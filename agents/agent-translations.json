@@ -36,7 +36,28 @@
     "uninstall": "Odinstalace",
     "connect": "Připojit",
     "disconnect": "Odpojit",
-    "cancel": "Storno"
+    "cancel": "Storno",
+    "agentVersion": "Nová verze agenta",
+    "url": "URL serveru",
+    "meshName": "Název oka",
+    "meshId": "Identifikátor sítě",
+    "serverId": "Identifikátor serveru",
+    "setup": "Založit",
+    "update": "Aktualizace",
+    "pressok": "Stisknutím tlačítka OK se odpojíte",
+    "elevation": "K instalaci / odinstalování agenta je vyžadováno zvýšené oprávnění.",
+    "sudo": "Zkuste to prosím znovu s sudo.",
+    "ctrlc": "Ukončete stisknutím Ctrl-C.",
+    "commands": "Textovou verzi můžete spustit z příkazového řádku pomocí následujících příkazů",
+    "graphicalerror": "V tomto systému nelze spustit grafickou verzi tohoto instalačního programu",
+    "zenity": "Zkuste nainstalovat / aktualizovat Zenity a spustit znovu",
+    "status": [
+      "NENÍ INSTALOVÁN",
+      "BĚH",
+      "NEFUNGUJE"
+    ],
+    "statusDescription": "Aktuální stav agenta",
+    "description": "Kliknutím na tlačítka níže nainstalujete nebo odinstalujete agenta sítě. Po instalaci je tento software spuštěn na pozadí, což umožňuje spravovat a ovládat tento počítač vzdáleným správcem."
   },
   "de": {
     "agent": "Agent",
@@ -45,7 +66,28 @@
     "uninstall": "Deinstallation",
     "connect": "Verbinden",
     "disconnect": "Trennen",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "agentVersion": "Neue Agentenversion",
+    "url": "Server-URL",
+    "meshName": "Maschenname",
+    "meshId": "Netzkennung",
+    "serverId": "Server-ID",
+    "setup": "Konfiguration",
+    "update": "Aktualisieren",
+    "pressok": "Drücken Sie OK, um die Verbindung zu trennen",
+    "elevation": "Für die Installation / Deinstallation des Agenten sind erhöhte Berechtigungen erforderlich.",
+    "sudo": "Bitte versuchen Sie es erneut mit sudo.",
+    "ctrlc": "Drücken Sie Strg-C, um den Vorgang zu beenden.",
+    "commands": "Sie können die Textversion über die Befehlszeile mit den folgenden Befehlen ausführen.",
+    "graphicalerror": "Die grafische Version dieses Installationsprogramms kann auf diesem System nicht ausgeführt werden",
+    "zenity": "Versuchen Sie, Zenity zu installieren / zu aktualisieren, und führen Sie es erneut aus",
+    "status": [
+      "NICHT INSTALLIERT",
+      "LAUFEN",
+      "NICHT LAUFEN"
+    ],
+    "statusDescription": "Aktueller Agentenstatus",
+    "description": "Klicken Sie auf die Schaltflächen unten, um den Mesh Agent zu installieren oder zu deinstallieren. Bei der Installation wird diese Software im Hintergrund ausgeführt, sodass dieser Computer von einem Remote-Administrator verwaltet und gesteuert werden kann."
   },
   "es": {
     "agent": "Agente",
@@ -54,7 +96,28 @@
     "uninstall": "Desinstalar",
     "connect": "Conectar",
     "disconnect": "Desconectar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "agentVersion": "Nueva versión del agente",
+    "url": "URL del servidor",
+    "meshName": "Nombre de malla",
+    "meshId": "Identificador de malla",
+    "serverId": "Identificador de servidor",
+    "setup": "Preparar",
+    "update": "Actualizar",
+    "pressok": "Presione OK para desconectar",
+    "elevation": "Se requieren permisos elevados para instalar / desinstalar el agente.",
+    "sudo": "Vuelve a intentarlo con sudo.",
+    "ctrlc": "Presione Ctrl-C para salir.",
+    "commands": "Puede ejecutar la versión de texto desde la línea de comandos con los siguientes comandos",
+    "graphicalerror": "La versión gráfica de este instalador no se puede ejecutar en este sistema.",
+    "zenity": "Intente instalar / actualizar Zenity y vuelva a ejecutar",
+    "status": [
+      "NO INSTALADO",
+      "CORRIENDO",
+      "NO CORRAS"
+    ],
+    "statusDescription": "Estado actual del agente",
+    "description": "Haga clic en los botones a continuación para instalar o desinstalar el agente de malla. Cuando se instala, este software se ejecuta en segundo plano, lo que permite que este equipo sea administrado y controlado por un administrador remoto."
   },
   "fi": {
     "agent": "Agentti",
@@ -63,7 +126,28 @@
     "uninstall": "Asennuksen poistaminen",
     "connect": "Yhdistä",
     "disconnect": "Katkaise yhteys",
-    "cancel": "Peruuta"
+    "cancel": "Peruuta",
+    "agentVersion": "Uusi agenttiversio",
+    "url": "Palvelimen URL-osoite",
+    "meshName": "Verkon nimi",
+    "meshId": "Verkon tunniste",
+    "serverId": "Palvelimen tunniste",
+    "setup": "Perustaa",
+    "update": "Päivittää",
+    "pressok": "Katkaise yhteys painamalla OK",
+    "elevation": "Agentin asentaminen / poistaminen edellyttää korotettuja käyttöoikeuksia.",
+    "sudo": "Yritä uudelleen sudolla.",
+    "ctrlc": "Poistu painamalla Ctrl-C.",
+    "commands": "Voit suorittaa tekstiversio komentoriviltä seuraavilla komennoilla",
+    "graphicalerror": "Tämän asennusohjelman graafinen versio ei toimi tässä järjestelmässä",
+    "zenity": "Yritä asentaa / päivittää Zenity ja suorita uudelleen",
+    "status": [
+      "EI ASENNETTU",
+      "Juoksu",
+      "EI RUNNING"
+    ],
+    "statusDescription": "Agentin nykyinen tila",
+    "description": "Napsauta alla olevia painikkeita asentaaksesi tai poistaaksesi verkkoagentin. Asennettuna tämä ohjelmisto toimii taustalla, jolloin etävalvoja hallitsee ja hallitsee tietokonetta."
   },
   "fr": {
     "agent": "Agent",
@@ -73,7 +157,27 @@
     "uninstall": "Désinstaller",
     "connect": "Se connecter",
     "disconnect": "Déconnecter",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "agentVersion": "Nouvelle version de l'agent",
+    "url": "URL du serveur",
+    "meshName": "Nom du maillage",
+    "meshId": "Identificateur de maillage",
+    "serverId": "Identifiant du serveur",
+    "update": "Mettre à jour",
+    "pressok": "Appuyez sur OK pour vous déconnecter",
+    "elevation": "Des autorisations élevées sont requises pour installer / désinstaller l'agent.",
+    "sudo": "Veuillez réessayer avec sudo.",
+    "ctrlc": "Appuyez sur Ctrl-C pour quitter.",
+    "commands": "Vous pouvez exécuter la version texte à partir de la ligne de commande avec la ou les commandes suivantes",
+    "graphicalerror": "La version graphique de ce programme d'installation ne peut pas s'exécuter sur ce système",
+    "zenity": "Essayez d'installer / mettre à jour Zenity et réexécutez",
+    "status": [
+      "PAS INSTALLÉ",
+      "FONCTIONNEMENT",
+      "NE PAS COURRIR"
+    ],
+    "statusDescription": "Statut actuel de l'agent",
+    "description": "Cliquez sur les boutons ci-dessous pour installer ou désinstaller l'agent de maillage. Une fois installé, ce logiciel s'exécute en arrière-plan permettant à cet ordinateur d'être géré et contrôlé par un administrateur distant."
   },
   "hi": {
     "agent": "एजेंट",
@@ -82,7 +186,28 @@
     "uninstall": "स्थापना रद्द करें",
     "connect": "जुडिये",
     "disconnect": "डिस्कनेक्ट",
-    "cancel": "रद्द करना"
+    "cancel": "रद्द करना",
+    "agentVersion": "नया एजेंट संस्करण",
+    "url": "सर्वर URL",
+    "meshName": "मेष नाम",
+    "meshId": "मेष पहचानकर्ता",
+    "serverId": "सर्वर पहचानकर्ता",
+    "setup": "सेट अप",
+    "update": "अपडेट करें",
+    "pressok": "डिस्कनेक्ट करने के लिए ओके दबाएं",
+    "elevation": "एजेंट को इंस्टॉल / अनइंस्टॉल करने के लिए एलिवेटेड परमिशन की जरूरत होती है।",
+    "sudo": "कृपया सूडो के साथ फिर से प्रयास करें।",
+    "ctrlc": "बाहर निकलने के लिए Ctrl-C दबाएं।",
+    "commands": "आप निम्न कमांड के साथ कमांड लाइन से टेक्स्ट संस्करण चला सकते हैं",
+    "graphicalerror": "इस इंस्टॉलर का आलेखीय संस्करण इस सिस्टम पर चलता है",
+    "zenity": "ज़ेनिटी को स्थापित / अपडेट करने का प्रयास करें, और फिर से चलाएं",
+    "status": [
+      "स्थापित नहीं है",
+      "चल रहा है",
+      "चल नहीं रहा"
+    ],
+    "statusDescription": "वर्तमान एजेंट की स्थिति",
+    "description": "मेष एजेंट को स्थापित या अनइंस्टॉल करने के लिए नीचे दिए गए बटन पर क्लिक करें। स्थापित होने पर, यह सॉफ़्टवेयर पृष्ठभूमि में चलता है, जिससे यह कंप्यूटर दूरस्थ व्यवस्थापक द्वारा प्रबंधित और नियंत्रित किया जा सकता है।"
   },
   "ja": {
     "agent": "エージェント",
@@ -91,7 +216,28 @@
     "uninstall": "アンインストール",
     "connect": "つなぐ",
     "disconnect": "切断する",
-    "cancel": "キャンセル"
+    "cancel": "キャンセル",
+    "agentVersion": "新しいエージェントバージョン",
+    "url": "サーバーのURL",
+    "meshName": "メッシュ名",
+    "meshId": "メッシュ識別子",
+    "serverId": "サーバー識別子",
+    "setup": "セットアップ",
+    "update": "更新",
+    "pressok": "OKを押して切断します",
+    "elevation": "エージェントをインストール/アンインストールするには、昇格された権限が必要です。",
+    "sudo": "sudoでもう一度やり直してください。",
+    "ctrlc": "Ctrl-Cを押して終了します。",
+    "commands": "次のコマンドを使用して、コマンドラインからテキストバージョンを実行できます。",
+    "graphicalerror": "このインストーラーのグラフィカルバージョンは、このシステムでは実行できません",
+    "zenity": "Zenityをインストール/更新して、もう一度実行してください",
+    "status": [
+      "インストールされていない",
+      "ランニング",
+      "走っていない"
+    ],
+    "statusDescription": "現在のエージェントステータス",
+    "description": "下のボタンをクリックして、メッシュエージェントをインストールまたはアンインストールします。インストールすると、このソフトウェアはバックグラウンドで実行され、リモート管理者がこのコンピューターを管理および制御できるようになります。"
   },
   "ko": {
     "agent": "에이전트",
@@ -120,7 +266,8 @@
       "중지됨"
     ],
     "statusDescription": "에이전트 상태",
-    "description": "메시 에이전트를 설치 또는 제거하려면 아래 버튼을 클릭하십시오. 이 프로그램은 설치하면 백그라운드에서 실행되므로 원격 관리자가이 컴퓨터를 관리하고 제어 할 수 있습니다."
+    "description": "메시 에이전트를 설치 또는 제거하려면 아래 버튼을 클릭하십시오. 이 프로그램은 설치하면 백그라운드에서 실행되므로 원격 관리자가이 컴퓨터를 관리하고 제어 할 수 있습니다.",
+    "graphicalerror": "이 설치 프로그램의 그래픽 버전은이 시스템에서 실행할 수 없습니다."
   },
   "nl": {
     "agent": "Agent",
@@ -158,7 +305,28 @@
     "uninstall": "Desinstalar",
     "connect": "Conectar",
     "disconnect": "Desconectar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "agentVersion": "Nova versão do agente",
+    "url": "URL do servidor",
+    "meshName": "Nome da malha",
+    "meshId": "Identificador de malha",
+    "serverId": "Identificador de Servidor",
+    "setup": "Configuração",
+    "update": "Atualizar",
+    "pressok": "Pressione OK para desconectar",
+    "elevation": "Permissões elevadas são necessárias para instalar / desinstalar o agente.",
+    "sudo": "Por favor, tente novamente com sudo.",
+    "ctrlc": "Pressione Ctrl-C para sair.",
+    "commands": "Você pode executar a versão em texto a partir da linha de comando com o (s) seguinte (s) comando (s)",
+    "graphicalerror": "A versão gráfica deste instalador não pode ser executada neste sistema",
+    "zenity": "Tente instalar / atualizar o Zenity e execute novamente",
+    "status": [
+      "NÃO INSTALADO",
+      "CORRIDA",
+      "NÃO CORRENDO"
+    ],
+    "statusDescription": "Status atual do agente",
+    "description": "Clique nos botões abaixo para instalar ou desinstalar o agente mesh. Quando instalado, este software é executado em segundo plano, permitindo que o computador seja gerenciado e controlado por um administrador remoto."
   },
   "ru": {
     "agent": "Агент",
@@ -167,7 +335,28 @@
     "uninstall": "Удаление",
     "connect": "Подключиться",
     "disconnect": "Разъединить",
-    "cancel": "Отмена"
+    "cancel": "Отмена",
+    "agentVersion": "Новая версия агента",
+    "url": "URL-адрес сервера",
+    "meshName": "Имя сетки",
+    "meshId": "Идентификатор сетки",
+    "serverId": "Идентификатор сервера",
+    "setup": "Настроить",
+    "update": "Обновить",
+    "pressok": "Нажмите ОК для отключения",
+    "elevation": "Для установки / удаления агента требуются повышенные разрешения.",
+    "sudo": "Пожалуйста, попробуйте еще раз с помощью sudo.",
+    "ctrlc": "Нажмите Ctrl-C для выхода.",
+    "commands": "Вы можете запустить текстовую версию из командной строки с помощью следующих команд",
+    "graphicalerror": "Графическая версия этого установщика не может работать в этой системе.",
+    "zenity": "Попробуйте установить / обновить Zenity и снова запустить",
+    "status": [
+      "НЕ УСТАНОВЛЕНО",
+      "БЕГ",
+      "НЕ БЕГАТЬ"
+    ],
+    "statusDescription": "Текущий статус агента",
+    "description": "Нажмите кнопки ниже, чтобы установить или удалить агент сетки. После установки это программное обеспечение работает в фоновом режиме, позволяя управлять этим компьютером удаленным администратором."
   },
   "tr": {
     "agent": "Ajan",
@@ -176,7 +365,28 @@
     "uninstall": "Kaldır",
     "connect": "Bağlan",
     "disconnect": "Bağlantıyı kes",
-    "cancel": "İptal etmek"
+    "cancel": "İptal etmek",
+    "agentVersion": "Yeni Temsilci Sürümü",
+    "url": "Sunucu URL'si",
+    "meshName": "Mesh Adı",
+    "meshId": "Mesh Tanımlayıcı",
+    "serverId": "Sunucu Tanımlayıcı",
+    "setup": "Kurmak",
+    "update": "Güncelleme",
+    "pressok": "Bağlantıyı kesmek için Tamam'a basın",
+    "elevation": "Aracıyı yüklemek / kaldırmak için yükseltilmiş izinler gereklidir.",
+    "sudo": "Lütfen sudo ile tekrar deneyin.",
+    "ctrlc": "Çıkmak için Ctrl-C tuşlarına basın.",
+    "commands": "Metin sürümünü aşağıdaki komutlarla komut satırından çalıştırabilirsiniz.",
+    "graphicalerror": "Bu yükleyicinin grafik versiyonu bu sistemde çalışamaz",
+    "zenity": "Zenity'yi kurmayı / güncellemeyi deneyin ve tekrar çalıştırın",
+    "status": [
+      "YÜKLÜ DEĞİL",
+      "KOŞU",
+      "KOŞMAK YOK"
+    ],
+    "statusDescription": "Mevcut Temsilci Durumu",
+    "description": "Mesh aracısını yüklemek veya kaldırmak için aşağıdaki düğmelere tıklayın. Bu yazılım yüklendiğinde arka planda çalışarak bu bilgisayarın bir uzak yönetici tarafından yönetilmesine ve kontrol edilmesine olanak tanır."
   },
   "zh-chs": {
     "agent": "代理",
@@ -185,7 +395,28 @@
     "uninstall": "卸载",
     "connect": "连接",
     "disconnect": "断线",
-    "cancel": "取消"
+    "cancel": "取消",
+    "agentVersion": "新代理版本",
+    "url": "服务器网址",
+    "meshName": "网格名称",
+    "meshId": "网格标识符",
+    "serverId": "服务器标识符",
+    "setup": "设定",
+    "update": "更新资料",
+    "pressok": "按确定断开连接",
+    "elevation": "安装/卸载代理需要提升的权限。",
+    "sudo": "请使用sudo再试一次。",
+    "ctrlc": "按Ctrl-C退出。",
+    "commands": "您可以使用以下命令从命令行运行文本版本",
+    "graphicalerror": "此安装程序Canot的图形版本在此系统上运行",
+    "zenity": "尝试安装/更新Zenity，然后再次运行",
+    "status": [
+      "未安装",
+      "正在运行",
+      "不在运行"
+    ],
+    "statusDescription": "当前代理状态",
+    "description": "单击下面的按钮以安装或卸载网状代理。安装后，该软件将在后台运行，从而允许该计算机由远程管理员进行管理和控制。"
   },
   "zh-cht": {
     "agent": "代理",
@@ -194,6 +425,27 @@
     "uninstall": "卸載",
     "connect": "連接",
     "disconnect": "斷線",
-    "cancel": "取消"
+    "cancel": "取消",
+    "agentVersion": "新代理版本",
+    "url": "服務器網址",
+    "meshName": "網格名稱",
+    "meshId": "網格標識符",
+    "serverId": "服務器標識符",
+    "setup": "設定",
+    "update": "更新資料",
+    "pressok": "按確定斷開連接",
+    "elevation": "安裝/卸載代理需要提升的權限。",
+    "sudo": "請使用sudo再試一次。",
+    "ctrlc": "按Ctrl-C退出。",
+    "commands": "您可以使用以下命令從命令行運行文本版本",
+    "graphicalerror": "此安裝程序Canot的圖形版本在此系統上運行",
+    "zenity": "嘗試安裝/更新Zenity，然後再次運行",
+    "status": [
+      "未安裝",
+      "正在運行",
+      "不在運行"
+    ],
+    "statusDescription": "當前代理狀態",
+    "description": "單擊下面的按鈕以安裝或卸載網狀代理。安裝後，該軟件將在後台運行，從而允許該計算機由遠程管理員進行管理和控制。"
   }
 }

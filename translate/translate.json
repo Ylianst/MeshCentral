@@ -211,7 +211,7 @@
       "cs": " Než budou moci být přiřazeni ke skupině zařízení, je třeba aby se uživatelé alespoň jednou k tomuto serveru přihlásili.",
       "de": " Benutzer müssen sich an diesem Server anmelden, bevor sie einer Gerätegruppe hinzugefügt werden können.",
       "en": " Users need to login to this server once before they can be added to a device group.",
-      "es": "Los usuarios deben iniciar sesión en este servidor una vez antes de poder agregarlos a un grupo de dispositivos.",
+      "es": " Los usuarios deben iniciar sesión en este servidor una vez antes de poder agregarlos a un grupo de dispositivos.",
       "fi": " Käyttäjien on kirjauduttava sisään tähän palvelimeen kerran, ennen kuin heidät voidaan lisätä laiteryhmään.",
       "fr": " Les utilisateurs doivent se connecter une première fois sur ce serveur avant de pouvoir être ajoutés à un groupe de périphériques..",
       "hi": " डिवाइस समूह में जोड़े जाने से पहले उपयोगकर्ताओं को एक बार इस सर्वर में प्रवेश करना होगा।",
@@ -416,9 +416,21 @@
       ]
     },
     {
+      "cs": "* 8 znaků, 1 horní, 1 dolní, 1 číselný, 1 jiný než alfanumerický.",
+      "de": "* 8 Zeichen, 1 oberes, 1 unteres, 1 numerisches, 1 nicht alphanumerisches Zeichen.",
       "en": "* 8 characters, 1 upper, 1 lower, 1 numeric, 1 non-alpha numeric.",
+      "es": "* 8 caracteres, 1 superior, 1 inferior, 1 numérico, 1 no alfanumérico.",
+      "fi": "* 8 merkkiä, 1 ylempi, 1 alempi, 1 numeerinen, 1 ei-aakkosnumeerinen.",
       "fr": "* 8 caractères, 1 majuscule, 1 minuscule, 1 numérique, 1 non alphanumérique.",
+      "hi": "* 8 अक्षर, 1 ऊपरी, 1 निचला, 1 संख्यात्मक, 1 गैर-अल्फा संख्यात्मक।",
+      "ja": "* 8文字、上1つ、下1つ、数字1つ、英数字以外の数字1つ。",
+      "ko": "* 8 자, 대문자 1 개, 하위 1 개, 숫자 1 개, 알파벳이 아닌 숫자 1 개.",
       "nl": "* 8 karakters, 1 hoofdletter, 1 normale letter, 1 nummeriek, 1 niet alfanumeriek.",
+      "pt": "* 8 caracteres, 1 superior, 1 inferior, 1 numérico, 1 não alfanumérico.",
+      "ru": "* 8 символов, 1 верхний, 1 нижний, 1 числовой, 1 не буквенно-цифровой.",
+      "tr": "* 8 karakter, 1 büyük, 1 alt, 1 sayısal, 1 alfa olmayan sayısal.",
+      "zh-chs": "* 8个字符，1个大写，1个小写，1个数字，1个非字母数字。",
+      "zh-cht": "* 8個字符，1個大寫，1個小寫，1個數字，1個非字母數字。",
       "xloc": [
         "default.handlebars->29->1421",
         "default.handlebars->29->309"
@@ -541,9 +553,21 @@
       ]
     },
     {
+      "cs": ", Vyzvat k souhlasu",
+      "de": "Aufforderung zur Zustimmung",
       "en": ", Prompt for consent",
-      "nl": ", vraag om toestemming",
+      "es": ", Solicitud de consentimiento",
+      "fi": ", Pyydä suostumusta",
       "fr": ", demander le consentement",
+      "hi": ", सहमति के लिए प्रेरित करें",
+      "ja": "、同意を求める",
+      "ko": ", 동의 확인",
+      "nl": ", vraag om toestemming",
+      "pt": ", Solicitar consentimento",
+      "ru": ", Запрос согласия",
+      "tr": ", Onay istemi",
+      "zh-chs": "，提示同意",
+      "zh-cht": "，提示同意",
       "xloc": [
         "default.handlebars->29->679"
       ]
@@ -1292,9 +1316,21 @@
       ]
     },
     {
+      "cs": "12 hodin",
+      "de": "12 Stunden",
       "en": "12 hours",
+      "es": "12 horas",
+      "fi": "12 tuntia",
       "fr": "12 heures",
+      "hi": "12 घंटे",
+      "ja": "12時間",
+      "ko": "12 시간",
       "nl": "12 uur",
+      "pt": "12 horas",
+      "ru": "12 часов",
+      "tr": "12 saat",
+      "zh-chs": "12小时",
+      "zh-cht": "12小時",
       "xloc": [
         "default.handlebars->29->742"
       ]
@@ -1342,25 +1378,61 @@
       ]
     },
     {
+      "cs": "16 hodin",
+      "de": "16 Stunden",
       "en": "16 hours",
+      "es": "16 horas",
+      "fi": "16 tuntia",
       "fr": "16 heures",
+      "hi": "16 घंटे",
+      "ja": "16時間",
+      "ko": "16 시간",
       "nl": "16 uur",
+      "pt": "16 horas",
+      "ru": "16 часов",
+      "tr": "16 saat",
+      "zh-chs": "16小时",
+      "zh-cht": "16小時",
       "xloc": [
         "default.handlebars->29->743"
       ]
     },
     {
+      "cs": "2 dny",
+      "de": "2 Tage",
       "en": "2 days",
+      "es": "2 días",
+      "fi": "2 päivää",
       "fr": "2 jours",
+      "hi": "दो दिन",
+      "ja": "2日",
+      "ko": "2 일",
       "nl": "2 dagen",
+      "pt": "2 dias",
+      "ru": "2 дня",
+      "tr": "2 gün",
+      "zh-chs": "2天",
+      "zh-cht": "2天",
       "xloc": [
         "default.handlebars->29->745"
       ]
     },
     {
+      "cs": "2 hodiny",
+      "de": "2 Stunden",
       "en": "2 hours",
+      "es": "2 horas",
+      "fi": "2 tuntia",
       "fr": "2 heures",
+      "hi": "2 घंटे",
+      "ja": "2時間",
+      "ko": "2 시간",
       "nl": "2 uur",
+      "pt": "2 horas",
+      "ru": "2 часа",
+      "tr": "2 saat",
+      "zh-chs": "2小时",
+      "zh-cht": "2小時",
       "xloc": [
         "default.handlebars->29->739"
       ]
@@ -1450,9 +1522,21 @@
       ]
     },
     {
+      "cs": "24 hodin",
+      "de": "24 Stunden",
       "en": "24 hours",
+      "es": "24 horas",
+      "fi": "24 tuntia",
       "fr": "24 heures",
+      "hi": "चौबीस घंटे",
+      "ja": "24時間",
+      "ko": "24 시간",
       "nl": "24 uur",
+      "pt": "24 horas",
+      "ru": "24 часа",
+      "tr": "24 saat",
+      "zh-chs": "24小时",
+      "zh-cht": "24小時",
       "xloc": [
         "default.handlebars->29->744"
       ]
@@ -1703,17 +1787,41 @@
       ]
     },
     {
+      "cs": "4 dny",
+      "de": "4 Tage",
       "en": "4 days",
+      "es": "4 dias",
+      "fi": "4 päivää",
       "fr": "4 jours",
+      "hi": "चार दिन",
+      "ja": "4日",
+      "ko": "4 일",
       "nl": "4 dagen",
+      "pt": "4 dias",
+      "ru": "4 дня",
+      "tr": "4 gün",
+      "zh-chs": "4天",
+      "zh-cht": "4天",
       "xloc": [
         "default.handlebars->29->746"
       ]
     },
     {
+      "cs": "4 hodiny",
+      "de": "4 Stunden",
       "en": "4 hours",
+      "es": "4 horas",
+      "fi": "4 tuntia",
       "fr": "4 heures",
+      "hi": "चार घंटे",
+      "ja": "4時間",
+      "ko": "4 시간",
       "nl": "4 uur",
+      "pt": "4 horas",
+      "ru": "4 часа",
+      "tr": "4 saat",
+      "zh-chs": "4个小时",
+      "zh-cht": "4個小時",
       "xloc": [
         "default.handlebars->29->740"
       ]
@@ -1948,9 +2056,21 @@
       ]
     },
     {
+      "cs": "60 minut",
+      "de": "60 Minuten",
       "en": "60 minutes",
+      "es": "60 minutos",
+      "fi": "60 minuuttia",
       "fr": "60 minutes",
+      "hi": "60 मिनट",
+      "ja": "60分",
+      "ko": "60 분",
       "nl": "60 minuten",
+      "pt": "60 minutos",
+      "ru": "60 минут",
+      "tr": "60 dakika",
+      "zh-chs": "60分钟",
+      "zh-cht": "60分鐘",
       "xloc": [
         "default.handlebars->29->738"
       ]
@@ -2361,17 +2481,41 @@
       ]
     },
     {
+      "cs": "ALT + F4",
+      "de": "ALT + F4",
       "en": "ALT + F4",
-      "nl": "ALT + F4",
+      "es": "ALT + F4",
+      "fi": "ALT + F4",
       "fr": "ALT + F4",
+      "hi": "ALT + F4",
+      "ja": "ALT + F4",
+      "ko": "Alt + F4",
+      "nl": "ALT + F4",
+      "pt": "ALT + F4",
+      "ru": "ALT + F4",
+      "tr": "ALT + F4",
+      "zh-chs": "ALT + F4",
+      "zh-cht": "ALT + F4",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->19"
       ]
     },
     {
+      "cs": "ALT + TAB",
+      "de": "ALT + TAB",
       "en": "ALT + TAB",
-      "nl": "ALT + TAB",
+      "es": "ALT + TAB",
+      "fi": "ALT + SARKAIN",
       "fr": "ALT + TAB",
+      "hi": "ALT + TAB",
+      "ja": "ALT + TAB",
+      "ko": "Alt + Tab",
+      "nl": "ALT + TAB",
+      "pt": "ALT + TAB",
+      "ru": "ALT + TAB",
+      "tr": "ALT + SEKME",
+      "zh-chs": "ALT + Tab",
+      "zh-cht": "ALT + Tab",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->23"
       ]
@@ -2993,9 +3137,21 @@
       ]
     },
     {
+      "cs": "Aktivujte Intel&reg; AMT v režimu správce (ACM) pomocí USB klíče ve formátu FAT. Umístěte soubor setup.bin a pomocí tohoto klíče spusťte jeden nebo více počítačů.",
+      "de": "Aktivieren Sie Intel&reg; AMT im Admin Control Mode (ACM) mit einem FAT-formatierten USB-Stick. Legen Sie setup.bin darauf und starten Sie einen oder mehrere Computer mit diesem Schlüssel.",
       "en": "Activate Intel&reg; AMT in Admin Control Mode (ACM) using a FAT formated USB key. Place setup.bin on it and boot one or more computers with this key.",
+      "es": "Active Intel&reg; AMT en el modo de control de administrador (ACM) mediante una llave USB formateada FAT. Coloque setup.bin en él e inicie una o más computadoras con esta clave.",
+      "fi": "Aktivoi Intel&reg; AMT järjestelmänvalvojan ohjaustilassa (ACM) FAT-muotoisella USB-avaimella. Aseta setup.bin siihen ja käynnistä yksi tai useampi tietokone tällä avaimella.",
       "fr": "Activer Intel&reg; AMT dans ACM (Admin Control Mode) en utilisant une clé USB (format FAT). Copiez le fichier setup.bin dessus et démarrez un ou plusieurs appareils avec.",
+      "hi": "FAT स्वरूपित USB कुंजी का उपयोग करके व्यवस्थापक कंट्रोल मोड (ACM) में Intel&reg; AMT को सक्रिय करें। इस पर setup.bin रखें और इस कुंजी के साथ एक या अधिक कंप्यूटर बूट करें।",
+      "ja": "FAT形式のUSBキーを使用して、管理制御モード（ACM）でインテル&reg;AMTをアクティブ化します。その上にsetup.binを配置し、このキーを使用して1台以上のコンピューターを起動します。",
+      "ko": "FAT 형식의 USB 키를 사용하여 관리자 제어 모드 (ACM)에서 Intel&reg; AMT를 활성화합니다. 여기에 setup.bin을 놓고이 키로 하나 이상의 컴퓨터를 부팅합니다.",
       "nl": "Activeer Intel&reg; AMT in Admin Control Mode (ACM) gebruikmakend van een FAT geformateerde USB sleutel. Plaats setup.bin erop en start een of meer computers met deze sleutel.",
+      "pt": "Ative a Intel&reg; AMT no Modo de controle de administrador (ACM) usando uma chave USB formatada em FAT. Coloque setup.bin nele e inicialize um ou mais computadores com esta chave.",
+      "ru": "Активируйте Intel&reg; AMT в режиме управления администратором (ACM) с помощью USB-ключа в формате FAT. Поместите на него файл setup.bin и загрузите один или несколько компьютеров с этим ключом.",
+      "tr": "Intel&reg; AMT'yi Yönetici Kontrol Modunda (ACM) FAT formatlı bir USB anahtarı kullanarak etkinleştirin. Setup.bin dosyasını üzerine yerleştirin ve bu anahtarla bir veya daha fazla bilgisayarı başlatın.",
+      "zh-chs": "使用FAT格式的USB密钥在管理控制模式（ACM）中激活英特尔&reg;AMT。将setup.bin放在其上，然后使用此键引导一台或多台计算机。",
+      "zh-cht": "使用FAT格式的USB密鑰在管理控制模式（ACM）中激活英特爾&reg;AMT。將setup.bin放在其上，然後使用此鍵引導一台或多台計算機。",
       "xloc": [
         "default.handlebars->29->304"
       ]
@@ -3041,9 +3197,21 @@
       ]
     },
     {
+      "cs": "Aktivujte CCM, pokud ACM selže",
+      "de": "Aktivieren Sie CCM, wenn ACM fehlschlägt",
       "en": "Activate to CCM, if ACM fails",
-      "nl": "Activeer naar CCM, als ACM faalt",
+      "es": "Activar a CCM, si ACM falla",
+      "fi": "Aktivoi CCM: ksi, jos ACM epäonnistuu",
       "fr": "Activer CCM, si ACM échoue",
+      "hi": "ACM विफल होने पर CCM को सक्रिय करें",
+      "ja": "ACMが失敗した場合は、CCMをアクティブにします",
+      "ko": "ACM이 실패하는 경우 CCM으로 활성화",
+      "nl": "Activeer naar CCM, als ACM faalt",
+      "pt": "Ative para CCM, se ACM falhar",
+      "ru": "Активировать в CCM, если ACM не работает",
+      "tr": "ACM başarısız olursa CCM'yi etkinleştirin",
+      "zh-chs": "如果ACM失败，则激活到CCM",
+      "zh-cht": "如果ACM失敗，則激活到CCM",
       "xloc": [
         "default.handlebars->29->1412"
       ]
@@ -3094,9 +3262,21 @@
       ]
     },
     {
+      "cs": "Aktivní sdílení zařízení",
+      "de": "Aktive Gerätefreigabe",
       "en": "Active Device Sharing",
+      "es": "Compartir dispositivo activo",
+      "fi": "Aktiivinen laitteen jakaminen",
       "fr": "Partage(s) actif(s) de l'appareil",
+      "hi": "सक्रिय डिवाइस शेयरिंग",
+      "ja": "アクティブデバイス共有",
+      "ko": "활성 장치 공유",
       "nl": "Actief delen van apparaten",
+      "pt": "Compartilhamento de dispositivo ativo",
+      "ru": "Совместное использование активного устройства",
+      "tr": "Aktif Cihaz Paylaşımı",
+      "zh-chs": "主动设备共享",
+      "zh-cht": "主動設備共享",
       "xloc": [
         "default.handlebars->29->673"
       ]
@@ -3724,9 +3904,21 @@
       ]
     },
     {
+      "cs": "Přidejte, aktivujte a nakonfigurujte Intel&reg; AMT do skupiny „{0}“ pravidelným spuštěním MeshCmd jako správce na vzdáleném zařízení.",
+      "de": "Fügen Sie Intel&reg; AMT hinzu, aktivieren Sie es und konfigurieren Sie es so, dass es \\\"{0}\\\" gruppiert, indem Sie MeshCmd regelmäßig als Administrator auf dem Remote-Gerät ausführen.",
       "en": "Add, activate and configure Intel&reg; AMT to group \\\"{0}\\\" by periodically running MeshCmd as administrator on the remote device.",
-      "nl": "Voeg toe, activeer en configureer Intel&reg; AMT aan groep \\\"{0}\\\" door MeshCmd periodiek uit te voeren als beheerder op het externe apparaat.",
+      "es": "Agregue, active y configure Intel&reg; AMT en el grupo \\\"{0}\\\" ejecutando periódicamente MeshCmd como administrador en el dispositivo remoto.",
+      "fi": "Lisää, aktivoi ja määritä Intel&reg; AMT ryhmittelemään \\\"{0}\\\" suorittamalla ajoittain MeshCmd etälaitteen järjestelmänvalvojana.",
       "fr": "Ajouter, activer et configurer Intel&reg; AMT au groupe \\\"{0}\\\" en exécutant périodiquement MeshCmd avec les droits administrateurs sur l'appareil distant.",
+      "hi": "दूरस्थ डिवाइस पर व्यवस्थापक के रूप में समय-समय पर MeshCmd चलाकर, Intel&reg; AMT को समूह में \\\"{0}\\\" जोड़ें, सक्रिय करें और कॉन्फ़िगर करें।",
+      "ja": "リモートデバイスで管理者としてMeshCmdを定期的に実行することにより、グループ\\\"{0}\\\"にインテル&reg;AMTを追加、アクティブ化、構成します。",
+      "ko": "원격 장치에서 관리자로 MeshCmd를 주기적으로 실행하여 \\\"{0}\\\"그룹에 Intel&reg; AMT를 추가, 활성화 및 구성합니다.",
+      "nl": "Voeg toe, activeer en configureer Intel&reg; AMT aan groep \\\"{0}\\\" door MeshCmd periodiek uit te voeren als beheerder op het externe apparaat.",
+      "pt": "Adicione, ative e configure Intel&reg; AMT para agrupar \\\"{0}\\\" executando MeshCmd periodicamente como administrador no dispositivo remoto.",
+      "ru": "Добавьте, активируйте и настройте Intel&reg; AMT в группу \\\"{0}\\\", периодически запуская MeshCmd от имени администратора на удаленном устройстве.",
+      "tr": "Uzak cihazda MeshCmd'yi yönetici olarak periyodik olarak çalıştırarak Intel&reg; AMT'yi \\\"{0}\\\" grubuna ekleyin, etkinleştirin ve yapılandırın.",
+      "zh-chs": "通过定期在远程设备上以管理员身份运行MeshCmd，添加，激活和配置Intel&reg;AMT以将“{0}”分组。",
+      "zh-cht": "通過定期在遠程設備上以管理員身份運行MeshCmd，添加，激活和配置Intel&reg;AMT以將“{0}”分組。",
       "xloc": [
         "default.handlebars->29->301"
       ]
@@ -3752,9 +3944,21 @@
       ]
     },
     {
+      "cs": "Přidáno sdílení zařízení {0} z {1} do {2}",
+      "de": "Gerätefreigabe {0} von {1} zu {2} hinzugefügt",
       "en": "Added device share {0} from {1} to {2}",
+      "es": "Se agregó el recurso compartido de dispositivo {0} de {1} a {2}",
+      "fi": "Laitteen jako {0} lisätty kohteesta {1} kansioon {2}",
       "fr": "Ajout du partage {0} de {1} à {2}",
+      "hi": "जोड़ा गया डिवाइस शेयर {0} से {1} से {2}",
+      "ja": "デバイス共有{0}を{1}から{2}に追加しました",
+      "ko": "{1}에서 {2} (으)로 기기 공유 {0}을 (를) 추가했습니다.",
       "nl": "Apparaat delen {0} toegevoegd van {1} tot {2}",
+      "pt": "Compartilhamento de dispositivo adicionado {0} de {1} a {2}",
+      "ru": "Добавлен общий доступ к устройству {0} с {1} на {2}",
+      "tr": "{1} ile {2} arasında {0} cihaz paylaşımı eklendi",
+      "zh-chs": "已将设备共享{0}从{1}添加到{2}",
+      "zh-cht": "已將設備共享{0}從{1}添加到{2}",
       "xloc": [
         "default.handlebars->29->1706"
       ]
@@ -4403,9 +4607,21 @@
       ]
     },
     {
+      "cs": "Agent běží na vzdáleném zařízení se sníženými oprávněními.",
+      "de": "Der Agent wird auf einem Remote-Gerät mit reduzierten Berechtigungen ausgeführt.",
       "en": "Agent is running on remote device with reduced privilages.",
+      "es": "El agente se ejecuta en un dispositivo remoto con privilegios reducidos.",
+      "fi": "Agentti toimii etälaitteella, jolla on rajoitetut oikeudet.",
       "fr": "L'agent s'exécute sur l'appareil distant sans privilèges administrateur.",
+      "hi": "एजेंट कम निजीकरण के साथ रिमोट डिवाइस पर चल रहा है।",
+      "ja": "エージェントは、特権が削減されたリモートデバイスで実行されています。",
+      "ko": "에이전트가 권한이 감소 된 원격 장치에서 실행 중입니다.",
       "nl": "De agent wordt op een extern apparaat uitgevoerd met beperkte rechten.",
+      "pt": "O agente está sendo executado em um dispositivo remoto com privilégios reduzidos.",
+      "ru": "Агент работает на удаленном устройстве с ограниченными правами.",
+      "tr": "Aracı, azaltılmış ayrıcalıklara sahip uzak cihazda çalışıyor.",
+      "zh-chs": "代理在特权降低的远程设备上运行。",
+      "zh-cht": "代理在特權降低的遠程設備上運行。",
       "xloc": [
         "default.handlebars->29->161",
         "default.handlebars->29->654"
@@ -4749,19 +4965,19 @@
     {
       "cs": "Účet pro vás byl vytvořen na serveru [[[SERVERNAME]]] ([[[[SERVERURL]]]/[[[URLARGS1]]]), nyní k němu můžete přistupovat pomocí uživatelského jména „[[[[ACCOUNTNAME]]]“ “a hesla„ [[[HESLO]] ]] \".",
       "de": "Auf dem Server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) wurde ein Konto für Sie erstellt, Sie können ab sofort mit dem Benutzernamen \"[[[ACCOUNTNAME]]]\" und dem Passwort \"[[[PASSWORD]]]\" darauf zugreifen.",
+      "en": "An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username \"[[[ACCOUNTNAME]]]\" and password \"[[[PASSWORD]]]\".",
       "es": "Una cuenta ha sido creada en su servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), ahora puede acceder con el usuario \"[[[ACCOUNTNAME]]]\" y la contraseña \"[[[PASSWORD]]]\".",
       "fi": "Sinulle on luotu tili palvelimelle [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), voit käyttää sitä nyt käyttäjätunnuksella \"[[[ACCOUNTNAME]]]\" and salasanalla \"[[[PASSWORD]]]\".",
       "fr": "Un compte a été créé pour vous sur le serveur [[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), vous pouvez y accéder maintenant avec le nom d'utilisateur \"[[[ACCOUNTNAME]]]\" et le mot de passe \"[[[PASSWORD]]]\".",
       "hi": "सर्वर [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) पर आपके लिए एक खाता बनाया गया था, आप इसे अब उपयोगकर्ता नाम \"[[[ACCOUNTNAME]]]]\" और पासवर्ड \"[[[PASSWORD]]]\" के साथ एक्सेस कर सकते हैं।।",
       "ja": "サーバー[[[SERVERNAME]]]（[[[SERVERURL]]]/[[[URLARGS1]]]）にアカウントが作成されました。ユーザー名 \"[[[ACCOUNTNAME]]]\"とパスワード \"[[[PASSWORD] ]] \"。",
       "ko": "당신을 위해 서버에서 한 계정이 생성되었습니다 : [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), 이제 당신은 다음 이름으로 접근 가능합니다 : \"[[[ACCOUNTNAME]]]\" 그리고 비밀번호는 다음과 같습니다 : \"[[[PASSWORD]]]\".",
+      "nl": "Er is een account jouw aangemaakt op de server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), Je kan inloggen met de gebruikersnaam \"[[[ACCOUNTNAME]]]\" en wachtwoord \"[[[PASSWORD]]]\".",
       "pt": "Uma conta foi criada para você no servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), você pode acessá-la agora com o nome de usuário \"[[[ACCOUNTNAME]]]\" e a senha \"[[[PASSWORD] ]] \".",
       "ru": "Учетная запись была создана для вас на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), теперь вы можете получить к ней доступ с именем пользователя «[[[ACCOUNTNAME]]]» и паролем «[[[PASSWORD] ]] \".",
       "tr": "[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) sunucusunda sizin için bir hesap oluşturuldu, şimdi \"[[[ACCOUNTNAME]]]\" kullanıcı adı ve \"[[[PASSWORD]]]\" ile bu hesaba erişebilirsiniz.",
       "zh-chs": "已在服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/[[[URLARGS1]]]）上为您创建了一个帐户，您现在可以使用用户名“ [[[ACCOUNTNAME]]]”和密码“ [[[PASSWORD] ]]”。",
       "zh-cht": "在伺服器[[[SERVERNAME]]]（[[[SERVERURL]]]/[[[URLARGS1]]]）上為你創建了一個帳戶，你現在可以使用用戶名“ [[[ACCOUNTNAME]]]”和密碼“ [[[PASSWORD] ]]”。",
-      "en": "An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username \"[[[ACCOUNTNAME]]]\" and password \"[[[PASSWORD]]]\".",
-      "nl": "Er is een account jouw aangemaakt op de server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), Je kan inloggen met de gebruikersnaam \"[[[ACCOUNTNAME]]]\" en wachtwoord \"[[[PASSWORD]]]\".",
       "xloc": [
         "account-invite.txt"
       ]
@@ -4870,9 +5086,9 @@
       ]
     },
     {
-      "en": "Apple Silicon",
       "cs": "Apple Silicon",
       "de": "Apple Silicon",
+      "en": "Apple Silicon",
       "es": "Apple Silicon",
       "fi": "Apple Silicon",
       "fr": "Apple Silicon",
@@ -4883,6 +5099,8 @@
       "pt": "Apple Silicon",
       "ru": "Apple Silicon",
       "tr": "Apple Silicon",
+      "zh-chs": "苹果硅",
+      "zh-cht": "蘋果矽",
       "xloc": [
         "default.handlebars->29->42"
       ]
@@ -5721,8 +5939,21 @@
       ]
     },
     {
+      "cs": "Automatické stahování souboru s výpisem jádra agenta: \\\"{0}\\\"",
+      "de": "Automatischer Download der Agent Core Dump-Datei: \\\"{0}\\\"",
       "en": "Automated download of agent core dump file: \\\"{0}\\\"",
+      "es": "Descarga automatizada del archivo de volcado del núcleo del agente: \\\"{0}\\\"",
+      "fi": "Agentin ydintiedoston automaattinen lataus: \\\"{0}\\\"",
+      "fr": "Téléchargement automatisé du fichier de vidage de mémoire de l'agent: \\\"{0}\\\"",
+      "hi": "एजेंट कोर डंप फ़ाइल का स्वचालित डाउनलोड: \\\"{0}\\\"",
+      "ja": "エージェントコアダンプファイルの自動ダウンロード：\\\"{0}\\\"",
+      "ko": "에이전트 코어 덤프 파일 자동 다운로드 : \\\"{0}\\\"",
       "nl": "Geautomatiseerde download van agent core dumpbestand: \\\"{0}\\\"",
+      "pt": "Download automatizado do arquivo de despejo central do agente: \\\"{0}\\\"",
+      "ru": "Автоматическая загрузка файла дампа ядра агента: \\\"{0}\\\"",
+      "tr": "Aracı çekirdek döküm dosyasının otomatik indirilmesi: \\\"{0}\\\"",
+      "zh-chs": "自动下载代理程序核心转储文件：“{0}”",
+      "zh-cht": "自動下載代理程序核心轉儲文件：“{0}”",
       "xloc": [
         "default.handlebars->29->1709"
       ]
@@ -6052,9 +6283,21 @@
       ]
     },
     {
+      "cs": "Dávkové nahrávání souborů",
+      "de": "Batch-Datei hochladen",
       "en": "Batch File Upload",
-      "nl": "Batch bestand uploaden",
+      "es": "Carga de archivos por lotes",
+      "fi": "Erätiedoston lataus",
       "fr": "Chargement de fichiers",
+      "hi": "बैच फ़ाइल अपलोड",
+      "ja": "バッチファイルのアップロード",
+      "ko": "배치 파일 업로드",
+      "nl": "Batch bestand uploaden",
+      "pt": "Upload de arquivo em lote",
+      "ru": "Пакетная загрузка файла",
+      "tr": "Toplu Dosya Yükleme",
+      "zh-chs": "批处理文件上传",
+      "zh-cht": "批處理文件上傳",
       "xloc": [
         "default.handlebars->29->483"
       ]
@@ -6080,9 +6323,21 @@
       ]
     },
     {
+      "cs": "Hromadné nahrávání {0} souborů do složky {1}",
+      "de": "Batch-Upload von {0} Datei (en) in Ordner {1}",
       "en": "Batch upload of {0} file(s) to folder {1}",
-      "nl": "Batch-upload van {0} bestand (en) naar map {1}",
+      "es": "Carga por lotes de {0} archivo (s) a la carpeta {1}",
+      "fi": "Erä lähetetään {0} tiedostoa kansioon {1}",
       "fr": "Chargement de {0} fichier(s) dans le dossier {1}",
+      "hi": "{0} फ़ाइल को फ़ोल्डर में अपलोड करें {1}",
+      "ja": "{0}ファイルのフォルダ{1}へのバッチアップロード",
+      "ko": "{0} 파일을 {1} 폴더에 일괄 업로드",
+      "nl": "Batch-upload van {0} bestand (en) naar map {1}",
+      "pt": "Upload em lote de {0} arquivo (s) para a pasta {1}",
+      "ru": "Массовая загрузка файлов ({0}) в папку {1}",
+      "tr": "{0} dosyanın {1} klasörüne toplu olarak yüklenmesi",
+      "zh-chs": "将{0}个文件批量上传到文件夹{1}",
+      "zh-cht": "將{0}個文件批量上傳到文件夾{1}",
       "xloc": [
         "default.handlebars->29->1708"
       ]
@@ -6313,9 +6568,21 @@
       ]
     },
     {
+      "cs": "Režim CCM",
+      "de": "CCM-Modus",
       "en": "CCM mode",
-      "nl": "CCM modus",
+      "es": "Modo CCM",
+      "fi": "CCM-tila",
       "fr": "mode CCM",
+      "hi": "CCM मोड",
+      "ja": "CCMモード",
+      "ko": "CCM 모드",
+      "nl": "CCM modus",
+      "pt": "Modo CCM",
+      "ru": "CCM режим",
+      "tr": "CCM modu",
+      "zh-chs": "CCM模式",
+      "zh-cht": "CCM模式",
       "xloc": [
         "default.handlebars->29->1409"
       ]
@@ -6383,9 +6650,21 @@
       ]
     },
     {
+      "cs": "Nastavení CIRA",
+      "de": "CIRA-Setup",
       "en": "CIRA setup",
+      "es": "Configuración de CIRA",
+      "fi": "CIRA-asetukset",
       "fr": "Configuration CIRA",
+      "hi": "CIRA सेटअप",
+      "ja": "CIRAのセットアップ",
+      "ko": "CIRA 설정",
       "nl": "CIRA setup",
+      "pt": "Configuração CIRA",
+      "ru": "Настройка CIRA",
+      "tr": "CIRA kurulumu",
+      "zh-chs": "CIRA设置",
+      "zh-cht": "CIRA設置",
       "xloc": [
         "default.handlebars->29->1417"
       ]
@@ -6559,9 +6838,21 @@
       ]
     },
     {
+      "cs": "CTRL + W",
+      "de": "STRG + W.",
       "en": "CTRL + W",
-      "nl": "CTRL + W",
+      "es": "CTRL + W",
+      "fi": "CTRL + W",
       "fr": "CTRL + W",
+      "hi": "CTRL + W",
+      "ja": "CTRL + W",
+      "ko": "Ctrl + W",
+      "nl": "CTRL + W",
+      "pt": "CTRL + W",
+      "ru": "CTRL + W",
+      "tr": "CTRL + W",
+      "zh-chs": "CTRL + W",
+      "zh-cht": "CTRL + W",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->21"
       ]
@@ -7550,9 +7841,21 @@
       ]
     },
     {
+      "cs": "Vymazat vyhledávací filtr",
+      "de": "Suchfilter löschen",
       "en": "Clear search filter",
+      "es": "Borrar filtro de búsqueda",
+      "fi": "Tyhjennä hakusuodatin",
       "fr": "Annuler la recherche",
+      "hi": "खोज फ़िल्टर साफ़ करें",
+      "ja": "検索フィルターをクリアする",
+      "ko": "검색 필터 지우기",
       "nl": "Wis zoekfilter",
+      "pt": "Limpar filtro de pesquisa",
+      "ru": "Очистить фильтр поиска",
+      "tr": "Arama filtresini temizle",
+      "zh-chs": "清除搜索过滤器",
+      "zh-cht": "清除搜索過濾器",
       "xloc": [
         "default-mobile.handlebars->9->154",
         "default.handlebars->29->214"
@@ -7783,9 +8086,21 @@
       ]
     },
     {
+      "cs": "Kliknutím na tlačítka níže nainstalujete nebo odinstalujete agenta sítě. Po instalaci je tento software spuštěn na pozadí, což umožňuje spravovat a ovládat tento počítač vzdáleným správcem.",
+      "de": "Klicken Sie auf die Schaltflächen unten, um den Mesh Agent zu installieren oder zu deinstallieren. Bei der Installation wird diese Software im Hintergrund ausgeführt, sodass dieser Computer von einem Remote-Administrator verwaltet und gesteuert werden kann.",
       "en": "Click the buttons below to install or uninstall the mesh agent. When installed, this software runs in the background allowing this computer to be managed and controlled by a remote administrator.",
-      "nl": "Klik op de onderstaande knoppen om de mesh-agent te installeren of te verwijderen. Na installatie wordt deze software op de achtergrond uitgevoerd, zodat deze computer kan worden beheerd en bestuurd door een externe beheerder.",
+      "es": "Haga clic en los botones a continuación para instalar o desinstalar el agente de malla. Cuando se instala, este software se ejecuta en segundo plano, lo que permite que este equipo sea administrado y controlado por un administrador remoto.",
+      "fi": "Napsauta alla olevia painikkeita asentaaksesi tai poistaaksesi verkkoagentin. Asennettuna tämä ohjelmisto toimii taustalla, jolloin etävalvoja hallitsee ja hallitsee tietokonetta.",
+      "fr": "Cliquez sur les boutons ci-dessous pour installer ou désinstaller l'agent de maillage. Une fois installé, ce logiciel s'exécute en arrière-plan permettant à cet ordinateur d'être géré et contrôlé par un administrateur distant.",
+      "hi": "मेष एजेंट को स्थापित या अनइंस्टॉल करने के लिए नीचे दिए गए बटन पर क्लिक करें। स्थापित होने पर, यह सॉफ़्टवेयर पृष्ठभूमि में चलता है, जिससे यह कंप्यूटर दूरस्थ व्यवस्थापक द्वारा प्रबंधित और नियंत्रित किया जा सकता है।",
+      "ja": "下のボタンをクリックして、メッシュエージェントをインストールまたはアンインストールします。インストールすると、このソフトウェアはバックグラウンドで実行され、リモート管理者がこのコンピューターを管理および制御できるようになります。",
       "ko": "메시 에이전트를 설치 또는 제거하려면 아래 버튼을 클릭하십시오. 이 프로그램은 설치하면 백그라운드에서 실행되므로 원격 관리자가이 컴퓨터를 관리하고 제어 할 수 있습니다.",
+      "nl": "Klik op de onderstaande knoppen om de mesh-agent te installeren of te verwijderen. Na installatie wordt deze software op de achtergrond uitgevoerd, zodat deze computer kan worden beheerd en bestuurd door een externe beheerder.",
+      "pt": "Clique nos botões abaixo para instalar ou desinstalar o agente mesh. Quando instalado, este software é executado em segundo plano, permitindo que o computador seja gerenciado e controlado por um administrador remoto.",
+      "ru": "Нажмите кнопки ниже, чтобы установить или удалить агент сетки. После установки это программное обеспечение работает в фоновом режиме, позволяя управлять этим компьютером удаленным администратором.",
+      "tr": "Mesh aracısını yüklemek veya kaldırmak için aşağıdaki düğmelere tıklayın. Bu yazılım yüklendiğinde arka planda çalışarak bu bilgisayarın bir uzak yönetici tarafından yönetilmesine ve kontrol edilmesine olanak tanır.",
+      "zh-chs": "单击下面的按钮以安装或卸载网状代理。安装后，该软件将在后台运行，从而允许该计算机由远程管理员进行管理和控制。",
+      "zh-cht": "單擊下面的按鈕以安裝或卸載網狀代理。安裝後，該軟件將在後台運行，從而允許該計算機由遠程管理員進行管理和控制。",
       "xloc": [
         "agent-translations.json"
       ]
@@ -7977,9 +8292,21 @@
       ]
     },
     {
+      "cs": "Sbalit vše",
+      "de": "Alle reduzieren",
       "en": "Collapse All",
-      "nl": "Alles inklappen",
+      "es": "Desplegar todo",
+      "fi": "Kutista kaikki",
       "fr": "Minimiser tout",
+      "hi": "सभी को संकुचित करें",
+      "ja": "すべて折りたたむ",
+      "ko": "모든 축소",
+      "nl": "Alles inklappen",
+      "pt": "Recolher todos",
+      "ru": "Свернуть все",
+      "tr": "Hepsini Daralt",
+      "zh-chs": "全部收缩",
+      "zh-cht": "全部收縮",
       "xloc": [
         "default.handlebars->expandAllContextMenu->3"
       ]
@@ -8027,17 +8354,41 @@
       ]
     },
     {
+      "cs": "Příkaz",
+      "de": "Befehl",
       "en": "Command",
+      "es": "Mando",
+      "fi": "Komento",
       "fr": "Commande",
+      "hi": "आदेश",
+      "ja": "コマンド",
+      "ko": "명령",
       "nl": "Opdracht",
+      "pt": "Comando",
+      "ru": "Команда",
+      "tr": "Komut",
+      "zh-chs": "命令",
+      "zh-cht": "命令",
       "xloc": [
         "default.handlebars->29->399"
       ]
     },
     {
+      "cs": "Příkazy",
+      "de": "Befehle",
       "en": "Commands",
+      "es": "Comandos",
+      "fi": "Komennot",
       "fr": "Commandes",
+      "hi": "आदेश",
+      "ja": "コマンド",
+      "ko": "명령",
       "nl": "Opdrachten",
+      "pt": "Comandos",
+      "ru": "Команды",
+      "tr": "Komutlar",
+      "zh-chs": "指令",
+      "zh-cht": "指令",
       "xloc": [
         "default-mobile.handlebars->9->459",
         "default.handlebars->29->1516",
@@ -8540,9 +8891,21 @@
       "zh-cht": "確認刪除裝置群{0}？"
     },
     {
+      "cs": "Potvrdit odebrání sdílení zařízení „{0}“?",
+      "de": "Entfernen der Gerätefreigabe bestätigen \\\"{0}\\\"?",
       "en": "Confirm removal of device share \\\"{0}\\\"?",
+      "es": "¿Confirmar la eliminación del dispositivo compartido \\\"{0}\\\"?",
+      "fi": "Vahvistetaanko laitteen jakamisen \\\"{0}\\\" poisto?",
       "fr": "Confirmez-vous l'arrêt du partage \\\"{0}\\\"?",
+      "hi": "डिवाइस शेयर \\\"{0}\\\" को हटाने की पुष्टि करें?",
+      "ja": "デバイス共有\\\"{0}\\\"の削除を確認しますか？",
+      "ko": "디바이스 공유 \\\"{0}\\\"제거를 확인 하시겠습니까?",
       "nl": "Bevestig de verwijdering van apparaatdeling \\\"{0}\\\"?",
+      "pt": "Confirma a remoção do compartilhamento do dispositivo \\\"{0}\\\"?",
+      "ru": "Подтвердить удаление общего доступа к устройству \\\"{0}\\\"?",
+      "tr": "Cihaz paylaşımının \\\"{0}\\\" kaldırılmasını onaylıyor musunuz?",
+      "zh-chs": "确认删除设备共享“{0}”？",
+      "zh-cht": "確認刪除設備共享“{0}”？",
       "xloc": [
         "default.handlebars->29->2027"
       ]
@@ -9706,9 +10069,21 @@
       ]
     },
     {
+      "cs": "Vytvořit složku, pokud neexistuje?",
+      "de": "Ordner erstellen, falls nicht vorhanden?",
       "en": "Create folder if it does not exists?",
-      "nl": "Map aanmaken als deze niet bestaat?",
+      "es": "¿Crear carpeta si no existe?",
+      "fi": "Luo kansio, jos sitä ei ole olemassa?",
       "fr": "Créer le répertoire si il n'existe pas ?",
+      "hi": "यदि यह मौजूद नहीं है तो फ़ोल्डर बनाएँ?",
+      "ja": "存在しない場合はフォルダを作成しますか？",
+      "ko": "존재하지 않는 경우 폴더를 만드시겠습니까?",
+      "nl": "Map aanmaken als deze niet bestaat?",
+      "pt": "Criar pasta se não existir?",
+      "ru": "Создать папку, если ее нет?",
+      "tr": "Mevcut değilse klasör oluşturulsun mu?",
+      "zh-chs": "创建文件夹（如果不存在）？",
+      "zh-cht": "創建文件夾（如果不存在）？",
       "xloc": [
         "default.handlebars->29->481"
       ]
@@ -9796,17 +10171,41 @@
       ]
     },
     {
+      "cs": "Vytvoří odkaz, který umožňuje hostovi bez účtu vzdálené ovládání tohoto zařízení po omezenou dobu.",
+      "de": "Erstellt einen Link, über den ein Gast ohne Konto dieses Gerät für eine begrenzte Zeit fernsteuern kann.",
       "en": "Creates a link that allows a guest without an account to remote control this device for a limited time.",
-      "nl": "Creëert een link waarmee een gast zonder account dit apparaat voor een beperkte tijd op afstand kan bedienen.",
+      "es": "Crea un enlace que permite a un invitado sin una cuenta controlar remotamente este dispositivo por un tiempo limitado.",
+      "fi": "Luo linkin, jonka avulla vieras, jolla ei ole tiliä, voi ohjata tätä laitetta rajoitetun ajan.",
       "fr": "Création d'un accès à distance temporaire pour un tiers (sous forme de lien)",
+      "hi": "एक लिंक बनाता है जो एक अतिथि को एक सीमित समय के लिए इस उपकरण को रिमोट कंट्रोल के बिना अनुमति देता है।",
+      "ja": "アカウントを持たないゲストがこのデバイスを期間限定でリモートコントロールできるようにするリンクを作成します。",
+      "ko": "계정이없는 게스트가 제한된 시간 동안이 장치를 원격 제어 할 수있는 링크를 만듭니다.",
+      "nl": "Creëert een link waarmee een gast zonder account dit apparaat voor een beperkte tijd op afstand kan bedienen.",
+      "pt": "Cria um link que permite a um convidado sem uma conta controlar remotamente este dispositivo por um tempo limitado.",
+      "ru": "Создает ссылку, которая позволяет гостю без учетной записи удаленно управлять этим устройством в течение ограниченного времени.",
+      "tr": "Hesabı olmayan bir misafirin sınırlı bir süre için bu cihazı uzaktan kontrol etmesine olanak tanıyan bir bağlantı oluşturur.",
+      "zh-chs": "创建一个链接，该链接允许没有帐户的访客在有限的时间内远程控制此设备。",
+      "zh-cht": "創建一個鏈接，該鏈接允許沒有帳戶的訪客在有限的時間內遠程控制此設備。",
       "xloc": [
         "default.handlebars->29->727"
       ]
     },
     {
+      "cs": "Vytvoří odkaz, který umožňuje hostovi bez účtu vzdálenou plochu do tohoto zařízení po omezenou dobu.",
+      "de": "Erstellt einen Link, über den ein Gast ohne Konto für eine begrenzte Zeit auf dem Remotedesktop auf dieses Gerät zugreifen kann.",
       "en": "Creates a link that allows a guest without an account to remote desktop into this device for a limited time.",
+      "es": "Crea un enlace que permite que un invitado sin una cuenta acceda al escritorio remoto en este dispositivo por un tiempo limitado.",
+      "fi": "Luo linkin, jonka avulla vieras, jolla ei ole tiliä, voi etätyöpöydän tähän laitteeseen rajoitetun ajan.",
+      "fr": "Autoriser un invité à se connecter au bureau de cet appareil pour un temps limité.",
+      "hi": "एक लिंक बनाता है जो एक अतिथि को एक सीमित समय के लिए इस उपकरण में दूरस्थ डेस्कटॉप के बिना अनुमति देता है।",
+      "ja": "アカウントを持たないゲストが期間限定でこのデバイスにリモートデスクトップを使用できるようにするリンクを作成します。",
+      "ko": "제한된 시간 동안 계정이없는 게스트가이 디바이스에 원격 데스크톱을 연결할 수있는 링크를 생성합니다.",
       "nl": "Creëert een link waarmee een gast zonder account voor een beperkte tijd naar een extern bureaublad op dit apparaat kan gaan.",
-      "fr": "Autoriser un invité à se connecter au bureau de cet appareil pour un temps limité."
+      "pt": "Cria um link que permite a um convidado sem uma conta acessar a área de trabalho remota neste dispositivo por um tempo limitado.",
+      "ru": "Создает ссылку, которая позволяет гостю без учетной записи подключаться к удаленному рабочему столу на этом устройстве в течение ограниченного времени.",
+      "tr": "Hesabı olmayan bir misafirin sınırlı bir süre için bu cihaza uzak masaüstüne girmesine izin veren bir bağlantı oluşturur.",
+      "zh-chs": "创建一个链接，该链接允许没有帐户的访客在有限的时间内访问远程桌面。",
+      "zh-cht": "創建一個鏈接，該鏈接允許沒有帳戶的訪客在有限的時間內訪問遠程桌面。"
     },
     {
       "cs": "Vytvoří odkaz, který umožňuje hostovi bez účtu vzdálenou plochu do tohoto zařízení po dobu až 1 hodiny.",
@@ -10054,16 +10453,16 @@
       ]
     },
     {
-      "en": "Ctrl-Alt-Del",
-      "nl": "Ctrl-Alt-Del",
       "cs": "Ctrl-Alt-Del",
       "de": "Strg-Alt-Entf",
+      "en": "Ctrl-Alt-Del",
       "es": "Ctrl-Alt-Del",
       "fi": "Ctrl-Alt-Del",
       "fr": "Ctrl-Alt-Del",
       "hi": "Ctrl-Alt-Del",
       "ja": "Ctrl-Alt-Del",
       "ko": "Ctrl-Alt-Del",
+      "nl": "Ctrl-Alt-Del",
       "pt": "Ctrl-Alt-Del",
       "ru": "Ctrl-Alt-Del",
       "tr": "Ctrl-Alt-Del",
@@ -10096,9 +10495,21 @@
       ]
     },
     {
+      "cs": "Aktuální stav agenta",
+      "de": "Aktueller Agentenstatus",
       "en": "Current Agent Status",
-      "nl": "Huidige agent status",
+      "es": "Estado actual del agente",
+      "fi": "Agentin nykyinen tila",
+      "fr": "Statut actuel de l'agent",
+      "hi": "वर्तमान एजेंट की स्थिति",
+      "ja": "現在のエージェントステータス",
       "ko": "에이전트 상태",
+      "nl": "Huidige agent status",
+      "pt": "Status atual do agente",
+      "ru": "Текущий статус агента",
+      "tr": "Mevcut Temsilci Durumu",
+      "zh-chs": "当前代理状态",
+      "zh-cht": "當前代理狀態",
       "xloc": [
         "agent-translations.json"
       ]
@@ -10269,17 +10680,41 @@
       ]
     },
     {
+      "cs": "Deaktivovat",
+      "de": "Deaktivieren",
       "en": "Deactivate",
+      "es": "Desactivar",
+      "fi": "Poista käytöstä",
       "fr": "Désactivé",
+      "hi": "निष्क्रिय करें",
+      "ja": "非アクティブ化",
+      "ko": "비활성화",
       "nl": "Deactiveren",
+      "pt": "Desativar",
+      "ru": "Деактивировать",
+      "tr": "Devre dışı bırakmak",
+      "zh-chs": "停用",
+      "zh-cht": "停用",
       "xloc": [
         "default.handlebars->29->1399"
       ]
     },
     {
+      "cs": "Pokud je nastaveno, deaktivujte CCM",
+      "de": "Deaktivieren Sie CCM, wenn Sie eingerichtet sind",
       "en": "Deactivate CCM if setup",
-      "nl": "Deactiveer CCM indien ingesteld",
+      "es": "Desactivar CCM si está configurado",
+      "fi": "Poista CCM käytöstä, jos asennus on valmis",
       "fr": "Désactiver CCM si il est configuré",
+      "hi": "सेटअप होने पर CCM को निष्क्रिय करें",
+      "ja": "セットアップする場合はCCMを非アクティブ化する",
+      "ko": "설정 한 경우 CCM 비활성화",
+      "nl": "Deactiveer CCM indien ingesteld",
+      "pt": "Desativar CCM se configurado",
+      "ru": "Деактивировать CCM, если настроен",
+      "tr": "Kurulum ise CCM'yi devre dışı bırakın",
+      "zh-chs": "如果设置停用CCM",
+      "zh-cht": "如果設置停用CCM",
       "xloc": [
         "default.handlebars->29->1411"
       ]
@@ -11102,9 +11537,21 @@
       ]
     },
     {
+      "cs": "Sdílení plochy",
+      "de": "Desktop-Freigabe",
       "en": "Desktop Sharing",
-      "nl": "Bureaublad delen",
+      "es": "Compartir escritorio",
+      "fi": "Työpöydän jakaminen",
       "fr": "Partage de bureau",
+      "hi": "डेस्कटॉप शेयरिंग",
+      "ja": "デスクトップ共有",
+      "ko": "데스크탑 공유",
+      "nl": "Bureaublad delen",
+      "pt": "Compartilhamento de área de trabalho",
+      "ru": "Совместное использование рабочего стола",
+      "tr": "Masaüstü Paylaşımı",
+      "zh-chs": "桌面共享",
+      "zh-cht": "桌面共享",
       "xloc": [
         "message.handlebars->3->2",
         "message2.handlebars->5->2"
@@ -11261,9 +11708,21 @@
       ]
     },
     {
+      "cs": "Filtr zařízení",
+      "de": "Gerätefilter",
       "en": "Device Filter",
+      "es": "Filtro de dispositivo",
+      "fi": "Laitesuodatin",
       "fr": "Filtre d'appareil",
+      "hi": "डिवाइस फ़िल्टर",
+      "ja": "デバイスフィルター",
+      "ko": "장치 필터",
       "nl": "Apparaat filter",
+      "pt": "Filtro de Dispositivo",
+      "ru": "Фильтр устройств",
+      "tr": "Cihaz Filtresi",
+      "zh-chs": "设备过滤器",
+      "zh-cht": "設備過濾器",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar"
       ]
@@ -11449,14 +11908,38 @@
       ]
     },
     {
+      "cs": "Sdílení zařízení",
+      "de": "Gerätefreigabe",
       "en": "Device Sharing",
+      "es": "Compartir dispositivo",
+      "fi": "Laitteen jakaminen",
+      "fr": "Partage de l'appareil",
+      "hi": "डिवाइस शेयरिंग",
+      "ja": "デバイス共有",
+      "ko": "장치 공유",
       "nl": "Apparaat delen",
-      "fr": "Partage de l'appareil"
+      "pt": "Compartilhamento de dispositivo",
+      "ru": "Совместное использование устройства",
+      "tr": "Cihaz Paylaşımı",
+      "zh-chs": "设备共享",
+      "zh-cht": "設備共享"
     },
     {
+      "cs": "Odkaz na sdílení zařízení",
+      "de": "Link zur Gerätefreigabe",
       "en": "Device Sharing Link",
+      "es": "Enlace para compartir dispositivo",
+      "fi": "Laitteen jakolinkki",
       "fr": "Lien de partage de l'appareil",
+      "hi": "डिवाइस शेयरिंग लिंक",
+      "ja": "デバイス共有リンク",
+      "ko": "장치 공유 링크",
       "nl": "Apparaat deel Link",
+      "pt": "Link de compartilhamento de dispositivo",
+      "ru": "Ссылка для совместного использования устройства",
+      "tr": "Cihaz Paylaşım Bağlantısı",
+      "zh-chs": "设备共享链接",
+      "zh-cht": "設備共享鏈接",
       "xloc": [
         "default.handlebars->29->674"
       ]
@@ -12199,9 +12682,21 @@
       ]
     },
     {
+      "cs": "Zavrhnout",
+      "de": "Entlassen",
       "en": "Dismiss",
-      "nl": "Afwijzen",
+      "es": "Descartar",
+      "fi": "Hylkää",
       "fr": "Ignorer",
+      "hi": "खारिज",
+      "ja": "退出させる",
+      "ko": "버리다",
+      "nl": "Afwijzen",
+      "pt": "Dispensar",
+      "ru": "Отклонить",
+      "tr": "Reddet",
+      "zh-chs": "解雇",
+      "zh-cht": "解僱",
       "xloc": [
         "default.handlebars->29->250"
       ]
@@ -12413,9 +12908,21 @@
       ]
     },
     {
+      "cs": "Neměňte, ponechte CCM, pokud je nastaveno",
+      "de": "Nicht ändern, CCM bei Einrichtung beibehalten",
       "en": "Don't change, keep CCM if setup",
-      "nl": "Verander niets, behoud CCM indien ingesteld",
+      "es": "No cambie, mantenga CCM si está configurado",
+      "fi": "Älä muuta, säilytä CCM, jos se on määritetty",
       "fr": "Aucun changement, conserver CCM si il est configuré",
+      "hi": "सेटअप न होने पर CCM रखें",
+      "ja": "変更しないでください。セットアップする場合はCCMを維持してください",
+      "ko": "변경하지 말고 설정 한 경우 CCM 유지",
+      "nl": "Verander niets, behoud CCM indien ingesteld",
+      "pt": "Não mude, mantenha CCM se configurado",
+      "ru": "Не меняйте, оставьте CCM, если настроили",
+      "tr": "Değiştirmeyin, kurulum ise CCM'yi koruyun",
+      "zh-chs": "请勿更改，如果设置请保留CCM",
+      "zh-cht": "請勿更改，如果設置請保留CCM",
       "xloc": [
         "default.handlebars->29->1410"
       ]
@@ -13783,8 +14290,21 @@
       ]
     },
     {
+      "cs": "Upravit souhlas skupiny uživatelů",
+      "de": "Benutzergruppe Benutzereinwilligung bearbeiten",
       "en": "Edit User Group User Consent",
+      "es": "Editar el consentimiento del usuario del grupo de usuarios",
+      "fi": "Muokkaa käyttäjäryhmän käyttäjän suostumusta",
+      "fr": "Modifier le consentement de l'utilisateur du groupe d'utilisateurs",
+      "hi": "उपयोगकर्ता समूह उपयोगकर्ता सहमति संपादित करें",
+      "ja": "ユーザーグループのユーザー同意の編集",
+      "ko": "사용자 그룹 사용자 동의 편집",
       "nl": "Bewerk groepsgebruikerstoestemming",
+      "pt": "Editar consentimento do usuário do grupo de usuários",
+      "ru": "Изменить согласие пользователя группы пользователей",
+      "tr": "Kullanıcı Grubu Kullanıcı İznini Düzenle",
+      "zh-chs": "编辑用户组用户同意",
+      "zh-cht": "編輯用戶組用戶同意",
       "xloc": [
         "default.handlebars->29->1435"
       ]
@@ -13831,9 +14351,21 @@
       ]
     },
     {
+      "cs": "K instalaci / odinstalování agenta je vyžadováno zvýšené oprávnění.",
+      "de": "Für die Installation / Deinstallation des Agenten sind erhöhte Berechtigungen erforderlich.",
       "en": "Elevated permissions is required to install/uninstall the agent.",
-      "nl": "Verhoogde machtigingen zijn vereist om de agent te installeren / verwijderen.",
+      "es": "Se requieren permisos elevados para instalar / desinstalar el agente.",
+      "fi": "Agentin asentaminen / poistaminen edellyttää korotettuja käyttöoikeuksia.",
+      "fr": "Des autorisations élevées sont requises pour installer / désinstaller l'agent.",
+      "hi": "एजेंट को इंस्टॉल / अनइंस्टॉल करने के लिए एलिवेटेड परमिशन की जरूरत होती है।",
+      "ja": "エージェントをインストール/アンインストールするには、昇格された権限が必要です。",
       "ko": "관리자 권한은 에이전트 제거 / 설치하는 데 필요",
+      "nl": "Verhoogde machtigingen zijn vereist om de agent te installeren / verwijderen.",
+      "pt": "Permissões elevadas são necessárias para instalar / desinstalar o agente.",
+      "ru": "Для установки / удаления агента требуются повышенные разрешения.",
+      "tr": "Aracıyı yüklemek / kaldırmak için yükseltilmiş izinler gereklidir.",
+      "zh-chs": "安装/卸载代理需要提升的权限。",
+      "zh-cht": "安裝/卸載代理需要提升的權限。",
       "xloc": [
         "agent-translations.json"
       ]
@@ -14018,9 +14550,21 @@
       ]
     },
     {
+      "cs": "E-mail je ověřen",
+      "de": "E-Mail wird überprüft",
       "en": "Email is verified",
-      "nl": "Email is geverifieerd",
+      "es": "El correo electrónico está verificado",
+      "fi": "Sähköposti on vahvistettu",
       "fr": "Email vérifié",
+      "hi": "ईमेल सत्यापित है",
+      "ja": "メールが確認されました",
+      "ko": "이메일이 확인되었습니다.",
+      "nl": "Email is geverifieerd",
+      "pt": "Email é verificado",
+      "ru": "Электронная почта подтверждена",
+      "tr": "E-posta doğrulandı",
+      "zh-chs": "电子邮件已验证",
+      "zh-cht": "電子郵件已驗證",
       "xloc": [
         "default.handlebars->29->1755",
         "default.handlebars->29->1929"
@@ -14760,9 +15304,21 @@
       ]
     },
     {
+      "cs": "Zadejte text a kliknutím na OK jej zadejte na dálku. Než budete pokračovat, nezapomeňte umístit kurzor do správné polohy.",
+      "de": "Geben Sie Text ein und klicken Sie auf OK, um ihn remote einzugeben. Stellen Sie sicher, dass sich der Remote-Cursor an der richtigen Position befindet, bevor Sie fortfahren.",
       "en": "Enter text and click OK to remotely type it. Make sure to place the remote cursor at the correct position before proceeding.",
-      "nl": "Voer tekst in en klik op OK om deze op afstand te typen. Zorg ervoor dat u de externe cursor op de juiste positie plaatst voordat u verder gaat.",
+      "es": "Ingrese el texto y haga clic en Aceptar para escribirlo de forma remota. Asegúrese de colocar el cursor remoto en la posición correcta antes de continuar.",
+      "fi": "Kirjoita teksti ja kirjoita se etänä napsauttamalla OK. Varmista, että asetat etäkohdistimen oikeaan kohtaan ennen kuin jatkat.",
       "fr": "Saisissez le texte puis cliquez sur OK pour le taper à distance. Vérifiez préalablement que le curseur distant est positionné correctement.",
+      "hi": "पाठ दर्ज करें और इसे दूर से टाइप करने के लिए ठीक क्लिक करें। आगे बढ़ने से पहले रिमोट कर्सर को सही स्थिति में रखना सुनिश्चित करें।",
+      "ja": "テキストを入力し、[OK]をクリックしてリモートで入力します。先に進む前に、リモートカーソルを正しい位置に置いてください。",
+      "ko": "텍스트를 입력하고 확인을 클릭하여 원격으로 입력합니다. 계속하기 전에 원격 커서를 올바른 위치에 두 었는지 확인하십시오.",
+      "nl": "Voer tekst in en klik op OK om deze op afstand te typen. Zorg ervoor dat u de externe cursor op de juiste positie plaatst voordat u verder gaat.",
+      "pt": "Insira o texto e clique em OK para digitá-lo remotamente. Certifique-se de colocar o cursor remoto na posição correta antes de prosseguir.",
+      "ru": "Введите текст и нажмите ОК, чтобы ввести его удаленно. Перед продолжением убедитесь, что вы установили удаленный курсор в правильное положение.",
+      "tr": "Uzaktan yazmak için metni girin ve Tamam'ı tıklayın. Devam etmeden önce uzak imleci doğru konuma yerleştirdiğinizden emin olun.",
+      "zh-chs": "输入文本，然后单击确定以远程键入它。在继续操作之前，请确保将远程光标放置在正确的位置。",
+      "zh-cht": "輸入文本，然後單擊確定以遠程鍵入它。在繼續操作之前，請確保將遠程光標放置在正確的位置。",
       "xloc": [
         "default.handlebars->29->862"
       ]
@@ -15015,9 +15571,21 @@
       ]
     },
     {
+      "cs": "Rozšířit vše",
+      "de": "Alle erweitern",
       "en": "Expand All",
+      "es": "Expandir todo",
+      "fi": "Laajenna kaikki",
       "fr": "Maximiser tout",
+      "hi": "सभी का विस्तार करें",
+      "ja": "すべて展開",
+      "ko": "모두 확장",
       "nl": "Alles uitvouwen",
+      "pt": "Expandir todos",
+      "ru": "Расширить все",
+      "tr": "Hepsini genişlet",
+      "zh-chs": "展开全部",
+      "zh-cht": "展開全部",
       "xloc": [
         "default.handlebars->expandAllContextMenu->1"
       ]
@@ -15065,8 +15633,21 @@
       ]
     },
     {
+      "cs": "Vyprší {0}",
+      "de": "Läuft ab {0}",
       "en": "Expires {0}",
+      "es": "Caduca el {0}",
+      "fi": "Vanhenee {0}",
+      "fr": "Expire le {0}",
+      "hi": "समाप्ति {0}",
+      "ja": "期限切れ{0}",
+      "ko": "{0} 만료",
       "nl": "vervalt op {0}",
+      "pt": "Expira em {0}",
+      "ru": "Срок действия истекает {0}",
+      "tr": "{0} tarihinde sona eriyor",
+      "zh-chs": "过期{0}",
+      "zh-cht": "過期{0}",
       "xloc": [
         "desktop.handlebars->3->27",
         "terminal.handlebars->3->25"
@@ -15421,8 +16002,20 @@
       ]
     },
     {
+      "cs": "Soubor Soubory",
+      "de": "Dateien Dateien",
       "en": "File Files",
-      "fr": "Rechercher des fichiers"
+      "es": "Archivos de archivo",
+      "fi": "Tiedostotiedostot",
+      "fr": "Rechercher des fichiers",
+      "hi": "फ़ाइल फ़ाइलें",
+      "ja": "ファイルファイル",
+      "ko": "파일 파일",
+      "pt": "Arquivos de arquivo",
+      "ru": "Файловые файлы",
+      "tr": "Dosya Dosyaları",
+      "zh-chs": "文件文件",
+      "zh-cht": "文件文件"
     },
     {
       "cs": "Provoz souboru",
@@ -15602,17 +16195,41 @@
       ]
     },
     {
+      "cs": "Nalézt",
+      "de": "Finden",
       "en": "Find",
-      "nl": "Zoeken",
+      "es": "Encontrar",
+      "fi": "löytö",
       "fr": "Rechercher",
+      "hi": "खोज",
+      "ja": "検索",
+      "ko": "찾기",
+      "nl": "Zoeken",
+      "pt": "Encontrar",
+      "ru": "найти",
+      "tr": "Bul",
+      "zh-chs": "找",
+      "zh-cht": "找",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3"
       ]
     },
     {
+      "cs": "Najít soubory",
+      "de": "Dateien suchen",
       "en": "Find Files",
-      "nl": "Zoek bestanden",
+      "es": "Buscar archivos",
+      "fi": "Etsi tiedostot",
       "fr": "Recherche des fichiers",
+      "hi": "फ़ाइलें खोजें",
+      "ja": "ファイルの検索",
+      "ko": "파일 찾기",
+      "nl": "Zoek bestanden",
+      "pt": "Encontrar arquivos",
+      "ru": "Найти файлы",
+      "tr": "Dosyaları Bul",
+      "zh-chs": "查找文件",
+      "zh-cht": "查找文件",
       "xloc": [
         "default.handlebars->29->910"
       ]
@@ -15724,9 +16341,21 @@
       ]
     },
     {
+      "cs": "Pro aktivaci ACM bude třeba Intel&reg; AMT nastavit na následující důvěryhodný plně kvalifikovaný název domény:",
+      "de": "Für die ACM-Aktivierung muss Intel&reg; AMT auf den folgenden vertrauenswürdigen vollqualifizierten Domänennamen eingestellt sein:",
       "en": "For ACM activation, Intel&reg; AMT will need to be set to the following trusted FQDN:",
+      "es": "Para la activación de ACM, Intel&reg; AMT deberá configurarse con el siguiente FQDN de confianza:",
+      "fi": "ACM-aktivointia varten Intel&reg; AMT on asetettava seuraavaan luotettavaan FQDN: ään:",
       "fr": "Pour activer ACM, Intel&reg; AMT doit être configuré avec le nom de domaine complet de confiance suivant :",
+      "hi": "ACM सक्रियण के लिए, Intel&reg; AMT को निम्नलिखित विश्वसनीय FQDN पर सेट करने की आवश्यकता होगी:",
+      "ja": "ACMをアクティブ化するには、インテル&reg;AMTを次の信頼できるFQDNに設定する必要があります。",
+      "ko": "ACM 활성화의 경우 Intel&reg; AMT를 다음과 같은 신뢰할 수있는 FQDN으로 설정해야합니다.",
       "nl": "Voor ACM activering moet Intel&reg; AMT worden ingesteld op de volgende vertrouwde FQDN:",
+      "pt": "Para a ativação do ACM, o Intel&reg; AMT precisará ser definido para o seguinte FQDN confiável:",
+      "ru": "Для активации ACM в Intel&reg; AMT необходимо указать следующее надежное полное доменное имя:",
+      "tr": "ACM aktivasyonu için, Intel&reg; AMT'nin aşağıdaki güvenilir FQDN'ye ayarlanması gerekecektir:",
+      "zh-chs": "对于ACM激活，需要将英特尔&reg;AMT设置为以下受信任的FQDN：",
+      "zh-cht": "對於ACM激活，需要將英特爾&reg;AMT設置為以下受信任的FQDN：",
       "xloc": [
         "default.handlebars->29->302"
       ]
@@ -16243,9 +16872,21 @@
       ]
     },
     {
+      "cs": "Celá obrazovka",
+      "de": "Ganzer Bildschirm",
       "en": "Full Screen",
-      "nl": "Volledig scherm",
+      "es": "Pantalla completa",
+      "fi": "Koko näyttö",
       "fr": "Plein écran",
+      "hi": "पूर्ण स्क्रीन",
+      "ja": "全画面表示",
+      "ko": "전체 화면",
+      "nl": "Volledig scherm",
+      "pt": "Tela cheia",
+      "ru": "Полноэкранный",
+      "tr": "Tam ekran",
+      "zh-chs": "全屏",
+      "zh-cht": "全屏",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->1"
       ]
@@ -16293,9 +16934,21 @@
       ]
     },
     {
+      "cs": "Plně automatické",
+      "de": "Komplett automatisch",
       "en": "Fully Automatic",
-      "nl": "Vol automatisch",
+      "es": "Completamente automatico",
+      "fi": "Täysin automaattinen",
       "fr": "Entièrement automatique",
+      "hi": "पूरी तरह से स्वचालित",
+      "ja": "全自動",
+      "ko": "완전 자동",
+      "nl": "Vol automatisch",
+      "pt": "Totalmente automatizado",
+      "ru": "Полностью автоматический",
+      "tr": "Tam otomatik",
+      "zh-chs": "全自动的",
+      "zh-cht": "全自動的",
       "xloc": [
         "default.handlebars->29->1378",
         "default.handlebars->29->1401"
@@ -17026,9 +17679,21 @@
       ]
     },
     {
+      "cs": "Skupinové značky",
+      "de": "Gruppen-Tags",
       "en": "Group-Tags",
-      "nl": "Groepstags",
+      "es": "Etiquetas de grupo",
+      "fi": "Ryhmätunnisteet",
       "fr": "Tags",
+      "hi": "समूह-टैग",
+      "ja": "グループタグ",
+      "ko": "그룹 태그",
+      "nl": "Groepstags",
+      "pt": "Group-Tags",
+      "ru": "Групповые теги",
+      "tr": "Grup Etiketleri",
+      "zh-chs": "组标签",
+      "zh-cht": "組標籤",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->9"
       ]
@@ -17279,34 +17944,82 @@
       ]
     },
     {
+      "cs": "Pomoc",
+      "de": "Hilfe",
       "en": "Help",
-      "nl": "Help",
+      "es": "Ayuda",
+      "fi": "auta",
       "fr": "Aide",
+      "hi": "मदद",
+      "ja": "助けて",
+      "ko": "도움",
+      "nl": "Help",
+      "pt": "Socorro",
+      "ru": "Помогите",
+      "tr": "Yardım",
+      "zh-chs": "救命",
+      "zh-cht": "救命",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->13"
       ]
     },
     {
+      "cs": "Požadována pomoc, uživatel: {0}, podrobnosti: {1}",
+      "de": "Angeforderte Hilfe, Benutzer: {0}, Details: {1}",
       "en": "Help Requested, user: {0}, details: {1}",
+      "es": "Ayuda solicitada, usuario: {0}, detalles: {1}",
+      "fi": "Apua pyydetään, käyttäjä: {0}, tiedot: {1}",
       "fr": "Assistance demandée, utilisateur: {0}, message: {1}",
+      "hi": "अनुरोधित सहायता, उपयोगकर्ता: {0}, विवरण: {1}",
+      "ja": "ヘルプリクエスト、ユーザー：{0}、詳細：{1}",
+      "ko": "도움말 요청, 사용자 : {0}, 세부 정보 : {1}",
       "nl": "Hulp verzoek van, user: {0}, details: {1}",
+      "pt": "Ajuda solicitada, usuário: {0}, detalhes: {1}",
+      "ru": "Запрошена помощь, пользователь: {0}, подробности: {1}",
+      "tr": "Yardım İstendi, kullanıcı: {0}, ayrıntılar: {1}",
+      "zh-chs": "已请求帮助，用户：{0}，详细信息：{1}",
+      "zh-cht": "已請求幫助，用戶：{0}，詳細信息：{1}",
       "xloc": [
         "default.handlebars->29->1703"
       ]
     },
     {
+      "cs": "Žádosti o pomoc",
+      "de": "Hilfeanfragen",
       "en": "Help Requests",
+      "es": "Solicitudes de ayuda",
+      "fi": "Apupyynnöt",
       "fr": "Demandes d'assistaSnce",
+      "hi": "मदद अनुरोध",
+      "ja": "ヘルプリクエスト",
+      "ko": "도움 요청",
       "nl": "Hulp verzoeken",
+      "pt": "Pedidos de ajuda",
+      "ru": "Запросы на помощь",
+      "tr": "Yardım talepleri",
+      "zh-chs": "帮助请求",
+      "zh-cht": "幫助請求",
       "xloc": [
         "default-mobile.handlebars->9->161",
         "default.handlebars->29->251"
       ]
     },
     {
+      "cs": "Žádost o pomoc od uživatele {0}: {1}",
+      "de": "Hilfe angefordert von {0}: {1}",
       "en": "Help requested from {0}: {1}",
+      "es": "Ayuda solicitada a {0}: {1}",
+      "fi": "Apua pyydettiin käyttäjältä {0}: {1}",
       "fr": "Assistance demandée de {0} : {1}",
+      "hi": "{0}: {1} से अनुरोधित सहायता",
+      "ja": "{0}からリクエストされたヘルプ：{1}",
+      "ko": "{0}에서 요청한 도움말 : {1}",
       "nl": "Hulp verzoek van, user: {0}, details: {1}",
+      "pt": "Ajuda solicitada a {0}: {1}",
+      "ru": "Справка запрошена от {0}: {1}",
+      "tr": "{0} tarafından yardım istendi: {1}",
+      "zh-chs": "从{0}请求的帮助：{1}",
+      "zh-cht": "從{0}請求的幫助：{1}",
       "xloc": [
         "default.handlebars->29->160"
       ]
@@ -17353,16 +18066,16 @@
       ]
     },
     {
-      "en": "Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:",
-      "nl": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) voert een e-mailverificatie uit. Ga naar de volgende link om het proces te voltooien:",
       "cs": "Ahoj [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) provádí ověření e-mailem. Chcete-li proces dokončit, přejděte na následující odkaz:",
       "de": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) führt eine E-Mail-Überprüfung durch. Klicken Sie auf den folgenden Link, um den Vorgang abzuschließen:",
+      "en": "Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:",
       "es": "Hola [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) esta realizando una comprobación del correo electrónico. Navegue al siguiente enlace para completar el proceso:",
       "fi": "Hei [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) tarkistaa sähköpostiosoitetta. Seuraa linkkiä prosessin loppuun saattamiseksi:",
       "fr": "Bonjour [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) effectue une vérification par e-mail. Accédez au lien suivant pour terminer le processus:",
       "hi": "हाय [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) ई-मेल सत्यापन कर रहा है। प्रक्रिया को पूरा करने के लिए निम्नलिखित लिंक को बताएं:",
       "ja": "こんにちは[[[USERNAME]]]、[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) は電子メールの検証を実行しています。プロセスを完了するには、次のリンクに移動します。",
       "ko": "안녕하세요, [[[USERNAME]]]님. [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]])은 이메일 검증을 위해 실행됩니다. 다음 링크로 이동하여 과정을 완료하십시오 :",
+      "nl": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) voert een e-mailverificatie uit. Ga naar de volgende link om het proces te voltooien:",
       "pt": "Olá, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) está realizando uma verificação de e-mail. Acesse o seguinte link para concluir o processo:",
       "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) выполняет проверку электронной почты. Для завершения процесса перейдите по следующей ссылке:",
       "tr": "Merhaba [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) bir e-posta doğrulaması yapıyor. İşlemi tamamlamak için aşağıdaki bağlantıya gidin:",
@@ -17373,16 +18086,16 @@
       ]
     },
     {
-      "en": "Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is requesting an account password reset. Nagivate to the following link to complete the process:",
-      "nl": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) vraagt om het opnieuw instellen van het account wachtwoord. Ga naar de volgende link om het proces te voltooien:",
       "cs": "Ahoj [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) požaduje obnovení hesla k účtu. Chcete-li proces dokončit, přejděte na následující odkaz:",
       "de": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) fordert ein Zurücksetzen des Kontokennworts an. Klicken Sie auf den folgenden Link, um den Vorgang abzuschließen:",
+      "en": "Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is requesting an account password reset. Nagivate to the following link to complete the process:",
       "es": "Hola [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) está solicitando un restablecimiento de contraseña de cuenta. Navegue al siguiente enlace para completar el proceso:",
       "fi": "Hei [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) pyytää tilin salasanan palauttamista. Seuraa linkkiä prosessin loppuun saattamiseksi:",
       "fr": "Bonjour [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) demande une réinitialisation du mot de passe du compte. Accédez au lien suivant pour terminer le processus:",
       "hi": "हाय [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) से खाता पासवर्ड रीसेट करने का अनुरोध किया जा रहा है। प्रक्रिया को पूरा करने के लिए निम्नलिखित लिंक को बताएं:",
       "ja": "こんにちは[[[USERNAME]]]、([[[SERVERURL]]][[[URLARGS1]]]) はアカウントパスワードのリセットをリクエストしています。プロセスを完了するには、次のリンクに移動します。",
       "ko": "안녕하세요, [[[USERNAME]]]님. [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]])은 계정 비밀번호 초기화를 위해 요구됩니다. 다음 링크로 이동하여 과정을 완료하십시오 :",
+      "nl": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) vraagt om het opnieuw instellen van het account wachtwoord. Ga naar de volgende link om het proces te voltooien:",
       "pt": "Olá, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) está solicitando uma redefinição de senha de conta. Acesse o seguinte link para concluir o processo:",
       "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) запрашивает сброс пароля учетной записи. Для завершения процесса перейдите по следующей ссылке:",
       "tr": "Merhaba [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) bir hesap şifresi sıfırlama istiyor. İşlemi tamamlamak için aşağıdaki bağlantıya gidin:",
@@ -17948,9 +18661,21 @@
       ]
     },
     {
+      "cs": "Pokud je v CCM, znovu aktivujte Intel&reg; AMT",
+      "de": "Aktivieren Sie in CCM Intel&reg; AMT erneut",
       "en": "If in CCM, reactivate Intel&reg; AMT",
+      "es": "Si está en CCM, reactive Intel&reg; AMT",
+      "fi": "Jos olet CCM: ssä, aktivoi Intel&reg; AMT uudelleen",
       "fr": "Si dans CCM, réactiver Intel&reg; AMT",
+      "hi": "यदि CCM में, Intel&reg; AMT को पुनः सक्रिय करें",
+      "ja": "CCMの場合は、インテル&reg;AMTを再アクティブ化します",
+      "ko": "CCM에있는 경우 Intel&reg; AMT 다시 활성화",
       "nl": "Indien in CCM, heractiveer Intel&reg; AMT",
+      "pt": "Se estiver no CCM, reative Intel&reg; AMT",
+      "ru": "Если в CCM, повторно активируйте Intel&reg; AMT",
+      "tr": "CCM'de ise, Intel&reg; AMT'yi yeniden etkinleştirin",
+      "zh-chs": "如果在CCM中，请重新激活英特尔&reg;AMT",
+      "zh-cht": "如果在CCM中，請重新激活英特爾&reg;AMT",
       "xloc": [
         "default.handlebars->29->1415"
       ]
@@ -17978,9 +18703,21 @@
       ]
     },
     {
+      "cs": "Pokud jste správce, [přihlaste se zde].",
+      "de": "Wenn Sie ein Administrator sind, [hier anmelden].",
       "en": "If you are an administrator, [login here].",
-      "nl": "Als je een administrator bent, [hier inloggen].",
+      "es": "Si es administrador, [inicie sesión aquí].",
+      "fi": "Jos olet järjestelmänvalvoja, [kirjaudu sisään].",
       "fr": "Si vous êtes un administrateur, [connectez vous ici].",
+      "hi": "यदि आप एक व्यवस्थापक हैं, तो [यहाँ लॉगिन करें]।",
+      "ja": "管理者の方は、[こちらからログイン]してください。",
+      "ko": "관리자 인 경우 [여기에서 로그인]하세요.",
+      "nl": "Als je een administrator bent, [hier inloggen].",
+      "pt": "Se você for um administrador, [faça login aqui].",
+      "ru": "Если вы администратор, [авторизуйтесь здесь].",
+      "tr": "Yöneticiyseniz, [buradan oturum açın].",
+      "zh-chs": "如果您是管理员，请[在此处登录]。",
+      "zh-cht": "如果您是管理員，請[在此處登錄]。",
       "xloc": [
         "message.handlebars->3->18",
         "message2.handlebars->5->18"
@@ -18387,9 +19124,21 @@
       ]
     },
     {
+      "cs": "Intel&reg; AMT ACM",
+      "de": "Intel&reg; AMT ACM",
       "en": "Intel&reg; AMT ACM",
-      "nl": "Intel&reg; AMT ACM",
+      "es": "Intel&reg; AMT ACM",
+      "fi": "Intel&reg; AMT ACM",
       "fr": "Intel® AMT ACM",
+      "hi": "इंटेल&reg; एएमटी एसीएम",
+      "ja": "インテル&reg;AMTACM",
+      "ko": "인텔 &reg; AMT ACM",
+      "nl": "Intel&reg; AMT ACM",
+      "pt": "Intel&reg; AMT ACM",
+      "ru": "Intel&reg; AMT ACM",
+      "tr": "Intel&reg; AMT ACM",
+      "zh-chs": "英特尔&reg;AMT ACM",
+      "zh-cht": "英特爾&reg;AMT ACM",
       "xloc": [
         "default.handlebars->29->310"
       ]
@@ -18851,9 +19600,21 @@
       ]
     },
     {
+      "cs": "Nastavení Intel&reg; AMT",
+      "de": "Intel&reg; AMT-Setup",
       "en": "Intel&reg; AMT setup",
+      "es": "Configuración de Intel&reg; AMT",
+      "fi": "Intel&reg; AMT -asennus",
       "fr": "Intel&reg; AMT configuration",
+      "hi": "Intel&reg; AMT सेटअप",
+      "ja": "インテル&reg;AMTのセットアップ",
+      "ko": "Intel&reg; AMT 설정",
       "nl": "Intel&reg; AMT setup",
+      "pt": "Configuração Intel&reg; AMT",
+      "ru": "Настройка Intel&reg; AMT",
+      "tr": "Intel&reg; AMT kurulumu",
+      "zh-chs": "英特尔&reg;AMT设置",
+      "zh-cht": "英特爾&reg;AMT設置",
       "xloc": [
         "default.handlebars->29->303"
       ]
@@ -19187,9 +19948,21 @@
       ]
     },
     {
+      "cs": "Neplatná pověření",
+      "de": "Ungültige Anmeldeinformationen",
       "en": "Invalid Credentials",
-      "nl": "Ongeldige inloggegevens",
+      "es": "Credenciales no válidas",
+      "fi": "Virheelliset kirjautumistiedot",
       "fr": "Autorisation invalide",
+      "hi": "अवैध प्रत्यय पत्र",
+      "ja": "無効な資格情報",
+      "ko": "잘못된 자격 증명",
+      "nl": "Ongeldige inloggegevens",
+      "pt": "Credenciais inválidas",
+      "ru": "Неверные учетные данные",
+      "tr": "Geçersiz kimlik bilgileri",
+      "zh-chs": "无效证件",
+      "zh-cht": "無效證件",
       "xloc": [
         "default-mobile.handlebars->9->243",
         "default-mobile.handlebars->9->244",
@@ -19523,9 +20296,21 @@
       ]
     },
     {
+      "cs": "Kód pozvánky",
+      "de": "Einladungscode",
       "en": "Invitation Code",
-      "nl": "Uitnodigings code",
+      "es": "Código de invitación",
+      "fi": "Kutsukoodi",
       "fr": "Code d'invitation",
+      "hi": "आमंत्रण संकेत",
+      "ja": "招待コード",
+      "ko": "초대 코드",
+      "nl": "Uitnodigings code",
+      "pt": "Código de Convite",
+      "ru": "Код приглашения",
+      "tr": "Davet Kodu",
+      "zh-chs": "邀请码",
+      "zh-cht": "邀請碼",
       "xloc": [
         "invite.handlebars->container->column_l->5->1->0->3->1"
       ]
@@ -19840,9 +20625,21 @@
       ]
     },
     {
+      "cs": "Ponechat stávající heslo",
+      "de": "Behalten Sie das vorhandene Passwort bei",
       "en": "Keep existing password",
+      "es": "Mantener la contraseña existente",
+      "fi": "Säilytä nykyinen salasana",
       "fr": "Conserver l'actuel mot de passe",
+      "hi": "मौजूदा पासवर्ड रखें",
+      "ja": "既存のパスワードを保持する",
+      "ko": "기존 비밀번호 유지",
       "nl": "Behoud huidige wachtwoord",
+      "pt": "Manter a senha existente",
+      "ru": "Сохранить существующий пароль",
+      "tr": "Mevcut parolayı koru",
+      "zh-chs": "保留现有密码",
+      "zh-cht": "保留現有密碼",
       "xloc": [
         "default.handlebars->29->1403"
       ]
@@ -21110,20 +21907,21 @@
       ]
     },
     {
-      "en": "Linux ARM, Raspberry Pi (64bit)",
-      "nl": "Linux ARM, Raspberry Pi (64bit)",
       "cs": "Linux ARM, Raspberry Pi (64bit)",
       "de": "Linux ARM, Raspberry Pi (64bit)",
+      "en": "Linux ARM, Raspberry Pi (64bit)",
       "es": "Linux ARM, Raspberry Pi (64bit)",
       "fi": "Linux ARM, Raspberry Pi (64bit)",
       "fr": "Linux ARM, Raspberry Pi (64bit)",
+      "hi": "लिनक्स एआरएम, रास्पबेरी पाई (64 बिट)",
       "ja": "Linux ARM, Raspberry Pi (64ビット)",
       "ko": "Linux ARM, Raspberry Pi (64비트)",
+      "nl": "Linux ARM, Raspberry Pi (64bit)",
       "pt": "Linux ARM, Raspberry Pi (64bit)",
       "ru": "Linux ARM, Raspberry Pi (64bit)",
       "tr": "Linux ARM, Raspberry Pi (64bit)",
-      "zh-cht": "Linux ARM, Raspberry Pi (64位)",
       "zh-chs": "Linux ARM, Raspberry Pi (64位)",
+      "zh-cht": "Linux ARM, Raspberry Pi (64位)",
       "xloc": [
         "default.handlebars->29->817"
       ]
@@ -21171,9 +21969,21 @@
       ]
     },
     {
+      "cs": "Cesta Linuxu",
+      "de": "Linux-Pfad",
       "en": "Linux Path",
-      "nl": "Linux Pad",
+      "es": "Ruta de Linux",
+      "fi": "Linux-polku",
       "fr": "Chemin Linux",
+      "hi": "लिनक्स पथ",
+      "ja": "Linuxパス",
+      "ko": "Linux 경로",
+      "nl": "Linux Pad",
+      "pt": "Caminho Linux",
+      "ru": "Путь к Linux",
+      "tr": "Linux Yolu",
+      "zh-chs": "Linux路径",
+      "zh-cht": "Linux路徑",
       "xloc": [
         "default.handlebars->29->480"
       ]
@@ -21360,9 +22170,21 @@
       ]
     },
     {
+      "cs": "Živý graf",
+      "de": "Live-Grafik",
       "en": "Live Graph",
-      "nl": "Live weergave",
+      "es": "Gráfico en vivo",
+      "fi": "Live-graafi",
       "fr": "Utilisation du processeur et de la mémoire",
+      "hi": "लाइव ग्राफ",
+      "ja": "ライブグラフ",
+      "ko": "라이브 그래프",
+      "nl": "Live weergave",
+      "pt": "Gráfico ao Vivo",
+      "ru": "Живой график",
+      "tr": "Canlı Grafik",
+      "zh-chs": "实时图表",
+      "zh-cht": "實時圖表",
       "xloc": [
         "default.handlebars->container->column_l->p17->p17info->p17graph->1->1->0->3->1->0"
       ]
@@ -22947,17 +23769,41 @@
       ]
     },
     {
+      "cs": "Identifikátor sítě",
+      "de": "Netzkennung",
       "en": "Mesh Identifier",
-      "nl": "Mesh identificatie",
+      "es": "Identificador de malla",
+      "fi": "Verkon tunniste",
+      "fr": "Identificateur de maillage",
+      "hi": "मेष पहचानकर्ता",
+      "ja": "メッシュ識別子",
       "ko": "메시의 식별자",
+      "nl": "Mesh identificatie",
+      "pt": "Identificador de malha",
+      "ru": "Идентификатор сетки",
+      "tr": "Mesh Tanımlayıcı",
+      "zh-chs": "网格标识符",
+      "zh-cht": "網格標識符",
       "xloc": [
         "agent-translations.json"
       ]
     },
     {
+      "cs": "Název oka",
+      "de": "Maschenname",
       "en": "Mesh Name",
-      "nl": "Mesh naam",
+      "es": "Nombre de malla",
+      "fi": "Verkon nimi",
+      "fr": "Nom du maillage",
+      "hi": "मेष नाम",
+      "ja": "メッシュ名",
       "ko": "메시의 이름",
+      "nl": "Mesh naam",
+      "pt": "Nome da malha",
+      "ru": "Имя сетки",
+      "tr": "Mesh Adı",
+      "zh-chs": "网格名称",
+      "zh-cht": "網格名稱",
       "xloc": [
         "agent-translations.json"
       ]
@@ -23293,9 +24139,9 @@
       ]
     },
     {
-      "en": "MeshCmd (Linux ARM, 64bit)",
       "cs": "MeshCmd (Linux ARM, 64bit)",
       "de": "MeshCmd (Linux ARM, 64bit)",
+      "en": "MeshCmd (Linux ARM, 64bit)",
       "es": "MeshCmd (Linux ARM, 64bit)",
       "fi": "MeshCmd (Linux ARM, 64bit)",
       "fr": "MeshCmd (Linux ARM, 64bit)",
@@ -23410,9 +24256,9 @@
       "zh-cht": "MeshCmd（macOS，64位）"
     },
     {
-      "en": "MeshCmd (macOS, ARM-64bit)",
       "cs": "MeshCmd (macOS, ARM-64bit)",
       "de": "MeshCmd (macOS, ARM-64bit)",
+      "en": "MeshCmd (macOS, ARM-64bit)",
       "es": "MeshCmd (macOS, ARM-64bit)",
       "fi": "MeshCmd (macOS, ARM-64-bittinen)",
       "fr": "MeshCmd (macOS, ARM-64bit)",
@@ -23430,9 +24276,9 @@
       ]
     },
     {
-      "en": "MeshCmd (macOS, x86-64bit)",
       "cs": "MeshCmd (macOS,x86-64bit)",
       "de": "MeshCmd (macOS, x86-64bit)",
+      "en": "MeshCmd (macOS, x86-64bit)",
       "es": "MeshCmd (macOS, x86-64bit)",
       "fi": "MeshCmd (macOS, x86-64-bittinen)",
       "fr": "MeshCmd (macOS, x86-64bit)",
@@ -23912,9 +24758,21 @@
       ]
     },
     {
+      "cs": "Musí běžet jako uživatel",
+      "de": "Muss als Benutzer ausgeführt werden",
       "en": "Must run as user",
+      "es": "Debe ejecutarse como usuario",
+      "fi": "On suoritettava käyttäjänä",
       "fr": "Doit être exécuté en tant qu'utilisateur",
+      "hi": "उपयोगकर्ता के रूप में चलाना चाहिए",
+      "ja": "ユーザーとして実行する必要があります",
+      "ko": "사용자로 실행해야합니다.",
       "nl": "Moet als gebruiker worden uitgevoerd",
+      "pt": "Deve ser executado como usuário",
+      "ru": "Должен работать как пользователь",
+      "tr": "Kullanıcı olarak çalıştırılmalıdır",
+      "zh-chs": "必须以用户身份运行",
+      "zh-cht": "必須以用戶身份運行",
       "xloc": [
         "default.handlebars->29->463",
         "default.handlebars->29->773"
@@ -24217,17 +25075,41 @@
       ]
     },
     {
+      "cs": "NENÍ INSTALOVÁN",
+      "de": "NICHT INSTALLIERT",
       "en": "NOT INSTALLED",
-      "nl": "NIET GEÏNSTALLEERD",
+      "es": "NO INSTALADO",
+      "fi": "EI ASENNETTU",
+      "fr": "PAS INSTALLÉ",
+      "hi": "स्थापित नहीं है",
+      "ja": "インストールされていない",
       "ko": "없다",
+      "nl": "NIET GEÏNSTALLEERD",
+      "pt": "NÃO INSTALADO",
+      "ru": "НЕ УСТАНОВЛЕНО",
+      "tr": "YÜKLÜ DEĞİL",
+      "zh-chs": "未安装",
+      "zh-cht": "未安裝",
       "xloc": [
         "agent-translations.json"
       ]
     },
     {
+      "cs": "NEFUNGUJE",
+      "de": "NICHT LAUFEN",
       "en": "NOT RUNNING",
-      "nl": "NIET ACTIEF",
+      "es": "NO CORRAS",
+      "fi": "EI RUNNING",
+      "fr": "NE PAS COURRIR",
+      "hi": "चल नहीं रहा",
+      "ja": "走っていない",
       "ko": "중지됨",
+      "nl": "NIET ACTIEF",
+      "pt": "NÃO CORRENDO",
+      "ru": "НЕ БЕГАТЬ",
+      "tr": "KOŞMAK YOK",
+      "zh-chs": "不在运行",
+      "zh-cht": "不在運行",
       "xloc": [
         "agent-translations.json"
       ]
@@ -24516,9 +25398,21 @@
       ]
     },
     {
+      "cs": "Nová verze agenta",
+      "de": "Neue Agentenversion",
       "en": "New Agent Version",
-      "nl": "Nieuwe agent versie",
+      "es": "Nueva versión del agente",
+      "fi": "Uusi agenttiversio",
+      "fr": "Nouvelle version de l'agent",
+      "hi": "नया एजेंट संस्करण",
+      "ja": "新しいエージェントバージョン",
       "ko": "새에이전트 버전",
+      "nl": "Nieuwe agent versie",
+      "pt": "Nova versão do agente",
+      "ru": "Новая версия агента",
+      "tr": "Yeni Temsilci Sürümü",
+      "zh-chs": "新代理版本",
+      "zh-cht": "新代理版本",
       "xloc": [
         "agent-translations.json"
       ]
@@ -24592,9 +25486,21 @@
       ]
     },
     {
+      "cs": "Nové heslo*",
+      "de": "Neues Passwort*",
       "en": "New Password*",
+      "es": "Nueva contraseña*",
+      "fi": "Uusi salasana*",
       "fr": "Nouveau mot de passe*",
+      "hi": "नया पासवर्ड*",
+      "ja": "新しいパスワード*",
+      "ko": "새 비밀번호*",
       "nl": "Nieuw Wachtwoord*",
+      "pt": "Nova senha*",
+      "ru": "Новый пароль*",
+      "tr": "Yeni Şifre*",
+      "zh-chs": "新密码*",
+      "zh-cht": "新密碼*",
       "xloc": [
         "default.handlebars->29->307",
         "default.handlebars->29->308"
@@ -24621,9 +25527,21 @@
       ]
     },
     {
+      "cs": "Nové heslo*",
+      "de": "Neues Passwort*",
       "en": "New password*",
+      "es": "Nueva contraseña*",
+      "fi": "Uusi salasana*",
       "fr": "Nouveau mot de passe*",
+      "hi": "नया पासवर्ड*",
+      "ja": "新しいパスワード*",
+      "ko": "새 비밀번호*",
       "nl": "Nieuw wachtwoord*",
+      "pt": "Nova senha*",
+      "ru": "Новый пароль*",
+      "tr": "Yeni Şifre*",
+      "zh-chs": "新密码*",
+      "zh-cht": "新密碼*",
       "xloc": [
         "default.handlebars->29->1407",
         "default.handlebars->29->1408"
@@ -25120,9 +26038,21 @@
       ]
     },
     {
+      "cs": "Momentálně nejsou pro toto zařízení k dispozici žádné akce.",
+      "de": "Derzeit sind keine Aktionen für dieses Gerät verfügbar.",
       "en": "No actions currently available for this device.",
+      "es": "Actualmente no hay acciones disponibles para este dispositivo.",
+      "fi": "Tällä laitteella ei ole tällä hetkellä käytettävissä toimintoja.",
       "fr": "Aucune action n'est actuellement disponible pour cet appareil.",
+      "hi": "वर्तमान में इस उपकरण के लिए कोई क्रिया उपलब्ध नहीं है।",
+      "ja": "現在、このデバイスで使用できるアクションはありません。",
+      "ko": "현재이 기기에 사용할 수있는 작업이 없습니다.",
       "nl": "Er zijn momenteel geen acties beschikbaar voor dit apparaat.",
+      "pt": "Nenhuma ação disponível atualmente para este dispositivo.",
+      "ru": "В настоящее время для этого устройства нет доступных действий.",
+      "tr": "Bu cihaz için şu anda kullanılabilir eylem yok.",
+      "zh-chs": "该设备当前无可用操作。",
+      "zh-cht": "該設備當前無可用操作。",
       "xloc": [
         "default-mobile.handlebars->9->276",
         "default.handlebars->29->765"
@@ -25354,9 +26284,21 @@
       ]
     },
     {
+      "cs": "Nebyly nalezeny žádné soubory",
+      "de": "Keine Dateien gefunden",
       "en": "No files found",
-      "nl": "Geen bestanden gevonden",
+      "es": "No se encontraron archivos",
+      "fi": "Tiedostoja ei löytynyt",
       "fr": "Aucun fichier trouvé",
+      "hi": "कोई फाइल नहीं मिली",
+      "ja": "ファイルが見つかりません",
+      "ko": "파일이 없습니다.",
+      "nl": "Geen bestanden gevonden",
+      "pt": "Nenhum arquivo encontrado",
+      "ru": "Файлы не найдены",
+      "tr": "Dosya bulunamadı",
+      "zh-chs": "找不到文件",
+      "zh-cht": "找不到文件",
       "xloc": [
         "default.handlebars->29->901"
       ]
@@ -25760,9 +26702,21 @@
       ]
     },
     {
+      "cs": "Neaktivováno",
+      "de": "Nicht aktiviert",
       "en": "Not Activated",
-      "nl": "Niet geactiveerd",
+      "es": "No esta activado",
+      "fi": "Ei aktivoitu",
       "fr": "Non activé",
+      "hi": "सक्रिय नहीं",
+      "ja": "アクティベートされていません",
+      "ko": "활성화되지 않음",
+      "nl": "Niet geactiveerd",
+      "pt": "Não ativado",
+      "ru": "Не активирован",
+      "tr": "Aktif Değil",
+      "zh-chs": "未激活",
+      "zh-cht": "未激活",
       "xloc": [
         "default.handlebars->29->990"
       ]
@@ -26218,9 +27172,21 @@
       ]
     },
     {
+      "cs": "Offline",
+      "de": "Offline",
       "en": "Offline",
-      "nl": "Offline",
+      "es": "Desconectado",
+      "fi": "Offline-tilassa",
       "fr": "Déconnecté",
+      "hi": "ऑफलाइन",
+      "ja": "オフライン",
+      "ko": "오프라인",
+      "nl": "Offline",
+      "pt": "desligada",
+      "ru": "Не в сети",
+      "tr": "Çevrimdışı",
+      "zh-chs": "离线",
+      "zh-cht": "離線",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->5"
       ]
@@ -26246,9 +27212,21 @@
       ]
     },
     {
+      "cs": "staré heslo",
+      "de": "Altes Passwort",
       "en": "Old Password",
+      "es": "Contraseña anterior",
+      "fi": "vanha salasana",
       "fr": "Ancien mot de passe",
+      "hi": "पुराना पासवर्ड",
+      "ja": "以前のパスワード",
+      "ko": "기존 비밀번호",
       "nl": "Oud wachtwoord",
+      "pt": "Senha Antiga",
+      "ru": "Прежний пароль",
+      "tr": "eski şifre",
+      "zh-chs": "旧密码",
+      "zh-cht": "舊密碼",
       "xloc": [
         "default.handlebars->29->306"
       ]
@@ -26708,9 +27686,21 @@
       ]
     },
     {
+      "cs": "Přepsat, pokud soubor existuje?",
+      "de": "Überschreiben, wenn Datei vorhanden ist?",
       "en": "Overwrite if file exists?",
-      "nl": "Overschrijven als bestand bestaat?",
+      "es": "¿Sobrescribir si el archivo existe?",
+      "fi": "Korvataanko tiedosto olemassa?",
       "fr": "Ecraser les fichiers existants ?",
+      "hi": "फ़ाइल मौजूद है तो अधिलेखित करें?",
+      "ja": "ファイルが存在する場合は上書きしますか？",
+      "ko": "파일이 있으면 덮어 쓰시겠습니까?",
+      "nl": "Overschrijven als bestand bestaat?",
+      "pt": "Substituir se o arquivo existir?",
+      "ru": "Перезаписать, если файл существует?",
+      "tr": "Dosya varsa üzerine yazılsın mı?",
+      "zh-chs": "是否覆盖文件存在？",
+      "zh-cht": "是否覆蓋文件存在？",
       "xloc": [
         "default.handlebars->29->482"
       ]
@@ -27305,9 +28295,21 @@
       "zh-cht": "執行Intel&reg AMT管理員控制模式（ACM）啟動。"
     },
     {
+      "cs": "Proveďte aktivaci a konfiguraci Intel&reg; AMT.",
+      "de": "Führen Sie die Aktivierung und Konfiguration von Intel&reg; AMT durch.",
       "en": "Perform Intel&reg; AMT activation and configuration.",
+      "es": "Realice la activación y configuración de Intel&reg; AMT.",
+      "fi": "Suorita Intel&reg; AMT -aktivointi ja -määritykset.",
       "fr": "Activer et configurer Intel&reg; AMT",
+      "hi": "Intel&reg; AMT सक्रियण और कॉन्फ़िगरेशन करें।",
+      "ja": "インテル&reg;AMTのアクティベーションと構成を実行します。",
+      "ko": "Intel&reg; AMT 활성화 및 구성을 수행합니다.",
       "nl": "Voer Intel&reg; AMT-activering en configuratie uit.",
+      "pt": "Execute a ativação e configuração do Intel&reg; AMT.",
+      "ru": "Выполните активацию и настройку Intel&reg; AMT.",
+      "tr": "Intel&reg; AMT aktivasyonu ve yapılandırması gerçekleştirin.",
+      "zh-chs": "执行英特尔&reg;AMT激活和配置。",
+      "zh-cht": "執行英特爾&reg;AMT激活和配置。",
       "xloc": [
         "default.handlebars->29->1384",
         "default.handlebars->29->284"
@@ -27693,9 +28695,21 @@
       ]
     },
     {
+      "cs": "Zkuste to prosím znovu s sudo.",
+      "de": "Bitte versuchen Sie es erneut mit sudo.",
       "en": "Please try again with sudo.",
-      "nl": "Probeer het opnieuw met sudo.",
+      "es": "Vuelve a intentarlo con sudo.",
+      "fi": "Yritä uudelleen sudolla.",
+      "fr": "Veuillez réessayer avec sudo.",
+      "hi": "कृपया सूडो के साथ फिर से प्रयास करें।",
+      "ja": "sudoでもう一度やり直してください。",
       "ko": "\"sudo\"로 다시 시도하십시오",
+      "nl": "Probeer het opnieuw met sudo.",
+      "pt": "Por favor, tente novamente com sudo.",
+      "ru": "Пожалуйста, попробуйте еще раз с помощью sudo.",
+      "tr": "Lütfen sudo ile tekrar deneyin.",
+      "zh-chs": "请使用sudo再试一次。",
+      "zh-cht": "請使用sudo再試一次。",
       "xloc": [
         "agent-translations.json"
       ]
@@ -28095,9 +29109,21 @@
       ]
     },
     {
+      "cs": "Předaktivace",
+      "de": "Voraktivierung",
       "en": "Pre-activation",
+      "es": "Preactivación",
+      "fi": "Esiaktivointi",
       "fr": "Pré-activation",
+      "hi": "पूर्व सक्रियण",
+      "ja": "事前アクティベーション",
+      "ko": "사전 활성화",
       "nl": "Pre-activering",
+      "pt": "Pré-ativação",
+      "ru": "Предварительная активация",
+      "tr": "Ön aktivasyon",
+      "zh-chs": "预激活",
+      "zh-cht": "預激活",
       "xloc": [
         "default.handlebars->29->991"
       ]
@@ -28146,17 +29172,41 @@
       ]
     },
     {
+      "cs": "Ukončete stisknutím Ctrl-C.",
+      "de": "Drücken Sie Strg-C, um den Vorgang zu beenden.",
       "en": "Press Ctrl-C to exit.",
-      "nl": "Druk op Ctrl-C om af te sluiten.",
+      "es": "Presione Ctrl-C para salir.",
+      "fi": "Poistu painamalla Ctrl-C.",
+      "fr": "Appuyez sur Ctrl-C pour quitter.",
+      "hi": "बाहर निकलने के लिए Ctrl-C दबाएं।",
+      "ja": "Ctrl-Cを押して終了します。",
       "ko": "종료하려면 \"Ctrl-C\"를 누르십시오.",
+      "nl": "Druk op Ctrl-C om af te sluiten.",
+      "pt": "Pressione Ctrl-C para sair.",
+      "ru": "Нажмите Ctrl-C для выхода.",
+      "tr": "Çıkmak için Ctrl-C tuşlarına basın.",
+      "zh-chs": "按Ctrl-C退出。",
+      "zh-cht": "按Ctrl-C退出。",
       "xloc": [
         "agent-translations.json"
       ]
     },
     {
+      "cs": "Stisknutím tlačítka OK se odpojíte",
+      "de": "Drücken Sie OK, um die Verbindung zu trennen",
       "en": "Press OK to disconnect",
-      "nl": "Druk op OK om de verbinding te verbreken",
+      "es": "Presione OK para desconectar",
+      "fi": "Katkaise yhteys painamalla OK",
+      "fr": "Appuyez sur OK pour vous déconnecter",
+      "hi": "डिस्कनेक्ट करने के लिए ओके दबाएं",
+      "ja": "OKを押して切断します",
       "ko": "연결을 끊으려면 \"OK\"를 누르십시오",
+      "nl": "Druk op OK om de verbinding te verbreken",
+      "pt": "Pressione OK para desconectar",
+      "ru": "Нажмите ОК для отключения",
+      "tr": "Bağlantıyı kesmek için Tamam'a basın",
+      "zh-chs": "按确定断开连接",
+      "zh-cht": "按確定斷開連接",
       "xloc": [
         "agent-translations.json"
       ]
@@ -28755,17 +29805,41 @@
       ]
     },
     {
+      "cs": "BĚH",
+      "de": "LAUFEN",
       "en": "RUNNING",
-      "nl": "ACTIEF",
+      "es": "CORRIENDO",
+      "fi": "Juoksu",
+      "fr": "FONCTIONNEMENT",
+      "hi": "चल रहा है",
+      "ja": "ランニング",
       "ko": "운영",
+      "nl": "ACTIEF",
+      "pt": "CORRIDA",
+      "ru": "БЕГ",
+      "tr": "KOŞU",
+      "zh-chs": "正在运行",
+      "zh-cht": "正在運行",
       "xloc": [
         "agent-translations.json"
       ]
     },
     {
+      "cs": "Náhodné heslo",
+      "de": "Passwort zufällig auswählen",
       "en": "Randomize password",
+      "es": "Aleatorizar contraseña",
+      "fi": "Satunnaista salasana",
       "fr": "Randomiser le mot de passe",
+      "hi": "पासवर्ड रेंडम करें",
+      "ja": "パスワードをランダム化する",
+      "ko": "비밀번호 무작위 화",
       "nl": "Willekeurig wachtwoord",
+      "pt": "Randomizar senha",
+      "ru": "Случайный пароль",
+      "tr": "Parolayı rastgele seç",
+      "zh-chs": "随机密码",
+      "zh-cht": "隨機密碼",
       "xloc": [
         "default.handlebars->29->1405"
       ]
@@ -28892,9 +29966,21 @@
       ]
     },
     {
+      "cs": "Záznam relací",
+      "de": "Sitzungen aufzeichnen",
       "en": "Record Sessions",
+      "es": "Grabar sesiones",
+      "fi": "Tallenna istunnot",
       "fr": "Enregistrer les sessions",
+      "hi": "रिकॉर्ड सत्र",
+      "ja": "セッションの記録",
+      "ko": "세션 기록",
       "nl": "Sessies opnemen",
+      "pt": "Sessões de registro",
+      "ru": "Запись сеансов",
+      "tr": "Oturumları Kaydet",
+      "zh-chs": "记录会议",
+      "zh-cht": "記錄會議",
       "xloc": [
         "default.handlebars->29->1351"
       ]
@@ -28920,9 +30006,21 @@
       ]
     },
     {
+      "cs": "Zaznamenejte relace",
+      "de": "Sitzungen aufzeichnen",
       "en": "Record sessions",
+      "es": "Grabar sesiones",
+      "fi": "Tallenna istunnot",
       "fr": "Enregistrer les sessions",
+      "hi": "रिकॉर्ड सत्र",
+      "ja": "セッションの記録",
+      "ko": "세션 녹화",
       "nl": "Sessies opnemen",
+      "pt": "Sessões gravadas",
+      "ru": "Запись сеансов",
+      "tr": "Kayıt oturumları",
+      "zh-chs": "记录会议",
+      "zh-cht": "記錄會議",
       "xloc": [
         "default.handlebars->29->1448"
       ]
@@ -29060,9 +30158,21 @@
       ]
     },
     {
+      "cs": "Obnovte plochu",
+      "de": "Aktualisieren Sie den Desktop",
       "en": "Refresh the desktop",
+      "es": "Actualizar el escritorio",
+      "fi": "Päivitä työpöytä",
       "fr": "Actualiser le bureau",
+      "hi": "डेस्कटॉप को रिफ्रेश करें",
+      "ja": "デスクトップを更新する",
+      "ko": "바탕 화면 새로 고침",
       "nl": "Vernieuw het bureaublad",
+      "pt": "Atualize a área de trabalho",
+      "ru": "Обновите рабочий стол",
+      "tr": "Masaüstünü yenileyin",
+      "zh-chs": "刷新桌面",
+      "zh-cht": "刷新桌面",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -29288,9 +30398,21 @@
       ]
     },
     {
+      "cs": "Dálkové příkazy",
+      "de": "Remote-Befehle",
       "en": "Remote Commands",
+      "es": "Comandos remotos",
+      "fi": "Etäkomennot",
       "fr": "Commandes distantes",
+      "hi": "रिमोट कमांड",
+      "ja": "リモートコマンド",
+      "ko": "원격 명령",
       "nl": "Externe opdrachten",
+      "pt": "Comandos Remotos",
+      "ru": "Удаленные команды",
+      "tr": "Uzaktan Komutlar",
+      "zh-chs": "远程命令",
+      "zh-cht": "遠程命令",
       "xloc": [
         "default-mobile.handlebars->9->439",
         "default.handlebars->29->1480"
@@ -29510,9 +30632,21 @@
       ]
     },
     {
+      "cs": "Vzdálené připojení terminálu",
+      "de": "Remote Terminal Link",
       "en": "Remote Terminal Link",
-      "nl": "Externe terminal link",
+      "es": "Enlace de terminal remoto",
+      "fi": "Etäpäätelinkki",
       "fr": "Lien du terminal distant",
+      "hi": "रिमोट टर्मिनल लिंक",
+      "ja": "リモートターミナルリンク",
+      "ko": "원격 터미널 링크",
+      "nl": "Externe terminal link",
+      "pt": "Link do Terminal Remoto",
+      "ru": "Связь с удаленным терминалом",
+      "tr": "Uzak Terminal Bağlantısı",
+      "zh-chs": "远程终端链接",
+      "zh-cht": "遠程終端鏈接",
       "xloc": [
         "default.handlebars->29->195"
       ]
@@ -29716,9 +30850,21 @@
       ]
     },
     {
+      "cs": "Odebrat sdílení zařízení",
+      "de": "Entfernen Sie die Gerätefreigabe",
       "en": "Remove Device Share",
+      "es": "Eliminar dispositivo compartido",
+      "fi": "Poista Device Share",
       "fr": "Arrêt du partage de l'appareil",
+      "hi": "डिवाइस शेयर निकालें",
+      "ja": "デバイス共有を削除する",
+      "ko": "장치 공유 제거",
       "nl": "Verwijder apparaat deling",
+      "pt": "Remover compartilhamento de dispositivo",
+      "ru": "Удалить общий доступ к устройству",
+      "tr": "Cihaz Paylaşımını Kaldır",
+      "zh-chs": "删除设备共享",
+      "zh-cht": "刪除設備共享",
       "xloc": [
         "default.handlebars->29->2026"
       ]
@@ -29883,9 +31029,21 @@
       ]
     },
     {
+      "cs": "Odebrat sdílení zařízení",
+      "de": "Entfernen Sie die Gerätefreigabe",
       "en": "Remove device sharing",
+      "es": "Eliminar dispositivo compartido",
+      "fi": "Poista laitteen jakaminen",
       "fr": "Arrêter le partage de l'appareil",
+      "hi": "डिवाइस साझाकरण निकालें",
+      "ja": "デバイス共有を削除する",
+      "ko": "장치 공유 제거",
       "nl": "Apparaat deling verwijderen",
+      "pt": "Remover compartilhamento de dispositivo",
+      "ru": "Удалить доступ к устройству",
+      "tr": "Cihaz paylaşımını kaldır",
+      "zh-chs": "删除设备共享",
+      "zh-cht": "刪除設備共享",
       "xloc": [
         "default.handlebars->29->675"
       ]
@@ -30097,9 +31255,21 @@
       ]
     },
     {
+      "cs": "Odebráno sdílení zařízení {0}",
+      "de": "Gerätefreigabe {0} entfernt",
       "en": "Removed device share {0}",
+      "es": "Compartir dispositivo eliminado {0}",
+      "fi": "Laitteen jakaminen poistettu {0}",
       "fr": "Arrêt du partage {0}",
+      "hi": "हटाया गया डिवाइस शेयर {0}",
+      "ja": "デバイス共有{0}を削除しました",
+      "ko": "기기 공유 {0}을 (를) 제거했습니다.",
       "nl": "Apparaatdeling {0} verwijderd",
+      "pt": "Compartilhamento de dispositivo removido {0}",
+      "ru": "Удалено совместное использование устройства {0}",
+      "tr": "Cihaz paylaşımı kaldırıldı {0}",
+      "zh-chs": "删除的设备共享{0}",
+      "zh-cht": "刪除的設備共享{0}",
       "xloc": [
         "default.handlebars->29->1707"
       ]
@@ -30379,17 +31549,41 @@
       ]
     },
     {
+      "cs": "Vyžaduje instalaci routeru MeshCentral",
+      "de": "Erfordert die Installation von MeshCentral Router",
       "en": "Requires installation of MeshCentral Router",
+      "es": "Requiere la instalación de MeshCentral Router",
+      "fi": "Edellyttää MeshCentral-reitittimen asennusta",
       "fr": "Nécessite l'installation du router MeshCentral",
+      "hi": "मेश्चरल राउटर की स्थापना की आवश्यकता है",
+      "ja": "MeshCentralルーターのインストールが必要",
+      "ko": "MeshCentral 라우터 설치 필요",
       "nl": "Vereist de installatie van MeshCentral Router",
+      "pt": "Requer a instalação do MeshCentral Router",
+      "ru": "Требуется установка MeshCentral Router",
+      "tr": "MeshCentral Yönlendiricinin kurulumunu gerektirir",
+      "zh-chs": "需要安装MeshCentral路由器",
+      "zh-cht": "需要安裝MeshCentral路由器",
       "xloc": [
         "default.handlebars->29->642"
       ]
     },
     {
+      "cs": "Vyžaduje instalaci routeru MeshCentral.",
+      "de": "Erfordert die Installation von MeshCentral Router.",
       "en": "Requires installation of MeshCentral Router.",
+      "es": "Requiere la instalación de MeshCentral Router.",
+      "fi": "Edellyttää MeshCentral-reitittimen asennusta.",
       "fr": "Nécessite l'installation du router MeshCentral.",
+      "hi": "मेश्चरल राउटर की स्थापना की आवश्यकता है।",
+      "ja": "MeshCentralルーターのインストールが必要です。",
+      "ko": "MeshCentral 라우터를 설치해야합니다.",
       "nl": "Vereist de installatie van MeshCentral Router.",
+      "pt": "Requer a instalação do MeshCentral Router.",
+      "ru": "Требуется установка MeshCentral Router.",
+      "tr": "MeshCentral Yönlendiricinin kurulmasını gerektirir.",
+      "zh-chs": "需要安装MeshCentral Router。",
+      "zh-cht": "需要安裝MeshCentral Router。",
       "xloc": [
         "default.handlebars->29->644",
         "default.handlebars->29->646"
@@ -30440,9 +31634,21 @@
       ]
     },
     {
+      "cs": "Reset / Vypnutí",
+      "de": "Zurücksetzen / Ausschalten",
       "en": "Reset / Power Off",
+      "es": "Reiniciar / Apagar",
+      "fi": "Nollaa / sammuta",
       "fr": "Réinitialiser / Éteindre",
+      "hi": "रीसेट / पावर ऑफ",
+      "ja": "リセット/電源オフ",
+      "ko": "재설정 / 전원 끄기",
       "nl": "Reset / uitschakelen",
+      "pt": "Reiniciar / Desligar",
+      "ru": "Сброс / выключение",
+      "tr": "Sıfırla / Kapat",
+      "zh-chs": "重置/关闭电源",
+      "zh-cht": "重置/關閉電源",
       "xloc": [
         "default-mobile.handlebars->9->440",
         "default.handlebars->29->1481"
@@ -30555,9 +31761,21 @@
       ]
     },
     {
+      "cs": "Reset / Vypnuto",
+      "de": "Zurücksetzen / Aus",
       "en": "Reset/Off",
+      "es": "Reset / Apagado",
+      "fi": "Nollaa / Pois",
       "fr": "Réinitialisation / arrêt",
+      "hi": "रीसेट / बंद",
+      "ja": "リセット/オフ",
+      "ko": "재설정 / 끄기",
       "nl": "Reset/Uit",
+      "pt": "Reiniciar / Desligar",
+      "ru": "Сброс / Выкл.",
+      "tr": "Sıfırla / Kapat",
+      "zh-chs": "重置/关闭",
+      "zh-cht": "重置/關閉",
       "xloc": [
         "default-mobile.handlebars->9->460",
         "default.handlebars->29->1517",
@@ -30647,9 +31865,21 @@
       ]
     },
     {
+      "cs": "Omezený",
+      "de": "Beschränkt",
       "en": "Restricted",
+      "es": "Restringido",
+      "fi": "Rajoitettu",
       "fr": "Limité",
+      "hi": "वर्जित",
+      "ja": "制限付き",
+      "ko": "한정된",
       "nl": "Beperkt",
+      "pt": "Restrito",
+      "ru": "Ограниченный",
+      "tr": "Kısıtlı",
+      "zh-chs": "受限制的",
+      "zh-cht": "受限制的",
       "xloc": [
         "default-mobile.handlebars->9->227",
         "default.handlebars->29->162",
@@ -30919,18 +32149,42 @@
       ]
     },
     {
+      "cs": "Spustit jako agent",
+      "de": "Als Agent ausführen",
       "en": "Run as agent",
+      "es": "Ejecutar como agente",
+      "fi": "Suorita agenttina",
       "fr": "Exécution en tant qu'agent",
+      "hi": "एजेंट के रूप में चलाएं",
+      "ja": "エージェントとして実行",
+      "ko": "에이전트로 실행",
       "nl": "Uitvoeren als agent",
+      "pt": "Executar como agente",
+      "ru": "Запуск от имени агента",
+      "tr": "Temsilci olarak çalıştır",
+      "zh-chs": "以代理身份运行",
+      "zh-cht": "以代理身份運行",
       "xloc": [
         "default.handlebars->29->461",
         "default.handlebars->29->771"
       ]
     },
     {
+      "cs": "Spustit jako uživatel, agent, pokud žádný uživatel",
+      "de": "Als Benutzer ausführen, Agent, wenn kein Benutzer vorhanden ist",
       "en": "Run as user, agent if no user",
+      "es": "Ejecutar como usuario, agente si no hay usuario",
+      "fi": "Suorita käyttäjänä, agenttina, jos ei käyttäjää",
       "fr": "Exécution en tant qu'utilisateur, à défaut en tant qu'agent",
+      "hi": "यदि कोई उपयोगकर्ता नहीं, तो उपयोगकर्ता, एजेंट के रूप में चलाएँ",
+      "ja": "ユーザーとして実行、ユーザーがいない場合はエージェント",
+      "ko": "사용자로 실행, 사용자가없는 경우 에이전트",
       "nl": "Uitvoeren als gebruiker, agent als er geen gebruiker is",
+      "pt": "Executar como usuário, agente se não houver usuário",
+      "ru": "Запуск от имени пользователя, агент, если нет пользователя",
+      "tr": "Kullanıcı yoksa aracı olarak çalıştır",
+      "zh-chs": "以用户身份运行，如果没有用户，则运行代理",
+      "zh-cht": "以用戶身份運行，如果沒有用戶，則運行代理",
       "xloc": [
         "default.handlebars->29->462",
         "default.handlebars->29->772"
@@ -31015,17 +32269,41 @@
       ]
     },
     {
+      "cs": "Spouštění příkazů jako uživatele",
+      "de": "Befehle als Benutzer ausführen",
       "en": "Running commands as user",
+      "es": "Ejecutando comandos como usuario",
+      "fi": "Komentojen suorittaminen käyttäjänä",
       "fr": "Exécution des commandes en tant qu'utilisateur",
+      "hi": "उपयोगकर्ता के रूप में कमांड चलाना",
+      "ja": "ユーザーとしてコマンドを実行する",
+      "ko": "사용자로 명령 실행",
       "nl": "Commando's uitvoeren als gebruiker",
+      "pt": "Executar comandos como usuário",
+      "ru": "Запуск команд от имени пользователя",
+      "tr": "Kullanıcı olarak komut çalıştırma",
+      "zh-chs": "以用户身份运行命令",
+      "zh-cht": "以用戶身份運行命令",
       "xloc": [
         "default.handlebars->29->1704"
       ]
     },
     {
+      "cs": "Spouštění příkazů jako uživatele, pokud je to možné",
+      "de": "Wenn möglich, Befehle als Benutzer ausführen",
       "en": "Running commands as user if possible",
+      "es": "Ejecutar comandos como usuario si es posible",
+      "fi": "Suorita komennot käyttäjänä, jos mahdollista",
       "fr": "Exécution des commandes en tant qu'utilisateur si possible",
+      "hi": "यदि संभव हो तो उपयोगकर्ता के रूप में कमांड चलाना",
+      "ja": "可能であればユーザーとしてコマンドを実行する",
+      "ko": "가능한 경우 사용자로 명령 실행",
       "nl": "Indien mogelijk commando's uitvoeren als gebruiker",
+      "pt": "Executar comandos como usuário, se possível",
+      "ru": "Выполнение команд от имени пользователя, если возможно",
+      "tr": "Mümkünse komutları kullanıcı olarak çalıştırmak",
+      "zh-chs": "如果可能，以用户身份运行命令",
+      "zh-cht": "如果可能，以用戶身份運行命令",
       "xloc": [
         "default.handlebars->29->1705"
       ]
@@ -31889,9 +33167,21 @@
       ]
     },
     {
+      "cs": "Vyberte nové heslo",
+      "de": "Wählen Sie ein neues Passwort",
       "en": "Select new password",
+      "es": "Seleccionar nueva contraseña",
+      "fi": "Valitse uusi salasana",
       "fr": "Choisir un nouveau mot de passe",
+      "hi": "नया पासवर्ड चुनें",
+      "ja": "新しいパスワードを選択してください",
+      "ko": "새 비밀번호 선택",
       "nl": "Selecteer nieuw wachtwoord",
+      "pt": "Selecione uma nova senha",
+      "ru": "Выберите новый пароль",
+      "tr": "Yeni şifre seçin",
+      "zh-chs": "选择新密码",
+      "zh-cht": "選擇新密碼",
       "xloc": [
         "default.handlebars->29->1406"
       ]
@@ -32434,9 +33724,21 @@
       ]
     },
     {
+      "cs": "Identifikátor serveru",
+      "de": "Server-ID",
       "en": "Server Identifier",
-      "nl": "Server identificatie",
+      "es": "Identificador de servidor",
+      "fi": "Palvelimen tunniste",
+      "fr": "Identifiant du serveur",
+      "hi": "सर्वर पहचानकर्ता",
+      "ja": "サーバー識別子",
       "ko": "서버의 식별자",
+      "nl": "Server identificatie",
+      "pt": "Identificador de Servidor",
+      "ru": "Идентификатор сервера",
+      "tr": "Sunucu Tanımlayıcı",
+      "zh-chs": "服务器标识符",
+      "zh-cht": "服務器標識符",
       "xloc": [
         "agent-translations.json"
       ]
@@ -32583,17 +33885,41 @@
       ]
     },
     {
+      "cs": "URL serveru",
+      "de": "Server-URL",
       "en": "Server URL",
-      "nl": "Server URL",
+      "es": "URL del servidor",
+      "fi": "Palvelimen URL-osoite",
+      "fr": "URL du serveur",
+      "hi": "सर्वर URL",
+      "ja": "サーバーのURL",
       "ko": "서버의 위치",
+      "nl": "Server URL",
+      "pt": "URL do servidor",
+      "ru": "URL-адрес сервера",
+      "tr": "Sunucu URL'si",
+      "zh-chs": "服务器网址",
+      "zh-cht": "服務器網址",
       "xloc": [
         "agent-translations.json"
       ]
     },
     {
+      "cs": "Server v údržbě",
+      "de": "Server unter Wartung",
       "en": "Server Under Maintenance",
-      "nl": "Onderhoud aan de server",
+      "es": "Servidor en mantenimiento",
+      "fi": "Palvelinta ylläpidetään",
       "fr": "Serveur en maintenance",
+      "hi": "रखरखाव के तहत सर्वर",
+      "ja": "メンテナンス中のサーバー",
+      "ko": "유지 관리중인 서버",
+      "nl": "Onderhoud aan de server",
+      "pt": "Servidor em manutenção",
+      "ru": "Сервер на обслуживании",
+      "tr": "Bakım Altındaki Sunucu",
+      "zh-chs": "维护中的服务器",
+      "zh-cht": "維護中的服務器",
       "xloc": [
         "message.handlebars->3->3",
         "message2.handlebars->5->3"
@@ -32744,9 +34070,21 @@
       ]
     },
     {
+      "cs": "Server je v údržbě.",
+      "de": "Server in Wartung.",
       "en": "Server under maintenance.",
-      "nl": "Onderhoud aan de server.",
+      "es": "Servidor en mantenimiento.",
+      "fi": "Palvelinta ylläpidetään.",
       "fr": "Serveur en maintenance.",
+      "hi": "रखरखाव के तहत सर्वर।",
+      "ja": "メンテナンス中のサーバー。",
+      "ko": "유지 보수중인 서버입니다.",
+      "nl": "Onderhoud aan de server.",
+      "pt": "Servidor em manutenção.",
+      "ru": "Сервер находится на обслуживании.",
+      "tr": "Sunucu bakımda.",
+      "zh-chs": "服务器正在维护中。",
+      "zh-cht": "服務器正在維護中。",
       "xloc": [
         "login.handlebars->5->20",
         "login2.handlebars->7->21"
@@ -33021,10 +34359,21 @@
       ]
     },
     {
+      "cs": "Založit",
+      "de": "Konfiguration",
       "en": "Setup",
-      "nl": "Setup",
+      "es": "Preparar",
+      "fi": "Perustaa",
       "fr": "Configuration",
+      "hi": "सेट अप",
+      "ja": "セットアップ",
       "ko": "설정하다",
+      "nl": "Setup",
+      "pt": "Configuração",
+      "ru": "Настроить",
+      "tr": "Kurmak",
+      "zh-chs": "设定",
+      "zh-cht": "設定",
       "xloc": [
         "agent-translations.json",
         "default.handlebars->29->1385",
@@ -33194,35 +34543,83 @@
       ]
     },
     {
+      "cs": "Odkaz na sdílení vypršel.",
+      "de": "Der Freigabelink ist abgelaufen.",
       "en": "Sharing link is expired.",
-      "nl": "link voor delen is verlopen.",
+      "es": "El enlace para compartir caducó.",
+      "fi": "Jakolinkki on vanhentunut.",
       "fr": "Le lien de partage a expiré.",
+      "hi": "शेयरिंग लिंक की समय सीमा समाप्त हो गई है।",
+      "ja": "共有リンクの有効期限が切れています。",
+      "ko": "공유 링크가 만료되었습니다.",
+      "nl": "link voor delen is verlopen.",
+      "pt": "O link de compartilhamento expirou.",
+      "ru": "Срок действия ссылки истек.",
+      "tr": "Paylaşım bağlantısının süresi doldu.",
+      "zh-chs": "共享链接已过期。",
+      "zh-cht": "共享鏈接已過期。",
       "xloc": [
         "message.handlebars->3->17",
         "message2.handlebars->5->17"
       ]
     },
     {
+      "cs": "Odkaz na sdílení zatím není platný.",
+      "de": "Freigabelink noch nicht gültig.",
       "en": "Sharing link not valid yet.",
-      "nl": "Link voor delen is niet geldig.",
+      "es": "El enlace para compartir aún no es válido.",
+      "fi": "Jakolinkki ei ole vielä voimassa.",
       "fr": "Le lien de partage n'est pas encore valide.",
+      "hi": "लिंक साझा करना अभी तक मान्य नहीं है।",
+      "ja": "共有リンクはまだ有効ではありません。",
+      "ko": "공유 링크가 아직 유효하지 않습니다.",
+      "nl": "Link voor delen is niet geldig.",
+      "pt": "O link de compartilhamento ainda não é válido.",
+      "ru": "Ссылка для отправки еще не действительна.",
+      "tr": "Bağlantı paylaşımı henüz geçerli değil.",
+      "zh-chs": "共享链接无效。",
+      "zh-cht": "共享鏈接無效。",
       "xloc": [
         "message.handlebars->3->16",
         "message2.handlebars->5->16"
       ]
     },
     {
+      "cs": "Shift + F10",
+      "de": "Umschalt + F10",
       "en": "Shift + F10",
-      "nl": "Shift + F10",
+      "es": "Mayús + F10",
+      "fi": "Vaihto + F10",
       "fr": "Shift + F10",
+      "hi": "Shift + F10",
+      "ja": "Shift + F10",
+      "ko": "Shift + F10",
+      "nl": "Shift + F10",
+      "pt": "Shift + F10",
+      "ru": "Shift + F10",
+      "tr": "Üst Karakter + F10",
+      "zh-chs": "Shift + F10",
+      "zh-cht": "Shift + F10",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->27"
       ]
     },
     {
+      "cs": "Shift + WIN + M",
+      "de": "Umschalt + GEWINN + M.",
       "en": "Shift + WIN + M",
-      "nl": "Shift + WIN + M",
+      "es": "Mayús + WIN + M",
+      "fi": "Vaihto + VOIT + M",
       "fr": "Shift + WIN + M",
+      "hi": "शिफ्ट + विन + एम",
+      "ja": "Shift + WIN + M",
+      "ko": "Shift + WIN + M",
+      "nl": "Shift + WIN + M",
+      "pt": "Shift + WIN + M",
+      "ru": "Shift + WIN + M",
+      "tr": "Üst Karakter + WIN + M",
+      "zh-chs": "Shift + WIN + M",
+      "zh-cht": "Shift + WIN + M",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->15"
       ]
@@ -33398,9 +34795,21 @@
       ]
     },
     {
+      "cs": "Zobrazit využití procesoru a paměti zařízení.",
+      "de": "Zeigen Sie die CPU- und Speicherauslastung des Geräts an.",
       "en": "Show device CPU and memory usage.",
-      "nl": "Toon processor en geheugengebruik van dit apparaat.",
+      "es": "Muestra el uso de la CPU y la memoria del dispositivo.",
+      "fi": "Näytä laitteen suorittimen ja muistin käyttö.",
       "fr": "Afficher l'utilisation du CPU et de la mémoire",
+      "hi": "डिवाइस CPU और मेमोरी उपयोग दिखाएं।",
+      "ja": "デバイスのCPUとメモリの使用状況を表示します。",
+      "ko": "장치 CPU 및 메모리 사용량을 표시합니다.",
+      "nl": "Toon processor en geheugengebruik van dit apparaat.",
+      "pt": "Mostra o uso da CPU e da memória do dispositivo.",
+      "ru": "Показать использование ЦП и памяти устройства.",
+      "tr": "Cihaz CPU'sunu ve bellek kullanımını gösterin.",
+      "zh-chs": "显示设备的CPU和内存使用情况。",
+      "zh-cht": "顯示設備的CPU和內存使用情況。",
       "xloc": [
         "default.handlebars->container->column_l->p17->p17title->devListToolbarViewIcons3"
       ]
@@ -34775,9 +36184,21 @@
       ]
     },
     {
+      "cs": "S hvězdičkou",
+      "de": "Markiert",
       "en": "Starred",
-      "nl": "Gemarkeerd",
+      "es": "Sembrado de estrellas",
+      "fi": "Tähdellä merkitty",
       "fr": "Favoris",
+      "hi": "तारांकित",
+      "ja": "スター付き",
+      "ko": "별표",
+      "nl": "Gemarkeerd",
+      "pt": "Estrelou",
+      "ru": "Помечено",
+      "tr": "Yıldızlı",
+      "zh-chs": "已加星标",
+      "zh-cht": "已加星標",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->9"
       ]
@@ -34844,9 +36265,21 @@
       ]
     },
     {
+      "cs": "Začněte zadáním starého a nového hesla MBEx.",
+      "de": "Geben Sie zunächst das alte und das neue MBEx-Passwort ein.",
       "en": "Start by entering the old and new MBEx password. ",
+      "es": "Comience ingresando la contraseña MBEx nueva y anterior.",
+      "fi": "Aloita kirjoittamalla vanha ja uusi MBEx-salasana.",
       "fr": "Commencez par entrer l'ancien puis le nouveau mot de passe MBEx. ",
+      "hi": "पुराने और नए MBEx पासवर्ड दर्ज करके प्रारंभ करें।",
+      "ja": "新旧のMBExパスワードを入力することから始めます。",
+      "ko": "이전 및 새 MBEx 암호를 입력하여 시작하십시오.",
       "nl": "Begin met het invoeren van het oude en nieuwe MBEx-wachtwoord. ",
+      "pt": "Comece inserindo a senha antiga e a nova do MBEx.",
+      "ru": "Начните с ввода старого и нового пароля MBEx.",
+      "tr": "Eski ve yeni MBEx şifresini girerek başlayın.",
+      "zh-chs": "首先输入新旧MBEx密码。",
+      "zh-cht": "首先輸入新舊MBEx密碼。",
       "xloc": [
         "default.handlebars->29->305"
       ]
@@ -35032,9 +36465,21 @@
       ]
     },
     {
+      "cs": "Nyní začíná",
+      "de": "Jetzt beginnend",
       "en": "Starting now",
-      "nl": "vanaf nu",
+      "es": "Comenzando ahora",
+      "fi": "Alkaen nyt",
       "fr": "Immédiate",
+      "hi": "अब प्रारंभ कर रहा है",
+      "ja": "今から",
+      "ko": "지금부터",
+      "nl": "vanaf nu",
+      "pt": "Começando agora",
+      "ru": "Начиная сейчас",
+      "tr": "Şimdi başlıyor",
+      "zh-chs": "现在开始",
+      "zh-cht": "現在開始",
       "xloc": [
         "default.handlebars->29->748"
       ]
@@ -35183,9 +36628,21 @@
       ]
     },
     {
+      "cs": "Zastavit proces č. {0} \\\"{1}\\\"?",
+      "de": "Prozess beenden # {0} \\\"{1}\\\"?",
       "en": "Stop process #{0} \\\"{1}\\\"?",
+      "es": "¿Detener el proceso n.º {0} \\\"{1}\\\"?",
+      "fi": "Lopetetaanko prosessi # {0} \\\"{1}\\\"?",
       "fr": "Arrêter me processus #{0} \\\"{1}\\\"?",
+      "hi": "स्टॉप प्रोसेस # {0} \\\"{1}\\\"?",
+      "ja": "プロセス＃{0} \\\"{1}\\\"を停止しますか？",
+      "ko": "프로세스 # {0} \\\"{1}\\\"을 (를) 중지 하시겠습니까?",
       "nl": "Stop proces #{0} \\\"{1}\\\"?",
+      "pt": "Parar o processo nº {0} \\\"{1}\\\"?",
+      "ru": "Остановить процесс № {0} \\\"{1}\\\"?",
+      "tr": "# {0} \\\"{1}\\\" işlemi durdurulsun mu?",
+      "zh-chs": "停止进程＃{0} “{1}”？",
+      "zh-cht": "停止進程＃{0} “{1}”？",
       "xloc": [
         "default.handlebars->29->885",
         "desktop.handlebars->3->25"
@@ -35455,9 +36912,21 @@
       ]
     },
     {
+      "cs": "Zaměňte tlačítka myši",
+      "de": "Tauschen Sie die Maustasten aus",
       "en": "Swap Mouse Buttons",
+      "es": "Cambiar botones del mouse",
+      "fi": "Vaihda hiiren painikkeet",
       "fr": "Echanger les boutons de la souris",
+      "hi": "माउस माउस को स्वैप करें",
+      "ja": "マウスボタンを交換する",
+      "ko": "마우스 버튼 교체",
       "nl": "Wissel muisknoppen",
+      "pt": "Botões de troca do mouse",
+      "ru": "Поменять местами кнопки мыши",
+      "tr": "Fare Düğmelerini Değiştirin",
+      "zh-chs": "交换鼠标按钮",
+      "zh-cht": "交換鼠標按鈕",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->1"
       ]
@@ -35523,9 +36992,21 @@
       ]
     },
     {
+      "cs": "Přepněte Intel AMT do režimu správy správce (ACM).",
+      "de": "Schalten Sie Intel AMT in den Admin Control Mode (ACM).",
       "en": "Switch Intel AMT to Admin Control Mode (ACM).",
-      "nl": "Schakel Intel AMT over naar Admin Control Mode (ACM).",
+      "es": "Cambie Intel AMT al modo de control de administrador (ACM).",
+      "fi": "Vaihda Intel AMT järjestelmänvalvojan ohjaustilaan (ACM).",
       "fr": "Basculer d'Intel AMT à Admin Control Mode (ACM).",
+      "hi": "इंटेल एएमटी को व्यवस्थापक नियंत्रण मोड (एसीएम) पर स्विच करें।",
+      "ja": "Intel AMTを管理制御モード（ACM）に切り替えます。",
+      "ko": "Intel AMT를 관리자 제어 모드 (ACM)로 전환합니다.",
+      "nl": "Schakel Intel AMT over naar Admin Control Mode (ACM).",
+      "pt": "Mude Intel AMT para Modo de controle de administrador (ACM).",
+      "ru": "Переключите Intel AMT в режим управления администратором (ACM).",
+      "tr": "Intel AMT'yi Yönetici Kontrol Moduna (ACM) geçirin.",
+      "zh-chs": "将英特尔AMT切换到管理员控制模式（ACM）。",
+      "zh-cht": "將英特爾AMT切換到管理員控制模式（ACM）。",
       "xloc": [
         "default.handlebars->29->1390"
       ]
@@ -35571,16 +37052,16 @@
       ]
     },
     {
-      "en": "TAB",
-      "nl": "TAB",
       "cs": "TAB",
       "de": "TAB",
+      "en": "TAB",
       "es": "Tab",
       "fi": "Välilehti",
       "fr": "TAB",
       "hi": "टैब",
       "ja": "タブ",
       "ko": "TAB",
+      "nl": "TAB",
       "pt": "TAB",
       "ru": "TAB",
       "tr": "Sekme",
@@ -35784,9 +37265,21 @@
       ]
     },
     {
+      "cs": "Označené",
+      "de": "Tagged",
       "en": "Tagged",
-      "nl": "Getagd",
+      "es": "Etiquetado",
+      "fi": "Merkitty",
       "fr": "Marqué",
+      "hi": "टैग",
+      "ja": "タグ付き",
+      "ko": "태그 됨",
+      "nl": "Getagd",
+      "pt": "Marcado",
+      "ru": "Помечено",
+      "tr": "Etiketli",
+      "zh-chs": "已标记",
+      "zh-cht": "已標記",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->15"
       ]
@@ -35973,17 +37466,41 @@
       ]
     },
     {
+      "cs": "Latence relace terminálu",
+      "de": "Latenz der Terminalsitzung",
       "en": "Terminal Session Latency",
-      "nl": "Latentie van terminalsessie",
+      "es": "Latencia de sesión terminal",
+      "fi": "Pääteistunnon viive",
       "fr": "Latence de la session du terminal",
+      "hi": "टर्मिनल सत्र की विलंबता",
+      "ja": "ターミナルセッションの待ち時間",
+      "ko": "터미널 세션 지연",
+      "nl": "Latentie van terminalsessie",
+      "pt": "Latência da Sessão Terminal",
+      "ru": "Задержка терминальной сессии",
+      "tr": "Terminal Oturum Gecikmesi",
+      "zh-chs": "终端会话延迟",
+      "zh-cht": "終端會話延遲",
       "xloc": [
         "terminal.handlebars->p12->9->1"
       ]
     },
     {
+      "cs": "Sdílení terminálu",
+      "de": "Terminalfreigabe",
       "en": "Terminal Sharing",
-      "nl": "Terminal delen",
+      "es": "Compartir terminal",
+      "fi": "Päätteen jakaminen",
       "fr": "Partage du terminal",
+      "hi": "टर्मिनल शेयरिंग",
+      "ja": "ターミナル共有",
+      "ko": "터미널 공유",
+      "nl": "Terminal delen",
+      "pt": "Compartilhamento de terminal",
+      "ru": "Совместное использование терминала",
+      "tr": "Terminal Paylaşımı",
+      "zh-chs": "终端共享",
+      "zh-cht": "終端共享",
       "xloc": [
         "message.handlebars->3->4",
         "message2.handlebars->5->4"
@@ -36079,12 +37596,37 @@
       ]
     },
     {
+      "cs": "Grafickou verzi tohoto instalačního programu nelze v tomto systému spustit",
+      "de": "Die grafische Version dieses Installationsprogramms kann auf diesem System nicht ausgeführt werden",
       "en": "The graphical version of this installer can not run on this system",
+      "es": "La versión gráfica de este instalador no se puede ejecutar en este sistema",
+      "fi": "Tämän asennusohjelman graafista versiota ei voi suorittaa tässä järjestelmässä",
+      "fr": "La version graphique de ce programme d'installation ne peut pas s'exécuter sur ce système",
+      "hi": "इस इंस्टॉलर का चित्रमय संस्करण इस सिस्टम पर नहीं चल सकता है",
+      "ja": "このインストーラーのグラフィカルバージョンは、このシステムでは実行できません",
+      "ko": "이 프로그램의 그래픽 버전이 시스템에서 실행할 수 없습니다",
       "nl": "De grafische versie van dit installatieprogramma kan niet op dit systeem worden uitgevoerd",
-      "ko": "이 프로그램의 그래픽 버전이 시스템에서 실행할 수 없습니다"
+      "pt": "A versão gráfica deste instalador não pode ser executada neste sistema",
+      "ru": "Графическая версия этого установщика не может работать в этой системе",
+      "tr": "Bu yükleyicinin grafik versiyonu bu sistemde çalıştırılamaz",
+      "zh-chs": "此安装程序的图形版本无法在此系统上运行",
+      "zh-cht": "此安裝程序的圖形版本無法在此系統上運行"
     },
     {
+      "cs": "V tomto systému nelze spustit grafickou verzi tohoto instalačního programu",
+      "de": "Die grafische Version dieses Installationsprogramms kann auf diesem System nicht ausgeführt werden",
       "en": "The graphical version of this installer canot run on this system",
+      "es": "La versión gráfica de este instalador no se puede ejecutar en este sistema.",
+      "fi": "Tämän asennusohjelman graafinen versio ei toimi tässä järjestelmässä",
+      "fr": "La version graphique de ce programme d'installation ne peut pas s'exécuter sur ce système",
+      "hi": "इस इंस्टॉलर का आलेखीय संस्करण इस सिस्टम पर चलता है",
+      "ja": "このインストーラーのグラフィカルバージョンは、このシステムでは実行できません",
+      "ko": "이 설치 프로그램의 그래픽 버전은이 시스템에서 실행할 수 없습니다.",
+      "pt": "A versão gráfica deste instalador não pode ser executada neste sistema",
+      "ru": "Графическая версия этого установщика не может работать в этой системе.",
+      "tr": "Bu yükleyicinin grafik versiyonu bu sistemde çalışamaz",
+      "zh-chs": "此安装程序Canot的图形版本在此系统上运行",
+      "zh-cht": "此安裝程序Canot的圖形版本在此系統上運行",
       "xloc": [
         "agent-translations.json"
       ]
@@ -36306,9 +37848,21 @@
       "zh-cht": "這是不安全政策，因為將用代理執行啟動。"
     },
     {
+      "cs": "Toto je doporučená zásada. Aktivace a správa Intel&reg; AMT je zcela automatizovaná a server se pokusí co nejlépe využít správu hardwaru.",
+      "de": "Dies ist die empfohlene Richtlinie. Die Aktivierung und Verwaltung von Intel&reg; AMT ist vollständig automatisiert und der Server wird versuchen, die Hardwareverwaltung optimal zu nutzen.",
       "en": "This is the recommended policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management.",
+      "es": "Esta es la política recomendada. La activación y administración de Intel&reg; AMT está completamente automatizada y el servidor intentará hacer el mejor uso posible de la administración de hardware.",
+      "fi": "Tämä on suositeltava käytäntö. Intel&reg; AMT: n aktivointi ja hallinta on täysin automatisoitu, ja palvelin yrittää hyödyntää laitteiston hallintaa parhaalla mahdollisella tavalla.",
       "fr": "Cette option est recommandée. L'activation et la gestion d'Intel® AMT sont entièrement automatisées. Le serveur tentera de faire le meilleur usage possible de la gestion du matériel.",
+      "hi": "यह अनुशंसित नीति है। Intel&reg; AMT सक्रियण और प्रबंधन पूरी तरह से स्वचालित है और सर्वर हार्डवेयर प्रबंधन का सर्वोत्तम संभव उपयोग करने का प्रयास करेगा।",
+      "ja": "これが推奨されるポリシーです。インテル&reg;AMTのアクティブ化と管理は完全に自動化されており、サーバーはハードウェア管理を最大限に活用しようとします。",
+      "ko": "이것이 권장되는 정책입니다. 인텔 &reg; AMT 활성화 및 관리는 완전히 자동화되어 있으며 서버는 하드웨어 관리를 최대한 활용하려고 시도합니다.",
       "nl": "Dit is het aanbevolen beleid. Activering en beheer van Intel&reg; AMT is volledig geautomatiseerd en de server zal proberen om optimaal gebruik te maken van hardwarebeheer.",
+      "pt": "Esta é a política recomendada. A ativação e o gerenciamento da Intel&reg; AMT são totalmente automatizados e o servidor tentará fazer o melhor uso possível do gerenciamento de hardware.",
+      "ru": "Это рекомендуемая политика. Активация и управление Intel&reg; AMT полностью автоматизированы, и сервер пытается максимально использовать возможности управления оборудованием.",
+      "tr": "Bu, önerilen politikadır. Intel&reg; AMT aktivasyonu ve yönetimi tamamen otomatiktir ve sunucu, donanım yönetiminden mümkün olan en iyi şekilde yararlanmaya çalışacaktır.",
+      "zh-chs": "这是推荐的策略。英特尔&reg;AMT激活和管理是完全自动化的，服务器将尝试最大程度地利用硬件管理。",
+      "zh-cht": "這是推薦的策略。英特爾&reg;AMT激活和管理是完全自動化的，服務器將嘗試最大程度地利用硬件管理。",
       "xloc": [
         "default.handlebars->29->1425"
       ]
@@ -36535,9 +38089,21 @@
       ]
     },
     {
+      "cs": "Časový rozsah",
+      "de": "Zeitspanne",
       "en": "Time Range",
-      "nl": "Tijdsbestek",
+      "es": "Intervalo de tiempo",
+      "fi": "Aikahaarukka",
       "fr": "Plage horaire",
+      "hi": "समय सीमा",
+      "ja": "時間範囲",
+      "ko": "시간 범위",
+      "nl": "Tijdsbestek",
+      "pt": "Intervalo de tempo",
+      "ru": "Временной диапазон",
+      "tr": "Zaman aralığı",
+      "zh-chs": "时间范围",
+      "zh-cht": "時間範圍",
       "xloc": [
         "default.handlebars->29->751"
       ]
@@ -36563,9 +38129,21 @@
       ]
     },
     {
+      "cs": "Časový rozsah",
+      "de": "Zeitspanne",
       "en": "Time range",
-      "nl": "Tijdsbestek",
+      "es": "Intervalo de tiempo",
+      "fi": "Aikahaarukka",
       "fr": "Plage horaire",
+      "hi": "समय सीमा",
+      "ja": "時間範囲",
+      "ko": "시간 범위",
+      "nl": "Tijdsbestek",
+      "pt": "Intervalo de tempo",
+      "ru": "Временной диапазон",
+      "tr": "Zaman aralığı",
+      "zh-chs": "时间范围",
+      "zh-cht": "時間範圍",
       "xloc": [
         "default.handlebars->29->749"
       ]
@@ -36784,16 +38362,16 @@
       ]
     },
     {
-      "en": "To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.",
-      "nl": "Om de software te installeren, navigeert u naar [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] en volgt u de instructies.",
       "cs": "Chcete-li nainstalovat software, přejděte na [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] a postupujte podle pokynů.",
       "de": "Navigieren Sie zum Installieren der Software zu [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] und befolgen Sie die Anweisungen.",
+      "en": "To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.",
       "es": "Para instalar el software, navega a [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] y siga las instrucciones.",
       "fi": "Asenna ohjelmisto siirtymällä kohtaan [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] ja noudattamalla ohjeita.",
       "fr": "Pour installer le logiciel, accédez à [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] et suivez les instructions.",
       "hi": "सॉफ़्टवेयर को स्थापित करने के लिए, [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] पर जाएँ और निर्देशों का पालन करें।",
       "ja": "ソフトウェアをインストールするには、[[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]]に移動し、指示に従います。",
       "ko": "소프트웨어를 설치하려면, 다음에 접속하여 지시에 따르십시오 : [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]]",
+      "nl": "Om de software te installeren, navigeert u naar [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] en volgt u de instructies.",
       "pt": "Para instalar o software, navegue até [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] e siga as instruções.",
       "ru": "Для установки программного обеспечения перейдите к [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] и следуйте инструкциям.",
       "tr": "Yazılımı kurmak için [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] adresine gidin ve talimatları takip edin.",
@@ -37303,9 +38881,21 @@
       ]
     },
     {
+      "cs": "Zkuste nainstalovat / aktualizovat Zenity a spustit znovu",
+      "de": "Versuchen Sie, Zenity zu installieren / zu aktualisieren, und führen Sie es erneut aus",
       "en": "Try installing/updating Zenity, and run again",
-      "nl": "Probeer Zenity te installeren / bij te werken en voer het opnieuw uit",
+      "es": "Intente instalar / actualizar Zenity y vuelva a ejecutar",
+      "fi": "Yritä asentaa / päivittää Zenity ja suorita uudelleen",
+      "fr": "Essayez d'installer / mettre à jour Zenity et réexécutez",
+      "hi": "ज़ेनिटी को स्थापित / अपडेट करने का प्रयास करें, और फिर से चलाएं",
+      "ja": "Zenityをインストール/更新して、もう一度実行してください",
       "ko": "\"Zenity\"를 설치 또는 업데이트하고 다시 시도하십시오",
+      "nl": "Probeer Zenity te installeren / bij te werken en voer het opnieuw uit",
+      "pt": "Tente instalar / atualizar o Zenity e execute novamente",
+      "ru": "Попробуйте установить / обновить Zenity и снова запустить",
+      "tr": "Zenity'yi kurmayı / güncellemeyi deneyin ve tekrar çalıştırın",
+      "zh-chs": "尝试安装/更新Zenity，然后再次运行",
+      "zh-cht": "嘗試安裝/更新Zenity，然後再次運行",
       "xloc": [
         "agent-translations.json"
       ]
@@ -37617,16 +39207,42 @@
       "zh-cht": "在啟用二因子身份驗證之前，無法訪問裝置。這是額外的安全性所必需的。轉到“我的帳戶”標籤，然後查看“帳戶安全性”部分。"
     },
     {
+      "cs": "Dokud nebude ověřena e-mailová adresa, nelze k této funkci přistupovat. To je vyžadováno pro obnovení hesla. Chcete-li změnit a ověřit e-mailovou adresu, přejděte na kartu \\\"Můj účet\\\".",
+      "de": "Der Zugriff auf diese Funktion ist erst möglich, wenn eine E-Mail-Adresse bestätigt wurde. Dies ist für die Kennwortwiederherstellung erforderlich. Gehen Sie zur Registerkarte \\\"Mein Konto\\\", um eine E-Mail-Adresse zu ändern und zu überprüfen.",
       "en": "Unable to access this feature until a email address is verified. This is required for password recovery. Go to the \\\"My Account\\\" tab to change and verify an email address.",
+      "es": "No se puede acceder a esta función hasta que se verifique una dirección de correo electrónico. Esto es necesario para recuperar la contraseña. Vaya a la pestaña \\\"Mi cuenta\\\" para cambiar y verificar una dirección de correo electrónico.",
+      "fi": "Tätä ominaisuutta ei voi käyttää, ennen kuin sähköpostiosoite on vahvistettu. Tätä vaaditaan salasanan palauttamiseksi. Siirry \\\"Oma tili\\\" -välilehteen vaihtaaksesi ja vahvistaaksesi sähköpostiosoitteen.",
+      "fr": "Impossible d'accéder à cette fonctionnalité tant qu'une adresse e-mail n'est pas vérifiée. Ceci est nécessaire pour la récupération du mot de passe. Accédez à l'onglet «Mon compte» pour modifier et vérifier une adresse e-mail.",
+      "hi": "ईमेल पता सत्यापित होने तक इस सुविधा का उपयोग करने में असमर्थ। पासवर्ड रिकवरी के लिए यह आवश्यक है। ईमेल पता बदलने और सत्यापित करने के लिए \\\"मेरा खाता\\\" टैब पर जाएं।",
+      "ja": "メールアドレスが確認されるまで、この機能にアクセスできません。これは、パスワードの回復に必要です。 [マイアカウント]タブに移動して、メールアドレスを変更して確認します。",
+      "ko": "이메일 주소가 확인 될 때까지이 기능에 액세스 할 수 없습니다. 이것은 비밀번호 복구에 필요합니다. \\\"내 계정\\\"탭으로 이동하여 이메일 주소를 변경하고 확인하십시오.",
       "nl": "Geen toegang tot deze functie totdat een e-mailadres is geverifieerd. Dit is vereist voor wachtwoordherstel. Ga naar het tabblad \\\"Mijn account\\\" om een e-mailadres te wijzigen en te verifiëren.",
+      "pt": "Incapaz de acessar este recurso até que um endereço de e-mail seja verificado. Isso é necessário para recuperação de senha. Vá para a guia \\\"Minha conta\\\" para alterar e verificar um endereço de e-mail.",
+      "ru": "Невозможно получить доступ к этой функции, пока адрес электронной почты не будет проверен. Это необходимо для восстановления пароля. Перейдите на вкладку \\\"Моя учетная запись\\\", чтобы изменить и подтвердить адрес электронной почты.",
+      "tr": "Bir e-posta adresi doğrulanana kadar bu özelliğe erişilemez. Bu, şifre kurtarma için gereklidir. Bir e-posta adresini değiştirmek ve doğrulamak için \\\"Hesabım\\\" sekmesine gidin.",
+      "zh-chs": "在验证电子邮件地址之前，无法访问此功能。这是密码恢复所必需的。转到“我的帐户”标签以更改和验证电子邮件地址。",
+      "zh-cht": "在驗證電子郵件地址之前，無法訪問此功能。這是密碼恢復所必需的。轉到“我的帳戶”標籤以更改和驗證電子郵件地址。",
       "xloc": [
         "default.handlebars->29->1298",
         "default.handlebars->29->541"
       ]
     },
     {
+      "cs": "Nelze získat přístup k této funkci, dokud není povoleno dvoufaktorové ověřování. To je nutné pro větší bezpečnost. Přejděte na kartu „Můj účet“ a podívejte se do části „Zabezpečení účtu“.",
+      "de": "Der Zugriff auf diese Funktion ist erst möglich, wenn die Zwei-Faktor-Authentifizierung aktiviert ist. Dies ist für zusätzliche Sicherheit erforderlich. Gehen Sie zur Registerkarte \\\"Mein Konto\\\" und sehen Sie sich den Abschnitt \\\"Kontosicherheit\\\" an.",
       "en": "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \\\"My Account\\\" tab and look at the \\\"Account Security\\\" section.",
+      "es": "No se puede acceder a esta función hasta que se habilita la autenticación de dos factores. Esto es necesario para mayor seguridad. Vaya a la pestaña \\\"Mi cuenta\\\" y observe la sección \\\"Seguridad de la cuenta\\\".",
+      "fi": "Tätä ominaisuutta ei voi käyttää, ennen kuin kaksivaiheinen todennus on käytössä. Tätä tarvitaan ylimääräisen turvallisuuden takaamiseksi. Siirry \\\"Oma tili\\\" -välilehdelle ja katso \\\"Tilin suojaus\\\" -osio.",
+      "fr": "Impossible d'accéder à cette fonctionnalité tant que l'authentification à deux facteurs n'est pas activée. Ceci est nécessaire pour plus de sécurité. Allez dans l'onglet \\\"Mon compte\\\" et regardez la section \\\"Sécurité du compte\\\".",
+      "hi": "दो-कारक प्रमाणीकरण सक्षम होने तक इस सुविधा का उपयोग करने में असमर्थ। अतिरिक्त सुरक्षा के लिए यह आवश्यक है। \\\"मेरा खाता\\\" टैब पर जाएं और \\\"खाता सुरक्षा\\\" अनुभाग देखें।",
+      "ja": "二要素認証が有効になるまで、この機能にアクセスできません。これは、セキュリティを強化するために必要です。 [マイアカウント]タブに移動し、[アカウントセキュリティ]セクションを確認します。",
+      "ko": "2 단계 인증이 활성화 될 때까지이 기능에 액세스 할 수 없습니다. 이는 추가 보안을 위해 필요합니다. \\\"내 계정\\\"탭으로 이동하여 \\\"계정 보안\\\"섹션을 확인하십시오.",
       "nl": "Geen toegang tot deze functie totdat tweefactorauthenticatie is ingeschakeld. Dit is nodig voor extra veiligheid. Ga naar het tabblad \\\"Mijn account\\\" en kijk naar het gedeelte \\\"Accountbeveiliging\\\".",
+      "pt": "Não é possível acessar esse recurso até que a autenticação de dois fatores seja ativada. Isso é necessário para segurança extra. Vá para a guia \\\"Minha conta\\\" e verifique a seção \\\"Segurança da conta\\\".",
+      "ru": "Невозможно получить доступ к этой функции, пока не будет включена двухфакторная аутентификация. Это необходимо для дополнительной безопасности. Перейдите на вкладку \\\"Моя учетная запись\\\" и посмотрите раздел \\\"Безопасность учетной записи\\\".",
+      "tr": "İki faktörlü kimlik doğrulama etkinleştirilene kadar bu özelliğe erişilemez. Ekstra güvenlik için bu gereklidir. \\\"Hesabım\\\" sekmesine gidin ve\\\"Hesap Güvenliği\\\" bölümüne bakın.",
+      "zh-chs": "在启用两因素身份验证之前，无法访问此功能。这是额外的安全性所必需的。转到“我的帐户”标签，然后查看“帐户安全性”部分。",
+      "zh-cht": "在啟用兩因素身份驗證之前，無法訪問此功能。這是額外的安全性所必需的。轉到“我的帳戶”標籤，然後查看“帳戶安全性”部分。",
       "xloc": [
         "default.handlebars->29->1300",
         "default.handlebars->29->2149",
@@ -38030,9 +39646,21 @@
       ]
     },
     {
+      "cs": "Neznámé heslo",
+      "de": "Unbekanntes Passwort",
       "en": "Unknown password",
+      "es": "Contraseña desconocida",
+      "fi": "Tuntematon salasana",
       "fr": "Mot de passe inconnu",
+      "hi": "अज्ञात पासवर्ड",
+      "ja": "不明なパスワード",
+      "ko": "알 수없는 비밀번호",
       "nl": "Onbekend wachtwoord",
+      "pt": "Senha desconhecida",
+      "ru": "Неизвестный пароль",
+      "tr": "Bilinmeyen şifre",
+      "zh-chs": "密码未知",
+      "zh-cht": "密碼未知",
       "xloc": [
         "default.handlebars->29->1413"
       ]
@@ -38080,9 +39708,21 @@
       ]
     },
     {
+      "cs": "Neoznačený",
+      "de": "Ohne Tags",
       "en": "Untagged",
-      "nl": "Niet getagd",
+      "es": "Sin etiquetar",
+      "fi": "Tunnistamaton",
       "fr": "Non marqué",
+      "hi": "टैग नहीं किए गए",
+      "ja": "タグなし",
+      "ko": "태그 없음",
+      "nl": "Niet getagd",
+      "pt": "Sem etiqueta",
+      "ru": "Без тегов",
+      "tr": "Etiketsiz",
+      "zh-chs": "未标记",
+      "zh-cht": "未標記",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->17"
       ]
@@ -38132,9 +39772,21 @@
       ]
     },
     {
+      "cs": "Aktualizace",
+      "de": "Aktualisieren",
       "en": "Update",
-      "nl": "Bijwerken",
+      "es": "Actualizar",
+      "fi": "Päivittää",
+      "fr": "Mettre à jour",
+      "hi": "अपडेट करें",
+      "ja": "更新",
       "ko": "개조하다",
+      "nl": "Bijwerken",
+      "pt": "Atualizar",
+      "ru": "Обновить",
+      "tr": "Güncelleme",
+      "zh-chs": "更新资料",
+      "zh-cht": "更新資料",
       "xloc": [
         "agent-translations.json"
       ]
@@ -38253,9 +39905,21 @@
       ]
     },
     {
+      "cs": "Nahrát soubory",
+      "de": "Daten hochladen",
       "en": "Upload files",
-      "nl": "Upload bestanden",
+      "es": "Subir archivos",
+      "fi": "Lähetä tiedostoja",
       "fr": "Charger les fichiers",
+      "hi": "फाइल अपलोड करो",
+      "ja": "ファイルをアップロードする",
+      "ko": "파일 업로드하다",
+      "nl": "Upload bestanden",
+      "pt": "Fazer upload de arquivos",
+      "ru": "Загрузить файлы",
+      "tr": "Dosyaları yükle",
+      "zh-chs": "上传文件",
+      "zh-cht": "上傳文件",
       "xloc": [
         "default.handlebars->29->448"
       ]
@@ -38301,9 +39965,21 @@
       ]
     },
     {
+      "cs": "Nahrajte vybrané soubory do všech vybraných zařízení",
+      "de": "Laden Sie ausgewählte Dateien auf alle ausgewählten Geräte hoch",
       "en": "Upload selected files to all selected devices",
-      "nl": "Upload de geselecteerde bestanden naar alle geselecteerde apparaten",
+      "es": "Cargar archivos seleccionados a todos los dispositivos seleccionados",
+      "fi": "Lähetä valitut tiedostot kaikkiin valittuihin laitteisiin",
       "fr": "Charger ces fichiers sur les appareils sélectionnés",
+      "hi": "चयनित फ़ाइलों को सभी चयनित उपकरणों पर अपलोड करें",
+      "ja": "選択したすべてのデバイスに選択したファイルをアップロードする",
+      "ko": "선택한 모든 장치에 선택한 파일 업로드",
+      "nl": "Upload de geselecteerde bestanden naar alle geselecteerde apparaten",
+      "pt": "Carregue os arquivos selecionados para todos os dispositivos selecionados",
+      "ru": "Загрузить выбранные файлы на все выбранные устройства",
+      "tr": "Seçili dosyaları seçili tüm cihazlara yükle",
+      "zh-chs": "将所选文件上传到所有所选设备",
+      "zh-cht": "將所選文件上傳到所有所選設備",
       "xloc": [
         "default.handlebars->29->478"
       ]
@@ -38430,9 +40106,21 @@
       ]
     },
     {
+      "cs": "Použijte Mapu vzdálené klávesnice",
+      "de": "Verwenden Sie die Remote Keyboard Map",
       "en": "Use Remote Keyboard Map",
-      "nl": "Gebruik de externe toetsenbord instelling",
+      "es": "Usar mapa de teclado remoto",
+      "fi": "Käytä kaukonäppäimistökarttaa",
       "fr": "Utiliser la configuration du clavier distant",
+      "hi": "रिमोट कीबोर्ड मैप का उपयोग करें",
+      "ja": "リモートキーボードマップを使用する",
+      "ko": "원격 키보드 맵 사용",
+      "nl": "Gebruik de externe toetsenbord instelling",
+      "pt": "Use o mapa do teclado remoto",
+      "ru": "Использовать карту удаленной клавиатуры",
+      "tr": "Uzak Klavye Haritasını Kullan",
+      "zh-chs": "使用远程键盘映射",
+      "zh-cht": "使用遠程鍵盤映射",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->3"
       ]
@@ -38926,16 +40614,16 @@
       ]
     },
     {
-      "en": "User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.",
-      "nl": "Gebruiker [[[USERNAME]]] op server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) vraagt u de software te installeren om de sessie voor afstandsbediening te starten.",
       "cs": "Uživatel [[[USERNAME]]] na serveru [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) požaduje instalaci softwaru k zahájení relace vzdáleného řízení.",
       "de": "Benutzer [[[USERNAME]]] auf dem Server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) fordert Sie auf, Software zu installieren, um die Fernsteuerungssitzung zu starten.",
+      "en": "User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.",
       "es": "Usuario [[[USERNAME]]] en servitor [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) solicita que instale el software para iniciar la sesión de control remoto.",
       "fi": "Käyttäjä[[[USERNAME]]] palvelimella [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) pyytää sinua asentamaan ohjelmiston etähallintaistunnon käynnistämiseksi.",
       "fr": "L'utilisateur [[[USERNAME]]] sur le serveur [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) vous demande d'installer un logiciel pour démarrer la session de contrôle à distance.",
       "hi": "उपयोगकर्ता [[[USERNAME]]] सर्वर पर [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) आपसे रिमोट कंट्रोल सेशन शुरू करने के लिए सॉफ़्टवेयर स्थापित करने का अनुरोध कर रहा है।",
       "ja": "サーバー[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) のユーザー[[[USERNAME]]]が、リモートコントロールセッションを開始するためのソフトウェアのインストールを要求しています。",
       "ko": "[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) 서버의 [[[USERNAME]]] 사용자가 원격 제어 세션을 시작하기 위해서는 소프트웨어 설치가 요구됩니다.",
+      "nl": "Gebruiker [[[USERNAME]]] op server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) vraagt u de software te installeren om de sessie voor afstandsbediening te starten.",
       "pt": "O usuário [[[USERNAME]]] no servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) está solicitando a instalação do software para iniciar a sessão de controle remoto.",
       "ru": "Пользователь [[[USERNAME]]] на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) запрашивает установку программного обеспечения для запуска сеанса удаленного управления.",
       "tr": "[[[SERVERNAME]]] [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) sunucusundaki [[[USERNAME]]] uzaktan kontrol oturumunu başlatmak için yazılım yüklemenizi istiyor.",
@@ -39252,9 +40940,21 @@
       ]
     },
     {
+      "cs": "Doba platnosti",
+      "de": "Gültigkeit",
       "en": "Validity",
-      "nl": "Geldigheid",
+      "es": "Validez",
+      "fi": "Voimassaolo",
       "fr": "Validité",
+      "hi": "वैधता",
+      "ja": "有効",
+      "ko": "타당성",
+      "nl": "Geldigheid",
+      "pt": "Validade",
+      "ru": "Срок действия",
+      "tr": "Geçerlilik",
+      "zh-chs": "有效期",
+      "zh-cht": "有效期",
       "xloc": [
         "default.handlebars->29->747"
       ]
@@ -39699,41 +41399,101 @@
       ]
     },
     {
+      "cs": "VYHRAJTE + Dolů",
+      "de": "WIN + Down",
       "en": "WIN + Down",
-      "nl": "WIN + Omlaag",
+      "es": "WIN + Abajo",
+      "fi": "VOIT + Alas",
       "fr": "WIN + Bas",
+      "hi": "विन + डाउन",
+      "ja": "WIN +ダウン",
+      "ko": "승리 + 아래로",
+      "nl": "WIN + Omlaag",
+      "pt": "WIN + Down",
+      "ru": "WIN + Down",
+      "tr": "WIN + Aşağı",
+      "zh-chs": "赢+下",
+      "zh-cht": "贏+下",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->7"
       ]
     },
     {
+      "cs": "VYHRAJ + L",
+      "de": "GEWINNEN + L.",
       "en": "WIN + L",
-      "nl": "WIN + L",
+      "es": "GANAR + L",
+      "fi": "VOIT + L",
       "fr": "WIN + L",
+      "hi": "जीत + ल",
+      "ja": "WIN + L",
+      "ko": "승리 + 패",
+      "nl": "WIN + L",
+      "pt": "WIN + L",
+      "ru": "WIN + L",
+      "tr": "WIN + L",
+      "zh-chs": "WIN + L",
+      "zh-cht": "WIN + L",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->11"
       ]
     },
     {
+      "cs": "VYHRAJ + M",
+      "de": "GEWINNEN + M.",
       "en": "WIN + M",
-      "nl": "WIN + M",
+      "es": "GANAR + M",
+      "fi": "VOIT + M",
       "fr": "WIN + M",
+      "hi": "जीत + म",
+      "ja": "WIN + M",
+      "ko": "승리 + 남",
+      "nl": "WIN + M",
+      "pt": "WIN + M",
+      "ru": "WIN + M",
+      "tr": "WIN + M",
+      "zh-chs": "WIN + M",
+      "zh-cht": "WIN + M",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->13"
       ]
     },
     {
+      "cs": "VYHRAJ + R",
+      "de": "WIN + R.",
       "en": "WIN + R",
-      "nl": "WIN + R",
+      "es": "GANAR + R",
+      "fi": "VOIT + R",
       "fr": "WIN + R",
+      "hi": "जीत + आर",
+      "ja": "WIN + R",
+      "ko": "승리 + R",
+      "nl": "WIN + R",
+      "pt": "WIN + R",
+      "ru": "WIN + R",
+      "tr": "WIN + R",
+      "zh-chs": "WIN + R",
+      "zh-cht": "WIN + R",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->17"
       ]
     },
     {
+      "cs": "VYHRAJTE + Nahoru",
+      "de": "WIN + Up",
       "en": "WIN + Up",
-      "nl": "WIN + Omhoog",
+      "es": "GANAR + Arriba",
+      "fi": "WIN + ylös",
       "fr": "WIN + Haut",
+      "hi": "जीत + अप",
+      "ja": "WIN + Up",
+      "ko": "WIN + 위로",
+      "nl": "WIN + Omhoog",
+      "pt": "WIN + Up",
+      "ru": "WIN + вверх",
+      "tr": "WIN + Yukarı",
+      "zh-chs": "赢+上",
+      "zh-cht": "贏+上",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->9"
       ]
@@ -40115,22 +41875,58 @@
       ]
     },
     {
+      "cs": "Pokud je vybrána tato zásada, Intel&reg; AMT není spravován tímto serverem. Intel AMT lze stále používat ruční aktivací a konfigurací.",
+      "de": "Wenn diese Richtlinie ausgewählt ist, wird Intel&reg; AMT nicht von diesem Server verwaltet. Intel AMT kann weiterhin verwendet werden, indem es manuell aktiviert und konfiguriert wird.",
       "en": "When this policy is selected, Intel&reg; AMT is not managed by this server. Intel AMT can still be used by manually activating and configuring it.",
+      "es": "Cuando se selecciona esta política, este servidor no administra Intel&reg; AMT. Intel AMT todavía se puede utilizar activándolo y configurándolo manualmente.",
+      "fi": "Kun tämä käytäntö on valittu, tämä palvelin ei hallinnoi Intel&reg; AMT: tä. Intel AMT: tä voidaan edelleen käyttää aktivoimalla ja määrittämällä se manuaalisesti.",
       "fr": "Lorsque cette option est choisie, Intel&reg; AMT n'est pas géré par le serveur. Il est toujours possible d'activer et de configurer manuellement Intel&reg; AMT.",
+      "hi": "जब यह नीति चुनी जाती है, तो Intel&reg; AMT इस सर्वर द्वारा प्रबंधित नहीं किया जाता है। इंटेल एएमटी को अभी भी मैन्युअल रूप से सक्रिय और कॉन्फ़िगर करके उपयोग किया जा सकता है।",
+      "ja": "このポリシーを選択すると、インテル&reg;AMTはこのサーバーによって管理されません。 Intel AMTは、手動でアクティブ化して構成することで引き続き使用できます。",
+      "ko": "이 정책을 선택하면이 서버에서 Intel&reg; AMT를 관리하지 않습니다. Intel AMT는 수동으로 활성화하고 구성하여 계속 사용할 수 있습니다.",
       "nl": "Als dit beleid is geselecteerd, wordt Intel&reg; AMT niet beheerd door deze server. Intel AMT kan nog steeds worden gebruikt door het handmatig te activeren en te configureren.",
+      "pt": "Quando esta política é selecionada, o Intel&reg; AMT não é gerenciado por este servidor. O Intel AMT ainda pode ser usado, ativando-o e configurando-o manualmente.",
+      "ru": "Когда выбрана эта политика, этот сервер не управляет Intel&reg; AMT. Intel AMT по-прежнему можно использовать, активировав и настроив его вручную.",
+      "tr": "Bu politika seçildiğinde, Intel&reg; AMT bu sunucu tarafından yönetilmez. Intel AMT, manuel olarak etkinleştirilerek ve yapılandırılarak yine de kullanılabilir.",
+      "zh-chs": "选择此策略时，此服务器不管理英特尔&reg;AMT。 仍然可以通过手动激活和配置Intel AMT来使用它。",
+      "zh-cht": "選擇此策略時，此服務器不管理英特爾&reg;AMT。 仍然可以通過手動激活和配置Intel AMT來使用它。",
       "xloc": [
         "default.handlebars->29->1423"
       ]
     },
     {
+      "cs": "Pokud je vybrána tato zásada, bude deaktivována jakákoli Intel&reg; AMT v režimu ovládání klienta (CCM). Zařízení v režimu správce (ACM) lze stále spravovat ručně.",
+      "de": "Wenn diese Richtlinie ausgewählt ist, wird jeder Intel&reg; AMT im Client Control Mode (CCM) deaktiviert. Geräte im Admin Control Mode (ACM) können weiterhin manuell verwaltet werden.",
       "en": "When this policy is selected, any Intel&reg; AMT in Client Control Mode (CCM) will be deactivated. Devices in Admin Control Mode (ACM) can still be managed manually.",
+      "es": "Cuando se selecciona esta política, se desactivará cualquier Intel&reg; AMT en el modo de control de cliente (CCM). Los dispositivos en el modo de control de administrador (ACM) aún se pueden administrar manualmente.",
+      "fi": "Kun tämä käytäntö on valittu, kaikki Intel&reg; AMT Client Control -tilassa (CCM) poistetaan käytöstä. Järjestelmänvalvojan ohjaustilassa (ACM) olevia laitteita voidaan silti hallita manuaalisesti.",
       "fr": "Lorsque cette option est choisie, tous les Intel&reg; AMT en mode Controle Client (CCM) seront désactivés. Les appareils configurés en mode ACM peuvent toujorus être gérés manuellement.",
-      "nl": "Wanneer dit beleid is geselecteerd, wordt elke Intel&reg; AMT in Client Control Mode (CCM) gedeactiveerd. Apparaten in Admin Control Mode (ACM) kunnen nog steeds handmatig worden beheerd."
+      "hi": "जब यह नीति चुनी जाती है, तो क्लाइंट कंट्रोल मोड (CCM) में कोई भी Intel&reg; AMT निष्क्रिय हो जाएगा। व्यवस्थापक नियंत्रण मोड (ACM) में उपकरण अभी भी मैन्युअल रूप से प्रबंधित किए जा सकते हैं।",
+      "ja": "このポリシーを選択すると、クライアント制御モード（CCM）のインテル&reg;AMTが無効になります。 管理制御モード（ACM）のデバイスは、引き続き手動で管理できます。",
+      "ko": "이 정책을 선택하면 CCM (클라이언트 제어 모드)의 모든 Intel&reg; AMT가 비활성화됩니다. 관리자 제어 모드 (ACM)의 장치는 여전히 수동으로 관리 할 수 ​​있습니다.",
+      "nl": "Wanneer dit beleid is geselecteerd, wordt elke Intel&reg; AMT in Client Control Mode (CCM) gedeactiveerd. Apparaten in Admin Control Mode (ACM) kunnen nog steeds handmatig worden beheerd.",
+      "pt": "Quando esta política é selecionada, qualquer Intel&reg; AMT no Modo de controle do cliente (CCM) será desativado. Os dispositivos no Modo de controle de administrador (ACM) ainda podem ser gerenciados manualmente.",
+      "ru": "Когда выбрана эта политика, любой Intel&reg; AMT в режиме управления клиентом (CCM) будет деактивирован. Устройствами в режиме административного управления (ACM) по-прежнему можно управлять вручную.",
+      "tr": "Bu politika seçildiğinde, İstemci Kontrol Modunda (CCM) herhangi bir Intel&reg; AMT devre dışı bırakılacaktır. Yönetici Kontrol Modundaki (ACM) cihazlar yine de manuel olarak yönetilebilir.",
+      "zh-chs": "选择此策略后，将禁用处于客户端控制模式（CCM）的所有英特尔&reg;AMT。 仍可以手动管理处于Admin Control Mode（ACM）的设备。",
+      "zh-cht": "選擇此策略後，將禁用處於客戶端控制模式（CCM）的所有英特爾&reg;AMT。 仍可以手動管理處於Admin Control Mode（ACM）的設備。"
     },
     {
+      "cs": "Pokud je vybrána tato zásada, bude deaktivována jakákoli Intel&reg; AMT v režimu ovládání klienta (CCM). U ostatních zařízení bude CIRA vymazána a stále je lze spravovat ručně.",
+      "de": "Wenn diese Richtlinie ausgewählt ist, wird jeder Intel&reg; AMT im Client Control Mode (CCM) deaktiviert. Bei anderen Geräten wird CIRA gelöscht und kann weiterhin manuell verwaltet werden.",
       "en": "When this policy is selected, any Intel&reg; AMT in Client Control Mode (CCM) will be deactivated. Other devices will have CIRA cleared and can still be managed manually.",
-      "nl": "Wanneer dit beleid is geselecteerd, wordt elke Intel&reg; AMT in Client Control Mode (CCM) gedeactiveerd. Bij andere apparaten is CIRA gewist en kunnen ze nog steeds handmatig worden beheerd.",
+      "es": "Cuando se selecciona esta política, se desactivará cualquier Intel&reg; AMT en el modo de control de cliente (CCM). Otros dispositivos tendrán CIRA borrado y aún se pueden administrar manualmente.",
+      "fi": "Kun tämä käytäntö on valittu, kaikki Intel&reg; AMT Client Control -tilassa (CCM) poistetaan käytöstä. Muissa laitteissa CIRA on tyhjennetty, ja niitä voidaan silti hallita manuaalisesti.",
       "fr": "Lorsque cette option est choisie, tous les Intel&reg; AMT en mode Controle Client (CCM) seront désactivés. Les autres appareils utilisant CIRA seront nettoyés et pourront toujous être gérés manuellement.",
+      "hi": "जब यह नीति चुनी जाती है, तो क्लाइंट कंट्रोल मोड (CCM) में कोई भी Intel&reg; AMT निष्क्रिय हो जाएगा। अन्य उपकरणों में CIRA साफ़ हो जाएगा और अभी भी इसे मैन्युअल रूप से प्रबंधित किया जा सकता है।",
+      "ja": "このポリシーを選択すると、クライアント制御モード（CCM）のインテル&reg;AMTが無効になります。 他のデバイスではCIRAがクリアされ、手動で管理できます。",
+      "ko": "이 정책을 선택하면 CCM (클라이언트 제어 모드)의 모든 Intel&reg; AMT가 비활성화됩니다. 다른 장치는 CIRA가 지워지며 여전히 수동으로 관리 할 수 ​​있습니다.",
+      "nl": "Wanneer dit beleid is geselecteerd, wordt elke Intel&reg; AMT in Client Control Mode (CCM) gedeactiveerd. Bij andere apparaten is CIRA gewist en kunnen ze nog steeds handmatig worden beheerd.",
+      "pt": "Quando esta política é selecionada, qualquer Intel&reg; AMT no Modo de controle do cliente (CCM) será desativado. Outros dispositivos terão o CIRA apagado e ainda podem ser gerenciados manualmente.",
+      "ru": "Когда выбрана эта политика, любой Intel&reg; AMT в режиме управления клиентом (CCM) будет деактивирован. Остальные устройства будут очищены от CIRA, и ими по-прежнему можно будет управлять вручную.",
+      "tr": "Bu politika seçildiğinde, İstemci Kontrol Modunda (CCM) herhangi bir Intel&reg; AMT devre dışı bırakılacaktır. Diğer cihazlarda CIRA silinir ve yine de manuel olarak yönetilebilir.",
+      "zh-chs": "选择此策略后，将禁用处于客户端控制模式（CCM）的所有英特尔&reg;AMT。 其他设备将清除CIRA，并且仍然可以手动进行管理。",
+      "zh-cht": "選擇此策略後，將禁用處於客戶端控制模式（CCM）的所有英特爾&reg;AMT。 其他設備將清除CIRA，並且仍然可以手動進行管理。",
       "xloc": [
         "default.handlebars->29->1424"
       ]
@@ -40659,9 +42455,21 @@
       ]
     },
     {
+      "cs": "Windows cesta",
+      "de": "Windows-Pfad",
       "en": "Windows Path",
-      "nl": "Windows Pad",
+      "es": "Ruta de Windows",
+      "fi": "Windowsin polku",
       "fr": "Chemin Windows",
+      "hi": "विंडोज पथ",
+      "ja": "Windowsパス",
+      "ko": "Windows 경로",
+      "nl": "Windows Pad",
+      "pt": "Caminho do Windows",
+      "ru": "Путь к Windows",
+      "tr": "Windows Yolu",
+      "zh-chs": "Windows路径",
+      "zh-cht": "Windows路徑",
       "xloc": [
         "default.handlebars->29->479"
       ]
@@ -40930,9 +42738,21 @@
       ]
     },
     {
+      "cs": "Textovou verzi můžete spustit z příkazového řádku pomocí následujících příkazů",
+      "de": "Sie können die Textversion über die Befehlszeile mit den folgenden Befehlen ausführen.",
       "en": "You can run the text version from the command line with the following command(s)",
-      "nl": "U kunt de tekstversie vanaf de opdrachtregel uitvoeren met de volgende opdracht(en)",
+      "es": "Puede ejecutar la versión de texto desde la línea de comandos con los siguientes comandos",
+      "fi": "Voit suorittaa tekstiversio komentoriviltä seuraavilla komennoilla",
+      "fr": "Vous pouvez exécuter la version texte à partir de la ligne de commande avec la ou les commandes suivantes",
+      "hi": "आप निम्न कमांड के साथ कमांड लाइन से टेक्स्ट संस्करण चला सकते हैं",
+      "ja": "次のコマンドを使用して、コマンドラインからテキストバージョンを実行できます。",
       "ko": "다음 명령을 사용하여 콘솔에서 텍스트 버전을 실행할 수 있습니다",
+      "nl": "U kunt de tekstversie vanaf de opdrachtregel uitvoeren met de volgende opdracht(en)",
+      "pt": "Você pode executar a versão em texto a partir da linha de comando com o (s) seguinte (s) comando (s)",
+      "ru": "Вы можете запустить текстовую версию из командной строки с помощью следующих команд",
+      "tr": "Metin sürümünü aşağıdaki komutlarla komut satırından çalıştırabilirsiniz.",
+      "zh-chs": "您可以使用以下命令从命令行运行文本版本",
+      "zh-cht": "您可以使用以下命令從命令行運行文本版本",
       "xloc": [
         "agent-translations.json"
       ]
@@ -41571,9 +43391,21 @@
       ]
     },
     {
+      "cs": "zrušit",
+      "de": "cancelhelp",
       "en": "cancelhelp",
-      "nl": "annuleer hulpvraag",
+      "es": "cancelar ayuda",
+      "fi": "peruuta apua",
       "fr": "Annuler la demande d'assistance",
+      "hi": "cancelhelp",
+      "ja": "cancelhelp",
+      "ko": "취소 도움말",
+      "nl": "annuleer hulpvraag",
+      "pt": "cancelar ajuda",
+      "ru": "отменить",
+      "tr": "iptal yardım",
+      "zh-chs": "取消帮助",
+      "zh-cht": "取消幫助",
       "xloc": [
         "default.handlebars->29->252"
       ]
@@ -42273,12 +44105,13 @@
       "zh-cht": "macOS 64位"
     },
     {
-      "en": "macOS ARM (64bit)",
       "cs": "macOS ARM (64bit)",
       "de": "macOS ARM (64bit)",
+      "en": "macOS ARM (64bit)",
       "es": "macOS ARM (64bit)",
       "fi": "macOS ARM (64-bittinen)",
       "fr": "macOS ARM (64bit)",
+      "hi": "macOS ARM (64 बिट)",
       "ja": "macOS ARM (64ビット)",
       "ko": "macOS ARM (64비트)",
       "nl": "macOS ARM (64bit)",
@@ -42292,9 +44125,9 @@
       ]
     },
     {
-      "en": "macOS x86 (64bit)",
       "cs": "macOS x86 (64bit)",
       "de": "macOS x86 (64bit)",
+      "en": "macOS x86 (64bit)",
       "es": "macOS x86 (64bit)",
       "fi": "macOS x86 (64-bittinen)",
       "fr": "macOS x86 (64bit)",
@@ -42312,9 +44145,9 @@
       ]
     },
     {
-      "en": "macOS x86-32bit",
       "cs": "macOS x86-32bit",
       "de": "macOS x86-32bit",
+      "en": "macOS x86-32bit",
       "es": "macOS x86-32bit",
       "fi": "macOS x86-32-bittinen",
       "fr": "macOS x86-32bit",
@@ -42332,9 +44165,9 @@
       ]
     },
     {
-      "en": "macOS x86-64bit",
       "cs": "macOS x86-64bit",
       "de": "macOS x86-64bit",
+      "en": "macOS x86-64bit",
       "es": "macOS x86-64bit",
       "fi": "macOS x86-64-bittinen",
       "fr": "macOS x86-64bit",
@@ -43405,9 +45238,21 @@
       ]
     },
     {
+      "cs": "{0}, {1} až {2}",
+      "de": "{0}, {1} bis {2}",
       "en": "{0}, {1} to {2}",
-      "nl": "{0}, {1} tot {2}",
+      "es": "{0}, {1} a {2}",
+      "fi": "{0}, {1} - {2}",
       "fr": "{0}, {1} à {2}",
+      "hi": "{0}, {1} से {2}",
+      "ja": "{0}、{1}から{2}",
+      "ko": "{0}, {1}-{2}",
+      "nl": "{0}, {1} tot {2}",
+      "pt": "{0}, {1} a {2}",
+      "ru": "{0}, с {1} на {2}",
+      "tr": "{0}, {1} - {2}",
+      "zh-chs": "{0}，{1}至{2}",
+      "zh-cht": "{0}，{1}至{2}",
       "xloc": [
         "default.handlebars->29->676"
       ]
