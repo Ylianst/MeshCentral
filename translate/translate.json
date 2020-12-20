@@ -775,10 +775,10 @@
         "default.handlebars->container->column_l->p1->NoMeshesPanel->1->1->0->3->getStarted1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->newAccountDiv",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->resetAccountDiv",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->newAccountDiv",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->resetAccountDiv",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->newAccountDiv",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->resetAccountDiv",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->newAccountDiv",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->resetAccountDiv",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->newAccountDiv",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->resetAccountDiv",
         "terms-mobile.handlebars->container->page_content->column_l->75->1",
         "terms.handlebars->container->column_l->75->1"
       ]
@@ -10146,8 +10146,8 @@
       "zh-cht": "創建一個",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->newAccountDiv->1",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->newAccountDiv->1",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->newAccountDiv->1"
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->newAccountDiv->1",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->newAccountDiv->1"
       ]
     },
     {
@@ -12982,8 +12982,8 @@
       "zh-cht": "還沒有帳戶？",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->newAccountDiv",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->newAccountDiv",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->newAccountDiv"
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->newAccountDiv",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->newAccountDiv"
       ]
     },
     {
@@ -16501,8 +16501,8 @@
       "zh-chs": "忘记了用户名/密码？",
       "zh-cht": "忘記了用戶名/密碼？",
       "xloc": [
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->resetAccountDiv->resetAccountSpan",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->resetAccountDiv->resetAccountSpan"
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->resetAccountDiv->resetAccountSpan",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->resetAccountDiv->resetAccountSpan"
       ]
     },
     {
@@ -22536,9 +22536,9 @@
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->5->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->7->1->4->3",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->5->1",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->7->1->4->3",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->5->1->6->1",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->1->1",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->3->1->4->3",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->1->1->6->1",
         "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->2->1->1",
         "login2.handlebars->centralTable->1->0->logincell->tokenpanel->1->7->1->2->1->1"
       ]
@@ -27910,8 +27910,8 @@
         "default.handlebars->29->1999",
         "default.handlebars->29->296",
         "default.handlebars->29->779",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->5->1->2->1",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->5->1->2->1",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->1->1->2->1",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->1->1->2->1",
         "mstsc.handlebars->main->1->3->1->6->1->0",
         "mstsc.handlebars->main->1->3->1->6->3"
       ]
@@ -27936,7 +27936,7 @@
         "login-mobile.handlebars->5->27",
         "login.handlebars->5->28",
         "login2.handlebars->7->29",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->5->1->4->1"
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->1->1->4->1"
       ]
     },
     {
@@ -28159,7 +28159,7 @@
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resetpasswordpanel->1->7->1->2->rnuPass2",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->4->nuPass1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->6->nuPass2",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->7->1->2->1",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->3->1->2->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resetpasswordpanel->1->7->1->0->rnuPass1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resetpasswordpanel->1->7->1->2->rnuPass2",
         "login2.handlebars->centralTable->1->0->logincell->createpanel->1->9->1->4->nuPass1",
@@ -31716,8 +31716,8 @@
       "zh-cht": "重設帳戶",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->resetAccountDiv->3",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->resetAccountDiv->3",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->resetAccountDiv->3"
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->resetAccountDiv->3",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->resetAccountDiv->3"
       ]
     },
     {
@@ -34728,8 +34728,8 @@
       "zh-cht": "顯示提示",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->7->1->4->1->showPassHintLink->0",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->7->1->4->1->showPassHintLink->0",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->5->1->4->1->showPassHintLink->0"
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->3->1->4->1->showPassHintLink->0",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->1->1->4->1->showPassHintLink->0"
       ]
     },
     {
@@ -40801,8 +40801,8 @@
         "default.handlebars->29->1807",
         "default.handlebars->29->294",
         "default.handlebars->29->778",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->5->1->0->1",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->5->1->0->1",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->1->1->0->1",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->1->1->0->1",
         "mstsc.handlebars->main->1->3->1->4->1->0",
         "mstsc.handlebars->main->1->3->1->4->3",
         "player.handlebars->3->4"
@@ -40851,7 +40851,7 @@
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->nuUserRow->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->7->1->0->loginusername",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->nuUserRow->nuUser",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->7->1->0->loginusername",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->3->1->0->loginusername",
         "login2.handlebars->centralTable->1->0->logincell->createpanel->1->9->1->nuUserRow->nuUser"
       ]
     },

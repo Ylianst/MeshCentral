@@ -422,6 +422,7 @@
             },
             "required": [ "protocols" ]
           },
+          "showPasswordLogin": { "type": "boolean", "default": true, "description": "When set to false, hides the username and password prompt on login screen." },
           "authStrategies": {
             "type": "object",
             "additionalProperties": false,
