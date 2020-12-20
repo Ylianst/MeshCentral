@@ -399,6 +399,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 if (i != -1) { obj.pressedKeys.splice(i, 1); } // Remove the key press from the pressed array
             }
 
+            if (obj.debugmode > 0) { console.log('Sending Key ' + kc + ', action ' + action); }
             obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, (action - 1), kc));
         }
     }
