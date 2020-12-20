@@ -42,38 +42,40 @@
                     <form method=post>
                         <input type=hidden name=action value=login />
                         <div id=message1></div>
-                        <table style="width:100%">
-                            <tr>
-                                <td>
-                                    <input id=username title="Username" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" autocomplete="username" placeholder="Username" type=text maxlength=64 name=username onchange=validateLogin(1) onkeyup=validateLogin(1,event) />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <input id=password title="Password" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" autocomplete="current-password" placeholder="Password" type=password maxlength=256 name=password onchange=validateLogin(2) onkeyup=validateLogin(2,event) />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div id=showPassHintLink title="Password Hint" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC;display:none"><a onclick="return showPassHint(event);" href="#" style="cursor:pointer">Show Hint</a></div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <input id=loginButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" type=submit value="Log In" disabled="disabled" />
-                                </td>
-                            </tr>
-                        </table>
-                        <div id="hrAccountDiv" style="display:none"><hr /></div>
-                        <div id="resetAccountDiv" style="display:none;padding:2px">
-                            <span id="resetAccountSpan">Forgot username/password?</span> <a onclick="return xgo(3,event);" href="#" style=cursor:pointer>Reset account</a>.
-                        </div>
-                        <div id="newAccountDiv" style="display:none;padding:2px;padding-top:10px">
-                            Don&#39;t have an account? <a onclick="return xgo(2,event);" href="#" style=cursor:pointer>Create one</a>.
+                        <div id="loginuserpassdiv" style="display:none">
+                            <table style="width:100%">
+                                <tr>
+                                    <td>
+                                        <input id=username title="Username" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" autocomplete="username" placeholder="Username" type=text maxlength=64 name=username onchange=validateLogin(1) onkeyup=validateLogin(1,event) />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input id=password title="Password" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" autocomplete="current-password" placeholder="Password" type=password maxlength=256 name=password onchange=validateLogin(2) onkeyup=validateLogin(2,event) />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div id=showPassHintLink title="Password Hint" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC;display:none"><a onclick="return showPassHint(event);" href="#" style="cursor:pointer">Show Hint</a></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input id=loginButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" type=submit value="Log In" disabled="disabled" />
+                                    </td>
+                                </tr>
+                            </table>
+                            <div id="hrAccountDiv" style="display:none"><hr /></div>
+                            <div id="resetAccountDiv" style="display:none;padding:2px">
+                                <span id="resetAccountSpan">Forgot username/password?</span> <a onclick="return xgo(3,event);" href="#" style=cursor:pointer>Reset account</a>.
+                            </div>
+                            <div id="newAccountDiv" style="display:none;padding:2px;padding-top:10px">
+                                Don&#39;t have an account? <a onclick="return xgo(2,event);" href="#" style=cursor:pointer>Create one</a>.
+                            </div>
                         </div>
                         <input id=loginformargs name="urlargs" type="hidden" value="" />
                         <div id="authStrategies" style="display:none">
-                            <hr />
+                            <hr id="loginuserpasshr" style="display:none" />
                             <div style="margin-bottom:8px">Log in using an existing account</div>
                             <a id="auth-twitter" href="auth-twitter" style="display:none"><img src="images/login/twitter32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Twitter" /></a>
                             <a id="auth-google" href="auth-google" style="display:none"><img src="images/login/google32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Google" /></a>
@@ -312,6 +314,7 @@
     </div>
     <script>
         'use strict';
+        var passlogin = '{{{passlogin}}}';
         var passhint = '{{{passhint}}}';
         var loginMode = '{{{loginmode}}}';
         var newAccount = '{{{newAccount}}}';
@@ -354,6 +357,13 @@
             // Fix links if a loginKey if used
             var urlargs = parseUriArgs();
             //if (urlargs.key) { Q('termsLinkFooter').href += '?key=' + urlargs.key; }
+
+            // Show user/pass login
+            passlogin = (passlogin == 'true');
+            if (urlargs.passlogin === 1) { passlogin = true; }
+            if (urlargs.passlogin === 0) { passlogin = false; }
+            QV('loginuserpassdiv', passlogin)
+            QV('loginuserpasshr', passlogin)
 
             // Setup two factor cookie time
             if (twoFactorCookieDays > 0) {
