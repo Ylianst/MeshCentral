@@ -4253,7 +4253,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             for (var i in meshsettingslines) { tokens = meshsettingslines[i].split('='); if (tokens.length == 2) { msh[tokens[0]] = tokens[1]; } }
             var js = scriptInfo.data.replace('var msh = {};', 'var msh = ' + JSON.stringify(msh) + ';');
 
-            setContentDispositionHeader(res, 'application/octet-stream', 'meshagent', null, 'meshagent');
+            // Get the agent filename
+            var meshagentFilename = 'meshagent';
+            if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { meshagentFilename = domain.agentcustomization.filename; }
+
+            setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename, null, 'meshagent');
             res.statusCode = 200;
             obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: Buffer.from(js, 'utf8'), peinfo: argentInfo.pe });
         } else if (req.query.id != null) {
@@ -4274,7 +4278,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
 
             if ((req.query.meshid == null) || (argentInfo.platform != 'win32')) {
-                setContentDispositionHeader(res, 'application/octet-stream', argentInfo.rname, null, 'meshagent');
+                // Get the agent filename
+                var meshagentFilename = argentInfo.rname;
+                if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { meshagentFilename = domain.agentcustomization.filename; }
+                setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename, null, 'meshagent');
                 if (argentInfo.data == null) { res.sendFile(argentInfo.path); } else { res.end(argentInfo.data); }
             } else {
                 // Check if the meshid is a time limited, encrypted cookie
@@ -4301,6 +4308,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var meshfilename = mesh.name
                 meshfilename = meshfilename.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
                 if (argentInfo.rname.endsWith('.exe')) { meshfilename = argentInfo.rname.substring(0, argentInfo.rname.length - 4) + '-' + meshfilename + '.exe'; } else { meshfilename = argentInfo.rname + '-' + meshfilename; }
+
+                // Customize the mesh agent file name
+                if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) {
+                    meshfilename = meshfilename.split('meshagent').join(domain.agentcustomization.filename);
+                    meshfilename = meshfilename.split('MeshAgent').join(domain.agentcustomization.filename);
+                }
 
                 // Get the agent connection server name
                 var serverName = obj.getWebServerName(domain);
@@ -4744,7 +4757,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var meshsettings = getMshFromRequest(req, res, domain);
         if (meshsettings == null) { res.sendStatus(401); return; }
 
-        setContentDispositionHeader(res, 'application/octet-stream', 'meshagent.msh', null, 'meshagent.msh');
+        // Get the agent filename
+        var meshagentFilename = 'meshagent';
+        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { meshagentFilename = domain.agentcustomization.filename; }
+
+        setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename + '.msh', null, 'meshagent.msh');
         res.send(meshsettings);
     };
 
