@@ -3274,7 +3274,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleUploadFileBatch(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
-        if (domain.userQuota == -1) { res.sendStatus(401); return; }
         var authUserid = null;
         if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
         const multiparty = require('multiparty');
@@ -3290,7 +3289,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Get the user
             const user = obj.users[authUserid];
-            if ((user == null) || (user.siteadmin & 8) == 0) { res.sendStatus(401); return; } // Check if we have file rights
+            if (user == null) { parent.debug('web', 'Batch upload error, invalid user.'); res.sendStatus(401); return; } // Check if user exists
 
             // Get fields
             if ((fields == null) || (fields.nodeIds == null) || (fields.nodeIds.length != 1)) { res.sendStatus(404); return; }
@@ -3300,7 +3299,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((fields.overwriteFiles != null) && (fields.overwriteFiles.length == 1) && (fields.overwriteFiles[0] == 'on')) { cmd.overwrite = true; }
             if ((fields.createFolder != null) && (fields.createFolder.length == 1) && (fields.createFolder[0] == 'on')) { cmd.createFolder = true; }
 
-            // Check if we have al least one target path
+            // Check if we have at least one target path
             if ((cmd.windowsPath == null) && (cmd.linuxPath == null)) {
                 parent.debug('web', 'Batch upload error, invalid fields: ' + JSON.stringify(fields));
                 res.send('');
