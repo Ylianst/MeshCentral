@@ -175,7 +175,7 @@
           "welcomePicture": { "type": "string", "description": "Name of the PNG or JPEG file that will be shown on the login screen. Put this file in the meshcentral-data folder and place the file name here." },
           "hide": { "type": "integer", "default": 0 },
           "footer": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is logged in." },
-          "loginfooter": { "type": "string", "default": null "description": "This is a HTML string displayed at the bottom of the web page when a user is not logged in." },
+          "loginfooter": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is not logged in." },
           "certUrl": {
             "type": "string",
             "format": "uri",
