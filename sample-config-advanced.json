@@ -139,6 +139,7 @@
       "___hide__": "Sum of: 1 = Hide header, 2 = Hide tab, 4 = Hide footer, 8 = Hide title, 16 = Hide left bar",
       "_hide": 4,
       "_footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
+      "_loginfooter": "This is a private server.",
       "_certUrl": "https://192.168.2.106:443/",
       "myServer": {
         "Backup": false,
