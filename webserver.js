@@ -4336,6 +4336,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (domain.agentcustomization.description != null) { meshsettings += 'description=' + domain.agentcustomization.description + '\r\n'; }
                     if (domain.agentcustomization.companyname != null) { meshsettings += 'companyName=' + domain.agentcustomization.companyname + '\r\n'; }
                     if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
+                    if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
                 }
                 if (parent.agentTranslations != null) { meshsettings += 'translation=' + parent.agentTranslations + '\r\n'; }
                 setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, argentInfo.rname);
@@ -4643,6 +4644,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.agentcustomization.description != null) { meshsettings += 'description=' + domain.agentcustomization.description + '\r\n'; }
             if (domain.agentcustomization.companyname != null) { meshsettings += 'companyName=' + domain.agentcustomization.companyname + '\r\n'; }
             if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
+            if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
         }
         if (parent.agentTranslations != null) { meshsettings += 'translation=' + parent.agentTranslations + '\r\n'; }
 
@@ -4742,6 +4744,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.agentcustomization.description != null) { meshsettings += 'description=' + domain.agentcustomization.description + '\r\n'; }
             if (domain.agentcustomization.companyname != null) { meshsettings += 'companyName=' + domain.agentcustomization.companyname + '\r\n'; }
             if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
+            if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
         }
         if (parent.agentTranslations != null) { meshsettings += 'translation=' + parent.agentTranslations + '\r\n'; }
         return meshsettings;
