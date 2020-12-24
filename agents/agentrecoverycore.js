@@ -400,7 +400,7 @@ function processConsoleCommand(cmd, args, rights, sessionid)
                 break;
             }
             default: { // This is an unknown command, return an error message
-                response = 'Unknown command \"' + cmd + '\", type \"help\" for list of avaialble commands.';
+                response = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.';
                 break;
             }
         }

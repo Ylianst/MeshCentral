@@ -1303,7 +1303,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         default: { // This is an unknown command, return an error message
-                            r = 'Unknown command \"' + cmd + '\", type \"help\" for list of avaialble commands.';
+                            r = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.';
                             break;
                         }
                     }
