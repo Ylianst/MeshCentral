@@ -2205,8 +2205,8 @@ function CreateMeshCentralServer(config, args) {
     // List of possible mesh agent install scripts
     var meshToolsList = {
         'MeshCentralRouter': { localname: 'MeshCentralRouter.exe', dlname: 'winrouter' },
-        'MeshCentralAssistant': { localname: 'MeshCentralAssistant.exe', dlname: 'winassistant' },
-        'MeshCentralRouterMacOS': { localname: 'MeshCentralRouter.dmg', dlname: 'MeshCentralRouter.dmg' }
+        'MeshCentralAssistant': { localname: 'MeshCentralAssistant.exe', dlname: 'winassistant' }
+        //'MeshCentralRouterMacOS': { localname: 'MeshCentralRouter.dmg', dlname: 'MeshCentralRouter.dmg' }
     };
 
     // Update the list of available mesh agents
