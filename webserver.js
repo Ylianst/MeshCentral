@@ -4419,6 +4419,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralAssistant.exe', null, 'MeshCentralAssistant.exe');
                             try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
                         } else { res.sendStatus(404); }
+                    } else if (req.query.meshaction == 'macrouter') {
+                        var p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.dmg');
+                        if (obj.fs.existsSync(p)) {
+                            setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.dmg', null, 'MeshCentralRouter.dmg');
+                            try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
+                        } else { res.sendStatus(404); }
                     }
                     return;
                 }
@@ -4470,6 +4476,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 setContentDispositionHeader(res, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
                 res.send(JSON.stringify(meshaction, null, ' '));
             } else if (req.query.meshaction == 'winrouter') {
+                console.log('t2');
                 var p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe');
                 if (obj.fs.existsSync(p)) {
                     setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.exe', null, 'MeshCentralRouter.exe');
@@ -4479,6 +4486,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var p = obj.path.join(__dirname, 'agents', 'MeshCentralAssistant.exe');
                 if (obj.fs.existsSync(p)) {
                     setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralAssistant.exe', null, 'MeshCentralAssistant.exe');
+                    try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
+                } else { res.sendStatus(404); }
+            } else if (req.query.meshaction == 'macrouter') {
+                var p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.dmg');
+                if (obj.fs.existsSync(p)) {
+                    setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.dmg', null, 'MeshCentralRouter.dmg');
                     try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
                 } else { res.sendStatus(404); }
             } else {

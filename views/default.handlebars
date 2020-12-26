@@ -3672,7 +3672,7 @@
                 }
                 if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) {
                     r += '<a href=# onclick=\'return p10showMeshCmdDialog(0)\' style=cursor:pointer title="' + "Download MeshCmd, a command line tool that performs many functions." + '">' + "MeshCmd" + '</a>&nbsp';
-                    if (navigator.platform.toLowerCase() == 'win32') { r += '<a href=# onclick=\'return p10showMeshRouterDialog()\' style=cursor:pointer title="' + "Download MeshCentral Router, a TCP port mapping tool." + '">' + "Router" + '</a>&nbsp'; }
+                    if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) { r += '<a href=# onclick=\'return p10showMeshRouterDialog()\' style=cursor:pointer title="' + "Download MeshCentral Router, a TCP port mapping tool." + '">' + "Router" + '</a>&nbsp'; }
                 }
                 r += '</div><br/>';
 
@@ -5978,11 +5978,15 @@
                 if ((args.xterm === 0) && (node.agent) && ((node.agent.caps & 2) != 0) && ((meshrights & 8) != 0) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0))) { x += '<a href=# onclick=p10openxterm(event,"' + node._id + '") title="' + "Open XTerm terminal" + '">' + "XTerm" + '</a>&nbsp;'; }
 
                 // RDP link, show this link only of the remote machine is Windows.
-                if (((connectivity & 1) != 0) && (windowsBrowser == true) && (node.agent) && ((meshrights & 8) != 0)) {
+                if (((connectivity & 1) != 0) && (node.agent) && ((meshrights & 8) != 0)) {
                     if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a href=# cmenu=altPortContextMenu id=rdpMCRouterLink onclick=p10MCRouter("' + node._id + '","RDP2") title="' + "Requires installation of MeshCentral Router" + '.">' + "RDP" + '</a>&nbsp;'; }
                     if (node.agent.id > 4) {
-                        x += '<a href=# onclick=p10MCRouter("' + node._id + '","PSSH",22) title="' + "Requires installation of MeshCentral Router." + '">' + "Putty" + '</a>&nbsp;';
-                        x += '<a href=# onclick=p10MCRouter("' + node._id + '","WSCP",22) title="' + "Requires installation of MeshCentral Router." + '">' + "WinSCP" + '</a>&nbsp;';
+                        if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
+                            x += '<a href=# onclick=p10MCRouter("' + node._id + '","PSSH",22) title="' + "Requires installation of MeshCentral Router." + '">' + "SSH" + '</a>&nbsp;';
+                        }
+                        if (navigator.platform.toLowerCase() == 'win32') {
+                            x += '<a href=# onclick=p10MCRouter("' + node._id + '","WSCP",22) title="' + "Requires installation of MeshCentral Router." + '">' + "SCP" + '</a>&nbsp;';
+                        }
                     }
                 }
 
@@ -6694,6 +6698,7 @@
             if (xxdialogMode) return;
             var x = '<div>' + "MeshCentral Router is a Windows tool for TCP port mapping. You can, for example, RDP into a remote device thru this server." + '</div><br />';
             x += addHtmlValue("Win32 Executable", '<a style=cursor:pointer onclick=downloadFile("meshagents?meshaction=winrouter' + (urlargs.key?('&key=' + urlargs.key):'') + '",null,true)>MeshCentralRouter.exe</a>');
+            x += addHtmlValue("MacOS Installer", '<a style=cursor:pointer onclick=downloadFile("meshagents?meshaction=macrouter' + (urlargs.key?('&key=' + urlargs.key):'') + '",null,true)>MeshCentralRouter.dwg</a>');
             var servername = serverinfo.name;
             if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
             var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
