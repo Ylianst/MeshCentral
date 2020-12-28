@@ -1936,10 +1936,12 @@
         // Return the number of 2nd factor for this account
         function count2factoraAuths() {
             var authFactorCount = 0;
-            if (userinfo.otpsecret == 1) { authFactorCount++; } // Authenticator time factor
+            if (userinfo != null) {
+                if (userinfo.otpsecret == 1) { authFactorCount++; } // Authenticator time factor
+                if (userinfo.otphkeys != null) { authFactorCount += userinfo.otphkeys; } // FIDO hardware factor
+            }
             if ((features & 0x00800000) && (userinfo.otpekey == 1)) { authFactorCount++; } // EMail factor
             if ((features & 0x04000000) && (userinfo.phone != null)) { authFactorCount++; } // SMS factor
-            if (userinfo.otphkeys != null) { authFactorCount += userinfo.otphkeys; } // FIDO hardware factor
             if ((authFactorCount > 0) && (userinfo.otpkeys == 1)) { authFactorCount++; } // Backup keys
             return authFactorCount;
         }
