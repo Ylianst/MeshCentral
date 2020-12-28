@@ -2139,7 +2139,7 @@ function CreateMeshCentralServer(config, args) {
                 } else {
                     obj.defaultMeshCores[i] = [obj.common.IntToStr(0), ...modulesAdd[i], meshCore].join('');
                 }
-                obj.defaultMeshCoresHash[i] = obj.crypto.createHash('sha384').update(obj.defaultMeshCores[i]).digest("binary");
+                obj.defaultMeshCoresHash[i] = obj.crypto.createHash('sha384').update(obj.defaultMeshCores[i]).digest('binary');
                 obj.debug('main', 'Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.');
                 //console.log('Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.'); // DEBUG, Print the core size
                 //obj.fs.writeFile("C:\\temp\\" + i + ".js", obj.defaultMeshCores[i].substring(4)); // DEBUG, Write the core to file
@@ -2511,7 +2511,7 @@ function CreateMeshCentralServer(config, args) {
         } catch (ex) { obj.debug('cookie', 'ERR: Failed to encode AESGCM cookie due to exception: ' + ex); return null; }
     };
 
-    // Decode a cookie back into an object using a key using AES256-GCM or AES128-CBC/HMAC-SHA386. Return null if it's not a valid cookie. (key must be 32 bytes or more)
+    // Decode a cookie back into an object using a key using AES256-GCM or AES128-CBC/HMAC-SHA384. Return null if it's not a valid cookie. (key must be 32 bytes or more)
     obj.decodeCookie = function (cookie, key, timeout) {
         var r = obj.decodeCookieAESGCM(cookie, key, timeout);
         if (r == null) { r = obj.decodeCookieAESSHA(cookie, key, timeout); }
@@ -2569,7 +2569,7 @@ function CreateMeshCentralServer(config, args) {
         } catch (ex) { obj.debug('cookie', 'ERR: Bad AESGCM cookie due to exception: ' + ex); return null; }
     };
 
-    // Decode a cookie back into an object using a key using AES256 / HMAC-SHA386. Return null if it's not a valid cookie. (key must be 80 bytes or more)
+    // Decode a cookie back into an object using a key using AES256 / HMAC-SHA384. Return null if it's not a valid cookie. (key must be 80 bytes or more)
     // We do this because poor .NET does not support AES256-GCM.
     obj.decodeCookieAESSHA = function (cookie, key, timeout) {
         try {
