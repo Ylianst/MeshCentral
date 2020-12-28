@@ -550,7 +550,7 @@ function run(argv) {
                     else if (mestate.ProvisioningState.stateStr == 'POST') {
                         if (mestate.ProvisioningMode) {
                             if (mestate.controlmode) {
-                                if (mestate.ProvisioningMode.modeStr == 'ENTERPRISE') { str += ', activated in ' + ["none", "client control mode", "admin control mode", "remote assistance mode"][mestate.controlmode.controlMode]; } else { str += ', activated in ' + mestate.ProvisioningMode.modeStr; }
+                                if (mestate.ProvisioningMode.modeStr == 'ENTERPRISE') { str += ', activated in ' + ["none", "Client Control Mode (CCM)", "Admin Control Mode (ACM)", "remote assistance mode"][mestate.controlmode.controlMode]; } else { str += ', activated in ' + mestate.ProvisioningMode.modeStr; }
                             } else {
                                 str += ', activated in ' + mestate.ProvisioningMode.modeStr;
                             }
@@ -560,7 +560,7 @@ function run(argv) {
                     str += '.';
                     if (mestate.net0 != null) { str += '\r\nWired ' + ((mestate.net0.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net0.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net0.mac + (mestate.net0.address == '0.0.0.0' ? '' : (', ' + mestate.net0.address)); }
                     if (mestate.net1 != null) { str += '\r\nWireless ' + ((mestate.net1.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net1.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net1.mac + (mestate.net1.address == '0.0.0.0' ? '' : (', ' + mestate.net1.address)); }
-                    if ((mestate.ProvisioningState.stateStr != 'POST') && (mestate.net0 != null) && (mestate.net0.enabled == 1)) {
+                    if ((mestate.net0 != null) && (mestate.net0.enabled == 1)) {
                         if (mestate.dns != null) {
                             // Intel AMT has a trusted DNS suffix set, use that one.
                             str += '\r\nTrusted DNS suffix: ' + mestate.dns;
