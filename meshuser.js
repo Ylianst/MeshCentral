@@ -2765,6 +2765,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'createmesh':
                 {
+                    console.log(command);
+
                     var err = null;
                     try {
                         // Check if we have new group restriction
@@ -2776,7 +2778,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Create mesh
                         else if (common.validateString(command.meshname, 1, 128) == false) { err = 'Invalid group name'; } // Meshname is between 1 and 64 characters
                         else if ((command.desc != null) && (common.validateString(command.desc, 0, 1024) == false)) { err = 'Invalid group description'; } // Mesh description is between 0 and 1024 characters
-                        else if ((command.meshtype != 1) && (command.meshtype != 2)) { err = 'Invalid group type'; }
+                        else if ((command.meshtype !== 1) && (command.meshtype !== 2)) { err = 'Invalid group type'; }
                     } catch (ex) { err = 'Validation exception: ' + ex; }
 
                     // Handle any errors

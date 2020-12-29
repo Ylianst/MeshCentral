@@ -1790,7 +1790,7 @@
         }
 
         function account_createMeshEx(button, tag) {
-            meshserver.send({ action: 'createmesh', meshname: Q('dp3meshname').value, meshtype: Q('dp3meshtype').value, desc: Q('dp3meshdesc').value });
+            meshserver.send({ action: 'createmesh', meshname: Q('dp3meshname').value, meshtype: parseInt(Q('dp3meshtype').value), desc: Q('dp3meshdesc').value });
         }
 
         function account_validateDeleteAccount() {
