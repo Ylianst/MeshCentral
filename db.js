@@ -1329,6 +1329,30 @@ module.exports.CreateDB = function (parent, func) {
         return r;
     }
 
+    // Check that the server is capable of performing a backup
+    obj.checkBackupCapability = function (func) {
+        if ((obj.databaseType == 2) || (obj.databaseType == 3)) {
+            // Check that we have access to MongoDump
+            var backupPath = parent.backuppath;
+            if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
+            var mongoDumpPath = 'mongodump';
+            if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = parent.config.settings.autobackup.mongodumppath; }
+            const child_process = require('child_process');
+            child_process.exec('"' + mongoDumpPath + '"', { cwd: backupPath }, function (error, stdout, stderr) {
+                try {
+                    if ((error != null) && (error != '')) {
+                        func(1, "Unable to find mongodump.exe, MongoDB database auto-backup will not be performed.");
+                    } else {
+                        func();
+                    }
+                } catch (ex) { console.log(ex); }
+            });
+        } else {
+            func();
+        }
+    }
+
+    // Perform a server backup
     obj.performingBackup = false;
     obj.performBackup = function (func) {
         try {
@@ -1354,11 +1378,12 @@ module.exports.CreateDB = function (parent, func) {
                 if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = parent.config.settings.autobackup.mongodumppath; }
                 const child_process = require('child_process');
                 var cmd = '\"' + mongoDumpPath + '\" --db=\"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
-                if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + dburl + '\" --archive=\"' + newBackupPath + '.archive\"'; }
+                if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + dburl.replace('?', '/?') + '\" --archive=\"' + newBackupPath + '.archive\"'; }
                 var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                     try {
+                        var mongoDumpSuccess = true;
                         backupProcess = null;
-                        if ((error != null) && (error != '')) { console.log('ERROR: Unable to perform database backup: ' + error + '\r\n'); obj.performingBackup = false; return; }
+                        if ((error != null) && (error != '')) { mongoDumpSuccess = false; console.log('ERROR: Unable to perform MongoDB backup: ' + error + '\r\n'); }
 
                         // Perform archive compression
                         var archiver = require('archiver');
@@ -1370,12 +1395,17 @@ module.exports.CreateDB = function (parent, func) {
                         } else {
                             archive = archiver('zip', { zlib: { level: 9 } });
                         }
-                        output.on('close', function () { obj.performingBackup = false; if (func) { func('Auto-backup completed.'); } obj.performCloudBackup(newAutoBackupPath + '.zip', func); setTimeout(function () { try { parent.fs.unlink(newBackupPath + '.archive', function () { }); } catch (ex) { console.log(ex); } }, 5000); });
+                        output.on('close', function () {
+                            obj.performingBackup = false;
+                            if (func) { if (mongoDumpSuccess) { func('Auto-backup completed.'); } else { func('Auto-backup completed without mongodb database: ' + error); } }
+                            obj.performCloudBackup(newAutoBackupPath + '.zip', func);
+                            setTimeout(function () { try { parent.fs.unlink(newBackupPath + '.archive', function () { }); } catch (ex) { console.log(ex); } }, 5000);
+                        });
                         output.on('end', function () { });
                         archive.on('warning', function (err) { console.log('Backup warning: ' + err); if (func) { func('Backup warning: ' + err); } });
                         archive.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
                         archive.pipe(output);
-                        archive.file(newBackupPath + '.archive', { name: newBackupFile + '.archive' });
+                        if (mongoDumpSuccess == true) { archive.file(newBackupPath + '.archive', { name: newBackupFile + '.archive' }); }
                         archive.directory(parent.datapath, 'meshcentral-data');
                         archive.finalize();
                     } catch (ex) { console.log(ex); }

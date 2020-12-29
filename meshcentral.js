@@ -987,6 +987,9 @@ function CreateMeshCentralServer(config, args) {
                         return;
                     }
 
+                    // Check if the database is capable of performing a backup
+                    obj.db.checkBackupCapability(function (err, msg) { if (msg != null) { obj.addServerWarning(msg, true) } });
+
                     // Load configuration for database if needed
                     if (obj.args.loadconfigfromdb) {
                         var key = null;
