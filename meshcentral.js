@@ -733,9 +733,9 @@ function CreateMeshCentralServer(config, args) {
                         if (obj.args.createaccount.startsWith('user/')) { userid = obj.args.createaccount; domainid = obj.args.createaccount.split('/')[1]; }
                         if (userid.split('/').length != 3) { console.log("Invalid userid."); process.exit(); return; }
                         obj.db.Get(userid, function (err, docs) {
-                            if (err != null) { console.log("Database error: " + err); process.exit(); return;  }
+                            if (err != null) { console.log("Database error: " + err); process.exit(); return; }
                             if ((docs != null) && (docs.length != 0)) { console.log('User already exists.'); process.exit(); return; }
-                            if ((domainid != '') &&  ((config.domains == null) || (config.domains[domainid] == null))) { console.log("Invalid domain."); process.exit(); return; }
+                            if ((domainid != '') && ((config.domains == null) || (config.domains[domainid] == null))) { console.log("Invalid domain."); process.exit(); return; }
                             var user = { _id: userid, type: 'user', name: (typeof obj.args.name == 'string') ? obj.args.name : (userid.split('/')[2]), domain: domainid, creation: Math.floor(Date.now() / 1000), links: {} };
                             if (typeof obj.args.email == 'string') { user.email = obj.args.email; user.emailVerified = true; }
                             require('./pass').hash(obj.args.pass, function (err, salt, hash, tag) { if (err) { console.log("Unable create account password: " + err); process.exit(); return; } user.salt = salt; user.hash = hash; obj.db.Set(user, function () { console.log("Done."); process.exit(); return; }); }, 0);
@@ -901,7 +901,13 @@ function CreateMeshCentralServer(config, args) {
                         if (badCharCount > 0) { console.log(badCharCount + ' invalid character(s) where removed.'); }
                         try { json = JSON.parse(json2); } catch (e) { console.log('Invalid JSON format: ' + obj.args.dbimport + ': ' + e); process.exit(); }
                         if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); }
-                        for (i in json) { if ((json[i].type == "mesh") && (json[i].links != null)) { for (var j in json[i].links) { var esc = obj.common.escapeFieldName(j); if (esc !== j) { json[i].links[esc] = json[i].links[j]; delete json[i].links[j]; } } } } // Escape MongoDB invalid field chars
+                        // Escape MongoDB invalid field chars
+                        for (i in json) {
+                            var doc = json[i];
+                            for (var j in doc) { if (j.indexOf('.') >= 0) { console.log("Invalid field name (" + j + ") in document: " + json[i]); return; } }
+                            if ((json[i].type == "ifinfo") && (json[i].netif2 != null)) { for (var j in json[i].netif2) { var esc = obj.common.escapeFieldName(j); if (esc !== j) { json[i].netif2[esc] = json[i].netif2[j]; delete json[i].netif2[j]; } } }
+                            if ((json[i].type == "mesh") && (json[i].links != null)) { for (var j in json[i].links) { var esc = obj.common.escapeFieldName(j); if (esc !== j) { json[i].links[esc] = json[i].links[j]; delete json[i].links[j]; } } }
+                        } 
                         //for (i in json) { if ((json[i].type == "node") && (json[i].host != null)) { json[i].rname = json[i].host; delete json[i].host; } } // DEBUG: Change host to rname
                         setTimeout(function () { // If the Mongo database is being created for the first time, there is a race condition here. This will get around it.
                             obj.db.RemoveAll(function () {

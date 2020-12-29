@@ -1164,6 +1164,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Check if network information is present
                         if ((command.netif2 == null) && (command.netif == null)) return;
 
+                        // Escape any field names that have special characters
+                        if (command.netif2 != null) {
+                            for (var i in command.netif2) {
+                                var esc = common.escapeFieldName(i);
+                                if (esc !== i) { command.netif2[esc] = command.netif2[i]; delete command.netif2[i]; }
+                            }
+                        }
+
                         // Sent by the agent to update agent network interface information
                         delete command.action;
                         command.updateTime = Date.now();

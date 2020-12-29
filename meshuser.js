@@ -3857,6 +3857,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.Get('if' + node._id, function (err, netinfos) {
                             if ((netinfos == null) || (netinfos.length != 1)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, netif: null, netif2: null })); } catch (ex) { } return; }
                             var netinfo = netinfos[0];
+
+                            // Unescape any field names that have special characters if needed
+                            if (netinfo.netif2 != null) {
+                                for (var i in netinfo.netif2) {
+                                    var esc = common.unEscapeFieldName(i);
+                                    if (esc !== i) { netinfo.netif2[esc] = netinfo.netif2[i]; delete netinfo.netif2[i]; }
+                                }
+                            }
+
                             try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, updateTime: netinfo.updateTime, netif: netinfo.netif, netif2: netinfo.netif2 })); } catch (ex) { }
                         });
                     });
