@@ -204,7 +204,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         for (i in parent.config.domains) { domainUserCount[i] = 0; }
         for (i in docs) { var u = obj.users[docs[i]._id] = docs[i]; domainUserCount[u.domain]++; }
         for (i in parent.config.domains) {
-            if (domainUserCount[i] == 0) {
+            if ((parent.config.domains[i].share == null) && (domainUserCount[i] == 0)) {
                 // If newaccounts is set to no new accounts, but no accounts exists, temporarly allow account creation.
                 //if ((parent.config.domains[i].newaccounts === 0) || (parent.config.domains[i].newaccounts === false)) { parent.config.domains[i].newaccounts = 2; }
                 console.log('Server ' + ((i == '') ? '' : (i + ' ')) + 'has no users, next new account will be site administrator.');
@@ -869,6 +869,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
         parent.debug('web', 'getHardwareKeyChallenge: fail');
         func('');
+    }
+
+    // Redirect a root request to a different page
+    function handleRootRedirect(req, res, direct) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+        res.redirect(domain.rootredirect + getQueryPortion(req));
     }
 
     function handleLoginRequest(req, res, direct) {
@@ -2842,6 +2850,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Use the logo on file
                 try { res.sendFile(obj.path.join(obj.parent.datapath, domain.loginpicture)); return; } catch (ex) { res.sendStatus(404); }
             }
+        } else {
+            res.sendStatus(404);
         }
     }
 
@@ -4961,7 +4971,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     'Referrer-Policy': 'no-referrer',
                     'X-XSS-Protection': '1; mode=block',
                     'X-Content-Type-Options': 'nosniff',
-                    'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self'" + geourl + selfurl + "; img-src 'self'" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' mcrouter:; media-src 'self'; form-action 'self'"
+                    'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self'" + geourl + selfurl + "; img-src 'self'" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' https://*.youtube.com mcrouter:; media-src 'self'; form-action 'self'"
                 };
                 if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
                 res.set(headers);
@@ -4982,7 +4992,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     res.sendStatus(404);
                 } else {
                     // Check if the file exists, if so, serve it.
-                    obj.fs.exists(obj.path.join(domain.share, rpath), function (exists) { if (exists == true) { res.sendfile(rpath, { root: domain.share }); } else { res.sendStatus(404); } });
+                    var fpath = obj.path.join(domain.share, rpath);
+                    if (rpath == '') {
+                        res.redirect(req.url + '/' + getQueryPortion(req));
+                    } else {
+                        obj.fs.exists(fpath, function (exists) { if (exists == true) { res.sendFile(rpath, { root: domain.share }); } else { next(); } });
+                    }
                 }
             } else {
                 //if (parent.config.settings.accesscontrolalloworigin != null) { headers['Access-Control-Allow-Origin'] = parent.config.settings.accesscontrolalloworigin; }
@@ -5029,14 +5044,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (parent.config.domains[i].dns != null) { continue; } // This is a subdomain with a DNS name, no added HTTP bindings needed.
             var domain = parent.config.domains[i];
             var url = domain.url;
-            obj.app.get(url, handleRootRequest);
-            obj.app.post(url, handleRootPostRequest);
+            if (domain.rootredirect == null) {
+                // Present the login page as the root page
+                obj.app.get(url, handleRootRequest);
+                obj.app.post(url, handleRootPostRequest);
+            } else {
+                // Root page redirects the user to a different URL
+                obj.app.get(url, handleRootRedirect);
+            }
             obj.app.get(url + 'refresh.ashx', function (req, res) { res.sendStatus(200); });
             if ((domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.backup === true))) { obj.app.get(url + 'backup.zip', handleBackupRequest); }
             if ((domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.restore === true))) { obj.app.post(url + 'restoreserver.ashx', handleRestoreRequest); }
             obj.app.get(url + 'terms', handleTermsRequest);
             obj.app.get(url + 'xterm', handleXTermRequest);
-            obj.app.post(url + 'login', handleLoginRequest);
+            obj.app.get(url + 'login', handleRootRequest);
+            obj.app.post(url + 'login', handleRootPostRequest);
             obj.app.post(url + 'tokenlogin', handleLoginRequest);
             obj.app.get(url + 'logout', handleLogoutRequest);
             obj.app.get(url + 'MeshServerRootCert.cer', handleRootCertRequest);
