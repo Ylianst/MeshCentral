@@ -42,7 +42,7 @@
         "agentPortTls": { "type": "boolean", "default": true, "description": "Indicates if the agent-only port must perform TLS, this should be set to false if TLS is performed in front of this server." },
         "agentCoreDump": { "type": "boolean", "default": false, "description": "Automatically activates and transfers any agent crash dump files to the server in meshcentral-data/coredumps." },
         "agentCoreDumpUsers": { "type": "array", "description": "List of non-administrator users that have access to mesh agent crash dumps." },
-        "ignoreAgentHashCheck": { "type": "boolean", "default": false, "description": "When true, the agent no longer checked the TLS certificate of the server. This should be used for debugging only." },
+        "ignoreAgentHashCheck": { "type": [ "boolean", "string" ], "default": false, "description": "When true, the agent no longer checked the TLS certificate of the server. This should be used for debugging only. You can also set this to a comma seperated list of IP addresses to ignore, for example: \"192.168.2.100,192.168.1.0/24\"." },
         "exactPorts": { "type": "boolean", "default": false },
         "allowLoginToken": { "type": "boolean", "default": false },
         "allowFraming": { "type": "boolean", "default": false, "description": "When enabled, the MeshCentral web site can be embedded within another website's iframe." },
@@ -85,7 +85,7 @@
           },
           "required": [ "name", "info" ]
         },
-        "tlsOffload": { "type": [ "string", "boolean" ], "default": false },
+        "tlsOffload": { "type": [ "boolean", "string" ], "default": false, "description": "When true, indicates that a TLS offloader is in front of the MeshCentral server. More typically, set this to the IP address of the reverse proxy or TLS offloader so that IP forwarding headers will be trusted. For example: \"127.0.0.1,192.168.1.100\"." },
         "trustedProxy": { "type": "string" },
         "mpsPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
         "mpsPortBind": { "type": "string" },

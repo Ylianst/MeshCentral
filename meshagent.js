@@ -402,7 +402,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((msg.length != 98) || ((obj.receivedCommands & 1) != 0)) return;
                 obj.receivedCommands += 1; // Agent can't send the same command twice on the same connection ever. Block DOS attack path.
 
-                if ((args.ignoreagenthashcheck === true) || (domain.ignoreagenthashcheck === true)) {
+                if (isIgnoreHashCheck()) {
                     // Send the agent web hash back to the agent
                     // Send 384 bits SHA384 hash of TLS cert + 384 bits nonce
                     obj.sendBinary(common.ShortToStr(1) + msg.substring(2, 50) + obj.nonce); // Command 1, hash + nonce. Use the web hash given by the agent.
@@ -1678,6 +1678,27 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (agenthashhex.length > 16) { agenthashhex = agenthashhex.substring(0, 16); }
         const cookie = parent.parent.encodeCookie({ a: 'aft', b: 'coredump', c: obj.agentInfo.agentId + '-' + agenthashhex + '-' + obj.nodeid + '.dmp' }, parent.parent.loginCookieEncryptionKey);
         obj.send('{"action":"msg","type":"tunnel","value":"*/' + (((domain.dns == null) && (domain.id != '')) ? (domain.id + '/') : '') + 'agenttransfer.ashx?c=' + cookie + '","rights":"4294967295"}');
+    }
+
+    // Return true if we need to ignore the agent hash check
+    function isIgnoreHashCheck() {
+        if ((args.ignoreagenthashcheck === true) || (domain.ignoreagenthashcheck === true)) return true;
+
+        // Check site wide exceptions
+        if (Array.isArray(args.ignoreagenthashcheck)) {
+            for (var i = 0; i < args.ignoreagenthashcheck.length; i++) {
+                if (require('ipcheck').match(obj.remoteaddr, args.ignoreagenthashcheck[i])) return true;
+            }
+        }
+
+        // Check domain wide exceptions
+        if (Array.isArray(domain.ignoreagenthashcheck)) {
+            for (var i = 0; i < domain.ignoreagenthashcheck.length; i++) {
+                if (require('ipcheck').match(obj.remoteaddr, domain.ignoreagenthashcheck[i])) return true;
+            }
+        }
+
+        return false;
     }
 
     // Generate a random Intel AMT password
