@@ -101,14 +101,7 @@ module.exports.CreateDB = function (parent, func) {
         obj.GetAllType('mesh', function (err, docs) {
             if (err != null) { parent.debug('db', 'ERROR (GetAll mesh): ' + err); }
             var meshlist = [];
-            if ((err == null) && (docs.length > 0)) {
-                for (var i in docs) {
-                    meshlist.push(docs[i]._id);
-
-                    // Make sure all mesh types are number type, if not, fix it.
-                    if (typeof docs[i].mtype == 'string') { docs[i].mtype = parseInt(docs[i].mtype); obj.Set(docs[i]); }
-                }
-            }
+            if ((err == null) && (docs.length > 0)) { for (var i in docs) { meshlist.push(docs[i]._id); } }
             if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
                 // MariaDB
                 sqlDbQuery('DELETE FROM MeshCentral.Main WHERE (extra LIKE ("mesh/%") AND (extra NOT IN ?)', [meshlist], func);
