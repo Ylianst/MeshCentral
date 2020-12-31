@@ -1038,7 +1038,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Verify the agent signature
     function processAgentSignature(msg) {
-        if ((args.ignoreagenthashcheck !== true) && (domain.ignoreagenthashcheck !== true)) {
+        if (isIgnoreHashCheck() == false) {
             var verified = false;
 
             if (msg.length != 384) {
@@ -1682,6 +1682,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Return true if we need to ignore the agent hash check
     function isIgnoreHashCheck() {
+        // Test
         if ((args.ignoreagenthashcheck === true) || (domain.ignoreagenthashcheck === true)) return true;
 
         // Check site wide exceptions
