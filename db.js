@@ -108,105 +108,104 @@ module.exports.CreateDB = function (parent, func) {
                     // Add this as a valid user identifier
                     validIdentifiers[docs[i]._id] = 1;
                 }
+            }
+            
+            // Fix all of the creating & login to ticks by seconds, not milliseconds.
+            obj.GetAllType('user', function (err, docs) {
+                if (err != null) { parent.debug('db', 'ERROR (GetAll user): ' + err); }
+                if ((err == null) && (docs.length > 0)) {
+                    for (var i in docs) {
+                        var fixed = false;
 
-                // Fix all of the creating & login to ticks by seconds, not milliseconds.
-                obj.GetAllType('user', function (err, docs) {
-                    if (err != null) { parent.debug('db', 'ERROR (GetAll user): ' + err); }
-                    if ((err == null) && (docs.length > 0)) {
-                        for (var i in docs) {
-                            var fixed = false;
+                        // Add this as a valid user identifier
+                        validIdentifiers[docs[i]._id] = 1;
 
-                            // Add this as a valid user identifier
-                            validIdentifiers[docs[i]._id] = 1;
-
-                            // Fix email address capitalization
-                            if (docs[i].email && (docs[i].email != docs[i].email.toLowerCase())) {
-                                docs[i].email = docs[i].email.toLowerCase(); fixed = true;
-                            }
-
-                            // Fix account creation
-                            if (docs[i].creation) {
-                                if (docs[i].creation > 1300000000000) { docs[i].creation = Math.floor(docs[i].creation / 1000); fixed = true; }
-                                if ((docs[i].creation % 1) != 0) { docs[i].creation = Math.floor(docs[i].creation); fixed = true; }
-                            }
-
-                            // Fix last account login
-                            if (docs[i].login) {
-                                if (docs[i].login > 1300000000000) { docs[i].login = Math.floor(docs[i].login / 1000); fixed = true; }
-                                if ((docs[i].login % 1) != 0) { docs[i].login = Math.floor(docs[i].login); fixed = true; }
-                            }
-
-                            // Fix last password change
-                            if (docs[i].passchange) {
-                                if (docs[i].passchange > 1300000000000) { docs[i].passchange = Math.floor(docs[i].passchange / 1000); fixed = true; }
-                                if ((docs[i].passchange % 1) != 0) { docs[i].passchange = Math.floor(docs[i].passchange); fixed = true; }
-                            }
-
-                            // Fix subscriptions
-                            if (docs[i].subscriptions != null) { delete docs[i].subscriptions; fixed = true; }
-
-                            // Save the user if needed
-                            if (fixed) { obj.Set(docs[i]); }
+                        // Fix email address capitalization
+                        if (docs[i].email && (docs[i].email != docs[i].email.toLowerCase())) {
+                            docs[i].email = docs[i].email.toLowerCase(); fixed = true;
                         }
 
-                        // Remove all objects that have a "meshid" that no longer points to a valid mesh.
-                        // Fix any incorrectly escaped user identifiers
-                        obj.GetAllType('mesh', function (err, docs) {
-                            if (err != null) { parent.debug('db', 'ERROR (GetAll mesh): ' + err); }
-                            var meshlist = [];
-                            if ((err == null) && (docs.length > 0)) {
-                                for (var i in docs) {
-                                    var meshChange = false;
-                                    docs[i] = common.unEscapeLinksFieldName(docs[i]);
-                                    meshlist.push(docs[i]._id);
+                        // Fix account creation
+                        if (docs[i].creation) {
+                            if (docs[i].creation > 1300000000000) { docs[i].creation = Math.floor(docs[i].creation / 1000); fixed = true; }
+                            if ((docs[i].creation % 1) != 0) { docs[i].creation = Math.floor(docs[i].creation); fixed = true; }
+                        }
 
-                                    // Make sure all mesh types are number type, if not, fix it.
-                                    if (typeof docs[i].mtype == 'string') { docs[i].mtype = parseInt(docs[i].mtype); meshChange = true; }
+                        // Fix last account login
+                        if (docs[i].login) {
+                            if (docs[i].login > 1300000000000) { docs[i].login = Math.floor(docs[i].login / 1000); fixed = true; }
+                            if ((docs[i].login % 1) != 0) { docs[i].login = Math.floor(docs[i].login); fixed = true; }
+                        }
 
-                                    // Take a look at the links
-                                    if (docs[i].links != null) {
-                                        for (var j in docs[i].links) {
-                                            if (validIdentifiers[j] == null) {
-                                                // This identifier is not known, let see if we can fix it.
-                                                var xid = j, xid2 = common.unEscapeFieldName(xid);
-                                                while ((xid != xid2) && (validIdentifiers[xid2] == null)) { xid = xid2; xid2 = common.unEscapeFieldName(xid2); }
-                                                if (validIdentifiers[xid2] == 1) {
-                                                    //console.log('Fixing id: ' + j + ' to ' + common.escapeFieldName(xid2));
-                                                    docs[i].links[xid2] = docs[i].links[j];
-                                                    delete docs[i].links[j];
-                                                    meshChange = true;
-                                                } else {
-                                                    // TODO: here, we may want to clean up links to users and user groups that do not exist anymore.
-                                                    //console.log('Unknown id: ' + j);
-                                                }
+                        // Fix last password change
+                        if (docs[i].passchange) {
+                            if (docs[i].passchange > 1300000000000) { docs[i].passchange = Math.floor(docs[i].passchange / 1000); fixed = true; }
+                            if ((docs[i].passchange % 1) != 0) { docs[i].passchange = Math.floor(docs[i].passchange); fixed = true; }
+                        }
+
+                        // Fix subscriptions
+                        if (docs[i].subscriptions != null) { delete docs[i].subscriptions; fixed = true; }
+
+                        // Save the user if needed
+                        if (fixed) { obj.Set(docs[i]); }
+                    }
+
+                    // Remove all objects that have a "meshid" that no longer points to a valid mesh.
+                    // Fix any incorrectly escaped user identifiers
+                    obj.GetAllType('mesh', function (err, docs) {
+                        if (err != null) { parent.debug('db', 'ERROR (GetAll mesh): ' + err); }
+                        var meshlist = [];
+                        if ((err == null) && (docs.length > 0)) {
+                            for (var i in docs) {
+                                var meshChange = false;
+                                docs[i] = common.unEscapeLinksFieldName(docs[i]);
+                                meshlist.push(docs[i]._id);
+
+                                // Make sure all mesh types are number type, if not, fix it.
+                                if (typeof docs[i].mtype == 'string') { docs[i].mtype = parseInt(docs[i].mtype); meshChange = true; }
+
+                                // Take a look at the links
+                                if (docs[i].links != null) {
+                                    for (var j in docs[i].links) {
+                                        if (validIdentifiers[j] == null) {
+                                            // This identifier is not known, let see if we can fix it.
+                                            var xid = j, xid2 = common.unEscapeFieldName(xid);
+                                            while ((xid != xid2) && (validIdentifiers[xid2] == null)) { xid = xid2; xid2 = common.unEscapeFieldName(xid2); }
+                                            if (validIdentifiers[xid2] == 1) {
+                                                //console.log('Fixing id: ' + j + ' to ' + xid2);
+                                                docs[i].links[xid2] = docs[i].links[j];
+                                                delete docs[i].links[j];
+                                                meshChange = true;
+                                            } else {
+                                                // TODO: here, we may want to clean up links to users and user groups that do not exist anymore.
+                                                //console.log('Unknown id: ' + j);
                                             }
                                         }
                                     }
-
-                                    // Save the updated device group if needed
-                                    if (meshChange) { obj.Set(docs[i]); }
                                 }
-                            }
-                            if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
-                                // MariaDB
-                                sqlDbQuery('DELETE FROM MeshCentral.Main WHERE (extra LIKE ("mesh/%") AND (extra NOT IN ?)', [meshlist], func);
-                            } else if (obj.databaseType == 3) {
-                                // MongoDB
-                                obj.file.deleteMany({ meshid: { $exists: true, $nin: meshlist } }, { multi: true });
-                            } else {
-                                // NeDB or MongoJS
-                                obj.file.remove({ meshid: { $exists: true, $nin: meshlist } }, { multi: true });
-                            }
 
-                            // We are done
-                            validIdentifiers = null;
-                            if (func) { func(); }
-                        });
-                    }
-                });
-            }
+                                // Save the updated device group if needed
+                                if (meshChange) { obj.Set(docs[i]); }
+                            }
+                        }
+                        if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
+                            // MariaDB
+                            sqlDbQuery('DELETE FROM MeshCentral.Main WHERE (extra LIKE ("mesh/%") AND (extra NOT IN ?)', [meshlist], func);
+                        } else if (obj.databaseType == 3) {
+                            // MongoDB
+                            obj.file.deleteMany({ meshid: { $exists: true, $nin: meshlist } }, { multi: true });
+                        } else {
+                            // NeDB or MongoJS
+                            obj.file.remove({ meshid: { $exists: true, $nin: meshlist } }, { multi: true });
+                        }
+
+                        // We are done
+                        validIdentifiers = null;
+                        if (func) { func(); }
+                    });
+                }
+            });
         });
-
     };
 
     // Get encryption key

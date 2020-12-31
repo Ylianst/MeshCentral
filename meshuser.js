@@ -2765,8 +2765,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'createmesh':
                 {
-                    console.log(command);
-
                     var err = null;
                     try {
                         // Check if we have new group restriction
