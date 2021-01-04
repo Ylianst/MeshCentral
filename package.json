@@ -13,8 +13,8 @@
     "Intel Active Management Technology",
     "Intel AMT"
   ],
-  "homepage": "http://meshcommander.com",
-  "description": "Web based remote computer management and file server",
+  "homepage": "https://meshcentral.com",
+  "description": "Web based remote computer management server",
   "author": "Ylian Saint-Hilaire <ylianst@gmail.com>",
   "main": "meshcentral.js",
   "bin": {
