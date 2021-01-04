@@ -1730,8 +1730,8 @@ function connectTunnel(url) {
                 try { cmd = JSON.parse(rawdata.toString()); } catch (ex) { return; }
                 if (cmd.reqid == 'up') {
                     if ((cmd.action == 'uploadack') || (cmd.action == 'uploadstart')) {
-                        var buf = Buffer.alloc(4096);
-                        var len = require('fs').readSync(settings.uploadFile, buf, 1, 4095, settings.uploadPtr);
+                        var buf = Buffer.alloc(16384);
+                        var len = require('fs').readSync(settings.uploadFile, buf, 1, 16383, settings.uploadPtr);
                         var start = 1;
                         settings.uploadPtr += len;
                         if (len > 0) {
