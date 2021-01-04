@@ -2782,6 +2782,7 @@
     },
     {
       "en": "Account Settings",
+      "nl": "Account instellingen",
       "fr": "Paramètres du compte",
       "xloc": [
         "default.handlebars->29->2082"
@@ -7438,6 +7439,7 @@
     },
     {
       "en": "Chat Request, Click here to accept.",
+      "nl": "Chatverzoek, klik hier om te accepteren.",
       "fr": "Demande de chat, cliquez ici pour accepter.",
       "xloc": [
         "default.handlebars->29->2095"
@@ -10551,6 +10553,7 @@
     },
     {
       "en": "Current password not correct.",
+      "nl": "Huidig wachtwoord is niet correct.",
       "fr": "Le mot de passe actuel n'est pas correct.",
       "xloc": [
         "default.handlebars->29->2105"
@@ -15431,6 +15434,7 @@
     },
     {
       "en": "Error, invite code \\\"{0}\\\" already in use.",
+      "nl": "Fout, uitnodigingscode \\\"{0}\\\" al in gebruik.",
       "fr": "Erreur, code d'invitation \\\"{0}\\\" déjà utilisé.",
       "xloc": [
         "default.handlebars->29->2106"
@@ -15438,6 +15442,7 @@
     },
     {
       "en": "Error, password not changed.",
+      "nl": "Fout, wachtwoord niet gewijzigd.",
       "fr": "Erreur, mot de passe non modifié.",
       "xloc": [
         "default.handlebars->29->2103"
@@ -15445,6 +15450,7 @@
     },
     {
       "en": "Error, unable to change to commonly used password.",
+      "nl": "Fout, het is niet mogelijk om naar algemeen gebruikt wachtwoord te veranderen.",
       "fr": "Erreur, impossible de changer le mot de passe couramment utilisé.",
       "xloc": [
         "default.handlebars->29->2102"
@@ -15452,6 +15458,7 @@
     },
     {
       "en": "Error, unable to change to previously used password.",
+      "nl": "Fout, kan niet wijzigen naar eerder gebruikt wachtwoord.",
       "fr": "Erreur, impossible de changer le mot de passe précédemment utilisé.",
       "xloc": [
         "default.handlebars->29->2101"
@@ -15869,6 +15876,7 @@
     },
     {
       "en": "Failed to change email address, another account already using: {0}.",
+      "nl": "E-mailadres kan niet worden gewijzigd, een ander account gebruikt al: {0}.",
       "fr": "Échec de la modification de l'adresse e-mail, un autre compte utilise déjà: {0}.",
       "xloc": [
         "default.handlebars->29->2097"
@@ -20152,6 +20160,7 @@
     },
     {
       "en": "Invalid SMS message",
+      "nl": "Ongeldig SMS bericht",
       "fr": "Message SMS non valide",
       "xloc": [
         "default.handlebars->29->2109"
@@ -20181,6 +20190,7 @@
     },
     {
       "en": "Invalid domain",
+      "nl": "Ongeldig domein",
       "fr": "Domaine non valide",
       "xloc": [
         "default.handlebars->29->2089"
@@ -20188,6 +20198,7 @@
     },
     {
       "en": "Invalid email",
+      "nl": "Ongeldig email",
       "fr": "Email invalide",
       "xloc": [
         "default.handlebars->29->2088"
@@ -20258,6 +20269,7 @@
     },
     {
       "en": "Invalid password",
+      "nl": "Ongeldig wachtwoord",
       "fr": "Mot de passe incorrect",
       "xloc": [
         "default.handlebars->29->2087"
@@ -20265,6 +20277,7 @@
     },
     {
       "en": "Invalid site permissions",
+      "nl": "Ongeldige sitemachtigingen",
       "fr": "Autorisations de site non valides",
       "xloc": [
         "default.handlebars->29->2090"
@@ -20294,6 +20307,7 @@
     },
     {
       "en": "Invalid username",
+      "nl": "Ongeldige gebruikersnaam",
       "fr": "Nom d'utilisateur invalide",
       "xloc": [
         "default.handlebars->29->2086"
@@ -23201,6 +23215,7 @@
     },
     {
       "en": "MacOS Installer",
+      "nl": "MacOS installatieprogramma",
       "fr": "Installateur MacOS",
       "xloc": [
         "default.handlebars->29->807"
@@ -25488,6 +25503,7 @@
     },
     {
       "en": "New Account",
+      "nl": "Nieuw account",
       "fr": "Nouveau compte",
       "xloc": [
         "default.handlebars->29->2079"
@@ -26522,6 +26538,7 @@
     },
     {
       "en": "No phone number for this user",
+      "nl": "Geen telefoonnummer voor deze gebruiker",
       "fr": "Aucun numéro de téléphone pour cet utilisateur",
       "xloc": [
         "default.handlebars->29->2110"
@@ -26609,6 +26626,7 @@
     },
     {
       "en": "No user management rights",
+      "nl": "Geen gebruikersbeheerrechten",
       "fr": "Aucun droit de gestion des utilisateurs",
       "xloc": [
         "default.handlebars->29->2108"
@@ -28144,6 +28162,7 @@
     },
     {
       "en": "Password changed.",
+      "nl": "Wachtwoord gewijzigd.",
       "fr": "Mot de passe changé.",
       "xloc": [
         "default.handlebars->29->2104"
@@ -28605,6 +28624,7 @@
     },
     {
       "en": "Permission denied",
+      "nl": "Toestemming geweigerd",
       "fr": "Permission refusée",
       "xloc": [
         "default.handlebars->29->2085"
@@ -32491,7 +32511,17 @@
     },
     {
       "en": "SCP",
-      "fr": "SCP",
+      "nl": "SCP",
+      "de": "SCP",
+      "cs": "SCP",
+      "fi": "SCP",
+      "hi": "SCP",
+      "ja": "SCP",
+      "ko": "SCP",
+      "pt": "SCP",
+      "ru": "SCP",
+      "tr": "SCP",
+      "es": "SCP",
       "xloc": [
         "default.handlebars->29->647"
       ]
@@ -32544,6 +32574,7 @@
     },
     {
       "en": "SMS error",
+      "nl": "SMS fout",
       "fr": "Erreur SMS",
       "xloc": [
         "default.handlebars->29->2112"
@@ -32551,6 +32582,7 @@
     },
     {
       "en": "SMS error: {0}",
+      "nl": "SMS fout: {0}",
       "fr": "Erreur SMS: {0}",
       "xloc": [
         "default.handlebars->29->2113"
@@ -32558,6 +32590,7 @@
     },
     {
       "en": "SMS gateway not enabled",
+      "nl": "SMS gateway niet ingeschakeld",
       "fr": "Passerelle SMS non activée",
       "xloc": [
         "default.handlebars->29->2107"
@@ -32587,6 +32620,7 @@
     },
     {
       "en": "SMS succesfuly sent.",
+      "nl": "SMS succesvol verzonden.",
       "fr": "SMS envoyé avec succès.",
       "xloc": [
         "default.handlebars->29->2111"
@@ -32594,6 +32628,17 @@
     },
     {
       "en": "SSH",
+      "nl": "SSH",
+      "cs": "SSH",
+      "de": "SSH",
+      "es": "SSH",
+      "fi": "SSH",
+      "hi": "SSH",
+      "ja": "SSH",
+      "ko": "SSH",
+      "pt": "SSH",
+      "ru": "SSH",
+      "tr": "SSH",
       "fr": "SSH",
       "xloc": [
         "default.handlebars->29->645"
@@ -33153,6 +33198,7 @@
     },
     {
       "en": "Security Warning",
+      "nl": "Beveiligingswaarschuwing",
       "fr": "Avertissement de sécurité",
       "xloc": [
         "default.handlebars->29->2081"
@@ -33935,6 +33981,7 @@
     },
     {
       "en": "Server Limit",
+      "nl": "Server limiet",
       "fr": "Limite du serveur",
       "xloc": [
         "default.handlebars->29->2080"
@@ -37813,6 +37860,7 @@
       "cs": "V tomto systému nelze spustit grafickou verzi tohoto instalačního programu",
       "de": "Die grafische Version dieses Installationsprogramms kann auf diesem System nicht ausgeführt werden",
       "en": "The graphical version of this installer canot run on this system",
+      "nl": "De grafische versie van dit installatieprogramma kan niet op dit systeem worden uitgevoerd",
       "es": "La versión gráfica de este instalador no se puede ejecutar en este sistema.",
       "fi": "Tämän asennusohjelman graafinen versio ei toimi tässä järjestelmässä",
       "fr": "La version graphique de ce programme d'installation ne peut pas s'exécuter sur ce système",
@@ -37911,6 +37959,7 @@
     },
     {
       "en": "There has been {0} failed login attempts on this account since the last login.",
+      "nl": "Er zijn {0} mislukte inlogpogingen voor dit account sinds de laatste keer inloggen.",
       "fr": "Il y a eu {0} tentatives de connexion infructueuses sur ce compte depuis la dernière connexion.",
       "xloc": [
         "default.handlebars->29->2096"
@@ -39455,6 +39504,7 @@
     },
     {
       "en": "Unable to add user in this mode",
+      "nl": "Kan geen gebruiker toevoegen in deze modus",
       "fr": "Impossible d'ajouter un utilisateur dans ce mode",
       "xloc": [
         "default.handlebars->29->2092"
@@ -40867,6 +40917,7 @@
     },
     {
       "en": "User already exists",
+      "nl": "Gebruiker bestaat al",
       "fr": "L'utilisateur existe déjà",
       "xloc": [
         "default.handlebars->29->2091"
@@ -40980,6 +41031,7 @@
     },
     {
       "en": "User {0} not found.",
+      "nl": "Gebruiker {0} niet gevonden.",
       "fr": "Utilisateur {0} introuvable.",
       "xloc": [
         "default.handlebars->29->2099"
@@ -41125,6 +41177,7 @@
     },
     {
       "en": "Users {0} not found.",
+      "nl": "Gebruikers {0} niet gevonden.",
       "fr": "Utilisateurs {0} introuvables.",
       "xloc": [
         "default.handlebars->29->2100"
@@ -41173,6 +41226,7 @@
     },
     {
       "en": "Validation exception",
+      "nl": "Validatie uitzondering",
       "fr": "Exception de validation",
       "xloc": [
         "default.handlebars->29->2093"
