@@ -296,7 +296,8 @@
       "NIET ACTIEF"
     ],
     "statusDescription": "Huidige agent status",
-    "description": "Klik op de onderstaande knoppen om de mesh-agent te installeren of te verwijderen. Na installatie wordt deze software op de achtergrond uitgevoerd, zodat deze computer kan worden beheerd en bestuurd door een externe beheerder."
+    "description": "Klik op de onderstaande knoppen om de mesh-agent te installeren of te verwijderen. Na installatie wordt deze software op de achtergrond uitgevoerd, zodat deze computer kan worden beheerd en bestuurd door een externe beheerder.",
+    "graphicalerror": "De grafische versie van dit installatieprogramma kan niet op dit systeem worden uitgevoerd"
   },
   "pt": {
     "agent": "Agente",

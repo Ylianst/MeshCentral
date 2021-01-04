@@ -5003,26 +5003,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Extend the session time by forcing a change to the session every minute.
             if (req.session.userid != null) { req.session.nowInMinutes = Math.floor(Date.now() / 60e3); } else { delete req.session.nowInMinutes; }
 
-            // Detect if this is a file sharing domain, if so, just share files.
-            if ((domain != null) && (domain.share != null)) {
-                var rpath;
-                if (domain.dns == null) { rpath = req.url.split('/'); rpath.splice(1, 1); rpath = rpath.join('/'); } else { rpath = req.url; }
-                if ((req.headers != null) && (req.headers.upgrade)) {
-                    // If this is a websocket, stop here.
-                    res.sendStatus(404);
-                } else {
-                    // Check if the file exists, if so, serve it.
-                    var fpath = obj.path.join(domain.share, rpath);
-                    if (rpath == '') {
-                        res.redirect(req.url + '/' + getQueryPortion(req));
-                    } else {
-                        obj.fs.exists(fpath, function (exists) { if (exists == true) { res.sendFile(rpath, { root: domain.share }); } else { next(); } });
-                    }
-                }
-            } else {
-                //if (parent.config.settings.accesscontrolalloworigin != null) { headers['Access-Control-Allow-Origin'] = parent.config.settings.accesscontrolalloworigin; }
-                return next();
-            }
+            // Continue processing the request
+            return next();
         });
 
         if (obj.agentapp) {
@@ -5058,10 +5040,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             });
         }
 
+        // Setup all sharing domains
+        for (var i in parent.config.domains) {
+            if ((parent.config.domains[i].dns == null) && (parent.config.domains[i].share != null)) { obj.app.use(parent.config.domains[i].url, obj.express.static(parent.config.domains[i].share)); }
+        }
+
         // Setup all HTTP handlers
         if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req, obj.args.tlsoffload == null); }); }
         for (var i in parent.config.domains) {
-            if (parent.config.domains[i].dns != null) { continue; } // This is a subdomain with a DNS name, no added HTTP bindings needed.
+            if ((parent.config.domains[i].dns != null) || (parent.config.domains[i].share != null)) { continue; } // This is a subdomain with a DNS name, no added HTTP bindings needed.
             var domain = parent.config.domains[i];
             var url = domain.url;
             if (domain.rootredirect == null) {
