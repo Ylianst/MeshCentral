@@ -1731,10 +1731,12 @@ function connectTunnel(url) {
                 if (cmd.reqid == 'up') {
                     if ((cmd.action == 'uploadack') || (cmd.action == 'uploadstart')) {
                         var buf = Buffer.alloc(4096);
-                        var len = require('fs').readSync(settings.uploadFile, buf, 0, 4096, settings.uploadPtr);
+                        var len = require('fs').readSync(settings.uploadFile, buf, 1, 4095, settings.uploadPtr);
+                        var start = 1;
                         settings.uploadPtr += len;
                         if (len > 0) {
-                            settings.tunnelws.send(buf.slice(0, len));
+                            if ((buf[1] == 0) || (buf[1] == 123)) { start = 0; buf[0] = 0; len++; } // If the buffer starts with 0 or 123, we must add an extra 0 at the start of the buffer
+                            settings.tunnelws.send(buf.slice(start, start + len));
                         } else {
                             console.log('Upload done, ' + settings.uploadPtr + ' bytes sent.');
                             if (settings.uploadFile != null) { require('fs').closeSync(settings.uploadFile); }
