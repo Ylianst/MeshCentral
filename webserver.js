@@ -4909,8 +4909,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Setup middleware
         obj.app.engine('handlebars', obj.exphbs({ defaultLayout: null })); // defaultLayout: 'main'
         obj.app.set('view engine', 'handlebars');
-        if (obj.args.trustedproxy) { obj.app.set('trust proxy', obj.args.trustedproxy); } // Reverse proxy should add the "X-Forwarded-*" headers
-        else if (typeof obj.args.tlsoffload == 'object') { obj.app.set('trust proxy', obj.args.tlsoffload); } // Reverse proxy should add the "X-Forwarded-*" headers
+        if (obj.args.trustedproxy) {
+            // Reverse proxy should add the "X-Forwarded-*" headers
+            try {
+                obj.app.set('trust proxy', obj.args.trustedproxy);
+            } catch (ex) {
+                // If there is an error, try to resolve the string
+                if ((obj.args.trustedproxy.length == 1) && (typeof obj.args.trustedproxy[0] == 'string')) {
+                    require('dns').lookup(obj.args.trustedproxy[0], function(err, address, family) { if (err == null) { obj.app.set('trust proxy', address); } });
+                }
+            }
+        } 
+        else if (typeof obj.args.tlsoffload == 'object') {
+            // Reverse proxy should add the "X-Forwarded-*" headers
+            try {
+                obj.app.set('trust proxy', obj.args.tlsoffload);
+            } catch (ex) {
+                // If there is an error, try to resolve the string
+                if ((obj.args.tlsoffload.length == 1) && (typeof obj.args.tlsoffload[0] == 'string')) {
+                    require('dns').lookup(obj.args.tlsoffload[0], function (err, address, family) { if (err == null) { obj.app.set('trust proxy', address); } });
+                }
+            }
+        }
         obj.app.use(obj.bodyParser.urlencoded({ extended: false }));
         var sessionOptions = {
             name: 'xid', // Recommended security practice to not use the default cookie name
