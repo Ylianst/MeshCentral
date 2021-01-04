@@ -37,7 +37,7 @@
   ],
   "dependencies": {
     "body-parser": "^1.19.0",
-    "cbor": "^4.1.5",
+    "cbor": "~5.2.0",
     "compression": "^1.7.4",
     "connect-redis": "^3.4.1",
     "cookie-session": "^2.0.0-beta.3",
