@@ -2185,7 +2185,7 @@
                             else if (message.type == 'notify') { // This is a notification message.
                                 var n = getstore('notifications', 0);
                                 if (((n & 8) == 0) && (message.amtMessage != null)) { break; } // Intel AMT desktop & terminal messages should be ignored.
-                                var n = { text: message.value, title: message.title, icon: message.icon };
+                                var n = { text: message.value, title: message.title, icon: message.icon, titleid: message.titleid, msgid: message.msgid, args: message.args };
                                 if (message.id != null) { n.id = message.id; }
                                 if (message.nodeid != null) { n.nodeid = message.nodeid; }
                                 if (message.tag != null) { n.tag = message.tag; }
@@ -2226,7 +2226,7 @@
                         }
                     } else {
                         if (message.type == 'notify') { // This is a notification message.
-                            var n = { text: message.value, title: message.title, icon: message.icon };
+                            var n = { text: message.value, title: message.title, icon: message.icon, titleid: message.titleid, msgid: message.msgid, args: message.args };
                             if (message.id != null) { n.id = message.id; }
                             if (message.tag != null) { n.tag = message.tag; }
                             if (message.username != null) { n.username = message.username; }
@@ -3027,7 +3027,7 @@
                             break;
                         }
                         case 'notify': {
-                            var n = { text: message.event.value, title: message.event.title, icon: message.event.icon };
+                            var n = { text: message.event.value, title: message.event.title, icon: message.event.icon, titleid: message.titleid, msgid: message.msgid, args: message.args };
                             if (message.id != null) { n.id = message.id; }
                             if (message.event.tag != null) { n.tag = message.event.tag; }
                             if (typeof message.maxtime == 'number') { n.maxtime = message.maxtime; }
@@ -13168,6 +13168,51 @@
 
         // Add a new notification and play the notification sound
         function addNotification(n) {
+            // Perform message translation
+            var translatedTitles = [
+                null,
+                "New Account", // 1
+                "Server Limit",
+                "Security Warning",
+                "Account Settings",
+                "Device Group",
+                "Invite Codes"
+            ];
+            var translatedMessages = [
+                null,
+                "Permission denied", // 1
+                "Invalid username",
+                "Invalid password",
+                "Invalid email",
+                "Invalid domain",
+                "Invalid site permissions",
+                "User already exists",
+                "Unable to add user in this mode",
+                "Validation exception",
+                "Account limit reached.", // 10
+                "Chat Request, Click here to accept.",
+                "There has been {0} failed login attempts on this account since the last login.",
+                "Failed to change email address, another account already using: {0}.",
+                "Email sent.",
+                "User {0} not found.",
+                "Users {0} not found.",
+                "Error, unable to change to previously used password.",
+                "Error, unable to change to commonly used password.",
+                "Error, password not changed.",
+                "Password changed.", // 20
+                "Current password not correct.",
+                "Error, invite code \"{0}\" already in use.",
+                "SMS gateway not enabled",
+                "No user management rights",
+                "Invalid SMS message",
+                "No phone number for this user",
+                "SMS succesfuly sent.",
+                "SMS error",
+                "SMS error: {0}"
+            ];
+            if (typeof n.titleid == 'number') { try { n.title = translatedTitles[n.titleid]; } catch (ex) {} }
+            if (typeof n.msgid == 'number') { try { n.text = translatedMessages[n.msgid]; if (Array.isArray(n.args)) { format(n.text, ...n.args); } } catch (ex) {} }
+
             // Show notification within the web page.
             if (n.time == null) { n.time = Date.now(); }
             if (n.id == null) { n.id = Math.random(); }

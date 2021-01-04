@@ -488,7 +488,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             const lastLoginTime = parent.users[user._id].pastlogin;
             if (lastLoginTime != null) {
                 db.GetFailedLoginCount(user.name, user.domain, new Date(lastLoginTime * 1000), function (count) {
-                    if (count > 0) { try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: "Security Warning", tag: 'ServerNotify', id: Math.random(), value: "There has been " + count + " failed login attempts on this account since the last login." })); } catch (ex) { } delete user.pastlogin; }
+                    if (count > 0) { try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: "Security Warning", tag: 'ServerNotify', id: Math.random(), value: "There has been " + count + " failed login attempts on this account since the last login.", titleid: 3, msgid: 12, args: [count] })); } catch (ex) { } delete user.pastlogin; }
                 });
             }
 
@@ -1540,7 +1540,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
                             if ((docs != null) && (docs.length > 0)) {
                                 // Notify the duplicate email error
-                                try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: 'Account Settings', id: Math.random(), tag: 'ServerNotify', value: 'Failed to change email address, another account already using: ' + command.email + '.' })); } catch (ex) { }
+                                try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: 'Account Settings', id: Math.random(), tag: 'ServerNotify', value: 'Failed to change email address, another account already using: ' + command.email + '.', titleid: 4, msgid: 13, args: [command.email] })); } catch (ex) { }
                             } else {
                                 // Update the user's email
                                 var oldemail = user.email;
@@ -1815,7 +1815,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Account count exceed, do notification
 
                             // Create the notification message
-                            var notification = { action: 'msg', type: 'notify', id: Math.random(), value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: domain.id };
+                            var notification = { action: 'msg', type: 'notify', id: Math.random(), value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: domain.id, titleid: 2, msgid: 10 };
 
                             // Get the list of sessions for this user
                             var sessions = parent.wssessions[user._id];
@@ -1870,36 +1870,36 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.randomPassword === true) { command.pass = getRandomPassword(); }
 
                     // Add a new user account
-                    var err = null, newusername, newuserid, newuserdomain;
+                    var err = null, errid = 0, newusername, newuserid, newuserdomain;
                     try {
-                        if ((user.siteadmin & 2) == 0) { err = 'Permission denied'; }
-                        else if (common.validateUsername(command.username, 1, 256) == false) { err = 'Invalid username'; } // Username is between 1 and 64 characters, no spaces
-                        else if ((command.username[0] == '~') || (command.username.indexOf('/') >= 0)) { err = 'Invalid username'; } // Usernames cant' start with ~ and can't have '/'
-                        else if (common.validateString(command.pass, 1, 256) == false) { err = 'Invalid password'; } // Password is between 1 and 256 characters
-                        else if ((command.randomPassword !== true) && (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false)) { err = 'Invalid password'; } // Password does not meet requirements
-                        else if ((command.email != null) && (common.validateEmail(command.email, 1, 1024) == false)) { err = 'Invalid email'; } // Check if this is a valid email address
-                        else if ((obj.crossDomain === true) && (command.domain != null) && ((typeof command.domain != 'string') || (parent.parent.config.domains[command.domain] == null))) { err = 'Invalid domain'; } // Check if this is a valid domain
+                        if ((user.siteadmin & 2) == 0) { err = "Permission denied"; errid = 1; }
+                        else if (common.validateUsername(command.username, 1, 256) == false) { err = "Invalid username"; errid = 2; } // Username is between 1 and 64 characters, no spaces
+                        else if ((command.username[0] == '~') || (command.username.indexOf('/') >= 0)) { err = "Invalid username"; errid = 2; } // Usernames cant' start with ~ and can't have '/'
+                        else if (common.validateString(command.pass, 1, 256) == false) { err = "Invalid password"; errid = 3; } // Password is between 1 and 256 characters
+                        else if ((command.randomPassword !== true) && (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false)) { err = "Invalid password"; errid = 3; } // Password does not meet requirements
+                        else if ((command.email != null) && (common.validateEmail(command.email, 1, 1024) == false)) { err = "Invalid email"; errid = 4; } // Check if this is a valid email address
+                        else if ((obj.crossDomain === true) && (command.domain != null) && ((typeof command.domain != 'string') || (parent.parent.config.domains[command.domain] == null))) { err = "Invalid domain"; errid = 5; } // Check if this is a valid domain
                         else {
                             newuserdomain = domain;
                             if ((obj.crossDomain === true) && (command.domain != null)) { newuserdomain = parent.parent.config.domains[command.domain]; }
                             newusername = command.username;
                             newuserid = 'user/' + newuserdomain.id + '/' + command.username.toLowerCase();
                             if (command.siteadmin != null) {
-                                if ((typeof command.siteadmin != 'number') || (Number.isInteger(command.siteadmin) == false)) { err = 'Invalid site permissions'; } // Check permissions
-                                else if ((user.siteadmin != SITERIGHT_ADMIN) && ((command.siteadmin & (SITERIGHT_ADMIN - 224)) != 0)) { err = 'Invalid site permissions'; }
+                                if ((typeof command.siteadmin != 'number') || (Number.isInteger(command.siteadmin) == false)) { err = "Invalid site permissions"; errid = 6; } // Check permissions
+                                else if ((user.siteadmin != SITERIGHT_ADMIN) && ((command.siteadmin & (SITERIGHT_ADMIN - 224)) != 0)) { err = "Invalid site permissions"; errid = 6; }
                             }
-                            if (parent.users[newuserid]) { err = 'User already exists'; } // Account already exists
-                            else if ((newuserdomain.auth == 'sspi') || (newuserdomain.auth == 'ldap')) { err = 'Unable to add user in this mode'; }
+                            if (parent.users[newuserid]) { err = "User already exists"; errid = 7; } // Account already exists
+                            else if ((newuserdomain.auth == 'sspi') || (newuserdomain.auth == 'ldap')) { err = "Unable to add user in this mode"; errid = 8; }
                         }
-                    } catch (ex) { err = 'Validation exception'; }
+                    } catch (ex) { err = "Validation exception"; errid = 9; }
 
                     // Handle any errors
                     if (err != null) {
                         if (command.responseid != null) {
-                            try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: err })); } catch (ex) { }
+                            try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: err, msgid: errid })); } catch (ex) { }
                         } else {
                             // Send error back, user not found.
-                            displayNotificationMessage(err, 'New Account', 'ServerNotify');
+                            displayNotificationMessage(err, "New Account", 'ServerNotify', null, 1, errid);
                         }
                         break;
                     }
@@ -1913,7 +1913,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'maxUsersExceed' })); } catch (ex) { }
                             } else {
                                 // Create the notification message
-                                var notification = { action: 'msg', type: 'notify', id: Math.random(), value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: newuserdomain.id };
+                                var notification = { action: 'msg', type: 'notify', id: Math.random(), value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: newuserdomain.id, titleid: 2, msgid: 10 };
 
                                 // Get the list of sessions for this user
                                 var sessions = parent.wssessions[user._id];
@@ -2420,7 +2420,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         if (unknownUsers.length > 0) {
                             // Send error back, user not found.
-                            displayNotificationMessage('User' + ((unknownUsers.length > 1) ? 's' : '') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', 'Device Group', 'ServerNotify');
+                            displayNotificationMessage('User' + ((unknownUsers.length > 1) ? 's' : '') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', "Device Group", 'ServerNotify', 5, (unknownUsers.length > 1) ? 16 : 15, [EscapeHtml(unknownUsers.join(', '))]);
                         }
                     }
 
@@ -2553,16 +2553,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             parent.checkOldUserPasswords(domain, user, command.newpass, function (result) {
                                 if (result == 1) {
                                     // Send user notification of error
-                                    displayNotificationMessage('Error, unable to change to previously used password.', 'Account Settings', 'ServerNotify');
+                                    displayNotificationMessage("Error, unable to change to previously used password.", "Account Settings", 'ServerNotify', 4, 17);
                                 } else if (result == 2) {
                                     // Send user notification of error
-                                    displayNotificationMessage('Error, unable to change to commonly used password.', 'Account Settings', 'ServerNotify');
+                                    displayNotificationMessage("Error, unable to change to commonly used password.", "Account Settings", 'ServerNotify', 4, 18);
                                 } else {
                                     // Update the password
                                     require('./pass').hash(command.newpass, function (err, salt, hash, tag) {
                                         if (err) {
                                             // Send user notification of error
-                                            displayNotificationMessage('Error, password not changed.', 'Account Settings', 'ServerNotify');
+                                            displayNotificationMessage("Error, password not changed.", "Account Settings", 'ServerNotify', 4, 19);
                                         } else {
                                             const nowSeconds = Math.floor(Date.now() / 1000);
 
@@ -2592,7 +2592,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             parent.parent.DispatchEvent(targets, obj, event);
 
                                             // Send user notification of password change
-                                            displayNotificationMessage('Password changed.', 'Account Settings', 'ServerNotify');
+                                            displayNotificationMessage("Password changed.", "Account Settings", 'ServerNotify', 4, 20);
 
                                             // Log in the auth log
                                             if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' changed this password'); }
@@ -2602,7 +2602,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             });
                         } else {
                             // Send user notification of error
-                            displayNotificationMessage('Current password not correct.', 'Account Settings', 'ServerNotify');
+                            displayNotificationMessage("Current password not correct.", "Account Settings", 'ServerNotify', 4, 21);
                         }
                     });
                     break;
@@ -2699,7 +2699,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Create the notification message
                         var notification = {
-                            'action': 'msg', 'type': 'notify', id: Math.random(), 'value': "Chat Request, Click here to accept.", 'title': user.name, 'userid': user._id, 'username': user.name, 'tag': 'meshmessenger/' + encodeURIComponent(command.userid) + '/' + encodeURIComponent(user._id)
+                            'action': 'msg', 'type': 'notify', id: Math.random(), 'value': "Chat Request, Click here to accept.", 'title': user.name, 'userid': user._id, 'username': user.name, 'tag': 'meshmessenger/' + encodeURIComponent(command.userid) + '/' + encodeURIComponent(user._id), msgid: 11
                         };
 
                         // Get the list of sessions for this user
@@ -2977,7 +2977,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 }
                                 if (dup != null) {
                                     // A duplicate was found, don't allow this change.
-                                    displayNotificationMessage('Error, invite code \"' + dup + '\" already in use.', 'Invite Codes');
+                                    displayNotificationMessage("Error, invite code \"" + dup + "\" already in use.", "Invite Codes", null, 6, 22, [ dup ]);
                                     return;
                                 }
                                 mesh.invite = { codes: command.invite.codes, flags: command.invite.flags };
@@ -3123,7 +3123,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     if (unknownUsers.length > 0) {
                         // Send error back, user not found.
-                        displayNotificationMessage('User' + ((unknownUsers.length > 1) ? 's' : '') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', 'Device Group', 'ServerNotify');
+                        displayNotificationMessage('User' + ((unknownUsers.length > 1) ? 's' : '') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', "Device Group", 'ServerNotify', 5, (unknownUsers.length > 1) ? 16 : 15, [EscapeHtml(unknownUsers.join(', '))]);
                     }
 
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addmeshuser', responseid: command.responseid, result: msgs.join(', '), success: successCount, failed: failCount })); } catch (ex) { } }
@@ -4489,24 +4489,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'smsuser': { // Send a SMS message to a user
-                var errMsg = null, smsuser = null;
-                if (parent.parent.smsserver == null) { errMsg = 'SMS gateway not enabled'; }
-                else if ((user.siteadmin & 2) == 0) { errMsg = 'No user management rights'; }
-                else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = 'Invalid userid'; }
-                else if (common.validateString(command.msg, 1, 160) == false) { errMsg = 'Invalid SMS message'; }
+                var errMsg = null, errId = 0, smsuser = null;
+                if (parent.parent.smsserver == null) { errMsg = "SMS gateway not enabled"; errId = 23; }
+                else if ((user.siteadmin & 2) == 0) { errMsg = "No user management rights"; errId = 24; }
+                else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = "Invalid username"; errId = 2; }
+                else if (common.validateString(command.msg, 1, 160) == false) { errMsg = "Invalid SMS message"; errId = 25; }
                 else {
                     smsuser = parent.users[command.userid];
-                    if (smsuser == null) { errMsg = 'Invalid userid'; }
-                    else if (smsuser.phone == null) { errMsg = 'No phone number for this user'; }
+                    if (smsuser == null) { errMsg = "Invalid username"; errId = 2; }
+                    else if (smsuser.phone == null) { errMsg = "No phone number for this user"; errId = 26; }
                 }
 
                 if (errMsg != null) { displayNotificationMessage(errMsg); break; }
 
                 parent.parent.smsserver.sendSMS(smsuser.phone, command.msg, function (success, msg) {
                     if (success) {
-                        displayNotificationMessage('SMS succesfuly sent.');
+                        displayNotificationMessage("SMS succesfuly sent.", null, null, null, 27);
                     } else {
-                        if (typeof msg == 'string') { displayNotificationMessage('SMS error: ' + msg); } else { displayNotificationMessage('SMS error'); }
+                        if (typeof msg == 'string') { displayNotificationMessage("SMS error: " + msg, null, null, null, 29, [msg]); } else { displayNotificationMessage("SMS error", null, null, null, 28); }
                     }
                 });
                 break;
@@ -4527,7 +4527,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 if (errMsg != null) { displayNotificationMessage(errMsg); break; }
                 parent.parent.mailserver.sendMail(emailuser.email, command.subject, command.msg);
-                displayNotificationMessage("Email sent.");
+                displayNotificationMessage("Email sent.", null, null, null, 14);
                 break;
             }
             case 'getClip': {
@@ -5105,7 +5105,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     // Display a notification message for this session only.
-    function displayNotificationMessage(msg, title, tag) { ws.send(JSON.stringify({ 'action': 'msg', 'type': 'notify', id: Math.random(), 'value': msg, 'title': title, 'userid': user._id, 'username': user.name, 'tag': tag })); }
+    function displayNotificationMessage(msg, title, tag, titleid, msgid, args) {
+        ws.send(JSON.stringify({ 'action': 'msg', 'type': 'notify', id: Math.random(), 'value': msg, 'title': title, 'userid': user._id, 'username': user.name, 'tag': tag, 'titleid': titleid, 'msgid': msgid, 'args': args }));
+    }
 
     // Read the folder and all sub-folders and serialize that into json.
     function readFilesRec(path) {
