@@ -831,13 +831,35 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     }
 }
 
+// If we are in multi-server mode, the desktop multiplexor needs to be created on the server with the agent connected to it.
+// So, if the agent is connected to a different server, just relay the connection to that server
 function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
-    const currentTime = Date.now();
+    // Do validation work
     if (cookie) {
         if ((typeof cookie.expire == 'number') && (cookie.expire <= currentTime)) { delete req.query.nodeid; }
         else if (typeof cookie.nid == 'string') { req.query.nodeid = cookie.nid; }
     }
     if ((req.query.nodeid == null) || (req.query.p != '2') || (req.query.id == null) || (domain == null)) { try { ws.close(); } catch (e) { } return; } // Not is not a valid remote desktop connection.
+
+    // Check routing if in multi-server mode
+    var nodeid = req.query.nodeid;
+    if (parent.parent.multiServer != null) {
+        const routing = parent.parent.GetRoutingServerIdNotSelf(nodeid, 1); // 1 = MeshAgent routing type
+        if (routing == null) {
+            // No need to relay the connection to a different server
+            return CreateMeshRelayEx2(parent, ws, req, domain, user, cookie);
+        } else {
+            // We must relay the connection to a different server
+            return parent.parent.multiServer.createPeerRelay(ws, req, routing.serverid, req.session.userid);
+        }
+    } else {
+        // No need to relay the connection to a different server
+        return CreateMeshRelayEx2(parent, ws, req, domain, user, cookie);
+    }
+}
+
+function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
+    const currentTime = Date.now();
     var obj = {};
     obj.ws = ws;
     obj.ws.me = obj;
