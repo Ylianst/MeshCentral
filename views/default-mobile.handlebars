@@ -1046,6 +1046,7 @@
                 // Control web socket disconnected
                 setDialogMode(0); // Close any dialog boxes if present
                 go(0); // Go to disconnection panel
+                deleteAllNotifications(); // Close and clear notifications if present
                 if (errorCode == 'noauth') { QH('p0span', "Unable to perform authentication"); return; }
                 if (prevState == 2) { setTimeout(serverPoll, 5000); } else { QH('p0span', "Unable to connect web socket"); }
                 // Clean up here

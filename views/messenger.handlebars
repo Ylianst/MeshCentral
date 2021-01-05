@@ -25,15 +25,25 @@
             </div>
             <div style="padding-top:9px;padding-left:6px;font-size:20px;display:inline-block"><b><span id="xtitle">MeshMessenger</span></b></div>
         </div>
-        <div id="xmiddle" style="position:absolute;left:0;right:0;top:38px;bottom:30px;font-size:16px">
+        <div id="xmiddle" style="position:absolute;left:0;right:0;top:38px;bottom:36px;font-size:18px">
             <div id="xmsgparent" style="position:absolute;left:0;right:0;top:0;bottom:0;overflow-y:scroll">
                 <div id="xmsg" style="padding:5px"></div>
             </div>
         </div>
-        <div id="xbottom" style="position:absolute;left:0;right:0;bottom:0px;height:30px;background-color:#036">
-            <div style="position:absolute;left:5px;right:215px;bottom:4px;top:4px;background-color:aliceblue"><input id="xouttext" type="text" style="width:calc(100% - 5px)" onfocus=onUserInputFocus(1) onblur=onUserInputFocus(0) /></div>
-            <input type="button" id="sendButton" value="Send" style="position:absolute;right:110px;width:100px;top:4px;" onclick="xsend(event)" />
-            <input type="button" id="clearButton" value="Clear" style="position:absolute;right:5px;width:100px;top:4px;" onclick="displayClear()" />
+        <div id="xbottom" style="position:absolute;left:0;right:0;bottom:0px;height:36px;background-color:#036;font-size:18px">
+            <table style="width:100%">
+                <tr>
+                    <td>
+                        <input id="xouttext" type="text" style="box-sizing:border-box;width:100%;font-size:18px" onfocus=onUserInputFocus(1) onblur=onUserInputFocus(0) />
+                    </td>
+                    <td style="width:1px">
+                        <input type="button" id="sendButton" value="Send" style="box-sizing: border-box;float:right;font-size:18px" onclick="xsend(event)" />
+                    </td>
+                    <td style="width:1px">
+                        <input type="button" id="clearButton" value="Clear" style="box-sizing: border-box;float:right;font-size:18px" onclick="displayClear()" />
+                    </td>
+                </tr>
+            </table>
         </div>
         <div id="remoteVideo" style="position:absolute;right:24px;top:45px;width:320px;height:calc(240px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none">
             <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Remote</div>
@@ -41,7 +51,7 @@
         </div>
         <div id="localVideo" style="position:absolute;right:24px;top:320px;width:160px;height:calc(120px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none">
             <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Local</div>
-            <video id="localVideoCanvas" autoplay muted style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);background-color:black"></video>
+            <video id="localVideoCanvas" autoplay muted style="position:absolute;top:20px;left:0;right:100%;height:calc(100% - 30px);background-color:black"></video>
         </div>
         <input id="uploadFileInput" type="file" multiple style="display:none">
         <script type="text/javascript" onunload="onUnLoad()">
@@ -72,6 +82,19 @@
             var fileDownloads = {};
             var currentFileUpload = null;
             var currentFileDownload = null;
+
+            setInterval(resizeVideos, 1000);
+            function resizeVideos() {
+                var rheight = 0;
+                if (remoteStream != null) {
+                    rheight = ((320 * Q('remoteVideoCanvas').videoHeight) / Q('remoteVideoCanvas').videoWidth);
+                    QS('remoteVideo').height = 'calc(' + rheight + 'px + 30px)';
+                }
+                if (localStream != null) {
+                    QS('localVideo').height = 'calc(' + ((160 * Q('localVideoCanvas').videoHeight) / Q('localVideoCanvas').videoWidth) + 'px + 30px)';
+                    QS('localVideo').top = (rheight + 50 + ((remoteStream != null)?30:0)) + 'px';
+                }
+            }
 
             // Set the title
             if (args.title) { QH('xtitle', EscapeHtml(args.title).split(' ').join('&nbsp')); document.title = document.title + ' - ' + args.title; }
@@ -170,6 +193,7 @@
                 //var lv = (QS('localVideo')['display'] != 'none');
                 var rv = (QS('remoteVideo')['display'] != 'none');
                 QS('localVideo')['top'] = rv ? '320px' : '45px';
+                resizeVideos();
             }
 
             // Display a message from the remote user
@@ -196,11 +220,12 @@
                 if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
                 var outtext = Q('xouttext').value;
                 if (outtext.length > 0) {
-                    Q('xouttext').value = '';
                     chatTextSession += ((new Date()).toLocaleTimeString() + ' - ' + "Local" + '> ' + outtext + '\r\n');
                     QA('xmsg', '<div style="clear:both"><div class="localBubble">' + EscapeHtml(outtext) + '</div><div></div></div>');
                     Q('xmsgparent').scrollTop = Q('xmsgparent').scrollHeight;
                     send({ action: 'chat', msg: outtext });
+                    Q('xouttext').value = '';
+                    Q('xouttext').focus();
                 }
             }
 
