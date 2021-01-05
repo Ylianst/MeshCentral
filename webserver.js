@@ -4917,7 +4917,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } catch (ex) {
                 // If there is an error, try to resolve the string
                 if ((obj.args.trustedproxy.length == 1) && (typeof obj.args.trustedproxy[0] == 'string')) {
-                    require('dns').lookup(obj.args.trustedproxy[0], function(err, address, family) { if (err == null) { obj.app.set('trust proxy', address); } });
+                    require('dns').lookup(obj.args.trustedproxy[0], function (err, address, family) { if (err == null) { obj.app.set('trust proxy', address); obj.args.trustedproxy = [address]; } });
                 }
             }
         } 
@@ -4928,7 +4928,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } catch (ex) {
                 // If there is an error, try to resolve the string
                 if ((obj.args.tlsoffload.length == 1) && (typeof obj.args.tlsoffload[0] == 'string')) {
-                    require('dns').lookup(obj.args.tlsoffload[0], function (err, address, family) { if (err == null) { obj.app.set('trust proxy', address); } });
+                    require('dns').lookup(obj.args.tlsoffload[0], function (err, address, family) { if (err == null) { obj.app.set('trust proxy', address); obj.args.tlsoffload = [address]; } });
                 }
             }
         }
@@ -4950,7 +4950,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var ipex = '0.0.0.0', xforwardedhost = req.headers.host;
             if (typeof req.connection.remoteAddress == 'string') { ipex = (req.connection.remoteAddress.startsWith('::ffff:')) ? req.connection.remoteAddress.substring(7) : req.connection.remoteAddress; }
             if (
-                (obj.args.trustedproxy === true) ||
+                (obj.args.trustedproxy === true) || (obj.args.tlsoffload === true) ||
                 ((typeof obj.args.trustedproxy == 'object') && (isIPMatch(ipex, obj.args.trustedproxy))) ||
                 ((typeof obj.args.tlsoffload == 'object') && (isIPMatch(ipex, obj.args.tlsoffload)))
             ) {
