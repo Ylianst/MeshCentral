@@ -47,7 +47,8 @@ function createMeshCore(agent) {
     var agentFileHttpPendingRequests = []; // Pending HTTPS GET requests from the server.
     var debugConsole = (_MSH().debugConsole == 1);
 
-    if (process.platform == 'win32' && require('user-sessions').isRoot()) {
+    if (process.platform == 'win32' && require('user-sessions').isRoot())
+    {
         // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
         try {
             var writtenSize = 0, actualSize = Math.floor(require('fs').statSync(process.execPath).size / 1024);
@@ -56,10 +57,20 @@ function createMeshCore(agent) {
         } catch (x) { }
 
         // Check to see if we are the Installed Mesh Agent Service, if we are, make sure we can run in Safe Mode
-        try {
+        var svcname = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent';
+        try
+        {
+            svcname = require('MeshAgent').serviceName;
+        }
+        catch (x)
+        {
+        }
+
+        try
+        {
             var meshCheck = false;
-            try { meshCheck = require('service-manager').manager.getService('Mesh Agent').isMe(); } catch (e) { }
-            if (meshCheck && require('win-bcd').isSafeModeService && !require('win-bcd').isSafeModeService('Mesh Agent')) { require('win-bcd').enableSafeModeService('Mesh Agent'); }
+            try { meshCheck = require('service-manager').manager.getService(svcname).isMe(); } catch (e) { }
+            if (meshCheck && require('win-bcd').isSafeModeService && !require('win-bcd').isSafeModeService(svcname)) { require('win-bcd').enableSafeModeService(svcname); }
         } catch (e) { }
     }
 
@@ -1054,6 +1065,14 @@ function createMeshCore(agent) {
                 case 'uninstallagent':
                     // Uninstall this agent
                     var agentName = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent';
+                    try
+                    {
+                        agentName = require('MeshAgent').serviceName;
+                    }
+                    catch (x)
+                    {
+                    }
+
                     if (require('service-manager').manager.getService(agentName).isMe()) {
                         try { diagnosticAgent_uninstall(); } catch (e) { }
                         var js = "require('service-manager').manager.getService('" + agentName + "').stop(); require('service-manager').manager.uninstallService('" + agentName + "'); process.exit();";
@@ -3119,29 +3138,45 @@ function createMeshCore(agent) {
                     }
                     break;
                 case 'safemode':
-                    if (process.platform != 'win32') {
+                    if (process.platform != 'win32')
+                    {
                         response = 'safemode only supported on Windows Platforms'
                     }
-                    else {
-                        if (args['_'].length != 1) {
+                    else
+                    {
+                        if (args['_'].length != 1)
+                        {
                             response = 'Proper usage: safemode (ON|OFF|STATUS)'; // Display usage
                         }
-                        else {
-                            switch (args['_'][0].toUpperCase()) {
+                        else
+                        {
+                            var svcname = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent';
+                            try
+                            {
+                                svcname = require('MeshAgent').serviceName;
+                            }
+                            catch (x)
+                            {
+                            }
+
+                            switch (args['_'][0].toUpperCase())
+                            {
                                 default:
                                     response = 'Proper usage: safemode (ON|OFF|STATUS)'; // Display usage
                                     break;
                                 case 'ON':
                                     require('win-bcd').setKey('safeboot', 'Network');
-                                    require('win-bcd').enableSafeModeService('Mesh Agent');
+                                    require('win-bcd').enableSafeModeService(svcname);
                                     break;
                                 case 'OFF':
                                     require('win-bcd').deleteKey('safeboot');
                                     break;
                                 case 'STATUS':
                                     var nextboot = require('win-bcd').getKey('safeboot');
-                                    if (nextboot) {
-                                        switch (nextboot) {
+                                    if (nextboot)
+                                    {
+                                        switch (nextboot)
+                                        {
                                             case 'Network':
                                             case 'network':
                                                 nextboot = 'SAFE_MODE_NETWORK';
@@ -3280,6 +3315,14 @@ function createMeshCore(agent) {
                 }
                 case 'uninstallagent': // Uninstall this agent
                     var agentName = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent';
+                    try
+                    {
+                        agentName = require('MeshAgent').serviceName;
+                    }
+                    catch (x)
+                    {
+                    }
+
                     if (!require('service-manager').manager.getService(agentName).isMe()) {
                         response = 'Uininstall failed, this instance is not the service instance';
                     } else {
