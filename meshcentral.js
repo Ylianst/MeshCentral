@@ -159,6 +159,7 @@ function CreateMeshCentralServer(config, args) {
             console.log('   --redirport [number]              Creates an additional HTTP server to redirect users to the HTTPS server.');
             console.log('   --exactports                      Server must run with correct ports or exit.');
             console.log('   --noagentupdate                   Server will not update mesh agent native binaries.');
+            console.log('   --nedbtodb                        Transfer all NeDB records into current database.');
             console.log('   --listuserids                     Show a list of a user identifiers in the database.');
             console.log('   --cert [name], (country), (org)   Create a web server certificate with [name] server name.');
             console.log('                                     country and organization can optionally be set.');
