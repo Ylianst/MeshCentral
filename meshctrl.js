@@ -1442,7 +1442,7 @@ function serverConnect() {
             case 'addusertousergroup':
             case 'removeuserfromusergroup':
             case 'userbroadcast': { // BROADCAST
-                if (settings.cmd == 'upload') return;
+                if ((settings.cmd == 'shell') || (settings.cmd == 'upload') || (settings.cmd == 'download')) return;
                 if ((settings.multiresponse != null) && (settings.multiresponse > 1)) { settings.multiresponse--; break; }
                 if (data.responseid == 'meshctrl') {
                     if (data.meshid) { console.log(data.result, data.meshid); }
