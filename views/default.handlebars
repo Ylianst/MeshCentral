@@ -12425,8 +12425,8 @@
             var emailLink = '';
             if (user.email) { emailLink = ' <a href="mailto:' + EscapeHtml(user.email) + '" \'><img class=hoverButton src="images/link1.png" /></a>'; }
             if (((user.siteadmin != 0xFFFFFFFF) || (userinfo.siteadmin == 0xFFFFFFFF))) { // If we are not site admin, we can't change a admin email or real name
-                x += addDeviceAttribute("Email", everify + email + emailLink + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserEmailChangeDialog(event,"' + userid + '") />');
-                x += addDeviceAttribute("Real Name", realname + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserRealNameChangeDialog(event,"' + userid + '") />');
+                x += addDeviceAttribute("Email", everify + email + emailLink + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserEmailChangeDialog(event,"' + encodeURIComponentEx(user._id) + '") />');
+                x += addDeviceAttribute("Real Name", realname + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserRealNameChangeDialog(event,"' + encodeURIComponentEx(user._id) + '") />');
             } else {
                 x += addDeviceAttribute("Email", everify + email + emailLink);
                 x += addDeviceAttribute("Real Name", realname);
@@ -12436,7 +12436,7 @@
                 x += addDeviceAttribute("Phone Number", (user.phone?user.phone:('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30editPhone() />');
             }
 
-            x += addDeviceAttribute("Server Rights", premsg + msg.join(', ') + ' <img style=cursor:pointer class=hoverButton onclick=\'return showUserAdminDialog(event,"' + userid + '")\' src="images/link5.png" />');
+            x += addDeviceAttribute("Server Rights", premsg + msg.join(', ') + ' <img style=cursor:pointer class=hoverButton onclick=\'return showUserAdminDialog(event,"' + encodeURIComponentEx(user._id) + '")\' src="images/link5.png" />');
             if (user.quota) x += addDeviceAttribute("Server Quota", EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute("Creation", printDateTime(new Date(user.creation * 1000)));
             if (user.login) x += addDeviceAttribute("Last Login", printDateTime(new Date(user.login * 1000)));
@@ -12455,7 +12455,7 @@
             if ((userinfo.siteadmin == 0xFFFFFFFF) || (userinfo.siteadmin & 2)) {
                 var xuserGroups = '<i>' + "None" + '</i>';
                 if (user.groups) { xuserGroups = ''; for (var i in user.groups) { xuserGroups += '<span class="tagSpan">' + EscapeHtml(user.groups[i]) + '</span>'; } }
-                x += addDeviceAttribute("Admin Realms", addLinkConditional(xuserGroups, 'showUserGroupDialog(event,"' + userid + '")', (userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.groups == null) && (userinfo._id != user._id) && (user.siteadmin != 0xFFFFFFFF))));
+                x += addDeviceAttribute("Admin Realms", addLinkConditional(xuserGroups, 'showUserGroupDialog(event,"' + encodeURIComponentEx(user._id) + '")', (userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.groups == null) && (userinfo._id != user._id) && (user.siteadmin != 0xFFFFFFFF))));
             }
 
             // Display device user consent
@@ -12488,10 +12488,13 @@
             x += '</table></div><br />';
 
             // Add action buttons
-            x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + encodeURIComponentEx(userid) + '") />';
-            if (user.phone && (features & 0x02000000)) { x += '<input type=button value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + encodeURIComponentEx(userid) + '") />'; }
-            if ((typeof user.email == 'string') && (user.emailVerified === true) && (features & 0x00000040)) { x += '<input type=button value="' + "Email" + '" title="' + "Send a email message to this user" + '" onclick=showSendEmail("' + userid + '") />'; }
-            if (!self && (activeSessions > 0)) { x += '<input type=button value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + encodeURIComponentEx(userid) + '") />'; }
+            x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + encodeURIComponentEx(user._id) + '") />';
+            if (user.phone && (features & 0x02000000)) { x += '<input type=button value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + encodeURIComponentEx(user._id) + '") />'; }
+            if ((typeof user.email == 'string') && (user.emailVerified === true) && (features & 0x00000040)) { x += '<input type=button value="' + "Email" + '" title="' + "Send a email message to this user" + '" onclick=showSendEmail("' + encodeURIComponentEx(user._id) + '") />'; }
+            if (!self && (activeSessions > 0)) {
+                x += '<input type=button value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + encodeURIComponentEx(user._id) + '") />';
+                x += '<input type=button value="' + "Chat" + '" title="' + "Chat" + '" onclick=userChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '") />';
+            }
 
             // Setup the panel
             QH('p30html', x);

@@ -417,10 +417,65 @@
             margin:10px;
             z-index:1000;
         }
+
+        #notificationCount {
+            min-width: 28px;
+            font-size: 20px;
+            background-color: orange;
+            text-align: center;
+            cursor: pointer;
+            color: black;
+        }
+
+        .notifiyBox {
+            font-size: 16px;
+            position: absolute;
+            z-index: 1000;
+            top: 60px;
+            right: 76px;
+            width: 300px;
+            text-align: left;
+            background-color: #F0ECCD;
+            border: 4px solid #666;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+            -webkit-box-shadow: 2px 2px 4px #888;
+            -moz-box-shadow: 2px 2px 4px #888;
+            box-shadow: 2px 2px 4px #888;
+            max-height: 200px;
+        }
+
+        .night .notifiyBox {
+            color: black;
+        }
+
+            .notifiyBox:before {
+                content: ' ';
+                position: absolute;
+                width: 0;
+                height: 0;
+                right: 5px;
+                top: -30px;
+                border: 15px solid;
+                border-color: transparent #666 #666 transparent;
+            }
+
+            .notifiyBox:after {
+                content: ' ';
+                position: absolute;
+                width: 0;
+                height: 0;
+                right: 7px;
+                top: -24px;
+                border: 12px solid;
+                border-color: transparent #F0ECCD #F0ECCD transparent;
+            }
     </style>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
     <div id=container>
+        <div id="notifiyBox" class="notifiyBox" style="display:none"></div>
         <div id=mastheadx></div>
         <div id=masthead style="background:url(logo.png) 0px 0px;background-size:341px 50px;background-color:#036;background-repeat:no-repeat;height:50px;width:100%;overflow:hidden">
             <div style="width:calc(100% - 50px);overflow:hidden">
@@ -431,7 +486,8 @@
                     <strong><font style="font-size:12px;font-family:Arial,Helvetica,sans-serif">{{{title2}}}</font></strong>
                 </div>
             </div>
-            <img id="topMenuIcon" class=noselect style="position:absolute;right:0;top:10px;bottom:50px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer;display:none" onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
+            <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="position:absolute;right:50px;top:0px;font-size:28px;width:50px;height:50px;cursor:pointer;display:none" title="Click to view current notifications"><div id="notificationCount2" style="padding-top:8px">0</div></div>
+            <img id="topMenuIcon" class=noselect style="position:absolute;right:0;top:10px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer;display:none" onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
         </div>
         <div id=page_content style="position:absolute;bottom:32px;top:50px;width:100%">
             <div id=column_l style="width:100%;padding:0;position:absolute;bottom:0px;top:0px">
@@ -879,6 +935,7 @@
         <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(1)>My Account</div>
         <div id="logoutMenuOption"><a href=/logout><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a></div>
     </div>
+    <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3" /></audio>
     <iframe name="fileUploadFrame" style=display:none></iframe>
     <script>
         'use strict';
@@ -1167,6 +1224,36 @@
                     if (node != null) {
                         node.lastconnect = message.time;
                         node.lastaddr = message.addr;
+                    }
+                    break;
+                }
+                case 'msg': {
+                    // Check if this is a message from a node
+                    if (message.nodeid != null) {
+                        var index = -1;
+                        if (nodes != null) { for (var i in nodes) { if (nodes[i]._id == message.nodeid) { index = i; break; } } }
+                        if (index != -1) {
+                            if (message.type == 'notify') { // This is a notification message.
+                                var n = getstore('notifications', 0);
+                                if (((n & 8) == 0) && (message.amtMessage != null)) { break; } // Intel AMT desktop & terminal messages should be ignored.
+                                var n = { text: message.value, title: message.title, icon: message.icon, titleid: message.titleid, msgid: message.msgid, args: message.args };
+                                if (message.id != null) { n.id = message.id; }
+                                if (message.nodeid != null) { n.nodeid = message.nodeid; }
+                                if (message.tag != null) { n.tag = message.tag; }
+                                if (message.username != null) { n.username = message.username; }
+                                if (typeof message.maxtime == 'number') { n.maxtime = message.maxtime; }
+                                addNotification(n);
+                            }
+                        }
+                    } else {
+                        if (message.type == 'notify') { // This is a notification message.
+                            var n = { text: message.value, title: message.title, icon: message.icon, titleid: message.titleid, msgid: message.msgid, args: message.args };
+                            if (message.id != null) { n.id = message.id; }
+                            if (message.tag != null) { n.tag = message.tag; }
+                            if (message.username != null) { n.username = message.username; }
+                            if (typeof message.maxtime == 'number') { n.maxtime = message.maxtime; }
+                            addNotification(n);
+                        }
                     }
                     break;
                 }
@@ -1536,9 +1623,11 @@
                             break;
                         }
                         case 'notify': {
-                            //var n = { text: message.event.value };
-                            //if (message.event.tag != null) { n.tag = message.event.tag; }
-                            //addNotification(n);
+                            var n = { text: message.event.value, title: message.event.title, icon: message.event.icon, titleid: message.titleid, msgid: message.msgid, args: message.args };
+                            if (message.id != null) { n.id = message.id; }
+                            if (message.event.tag != null) { n.tag = message.event.tag; }
+                            if (typeof message.maxtime == 'number') { n.maxtime = message.maxtime; }
+                            addNotification(n);
                             break;
                         }
                         case 'sysinfohash': {
@@ -4449,6 +4538,200 @@
         function p20deleteUser(e, userid) { haltEvent(e); p20viewuserEx(2, decodeURIComponent(userid)); }
         function p20viewuserEx2(button, userid) { meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid }); }
 
+
+        //
+        // NOTIFICATIONS
+        //
+
+        var notifications = [];
+
+        // Toggle showing notifications
+        function clickNotificationIcon(show) {
+            //addNotification({ icon:0, text:'test' });
+            if (show == true) { QV('notifiyBox', true); } else if (show == false) { QV('notifiyBox', false); } else { QV('notifiyBox', QS('notifiyBox')['display'] == 'none'); }
+            drawNotifications();
+        }
+
+        // Set the notification count on the upper right oft he screen
+        function setNotificationCount(c) {
+            if (parseInt(Q('notificationCount').innerHTML) == c) return; // If the count did not change, exit now.
+            QH('notificationCount2', c);
+            QV('notificationCount', c > 0);
+        }
+
+        // Refresh the notification box
+        function drawNotifications() {
+            var notifySettings = getstore('notifications', 0);
+            var r = '';
+            if (notifications.length == 0) {
+                r = '<div style=margin:5px>' + "There are currently no notifications" + '</div>';
+            } else {
+                for (var i in notifications) {
+                    var n = notifications[i], t = '', d = new Date(n.time), icon = 0;
+                    if (n.title != null) { t = '<b>' + EscapeHtml(n.title) + '</b>: ' }
+                    if (n.nodeid != null) {
+                        var node = getNodeFromId(n.nodeid);
+                        if (node != null) {
+                            icon = node.icon;
+                            if (notifySettings & 16) { t = '<b>' + EscapeHtml(meshes[node.meshid].name) + ' / ' + EscapeHtml(node.name) + '</b>: '; } else { t = '<b>' + EscapeHtml(node.name) + '</b>: '; } // Display with or without group name
+                        }
+                    }
+
+                    r += '<div title="' + format("Occured at {0}", printDateTime(d)) + '" id="notifyx' + n.id + '" class=notification style="cursor:pointer;border-top:1px solid ' + ((r == '') ? 'transparent' : 'orange') + '">';
+                    if (icon) { r += '<div class=j' + icon + ' onclick="notificationSelected(' + n.id + ')" style=margin:5px;float:left></div>'; }
+                    r += '<div onclick="notificationDelete(' + n.id + ')" class=unselectable title="' + "Clear this notification" + '" style=margin:5px;float:right;color:orange><b>X</b></div><div onclick="notificationSelected(' + n.id + ')" style=margin:5px>' + t + EscapeHtml(n.text) + '</div></div>';
+                }
+            }
+            var deleteall = '';
+            if (notifications.length > 1) { deleteall = '<div id="notifyRemoveAll" onclick="deleteAllNotifications()" style="cursor:pointer;border-top:1px solid orange;margin:5px;color:orange;text-align:right;padding-right:3px">' + "Clear all" + '</div>'; }
+            QH('notifiyBox', '<div class=customScroll style="max-height:170px;overflow-y:auto;margin:5px">' + r + '</div>' + deleteall);
+        }
+
+        // A notification was selected
+        function notificationSelected(id, del) {
+            var j = -1;
+            for (var i in notifications) { if (notifications[i].id == id) { j = i; } }
+            if (j != -1) {
+                notificationSelectedEx(notifications[j], id);
+                if (del && notifications[j]) {
+                    if (notifications[j].notification) { notifications[j].notification.close(); delete notifications[j].notification; }
+                    notificationDelete(id);
+                }
+            }
+        }
+
+        function notificationSelectedEx(n, id) {
+            if (n.nodeid != null) {
+                if (n.tag == 'desktop') gotoDevice(n.nodeid, 12); // Desktop
+                else if (n.tag == 'terminal') gotoDevice(n.nodeid, 11); // Terminal
+                else if (n.tag == 'files') gotoDevice(n.nodeid, 13); // Files
+                else if (n.tag == 'intelamt') gotoDevice(n.nodeid, 14); // Intel AMT
+                else if (n.tag == 'console') gotoDevice(n.nodeid, 15); // Files
+                else gotoDevice(n.nodeid, 10); // General
+            } else {
+                if ((n.tag != null) && n.tag.startsWith('meshmessenger/')) {
+                    safeNewWindow('/messenger?id=' + n.tag + '&title=' + encodeURIComponentEx(n.username), n.tag.split('/')[2]);
+                    notificationDelete(id);
+                }
+            }
+        }
+
+        // Remove one notification
+        function notificationDelete(id) {
+            var j = -1, e = Q('notifyx' + id);
+            if (e != null) {
+                for (var i in notifications) { if (notifications[i].id == id) { j = i; } }
+                if (j != -1) {
+                    meshserver.send({ action: 'intersession', subaction: 'removeNotify', id: id }); // Remove the notification in other sessions of the same user.
+                    if (notifications[j].notification) { notifications[j].notification.close(); delete notifications[j].notification; }
+                    notifications.splice(j, 1);
+                    e.parentNode.removeChild(e);
+                    setNotificationCount(notifications.length);
+                    if (notifications.length == 0) { QV('notifiyBox', false); }
+                    if (notifications.length == 1) { QV('notifyRemoveAll', false); }
+                    if ((notifications.length > 0) && (j == 0)) {
+                        var n = notifications[0];
+                        QS('notifyx' + n.id)['border-top'] = '1px solid transparent';
+                    }
+                }
+            }
+        }
+
+        // Add a new notification and play the notification sound
+        function addNotification(n) {
+            // Perform message translation
+            var translatedTitles = [
+                null,
+                "New Account", // 1
+                "Server Limit",
+                "Security Warning",
+                "Account Settings",
+                "Device Group",
+                "Invite Codes"
+            ];
+            var translatedMessages = [
+                null,
+                "Permission denied", // 1
+                "Invalid username",
+                "Invalid password",
+                "Invalid email",
+                "Invalid domain",
+                "Invalid site permissions",
+                "User already exists",
+                "Unable to add user in this mode",
+                "Validation exception",
+                "Account limit reached.", // 10
+                "Chat Request, Click here to accept.",
+                "There has been {0} failed login attempts on this account since the last login.",
+                "Failed to change email address, another account already using: {0}.",
+                "Email sent.",
+                "User {0} not found.",
+                "Users {0} not found.",
+                "Error, unable to change to previously used password.",
+                "Error, unable to change to commonly used password.",
+                "Error, password not changed.",
+                "Password changed.", // 20
+                "Current password not correct.",
+                "Error, invite code \"{0}\" already in use.",
+                "SMS gateway not enabled",
+                "No user management rights",
+                "Invalid SMS message",
+                "No phone number for this user",
+                "SMS succesfuly sent.",
+                "SMS error",
+                "SMS error: {0}"
+            ];
+            if (typeof n.titleid == 'number') { try { n.title = translatedTitles[n.titleid]; } catch (ex) { } }
+            if (typeof n.msgid == 'number') { try { n.text = translatedMessages[n.msgid]; if (Array.isArray(n.args)) { format(n.text, ...n.args); } } catch (ex) { } }
+
+            // Show notification within the web page.
+            if (n.time == null) { n.time = Date.now(); }
+            if (n.id == null) { n.id = Math.random(); }
+            notifications.unshift(n);
+            setNotificationCount(notifications.length);
+            clickNotificationIcon(true);
+            var notifySettings = getstore('notifications', 0);
+            if (notifySettings & 1) { Q('chimes').play(); }
+
+            // If web notifications are granted, use it.
+            var notification = null;
+            if (Notification && (Notification.permission == 'granted')) {
+                var text = n.text.split('&reg;').join('').split('<b>').join('').split('</b>').join('').split('<br />').join('\r\n'); // Clean up any HTML codes
+                if (n.nodeid) {
+                    var node = getNodeFromId(n.nodeid);
+                    if (node) {
+                        if (notifySettings & 16) { // Notify with group name
+                            notification = new Notification(decodeURIComponent('{{{extitle}}}') + ' - ' + meshes[node.meshid].name + ' - ' + node.name, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + node.icon + '.png' });
+                        } else {
+                            notification = new Notification(decodeURIComponent('{{{extitle}}}') + ' - ' + node.name, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + node.icon + '.png' });
+                        }
+                    }
+                } else {
+                    if (n.icon == null) { n.icon = 0; }
+                    var title = n.title;
+                    if (title == null) { title = ''; } else { title = ' - ' + n.title; }
+                    notification = new Notification(decodeURIComponent('{{{extitle}}}') + title, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + n.icon + '.png' });
+                }
+                notification.id = n.id;
+                notification.xtag = n.tag;
+                notification.nodeid = n.nodeid;
+                notification.username = n.username;
+                notification.onclick = function (e) { notificationSelected(e.target.id, true); }
+                n.notification = notification;
+            }
+
+            // If the notification has a max time, setup the timer here.
+            if ((typeof n.maxtime == 'number') && (n.maxtime > 0)) { var trigger = function notifyRemoveTrigger() { notificationDelete(notifyRemoveTrigger.xid); }; trigger.xid = n.id; setTimeout(trigger, n.maxtime * 1000); }
+        }
+
+        // Remove all notifications
+        function deleteAllNotifications() {
+            notifications = [];
+            setNotificationCount(0);
+            drawNotifications();
+            QV('notifiyBox', false);
+        }
+
         //
         // PANELS
         //
@@ -4649,6 +4932,8 @@
         function getUserName(userid) { if (users && users[userid] != null) return users[userid].name; return userid.split('/')[2]; }
         function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right>' + value + '</table>'; }
         function isPrivateIP(a) { return (a.startsWith('10.') || a.startsWith('172.16.') || a.startsWith('192.168.')); }
+        function encodeURIComponentEx(txt) { return encodeURIComponent(txt).replace(/'/g, '%27'); };
+        function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
 
     </script>
 </body>
