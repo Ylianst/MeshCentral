@@ -927,10 +927,10 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the events collection
             obj.GetAllEvents = function (func) { sqlDbQuery('SELECT doc FROM meshcentral.events', null, func); };
-            obj.StoreEvent = function (event) {
+            obj.StoreEvent = function (event, func) {
                 var batchQuery = [['INSERT INTO meshcentral.events VALUE (?, ?, ?, ?, ?, ?, ?)', [null, event.time, ((typeof event.domain == 'string') ? event.domain : null), event.action, event.nodeid ? event.nodeid : null, event.userid ? event.userid : null, JSON.stringify(event)]]];
                 for (var i in event.ids) { if (event.ids[i] != '*') { batchQuery.push(['INSERT INTO meshcentral.eventids VALUE (LAST_INSERT_ID(), ?)', [event.ids[i]]]); } }
-                sqlDbBatchExec(batchQuery, function (err, docs) { });
+                sqlDbBatchExec(batchQuery, function (err, docs) { if (func != null) { func(err, docs); } });
             };
             obj.GetEvents = function (ids, domain, func) {
                 if (ids.indexOf('*') >= 0) {
@@ -1101,7 +1101,7 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the events collection
             obj.GetAllEvents = function (func) { obj.eventsfile.find({}).toArray(func); };
-            obj.StoreEvent = function (event) { obj.eventsfile.insertOne(event); };
+            obj.StoreEvent = function (event, func) { obj.eventsfile.insertOne(event, func); };
             obj.GetEvents = function (ids, domain, func) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).toArray(func); };
             obj.GetEventsWithLimit = function (ids, domain, limit, func) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).toArray(func); };
             obj.GetUserEvents = function (ids, domain, username, func) { obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { username: username }] }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).toArray(func); };
@@ -1249,7 +1249,7 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the events collection
             obj.GetAllEvents = function (func) { obj.eventsfile.find({}, func); };
-            obj.StoreEvent = function (event) { obj.eventsfile.insert(event); };
+            obj.StoreEvent = function (event, func) { obj.eventsfile.insert(event, func); };
             obj.GetEvents = function (ids, domain, func) { if (obj.databaseType == 1) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).exec(func); } else { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }, func); } };
             obj.GetEventsWithLimit = function (ids, domain, limit, func) { if (obj.databaseType == 1) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func); } };
             obj.GetUserEvents = function (ids, domain, username, func) {
@@ -1655,6 +1655,97 @@ module.exports.CreateDB = function (parent, func) {
                 });
             });
         }
+    }
+
+    // Transfer NeDB data into the current database
+    obj.nedbtodb = function (func) {
+        var nedbDatastore = require('nedb');
+        var datastoreOptions = { filename: parent.getConfigFilePath('meshcentral.db'), autoload: true };
+
+        // If a DB encryption key is provided, perform database encryption
+        if ((typeof parent.args.dbencryptkey == 'string') && (parent.args.dbencryptkey.length != 0)) {
+            // Hash the database password into a AES256 key and setup encryption and decryption.
+            var nedbKey = parent.crypto.createHash('sha384').update(parent.args.dbencryptkey).digest('raw').slice(0, 32);
+            datastoreOptions.afterSerialization = function (plaintext) {
+                const iv = parent.crypto.randomBytes(16);
+                const aes = parent.crypto.createCipheriv('aes-256-cbc', nedbKey, iv);
+                var ciphertext = aes.update(plaintext);
+                ciphertext = Buffer.concat([iv, ciphertext, aes.final()]);
+                return ciphertext.toString('base64');
+            }
+            datastoreOptions.beforeDeserialization = function (ciphertext) {
+                const ciphertextBytes = Buffer.from(ciphertext, 'base64');
+                const iv = ciphertextBytes.slice(0, 16);
+                const data = ciphertextBytes.slice(16);
+                const aes = parent.crypto.createDecipheriv('aes-256-cbc', nedbKey, iv);
+                var plaintextBytes = Buffer.from(aes.update(data));
+                plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
+                return plaintextBytes.toString();
+            }
+        }
+
+        // Setup all NeDB collections
+        var nedbfile = new nedbDatastore(datastoreOptions);
+        var nedbeventsfile = new nedbDatastore({ filename: parent.getConfigFilePath('meshcentral-events.db'), autoload: true, corruptAlertThreshold: 1 });
+        var nedbpowerfile = new nedbDatastore({ filename: parent.getConfigFilePath('meshcentral-power.db'), autoload: true, corruptAlertThreshold: 1 });
+        var nedbserverstatsfile = new nedbDatastore({ filename: parent.getConfigFilePath('meshcentral-stats.db'), autoload: true, corruptAlertThreshold: 1 });
+
+        // Transfered record counts
+        var normalRecordsTransferCount = 0;
+        var eventRecordsTransferCount = 0;
+        var powerRecordsTransferCount = 0;
+        var statsRecordsTransferCount = 0;
+        var pendingTransfer = 0;
+
+        // Transfer the data from main database
+        nedbfile.find({}, function (err, docs) {
+            if ((err == null) && (docs.length > 0)) {
+                performTypedRecordDecrypt(docs)
+                for (var i in docs) {
+                    pendingTransfer++;
+                    normalRecordsTransferCount++;
+                    obj.Set(common.unEscapeLinksFieldName(docs[i]), function () { pendingTransfer--; });
+                }
+            }
+
+            // Transfer events
+            nedbeventsfile.find({}, function (err, docs) {
+                if ((err == null) && (docs.length > 0)) {
+                    for (var i in docs) {
+                        pendingTransfer++;
+                        eventRecordsTransferCount++;
+                        obj.StoreEvent(docs[i], function () { pendingTransfer--; });
+                    }
+                }
+
+                // Transfer power events
+                nedbpowerfile.find({}, function (err, docs) {
+                    if ((err == null) && (docs.length > 0)) {
+                        for (var i in docs) {
+                            pendingTransfer++;
+                            powerRecordsTransferCount++;
+                            obj.storePowerEvent(docs[i], null, function () { pendingTransfer--; });
+                        }
+                    }
+
+                    // Transfer server stats
+                    nedbserverstatsfile.find({}, function (err, docs) {
+                        if ((err == null) && (docs.length > 0)) {
+                            for (var i in docs) {
+                                pendingTransfer++;
+                                statsRecordsTransferCount++;
+                                obj.SetServerStats(docs[i], function () { pendingTransfer--; });
+                            }
+                        }
+
+                        // Only exit when all the records are stored.
+                        setInterval(function () {
+                            if (pendingTransfer == 0) { func("Done. " + normalRecordsTransferCount + " record(s), " + eventRecordsTransferCount + " event(s), " + powerRecordsTransferCount + " power change(s), " + statsRecordsTransferCount + " stat(s)."); }
+                        }, 200)
+                    });
+                });
+            });
+        });
     }
 
     function padNumber(number, digits) { return Array(Math.max(digits - String(number).length + 1, 0)).join(0) + number; }
