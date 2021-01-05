@@ -3243,7 +3243,7 @@
                 var xuserid = args.gotouser;
                 if (args.gotouser.indexOf('/') < 0) { xuserid = 'user/' + domain + '/' + args.gotouser; }
                 if ((users == null) || (users[xuserid] == null)) return; // This user is not loaded yet
-                gotoUser(xuserid);
+                gotoUser(encodeURIComponentEx(xuserid));
                 go(xviewmode);
                 goBackStack.push(4);
             } else if (args.gotougrp != null) {
@@ -12923,7 +12923,7 @@
                     var ruser = null;
                     if (users != null) { ruser = users[rec.userids[0]]; }
                     if (ruser != null) {
-                        sessionName += ' - <a href=# onclick=\'gotoUser("' + rec.userids[0] + '")\'>' + EscapeHtml(ruser.name) + '</a>';
+                        sessionName += ' - <a href=# onclick=\'gotoUser("' + encodeURIComponentEx(rec.userids[0]) + '")\'>' + EscapeHtml(ruser.name) + '</a>';
                     } else {
                         sessionName += ' - ' + EscapeHtml(rec.userids[0].split('/')[2]);
                     }
@@ -13641,7 +13641,7 @@
             if ((xxcurrentView == 11) && (desktop != null) && (desktop.m.recordedData != null)) { deskRecordSession(); }
 
             // If we are trying to go to "My Users" and we are not a user manager, move to recordings
-            if (((x == 4) && ((userinfo.siteadmin & 2) == 0)) || ((features & 4) != 0)) { x = 52; }
+            if (((x == 4) && (userinfo != null) && ((userinfo.siteadmin & 2) == 0)) || ((features & 4) != 0)) { x = 52; }
 
             // Stop the list graph if active
             if (xxcurrentView == 17) deviceDetailsStatsClear();

@@ -47,7 +47,8 @@
         </div>
         <div id="remoteVideo" style="position:absolute;right:24px;top:45px;width:320px;height:calc(240px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none">
             <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Remote</div>
-            <video id="remoteVideoCanvas" autoplay style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);background-color:black"></video>
+            <video id="remoteVideoCanvas" autoplay style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);background-color:black" onclick="remotePlay(event)"></video>
+            <div id="remoteClickToView" style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);color:white;text-align:center;padding-top:20px;display:none" onclick="remotePlay(event)">Click here to view.</div>
         </div>
         <div id="localVideo" style="position:absolute;right:24px;top:320px;width:160px;height:calc(120px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none">
             <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Local</div>
@@ -272,9 +273,20 @@
                 }
                 webrtc.ontrack = function (event) {
                     //console.log('ontrack', id);
+                    QV('remoteClickToView', false);
                     var video = Q('remoteVideoCanvas');
                     video.srcObject = remoteStream = event.streams[0];
-                    video.onloadedmetadata = function (e) { video.play(); };
+                    video.onloadedmetadata = function (e) {
+                        var promise = video.play();
+                        if (promise !== undefined) {
+                            promise.then(function() {
+                                // Video start ok
+                            }).catch(function(err) {
+                                // Video start error, display a play button
+                                QV('remoteClickToView', true);
+                            })
+                        }
+                    };
                     displayRemoteVideo(true);
                 }
                 //webrtc.onremovetrack = function (event) { console.log('onremovetrack'); }
@@ -292,6 +304,8 @@
                 webrtcSessions[id] = webrtc;
                 return webrtc;
             }
+
+            function remotePlay() { QV('remoteClickToView', false); Q('remoteVideoCanvas').play(); }
 
             function webRtcHandleOffer(id, description) {
                 //console.log('webRtcHandleOffer', description.sdp.length);
