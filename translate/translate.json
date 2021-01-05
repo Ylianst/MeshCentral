@@ -8090,6 +8090,12 @@
       ]
     },
     {
+      "en": "Click here to view.",
+      "xloc": [
+        "messenger.handlebars->remoteVideo->remoteClickToView"
+      ]
+    },
+    {
       "cs": "Klikněte na OK a bude vám zaslán ověřovací e-mail na:",
       "de": "Auf OK klicken, um eine Bestätigungsmail an folgende Adresse zu senden:",
       "en": "Click ok to send a verification mail to:",
