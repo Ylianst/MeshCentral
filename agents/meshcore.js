@@ -1014,7 +1014,7 @@ function createMeshCore(agent) {
                 }
                 case 'wakeonlan': {
                     // Send wake-on-lan on all interfaces for all MAC addresses in data.macs array. The array is a list of HEX MAC addresses.
-                    sendConsoleText("Server requesting wake-on-lan for: " + data.macs.join(', '));
+                    //sendConsoleText("Server requesting wake-on-lan for: " + data.macs.join(', '));
                     for (var i in data.macs) { sendWakeOnLan(data.macs[i]); }
                     break;
                 }

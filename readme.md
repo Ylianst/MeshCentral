@@ -12,9 +12,9 @@
 
 MeshCentral is a full computer management web site. With MeshCentral, you can run your own web server to remotely manage and control computers on a local network or anywhere on the internet. Once you get the server started, create device group and download and install an agent on each computer you want to manage. A minute later, the new computer will show up on the web site and you can take control of it. MeshCentral includes full web-based remote desktop, terminal and file management capability.
 
-To try out this software, please go to [MeshCentral.com](http://meshcentral.com). Be mindful that the public MeshCentral server comes with no guaranties, most should setup their own server
+To try out this software on the public server, please visit [MeshCentral.com/login](https://meshcentral.com/login). Be mindful that the public MeshCentral server comes with no guaranties, most should setup their own server.
 
-For more information, [visit MeshCommander.com/MeshCentral2](https://www.meshcommander.com/meshcentral2).
+For more information, [visit MeshCentral.com](https://www.meshcentral.com).
 
 ## Social Media
 [Reddit](https://www.reddit.com/r/MeshCentral/)  
