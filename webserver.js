@@ -5014,11 +5014,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 const geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
                 var selfurl = ' wss://' + req.headers.host;
                 if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { selfurl += ' wss://' + xforwardedhost; }
+                const extraScriptSrc = (parent.config.settings.extrascriptsrc != null) ? (' ' + parent.config.settings.extrascriptsrc) : '';
                 const headers = {
                     'Referrer-Policy': 'no-referrer',
                     'X-XSS-Protection': '1; mode=block',
                     'X-Content-Type-Options': 'nosniff',
-                    'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self'" + geourl + selfurl + "; img-src 'self'" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' https://*.youtube.com mcrouter:; media-src 'self'; form-action 'self'"
+                    'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'" + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self'" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' https://*.youtube.com mcrouter:; media-src 'self'; form-action 'self'"
                 };
                 if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
                 res.set(headers);

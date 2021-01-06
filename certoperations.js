@@ -110,6 +110,7 @@ module.exports.CertificateOperations = function (parent) {
         var acmCerts = [], acmmatch = [];
         if (amtacmactivation.certs != null) {
             for (var j in amtacmactivation.certs) {
+                if (j.startsWith('_')) continue; // Skip any certificates that start with underscore as the name.
                 var acmconfig = amtacmactivation.certs[j], r = null;
 
                 if ((typeof acmconfig.certpfx == 'string') && (typeof acmconfig.certpfxpass == 'string')) {
