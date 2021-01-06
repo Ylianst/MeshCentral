@@ -82,6 +82,15 @@ module.exports.CertificateOperations = function (parent) {
     // Remove the PEM header, footer and carriage returns so we only have the Base64 DER.
     function pemToBase64(pem) { return pem.split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('').split('\r\n').join(''); }
 
+    // Return true if both arrays match
+    function compareArrays(a1, a2) {
+        if (Array.isArray(a1) == false) return false;
+        if (Array.isArray(a2) == false) return false;
+        if (a1.length !== a2.length) return false;
+        for (var i = 0; i < a1.length; i++) { if (a1[i] !== a2[i]) return false; }
+        return true;
+    }
+
     // Log the Intel AMT activation operation in the domain log
     obj.logAmtActivation = function (domain, x) {
         if (x == null) return true;
@@ -130,6 +139,12 @@ module.exports.CertificateOperations = function (parent) {
                 }
                 if (orderingError == true) continue;
                 r.certs = or;
+
+                // Check that the certificate and private key match
+                if ((compareArrays(r.certs[0].publicKey.n.data, r.keys[0].n.data) == false) || (compareArrays(r.certs[0].publicKey.e.data, r.keys[0].e.data) == false)) {
+                    parent.addServerWarning('Intel AMT activation certificate provided with a mismatching private key.');
+                    continue;
+                }
 
                 /*
                 // Debug: Display all certs & key as PEM
