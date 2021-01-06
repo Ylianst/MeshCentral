@@ -6156,7 +6156,12 @@
                         var dshare = deviceShares[i];
                         var trash = '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><img src=images/link2.png border=0 height=10 width=10></a> <a href=# onclick=\'return p30removeDeviceSharing(event,"' + encodeURIComponentEx(currentNode._id) + '","' + encodeURIComponentEx(dshare.publicid) + '","' + encodeURIComponentEx(dshare.guestName) + '")\' title="' + "Remove device sharing" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                         var details = format("{0}, {1} to {2}", ((dshare.p == 1)?"Terminal":"Desktop"), printFlexDateTime(new Date(dshare.startTime)), printFlexDateTime(new Date(dshare.expireTime)));
-                        if (dshare.consent) { if (((dshare.consent & 8) != 0) || ((dshare.consent & 16) != 0)) { details += ", Prompt for consent"; } }
+                        if (dshare.consent != null) {
+                            if (dshare.consent == 0) { details += ", No Consent"; } else {
+                                if (((dshare.consent & 8) != 0) || ((dshare.consent & 16) != 0)) { details += ", Prompt for consent"; }
+                                if ((dshare.consent & 0x40) != 0) { details += ", Toolbar"; }
+                            }
+                        }
                         x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div class=m' + 2 + '></div><div>&nbsp;' + dshare.guestName + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + details + '</div></td></tr>';
                     }
                     x += '</tbody></table>';
@@ -6352,6 +6357,7 @@
 
             QE('idx_dlgOkButton', ok);
         }
+
         function showShareDeviceEx(b, tag) {
             var consent = 0;
             if (currentNode.agent.caps & 1) {

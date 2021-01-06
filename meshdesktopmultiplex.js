@@ -836,7 +836,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
 function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
     // Do validation work
     if (cookie) {
-        if ((typeof cookie.expire == 'number') && (cookie.expire <= currentTime)) { delete req.query.nodeid; }
+        if ((typeof cookie.expire == 'number') && (cookie.expire <= Date.now())) { delete req.query.nodeid; }
         else if (typeof cookie.nid == 'string') { req.query.nodeid = cookie.nid; }
     }
     if ((req.query.nodeid == null) || (req.query.p != '2') || (req.query.id == null) || (domain == null)) { try { ws.close(); } catch (e) { } return; } // Not is not a valid remote desktop connection.

@@ -4661,7 +4661,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'deviceShares': {
                 var err = null;
+
+                // Argument validation
                 if (common.validateString(command.nodeid, 8, 128) == false) { err = 'Invalid node id'; } // Check the nodeid
+                else if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                else if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
 
                 // Handle any errors
                 if (err != null) {
@@ -4672,7 +4676,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Get the device rights
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                     // If node not found or we don't have remote control, reject.
-                    if ((node == null) || ((rights & 8) == 0)) return;
+                    if ((node == null) || ((rights & 8) == 0)) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deviceShares', responseid: command.responseid, result: 'Invalid node id' })); } catch (ex) { } }
+                        return;
+                    }
 
                     // If there is MESHRIGHT_DESKLIMITEDINPUT or MESHRIGHT_REMOTEVIEWONLY on this account, reject this request.
                     if ((rights != 0xFFFFFFFF) && ((rights & 4352) != 0)) return;
@@ -4705,8 +4712,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'removeDeviceShare': {
                 var err = null;
+
+                // Argument validation
                 if (common.validateString(command.nodeid, 8, 128) == false) { err = 'Invalid node id'; } // Check the nodeid
-                else if (common.validateString(command.publicid, 1, 128) == false) { err = 'Invalid public id'; } // Check the public identifier
+                else if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                else if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
+                if (common.validateString(command.publicid, 1, 128) == false) { err = 'Invalid public id'; } // Check the public identifier
 
                 // Handle any errors
                 if (err != null) {
@@ -4717,8 +4728,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Get the device rights
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                     // If node not found or we don't have remote control, reject.
-                    if ((node == null) || ((rights & 8) == 0)) return;
-
+                    if ((node == null) || ((rights & 8) == 0)) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeDeviceShare', responseid: command.responseid, result: 'Invalid node id' })); } catch (ex) { } }
+                        return;
+                    }
+                    
                     // If there is MESHRIGHT_DESKLIMITEDINPUT or MESHRIGHT_REMOTEVIEWONLY on this account, reject this request.
                     if ((rights != 0xFFFFFFFF) && ((rights & 4352) != 0)) return;
 
@@ -4752,6 +4766,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (removed == true) {
                             var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
                             parent.parent.DispatchEvent(targets, obj, { etype: 'node', nodeid: node._id, action: 'deviceShareUpdate', domain: domain.id, deviceShares: okDocs, nolog: 1 });
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeDeviceShare', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
+                        } else {
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeDeviceShare', responseid: command.responseid, result: 'Invalid device share identifier.' })); } catch (ex) { } }
                         }
                     });
                 });
@@ -4759,8 +4776,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'createDeviceShareLink': {
                 var err = null;
+
+                // Argument validation
                 if (common.validateString(command.nodeid, 8, 128) == false) { err = 'Invalid node id'; } // Check the nodeid
-                else if (common.validateString(command.guestname, 1, 128) == false) { err = 'Invalid guest name'; } // Check the guest name
+                else if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                else if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
+                if (common.validateString(command.guestname, 1, 128) == false) { err = 'Invalid guest name'; } // Check the guest name
                 else if ((command.expire != null) && (typeof command.expire != 'number')) { err = 'Invalid expire time'; } // Check the expire time in hours
                 else if ((command.start != null) && (typeof command.start != 'number')) { err = 'Invalid start time'; } // Check the start time in seconds
                 else if ((command.end != null) && (typeof command.end != 'number')) { err = 'Invalid end time'; } // Check the end time in seconds
@@ -4782,7 +4803,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Get the device rights
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                     // If node not found or we don't have remote control, reject.
-                    if ((node == null) || ((rights & 8) == 0)) return;
+                    if ((node == null) || ((rights & 8) == 0)) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createDeviceShareLink', responseid: command.responseid, result: 'Invalid node id' })); } catch (ex) { } }
+                        return;
+                    }
 
                     // If there is MESHRIGHT_DESKLIMITEDINPUT or MESHRIGHT_REMOTEVIEWONLY on this account, reject this request.
                     if ((rights != 0xFFFFFFFF) && ((rights & 4352) != 0)) return;
@@ -4813,7 +4837,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var url = 'https://' + serverName + ':' + httpsPort + '/' + xdomain + page + '?c=' + inviteCookie;
                     if (serverName.split('.') == 1) { url = '/' + xdomain + page + '?c=' + inviteCookie; }
                     command.url = url;
-                    ws.send(JSON.stringify(command));
+                    if (command.responseid != null) { command.result = 'OK'; }
+                    try { ws.send(JSON.stringify(command)); } catch (ex) { }
 
                     // Create a device sharing database entry
                     parent.db.Set({ _id: 'deviceshare-' + publicid, type: 'deviceshare', nodeid: node._id, p: command.p, domain: node.domain, publicid: publicid, startTime: startTime, expireTime: expireTime, userid: user._id, guestName: command.guestname, consent: command.consent, url: url });
