@@ -9,7 +9,6 @@
     "_mongoDumpPath": "C:\\Program Files\\MongoDB\\Server\\4.2\\bin\\mongodump.exe",
     "_WANonly": true,
     "_LANonly": true,
-    "_sessionTime": 30,
     "_sessionKey": "MyReallySecretPassword1",
     "_sessionSameSite": "strict",
     "_dbEncryptKey": "MyReallySecretPassword2",

@@ -994,6 +994,8 @@
                 <div id="p40title"><h1>My Server Stats</h1></div>
                 <div class="areaHead">
                     <div class="toright2">
+                        <select id=p40server style="display:none" onchange=updateServerTimelineStats()>
+                        </select>&nbsp;
                         <select id=p40type onchange=updateServerTimelineStats()>
                             <option value=0>Connections</option>
                             <option value=1>Memory</option>
@@ -1248,7 +1250,7 @@
         <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3" /></audio>
         <iframe style=display:none name="fileDownloadFrame"></iframe>
     </div>
-    <script type="text/javascript" nonce="abc">
+    <script type="text/javascript">
         'use strict';
 
         // Process server-side web state
@@ -13377,6 +13379,15 @@
         function setServerTimelineStats(stats) { serverTimelineStats = stats; updateServerTimelineStats(); }
         function addServerTimelineStats(stats) {
             if (serverTimelineStats == null) return;
+
+            // Check if this new data is for our selected server
+            var selectedServer = null;
+            if (Q('p40server').value != null) {
+                selectedServer = decodeURIComponent(Q('p40server').value);
+                if (selectedServer == "") { selectedServer = null; }
+            }
+            if (stats.s != selectedServer) return;
+
             serverTimelineStats.push(stats);
             var chartType = Q('p40type').value;
             if (chartType == 0) {
@@ -13406,7 +13417,8 @@
         function setupServerTimelineStats() { window.serverMainStats = new Chart(document.getElementById('serverMainStats').getContext('2d'), serverTimelineConfig); }
 
         function updateServerTimelineStats() {
-            var data, chartType = Q('p40type').value, timeAfter = pastDate(Q('p40time').value);
+            var data, chartType = Q('p40type').value, timeAfter = pastDate(Q('p40time').value), servers = [], selectedServer = null, serverEmptyExists = false, serverAutoSelect = true;
+            if (Q('p40server').value != null) { selectedServer = decodeURIComponent(Q('p40server').value); if (selectedServer == "") { selectedServer = null; } serverAutoSelect = false; }
             serverTimelineConfig.options.scales.xAxes[0].time = { min: timeAfter };
             if (chartType == 0) { // Connections
                 serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = "Connection Count";
@@ -13422,6 +13434,12 @@
                 };
                 for (var i = 0; i < serverTimelineStats.length; i++) {
                     var t = new Date(serverTimelineStats[i].time);
+                    if ((serverTimelineStats[i].s != null) && (servers.indexOf(serverTimelineStats[i].s) == -1)) {
+                        servers.push(serverTimelineStats[i].s);
+                        if (serverAutoSelect) { selectedServer = serverTimelineStats[i].s; serverAutoSelect = false; }
+                    }
+                    if (serverTimelineStats[i].s == null) { serverEmptyExists = true; }
+                    if (serverTimelineStats[i].s != selectedServer) { continue; }
                     if (serverTimelineStats[i].first == true) {
                         data.datasets[0].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
                         data.datasets[1].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
@@ -13449,6 +13467,12 @@
                     ]
                 };
                 for (var i = 0; i < serverTimelineStats.length; i++) {
+                    if ((serverTimelineStats[i].s != null) && (servers.indexOf(serverTimelineStats[i].s) == -1)) {
+                        servers.push(serverTimelineStats[i].s);
+                        if (serverAutoSelect) { selectedServer = serverTimelineStats[i].s; serverAutoSelect = false; }
+                    }
+                    if (serverTimelineStats[i].s == null) { serverEmptyExists = true; }
+                    if (serverTimelineStats[i].s != selectedServer) { continue; }
                     if (serverTimelineStats[i].first == true) {
                         data.datasets[0].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
                         data.datasets[1].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
@@ -13480,6 +13504,14 @@
             }*/
             serverTimelineConfig.data = data;
             window.serverMainStats.update();
+
+            if (servers.length > 0) {
+                var x = '';
+                for (var i = 0; i < servers.length; i++) { x += '<option value="' + encodeURIComponentEx(servers[i]) + '"' + ((selectedServer == servers[i])?' selected':'') + '>' + EscapeHtml(servers[i]) + '</option>'; }
+                if (serverEmptyExists) { x += '<option value=""' + ((selectedServer == null)?' selected':'') + '>' + "Null" + '</option>'; }
+                QH('p40server', x);
+            }
+            QV('p40server', servers.length > 0);
         }
 
         function p40downloadEvents() {

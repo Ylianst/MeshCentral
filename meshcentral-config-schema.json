@@ -15,7 +15,7 @@
         "WANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral WAN features are enabled and agents will connect to the server using a well known DNS name." },
         "LANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral LAN features are enabled and agents will find the server using multicast LAN packets." },
         "maintenanceMode": { "type": "boolean", "default": false, "description": "When enabled the server is in maintenance mode, only administrators can login. Use the maintenance command in server console to change." },
-        "sessionTime": { "type": "integer" },
+        "sessionTime": { "type": "integer", "default": 60, "description": "Duration of a session cookie in minutes. Changing this affects how often the session needs to be automatically refreshed." },
         "sessionKey": { "type": "string" },
         "sessionSameSite": { "type": "string" },
         "dbEncryptKey": { "type": "string" },
@@ -273,7 +273,7 @@
           "userBlockedIP": { "type": "string" },
           "agentAllowedIP": { "type": "string" },
           "agentBlockedIP": { "type": "string" },
-          "userSessionIdleTimeout": { "type": "integer" },
+          "userSessionIdleTimeout": { "type": "integer", "default": null, "description": "When set, idle users will be disconnected after a set amounts of minutes." },
           "userConsentFlags": {
             "type": "object",
             "additionalProperties": false,
