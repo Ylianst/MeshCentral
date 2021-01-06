@@ -1350,6 +1350,7 @@ function CreateMeshCentralServer(config, args) {
 
         // Load CloudFlare trusted proxies list if needed
         if ((obj.config.settings.trustedproxy != null) && (typeof obj.config.settings.trustedproxy == 'string') && (obj.config.settings.trustedproxy.toLowerCase() == 'cloudflare')) {
+            obj.config.settings.extrascriptsrc = 'ajax.cloudflare.com'; // Add CloudFlare as a trusted script source. This allows for CloudFlare's RocketLoader feature.
             delete obj.args.trustedproxy;
             delete obj.config.settings.trustedproxy;
             obj.certificateOperations.loadTextFile('https://www.cloudflare.com/ips-v4', null, function (url, data, tag) {
