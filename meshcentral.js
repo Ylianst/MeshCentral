@@ -1543,6 +1543,7 @@ function CreateMeshCentralServer(config, args) {
                         for (var i in obj.mpsserver.ciraConnections) { data.conn.am += obj.mpsserver.ciraConnections[i].length; }
                     }
                     if (obj.firstStats === true) { delete obj.firstStats; data.first = true; }
+                    if (obj.multiServer != null) { data.s = obj.multiServer.serverid; }
                     obj.db.SetServerStats(data); // Save the stats to the database
                     obj.DispatchEvent(['*'], obj, { action: 'servertimelinestats', data: data }); // Event the server stats
                 }, 300000);
