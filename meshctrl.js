@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing'];
+const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -53,6 +53,7 @@ if (args['_'].length == 0) {
     console.log("  DeviceOpenUrl               - Open a URL on a remote device.");
     console.log("  DeviceMessage               - Open a message box on a remote device.");
     console.log("  DeviceToast                 - Display a toast notification on a remote device.");
+    console.log("  DevicePower                 - Perform wake/sleep/reset/off operations on remote devices.");
     console.log("  DeviceSharing               - View, add and remove sharing links for a given device.");
     console.log("\r\nSupported login arguments:");
     console.log("  --url [wss://server]        - Server url, wss://localhost:443 is default.");
@@ -202,6 +203,11 @@ if (args['_'].length == 0) {
             break;
         }
         case 'shell': {
+            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
+            else { ok = true; }
+            break;
+        }
+        case 'devicepower': {
             if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
             else { ok = true; }
             break;
@@ -715,6 +721,26 @@ if (args['_'].length == 0) {
                         console.log("  --powershell           - Run a Windows PowerShell.");
                         break;
                     }
+                    case 'devicepower': {
+                        console.log("Perform power operations on remote devices, Example usages:\r\n");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DevicePower --wake --id 'deviceid'"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DevicePower --sleep --id 'deviceid'"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DevicePower --reset --id 'deviceid'"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DevicePower --off --id 'deviceid1,deviceid2'"));
+                        console.log("\r\nNote that some power operations may take up to a minute to execute.\r\n");
+                        console.log("Required arguments:\r\n");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [deviceid1,deviceid2]    - Device identifiers.");
+                        } else {
+                            console.log("  --id '[deviceid1,deviceid2]'  - Device identifiers.");
+                        }
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --wake                        - Attempt to wake up the remote device.");
+                        console.log("  --reset                       - Attempt to remote the remote device.");
+                        console.log("  --sleep                       - Attempt to place the remote device in low power mode.");
+                        console.log("  --off                         - Attempt to power off the remote device.");
+                        break;
+                    }
                     case 'devicesharing': {
                         var tzoffset = (new Date()).getTimezoneOffset() * 60000; // Offset in milliseconds
                         var localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -5);
@@ -722,7 +748,7 @@ if (args['_'].length == 0) {
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid'"));
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --remote abcdef"));
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --start " + localISOTime + " --duration 30"));
-                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest  --type terminal --consent prompt"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --type terminal --consent prompt"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
                             console.log("  --id [deviceid]                - The device identifier.");
@@ -1317,6 +1343,26 @@ function serverConnect() {
                 ws.send("{\"action\":\"authcookie\"}");
                 break;
             }
+            case 'devicepower': {
+                var nodes = args.id.split(',');
+                if (args.wake) {
+                    // Wake operation
+                    ws.send(JSON.stringify({ action: 'wakedevices', nodeids: nodes, responseid: 'meshctrl' }));
+                } else if (args.off) {
+                    // Power off operation
+                    ws.send(JSON.stringify({ action: 'poweraction', nodeids: nodes, actiontype: 2, responseid: 'meshctrl' }));
+                } else if (args.reset) {
+                    // Reset operation
+                    ws.send(JSON.stringify({ action: 'poweraction', nodeids: nodes, actiontype: 3, responseid: 'meshctrl' }));
+                } else if (args.sleep) {
+                    // Sleep operation
+                    ws.send(JSON.stringify({ action: 'poweraction', nodeids: nodes, actiontype: 4, responseid: 'meshctrl' }));
+                } else {
+                    console.log('No power operation specified.');
+                    process.exit(1);
+                }
+                break;
+            }
             case 'devicesharing': {
                 if (args.add) {
                     if (args.add.length == 0) { console.log("Invalid guest name."); process.exit(1); }
@@ -1544,14 +1590,17 @@ function serverConnect() {
             case 'createmesh': // ADDDEVICEGROUP
             case 'deletemesh': // REMOVEDEVICEGROUP
             case 'editmesh': // EDITDEVICEGROUP
+            case 'wakedevices':
             case 'changeDeviceMesh':
             case 'addmeshuser': //
             case 'removemeshuser': //
+            case 'wakedevices': //
             case 'inviteAgent': //
             case 'adddeviceuser': //
             case 'createusergroup': //
             case 'deleteusergroup': //
             case 'runcommands':
+            case 'poweraction':
             case 'addusertousergroup':
             case 'removeuserfromusergroup':
             case 'removeDeviceShare':

@@ -3643,8 +3643,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Perform wake-on-lan
                     for (i in command.nodeids) {
+                        var nodeid = command.nodeids[i];
+
+                        // Argument validation
+                        if (common.validateString(nodeid, 8, 128) == false) { continue; } // Check the nodeid
+                        else if (nodeid.indexOf('/') == -1) { nodeid = 'node/' + domain.id + '/' + nodeid; }
+                        else if ((nodeid.split('/').length != 3) || (nodeid.split('/')[1] != domain.id)) { continue; } // Invalid domain, operation only valid for current domain
+
                         // Get the node and the rights for this node
-                        parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
+                        parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                             // Check we have the rights to delete this device
                             if ((rights & MESHRIGHT_WAKEDEVICE) == 0) return;
 
@@ -3681,8 +3688,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 }
                             });
                         });
+
                         // Confirm we may be doing something (TODO)
-                        try { ws.send(JSON.stringify({ action: 'wakedevices' })); } catch (ex) { }
+                        if (command.responseid != null) {
+                            try { ws.send(JSON.stringify({ action: 'wakedevices', responseid: command.responseid, result: 'ok' })); } catch (ex) { }
+                        } else {
+                            try { ws.send(JSON.stringify({ action: 'wakedevices' })); } catch (ex) { }
+                        }
                     }
                     break;
                 }
@@ -3782,8 +3794,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
                     if (common.validateInt(command.actiontype, 2, 4) == false) break; // Check actiontype
                     for (i in command.nodeids) {
+                        var nodeid = command.nodeids[i];
+
+                        // Argument validation
+                        if (common.validateString(nodeid, 8, 128) == false) { continue; } // Check the nodeid
+                        else if (nodeid.indexOf('/') == -1) { nodeid = 'node/' + domain.id + '/' + nodeid; }
+                        else if ((nodeid.split('/').length != 3) || (nodeid.split('/')[1] != domain.id)) { continue; } // Invalid domain, operation only valid for current domain
+
                         // Get the node and the rights for this node
-                        parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
+                        parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                             // Check we have the rights to delete this device
                             if ((rights & MESHRIGHT_RESETOFF) == 0) return;
 
@@ -3798,7 +3817,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         });
 
                         // Confirm we may be doing something (TODO)
-                        try { ws.send(JSON.stringify({ action: 'poweraction' })); } catch (ex) { }
+                        if (command.responseid != null) {
+                            try { ws.send(JSON.stringify({ action: 'poweraction', responseid: command.responseid, result: 'ok' })); } catch (ex) { }
+                        } else {
+                            try { ws.send(JSON.stringify({ action: 'poweraction' })); } catch (ex) { }
+                        }
                     }
                     break;
                 }
