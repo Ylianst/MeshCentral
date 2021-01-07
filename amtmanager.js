@@ -115,6 +115,8 @@ module.exports.CreateAmtManager = function (parent) {
 
     // Remove an Intel AMT managed device
     function removeAmtDevice(dev) {
+        parent.debug('amt', "Remove device", dev.nodeid, dev.connType);
+
         // Find the device in the list
         var devices = obj.amtDevices[dev.nodeid];
         if (devices == null) return false;
@@ -133,12 +135,14 @@ module.exports.CreateAmtManager = function (parent) {
         if (devices.length == 0) { delete obj.amtDevices[dev.nodeid]; } else { obj.amtDevices[dev.nodeid] = devices; }
 
         // Notify connection closure if this is a LMS connection
-        if (dev.connType == 2) { dev.controlMsg({ action: "close" }); }
+        if (dev.connType == 2) { dev.controlMsg({ action: 'close' }); }
         return true;
     }
 
     // Remove all Intel AMT devices for a given nodeid
     function removeDevice(nodeid) {
+        parent.debug('amt', "Remove nodeid", nodeid);
+
         // Find the devices in the list
         var devices = obj.amtDevices[nodeid];
         if (devices == null) return false;
@@ -152,9 +156,12 @@ module.exports.CreateAmtManager = function (parent) {
             // Clean up this device
             if (dev.amtstack != null) { dev.amtstack.wsman.comm.FailAllError = 999; delete dev.amtstack; } // Disconnect any active connections.
             if (dev.polltimer != null) { clearInterval(dev.polltimer); delete dev.polltimer; }
+
+            // Notify connection closure if this is a LMS connection
+            if (dev.connType == 2) { dev.controlMsg({ action: 'close' }); }
         }
 
-        // Remove all devices
+        // Remove all Intel AMT management sessions for this nodeid
         delete obj.amtDevices[nodeid];
         return true;
     }
