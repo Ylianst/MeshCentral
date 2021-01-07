@@ -1337,6 +1337,15 @@
         var p12TermConsoleMsgTimer = null;
         var p13FilesConsoleMsgTimer = null;
 
+        /*
+        // Check browser dark mode preference
+        var prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var prefersLightScheme = window.matchMedia('(prefers-color-scheme: light)').matches;
+        console.log(prefersDarkScheme, prefersLightScheme);
+        var mql = window.matchMedia('(prefers-color-scheme: dark)');
+        mql.addEventListener('change', function() { console.log('Dark Change'); });
+        */
+
         function startup() {
             if ((features & 32) == 0) {
                 // Guard against other site's top frames (web bugs).
@@ -13541,7 +13550,7 @@
         function clearServerTracing() { serverTrace = []; displayServerTrace(); }
 
         function setServerTracing() {
-            var x = '';
+            var x = '<div style="max-height:200px;overflow-y:auto">';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>' + "Core Server" + '</b></div>';
             x += '<div><label><input type=checkbox id=p41c1 ' + ((serverTraceSources.indexOf('cookie') >= 0) ? 'checked' : '') + '>' + "Cookie encoder" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c2 ' + ((serverTraceSources.indexOf('dispatch') >= 0) ? 'checked' : '') + '>' + "Message Dispatcher" + '</label></div>';
@@ -13558,18 +13567,20 @@
             x += '<div><label><input type=checkbox id=p41c7 ' + ((serverTraceSources.indexOf('relay') >= 0) ? 'checked' : '') + '>' + "Web Socket Relay" + '</label></div>';
             //x += '<div><label><input type=checkbox id=p41c8 ' + ((serverTraceSources.indexOf('webrelaydata') >= 0) ? 'checked' : '') + '>' + "Traffic Relay 2 Data" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>' + "Intel&reg; AMT" + '</b></div>';
+            x += '<div><label><input type=checkbox id=p41c19 ' + ((serverTraceSources.indexOf('amt') >= 0) ? 'checked' : '') + '>' + "Intel AMT manager" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c9 ' + ((serverTraceSources.indexOf('webrelay') >= 0) ? 'checked' : '') + '>' + "Connection Relay" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c10 ' + ((serverTraceSources.indexOf('mps') >= 0) ? 'checked' : '') + '>' + "CIRA Server" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c11 ' + ((serverTraceSources.indexOf('mpscmd') >= 0) ? 'checked' : '') + '>' + "CIRA Server Commands" + '</label></div>';
             //x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>Legacy</b></div>';
             //x += '<div><label><input type=checkbox id=p41c12 ' + ((serverTraceSources.indexOf('swarm') >= 0) ? 'checked' : '') + ">' + "Legacy Swarm Server" + '</label></div>";
             //x += '<div><label><input type=checkbox id=p41c13 ' + ((serverTraceSources.indexOf('swarmcmd') >= 0) ? 'checked' : '') + ">' + "Legacy Swarm Server Commands" + '</label></div>";
+            x += '</div>';
             setDialogMode(2, "Server Tracing", 7, setServerTracingEx, x);
         }
 
         function setServerTracingEx(b) {
-            var sources = [], allsources = ['cookie', 'dispatch', 'main', 'peer', 'web', 'webrequest', 'relay', 'webrelaydata', 'webrelay', 'mps', 'mpscmd', 'swarm', 'swarmcmd', 'agentupdate', 'agent', 'cert', 'db', 'email'];
-            if (b == 1) { for (var i = 1; i < 19; i++) { try { if (Q('p41c' + i).checked) { sources.push(allsources[i - 1]); } } catch (ex) { } } }
+            var sources = [], allsources = ['cookie', 'dispatch', 'main', 'peer', 'web', 'webrequest', 'relay', 'webrelaydata', 'webrelay', 'mps', 'mpscmd', 'swarm', 'swarmcmd', 'agentupdate', 'agent', 'cert', 'db', 'email', 'amt'];
+            if (b == 1) { for (var i = 1; i < 20; i++) { try { if (Q('p41c' + i).checked) { sources.push(allsources[i - 1]); } } catch (ex) { } } }
             meshserver.send({ action: 'traceinfo', traceSources: sources });
         }
 
