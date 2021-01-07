@@ -115,7 +115,7 @@ module.exports.CreateAmtManager = function (parent) {
 
     // Remove an Intel AMT managed device
     function removeAmtDevice(dev) {
-        parent.debug('amt', "Remove device", dev.nodeid, dev.connType);
+        parent.debug('amt', dev.name, "Remove device", dev.nodeid, dev.connType);
 
         // Find the device in the list
         var devices = obj.amtDevices[dev.nodeid];
@@ -175,7 +175,7 @@ module.exports.CreateAmtManager = function (parent) {
         dev = { nodeid: nodeid, connType: connType, domainid: nodeid.split('/')[1] };
         if (typeof connection == 'string') { dev.host = connection; }
         if (typeof connection == 'object') { dev.mpsConnection = connection; }
-        dev.consoleMsg = function deviceConsoleMsg(msg) { if (typeof deviceConsoleMsg.conn == 'object') { deviceConsoleMsg.conn.ControlMsg({ action: 'console', msg: msg }); } }
+        dev.consoleMsg = function deviceConsoleMsg(msg) { parent.debug('amt', deviceConsoleMsg.dev.name, msg); if (typeof deviceConsoleMsg.conn == 'object') { deviceConsoleMsg.conn.ControlMsg({ action: 'console', msg: msg }); } }
         dev.consoleMsg.conn = connection;
         dev.consoleMsg.dev = dev;
         dev.controlMsg = function deviceControlMsg(msg) { if (typeof deviceControlMsg.conn == 'object') { deviceControlMsg.conn.ControlMsg(msg); } }
@@ -201,7 +201,7 @@ module.exports.CreateAmtManager = function (parent) {
         var devices = obj.amtDevices[nodeid], dev = null;
         if (devices != null) { for (var i in devices) { if ((devices[i].mpsConnection == connection) || (devices[i].host == connection)) { dev = devices[i]; } } }
         if (dev == null) return false; // We are not managing this device on this connection
-        parent.debug('amt', "Stop Management", nodeid, connType);
+        parent.debug('amt', dev.name, "Stop Management", nodeid, connType);
         return removeAmtDevice(dev);
     }
 
@@ -358,7 +358,7 @@ module.exports.CreateAmtManager = function (parent) {
     // Attempt to perform initial contact with Intel AMT
     function attemptInitialContact(dev) {
         delete dev.amtstack; // If there is a WSMAn stack setup, clean it up now.
-        parent.debug('amt', "Attempt Initial Contact", dev.name, ["CIRA", "CIRA-Relay", "CIRA-LMS", "Local"][dev.connType]);
+        parent.debug('amt', dev.name, "Attempt Initial Contact", ["CIRA", "CIRA-Relay", "CIRA-LMS", "Local"][dev.connType]);
 
         // Check Intel AMT policy when CIRA-LMS connection is in use.
         if ((dev.connType == 2) && (dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null)) {
@@ -410,7 +410,7 @@ module.exports.CreateAmtManager = function (parent) {
                 if (dotls == -1) { removeAmtDevice(dev); return; } // The Intel AMT ports are not open, not a device we can deal with.
 
                 // Connect now
-                parent.debug('amt', 'CIRA-Connect', (dotls == 1) ? "TLS" : "NoTLS", dev.name, user, pass);
+                parent.debug('amt', dev.name, 'CIRA-Connect', (dotls == 1) ? "TLS" : "NoTLS", user, pass);
                 var comm;
                 if (dotls == 1) {
                     comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, ciraconn); // Perform TLS
@@ -439,11 +439,11 @@ module.exports.CreateAmtManager = function (parent) {
                 // Connect now
                 var comm;
                 if (dev.tlsfail !== true) {
-                    parent.debug('amt', (dev.connType == 1) ? 'Relay-Connect' : 'LMS-Connect', "TLS", dev.name, user, pass);
+                    parent.debug('amt', dev.name, (dev.connType == 1) ? 'Relay-Connect' : 'LMS-Connect', "TLS", user, pass);
                     comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, ciraconn); // Perform TLS
                     comm.xtlsFingerprint = 0; // Perform no certificate checking
                 } else {
-                    parent.debug('amt', (dev.connType == 1) ? 'Relay-Connect' : 'LMS-Connect', "NoTLS", dev.name, user, pass);
+                    parent.debug('amt', dev.name, (dev.connType == 1) ? 'Relay-Connect' : 'LMS-Connect', "NoTLS", user, pass);
                     comm = CreateWsmanComm(dev.nodeid, 16992, user, pass, 0, null, ciraconn); // No TLS
                 }
                 var wsstack = WsmanStackCreateService(comm);
@@ -453,7 +453,7 @@ module.exports.CreateAmtManager = function (parent) {
                 break;
             case 3: // Local LAN
                 // Handle the case where the Intel AMT local scanner found the device (connType 3)
-                parent.debug('amt', "Attempt Initial Local Contact", dev.name, dev.connType, dev.host);
+                parent.debug('amt', dev.name, "Attempt Initial Local Contact", dev.connType, dev.host);
                 if (typeof dev.host != 'string') { removeAmtDevice(dev); return; } // Local connection not valid
 
                 // Since we don't allow two or more connections to the same host, check if a pending connection is active.
@@ -474,11 +474,11 @@ module.exports.CreateAmtManager = function (parent) {
                     // Connect now
                     var comm;
                     if (dev.tlsfail !== true) {
-                        parent.debug('amt', 'Direct-Connect', "TLS", dev.name, dev.host, user, pass);
+                        parent.debug('amt', dev.name, 'Direct-Connect', "TLS", dev.host, user);
                         comm = CreateWsmanComm(dev.host, 16993, user, pass, 1); // Always try with TLS first
                         comm.xtlsFingerprint = 0; // Perform no certificate checking
                     } else {
-                        parent.debug('amt', 'Direct-Connect', "NoTLS", dev.name, dev.host, user, pass);
+                        parent.debug('amt', dev.name, 'Direct-Connect', "NoTLS", dev.host, user);
                         comm = CreateWsmanComm(dev.host, 16992, user, pass, 0); // Try without TLS
                     }
                     var wsstack = WsmanStackCreateService(comm);
@@ -494,7 +494,7 @@ module.exports.CreateAmtManager = function (parent) {
 
     function attemptLocalConnectResponse(stack, name, responses, status) {
         const dev = stack.dev;
-        parent.debug('amt', "Initial Contact Response", dev.name, status);
+        parent.debug('amt', dev.name, "Initial Contact Response", status);
 
         // If this is a local connection device, release active connection to this host.
         if (dev.connType == 3) { delete obj.activeLocalConnections[dev.host]; }
