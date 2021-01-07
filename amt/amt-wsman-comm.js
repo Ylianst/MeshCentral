@@ -249,7 +249,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
 
                         obj.socket = obj.tls.connect(obj.port, obj.host, options, obj.xxOnSocketConnected);
                         obj.socket.setEncoding('binary');
-                        obj.socket.setTimeout(6000); // Set socket idle timeout
+                        obj.socket.setTimeout(60000); // Set socket idle timeout
                         obj.socket.on('error', function (ex) { obj.xtlsMethod = 1 - obj.xtlsMethod; });
                         obj.socket.on('close', obj.xxOnSocketClosed);
                         obj.socket.on('timeout', obj.xxOnSocketTimeout);
@@ -269,7 +269,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                 // Direct connect without TLS
                 obj.socket = new obj.net.Socket();
                 obj.socket.setEncoding('binary');
-                obj.socket.setTimeout(6000); // Set socket idle timeout
+                obj.socket.setTimeout(60000); // Set socket idle timeout
                 obj.socket.on('data', obj.xxOnSocketData);
                 obj.socket.on('close', obj.xxOnSocketClosed);
                 obj.socket.on('timeout', obj.xxOnSocketTimeout);
@@ -286,7 +286,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                 }
                 obj.socket = obj.tls.connect(obj.port, obj.host, options, obj.xxOnSocketConnected);
                 obj.socket.setEncoding('binary');
-                obj.socket.setTimeout(6000); // Set socket idle timeout
+                obj.socket.setTimeout(60000); // Set socket idle timeout
                 obj.socket.on('data', obj.xxOnSocketData);
                 obj.socket.on('close', obj.xxOnSocketClosed);
                 obj.socket.on('timeout', obj.xxOnSocketTimeout);
