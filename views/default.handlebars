@@ -627,6 +627,7 @@
                             <span id=DeskRefreshButton title="Refresh the desktop"><img id=DeskRefreshButtonImage src='images/icon-refresh.png' onclick=deskRefreshFunction() height=16 width=16 style=padding-top:2px /></span>
                         </div>
                         <div>
+                            <!--
                             <select id="deskkeys">
                                 <option value=10>Ctrl+Alt+Del</option>
                                 <option value=5>Win</option>
@@ -641,6 +642,37 @@
                                 <option value=9>Alt-Tab</option>
                                 <option value=11>Win+Left</option>
                                 <option value=12>Win+Right</option>
+                            </select>
+
+                            // WIN+DOWN       = 0x100028
+                            // WIN+UP         = 0x100026
+                            // WIN+L          = 0x10004C
+                            // WIN+M          = 0x10004D
+                            // Shift+WIN+M    = 0x11004D
+                            // WIN            = 0x100000
+                            // WIN+R          = 0x100052
+                            // ALT+F4         = 0x020073
+                            // CTRL+W         = 0x080057
+                            // ALT+TAB        = 0x020009
+                            // CTRL-ALT-DEL   = 0x0A0053
+                            // WIN-LEFT       = 0x100025
+                            // WIN-RIGHT      = 0x100027
+
+                            -->
+                            <select id="deskkeys">
+                                <option value=0x0A0053>Ctrl+Alt+Del</option>
+                                <option value=0x100000>Win</option>
+                                <option value=0x100028>Win+Down</option>
+                                <option value=0x100026>Win+Up</option>
+                                <option value=0x10004C>Win+L</option>
+                                <option value=0x10004D>Win+M</option>
+                                <option value=0x11004D>Shift+Win+M</option>
+                                <option value=0x100052>Win+R</option>
+                                <option value=0x020073>Alt-F4</option>
+                                <option value=0x080057>Ctrl-W</option>
+                                <option value=0x020009>Alt-Tab</option>
+                                <option value=0x100025>Win+Left</option>
+                                <option value=0x100027>Win+Right</option>
                             </select>
                             <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
                             <input id="DeskESC" style="display:none" type="button" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
@@ -7429,86 +7461,85 @@
         function deskSendKeys() {
             Q('DeskWD').blur();
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
-            var ks = Q('deskkeys').value;
-            if (ks == 0) { // WIN+Down arrow
-                if (desktop.contype == 2) {
-                    desktop.m.sendkey([[0xffe7,1],[0xff54,1],[0xff54,0],[0xffe7,0]]); // Intel AMT: Meta-left down, Down arrow press, Down arrow release, Meta-left release
-                } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,40],[desktop.m.KeyAction.UP,40],[desktop.m.KeyAction.EXUP,0x5B]]); // Agent: L-Winkey press, Down arrow press, Down arrow release, L-Winkey release
-                }
-            } else if (ks == 1) { // WIN+Up arrow
-                if (desktop.contype == 2) {
-                    desktop.m.sendkey([[0xffe7,1],[0xff52,1],[0xff52,0],[0xffe7,0]]); // Intel AMT: Meta-left down, Up arrow press, Up arrow release, Meta-left release
-                } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,38],[desktop.m.KeyAction.UP,38],[desktop.m.KeyAction.EXUP,0x5B]]); // MeshAgent: L-Winkey press, Up arrow press, Up arrow release, L-Winkey release
-                }
-            } else if (ks == 2) { // WIN+L arrow
-                if (desktop.contype == 2) {
-                    desktop.m.sendkey([[0xffe7,1],[0x6c,1],[0x6c,0],[0xffe7,0]]); // Intel AMT: Meta-left down, 'l' press, 'l' release, Meta-left release
-                } else {
-                    desktop.sendCtrlMsg('{"action":"lock"}');
-                    //desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,76],[desktop.m.KeyAction.UP,76],[desktop.m.KeyAction.EXUP,0x5B]]); // MeshAgent: L-Winkey press, 'L' press, 'L' release, L-Winkey release
-                    //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.EXDOWN, 0x5B);
-                    //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.DOWN, 76);
-                    //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.UP, 76);
-                    //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.EXUP, 0x5B);
-                }
-            } else if (ks == 3) { // WIN+M arrow
-                if (desktop.contype == 2) {
-                    desktop.m.sendkey([[0xffe7,1],[0x6d,1],[0x6d,0],[0xffe7,0]]); // Intel AMT: Meta-left down, 'm' press, 'm' release, Meta-left release
-                } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,77],[desktop.m.KeyAction.UP,77],[desktop.m.KeyAction.EXUP,0x5B]]); // MeshAgent: L-Winkey press, 'M' press, 'M' release, L-Winkey release
-                }
-            } else if (ks == 4) { // Shift+WIN+M arrow
-                if (desktop.contype == 2) {
-                    desktop.m.sendkey([[0xffe1,1],[0xffe7,1],[0x6d,1],[0x6d,0],[0xffe7,0],[0xffe1,0]]); // Intel AMT: Shift-left down, Meta-left down, 'm' press, 'm' release, Meta-left release, Shift-left release
-                } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.DOWN,16],[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,77],[desktop.m.KeyAction.UP,77],[desktop.m.KeyAction.EXUP,0x5B],[desktop.m.KeyAction.UP, 16]]);     // MeshAgent: L-shift press, L-Winkey press, 'M' press, 'M' release, L-Winkey release, L-shift release
-                }
-            } else if (ks == 5) { // WIN
-                if (desktop.contype == 2) {
-                    desktop.m.sendkey([[0xffe7,1],[0xffe7,0]]); // Intel AMT: Meta-left down, Meta-left release
-                } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B], [desktop.m.KeyAction.EXUP,0x5B]]); // MeshAgent: L-Winkey press, L-Winkey release
-                }
-            } else if (ks == 6) { // WIN+R
-                if (desktop.contype == 2) {
-                    desktop.m.sendkey([[0xffe7,1],[0x72,1],[0x72,0],[0xffe7,0]]); // Intel AMT: Meta-left down, 'r' press, 'r' release, Meta-left release
-                } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 82], [desktop.m.KeyAction.UP, 82], [desktop.m.KeyAction.EXUP, 0x5B]]); // MeshAgent: L-Winkey press, 'R' press, 'R' release, L-Winkey release
-                }
-            } else if (ks == 7) { // ALT-F4
-                if (desktop.contype == 2) {
-                    desktop.m.sendkey([[0xffe9,1],[0xffc1,1],[0xffc1,0],[0xffe9,0]]); // Intel AMT: Alt down, 'F4' press, 'F4' release, Alt release
-                } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 18], [desktop.m.KeyAction.DOWN, 115], [desktop.m.KeyAction.UP, 115], [desktop.m.KeyAction.EXUP, 18]]); // MeshAgent: Alt press, 'F4' press, 'F4' release, Alt release
-                }
-            } else if (ks == 8) { // CTRL-W
-                if (desktop.contype == 2) {
-                    desktop.m.sendkey([[0xffe3,1],[0x77,1],[0x77,0],[0xffe3,0]]); // Intel AMT: Ctrl down, 'w' press, 'w' release, Ctrl release
-                } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 17], [desktop.m.KeyAction.DOWN, 87], [desktop.m.KeyAction.UP, 87], [desktop.m.KeyAction.EXUP, 17]]); // MeshAgent: Ctrl press, 'W' press, 'W' release, Ctrl release
-                }
-            } else if (ks == 9) { // ALT-TAB
-                if (desktop.contype == 2) {
-                    desktop.m.sendkey([[0xffe9, 1], [0xff09, 1], [0xff09, 0], [0xffe9, 0]]); // Intel AMT: Alt down, 'TAB' press, 'TAB' release, Alt release
-                } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 18], [desktop.m.KeyAction.DOWN, 9], [desktop.m.KeyAction.UP, 9], [desktop.m.KeyAction.EXUP, 18]]); // MeshAgent: Alt press, 'TAB' press, 'TAB' release, Alt release
-                }
-            } else if (ks == 10) { // CTRL-ALT-DEL
-                desktop.m.sendcad();
-            } else if (ks == 11) { // WIN-LEFT
-                if (desktop.contype == 2) {
-                    desktop.m.sendkey([[0xffe7, 1], [0xff51, 1], [0xff51, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, Left arrow press, Left arrow release, Meta-left release
-                } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 37], [desktop.m.KeyAction.UP, 37], [desktop.m.KeyAction.EXUP, 0x5B]]);
-                }
-            } else if (ks == 12) { // WIN-RIGHT
-                if (desktop.contype == 2) {
-                    desktop.m.sendkey([[0xffe7, 1], [0xff53, 1], [0xff53, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, Right arrow press, Right arrow release, Meta-left release
-                } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 39], [desktop.m.KeyAction.UP, 39], [desktop.m.KeyAction.EXUP, 0x5B]]);
-                }
+
+            // Construct the key command
+            var ks = parseInt(Q('deskkeys').value);
+            if (ks == 0x0A0053) { desktop.m.sendcad(); return; } // CTRL-ALT-DEL
+            if ((desktop.contype == 1) && (ks == 0x100052)) { desktop.sendCtrlMsg('{"action":"lock"}'); return; } // Lock desktop
+
+            var flags = (ks & 0xFF0000) >> 16, key = (ks & 0xFFFF), keyArray = [], keyArray2 = [];
+            var amtTranslate = {
+                8   : 0xff08,       // BackSpace
+                9   : 0xff09,       // Tab
+                13  : 0xff0d,       // Return or Enter
+                27  : 0xff1b,       // Escape
+                45  : 0xff63,       // Insert
+                46  : 0xffff,       // Delete
+                36  : 0xff50,       // Home
+                35  : 0xff57,       // End
+                33  : 0xff55,       // Page Up
+                34  : 0xff56,       // Page Down
+                37  : 0xff51,       // Left arrow
+                38  : 0xff52,       // Up arrow
+                39  : 0xff53,       // Right arrow
+                40  : 0xff54,       // Down arrow
+                112 : 0xffbe,       // F1
+                113 : 0xffbf,       // F2
+                114 : 0xffc0,       // F3
+                115 : 0xffc1,       // F4
+                116 : 0xffc2,       // F5
+                117 : 0xffc3,       // F6
+                118 : 0xffc4,       // F7
+                119 : 0xffc5,       // F8
+                120 : 0xffc6,       // F9
+                121 : 0xffc7,       // F10
+                122 : 0xffc8,       // F11
+                123 : 0xffc9        // F12
+            }
+
+            // 0x010000 = Shift
+            // 0x020000 = Left-Alt
+            // 0x080000 = Ctrl
+            // 0x100000 = Window
+
+            // Examples:
+            // WIN+DOWN       = 0x100028
+            // WIN+UP         = 0x100026
+            // WIN+L          = 0x10004C
+            // WIN+M          = 0x10004D
+            // Shift+WIN+M    = 0x11004D
+            // WIN            = 0x100000
+            // WIN+R          = 0x100052
+            // ALT+F4         = 0x020073
+            // CTRL+W         = 0x080057
+            // ALT+TAB        = 0x020009
+            // CTRL-ALT-DEL   = 0x0A0053
+            // WIN-LEFT       = 0x100025
+            // WIN-RIGHT      = 0x100027
+            // SHIFT+F10      = 0x010079
+
+            if (desktop.contype == 2) {
+                // Intel AMT
+                if (flags & 1)  { keyArray.push([0xffe1, 1]); keyArray2.push([0xffe1, 0]); } // Shift
+                if (flags & 2)  { keyArray.push([0xffe9, 1]); keyArray2.push([0xffe9, 0]); } // Left-alt
+                if (flags & 8)  { keyArray.push([0xffe3, 1]); keyArray2.push([0xffe3, 0]); } // Ctrl
+                if (flags & 16) { keyArray.push([0xffe7, 1]); keyArray2.push([0xffe7, 0]); } // Windows key
+                if (amtTranslate[key]) { key = amtTranslate[key]; }
+                if ((key >= 65) && (key <= 90)) { key += 32; }
+                if (key != 0) { keyArray.push([key, 1]); keyArray2.push([key, 0]); }
+                keyArray2.reverse();
+                for (var i = 0; i < keyArray2.length; i++) { keyArray.push(keyArray2[i]); }
+                desktop.m.sendkey(keyArray);
+            } else {
+                // Agent desktop
+                if (flags & 1)  { keyArray.push([desktop.m.KeyAction.DOWN,     16]); keyArray2.push([desktop.m.KeyAction.UP,     16]); } // Shift
+                if (flags & 2)  { keyArray.push([desktop.m.KeyAction.EXDOWN,   18]); keyArray2.push([desktop.m.KeyAction.EXUP,   18]); } // Left-alt
+                if (flags & 8)  { keyArray.push([desktop.m.KeyAction.EXDOWN,   17]); keyArray2.push([desktop.m.KeyAction.EXUP,   17]); } // Ctrl
+                if (flags & 16) { keyArray.push([desktop.m.KeyAction.EXDOWN, 0x5B]); keyArray2.push([desktop.m.KeyAction.EXUP, 0x5B]); } // Windows key
+                if (key != 0) { keyArray.push([desktop.m.KeyAction.DOWN, key]); keyArray2.push([desktop.m.KeyAction.UP, key]); }
+                keyArray2.reverse();
+                for (var i = 0; i < keyArray2.length; i++) { keyArray.push(keyArray2[i]); }
+                desktop.m.SendKeyMsgKC(keyArray);
             }
         }
 
@@ -7543,7 +7574,7 @@
                     // New unicode typing
                     desktop.m.SendStringUnicode(txt);
                 } else {
-                    // Old scan code typing. Remove this when non-Windows platforms support Unicode.
+                    // Old scan code typing. This is for non-unicode system.
                     for (var i in txt) {
                         var a = txt.charCodeAt(i), b = ltxt.charCodeAt(i);
                         if (((a >= 65) && (a <= 90)) || ((a >= 97) && (a <= 122))) {
