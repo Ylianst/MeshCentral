@@ -857,6 +857,84 @@
       ]
     },
     {
+      "en": "0x020009",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys"
+      ]
+    },
+    {
+      "en": "0x020073",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys"
+      ]
+    },
+    {
+      "en": "0x080057",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys"
+      ]
+    },
+    {
+      "en": "0x0A0053",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys"
+      ]
+    },
+    {
+      "en": "0x100000",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys"
+      ]
+    },
+    {
+      "en": "0x100025",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys"
+      ]
+    },
+    {
+      "en": "0x100026",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys"
+      ]
+    },
+    {
+      "en": "0x100027",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys"
+      ]
+    },
+    {
+      "en": "0x100028",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys"
+      ]
+    },
+    {
+      "en": "0x10004C",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys"
+      ]
+    },
+    {
+      "en": "0x10004D",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys"
+      ]
+    },
+    {
+      "en": "0x100052",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys"
+      ]
+    },
+    {
+      "en": "0x11004D",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys"
+      ]
+    },
+    {
       "cs": "1 aktivní relace",
       "de": "1 aktive Sitzung",
       "en": "1 active session",
@@ -19010,7 +19088,7 @@
       "zh-cht": "輸入",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3->11->DeskControlSpan",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->11->DeskControlSpan",
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->13->DeskControlSpan",
         "desktop.handlebars->p11->deskarea0->deskarea4->3->9->DeskControlSpan"
       ]
     },
@@ -38929,7 +39007,7 @@
       "zh-chs": "切换鼠标和键盘输入",
       "zh-cht": "切換鼠標和鍵盤輸入",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->11",
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->13",
         "desktop.handlebars->p11->deskarea0->deskarea4->3->9"
       ]
     },
