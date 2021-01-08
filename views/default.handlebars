@@ -7492,11 +7492,27 @@
         function deskUpdateShortcutList() {
             var x = '';
             for (var i in deskKeyboardShortcuts) {
-                var kt = keyShortcutTotext(deskKeyboardShortcuts[i]);
-                x += '<div style="width:100%;background-color:#AAA;border-radius:4px;margin-bottom:4px;padding:4px;text-align:left;box-sizing:border-box" value=' + deskKeyboardShortcuts[i] + '>' + kt + '<img width=10 height=10 style=float:right;cursor:pointer;padding:2px src="images/trash.png" onclick=removeDeskCustomizeKey(' + deskKeyboardShortcuts[i] + ')></div>';
+                var kt = keyShortcutTotext(deskKeyboardShortcuts[i]), orderButtons = '';
+                if (i != (deskKeyboardShortcuts.length - 1)) { orderButtons += '<img width=8 height=8 style=float:right;cursor:pointer;padding:3px src="images/c2.png" onclick=deskCustomizeKeyDown(' + deskKeyboardShortcuts[i] + ')>'; }
+                if (i != 0) { orderButtons += '<img width=8 height=8 style=float:right;cursor:pointer;padding:3px src="images/c3.png" onclick=deskCustomizeKeyUp(' + deskKeyboardShortcuts[i] + ')>'; }
+                x += '<div style="width:100%;background-color:#AAA;border-radius:4px;margin-bottom:4px;padding:4px;text-align:left;box-sizing:border-box" value=' + deskKeyboardShortcuts[i] + '>' + kt + '<img width=10 height=10 style=float:right;cursor:pointer;padding:2px;margin-left:8px src="images/trash.png" onclick=removeDeskCustomizeKey(' + deskKeyboardShortcuts[i] + ')>' + orderButtons + '</div>';
             }
             if (x == '') { x = '<i>' + "No keyboard shortcuts defined" + '</i>'; }
             QH('d2shortcuts', x);
+        }
+
+        function deskCustomizeKeyDown(k) {
+            var i = deskKeyboardShortcuts.indexOf(k), x = deskKeyboardShortcuts[i + 1];
+            deskKeyboardShortcuts[i + 1] = deskKeyboardShortcuts[i];
+            deskKeyboardShortcuts[i] = x;
+            deskUpdateShortcutList();
+        }
+
+        function deskCustomizeKeyUp(k) {
+            var i = deskKeyboardShortcuts.indexOf(k), x = deskKeyboardShortcuts[i];
+            deskKeyboardShortcuts[i] = deskKeyboardShortcuts[i - 1];
+            deskKeyboardShortcuts[i - 1] = x;
+            deskUpdateShortcutList();
         }
 
         function removeDeskCustomizeKey(k) {
