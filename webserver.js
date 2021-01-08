@@ -4953,7 +4953,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.app.set('trust proxy', obj.args.tlsoffload);
             } catch (ex) {
                 // If there is an error, try to resolve the string
-                if ((obj.args.tlsoffload.length == 1) && (typeof obj.args.tlsoffload[0] == 'string')) {
+                if ((Array.isArray(obj.args.tlsoffload)) && (obj.args.tlsoffload.length == 1) && (typeof obj.args.tlsoffload[0] == 'string')) {
                     require('dns').lookup(obj.args.tlsoffload[0], function (err, address, family) { if (err == null) { obj.app.set('trust proxy', address); obj.args.tlsoffload = [address]; } });
                 }
             }
@@ -4990,6 +4990,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 } else {
                     req.clientIp = ipex;
                 }
+
+                // If there is a port number, remove it. This will only work for IPv4, but nice for people that have a bad reverse proxy config.
+                const clientIpSplit = req.clientIp.split(':');
+                if (clientIpSplit.length == 2) { req.clientIp = clientIpSplit[0]; }
 
                 // Get server host
                 if (req.headers['x-forwarded-host']) { xforwardedhost = req.headers['x-forwarded-host']; }
@@ -5688,7 +5692,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             parent.debug('web', 'ERR: Websocket bad user/pass auth');
                             //obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + obj.args.user.toLowerCase()], obj, { action: 'authfail', userid: 'user/' + domain.id + '/' + obj.args.user.toLowerCase(), username: obj.args.user, domain: domain.id, msg: 'Invalid user login attempt from ' + req.clientIp });
                             //obj.setbadLogin(req);
-                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2' })); ws.close(); } catch (e) { }
+                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2a' })); ws.close(); } catch (e) { }
                         }
                     }
                 });
@@ -5708,14 +5712,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // This is a bad cookie, keep going anyway, maybe we have a active session that will save us.
                     if ((cookie != null) && (cookie.domainid != domain.id)) { parent.debug('web', 'ERR: Invalid domain, got \"' + cookie.domainid + '\", expected \"' + domain.id + '\".'); }
                     parent.debug('web', 'ERR: Websocket bad cookie auth (Cookie:' + (cookie != null) + '): ' + req.query.auth);
-                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2' })); ws.close(); } catch (e) { }
+                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2b' })); ws.close(); } catch (e) { }
                 }
                 return;
             } else if (req.headers['x-meshauth'] != null) {
                 // This is authentication using a custom HTTP header
                 var s = req.headers['x-meshauth'].split(',');
                 for (var i in s) { s[i] = Buffer.from(s[i], 'base64').toString(); }
-                if ((s.length < 2) || (s.length > 3)) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2' })); ws.close(); } catch (e) { } return; }
+                if ((s.length < 2) || (s.length > 3)) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2c' })); ws.close(); } catch (e) { } return; }
                 obj.authenticate(s[0], s[1], domain, function (err, userid) {
                     var user = obj.users[userid];
                     if ((err == null) && (user)) {
@@ -5782,7 +5786,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         } else {
                             // If not authenticated, close the websocket connection
                             parent.debug('web', 'ERR: Websocket bad user/pass auth');
-                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2' })); ws.close(); } catch (e) { }
+                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2d' })); ws.close(); } catch (e) { }
                         }
                     }
                 });
@@ -6348,6 +6352,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
             out.desktopsettings = JSON.stringify(out.desktopsettings);
         }
+        if ((typeof state.deskKeyShortcuts == 'string') && (state.deskKeyShortcuts.length < 2048)) { out.deskKeyShortcuts = state.deskKeyShortcuts; }
         return JSON.stringify(out);
     }
 

@@ -97,8 +97,9 @@
     <div id="deskPlayerContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmdeskplayeraction(1,event)">Open Player...</div>
     </div>
-
-    
+    <div id="deskKeyShortcutContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div class="cmtext" onclick="cmdeskshortcutaction(1,event)">Customize...</div>
+    </div>
 
     <!--
     <div id="pluginTabContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
@@ -627,53 +628,7 @@
                             <span id=DeskRefreshButton title="Refresh the desktop"><img id=DeskRefreshButtonImage src='images/icon-refresh.png' onclick=deskRefreshFunction() height=16 width=16 style=padding-top:2px /></span>
                         </div>
                         <div>
-                            <!--
-                            <select id="deskkeys">
-                                <option value=10>Ctrl+Alt+Del</option>
-                                <option value=5>Win</option>
-                                <option value=0>Win+Down</option>
-                                <option value=1>Win+Up</option>
-                                <option value=2>Win+L</option>
-                                <option value=3>Win+M</option>
-                                <option value=4>Shift+Win+M</option>
-                                <option value=6>Win+R</option>
-                                <option value=7>Alt-F4</option>
-                                <option value=8>Ctrl-W</option>
-                                <option value=9>Alt-Tab</option>
-                                <option value=11>Win+Left</option>
-                                <option value=12>Win+Right</option>
-                            </select>
-
-                            // WIN+DOWN       = 0x100028
-                            // WIN+UP         = 0x100026
-                            // WIN+L          = 0x10004C
-                            // WIN+M          = 0x10004D
-                            // Shift+WIN+M    = 0x11004D
-                            // WIN            = 0x100000
-                            // WIN+R          = 0x100052
-                            // ALT+F4         = 0x020073
-                            // CTRL+W         = 0x080057
-                            // ALT+TAB        = 0x020009
-                            // CTRL-ALT-DEL   = 0x0A0053
-                            // WIN-LEFT       = 0x100025
-                            // WIN-RIGHT      = 0x100027
-
-                            -->
-                            <select id="deskkeys">
-                                <option value=0x0A0053>Ctrl+Alt+Del</option>
-                                <option value=0x100000>Win</option>
-                                <option value=0x100028>Win+Down</option>
-                                <option value=0x100026>Win+Up</option>
-                                <option value=0x10004C>Win+L</option>
-                                <option value=0x10004D>Win+M</option>
-                                <option value=0x11004D>Shift+Win+M</option>
-                                <option value=0x100052>Win+R</option>
-                                <option value=0x020073>Alt-F4</option>
-                                <option value=0x080057>Ctrl-W</option>
-                                <option value=0x020009>Alt-Tab</option>
-                                <option value=0x100025>Win+Left</option>
-                                <option value=0x100027>Win+Right</option>
-                            </select>
+                            <select id="deskkeys" cmenu=deskKeyShortcutContextMenu></select>
                             <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
                             <input id="DeskESC" style="display:none" type="button" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
                             <input id="DeskClip" style="" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
@@ -1363,6 +1318,7 @@
         var xtermResizeTimer = null;
         var miscState = {};
         var checkedNodeids = {};
+        var deskKeyboardShortcuts = [];
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -1567,6 +1523,12 @@
 
             // Session Refresh Timer
             if (sessionTime >= 10) { sessionRefreshTimer = setTimeout(refreshCookieSession, Math.round((sessionTime * 60000) * 0.8)); }
+
+            // Set the user's desktop shortcut keys
+            deskKeyboardShortcuts = [];
+            var deskKeyboardShortcutsStr = getstore('deskKeyShortcuts', '0x0A002E,0x100000,0x100028,0x100026,0x10004C,0x10004D,0x11004D,0x100052,0x020073,0x080057,0x020009,0x100025,0x100027').split(',');
+            for (var i in deskKeyboardShortcutsStr) { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); }
+            updateDeskShortcutKeys();
         }
 
         function refreshCookieSession() {
@@ -2650,6 +2612,13 @@
                                         stars = JSON.parse(webstate.stars);
                                         if (Q('DevFilterSelect').value == 3) { mainUpdate(5); } else { mainUpdate(4); }
                                         if (currentNode) { refreshDevice(currentNode._id); }
+                                    }
+                                    if (webstate.deskKeyShortcuts != null) {
+                                        // Set the user's desktop shortcut keys
+                                        deskKeyboardShortcuts = [];
+                                        var deskKeyboardShortcutsStr = webstate.deskKeyShortcuts.split(',');
+                                        for (var i in deskKeyboardShortcutsStr) { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); }
+                                        updateDeskShortcutKeys();
                                     }
                                 }
                             } catch (ex) {}
@@ -5091,6 +5060,11 @@
             safeNewWindow(window.location.origin + '{{{domainurl}}}player.htm', 'meshcentral-deskplayer');
         }
 
+        function cmdeskshortcutaction(action) {
+            if (xxdialogMode) return;
+            deskCustomizeKeys();
+        }
+
         function p13deletefileCm(b, file) {
             files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: [ file.n ], rec: false });
             p13folderup(999);
@@ -5118,6 +5092,7 @@
             QV('rfbPortContextMenu', false);
             QV('filesContextMenu', false);
             QV('deskPlayerContextMenu', false);
+            QV('deskKeyShortcutContextMenu', false);
             QV('expandAllContextMenu', false);
             //QV('pluginTabContextMenu', false);
             contextelement = null;
@@ -6966,7 +6941,6 @@
             QV('DeskWD', inputAllowed);
             QE('DeskWD', deskState == 3);
             QV('deskkeys', inputAllowed);
-            QE('deskkeys', deskState == 3);
 
             // Display this only if we have Chat & Notify permissions
             QV('DeskSaveImageButton', (deskState == 3) && (Q('Desk')['toBlob'] != null));
@@ -7457,6 +7431,90 @@
             }
         }
 
+        function updateDeskShortcutKeys() {
+            var x = '', v = parseInt(Q('deskkeys').value);
+            if ((v == '') && (deskKeyboardShortcuts.length > 0)) { v = deskKeyboardShortcuts[0]; }
+            for (var i in deskKeyboardShortcuts) { x += '<option value=' + deskKeyboardShortcuts[i] + ((v == deskKeyboardShortcuts[i])?' selected':'') + '>' + keyShortcutTotext(deskKeyboardShortcuts[i]) + '</option>'; }
+            //x += '<option value=-1' + ((v == -1)?' selected':'') + '>' + "Customize" + '</option>';
+            QH('deskkeys', x);
+        }
+
+        var keyStrings = {
+            8  : "BackSpace",
+            9  : "Tab",
+            13 : "Enter",
+            27 : "Escape",
+            45 : "Insert",
+            46 : "Del",
+            36 : "Home",
+            35 : "End",
+            33 : "Page Up",
+            34 : "Page Down",
+            37 : "Left",
+            38 : "Up",
+            39 : "Right",
+            40 : "Down"
+        }
+
+        function keyShortcutTotext(n) {
+            var x = [];
+            if (n & 0x010000) { x.push("Shift"); }
+            if (n & 0x020000) { x.push("Alt"); }
+            if (n & 0x080000) { x.push("Ctrl"); }
+            if (n & 0x100000) { x.push("Win"); }
+            n = (n & 0xFFFF);
+            if ((n >= 112) && (n <= 123)) { x.push('F' + (n - 111)); } // Fx keys
+            else if (keyStrings[n]) { x.push(keyStrings[n]); }
+            else { if (n != 0) { x.push(String.fromCharCode(n)); } }
+            return x.join(' + ');
+        }
+
+        // Customize keyboard shortcuts
+        function deskCustomizeKeys() {
+            if (xxdialogMode) return;
+            var x = '<div id=d2shortcuts style="width:100%;height:180px;padding:4px;overflow-y:auto;border:1px solid gray"></div><div style=width:100%;padding:5px>';
+            x += '<label><input id=d1kshift type=checkbox /> ' + "Shift" + '</label><label> <input id=d1kalt type=checkbox /> ' + "Alt" + '</label><label> <input id=d1kctrl type=checkbox /> ' + "Ctrl" + '</label> <input id=d1kwin type=checkbox /> ' + "Win" + '</label>';
+            x += ' <select id=d2keySelect>';
+            for (var i in keyStrings) { x += '<option value=' + i + '>' + keyStrings[i] + '</option>'; }
+            for (var i = 1; i <= 12; i++) { x += '<option value=' + (i + 111) + '>F' + i + '</option>'; }
+            for (var i = 0; i < 10; i++) { x += '<option value=' + (i + 48) + '>' + i + '</option>'; }
+            for (var i = 0; i < 26; i++) { x += '<option value=' + (i + 65) + '>' + String.fromCharCode(i + 65) + '</option>'; }
+            x += '</select> <input type=button value=' + "Add" + ' onclick=addDeskCustomizeKey() /></div>';
+            setDialogMode(2, "Keyboard Shortcuts Customization", 1, deskCustomizeKeysEx, x);
+            deskUpdateShortcutList();
+        }
+
+        function deskCustomizeKeysEx() {
+            putstore('deskKeyShortcuts', deskKeyboardShortcuts.join(','));
+            updateDeskShortcutKeys();
+        }
+
+        function deskUpdateShortcutList() {
+            var x = '';
+            for (var i in deskKeyboardShortcuts) {
+                var kt = keyShortcutTotext(deskKeyboardShortcuts[i]);
+                x += '<div style="width:100%;background-color:#AAA;border-radius:4px;margin-bottom:4px;padding:4px;text-align:left;box-sizing:border-box" value=' + deskKeyboardShortcuts[i] + '>' + kt + '<img width=10 height=10 style=float:right;cursor:pointer;padding:2px src="images/trash.png" onclick=removeDeskCustomizeKey(' + deskKeyboardShortcuts[i] + ')></div>';
+            }
+            if (x == '') { x = '<i>' + "No keyboard shortcuts defined" + '</i>'; }
+            QH('d2shortcuts', x);
+        }
+
+        function removeDeskCustomizeKey(k) {
+            var na = [];
+            for (var i in deskKeyboardShortcuts) { if (deskKeyboardShortcuts[i] != k) { na.push(deskKeyboardShortcuts[i]); } }
+            deskKeyboardShortcuts = na;
+            deskUpdateShortcutList();
+        }
+
+        function addDeskCustomizeKey() {
+            var k = parseInt(Q('d2keySelect').value);
+            if (Q('d1kshift').checked) { k |= 0x010000; }
+            if (Q('d1kalt').checked)   { k |= 0x020000; }
+            if (Q('d1kctrl').checked)  { k |= 0x080000; }
+            if (Q('d1kwin').checked)   { k |= 0x100000; }
+            if (deskKeyboardShortcuts.indexOf(k) == -1) { deskKeyboardShortcuts.push(k); deskUpdateShortcutList(); }
+        }
+
         // Remote desktop special key combos for Windows
         function deskSendKeys() {
             Q('DeskWD').blur();
@@ -7464,37 +7522,38 @@
 
             // Construct the key command
             var ks = parseInt(Q('deskkeys').value);
-            if (ks == 0x0A0053) { desktop.m.sendcad(); return; } // CTRL-ALT-DEL
+            if (ks == -1) { deskCustomizeKeys(); return; }
+            if (ks == 0x0A002E) { desktop.m.sendcad(); return; } // CTRL-ALT-DEL
             if ((desktop.contype == 1) && (ks == 0x100052)) { desktop.sendCtrlMsg('{"action":"lock"}'); return; } // Lock desktop
 
             var flags = (ks & 0xFF0000) >> 16, key = (ks & 0xFFFF), keyArray = [], keyArray2 = [];
             var amtTranslate = {
-                8   : 0xff08,       // BackSpace
-                9   : 0xff09,       // Tab
-                13  : 0xff0d,       // Return or Enter
-                27  : 0xff1b,       // Escape
-                45  : 0xff63,       // Insert
-                46  : 0xffff,       // Delete
-                36  : 0xff50,       // Home
-                35  : 0xff57,       // End
-                33  : 0xff55,       // Page Up
-                34  : 0xff56,       // Page Down
-                37  : 0xff51,       // Left arrow
-                38  : 0xff52,       // Up arrow
-                39  : 0xff53,       // Right arrow
-                40  : 0xff54,       // Down arrow
-                112 : 0xffbe,       // F1
-                113 : 0xffbf,       // F2
-                114 : 0xffc0,       // F3
-                115 : 0xffc1,       // F4
-                116 : 0xffc2,       // F5
-                117 : 0xffc3,       // F6
-                118 : 0xffc4,       // F7
-                119 : 0xffc5,       // F8
-                120 : 0xffc6,       // F9
-                121 : 0xffc7,       // F10
-                122 : 0xffc8,       // F11
-                123 : 0xffc9        // F12
+                8   : 0xff08, // BackSpace
+                9   : 0xff09, // Tab
+                13  : 0xff0d, // Return or Enter
+                27  : 0xff1b, // Escape
+                45  : 0xff63, // Insert
+                46  : 0xffff, // Delete
+                36  : 0xff50, // Home
+                35  : 0xff57, // End
+                33  : 0xff55, // Page Up
+                34  : 0xff56, // Page Down
+                37  : 0xff51, // Left arrow
+                38  : 0xff52, // Up arrow
+                39  : 0xff53, // Right arrow
+                40  : 0xff54, // Down arrow
+                112 : 0xffbe, // F1
+                113 : 0xffbf, // F2
+                114 : 0xffc0, // F3
+                115 : 0xffc1, // F4
+                116 : 0xffc2, // F5
+                117 : 0xffc3, // F6
+                118 : 0xffc4, // F7
+                119 : 0xffc5, // F8
+                120 : 0xffc6, // F9
+                121 : 0xffc7, // F10
+                122 : 0xffc8, // F11
+                123 : 0xffc9  // F12
             }
 
             // 0x010000 = Shift
@@ -7513,7 +7572,7 @@
             // ALT+F4         = 0x020073
             // CTRL+W         = 0x080057
             // ALT+TAB        = 0x020009
-            // CTRL-ALT-DEL   = 0x0A0053
+            // CTRL-ALT-DEL   = 0x0A002E
             // WIN-LEFT       = 0x100025
             // WIN-RIGHT      = 0x100027
             // SHIFT+F10      = 0x010079
@@ -14177,7 +14236,7 @@
                         var k = localStorage.key(i);
                         if (k[0] != '_') {
                             s[k] = localStorage.getItem(k);
-                            if ((k != 'desktopsettings') && (k != 'stars') && (typeof s[k] == 'string') && (s[k].length > 64)) { delete s[k]; }
+                            if ((k != 'desktopsettings') && (k != 'stars') && (k != 'deskKeyShortcuts') && (typeof s[k] == 'string') && (s[k].length > 64)) { delete s[k]; }
                         }
                     }
                 } catch (ex) {}
