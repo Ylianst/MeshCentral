@@ -2990,7 +2990,12 @@ a {
     padding: 3px;
     border-radius: 3px;
     background-color: #DDD;
+    cursor: pointer;
 }
+
+    .traceEvent:hover {
+        background-color:#BBB;
+    }
 
 .night .traceEvent {
     background-color: #222;
