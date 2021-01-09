@@ -555,6 +555,7 @@
     {
       "en": ", No Consent",
       "fr": ", Pas de consentement",
+      "nl": ", Geen toestemming",
       "xloc": [
         "default.handlebars->31->689"
       ]
@@ -603,6 +604,7 @@
     {
       "en": ", Toolbar",
       "fr": ", barre d'outils",
+      "nl": ", Werkbalk",
       "xloc": [
         "default.handlebars->31->691"
       ]
@@ -3321,6 +3323,7 @@
     {
       "en": "Add",
       "fr": "Ajouter",
+      "nl": "Toevoegen",
       "xloc": [
         "default-mobile.handlebars->11->339",
         "default.handlebars->31->898"
@@ -4841,6 +4844,7 @@
     {
       "en": "Alt",
       "fr": "Alt",
+      "nl": "Alt",
       "xloc": [
         "default-mobile.handlebars->11->332",
         "default-mobile.handlebars->11->336",
@@ -6154,6 +6158,7 @@
     {
       "en": "BackSpace",
       "fr": "Backspace",
+      "nl": "BackSpace",
       "xloc": [
         "default-mobile.handlebars->11->316",
         "default.handlebars->31->875"
@@ -8122,6 +8127,7 @@
     {
       "en": "Click here to view.",
       "fr": "Cliquer ici pour voir.",
+      "nl": "Klik hier om te bekijken.",
       "xloc": [
         "messenger.handlebars->remoteVideo->remoteClickToView"
       ]
@@ -10607,6 +10613,7 @@
     },
     {
       "en": "Customize",
+      "nl": "Aanpassen",
       "xloc": [
         "default-mobile.handlebars->11->315"
       ]
@@ -10614,6 +10621,7 @@
     {
       "en": "Customize...",
       "fr": "Personnaliser ...",
+      "nl": "Aanpassen...",
       "xloc": [
         "default.handlebars->deskKeyShortcutContextMenu->1"
       ]
@@ -10867,6 +10875,7 @@
     {
       "en": "Del",
       "fr": "Suppr",
+      "nl": "Del",
       "xloc": [
         "default-mobile.handlebars->11->321",
         "default.handlebars->31->880"
@@ -13119,6 +13128,7 @@
     {
       "en": "Down",
       "fr": "Bas",
+      "nl": "Omlaag",
       "xloc": [
         "default-mobile.handlebars->11->329",
         "default.handlebars->31->888"
@@ -14969,6 +14979,7 @@
     {
       "en": "End",
       "fr": "Fin",
+      "nl": "End",
       "xloc": [
         "default-mobile.handlebars->11->323",
         "default.handlebars->31->882"
@@ -15579,6 +15590,7 @@
     {
       "en": "Escape",
       "fr": "Echap",
+      "nl": "Escape",
       "xloc": [
         "default-mobile.handlebars->11->319",
         "default.handlebars->31->878"
@@ -18442,6 +18454,7 @@
     {
       "en": "Home",
       "fr": "Home",
+      "nl": "Home",
       "xloc": [
         "default-mobile.handlebars->11->322",
         "default.handlebars->31->881"
@@ -19091,6 +19104,7 @@
     {
       "en": "Insert",
       "fr": "Insérer",
+      "nl": "Insert",
       "xloc": [
         "default-mobile.handlebars->11->320",
         "default.handlebars->31->879"
@@ -19260,6 +19274,7 @@
     {
       "en": "Intel AMT manager",
       "fr": "Gestionnaire Intel AMT",
+      "nl": "Intel AMT beheerder",
       "xloc": [
         "default.handlebars->31->2219"
       ]
@@ -20474,7 +20489,7 @@
       "hi": "आमंत्रण संकेत",
       "ja": "招待コード",
       "ko": "초대 코드",
-      "nl": "Uitnodigingscode",
+      "nl": "Uitnodigings code",
       "pt": "Código de Convite",
       "ru": "Код приглашения",
       "tr": "Davet Kodu",
@@ -20953,6 +20968,7 @@
     {
       "en": "Keyboard Shortcuts Customization",
       "fr": "Personnalisation des raccourcis clavier",
+      "nl": "Toetsenbord sneltoetsen aanpassen",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10dialog->1->1",
         "default.handlebars->31->899"
@@ -21788,6 +21804,7 @@
     {
       "en": "Left",
       "fr": "Gauche",
+      "nl": "Links",
       "xloc": [
         "default-mobile.handlebars->11->326",
         "default.handlebars->31->885"
@@ -23136,6 +23153,7 @@
     {
       "en": "MIPSEL24KC (OpenWRT)",
       "fr": "MIPSEL24KC (OpenWRT)",
+      "nl": "MIPSEL24KC (OpenWRT)",
       "xloc": [
         "default-mobile.handlebars->11->46",
         "default.handlebars->31->53"
@@ -26630,6 +26648,7 @@
     {
       "en": "No keyboard shortcuts defined",
       "fr": "Aucun raccourci clavier défini",
+      "nl": "Geen toetsenbord snelkoppelingen gedefinieerd",
       "xloc": [
         "default-mobile.handlebars->11->340",
         "default.handlebars->31->900"
@@ -27392,6 +27411,7 @@
     {
       "en": "Null",
       "fr": "Null",
+      "nl": "Null",
       "xloc": [
         "default.handlebars->31->2201"
       ]
@@ -28069,6 +28089,7 @@
     {
       "en": "Page Down",
       "fr": "Bas de page",
+      "nl": "Page Down",
       "xloc": [
         "default-mobile.handlebars->11->325",
         "default.handlebars->31->884"
@@ -28077,6 +28098,7 @@
     {
       "en": "Page Up",
       "fr": "Haut de page",
+      "nl": "Page Up",
       "xloc": [
         "default-mobile.handlebars->11->324",
         "default.handlebars->31->883"
@@ -32281,6 +32303,7 @@
     {
       "en": "Right",
       "fr": "Droit",
+      "nl": "Rechts",
       "xloc": [
         "default-mobile.handlebars->11->328",
         "default.handlebars->31->887"
@@ -35037,6 +35060,7 @@
     {
       "en": "Shift",
       "fr": "Shift",
+      "nl": "Shift",
       "xloc": [
         "default-mobile.handlebars->11->331",
         "default-mobile.handlebars->11->335",
@@ -36740,6 +36764,7 @@
     {
       "en": "Start chat session?",
       "fr": "Démarrer la discussion ?",
+      "nl": "Chat sessie starten?",
       "xloc": [
         "default-mobile.handlebars->11->289"
       ]
