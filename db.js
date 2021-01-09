@@ -1393,7 +1393,11 @@ module.exports.CreateDB = function (parent, func) {
             child_process.exec('"' + mongoDumpPath + '"', { cwd: backupPath }, function (error, stdout, stderr) {
                 try {
                     if ((error != null) && (error != '')) {
-                        func(1, "Unable to find mongodump.exe, MongoDB database auto-backup will not be performed.");
+                        if (parent.platform == 'win32') {
+                            func(1, "Unable to find mongodump.exe, MongoDB database auto-backup will not be performed.");
+                        } else {
+                            func(1, "Unable to find mongodump, MongoDB database auto-backup will not be performed.");
+                        }
                     } else {
                         func();
                     }
