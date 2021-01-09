@@ -1,5 +1,5 @@
 /*
-Copyright 2018-2020 Intel Corporation
+Copyright 2018-2021 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -488,31 +488,22 @@ function createMeshCore(agent) {
         mesh.SendCommand(msg);
     }
 
-    // If we are running in Duktape, agent will be null
-    if (agent == null) {
-        // Running in native agent, Import libraries
-        db = require('SimpleDataStore').Shared();
-        sha = require('SHA256Stream');
-        mesh = require('MeshAgent');
-        childProcess = require('child_process');
-        if (mesh.hasKVM == 1) { // if the agent is compiled with KVM support
-            // Check if this computer supports a desktop
-            try
-            {
-                if ((process.platform == 'win32') || (process.platform == 'darwin') || (require('monitor-info').kvm_x11_support)) {
-                    meshCoreObj.caps |= 1; meshCoreObjChanged();
-                } else if (process.platform == 'linux' || process.platform == 'freebsd') {
-                    require('monitor-info').on('kvmSupportDetected', function (value) { meshCoreObj.caps |= 1; meshCoreObjChanged(); });
-                }
-            } catch (e) { }
-        }
-    } else {
-        // Running in nodejs
-        meshCoreObj.value += '-NodeJS';
-        meshCoreObj.caps = 8;
-        mesh = agent.getMeshApi();
+    // Import libraries
+    db = require('SimpleDataStore').Shared();
+    sha = require('SHA256Stream');
+    mesh = require('MeshAgent');
+    childProcess = require('child_process');
+    if (mesh.hasKVM == 1) { // if the agent is compiled with KVM support
+        // Check if this computer supports a desktop
+        try
+        {
+            if ((process.platform == 'win32') || (process.platform == 'darwin') || (require('monitor-info').kvm_x11_support)) {
+                meshCoreObj.caps |= 1; meshCoreObjChanged();
+            } else if (process.platform == 'linux' || process.platform == 'freebsd') {
+                require('monitor-info').on('kvmSupportDetected', function (value) { meshCoreObj.caps |= 1; meshCoreObjChanged(); });
+            }
+        } catch (e) { }
     }
-
     mesh.DAIPC = obj.DAIPC;
 
     /*
@@ -3945,21 +3936,11 @@ function createMeshCore(agent) {
 }
 
 //
-// Module startup
+// Startup for Duktape only. This file is not intended to run in NodeJS.
 //
-
 try {
-    var xexports = null, mainMeshCore = null;
-    try { xexports = module.exports; } catch (e) { }
-
-    if (xexports != null) {
-        // If we are running within NodeJS, export the core
-        module.exports.createMeshCore = createMeshCore;
-    } else {
-        // If we are not running in NodeJS, launch the core
-        mainMeshCore = createMeshCore();
-        mainMeshCore.start(null);
-    }
+    mainMeshCore = createMeshCore();
+    mainMeshCore.start(null);
 } catch (e) {
     require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "uncaughtException2: " + ex });
 }

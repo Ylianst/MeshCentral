@@ -1,7 +1,7 @@
 /**
 * @description MQTT broker reference implementation based on AEDES
 * @author Joko Banu Sastriawan, Ylian Saint-Hilaire
-* @copyright Intel Corporation 2018-2020
+* @copyright Intel Corporation 2018-2021
 * @license Apache-2.0
 * @version v0.0.1
 */

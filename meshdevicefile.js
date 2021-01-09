@@ -1,7 +1,7 @@
 /**
 * @description MeshCentral device file download relay module
 * @author Ylian Saint-Hilaire
-* @copyright Intel Corporation 2018-2020
+* @copyright Intel Corporation 2018-2021
 * @license Apache-2.0
 * @version v0.0.1
 */
