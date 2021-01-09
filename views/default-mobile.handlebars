@@ -699,7 +699,7 @@
                                     <input type=button id=deskFullScreen value="Full Screen" onclick=deskToggleFull(event) onkeypress="return false" onkeydown="return false" disabled="disabled" style="height:28px;margin-right:3px;">
                                 </div>
                                 <div style="margin-left:3px">
-                                    <input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" style="height:28px">
+                                    <input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" style="height:28px">
                                     <input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" style="height:28px">
                                     <input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" style="height:28px">
                                     <span id="deskstatus">Disconnected</span>
@@ -710,6 +710,8 @@
                             <div id=DeskParent style="height:100%">
                                 <canvas id=Desk width=640 height=200 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
                             </div>
+                            <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px;text-align:left" onclick=p11clearConsoleMsg()></div>
+                            <div id=p11DeskSessionSelector style="display:none;position:absolute;left:30px;top:17px;right:30px;bottom:17px;overflow-y:auto"></div>
                         </div>
                         <div id=deskarea4 style="position:absolute;bottom:0px;width:100%;height:32px">
                             <div style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
@@ -781,6 +783,7 @@
                                 </td>
                             </tr>
                         </table>
+                        <div id=p13FilesConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:165px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p13clearConsoleMsg()></div>
                         <div id="p13filetable" style="width:100%;height:calc(100% - 133px);overflow:auto;-webkit-user-select:none">
                             <!--
                             <div id="p13bigok" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&checkmark;</b></div>
@@ -975,6 +978,10 @@
         var sessionActivity = Date.now();
         var deskPinchZoom;
         var deskKeyboardShortcuts = [];
+
+        // Console Message Display Timers
+        var p11DeskConsoleMsgTimer = null;
+        var p13FilesConsoleMsgTimer = null;
 
         function startup() {
             if ((features & 32) == 0) {
@@ -1243,6 +1250,22 @@
                                 if (message.username != null) { n.username = message.username; }
                                 if (typeof message.maxtime == 'number') { n.maxtime = message.maxtime; }
                                 addNotification(n);
+                            } else if ((message.type == 'userSessions') && (currentNode != null) && (currentNode._id == message.nodeid) && (desktop == null)) {
+                                // Got list of user sessions
+                                var userSessions = [];
+                                if (message.data != null) { for (var i in message.data) { if ((message.data[i].State == 'Active') || (message.data[i].StationName == 'Console') || (debugmode == 3)) { userSessions.push(message.data[i]); } } }
+                                if (userSessions.length == 0) { connectDesktop(null, 1, null, message.tag); } // No active sessions, do a normal connection.
+                                else if (userSessions.length == 1) { connectDesktop(null, 1, userSessions[0].SessionId, message.tag); } // One active session, connect to it
+                                else {
+                                    var x = '';
+                                    for (var i in userSessions) {
+                                        x += '<div style="text-align:left;cursor:pointer;background-color:gray;margin:5px;padding:5px;border-radius:5px" onclick=connectDesktop(event,1,' + userSessions[i].SessionId + ',' + message.tag + ')>' + userSessions[i].State + ', ' + userSessions[i].StationName;
+                                        if (userSessions[i].Username) { if (userSessions[i].Domain) { x += ' - ' + userSessions[i].Domain + '/' + userSessions[i].Username; } else { x += ' - ' + userSessions[i].Username; } }
+                                        x += '</div>';
+                                    }
+                                    QH('p11DeskSessionSelector', x);
+                                    QV('p11DeskSessionSelector', true);
+                                }
                             }
                         }
                     } else {
@@ -2686,6 +2709,7 @@
             if (node == null) { goBack(); return; }
             var mesh = meshes[node.meshid];
             var meshrights = GetNodeRights(node);
+            var deviceSwitch = ((currentNode == null) || (currentNode._id != nodeid));
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
 
@@ -2908,6 +2932,16 @@
                     meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id });
                     QH('p10detailshtml', '');
                 }
+
+                // Clear user consent status if present
+                if (deviceSwitch) {
+                    p11clearConsoleMsg();
+                    p13clearConsoleMsg();
+                }
+
+                // Clear the desktop session selector
+                QV('p11DeskSessionSelector', false);
+                QH('p11DeskSessionSelector', '');
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
@@ -3231,8 +3265,20 @@
             if (online == false) QV('DeskTools', false);
         }
 
-        function connectDesktop(e, contype) {
+        // Used to translate incoming agent console messages
+        var agentConsoleMessages = ['', "Waiting for user to grant access...", "Denied", "Failed to start remote terminal session, {0} ({1})", "Timeout", "Received invalid network data"];
+        function formatAgentConsoleMessage(msg, msgid, msgargs) {
+            var r;
+            if (msgargs == null) { msgargs = []; }
+            while (msgargs.length < 3) { msgargs.push(''); } // We need to call the format function in a way that works with older browsers and minifier, can't use apply() or ...
+            if (msgid && (msgid < agentConsoleMessages.length)) { r = EscapeHtml(format(agentConsoleMessages[msgid], (msgargs[0]), (msgargs[1]), (msgargs[2]))); } else { r = EscapeHtml(msg); }
+            return r.split('\n').join('<br />') + '<br /><br />';
+        }
+
+        function connectDesktop(e, contype, tsid, consent) {
             setSessionActivity();
+            QV('p11DeskSessionSelector', false);
+            p11clearConsoleMsg();
             if (desktop == null) {
                 desktopNode = currentNode;
                 if (contype == 2) {
@@ -3247,13 +3293,26 @@
                     desktop.m.onScreenSizeChange = function (o, x, y) { if (fullscreen) { QS('deskarea3').width = (x * fullscreenzoom) + 'px'; QS('deskarea3').height = (y * fullscreenzoom) + 'px'; } deskAdjust(); }
                     desktop.Start(desktopNode._id, 16994, '*', '*', 0);
                     desktop.contype = 2;
-                } else {
+                } else if ((contype == null) || (contype == 1) || ((contype == 3) && (currentNode.agent.id > 4))) {
                     // Setup the Mesh Agent remote desktop
                     desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
+                    desktop.options = {};
+                    if (tsid != null) { desktop.options.tsid = tsid; }
+                    if (consent != null) { desktop.options.consent = consent; }
                     desktop.onStateChanged = onDesktopStateChange;
+                    desktop.onConsoleMessageChange = function () {
+                        if (desktop.consoleMessage) {
+                            Q('p11DeskConsoleMsg').innerHTML += formatAgentConsoleMessage(desktop.consoleMessage, desktop.consoleMessageId, desktop.consoleMessageArgs);
+                            QV('p11DeskConsoleMsg', true);
+                            if (p11DeskConsoleMsgTimer != null) { clearTimeout(p11DeskConsoleMsgTimer); }
+                            if (desktop.consoleMessageTimeout) { p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, desktop.consoleMessageTimeout * 1000); }
+                        } else {
+                            p11clearConsoleMsg();
+                        }
+                    }
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
                     desktop.m.FrameRateTimer = desktopsettings.framerate;
@@ -3261,6 +3320,9 @@
                     desktop.m.onScreenSizeChange = function (o, x, y) { if (fullscreen) { QS('deskarea3').width = (x * fullscreenzoom) + 'px'; QS('deskarea3').height = (y * fullscreenzoom) + 'px'; } deskAdjust(); }
                     desktop.Start(desktopNode._id);
                     desktop.contype = 1;
+                } else if (contype == 3) {
+                    // Ask for user sessions
+                    meshserver.send({ action: 'msg', type: 'userSessions', nodeid: currentNode._id, tag: consent });
                 }
             } else {
                 // Disconnect and clean up the remote desktop
@@ -3268,6 +3330,9 @@
                 desktopNode = desktop = null;
             }
         }
+
+        function p11clearConsoleMsg() { QH('p11DeskConsoleMsg', ''); QV('p11DeskConsoleMsg', false); if (p11DeskConsoleMsgTimer) { clearTimeout(p11DeskConsoleMsgTimer); p11DeskConsoleMsgTimer = null; } }
+        function p13clearConsoleMsg() { QH('p13FilesConsoleMsg', ''); QV('p13FilesConsoleMsg', false); if (p13FilesConsoleMsgTimer) { clearTimeout(p13FilesConsoleMsgTimer); p13FilesConsoleMsgTimer = null; } }
 
         function onDesktopStateChange(xdesktop, state) {
             var xstate = state;
@@ -3752,6 +3817,16 @@
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
+                files.onConsoleMessageChange = function () {
+                    if (files.consoleMessage) {
+                        Q('p13FilesConsoleMsg').innerHTML += formatAgentConsoleMessage(files.consoleMessage, files.consoleMessageId, files.consoleMessageArgs);
+                        QV('p13FilesConsoleMsg', true);
+                        if (p13FilesConsoleMsgTimer != null) { clearTimeout(p13FilesConsoleMsgTimer); }
+                        if (files.consoleMessageTimeout) { p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, files.consoleMessageTimeout * 1000); }
+                    } else {
+                        p13clearConsoleMsg();
+                    }
+                }
                 files.Start(filesNode._id);
             } else {
                 //QH('Term', '');
