@@ -2786,7 +2786,7 @@
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->1->0",
         "default.handlebars->31->1336",
         "default.handlebars->31->1338",
-        "default.handlebars->31->2226",
+        "default.handlebars->31->2228",
         "default.handlebars->31->550",
         "default.handlebars->31->552"
       ]
@@ -5705,7 +5705,7 @@
       "zh-chs": "您确定要{0}插件吗：{1}",
       "zh-cht": "你確定要{0}外掛嗎：{1}",
       "xloc": [
-        "default.handlebars->31->2235"
+        "default.handlebars->31->2237"
       ]
     },
     {
@@ -6676,7 +6676,7 @@
       "zh-chs": "CIRA服务器",
       "zh-cht": "CIRA伺服器",
       "xloc": [
-        "default.handlebars->31->2221"
+        "default.handlebars->31->2223"
       ]
     },
     {
@@ -6696,7 +6696,7 @@
       "zh-chs": "CIRA服务器命令",
       "zh-cht": "CIRA伺服器指令",
       "xloc": [
-        "default.handlebars->31->2222"
+        "default.handlebars->31->2224"
       ]
     },
     {
@@ -6921,7 +6921,7 @@
       "zh-chs": "呼叫错误",
       "zh-cht": "呼叫錯誤",
       "xloc": [
-        "default.handlebars->31->2236"
+        "default.handlebars->31->2238"
       ]
     },
     {
@@ -7624,7 +7624,7 @@
       "zh-cht": "檢查...",
       "xloc": [
         "default.handlebars->31->1105",
-        "default.handlebars->31->2230"
+        "default.handlebars->31->2232"
       ]
     },
     {
@@ -9434,7 +9434,7 @@
       "zh-chs": "连接转发器",
       "zh-cht": "連接轉發器",
       "xloc": [
-        "default.handlebars->31->2220"
+        "default.handlebars->31->2222"
       ]
     },
     {
@@ -9584,7 +9584,7 @@
       "zh-chs": "Cookie编码器",
       "zh-cht": "Cookie編碼器",
       "xloc": [
-        "default.handlebars->31->2205"
+        "default.handlebars->31->2206"
       ]
     },
     {
@@ -9991,7 +9991,7 @@
       "zh-chs": "核心服务器",
       "zh-cht": "核心伺服器",
       "xloc": [
-        "default.handlebars->31->2204"
+        "default.handlebars->31->2205"
       ]
     },
     {
@@ -14806,7 +14806,7 @@
       "zh-chs": "电邮/短信流量",
       "zh-cht": "電郵/短信流量",
       "xloc": [
-        "default.handlebars->31->2213"
+        "default.handlebars->31->2214"
       ]
     },
     {
@@ -19276,7 +19276,7 @@
       "fr": "Gestionnaire Intel AMT",
       "nl": "Intel AMT beheerder",
       "xloc": [
-        "default.handlebars->31->2219"
+        "default.handlebars->31->2221"
       ]
     },
     {
@@ -19324,7 +19324,7 @@
         "default.handlebars->31->1418",
         "default.handlebars->31->1589",
         "default.handlebars->31->1597",
-        "default.handlebars->31->2218",
+        "default.handlebars->31->2220",
         "default.handlebars->31->536",
         "default.handlebars->31->594",
         "default.handlebars->31->621"
@@ -21872,7 +21872,7 @@
       "zh-chs": "减",
       "zh-cht": "減",
       "xloc": [
-        "default.handlebars->31->2238"
+        "default.handlebars->31->2240"
       ]
     },
     {
@@ -23406,7 +23406,7 @@
       "zh-chs": "主服务器信息",
       "zh-cht": "主伺服器訊息",
       "xloc": [
-        "default.handlebars->31->2207"
+        "default.handlebars->31->2208"
       ]
     },
     {
@@ -24202,7 +24202,7 @@
       "zh-chs": "MeshAgent流量",
       "zh-cht": "MeshAgent流量",
       "xloc": [
-        "default.handlebars->31->2209"
+        "default.handlebars->31->2210"
       ]
     },
     {
@@ -24222,7 +24222,7 @@
       "zh-chs": "MeshAgent更新",
       "zh-cht": "MeshAgent更新",
       "xloc": [
-        "default.handlebars->31->2210"
+        "default.handlebars->31->2211"
       ]
     },
     {
@@ -24343,7 +24343,7 @@
       "zh-chs": "MeshCentral服务器同级化",
       "zh-cht": "MeshCentral伺服器同級化",
       "xloc": [
-        "default.handlebars->31->2208"
+        "default.handlebars->31->2209"
       ]
     },
     {
@@ -24722,7 +24722,7 @@
       "zh-chs": "消息调度器",
       "zh-cht": "電郵調度器",
       "xloc": [
-        "default.handlebars->31->2206"
+        "default.handlebars->31->2207"
       ]
     },
     {
@@ -24905,7 +24905,7 @@
       "zh-chs": "更多",
       "zh-cht": "更多",
       "xloc": [
-        "default.handlebars->31->2237"
+        "default.handlebars->31->2239"
       ]
     },
     {
@@ -29129,7 +29129,7 @@
       "zh-cht": "外掛指令",
       "xloc": [
         "default.handlebars->31->211",
-        "default.handlebars->31->2234"
+        "default.handlebars->31->2236"
       ]
     },
     {
@@ -34138,7 +34138,7 @@
       "zh-chs": "服务器证书",
       "zh-cht": "伺服器憑證",
       "xloc": [
-        "default.handlebars->31->2211"
+        "default.handlebars->31->2212"
       ]
     },
     {
@@ -34158,7 +34158,7 @@
       "zh-chs": "服务器数据库",
       "zh-cht": "伺服器數據庫",
       "xloc": [
-        "default.handlebars->31->2212"
+        "default.handlebars->31->2213"
       ]
     },
     {
@@ -34354,7 +34354,13 @@
       "zh-chs": "服务器跟踪",
       "zh-cht": "伺服器追蹤",
       "xloc": [
-        "default.handlebars->31->2223"
+        "default.handlebars->31->2225"
+      ]
+    },
+    {
+      "en": "Server Tracing Event",
+      "xloc": [
+        "default.handlebars->31->2204"
       ]
     },
     {
@@ -39741,7 +39747,7 @@
       "zh-cht": "在啟用兩因素身份驗證之前，無法訪問此功能。這是額外的安全性所必需的。轉到“我的帳戶”標籤，然後查看“帳戶安全性”部分。",
       "xloc": [
         "default.handlebars->31->1339",
-        "default.handlebars->31->2227",
+        "default.handlebars->31->2229",
         "default.handlebars->31->553"
       ]
     },
@@ -40292,7 +40298,7 @@
       "zh-chs": "最新",
       "zh-cht": "最新",
       "xloc": [
-        "default.handlebars->31->2232"
+        "default.handlebars->31->2234"
       ]
     },
     {
@@ -41752,7 +41758,7 @@
       "zh-chs": "版本不兼容，请先升级您的MeshCentral",
       "zh-cht": "版本不兼容，請先升級你的MeshCentral",
       "xloc": [
-        "default.handlebars->31->2228"
+        "default.handlebars->31->2230"
       ]
     },
     {
@@ -41854,8 +41860,8 @@
       "zh-chs": "查看变更日志",
       "zh-cht": "查看變更日誌",
       "xloc": [
-        "default.handlebars->31->2231",
-        "default.handlebars->31->2233"
+        "default.handlebars->31->2233",
+        "default.handlebars->31->2235"
       ]
     },
     {
@@ -42253,8 +42259,14 @@
       "zh-chs": "网络服务器",
       "zh-cht": "網絡伺服器",
       "xloc": [
-        "default.handlebars->31->2214",
-        "default.handlebars->31->2215"
+        "default.handlebars->31->2215",
+        "default.handlebars->31->2216"
+      ]
+    },
+    {
+      "en": "Web Server HTTP Headers",
+      "xloc": [
+        "default.handlebars->31->2219"
       ]
     },
     {
@@ -42274,7 +42286,7 @@
       "zh-chs": "Web服务器请求",
       "zh-cht": "Web伺服器請求",
       "xloc": [
-        "default.handlebars->31->2216"
+        "default.handlebars->31->2217"
       ]
     },
     {
@@ -42294,7 +42306,7 @@
       "zh-chs": "Web套接字中继",
       "zh-cht": "Web插座中繼",
       "xloc": [
-        "default.handlebars->31->2217"
+        "default.handlebars->31->2218"
       ]
     },
     {
@@ -43780,7 +43792,7 @@
       "zh-chs": "\\\\'",
       "zh-cht": "\\\\'",
       "xloc": [
-        "default.handlebars->31->2229"
+        "default.handlebars->31->2231"
       ]
     },
     {
@@ -44879,7 +44891,7 @@
       "zh-chs": "servertrace.csv",
       "zh-cht": "servertrace.csv",
       "xloc": [
-        "default.handlebars->31->2225"
+        "default.handlebars->31->2227"
       ]
     },
     {
@@ -44965,7 +44977,7 @@
       "zh-chs": "时间，来源，信息",
       "zh-cht": "時間，來源，訊息",
       "xloc": [
-        "default.handlebars->31->2224"
+        "default.handlebars->31->2226"
       ]
     },
     {

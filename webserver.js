@@ -4971,6 +4971,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Add HTTP security headers to all responses
         obj.app.use(function (req, res, next) {
+            // Useful for debugging reverse proxy issues
+            parent.debug('httpheaders', req.headers);
+
             // Set the real IP address of the request
             // If a trusted reverse-proxy is sending us the remote IP address, use it.
             var ipex = '0.0.0.0', xforwardedhost = req.headers.host;

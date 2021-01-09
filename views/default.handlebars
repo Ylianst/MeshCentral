@@ -13637,8 +13637,21 @@
         function displayServerTrace() {
             var x = '', max = parseInt(Q('p41limitdropdown').value);
             if (serverTrace.length > max) { serverTrace.splice(max); }
-            for (var i in serverTrace) { x += '<div class=traceEvent>' + EscapeHtml(new Date(serverTrace[i].time).toLocaleTimeString()) + ' - <b>' + EscapeHtml(serverTrace[i].source.toUpperCase()) + '</b>: ' + EscapeHtml(serverTrace[i].args.join(', ')) + '</div>' }
+            for (var i in serverTrace) {
+                var args = [];
+                for (var j in serverTrace[i].args) { if (typeof serverTrace[i].args[j] == 'object') { args.push(JSON.stringify(serverTrace[i].args[j])); } else { args.push(serverTrace[i].args[j]); } }
+                x += '<div class=traceEvent onclick=showTraceEvent(' + j + ')>' + EscapeHtml(new Date(serverTrace[i].time).toLocaleTimeString()) + ' - <b>' + EscapeHtml(serverTrace[i].source.toUpperCase()) + '</b>: ' + EscapeHtml(args.join(', ')) + '</div>';
+            }
             QH('p41events', x);
+        }
+
+        function showTraceEvent(i) {
+            var e = serverTrace[i], x = '';
+            if (xxdialogMode || (e == null)) return;
+            for (var i in e.args) {
+                if (typeof e.args[i] == 'object') { x += EscapeHtml(JSON.stringify(e.args[i])) + '<br /><br />'; } else { x += EscapeHtml(e.args[i]) + '<br /><br />'; }
+            }
+            setDialogMode(2, "Server Tracing Event", 1, null, '<div class=selecttext style=max-height:300px;overflow-y:auto>' + x + '</div>');
         }
 
         function clearServerTracing() { serverTrace = []; displayServerTrace(); }
@@ -13659,6 +13672,7 @@
             x += '<div><label><input type=checkbox id=p41c5 ' + ((serverTraceSources.indexOf('web') >= 0) ? 'checked' : '') + '>' + "Web Server" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c6 ' + ((serverTraceSources.indexOf('webrequest') >= 0) ? 'checked' : '') + '>' + "Web Server Requests" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c7 ' + ((serverTraceSources.indexOf('relay') >= 0) ? 'checked' : '') + '>' + "Web Socket Relay" + '</label></div>';
+            x += '<div><label><input type=checkbox id=p41c20 ' + ((serverTraceSources.indexOf('httpheaders') >= 0) ? 'checked' : '') + '>' + "Web Server HTTP Headers" + '</label></div>';
             //x += '<div><label><input type=checkbox id=p41c8 ' + ((serverTraceSources.indexOf('webrelaydata') >= 0) ? 'checked' : '') + '>' + "Traffic Relay 2 Data" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>' + "Intel&reg; AMT" + '</b></div>';
             x += '<div><label><input type=checkbox id=p41c19 ' + ((serverTraceSources.indexOf('amt') >= 0) ? 'checked' : '') + '>' + "Intel AMT manager" + '</label></div>';
@@ -13673,8 +13687,8 @@
         }
 
         function setServerTracingEx(b) {
-            var sources = [], allsources = ['cookie', 'dispatch', 'main', 'peer', 'web', 'webrequest', 'relay', 'webrelaydata', 'webrelay', 'mps', 'mpscmd', 'swarm', 'swarmcmd', 'agentupdate', 'agent', 'cert', 'db', 'email', 'amt'];
-            if (b == 1) { for (var i = 1; i < 20; i++) { try { if (Q('p41c' + i).checked) { sources.push(allsources[i - 1]); } } catch (ex) { } } }
+            var sources = [], allsources = ['cookie', 'dispatch', 'main', 'peer', 'web', 'webrequest', 'relay', 'webrelaydata', 'webrelay', 'mps', 'mpscmd', 'swarm', 'swarmcmd', 'agentupdate', 'agent', 'cert', 'db', 'email', 'amt', 'httpheaders'];
+            if (b == 1) { for (var i = 1; i < 21; i++) { try { if (Q('p41c' + i).checked) { sources.push(allsources[i - 1]); } } catch (ex) { } } }
             meshserver.send({ action: 'traceinfo', traceSources: sources });
         }
 
