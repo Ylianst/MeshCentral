@@ -7431,6 +7431,10 @@
             }
         }
 
+        //
+        // Desktop Shortcut Keys
+        //
+
         function updateDeskShortcutKeys() {
             var x = '', v = parseInt(Q('deskkeys').value);
             if ((v == '') && (deskKeyboardShortcuts.length > 0)) { v = deskKeyboardShortcuts[0]; }
@@ -7439,22 +7443,7 @@
             QH('deskkeys', x);
         }
 
-        var keyStrings = {
-            8  : "BackSpace",
-            9  : "Tab",
-            13 : "Enter",
-            27 : "Escape",
-            45 : "Insert",
-            46 : "Del",
-            36 : "Home",
-            35 : "End",
-            33 : "Page Up",
-            34 : "Page Down",
-            37 : "Left",
-            38 : "Up",
-            39 : "Right",
-            40 : "Down"
-        }
+        var keyStrings = { 8  : "BackSpace", 9  : "Tab", 13 : "Enter", 27 : "Escape", 45 : "Insert", 46 : "Del", 36 : "Home", 35 : "End", 33 : "Page Up", 34 : "Page Down", 37 : "Left", 38 : "Up", 39 : "Right", 40 : "Down", 0  : "None" }
 
         function keyShortcutTotext(n) {
             var x = [];
@@ -7464,7 +7453,7 @@
             if (n & 0x100000) { x.push("Win"); }
             n = (n & 0xFFFF);
             if ((n >= 112) && (n <= 123)) { x.push('F' + (n - 111)); } // Fx keys
-            else if (keyStrings[n]) { x.push(keyStrings[n]); }
+            else if ((n != 0) && (keyStrings[n])) { x.push(keyStrings[n]); }
             else { if (n != 0) { x.push(String.fromCharCode(n)); } }
             return x.join(' + ');
         }
@@ -7528,7 +7517,7 @@
             if (Q('d1kalt').checked)   { k |= 0x020000; }
             if (Q('d1kctrl').checked)  { k |= 0x080000; }
             if (Q('d1kwin').checked)   { k |= 0x100000; }
-            if (deskKeyboardShortcuts.indexOf(k) == -1) { deskKeyboardShortcuts.push(k); deskUpdateShortcutList(); }
+            if ((k > 0) && (deskKeyboardShortcuts.indexOf(k) == -1)) { deskKeyboardShortcuts.push(k); deskUpdateShortcutList(); }
         }
 
         // Remote desktop special key combos for Windows
@@ -7538,7 +7527,6 @@
 
             // Construct the key command
             var ks = parseInt(Q('deskkeys').value);
-            if (ks == -1) { deskCustomizeKeys(); return; }
             if (ks == 0x0A002E) { desktop.m.sendcad(); return; } // CTRL-ALT-DEL
             if ((desktop.contype == 1) && (ks == 0x100052)) { desktop.sendCtrlMsg('{"action":"lock"}'); return; } // Lock desktop
 
