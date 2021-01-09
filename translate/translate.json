@@ -554,6 +554,7 @@
     },
     {
       "en": ", No Consent",
+      "nl": ", Geen toestemming",
       "fr": ", Pas de consentement",
       "xloc": [
         "default.handlebars->31->689"
@@ -602,6 +603,7 @@
     },
     {
       "en": ", Toolbar",
+      "nl": ", Werkbalk",
       "fr": ", barre d'outils",
       "xloc": [
         "default.handlebars->31->691"
@@ -3320,6 +3322,7 @@
     },
     {
       "en": "Add",
+      "nl": "Toevoegen",
       "fr": "Ajouter",
       "xloc": [
         "default-mobile.handlebars->11->339",
@@ -4840,6 +4843,19 @@
     },
     {
       "en": "Alt",
+      "cs": "Alt",
+      "de": "Alt",
+      "es": "Alt",
+      "fi": "Alt",
+      "hi": "Alt",
+      "ja": "Alt",
+      "ko": "Alt",
+      "nl": "Alt",
+      "pt": "Alt",
+      "ru": "Alt",
+      "tr": "Alt",
+      "zh-chs": "Alt",
+      "zh-cht": "Alt",
       "fr": "Alt",
       "xloc": [
         "default-mobile.handlebars->11->332",
@@ -6153,6 +6169,7 @@
     },
     {
       "en": "BackSpace",
+      "nl": "BackSpace",
       "fr": "Backspace",
       "xloc": [
         "default-mobile.handlebars->11->316",
@@ -8121,6 +8138,7 @@
     },
     {
       "en": "Click here to view.",
+      "nl": "Klik hier om te bekijken.",
       "fr": "Cliquer ici pour voir.",
       "xloc": [
         "messenger.handlebars->remoteVideo->remoteClickToView"
@@ -10607,12 +10625,15 @@
     },
     {
       "en": "Customize",
+      "nl": "Aanpassen",
+      "fr": "Personnaliser",
       "xloc": [
         "default-mobile.handlebars->11->315"
       ]
     },
     {
       "en": "Customize...",
+      "nl": "Aanpassen...",
       "fr": "Personnaliser ...",
       "xloc": [
         "default.handlebars->deskKeyShortcutContextMenu->1"
@@ -10866,6 +10887,7 @@
     },
     {
       "en": "Del",
+      "nl": "Del",
       "fr": "Suppr",
       "xloc": [
         "default-mobile.handlebars->11->321",
@@ -13118,6 +13140,7 @@
     },
     {
       "en": "Down",
+      "nl": "Omlaag",
       "fr": "Bas",
       "xloc": [
         "default-mobile.handlebars->11->329",
@@ -14968,6 +14991,7 @@
     },
     {
       "en": "End",
+      "nl": "End",
       "fr": "Fin",
       "xloc": [
         "default-mobile.handlebars->11->323",
@@ -15578,6 +15602,7 @@
     },
     {
       "en": "Escape",
+      "nl": "Escape",
       "fr": "Echap",
       "xloc": [
         "default-mobile.handlebars->11->319",
@@ -18441,6 +18466,7 @@
     },
     {
       "en": "Home",
+      "nl": "Home",
       "fr": "Home",
       "xloc": [
         "default-mobile.handlebars->11->322",
@@ -19090,6 +19116,7 @@
     },
     {
       "en": "Insert",
+      "nl": "Insert",
       "fr": "Insérer",
       "xloc": [
         "default-mobile.handlebars->11->320",
@@ -19259,6 +19286,7 @@
     },
     {
       "en": "Intel AMT manager",
+      "nl": "Intel AMT beheerder",
       "fr": "Gestionnaire Intel AMT",
       "xloc": [
         "default.handlebars->31->2219"
@@ -20952,6 +20980,7 @@
     },
     {
       "en": "Keyboard Shortcuts Customization",
+      "nl": "Toetsenbord sneltoetsen aanpassen",
       "fr": "Personnalisation des raccourcis clavier",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10dialog->1->1",
@@ -21787,6 +21816,7 @@
     },
     {
       "en": "Left",
+      "nl": "Links",
       "fr": "Gauche",
       "xloc": [
         "default-mobile.handlebars->11->326",
@@ -23135,7 +23165,22 @@
     },
     {
       "en": "MIPSEL24KC (OpenWRT)",
+      "nl": "MIPSEL24KC (OpenWRT)",
       "fr": "MIPSEL24KC (OpenWRT)",
+      "cs": "MIPSEL24KC (OpenWRT)",
+      "de": "MIPSEL24KC (OpenWRT)",
+      "es": "MIPSEL24KC (OpenWRT)",
+      "fi": "MIPSEL24KC (OpenWRT)",
+      "hi": "MIPSEL24KC (OpenWRT)",
+      "ja": "MIPSEL24KC (OpenWRT)",
+      "ko": "MIPSEL24KC (OpenWRT)",
+      "nl": "MIPSEL24KC (OpenWRT)",
+      "pt": "MIPSEL24KC (OpenWRT)",
+      "ru": "MIPSEL24KC (OpenWRT)",
+      "tr": "MIPSEL24KC (OpenWRT)",
+      "zh-chs": "MIPS24KC（OpenWRT）",
+      "zh-cht": "MIPS24KC（OpenWRT）",
+
       "xloc": [
         "default-mobile.handlebars->11->46",
         "default.handlebars->31->53"
@@ -26629,6 +26674,7 @@
     },
     {
       "en": "No keyboard shortcuts defined",
+      "nl": "Geen toetsenbord snelkoppelingen gedefinieerd",
       "fr": "Aucun raccourci clavier défini",
       "xloc": [
         "default-mobile.handlebars->11->340",
@@ -27391,6 +27437,7 @@
     },
     {
       "en": "Null",
+      "nl": "Null",
       "fr": "Null",
       "xloc": [
         "default.handlebars->31->2201"
@@ -28068,6 +28115,7 @@
     },
     {
       "en": "Page Down",
+      "nl": "Page Down",
       "fr": "Bas de page",
       "xloc": [
         "default-mobile.handlebars->11->325",
@@ -28076,6 +28124,7 @@
     },
     {
       "en": "Page Up",
+      "nl": "Page Up",
       "fr": "Haut de page",
       "xloc": [
         "default-mobile.handlebars->11->324",
@@ -32280,6 +32329,7 @@
     },
     {
       "en": "Right",
+      "nl": "Rechts",
       "fr": "Droit",
       "xloc": [
         "default-mobile.handlebars->11->328",
@@ -35036,7 +35086,21 @@
     },
     {
       "en": "Shift",
+      "nl": "Shift",
       "fr": "Shift",
+      "cs": "Shift",
+      "de": "Umschalt",
+      "es": "Mayús",
+      "fi": "Vaihto",
+      "hi": "Shift",
+      "ja": "Shift",
+      "ko": "Shift",
+      "nl": "Shift",
+      "pt": "Shift",
+      "ru": "Shift",
+      "tr": "Üst Karakter",
+      "zh-chs": "Shift",
+      "zh-cht": "Shift"
       "xloc": [
         "default-mobile.handlebars->11->331",
         "default-mobile.handlebars->11->335",
@@ -36739,6 +36803,7 @@
     },
     {
       "en": "Start chat session?",
+      "nl": "Chat sessie starten?",
       "fr": "Démarrer la discussion ?",
       "xloc": [
         "default-mobile.handlebars->11->289"
