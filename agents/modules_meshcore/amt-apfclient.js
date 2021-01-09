@@ -1,5 +1,5 @@
 /*
-Copyright 2018-2020 Intel Corporation
+Copyright 2018-2021 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ limitations under the License.
 /**
 * @description APF/CIRA Client for Duktape
 * @author Joko Sastriawan & Ylian Saint-Hilaire
-* @copyright Intel Corporation 2020
+* @copyright Intel Corporation 2020-2021
 * @license Apache-2.0
 * @version v0.0.2
 */
