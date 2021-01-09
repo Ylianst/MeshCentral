@@ -3812,6 +3812,7 @@
         function autoConnectFiles(e) { if (autoConnectFilesTimer == null) { autoConnectFilesTimer = setInterval(connectFiles, 100); } else { clearInterval(autoConnectFilesTimer); autoConnectFilesTimer = null; } }
 
         function connectFiles(e) {
+            p13clearConsoleMsg();
             if (!files) {
                 // Setup a mesh agent files
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
