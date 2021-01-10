@@ -40,6 +40,8 @@ module.exports.CreateDB = function (parent, func) {
     obj.pluginsActive = ((parent.config) && (parent.config.settings) && (parent.config.settings.plugins != null) && (parent.config.settings.plugins != false) && ((typeof parent.config.settings.plugins != 'object') || (parent.config.settings.plugins.enabled != false)));
 
     // MongoDB bulk write state
+    obj.filePendingGet = null;
+    obj.filePendingGets = null;
     obj.filePendingSet = false;
     obj.filePendingSets = null;
     obj.filePendingCb = null;
@@ -1056,7 +1058,10 @@ module.exports.CreateDB = function (parent, func) {
                     if (func != null) { if (obj.filePendingCb == null) { obj.filePendingCb = [ func ]; } else { obj.filePendingCb.push(func); } }
                 }
             };
-            obj.Get = function (id, func) {
+
+            obj.Get = function (id, func) { // Fast Get operation using a bulk find() to reduce round trips to the database.
+                // Encode arguments into return function if any are present.
+                var func2 = func;
                 if (arguments.length > 2) {
                     var parms = [func];
                     for (var parmx = 2; parmx < arguments.length; ++parmx) { parms.push(arguments[parmx]); }
@@ -1067,17 +1072,20 @@ module.exports.CreateDB = function (parent, func) {
                         userCallback.apply(obj, _func2.userArgs);
                     };
                     func2.userArgs = parms;
-                    obj.file.find({ _id: id }).toArray(function (err, docs) {
-                        if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
-                        func2(err, performTypedRecordDecrypt(docs));
-                    });
+                }
+
+                if (obj.filePendingGets == null) {
+                    // No pending gets, perform the operation now.
+                    obj.filePendingGets = {};
+                    obj.filePendingGets[id] = [func2];
+                    obj.file.find({ _id: id }).toArray(fileBulkReadCompleted);
                 } else {
-                    obj.file.find({ _id: id }).toArray(function (err, docs) {
-                        if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
-                        func(err, performTypedRecordDecrypt(docs));
-                    });
+                    // Add get to pending list.
+                    if (obj.filePendingGet == null) { obj.filePendingGet = {}; }
+                    if (obj.filePendingGet[id] == null) { obj.filePendingGet[id] = [func2]; } else { obj.filePendingGet[id].push(func2); }
                 }
             };
+
             obj.GetAll = function (func) { obj.file.find({}).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetHash = function (id, func) { obj.file.find({ _id: id }).project({ _id: 0, hash: 1 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }).project({ type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
@@ -1456,6 +1464,30 @@ module.exports.CreateDB = function (parent, func) {
             });
         } else {
             func();
+        }
+    }
+
+    // MongoDB pending bulk read operation, perform fast bulk document reads.
+    function fileBulkReadCompleted(err, docs) {
+        // Send out callbacks with results
+        if (docs != null) {
+            for (var i in docs) {
+                if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); }
+                const id = docs[i]._id;
+                if (obj.filePendingGets[id] != null) { for (var j in obj.filePendingGets[id]) { obj.filePendingGets[id][j](err, [ docs[i] ]); } delete obj.filePendingGets[id]; }
+            }
+        }
+
+        // If there are not results, send out a null callback
+        for (var i in obj.filePendingGets) { for (var j in obj.filePendingGets[i]) { obj.filePendingGets[i][j](err, null); } }
+
+        // Move on to process any more pending get operations
+        obj.filePendingGets = obj.filePendingGet;
+        obj.filePendingGet = null;
+        if (obj.filePendingGets != null) {
+            var findlist = [];
+            for (var i in obj.filePendingGets) { findlist.push(i); }
+            obj.file.find({ _id: { $in: findlist } }).toArray(fileBulkReadCompleted);
         }
     }
 
