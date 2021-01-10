@@ -1479,7 +1479,7 @@ module.exports.CreateDB = function (parent, func) {
         }
 
         // If there are not results, send out a null callback
-        for (var i in obj.filePendingGets) { for (var j in obj.filePendingGets[i]) { obj.filePendingGets[i][j](err, null); } }
+        for (var i in obj.filePendingGets) { for (var j in obj.filePendingGets[i]) { obj.filePendingGets[i][j](err, []); } }
 
         // Move on to process any more pending get operations
         obj.filePendingGets = obj.filePendingGet;

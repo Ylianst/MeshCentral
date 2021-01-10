@@ -1205,7 +1205,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if (command.oldnodeid.length != 64) break;
                         const oldNodeKey = 'node//' + command.oldnodeid.toLowerCase();
                         db.Get(oldNodeKey, function (err, nodes) {
-                            if ((nodes != null) && (nodes.length != 1)) return;
+                            if ((nodes == null) || (nodes.length != 1)) return;
                             const node = nodes[0];
                             if (node.meshid == obj.dbMeshKey) {
                                 // Update the device name & host
@@ -1283,7 +1283,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     if ((obj.agentInfo.capabilities & 0x40) != 0) {
                                         // Return nodeid of main agent + connection status
                                         db.Get('da' + obj.dbNodeKey, function (err, nodes) {
-                                            if (nodes.length == 1) {
+                                            if ((nodes != null) && (nodes.length == 1)) {
                                                 obj.realNodeKey = nodes[0].raid;
 
                                                 // Get agent connection state
