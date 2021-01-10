@@ -38,6 +38,8 @@ module.exports.CreateDB = function (parent, func) {
     obj.dbRecordsDecryptKey = null;
     obj.changeStream = false;
     obj.pluginsActive = ((parent.config) && (parent.config.settings) && (parent.config.settings.plugins != null) && (parent.config.settings.plugins != false) && ((typeof parent.config.settings.plugins != 'object') || (parent.config.settings.plugins.enabled != false)));
+    obj.pendingSet = false;
+    obj.pendingSets = null;
 
     obj.SetupDatabase = function (func) {
         // Check if the database unique identifier is present
@@ -1029,7 +1031,17 @@ module.exports.CreateDB = function (parent, func) {
             }
         } else if (obj.databaseType == 3) {
             // Database actions on the main collection (MongoDB)
-            obj.Set = function (data, func) { data = common.escapeLinksFieldNameEx(data); obj.file.replaceOne({ _id: data._id }, performTypedRecordEncrypt(data), { upsert: true }, func); };
+            obj.Set = function (data) { // Fast Set operation using bulkWrite(), this is much faster then using replaceOne()
+                if (obj.pendingSet == false) {
+                    // Perform the operation now
+                    obj.pendingSet = true; obj.pendingSets = null;
+                    obj.file.bulkWrite([{ replaceOne: { filter: { _id: data._id }, replacement: performTypedRecordEncrypt(common.escapeLinksFieldNameEx(data)), upsert: true } }], bulkWriteCompleted);
+                } else {
+                    // Add this operation to the pending list
+                    if (obj.pendingSets == null) { obj.pendingSets = {} }
+                    obj.pendingSets[data._id] = data;
+                }
+            };
             obj.Get = function (id, func) {
                 if (arguments.length > 2) {
                     var parms = [func];
@@ -1405,6 +1417,20 @@ module.exports.CreateDB = function (parent, func) {
             });
         } else {
             func();
+        }
+    }
+
+    // MongoDB pending bulk write operation, perform fast bulk document replacement.
+    function bulkWriteCompleted() {
+        if (obj.pendingSets != null) {
+            // Perform pending operations
+            var ops = [], c = 0;
+            for (var i in obj.pendingSets) { c++; ops.push({ replaceOne: { filter: { _id: i }, replacement: performTypedRecordEncrypt(common.escapeLinksFieldNameEx(obj.pendingSets[i])), upsert: true } }); }
+            obj.file.bulkWrite(ops, bulkWriteCompleted);
+            obj.pendingSets = null;
+        } else {
+            // All done, no pending operations.
+            obj.pendingSet = false;
         }
     }
 
