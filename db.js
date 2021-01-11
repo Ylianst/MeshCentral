@@ -40,10 +40,8 @@ module.exports.CreateDB = function (parent, func) {
     obj.pluginsActive = ((parent.config) && (parent.config.settings) && (parent.config.settings.plugins != null) && (parent.config.settings.plugins != false) && ((typeof parent.config.settings.plugins != 'object') || (parent.config.settings.plugins.enabled != false)));
 
     // MongoDB bulk write state
-    /*
     obj.filePendingGet = null;
     obj.filePendingGets = null;
-    */
     obj.filePendingSet = false;
     obj.filePendingSets = null;
     obj.filePendingCb = null;
@@ -1059,6 +1057,8 @@ module.exports.CreateDB = function (parent, func) {
                     if (func != null) { if (obj.filePendingCb == null) { obj.filePendingCb = [ func ]; } else { obj.filePendingCb.push(func); } }
                 }
             };
+
+            /*
             obj.Get = function (id, func) {
                 if (arguments.length > 2) {
                     var parms = [func];
@@ -1081,8 +1081,8 @@ module.exports.CreateDB = function (parent, func) {
                     });
                 }
             };
+            */
 
-            /*
             obj.Get = function (id, func) { // Fast Get operation using a bulk find() to reduce round trips to the database.
                 // Encode arguments into return function if any are present.
                 var func2 = func;
@@ -1109,7 +1109,6 @@ module.exports.CreateDB = function (parent, func) {
                     if (obj.filePendingGet[id] == null) { obj.filePendingGet[id] = [func2]; } else { obj.filePendingGet[id].push(func2); }
                 }
             };
-            */
 
             obj.GetAll = function (func) { obj.file.find({}).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetHash = function (id, func) { obj.file.find({ _id: id }).project({ _id: 0, hash: 1 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
@@ -1490,7 +1489,6 @@ module.exports.CreateDB = function (parent, func) {
         }
     }
 
-    /*
     // MongoDB pending bulk read operation, perform fast bulk document reads.
     function fileBulkReadCompleted(err, docs) {
         // Send out callbacks with results
@@ -1498,7 +1496,7 @@ module.exports.CreateDB = function (parent, func) {
             for (var i in docs) {
                 if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); }
                 const id = docs[i]._id;
-                if (obj.filePendingGets[id] != null) { for (var j in obj.filePendingGets[id]) { obj.filePendingGets[id][j](err, [ docs[i] ]); } delete obj.filePendingGets[id]; }
+                if (obj.filePendingGets[id] != null) { for (var j in obj.filePendingGets[id]) { obj.filePendingGets[id][j](err, performTypedRecordDecrypt([docs[i]])); } delete obj.filePendingGets[id]; }
             }
         }
 
@@ -1514,7 +1512,6 @@ module.exports.CreateDB = function (parent, func) {
             obj.file.find({ _id: { $in: findlist } }).toArray(fileBulkReadCompleted);
         }
     }
-    */
 
     // MongoDB pending bulk write operation, perform fast bulk document replacement.
     function fileBulkWriteCompleted() {
