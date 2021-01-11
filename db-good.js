@@ -1,7 +1,7 @@
 /** 
 * @description MeshCentral database module
 * @author Ylian Saint-Hilaire
-* @copyright Intel Corporation 2018-2021
+* @copyright Intel Corporation 2018-2020
 * @license Apache-2.0
 * @version v0.0.2
 */
@@ -38,24 +38,6 @@ module.exports.CreateDB = function (parent, func) {
     obj.dbRecordsDecryptKey = null;
     obj.changeStream = false;
     obj.pluginsActive = ((parent.config) && (parent.config.settings) && (parent.config.settings.plugins != null) && (parent.config.settings.plugins != false) && ((typeof parent.config.settings.plugins != 'object') || (parent.config.settings.plugins.enabled != false)));
-
-    // MongoDB bulk write state
-    /*
-    obj.filePendingGet = null;
-    obj.filePendingGets = null;
-    */
-    obj.filePendingSet = false;
-    obj.filePendingSets = null;
-    obj.filePendingCb = null;
-    obj.filePendingCbs = null;
-    obj.powerFilePendingSet = false;
-    obj.powerFilePendingSets = null;
-    obj.powerFilePendingCb = null;
-    obj.powerFilePendingCbs = null;
-    obj.eventsFilePendingSet = false;
-    obj.eventsFilePendingSets = null;
-    obj.eventsFilePendingCb = null;
-    obj.eventsFilePendingCbs = null;
 
     obj.SetupDatabase = function (func) {
         // Check if the database unique identifier is present
@@ -1047,19 +1029,7 @@ module.exports.CreateDB = function (parent, func) {
             }
         } else if (obj.databaseType == 3) {
             // Database actions on the main collection (MongoDB)
-            obj.Set = function (data, func) { // Fast Set operation using bulkWrite(), this is much faster then using replaceOne()
-                if (obj.filePendingSet == false) {
-                    // Perform the operation now
-                    obj.filePendingSet = true; obj.filePendingSets = null;
-                    if (func != null) { obj.filePendingCbs = [func]; }
-                    obj.file.bulkWrite([{ replaceOne: { filter: { _id: data._id }, replacement: performTypedRecordEncrypt(common.escapeLinksFieldNameEx(data)), upsert: true } }], fileBulkWriteCompleted);
-                } else {
-                    // Add this operation to the pending list
-                    if (obj.filePendingSets == null) { obj.filePendingSets = {} }
-                    obj.filePendingSets[data._id] = data;
-                    if (func != null) { if (obj.filePendingCb == null) { obj.filePendingCb = [ func ]; } else { obj.filePendingCb.push(func); } }
-                }
-            };
+            obj.Set = function (data, func) { data = common.escapeLinksFieldNameEx(data); obj.file.replaceOne({ _id: data._id }, performTypedRecordEncrypt(data), { upsert: true }, func); };
             obj.Get = function (id, func) {
                 if (arguments.length > 2) {
                     var parms = [func];
@@ -1082,36 +1052,6 @@ module.exports.CreateDB = function (parent, func) {
                     });
                 }
             };
-
-            /*
-            obj.Get = function (id, func) { // Fast Get operation using a bulk find() to reduce round trips to the database.
-                // Encode arguments into return function if any are present.
-                var func2 = func;
-                if (arguments.length > 2) {
-                    var parms = [func];
-                    for (var parmx = 2; parmx < arguments.length; ++parmx) { parms.push(arguments[parmx]); }
-                    var func2 = function _func2(arg1, arg2) {
-                        var userCallback = _func2.userArgs.shift();
-                        _func2.userArgs.unshift(arg2);
-                        _func2.userArgs.unshift(arg1);
-                        userCallback.apply(obj, _func2.userArgs);
-                    };
-                    func2.userArgs = parms;
-                }
-
-                if (obj.filePendingGets == null) {
-                    // No pending gets, perform the operation now.
-                    obj.filePendingGets = {};
-                    obj.filePendingGets[id] = [func2];
-                    obj.file.find({ _id: id }).toArray(fileBulkReadCompleted);
-                } else {
-                    // Add get to pending list.
-                    if (obj.filePendingGet == null) { obj.filePendingGet = {}; }
-                    if (obj.filePendingGet[id] == null) { obj.filePendingGet[id] = [func2]; } else { obj.filePendingGet[id].push(func2); }
-                }
-            };
-            */
-
             obj.GetAll = function (func) { obj.file.find({}).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetHash = function (id, func) { obj.file.find({ _id: id }).project({ _id: 0, hash: 1 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }).project({ type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
@@ -1161,19 +1101,7 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the events collection
             obj.GetAllEvents = function (func) { obj.eventsfile.find({}).toArray(func); };
-            obj.StoreEvent = function (event, func) { // Fast MongoDB event store using bulkWrite()
-                if (obj.eventsFilePendingSet == false) {
-                    // Perform the operation now
-                    obj.eventsFilePendingSet = true; obj.eventsFilePendingSets = null;
-                    if (func != null) { obj.eventsFilePendingCbs = [func]; }
-                    obj.eventsfile.bulkWrite([{ insertOne: { document: event } }], eventsFileBulkWriteCompleted);
-                } else {
-                    // Add this operation to the pending list
-                    if (obj.eventsFilePendingSets == null) { obj.eventsFilePendingSets = [] }
-                    obj.eventsFilePendingSets.push(event);
-                    if (func != null) { if (obj.eventsFilePendingCb == null) { obj.eventsFilePendingCb = [func]; } else { obj.eventsFilePendingCb.push(func); } }
-                }
-            };
+            obj.StoreEvent = function (event, func) { obj.eventsfile.insertOne(event, func); };
             obj.GetEvents = function (ids, domain, func) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).toArray(func); };
             obj.GetEventsWithLimit = function (ids, domain, limit, func) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).toArray(func); };
             obj.GetUserEvents = function (ids, domain, username, func) { obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { username: username }] }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).toArray(func); };
@@ -1193,20 +1121,7 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the power collection
             obj.getAllPower = function (func) { obj.powerfile.find({}).toArray(func); };
-            obj.storePowerEvent = function (event, multiServer, func) { // Fast MongoDB event store using bulkWrite()
-                if (multiServer != null) { event.server = multiServer.serverid; }
-                if (obj.powerFilePendingSet == false) {
-                    // Perform the operation now
-                    obj.powerFilePendingSet = true; obj.powerFilePendingSets = null;
-                    if (func != null) { obj.powerFilePendingCbs = [func]; }
-                    obj.powerfile.bulkWrite([{ insertOne: { document: event } }], powerFileBulkWriteCompleted);
-                } else {
-                    // Add this operation to the pending list
-                    if (obj.powerFilePendingSets == null) { obj.powerFilePendingSets = [] }
-                    obj.powerFilePendingSets.push(event);
-                    if (func != null) { if (obj.powerFilePendingCb == null) { obj.powerFilePendingCb = [func]; } else { obj.powerFilePendingCb.push(func); } }
-                }
-            };
+            obj.storePowerEvent = function (event, multiServer, func) { if (multiServer != null) { event.server = multiServer.serverid; } obj.powerfile.insertOne(event, func); };
             obj.getPowerTimeline = function (nodeid, func) { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }).project({ _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }).toArray(func); };
             obj.removeAllPowerEvents = function () { obj.powerfile.deleteMany({}, { multi: true }); };
             obj.removeAllPowerEventsForNode = function (nodeid) { obj.powerfile.deleteMany({ nodeid: nodeid }, { multi: true }); };
@@ -1478,11 +1393,7 @@ module.exports.CreateDB = function (parent, func) {
             child_process.exec('"' + mongoDumpPath + '"', { cwd: backupPath }, function (error, stdout, stderr) {
                 try {
                     if ((error != null) && (error != '')) {
-                        if (parent.platform == 'win32') {
-                            func(1, "Unable to find mongodump.exe, MongoDB database auto-backup will not be performed.");
-                        } else {
-                            func(1, "Unable to find mongodump, MongoDB database auto-backup will not be performed.");
-                        }
+                        func(1, "Unable to find mongodump.exe, MongoDB database auto-backup will not be performed.");
                     } else {
                         func();
                     }
@@ -1490,86 +1401,6 @@ module.exports.CreateDB = function (parent, func) {
             });
         } else {
             func();
-        }
-    }
-
-    /*
-    // MongoDB pending bulk read operation, perform fast bulk document reads.
-    function fileBulkReadCompleted(err, docs) {
-        // Send out callbacks with results
-        if (docs != null) {
-            for (var i in docs) {
-                if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); }
-                const id = docs[i]._id;
-                if (obj.filePendingGets[id] != null) { for (var j in obj.filePendingGets[id]) { obj.filePendingGets[id][j](err, [ docs[i] ]); } delete obj.filePendingGets[id]; }
-            }
-        }
-
-        // If there are not results, send out a null callback
-        for (var i in obj.filePendingGets) { for (var j in obj.filePendingGets[i]) { obj.filePendingGets[i][j](err, []); } }
-
-        // Move on to process any more pending get operations
-        obj.filePendingGets = obj.filePendingGet;
-        obj.filePendingGet = null;
-        if (obj.filePendingGets != null) {
-            var findlist = [];
-            for (var i in obj.filePendingGets) { findlist.push(i); }
-            obj.file.find({ _id: { $in: findlist } }).toArray(fileBulkReadCompleted);
-        }
-    }
-    */
-
-    // MongoDB pending bulk write operation, perform fast bulk document replacement.
-    function fileBulkWriteCompleted() {
-        // Callbacks
-        if (obj.filePendingCbs != null) { for (var i in obj.filePendingCbs) { obj.filePendingCbs[i](); } obj.filePendingCbs = null; }
-        if (obj.filePendingSets != null) {
-            // Perform pending operations
-            var ops = [];
-            obj.filePendingCbs = obj.filePendingCb;
-            obj.filePendingCb = null;
-            for (var i in obj.filePendingSets) { ops.push({ replaceOne: { filter: { _id: i }, replacement: performTypedRecordEncrypt(common.escapeLinksFieldNameEx(obj.filePendingSets[i])), upsert: true } }); }
-            obj.file.bulkWrite(ops, fileBulkWriteCompleted);
-            obj.filePendingSets = null;
-        } else {
-            // All done, no pending operations.
-            obj.filePendingSet = false;
-        }
-    }
-
-    // MongoDB pending bulk write operation, perform fast bulk document replacement.
-    function eventsFileBulkWriteCompleted() {
-        // Callbacks
-        if (obj.eventsFilePendingCbs != null) { for (var i in obj.eventsFilePendingCbs) { obj.eventsFilePendingCbs[i](); } obj.eventsFilePendingCbs = null; }
-        if (obj.eventsFilePendingSets != null) {
-            // Perform pending operations
-            var ops = [];
-            for (var i in obj.eventsFilePendingSets) { ops.push({ document: obj.eventsFilePendingSets[i] }); }
-            obj.eventsFilePendingCbs = obj.eventsFilePendingCb;
-            obj.eventsFilePendingCb = null;
-            obj.eventsFilePendingSets = null;
-            obj.eventsfile.bulkWrite(ops, eventsFileBulkWriteCompleted);
-        } else {
-            // All done, no pending operations.
-            obj.eventsFilePendingSet = false;
-        }
-    }
-
-    // MongoDB pending bulk write operation, perform fast bulk document replacement.
-    function powerFileBulkWriteCompleted() {
-        // Callbacks
-        if (obj.powerFilePendingCbs != null) { for (var i in obj.powerFilePendingCbs) { obj.powerFilePendingCbs[i](); } obj.powerFilePendingCbs = null; }
-        if (obj.powerFilePendingSets != null) {
-            // Perform pending operations
-            var ops = [];
-            for (var i in obj.powerFilePendingSets) { ops.push({ document: obj.powerFilePendingSets[i] }); }
-            obj.powerFilePendingCbs = obj.powerFilePendingCb;
-            obj.powerFilePendingCb = null;
-            obj.powerFilePendingSets = null;
-            obj.powerfile.bulkWrite(ops, powerFileBulkWriteCompleted);
-        } else {
-            // All done, no pending operations.
-            obj.powerFilePendingSet = false;
         }
     }
 
