@@ -13325,7 +13325,7 @@
                 "SMS error: {0}"
             ];
             if (typeof n.titleid == 'number') { try { n.title = translatedTitles[n.titleid]; } catch (ex) {} }
-            if (typeof n.msgid == 'number') { try { n.text = translatedMessages[n.msgid]; if (Array.isArray(n.args)) { format(n.text, ...n.args); } } catch (ex) {} }
+            if (typeof n.msgid == 'number') { try { n.text = translatedMessages[n.msgid]; if (Array.isArray(n.args)) { n.text = format(n.text, ...n.args); } } catch (ex) {} }
 
             // Show notification within the web page.
             if (n.time == null) { n.time = Date.now(); }
