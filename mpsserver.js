@@ -637,7 +637,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     });
                 } else if (mesh.mtype == 2) { // If this is a agent mesh, search the mesh for this device UUID
                     // Intel AMT GUID (socket.tag.SystemId) will be used to search the node
-                    obj.db.getAmtUuidNode(socket.tag.SystemId, function (err, nodes) { // TODO: May need to optimize this request with indexes
+                    obj.db.getAmtUuidMeshNode(mesh._id, socket.tag.SystemId, function (err, nodes) { // TODO: Need to optimize this request with indexes
                         if ((nodes == null) || (nodes.length === 0) || (obj.parent.webserver.meshes == null)) {
                             // New CIRA connection for unknown node, disconnect.
                             unknownNodeCount++;
