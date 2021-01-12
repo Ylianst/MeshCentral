@@ -3587,7 +3587,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (db.RemoveSMBIOS) { db.RemoveSMBIOS(node._id); }  // Remove SMBios data
                             db.RemoveAllNodeEvents(node._id);                    // Remove all events for this node
                             db.removeAllPowerEventsForNode(node._id);            // Remove all power events for this node
-                            db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
+                            db.Get('ra' + node._id, function (err, nodes) {
                                 if ((nodes != null) && (nodes.length == 1)) { db.Remove('da' + nodes[0].daid); } // Remove diagnostic agent to real agent link
                                 db.Remove('ra' + node._id); // Remove real agent to diagnostic agent link
                             });
