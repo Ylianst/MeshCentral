@@ -138,7 +138,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }, 0); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'resetaccount', 'pass', 'adminaccount', 'removeaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb'];
+        var validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'resetaccount', 'pass', 'adminaccount', 'removeaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -780,6 +780,68 @@ function CreateMeshCentralServer(config, args) {
                             if ((docs == null) || (docs.length == 0)) { console.log("Unknown userid, usage: --removeaccount [userid] --domain (domain)."); process.exit(); return; }
                             if ((docs[0].links != null) && (Object.keys(docs[0].links).length > 0)) { console.log("Unable to delete account since user has device rights."); process.exit(); return; }
                             obj.db.Remove(docs[0]._id, function () { console.log("Done."); process.exit(); return; });
+                        });
+                        return;
+                    }
+                    if (obj.args.removetestagents) { // Remove all test agents from the database
+                        db.GetAllType('node', function (err, docs) {
+                            if ((err != null) || (docs.length == 0)) {
+                                console.log('Unable to get any nodes from the database');
+                                process.exit(0);
+                            } else {
+                                // Load all users
+                                var allusers = {}, removeCount = 0;
+                                obj.db.GetAllType('user', function (err, docs) {
+                                    obj.common.unEscapeAllLinksFieldName(docs);
+                                    for (i in docs) { allusers[docs[i]._id] = docs[i]; }
+                                });
+
+                                // Look at all devices
+                                for (var i in docs) {
+                                    if ((docs[i] != null) && (docs[i].agent != null) && (docs[i].agent.id == 23)) {
+                                        // Remove this test node
+                                        var node = docs[i];
+
+                                        // Delete this node including network interface information, events and timeline
+                                        removeCount++;
+                                        db.Remove(node._id);                                 // Remove node with that id
+                                        db.Remove('if' + node._id);                          // Remove interface information
+                                        db.Remove('nt' + node._id);                          // Remove notes
+                                        db.Remove('lc' + node._id);                          // Remove last connect time
+                                        db.Remove('si' + node._id);                          // Remove system information
+                                        if (db.RemoveSMBIOS) { db.RemoveSMBIOS(node._id); }  // Remove SMBios data
+                                        db.RemoveAllNodeEvents(node._id);                    // Remove all events for this node
+                                        db.removeAllPowerEventsForNode(node._id);            // Remove all power events for this node
+                                        db.Get('ra' + node._id, function (err, nodes) {
+                                            if ((nodes != null) && (nodes.length == 1)) { db.Remove('da' + nodes[0].daid); } // Remove diagnostic agent to real agent link
+                                            db.Remove('ra' + node._id); // Remove real agent to diagnostic agent link
+                                        });
+
+                                        // Remove any user node links
+                                        if (node.links != null) {
+                                            for (var i in node.links) {
+                                                if (i.startsWith('user/')) {
+                                                    var cuser = allusers[i];
+                                                    if ((cuser != null) && (cuser.links != null) && (cuser.links[node._id] != null)) {
+                                                        // Remove the user link & save the user
+                                                        delete cuser.links[node._id];
+                                                        if (Object.keys(cuser.links).length == 0) { delete cuser.links; }
+                                                        db.SetUser(cuser);
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                    }
+                                }
+                                if (removeCount == 0) {
+                                    console.log("Done, no devices removed.");
+                                    process.exit(0);
+                                } else {
+                                    console.log("Removed " + removeCount + " device(s), holding 10 seconds...");
+                                    setTimeout(function () { console.log("Done."); process.exit(0); }, 10000)
+                                }
+                            }
                         });
                         return;
                     }
