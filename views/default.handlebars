@@ -1849,7 +1849,9 @@
             if (!xdr) xdr = new XMLHttpRequest();
             xdr.open('HEAD', window.location.href);
             xdr.timeout = 15000;
-            xdr.onload = function () { reload(); };
+            // Make sure there isn't a reverse proxy in front that may just be returning 5xx codes
+            // Status code 4xx should still be allowed, since a page could potentially be removed, etc
+            xdr.onload = function () { if (xdr.status < 500) reload(); else setTimeout(serverPoll, 10000); };
             xdr.onerror = xdr.ontimeout = function () { setTimeout(serverPoll, 10000); };
             xdr.send();
         }
