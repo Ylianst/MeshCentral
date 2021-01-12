@@ -39,9 +39,11 @@ module.exports.CreateDB = function (parent, func) {
     obj.changeStream = false;
     obj.pluginsActive = ((parent.config) && (parent.config.settings) && (parent.config.settings.plugins != null) && (parent.config.settings.plugins != false) && ((typeof parent.config.settings.plugins != 'object') || (parent.config.settings.plugins.enabled != false)));
 
-    // MongoDB bulk write state
+    // MongoDB bulk operations state
     obj.filePendingGet = null;
     obj.filePendingGets = null;
+    obj.filePendingRemove = null;
+    obj.filePendingRemoves = null;
     obj.filePendingSet = false;
     obj.filePendingSets = null;
     obj.filePendingCb = null;
@@ -1133,7 +1135,20 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
-            obj.Remove = function (id, func) { obj.file.deleteOne({ _id: id }, func); }; // TODO: May want to do bulk removes to speed up the database.
+
+            obj.Remove = function (id, func) { // Fast remove operation using a bulk find() to reduce round trips to the database.
+                if (obj.filePendingRemoves == null) {
+                    // No pending gets, perform the operation now.
+                    obj.filePendingRemoves = {};
+                    obj.filePendingRemoves[id] = [func];
+                    obj.file.deleteOne({ _id: id }, fileBulkRemoveCompleted);
+                } else {
+                    // Add remove to pending list.
+                    if (obj.filePendingRemove == null) { obj.filePendingRemove = {}; }
+                    if (obj.filePendingRemove[id] == null) { obj.filePendingRemove[id] = [func]; } else { obj.filePendingRemove[id].push(func); }
+                }
+            };
+
             obj.RemoveAll = function (func) { obj.file.deleteMany({}, { multi: true }, func); };
             obj.RemoveAllOfType = function (type, func) { obj.file.deleteMany({ type: type }, { multi: true }, func); };
             obj.InsertMany = function (data, func) { obj.file.insertMany(data, func); };
@@ -1510,6 +1525,25 @@ module.exports.CreateDB = function (parent, func) {
             var findlist = [];
             for (var i in obj.filePendingGets) { findlist.push(i); }
             obj.file.find({ _id: { $in: findlist } }).toArray(fileBulkReadCompleted);
+        }
+    }
+
+    // MongoDB pending bulk remove operation, perform fast bulk document removes.
+    function fileBulkRemoveCompleted(err) {
+        // Send out callbacks
+        for (var i in obj.filePendingGets) {
+            for (var j in obj.filePendingGets[i]) {
+                obj.filePendingGets[i][j](err);
+            }
+        }
+
+        // Move on to process any more pending get operations
+        obj.filePendingRemoves = obj.filePendingRemove;
+        obj.filePendingRemove = null;
+        if (obj.filePendingRemoves != null) {
+            var findlist = [], count = 0;
+            for (var i in obj.filePendingRemoves) { findlist.push(i); count++; }
+            obj.file.deleteMany({ _id: { $in: findlist } }, { multi: true }, fileBulkRemoveCompleted);
         }
     }
 
