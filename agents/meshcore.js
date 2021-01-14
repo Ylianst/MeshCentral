@@ -40,6 +40,23 @@ var MESHRIGHT_LIMITEVENTS = 8192;
 var MESHRIGHT_CHATNOTIFY = 16384;
 var MESHRIGHT_UNINSTALL = 32768;
 var MESHRIGHT_NODESKTOP = 65536;
+if (require('MeshAgent').ARCHID == null)
+{
+    var id = null;
+    switch (process.platform)
+    {
+        case 'win32':
+            id = require('_GenericMarshal').PointerSize == 4 ? 3 : 4;
+            break;
+        case 'freebsd':
+            id = require('_GenericMarshal').PointerSize == 4 ? 31 : 30;
+            break;
+        case 'darwin':
+            id = require('os').arch() == 'x64' ? 16 : 29;
+            break;
+    }
+    if (id != null) { Object.defineProperty(require('MeshAgent'), 'ARCHID', { value: id }); }
+}
 
 function createMeshCore(agent) {
     var obj = {};
@@ -2713,6 +2730,95 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
+                case 'agentupdate':
+                    if (require('MeshAgent').ARCHID == null)
+                    {
+                        response = 'Unable to initiate update, agent ARCHID is not defined';
+                        break;
+                    }
+                    if (this._selfupdate != null)
+                    {
+                        response = "Self update already in progress...";
+                    }
+                    else
+                    {
+                        var agentfilename = process.execPath.split(process.platform == 'win32' ? '\\' : '/').pop();
+                        var name = require('MeshAgent').serviceName;
+                        if (name == null) { name = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'; }
+                        try
+                        {
+                            var s = require('service-manager').manager.getService(name);
+                            if (s.isMe())
+                            {
+                                sendConsoleText('Service check SUCCESS');
+                            }
+                            else
+                            {
+                                s.close();
+                                throw ('not a service');
+                                break;
+                            }
+                            if(process.platform=='win32') {s.close();}
+                        }
+                        catch (zz)
+                        {
+                            response = 'This is not a service instance';
+                            break;
+                        }
+                        sendConsoleText('Downloading update...');
+                        var options = require('http').parseUri(require('MeshAgent').ServerUrl);
+                        options.protocol = 'https:';
+                        options.path = ('/meshagents?id=' + require('MeshAgent').ARCHID);
+                        options.rejectUnauthorized = false;
+                        this._selfupdate = require('https').get(options);
+                        this._selfupdate.on('response', function (img)
+                        {
+                            this._file = require('fs').createWriteStream(agentfilename + '.update', {flags: 'wb'});
+                            this._filehash = require('SHA384Stream').create();
+                            this._filehash.on('hash', function (h)
+                            {
+                                sendConsoleText('Download complete. HASH=' + h.toString('hex'));
+                                if(process.platform == 'win32')
+                                {
+                                    this.child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe',
+                                        ['/C wmic service "' + name + '" call stopservice && copy "' + process.cwd() + agentfilename + '.update" "' + process.execPath + '" && wmic service "' + name + '" call startservice && erase "' + process.cwd() + agentfilename + '.update"'], { type: 4 | 0x8000 });
+                                }
+                                else
+                                {
+                                    // remove binary
+                                    require('fs').unlinkSync(process.execPath);
+
+                                    // copy update
+                                    require('fs').copyFileSync(process.cwd() + agentfilename + '.update', process.execPath);
+
+                                    // erase update
+                                    require('fs').unlinkSync(process.cwd() + agentfilename + '.update');
+
+                                    // add execute permissions
+                                    var m = require('fs').statSync(process.execPath).mode;
+                                    m |= (require('fs').CHMOD_MODES.S_IXUSR | require('fs').CHMOD_MODES.S_IXGRP | require('fs').CHMOD_MODES.S_IXOTH);
+                                    require('fs').chmodSync(process.execPath, m);
+
+                                    sendConsoleText('Restarting service...');
+                                    try
+                                    {
+                                        // restart service
+                                        var s = require('service-manager').manager.getService(name);
+                                        s.restart();
+                                    }
+                                    catch(zz)
+                                    {
+                                        sendConsoleText('Error restarting service');
+                                    }
+                                }
+                            });
+                            img.pipe(this._file);
+                            img.pipe(this._filehash);
+                        });
+                        this._selfupdate.on('error', function (e) { sendConsoleText('Error fetching update'); });
+                    }
+                    
+                    break;
                 case 'msh':
                     response = JSON.stringify(_MSH(), null, 2);
                     break;
