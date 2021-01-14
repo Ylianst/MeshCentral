@@ -516,6 +516,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             } else if (cmd == 5) {
                 // ServerID. Agent is telling us what serverid it expects. Useful if we have many server certificates.
                 if ((msg.substring(2, 34) == parent.swarmCertificateHash256) || (msg.substring(2, 50) == parent.swarmCertificateHash384)) { obj.useSwarmCert = true; }
+            } else if (cmd == 30) {
+                // Agent Commit Date. This is future proofing. Can be used to change server behavior depending on the date range of the agent.
+                //console.log('Connected Agent Commit Date: ' + msg.substring(2));
             }
         }
     });
@@ -531,11 +534,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             //console.log('Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + agentId);
             parent.parent.debug('agent', 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + agentId);
 
-            // Log the agent disconnection
-            if (parent.wsagentsDisconnections[obj.nodeid] == null) {
-                parent.wsagentsDisconnections[obj.nodeid] = 1;
-            } else {
-                parent.wsagentsDisconnections[obj.nodeid] = ++parent.wsagentsDisconnections[obj.nodeid];
+            // Log the agent disconnection if we are not testing agent update
+            if (args.agentupdatetest !== true) {
+                if (parent.wsagentsDisconnections[obj.nodeid] == null) {
+                    parent.wsagentsDisconnections[obj.nodeid] = 1;
+                } else {
+                    parent.wsagentsDisconnections[obj.nodeid] = ++parent.wsagentsDisconnections[obj.nodeid];
+                }
             }
         }
         obj.close(0);
@@ -1665,6 +1670,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Check if we need to update this agent, return true if agent binary update required.
     function compareAgentBinaryHash(agentExeInfo, agentHash) {
+        // If we are testing the agent update system, always return true
+        if (args.agentupdatetest === true) return true;
         // If the hash matches or is null, no update required.
         if ((agentExeInfo.hash == agentHash) || (agentHash == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) return false;
         // If this is a macOS x86 or ARM agent type and it matched the universal binary, no update required.
