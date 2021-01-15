@@ -4355,7 +4355,11 @@
         function addAgentToMesh(meshid) {
             if (xxdialogMode) return false;
             var mesh = meshes[meshid], x = '', installType = 0, moreoptions = '';
-            x += addHtmlValue("Operating System", '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option><option value=5>' + "Linux / BSD / macOS Binary Installer" + '</option><option value=2>' + "Apple macOS" + '</option><option value=3>' + "Windows (UnInstall)" + '</option><option value=4>' + "Linux / BSD (UnInstall)" + '</option></select>');
+
+            var opts = '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option><option value=5>' + "Linux / BSD / macOS Binary Installer" + '</option><option value=2>' + "Apple macOS" + '</option>';
+            if (debugmode > 0) { opts += '<option value=6>' + "Mobile device" + '</option>'; }
+            opts += '<option value=3>' + "Windows (UnInstall)" + '</option><option value=4>' + "Linux / BSD (UnInstall)" + '</option></select>';
+            x += addHtmlValue("Operating System", opts);
 
             var servername = serverinfo.name;
             if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
@@ -4396,6 +4400,9 @@
             x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '") title="' + "64bit version of macOS Mesh Agent" + '">macOS Agent (64bit)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)>');
             x += '</div>';
 
+            // QR code agent install
+            x += '<div id=agins_qrcode style=display:none;min-height:180px><div id=agins_qrimage style=float:right;margin-left:10px;width:180px;height:180px></div><div>' + format("To add a mobile device to group \"{0}\", download the MeshAgent application and scan this QR code.", EscapeHtml(mesh.name)) + "</div></div>";
+
             // Windows agent uninstall
             x += '<div id=agins_windows_un style=display:none>' + "To remove a mesh agent, download the file below, run it and click \"uninstall\"." + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshagents?id=3' + (urlargs.key?('&key=' + urlargs.key):'') + '",null,true) title="' + "32bit version of the MeshAgent" + '">' + "Windows (.exe)" + '</a>');
@@ -4414,6 +4421,13 @@
             x += '</div>';
 
             setDialogMode(2, "Add Mesh Agent", 2, null, x, 'fileDownload');
+
+            // Create the QR code
+            var servername = serverinfo.name;
+            if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+            var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
+            var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
+            new QRCode(Q('agins_qrimage'), { text: 'mc://' + servername + portStr + domainUrlNoSlash + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2], width: 180, height: 180, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.M });
 
             if (serverinfo.https == true)
             {
@@ -4471,6 +4485,7 @@
             QV('agins_linux_un', v == 4);
             QV('agins_linux_inst', v == 5);
             QV('aginsSysTypeDiv', v == 5);
+            QV('agins_qrcode', v == 6);
             Q('aginsbinlnk').onclick = function() { downloadFile((Q('aginsbinlnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value); };
             Q('aginsbincmd').value = (Q('aginsbincmd').value.split('&installflags=')[0]) + '&installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value + '\"';
             QV('aginsTypeDiv', (v == 0) || (v == 5));
