@@ -88,7 +88,7 @@ function getServerTargetUrlEx(url) {
 
 require('MeshAgent').on('Connected', function () {
     require('os').name().then(function (v) {
-        sendConsoleText("Mesh Agent Receovery Console, OS: " + v);
+        //sendConsoleText("Mesh Agent Receovery Console, OS: " + v);
         require('MeshAgent').SendCommand(meshCoreObj);
     });
 });
