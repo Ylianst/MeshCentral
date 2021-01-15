@@ -6,11 +6,210 @@ var nextTunnelIndex = 1;
 var tunnels = {};
 var fs = require('fs');
 
+if (require('MeshAgent').ARCHID == null)
+{
+    var id = null;
+    switch (process.platform)
+    {
+        case 'win32':
+            id = require('_GenericMarshal').PointerSize == 4 ? 3 : 4;
+            break;
+        case 'freebsd':
+            id = require('_GenericMarshal').PointerSize == 4 ? 31 : 30;
+            break;
+        case 'darwin':
+            id = require('os').arch() == 'x64' ? 16 : 29;
+            break;
+    }
+    if (id != null) { Object.defineProperty(require('MeshAgent'), 'ARCHID', { value: id }); }
+}
+
 //attachDebugger({ webport: 9994, wait: 1 }).then(function (p) { console.log('Debug on port: ' + p); });
 
-function sendConsoleText(msg) {
-    require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: msg });
+function sendConsoleText(msg, sessionid)
+{
+    if (sessionid != null)
+    {
+        require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: msg, sessionid: sessionid });
+    }
+    else
+    {
+        require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: msg });
+    }
 }
+
+function sendAgentMessage(msg, icon)
+{
+    if (sendAgentMessage.messages == null)
+    {
+        sendAgentMessage.messages = {};
+        sendAgentMessage.nextid = 1;
+    }
+    sendAgentMessage.messages[sendAgentMessage.nextid++] = { msg: msg, icon: icon };
+    require('MeshAgent').SendCommand({ action: 'sessions', type: 'msg', value: sendAgentMessage.messages });
+}
+
+function agentUpdate_Start(updateurl, updateoptions)
+{
+    var sessionid = updateoptions != null ? updateoptions.session : null;
+
+    if (this._selfupdate != null)
+    {
+        if (sessionid != null) { sendConsoleText('Self update already in progress...', sessionid); }
+    }
+    else
+    {
+        if (require('MeshAgent').ARCHID == null && updateurl == null)
+        {
+            if (sessionid != null) { sendConsoleText('Unable to initiate update, agent ARCHID is not defined', sessionid); }
+        }
+        else
+        {
+            var agentfilename = process.execPath.split(process.platform == 'win32' ? '\\' : '/').pop();
+            var name = require('MeshAgent').serviceName;
+            if (name == null) { name = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'; }
+            try
+            {
+                var s = require('service-manager').manager.getService(name);
+                if (!s.isMe())
+                {
+                    if (process.platform == 'win32') { s.close(); }
+                    if (sessionid != null) { sendConsoleText('Service check FAILED', sessionid); }
+                    return;
+                }
+                if (process.platform == 'win32') { s.close(); }
+            }
+            catch (zz)
+            {
+                if (sessionid != null) { sendConsoleText('Service check FAILED', sessionid); }
+                else
+                {
+                    sendAgentMessage('Self Update Failed, because this agent is not running as a service', 3);
+                }
+                return;
+            }
+
+            if (sessionid != null) { sendConsoleText('Downloading update...', sessionid); }
+            var options = require('http').parseUri(updateurl != null ? updateurl : require('MeshAgent').ServerUrl);
+            options.protocol = 'https:';
+            if (updateurl == null) { options.path = ('/meshagents?id=' + require('MeshAgent').ARCHID); }
+            options.rejectUnauthorized = false;
+            options.checkServerIdentity = function checkServerIdentity(certs)
+            {
+                // If the tunnel certificate matches the control channel certificate, accept the connection
+                try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { }
+                try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { }
+
+                // Check that the certificate is the one expected by the server, fail if not.
+                if (checkServerIdentity.servertlshash == null)
+                {
+                    if(sessionid!=null)
+                    {
+                        sendConsoleText('Self Update failed, because the url cannot be verified', sessionid);
+                    }
+                    else
+                    {
+                        sendAgentMessage('Self Update failed, because the url cannot be verified', 3);
+                    }
+                    throw new Error('BadCert');
+                }
+                if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase()))
+                {
+                    if (sessionid != null)
+                    {
+                        sendConsoleText('Self Update failed, because the supplied certificate does not match', sessionid);
+                    }
+                    else
+                    {
+                        sendAgentMessage('Self Update failed, because the supplied certificate does not match', 3);
+                    }
+                    throw new Error('BadCert')
+                }
+            }
+            options.checkServerIdentity.servertlshash = (updateoptions != null ? updateoptions.tlshash : null);
+            this._selfupdate = require('https').get(options);
+            this._selfupdate.on('error', function (e)
+            {
+                if (sessionid != null) { sendConsoleText('Error fetching update', sessionid); }
+                else
+                {
+                    sendAgentMessage('Self Update failed, because there was a problem trying to download the update', 3);
+                }
+            });
+            this._selfupdate.on('response', function (img)
+            {
+                this._file = require('fs').createWriteStream(agentfilename + '.update', { flags: 'wb' });
+                this._filehash = require('SHA384Stream').create();
+                this._filehash.on('hash', function (h)
+                {
+                    if (updateoptions != null && updateoptions.hash != null)
+                    {
+                        if (updateoptions.hash.toLowerCase() == h.toString('hex').toLowerCase())
+                        {
+                            if (sessionid != null) { sendConsoleText('Download complete. HASH verified.', sessionid); }
+                        }
+                        else
+                        {
+                            if (sessionid != null) { sendConsoleText('Download complete. HASH FAILED.', sessionid); }
+                            else
+                            {
+                                sendAgentMessage('Self Update FAILED because the downloaded agent FAILED hash check', 3);
+                            }
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (sessionid != null) { sendConsoleText('Download complete. HASH=' + h.toString('hex'), sessionid); }
+                    }
+
+                    if (sessionid != null) { sendConsoleText('Updating and restarting agent...', sessionid); }
+                    if (process.platform == 'win32')
+                    {
+                        this.child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe',
+                            ['/C wmic service "' + name + '" call stopservice && copy "' + process.cwd() + agentfilename + '.update" "' + process.execPath + '" && wmic service "' + name + '" call startservice && erase "' + process.cwd() + agentfilename + '.update"'], { type: 4 | 0x8000 });
+                    }
+                    else
+                    {
+                        // remove binary
+                        require('fs').unlinkSync(process.execPath);
+
+                        // copy update
+                        require('fs').copyFileSync(process.cwd() + agentfilename + '.update', process.execPath);
+
+                        // erase update
+                        require('fs').unlinkSync(process.cwd() + agentfilename + '.update');
+
+                        // add execute permissions
+                        var m = require('fs').statSync(process.execPath).mode;
+                        m |= (require('fs').CHMOD_MODES.S_IXUSR | require('fs').CHMOD_MODES.S_IXGRP | require('fs').CHMOD_MODES.S_IXOTH);
+                        require('fs').chmodSync(process.execPath, m);
+
+                        if (sessionid != null) { sendConsoleText('Restarting service...', sessionid); }
+                        try
+                        {
+                            // restart service
+                            var s = require('service-manager').manager.getService(name);
+                            s.restart();
+                        }
+                        catch (zz)
+                        {
+                            if (sessionid != null) { sendConsoleText('Error restarting service', sessionid); }
+                            else
+                            {
+                                sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+                            }
+                        }
+                    }
+                });
+                img.pipe(this._file);
+                img.pipe(this._filehash);
+            });
+        }
+    }
+}
+
+
 // Return p number of spaces 
 function addPad(p, ret) { var r = ''; for (var i = 0; i < p; i++) { r += ret; } return r; }
 
@@ -187,16 +386,23 @@ function onTunnelControlData(data, ws)
 }
 
 
-require('MeshAgent').AddCommandHandler(function (data) {
+require('MeshAgent').AddCommandHandler(function (data)
+{
     if (typeof data == 'object')
     {
         // If this is a console command, parse it and call the console handler
-        switch (data.action) {
+        switch (data.action)
+        {
+            case 'agentupdate':
+                agentUpdate_Start(data.url, { hash: data.hash, tlshash: data.servertlshash });
+                break;
             case 'msg':
                 {
-                    switch (data.type) {
+                    switch (data.type)
+                    {
                         case 'console': { // Process a console command
-                            if (data.value && data.sessionid) {
+                            if (data.value && data.sessionid)
+                            {
                                 var args = splitArgs(data.value);
                                 processConsoleCommand(args[0].toLowerCase(), parseArgs(args), data.rights, data.sessionid);
                             }
@@ -204,19 +410,23 @@ require('MeshAgent').AddCommandHandler(function (data) {
                         }
                         case 'tunnel':
                             {
-                                if (data.value != null) { // Process a new tunnel connection request
+                                if (data.value != null)
+                                { // Process a new tunnel connection request
                                     // Create a new tunnel object
                                     var xurl = getServerTargetUrlEx(data.value);
-                                    if (xurl != null) {
+                                    if (xurl != null)
+                                    {
                                         var woptions = http.parseUri(xurl);
                                         woptions.rejectUnauthorized = 0;
                                         //sendConsoleText(JSON.stringify(woptions));
                                         var tunnel = http.request(woptions);
-                                        tunnel.on('upgrade', function (response, s, head) {
+                                        tunnel.on('upgrade', function (response, s, head)
+                                        {
                                             this.s = s;
                                             s.httprequest = this;
                                             s.tunnel = this;
-                                            s.on('end', function () {
+                                            s.on('end', function ()
+                                            {
                                                 if (tunnels[this.httprequest.index] == null) return; // Stop duplicate calls.
 
                                                 // If there is a upload or download active on this connection, close the file
@@ -230,18 +440,22 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                                 // Clean up WebSocket
                                                 this.removeAllListeners('data');
                                             });
-                                            s.on('data', function (data) {
+                                            s.on('data', function (data)
+                                            {
                                                 // If this is upload data, save it to file
-                                                if (this.httprequest.uploadFile) {
+                                                if (this.httprequest.uploadFile)
+                                                {
                                                     try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
                                                     this.write(Buffer.from(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data
                                                     return;
                                                 }
 
-                                                if (this.httprequest.state == 0) {
+                                                if (this.httprequest.state == 0)
+                                                {
                                                     // Check if this is a relay connection
                                                     if ((data == 'c') || (data == 'cr')) { this.httprequest.state = 1; sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid); }
-                                                } else {
+                                                } else
+                                                {
                                                     // Handle tunnel data
                                                     if (this.httprequest.protocol == 0)
                                                     {
@@ -296,7 +510,7 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                                                 }
                                                                 var options = { type: childProcess.SpawnTypes.TERM, env: env };
 
-                                                                if(require('fs').existsSync('/bin/bash'))
+                                                                if (require('fs').existsSync('/bin/bash'))
                                                                 {
                                                                     this.httprequest.process = childProcess.execFile('/bin/bash', ['bash'], options); // Start bash
                                                                 }
@@ -316,7 +530,8 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                                             }
                                                         }
                                                     }
-                                                    else if (this.httprequest.protocol == 5) {
+                                                    else if (this.httprequest.protocol == 5)
+                                                    {
                                                         // Process files commands
                                                         var cmd = null;
                                                         try { cmd = JSON.parse(data); } catch (e) { };
@@ -329,7 +544,8 @@ require('MeshAgent').AddCommandHandler(function (data) {
 
                                                         if ((cmd.path != null) && (process.platform != 'win32') && (cmd.path[0] != '/')) { cmd.path = '/' + cmd.path; } // Add '/' to paths on non-windows
                                                         //console.log(objToString(cmd, 0, ' '));
-                                                        switch (cmd.action) {
+                                                        switch (cmd.action)
+                                                        {
                                                             case 'ls':
                                                                 // Send the folder content to the browser
                                                                 var response = getDirectoryInfo(cmd.path);
@@ -343,7 +559,8 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                                             }
                                                             case 'rm': {
                                                                 // Delete, possibly recursive delete
-                                                                for (var i in cmd.delfiles) {
+                                                                for (var i in cmd.delfiles)
+                                                                {
                                                                     try { deleteFolderRecursive(path.join(cmd.path, cmd.delfiles[i]), cmd.rec); } catch (e) { }
                                                                 }
                                                                 break;
@@ -367,7 +584,8 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                                             }
                                                             case 'copy': {
                                                                 // Copy a bunch of files from scpath to dspath
-                                                                for (var i in cmd.names) {
+                                                                for (var i in cmd.names)
+                                                                {
                                                                     var sc = path.join(cmd.scpath, cmd.names[i]), ds = path.join(cmd.dspath, cmd.names[i]);
                                                                     if (sc != ds) { try { fs.copyFileSync(sc, ds); } catch (e) { } }
                                                                 }
@@ -375,7 +593,8 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                                             }
                                                             case 'move': {
                                                                 // Move a bunch of files from scpath to dspath
-                                                                for (var i in cmd.names) {
+                                                                for (var i in cmd.names)
+                                                                {
                                                                     var sc = path.join(cmd.scpath, cmd.names[i]), ds = path.join(cmd.dspath, cmd.names[i]);
                                                                     if (sc != ds) { try { fs.copyFileSync(sc, ds); fs.unlinkSync(sc); } catch (e) { } }
                                                                 }
@@ -424,7 +643,13 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help':
-                response = "Available commands are: osinfo, dbkeys, dbget, dbset, dbcompact, netinfo.";
+                response = "Available commands are: osinfo, dbkeys, dbget, dbset, dbcompact, netinfo, versions.";
+                break;
+            case 'versions':
+                response = JSON.stringify(process.versions, null, '  ');
+                break;
+            case 'agentupdate':
+                agentUpdate_Start(null, { session: sessionid });
                 break;
             case 'osinfo': { // Return the operating system information
                 var i = 1;
