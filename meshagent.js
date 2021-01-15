@@ -167,7 +167,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // If we have a core, use it.
                 if (corename != null) {
                     const meshcorehash = parent.parent.defaultMeshCoresHash[corename];
-                    if (agentMeshCoreHash != meshcorehash) {
+                    if ((agentMeshCoreHash != meshcorehash) || (obj.agentCoreUpdate === true)) {
                         if ((obj.agentCoreCheck < 5) || (obj.agentCoreCheck == 1001)) {
                             if (meshcorehash == null) {
                                 // Clear the core
@@ -187,7 +187,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 obj.agentCoreUpdatePending = true;
                                 parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
                                     if (obj.authenticated == 2) {
-                                        // Send the updated code.
+                                        // Send the updated core.
                                         delete obj.agentCoreUpdatePending;
                                         obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0) + argument.hash + argument.core, function () { parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
                                         parent.agentStats.updatingCoreCount++;
@@ -234,7 +234,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             else if (cmdid == 12) { // MeshCommand_AgentHash
                 if ((msg.length == 52) && (obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
                     const agenthash = msg.substring(4);
-                    if (compareAgentBinaryHash(obj.agentExeInfo, agenthash)) {
+                    const agentUpdateMethod = compareAgentBinaryHash(obj.agentExeInfo, agenthash)
+                    if (agentUpdateMethod === 2) { // Use meshcore agent update system
+                        // Send the recovery core to the agent, if the agent is capable of running one
+                        if (((obj.agentInfo.capabilities & 16) != 0) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
+                            obj.agentCoreCheck = 1001;
+                            obj.agentCoreUpdate = true;
+                            obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
+                        }
+                    } else if (agentUpdateMethod === 1) { // Use native agent update system
                         // Mesh agent update required, do it using task limiter so not to flood the network. Medium priority task.
                         parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
                             if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; } // If agent disconnection, complete and exit now.
@@ -518,7 +526,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((msg.substring(2, 34) == parent.swarmCertificateHash256) || (msg.substring(2, 50) == parent.swarmCertificateHash384)) { obj.useSwarmCert = true; }
             } else if (cmd == 30) {
                 // Agent Commit Date. This is future proofing. Can be used to change server behavior depending on the date range of the agent.
-                //console.log('Connected Agent Commit Date: ' + msg.substring(2));
+                //console.log('Connected Agent Commit Date: ' + msg.substring(2) + ", " + Date.parse(msg.substring(2)));
             }
         }
     });
@@ -1140,8 +1148,21 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                 case 'coreinfo':
                     {
-                        // Sent by the agent to update agent information
-                        ChangeAgentCoreInfo(command);
+                        if ((obj.agentCoreUpdate === true) && (obj.agentExeInfo != null)) {
+                            // Agent update. The recovery core was loaded in the agent, send a command to update the agent
+                            var cmd = { action: 'agentUpdate', url: obj.agentExeInfo.url, hash: obj.agentExeInfo.hashhex };
+                            // Add server TLS cert hash
+                            if (parent.parent.args.ignoreagenthashcheck !== true) {
+                                const tlsCertHash = parent.webCertificateFullHashs[domain.id];
+                                if (tlsCertHash != null) { cmd.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
+                            }
+                            // Send the agent update command
+                            obj.send(JSON.stringify(cmd));
+                            delete obj.agentCoreUpdate;
+                        } else {
+                            // Sent by the agent to update agent information
+                            ChangeAgentCoreInfo(command);
+                        }
                         break;
                     }
                 case 'smbios':
@@ -1669,15 +1690,19 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     }
 
     // Check if we need to update this agent, return true if agent binary update required.
+    // Return 0 is no update needed, 1 update using native system, 2 update using meshcore system
     function compareAgentBinaryHash(agentExeInfo, agentHash) {
         // If we are testing the agent update system, always return true
-        if (args.agentupdatetest === true) return true;
+        if ((args.agentupdatetest === true) || (args.agentupdatetest === 1)) return 1;
+        if (args.agentupdatetest === 2) return 2;
         // If the hash matches or is null, no update required.
-        if ((agentExeInfo.hash == agentHash) || (agentHash == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) return false;
+        if ((agentExeInfo.hash == agentHash) || (agentHash == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) return 0;
         // If this is a macOS x86 or ARM agent type and it matched the universal binary, no update required.
-        if (((agentExeInfo.id == 16) || (agentExeInfo.id == 29)) && (parent.parent.meshAgentBinaries[10005].hash == agentHash)) return false;
+        if (((agentExeInfo.id == 16) || (agentExeInfo.id == 29)) && (parent.parent.meshAgentBinaries[10005].hash == agentHash)) return 0;
+
         // No match, update the agent.
-        return true;
+        if ((agentExeInfo.id == 3) && (agentExeInfo.id == 4)) return 2; // For Windows agents, use the meshcore update technique.
+        return 1; // For all other agents, use the native update technique.
     }
 
     // Request that the core dump file on this agent be uploaded to the server
