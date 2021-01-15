@@ -287,7 +287,7 @@ function getServerTargetUrlEx(url) {
 
 require('MeshAgent').on('Connected', function () {
     require('os').name().then(function (v) {
-        //sendConsoleText("Mesh Agent Receovery Console, OS: " + v);
+        //sendConsoleText("Mesh Agent Recovery Console, OS: " + v);
         require('MeshAgent').SendCommand(meshCoreObj);
     });
 });
@@ -643,12 +643,17 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help':
-                response = "Available commands are: osinfo, dbkeys, dbget, dbset, dbcompact, netinfo, versions.";
+                response = "Available commands are: osinfo, dbkeys, dbget, dbset, dbcompact, netinfo, versions, agentupdate.";
                 break;
             case 'versions':
                 response = JSON.stringify(process.versions, null, '  ');
                 break;
             case 'agentupdate':
+                // Request that the server send a agent update command
+                require('MeshAgent').SendCommand({ action: 'agentupdate' });
+                break;
+            case 'agentupdateex':
+                // Perform an direct agent update without requesting any information from the server, this should not typically be used.
                 agentUpdate_Start(null, { session: sessionid });
                 break;
             case 'osinfo': { // Return the operating system information
