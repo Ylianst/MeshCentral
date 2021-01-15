@@ -2445,9 +2445,13 @@ function CreateMeshCentralServer(config, args) {
                             this.meshAgentBinary.size = this.meshAgentBinary.data.length;
                             delete this.bufferList;
 
+                            // Hash the uncompressed binary
+                            var hash = obj.crypto.createHash('sha384').update(this.meshAgentBinary.data);
+                            this.meshAgentBinary.fileHash = hash.digest('binary');
+                            this.meshAgentBinary.fileHashHex = Buffer.from(this.meshAgentBinary.fileHash, 'binary').toString('hex');
+
                             // Compress the agent using ZIP
                             var archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
-
                             const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
                             const onZipEnd = function onZipEnd() {
                                 // Concat all the buffer for create compressed zip agent
