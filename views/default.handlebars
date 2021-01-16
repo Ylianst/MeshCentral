@@ -1251,7 +1251,7 @@
         var autoReconnect = true;
         var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Power off", "Present"];
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
-        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android ARM", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android APK", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)"];
+        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)"];
         var sort = 0;
         var searchFocus = 0;
         var mapSearchFocus = 0;
@@ -4423,11 +4423,13 @@
             setDialogMode(2, "Add Mesh Agent", 2, null, x, 'fileDownload');
 
             // Create the QR code
-            var servername = serverinfo.name;
-            if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
-            var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
-            var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
-            new QRCode(Q('agins_qrimage'), { text: 'mc://' + servername + portStr + domainUrlNoSlash + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2], width: 180, height: 180, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.M });
+            if (debugmode > 0) {
+                var servername = serverinfo.name;
+                if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+                var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
+                var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
+                new QRCode(Q('agins_qrimage'), { text: 'mc://' + servername + portStr + domainUrlNoSlash + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2], width: 180, height: 180, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.M });
+            }
 
             if (serverinfo.https == true)
             {
@@ -5970,10 +5972,12 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />';
+                if ((node.agent == null) || (node.agent.id != 14)) {
+                    x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />';
+                }
                 x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponentEx(node._id) + '") />';
                 x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
-                if ((connectivity & 1) && (meshrights & 8)) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
+                if ((connectivity & 1) && (meshrights & 8) && (node.agent.id != 14)) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
                 if ((node.agent!=null) && (node.agent.caps & 3) && (connectivity & 1) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 4352) == 0))) { x += '<input type=button value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />'; }
 
@@ -6010,12 +6014,12 @@
                 if (node.agent) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title="' + "Show device network interface information" + '">' + "Interfaces" + '</a>&nbsp;';
                 if ((features & 0x00008000) && (xxmap != null)) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title="' + "Show device locations information" + '">' + "Location" + '</a>&nbsp;';
                 if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) { // Check if we should view tools
-                    if ((terminalAccess) && ((meshrights & 8) != 0) && (node.agent != null)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="' + "Traffic router used to connect to a device thru this server" + '.">' + "MeshCmd" + '</a>&nbsp;';
+                    if ((terminalAccess) && ((meshrights & 8) != 0) && (node.agent != null) && (node.agent.id != 14)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="' + "Traffic router used to connect to a device thru this server" + '.">' + "MeshCmd" + '</a>&nbsp;';
                 }
                 if ((args.xterm === 0) && (node.agent) && ((node.agent.caps & 2) != 0) && ((meshrights & 8) != 0) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0))) { x += '<a href=# onclick=p10openxterm(event,"' + node._id + '") title="' + "Open XTerm terminal" + '">' + "XTerm" + '</a>&nbsp;'; }
 
                 // RDP link, show this link only of the remote machine is Windows.
-                if (((connectivity & 1) != 0) && (node.agent) && ((meshrights & 8) != 0)) {
+                if (((connectivity & 1) != 0) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
                     if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a href=# cmenu=altPortContextMenu id=rdpMCRouterLink onclick=p10MCRouter("' + node._id + '","RDP2") title="' + "Requires installation of MeshCentral Router" + '.">' + "RDP" + '</a>&nbsp;'; }
                     if (node.agent.id > 4) {
                         if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
@@ -6028,12 +6032,12 @@
                 }
 
                 // noVNC link
-                if (((connectivity & 1) != 0) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x20000000) == 0)) {
+                if (((connectivity & 1) != 0) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x20000000) == 0) && (node.agent.id != 14)) {
                     x += '<a href=# cmenu=rfbPortContextMenu id=rfbLink onclick=p10rfb("' + node._id + '") title="' + "Launch noVNC session to this device" + '.">' + "noVNC" + '</a>&nbsp;';
                 }
 
                 // MSTSC.js link
-                if (((connectivity & 1) != 0) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x40000000) == 0)) {
+                if (((connectivity & 1) != 0) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x40000000) == 0) && (node.agent.id != 14)) {
                     x += '<a href=# cmenu=altPortContextMenu id=mstscLink onclick=p10mstsc("' + node._id + '") title="' + "Launch web-based RDP session to this device" + '.">' + "Web-RDP" + '</a>&nbsp;';
                 }
 
