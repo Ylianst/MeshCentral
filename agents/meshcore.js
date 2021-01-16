@@ -53,8 +53,15 @@ if (require('MeshAgent').ARCHID == null)
             id = require('_GenericMarshal').PointerSize == 4 ? 31 : 30;
             break;
         case 'darwin':
-            id = require('os').arch() == 'x64' ? 16 : 29;
-            break;
+            try
+            {
+                id = require('os').arch() == 'x64' ? 16 : 29;
+            }
+            catch (xx)
+            {
+                id = 16;
+            }
+            break; break;
     }
     if (id != null) { Object.defineProperty(require('MeshAgent'), 'ARCHID', { value: id }); }
 }
