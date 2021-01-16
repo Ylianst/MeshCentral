@@ -63,8 +63,6 @@ function windows_execve(name, agentfilename, sessionid)
         sendAgentMessage('Self Update failed because msvcrt.dll is missing', 3);
         return;
     }
-    var name = 'Mesh Agent';
-    var agentfilename = 'MeshAgent.exe';
 
     var cmd = require('_GenericMarshal').CreateVariable(process.env['windir'] + '\\system32\\cmd.exe', { wide: true });
     var args = require('_GenericMarshal').CreateVariable(3 * require('_GenericMarshal').PointerSize);
