@@ -515,6 +515,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     obj.agentInfo.computerName = '';
                     //console.log('computerName-none');
                 }
+
                 obj.dbMeshKey = 'mesh/' + domain.id + '/' + obj.meshid;
                 completeAgentConnection();
             } else if (cmd == 4) {

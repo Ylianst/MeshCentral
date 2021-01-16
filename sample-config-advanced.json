@@ -248,8 +248,7 @@
       },
       "_httpHeaders": {
         "Strict-Transport-Security": "max-age=360000",
-        "x-frame-options": "SAMEORIGIN",
-        "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
+        "x-frame-options": "SAMEORIGIN"
       },
       "_agentConfig": [ "webSocketMaskOverride=1", "coreDumpEnabled=1" ],
       "_sessionRecording": {
