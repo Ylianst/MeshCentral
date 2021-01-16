@@ -4306,6 +4306,34 @@ function createMeshCore(agent)
         require('MeshAgent').SendCommand({ action: 'sessions', type: 'msg', value: sendAgentMessage.messages });
     }
 
+    function windows_execve(name, agentfilename, sessionid)
+    {
+        var libc;
+        try
+        {
+            libc = require('_GenericMarshal').CreateNativeProxy('msvcrt.dll');
+            libc.CreateMethod('_wexecve');
+        }
+        catch (xx)
+        {
+            sendConsoleText('Self Update failed because msvcrt.dll is missing', sessionid);
+            sendAgentMessage('Self Update failed because msvcrt.dll is missing', 3);
+            return;
+        }
+        var name = 'Mesh Agent';
+        var agentfilename = 'MeshAgent.exe';
+
+        var cmd = require('_GenericMarshal').CreateVariable(process.env['windir'] + '\\system32\\cmd.exe', { wide: true });
+        var args = require('_GenericMarshal').CreateVariable(3 * require('_GenericMarshal').PointerSize);
+        var arg1 = require('_GenericMarshal').CreateVariable('cmd.exe', { wide: true });
+        var arg2 = require('_GenericMarshal').CreateVariable('/C wmic service "' + name + '" call stopservice & copy "' + process.cwd() + agentfilename + '.update" "' + process.execPath + '" & wmic service "' + name + '" call startservice & erase "' + process.cwd() + agentfilename + '.update"', { wide: true });
+
+        arg1.pointerBuffer().copy(args.toBuffer());
+        arg2.pointerBuffer().copy(args.toBuffer(), require('_GenericMarshal').PointerSize);
+
+        libc._wexecve(cmd, args, 0);
+    }
+
     // Start a JavaScript based Agent Self-Update
     function agentUpdate_Start(updateurl, updateoptions)
     {
@@ -4407,8 +4435,7 @@ function createMeshCore(agent)
                         if (process.platform == 'win32')
                         {
                             // Use _wexecve() equivalent to perform the update
-                            this.child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe',
-                                ['/C wmic service "' + name + '" call stopservice && copy "' + process.cwd() + agentfilename + '.update" "' + process.execPath + '" && wmic service "' + name + '" call startservice && erase "' + process.cwd() + agentfilename + '.update"'], { type: 4 | 0x8000 });
+                            windows_execve(name, agentfilename, sessionid);
                         }
                         else
                         {
