@@ -187,6 +187,9 @@ function agentUpdate_Start(updateurl, updateoptions)
                     }
                     else
                     {
+                        var m = require('fs').statSync(process.execPath).mode;
+                        require('fs').chmodSync(process.cwd() + agentfilename + '.update', m);
+
                         // remove binary
                         require('fs').unlinkSync(process.execPath);
 
@@ -195,11 +198,6 @@ function agentUpdate_Start(updateurl, updateoptions)
 
                         // erase update
                         require('fs').unlinkSync(process.cwd() + agentfilename + '.update');
-
-                        // add execute permissions
-                        var m = require('fs').statSync(process.execPath).mode;
-                        m |= (require('fs').CHMOD_MODES.S_IXUSR | require('fs').CHMOD_MODES.S_IXGRP | require('fs').CHMOD_MODES.S_IXOTH);
-                        require('fs').chmodSync(process.execPath, m);
 
                         sendConsoleText('Restarting service...', sessionid);
                         try
