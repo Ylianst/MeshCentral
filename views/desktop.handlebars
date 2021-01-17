@@ -59,7 +59,7 @@
                     <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onkeypress="return false" onkeydown="return false"></select>&nbsp;
                     <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop"><img src='images/icon-camera.png' onclick=deskSaveImage() height=16 width=16 style=padding-top:2px /></span>
                 </div>
-                <div>
+                <div style="height:22px">
                     <select id="deskkeys">
                         <option value=10>Ctrl+Alt+Del</option>
                         <option value=5>Win</option>
@@ -165,6 +165,7 @@
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
         var authCookie = '{{{authCookie}}}';
+        var viewOnly = parseInt('{{{viewOnly}}}');
         var urlargs = parseUriArgs();
         var debugmode = urlargs.debug;
         var attemptWebRTC = false;
@@ -180,8 +181,18 @@
             document.onkeydown = ondockeydown;
             document.onkeyup = ondockeyup;
             setupDesktop();
+
+            // View only mode
+            if (viewOnly == 1) {
+                QV('deskkeys', false);
+                QV('DeskWD', false);
+                QV('DeskClip', false);
+                QV('DeskType', false);
+                QV('DeskControlSpan', false);
+            }
         }
 
+        function isInputAllowed() { return (viewOnly != 1) && (Q('DeskControl').checked == true); }
         function clearConsoleMsg() { QH('p11DeskConsoleMsg', ''); }
 
         // Toggle the web page to full screen
@@ -270,21 +281,20 @@
             QV('d7amtkvm', intelAmtPresent && ((deskState == 0) || (desktop.contype == 2)));
 
             // Enable buttons
-            var inputAllowed = true; // TODO
             QE('connectbutton1', agentPresent);
             QE('connectbutton1h', intelAmtPresent);
             //QV('DeskClip', agentPresent && ((desktop == null) || (desktop.contype != 2))); // Clipboard not supported on macOS
             QV('DeskClip', false); // Clipboard not supported on this page
             QE('DeskClip', deskState == 3);
             QE('DeskType', deskState == 3);
-            QV('DeskWD', inputAllowed);
+            QV('DeskWD', viewOnly != 1);
             QE('DeskWD', deskState == 3);
-            QV('deskkeys', inputAllowed);
+            QV('deskkeys', viewOnly != 1);
             QE('deskkeys', deskState == 3);
 
             // Display this only if we have Chat & Notify permissions
             QV('DeskSaveImageButton', (deskState == 3) && (Q('Desk')['toBlob'] != null));
-            QV('DeskControlSpan', inputAllowed)
+            QV('DeskControlSpan', viewOnly != 1);
             QV('deskActionsBtn', (browserfullscreen == false));
             QV('deskActionsSettings', (browserfullscreen == false));
             Q('DeskControl').checked = true;
@@ -317,6 +327,7 @@
                     desktop = CreateAmtRedirect(CreateAmtRemoteDesktop('Desk'), authCookie);
                     desktop.debugmode = debugmode;
                     desktop.onStateChanged = onDesktopStateChange;
+                    desktop.m.stopInput = (viewOnly == 1);
                     desktop.m.bpp = (desktopsettings.encoding == 1 || desktopsettings.encoding == 3) ? 1 : 2;
                     desktop.m.useZRLE = (desktopsettings.encoding < 3);
                     desktop.m.localKeyMap = desktopsettings.localkeymap;
@@ -398,6 +409,7 @@
                 } else if ((contype == null) || (contype == 1) || (contype == 3)) {
                     // Setup the Mesh Agent remote desktop
                     desktop = CreateAgentRedirect(null, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, null, domainUrl);
+                    desktop.m.stopInput = (viewOnly == 1);
                     desktop.m.mouseCursorActive(true);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
@@ -808,7 +820,7 @@
 
         function ondockeypress(e) {
             setSessionActivity();
-            if (!xxdialogMode && desktop && Q('DeskControl').checked) {
+            if (!xxdialogMode && desktop && isInputAllowed()) {
                 // Check what keys we are allows to send
                 /*
                 if (currentNode != null) {
@@ -825,7 +837,7 @@
 
         function ondockeydown(e) {
             setSessionActivity();
-            if (!xxdialogMode && desktop && Q('DeskControl').checked) {
+            if (!xxdialogMode && desktop && isInputAllowed()) {
                 // Check what keys we are allows to send
                 /*
                 if (currentNode != null) {
@@ -842,7 +854,7 @@
 
         function ondockeyup(e) {
             setSessionActivity();
-            if (!xxdialogMode && desktop && Q('DeskControl').checked) {
+            if (!xxdialogMode && desktop && isInputAllowed()) {
                 // Check what keys we are allows to send
                 /*
                 if (currentNode != null) {
@@ -1100,17 +1112,17 @@
             if (e.buttons != 1) return;
             var t = Date.now();
             if (((t - dblClickDetectArgs.t) < 250) && (Math.abs(e.clientX - dblClickDetectArgs.x) < 2) && (Math.abs(e.clientY - dblClickDetectArgs.y) < 2)) {
-                if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedblclick(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedblclick(e); } }
+                if (!xxdialogMode && desktop != null && isInputAllowed()) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedblclick(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedblclick(e); } }
             }
             dblClickDetectArgs.t = t;
             dblClickDetectArgs.x = e.clientX;
             dblClickDetectArgs.y = e.clientY;
         }
 
-        function dmousedown(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } } dblClickDetect(e); }
-        function dmouseup(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mouseup(e); desktop.m.sendKeepAlive(); } else { desktop.m.mouseup(e); } }
-        function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } }
-        function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
+        function dmousedown(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && isInputAllowed()) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } } dblClickDetect(e); }
+        function dmouseup(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && isInputAllowed()) if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mouseup(e); desktop.m.sendKeepAlive(); } else { desktop.m.mouseup(e); } }
+        function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && isInputAllowed()) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } }
+        function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && isInputAllowed()) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
         function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, format("Stop process #{0} \"{1}\"?", id, name), id); return false; }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }

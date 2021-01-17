@@ -453,12 +453,10 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         //console.log('ViewerData', data.length, command, cmdsize);
         switch (command) {
             case 1: // Key Events, forward to agent
-                //console.log('Viewer-Keys');
-                obj.sendToAgent(data);
+                if (viewer.viewOnly == false) { obj.sendToAgent(data); }
                 break;
             case 2: // Mouse events, forward to agent
-                //console.log('Viewer-Mouse');
-                obj.sendToAgent(data);
+                if (viewer.viewOnly == false) { obj.sendToAgent(data); }
                 break;
             case 5: // Compression
                 if (data.length < 10) return;
@@ -514,15 +512,15 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 }
                 break;
             case 10: // CTRL-ALT-DEL, forward to agent
-                obj.sendToAgent(data);
+                if (viewer.viewOnly == false) { obj.sendToAgent(data); }
                 break;
             case 12: // SET DISPLAY, forward to agent
-                obj.sendToAgent(data);
+                if (viewer.viewOnly == false) { obj.sendToAgent(data); }
                 break;
             case 14: // Touch setup
                 break;
             case 85: // Unicode Key Events, forward to agent
-                obj.sendToAgent(data);
+                if (viewer.viewOnly == false) { obj.sendToAgent(data); }
                 break;
             default:
                 console.log('Un-handled viewer command: ' + command);
@@ -868,6 +866,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
     obj.user = user;
     obj.ruserid = null;
     obj.req = req; // Used in multi-server.js
+    obj.viewOnly = ((cookie != null) && (cookie.vo == 1)); // set view only mode
 
     // Setup subscription for desktop sharing public identifier
     // If the identifier is removed, drop the connection
