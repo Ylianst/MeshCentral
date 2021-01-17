@@ -4845,7 +4845,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         expireTime = command.end * 1000;
                     }
 
-                    const inviteCookie = parent.parent.encodeCookie({ a: 5, p: command.p, uid: user._id, gn: command.guestname, nid: node._id, cf: command.consent, start: startTime, expire: expireTime, pid: publicid }, parent.parent.invitationLinkEncryptionKey);
+                    var cookie = { a: 5, p: command.p, uid: user._id, gn: command.guestname, nid: node._id, cf: command.consent, start: startTime, expire: expireTime, pid: publicid };
+                    if (command.viewOnly === true) { cookie.vo = 1; }
+                    const inviteCookie = parent.parent.encodeCookie(cookie, parent.parent.invitationLinkEncryptionKey);
                     if (inviteCookie == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createDeviceShareLink', responseid: command.responseid, result: 'Unable to generate shareing cookie' })); } catch (ex) { } } return; }
                     command.start = startTime;
                     command.expire = expireTime;
@@ -4863,7 +4865,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     try { ws.send(JSON.stringify(command)); } catch (ex) { }
 
                     // Create a device sharing database entry
-                    parent.db.Set({ _id: 'deviceshare-' + publicid, type: 'deviceshare', nodeid: node._id, p: command.p, domain: node.domain, publicid: publicid, startTime: startTime, expireTime: expireTime, userid: user._id, guestName: command.guestname, consent: command.consent, url: url });
+                    var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', nodeid: node._id, p: command.p, domain: node.domain, publicid: publicid, startTime: startTime, expireTime: expireTime, userid: user._id, guestName: command.guestname, consent: command.consent, url: url };
+                    if (command.viewOnly === true) { shareEntry.viewOnly = true; }
+                    parent.db.Set(shareEntry);
 
                     // Send out an event that we added a device share
                     var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);

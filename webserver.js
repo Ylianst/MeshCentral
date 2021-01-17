@@ -3056,13 +3056,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Looks good, let's create the outbound session cookies.
             // Consent flags are 1 = Notify, 8 = Prompt, 64 = Privacy Bar.
-            const authCookie = obj.parent.encodeCookie({ userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: 2, gn: c.gn, cf: 65 | c.cf, r: 8, expire: c.expire, pid: c.pid }, obj.parent.loginCookieEncryptionKey);
+            const authCookie = obj.parent.encodeCookie({ userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: 2, gn: c.gn, cf: 65 | c.cf, r: 8, expire: c.expire, pid: c.pid, vo: c.vo }, obj.parent.loginCookieEncryptionKey);
 
             // Lets respond by sending out the desktop viewer.
             var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
             parent.debug('web', 'handleDesktopRequest: Sending guest desktop page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
             res.set({ 'Cache-Control': 'no-store' });
-            render(req, res, getRenderPage('desktop', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire }, req, domain));
+            render(req, res, getRenderPage('desktop', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire, viewOnly: (c.vo == 1) ? 1 : 0 }, req, domain));
         });
     }
 

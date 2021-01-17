@@ -266,7 +266,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 }
                 break;
             case 88: // MNG_KVM_MOUSE_CURSOR
-                if (cmdsize != 5) break;
+                if ((cmdsize != 5) || (obj.stopInput)) break;
                 var cursorNum = view[4];
                 if (cursorNum > mouseCursors.length) { cursorNum = 0; }
                 xMouseCursorCurrent = mouseCursors[cursorNum];
