@@ -9014,6 +9014,17 @@
                 if (x != '') { sections.push({ name: "Mesh Agent", html: x, img: 'meshagent64.png'}); }
             }
 
+            // Mobile
+            if (hardware.mobile) {
+                var x = '';
+                if (hardware.mobile.brand && hardware.mobile.model) { x += addDetailItem("Model", EscapeHtml(hardware.mobile.brand + ', ' + hardware.mobile.model), s); }
+                if (hardware.mobile.device) { x += addDetailItem("Device", EscapeHtml(hardware.mobile.device), s); }
+                if (hardware.mobile.bootloader) { x += addDetailItem("Bootloader", EscapeHtml(hardware.mobile.bootloader), s); }
+                if (hardware.mobile.id) { x += addDetailItem("Identifier", EscapeHtml(hardware.mobile.id), s); }
+                if (hardware.mobile.host) { x += addDetailItem("Hostname", EscapeHtml(hardware.mobile.host), s); }
+                if (x != '') { sections.push({ name: "Mobile Device", html: x, img: 'mobile64.png'}); }
+            }
+
             // Networking (old style)
             if (network.netif != null) {
                 // Compact interfaces that have the same MAC addresses
