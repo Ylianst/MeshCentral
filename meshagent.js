@@ -89,12 +89,18 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Set this agent as no longer authenticated
         obj.authenticated = -1;
 
-        // If we where updating the agent, clean that up.
+        // If we where updating the agent using native method, clean that up.
         if (obj.agentUpdate != null) {
             if (obj.agentUpdate.fd) { try { parent.fs.close(obj.agentUpdate.fd); } catch (ex) { } }
             parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
             delete obj.agentUpdate.buf;
             delete obj.agentUpdate;
+        }
+
+        // If we where updating the agent meshcore method, clean that up.
+        if (obj.agentCoreUpdateTaskId != null) {
+            parent.parent.taskLimiter.completed(obj.agentCoreUpdateTaskId);
+            delete obj.agentCoreUpdateTaskId;
         }
 
         // Perform timer cleanup
@@ -238,7 +244,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (agentUpdateMethod === 2) { // Use meshcore agent update system
                         // Send the recovery core to the agent, if the agent is capable of running one
                         if (((obj.agentInfo.capabilities & 16) != 0) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
-                            //obj.agentCoreCheck = 1001;
                             obj.agentCoreUpdate = true;
                             obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0));
                         }
@@ -1152,17 +1157,26 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     {
                         if ((obj.agentCoreUpdate === true) && (obj.agentExeInfo != null)) {
                             // Agent update. The recovery core was loaded in the agent, send a command to update the agent
-                            var cmd = { action: 'agentupdate', url: obj.agentExeInfo.url, hash: obj.agentExeInfo.hashhex };
-                            // Add the hash
-                            if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
-                            // Add server TLS cert hash
-                            if (parent.parent.args.ignoreagenthashcheck !== true) {
-                                const tlsCertHash = parent.webCertificateFullHashs[domain.id];
-                                if (tlsCertHash != null) { cmd.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
-                            }
-                            // Send the agent update command
-                            obj.send(JSON.stringify(cmd));
-                            //delete obj.agentCoreUpdate;
+                            parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) { // Medium priority task
+                                // If agent disconnection, complete and exit now.
+                                if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; }
+
+                                // Agent update. The recovery core was loaded in the agent, send a command to update the agent
+                                obj.agentCoreUpdateTaskId = taskid;
+                                var cmd = { action: 'agentupdate', url: obj.agentExeInfo.url, hash: obj.agentExeInfo.hashhex };
+
+                                // Add the hash
+                                if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
+
+                                // Add server TLS cert hash
+                                if (parent.parent.args.ignoreagenthashcheck !== true) {
+                                    const tlsCertHash = parent.webCertificateFullHashs[domain.id];
+                                    if (tlsCertHash != null) { cmd.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
+                                }
+
+                                // Send the agent update command
+                                obj.send(JSON.stringify(cmd));
+                            }, null, 1);
                         } else {
                             // Sent by the agent to update agent information
                             ChangeAgentCoreInfo(command);
@@ -1456,17 +1470,38 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     break;
                 }
                 case 'agentupdate': {
-                    // Agent is requesting an agent update
-                    var cmd = { action: 'agentupdate', url: obj.agentExeInfo.url, hash: obj.agentExeInfo.hashhex };
-                    // Add the hash
-                    if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
-                    // Add server TLS cert hash
-                    if (parent.parent.args.ignoreagenthashcheck !== true) {
-                        const tlsCertHash = parent.webCertificateFullHashs[domain.id];
-                        if (tlsCertHash != null) { cmd.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
+                    var func = function agentUpdateFunc(argument, taskid, taskLimiterQueue) { // Medium priority task
+                        // If agent disconnection, complete and exit now.
+                        if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; }
+
+                        // Agent is requesting an agent update
+                        obj.agentCoreUpdateTaskId = taskid;
+                        var cmd = { action: 'agentupdate', url: obj.agentExeInfo.url, hash: obj.agentExeInfo.hashhex, sessionid: agentUpdateFunc.sessionid };
+
+                        // Add the hash
+                        if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
+
+                        // Add server TLS cert hash
+                        if (parent.parent.args.ignoreagenthashcheck !== true) {
+                            const tlsCertHash = parent.webCertificateFullHashs[domain.id];
+                            if (tlsCertHash != null) { cmd.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
+                        }
+
+                        // Send the agent update command
+                        obj.send(JSON.stringify(cmd));
                     }
-                    // Send the agent update command
-                    obj.send(JSON.stringify(cmd));
+                    func.sessionid = command.sessionid;
+
+                    // Agent update. The recovery core was loaded in the agent, send a command to update the agent
+                    parent.parent.taskLimiter.launch(func, null, 1);
+                    break;
+                }
+                case 'agentupdatedownloaded': {
+                    if (obj.agentCoreUpdateTaskId != null) {
+                        // Indicate this udpate task is complete
+                        parent.parent.taskLimiter.completed(obj.agentCoreUpdateTaskId);
+                        delete obj.agentCoreUpdateTaskId;
+                    }
                     break;
                 }
                 default: {
