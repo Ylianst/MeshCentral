@@ -56,6 +56,63 @@ function sendAgentMessage(msg, icon)
     require('MeshAgent').SendCommand({ action: 'sessions', type: 'msg', value: sendAgentMessage.messages });
 }
 
+function bsd_execv(name, agentfilename, sessionid)
+{
+    var child = require('child_process').execFile('/bin/sh', ['sh']);
+    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+    child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
+    child.stdin.write("cat /usr/lib/libc.so | awk '");
+    child.stdin.write('{');
+    child.stdin.write(' a=split($0, tok, "(");');
+    child.stdin.write(' if(a>1)');
+    child.stdin.write(' {');
+    child.stdin.write('     split(tok[2], b, ")");');
+    child.stdin.write('     split(b[1], c, " ");');
+    child.stdin.write('     print c[1];');
+    child.stdin.write(' }');
+    child.stdin.write("}'\nexit\n");
+    child.waitExit();
+    if (child.stdout.str.trim() == '')
+    {
+        if (sessionid != null) { sendConsoleText('Self Update failed because cannot find libc.so', sessionid) }
+        sendAgentMessage('Self Update failed because cannot find libc.so', 3);
+        return;
+    }
+
+    var libc = null;
+    try
+    {
+        libc = require('_GenericMarshal').CreateNativeProxy(child.stdout.str.trim());
+        libc.CreateMethod('execv');
+    }
+    catch(e)
+    {
+        if (sessionid != null) { sendConsoleText('Self Update failed: ' + e.toString(), sessionid) }
+        sendAgentMessage('Self Update failed: ' + e.toString(), 3);
+        return;
+    }
+
+    var i;
+    var path = require('_GenericMarshal').CreateVariable(process.execPath);
+    var argarr = [];
+    var args;
+    var options = require('MeshAgent').getStartupOptions();
+    for(i in options)
+    {
+        argarr.push('--' + i + '="' + options[i] + '"');
+    }
+    args = require('_GenericMarshal').CreateVariable((1 + argarr.length) * require('_GenericMarshal').PointerSize);
+    for (i = 0; i < argarr.length; ++i)
+    {
+        var arg = require('_GenericMarshal').CreateVariable(argarr[i]);
+        arg.pointerBuffer().copy(args.toBuffer(), i * require('_GenericMarshal').PointerSize);
+    }
+    
+    libc.execv(path, args);
+    if (sessionid != null) { sendConsoleText('Self Update failed because execv() failed', sessionid) }
+    sendAgentMessage('Self Update failed because execv() failed', 3);
+}
+
 function windows_execve(name, agentfilename, sessionid)
 {
     var libc;
@@ -180,7 +237,7 @@ function agentUpdate_Start(updateurl, updateoptions)
                     }
 
                     // Send an indication to the server that we got the update download correctly.
-                    try { mesh.SendCommand({ action: 'agentupdatedownloaded' }); } catch (e) { }
+                    try { require('MeshAgent').SendCommand({ action: 'agentupdatedownloaded' }); } catch (e) { }
 
                     if (sessionid != null) { sendConsoleText('Updating and restarting agent...', sessionid); }
                     if (process.platform == 'win32')
@@ -198,21 +255,29 @@ function agentUpdate_Start(updateurl, updateoptions)
 
                         // copy update
                         require('fs').copyFileSync(process.cwd() + agentfilename + '.update', process.execPath);
+                        require('fs').chmodSync(process.execPath, m);
 
                         // erase update
                         require('fs').unlinkSync(process.cwd() + agentfilename + '.update');
 
                         if (sessionid != null) { sendConsoleText('Restarting service...', sessionid); }
-                        try
+                        if (process.platform == 'freebsd')
                         {
-                            // restart service
-                            var s = require('service-manager').manager.getService(name);
-                            s.restart();
+                            bsd_execv(name, agentfilename, sessionid);
                         }
-                        catch (zz)
+                        else
                         {
-                            sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
-                            sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+                            try
+                            {
+                                // restart service
+                                var s = require('service-manager').manager.getService(name);
+                                s.restart();
+                            }
+                            catch (zz)
+                            {
+                                sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
+                                sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+                            }
                         }
                     }
                 });
