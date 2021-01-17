@@ -86,7 +86,7 @@ function windows_execve(name, agentfilename, sessionid)
 function agentUpdate_Start(updateurl, updateoptions)
 {
     // If this value is null
-    var sessionid = updateoptions != null ? updateoptions.session : null; // If this is null, messages will be broadcast. Otherwise they will be unicasted
+    var sessionid = (updateoptions != null) ? updateoptions.sessionid : null; // If this is null, messages will be broadcast. Otherwise they will be unicasted
 
     if (this._selfupdate != null)
     {
@@ -123,7 +123,7 @@ function agentUpdate_Start(updateurl, updateoptions)
                 return;
             }
 
-            sendConsoleText('Downloading update...', sessionid);
+            if (sessionid != null) { sendConsoleText('Downloading update...', sessionid); }
             var options = require('http').parseUri(updateurl != null ? updateurl : require('MeshAgent').ServerUrl);
             options.protocol = 'https:';
             if (updateurl == null) { options.path = ('/meshagents?id=' + require('MeshAgent').ARCHID); }
@@ -165,7 +165,7 @@ function agentUpdate_Start(updateurl, updateoptions)
                     {
                         if (updateoptions.hash.toLowerCase() == h.toString('hex').toLowerCase())
                         {
-                            sendConsoleText('Download complete. HASH verified.', sessionid);
+                            if (sessionid != null) { sendConsoleText('Download complete. HASH verified.', sessionid); }
                         }
                         else
                         {
@@ -179,7 +179,10 @@ function agentUpdate_Start(updateurl, updateoptions)
                         sendConsoleText('Download complete. HASH=' + h.toString('hex'), sessionid);
                     }
 
-                    sendConsoleText('Updating and restarting agent...', sessionid);
+                    // Send an indication to the server that we got the update download correctly.
+                    try { mesh.SendCommand({ action: 'agentupdatedownloaded' }); } catch (e) { }
+
+                    if (sessionid != null) { sendConsoleText('Updating and restarting agent...', sessionid); }
                     if (process.platform == 'win32')
                     {
                         // Use _wexecve() equivalent to perform the update
@@ -201,7 +204,7 @@ function agentUpdate_Start(updateurl, updateoptions)
                         m |= (require('fs').CHMOD_MODES.S_IXUSR | require('fs').CHMOD_MODES.S_IXGRP | require('fs').CHMOD_MODES.S_IXOTH);
                         require('fs').chmodSync(process.execPath, m);
 
-                        sendConsoleText('Restarting service...', sessionid);
+                        if (sessionid != null) { sendConsoleText('Restarting service...', sessionid); }
                         try
                         {
                             // restart service
@@ -406,7 +409,7 @@ require('MeshAgent').AddCommandHandler(function (data)
         switch (data.action)
         {
             case 'agentupdate':
-                agentUpdate_Start(data.url, { hash: data.hash, tlshash: data.servertlshash });
+                agentUpdate_Start(data.url, { hash: data.hash, tlshash: data.servertlshash, sessionid: data.sessionid });
                 break;
             case 'msg':
                 {
@@ -662,11 +665,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'agentupdate':
                 // Request that the server send a agent update command
-                require('MeshAgent').SendCommand({ action: 'agentupdate' });
+                require('MeshAgent').SendCommand({ action: 'agentupdate', sessionid: sessionid });
                 break;
             case 'agentupdateex':
                 // Perform an direct agent update without requesting any information from the server, this should not typically be used.
-                agentUpdate_Start(null, { session: sessionid });
+                agentUpdate_Start(null, { sessionid: sessionid });
                 break;
             case 'osinfo': { // Return the operating system information
                 var i = 1;
