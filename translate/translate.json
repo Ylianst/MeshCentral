@@ -611,6 +611,7 @@
     },
     {
       "en": ", View only",
+      "nl": ", Alleen kijken",
       "xloc": [
         "default.handlebars->31->695"
       ]
@@ -2343,6 +2344,7 @@
     },
     {
       "en": "</div></div>",
+      "nl": "</div></div>",
       "xloc": [
         "default.handlebars->31->402"
       ]
@@ -4855,6 +4857,7 @@
     },
     {
       "en": "Allowed",
+      "nl": "Toegestaan",
       "xloc": [
         "default.handlebars->31->200"
       ]
@@ -5042,6 +5045,20 @@
     },
     {
       "en": "Android",
+      "cs": "Android",
+      "de": "Android",
+      "es": "Android",
+      "fi": "Android",
+      "fr": "Android",
+      "hi": "Android",
+      "ja": "Android",
+      "ko": "Android",
+      "nl": "Android",
+      "pt": "Android",
+      "ru": "Android",
+      "tr": "Android",
+      "zh-chs": "Android",
+      "zh-cht": "Android"
       "xloc": [
         "default-mobile.handlebars->11->20",
         "default.handlebars->31->22",
@@ -11705,6 +11722,7 @@
     },
     {
       "en": "Desktop, View only",
+      "en": "Desktop, Alleen kijken",
       "xloc": [
         "default.handlebars->31->750"
       ]
@@ -24856,6 +24874,7 @@
     },
     {
       "en": "Mobile device",
+      "nl": "Mobiel apparaat",
       "xloc": [
         "default.handlebars->31->375"
       ]
@@ -27172,6 +27191,7 @@
     },
     {
       "en": "Not allowed, view only",
+      "nl": "Niet toegestaan, alleen kijken",
       "xloc": [
         "default.handlebars->31->199"
       ]
@@ -34398,6 +34418,7 @@
     },
     {
       "en": "Server Tracing Event",
+      "nl": "Server Tracing Event",
       "xloc": [
         "default.handlebars->31->2212"
       ]
@@ -38753,6 +38774,7 @@
     },
     {
       "en": "To add a mobile device to group \\\"{0}\\\", download the MeshAgent application and scan this QR code.",
+      "nl": "Om een mobiel apparaat toe te voegen aan de groep \\\"{0}\\\", downloadt u de MeshAgent applicatie en scant u deze QR-code.",
       "xloc": [
         "default.handlebars->31->401"
       ]
@@ -41031,6 +41053,7 @@
     },
     {
       "en": "User Input",
+      "nl": "Gebruikers invoer",
       "xloc": [
         "default.handlebars->31->198"
       ]
@@ -42316,6 +42339,7 @@
     },
     {
       "en": "Web Server HTTP Headers",
+      "nl": "Webserver HTTP Headers",
       "xloc": [
         "default.handlebars->31->2227"
       ]
