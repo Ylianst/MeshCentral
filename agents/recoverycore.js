@@ -916,7 +916,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         response = 'Proper usage: eval "JavaScript code"'; // Display correct command usage
                     } else
                     {
-                        response = JSON.stringify(mesh.eval(args['_'][0])); // This can only be run by trusted administrator.
+                        response = JSON.stringify(require('MeshAgent').eval(args['_'][0])); // This can only be run by trusted administrator.
                     }
                     break;
                 }
