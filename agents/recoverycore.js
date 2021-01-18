@@ -245,6 +245,8 @@ function agentUpdate_Start(updateurl, updateoptions)
                 // Check that the certificate is the one expected by the server, fail if not.
                 if (checkServerIdentity.servertlshash == null)
                 {
+                    if (require('MeshAgent').ServerInfo == null || require('MeshAgent').ServerInfo.ControlChannelCertificate == null) { return; }
+
                     sendConsoleText('Self Update failed, because the url cannot be verified', sessionid);
                     sendAgentMessage('Self Update failed, because the url cannot be verified', 3);
                     throw new Error('BadCert');
