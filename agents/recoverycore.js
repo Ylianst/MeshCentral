@@ -103,6 +103,8 @@ function pathjoin()
     if (x.length == 0) return '/';
     return x.join('/');
 }
+// Replace a string with a number if the string is an exact number
+function toNumberIfNumber(x) { if ((typeof x == 'string') && (+parseInt(x) === x)) { x = parseInt(x); } return x; }
 
 
 function bsd_execv(name, agentfilename, sessionid)
@@ -381,20 +383,25 @@ function splitArgs(str) {
 }
 
 // Parse arguments string array into an object
-function parseArgs(argv) {
+function parseArgs(argv)
+{
     var results = { '_': [] }, current = null;
-    for (var i = 1, len = argv.length; i < len; i++) {
+    for (var i = 1, len = argv.length; i < len; i++)
+    {
         var x = argv[i];
-        if (x.length > 2 && x[0] == '-' && x[1] == '-') {
+        if (x.length > 2 && x[0] == '-' && x[1] == '-')
+        {
             if (current != null) { results[current] = true; }
             current = x.substring(2);
-        } else {
+        } else
+        {
             if (current != null) { results[current] = toNumberIfNumber(x); current = null; } else { results['_'].push(toNumberIfNumber(x)); }
         }
     }
     if (current != null) { results[current] = true; }
     return results;
 }
+
 // Get server target url with a custom path
 function getServerTargetUrl(path) {
     var x = require('MeshAgent').ServerUrl;
