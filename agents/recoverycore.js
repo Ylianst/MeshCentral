@@ -56,6 +56,55 @@ function sendAgentMessage(msg, icon)
     require('MeshAgent').SendCommand({ action: 'sessions', type: 'msg', value: sendAgentMessage.messages });
 }
 
+// Add to the server event log
+function MeshServerLog(msg, state)
+{
+    if (typeof msg == 'string') { msg = { action: 'log', msg: msg }; } else { msg.action = 'log'; }
+    if (state)
+    {
+        if (state.userid) { msg.userid = state.userid; }
+        if (state.username) { msg.username = state.username; }
+        if (state.sessionid) { msg.sessionid = state.sessionid; }
+        if (state.remoteaddr) { msg.remoteaddr = state.remoteaddr; }
+    }
+    require('MeshAgent').SendCommand(msg);
+}
+
+// Add to the server event log, use internationalized events
+function MeshServerLogEx(id, args, msg, state)
+{
+    var msg = { action: 'log', msgid: id, msgArgs: args, msg: msg };
+    if (state)
+    {
+        if (state.userid) { msg.userid = state.userid; }
+        if (state.username) { msg.username = state.username; }
+        if (state.sessionid) { msg.sessionid = state.sessionid; }
+        if (state.remoteaddr) { msg.remoteaddr = state.remoteaddr; }
+    }
+    require('MeshAgent').SendCommand(msg);
+}
+
+function pathjoin()
+{
+    var x = [];
+    for (var i in arguments)
+    {
+        var w = arguments[i];
+        if (w != null)
+        {
+            while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); }
+            if (i != 0)
+            {
+                while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); }
+            }
+            x.push(w);
+        }
+    }
+    if (x.length == 0) return '/';
+    return x.join('/');
+}
+
+
 function bsd_execv(name, agentfilename, sessionid)
 {
     var child = require('child_process').execFile('/bin/sh', ['sh']);
@@ -370,29 +419,6 @@ require('MeshAgent').on('Connected', function () {
     });
 });
 
-// Tunnel callback operations
-function onTunnelUpgrade(response, s, head) {
-    this.s = s;
-    s.httprequest = this;
-    s.end = onTunnelClosed;
-    s.tunnel = this;
-
-    //sendConsoleText('onTunnelUpgrade');
-
-    if (this.tcpport != null) {
-        // This is a TCP relay connection, pause now and try to connect to the target.
-        s.pause();
-        s.data = onTcpRelayServerTunnelData;
-        var connectionOptions = { port: parseInt(this.tcpport) };
-        if (this.tcpaddr != null) { connectionOptions.host = this.tcpaddr; } else { connectionOptions.host = '127.0.0.1'; }
-        s.tcprelay = net.createConnection(connectionOptions, onTcpRelayTargetTunnelConnect);
-        s.tcprelay.peerindex = this.index;
-    } else {
-        // This is a normal connect for KVM/Terminal/Files
-        s.data = onTunnelData;
-    }
-}
-
 // Called when receiving control data on websocket
 function onTunnelControlData(data, ws)
 {
@@ -491,15 +517,44 @@ require('MeshAgent').AddCommandHandler(function (data)
                                 if (data.value != null)
                                 { // Process a new tunnel connection request
                                     // Create a new tunnel object
+                                    if (data.rights != 4294967295)
+                                    {
+                                        MeshServerLog('Tunnel Error: RecoveryCore requires admin rights for tunnels');
+                                        break;
+                                    }
+
                                     var xurl = getServerTargetUrlEx(data.value);
                                     if (xurl != null)
                                     {
                                         var woptions = http.parseUri(xurl);
                                         woptions.rejectUnauthorized = 0;
+                                        woptions.perMessageDeflate = false;
+                                        woptions.checkServerIdentity = function checkServerIdentity(certs)
+                                        {
+                                            // If the tunnel certificate matches the control channel certificate, accept the connection
+                                            try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { }
+                                            try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { }
+
+                                            // Check that the certificate is the one expected by the server, fail if not.
+                                            if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') }
+                                        }
+                                        woptions.checkServerIdentity.servertlshash = data.servertlshash;
+
+
                                         //sendConsoleText(JSON.stringify(woptions));
                                         var tunnel = http.request(woptions);
                                         tunnel.on('upgrade', function (response, s, head)
                                         {
+                                            if (require('MeshAgent').idleTimeout != null)
+                                            {
+                                                s.setTimeout(require('MeshAgent').idleTimeout * 1000);
+                                                s.on('timeout', function ()
+                                                {
+                                                    this.ping();
+                                                    this.setTimeout(require('MeshAgent').idleTimeout * 1000);
+                                                });
+                                            }
+
                                             this.s = s;
                                             s.httprequest = this;
                                             s.tunnel = this;
@@ -508,9 +563,8 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                 if (tunnels[this.httprequest.index] == null) return; // Stop duplicate calls.
 
                                                 // If there is a upload or download active on this connection, close the file
-                                                if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); this.httprequest.uploadFile = undefined; }
-                                                if (this.httprequest.downloadFile) { fs.closeSync(this.httprequest.downloadFile); this.httprequest.downloadFile = undefined; }
-
+                                                if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; delete this.httprequest.uploadFileid; delete this.httprequest.uploadFilePath; }
+                                                if (this.httprequest.downloadFile) { delete this.httprequest.downloadFile; }
 
                                                 //sendConsoleText("Tunnel #" + this.httprequest.index + " closed.", this.httprequest.sessionid);
                                                 delete tunnels[this.httprequest.index];
@@ -521,29 +575,62 @@ require('MeshAgent').AddCommandHandler(function (data)
                                             s.on('data', function (data)
                                             {
                                                 // If this is upload data, save it to file
-                                                if (this.httprequest.uploadFile)
+                                                if ((this.httprequest.uploadFile) && (typeof data == 'object') && (data[0] != 123))
                                                 {
-                                                    try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
-                                                    this.write(Buffer.from(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data
+                                                    // Save the data to file being uploaded.
+                                                    if (data[0] == 0)
+                                                    {
+                                                        // If data starts with zero, skip the first byte. This is used to escape binary file data from JSON.
+                                                        try { fs.writeSync(this.httprequest.uploadFile, data, 1, data.length - 1); } catch (e) { sendConsoleText('FileUpload Error'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
+                                                    } else
+                                                    {
+                                                        // If data does not start with zero, save as-is.
+                                                        try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { sendConsoleText('FileUpload Error'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
+                                                    }
+                                                    this.write(Buffer.from(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data.
                                                     return;
                                                 }
 
                                                 if (this.httprequest.state == 0)
                                                 {
                                                     // Check if this is a relay connection
-                                                    if ((data == 'c') || (data == 'cr')) { this.httprequest.state = 1; sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid); }
-                                                } else
+                                                    if ((data == 'c') || (data == 'cr')) { this.httprequest.state = 1; /*sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid);*/ }
+                                                }
+                                                else
                                                 {
                                                     // Handle tunnel data
                                                     if (this.httprequest.protocol == 0)
-                                                    {
-                                                        if ((data.length > 3) && (data[0] == '{')) { onTunnelControlData(data, this); return; }
+                                                    {   // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user), 10 = FileTransfer
                                                         // Take a look at the protocol
+                                                        if ((data.length > 3) && (data[0] == '{')) { onTunnelControlData(data, this); return; }
                                                         this.httprequest.protocol = parseInt(data);
                                                         if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
-                                                        if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 8) || (this.httprequest.protocol == 9))
+                                                        if (this.httprequest.protocol == 10)
                                                         {
-                                                            // Remote terminal using native pipes
+                                                            //
+                                                            // Basic file transfer
+                                                            //
+                                                            var stats = null;
+                                                            if ((process.platform != 'win32') && (this.httprequest.xoptions.file.startsWith('/') == false)) { this.httprequest.xoptions.file = '/' + this.httprequest.xoptions.file; }
+                                                            try { stats = require('fs').statSync(this.httprequest.xoptions.file) } catch (e) { }
+                                                            try { if (stats) { this.httprequest.downloadFile = fs.createReadStream(this.httprequest.xoptions.file, { flags: 'rbN' }); } } catch (e) { }
+                                                            if (this.httprequest.downloadFile)
+                                                            {
+                                                                //sendConsoleText('BasicFileTransfer, ok, ' + this.httprequest.xoptions.file + ', ' + JSON.stringify(stats));
+                                                                this.write(JSON.stringify({ op: 'ok', size: stats.size }));
+                                                                this.httprequest.downloadFile.pipe(this);
+                                                                this.httprequest.downloadFile.end = function () { }
+                                                            } else
+                                                            {
+                                                                //sendConsoleText('BasicFileTransfer, cancel, ' + this.httprequest.xoptions.file);
+                                                                this.write(JSON.stringify({ op: 'cancel' }));
+                                                            }
+                                                        }
+                                                        else if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 8) || (this.httprequest.protocol == 9))
+                                                        {
+                                                            //
+                                                            // Remote Terminal
+                                                            //
                                                             if (process.platform == "win32")
                                                             {
                                                                 var cols = 80, rows = 25;
@@ -630,36 +717,124 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                                 if (cmd.reqid != undefined) { response.reqid = cmd.reqid; }
                                                                 this.write(Buffer.from(JSON.stringify(response)));
                                                                 break;
-                                                            case 'mkdir': {
-                                                                // Create a new empty folder
-                                                                fs.mkdirSync(cmd.path);
-                                                                break;
-                                                            }
-                                                            case 'rm': {
-                                                                // Delete, possibly recursive delete
-                                                                for (var i in cmd.delfiles)
+                                                            case 'mkdir':
                                                                 {
-                                                                    try { deleteFolderRecursive(path.join(cmd.path, cmd.delfiles[i]), cmd.rec); } catch (e) { }
+                                                                    // Create a new empty folder
+                                                                    fs.mkdirSync(cmd.path);
+                                                                    break;
                                                                 }
-                                                                break;
-                                                            }
-                                                            case 'rename': {
-                                                                // Rename a file or folder
-                                                                var oldfullpath = path.join(cmd.path, cmd.oldname);
-                                                                var newfullpath = path.join(cmd.path, cmd.newname);
-                                                                try { fs.renameSync(oldfullpath, newfullpath); } catch (e) { console.log(e); }
-                                                                break;
-                                                            }
-                                                            case 'upload': {
-                                                                // Upload a file, browser to agent
-                                                                if (this.httprequest.uploadFile != undefined) { fs.closeSync(this.httprequest.uploadFile); this.httprequest.uploadFile = undefined; }
-                                                                if (cmd.path == undefined) break;
-                                                                var filepath = cmd.name ? path.join(cmd.path, cmd.name) : cmd.path;
-                                                                try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
-                                                                this.httprequest.uploadFileid = cmd.reqid;
-                                                                if (this.httprequest.uploadFile) { this.write(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
-                                                                break;
-                                                            }
+                                                            case 'rm':
+                                                                {
+                                                                    // Delete, possibly recursive delete
+                                                                    for (var i in cmd.delfiles)
+                                                                    {
+                                                                        try { deleteFolderRecursive(path.join(cmd.path, cmd.delfiles[i]), cmd.rec); } catch (e) { }
+                                                                    }
+                                                                    break;
+                                                                }
+                                                            case 'rename':
+                                                                {
+                                                                    // Rename a file or folder
+                                                                    var oldfullpath = path.join(cmd.path, cmd.oldname);
+                                                                    var newfullpath = path.join(cmd.path, cmd.newname);
+                                                                    try { fs.renameSync(oldfullpath, newfullpath); } catch (e) { console.log(e); }
+                                                                    break;
+                                                                }
+                                                            case 'findfile':
+                                                                {
+                                                                    // Search for files
+                                                                    var r = require('file-search').find('"' + cmd.path + '"', cmd.filter);
+                                                                    if (!r.cancel) { r.cancel = function cancel() { this.child.kill(); }; }
+                                                                    this._search = r;
+                                                                    r.socket = this;
+                                                                    r.socket.reqid = cmd.reqid; // Search request id. This is used to send responses and cancel the request.
+                                                                    r.socket.path = cmd.path;   // Search path
+                                                                    r.on('result', function (str) { try { this.socket.write(Buffer.from(JSON.stringify({ action: 'findfile', r: str.substring(this.socket.path.length), reqid: this.socket.reqid }))); } catch (ex) { } });
+                                                                    r.then(function () { try { this.socket.write(Buffer.from(JSON.stringify({ action: 'findfile', r: null, reqid: this.socket.reqid }))); } catch (ex) { } });
+                                                                    break;
+                                                                }
+                                                            case 'cancelfindfile':
+                                                                {
+                                                                    if (this._search) { this._search.cancel(); this._search = null; }
+                                                                    break;
+                                                                }
+                                                            case 'download':
+                                                                {
+                                                                    // Download a file
+                                                                    var sendNextBlock = 0;
+                                                                    if (cmd.sub == 'start')
+                                                                    { // Setup the download
+                                                                        if ((cmd.path == null) && (cmd.ask == 'coredump'))
+                                                                        { // If we are asking for the coredump file, set the right path.
+                                                                            if (process.platform == 'win32')
+                                                                            {
+                                                                                if (fs.existsSync(process.coreDumpLocation)) { cmd.path = process.coreDumpLocation; }
+                                                                            } else
+                                                                            {
+                                                                                if ((process.cwd() != '//') && fs.existsSync(process.cwd() + 'core')) { cmd.path = process.cwd() + 'core'; }
+                                                                            }
+                                                                        }
+                                                                        MeshServerLogEx((cmd.ask == 'coredump') ? 104 : 49, [cmd.path], 'Download: \"' + cmd.path + '\"', this.httprequest);
+                                                                        if ((cmd.path == null) || (this.filedownload != null)) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
+                                                                        this.filedownload = { id: cmd.id, path: cmd.path, ptr: 0 }
+                                                                        try { this.filedownload.f = fs.openSync(this.filedownload.path, 'rbN'); } catch (e) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
+                                                                        if (this.filedownload) { this.write({ action: 'download', sub: 'start', id: cmd.id }); }
+                                                                    } else if ((this.filedownload != null) && (cmd.id == this.filedownload.id))
+                                                                    { // Download commands
+                                                                        if (cmd.sub == 'startack') { sendNextBlock = ((typeof cmd.ack == 'number') ? cmd.ack : 8); } else if (cmd.sub == 'stop') { delete this.filedownload; } else if (cmd.sub == 'ack') { sendNextBlock = 1; }
+                                                                    }
+                                                                    // Send the next download block(s)
+                                                                    while (sendNextBlock > 0)
+                                                                    {
+                                                                        sendNextBlock--;
+                                                                        var buf = Buffer.alloc(16384);
+                                                                        var len = fs.readSync(this.filedownload.f, buf, 4, 16380, null);
+                                                                        this.filedownload.ptr += len;
+                                                                        if (len < 16380) { buf.writeInt32BE(0x01000001, 0); fs.closeSync(this.filedownload.f); delete this.filedownload; sendNextBlock = 0; } else { buf.writeInt32BE(0x01000000, 0); }
+                                                                        this.write(buf.slice(0, len + 4)); // Write as binary
+                                                                    }
+                                                                    break;
+                                                                }
+                                                            case 'upload':
+                                                                {
+                                                                    // Upload a file, browser to agent
+                                                                    if (this.httprequest.uploadFile != null) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; }
+                                                                    if (cmd.path == undefined) break;
+                                                                    var filepath = cmd.name ? pathjoin(cmd.path, cmd.name) : cmd.path;
+                                                                    this.httprequest.uploadFilePath = filepath;
+                                                                    MeshServerLogEx(50, [filepath], 'Upload: \"' + filepath + '\"', this.httprequest);
+                                                                    try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
+                                                                    this.httprequest.uploadFileid = cmd.reqid;
+                                                                    if (this.httprequest.uploadFile) { this.write(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
+                                                                    break;
+                                                                }
+                                                            case 'uploaddone':
+                                                                {
+                                                                    // Indicates that an upload is done
+                                                                    if (this.httprequest.uploadFile)
+                                                                    {
+                                                                        fs.closeSync(this.httprequest.uploadFile);
+                                                                        this.write(Buffer.from(JSON.stringify({ action: 'uploaddone', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
+                                                                        delete this.httprequest.uploadFile;
+                                                                        delete this.httprequest.uploadFileid;
+                                                                        delete this.httprequest.uploadFilePath;
+                                                                    }
+                                                                    break;
+                                                                }
+                                                            case 'uploadcancel':
+                                                                {
+                                                                    // Indicates that an upload is canceled
+                                                                    if (this.httprequest.uploadFile)
+                                                                    {
+                                                                        fs.closeSync(this.httprequest.uploadFile);
+                                                                        fs.unlinkSync(this.httprequest.uploadFilePath);
+                                                                        this.write(Buffer.from(JSON.stringify({ action: 'uploadcancel', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
+                                                                        delete this.httprequest.uploadFile;
+                                                                        delete this.httprequest.uploadFileid;
+                                                                        delete this.httprequest.uploadFilePath;
+                                                                    }
+                                                                    break;
+                                                                }
                                                             case 'copy': {
                                                                 // Copy a bunch of files from scpath to dspath
                                                                 for (var i in cmd.names)

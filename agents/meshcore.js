@@ -2551,144 +2551,132 @@ function createMeshCore(agent)
                         if (coreDumpPath != null) { db.Put('CoreDumpTime', require('fs').statSync(coreDumpPath).mtime); }
                         break;
                     }
-                    case 'rename': {
-                        // Rename a file or folder
-                        var oldfullpath = obj.path.join(cmd.path, cmd.oldname);
-                        var newfullpath = obj.path.join(cmd.path, cmd.newname);
-                        MeshServerLogEx(48, [oldfullpath, cmd.newname], 'Rename: \"' + oldfullpath + '\" to \"' + cmd.newname + '\"', this.httprequest);
-                        try { fs.renameSync(oldfullpath, newfullpath); } catch (e) { console.log(e); }
-                        break;
-                    }
-                    case 'findfile': {
-                        // Search for files
-                        var r = require('file-search').find('"' + cmd.path + '"', cmd.filter);
-                        if (!r.cancel) { r.cancel = function cancel() { this.child.kill(); }; }
-                        this._search = r;
-                        r.socket = this;
-                        r.socket.reqid = cmd.reqid; // Search request id. This is used to send responses and cancel the request.
-                        r.socket.path = cmd.path;   // Search path
-                        r.on('result', function (str) { try { this.socket.write(Buffer.from(JSON.stringify({ action: 'findfile', r: str.substring(this.socket.path.length), reqid: this.socket.reqid }))); } catch (ex) { } });
-                        r.then(function () { try { this.socket.write(Buffer.from(JSON.stringify({ action: 'findfile', r: null, reqid: this.socket.reqid }))); } catch (ex) { } });
-                        break;
-                    }
-                    case 'cancelfindfile': {
-                        if (this._search) { this._search.cancel(); this._search = null; }
-                    }
-                    case 'download': {
-                        // Download a file
-                        var sendNextBlock = 0;
-                        if (cmd.sub == 'start')
-                        { // Setup the download
-                            if ((cmd.path == null) && (cmd.ask == 'coredump'))
-                            { // If we are asking for the coredump file, set the right path.
-                                if (process.platform == 'win32')
-                                {
-                                    if (fs.existsSync(process.coreDumpLocation)) { cmd.path = process.coreDumpLocation; }
-                                } else
-                                {
-                                    if ((process.cwd() != '//') && fs.existsSync(process.cwd() + 'core')) { cmd.path = process.cwd() + 'core'; }
+                    case 'rename':
+                        {
+                            // Rename a file or folder
+                            var oldfullpath = obj.path.join(cmd.path, cmd.oldname);
+                            var newfullpath = obj.path.join(cmd.path, cmd.newname);
+                            MeshServerLogEx(48, [oldfullpath, cmd.newname], 'Rename: \"' + oldfullpath + '\" to \"' + cmd.newname + '\"', this.httprequest);
+                            try { fs.renameSync(oldfullpath, newfullpath); } catch (e) { console.log(e); }
+                            break;
+                        }
+                    case 'findfile':
+                        {
+                            // Search for files
+                            var r = require('file-search').find('"' + cmd.path + '"', cmd.filter);
+                            if (!r.cancel) { r.cancel = function cancel() { this.child.kill(); }; }
+                            this._search = r;
+                            r.socket = this;
+                            r.socket.reqid = cmd.reqid; // Search request id. This is used to send responses and cancel the request.
+                            r.socket.path = cmd.path;   // Search path
+                            r.on('result', function (str) { try { this.socket.write(Buffer.from(JSON.stringify({ action: 'findfile', r: str.substring(this.socket.path.length), reqid: this.socket.reqid }))); } catch (ex) { } });
+                            r.then(function () { try { this.socket.write(Buffer.from(JSON.stringify({ action: 'findfile', r: null, reqid: this.socket.reqid }))); } catch (ex) { } });
+                            break;
+                        }
+                    case 'cancelfindfile':
+                        {
+                            if (this._search) { this._search.cancel(); this._search = null; }
+                            break;
+                        }
+                    case 'download':
+                        {
+                            // Download a file
+                            var sendNextBlock = 0;
+                            if (cmd.sub == 'start')
+                            { // Setup the download
+                                if ((cmd.path == null) && (cmd.ask == 'coredump'))
+                                { // If we are asking for the coredump file, set the right path.
+                                    if (process.platform == 'win32')
+                                    {
+                                        if (fs.existsSync(process.coreDumpLocation)) { cmd.path = process.coreDumpLocation; }
+                                    } else
+                                    {
+                                        if ((process.cwd() != '//') && fs.existsSync(process.cwd() + 'core')) { cmd.path = process.cwd() + 'core'; }
+                                    }
                                 }
+                                MeshServerLogEx((cmd.ask == 'coredump') ? 104 : 49, [cmd.path], 'Download: \"' + cmd.path + '\"', this.httprequest);
+                                if ((cmd.path == null) || (this.filedownload != null)) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
+                                this.filedownload = { id: cmd.id, path: cmd.path, ptr: 0 }
+                                try { this.filedownload.f = fs.openSync(this.filedownload.path, 'rbN'); } catch (e) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
+                                if (this.filedownload) { this.write({ action: 'download', sub: 'start', id: cmd.id }); }
+                            } else if ((this.filedownload != null) && (cmd.id == this.filedownload.id))
+                            { // Download commands
+                                if (cmd.sub == 'startack') { sendNextBlock = ((typeof cmd.ack == 'number') ? cmd.ack : 8); } else if (cmd.sub == 'stop') { delete this.filedownload; } else if (cmd.sub == 'ack') { sendNextBlock = 1; }
                             }
-                            MeshServerLogEx((cmd.ask == 'coredump') ? 104 : 49, [cmd.path], 'Download: \"' + cmd.path + '\"', this.httprequest);
-                            if ((cmd.path == null) || (this.filedownload != null)) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
-                            this.filedownload = { id: cmd.id, path: cmd.path, ptr: 0 }
-                            try { this.filedownload.f = fs.openSync(this.filedownload.path, 'rbN'); } catch (e) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
-                            if (this.filedownload) { this.write({ action: 'download', sub: 'start', id: cmd.id }); }
-                        } else if ((this.filedownload != null) && (cmd.id == this.filedownload.id))
-                        { // Download commands
-                            if (cmd.sub == 'startack') { sendNextBlock = ((typeof cmd.ack == 'number') ? cmd.ack : 8); } else if (cmd.sub == 'stop') { delete this.filedownload; } else if (cmd.sub == 'ack') { sendNextBlock = 1; }
-                        }
-                        // Send the next download block(s)
-                        while (sendNextBlock > 0)
-                        {
-                            sendNextBlock--;
-                            var buf = Buffer.alloc(16384);
-                            var len = fs.readSync(this.filedownload.f, buf, 4, 16380, null);
-                            this.filedownload.ptr += len;
-                            if (len < 16380) { buf.writeInt32BE(0x01000001, 0); fs.closeSync(this.filedownload.f); delete this.filedownload; sendNextBlock = 0; } else { buf.writeInt32BE(0x01000000, 0); }
-                            this.write(buf.slice(0, len + 4)); // Write as binary
-                        }
-                        break;
-                    }
-                        /*
-                        case 'download': {
-                            // Packet download of a file, agent to browser
-                            if (cmd.path == undefined) break;
-                            var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
-                            //console.log('Download: ' + filepath);
-                            try { this.httprequest.downloadFile = fs.openSync(filepath, 'rbN'); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'downloaderror', reqid: cmd.reqid }))); break; }
-                            this.httprequest.downloadFileId = cmd.reqid;
-                            this.httprequest.downloadFilePtr = 0;
-                            if (this.httprequest.downloadFile) { this.write(Buffer.from(JSON.stringify({ action: 'downloadstart', reqid: this.httprequest.downloadFileId }))); }
+                            // Send the next download block(s)
+                            while (sendNextBlock > 0)
+                            {
+                                sendNextBlock--;
+                                var buf = Buffer.alloc(16384);
+                                var len = fs.readSync(this.filedownload.f, buf, 4, 16380, null);
+                                this.filedownload.ptr += len;
+                                if (len < 16380) { buf.writeInt32BE(0x01000001, 0); fs.closeSync(this.filedownload.f); delete this.filedownload; sendNextBlock = 0; } else { buf.writeInt32BE(0x01000000, 0); }
+                                this.write(buf.slice(0, len + 4)); // Write as binary
+                            }
                             break;
                         }
-                        case 'download2': {
-                            // Stream download of a file, agent to browser
+                    case 'upload':
+                        {
+                            // Upload a file, browser to agent
+                            if (this.httprequest.uploadFile != null) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; }
                             if (cmd.path == undefined) break;
                             var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
-                            try { this.httprequest.downloadFile = fs.createReadStream(filepath, { flags: 'rbN' }); } catch (e) { console.log(e); }
-                            this.httprequest.downloadFile.pipe(this);
-                            this.httprequest.downloadFile.end = function () { }
+                            this.httprequest.uploadFilePath = filepath;
+                            MeshServerLogEx(50, [filepath], 'Upload: \"' + filepath + '\"', this.httprequest);
+                            try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
+                            this.httprequest.uploadFileid = cmd.reqid;
+                            if (this.httprequest.uploadFile) { this.write(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
                             break;
                         }
-                        */
-                    case 'upload': {
-                        // Upload a file, browser to agent
-                        if (this.httprequest.uploadFile != null) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; }
-                        if (cmd.path == undefined) break;
-                        var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
-                        this.httprequest.uploadFilePath = filepath;
-                        MeshServerLogEx(50, [filepath], 'Upload: \"' + filepath + '\"', this.httprequest);
-                        try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
-                        this.httprequest.uploadFileid = cmd.reqid;
-                        if (this.httprequest.uploadFile) { this.write(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
-                        break;
-                    }
-                    case 'uploaddone': {
-                        // Indicates that an upload is done
-                        if (this.httprequest.uploadFile)
+                    case 'uploaddone':
                         {
-                            fs.closeSync(this.httprequest.uploadFile);
-                            this.write(Buffer.from(JSON.stringify({ action: 'uploaddone', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
-                            delete this.httprequest.uploadFile;
-                            delete this.httprequest.uploadFileid;
-                            delete this.httprequest.uploadFilePath;
+                            // Indicates that an upload is done
+                            if (this.httprequest.uploadFile)
+                            {
+                                fs.closeSync(this.httprequest.uploadFile);
+                                this.write(Buffer.from(JSON.stringify({ action: 'uploaddone', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
+                                delete this.httprequest.uploadFile;
+                                delete this.httprequest.uploadFileid;
+                                delete this.httprequest.uploadFilePath;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case 'uploadcancel': {
-                        // Indicates that an upload is canceled
-                        if (this.httprequest.uploadFile)
+                    case 'uploadcancel':
                         {
-                            fs.closeSync(this.httprequest.uploadFile);
-                            fs.unlinkSync(this.httprequest.uploadFilePath);
-                            this.write(Buffer.from(JSON.stringify({ action: 'uploadcancel', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
-                            delete this.httprequest.uploadFile;
-                            delete this.httprequest.uploadFileid;
-                            delete this.httprequest.uploadFilePath;
+                            // Indicates that an upload is canceled
+                            if (this.httprequest.uploadFile)
+                            {
+                                fs.closeSync(this.httprequest.uploadFile);
+                                fs.unlinkSync(this.httprequest.uploadFilePath);
+                                this.write(Buffer.from(JSON.stringify({ action: 'uploadcancel', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
+                                delete this.httprequest.uploadFile;
+                                delete this.httprequest.uploadFileid;
+                                delete this.httprequest.uploadFilePath;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case 'copy': {
-                        // Copy a bunch of files from scpath to dspath
-                        for (var i in cmd.names)
+                    case 'copy':
                         {
-                            var sc = obj.path.join(cmd.scpath, cmd.names[i]), ds = obj.path.join(cmd.dspath, cmd.names[i]);
-                            MeshServerLogEx(51, [sc, ds], 'Copy: \"' + sc + '\" to \"' + ds + '\"', this.httprequest);
-                            if (sc != ds) { try { fs.copyFileSync(sc, ds); } catch (e) { } }
+                            // Copy a bunch of files from scpath to dspath
+                            for (var i in cmd.names)
+                            {
+                                var sc = obj.path.join(cmd.scpath, cmd.names[i]), ds = obj.path.join(cmd.dspath, cmd.names[i]);
+                                MeshServerLogEx(51, [sc, ds], 'Copy: \"' + sc + '\" to \"' + ds + '\"', this.httprequest);
+                                if (sc != ds) { try { fs.copyFileSync(sc, ds); } catch (e) { } }
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case 'move': {
-                        // Move a bunch of files from scpath to dspath
-                        for (var i in cmd.names)
+                    case 'move':
                         {
-                            var sc = obj.path.join(cmd.scpath, cmd.names[i]), ds = obj.path.join(cmd.dspath, cmd.names[i]);
-                            MeshServerLogEx(52, [sc, ds], 'Move: \"' + sc + '\" to \"' + ds + '\"', this.httprequest);
-                            if (sc != ds) { try { fs.copyFileSync(sc, ds); fs.unlinkSync(sc); } catch (e) { } }
+                            // Move a bunch of files from scpath to dspath
+                            for (var i in cmd.names)
+                            {
+                                var sc = obj.path.join(cmd.scpath, cmd.names[i]), ds = obj.path.join(cmd.dspath, cmd.names[i]);
+                                MeshServerLogEx(52, [sc, ds], 'Move: \"' + sc + '\" to \"' + ds + '\"', this.httprequest);
+                                if (sc != ds) { try { fs.copyFileSync(sc, ds); fs.unlinkSync(sc); } catch (e) { } }
+                            }
+                            break;
                         }
-                        break;
-                    }
                     case 'zip':
                         // Zip a bunch of files
                         if (this.zip != null) return; // Zip operating is currently running, exit now.
