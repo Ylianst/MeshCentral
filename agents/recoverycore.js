@@ -896,7 +896,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help':
-                response = "Available commands are: agentupdate, dbkeys, dbget, dbset, dbcompact, netinfo, osinfo, versions.";
+                response = "Available commands are: agentupdate, dbkeys, dbget, dbset, dbcompact, eval, netinfo, osinfo, setdebug, versions.";
                 break;
             case 'versions':
                 response = JSON.stringify(process.versions, null, '  ');
@@ -909,6 +909,23 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 // Perform an direct agent update without requesting any information from the server, this should not typically be used.
                 agentUpdate_Start(null, { sessionid: sessionid });
                 break;
+            case 'eval':
+                { // Eval JavaScript
+                    if (args['_'].length < 1)
+                    {
+                        response = 'Proper usage: eval "JavaScript code"'; // Display correct command usage
+                    } else
+                    {
+                        response = JSON.stringify(mesh.eval(args['_'][0])); // This can only be run by trusted administrator.
+                    }
+                    break;
+                }
+            case 'setdebug':
+                {
+                    if (args['_'].length < 1) { response = 'Proper usage: setdebug (target), 0 = Disabled, 1 = StdOut, 2 = This Console, * = All Consoles, 4 = WebLog, 8 = Logfile'; } // Display usage
+                    else { if (args['_'][0] == '*') { console.setDestination(2); } else { console.setDestination(parseInt(args['_'][0]), sessionid); } }
+                    break;
+                }
             case 'osinfo': { // Return the operating system information
                 var i = 1;
                 if (args['_'].length > 0) { i = parseInt(args['_'][0]); if (i > 8) { i = 8; } response = 'Calling ' + i + ' times.'; }
