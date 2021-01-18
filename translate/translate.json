@@ -5058,7 +5058,7 @@
       "ru": "Android",
       "tr": "Android",
       "zh-chs": "Android",
-      "zh-cht": "Android"
+      "zh-cht": "Android",
       "xloc": [
         "default-mobile.handlebars->11->20",
         "default.handlebars->31->22",
@@ -11728,8 +11728,10 @@
       ]
     },
     {
+      "en": "Desktop, Alleen kijken"
+    },
+    {
       "en": "Desktop, View only",
-      "en": "Desktop, Alleen kijken",
       "xloc": [
         "default.handlebars->31->750"
       ]
