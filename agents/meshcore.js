@@ -3892,13 +3892,14 @@ function createMeshCore(agent) {
         // If this value is null
         var sessionid = (updateoptions != null) ? updateoptions.sessionid : null; // If this is null, messages will be broadcast. Otherwise they will be unicasted
 
-        if (this._selfupdate != null)
+        if (agentUpdate_Start._selfupdate != null)
         {
             // We were already called, so we will ignore this duplicate request
             if (sessionid != null) { sendConsoleText('Self update already in progress...', sessionid); }
         }
         else
         {
+            if (agentUpdate_Start._retryCount == null) { agentUpdate_Start._retryCount = 0; }
             if (require('MeshAgent').ARCHID == null && updateurl == null)
             {
                 // This agent doesn't have the ability to tell us which ARCHID it is, so we don't know which agent to pull
@@ -3956,13 +3957,13 @@ function createMeshCore(agent) {
                     }
                 }
                 options.checkServerIdentity.servertlshash = (updateoptions != null ? updateoptions.tlshash : null);
-                this._selfupdate = require('https').get(options);
-                this._selfupdate.on('error', function (e)
+                agentUpdate_Start._selfupdate = require('https').get(options);
+                agentUpdate_Start._selfupdate.on('error', function (e)
                 {
                     sendConsoleText('Self Update failed, because there was a problem trying to download the update', sessionid);
                     sendAgentMessage('Self Update failed, because there was a problem trying to download the update', 3);
                 });
-                this._selfupdate.on('response', function (img)
+                agentUpdate_Start._selfupdate.on('response', function (img)
                 {
                     this._file = require('fs').createWriteStream(agentfilename + '.update', { flags: 'wb' });
                     this._filehash = require('SHA384Stream').create();
@@ -3976,8 +3977,22 @@ function createMeshCore(agent) {
                             }
                             else
                             {
-                                sendConsoleText('Self Update FAILED because the downloaded agent FAILED hash check', sessionid);
-                                sendAgentMessage('Self Update FAILED because the downloaded agent FAILED hash check', 3);
+                                agentUpdate_Start._retryCount++;
+                                sendConsoleText('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + ')', sessionid);
+                                sendAgentMessage('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + ')', 3);
+                                agentUpdate_Start._selfupdate = null;
+
+                                if (agentUpdate_Start._retryCount < 4)
+                                {
+                                    // Retry the download again
+                                    sendConsoleText('Self Update will try again in 60 seconds...', sessionid);
+                                    agentUpdate_Start._timeout = setTimeout(agentUpdate_Start, 60000, updateurl, updateoptions);
+                                }
+                                else
+                                {
+                                    sendConsoleText('Self Update giving up, too many failures...', sessionid);
+                                    sendAgentMessage('Self Update giving up, too many failures...', 3);
+                                }
                                 return;
                             }
                         }
