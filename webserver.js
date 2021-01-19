@@ -5731,6 +5731,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } else if (coretype == 'custom') {
                 agent.agentCoreCheck = 1000; // Tell the agent object we are using a custom core.
                 const hash = obj.crypto.createHash('sha384').update(Buffer.from(coredata, 'binary')).digest().toString('binary'); // Perform a SHA384 hash on the core module
+                //console.log('Sending custome core to agent, ' + coredata.length + ' bytes.');
                 agent.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + hash + coredata); // Send the code module to the agent
             }
         }
