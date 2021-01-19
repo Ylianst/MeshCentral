@@ -20,7 +20,9 @@ var agents = {
     'meshagent_mips24kc': 28,
     'meshagent_osx-arm-64': 29,
     'meshagent_freebsd_x86-64': 30,
+    'meshagent_aarch64': 32,
     'meshagent_mipsel24kc': 40,
+    'meshagent_aarch64-cortex-a53': 41,
     'meshagent_osx-universal-64': 10005
 }
 
