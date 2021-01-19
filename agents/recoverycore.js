@@ -106,6 +106,81 @@ function pathjoin()
 // Replace a string with a number if the string is an exact number
 function toNumberIfNumber(x) { if ((typeof x == 'string') && (+parseInt(x) === x)) { x = parseInt(x); } return x; }
 
+function linux_execv(name, agentfilename, sessionid)
+{
+    var libs = require('monitor-info').getLibInfo('libc');
+    var libc = null;
+
+    while (libs.length > 0)
+    {
+        try
+        {
+            libc = require('_GenericMarshal').CreateNativeProxy(libs.pop().path);
+            break;
+        }
+        catch (e)
+        {
+            libc = null;
+            continue;
+        }
+    }
+    if (libc != null)
+    {
+        try
+        {
+            libc.CreateMethod('execv');
+        }
+        catch (e)
+        {
+            libc = null;
+        }
+    }
+
+    if (libc == null)
+    {
+        // Couldn't find libc.so, fallback to using service manager to restart agent
+        if (sessionid != null) { sendConsoleText('Restarting service via service-manager...', sessionid) }
+        try
+        {
+            // restart service
+            var s = require('service-manager').manager.getService(name);
+            s.restart();
+        }
+        catch (zz)
+        {
+            sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
+            sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+        }
+        return;
+    }
+
+    if (sessionid != null) { sendConsoleText('Restarting service via execv()...', sessionid) }
+
+    var i;
+    var args;
+    var argarr = [];
+    var path = require('_GenericMarshal').CreateVariable(process.execPath);
+    
+    if (require('MeshAgent').getStartupOptions != null)
+    {
+        var options = require('MeshAgent').getStartupOptions();
+        for (i in options)
+        {
+            argarr.push('--' + i + '="' + options[i] + '"');
+        }
+    }
+
+    args = require('_GenericMarshal').CreateVariable((1 + argarr.length) * require('_GenericMarshal').PointerSize);
+    for (i = 0; i < argarr.length; ++i)
+    {
+        var arg = require('_GenericMarshal').CreateVariable(argarr[i]);
+        arg.pointerBuffer().copy(args.toBuffer(), i * require('_GenericMarshal').PointerSize);
+    }
+
+    libc.execv(path, args);
+    if (sessionid != null) { sendConsoleText('Self Update failed because execv() failed', sessionid) }
+    sendAgentMessage('Self Update failed because execv() failed', 3);
+}
 
 function bsd_execv(name, agentfilename, sessionid)
 {
@@ -159,6 +234,7 @@ function bsd_execv(name, agentfilename, sessionid)
         arg.pointerBuffer().copy(args.toBuffer(), i * require('_GenericMarshal').PointerSize);
     }
     
+    if (sessionid != null) { sendConsoleText('Restarting service via service-manager', sessionid) }
     libc.execv(path, args);
     if (sessionid != null) { sendConsoleText('Self Update failed because execv() failed', sessionid) }
     sendAgentMessage('Self Update failed because execv() failed', 3);
@@ -251,6 +327,7 @@ function agentUpdate_Start(updateurl, updateoptions)
                     sendAgentMessage('Self Update failed, because the url cannot be verified', 3);
                     throw new Error('BadCert');
                 }
+                if (certs[0].digest == null) { return; }
                 if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase()))
                 {
                     sendConsoleText('Self Update failed, because the supplied certificate does not match', sessionid);
@@ -313,24 +390,27 @@ function agentUpdate_Start(updateurl, updateoptions)
                         // erase update
                         require('fs').unlinkSync(process.cwd() + agentfilename + '.update');
 
-                        if (sessionid != null) { sendConsoleText('Restarting service...', sessionid); }
-                        if (process.platform == 'freebsd')
+                        switch(process.platform)
                         {
-                            bsd_execv(name, agentfilename, sessionid);
-                        }
-                        else
-                        {
-                            try
-                            {
-                                // restart service
-                                var s = require('service-manager').manager.getService(name);
-                                s.restart();
-                            }
-                            catch (zz)
-                            {
-                                sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
-                                sendAgentMessage('Self Update encountered an error trying to restart service', 3);
-                            }
+                            case 'freebsd':
+                                bsd_execv(name, agentfilename, sessionid);
+                                break;
+                            case 'linux':
+                                linux_execv(name, agentfilename, sessionid);
+                                break;
+                            default:
+                                try
+                                {
+                                    // restart service
+                                    var s = require('service-manager').manager.getService(name);
+                                    s.restart();
+                                }
+                                catch (zz)
+                                {
+                                    sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
+                                    sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+                                }
+                                break;
                         }
                     }
                 });
