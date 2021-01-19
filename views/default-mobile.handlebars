@@ -3543,7 +3543,7 @@
             // Construct the key command
             if (ks == -1) { deskCustomizeKeys(); return; } // Customize
             if (ks == 0x0A002E) { desktop.m.sendcad(); return; } // CTRL-ALT-DEL
-            if ((desktop.contype == 1) && (ks == 0x100052)) { desktop.sendCtrlMsg('{"action":"lock"}'); return; } // Lock desktop
+            //if ((desktop.contype == 1) && (ks == 0x10004C)) { desktop.sendCtrlMsg('{"action":"lock"}'); return; } // Lock desktop, WIN + L
 
             var flags = (ks & 0xFF0000) >> 16, key = (ks & 0xFFFF), keyArray = [], keyArray2 = [];
             var amtTranslate = {
