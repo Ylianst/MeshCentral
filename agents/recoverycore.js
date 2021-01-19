@@ -193,6 +193,8 @@ function windows_execve(name, agentfilename, sessionid)
 // Start a JavaScript based Agent Self-Update
 function agentUpdate_Start(updateurl, updateoptions)
 {
+    sendConsoleText('agentUpdate_Start: ' + updateurl + ', ' + JSON.stringify(updateoptions));
+
     // If this value is null
     var sessionid = (updateoptions != null) ? updateoptions.sessionid : null; // If this is null, messages will be broadcast. Otherwise they will be unicasted
 
@@ -243,22 +245,31 @@ function agentUpdate_Start(updateurl, updateoptions)
                 try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { }
 
                 // Check that the certificate is the one expected by the server, fail if not.
-                if (checkServerIdentity.servertlshash == null)
-                {
+                sendConsoleText('hashx: ' + checkServerIdentity.servertlshash);
+                if (checkServerIdentity.servertlshash == null) {
+                    sendConsoleText('1a');
                     if (require('MeshAgent').ServerInfo == null || require('MeshAgent').ServerInfo.ControlChannelCertificate == null) { return; }
+                    sendConsoleText('1b');
 
                     sendConsoleText('Self Update failed, because the url cannot be verified', sessionid);
                     sendAgentMessage('Self Update failed, because the url cannot be verified', 3);
                     throw new Error('BadCert');
                 }
-                if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase()))
-                {
+                sendConsoleText('2t: ' + checkServerIdentity.servertlshash);
+                sendConsoleText('2y: ' + checkServerIdentity.servertlshash.toLowerCase());
+                sendConsoleText('2z: ' + certs[0].digest);
+                sendConsoleText('2r: ' + certs[0].fingerprint);
+                if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) {
+                    sendConsoleText('2b');
                     sendConsoleText('Self Update failed, because the supplied certificate does not match', sessionid);
                     sendAgentMessage('Self Update failed, because the supplied certificate does not match', 3);
                     throw new Error('BadCert')
                 }
+                sendConsoleText('3');
             }
             options.checkServerIdentity.servertlshash = (updateoptions != null ? updateoptions.tlshash : null);
+            sendConsoleText('Downloading1: ' + JSON.stringify(options));
+            sendConsoleText('Downloading2: ' + JSON.stringify(updateoptions));
             this._selfupdate = require('https').get(options);
             this._selfupdate.on('error', function (e)
             {
