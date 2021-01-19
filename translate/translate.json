@@ -2589,6 +2589,20 @@
     },
     {
       "en": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "nl": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "es": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "de": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "cs": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "fi": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "fr": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "hi": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "ja": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "pt": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "ru": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "tr": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "ko": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "zh-chs": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "zh-cht": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
       "xloc": [
         "default-mobile.handlebars->11->47",
         "default.handlebars->31->54"
@@ -6502,6 +6516,7 @@
     },
     {
       "en": "Bootloader",
+      "nl": "Bootloader",
       "xloc": [
         "default-mobile.handlebars->11->396",
         "default.handlebars->31->1014"
@@ -11735,10 +11750,8 @@
       ]
     },
     {
-      "en": "Desktop, Alleen kijken"
-    },
-    {
       "en": "Desktop, View only",
+      "nl": "Desktop, Alleen kijken",
       "xloc": [
         "default.handlebars->31->751"
       ]
@@ -22236,6 +22249,20 @@
     },
     {
       "en": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "nl": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "es": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "cs": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "de": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "fr": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "ru": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "pt": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "hi": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "ja": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "tr": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "fi": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "ko": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "zh-chs": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "zh-cht": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
       "xloc": [
         "default-mobile.handlebars->11->38",
         "default.handlebars->31->45"
@@ -24903,6 +24930,7 @@
     },
     {
       "en": "Mobile Device",
+      "nl": "Mobiel apparaat",
       "xloc": [
         "default-mobile.handlebars->11->399",
         "default.handlebars->31->1017"
