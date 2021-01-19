@@ -3800,6 +3800,7 @@ function createMeshCore(agent) {
                         sendAgentMessage('Self Update failed, because the url cannot be verified', 3);
                         throw new Error('BadCert');
                     }
+                    if (certs[0].digest == null) { return; }
                     if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) {
                         sendConsoleText('Self Update failed, because the supplied certificate does not match', sessionid);
                         sendAgentMessage('Self Update failed, because the supplied certificate does not match', 3);
