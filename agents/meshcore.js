@@ -3726,13 +3726,150 @@ function createMeshCore(agent) {
         require('MeshAgent').SendCommand({ action: 'sessions', type: 'msg', value: sendAgentMessage.messages });
     }
 
-    function windows_execve(name, agentfilename, sessionid) {
+    function linux_execv(name, agentfilename, sessionid)
+    {
+        var libs = require('monitor-info').getLibInfo('libc');
+        var libc = null;
+
+        while (libs.length > 0)
+        {
+            try
+            {
+                libc = require('_GenericMarshal').CreateNativeProxy(libs.pop().path);
+                break;
+            }
+            catch (e)
+            {
+                libc = null;
+                continue;
+            }
+        }
+        if (libc != null)
+        {
+            try
+            {
+                libc.CreateMethod('execv');
+            }
+            catch (e)
+            {
+                libc = null;
+            }
+        }
+
+        if (libc == null)
+        {
+            // Couldn't find libc.so, fallback to using service manager to restart agent
+            if (sessionid != null) { sendConsoleText('Restarting service via service-manager...', sessionid) }
+            try
+            {
+                // restart service
+                var s = require('service-manager').manager.getService(name);
+                s.restart();
+            }
+            catch (zz)
+            {
+                sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
+                sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+            }
+            return;
+        }
+
+        if (sessionid != null) { sendConsoleText('Restarting service via execv()...', sessionid) }
+
+        var i;
+        var args;
+        var argarr = [];
+        var path = require('_GenericMarshal').CreateVariable(process.execPath);
+
+        if (require('MeshAgent').getStartupOptions != null)
+        {
+            var options = require('MeshAgent').getStartupOptions();
+            for (i in options)
+            {
+                argarr.push('--' + i + '="' + options[i] + '"');
+            }
+        }
+
+        args = require('_GenericMarshal').CreateVariable((1 + argarr.length) * require('_GenericMarshal').PointerSize);
+        for (i = 0; i < argarr.length; ++i)
+        {
+            var arg = require('_GenericMarshal').CreateVariable(argarr[i]);
+            arg.pointerBuffer().copy(args.toBuffer(), i * require('_GenericMarshal').PointerSize);
+        }
+
+        libc.execv(path, args);
+        if (sessionid != null) { sendConsoleText('Self Update failed because execv() failed', sessionid) }
+        sendAgentMessage('Self Update failed because execv() failed', 3);
+    }
+
+    function bsd_execv(name, agentfilename, sessionid)
+    {
+        var child = require('child_process').execFile('/bin/sh', ['sh']);
+        child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+        child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
+        child.stdin.write("cat /usr/lib/libc.so | awk '");
+        child.stdin.write('{');
+        child.stdin.write(' a=split($0, tok, "(");');
+        child.stdin.write(' if(a>1)');
+        child.stdin.write(' {');
+        child.stdin.write('     split(tok[2], b, ")");');
+        child.stdin.write('     split(b[1], c, " ");');
+        child.stdin.write('     print c[1];');
+        child.stdin.write(' }');
+        child.stdin.write("}'\nexit\n");
+        child.waitExit();
+        if (child.stdout.str.trim() == '')
+        {
+            if (sessionid != null) { sendConsoleText('Self Update failed because cannot find libc.so', sessionid) }
+            sendAgentMessage('Self Update failed because cannot find libc.so', 3);
+            return;
+        }
+
+        var libc = null;
+        try
+        {
+            libc = require('_GenericMarshal').CreateNativeProxy(child.stdout.str.trim());
+            libc.CreateMethod('execv');
+        }
+        catch (e)
+        {
+            if (sessionid != null) { sendConsoleText('Self Update failed: ' + e.toString(), sessionid) }
+            sendAgentMessage('Self Update failed: ' + e.toString(), 3);
+            return;
+        }
+
+        var i;
+        var path = require('_GenericMarshal').CreateVariable(process.execPath);
+        var argarr = [];
+        var args;
+        var options = require('MeshAgent').getStartupOptions();
+        for (i in options)
+        {
+            argarr.push('--' + i + '="' + options[i] + '"');
+        }
+        args = require('_GenericMarshal').CreateVariable((1 + argarr.length) * require('_GenericMarshal').PointerSize);
+        for (i = 0; i < argarr.length; ++i)
+        {
+            var arg = require('_GenericMarshal').CreateVariable(argarr[i]);
+            arg.pointerBuffer().copy(args.toBuffer(), i * require('_GenericMarshal').PointerSize);
+        }
+
+        if (sessionid != null) { sendConsoleText('Restarting service via service-manager', sessionid) }
+        libc.execv(path, args);
+        if (sessionid != null) { sendConsoleText('Self Update failed because execv() failed', sessionid) }
+        sendAgentMessage('Self Update failed because execv() failed', 3);
+    }
+
+    function windows_execve(name, agentfilename, sessionid)
+    {
         var libc;
-        try {
+        try
+        {
             libc = require('_GenericMarshal').CreateNativeProxy('msvcrt.dll');
             libc.CreateMethod('_wexecve');
         }
-        catch (xx) {
+        catch (xx)
+        {
             sendConsoleText('Self Update failed because msvcrt.dll is missing', sessionid);
             sendAgentMessage('Self Update failed because msvcrt.dll is missing', 3);
             return;
@@ -3750,33 +3887,41 @@ function createMeshCore(agent) {
     }
 
     // Start a JavaScript based Agent Self-Update
-    function agentUpdate_Start(updateurl, updateoptions) {
+    function agentUpdate_Start(updateurl, updateoptions)
+    {
         // If this value is null
         var sessionid = (updateoptions != null) ? updateoptions.sessionid : null; // If this is null, messages will be broadcast. Otherwise they will be unicasted
 
-        if (this._selfupdate != null) {
+        if (this._selfupdate != null)
+        {
             // We were already called, so we will ignore this duplicate request
             if (sessionid != null) { sendConsoleText('Self update already in progress...', sessionid); }
         }
-        else {
-            if (require('MeshAgent').ARCHID == null && updateurl == null) {
+        else
+        {
+            if (require('MeshAgent').ARCHID == null && updateurl == null)
+            {
                 // This agent doesn't have the ability to tell us which ARCHID it is, so we don't know which agent to pull
                 sendConsoleText('Unable to initiate update, agent ARCHID is not defined', sessionid);
             }
-            else {
+            else
+            {
                 var agentfilename = process.execPath.split(process.platform == 'win32' ? '\\' : '/').pop(); // Local File Name, ie: MeshAgent.exe
                 var name = require('MeshAgent').serviceName;
                 if (name == null) { name = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'; }      // This is an older agent that doesn't expose the service name, so use the default
-                try {
+                try
+                {
                     var s = require('service-manager').manager.getService(name);
-                    if (!s.isMe()) {
+                    if (!s.isMe())
+                    {
                         if (process.platform == 'win32') { s.close(); }
                         sendConsoleText('Self Update cannot continue, this agent is not an instance of (' + name + ')', sessionid);
                         return;
                     }
                     if (process.platform == 'win32') { s.close(); }
                 }
-                catch (zz) {
+                catch (zz)
+                {
                     sendConsoleText('Self Update Failed because this agent is not an instance of (' + name + ')', sessionid);
                     sendAgentMessage('Self Update Failed because this agent is not an instance of (' + name + ')', 3);
                     return;
@@ -3787,13 +3932,15 @@ function createMeshCore(agent) {
                 options.protocol = 'https:';
                 if (updateurl == null) { options.path = ('/meshagents?id=' + require('MeshAgent').ARCHID); }
                 options.rejectUnauthorized = false;
-                options.checkServerIdentity = function checkServerIdentity(certs) {
+                options.checkServerIdentity = function checkServerIdentity(certs)
+                {
                     // If the tunnel certificate matches the control channel certificate, accept the connection
                     try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { }
                     try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { }
 
                     // Check that the certificate is the one expected by the server, fail if not.
-                    if (checkServerIdentity.servertlshash == null) {
+                    if (checkServerIdentity.servertlshash == null)
+                    {
                         if (require('MeshAgent').ServerInfo == null || require('MeshAgent').ServerInfo.ControlChannelCertificate == null) { return; }
 
                         sendConsoleText('Self Update failed, because the url cannot be verified', sessionid);
@@ -3801,7 +3948,8 @@ function createMeshCore(agent) {
                         throw new Error('BadCert');
                     }
                     if (certs[0].digest == null) { return; }
-                    if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) {
+                    if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase()))
+                    {
                         sendConsoleText('Self Update failed, because the supplied certificate does not match', sessionid);
                         sendAgentMessage('Self Update failed, because the supplied certificate does not match', 3);
                         throw new Error('BadCert')
@@ -3809,60 +3957,80 @@ function createMeshCore(agent) {
                 }
                 options.checkServerIdentity.servertlshash = (updateoptions != null ? updateoptions.tlshash : null);
                 this._selfupdate = require('https').get(options);
-                this._selfupdate.on('error', function (e) {
+                this._selfupdate.on('error', function (e)
+                {
                     sendConsoleText('Self Update failed, because there was a problem trying to download the update', sessionid);
                     sendAgentMessage('Self Update failed, because there was a problem trying to download the update', 3);
                 });
-                this._selfupdate.on('response', function (img) {
+                this._selfupdate.on('response', function (img)
+                {
                     this._file = require('fs').createWriteStream(agentfilename + '.update', { flags: 'wb' });
                     this._filehash = require('SHA384Stream').create();
-                    this._filehash.on('hash', function (h) {
-                        if (updateoptions != null && updateoptions.hash != null) {
-                            if (updateoptions.hash.toLowerCase() == h.toString('hex').toLowerCase()) {
+                    this._filehash.on('hash', function (h)
+                    {
+                        if (updateoptions != null && updateoptions.hash != null)
+                        {
+                            if (updateoptions.hash.toLowerCase() == h.toString('hex').toLowerCase())
+                            {
                                 if (sessionid != null) { sendConsoleText('Download complete. HASH verified.', sessionid); }
                             }
-                            else {
+                            else
+                            {
                                 sendConsoleText('Self Update FAILED because the downloaded agent FAILED hash check', sessionid);
                                 sendAgentMessage('Self Update FAILED because the downloaded agent FAILED hash check', 3);
                                 return;
                             }
                         }
-                        else {
-                            if (sessionid != null) { sendConsoleText('Download complete. HASH=' + h.toString('hex'), sessionid); }
+                        else
+                        {
+                            sendConsoleText('Download complete. HASH=' + h.toString('hex'), sessionid);
                         }
 
                         // Send an indication to the server that we got the update download correctly.
-                        try { mesh.SendCommand({ action: 'agentupdatedownloaded' }); } catch (e) { }
+                        try { require('MeshAgent').SendCommand({ action: 'agentupdatedownloaded' }); } catch (e) { }
 
                         if (sessionid != null) { sendConsoleText('Updating and restarting agent...', sessionid); }
-                        if (process.platform == 'win32') {
+                        if (process.platform == 'win32')
+                        {
                             // Use _wexecve() equivalent to perform the update
                             windows_execve(name, agentfilename, sessionid);
                         }
-                        else {
+                        else
+                        {
+                            var m = require('fs').statSync(process.execPath).mode;
+                            require('fs').chmodSync(process.cwd() + agentfilename + '.update', m);
+
                             // remove binary
                             require('fs').unlinkSync(process.execPath);
 
                             // copy update
                             require('fs').copyFileSync(process.cwd() + agentfilename + '.update', process.execPath);
+                            require('fs').chmodSync(process.execPath, m);
 
                             // erase update
                             require('fs').unlinkSync(process.cwd() + agentfilename + '.update');
 
-                            // add execute permissions
-                            var m = require('fs').statSync(process.execPath).mode;
-                            m |= (require('fs').CHMOD_MODES.S_IXUSR | require('fs').CHMOD_MODES.S_IXGRP | require('fs').CHMOD_MODES.S_IXOTH);
-                            require('fs').chmodSync(process.execPath, m);
-
-                            if (sessionid != null) { sendConsoleText('Restarting service...', sessionid); }
-                            try {
-                                // restart service
-                                var s = require('service-manager').manager.getService(name);
-                                s.restart();
-                            }
-                            catch (zz) {
-                                sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
-                                sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+                            switch (process.platform)
+                            {
+                                case 'freebsd':
+                                    bsd_execv(name, agentfilename, sessionid);
+                                    break;
+                                case 'linux':
+                                    linux_execv(name, agentfilename, sessionid);
+                                    break;
+                                default:
+                                    try
+                                    {
+                                        // restart service
+                                        var s = require('service-manager').manager.getService(name);
+                                        s.restart();
+                                    }
+                                    catch (zz)
+                                    {
+                                        sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
+                                        sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+                                    }
+                                    break;
                             }
                         }
                     });
