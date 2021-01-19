@@ -6,11 +6,9 @@ var nextTunnelIndex = 1;
 var tunnels = {};
 var fs = require('fs');
 
-if (require('MeshAgent').ARCHID == null)
-{
+if (require('MeshAgent').ARCHID == null) {
     var id = null;
-    switch (process.platform)
-    {
+    switch (process.platform) {
         case 'win32':
             id = require('_GenericMarshal').PointerSize == 4 ? 3 : 4;
             break;
@@ -18,12 +16,10 @@ if (require('MeshAgent').ARCHID == null)
             id = require('_GenericMarshal').PointerSize == 4 ? 31 : 30;
             break;
         case 'darwin':
-            try
-            {
+            try {
                 id = require('os').arch() == 'x64' ? 16 : 29;
             }
-            catch(xx)
-            {
+            catch (xx) {
                 id = 16;
             }
             break;
@@ -33,22 +29,17 @@ if (require('MeshAgent').ARCHID == null)
 
 //attachDebugger({ webport: 9994, wait: 1 }).then(function (p) { console.log('Debug on port: ' + p); });
 
-function sendConsoleText(msg, sessionid)
-{
-    if (sessionid != null)
-    {
+function sendConsoleText(msg, sessionid) {
+    if (sessionid != null) {
         require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: msg, sessionid: sessionid });
     }
-    else
-    {
+    else {
         require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: msg });
     }
 }
 
-function sendAgentMessage(msg, icon)
-{
-    if (sendAgentMessage.messages == null)
-    {
+function sendAgentMessage(msg, icon) {
+    if (sendAgentMessage.messages == null) {
         sendAgentMessage.messages = {};
         sendAgentMessage.nextid = 1;
     }
@@ -57,11 +48,9 @@ function sendAgentMessage(msg, icon)
 }
 
 // Add to the server event log
-function MeshServerLog(msg, state)
-{
+function MeshServerLog(msg, state) {
     if (typeof msg == 'string') { msg = { action: 'log', msg: msg }; } else { msg.action = 'log'; }
-    if (state)
-    {
+    if (state) {
         if (state.userid) { msg.userid = state.userid; }
         if (state.username) { msg.username = state.username; }
         if (state.sessionid) { msg.sessionid = state.sessionid; }
@@ -71,11 +60,9 @@ function MeshServerLog(msg, state)
 }
 
 // Add to the server event log, use internationalized events
-function MeshServerLogEx(id, args, msg, state)
-{
+function MeshServerLogEx(id, args, msg, state) {
     var msg = { action: 'log', msgid: id, msgArgs: args, msg: msg };
-    if (state)
-    {
+    if (state) {
         if (state.userid) { msg.userid = state.userid; }
         if (state.username) { msg.username = state.username; }
         if (state.sessionid) { msg.sessionid = state.sessionid; }
@@ -84,17 +71,13 @@ function MeshServerLogEx(id, args, msg, state)
     require('MeshAgent').SendCommand(msg);
 }
 
-function pathjoin()
-{
+function pathjoin() {
     var x = [];
-    for (var i in arguments)
-    {
+    for (var i in arguments) {
         var w = arguments[i];
-        if (w != null)
-        {
+        if (w != null) {
             while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); }
-            if (i != 0)
-            {
+            if (i != 0) {
                 while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); }
             }
             x.push(w);
@@ -106,9 +89,70 @@ function pathjoin()
 // Replace a string with a number if the string is an exact number
 function toNumberIfNumber(x) { if ((typeof x == 'string') && (+parseInt(x) === x)) { x = parseInt(x); } return x; }
 
+function linux_execv(name, agentfilename, sessionid) {
+    var libs = require('monitor-info').getLibInfo('libc');
+    var libc = null;
 
-function bsd_execv(name, agentfilename, sessionid)
-{
+    while (libs.length > 0) {
+        try {
+            libc = require('_GenericMarshal').CreateNativeProxy(libs.pop().path);
+            break;
+        }
+        catch (e) {
+            libc = null;
+            continue;
+        }
+    }
+    if (libc != null) {
+        try {
+            libc.CreateMethod('execv');
+        }
+        catch (e) {
+            libc = null;
+        }
+    }
+
+    if (libc == null) {
+        // Couldn't find libc.so, fallback to using service manager to restart agent
+        if (sessionid != null) { sendConsoleText('Restarting service via service-manager...', sessionid) }
+        try {
+            // restart service
+            var s = require('service-manager').manager.getService(name);
+            s.restart();
+        }
+        catch (zz) {
+            sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
+            sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+        }
+        return;
+    }
+
+    if (sessionid != null) { sendConsoleText('Restarting service via execv()...', sessionid) }
+
+    var i;
+    var args;
+    var argarr = [];
+    var path = require('_GenericMarshal').CreateVariable(process.execPath);
+
+    if (require('MeshAgent').getStartupOptions != null) {
+        var options = require('MeshAgent').getStartupOptions();
+        for (i in options) {
+            argarr.push('--' + i + '="' + options[i] + '"');
+        }
+    }
+
+    args = require('_GenericMarshal').CreateVariable((1 + argarr.length) * require('_GenericMarshal').PointerSize);
+    for (i = 0; i < argarr.length; ++i) {
+        var arg = require('_GenericMarshal').CreateVariable(argarr[i]);
+        arg.pointerBuffer().copy(args.toBuffer(), i * require('_GenericMarshal').PointerSize);
+    }
+
+    libc.execv(path, args);
+    if (sessionid != null) { sendConsoleText('Self Update failed because execv() failed', sessionid) }
+    sendAgentMessage('Self Update failed because execv() failed', 3);
+}
+
+function bsd_execv(name, agentfilename, sessionid) {
     var child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
     child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
@@ -123,21 +167,18 @@ function bsd_execv(name, agentfilename, sessionid)
     child.stdin.write(' }');
     child.stdin.write("}'\nexit\n");
     child.waitExit();
-    if (child.stdout.str.trim() == '')
-    {
+    if (child.stdout.str.trim() == '') {
         if (sessionid != null) { sendConsoleText('Self Update failed because cannot find libc.so', sessionid) }
         sendAgentMessage('Self Update failed because cannot find libc.so', 3);
         return;
     }
 
     var libc = null;
-    try
-    {
+    try {
         libc = require('_GenericMarshal').CreateNativeProxy(child.stdout.str.trim());
         libc.CreateMethod('execv');
     }
-    catch(e)
-    {
+    catch (e) {
         if (sessionid != null) { sendConsoleText('Self Update failed: ' + e.toString(), sessionid) }
         sendAgentMessage('Self Update failed: ' + e.toString(), 3);
         return;
@@ -148,32 +189,28 @@ function bsd_execv(name, agentfilename, sessionid)
     var argarr = [];
     var args;
     var options = require('MeshAgent').getStartupOptions();
-    for(i in options)
-    {
+    for (i in options) {
         argarr.push('--' + i + '="' + options[i] + '"');
     }
     args = require('_GenericMarshal').CreateVariable((1 + argarr.length) * require('_GenericMarshal').PointerSize);
-    for (i = 0; i < argarr.length; ++i)
-    {
+    for (i = 0; i < argarr.length; ++i) {
         var arg = require('_GenericMarshal').CreateVariable(argarr[i]);
         arg.pointerBuffer().copy(args.toBuffer(), i * require('_GenericMarshal').PointerSize);
     }
-    
+
+    if (sessionid != null) { sendConsoleText('Restarting service via service-manager', sessionid) }
     libc.execv(path, args);
     if (sessionid != null) { sendConsoleText('Self Update failed because execv() failed', sessionid) }
     sendAgentMessage('Self Update failed because execv() failed', 3);
 }
 
-function windows_execve(name, agentfilename, sessionid)
-{
+function windows_execve(name, agentfilename, sessionid) {
     var libc;
-    try
-    {
+    try {
         libc = require('_GenericMarshal').CreateNativeProxy('msvcrt.dll');
         libc.CreateMethod('_wexecve');
     }
-    catch (xx)
-    {
+    catch (xx) {
         sendConsoleText('Self Update failed because msvcrt.dll is missing', sessionid);
         sendAgentMessage('Self Update failed because msvcrt.dll is missing', 3);
         return;
@@ -191,43 +228,33 @@ function windows_execve(name, agentfilename, sessionid)
 }
 
 // Start a JavaScript based Agent Self-Update
-function agentUpdate_Start(updateurl, updateoptions)
-{
-    sendConsoleText('agentUpdate_Start: ' + updateurl + ', ' + JSON.stringify(updateoptions));
-
+function agentUpdate_Start(updateurl, updateoptions) {
     // If this value is null
     var sessionid = (updateoptions != null) ? updateoptions.sessionid : null; // If this is null, messages will be broadcast. Otherwise they will be unicasted
 
-    if (this._selfupdate != null)
-    {
+    if (this._selfupdate != null) {
         // We were already called, so we will ignore this duplicate request
         if (sessionid != null) { sendConsoleText('Self update already in progress...', sessionid); }
     }
-    else
-    {
-        if (require('MeshAgent').ARCHID == null && updateurl == null)
-        {
+    else {
+        if (require('MeshAgent').ARCHID == null && updateurl == null) {
             // This agent doesn't have the ability to tell us which ARCHID it is, so we don't know which agent to pull
             sendConsoleText('Unable to initiate update, agent ARCHID is not defined', sessionid);
         }
-        else
-        {
+        else {
             var agentfilename = process.execPath.split(process.platform == 'win32' ? '\\' : '/').pop(); // Local File Name, ie: MeshAgent.exe
             var name = require('MeshAgent').serviceName;
             if (name == null) { name = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'; }      // This is an older agent that doesn't expose the service name, so use the default
-            try
-            {
+            try {
                 var s = require('service-manager').manager.getService(name);
-                if (!s.isMe())
-                {
+                if (!s.isMe()) {
                     if (process.platform == 'win32') { s.close(); }
                     sendConsoleText('Self Update cannot continue, this agent is not an instance of (' + name + ')', sessionid);
                     return;
                 }
                 if (process.platform == 'win32') { s.close(); }
             }
-            catch (zz)
-            {
+            catch (zz) {
                 sendConsoleText('Self Update Failed because this agent is not an instance of (' + name + ')', sessionid);
                 sendAgentMessage('Self Update Failed because this agent is not an instance of (' + name + ')', 3);
                 return;
@@ -238,65 +265,47 @@ function agentUpdate_Start(updateurl, updateoptions)
             options.protocol = 'https:';
             if (updateurl == null) { options.path = ('/meshagents?id=' + require('MeshAgent').ARCHID); }
             options.rejectUnauthorized = false;
-            options.checkServerIdentity = function checkServerIdentity(certs)
-            {
+            options.checkServerIdentity = function checkServerIdentity(certs) {
                 // If the tunnel certificate matches the control channel certificate, accept the connection
                 try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { }
                 try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { }
 
                 // Check that the certificate is the one expected by the server, fail if not.
-                sendConsoleText('hashx: ' + checkServerIdentity.servertlshash);
                 if (checkServerIdentity.servertlshash == null) {
-                    sendConsoleText('1a');
                     if (require('MeshAgent').ServerInfo == null || require('MeshAgent').ServerInfo.ControlChannelCertificate == null) { return; }
-                    sendConsoleText('1b');
 
                     sendConsoleText('Self Update failed, because the url cannot be verified', sessionid);
                     sendAgentMessage('Self Update failed, because the url cannot be verified', 3);
                     throw new Error('BadCert');
                 }
-                sendConsoleText('2t: ' + checkServerIdentity.servertlshash);
-                sendConsoleText('2y: ' + checkServerIdentity.servertlshash.toLowerCase());
-                sendConsoleText('2z: ' + certs[0].digest);
-                sendConsoleText('2r: ' + certs[0].fingerprint);
+                if (certs[0].digest == null) { return; }
                 if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) {
-                    sendConsoleText('2b');
                     sendConsoleText('Self Update failed, because the supplied certificate does not match', sessionid);
                     sendAgentMessage('Self Update failed, because the supplied certificate does not match', 3);
                     throw new Error('BadCert')
                 }
-                sendConsoleText('3');
             }
             options.checkServerIdentity.servertlshash = (updateoptions != null ? updateoptions.tlshash : null);
-            sendConsoleText('Downloading1: ' + JSON.stringify(options));
-            sendConsoleText('Downloading2: ' + JSON.stringify(updateoptions));
             this._selfupdate = require('https').get(options);
-            this._selfupdate.on('error', function (e)
-            {
+            this._selfupdate.on('error', function (e) {
                 sendConsoleText('Self Update failed, because there was a problem trying to download the update', sessionid);
                 sendAgentMessage('Self Update failed, because there was a problem trying to download the update', 3);
             });
-            this._selfupdate.on('response', function (img)
-            {
+            this._selfupdate.on('response', function (img) {
                 this._file = require('fs').createWriteStream(agentfilename + '.update', { flags: 'wb' });
                 this._filehash = require('SHA384Stream').create();
-                this._filehash.on('hash', function (h)
-                {
-                    if (updateoptions != null && updateoptions.hash != null)
-                    {
-                        if (updateoptions.hash.toLowerCase() == h.toString('hex').toLowerCase())
-                        {
+                this._filehash.on('hash', function (h) {
+                    if (updateoptions != null && updateoptions.hash != null) {
+                        if (updateoptions.hash.toLowerCase() == h.toString('hex').toLowerCase()) {
                             if (sessionid != null) { sendConsoleText('Download complete. HASH verified.', sessionid); }
                         }
-                        else
-                        {
+                        else {
                             sendConsoleText('Self Update FAILED because the downloaded agent FAILED hash check', sessionid);
                             sendAgentMessage('Self Update FAILED because the downloaded agent FAILED hash check', 3);
                             return;
                         }
                     }
-                    else
-                    {
+                    else {
                         sendConsoleText('Download complete. HASH=' + h.toString('hex'), sessionid);
                     }
 
@@ -304,13 +313,11 @@ function agentUpdate_Start(updateurl, updateoptions)
                     try { require('MeshAgent').SendCommand({ action: 'agentupdatedownloaded' }); } catch (e) { }
 
                     if (sessionid != null) { sendConsoleText('Updating and restarting agent...', sessionid); }
-                    if (process.platform == 'win32')
-                    {
+                    if (process.platform == 'win32') {
                         // Use _wexecve() equivalent to perform the update
                         windows_execve(name, agentfilename, sessionid);
                     }
-                    else
-                    {
+                    else {
                         var m = require('fs').statSync(process.execPath).mode;
                         require('fs').chmodSync(process.cwd() + agentfilename + '.update', m);
 
@@ -324,24 +331,24 @@ function agentUpdate_Start(updateurl, updateoptions)
                         // erase update
                         require('fs').unlinkSync(process.cwd() + agentfilename + '.update');
 
-                        if (sessionid != null) { sendConsoleText('Restarting service...', sessionid); }
-                        if (process.platform == 'freebsd')
-                        {
-                            bsd_execv(name, agentfilename, sessionid);
-                        }
-                        else
-                        {
-                            try
-                            {
-                                // restart service
-                                var s = require('service-manager').manager.getService(name);
-                                s.restart();
-                            }
-                            catch (zz)
-                            {
-                                sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
-                                sendAgentMessage('Self Update encountered an error trying to restart service', 3);
-                            }
+                        switch (process.platform) {
+                            case 'freebsd':
+                                bsd_execv(name, agentfilename, sessionid);
+                                break;
+                            case 'linux':
+                                linux_execv(name, agentfilename, sessionid);
+                                break;
+                            default:
+                                try {
+                                    // restart service
+                                    var s = require('service-manager').manager.getService(name);
+                                    s.restart();
+                                }
+                                catch (zz) {
+                                    sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
+                                    sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+                                }
+                                break;
                         }
                     }
                 });
@@ -396,18 +403,14 @@ function splitArgs(str) {
 }
 
 // Parse arguments string array into an object
-function parseArgs(argv)
-{
+function parseArgs(argv) {
     var results = { '_': [] }, current = null;
-    for (var i = 1, len = argv.length; i < len; i++)
-    {
+    for (var i = 1, len = argv.length; i < len; i++) {
         var x = argv[i];
-        if (x.length > 2 && x[0] == '-' && x[1] == '-')
-        {
+        if (x.length > 2 && x[0] == '-' && x[1] == '-') {
             if (current != null) { results[current] = true; }
             current = x.substring(2);
-        } else
-        {
+        } else {
             if (current != null) { results[current] = toNumberIfNumber(x); current = null; } else { results['_'].push(toNumberIfNumber(x)); }
         }
     }
@@ -440,8 +443,7 @@ require('MeshAgent').on('Connected', function () {
 });
 
 // Called when receiving control data on websocket
-function onTunnelControlData(data, ws)
-{
+function onTunnelControlData(data, ws) {
     var obj;
     if (ws == null) { ws = this; }
     if (typeof data == 'string') { try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON: ' + data); return; } }
@@ -449,16 +451,12 @@ function onTunnelControlData(data, ws)
     //sendConsoleText('onTunnelControlData(' + ws.httprequest.protocol + '): ' + JSON.stringify(data));
     //console.log('onTunnelControlData: ' + JSON.stringify(data));
 
-    if (obj.action)
-    {
-        switch (obj.action)
-        {
+    if (obj.action) {
+        switch (obj.action) {
             case 'lock': {
                 // Lock the current user out of the desktop
-                try
-                {
-                    if (process.platform == 'win32')
-                    {
+                try {
+                    if (process.platform == 'win32') {
                         MeshServerLog("Locking remote user out of desktop", ws.httprequest);
                         var child = require('child_process');
                         child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 });
@@ -473,8 +471,7 @@ function onTunnelControlData(data, ws)
         return;
     }
 
-    switch (obj.type)
-    {
+    switch (obj.type) {
         case 'options': {
             // These are additional connection options passed in the control channel.
             //sendConsoleText('options: ' + JSON.stringify(obj));
@@ -494,13 +491,11 @@ function onTunnelControlData(data, ws)
         }
         case 'termsize': {
             // Indicates a change in terminal size
-            if (process.platform == 'win32')
-            {
+            if (process.platform == 'win32') {
                 if (ws.httprequest._dispatcher == null) return;
                 if (ws.httprequest._dispatcher.invoke) { ws.httprequest._dispatcher.invoke('resizeTerminal', [obj.cols, obj.rows]); }
             }
-            else
-            {
+            else {
                 if (ws.httprequest.process == null || ws.httprequest.process.pty == 0) return;
                 if (ws.httprequest.process.tcsetsize) { ws.httprequest.process.tcsetsize(obj.rows, obj.cols); }
             }
@@ -510,23 +505,18 @@ function onTunnelControlData(data, ws)
 }
 
 
-require('MeshAgent').AddCommandHandler(function (data)
-{
-    if (typeof data == 'object')
-    {
+require('MeshAgent').AddCommandHandler(function (data) {
+    if (typeof data == 'object') {
         // If this is a console command, parse it and call the console handler
-        switch (data.action)
-        {
+        switch (data.action) {
             case 'agentupdate':
                 agentUpdate_Start(data.url, { hash: data.hash, tlshash: data.servertlshash, sessionid: data.sessionid });
                 break;
             case 'msg':
                 {
-                    switch (data.type)
-                    {
+                    switch (data.type) {
                         case 'console': { // Process a console command
-                            if (data.value && data.sessionid)
-                            {
+                            if (data.value && data.sessionid) {
                                 var args = splitArgs(data.value);
                                 processConsoleCommand(args[0].toLowerCase(), parseArgs(args), data.rights, data.sessionid);
                             }
@@ -534,23 +524,19 @@ require('MeshAgent').AddCommandHandler(function (data)
                         }
                         case 'tunnel':
                             {
-                                if (data.value != null)
-                                { // Process a new tunnel connection request
+                                if (data.value != null) { // Process a new tunnel connection request
                                     // Create a new tunnel object
-                                    if (data.rights != 4294967295)
-                                    {
+                                    if (data.rights != 4294967295) {
                                         MeshServerLog('Tunnel Error: RecoveryCore requires admin rights for tunnels');
                                         break;
                                     }
 
                                     var xurl = getServerTargetUrlEx(data.value);
-                                    if (xurl != null)
-                                    {
+                                    if (xurl != null) {
                                         var woptions = http.parseUri(xurl);
                                         woptions.rejectUnauthorized = 0;
                                         woptions.perMessageDeflate = false;
-                                        woptions.checkServerIdentity = function checkServerIdentity(certs)
-                                        {
+                                        woptions.checkServerIdentity = function checkServerIdentity(certs) {
                                             // If the tunnel certificate matches the control channel certificate, accept the connection
                                             try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { }
                                             try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { }
@@ -563,13 +549,10 @@ require('MeshAgent').AddCommandHandler(function (data)
 
                                         //sendConsoleText(JSON.stringify(woptions));
                                         var tunnel = http.request(woptions);
-                                        tunnel.on('upgrade', function (response, s, head)
-                                        {
-                                            if (require('MeshAgent').idleTimeout != null)
-                                            {
+                                        tunnel.on('upgrade', function (response, s, head) {
+                                            if (require('MeshAgent').idleTimeout != null) {
                                                 s.setTimeout(require('MeshAgent').idleTimeout * 1000);
-                                                s.on('timeout', function ()
-                                                {
+                                                s.on('timeout', function () {
                                                     this.ping();
                                                     this.setTimeout(require('MeshAgent').idleTimeout * 1000);
                                                 });
@@ -578,8 +561,7 @@ require('MeshAgent').AddCommandHandler(function (data)
                                             this.s = s;
                                             s.httprequest = this;
                                             s.tunnel = this;
-                                            s.on('end', function ()
-                                            {
+                                            s.on('end', function () {
                                                 if (tunnels[this.httprequest.index] == null) return; // Stop duplicate calls.
 
                                                 // If there is a upload or download active on this connection, close the file
@@ -592,18 +574,14 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                 // Clean up WebSocket
                                                 this.removeAllListeners('data');
                                             });
-                                            s.on('data', function (data)
-                                            {
+                                            s.on('data', function (data) {
                                                 // If this is upload data, save it to file
-                                                if ((this.httprequest.uploadFile) && (typeof data == 'object') && (data[0] != 123))
-                                                {
+                                                if ((this.httprequest.uploadFile) && (typeof data == 'object') && (data[0] != 123)) {
                                                     // Save the data to file being uploaded.
-                                                    if (data[0] == 0)
-                                                    {
+                                                    if (data[0] == 0) {
                                                         // If data starts with zero, skip the first byte. This is used to escape binary file data from JSON.
                                                         try { fs.writeSync(this.httprequest.uploadFile, data, 1, data.length - 1); } catch (e) { sendConsoleText('FileUpload Error'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
-                                                    } else
-                                                    {
+                                                    } else {
                                                         // If data does not start with zero, save as-is.
                                                         try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { sendConsoleText('FileUpload Error'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
                                                     }
@@ -611,22 +589,18 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                     return;
                                                 }
 
-                                                if (this.httprequest.state == 0)
-                                                {
+                                                if (this.httprequest.state == 0) {
                                                     // Check if this is a relay connection
                                                     if ((data == 'c') || (data == 'cr')) { this.httprequest.state = 1; /*sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid);*/ }
                                                 }
-                                                else
-                                                {
+                                                else {
                                                     // Handle tunnel data
-                                                    if (this.httprequest.protocol == 0)
-                                                    {   // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user), 10 = FileTransfer
+                                                    if (this.httprequest.protocol == 0) {   // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user), 10 = FileTransfer
                                                         // Take a look at the protocol
                                                         if ((data.length > 3) && (data[0] == '{')) { onTunnelControlData(data, this); return; }
                                                         this.httprequest.protocol = parseInt(data);
                                                         if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
-                                                        if (this.httprequest.protocol == 10)
-                                                        {
+                                                        if (this.httprequest.protocol == 10) {
                                                             //
                                                             // Basic file transfer
                                                             //
@@ -634,50 +608,42 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                             if ((process.platform != 'win32') && (this.httprequest.xoptions.file.startsWith('/') == false)) { this.httprequest.xoptions.file = '/' + this.httprequest.xoptions.file; }
                                                             try { stats = require('fs').statSync(this.httprequest.xoptions.file) } catch (e) { }
                                                             try { if (stats) { this.httprequest.downloadFile = fs.createReadStream(this.httprequest.xoptions.file, { flags: 'rbN' }); } } catch (e) { }
-                                                            if (this.httprequest.downloadFile)
-                                                            {
+                                                            if (this.httprequest.downloadFile) {
                                                                 //sendConsoleText('BasicFileTransfer, ok, ' + this.httprequest.xoptions.file + ', ' + JSON.stringify(stats));
                                                                 this.write(JSON.stringify({ op: 'ok', size: stats.size }));
                                                                 this.httprequest.downloadFile.pipe(this);
                                                                 this.httprequest.downloadFile.end = function () { }
-                                                            } else
-                                                            {
+                                                            } else {
                                                                 //sendConsoleText('BasicFileTransfer, cancel, ' + this.httprequest.xoptions.file);
                                                                 this.write(JSON.stringify({ op: 'cancel' }));
                                                             }
                                                         }
-                                                        else if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 8) || (this.httprequest.protocol == 9))
-                                                        {
+                                                        else if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 8) || (this.httprequest.protocol == 9)) {
                                                             //
                                                             // Remote Terminal
                                                             //
-                                                            if (process.platform == "win32")
-                                                            {
+                                                            if (process.platform == "win32") {
                                                                 var cols = 80, rows = 25;
-                                                                if (this.httprequest.xoptions)
-                                                                {
+                                                                if (this.httprequest.xoptions) {
                                                                     if (this.httprequest.xoptions.rows) { rows = this.httprequest.xoptions.rows; }
                                                                     if (this.httprequest.xoptions.cols) { cols = this.httprequest.xoptions.cols; }
                                                                 }
 
                                                                 // Admin Terminal
-                                                                if (require('win-virtual-terminal').supported)
-                                                                {
+                                                                if (require('win-virtual-terminal').supported) {
                                                                     // ConPTY PseudoTerminal
                                                                     // this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
 
                                                                     // The above line is commented out, because there is a bug with ClosePseudoConsole() API, so this is the workaround
                                                                     this.httprequest._dispatcher = require('win-dispatcher').dispatch({ modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: 'Start', args: [cols, rows] } });
                                                                     this.httprequest._dispatcher.ws = this;
-                                                                    this.httprequest._dispatcher.on('connection', function (c)
-                                                                    {
+                                                                    this.httprequest._dispatcher.on('connection', function (c) {
                                                                         this.ws._term = c;
                                                                         c.pipe(this.ws, { dataTypeSkip: 1 });
                                                                         this.ws.pipe(c, { dataTypeSkip: 1 });
                                                                     });
                                                                 }
-                                                                else
-                                                                {
+                                                                else {
                                                                     // Legacy Terminal
                                                                     this.httprequest._term = require('win-terminal').Start(80, 25);
                                                                     this.httprequest._term.pipe(this, { dataTypeSkip: 1 });
@@ -685,22 +651,18 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                                     this.prependListener('end', function () { this.httprequest._term.end(function () { sendConsoleText('Terminal was closed'); }); });
                                                                 }
                                                             }
-                                                            else
-                                                            {
+                                                            else {
                                                                 var env = { HISTCONTROL: 'ignoreboth' };
-                                                                if (this.httprequest.xoptions)
-                                                                {
+                                                                if (this.httprequest.xoptions) {
                                                                     if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
                                                                     if (this.httprequest.xoptions.cols) { env.COLUMNS = ('' + this.httprequest.xoptions.cols); }
                                                                 }
                                                                 var options = { type: childProcess.SpawnTypes.TERM, env: env };
 
-                                                                if (require('fs').existsSync('/bin/bash'))
-                                                                {
+                                                                if (require('fs').existsSync('/bin/bash')) {
                                                                     this.httprequest.process = childProcess.execFile('/bin/bash', ['bash'], options); // Start bash
                                                                 }
-                                                                else
-                                                                {
+                                                                else {
                                                                     this.httprequest.process = childProcess.execFile('/bin/sh', ['sh'], options); // Start sh
                                                                 }
 
@@ -715,8 +677,7 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                             }
                                                         }
                                                     }
-                                                    else if (this.httprequest.protocol == 5)
-                                                    {
+                                                    else if (this.httprequest.protocol == 5) {
                                                         // Process files commands
                                                         var cmd = null;
                                                         try { cmd = JSON.parse(data); } catch (e) { };
@@ -729,8 +690,7 @@ require('MeshAgent').AddCommandHandler(function (data)
 
                                                         if ((cmd.path != null) && (process.platform != 'win32') && (cmd.path[0] != '/')) { cmd.path = '/' + cmd.path; } // Add '/' to paths on non-windows
                                                         //console.log(objToString(cmd, 0, ' '));
-                                                        switch (cmd.action)
-                                                        {
+                                                        switch (cmd.action) {
                                                             case 'ls':
                                                                 // Send the folder content to the browser
                                                                 var response = getDirectoryInfo(cmd.path);
@@ -746,8 +706,7 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                             case 'rm':
                                                                 {
                                                                     // Delete, possibly recursive delete
-                                                                    for (var i in cmd.delfiles)
-                                                                    {
+                                                                    for (var i in cmd.delfiles) {
                                                                         try { deleteFolderRecursive(path.join(cmd.path, cmd.delfiles[i]), cmd.rec); } catch (e) { }
                                                                     }
                                                                     break;
@@ -782,15 +741,11 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                                 {
                                                                     // Download a file
                                                                     var sendNextBlock = 0;
-                                                                    if (cmd.sub == 'start')
-                                                                    { // Setup the download
-                                                                        if ((cmd.path == null) && (cmd.ask == 'coredump'))
-                                                                        { // If we are asking for the coredump file, set the right path.
-                                                                            if (process.platform == 'win32')
-                                                                            {
+                                                                    if (cmd.sub == 'start') { // Setup the download
+                                                                        if ((cmd.path == null) && (cmd.ask == 'coredump')) { // If we are asking for the coredump file, set the right path.
+                                                                            if (process.platform == 'win32') {
                                                                                 if (fs.existsSync(process.coreDumpLocation)) { cmd.path = process.coreDumpLocation; }
-                                                                            } else
-                                                                            {
+                                                                            } else {
                                                                                 if ((process.cwd() != '//') && fs.existsSync(process.cwd() + 'core')) { cmd.path = process.cwd() + 'core'; }
                                                                             }
                                                                         }
@@ -799,13 +754,11 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                                         this.filedownload = { id: cmd.id, path: cmd.path, ptr: 0 }
                                                                         try { this.filedownload.f = fs.openSync(this.filedownload.path, 'rbN'); } catch (e) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
                                                                         if (this.filedownload) { this.write({ action: 'download', sub: 'start', id: cmd.id }); }
-                                                                    } else if ((this.filedownload != null) && (cmd.id == this.filedownload.id))
-                                                                    { // Download commands
+                                                                    } else if ((this.filedownload != null) && (cmd.id == this.filedownload.id)) { // Download commands
                                                                         if (cmd.sub == 'startack') { sendNextBlock = ((typeof cmd.ack == 'number') ? cmd.ack : 8); } else if (cmd.sub == 'stop') { delete this.filedownload; } else if (cmd.sub == 'ack') { sendNextBlock = 1; }
                                                                     }
                                                                     // Send the next download block(s)
-                                                                    while (sendNextBlock > 0)
-                                                                    {
+                                                                    while (sendNextBlock > 0) {
                                                                         sendNextBlock--;
                                                                         var buf = Buffer.alloc(16384);
                                                                         var len = fs.readSync(this.filedownload.f, buf, 4, 16380, null);
@@ -831,8 +784,7 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                             case 'uploaddone':
                                                                 {
                                                                     // Indicates that an upload is done
-                                                                    if (this.httprequest.uploadFile)
-                                                                    {
+                                                                    if (this.httprequest.uploadFile) {
                                                                         fs.closeSync(this.httprequest.uploadFile);
                                                                         this.write(Buffer.from(JSON.stringify({ action: 'uploaddone', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
                                                                         delete this.httprequest.uploadFile;
@@ -844,8 +796,7 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                             case 'uploadcancel':
                                                                 {
                                                                     // Indicates that an upload is canceled
-                                                                    if (this.httprequest.uploadFile)
-                                                                    {
+                                                                    if (this.httprequest.uploadFile) {
                                                                         fs.closeSync(this.httprequest.uploadFile);
                                                                         fs.unlinkSync(this.httprequest.uploadFilePath);
                                                                         this.write(Buffer.from(JSON.stringify({ action: 'uploadcancel', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
@@ -857,8 +808,7 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                                 }
                                                             case 'copy': {
                                                                 // Copy a bunch of files from scpath to dspath
-                                                                for (var i in cmd.names)
-                                                                {
+                                                                for (var i in cmd.names) {
                                                                     var sc = path.join(cmd.scpath, cmd.names[i]), ds = path.join(cmd.dspath, cmd.names[i]);
                                                                     if (sc != ds) { try { fs.copyFileSync(sc, ds); } catch (e) { } }
                                                                 }
@@ -866,8 +816,7 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                             }
                                                             case 'move': {
                                                                 // Move a bunch of files from scpath to dspath
-                                                                for (var i in cmd.names)
-                                                                {
+                                                                for (var i in cmd.names) {
                                                                     var sc = path.join(cmd.scpath, cmd.names[i]), ds = path.join(cmd.dspath, cmd.names[i]);
                                                                     if (sc != ds) { try { fs.copyFileSync(sc, ds); fs.unlinkSync(sc); } catch (e) { } }
                                                                 }
@@ -931,11 +880,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'eval':
                 { // Eval JavaScript
-                    if (args['_'].length < 1)
-                    {
+                    if (args['_'].length < 1) {
                         response = 'Proper usage: eval "JavaScript code"'; // Display correct command usage
-                    } else
-                    {
+                    } else {
                         response = JSON.stringify(require('MeshAgent').eval(args['_'][0])); // This can only be run by trusted administrator.
                     }
                     break;
@@ -949,12 +896,10 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'osinfo': { // Return the operating system information
                 var i = 1;
                 if (args['_'].length > 0) { i = parseInt(args['_'][0]); if (i > 8) { i = 8; } response = 'Calling ' + i + ' times.'; }
-                for (var j = 0; j < i; j++)
-                {
+                for (var j = 0; j < i; j++) {
                     var pr = require('os').name();
                     pr.sessionid = sessionid;
-                    pr.then(function (v)
-                    {
+                    pr.then(function (v) {
                         sendConsoleText("OS: " + v + (process.platform == 'win32' ? (require('win-virtual-terminal').supported ? ' [ConPTY: YES]' : ' [ConPTY: NO]') : ''), this.sessionid);
                     });
                 }
