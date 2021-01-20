@@ -337,6 +337,28 @@
                   "uniqueItems": true
                 }
               },
+              "TlsRootCert": {
+                "description": "Specifies a certificate and private key to use to issue Intel AMT TLS certificates. By default the MeshCentral self-signed root certificate is used.",
+                "type": "object",
+                "properties": {
+                  "certpfx": {
+                    "description": "Name of the certificate file that is in .p12 or .pfx format in meshcentral-data, use this with certpfxpass.",
+                    "type": "string"
+                  },
+                  "certpfxpass": {
+                    "description": "Password for the file specified in certpfx.",
+                    "type": "string"
+                  },
+                  "certfile": {
+                    "description": "Name of the certificate file in PEM format located in meshcentral-data. Using this with keyfile.",
+                    "type": "string"
+                  },
+                  "keyfile": {
+                    "description": "Name of the private key file in PEM format located in meshcentral-data. Using this with certfile.",
+                    "type": "string"
+                  }
+                }
+              },
               "WifiProfiles": {
                 "description": "List of WIFI profiles to setup in any managed Intel AMT device with a WIFI network interface.",
                 "type": "array",

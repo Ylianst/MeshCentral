@@ -1119,6 +1119,9 @@ function CreateMeshCentralServer(config, args) {
     obj.StartEx1b = function () {
         var i;
 
+        // Setup certificate operations
+        obj.certificateOperations = require('./certoperations.js').CertificateOperations(obj);
+
         // Linux format /var/log/auth.log
         if (obj.config.settings.authlog != null) {
             obj.fs.open(obj.config.settings.authlog, 'a', function (err, fd) {
@@ -1223,6 +1226,20 @@ function CreateMeshCentralServer(config, args) {
                 if (obj.config.domains[i].userconsentflags.fileprompt == true) { flags |= 32; }
                 if (obj.config.domains[i].userconsentflags.desktopprivacybar == true) { flags |= 64; }
                 obj.config.domains[i].userconsentflags = flags;
+            }
+
+            // If we have Intel AMT manager settings, take a look at them here.
+            if (typeof obj.config.domains[i].amtmanager == 'object') {
+                if (typeof obj.config.domains[i].amtmanager.tlsrootcert == 'object') {
+                    obj.config.domains[i].amtmanager.tlsrootcert2 = obj.certificateOperations.loadGenericCertAndKey(obj.config.domains[i].amtmanager.tlsrootcert);
+                    if (obj.config.domains[i].amtmanager.tlsrootcert2 == null) { // Show an error message if needed
+                        if (i == '') {
+                            addServerWarning("Unable to load Intel AMT TLS root certificate for default domain.");
+                        } else {
+                            addServerWarning("Unable to load Intel AMT TLS root certificate for domain " + i + ".");
+                        }
+                    }
+                }
             }
         }
 
@@ -1340,7 +1357,6 @@ function CreateMeshCentralServer(config, args) {
     // Done starting the redirection server, go on to load the server certificates
     obj.StartEx2 = function () {
         // Load server certificates
-        obj.certificateOperations = require('./certoperations.js').CertificateOperations(obj);
         obj.certificateOperations.GetMeshServerCertificate(obj.args, obj.config, function (certs) {
             // Get the current node version
             const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
