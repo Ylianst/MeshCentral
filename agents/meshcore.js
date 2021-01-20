@@ -1287,7 +1287,21 @@ function createMeshCore(agent) {
                     if (results.hardware.windows.partitions) { for (var i in results.hardware.windows.partitions) { delete results.hardware.windows.partitions[i].Node; } }
                 } catch (e) { }
             }
-            if (process.platform == 'win32') { results.pendingReboot = require('win-info').pendingReboot(); } // Pending reboot
+            if (process.platform == 'win32')
+            {
+                results.pendingReboot = require('win-info').pendingReboot(); // Pending reboot
+                if (require('identifiers').volumes != null)
+                {
+                    try
+                    {
+                        results.volumes = require('identifiers').volumes();
+                    }
+                    catch (e)
+                    {
+                    }
+                }
+            } 
+
             /*
             if (process.platform == 'win32') {
                 var defragResult = function (r) {
