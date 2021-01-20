@@ -302,6 +302,17 @@
               "MaxSingleUserSessions": { "type": "integer" }
             }
           },
+          "terminal": {
+            "type": "object",
+            "description": "Values that affect the terminal feature",
+            "properties": {
+              "linuxshell": {
+                "type": "string",
+                "enum": [ "any", "root", "user", "login" ],
+                "default": "any"
+              }
+            }
+          },
           "amtManager": {
             "type": "object",
             "additionalProperties": false,

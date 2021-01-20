@@ -4856,6 +4856,10 @@
                 case 'termConnectButton': {
                     // Terminal connect button context menu
                     if ((currentNode == null) || (currentNode.agent == null)) return true;
+
+                    // If the server has a specific terminal shell mode, don't show connection options
+                    if (serverinfo.linuxshell && (currentNode.agent.id > 4)) return;
+
                     contextelement = elem;
                     var contextmenudiv = document.getElementById('termShellContextMenu'); // Windows options (Power Shell)
                     if (currentNode.agent.id > 4) { contextmenudiv = document.getElementById('termShellContextMenuLinux'); } // Non-Windows options
@@ -8060,6 +8064,13 @@
                         }
                     }
 
+                    // If the server requires a shell type
+                    if ((serverinfo.linuxshell) != null && (currentNode.agent.id > 4)) {
+                        if (serverinfo.linuxshell == 'root') { termoptions.protocol = 1; delete termoptions.requireLogin; }
+                        if (serverinfo.linuxshell == 'user') { termoptions.protocol = 8; delete termoptions.requireLogin; }
+                        if (serverinfo.linuxshell == 'login') { termoptions.protocol = 1; termoptions.requireLogin = true; }
+                    }
+
                     if (args.xterm !== 0) {
                         // Setup a mesh agent xterm terminal
                         QV('termarea3xdiv', true);
@@ -8081,11 +8092,12 @@
                         });
 
                         // Setup a terminal tunnel to the agent
-                        terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel(tunnelUpdate, options), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                        terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel(tunnelUpdate, termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                         terminal.debugmode = debugmode;
                         terminal.m.debugmode = debugmode;
+                        terminal.options = termoptions;
                         terminal.options = { cols: xterm.cols, rows: xterm.rows };
-                        if (options && options.requireLogin) { terminal.options.requireLogin = true; }
+                        if (termoptions.requireLogin) { terminal.options.requireLogin = true; }
                         terminal.Start(terminalNode._id);
                         terminal.onStateChanged = onTerminalStateChange;
                         terminal.contype = 1;

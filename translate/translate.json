@@ -22820,6 +22820,12 @@
       ]
     },
     {
+      "en": "Lock the remote computer",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
+      ]
+    },
+    {
       "cs": "Zamknuto",
       "de": "Gesperrt",
       "en": "Locked",
