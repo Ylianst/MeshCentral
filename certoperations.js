@@ -212,6 +212,30 @@ module.exports.CertificateOperations = function (parent) {
         }
     }
 
+    // Load a generic certificate and key from PFX/P12 or PEM format. Load both keys and attributes.
+    obj.loadGenericCertAndKey = function (config) {
+        if ((typeof config.certpfx == 'string') || (typeof config.certpfxpass == 'string')) {
+            // Load a PFX certificate
+            var r = null;
+            try { r = obj.loadPfxCertificate(parent.getConfigFilePath(config.certpfx), config.certpfxpass); } catch (ex) { console.log(ex); }
+            if ((r != null) && (r.keys.length > 0) && (r.certs.length > 0)) {
+                var attributes = {};
+                for (var j in r.certs[0].subject.attributes) { attributes[r.certs[0].subject.attributes[j].shortName] = r.certs[0].subject.attributes[j].value; }
+                return { cert: obj.pki.certificateToPem(r.certs[0]), key: obj.pki.privateKeyToPem(r.keys[0]), attributes: attributes };
+            }
+        }
+        if ((typeof config.certfile == 'string') || (typeof config.keyfile == 'string')) {
+            // Load a PEM certificate
+            var r = {}
+            r.cert = obj.fs.readFileSync(parent.getConfigFilePath(config.certfile), 'utf8');
+            r.key = obj.fs.readFileSync(parent.getConfigFilePath(config.keyfile), 'utf8');
+            var cert = obj.pki.certificateFromPem(r.cert);
+            r.attributes = {};
+            for (var j in cert.subject.attributes) { r.attributes[cert.subject.attributes[j].shortName] = cert.subject.attributes[j].value; }
+            return r;
+        }
+        return null;
+    }
 
     // Get the setup.bin file
     obj.GetSetupBinFile = function (amtacmactivation, oldmebxpass, newmebxpass, domain, user) {

@@ -862,8 +862,14 @@ module.exports.CreateAmtManager = function (parent) {
                     var serverName = 'MeshCentral';
                     if ((domain != null) && (domain.title != null)) { serverName = domain.title; }
                     const certattributes = { 'CN': commonName, 'O': serverName, 'ST': 'MC', 'C': 'MC' };
-                    const issuerattributes = { 'CN': obj.rootCertCN };
-                    const xxCaPrivateKey = obj.parent.certificates.root.key;
+
+                    // See what root certificate to use to sign the TLS cert
+                    var xxCaPrivateKey = obj.parent.certificates.root.key; // Use our own root by default
+                    var issuerattributes = { 'CN': obj.rootCertCN };
+                    if (domain.amtmanager.tlsrootcert2 != null) {
+                        xxCaPrivateKey = domain.amtmanager.tlsrootcert2.key;
+                        issuerattributes = domain.amtmanager.tlsrootcert2.attributes;
+                    }
 
                     // Set the extended key usages
                     var extKeyUsage = { name: 'extKeyUsage', serverAuth: true, clientAuth: true }
