@@ -531,7 +531,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                     if (peerServerId > obj.parent.serverId) {
                         // We must initiate the connection to the peer
                         userid = null;
-                        if (rsession.peer1.req.session != null) { userid = rsession.peer1.req.session.userid; }
+                        if (rsession.peer1.req.session != null) { userid = rsession.peer1.req.session.userid; } // TODO: Seems like there is a race condition here, need to investigate.
                         obj.createPeerRelay(rsession.peer1.ws, rsession.peer1.req, peerServerId, userid);
                         delete obj.parent.webserver.wsrelays[msg.id];
                     }
