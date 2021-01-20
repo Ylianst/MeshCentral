@@ -1001,7 +1001,19 @@ function createMeshCore(agent) {
                             var cpuuse = require('sysinfo').cpuUtilization();
                             cpuuse.sessionid = data.sessionid;
                             cpuuse.tag = data.tag;
-                            cpuuse.then(function (data) { mesh.SendCommand(JSON.stringify({ action: 'msg', type: 'cpuinfo', cpu: data, memory: require('sysinfo').memUtilization(), sessionid: this.sessionid, tag: this.tag })); }, function (ex) { });
+                            cpuuse.then(function (data)
+                            {
+                                mesh.SendCommand(JSON.stringify(
+                                    {
+                                        action: 'msg',
+                                        type: 'cpuinfo',
+                                        cpu: data,
+                                        memory: require('sysinfo').memUtilization(),
+                                        thermals: require('sysinfo').thermals==null?[]:require('sysinfo').thermals(),
+                                        sessionid: this.sessionid,
+                                        tag: this.tag
+                                    }));
+                            }, function (ex) { });
                             break;
                         case 'localapp':
                             // Send a message to a local application
@@ -3266,8 +3278,14 @@ function createMeshCore(agent) {
                     // CPU & memory utilization
                     pr = require('sysinfo').cpuUtilization();
                     pr.sessionid = sessionid;
-                    pr.then(function (data) {
-                        sendConsoleText(JSON.stringify({ cpu: data, memory: require('sysinfo').memUtilization() }, null, 1), this.sessionid);
+                    pr.then(function (data)
+                    {
+                        sendConsoleText(JSON.stringify(
+                            {
+                                cpu: data,
+                                memory: require('sysinfo').memUtilization(),
+                                thermals: require('sysinfo').thermals == null ? [] : require('sysinfo').thermals()
+                            }, null, 1), this.sessionid);
                     }, function (e) {
                             sendConsoleText(e);
                         });

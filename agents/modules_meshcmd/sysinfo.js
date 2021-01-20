@@ -72,11 +72,11 @@ function windows_cpuUtilization()
             szName = item.Deref(0, GM.PointerSize).Deref();
             if (szName.String == '_Total')
             {
-                u.total = item.Deref(16, 8).toBuffer().readDoubleLE().toFixed(2);
+                u.total = item.Deref(16, 8).toBuffer().readDoubleLE();
             }
             else
             {
-                u.cpus[parseInt(szName.String)] = item.Deref(16, 8).toBuffer().readDoubleLE().toFixed(2);
+                u.cpus[parseInt(szName.String)] = item.Deref(16, 8).toBuffer().readDoubleLE();
             }
         }
 
@@ -99,8 +99,8 @@ function windows_memUtilization()
             MemFree: require('bignum').fromBuffer(info.Deref(16, 8).toBuffer(), { endian: 'little' })
         };
 
-    ret.percentFree = ((ret.MemFree.div(require('bignum')('1048576')).toNumber() / ret.MemTotal.div(require('bignum')('1048576')).toNumber()) * 100).toFixed(2);
-    ret.percentConsumed = ((ret.MemTotal.sub(ret.MemFree).div(require('bignum')('1048576')).toNumber() / ret.MemTotal.div(require('bignum')('1048576')).toNumber()) * 100).toFixed(2);
+    ret.percentFree = ((ret.MemFree.div(require('bignum')('1048576')).toNumber() / ret.MemTotal.div(require('bignum')('1048576')).toNumber()) * 100);//.toFixed(2);
+    ret.percentConsumed = ((ret.MemTotal.sub(ret.MemFree).div(require('bignum')('1048576')).toNumber() / ret.MemTotal.div(require('bignum')('1048576')).toNumber()) * 100);//.toFixed(2);
     ret.MemTotal = ret.MemTotal.toString();
     ret.MemFree = ret.MemFree.toString();
     return (ret);
@@ -123,7 +123,7 @@ function linux_cpuUtilization()
         while (columns[++x] == '');
         for (y = x; y < columns.length; ++y) { sum += parseInt(columns[y]); }
         idle = parseInt(columns[3 + x]);
-        utilization = (100 - ((idle / sum) * 100)).toFixed(2);
+        utilization = (100 - ((idle / sum) * 100)); //.toFixed(2);
         if (!ret.total)
         {
             ret.total = utilization;
@@ -157,8 +157,8 @@ function linux_memUtilization()
                 break;
         }
     }
-    ret.percentFree = ((ret.free / ret.total) * 100).toFixed(2);
-    ret.percentConsumed = (((ret.total - ret.free) / ret.total) * 100).toFixed(2);
+    ret.percentFree = ((ret.free / ret.total) * 100);//.toFixed(2);
+    ret.percentConsumed = (((ret.total - ret.free) / ret.total) * 100);//.toFixed(2);
     return (ret);
 }
 
@@ -205,8 +205,8 @@ function macos_memUtilization()
 
         mem.MemTotal = parseInt(bdown[0].trim().split(' ')[0]);
         mem.MemFree = parseInt(bdown[1].trim().split(' ')[0]);
-        mem.percentFree = ((mem.MemFree / mem.MemTotal) * 100).toFixed(2);
-        mem.percentConsumed = (((mem.MemTotal - mem.MemFree)/ mem.MemTotal) * 100).toFixed(2);
+        mem.percentFree = ((mem.MemFree / mem.MemTotal) * 100);//.toFixed(2);
+        mem.percentConsumed = (((mem.MemTotal - mem.MemFree) / mem.MemTotal) * 100);//.toFixed(2);
         return (mem);
     }
     else
@@ -215,13 +215,33 @@ function macos_memUtilization()
     }
 }
 
+function windows_thermals()
+{
+    var ret = [];
+    child = require('child_process').execFile(process.env['windir'] + '\\System32\\wbem\\wmic.exe', ['wmic', '/namespace:\\\\root\\wmi', 'PATH', 'MSAcpi_ThermalZoneTemperature', 'get', 'CurrentTemperature']);
+    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+    child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
+    child.waitExit();
+
+    if(child.stdout.str.trim!='')
+    {
+        var lines = child.stdout.str.trim().split('\r\n');
+        for (var i = 1; i < lines.length; ++i)
+        {
+            if (lines[i].trim() != '') { ret.push(((parseFloat(lines[i]) / 10) - 273.15).toFixed(2)); }
+        }
+    }
+    return (ret);
+}
+
+
 switch(process.platform)
 {
     case 'linux':
         module.exports = { cpuUtilization: linux_cpuUtilization, memUtilization: linux_memUtilization };
         break;
     case 'win32':
-        module.exports = { cpuUtilization: windows_cpuUtilization, memUtilization: windows_memUtilization };
+        module.exports = { cpuUtilization: windows_cpuUtilization, memUtilization: windows_memUtilization, thermals: windows_thermals };
         break;
     case 'darwin':
         module.exports = { cpuUtilization: macos_cpuUtilization, memUtilization: macos_memUtilization };
