@@ -869,6 +869,8 @@ module.exports.CreateAmtManager = function (parent) {
                     if (domain.amtmanager.tlsrootcert2 != null) {
                         xxCaPrivateKey = domain.amtmanager.tlsrootcert2.key;
                         issuerattributes = domain.amtmanager.tlsrootcert2.attributes;
+                        // TODO: We should change the start and end dates of our issued certificate to at least match the root.
+                        // TODO: We could do one better and auto-renew TLS certificates as needed.
                     }
 
                     // Set the extended key usages
