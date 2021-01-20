@@ -2549,7 +2549,7 @@ a {
     -ms-grid-row: 4;
 }
 
-#DeskChatButton, #DeskNotifyButton, #DeskOpenWebButton, #DeskBackgroundButton, #DeskSaveImageButton, #DeskRecordButton, #DeskClipboardInButton, #DeskClipboardOutButton, #DeskRefreshButton {
+#DeskChatButton, #DeskNotifyButton, #DeskOpenWebButton, #DeskBackgroundButton, #DeskSaveImageButton, #DeskRecordButton, #DeskClipboardInButton, #DeskClipboardOutButton, #DeskRefreshButton, #DeskLockButton {
     float: right;
     margin-top: 1px;
     margin-right: 4px;
