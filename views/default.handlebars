@@ -619,6 +619,7 @@
                             <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />&nbsp;
                             <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><img src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskNotifyButton title="Display a notification on the remote computer"><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskLockButton title="Lock the remote computer"><img src='images/icon-lock.png' onclick=deviceLockFunction() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskOpenWebButton title="Open a web address on the remote computer"><img src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskBackgroundButton title="Toggle remote desktop background"><img src='images/icon-background.png' onclick=deviceToggleBackground(event) height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop"><img src='images/icon-camera.png' onclick=deskSaveImage() height=16 width=16 style=padding-top:2px /></span>
@@ -6347,6 +6348,11 @@
             meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: decodeURIComponent('{{{extitle}}}'), msg: Q('d2devToast').value });
         }
 
+        function deviceLockFunction() {
+            if (xxdialogMode) return;
+            if ((desktop != null) && (desktop.contype == 1)) { desktop.sendCtrlMsg('{"action":"lock"}'); } // Lock desktop
+        }
+
         function showShareDevice() {
             if (xxdialogMode) return;
             var y = '', x = "Creates a link that allows a guest without an account to remote control this device for a limited time." + '<br /><br />';
@@ -6949,7 +6955,8 @@
             QV('DeskRecordButton', (deskState == 3) && (Q('Desk')['toBlob'] != null) && (desktop.m.StartRecording != null));
             QV('DeskChatButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
             QV('DeskNotifyButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (currentNode.agent) && online);
-
+            //QV('DeskLockButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (currentNode.agent) && (deskState == 3));
+            QV('DeskLockButton', false); // TODO: Work on adding remote desktop lock feature.
             QV('DeskToolsButton', (inputAllowed) && (currentNode.agent) && online);
             QV('DeskOpenWebButton', (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
             QV('DeskBackgroundButton', (deskState == 3) && (desktop.contype == 1) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && online);
