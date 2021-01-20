@@ -12,7 +12,7 @@ var agents = {
     'meshagent_osx-x86-64': 16,
     'meshagent_poky64': 18,
     'meshagent_x86_nokvm': 19,
-    'meshagent_x86-64_nokvm': 20,
+    'meshagent_x86-64_nokvm': 20, 
     'meshagent_arm-linaro': 24,
     'meshagent_armhf': 25,
     'meshagent_arm64': 26,

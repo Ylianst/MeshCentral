@@ -167,7 +167,7 @@
           "meshQuota": { "type": "integer" },
           "loginKey": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": null, "description": "Requires that users add the value ?key=xxx in the URL in order to see the web site." },
           "minify": { "type": "boolean", "default": false, "description": "When enabled, the server will send reduced sided web pages." },
-          "newAccounts": { "type": "boolean" },
+          "newAccounts": { "type": "boolean", "default": false, "description": "When set to true, allow new user accounts to be created from the login page." },
           "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
           "userNameIsEmail": { "type": "boolean", "default": false, "description": "When enabled, the username of each account is also the email address of the account." },
           "newAccountEmailDomains": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
@@ -177,6 +177,7 @@
           "hide": { "type": "integer", "default": 0 },
           "footer": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is logged in." },
           "loginfooter": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is not logged in." },
+          "guestDeviceSharing": { "type": "boolean", "default": true, "description": "When set to false, the desktop/terminal sharing link feature is not available." },
           "certUrl": {
             "type": "string",
             "format": "uri",

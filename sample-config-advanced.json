@@ -127,6 +127,7 @@
       "_userQuota": 1048576,
       "_meshQuota": 248576,
       "minify": true,
+      "_guestDeviceSharing" : false,
       "_loginKey": [ "abc", "123" ],
       "_newAccounts": true,
       "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],

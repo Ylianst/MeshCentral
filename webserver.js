@@ -3033,6 +3033,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = getDomain(req, res);
         if (domain == null) { return; }
         if (req.query.c == null) { res.sendStatus(404); return; }
+        if (domain.guestdevicesharing === false) { res.sendStatus(404); return; } // This feature is not allowed.
 
         // Check the inbound desktop sharing cookie
         var c = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey, 60); // 60 minute timeout
@@ -3071,6 +3072,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = getDomain(req, res);
         if (domain == null) { return; }
         if (req.query.c == null) { res.sendStatus(404); return; }
+        if (domain.guestdevicesharing === false) { res.sendStatus(404); return; } // This feature is not allowed.
 
         // Check the inbound desktop sharing cookie
         var c = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey, 60); // 60 minute timeout

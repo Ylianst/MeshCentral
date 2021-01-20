@@ -460,6 +460,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             serverinfo.https = true;
             serverinfo.redirport = args.redirport;
+            if (domain.guestdevicesharing === false) { serverinfo.guestdevicesharing = false; }
             if (typeof domain.userconsentflags == 'number') { serverinfo.consent = domain.userconsentflags; }
             if ((typeof domain.usersessionidletimeout == 'number') && (domain.usersessionidletimeout > 0)) { serverinfo.timeout = (domain.usersessionidletimeout * 60 * 1000); }
             if (user.siteadmin === SITERIGHT_ADMIN) {
@@ -4682,6 +4683,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'deviceShares': {
+                if (domain.guestdevicesharing === false) return; // This feature is not allowed.
                 var err = null;
 
                 // Argument validation
@@ -4733,6 +4735,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'removeDeviceShare': {
+                if (domain.guestdevicesharing === false) return; // This feature is not allowed.
                 var err = null;
 
                 // Argument validation
@@ -4797,6 +4800,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'createDeviceShareLink': {
+                if (domain.guestdevicesharing === false) return; // This feature is not allowed.
                 var err = null;
 
                 // Argument validation
