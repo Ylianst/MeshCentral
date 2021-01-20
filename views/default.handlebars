@@ -2603,7 +2603,7 @@
                                     for (var i in webstate) { localStorage.setItem(i, webstate[i]); }
 
                                     // Update the web page
-                                    if ((webstate.deskAspectRatio != null) && (webstate.deskAspectRatio != deskAspectRatio)) { deskAspectRatio = webstate.deskAspectRatio; deskAdjust(); }
+                                    //if ((webstate.deskAspectRatio != null) && (webstate.deskAspectRatio != deskAspectRatio)) { deskAspectRatio = webstate.deskAspectRatio; deskAdjust(); }
                                     if ((webstate.showRealNames != null) && (webstate.showRealNames != oldShowRealNames)) { showRealNames = Q('RealNameCheckBox').checked = (webstate.showRealNames == '1'); mainUpdate(6); }
                                     if ((webstate.uiMode != null) && (webstate.uiMode != oldUiMode)) { userInterfaceSelectMenu(parseInt(webstate.uiMode)); }
                                     if ((webstate.sort != null) && (webstate.sort != oldSort)) { document.getElementById('sortselect').selectedIndex = sort = parseInt(webstate.sort); mainUpdate(6); }
