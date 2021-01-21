@@ -4186,7 +4186,7 @@ function createMeshCore(agent) {
                     {
                         require('MeshAgent')._securitycenter = require('win-securitycenter').status();
                         meshCoreObj['windowsSecurityCenter'] = require('MeshAgent')._securitycenter;
-                        require('MeshAgent').SendCommand({ windowsSecurityCenter: require('MeshAgent')._securitycenter });
+                        require('MeshAgent').SendCommand({ action: 'coreinfo', windowsSecurityCenter: require('MeshAgent')._securitycenter });
                     });
                 }
                 catch(e)
