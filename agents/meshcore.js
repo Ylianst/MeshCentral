@@ -4147,14 +4147,17 @@ function createMeshCore(agent) {
     }
 
     // Called periodically to check if we need to send updates to the server
-    function sendPeriodicServerUpdate(flags, force) {
+    function sendPeriodicServerUpdate(flags, force)
+    {
         if (meshServerConnectionState == 0) return; // Not connected to server, do nothing.
         if (!flags) { flags = 0xFFFFFFFF; }
 
         // If we have a connected MEI, get Intel ME information
-        if ((flags & 1) && (amt != null) && (amt.state == 2)) {
+        if ((flags & 1) && (amt != null) && (amt.state == 2))
+        {
             delete meshCoreObj.intelamt;
-            amt.getMeiState(9, function (meinfo) {
+            amt.getMeiState(9, function (meinfo)
+            {
                 meshCoreObj.intelamt = meinfo;
                 meshCoreObj.intelamt.microlms = amt.lmsstate;
                 meshCoreObjChanged();
@@ -4165,17 +4168,40 @@ function createMeshCore(agent) {
         if (flags & 2) { sendNetworkUpdateNagle(false); }
 
         // Update anti-virus information
-        if ((flags & 4) && (process.platform == 'win32')) {
+        if ((flags & 4) && (process.platform == 'win32'))
+        {
             // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
             try { meshCoreObj.av = require('win-info').av(); meshCoreObjChanged(); } catch (e) { av = null; } // Antivirus
             //if (process.platform == 'win32') { try { meshCoreObj.pr = require('win-info').pendingReboot(); meshCoreObjChanged(); } catch (e) { meshCoreObj.pr = null; } } // Pending reboot
         }
+        if (process.platform == 'win32')
+        {
+            if(require('MeshAgent')._securitycenter == null)
+            {
+                try
+                {
+                    require('MeshAgent')._securitycenter = require('win-securitycenter').status();
+                    meshCoreObj['windowsSecurityCenter'] = require('MeshAgent')._securitycenter;
+                    require('win-securitycenter').on('changed', function ()
+                    {
+                        require('MeshAgent')._securitycenter = require('win-securitycenter').status();
+                        meshCoreObj['windowsSecurityCenter'] = require('MeshAgent')._securitycenter;
+                        require('MeshAgent').SendCommand({ windowsSecurityCenter: require('MeshAgent')._securitycenter });
+                    });
+                }
+                catch(e)
+                {
+                }
+            }
+        }
 
         // Send available data right now
-        if (force) {
+        if (force)
+        {
             meshCoreObj = sortObjRec(meshCoreObj);
             var x = JSON.stringify(meshCoreObj);
-            if (x != LastPeriodicServerUpdate) {
+            if (x != LastPeriodicServerUpdate)
+            {
                 LastPeriodicServerUpdate = x;
                 mesh.SendCommand(meshCoreObj);
             }
@@ -4186,11 +4212,13 @@ function createMeshCore(agent) {
     var LastPeriodicServerUpdate = null;
     var PeriodicServerUpdateNagleTimer = null;
     function meshCoreObjChanged() { if (PeriodicServerUpdateNagleTimer == null) { PeriodicServerUpdateNagleTimer = setTimeout(meshCoreObjChangedEx, 500); } }
-    function meshCoreObjChangedEx() {
+    function meshCoreObjChangedEx()
+    {
         PeriodicServerUpdateNagleTimer = null;
         meshCoreObj = sortObjRec(meshCoreObj);
         var x = JSON.stringify(meshCoreObj);
-        if (x != LastPeriodicServerUpdate) {
+        if (x != LastPeriodicServerUpdate)
+        {
             try { LastPeriodicServerUpdate = x; mesh.SendCommand(meshCoreObj); } catch (ex) { }
         }
     }
