@@ -1497,6 +1497,7 @@ function CreateMeshCentralServer(config, args) {
                 obj.multiServer = require('./multiserver.js').CreateMultiServer(obj, obj.args);
                 if (obj.multiServer != null) {
                     if ((obj.db.databaseType != 3) || (obj.db.changeStream != true)) { console.log("ERROR: Multi-server support requires use of MongoDB with ReplicaSet and ChangeStream enabled."); process.exit(0); return; }
+                    if (typeof obj.args.sessionkey != 'string') { console.log("ERROR: Multi-server support requires \"SessionKey\" be set in the settings section of config.json, same key for all servers."); process.exit(0); return; }
                     obj.serverId = obj.multiServer.serverid;
                     for (var serverid in obj.config.peers.servers) { obj.peerConnectivityByNode[serverid] = {}; }
                 }
@@ -1506,7 +1507,7 @@ function CreateMeshCentralServer(config, args) {
 
                 // Set the session length to 60 minutes if not set and set a random key if needed
                 if ((obj.args.sessiontime != null) && ((typeof obj.args.sessiontime != 'number') || (obj.args.sessiontime < 1))) { delete obj.args.sessiontime; }
-                if (!obj.args.sessionkey) { obj.args.sessionkey = buf.toString('hex').toUpperCase(); }
+                if (typeof obj.args.sessionkey != 'string') { obj.args.sessionkey = buf.toString('hex').toUpperCase(); }
 
                 // Create MQTT Broker to hook into webserver and mpsserver
                 if ((typeof obj.config.settings.mqtt == 'object') && (typeof obj.config.settings.mqtt.auth == 'object') && (typeof obj.config.settings.mqtt.auth.keyid == 'string') && (typeof obj.config.settings.mqtt.auth.key == 'string')) { obj.mqttbroker = require("./mqttbroker.js").CreateMQTTBroker(obj, obj.db, obj.args); }
