@@ -463,7 +463,7 @@ module.exports.CreateMultiServer = function (parent, args) {
     // Process a message coming from a peer server
     obj.ProcessPeerServerMessage = function (server, peerServerId, msg) {
         var userid, i;
-        //console.log('ProcessPeerServerMessage', peerServerId, msg);
+        //console.log('ProcessPeerServerMessage', peerServerId, msg.action);
         switch (msg.action) {
             case 'mqtt': {
                 if ((obj.parent.mqttbroker != null) && (msg.nodeid != null)) { obj.parent.mqttbroker.publishNoPeers(msg.nodeid, msg.topic, msg.message); } // Dispatch in the MQTT broker
@@ -531,7 +531,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                     if (peerServerId > obj.parent.serverId) {
                         // We must initiate the connection to the peer
                         userid = null;
-                        if (rsession.peer1.req.session != null) { userid = rsession.peer1.req.session.userid; } // TODO: Seems like there is a race condition here, need to investigate.
+                        if (rsession.peer1.user != null) { userid = rsession.peer1.user._id; }
                         obj.createPeerRelay(rsession.peer1.ws, rsession.peer1.req, peerServerId, userid);
                         delete obj.parent.webserver.wsrelays[msg.id];
                     }
