@@ -2344,7 +2344,10 @@
     },
     {
       "en": "</div></div>",
-      "nl": "</div></div>",
+      "nl": "</div></div>"
+    },
+    {
+      "en": "</div><div><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=margin-top:20px;margin-left:5px;cursor:pointer width=40 height=40 src=\\\"images/android40.png\\\" srcset=\\\"images/android80.png 2x\\\" /></a></div></div>",
       "xloc": [
         "default.handlebars->31->403"
       ]
