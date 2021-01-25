@@ -5762,6 +5762,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Reset to recovery core
                 agent.agentCoreCheck = 1001; // Tell the agent object we are using the recovery core.
                 agent.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
+            } else if (coretype == 'tiny') {
+                // Reset to tiny core
+                agent.agentCoreCheck = 1011; // Tell the agent object we are using the tiny core.
+                agent.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
             } else if (coretype == 'custom') {
                 agent.agentCoreCheck = 1000; // Tell the agent object we are using a custom core.
                 const hash = obj.crypto.createHash('sha384').update(Buffer.from(coredata, 'binary')).digest().toString('binary'); // Perform a SHA384 hash on the core module
