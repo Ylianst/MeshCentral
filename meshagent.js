@@ -161,6 +161,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if ((obj.agentCoreCheck == 1001) || (obj.agentCoreUpdate == true)) {
                         // If the user asked, use the recovery core.
                         corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].rcore;
+                    } else if (obj.agentCoreCheck == 1011) {
+                        // If the user asked, use the tiny core.
+                        corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].tcore;
                     } else if (obj.agentInfo.capabilities & 0x40) {
                         // If this is a recovery agent, use the agent recovery core.
                         corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].arcore;
@@ -174,7 +177,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (corename != null) {
                     const meshcorehash = parent.parent.defaultMeshCoresHash[corename];
                     if (agentMeshCoreHash != meshcorehash) {
-                        if ((obj.agentCoreCheck < 5) || (obj.agentCoreCheck == 1001) || (obj.agentCoreUpdate == true)) {
+                        if ((obj.agentCoreCheck < 5) || (obj.agentCoreCheck == 1001) || (obj.agentCoreCheck == 1011) || (obj.agentCoreUpdate == true)) {
                             if (meshcorehash == null) {
                                 // Clear the core
                                 obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0)); // MeshCommand_CoreModule, ask mesh agent to clear the core

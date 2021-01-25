@@ -4006,6 +4006,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         } else if (command.type == 'recovery') {
                             // Send the recovery core to the agent
                             parent.sendMeshAgentCore(user, domain, node._id, 'recovery');
+                        } else if (command.type == 'tiny') {
+                            // Send the tiny core to the agent
+                            parent.sendMeshAgentCore(user, domain, node._id, 'tiny');
                         } else if ((command.type == 'custom') && (common.validateString(command.path, 1, 2048) == true)) {
                             // Send a mesh agent core to the mesh agent
                             var file = parent.getServerFilePath(user, domain, command.path);
