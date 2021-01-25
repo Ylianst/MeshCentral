@@ -1579,6 +1579,8 @@
                                     if (message.event.node.intelamt.flags != null) { node.intelamt.flags = message.event.node.intelamt.flags; }
                                     if (message.event.node.intelamt.warn != null) { node.intelamt.warn = message.event.node.intelamt.warn; } else { delete node.intelamt.warn; }
                                 }
+                                if (message.event.node.av != null) { node.av = message.event.node.av; }
+                                if (message.event.node.wsc != null) { node.wsc = message.event.node.wsc; }
                                 node.namel = node.name.toLowerCase();
                                 if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                                 if (message.event.node.icon) { node.icon = message.event.node.icon; }
@@ -1588,6 +1590,7 @@
                                 refreshDevice(node._id);
                                 //updateMapMarkers();
                                 updateDevices();
+                                if (currentNode == node) { updateDeviceDetails(); }
 
                                 //if ((currentNode == node) && (xxdialogMode != null) && (xxdialogTag == '@xxmap')) { p10showNodeLocationDialog(); }
                             }
@@ -4293,6 +4296,32 @@
                     var m = hardware.windows.osinfo;
                     if (m.OSArchitecture) { x += addDetailItem("Architecture", EscapeHtml(m.OSArchitecture), s); }
                 }
+
+                // Windows Security Central
+                if (node.wsc) {
+                    var y = [];
+                    if (node.wsc.antiVirus != null) { if (node.wsc.antiVirus == 'OK') { y.push("AV" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("AV" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
+                    if (node.wsc.autoUpdate != null) { if (node.wsc.autoUpdate == 'OK') { y.push("Update" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("Update" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
+                    if (node.wsc.firewall != null) { if (node.wsc.firewall == 'OK') { y.push("Firewall" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("Firewall" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
+                    x += addDetailItem("Windows Security", y.join(', '));
+                }
+
+                // Antivirus
+                if (node.av && node.av.length > 0) {
+                    var y = [];
+                    for (var i in node.av) {
+                        if (node.av[i].product) {
+                            var avx = EscapeHtml(node.av[i].product);
+                            if (node.av[i].enabled !== true) { avx += ' - <span style=color:red>' + "Disabled" + '</span>'; }
+                            if (node.av[i].updated !== true) { avx += ' - <span style=color:red>' + "Out of date" + '</span>'; }
+                            if ((node.av[i].enabled == true) && (node.av[i].updated == true)) { avx += ' - <span style=color:green>' + "OK" + '</span>'; }
+                            y.push(avx);
+                        }
+                    }
+                    x += addDetailItem("Antivirus", y.join('<br />'));
+                }
+
+
                 if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software' }); }
             }
 
@@ -4361,16 +4390,16 @@
                         var iplayer = m[j];
                         if (iplayer.family == 'IPv4') {
                             if (iplayer.gateway && iplayer.netmask) {
-                                x += addDetailItem("IPv4 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
+                                x += addDetailItem("IPv4 Layer", format("{0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
                             } else {
-                                x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(iplayer.address)));
+                                x += addDetailItem("IPv4 Layer", format("{0}", EscapeHtml(iplayer.address)));
                             }
                         }
                         if (iplayer.family == 'IPv6') {
                             if (iplayer.gateway && iplayer.netmask) {
-                                x += addDetailItem("IPv6 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
+                                x += addDetailItem("IPv6 Layer", format("{0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
                             } else {
-                                x += addDetailItem("IPv6 Layer", format("IP: {0}", EscapeHtml(iplayer.address)));
+                                x += addDetailItem("IPv6 Layer", format("{0}", EscapeHtml(iplayer.address)));
                             }
                         }
                     }

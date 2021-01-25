@@ -1576,9 +1576,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                     if ((command.intelamt.UUID != null) && (typeof command.intelamt.UUID == 'string') && (device.intelamt.uuid != command.intelamt.UUID)) { changes.push('AMT uuid'); device.intelamt.uuid = command.intelamt.UUID; change = 1; log = 1; }
                 }
-                if (command.av) {
+                if (command.av != null) { // Antivirus
                     if (!device.av) { device.av = []; }
-                    if ((command.av != null) && (JSON.stringify(device.av) != JSON.stringify(command.av))) { /*changes.push('AV status');*/ device.av = command.av; change = 1; log = 1; }
+                    if (JSON.stringify(device.av) != JSON.stringify(command.av)) { /*changes.push('AV status');*/ device.av = command.av; change = 1; log = 1; }
+                }
+                if (command.wsc != null) { // Windows Security Center
+                    if (!device.wsc) { device.wsc = {}; }
+                    if (JSON.stringify(device.wsc) != JSON.stringify(command.wsc)) { /*changes.push('Windows Security Center status');*/ device.wsc = command.wsc; change = 1; log = 1; }
                 }
 
                 if ((command.users != null) && (Array.isArray(command.users)) && (device.users != command.users)) { device.users = command.users; change = 1; } // Don't save this to the db.
