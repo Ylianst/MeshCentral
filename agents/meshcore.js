@@ -1496,7 +1496,7 @@ function onTunnelClosed() {
     */
 
     // If there is a upload or download active on this connection, close the file
-    if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; delete this.httprequest.uploadFileid; delete this.httprequest.uploadFilePath; }
+    if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; delete this.httprequest.uploadFileid; delete this.httprequest.uploadFilePath; delete this.httprequest.uploadFileSize; }
     if (this.httprequest.downloadFile) { delete this.httprequest.downloadFile; }
 
     // Clean up WebRTC
@@ -1523,9 +1523,11 @@ function onTunnelData(data) {
         // Save the data to file being uploaded.
         if (data[0] == 0) {
             // If data starts with zero, skip the first byte. This is used to escape binary file data from JSON.
+            this.httprequest.uploadFileSize += (data.length - 1);
             try { fs.writeSync(this.httprequest.uploadFile, data, 1, data.length - 1); } catch (e) { sendConsoleText('FileUpload Error'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
         } else {
             // If data does not start with zero, save as-is.
+            this.httprequest.uploadFileSize += data.length;
             try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { sendConsoleText('FileUpload Error'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
         }
         this.write(Buffer.from(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data.
@@ -1552,6 +1554,7 @@ function onTunnelData(data) {
                 try { stats = require('fs').statSync(this.httprequest.xoptions.file) } catch (e) { }
                 try { if (stats) { this.httprequest.downloadFile = fs.createReadStream(this.httprequest.xoptions.file, { flags: 'rbN' }); } } catch (e) { }
                 if (this.httprequest.downloadFile) {
+                    MeshServerLogEx(106, [this.httprequest.xoptions.file, stats.size], 'Download: \"' + this.httprequest.xoptions.file + '\", Size: ' + stats.size, this.httprequest);
                     //sendConsoleText('BasicFileTransfer, ok, ' + this.httprequest.xoptions.file + ', ' + JSON.stringify(stats));
                     this.write(JSON.stringify({ op: 'ok', size: stats.size }));
                     this.httprequest.downloadFile.pipe(this);
@@ -2292,7 +2295,7 @@ function onTunnelData(data) {
                         if (cmd.path == undefined) break;
                         var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
                         this.httprequest.uploadFilePath = filepath;
-                        MeshServerLogEx(50, [filepath], 'Upload: \"' + filepath + '\"', this.httprequest);
+                        this.httprequest.uploadFileSize = 0;
                         try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
                         this.httprequest.uploadFileid = cmd.reqid;
                         if (this.httprequest.uploadFile) { this.write(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
@@ -2302,11 +2305,13 @@ function onTunnelData(data) {
                     {
                         // Indicates that an upload is done
                         if (this.httprequest.uploadFile) {
+                            MeshServerLogEx(105, [this.httprequest.uploadFilePath, this.httprequest.uploadFileSize], 'Upload: \"' + this.httprequest.uploadFilePath + '\", Size: ' + this.httprequest.uploadFileSize, this.httprequest);
                             fs.closeSync(this.httprequest.uploadFile);
                             this.write(Buffer.from(JSON.stringify({ action: 'uploaddone', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
                             delete this.httprequest.uploadFile;
                             delete this.httprequest.uploadFileid;
                             delete this.httprequest.uploadFilePath;
+                            delete this.httprequest.uploadFileSize;
                         }
                         break;
                     }
@@ -2320,6 +2325,7 @@ function onTunnelData(data) {
                             delete this.httprequest.uploadFile;
                             delete this.httprequest.uploadFileid;
                             delete this.httprequest.uploadFilePath;
+                            delete this.httprequest.uploadFileSize;
                         }
                         break;
                     }
