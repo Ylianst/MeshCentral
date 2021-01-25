@@ -2414,9 +2414,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Fetch the web state
             parent.debug('web', 'handleRootRequestEx: success.');
             obj.db.Get('ws' + user._id, function (err, states) {
-                var webstate = (states.length == 1) ? obj.filterUserWebState(states[0].state) : '';
+                var webstate = '';
+                if ((err == null) && (states != null) && (Array.isArray(states)) && (states.length == 1) && (states[0].state != null)) { webstate = obj.filterUserWebState(states[0].state); }
                 if ((webstate == '') && (typeof domain.defaultuserwebstate == 'object')) { webstate = JSON.stringify(domain.defaultuserwebstate); } // User has no web state, use defaults.
-                if (typeof domain.forceduserwebstate == 'object') { // Forces initial user web state is present, use it.
+                if (typeof domain.forceduserwebstate == 'object') { // Forces initial user web state if present, use it.
                     var webstate2 = {};
                     try { if (webstate != '') { webstate2 = JSON.parse(webstate); } } catch (ex) { }
                     for (var i in domain.forceduserwebstate) { webstate2[i] = domain.forceduserwebstate[i]; }
