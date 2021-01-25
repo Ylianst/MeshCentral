@@ -6010,13 +6010,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (i.startsWith('mesh/')) {
                 // Grant access to a device group thru a direct link
                 const m = obj.meshes[i];
-                if ((m) && (m.deleted == null) && ((rights == null) || ((m.rights & rights) != 0))) {
+                if ((m) && (m.deleted == null) && ((rights == null) || ((user.links[i].rights & rights) != 0))) {
                     if (r.indexOf(m) == -1) { r.push(m); }
                 }
             } else if (i.startsWith('ugrp/')) {
                 // Grant access to a device group thru a user group
                 const g = obj.userGroups[i];
-                if (g && (g.links != null) && ((rights == null) || ((g.rights & rights) != 0))) {
+                if (g && (g.links != null) && ((rights == null) || ((user.links[i].rights & rights) != 0))) {
                     for (var j in g.links) {
                         if (j.startsWith('mesh/')) {
                             const m = obj.meshes[j];
@@ -6047,13 +6047,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (i.startsWith('mesh/')) {
                 // Grant access to a device group thru a direct link
                 const m = obj.meshes[i];
-                if ((m) && (m.deleted == null) && ((rights == null) || ((m.rights & rights) != 0))) {
+                if ((m) && (m.deleted == null) && ((rights == null) || ((user.links[i].rights & rights) != 0))) {
                     if (r.indexOf(m._id) == -1) { r.push(m._id); }
                 }
             } else if (i.startsWith('ugrp/')) {
                 // Grant access to a device group thru a user group
                 const g = obj.userGroups[i];
-                if (g && (g.links != null) && ((rights == null) || ((g.rights & rights) != 0))) {
+                if (g && (g.links != null) && ((rights == null) || ((user.links[i].rights & rights) != 0))) {
                     for (var j in g.links) {
                         if (j.startsWith('mesh/')) {
                             const m = obj.meshes[j];
