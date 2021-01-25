@@ -342,9 +342,26 @@ module.exports.CreateMeshMail = function (parent) {
             obj.sendGridServer
                 .send(mailToSend)
                 .then(function () {
+                    obj.sendingMail = false;
                     parent.debug('email', 'SendGrid sending success.');
+                    obj.pendingMails.shift();
+                    obj.retry = 0;
+                    sendNextMail();
                 }, function (error) {
+                    obj.sendingMail = false;
                     parent.debug('email', 'SendGrid sending error: ' + JSON.stringify(error));
+                    obj.retry++;
+                    // Wait and try again
+                    if (obj.retry < 3) {
+                        setTimeout(sendNextMail, 10000);
+                    } else {
+                        // Failed, send the next mail
+                        parent.debug('email', 'SendGrid server failed (Skipping): ' + JSON.stringify(err));
+                        console.log('SendGrid server failed (Skipping): ' + JSON.stringify(err));
+                        obj.pendingMails.shift();
+                        obj.retry = 0;
+                        sendNextMail();
+                    }
                 });
         } else if (obj.smtpServer != null) {
             // SMTP send
