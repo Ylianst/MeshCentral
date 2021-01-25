@@ -157,7 +157,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // We need to check if the core is current. Figure out what core we need.
                 var corename = null;
-                if (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId] != null) {
+                if ((obj.agentInfo != null) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId] != null)) {
                     if ((obj.agentCoreCheck == 1001) || (obj.agentCoreUpdate == true)) {
                         // If the user asked, use the recovery core.
                         corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].rcore;
@@ -1659,7 +1659,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Update the mesh agent tab in the database
     function ChangeAgentTag(tag) {
-        if (obj.agentInfo.capabilities & 0x40) return;
+        if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) return;
         if ((tag != null) && (tag.length == 0)) { tag = null; }
 
         // If the device is pending a change, hold.
