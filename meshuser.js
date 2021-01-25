@@ -50,6 +50,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_NODESKTOP           = 0x00010000;
     const MESHRIGHT_REMOTECOMMAND       = 0x00020000;
     const MESHRIGHT_RESETOFF            = 0x00040000;
+    const MESHRIGHT_GUESTSHARING        = 0x00080000;
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
@@ -4706,13 +4707,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Get the device rights
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                     // If node not found or we don't have remote control, reject.
-                    if ((node == null) || ((rights & 8) == 0)) {
+                    if (node == null) {
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deviceShares', responseid: command.responseid, result: 'Invalid node id' })); } catch (ex) { } }
                         return;
                     }
 
-                    // If there is MESHRIGHT_DESKLIMITEDINPUT or MESHRIGHT_REMOTEVIEWONLY on this account, reject this request.
-                    if ((rights != 0xFFFFFFFF) && ((rights & 4352) != 0)) return;
+                    // If there is MESHRIGHT_DESKLIMITEDINPUT or we don't have MESHRIGHT_GUESTSHARING on this account, reject this request.
+                    if (rights != MESHRIGHT_ADMIN) {
+                        // If we don't have remote control, or have limited input, or don't have guest sharing permission, fail here.
+                        if (((rights & MESHRIGHT_REMOTECONTROL) == 0) || ((rights & MESHRIGHT_DESKLIMITEDINPUT) != 0) || ((rights & MESHRIGHT_GUESTSHARING) == 0)) {
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deviceShares', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } }
+                            return;
+                        }
+                    }
 
                     parent.db.GetAllTypeNodeFiltered([command.nodeid], domain.id, 'deviceshare', null, function (err, docs) {
                         if (err != null) return;
@@ -4759,13 +4766,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Get the device rights
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                     // If node not found or we don't have remote control, reject.
-                    if ((node == null) || ((rights & 8) == 0)) {
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeDeviceShare', responseid: command.responseid, result: 'Invalid node id' })); } catch (ex) { } }
+                    if (node == null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deviceShares', responseid: command.responseid, result: 'Invalid node id' })); } catch (ex) { } }
                         return;
                     }
-                    
-                    // If there is MESHRIGHT_DESKLIMITEDINPUT or MESHRIGHT_REMOTEVIEWONLY on this account, reject this request.
-                    if ((rights != 0xFFFFFFFF) && ((rights & 4352) != 0)) return;
+
+                    // If there is MESHRIGHT_DESKLIMITEDINPUT or we don't have MESHRIGHT_GUESTSHARING on this account, reject this request.
+                    if (rights != MESHRIGHT_ADMIN) {
+                        // If we don't have remote control, or have limited input, or don't have guest sharing permission, fail here.
+                        if (((rights & MESHRIGHT_REMOTECONTROL) == 0) || ((rights & MESHRIGHT_DESKLIMITEDINPUT) != 0) || ((rights & MESHRIGHT_GUESTSHARING) == 0)) {
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deviceShares', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } }
+                            return;
+                        }
+                    }
 
                     parent.db.GetAllTypeNodeFiltered([command.nodeid], domain.id, 'deviceshare', null, function (err, docs) {
                         if (err != null) return;
@@ -4835,13 +4848,28 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Get the device rights
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                     // If node not found or we don't have remote control, reject.
-                    if ((node == null) || ((rights & 8) == 0)) {
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createDeviceShareLink', responseid: command.responseid, result: 'Invalid node id' })); } catch (ex) { } }
+                    if (node == null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deviceShares', responseid: command.responseid, result: 'Invalid node id' })); } catch (ex) { } }
                         return;
                     }
 
-                    // If there is MESHRIGHT_DESKLIMITEDINPUT or MESHRIGHT_REMOTEVIEWONLY on this account, reject this request.
-                    if ((rights != 0xFFFFFFFF) && ((rights & 4352) != 0)) return;
+                    // If there is MESHRIGHT_DESKLIMITEDINPUT or we don't have MESHRIGHT_GUESTSHARING on this account, reject this request.
+                    if (rights != MESHRIGHT_ADMIN) {
+                        // If we don't have remote control, or have limited input, or don't have guest sharing permission, fail here.
+                        if (((rights & MESHRIGHT_REMOTECONTROL) == 0) || ((rights & MESHRIGHT_DESKLIMITEDINPUT) != 0) || ((rights & MESHRIGHT_GUESTSHARING) == 0)) {
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deviceShares', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } }
+                            return;
+                        }
+                    }
+
+                    // If we are limited to no terminal, don't allow terminal sharing
+                    if ((command.p == 1) && (rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOTERMINAL) != 0)) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deviceShares', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } }
+                        return;                        
+                    }
+
+                    // If we have view only remote desktop rights, force view-only on the guest share.
+                    if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_REMOTEVIEWONLY) != 0)) { command.viewOnly = true; }
 
                     // Create cookie
                     var publicid = getRandomPassword(), startTime, expireTime;

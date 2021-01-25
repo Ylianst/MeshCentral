@@ -5978,7 +5978,7 @@
                 x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
                 if ((connectivity & 1) && (meshrights & 8) && (node.agent.id != 14)) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
-                if ((serverinfo.guestdevicesharing !== false) && (node.agent != null) && (node.agent.caps & 3) && (connectivity & 1) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 4352) == 0))) { x += '<input type=button value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />'; }
+                if ((serverinfo.guestdevicesharing !== false) && (node.agent != null) && (node.agent.caps & 3) && (connectivity & 1) && (meshrights & 0x80008) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 0x1000) == 0))) { x += '<input type=button value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />'; }
 
                 // Custom UI
                 if ((customui != null) && (customui.devicebuttons != null)) {
@@ -6235,6 +6235,7 @@
                 if (rights & 2048) str1.push("No AMT");
                 if (rights & 4096) str1.push("Limited Input");
                 if (rights & 65536) str1.push("No Desktop");
+                if ((rights & 524288) && (serverinfo.guestdevicesharing !== false)) str1.push("Guest Share");
                 if (str1.length > 0) { str.push('Control (' + str1.join(', ') + ')'); } else { str.push("Control"); }
             }
             if (rights & 16) str.push("Console");
@@ -6264,6 +6265,7 @@
                 if (rights & 2048) str1.push("No AMT");
                 if (rights & 4096) str1.push("Limited Input");
                 if (rights & 65536) str1.push("No Desktop");
+                if ((rights & 524288) && (serverinfo.guestdevicesharing !== false)) str1.push("Guest Share");
                 if (str1.length > 0) { str.push('Control (' + str1.join(', ') + ')'); } else { str.push("Control"); }
             }
             if (rights & 16) str.push("Console");
@@ -6371,9 +6373,14 @@
 
         function showShareDevice() {
             if (xxdialogMode) return;
+            var rights = GetNodeRights(currentNode);
             var y = '', x = "Creates a link that allows a guest without an account to remote control this device for a limited time." + '<br /><br />';
             x += addHtmlValue("Guest Name", '<input id=d2inviteName style=width:250px maxlength=128 type=text onkeyup=showShareDeviceValidate() />');
-            x += addHtmlValue("Type", '<select id=d2shareType style=float:right;width:250px onchange=showShareDeviceValidate()>' + ((currentNode.agent.caps & 1)?('<option value=2>' + "Desktop" + '</option><option value=3>' + "Desktop, View only" + '</option>'):'') + ((currentNode.agent.caps & 2)?('<option value=1>' + "Terminal" + '</option>'):'') + '</select>');
+            var deskFull = '<option value=2>' + "Desktop" + '</option>';
+            if ((rights != 0xFFFFFFFF) && ((rights & 0x100) != 0)) { deskFull = ''; }
+            var fullTerm = '<option value=1>' + "Terminal" + '</option>';
+            if ((rights != 0xFFFFFFFF) && ((rights & 0x200) != 0)) { fullTerm = ''; }
+            x += addHtmlValue("Type", '<select id=d2shareType style=float:right;width:250px onchange=showShareDeviceValidate()>' + ((currentNode.agent.caps & 1)?(deskFull + '<option value=3>' + "Desktop, View only" + '</option>'):'') + ((currentNode.agent.caps & 2)?fullTerm:'') + '</select>');
             var options = { 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days" }
             for (var i in options) { y += '<option value=' + i + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Validity", '<select id=d2timeRange style=float:right;width:250px onchange=showShareDeviceValidate()><option value=0>' + "Starting now" + '</option><option value=1>' + "Time range" + '</option></select>');
@@ -10372,6 +10379,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
+            if (serverinfo.guestdevicesharing !== false) { x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20guestshare style=margin-left:12px>' + "Guest Sharing" + '</label><br>'; }
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nodesktop style=margin-left:12px>' + "No Desktop Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "No File Access" + '</label><br>';
@@ -10445,6 +10453,7 @@
                     Q('p20remotecontrol').checked = true;
                     if (urights & 65536) { Q('p20nodesktop').checked = true; }
                     if (urights & 256) { Q('p20remoteview').checked = true; }
+                    if ((urights & 524288) && (serverinfo.guestdevicesharing !== false)) { Q('p20guestshare').checked = true; }
                     if (urights & 512) { Q('p20noterminal').checked = true; }
                     if (urights & 1024) { Q('p20nofiles').checked = true; }
                     if (urights & 2048) { Q('p20noamt').checked = true; }
@@ -10459,6 +10468,7 @@
                 if (urights & 32768) { Q('p20uninstall').checked = true; }
                 if (urights & 131072) { Q('p20commands').checked = true; }
                 if (urights & 262144) { Q('p20resetoff').checked = true; }
+                if ((urights & 524288) && (serverinfo.guestdevicesharing !== false)) { Q('p20guestshare').checked = true; }
             }
 
             p20validateAddMeshUserDialog(userid);
@@ -10505,6 +10515,7 @@
                 Q('p20nodesktop').checked = ((devrights & 65536) != 0);
                 Q('p20commands').checked = ((devrights & 131072) != 0);
                 Q('p20resetoff').checked = ((devrights & 262144) != 0);
+                if (serverinfo.guestdevicesharing !== false) { Q('p20guestshare').checked = ((devrights & 524288) != 0); }
                 ok = (nodeid != '');
             }
 
@@ -10575,6 +10586,7 @@
             QE('p20editnotes', nc);
             QE('p20limitevents', nc);
             QE('p20remoteview', nc && Q('p20remotecontrol').checked);
+            if (serverinfo.guestdevicesharing !== false) { QE('p20guestshare', nc && Q('p20remotecontrol').checked && (Q('p20remoteview').checked || !Q('p20remotelimitedinput').checked)); }
             QE('p20remotelimitedinput', nc && Q('p20remotecontrol').checked && !Q('p20remoteview').checked);
             QE('p20nodesktop', nc && Q('p20remotecontrol').checked);
             QE('p20noterminal', nc && Q('p20remotecontrol').checked);
@@ -10605,12 +10617,13 @@
                 if (Q('p20noterminal').checked == true) meshadmin += 512;
                 if (Q('p20nofiles').checked == true) meshadmin += 1024;
                 if (Q('p20noamt').checked == true) meshadmin += 2048;
-                if (Q('p20remotelimitedinput').checked == true) meshadmin += 4096;
+                if ((Q('p20remotelimitedinput').checked == true) && (!Q('p20remoteview').checked)) meshadmin += 4096;
                 if (Q('p20limitevents').checked == true) meshadmin += 8192;
                 if (Q('p20chatnotify').checked == true) meshadmin += 16384;
                 if (Q('p20uninstall').checked == true) meshadmin += 32768;
                 if (Q('p20commands').checked == true) meshadmin += 131072;
                 if (Q('p20resetoff').checked == true) meshadmin += 262144;
+                if ((serverinfo.guestdevicesharing !== false) && (Q('p20guestshare').checked == true) && (Q('p20remoteview').checked || (!Q('p20remoteview').checked && !Q('p20remotelimitedinput').checked))) meshadmin += 524288;
             }
 
             // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
