@@ -1159,11 +1159,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                 case 'coreinfo':
                     {
+                        // Sent by the agent to update agent information
+                        ChangeAgentCoreInfo(command);
+
                         if ((obj.agentCoreUpdate === true) && (obj.agentExeInfo != null)) {
                             // Agent update. The recovery core was loaded in the agent, send a command to update the agent
                             parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) { // Medium priority task
                                 // If agent disconnection, complete and exit now.
-                                if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; }
+                                if ((obj.authenticated != 2) || (obj.agentExeInfo == null)) { parent.parent.taskLimiter.completed(taskid); return; }
 
                                 // Agent update. The recovery core was loaded in the agent, send a command to update the agent
                                 obj.agentCoreUpdateTaskId = taskid;
@@ -1183,9 +1186,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 // Send the agent update command
                                 obj.send(JSON.stringify(cmd));
                             }, null, 1);
-                        } else {
-                            // Sent by the agent to update agent information
-                            ChangeAgentCoreInfo(command);
                         }
                         break;
                     }
