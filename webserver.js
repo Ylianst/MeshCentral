@@ -2739,11 +2739,60 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             return;
         }
 
+        // Get WebRTC configuration
         var webRtcConfig = null;
         if (obj.parent.config.settings && obj.parent.config.settings.webrtconfig && (typeof obj.parent.config.settings.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtconfig)).replace(/'/g, '%27'); }
         else if (args.webrtconfig && (typeof args.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtconfig)).replace(/'/g, '%27'); }
+
+        // Setup other options
+        var options = { webrtconfig: webRtcConfig };
+        if (typeof domain.meshmessengertitle == 'string') { options.meshMessengerTitle = domain.meshmessengertitle; } else { options.meshMessengerTitle = '!'; }
+
+        // Render the page
         res.set({ 'Cache-Control': 'no-store' });
-        render(req, res, getRenderPage('messenger', req, domain), getRenderArgs({ webrtconfig: webRtcConfig }, req, domain));
+        render(req, res, getRenderPage('messenger', req, domain), getRenderArgs(options, req, domain));
+    }
+
+    // Handle messenger image request
+    function handleMessengerImageRequest(req, res) {
+        const domain = getDomain(req);
+        if (domain == null) { parent.debug('web', 'handleMessengerImageRequest: no domain'); res.sendStatus(404); return; }
+        parent.debug('web', 'handleMessengerImageRequest()');
+
+        // Check if we are in maintenance mode
+        if (parent.config.settings.maintenancemode != null) { res.sendStatus(404); return; }
+
+        //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
+        if (domain.meshmessengerpicture) {
+            // Use the configured messenger logo picture
+            try { res.sendFile(obj.path.join(obj.parent.datapath, domain.meshmessengerpicture)); return; } catch (ex) { }
+        }
+
+        var imagefile = 'images/messenger.png';
+        if (domain.webpublicpath != null) {
+            obj.fs.exists(obj.path.join(domain.webpublicpath, imagefile), function (exists) {
+                if (exists) {
+                    // Use the domain logo picture
+                    try { res.sendFile(obj.path.join(domain.webpublicpath, imagefile)); } catch (ex) { res.sendStatus(404); }
+                } else {
+                    // Use the default logo picture
+                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
+                }
+            });
+        } else if (parent.webPublicOverridePath) {
+            obj.fs.exists(obj.path.join(obj.parent.webPublicOverridePath, imagefile), function (exists) {
+                if (exists) {
+                    // Use the override logo picture
+                    try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, imagefile)); } catch (ex) { res.sendStatus(404); }
+                } else {
+                    // Use the default logo picture
+                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
+                }
+            });
+        } else {
+            // Use the default logo picture
+            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
+        }
     }
 
     // Returns the server root certificate encoded in base64
@@ -4959,6 +5008,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
             obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
             obj.app.get(url + 'messenger', handleMessengerRequest);
+            obj.app.get(url + 'messenger.png', handleMessengerImageRequest);
             obj.app.get(url + 'meshosxagent', obj.handleMeshOsxAgentRequest);
             obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
             obj.app.get(url + 'devicepowerevents.ashx', obj.handleDevicePowerEvents);
