@@ -245,7 +245,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Send the recovery core to the agent, if the agent is capable of running one
                         if (((obj.agentInfo.capabilities & 16) != 0) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
                             obj.agentCoreUpdate = true;
-                            obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0));
+                            obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0)); // Ask to clear the core
+                            obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0)); // Ask for meshcore hash
                         }
                     } else if (agentUpdateMethod === 1) { // Use native agent update system
                         // Mesh agent update required, do it using task limiter so not to flood the network. Medium priority task.
