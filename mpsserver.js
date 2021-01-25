@@ -616,7 +616,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                             } else {
                                 // Node is not in the database, add it. Credentials will be empty until added by the user.
                                 var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState && socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: socket.remoteAddr, domain: mesh.domain, intelamt: { user: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtuser == 'string')) ? socket.tag.meiState.amtuser : '', pass: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtpass == 'string')) ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
-                                if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                if ((socket.tag.meiState != null) && (typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
                                 obj.db.Set(device);
 
                                 // Event the new node
