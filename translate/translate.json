@@ -7604,7 +7604,7 @@
       "zh-chs": "聊天时段",
       "zh-cht": "聊天時段",
       "xloc": [
-        "messenger.handlebars->13->17"
+        "messenger.handlebars->13->15"
       ]
     },
     {
@@ -9472,7 +9472,7 @@
       "zh-chs": "已连接。",
       "zh-cht": "已連接。",
       "xloc": [
-        "messenger.handlebars->13->15"
+        "messenger.handlebars->13->13"
       ]
     },
     {
@@ -9562,7 +9562,7 @@
       "zh-chs": "连接已关闭。",
       "zh-cht": "連接已關閉。",
       "xloc": [
-        "messenger.handlebars->13->7"
+        "messenger.handlebars->13->5"
       ]
     },
     {
@@ -13272,7 +13272,7 @@
       "zh-cht": "下載",
       "xloc": [
         "download.handlebars->container->page_content->column_l->1",
-        "messenger.handlebars->13->12"
+        "messenger.handlebars->13->10"
       ]
     },
     {
@@ -15712,7 +15712,7 @@
       "zh-chs": "错误：未指定连接密钥。",
       "zh-cht": "錯誤：未指定連接密鑰。",
       "xloc": [
-        "messenger.handlebars->13->16"
+        "messenger.handlebars->13->14"
       ]
     },
     {
@@ -22067,8 +22067,8 @@
       "zh-chs": "一次最多可上传10个档案。",
       "zh-cht": "一次最多可上傳10個檔案。",
       "xloc": [
-        "messenger.handlebars->13->8",
-        "messenger.handlebars->13->9"
+        "messenger.handlebars->13->6",
+        "messenger.handlebars->13->7"
       ]
     },
     {
@@ -22687,7 +22687,7 @@
       "zh-chs": "本地",
       "zh-cht": "本地",
       "xloc": [
-        "messenger.handlebars->13->6",
+        "messenger.handlebars->13->4",
         "messenger.handlebars->localVideo->1"
       ]
     },
@@ -24824,9 +24824,7 @@
       "zh-chs": "MeshMessenger",
       "zh-cht": "MeshMessenger",
       "xloc": [
-        "messenger.handlebars->13->1",
-        "messenger.handlebars->13->4",
-        "messenger.handlebars->13->5"
+        "messenger.handlebars->13->1"
       ]
     },
     {
@@ -40572,7 +40570,7 @@
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
-        "messenger.handlebars->13->10"
+        "messenger.handlebars->13->8"
       ]
     },
     {
@@ -42320,7 +42318,7 @@
       "zh-chs": "正在等待其他用户...",
       "zh-cht": "正在等待其他用戶...",
       "xloc": [
-        "messenger.handlebars->13->14"
+        "messenger.handlebars->13->12"
       ]
     },
     {
@@ -44202,7 +44200,7 @@
       "zh-cht": "字節",
       "xloc": [
         "messenger.handlebars->13->11",
-        "messenger.handlebars->13->13"
+        "messenger.handlebars->13->9"
       ]
     },
     {
