@@ -2626,7 +2626,7 @@ function openUserDesktopUrl(url) {
                 child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['cmd']);
                 child.stderr.on('data', function () { });
                 child.stdout.on('data', function () { });
-                child.stdin.write('SCHTASKS /CREATE /F /TN MeshChatTask /SC ONCE /ST 00:00 /RU ' + user + ' /TR "' + process.env['windir'] + '\\system32\\cmd.exe /C START ' + url + '"\r\n');
+                child.stdin.write('SCHTASKS /CREATE /F /TN MeshChatTask /SC ONCE /ST 00:00 /RU ' + user + ' /TR "' + process.env['windir'] + '\\system32\\cmd.exe /C START ' + url.split('&').join('^&') + '"\r\n');
                 child.stdin.write('SCHTASKS /RUN /TN MeshChatTask\r\n');
                 child.stdin.write('SCHTASKS /DELETE /F /TN MeshChatTask\r\n');
                 child.stdin.write('exit\r\n');

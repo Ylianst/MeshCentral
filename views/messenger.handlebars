@@ -76,6 +76,8 @@
             getUserMediaSupport(function (x) { userMediaSupport = x; })
             var meshMessengerTitle = '{{{meshMessengerTitle}}}';
             var meshMessengerImage = '{{{meshMessengerImage}}}';
+            var remoteUserName = '{{{username}}}';
+            var remoteUserId = '{{{userid}}}';
             var webrtcconfiguration = '{{{webrtconfig}}}';
             if (webrtcconfiguration == '') { webrtcconfiguration = null; } else { try { webrtcconfiguration = JSON.parse(decodeURIComponent(webrtcconfiguration)); } catch (ex) { console.log('Invalid WebRTC config: "' + webrtcconfiguration + '".'); webrtcconfiguration = null; } }
             var windowFocus = true;
@@ -101,8 +103,11 @@
             }
 
             // Set the title
-            if (args.title) { QH('xtitle', EscapeHtml(args.title).split(' ').join('&nbsp')); document.title = document.title + ' - ' + args.title; }
-            else if (meshMessengerTitle == '!') { QH('xtitle', EscapeHtml("MeshMessenger")); } else { QH('xtitle', meshMessengerTitle); }
+            var newTitle = '';
+            if (args.title) { newTitle = decodeURIComponent(args.title); document.title = document.title + ' - ' + decodeURIComponent(args.title); }
+            else if (meshMessengerTitle == '!') { newTitle = "MeshMessenger"; } else { newTitle = decodeURIComponent(meshMessengerTitle); }
+            newTitle = newTitle.split('{0}').join(decodeURIComponent(remoteUserName)).split('{1}').join(decodeURIComponent(remoteUserId));
+            QH('xtitle', EscapeHtml(newTitle).split(' ').join('&nbsp'));
 
             // Setup web notifications
             if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }

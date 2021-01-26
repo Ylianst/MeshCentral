@@ -2727,9 +2727,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
                         var xdomain = (domain.dns == null) ? domain.id : '';
                         if (xdomain != '') xdomain += "/";
-                        var url = "https://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
+                        var url = "https://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id);
 
-                        // Create the notification message
+                        // Open a web page on the remote device
                         routeCommandToNode({ 'action': 'openUrl', 'nodeid': command.nodeid, 'userid': user._id, 'username': user.name, 'url': url });
                     });
                     break;
