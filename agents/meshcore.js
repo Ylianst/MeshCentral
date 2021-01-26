@@ -2654,6 +2654,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         switch (cmd) {
             case 'help': { // Displays available commands
                 var fin = '', f = '', availcommands = 'agentupdate,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
+                if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
@@ -2678,6 +2679,22 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'msh':
                 response = JSON.stringify(_MSH(), null, 2);
+                break;
+            case 'dnsinfo':
+                if (require('os').dns == null)
+                {
+                    response = "Unknown command \"" + cmd + "\", type \"help\" for list of avaialble commands.";
+                }
+                else
+                {
+                    response = 'DNS Servers: ';
+                    var dns = require('os').dns();
+                    for(var i=0;i<dns.length;++i)
+                    {
+                        if (i > 0) { response += ', ';}
+                        response += dns[i];
+                    }
+                }
                 break;
             case 'timerinfo':
                 response = require('ChainViewer').getTimerInfo();
