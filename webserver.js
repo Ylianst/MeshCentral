@@ -3659,7 +3659,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // Log to recording file
                     if (ws.logfile == null) {
                         // Forward data to the associated TCP connection.
-                        ws.forwardclient.write(data);
+                        try { ws.forwardclient.write(data); } catch (ex) { }
                     } else {
                         // Log to recording file
                         recordingEntry(ws.logfile.fd, 2, 2, data, function () { try { ws.forwardclient.write(data); } catch (ex) { } });
