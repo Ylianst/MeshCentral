@@ -4526,9 +4526,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (req.query.dlcore != null) {
                 // Download mesh core
                 var bin = parent.defaultMeshCores[req.query.dlcore];
-                if (bin == null) { try { res.sendStatus(404); } catch (ex) { } return; }
+                if ((bin == null) || (bin.length < 5)) { try { res.sendStatus(404); } catch (ex) { } return; }
                 setContentDispositionHeader(res, 'application/octet-stream', req.query.dlcore + '.js', null, 'meshcore.js');
-                res.send(bin);
+                res.send(bin.substring(4));
                 return;
             }
 
