@@ -1293,6 +1293,7 @@ function getSystemInformation(func) {
                 }
             }
         }
+        results.hardware.agentvers = process.versions;
 
         /*
         if (process.platform == 'win32') {
