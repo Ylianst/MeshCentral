@@ -1140,6 +1140,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Process incoming agent JSON data
     function processAgentData(msg) {
+        if (obj.agentInfo == null) return;
         var i, str = msg.toString('utf8'), command = null;
         if (str[0] == '{') {
             try { command = JSON.parse(str); } catch (ex) {
