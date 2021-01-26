@@ -216,11 +216,7 @@
                 if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
                 if (Notification && (windowFocus == false) && (Notification.permission == 'granted')) {
                     if (notification != null) { notification.close(); notification = null; }
-                    if (args.title) {
-                        notification = new Notification("MeshMessenger" + ' - ' + args.title, { body: msg });
-                    } else {
-                        notification = new Notification("MeshMessenger", { body: msg });
-                    }
+                    notification = new Notification(Q('xtitle').innerHTML.split('&nbsp;').join(' '), { body: msg });
                 }
             }
 
