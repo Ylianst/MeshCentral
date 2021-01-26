@@ -1531,9 +1531,9 @@ module.exports.CreateDB = function (parent, func) {
     // MongoDB pending bulk remove operation, perform fast bulk document removes.
     function fileBulkRemoveCompleted(err) {
         // Send out callbacks
-        for (var i in obj.filePendingGets) {
-            for (var j in obj.filePendingGets[i]) {
-                obj.filePendingGets[i][j](err);
+        for (var i in obj.filePendingRemoves) {
+            for (var j in obj.filePendingRemoves[i]) {
+                obj.filePendingRemoves[i][j](err);
             }
         }
 
