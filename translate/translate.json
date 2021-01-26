@@ -2350,14 +2350,11 @@
     },
     {
       "en": "</div><div><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=margin-top:20px;margin-left:5px;cursor:pointer width=40 height=40 src=\\\"images/android-40.png\\\" srcset=\\\"images/android-80.png 2x\\\" /></a></div></div>",
+      "nl": "</div><div><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=margin-top:20px;margin-left:5px;cursor:pointer width=40 height=40 src=\\\"images/android-40.png\\\" srcset=\\\"images/android-80.png 2x\\\" /></a></div></div>",
       "fr": "</div><div><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=margin-top:20px;margin-left:5px;cursor:pointer width=40 height=40 src=\\\"images/android-40.png\\\" srcset=\\\"images/android-80.png 2x\\\" /></a></div></div>",
       "xloc": [
         "default.handlebars->31->403"
       ]
-    },
-    {
-      "en": "</div><div><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=margin-top:20px;margin-left:5px;cursor:pointer width=40 height=40 src=\\\"images/android40.png\\\" srcset=\\\"images/android80.png 2x\\\" /></a></div></div>",
-      "fr": "</div><div><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=margin-top:20px;margin-left:5px;cursor:pointer width=40 height=40 src=\\\"images/android40.png\\\" srcset=\\\"images/android80.png 2x\\\" /></a></div></div>"
     },
     {
       "cs": "<<",
@@ -2683,6 +2680,7 @@
     },
     {
       "en": "AV",
+      "nl": "Anti-virus",
       "fr": "Antivirus",
       "xloc": [
         "default-mobile.handlebars->11->385",
@@ -6142,6 +6140,7 @@
     },
     {
       "en": "BAD",
+      "nl": "Uitgeschakeld",
       "fr": "Désactivé",
       "xloc": [
         "default-mobile.handlebars->11->388",
@@ -13716,6 +13715,7 @@
     },
     {
       "en": "Download: \\\"{0}\\\", Size: {1}",
+      "nl": "Download: \\\"{0}\\\", Grootte: {1}",
       "fr": "Téléchargement : \\\"{0}\\\", Taille : {1}",
       "xloc": [
         "default.handlebars->31->1782"
@@ -16578,6 +16578,7 @@
     },
     {
       "en": "Firewall",
+      "nl": "Firewall",
       "fr": "Parefeu",
       "xloc": [
         "default-mobile.handlebars->11->393",
@@ -18073,6 +18074,7 @@
     },
     {
       "en": "Guest Share",
+      "nl": "Gast delen",
       "xloc": [
         "default.handlebars->31->720",
         "default.handlebars->31->742"
@@ -18080,6 +18082,7 @@
     },
     {
       "en": "Guest Sharing",
+      "nl": "Gastdeling",
       "xloc": [
         "default.handlebars->31->1539"
       ]
@@ -22885,6 +22888,7 @@
     },
     {
       "en": "Lock the remote computer",
+      "nl": "Vergrendel de externe computer",
       "fr": "Verrouiller l'appareil distant",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
@@ -40735,6 +40739,7 @@
     },
     {
       "en": "Upload tiny core",
+      "nl": "Upload eem kleine kern",
       "fr": "Charger un micro noyau",
       "xloc": [
         "default.handlebars->31->1109"
@@ -40823,6 +40828,7 @@
     },
     {
       "en": "Upload: \\\"{0}\\\", Size: {1}",
+      "nl": "Upload: \\\"{0}\\\", Grootte: {1}",
       "fr": "Chargement : \\\"{0}\\\", Taille : {1}",
       "xloc": [
         "default.handlebars->31->1781"
@@ -43290,6 +43296,7 @@
     },
     {
       "en": "Windows Security",
+      "nl": "Windows Beveiliging",
       "fr": "Sécurité Windows",
       "xloc": [
         "default-mobile.handlebars->11->397",
@@ -45396,7 +45403,20 @@
     },
     {
       "en": "{0}",
+      "nl": "{0}",
+      "es": "{0}",
+      "cs": "{0}",
+      "de": "{0}",
+      "pt": "{0}",
+      "fi": "{0}",
+      "hi": "{0}",
+      "ja": "{0}",
+      "ko": "{0}",
+      "ru": "{0}",
+      "tr": "{0}",
       "fr": "{0}",
+      "zh-chs": "{0}",
+      "zh-cht": "{0}",
       "xloc": [
         "default-mobile.handlebars->11->425",
         "default-mobile.handlebars->11->429"
@@ -46050,6 +46070,7 @@
     },
     {
       "en": "{0}, Mask: {1}, Gateway: {2}",
+      "nl": "{0}, Mask: {1}, Gateway: {2}",
       "fr": "{0}, Masque : {1}, Passerelle : {2}",
       "xloc": [
         "default-mobile.handlebars->11->423",
