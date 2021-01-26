@@ -1511,7 +1511,12 @@ module.exports.CreateDB = function (parent, func) {
             for (var i in docs) {
                 if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); }
                 const id = docs[i]._id;
-                if (obj.filePendingGets[id] != null) { for (var j in obj.filePendingGets[id]) { obj.filePendingGets[id][j](err, performTypedRecordDecrypt([docs[i]])); } delete obj.filePendingGets[id]; }
+                if (obj.filePendingGets[id] != null) {
+                    for (var j in obj.filePendingGets[id]) {
+                        if (typeof obj.filePendingGets[id][j] == 'function') { obj.filePendingGets[id][j](err, performTypedRecordDecrypt([docs[i]])); }
+                    }
+                    delete obj.filePendingGets[id];
+                }
             }
         }
 
@@ -1533,7 +1538,7 @@ module.exports.CreateDB = function (parent, func) {
         // Send out callbacks
         for (var i in obj.filePendingRemoves) {
             for (var j in obj.filePendingRemoves[i]) {
-                obj.filePendingRemoves[i][j](err);
+                if (typeof obj.filePendingRemoves[i][j] == 'function') { obj.filePendingRemoves[i][j](err); }
             }
         }
 
@@ -1550,7 +1555,10 @@ module.exports.CreateDB = function (parent, func) {
     // MongoDB pending bulk write operation, perform fast bulk document replacement.
     function fileBulkWriteCompleted() {
         // Callbacks
-        if (obj.filePendingCbs != null) { for (var i in obj.filePendingCbs) { obj.filePendingCbs[i](); } obj.filePendingCbs = null; }
+        if (obj.filePendingCbs != null) {
+            for (var i in obj.filePendingCbs) { if (typeof obj.filePendingCbs[i] == 'function') { obj.filePendingCbs[i](); } }
+            obj.filePendingCbs = null;
+        }
         if (obj.filePendingSets != null) {
             // Perform pending operations
             var ops = [];
