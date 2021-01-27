@@ -3870,7 +3870,7 @@ function bsd_execv(name, agentfilename, sessionid) {
         arg.pointerBuffer().copy(args.toBuffer(), i * require('_GenericMarshal').PointerSize);
     }
 
-    if (sessionid != null) { sendConsoleText('Restarting service via service-manager', sessionid) }
+    if (sessionid != null) { sendConsoleText('Restarting service via execv()', sessionid) }
     libc.execv(path, args);
     if (sessionid != null) { sendConsoleText('Self Update failed because execv() failed', sessionid) }
     sendAgentMessage('Self Update failed because execv() failed', 3);
