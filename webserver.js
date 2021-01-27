@@ -2759,7 +2759,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (idSplit.length == 7) {
                 const user = obj.users[idSplit[4] + '/' + idSplit[5] + '/' + idSplit[6]];
                 if (user != null) {
-                    if (domain.meshmessengertitle.indexOf('{0}') >= 0) { options.username = encodeURIComponent(user.name ? user.name : user._id.split('/')[2]).replace(/'/g, '%27'); }
+                    if (domain.meshmessengertitle.indexOf('{0}') >= 0) { options.username = encodeURIComponent(user.realname ? user.realname : user._id.split('/')[2]).replace(/'/g, '%27'); }
                     if (domain.meshmessengertitle.indexOf('{1}') >= 0) { options.userid = encodeURIComponent(user._id.split('/')[2]).replace(/'/g, '%27'); }
                 }
             }
