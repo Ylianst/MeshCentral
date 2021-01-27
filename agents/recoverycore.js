@@ -71,6 +71,77 @@ function MeshServerLogEx(id, args, msg, state) {
     require('MeshAgent').SendCommand(msg);
 }
 
+function getOpenDescriptors()
+{
+    switch(process.platform)
+    {
+        case "freebsd":
+            var child = require('child_process').execFile('/bin/sh', ['sh']);
+            child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+            child.stderr.on('data', function (c) { });
+
+            child.stdin.write("procstat -f " + process.pid + " | tr '\\n' '`' | awk -F'`' '");
+            child.stdin.write('{');
+            child.stdin.write('   DEL="";');
+            child.stdin.write('   printf "[";');
+            child.stdin.write('   for(i=1;i<NF;++i)');
+            child.stdin.write('   {');
+            child.stdin.write('      A=split($i,B," ");');
+            child.stdin.write('      if(B[3] ~ /^[0-9]/)');
+            child.stdin.write('      {');
+            child.stdin.write('         printf "%s%s", DEL, B[3];');
+            child.stdin.write('         DEL=",";');
+            child.stdin.write('      }');
+            child.stdin.write('   }');
+            child.stdin.write('   printf "]";');
+            child.stdin.write("}'");
+
+            child.stdin.write('\nexit\n');
+            child.waitExit();
+
+            try
+            {
+                return(JSON.parse(child.stdout.str.trim()));
+            }
+            catch(e)
+            {
+                return ([]);
+            }
+            break;
+        case "linux":
+            var child = require('child_process').execFile('/bin/sh', ['sh']);
+            child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+            child.stderr.on('data', function (c) { });
+
+            child.stdin.write("ls /proc/" + process.pid + "/fd | tr '\\n' '`' | awk -F'`' '");
+            child.stdin.write('{');
+            child.stdin.write('   printf "[";');
+            child.stdin.write('   DEL="";');
+            child.stdin.write('   for(i=1;i<NF;++i)');
+            child.stdin.write('   {');
+            child.stdin.write('      printf "%s%s",DEL,$i;');
+            child.stdin.write('      DEL=",";');
+            child.stdin.write('   }');
+            child.stdin.write('   printf "]";');
+            child.stdin.write("}'");
+            child.stdin.write('\nexit\n');
+            child.waitExit();
+
+            try
+            {
+                return (JSON.parse(child.stdout.str.trim()));
+            }
+            catch (e)
+            {
+                return ([]);
+            }
+            break;
+        default:
+            return ([]);
+    }
+}
+
+
 function pathjoin() {
     var x = [];
     for (var i in arguments) {
@@ -89,6 +160,20 @@ function pathjoin() {
 // Replace a string with a number if the string is an exact number
 function toNumberIfNumber(x) { if ((typeof x == 'string') && (+parseInt(x) === x)) { x = parseInt(x); } return x; }
 
+
+function closeDescriptors(libc, descriptors)
+{
+    var fd = null;
+    while(descriptors.length>0)
+    {
+        fd = descriptors.pop();
+        if(fd > 2)
+        {
+            libc.close(fd);
+        }
+    }
+}
+
 function linux_execv(name, agentfilename, sessionid) {
     var libs = require('monitor-info').getLibInfo('libc');
     var libc = null;
@@ -104,8 +189,10 @@ function linux_execv(name, agentfilename, sessionid) {
         }
     }
     if (libc != null) {
-        try {
+        try
+        {
             libc.CreateMethod('execv');
+            libc.CreateMethod('close');
         }
         catch (e) {
             libc = null;
@@ -131,7 +218,7 @@ function linux_execv(name, agentfilename, sessionid) {
 
     var i;
     var args;
-    var argarr = [];
+    var argarr = [process.execPath];
     var path = require('_GenericMarshal').CreateVariable(process.execPath);
 
     if (require('MeshAgent').getStartupOptions != null) {
@@ -146,6 +233,9 @@ function linux_execv(name, agentfilename, sessionid) {
         var arg = require('_GenericMarshal').CreateVariable(argarr[i]);
         arg.pointerBuffer().copy(args.toBuffer(), i * require('_GenericMarshal').PointerSize);
     }
+
+    var descriptors = getOpenDescriptors();
+    closeDescriptors(libc, descriptors);
 
     libc.execv(path, args);
     if (sessionid != null) { sendConsoleText('Self Update failed because execv() failed', sessionid) }
@@ -174,9 +264,11 @@ function bsd_execv(name, agentfilename, sessionid) {
     }
 
     var libc = null;
-    try {
+    try
+    {
         libc = require('_GenericMarshal').CreateNativeProxy(child.stdout.str.trim());
         libc.CreateMethod('execv');
+        libc.CreateMethod('close');
     }
     catch (e) {
         if (sessionid != null) { sendConsoleText('Self Update failed: ' + e.toString(), sessionid) }
@@ -186,7 +278,7 @@ function bsd_execv(name, agentfilename, sessionid) {
 
     var i;
     var path = require('_GenericMarshal').CreateVariable(process.execPath);
-    var argarr = [];
+    var argarr = [process.execPath];
     var args;
     var options = require('MeshAgent').getStartupOptions();
     for (i in options) {
@@ -199,6 +291,10 @@ function bsd_execv(name, agentfilename, sessionid) {
     }
 
     if (sessionid != null) { sendConsoleText('Restarting service via execv()', sessionid) }
+
+    var descriptors = getOpenDescriptors();
+    closeDescriptors(libc, descriptors);
+
     libc.execv(path, args);
     if (sessionid != null) { sendConsoleText('Self Update failed because execv() failed', sessionid) }
     sendAgentMessage('Self Update failed because execv() failed', 3);
@@ -904,6 +1000,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         switch (cmd) {
             case 'help':
                 response = "Available commands are: agentupdate, dbkeys, dbget, dbset, dbcompact, eval, netinfo, osinfo, setdebug, versions.";
+                break;
+            case '_descriptors':
+                response = 'Open Descriptors: ' + JSON.stringify(getOpenDescriptors());
                 break;
             case 'versions':
                 response = JSON.stringify(process.versions, null, '  ');
