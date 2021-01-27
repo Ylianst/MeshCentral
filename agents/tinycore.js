@@ -136,6 +136,10 @@ function handleServerCommand(data)
             }
         }
     }
+    else
+    {
+        console.log(JSON.stringify(data, null, 1));
+    }
 }
 
 // Called when the server connection state changes
