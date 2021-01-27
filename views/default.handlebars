@@ -9037,10 +9037,8 @@
                 }
                 if (hardware.agentvers != null) {
                     if (hardware.agentvers.compileTime) {
-                        try {
-                            var d = Date.parse(hardware.agentvers.compileTime)
-                            x += addDetailItem("Compile time", printDateTime(new Date(d)));
-                        } catch (ex) {}
+                        var d = Date.parse(hardware.agentvers.compileTime)
+                        x += addDetailItem("Compile time", isNaN(d)?hardware.agentvers.compileTime:printDateTime(new Date(d)));
                     }
                 }
                 if (x != '') { sections.push({ name: "Mesh Agent", html: x, img: 'meshagent64.png'}); }
