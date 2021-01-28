@@ -3094,3 +3094,15 @@ a {
 #p19headers > span.on {
     font-weight: bold;
 }
+
+.thermalSensor {
+    float: left;
+    padding: 5px;
+    background-color: gold;
+    margin-right: 6px;
+    border-radius: 4px;
+}
+
+.night .thermalSensor {
+    color: #000;
+}

@@ -878,6 +878,7 @@
                                     <div style="margin-bottom:10px;margin-left:16px;height:240px;width:calc(100% - 16px);position:relative">
                                         <canvas id=deviceDetailsStats style="position:absolute;top:0;left:0;right:0;bottom:0"></canvas>
                                     </div>
+                                    <div id="extraGraphValues" style="display:none;margin-left:30px;margin-bottom:15px"></div>
                                 </td>
                             </tr>
                         </table>
@@ -2188,7 +2189,7 @@
                                 if (typeof message.cpu.total == 'number') { cpu = message.cpu.total; }
                                 if (typeof message.memory.percentConsumed == 'number') { memory = message.memory.percentConsumed; }
                                 deviceDetailsStatsData.push([now, cpu, memory]);
-                                deviceDetailsStatsDraw();
+                                deviceDetailsStatsDraw(message);
                             } else if (message.type == 'console') { p15consoleReceive(nodes[index], message.value, message.source); } // This is a console message.
                             else if (message.type == 'notify') { // This is a notification message.
                                 var n = getstore('notifications', 0);
@@ -8929,6 +8930,7 @@
                     { label: 'Memory', backgroundColor: 'rgba(255, 99, 132, .5)', borderColor: 'rgb(255, 99, 132)', data: [], fill: true }
                 ] },
             options: {
+                events: ['click'],
                 animation: false,
                 responsive: true,
                 maintainAspectRatio: false,
@@ -8957,13 +8959,15 @@
             if (deviceDetailsStatsTimer != null) { clearInterval(deviceDetailsStatsTimer); deviceDetailsStatsTimer = null; }
             deviceDetailsStatsData = [];
             deviceDetailsStatsDraw();
+            QV('extraGraphValues', false);
+            QH('extraGraphValues', '');
         }
 
         function deviceDetailsStatsTimerFunc() {
             if (currentNode != null) { meshserver.send({ action: 'msg', type: 'cpuinfo', nodeid: currentNode._id }); }
         }
 
-        function deviceDetailsStatsDraw() {
+        function deviceDetailsStatsDraw(message) {
             var now = Date.now() / 1000, oldLimit = (now - 100);
             while ((deviceDetailsStatsData.length > 0) && (deviceDetailsStatsData[0][0] < (oldLimit - 5))) { deviceDetailsStatsData.shift(); }
 
@@ -8977,6 +8981,16 @@
             deviceDetailsConfig.data.datasets[0].data = cpu;
             deviceDetailsConfig.data.datasets[1].data = memory;
             if (window.deviceDetailsStatsChart) { window.deviceDetailsStatsChart.update(); }
+
+            // Display any additional live values
+            if (message != null) {
+                if (Array.isArray(message.thermals) && (message.thermals.length > 0)) {
+                    var x = '&nbsp;';
+                    for (var i in message.thermals) { x += '<div class=thermalSensor>' +  parseFloat(message.thermals[i]).toFixed(2) + '&deg;C / ' + parseFloat((message.thermals[i] * 1.8) + 32).toFixed(2) + '&deg;F' + '</div>'; }
+                    QV('extraGraphValues', true);
+                    QH('extraGraphValues', x);
+                }
+            }
         }
 
         var DeviceDetailsHardware = null;
