@@ -3993,6 +3993,10 @@ function agentUpdate_Start(updateurl, updateoptions) {
     // If this value is null
     var sessionid = (updateoptions != null) ? updateoptions.sessionid : null; // If this is null, messages will be broadcast. Otherwise they will be unicasted
 
+    // If the url starts with *, switch it to use the same protoco, host and port as the control channel.
+    updateurl = getServerTargetUrlEx(updateurl);
+    if (updateurl.startsWith("wss://")) { updateurl = "https://" + updateurl.substring(6); }
+
     if (agentUpdate_Start._selfupdate != null) {
         // We were already called, so we will ignore this duplicate request
         if (sessionid != null) { sendConsoleText('Self update already in progress...', sessionid); }
@@ -4006,7 +4010,7 @@ function agentUpdate_Start(updateurl, updateoptions) {
         else {
             var agentfilename = process.execPath.split(process.platform == 'win32' ? '\\' : '/').pop(); // Local File Name, ie: MeshAgent.exe
             var name = require('MeshAgent').serviceName;
-            if (name == null) { name = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'; }      // This is an older agent that doesn't expose the service name, so use the default
+            if (name == null) { name = (process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'); } // This is an older agent that doesn't expose the service name, so use the default
             try {
                 var s = require('service-manager').manager.getService(name);
                 if (!s.isMe()) {
@@ -4035,9 +4039,8 @@ function agentUpdate_Start(updateurl, updateoptions) {
                 // Check that the certificate is the one expected by the server, fail if not.
                 if (checkServerIdentity.servertlshash == null) {
                     if (require('MeshAgent').ServerInfo == null || require('MeshAgent').ServerInfo.ControlChannelCertificate == null) { return; }
-
-                    sendConsoleText('Self Update failed, because the url cannot be verified', sessionid);
-                    sendAgentMessage('Self Update failed, because the url cannot be verified', 3);
+                    sendConsoleText('Self Update failed, because the url cannot be verified: ' + updateurl, sessionid);
+                    sendAgentMessage('Self Update failed, because the url cannot be verified: ' + updateurl, 3);
                     throw new Error('BadCert');
                 }
                 if (certs[0].digest == null) { return; }
@@ -4050,8 +4053,8 @@ function agentUpdate_Start(updateurl, updateoptions) {
             options.checkServerIdentity.servertlshash = (updateoptions != null ? updateoptions.tlshash : null);
             agentUpdate_Start._selfupdate = require('https').get(options);
             agentUpdate_Start._selfupdate.on('error', function (e) {
-                sendConsoleText('Self Update failed, because there was a problem trying to download the update', sessionid);
-                sendAgentMessage('Self Update failed, because there was a problem trying to download the update', 3);
+                sendConsoleText('Self Update failed, because there was a problem trying to download the update from ' + updateurl, sessionid);
+                sendAgentMessage('Self Update failed, because there was a problem trying to download the update from ' + updateurl, 3);
                 agentUpdate_Start._selfupdate = null;
             });
             agentUpdate_Start._selfupdate.on('response', function (img) {
@@ -4064,8 +4067,8 @@ function agentUpdate_Start(updateurl, updateoptions) {
                         }
                         else {
                             agentUpdate_Start._retryCount++;
-                            sendConsoleText('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + ')', sessionid);
-                            sendAgentMessage('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + ')', 3);
+                            sendConsoleText('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + '), URL: ' + updateurl, sessionid);
+                            sendAgentMessage('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + '), URL: ' + updateurl, 3);
                             agentUpdate_Start._selfupdate = null;
 
                             if (agentUpdate_Start._retryCount < 4) {

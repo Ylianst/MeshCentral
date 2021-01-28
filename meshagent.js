@@ -1171,8 +1171,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                                 // Agent update. The recovery core was loaded in the agent, send a command to update the agent
                                 obj.agentCoreUpdateTaskId = taskid;
-                                var url = obj.agentExeInfo.url;
-                                if (url.startsWith('http://')) { url = url.replace('http://', 'https://') }
+                                const url = '*' + require('url').parse(obj.agentExeInfo.url).path;
                                 var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex };
 
                                 // Add the hash
@@ -1483,8 +1482,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                         // Agent is requesting an agent update
                         obj.agentCoreUpdateTaskId = taskid;
-                        var url = obj.agentExeInfo.url;
-                        if (url.startsWith('http://')) { url = url.replace('http://', 'https://') }
+                        const url = '*' + require('url').parse(obj.agentExeInfo.url).path;
                         var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex, sessionid: agentUpdateFunc.sessionid };
 
                         // Add the hash

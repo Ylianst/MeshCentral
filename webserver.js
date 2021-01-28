@@ -5513,6 +5513,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // Setup agent to/from server file transfer handler
                 obj.agentapp.ws(url + 'agenttransfer.ashx', handleAgentFileTransfer); // Setup agent to/from server file transfer handler
+
+                // Setup agent downloads for meshcore updates
+                obj.agentapp.get(url + 'meshagents', obj.handleMeshAgentRequest);
             }
 
             // Indicates to ExpressJS that the override public folder should be used to serve static files.
