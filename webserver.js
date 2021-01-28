@@ -2760,7 +2760,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 const user = obj.users[idSplit[4] + '/' + idSplit[5] + '/' + idSplit[6]];
                 if (user != null) {
                     if (domain.meshmessengertitle.indexOf('{0}') >= 0) { options.username = encodeURIComponent(user.realname ? user.realname : user.name).replace(/'/g, '%27'); }
-                    if (domain.meshmessengertitle.indexOf('{1}') >= 0) { options.userid = encodeURIComponent(user.name); }
+                    if (domain.meshmessengertitle.indexOf('{1}') >= 0) { options.userid = encodeURIComponent(user.name).replace(/'/g, '%27'); }
                 }
             }
         }
