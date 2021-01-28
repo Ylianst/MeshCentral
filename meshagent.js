@@ -1179,7 +1179,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
 
                                 // Add server TLS cert hash
-                                if (parent.parent.args.ignoreagenthashcheck !== true) {
+                                if (isIgnoreHashCheck() == false) {
                                     const tlsCertHash = parent.webCertificateFullHashs[domain.id];
                                     if (tlsCertHash != null) { cmd.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
                                 }
@@ -1491,7 +1491,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
 
                         // Add server TLS cert hash
-                        if (parent.parent.args.ignoreagenthashcheck !== true) {
+                        if (isIgnoreHashCheck() == false) {
                             const tlsCertHash = parent.webCertificateFullHashs[domain.id];
                             if (tlsCertHash != null) { cmd.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
                         }

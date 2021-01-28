@@ -399,6 +399,7 @@ function agentUpdate_Start(updateurl, updateoptions)
             {
                 sendConsoleText('Self Update failed, because there was a problem trying to download the update', sessionid);
                 sendAgentMessage('Self Update failed, because there was a problem trying to download the update', 3);
+                agentUpdate_Start._selfupdate = null;
             });
             agentUpdate_Start._selfupdate.on('response', function (img)
             {
