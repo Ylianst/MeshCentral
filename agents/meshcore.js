@@ -4022,7 +4022,7 @@ function agentUpdate_Start(updateurl, updateoptions) {
                 return;
             }
 
-            if (sessionid != null) { sendConsoleText('Downloading update...', sessionid); }
+            if (sessionid != null) { sendConsoleText('Downloading update from: ' + updateurl, sessionid); }
             var options = require('http').parseUri(updateurl != null ? updateurl : require('MeshAgent').ServerUrl);
             options.protocol = 'https:';
             if (updateurl == null) { options.path = ('/meshagents?id=' + require('MeshAgent').ARCHID); }
@@ -4052,6 +4052,7 @@ function agentUpdate_Start(updateurl, updateoptions) {
             agentUpdate_Start._selfupdate.on('error', function (e) {
                 sendConsoleText('Self Update failed, because there was a problem trying to download the update', sessionid);
                 sendAgentMessage('Self Update failed, because there was a problem trying to download the update', 3);
+                agentUpdate_Start._selfupdate = null;
             });
             agentUpdate_Start._selfupdate.on('response', function (img) {
                 this._file = require('fs').createWriteStream(agentfilename + '.update', { flags: 'wb' });

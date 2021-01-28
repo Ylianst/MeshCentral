@@ -1344,7 +1344,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Add server TLS cert hash
                         var tlsCertHash = null;
-                        if (parent.parent.args.ignoreagenthashcheck !== true) {
+                        if ((parent.parent.args.ignoreagenthashcheck == null) || (parent.parent.args.ignoreagenthashcheck === false)) { // TODO: If ignoreagenthashcheck is an array of IP addresses, not sure how to handle this.
                             tlsCertHash = parent.webCertificateFullHashs[domain.id];
                             if (tlsCertHash != null) { command.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
                         }

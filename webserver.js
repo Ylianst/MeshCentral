@@ -3432,7 +3432,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Instruct one of more agents to download a URL to a given local drive location.
             var tlsCertHash = null;
-            if (parent.args.ignoreagenthashcheck !== true) {
+            if ((parent.args.ignoreagenthashcheck == null) || (parent.args.ignoreagenthashcheck === false)) { // TODO: If ignoreagenthashcheck is an array of IP addresses, not sure how to handle this.
                 tlsCertHash = obj.webCertificateFullHashs[cmd.domain.id];
                 if (tlsCertHash != null) { tlsCertHash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
             }
