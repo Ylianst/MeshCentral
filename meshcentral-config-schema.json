@@ -291,7 +291,7 @@
               "desktopprivacybar": { "type": "boolean", "default": false, "description": "Enable remote desktop privacy bar for this domain." }
             }
           },
-          "urlSwitching": { "type": "boolean" },
+          "urlSwitching": { "type": "boolean", "default": true, "description": "When users navigate thru the web interface, the URL on top will change to point to the current screen. This allows a user to refresh or bookmark the URL and come back to the correct screen. Setting false here will disable this feature." },
           "desktopPrivacyBarText": { "type": "string" },
           "limits": {
             "type": "object",
@@ -433,7 +433,8 @@
           },
           "redirects": {
             "type": "object",
-            "additionalProperties": { "type": "string" }
+            "additionalProperties": { "type": "string" },
+            "description": "This is used to create HTTP redirections. For example setting \"redirects\": { \"example\":\"https://example.com\" } will make it so that anyone accessing /example on the server will get redirected to the specified URL."
           },
           "yubikey": {
             "type": "object",
