@@ -324,70 +324,62 @@ function windows_execve(name, agentfilename, sessionid) {
 }
 
 // Start a JavaScript based Agent Self-Update
-function agentUpdate_Start(updateurl, updateoptions)
-{
+function agentUpdate_Start(updateurl, updateoptions) {
     // If this value is null
     var sessionid = (updateoptions != null) ? updateoptions.sessionid : null; // If this is null, messages will be broadcast. Otherwise they will be unicasted
 
-    if (agentUpdate_Start._selfupdate != null)
-    {
+    // If the url starts with *, switch it to use the same protoco, host and port as the control channel.
+    updateurl = getServerTargetUrlEx(updateurl);
+    if (updateurl.startsWith("wss://")) { updateurl = "https://" + updateurl.substring(6); }
+
+    if (agentUpdate_Start._selfupdate != null) {
         // We were already called, so we will ignore this duplicate request
         if (sessionid != null) { sendConsoleText('Self update already in progress...', sessionid); }
     }
-    else
-    {
+    else {
         if (agentUpdate_Start._retryCount == null) { agentUpdate_Start._retryCount = 0; }
-        if (require('MeshAgent').ARCHID == null && updateurl == null)
-        {
+        if (require('MeshAgent').ARCHID == null && updateurl == null) {
             // This agent doesn't have the ability to tell us which ARCHID it is, so we don't know which agent to pull
             sendConsoleText('Unable to initiate update, agent ARCHID is not defined', sessionid);
         }
-        else
-        {
+        else {
             var agentfilename = process.execPath.split(process.platform == 'win32' ? '\\' : '/').pop(); // Local File Name, ie: MeshAgent.exe
             var name = require('MeshAgent').serviceName;
-            if (name == null) { name = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'; }      // This is an older agent that doesn't expose the service name, so use the default
-            try
-            {
+            if (name == null) { name = (process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'); }      // This is an older agent that doesn't expose the service name, so use the default
+            try {
                 var s = require('service-manager').manager.getService(name);
-                if (!s.isMe())
-                {
+                if (!s.isMe()) {
                     if (process.platform == 'win32') { s.close(); }
                     sendConsoleText('Self Update cannot continue, this agent is not an instance of (' + name + ')', sessionid);
                     return;
                 }
                 if (process.platform == 'win32') { s.close(); }
             }
-            catch (zz)
-            {
+            catch (zz) {
                 sendConsoleText('Self Update Failed because this agent is not an instance of (' + name + ')', sessionid);
                 sendAgentMessage('Self Update Failed because this agent is not an instance of (' + name + ')', 3);
                 return;
             }
 
-            if (sessionid != null) { sendConsoleText('Downloading update...', sessionid); }
+            if (sessionid != null) { sendConsoleText('Downloading update from: ' + updateurl, sessionid); }
             var options = require('http').parseUri(updateurl != null ? updateurl : require('MeshAgent').ServerUrl);
             options.protocol = 'https:';
             if (updateurl == null) { options.path = ('/meshagents?id=' + require('MeshAgent').ARCHID); }
             options.rejectUnauthorized = false;
-            options.checkServerIdentity = function checkServerIdentity(certs)
-            {
+            options.checkServerIdentity = function checkServerIdentity(certs) {
                 // If the tunnel certificate matches the control channel certificate, accept the connection
                 try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { }
                 try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { }
 
                 // Check that the certificate is the one expected by the server, fail if not.
-                if (checkServerIdentity.servertlshash == null)
-                {
+                if (checkServerIdentity.servertlshash == null) {
                     if (require('MeshAgent').ServerInfo == null || require('MeshAgent').ServerInfo.ControlChannelCertificate == null) { return; }
-
-                    sendConsoleText('Self Update failed, because the url cannot be verified', sessionid);
-                    sendAgentMessage('Self Update failed, because the url cannot be verified', 3);
+                    sendConsoleText('Self Update failed, because the url cannot be verified: ' + updateurl, sessionid);
+                    sendAgentMessage('Self Update failed, because the url cannot be verified: ' + updateurl, 3);
                     throw new Error('BadCert');
                 }
                 if (certs[0].digest == null) { return; }
-                if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase()))
-                {
+                if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) {
                     sendConsoleText('Self Update failed, because the supplied certificate does not match', sessionid);
                     sendAgentMessage('Self Update failed, because the supplied certificate does not match', 3);
                     throw new Error('BadCert')
@@ -395,47 +387,38 @@ function agentUpdate_Start(updateurl, updateoptions)
             }
             options.checkServerIdentity.servertlshash = (updateoptions != null ? updateoptions.tlshash : null);
             agentUpdate_Start._selfupdate = require('https').get(options);
-            agentUpdate_Start._selfupdate.on('error', function (e)
-            {
-                sendConsoleText('Self Update failed, because there was a problem trying to download the update', sessionid);
-                sendAgentMessage('Self Update failed, because there was a problem trying to download the update', 3);
+            agentUpdate_Start._selfupdate.on('error', function (e) {
+                sendConsoleText('Self Update failed, because there was a problem trying to download the update from ' + updateurl, sessionid);
+                sendAgentMessage('Self Update failed, because there was a problem trying to download the update from ' + updateurl, 3);
                 agentUpdate_Start._selfupdate = null;
             });
-            agentUpdate_Start._selfupdate.on('response', function (img)
-            {
+            agentUpdate_Start._selfupdate.on('response', function (img) {
                 this._file = require('fs').createWriteStream(agentfilename + '.update', { flags: 'wb' });
                 this._filehash = require('SHA384Stream').create();
-                this._filehash.on('hash', function (h)
-                {
-                    if (updateoptions != null && updateoptions.hash != null)
-                    {
-                        if (updateoptions.hash.toLowerCase() == h.toString('hex').toLowerCase())
-                        {
+                this._filehash.on('hash', function (h) {
+                    if (updateoptions != null && updateoptions.hash != null) {
+                        if (updateoptions.hash.toLowerCase() == h.toString('hex').toLowerCase()) {
                             if (sessionid != null) { sendConsoleText('Download complete. HASH verified.', sessionid); }
                         }
-                        else
-                        {
+                        else {
                             agentUpdate_Start._retryCount++;
-                            sendConsoleText('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + ')', sessionid);
-                            sendAgentMessage('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + ')', 3);
+                            sendConsoleText('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + '), URL: ' + updateurl, sessionid);
+                            sendAgentMessage('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + '), URL: ' + updateurl, 3);
                             agentUpdate_Start._selfupdate = null;
 
-                            if (agentUpdate_Start._retryCount < 4)
-                            {
+                            if (agentUpdate_Start._retryCount < 4) {
                                 // Retry the download again
                                 sendConsoleText('Self Update will try again in 60 seconds...', sessionid);
                                 agentUpdate_Start._timeout = setTimeout(agentUpdate_Start, 60000, updateurl, updateoptions);
                             }
-                            else
-                            {
+                            else {
                                 sendConsoleText('Self Update giving up, too many failures...', sessionid);
                                 sendAgentMessage('Self Update giving up, too many failures...', 3);
                             }
                             return;
                         }
                     }
-                    else
-                    {
+                    else {
                         sendConsoleText('Download complete. HASH=' + h.toString('hex'), sessionid);
                     }
 
@@ -443,13 +426,11 @@ function agentUpdate_Start(updateurl, updateoptions)
                     try { require('MeshAgent').SendCommand({ action: 'agentupdatedownloaded' }); } catch (e) { }
 
                     if (sessionid != null) { sendConsoleText('Updating and restarting agent...', sessionid); }
-                    if (process.platform == 'win32')
-                    {
+                    if (process.platform == 'win32') {
                         // Use _wexecve() equivalent to perform the update
                         windows_execve(name, agentfilename, sessionid);
                     }
-                    else
-                    {
+                    else {
                         var m = require('fs').statSync(process.execPath).mode;
                         require('fs').chmodSync(process.cwd() + agentfilename + '.update', m);
 
@@ -463,8 +444,7 @@ function agentUpdate_Start(updateurl, updateoptions)
                         // erase update
                         require('fs').unlinkSync(process.cwd() + agentfilename + '.update');
 
-                        switch (process.platform)
-                        {
+                        switch (process.platform) {
                             case 'freebsd':
                                 bsd_execv(name, agentfilename, sessionid);
                                 break;
@@ -472,14 +452,12 @@ function agentUpdate_Start(updateurl, updateoptions)
                                 linux_execv(name, agentfilename, sessionid);
                                 break;
                             default:
-                                try
-                                {
+                                try {
                                     // restart service
                                     var s = require('service-manager').manager.getService(name);
                                     s.restart();
                                 }
-                                catch (zz)
-                                {
+                                catch (zz) {
                                     sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
                                     sendAgentMessage('Self Update encountered an error trying to restart service', 3);
                                 }
