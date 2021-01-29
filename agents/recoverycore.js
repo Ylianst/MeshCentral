@@ -174,11 +174,30 @@ function closeDescriptors(libc, descriptors)
     }
 }
 
-function linux_execv(name, agentfilename, sessionid) {
+function linux_execv(name, agentfilename, sessionid)
+{
     var libs = require('monitor-info').getLibInfo('libc');
     var libc = null;
 
-    while (libs.length > 0) {
+    if ((libs.length == 0 || libs.length == null) && require('MeshAgent').ARCHID == 33)
+    {
+        var child = require('child_process').execFile('/bin/sh', ['sh']);
+        child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+        child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
+        child.stdin.write("ls /lib/libc.* | tr '\\n' '`' | awk -F'`' '{ " + ' printf "["; DEL=""; for(i=1;i<NF;++i) { printf "%s{\\"path\\":\\"%s\\"}",DEL,$i; DEL=""; } printf "]"; }\'\nexit\n');
+        child.waitExit();
+
+        try
+        {
+            libs = JSON.parse(child.stdout.str.trim());
+        }
+        catch(e)
+        {
+        }
+    }
+
+    while (libs.length > 0)
+    {
         try {
             libc = require('_GenericMarshal').CreateNativeProxy(libs.pop().path);
             break;
