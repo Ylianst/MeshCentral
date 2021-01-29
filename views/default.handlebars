@@ -8531,10 +8531,10 @@
                 QE('p13PasteButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
-                var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5));
-                QE('p13DeleteFileButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14);
+                QE('p13DeleteFileButton', (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13NewFolderButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
-                QE('p13UploadButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false) || (currentNode.agent.id == 14)));
                 QE('p13RenameFileButton', advancedFeatures && (cc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13ViewFileButton', advancedFeatures && (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13SelectAllButton', tc > 0);
@@ -8628,7 +8628,7 @@
             haltEvent(e);
             QV('p13bigfail', false);
             QV('p13bigok', false);
-            if ((e.dataTransfer == null) || (e.dataTransfer.files.length == 0) || (p13filetree == null) || (currentNode.agent.id == 14)) return;
+            if ((e.dataTransfer == null) || (e.dataTransfer.files.length == 0) || (p13filetree == null)) return;
 
             // Check if these are files we can upload, remove all folders.
             var files = [];
@@ -8642,7 +8642,7 @@
         function p13fileDragOver(e) {
             haltEvent(e);
             if (p13dragtimer != null) { clearTimeout(p13dragtimer); p13dragtimer = null; }
-            var ac = (p13filetree != null) && (currentNode.agent.id != 14); // Set to true if we can accept the file
+            var ac = (p13filetree != null); // Set to true if we can accept the file
             QV('p13bigok', ac);
             QV('p13bigfail', !ac);
         }
