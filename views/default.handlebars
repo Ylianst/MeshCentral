@@ -4427,11 +4427,7 @@
             setDialogMode(2, "Add Mesh Agent", 2, null, x, 'fileDownload');
 
             // Create the QR code
-            var servername = serverinfo.name;
-            if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
-            var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
-            var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
-            new QRCode(Q('agins_qrimage'), { text: 'mc://' + servername + portStr + domainUrlNoSlash + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2], width: 180, height: 180, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.M });
+            new QRCode(Q('agins_qrimage'), { text: serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2], width: 180, height: 180, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.M });
 
             if ((features & 0x2000) == 0)
             {
