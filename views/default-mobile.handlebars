@@ -4540,7 +4540,11 @@
 
             x += '<br style=clear:both><br>';
             var currentMeshLinks = currentMesh.links[userinfo._id];
-            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User" + '</a></div>'; }
+            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px;float:left;margin-right:10px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User" + '</a></div>'; }
+
+            if (navigator.userAgent.toLowerCase().indexOf('android') >= 0) {
+                x += '<div style=margin-bottom:6px;float:left;margin-right:10px><a onclick=p20installAndroidDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Install on this device" + '</a></div>';
+            }
 
             /*
             if ((meshrights & 4) != 0) {
@@ -4636,6 +4640,14 @@
 
         function p20editmeshValidate() {
             QE('idx_dlgOkButton', Q('dp20meshname').value.length > 0);
+        }
+
+        function p20installAndroidDialog() {
+            if (xxdialogMode) return;
+            var x = '<div>' + "Install the MeshCentral Agent on your Android device. Once installed, click the pairing link to connect your device to this server." + '</div>';
+            x += '<br /><div><a href="https://play.google.com/store/apps/details?id=com.meshcentral.agent2"><b>' + "MeshCentral Agent for Android" + '</b></a><div>';
+            x += '<br /><div><a href="' + serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + currentMesh._id.split('/')[2] + '"><b>' + "Device Pairing Link" + '</b></a><div>';
+            setDialogMode(2, "Android Installation", 1, null, x);
         }
 
         function p20showAddMeshUserDialog() {
