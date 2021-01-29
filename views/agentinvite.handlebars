@@ -10,6 +10,7 @@
     <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/qrcode.min.js"></script>
     <title>Agent Installation</title>
     <style>
         .tab {
@@ -83,6 +84,7 @@
                     <button id="twintab32" class="tablinks" onclick="openTab(event, 'wintab32')">Windows 32bit</button>
                     <button id="tlinuxtab" class="tablinks" onclick="openTab(event, 'linuxtab')">Linux</button>
                     <button id="tmacostab" class="tablinks" onclick="openTab(event, 'macostab')">MacOS</button>
+                    <button id="tandrotab" class="tablinks" onclick="openTab(event, 'androtab')">Android</button>
                 </div>
 
                 <div id="wintab64" class="tabcontent" style="background-color:white;color:black">
@@ -119,6 +121,27 @@
                         <img src="images/macosagent.png" />
                     </div>
                 </div>
+
+                <div id="androtab" class="tabcontent" style="background-color:white;color:black">
+                    <h3>Android</h3>
+                    <div id=agins_qrcode style=min-height:220px;min-width:220px;float:right>
+                        <a id=android_qrimage2 href="{{{magenturl}}}" rel="noreferrer noopener" target=_blank>
+                            <div id=android_qrimage style=float:right;margin-left:10px;width:220px;height:220px;cursor:pointer;margin-left:25px></div>
+                        </a>
+                    </div>
+                    <div style="min-height:220px">
+                        <p>Download the agent software using the Google Play store or APK file, install it and use the QR code on the right or the pairing link below to setup your device on this server.</p>
+                        <p>
+                            <a rel="noreferrer noopener" target=_blank href="https://play.google.com/store/apps/details?id=com.meshcentral.agent2">Google Play Store</a>
+                        </p>
+                        <p>
+                            <a rel="noreferrer noopener" target=_blank href="https://info.meshcentral.com/downloads/MeshCentral2/meshcentral-agent.apk">Android APK Download</a>
+                        </p>
+                        <p>
+                            <a rel="noreferrer noopener" target=_blank href="{{{magenturl}}}">Server Pairing Link</a>
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
         <div id="footer">
@@ -144,6 +167,7 @@
         var serverHttps = '{{{serverhttps}}}';
         var serverNoProxy = '{{{servernoproxy}}}';
         var installFlags = '{{{installflags}}}';
+        var magenturl = '{{{magenturl}}}';
         var groupName = decodeURIComponent('{{{meshname}}}');
         if (groupName != '') {
             QH('groupname', format("Remote Agent Installation for {0}", escapeHtml(groupName)));
@@ -153,6 +177,10 @@
         }
         userInterfaceSelectMenu();
         setup();
+
+        // Create the QR code
+        new QRCode(Q('android_qrimage'), { text: magenturl, width: 220, height: 220, colorDark: '#000000', colorLight: '#FFF', correctLevel: QRCode.CorrectLevel.M });
+        Q('android_qrimage2').setAttribute('href', magenturl)
 
         // Toggle user interface menu
         function showUserInterfaceSelectMenu() {
@@ -290,6 +318,7 @@
             else if (navigator.userAgent.indexOf('Windows') >= 0) { openTab(null, 'wintab32'); }
             else if (navigator.userAgent.indexOf('Linux') >= 0) { openTab(null, 'linuxtab'); }
             else if (navigator.userAgent.indexOf('Macintosh') >= 0) { openTab(null, 'macostab'); }
+            else if (navigator.userAgent.indexOf('Android') >= 0) { openTab(null, 'mobiltab'); }
             else { openTab(null, 'wintab64'); }
         }
 

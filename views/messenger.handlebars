@@ -110,7 +110,7 @@
             QH('xtitle', EscapeHtml(newTitle).split(' ').join('&nbsp'));
 
             // Setup web notifications
-            if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+            try { if (Notification) { QV('notifyButton', Notification.permission != 'granted'); } } catch (ex) { }
 
             // Track window focus
             window.addEventListener('focus', function (event) { windowFocus = true; }, false);
