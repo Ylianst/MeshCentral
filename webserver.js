@@ -2413,7 +2413,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (domain.novnc === false) { features += 0x20000000; } // Disables noVNC
                 if (domain.mstsc !== true) { features += 0x40000000; } // Disables MSTSC.js
                 if (obj.isTrustedCert(domain) == false) { features += 0x80000000; } // Indicate we are not using a trusted certificate
-                if (obj.parent.amtManager != null) { features2 += 1; } // Indicates that the Intel AMT manager is active
+                if (obj.parent.amtManager != null) { features2 += 0x00000001; } // Indicates that the Intel AMT manager is active
+                if (obj.parent.firebase != null) { features2 += 0x00000002; } // Indicates the server supports Firebase push messaging
 
                 // Create a authentication cookie
                 const authCookie = obj.parent.encodeCookie({ userid: dbGetFunc.user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);

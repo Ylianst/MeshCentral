@@ -6303,7 +6303,7 @@
             if (xxdialogMode) return;
             var url = '/messenger?id=meshmessenger/' + encodeURIComponentEx(currentNode._id) + '/' + encodeURIComponentEx(userinfo._id) + '&title=' + currentNode.name;
             if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
-            if (currentNode.pmt == 1) { url += '&pmt=1'; } // Push messaging is possible for this device
+            if ((currentNode.pmt == 1) && ((features2 & 2) != 0)) { url += '&pmt=1'; } // Push messaging is possible for this device
             if (e && (e.shiftKey == true)) {
                 safeNewWindow(url, 'meshmessenger:' + currentNode._id);
             } else {
@@ -9336,18 +9336,18 @@
                     if ((consoleNode.conn & 16) != 0) { onlineText += ", MQTT is online" }
                     QH('p15statetext', onlineText);
                     QE('p15uploadCore', ((consoleNode.conn & 1) != 0));
-                    QV('p15outputselecttd', ((consoleNode.conn & 16) != 0) || (currentNode.pmt == 1));
+                    QV('p15outputselecttd', ((consoleNode.conn & 16) != 0) || ((currentNode.pmt == 1) && ((features2 & 2) != 0)));
                     QV('p15outputselect2', ((consoleNode.conn & 16) != 0)); // MQTT channel
-                    QV('p15outputselect3', (currentNode.pmt == 1)); // Push Notification channel
+                    QV('p15outputselect3', ((currentNode.pmt == 1) && ((features2 & 2) != 0))); // Push Notification channel
 
                     var c = Q('p15outputselect').value;
                     if (((consoleNode.conn & 16) == 0) && (c == 2)) { c = 1;  Q('p15outputselect').value = 1; }
-                    if ((currentNode.pmt != 1) && (c == 3)) { c = 1;  Q('p15outputselect').value = 1; }
+                    if (((currentNode.pmt != 1) || ((features2 & 2) == 0)) && (c == 3)) { c = 1;  Q('p15outputselect').value = 1; }
 
                     var active = false;
                     if (((consoleNode.conn & 1) != 0) && (c == 1)) { active = true; } // Agent
                     if (((consoleNode.conn & 16) != 0) && (c == 2)) { active = true; } // MQTT
-                    if ((consoleNode.pmt == 1) && (c == 3)) { active = true; } // Push
+                    if (((currentNode.pmt == 1) && ((features2 & 2) != 0)) && (c == 3)) { active = true; } // Push
                     QE('p15consoleText', active);
                 } else {
                     QH('p15statetext', "Access Denied");
@@ -9386,7 +9386,7 @@
                     t = '<div style=color:orange>' + "MQTT" + '&gt; ' + EscapeHtml(v) + '<br/></div>';
                     consoleNode.consoleText += t;
                     meshserver.send({ action: 'sendmqttmsg', topic: 'console', nodeids: [ consoleNode._id ], msg: v });
-                } else if ((consoleNode.pmt == 1) && (Q('p15outputselect').value == 3)) {
+                } else if ((consoleNode.pmt == 1) && (Q('p15outputselect').value == 3) && ((features2 & 2) != 0)) {
                     // Send the command using push notification
                     t = '<div style=color:violet>' + "PUSH" + '&gt; ' + EscapeHtml(v) + '<br/></div>';
                     consoleNode.consoleText += t;
