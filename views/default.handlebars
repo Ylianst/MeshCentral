@@ -5974,7 +5974,7 @@
                 }
                 x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponentEx(node._id) + '") />';
                 x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
-                if ((connectivity & 1) && (meshrights & 8) && (node.agent.id != 14)) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
+                if ((meshrights & 8) && ((connectivity & 1) || (node.pmt == 1))) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
                 if ((connectivity & 1) && (meshrights & 8) && (node.agent.id == 14)) { x += '<input type=button value="' + "Chat" + '" title="' + "Open chat window to this computer" + '" onclick=deviceChat(event) />'; }
                 if ((serverinfo.guestdevicesharing !== false) && (node.agent != null) && (node.agent.caps & 3) && (connectivity & 1) && (meshrights & 0x80008) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 0x1000) == 0))) { x += '<input type=button value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />'; }
@@ -6338,7 +6338,11 @@
         }
 
         function deviceMessageFunctionEx() {
-            meshserver.send({ action: 'msg', type: 'messagebox', nodeid: currentNode._id, title: decodeURIComponent('{{{extitle}}}'), msg: Q('d2devMessage').value });
+            if (currentNode.pmt == 1) {
+                meshserver.send({ action: 'pushmessage', nodeid: currentNode._id, title: decodeURIComponent('{{{extitle}}}'), msg: Q('d2devMessage').value });
+            } else {
+                meshserver.send({ action: 'msg', type: 'messagebox', nodeid: currentNode._id, title: decodeURIComponent('{{{extitle}}}'), msg: Q('d2devMessage').value });
+            }
         }
 
         function deskClipboardInFunction() {
@@ -13752,7 +13756,7 @@
             x += '<div><label><input type=checkbox id=p41c14 ' + ((serverTraceSources.indexOf('agentupdate') >= 0) ? 'checked' : '') + '>' + "MeshAgent update" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c16 ' + ((serverTraceSources.indexOf('cert') >= 0) ? 'checked' : '') + '>' + "Server Certificate" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c17 ' + ((serverTraceSources.indexOf('db') >= 0) ? 'checked' : '') + '>' + "Server Database" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c18 ' + ((serverTraceSources.indexOf('email') >= 0) ? 'checked' : '') + '>' + "Email/SMS Traffic" + '</label></div>';
+            x += '<div><label><input type=checkbox id=p41c18 ' + ((serverTraceSources.indexOf('email') >= 0) ? 'checked' : '') + '>' + "Email/SMS/Push Traffic" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>' + "Web Server" + '</b></div>';
             x += '<div><label><input type=checkbox id=p41c5 ' + ((serverTraceSources.indexOf('web') >= 0) ? 'checked' : '') + '>' + "Web Server" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c6 ' + ((serverTraceSources.indexOf('webrequest') >= 0) ? 'checked' : '') + '>' + "Web Server Requests" + '</label></div>';

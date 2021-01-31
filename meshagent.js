@@ -1584,6 +1584,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (JSON.stringify(device.wsc) != JSON.stringify(command.wsc)) { /*changes.push('Windows Security Center status');*/ device.wsc = command.wsc; change = 1; log = 1; }
                 }
 
+                // Push Messaging Token
+                if ((command.pmt != null) && (typeof command.pmt == 'string') && (device.pmt != command.pmt)) { device.pmt = command.pmt; change = 1; } // Don't save this as an event to the db.
+
                 if ((command.users != null) && (Array.isArray(command.users)) && (device.users != command.users)) { device.users = command.users; change = 1; } // Don't save this to the db.
                 if ((mesh.mtype == 2) && (!args.wanonly)) {
                     // In WAN mode, the hostname of a computer is not important. Don't log hostname changes.
