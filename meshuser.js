@@ -5203,7 +5203,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 db.Get(command.nodeid, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
                     if ((err == null) && (nodes.length == 1)) {
                         const node = nodes[0];
-                        if (((parent.GetMeshRights(user, node.meshid) & MESHRIGHT_REMOTECONTROL) != 0) && (typeof node.pmt == 'string')) {
+                        if (((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_CHATNOTIFY) != 0) && (typeof node.pmt == 'string')) {
                             // Send out a push message to the device
                             var payload = { notification: { title: command.title, body: command.msg } };
                             var options = { priority: "Normal", timeToLive: 5 * 60 }; // TTL: 5 minutes
@@ -5213,6 +5213,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 })
                                 .catch(function (error) {
                                     parent.parent.debug('email', 'Failed to send push message to device ' + node.name + ', title: ' + command.title + ', msg: ' + command.msg + ', error: ' + error);
+                                });
+                        }
+                    }
+                });
+                break;
+            }
+            case 'pushconsole': {
+                // Check if this user has rights on this nodeid
+                if (parent.parent.firebase == null) return;
+                if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                if (common.validateString(command.console, 1, 3000) == false) break; // Check console command
+                db.Get(command.nodeid, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
+                    if ((err == null) && (nodes.length == 1)) {
+                        const node = nodes[0];
+                        if ((parent.GetNodeRights(user, node.meshid, node._id) == MESHRIGHT_ADMIN) && (typeof node.pmt == 'string')) {
+                            // Send out a push message to the device
+                            var payload = { data: { console: command.console, session: ws.sessionId } };
+                            var options = { priority: "Normal", timeToLive: 60 }; // TTL: 1 minutes, priority 'Normal' or 'High'
+                            parent.parent.firebase.messaging().sendToDevice(node.pmt, payload, options)
+                                .then(function (response) {
+                                    try { ws.send(JSON.stringify({ action: 'msg', type: 'console', nodeid: node._id, value: 'OK' })); } catch (ex) { }
+                                })
+                                .catch(function (error) {
+                                    try { ws.send(JSON.stringify({ action: 'msg', type: 'console', nodeid: node._id, value: 'Failed: ' + error })); } catch (ex) { }
+                                    parent.parent.debug('email', 'Failed to send push console message to device ' + node.name + ', command: ' + command.console + ', error: ' + error);
                                 });
                         }
                     }
