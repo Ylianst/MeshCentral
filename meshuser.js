@@ -5207,7 +5207,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Send out a push message to the device
                             var payload = { notification: { title: command.title, body: command.msg } };
                             var options = { priority: "Normal", timeToLive: 5 * 60 }; // TTL: 5 minutes
-                            parent.parent.firebase.sendToDevice(node.pmt, payload, options, function (id, err, errdesc) {
+                            parent.parent.firebase.sendToDevice(node, payload, options, function (id, err, errdesc) {
                                 if (err == null) {
                                     parent.parent.debug('email', 'Successfully send push message to device ' + node.name + ', title: ' + command.title + ', msg: ' + command.msg);
                                 } else {
@@ -5229,12 +5229,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         const node = nodes[0];
                         if ((parent.GetNodeRights(user, node.meshid, node._id) == MESHRIGHT_ADMIN) && (typeof node.pmt == 'string')) {
                             // Send out a push message to the device
-                            var payload = { data: { console: command.console, session: ws.sessionId } };
+                            var payload = { data: { con: command.console, s: ws.sessionId } };
                             var options = { priority: "Normal", timeToLive: 60 }; // TTL: 1 minutes, priority 'Normal' or 'High'
-                            parent.parent.firebase.sendToDevice(node.pmt, payload, options, function (id, err, errdesc) {
-                                if (err == null) {
-                                    try { ws.send(JSON.stringify({ action: 'msg', type: 'console', nodeid: node._id, value: 'OK' })); } catch (ex) { }
-                                } else {
+                            parent.parent.firebase.sendToDevice(node, payload, options, function (id, err, errdesc) {
+                                if (err != null) {
                                     try { ws.send(JSON.stringify({ action: 'msg', type: 'console', nodeid: node._id, value: 'Failed: ' + errdesc })); } catch (ex) { }
                                     parent.parent.debug('email', 'Failed to send push console message to device ' + node.name + ', command: ' + command.console + ', error: ' + errdesc);
                                 }

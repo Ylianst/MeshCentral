@@ -9391,7 +9391,7 @@
                     t = '<div style=color:violet>' + "PUSH" + '&gt; ' + EscapeHtml(v) + '<br/></div>';
                     consoleNode.consoleText += t;
                     meshserver.send({ action: 'pushconsole', nodeid: consoleNode._id, console: v });
-                } else if ((consoleNode.conn & 1) == 0) {
+                } else if ((consoleNode.conn & 1) != 0) {
                     // Send the command to the mesh agent
                     consoleNode.consoleText += t;
                     meshserver.send({ action: 'msg', type: 'console', nodeid: consoleNode._id, value: v });

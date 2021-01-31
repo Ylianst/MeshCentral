@@ -1546,7 +1546,7 @@ function CreateMeshCentralServer(config, args) {
 
                 // Setup Firebase
                 if ((config.firebase != null) && (typeof config.firebase.senderid == 'string') && (typeof config.firebase.serverkey == 'string')) {
-                    obj.firebase = require('./firebase').CreateFirebase(this, config.firebase.senderid, config.firebase.serverkey);
+                    obj.firebase = require('./firebase').CreateFirebase(obj, config.firebase.senderid, config.firebase.serverkey);
                 }
 
                 // Start periodic maintenance
