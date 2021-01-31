@@ -1545,15 +1545,8 @@ function CreateMeshCentralServer(config, args) {
                 }
 
                 // Setup Firebase
-                if (config.firebase != null) {
-                    try {
-                        obj.firebase = require('firebase-admin');
-                        var firebaseServiceAccount = require(obj.path.join(obj.datapath, config.firebase.serviceaccountkeyfile));
-                        obj.firebase.initializeApp({ credential: obj.firebase.credential.cert(firebaseServiceAccount) });
-                    } catch (ex) {
-                        console.log('Unable to setup Firebase: ' + ex);
-                        delete obj.firebase;
-                    }
+                if ((config.firebase != null) && (typeof config.firebase.senderid == 'string') && (typeof config.firebase.serverkey == 'string')) {
+                    obj.firebase = require('./firebase').CreateFirebase(this, config.firebase.senderid, config.firebase.serverkey);
                 }
 
                 // Start periodic maintenance
@@ -3066,7 +3059,7 @@ function mainStart() {
         }
 
         // Firebase Support
-        if (config.firebase != null) { modules.push('firebase-admin'); }
+        if (config.firebase != null) { modules.push('node-xcs'); }
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog'); }

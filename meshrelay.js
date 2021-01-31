@@ -414,11 +414,12 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                             }
                         }
                     });
+                    parent.wsrelays[obj.id] = { peer1: obj, state: 1 }; // No timeout on connections with push notification.
                 } else {
                     ws._socket.pause(); // Hold traffic until the other connection
                     parent.parent.debug('relay', 'Relay holding: ' + obj.id + ' (' + obj.req.clientIp + ') ' + (obj.authenticated ? 'Authenticated' : ''));
+                    parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(closeBothSides, 60000) };
                 }
-                parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(closeBothSides, 30000) };
 
                 // Check if a peer server has this connection
                 if (parent.parent.multiServer != null) {
@@ -485,15 +486,15 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 command.title = (domain.title ? domain.title : 'MeshCentral');
                 var payload = { notification: { title: command.title, body: command.msg }, data: { url: obj.msgurl } };
                 var options = { priority: 'High', timeToLive: 5 * 60 }; // TTL: 5 minutes, priority 'Normal' or 'High'
-                parent.parent.firebase.messaging().sendToDevice(obj.pmt, payload, options)
-                    .then(function (response) {
+                parent.parent.firebase.sendToDevice(obj.pmt, payload, options, function (id, err, errdesc) {
+                    if (err == null) {
                         parent.parent.debug('email', 'Successfully send push message to device ' + obj.nodename + ', title: ' + command.title + ', msg: ' + command.msg);
                         try { ws.send(JSON.stringify({ action: 'ctrl', value: 1 })); } catch (ex) { } // Push notification success
-                    })
-                    .catch(function (error) {
-                        parent.parent.debug('email', 'Failed to send push message to device ' + obj.nodename + ', title: ' + command.title + ', msg: ' + command.msg + ', error: ' + error);
+                    } else {
+                        parent.parent.debug('email', 'Failed to send push message to device ' + obj.nodename + ', title: ' + command.title + ', msg: ' + command.msg + ', error: ' + errdesc);
                         try { ws.send(JSON.stringify({ action: 'ctrl', value: 2 })); } catch (ex) { } // Push notification failed
-                    });
+                    }
+                });
             }
         }
     });

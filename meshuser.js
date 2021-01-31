@@ -5207,13 +5207,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Send out a push message to the device
                             var payload = { notification: { title: command.title, body: command.msg } };
                             var options = { priority: "Normal", timeToLive: 5 * 60 }; // TTL: 5 minutes
-                            parent.parent.firebase.messaging().sendToDevice(node.pmt, payload, options)
-                                .then(function (response) {
+                            parent.parent.firebase.sendToDevice(node.pmt, payload, options, function (id, err, errdesc) {
+                                if (err == null) {
                                     parent.parent.debug('email', 'Successfully send push message to device ' + node.name + ', title: ' + command.title + ', msg: ' + command.msg);
-                                })
-                                .catch(function (error) {
-                                    parent.parent.debug('email', 'Failed to send push message to device ' + node.name + ', title: ' + command.title + ', msg: ' + command.msg + ', error: ' + error);
-                                });
+                                } else {
+                                    parent.parent.debug('email', 'Failed to send push message to device ' + node.name + ', title: ' + command.title + ', msg: ' + command.msg + ', error: ' + errdesc);
+                                }
+                            });
                         }
                     }
                 });
@@ -5231,14 +5231,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Send out a push message to the device
                             var payload = { data: { console: command.console, session: ws.sessionId } };
                             var options = { priority: "Normal", timeToLive: 60 }; // TTL: 1 minutes, priority 'Normal' or 'High'
-                            parent.parent.firebase.messaging().sendToDevice(node.pmt, payload, options)
-                                .then(function (response) {
+                            parent.parent.firebase.sendToDevice(node.pmt, payload, options, function (id, err, errdesc) {
+                                if (err == null) {
                                     try { ws.send(JSON.stringify({ action: 'msg', type: 'console', nodeid: node._id, value: 'OK' })); } catch (ex) { }
-                                })
-                                .catch(function (error) {
-                                    try { ws.send(JSON.stringify({ action: 'msg', type: 'console', nodeid: node._id, value: 'Failed: ' + error })); } catch (ex) { }
-                                    parent.parent.debug('email', 'Failed to send push console message to device ' + node.name + ', command: ' + command.console + ', error: ' + error);
-                                });
+                                } else {
+                                    try { ws.send(JSON.stringify({ action: 'msg', type: 'console', nodeid: node._id, value: 'Failed: ' + errdesc })); } catch (ex) { }
+                                    parent.parent.debug('email', 'Failed to send push console message to device ' + node.name + ', command: ' + command.console + ', error: ' + errdesc);
+                                }
+                            });
                         }
                     }
                 });

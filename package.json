@@ -18,7 +18,7 @@
   "author": "Ylian Saint-Hilaire <ylianst@gmail.com>",
   "main": "meshcentral.js",
   "bin": {
-    "meshcentral": "./bin/meshcentral"
+    "meshcentral": "bin/meshcentral"
   },
   "license": "Apache-2.0",
   "files": [
@@ -53,7 +53,6 @@
     "xmldom": "^0.1.27",
     "yauzl": "^2.10.0"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/Ylianst/MeshCentral.git"
