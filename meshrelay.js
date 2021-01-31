@@ -13,6 +13,28 @@
 /*jshint esversion: 6 */
 "use strict";
 
+// Mesh Rights
+const MESHRIGHT_EDITMESH = 0x00000001;
+const MESHRIGHT_MANAGEUSERS = 0x00000002;
+const MESHRIGHT_MANAGECOMPUTERS = 0x00000004;
+const MESHRIGHT_REMOTECONTROL = 0x00000008;
+const MESHRIGHT_AGENTCONSOLE = 0x00000010;
+const MESHRIGHT_SERVERFILES = 0x00000020;
+const MESHRIGHT_WAKEDEVICE = 0x00000040;
+const MESHRIGHT_SETNOTES = 0x00000080;
+const MESHRIGHT_REMOTEVIEWONLY = 0x00000100;
+const MESHRIGHT_NOTERMINAL = 0x00000200;
+const MESHRIGHT_NOFILES = 0x00000400;
+const MESHRIGHT_NOAMT = 0x00000800;
+const MESHRIGHT_DESKLIMITEDINPUT = 0x00001000;
+const MESHRIGHT_LIMITEVENTS = 0x00002000;
+const MESHRIGHT_CHATNOTIFY = 0x00004000;
+const MESHRIGHT_UNINSTALL = 0x00008000;
+const MESHRIGHT_NODESKTOP = 0x00010000;
+const MESHRIGHT_REMOTECOMMAND = 0x00020000;
+const MESHRIGHT_RESETOFF = 0x00040000;
+const MESHRIGHT_GUESTSHARING = 0x00080000;
+const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
 function checkDeviceSharePublicIdentifier(parent, domain, nodeid, pid, func) {
     // Check the public id
@@ -166,7 +188,14 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
             }
         }
         return false;
-    };
+    }
+
+    // Push any stored message to the peer
+    obj.pushStoredMessages = function () {
+        if ((obj.storedPushedMessages != null) && (this.peer != null)) {
+            for (var i in obj.storedPushedMessages) { try { this.peer.send(JSON.stringify({ action: 'chat', msg: obj.storedPushedMessages[i] })); } catch (ex) { } }
+        }
+    }
 
     // Send a PING/PONG message
     function sendPing() {
@@ -277,6 +306,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                                     // Do not record the session, just send session start
                                     try { ws.send('c'); } catch (ex) { } // Send connect to both peers
                                     try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
+
+                                    // Send any stored push messages
+                                    obj.pushStoredMessages();
+                                    relayinfo.peer1.pushStoredMessages();
                                     return;
                                 }
                             }
@@ -300,6 +333,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                                     parent.parent.debug('relay', 'Relay: Unable to record to file: ' + recFullFilename);
                                     try { ws.send('c'); } catch (ex) { } // Send connect to both peers
                                     try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
+
+                                    // Send any stored push messages
+                                    obj.pushStoredMessages();
+                                    relayinfo.peer1.pushStoredMessages();
                                 } else {
                                     // Write the recording file header
                                     parent.parent.debug('relay', 'Relay: Started recoding to file: ' + recFullFilename);
@@ -312,10 +349,17 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                                         try { relayinfo.peer1.ws.logfile = ws.logfile = logfile; } catch (ex) {
                                             try { ws.send('c'); } catch (ex) { } // Send connect to both peers, 'cr' indicates the session is being recorded.
                                             try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
+                                            // Send any stored push messages
+                                            obj.pushStoredMessages();
+                                            relayinfo.peer1.pushStoredMessages();
                                             return;
                                         }
                                         try { ws.send('cr'); } catch (ex) { } // Send connect to both peers, 'cr' indicates the session is being recorded.
                                         try { relayinfo.peer1.ws.send('cr'); } catch (ex) { }
+
+                                        // Send any stored push messages
+                                        obj.pushStoredMessages();
+                                        relayinfo.peer1.pushStoredMessages();
                                     });
                                 }
                             });
@@ -324,6 +368,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         // Send session start
                         try { ws.send('c'); } catch (ex) { } // Send connect to both peers
                         try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
+
+                        // Send any stored push messages
+                        obj.pushStoredMessages();
+                        relayinfo.peer1.pushStoredMessages();
                     }
 
                     parent.parent.debug('relay', 'Relay connected: ' + obj.id + ' (' + obj.req.clientIp + ' --> ' + obj.peer.req.clientIp + ')');
@@ -348,9 +396,29 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 }
             } else {
                 // Wait for other relay connection
-                ws._socket.pause(); // Hold traffic until the other connection
+                if ((obj.id.startsWith('meshmessenger/node/') == true) && obj.authenticated && (parent.parent.firebase != null)) {
+                    // This is an authenticated messenger session, push messaging may be allowed. Don't hold traffic.
+                    ws._socket.resume(); // Don't hold traffic, process push messages
+                    parent.parent.debug('relay', 'Relay messenger waiting: ' + obj.id + ' (' + obj.req.clientIp + ') ' + (obj.authenticated ? 'Authenticated' : ''));
+
+                    // Fetch the Push Messaging Token
+                    const idsplit = obj.id.split('/');
+                    const nodeid = idsplit[1] + '/' + idsplit[2] + '/' + idsplit[3];
+                    parent.db.Get(nodeid, function (err, nodes) {
+                        if ((err == null) && (nodes != null) && (nodes.length == 1) && (typeof nodes[0].pmt == 'string')) {
+                            if ((parent.GetNodeRights(obj.user, nodes[0].meshid, nodes[0]._id) & MESHRIGHT_CHATNOTIFY) != 0) {
+                                obj.pmt = nodes[0].pmt;
+                                obj.nodename = nodes[0].name;
+                                // Create the peer connection URL, we will include that in push messages
+                                obj.msgurl = req.headers.origin + (req.url.split('/.websocket')[0].split('/meshrelay.ashx').join('/messenger')) + '?id=' + req.query.id
+                            }
+                        }
+                    });
+                } else {
+                    ws._socket.pause(); // Hold traffic until the other connection
+                    parent.parent.debug('relay', 'Relay holding: ' + obj.id + ' (' + obj.req.clientIp + ') ' + (obj.authenticated ? 'Authenticated' : ''));
+                }
                 parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(closeBothSides, 30000) };
-                parent.parent.debug('relay', 'Relay holding: ' + obj.id + ' (' + obj.req.clientIp + ') ' + (obj.authenticated ? 'Authenticated' : ''));
 
                 // Check if a peer server has this connection
                 if (parent.parent.multiServer != null) {
@@ -372,7 +440,6 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
 
     // When data is received from the mesh relay web socket
     ws.on('message', function (data) {
-        //console.log(typeof data, data.length);
         if (this.peer != null) {
             //if (typeof data == 'string') { console.log('Relay: ' + data); } else { console.log('Relay:' + data.length + ' byte(s)'); }
             if (this.peer.slowRelay == null) {
@@ -402,6 +469,31 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         setTimeout(function () { xthis.peer.send(data, ws.flushSink); }, xthis.peer.slowRelay);
                     }
                 } catch (ex) { console.log(ex); }
+            }
+        } else {
+            if ((typeof data == 'string') && (obj.pmt != null)) {
+                var command = null;
+                try { command = JSON.parse(data); } catch (ex) { return; }
+                if ((typeof command != 'object') || (command.action != 'chat') || (typeof command.msg != 'string') || (command.msg == '')) return;
+
+                // Store pushed messages
+                if (obj.storedPushedMessages == null) { obj.storedPushedMessages = []; }
+                obj.storedPushedMessages.push(obj.storedPushedMessages.push(command.msg));
+                while (obj.storedPushedMessages.length > 50) { obj.storedPushedMessages.shift(); } // Only keep last 50 notifications
+
+                // Send out a push message to the device
+                command.title = (domain.title ? domain.title : 'MeshCentral');
+                var payload = { notification: { title: command.title, body: command.msg }, data: { url: obj.msgurl } };
+                var options = { priority: 'High', timeToLive: 5 * 60 }; // TTL: 5 minutes, priority 'Normal' or 'High'
+                parent.parent.firebase.messaging().sendToDevice(obj.pmt, payload, options)
+                    .then(function (response) {
+                        parent.parent.debug('email', 'Successfully send push message to device ' + obj.nodename + ', title: ' + command.title + ', msg: ' + command.msg);
+                        try { ws.send(JSON.stringify({ action: 'ctrl', value: 1 })); } catch (ex) { } // Push notification success
+                    })
+                    .catch(function (error) {
+                        parent.parent.debug('email', 'Failed to send push message to device ' + obj.nodename + ', title: ' + command.title + ', msg: ' + command.msg + ', error: ' + error);
+                        try { ws.send(JSON.stringify({ action: 'ctrl', value: 2 })); } catch (ex) { } // Push notification failed
+                    });
             }
         }
     });

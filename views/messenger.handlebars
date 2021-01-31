@@ -63,6 +63,7 @@
             var args = XparseUriArgs();
             if (args.key && (isAlphaNumeric(args.key) == false)) { delete args.key; }
             if (args.locale && (isAlphaNumeric(args.locale) == false)) { delete args.locale; }
+            var pushMessaging = (args.pmt == 1);
 
             // WebRTC sessions and data, audio and video channels
             var random = Math.random();         // Selected random, larger value initiates WebRTC.
@@ -144,7 +145,7 @@
             document.onkeypress = function ondockeypress(e) {
                 if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
                 if (notification != null) { notification.close(); notification = null; }
-                if (state == 2) {
+                if ((state == 2) || pushMessaging) {
                     if (e.keyCode == 13) {
                         // Return
                         xsend(e);
@@ -229,7 +230,7 @@
                     chatTextSession += ((new Date()).toLocaleTimeString() + ' - ' + "Local" + '> ' + outtext + '\r\n');
                     QA('xmsg', '<div style="clear:both"><div class="localBubble">' + EscapeHtml(outtext) + '</div><div></div></div>');
                     Q('xmsgparent').scrollTop = Q('xmsgparent').scrollHeight;
-                    send({ action: 'chat', msg: outtext });
+                    if ((state == 2) || pushMessaging) { send({ action: 'chat', msg: outtext }); }
                     Q('xouttext').value = '';
                     Q('xouttext').focus();
                 }
@@ -239,9 +240,9 @@
 
             // Update user controls
             function updateControls() {
-                QE('sendButton', state == 2);
-                QE('clearButton', state == 2);
-                QE('xouttext', state == 2);
+                QE('sendButton', (state == 2) || pushMessaging);
+                QE('clearButton', (state == 2) || pushMessaging);
+                QE('xouttext', (state == 2) || pushMessaging);
                 QV('fileButton', state == 2);
                 QV('camButton', webchannel && webchannel.ok && !localStream && (userMediaSupport == 2));
                 QV('micButton', webchannel && webchannel.ok && !localStream && (userMediaSupport > 0));
@@ -348,7 +349,7 @@
 
             // Send data over the current transport (WebRTC first)
             function send(data) {
-                if (state != 2) return; // If not in connected state, ignore this.
+                if ((state != 2) && (pushMessaging == false)) return; // If not in connected state, ignore this.
                 if (typeof data == 'object') { data = JSON.stringify(data); } // If this is an object, convert it to a string.
                 if (webchannel && webchannel.ok) { if (webchannel.xoutBuffer != null) { webchannel.xoutBuffer.push(data); } else { webchannel.send(data); } } // If WebRTC channel is possible, use it or hold until we can use it.
                 else { if (socket != null) { try { socket.send(data); } catch (ex) { } } } // If a websocket channel is present, use that.
@@ -372,6 +373,12 @@
                     //console.log('RECV', data);
                     switch (data.action) {
                         case 'chat': { displayRemote(data.msg); break; } // Incoming chat message.
+                        case 'ctrl': {
+                            if (data.value == 1) { displayControl("Sent as push notification."); }
+                            else if (data.value == 2) { displayControl("Push notification failed."); }
+                            if (data.msg != null) { displayControl(msg); }
+                            break;
+                        }
                         case 'random': { if (random > data.random) { startWebRTC(0, true); } break; } // If we have a larger random value, we start WebRTC.
                         case 'webRtcSdp': { if (!webrtcSessions[webRtcIdSwitch(data.id)]) { startWebRTC(webRtcIdSwitch(data.id), false); } webRtcHandleOffer(webRtcIdSwitch(data.id), data.sdp); break; } // Remote WebRTC offer or answer.
                         case 'webRtcIce': { var webrtc = webrtcSessions[webRtcIdSwitch(data.id)]; if (webrtc) { try { webrtc.addIceCandidate(new RTCIceCandidate(data.ice)); } catch (ex) { } } break; } // Remote ICE candidate
@@ -683,7 +690,7 @@
                             sendws({ action: 'random', random: random }); // Send a random number. Higher number starts the WebRTC session.
                             return;
                         }
-                        if (state == 2) { processMessage(msg.data, 1); }
+                        if (msg.data[0] == '{') { processMessage(msg.data, 1); }
                     }
                 } else {
                     displayControl("Error: No connection key specified.");
