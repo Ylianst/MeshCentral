@@ -686,6 +686,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (!r[meshid]) { r[meshid] = []; }
                             delete docs[i].meshid;
 
+                            // Remove push messaging token if present
+                            if (docs[i].pmt != null) { docs[i].pmt = 1; }
+
                             // Remove Intel AMT credential if present
                             if (docs[i].intelamt != null) {
                                 if (docs[i].intelamt.pass != null) { docs[i].intelamt.pass = 1; }
@@ -4060,7 +4063,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Check if this user has rights on this nodeid
                     if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
                     db.Get(command.nodeid, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
-                        if ((nodes == null) || (nodes.length == 1)) {
+                        if ((err == null) && (nodes.length == 1)) {
                             if ((parent.GetMeshRights(user, nodes[0].meshid) & MESHRIGHT_REMOTECONTROL) != 0) {
                                 // Add a user authentication cookie to a url
                                 var cookieContent = { userid: user._id, domainid: user.domain };
@@ -5189,6 +5192,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var responseCmd = { action: 'meshToolInfo', name: command.name, hash: info.hash, size: info.size, url: info.url };
                 if (parent.webCertificateHashs[domain.id] != null) { responseCmd.serverhash = Buffer.from(parent.webCertificateHashs[domain.id], 'binary').toString('hex'); }
                 try { ws.send(JSON.stringify(responseCmd)); } catch (ex) { }
+                break;
+            }
+            case 'pushmessage': {
+                // Check if this user has rights on this nodeid
+                if (parent.parent.firebase == null) return;
+                if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                if (common.validateString(command.title, 1, 1024) == false) break; // Check title
+                if (common.validateString(command.msg, 1, 1024) == false) break; // Check message
+                db.Get(command.nodeid, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
+                    if ((err == null) && (nodes.length == 1)) {
+                        const node = nodes[0];
+                        if (((parent.GetMeshRights(user, node.meshid) & MESHRIGHT_REMOTECONTROL) != 0) && (typeof node.pmt == 'string')) {
+                            // Send out a push message to the device
+                            var payload = { notification: { title: command.title, body: command.msg } };
+                            var options = { priority: "Normal", timeToLive: 5 * 60 }; // TTL: 5 minutes
+                            parent.parent.firebase.messaging().sendToDevice(node.pmt, payload, options)
+                                .then(function (response) {
+                                    parent.parent.debug('email', 'Successfully send push message to device ' + node.name + ', title: ' + command.title + ', msg: ' + command.msg);
+                                })
+                                .catch(function (error) {
+                                    parent.parent.debug('email', 'Failed to send push message to device ' + node.name + ', title: ' + command.title + ', msg: ' + command.msg + ', error: ' + error);
+                                });
+                        }
+                    }
+                });
                 break;
             }
             case 'print': {

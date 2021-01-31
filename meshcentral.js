@@ -678,7 +678,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Check top level configuration for any unreconized values
-        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'sendgrid', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".'); } } }
+        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'sendgrid', 'firebase', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".'); } } }
 
         if (typeof obj.args.userallowedip == 'string') { if (obj.args.userallowedip == '') { config.settings.userallowedip = obj.args.userallowedip = null; } else { config.settings.userallowedip = obj.args.userallowedip = obj.args.userallowedip.split(','); } }
         if (typeof obj.args.userblockedip == 'string') { if (obj.args.userblockedip == '') { config.settings.userblockedip = obj.args.userblockedip = null; } else { config.settings.userblockedip = obj.args.userblockedip = obj.args.userblockedip.split(','); } }
@@ -1542,6 +1542,18 @@ function CreateMeshCentralServer(config, args) {
                 if (config.sms != null) {
                     obj.smsserver = require('./meshsms.js').CreateMeshSMS(obj);
                     if ((obj.smsserver != null) && (obj.args.lanonly == true)) { addServerWarning("SMS gateway has limited use in LAN mode."); }
+                }
+
+                // Setup Firebase
+                if (config.firebase != null) {
+                    try {
+                        obj.firebase = require('firebase-admin');
+                        var firebaseServiceAccount = require(obj.path.join(obj.datapath, config.firebase.serviceaccountkeyfile));
+                        obj.firebase.initializeApp({ credential: obj.firebase.credential.cert(firebaseServiceAccount) });
+                    } catch (ex) {
+                        console.log('Unable to setup Firebase: ' + ex);
+                        delete obj.firebase;
+                    }
                 }
 
                 // Start periodic maintenance
@@ -3052,6 +3064,9 @@ function mainStart() {
             const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
             if (NodeJSVer < 8) { console.log("SMS Plivo support requires Node v8 or above, current version is " + process.version + "."); } else { modules.push('plivo'); }
         }
+
+        // Firebase Support
+        if (config.firebase != null) { modules.push('firebase-admin'); }
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog'); }
