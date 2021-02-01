@@ -1546,7 +1546,8 @@ function CreateMeshCentralServer(config, args) {
 
                 // Setup Firebase
                 if ((config.firebase != null) && (typeof config.firebase.senderid == 'string') && (typeof config.firebase.serverkey == 'string')) {
-                    obj.firebase = require('./firebase').CreateFirebase(obj, config.firebase.senderid, config.firebase.serverkey);
+                    const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+                    if (NodeJSVer >= 10) { obj.firebase = require('./firebase').CreateFirebase(obj, config.firebase.senderid, config.firebase.serverkey); }
                 }
 
                 // Start periodic maintenance
@@ -3059,7 +3060,10 @@ function mainStart() {
         }
 
         // Firebase Support
-        if (config.firebase != null) { modules.push('node-xcs'); }
+        if (config.firebase != null) {
+            const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+            if (NodeJSVer < 10) { console.log("Firebase support required Node v10 or above, current version is " + process.version + "."); } else { modules.push('node-xcs'); }
+        }
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog'); }
