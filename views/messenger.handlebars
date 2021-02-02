@@ -29,13 +29,14 @@
         <div id="xmiddle" style="position:absolute;left:0;right:0;top:38px;bottom:36px;font-size:18px">
             <div id="xmsgparent" style="position:absolute;left:0;right:0;top:0;bottom:0;overflow-y:scroll">
                 <div id="xmsg" style="padding:5px"></div>
+                <div id="typingIndicator" style="display:none;margin-left:5px;clear:both"><img src="images/3dots-24.gif" srcset="images/3dots-48.gif 2x" /></div>
             </div>
         </div>
         <div id="xbottom" style="position:absolute;left:0;right:0;bottom:0px;height:36px;background-color:#036;font-size:18px">
             <table style="width:100%">
                 <tr>
                     <td>
-                        <input id="xouttext" type="text" style="box-sizing:border-box;width:100%;font-size:18px" onfocus=onUserInputFocus(1) onblur=onUserInputFocus(0) />
+                        <input id="xouttext" type="text" style="box-sizing:border-box;width:100%;font-size:18px" onfocus=onUserInputFocus(1) onblur=onUserInputFocus(0) onkeyup="updateLocalOutText()" />
                     </td>
                     <td style="width:1px">
                         <input type="button" id="sendButton" value="Send" style="box-sizing: border-box;float:right;font-size:18px" onclick="xsend(event)" />
@@ -83,6 +84,8 @@
             if (webrtcconfiguration == '') { webrtcconfiguration = null; } else { try { webrtcconfiguration = JSON.parse(decodeURIComponent(webrtcconfiguration)); } catch (ex) { console.log('Invalid WebRTC config: "' + webrtcconfiguration + '".'); webrtcconfiguration = null; } }
             var windowFocus = true;
             var chatTextSession = new Date().toString() + '\r\n';
+            var localOutText = false;
+            var remoteOutText = false;
 
             // File transfer state
             var fileUploads = [];
@@ -136,6 +139,7 @@
                         // Backspace
                         var outtext = Q('xouttext').value;
                         if (outtext.length > 0) { Q('xouttext').value = outtext.substring(0, outtext.length - 1); }
+                        updateLocalOutText();
                     }
                 }
                 if (userInputFocus == 0) { haltEvent(e); return false; }
@@ -151,7 +155,7 @@
                         xsend(e);
                     } else {
                         // Any other key
-                        if ((userInputFocus == 0) && (e.key.length == 1)) { Q('xouttext').value = Q('xouttext').value + e.key; }
+                        if ((userInputFocus == 0) && (e.key.length == 1)) { Q('xouttext').value = Q('xouttext').value + e.key; updateLocalOutText(); }
                     }
                 }
                 if (userInputFocus == 0) { haltEvent(e); return false; }
@@ -233,6 +237,7 @@
                     if ((state == 2) || pushMessaging) { send({ action: 'chat', msg: outtext }); }
                     Q('xouttext').value = '';
                     Q('xouttext').focus();
+                    localOutText = false;
                 }
             }
 
@@ -247,6 +252,7 @@
                 QV('camButton', webchannel && webchannel.ok && !localStream && (userMediaSupport == 2));
                 QV('micButton', webchannel && webchannel.ok && !localStream && (userMediaSupport > 0));
                 QV('hangupButton', webchannel && webchannel.ok && localStream);
+                updateLocalOutText();
             }
 
             // This is the WebRTC setup
@@ -345,6 +351,8 @@
                 if (socket != null) { socket.close(); socket = null; }
                 updateControls();
                 state = 0;
+                updateLocalOutText();
+                updateRemoteOutText();
             }
 
             // Send data over the current transport (WebRTC first)
@@ -372,7 +380,8 @@
                     try { data = JSON.parse(data); } catch (ex) { console.log('Unable to parse', data); return; }
                     //console.log('RECV', data);
                     switch (data.action) {
-                        case 'chat': { displayRemote(data.msg); break; } // Incoming chat message.
+                        case 'chat': { displayRemote(data.msg); updateRemoteOutText(false); break; } // Incoming chat message.
+                        case 'outtext': { updateRemoteOutText(data.value); break; }
                         case 'ctrl': {
                             if (data.value == 1) { displayControl("Sent as push notification."); }
                             else if (data.value == 2) { displayControl("Push notification failed."); }
@@ -688,6 +697,8 @@
                             state = 2;
                             updateControls();
                             sendws({ action: 'random', random: random }); // Send a random number. Higher number starts the WebRTC session.
+                            updateLocalOutText();
+                            updateRemoteOutText();
                             return;
                         }
                         if (msg.data[0] == '{') { processMessage(msg.data, 1); }
@@ -724,6 +735,23 @@
                     if (!isSafeString3(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
                 }
                 return r;
+            }
+
+            function updateLocalOutText() {
+                var l = Q('xouttext').value;
+                if (((state != 2) || (l == '')) && (localOutText == true)) {
+                    localOutText = false;
+                    send({ action: 'outtext', value: false });
+                } else if ((state == 2) && ((l != '') && (localOutText == false))) {
+                    localOutText = true;
+                    send({ action: 'outtext', value: true });
+                }
+            }
+
+            function updateRemoteOutText(newState) {
+                //console.log('updateRemoteOutText', newState);
+                if (state != 2) { newState = false; }
+                if (remoteOutText != newState) { remoteOutText = newState; QV('typingIndicator', remoteOutText); }
             }
 
         </script>

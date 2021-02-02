@@ -580,9 +580,9 @@ function getIpLocationDataEx(func) {
 
 // Remove all Gateway MAC addresses for interface list. This is useful because the gateway MAC is not always populated reliably.
 function clearGatewayMac(str) {
-    if (str == null) return null;
+    if (typeof str != 'string') return null;
     var x = JSON.parse(str);
-    for (var i in x.netif) { if (x.netif[i].gatewaymac) { delete x.netif[i].gatewaymac } }
+    for (var i in x.netif) { try { if (x.netif[i].gatewaymac) { delete x.netif[i].gatewaymac } } catch (ex) { } }
     return JSON.stringify(x);
 }
 
@@ -4207,13 +4207,15 @@ function sendNetworkUpdateNagle() { if (sendNetworkUpdateNagleTimer != null) { c
 function sendNetworkUpdate(force) {
     sendNetworkUpdateNagleTimer = null;
 
-    // Update the network interfaces information data
-    var netInfo = { netif2: require('os').networkInterfaces() };
-    if (netInfo.netif2) {
-        netInfo.action = 'netinfo';
-        var netInfoStr = JSON.stringify(netInfo);
-        if ((force == true) || (clearGatewayMac(netInfoStr) != clearGatewayMac(lastNetworkInfo))) { mesh.SendCommand(netInfo); lastNetworkInfo = netInfoStr; }
-    }
+    try {
+        // Update the network interfaces information data
+        var netInfo = { netif2: require('os').networkInterfaces() };
+        if (netInfo.netif2) {
+            netInfo.action = 'netinfo';
+            var netInfoStr = JSON.stringify(netInfo);
+            if ((force == true) || (clearGatewayMac(netInfoStr) != clearGatewayMac(lastNetworkInfo))) { mesh.SendCommand(netInfo); lastNetworkInfo = netInfoStr; }
+        }
+    } catch (ex) { }
 }
 
 // Called periodically to check if we need to send updates to the server
