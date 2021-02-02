@@ -471,6 +471,77 @@
                 border: 12px solid;
                 border-color: transparent #F0ECCD #F0ECCD transparent;
             }
+
+        #p15statetext {
+            padding: 4px;
+            height: 15px;
+        }
+
+        #p15agentConsole {
+            background: black;
+            margin: 0;
+            padding: 0;
+            color: lightgray;
+            width: 100%;
+            position: relative;
+        }
+
+        #p15coreName {
+            padding: 4px;
+            display: inline-block;
+        }
+
+        #p15agentConsoleText {
+            position:absolute;
+            margin: 0;
+            padding: 0;
+            top: 0;
+            bottom: 0;
+            left:0;
+            right: 0;
+            overflow-y: scroll;
+            overflow-x: auto;
+        }
+
+        .areaHead {
+            padding-left: 4px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            background: #C0C0C0;
+        }
+
+        .night .areaHead {
+            color: #CCC;
+            background: #333;
+        }
+
+        .areaFoot {
+            padding-top: 2px;
+            padding-bottom: 2px;
+            background: #C0C0C0;
+        }
+
+        .night .areaFoot {
+            color: #CCC;
+            background: #333;
+        }
+
+        .toright2 {
+            float: right;
+            text-align: right;
+            padding-right: 4px;
+        }
+
+        #consoleTable {
+            width: 100%;
+            height: 100%;
+            padding: 0px;
+            margin-top: 0px;
+        }
+
+        .night #consoleTable {
+            color: black;
+        }
     </style>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
@@ -797,6 +868,43 @@
                     </div>
                     <div id=p10details style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
                         <div id=p10detailshtml style="margin-left:-3px"></div>
+                    </div>
+                    <div id=p10console style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%">
+                        <table id="consoleTable" cellpadding=0 cellspacing=0>
+                            <tr style="height:28px">
+                                <td class="areaHead">
+                                    <div class="toright2">
+                                        <div id=p15coreName></div>
+                                        <input type=button id=p15uploadCore value="Agent Action" onclick=p15uploadCore(event) />
+                                    </div>
+                                    <div id="p15statetext"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td id=p15agentConsole style="position:relative">
+                                    <pre id=p15agentConsoleText></pre>
+                                </td>
+                            </tr>
+                            <tr style="height:28px">
+                                <td class="areaFoot">
+                                    <table style="width:100%">
+                                        <tr>
+                                            <td style="width:99%">
+                                                <input id=p15consoleText style=width:100%;box-sizing:border-box onkeyup=p15consoleSend(event) />
+                                            </td>
+                                            <td id="p15outputselecttd">
+                                                <select id=p15outputselect onchange="setupConsole()">
+                                                    <option id="p15outputselect1" value=1>Agent</option>
+                                                    <option id="p15outputselect3" value=3>Push</option>
+                                                    <option id="p15outputselect2" value=2>MQTT</option>
+                                                </select>
+                                            </td>
+                                            <td style="width:1%"><input id="id_p15consoleClear" type="button" class="bottombutton" value="Clear" onclick="p15consoleClear()" /></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
                 </div>
                 <div id=p20 style="display:none;position:absolute;bottom:0;top:0;width:100%">
@@ -1242,7 +1350,8 @@
                         var index = -1;
                         if (nodes != null) { for (var i in nodes) { if (nodes[i]._id == message.nodeid) { index = i; break; } } }
                         if (index != -1) {
-                            if (message.type == 'notify') { // This is a notification message.
+                            if (message.type == 'console') { p15consoleReceive(nodes[index], message.value, message.source); } // This is a console message.
+                            else if (message.type == 'notify') { // This is a notification message.
                                 var n = getstore('notifications', 0);
                                 if (((n & 8) == 0) && (message.amtMessage != null)) { break; } // Intel AMT desktop & terminal messages should be ignored.
                                 var n = { text: message.value, title: message.title, icon: message.icon, titleid: message.titleid, msgid: message.msgid, args: message.args };
@@ -2903,6 +3012,7 @@
                 // Show node last 7 days timeline
                 //drawDeviceTimeline();
                 setupFiles();
+                if (meshrights & 16) { setupConsole(); }
 
                 // Show bottom buttons
                 x = '<div style=float:right;font-size:x-small;margin-right:10px>';
@@ -2973,6 +3083,7 @@
             QV('p10desktop', currentDevicePanel == 1); // Show if we have remote control rights or desktop view only rights
             QV('p10files', currentDevicePanel == 2);
             QV('p10details', currentDevicePanel == 3);
+            QV('p10console', currentDevicePanel == 4);
             var menus = [];
             if (currentDevicePanel != 0) { menus.push({ n: "General", f: 'setupDeviceMenu(0)' }); }
 
@@ -2984,6 +3095,7 @@
 
             if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: "Files", f: 'setupDeviceMenu(2)' }); }
             if ((currentDevicePanel != 3) && (currentNode != null)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
+            if ((currentDevicePanel != 4) && (currentNode != null) && (meshrights & 0x00000010)) { menus.push({ n: "Console", f: 'setupDeviceMenu(4)' }); }
             updateFooterMenu(menus);
         }
 
@@ -4514,6 +4626,216 @@
                 QH('p10detailshtml', "No information for this device.");
             } else {
                 QH('p10detailshtml', x);
+            }
+        }
+
+
+        //
+        // CONSOLE
+        //
+
+        /*
+        function agentConsoleHandleKeys(e) {
+            if ((e.ctrlKey) || (e.altKey)) { return true; }
+            var processed = 0, box = Q('p15consoleText');
+            if (e.key) {
+                if (e.keyCode == 13 && consoleFocus == 0) { p15consoleSend(e); processed = 1; }
+                else if (e.keyCode == 8 && consoleFocus == 0) { var x = box.value; box.value = x.substring(0, x.length - 1); processed = 1; }
+                else if (e.keyCode == 27) { box.value = ''; processed = 1; }
+                else if ((e.keyCode == 38) || (e.keyCode == 40)) { // Arrow up || Arrow down
+                    var hindex = consoleHistory.indexOf(box.value);
+                    //console.log(hindex, consoleHistory);
+                    if ((e.keyCode == 38) && ((consoleHistory.length - 1) > hindex)) { box.value = consoleHistory[hindex + 1]; }
+                    else if ((e.keyCode == 40) && (hindex > 0)) { box.value = consoleHistory[hindex - 1]; }
+                    else if ((e.keyCode == 40) && (hindex == 0)) { box.value = ''; }
+                    processed = 1;
+                }
+                else if (e.key.length === 1) {
+                    //box.value = ((box.value + e.key));
+                    insertTextAtCursor(box, e.key);
+                    processed = 1;
+                }
+            } else {
+                if (e.charCode != 0 && consoleFocus == 0) { box.value = ((box.value + String.fromCharCode(e.charCode))); processed = 1; }
+            }
+            if (processed > 0) { return haltEvent(e); }
+        }
+        */
+
+        // Insert text at the cursor location on the
+        function insertTextAtCursor(ctrl, val) {
+            if (document.selection) { ctrl.focus(); sel = document.selection.createRange(); sel.text = val; }
+            else if (ctrl.selectionStart || ctrl.selectionStart == '0') {
+                var start = ctrl.selectionStart, end = ctrl.selectionEnd;
+                ctrl.value = ctrl.value.substring(0, start) + val + ctrl.value.substring(end, ctrl.value.length);
+                ctrl.setSelectionRange(end + 1, end + 1);
+            } else { ctrl.value += myValue; }
+        }
+
+        var consoleNode;
+        var consoleServerText = '';
+        function setupConsole() {
+            // Setup the console
+            var samenode = (consoleNode == currentNode);
+            consoleNode = currentNode;
+
+            var mesh = meshes[consoleNode.meshid];
+            var rights = GetNodeRights(currentNode);
+            if ((rights & 16) != 0) {
+                if (consoleNode.consoleText == null) { consoleNode.consoleText = ''; }
+                if (samenode == false) {
+                    QH('p15agentConsoleText', consoleNode.consoleText);
+                    Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
+                }
+                var online = (((consoleNode.conn & 1) != 0) || ((consoleNode.conn & 16) != 0)) ? true : false;
+                var onlineText = ((consoleNode.conn & 1) != 0) ? "Agent is online" : "Agent is offline"
+                if ((consoleNode.conn & 16) != 0) { onlineText += ", MQTT is online" }
+                QH('p15statetext', onlineText);
+                QE('p15uploadCore', ((consoleNode.conn & 1) != 0));
+                QV('p15outputselecttd', ((consoleNode.conn & 16) != 0) || ((currentNode.pmt == 1) && ((features2 & 2) != 0)));
+                QV('p15outputselect2', ((consoleNode.conn & 16) != 0)); // MQTT channel
+                QV('p15outputselect3', ((currentNode.pmt == 1) && ((features2 & 2) != 0))); // Push Notification channel
+
+                var c = Q('p15outputselect').value;
+                if (((consoleNode.conn & 16) == 0) && (c == 2)) { c = 1; Q('p15outputselect').value = 1; }
+                if (((currentNode.pmt != 1) || ((features2 & 2) == 0)) && (c == 3)) { c = 1; Q('p15outputselect').value = 1; }
+
+                var active = false;
+                if (((consoleNode.conn & 1) != 0) && (c == 1)) { active = true; } // Agent
+                if (((consoleNode.conn & 16) != 0) && (c == 2)) { active = true; } // MQTT
+                if (((currentNode.pmt == 1) && ((features2 & 2) != 0)) && (c == 3)) { active = true; } // Push
+                QE('p15consoleText', active);
+            } else {
+                QH('p15statetext', "Access Denied");
+                QE('p15consoleText', false);
+                QE('p15uploadCore', false);
+                QV('p15outputselecttd', false);
+            }
+            QV('devListToolbarViewIcons3', ((consoleNode.conn & 1) != 0));
+        }
+
+        // Clear the console for this node
+        function p15consoleClear() {
+            QH('p15agentConsoleText', '');
+            Q('id_p15consoleClear').blur();
+            consoleNode.consoleText = '';
+        }
+
+        // Send a command to the agent
+        var consoleHistory = [];
+        function p15consoleSend(e) {
+            if (e && e.keyCode != 13) return;
+            var v = Q('p15consoleText').value, t = '<div style=color:green>&gt; ' + EscapeHtml(v) + '<br/></div>';
+
+            if (((consoleNode.conn & 16) != 0) && (Q('p15outputselect').value == 2)) {
+                // Send the command to MQTT
+                t = '<div style=color:orange>' + "MQTT" + '&gt; ' + EscapeHtml(v) + '<br/></div>';
+                consoleNode.consoleText += t;
+                meshserver.send({ action: 'sendmqttmsg', topic: 'console', nodeids: [consoleNode._id], msg: v });
+            } else if ((consoleNode.pmt == 1) && (Q('p15outputselect').value == 3) && ((features2 & 2) != 0)) {
+                // Send the command using push notification
+                t = '<div style=color:violet>' + "PUSH" + '&gt; ' + EscapeHtml(v) + '<br/></div>';
+                consoleNode.consoleText += t;
+                meshserver.send({ action: 'pushconsole', nodeid: consoleNode._id, console: v });
+            } else if ((consoleNode.conn & 1) != 0) {
+                // Send the command to the mesh agent
+                consoleNode.consoleText += t;
+                meshserver.send({ action: 'msg', type: 'console', nodeid: consoleNode._id, value: v });
+            }
+
+            Q('p15agentConsoleText').innerHTML += t;
+            Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
+            Q('p15consoleText').value = '';
+
+            // Add command to history list
+            if (v.length > 0) {
+                // Move this command to the top if it already exists
+                var j = consoleHistory.indexOf(v);
+                if (j >= 0) { consoleHistory.splice(j, 1); }
+                consoleHistory.unshift(v);
+                consoleHistory.splice(10);
+            }
+        }
+
+        // Handle Mesh Agent console data
+        function p15consoleReceive(node, data, source) {
+            if (node === 'serverconsole') {
+                // Server console data
+                data = '<div>' + EscapeHtml(data) + '</div>'
+                consoleServerText += data;
+                if (consoleNode == 'server') {
+                    Q('p15agentConsoleText').innerHTML += data;
+                    Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
+                }
+            } else {
+                // Agent console data
+                if (source == 'MQTT') { data = '<div style=color:red>' + "MQTT" + '&gt; ' + EscapeHtml(data) + '<br/></div>'; } else { data = '<div>' + EscapeHtml(data) + '</div>' }
+                if (node.consoleText == null) { node.consoleText = data; } else { node.consoleText += data; }
+                if (consoleNode == node) {
+                    Q('p15agentConsoleText').innerHTML += data;
+                    Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
+                }
+            }
+        }
+
+        // Save console text to file
+        function p15downloadConsoleText() {
+            saveAs(new Blob([Q('p15agentConsoleText').innerText], { type: 'application/octet-stream' }), "console.txt");
+        }
+
+        // Called then user presses the "Change Core" button
+        function p15uploadCore(e) {
+            if (xxdialogMode) return;
+            if (e.shiftKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'default' }); } // Upload default core
+            else if (e.altKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'clear' }); } // Clear the core
+            else if (e.ctrlKey == true) { p15uploadCore2(); } // Upload the core from a file
+            else { setDialogMode(2, "Perform Agent Action", 3, p15uploadCoreEx, addHtmlValue("Action", '<select id=d3coreMode style=width:230px><option value=1>' + "Upload default server core" + '</option><option value=2>' + "Clear the core" + '</option><option value=6>' + "Upload recovery core" + '</option><option value=7>' + "Upload tiny core" + '</option><option value=3>' + "Upload a core file" + '</option><option value=4>' + "Soft disconnect agent" + '</option><option value=5>' + "Hard disconnect agent" + '</option></select>')); }
+        }
+
+        function p15uploadCoreEx() {
+            if (Q('d3coreMode').value == 1) {
+                // Upload default core
+                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'default' });
+            } else if (Q('d3coreMode').value == 2) {
+                // Clear the core
+                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'clear' });
+            } else if (Q('d3coreMode').value == 3) {
+                // Upload file as core
+                p15uploadCore2();
+            } else if (Q('d3coreMode').value == 4) {
+                // Soft disconnect the mesh agent
+                meshserver.send({ action: 'agentdisconnect', nodeid: consoleNode._id, disconnectMode: 1 });
+            } else if (Q('d3coreMode').value == 5) {
+                // Hard disconnect the mesh agent
+                meshserver.send({ action: 'agentdisconnect', nodeid: consoleNode._id, disconnectMode: 2 });
+            } else if (Q('d3coreMode').value == 6) {
+                // Upload a recovery core
+                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'recovery' });
+            } else if (Q('d3coreMode').value == 7) {
+                // Upload a tiny core
+                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'tiny' });
+            }
+        }
+
+        // Called then user opts to upload a file as core
+        function p15uploadCore2() {
+            if (xxdialogMode) return;
+            Q('d3localmodeform').action = 'uploadmeshcorefile.ashx';
+            Q('d3auth').value = authCookie;
+            Q('d3attrib').value = currentNode._id;
+            setDialogMode(3, "Upload Mesh Agent Core", 3, p15uploadCoreEx2);
+            d3init();
+        }
+
+        function p15uploadCoreEx2() {
+            var mode = Q('d3uploadMode').value;
+            if (mode == 1) {
+                // Upload local mesh agent core
+                Q('d3submit').click();
+            } else {
+                // Upload server mesh agent code
+                var files = d3getFileSel();
+                if (files.length == 1) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'custom', path: d3filetreelocation.join('/') + '/' + files[0] }); }
             }
         }
 
