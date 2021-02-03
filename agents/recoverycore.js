@@ -237,6 +237,7 @@ function linux_execv(name, agentfilename, sessionid)
 
     var i;
     var args;
+    var argtmp = [];
     var argarr = [process.execPath];
     var path = require('_GenericMarshal').CreateVariable(process.execPath);
 
@@ -250,6 +251,7 @@ function linux_execv(name, agentfilename, sessionid)
     args = require('_GenericMarshal').CreateVariable((1 + argarr.length) * require('_GenericMarshal').PointerSize);
     for (i = 0; i < argarr.length; ++i) {
         var arg = require('_GenericMarshal').CreateVariable(argarr[i]);
+        argtmp.push(arg);
         arg.pointerBuffer().copy(args.toBuffer(), i * require('_GenericMarshal').PointerSize);
     }
 
@@ -298,6 +300,7 @@ function bsd_execv(name, agentfilename, sessionid) {
     var i;
     var path = require('_GenericMarshal').CreateVariable(process.execPath);
     var argarr = [process.execPath];
+    var argtmp = [];
     var args;
     var options = require('MeshAgent').getStartupOptions();
     for (i in options) {
@@ -306,6 +309,7 @@ function bsd_execv(name, agentfilename, sessionid) {
     args = require('_GenericMarshal').CreateVariable((1 + argarr.length) * require('_GenericMarshal').PointerSize);
     for (i = 0; i < argarr.length; ++i) {
         var arg = require('_GenericMarshal').CreateVariable(argarr[i]);
+        argtmp.push(arg);
         arg.pointerBuffer().copy(args.toBuffer(), i * require('_GenericMarshal').PointerSize);
     }
 
