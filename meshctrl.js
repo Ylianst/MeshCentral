@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower'];
+const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -24,6 +24,7 @@ if (args['_'].length == 0) {
     console.log("  ListDevices                 - List devices.");
     console.log("  ListDeviceGroups            - List device groups.");
     console.log("  ListUsersOfDeviceGroup      - List the users in a device group.");
+    console.log("  ListEvents                  - List server events.");
     console.log("  DeviceInfo                  - Show information about a device.");
     console.log("  Config                      - Perform operation on config.json file.");
     console.log("  AddUser                     - Create a new user account.");
@@ -81,6 +82,7 @@ if (args['_'].length == 0) {
         case 'listusergroups': { ok = true; break; }
         case 'listdevicegroups': { ok = true; break; }
         case 'listdevices': { ok = true; break; }
+        case 'listevents': { ok = true; break; }
         case 'listusersofdevicegroup': {
             if (args.id == null) { console.log(winRemoveSingleQuotes("Missing group id, use --id '[groupid]'")); }
             else { ok = true; }
@@ -341,7 +343,7 @@ if (args['_'].length == 0) {
                         break;
                     }
                     case 'listdevicegroups': {
-                        console.log("List the device groups for this account, Example usages:\r\n");
+                        console.log("List the device groups for this account. Example usages:\r\n");
                         console.log("  MeshCtrl ListDeviceGroups ");
                         console.log("  MeshCtrl ListDeviceGroups --json");
                         console.log("\r\nOptional arguments:\r\n");
@@ -353,7 +355,7 @@ if (args['_'].length == 0) {
                         break;
                     }
                     case 'listdevices': {
-                        console.log("List devices, Example usages:\r\n");
+                        console.log("List devices. Example usages:\r\n");
                         console.log("  MeshCtrl ListDevices");
                         console.log(winRemoveSingleQuotes("  MeshCtrl ListDevices -id '[groupid]' --json"));
                         console.log("\r\nOptional arguments:\r\n");
@@ -369,7 +371,7 @@ if (args['_'].length == 0) {
                         break;
                     }
                     case 'listusersofdevicegroup': {
-                        console.log("List users that have permissions for a given device group, Example usage:\r\n");
+                        console.log("List users that have permissions for a given device group. Example usage:\r\n");
                         console.log("  MeshCtrl ListUserOfDeviceGroup ");
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
@@ -381,8 +383,19 @@ if (args['_'].length == 0) {
                         console.log("  --json                 - Show result as JSON.");
                         break;
                     }
+                    case 'listevents': {
+                        console.log("List server events optionally filtered by user or device. Example usage:\r\n");
+                        console.log("  MeshCtrl ListEvents ");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --userid [name]        - User account identifier.");
+                        console.log("  --id [deviceid]        - The device identifier.");
+                        console.log("  --limit [number]       - Maximum number of events to list.");
+                        console.log("  --raw                  - Output raw data in JSON format.");
+                        console.log("  --json                 - Give results in JSON format.");
+                        break;
+                    }
                     case 'adduser': {
-                        console.log("Add a new user account, Example usages:\r\n");
+                        console.log("Add a new user account. Example usages:\r\n");
                         console.log("  MeshCtrl AddUser --user newaccountname --pass newpassword");
                         console.log("  MeshCtrl AddUser --user newaccountname --randompass --rights full");
                         console.log("\r\nRequired arguments:\r\n");
@@ -1058,6 +1071,24 @@ function serverConnect() {
                 }
                 break;
             }
+            case 'listevents': {
+                limit = null;
+                if (args.limit) { limit = parseInt(args.limit); } 
+                if ((typeof limit != 'number') || (limit < 1)) { limit = null; }
+
+                var cmd = null;
+                if (args.userid) {
+                    cmd = { action: 'events', user: args.userid, responseid: 'meshctrl' };
+                } else if (args.id) {
+                    cmd = { action: 'events', nodeid: args.id, responseid: 'meshctrl' };
+                } else {
+                    cmd = { action: 'events', responseid: 'meshctrl' };
+                }
+                if (typeof limit == 'number') { cmd.limit = limit; }
+                console.log(cmd);
+                ws.send(JSON.stringify(cmd));
+                break;
+            }
             case 'adduser': {
                 var siteadmin = getSiteAdminRights(args);
                 if (args.randompass) { args.pass = getRandomAmtPassword(); }
@@ -1494,6 +1525,58 @@ function serverConnect() {
                         console.log(JSON.stringify(data.serverinfo, ' ', 2));
                     } else {
                         for (var i in data.serverinfo) { console.log(i + ':', data.serverinfo[i]); }
+                    }
+                    process.exit();
+                }
+                break;
+            }
+            case 'events': {
+                if (settings.cmd == 'listevents') {
+                    if (args.raw) {
+                        // RAW JSON
+                        console.log(JSON.stringify(data.events));
+                    } else if (args.json) {
+                        // Formatted JSON
+                        console.log(JSON.stringify(data.events, null, 2));
+                    } else {
+                        if ((args.id == null) && (args.userid == null)) {
+                            // CSV format
+                            console.log("time,type,action,nodeid,userid,msg");
+                            for (var i in data.events) {
+                                var x = [];
+                                x.push(data.events[i].time);
+                                x.push(data.events[i].etype);
+                                x.push(data.events[i].action);
+                                x.push(data.events[i].nodeid);
+                                x.push(data.events[i].userid);
+                                x.push(data.events[i].msg);
+                                console.log(csvFormatArray(x));
+                            }
+                        } else if (args.id != null) {
+                            // CSV format
+                            console.log("time,type,action,userid,msg");
+                            for (var i in data.events) {
+                                var x = [];
+                                x.push(data.events[i].time);
+                                x.push(data.events[i].etype);
+                                x.push(data.events[i].action);
+                                x.push(data.events[i].userid);
+                                x.push(data.events[i].msg);
+                                console.log(csvFormatArray(x));
+                            }
+                        } else if (args.userid != null) {
+                            // CSV format
+                            console.log("time,type,action,nodeid,msg");
+                            for (var i in data.events) {
+                                var x = [];
+                                x.push(data.events[i].time);
+                                x.push(data.events[i].etype);
+                                x.push(data.events[i].action);
+                                x.push(data.events[i].nodeid);
+                                x.push(data.events[i].msg);
+                                console.log(csvFormatArray(x));
+                            }
+                        }
                     }
                     process.exit();
                 }
@@ -1985,6 +2068,12 @@ function getRandomAmtPassword() { var p; do { p = Buffer.from(crypto.randomBytes
 function getRandomHex(count) { return Buffer.from(crypto.randomBytes(count), 'binary').toString('hex'); }
 function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
 function winRemoveSingleQuotes(str) { if (process.platform != 'win32') return str; else return str.split('\'').join(''); }
+
+function csvFormatArray(x) {
+    var y = [];
+    for (var i in x) { if ((x[i] == null) || (x[i] == '')) { y.push(''); } else { y.push('"' + x[i].split('"').join('') + '"'); } }
+    return y.join(',');
+}
 
 function displayDeviceInfo(sysinfo, lastconnect, network) {
     var node = sysinfo.node;

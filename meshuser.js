@@ -1398,6 +1398,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((command.user != null) && ((user.siteadmin & 2) != 0)) { // SITERIGHT_MANAGEUSERS
                         // TODO: Add the meshes command.user has access to (???)
                         var filter = ['user/' + domain.id + '/' + command.user];
+
+                        const userSplit = command.user.split('/');
+                        if (userSplit.length == 3) { filter = []; if ((userSplit[0] == 'user') && (userSplit[1] == domain.id)) { filter = [command.user]; } }
+
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
                             // Send the list of all events for this session
                             db.GetUserEvents(filter, domain.id, command.user, function (err, docs) {
@@ -1413,12 +1417,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     } else if (command.nodeid != null) { // Device filtered events
                         // Check that the user has access to this nodeid
+
+                        const nodeSplit = command.nodeid.split('/');
+                        if (nodeSplit.length == 1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+
                         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                            if (node == null) return;
+                            if (node == null) { try { ws.send(JSON.stringify({ action: 'events', events: [], nodeid: command.nodeid, tag: command.tag })); } catch (ex) { } return; }
 
                             // Put a limit on the number of returned entries if present
                             var limit = 10000;
-                            if (common.validateInt(command.limit, 1, 60000) == true) { limit = command.limit; }
+                            if (common.validateInt(command.limit, 1, 1000000) == true) { limit = command.limit; }
 
                             if (((rights & MESHRIGHT_LIMITEVENTS) != 0) && (rights != MESHRIGHT_ADMIN)) {
                                 // Send the list of most recent events for this nodeid that only apply to us, up to 'limit' count
