@@ -18,6 +18,14 @@
 module.exports.CreateFirebase = function (parent, senderid, serverkey) {
     var obj = {};
     obj.messageId = 0;
+    obj.stats = {
+        mode: "Real",
+        sent: 0,
+        sendError: 0,
+        received: 0,
+        receivedNoRoute: 0,
+        receivedBadArgs: 0
+    }
 
     const Sender = require('node-xcs').Sender;
     const Message = require('node-xcs').Message;
@@ -32,10 +40,13 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
 
         // Lookup node information from the cache
         var ninfo = tokenToNodeMap[from];
-        if (ninfo == null) return;
+        if (ninfo == null) { obj.stats.receivedNoRoute++; return; }
 
         if ((data != null) && (data.con != null) && (data.s != null)) { // Console command
+            obj.stats.received++;
             parent.webserver.routeAgentCommand({ action: 'msg', type: 'console', value: data.con, sessionid: data.s }, ninfo.did, ninfo.nid, ninfo.mid);
+        } else {
+            obj.stats.receivedBadArgs++;
         }
     });
 
@@ -51,16 +62,19 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
 
     xcs.start();
 
+    parent.debug('email', 'CreateFirebase-Setup');
+
     // EXAMPLE
     //var payload = { notification: { title: command.title, body: command.msg }, data: { url: obj.msgurl } };
     //var options = { priority: 'High', timeToLive: 5 * 60 }; // TTL: 5 minutes, priority 'Normal' or 'High'
 
     // Send an outbound push notification
     obj.sendToDevice = function (node, payload, options, func) {
+        parent.debug('email', 'Firebase-sendToDevice');
         if ((node == null) || (typeof node.pmt != 'string')) return;
 
         // Fill in our lookup table
-        tokenToNodeMap[node.pmt] = { nid: node._id, mid: node.meshid, did: node.domain }
+        if (node._id != null) { tokenToNodeMap[node.pmt] = { nid: node._id, mid: node.meshid, did: node.domain } }
 
         // Built the on-screen notification
         var notification = null;
@@ -79,9 +93,65 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
         message.build();
 
         // Send the message
-        function callback(result) { callback.func(result.getMessageId(), result.getError(), result.getErrorDescription()) }
+        function callback(result) {
+            if (result.getError() == null) { obj.stats.sent++; } else { obj.stats.sendError++; }
+            callback.func(result.getMessageId(), result.getError(), result.getErrorDescription())
+        }
         callback.func = func;
+        parent.debug('email', 'Firebase-sending');
         xcs.sendNoRetry(message, node.pmt, callback);
+    }
+
+    return obj;
+};
+
+
+// Construct the Firebase object
+module.exports.CreateFirebaseRelay = function (parent, url, key) {
+    var obj = {};
+    obj.messageId = 0;
+    obj.stats = {
+        mode: "Relay",
+        sent: 0,
+        sendError: 0,
+        received: 0,
+        receivedNoRoute: 0,
+        receivedBadArgs: 0
+    }
+    obj.pushOnly = true;
+    const https = require('https');
+    const querystring = require('querystring');
+    const relayUrl = require('url').parse(url);
+
+    parent.debug('email', 'CreateFirebaseRelay-Setup');
+
+    // Send an outbound push notification
+    obj.sendToDevice = function (node, payload, options, func) {
+        parent.debug('email', 'Firebase-sendToDevice');
+        if ((node == null) || (typeof node.pmt != 'string')) return;
+
+        const querydata = querystring.stringify({ 'msg': JSON.stringify({ pmt: node.pmt, payload: payload, options: options }) });
+
+        // Send the message to the relay
+        const httpOptions = {
+            hostname: relayUrl.hostname,
+            port: relayUrl.port ? relayUrl.port : 443,
+            path: relayUrl.path + (key ? ('?key=' + key) : ''),
+            method: 'POST',
+            //rejectUnauthorized: false, // DEBUG
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': querydata.length
+            }
+        }
+        const req = https.request(httpOptions, function (res) {
+            if (res.statusCode == 200) { obj.stats.sent++; } else { obj.stats.sendError++; }
+            if (func != null) { func(++obj.messageId, (res.statusCode == 200) ? null : 'error'); }
+        });
+        parent.debug('email', 'Firebase-sending');
+        req.on('error', function (error) { obj.stats.sent++; func(++obj.messageId, 'error'); });
+        req.write(querydata);
+        req.end();
     }
 
     return obj;
