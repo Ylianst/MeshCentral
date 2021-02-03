@@ -471,7 +471,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 } catch (ex) { console.log(ex); }
             }
         } else {
-            if ((typeof data == 'string') && (obj.pmt != null)) {
+            if ((typeof data == 'string') && (obj.node != null) && (obj.node.pmt != null)) {
                 var command = null;
                 try { command = JSON.parse(data); } catch (ex) { return; }
                 if ((typeof command != 'object') || (command.action != 'chat') || (typeof command.msg != 'string') || (command.msg == '')) return;

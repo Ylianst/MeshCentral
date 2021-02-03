@@ -678,7 +678,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Check top level configuration for any unreconized values
-        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'sendgrid', 'firebase', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".'); } } }
+        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'sendgrid', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".'); } } }
 
         if (typeof obj.args.userallowedip == 'string') { if (obj.args.userallowedip == '') { config.settings.userallowedip = obj.args.userallowedip = null; } else { config.settings.userallowedip = obj.args.userallowedip = obj.args.userallowedip.split(','); } }
         if (typeof obj.args.userblockedip == 'string') { if (obj.args.userblockedip == '') { config.settings.userblockedip = obj.args.userblockedip = null; } else { config.settings.userblockedip = obj.args.userblockedip = obj.args.userblockedip.split(','); } }
@@ -1548,6 +1548,12 @@ function CreateMeshCentralServer(config, args) {
                 if ((config.firebase != null) && (typeof config.firebase.senderid == 'string') && (typeof config.firebase.serverkey == 'string')) {
                     const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
                     if (NodeJSVer >= 10) { obj.firebase = require('./firebase').CreateFirebase(obj, config.firebase.senderid, config.firebase.serverkey); }
+                } else if ((typeof config.firebaserelay == 'object') && (typeof config.firebaserelay.url == 'string')) {
+                    // Setup the push messaging relay
+                    obj.firebase = require('./firebase').CreateFirebaseRelay(obj, config.firebaserelay.url, config.firebaserelay.key);
+                } else if (typeof config.firebaserelay == true) {
+                    // Setup the push messaging relay using https://meshcentral.com
+                    obj.firebase = require('./firebase').CreateFirebaseRelay(obj, 'https://central.mesh.meshcentral.com/firebaserelay.aspx');
                 }
 
                 // Start periodic maintenance

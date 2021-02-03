@@ -1771,6 +1771,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
     }
 
+    // Called to handle push-only requests
+    function handleFirebasePushOnlyRelayRequest(req, res) {
+        parent.debug('email', 'handleFirebasePushOnlyRelayRequest');
+        if ((req.body == null) || (req.body.msg == null) || (obj.parent.firebase == null)) { res.sendStatus(404); return; }
+        if (obj.parent.config.firebase.pushrelayserver == null) { res.sendStatus(404); return; }
+        if ((typeof obj.parent.config.firebase.pushrelayserver == 'string') && (req.query.key != obj.parent.firebase.pushrelayserver)) { res.sendStatus(404); return; }
+        var data = null;
+        try { data = JSON.parse(req.body.msg) } catch (ex) { res.sendStatus(404); return; }
+        if (typeof data != 'object') { res.sendStatus(404); return; }
+        if (typeof data.pmt != 'string') { res.sendStatus(404); return; }
+        if (typeof data.payload != 'object') { res.sendStatus(404); return; }
+        if (typeof data.payload.notification != 'object') { res.sendStatus(404); return; }
+        if (typeof data.payload.notification.title != 'string') { res.sendStatus(404); return; }
+        if (typeof data.payload.notification.body != 'string') { res.sendStatus(404); return; }
+        if (typeof data.options != 'object') { res.sendStatus(404); return; }
+        if ((data.options.priority != 'Normal') && (data.options.priority != 'High')) { res.sendStatus(404); return; }
+        if ((typeof data.options.timeToLive != 'number') || (data.options.timeToLive < 1)) { res.sendStatus(404); return; }
+        parent.debug('email', 'handleFirebasePushOnlyRelayRequest - ok');
+        obj.parent.firebase.sendToDevice({ pmt: data.pmt }, data.payload, data.options, function (id, err, errdesc) {
+            if (err == null) { res.sendStatus(200); } else { res.sendStatus(500); }
+        });
+    }
+
     // Called to process an agent invite request
     function handleAgentInviteRequest(req, res) {
         const domain = getDomain(req);
@@ -2415,6 +2438,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (obj.isTrustedCert(domain) == false) { features += 0x80000000; } // Indicate we are not using a trusted certificate
                 if (obj.parent.amtManager != null) { features2 += 0x00000001; } // Indicates that the Intel AMT manager is active
                 if (obj.parent.firebase != null) { features2 += 0x00000002; } // Indicates the server supports Firebase push messaging
+                if ((obj.parent.firebase != null) && (obj.parent.firebase.pushOnly != true)) { features2 += 0x00000004; } // Indicates the server supports Firebase two-way push messaging
 
                 // Create a authentication cookie
                 const authCookie = obj.parent.encodeCookie({ userid: dbGetFunc.user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
@@ -5149,6 +5173,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (domain == null) { parent.debug('web', 'mstsc: failed checks.'); try { ws.close(); } catch (e) { } return; }
                     require('./mstsc.js').CreateMstscRelay(obj, obj.db, ws, req, obj.args, domain);
                 });
+            }
+
+            // Setup firebase push only server
+            if ((obj.parent.firebase != null) && (obj.parent.config.firebase)) {
+                if (obj.parent.config.firebase.pushrelayserver) { parent.debug('email', 'Firebase-pushrelay-handler'); obj.app.post(url + 'firebaserelay.aspx', handleFirebasePushOnlyRelayRequest); }
+                if (obj.parent.config.firebase.relayserver) { parent.debug('email', 'Firebase-relay-handler'); /*obj.app.ws(url + 'firebaserelay.aspx', handleFirebaseRelayRequest);*/ }
             }
 
             // Setup auth strategies using passport if needed

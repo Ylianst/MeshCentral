@@ -1319,6 +1319,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             r = parent.db.getBackupConfig();
                             break;
                         }
+                        case 'firebase': {
+                            if (parent.parent.firebase == null) {
+                                r = "Firebase push messaging not supported";
+                            } else {
+                                r = JSON.stringify(parent.parent.firebase.stats, null, 2);
+                            }
+                            break;
+                        }
                         default: { // This is an unknown command, return an error message
                             r = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.';
                             break;
