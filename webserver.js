@@ -308,6 +308,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         createMeshAgentCount: 0,
         agentClose: 0,
         agentBinaryUpdate: 0,
+        agentMeshCoreBinaryUpdate: 0,
         coreIsStableCount: 0,
         verifiedAgentConnectionCount: 0,
         clearingCoreCount: 0,
@@ -330,6 +331,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         maxDomainDevicesReached: 0
     }
     obj.getAgentStats = function () { return obj.agentStats; }
+
+    // Keep a record of the last agent issues.
+    obj.getAgentIssues = function () { return obj.agentIssues; }
+    obj.setAgentIssue = function (agent, issue) { obj.agentIssues.push([new Date().toLocaleTimeString(), agent.remoteaddrport, issue]); while (obj.setAgentIssue.length > 50) { obj.agentIssues.shift(); } }
+    obj.agentIssues = [];
 
     // Authenticate the user
     obj.authenticate = function (name, pass, domain, fn) {
