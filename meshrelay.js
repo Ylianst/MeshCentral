@@ -192,8 +192,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
 
     // Push any stored message to the peer
     obj.pushStoredMessages = function () {
-        if ((obj.storedPushedMessages != null) && (this.peer != null)) {
-            for (var i in obj.storedPushedMessages) { try { this.peer.send(JSON.stringify({ action: 'chat', msg: obj.storedPushedMessages[i] })); } catch (ex) { } }
+        if ((obj.storedPushedMessages != null) && (obj.peer != null)) {
+            for (var i in obj.storedPushedMessages) {
+                try { obj.peer.ws.send(JSON.stringify({ action: 'chat', msg: obj.storedPushedMessages[i] })); } catch (ex) { console.log(ex); }
+            }
         }
     }
 
@@ -478,7 +480,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
 
                 // Store pushed messages
                 if (obj.storedPushedMessages == null) { obj.storedPushedMessages = []; }
-                obj.storedPushedMessages.push(obj.storedPushedMessages.push(command.msg));
+                obj.storedPushedMessages.push(command.msg);
                 while (obj.storedPushedMessages.length > 50) { obj.storedPushedMessages.shift(); } // Only keep last 50 notifications
 
                 // Send out a push message to the device
