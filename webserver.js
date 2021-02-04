@@ -3317,22 +3317,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
+            if ((fields == null) || (fields.attrib == null) || (fields.attrib.length != 1)) { res.sendStatus(404); return; }
 
             // Get the user
             const user = obj.users[authUserid];
-            if (user.siteadmin != 0xFFFFFFFF) { res.sendStatus(401); return; } // Check if we have mesh core upload rights (Full admin only)
+            if (user == null) { res.sendStatus(401); return; } // Check this user exists
 
-            if ((fields == null) || (fields.attrib == null) || (fields.attrib.length != 1)) { res.sendStatus(404); return; }
-            for (var i in files.files) {
-                var file = files.files[i];
-                obj.fs.readFile(file.path, 'utf8', function (err, data) {
-                    if (err != null) return;
-                    data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
-                    obj.sendMeshAgentCore(user, domain, fields.attrib[0], 'custom', data); // Upload the core
-                    try { obj.fs.unlinkSync(file.path); } catch (e) { }
-                });
-            }
-            res.send('');
+            // Get the node and check node rights
+            const nodeid = fields.attrib[0];
+            obj.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
+                if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
+                for (var i in files.files) {
+                    var file = files.files[i];
+                    obj.fs.readFile(file.path, 'utf8', function (err, data) {
+                        if (err != null) return;
+                        data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
+                        obj.sendMeshAgentCore(user, domain, fields.attrib[0], 'custom', data); // Upload the core
+                        try { obj.fs.unlinkSync(file.path); } catch (e) { }
+                    });
+                }
+                res.send('');
+            });
         });
     }
 
