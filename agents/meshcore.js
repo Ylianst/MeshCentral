@@ -803,6 +803,13 @@ function handleServerCommand(data) {
                                 // Perform manual server TLS certificate checking based on the certificate hash given by the server.
                                 woptions.rejectUnauthorized = 0;
                                 woptions.checkServerIdentity = function checkServerIdentity(certs) {
+                                    /*
+                                    try { sendConsoleText("certs[0].digest: " + certs[0].digest); } catch (ex) { sendConsoleText(ex); }
+                                    try { sendConsoleText("certs[0].fingerprint: " + certs[0].fingerprint); } catch (ex) { sendConsoleText(ex); }
+                                    try { sendConsoleText("control-digest: " + require('MeshAgent').ServerInfo.ControlChannelCertificate.digest); } catch (ex) { sendConsoleText(ex); }
+                                    try { sendConsoleText("control-fingerprint: " + require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint); } catch (ex) { sendConsoleText(ex); }
+                                    */
+
                                     // If the tunnel certificate matches the control channel certificate, accept the connection
                                     try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { }
                                     try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { }

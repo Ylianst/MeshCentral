@@ -1176,7 +1176,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Sent by the agent to update agent information
                         ChangeAgentCoreInfo(command);
 
-                        if ((obj.agentCoreUpdate === true) && (obj.agentExeInfo != null)) {
+                        if ((obj.agentCoreUpdate === true) && (obj.agentExeInfo != null) && (typeof obj.agentExeInfo.url == 'string')) {
                             // Agent update. The recovery core was loaded in the agent, send a command to update the agent
                             parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) { // Medium priority task
                                 // If agent disconnection, complete and exit now.
@@ -1489,31 +1489,33 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     break;
                 }
                 case 'agentupdate': {
-                    var func = function agentUpdateFunc(argument, taskid, taskLimiterQueue) { // Medium priority task
-                        // If agent disconnection, complete and exit now.
-                        if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; }
+                    if ((obj.agentExeInfo != null) && (typeof obj.agentExeInfo.url == 'string')) {
+                        var func = function agentUpdateFunc(argument, taskid, taskLimiterQueue) { // Medium priority task
+                            // If agent disconnection, complete and exit now.
+                            if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; }
 
-                        // Agent is requesting an agent update
-                        obj.agentCoreUpdateTaskId = taskid;
-                        const url = '*' + require('url').parse(obj.agentExeInfo.url).path;
-                        var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex, sessionid: agentUpdateFunc.sessionid };
+                            // Agent is requesting an agent update
+                            obj.agentCoreUpdateTaskId = taskid;
+                            const url = '*' + require('url').parse(obj.agentExeInfo.url).path;
+                            var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex, sessionid: agentUpdateFunc.sessionid };
 
-                        // Add the hash
-                        if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
+                            // Add the hash
+                            if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
 
-                        // Add server TLS cert hash
-                        if (isIgnoreHashCheck() == false) {
-                            const tlsCertHash = parent.webCertificateFullHashs[domain.id];
-                            if (tlsCertHash != null) { cmd.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
+                            // Add server TLS cert hash
+                            if (isIgnoreHashCheck() == false) {
+                                const tlsCertHash = parent.webCertificateFullHashs[domain.id];
+                                if (tlsCertHash != null) { cmd.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
+                            }
+
+                            // Send the agent update command
+                            obj.send(JSON.stringify(cmd));
                         }
+                        func.sessionid = command.sessionid;
 
-                        // Send the agent update command
-                        obj.send(JSON.stringify(cmd));
+                        // Agent update. The recovery core was loaded in the agent, send a command to update the agent
+                        parent.parent.taskLimiter.launch(func, null, 1);
                     }
-                    func.sessionid = command.sessionid;
-
-                    // Agent update. The recovery core was loaded in the agent, send a command to update the agent
-                    parent.parent.taskLimiter.launch(func, null, 1);
                     break;
                 }
                 case 'agentupdatedownloaded': {
