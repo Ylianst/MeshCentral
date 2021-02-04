@@ -294,9 +294,9 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
     // Set the content disposition header for a HTTP response.
     // Because the filename can't have any special characters in it, we need to be extra careful.
     function setContentDispositionHeader(res, type, name, size, altname) {
-        if (name != null) { name = require('path').basename(name).split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join(''); } else { name = altname; }
+        if (name != null) { name = require('path').basename(name).split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split('\'').join(''); } else { name = altname; }
         try {
-            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename="' + name + '"' };
+            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename*="' + encodeURIComponent(name) + '"; filename="' + altname + '"' };
             if (typeof size == 'number') { x['Content-Length'] = size; }
             res.set(x);
         } catch (ex) {
