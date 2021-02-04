@@ -242,11 +242,13 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
 
             // If the web socket is open, send now
             if (obj.wsopen == true) {
-                try { obj.wsclient.send(JSON.stringify({ pmt: node.pmt, payload: payload, options: options })); } catch (ex) { func(0, 'error'); return; }
+                try { obj.wsclient.send(JSON.stringify({ pmt: node.pmt, payload: payload, options: options })); } catch (ex) { func(0, 'error'); obj.stats.sendError++; return; }
+                obj.stats.sent++;
                 func(1);
             } else {
                 // TODO: Buffer the push messages until TTL.
                 func(0, 'error');
+                obj.stats.sendError++;
             }
         }
         obj.connectWebSocket();
