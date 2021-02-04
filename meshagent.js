@@ -1689,8 +1689,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // If the device is pending a change, hold.
         if (obj.deviceChanging === true) {
-            var func = function ChangeAgentTagFunc() { ChangeAgentCoreInfo(ChangeAgentTagFunc.cmd); }
-            func.cmd = command;
+            var func = function ChangeAgentTagFunc() { ChangeAgentCoreInfo(ChangeAgentTagFunc.tag); }
+            func.tag = tag;
             setTimeout(func, 100);
             return;
         }
