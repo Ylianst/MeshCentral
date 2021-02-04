@@ -6,7 +6,6 @@
     "_mongoDb": "mongodb://127.0.0.1:27017",
     "_mongoDbName": "meshcentral",
     "_mongoDbChangeStream": true,
-    "_mongoDumpPath": "C:\\Program Files\\MongoDB\\Server\\4.2\\bin\\mongodump.exe",
     "_WANonly": true,
     "_LANonly": true,
     "_sessionKey": "MyReallySecretPassword1",
@@ -83,6 +82,7 @@
       ]
     },
     "_autoBackup": {
+      "_mongoDumpPath": "C:\\Program Files\\MongoDB\\Server\\4.2\\bin\\mongodump.exe",
       "backupIntervalHours": 24,
       "keepLastDaysBackup": 10,
       "zipPassword": "MyReallySecretPassword3",

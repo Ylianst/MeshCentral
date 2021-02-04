@@ -11,7 +11,6 @@
         "mongoDb": { "type": "string" },
         "mongoDbName": { "type": "string" },
         "mongoDbChangeStream": { "type": "boolean" },
-        "mongoDumpPath": { "type": "string" },
         "WANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral WAN features are enabled and agents will connect to the server using a well known DNS name." },
         "LANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral LAN features are enabled and agents will find the server using multicast LAN packets." },
         "maintenanceMode": { "type": "boolean", "default": false, "description": "When enabled the server is in maintenance mode, only administrators can login. Use the maintenance command in server console to change." },
@@ -109,6 +108,7 @@
         "autoBackup": {
           "type": "object",
           "properties": {
+            "mongoDumpPath": { "type": "string" },
             "backupIntervalHours": { "type": "integer" },
             "keepLastDaysBackup": { "type": "integer" },
             "zipPassword": { "type": "string" },
@@ -117,19 +117,44 @@
               "type": "object",
               "description": "Enabled automated upload of the server backups to a Google Drive account, once enabled you need to go in \"My Server\" tab as administrator to associate the account.",
               "properties": {
-                "folderName": { "type": "integer", "default": "MeshCentral-Backups", "description": "The name of the folder to create in the Google Drive account." },
-                "maxFiles": { "type": "string", "default": null, "description": "The maximum number of files to keep in the Google Drive folder, older files will be removed if needed." }
+                "folderName": {
+                  "type": "integer",
+                  "default": "MeshCentral-Backups",
+                  "description": "The name of the folder to create in the Google Drive account."
+                },
+                "maxFiles": {
+                  "type": "string",
+                  "default": null,
+                  "description": "The maximum number of files to keep in the Google Drive folder, older files will be removed if needed."
+                }
               }
             },
             "webDAV": {
               "type": "object",
               "description": "Enabled automated upload of the server backups to a WebDAV account.",
               "properties": {
-                "url": { "type": "string", "description": "WebDAV account URL." },
-                "username": { "type": "string", "description": "WebDAV account username." },
-                "password": { "type": "string", "description": "WebDAV account password." },
-                "folderName": { "type": "integer", "default": "MeshCentral-Backups", "description": "The name of the folder to create in the WebDAV account." },
-                "maxFiles": { "type": "string", "default": null, "description": "The maximum number of files to keep in the WebDAV folder, older files will be removed if needed." }
+                "url": {
+                  "type": "string",
+                  "description": "WebDAV account URL."
+                },
+                "username": {
+                  "type": "string",
+                  "description": "WebDAV account username."
+                },
+                "password": {
+                  "type": "string",
+                  "description": "WebDAV account password."
+                },
+                "folderName": {
+                  "type": "integer",
+                  "default": "MeshCentral-Backups",
+                  "description": "The name of the folder to create in the WebDAV account."
+                },
+                "maxFiles": {
+                  "type": "string",
+                  "default": null,
+                  "description": "The maximum number of files to keep in the WebDAV folder, older files will be removed if needed."
+                }
               }
             }
           }
