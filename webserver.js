@@ -6705,9 +6705,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Set the content disposition header for a HTTP response.
     // Because the filename can't have any special characters in it, we need to be extra careful.
     function setContentDispositionHeader(res, type, name, size, altname) {
-        var name = require('path').basename(name).split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
+        var name = require('path').basename(name).split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split('\'').join('');
         try {
-            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename="' + name + '"' };
+            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename*="' + encodeURIComponent(name) + '"; filename="' + altname + '"' };
             if (typeof size == 'number') { x['Content-Length'] = size; }
             res.set(x);
         } catch (ex) {

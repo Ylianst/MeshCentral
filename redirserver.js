@@ -53,7 +53,7 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
     obj.app.get('/MeshServerRootCert.cer', function (req, res) {
         // The redirection server starts before certificates are loaded, make sure to handle the case where no certificate is loaded now.
         if (obj.certificates != null) {
-            res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + obj.certificates.RootName + '.cer"' });
+            res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename*="' + encodeURIComponent(obj.certificates.RootName) + '.cer"' });
             var rootcert = obj.certificates.root.cert;
             var i = rootcert.indexOf('-----BEGIN CERTIFICATE-----\r\n');
             if (i >= 0) { rootcert = rootcert.substring(i + 29); }
