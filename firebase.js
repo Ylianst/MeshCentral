@@ -18,6 +18,7 @@
 module.exports.CreateFirebase = function (parent, senderid, serverkey) {
     var obj = {};
     obj.messageId = 0;
+    obj.relays = {};
     obj.stats = {
         mode: "Real",
         sent: 0,
@@ -36,17 +37,27 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
 
     // Messages received from client (excluding receipts)
     xcs.on('message', function (messageId, from, data, category) {
-        //console.log('Firebase-Message', messageId, from, data, category);
+        parent.debug('email', 'Firebase-Message: ' + JSON.stringify(data));
 
-        // Lookup node information from the cache
-        var ninfo = tokenToNodeMap[from];
-        if (ninfo == null) { obj.stats.receivedNoRoute++; return; }
-
-        if ((data != null) && (data.con != null) && (data.s != null)) { // Console command
-            obj.stats.received++;
-            parent.webserver.routeAgentCommand({ action: 'msg', type: 'console', value: data.con, sessionid: data.s }, ninfo.did, ninfo.nid, ninfo.mid);
+        if (typeof data.r == 'string') {
+            // Lookup push relay server
+            parent.debug('email', 'Firebase-RelayRoute: ' + data.r);
+            const wsrelay = obj.relays[data.r];
+            if (wsrelay != null) {
+                delete data.r;
+                try { wsrelay.send(JSON.stringify({ from: from, data: data, category: category })); } catch (ex) { }
+            }
         } else {
-            obj.stats.receivedBadArgs++;
+            // Lookup node information from the cache
+            var ninfo = tokenToNodeMap[from];
+            if (ninfo == null) { obj.stats.receivedNoRoute++; return; }
+
+            if ((data != null) && (data.con != null) && (data.s != null)) { // Console command
+                obj.stats.received++;
+                parent.webserver.routeAgentCommand({ action: 'msg', type: 'console', value: data.con, sessionid: data.s }, ninfo.did, ninfo.nid, ninfo.mid);
+            } else {
+                obj.stats.receivedBadArgs++;
+            }
         }
     });
 
@@ -102,6 +113,61 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
         xcs.sendNoRetry(message, node.pmt, callback);
     }
 
+    // Setup a two way relay
+    obj.setupRelay = function (ws) {
+        // Select and set a relay identifier
+        ws.relayId = getRandomPassword();
+        while (obj.relays[ws.relayId] != null) { ws.relayId = getRandomPassword(); }
+        obj.relays[ws.relayId] = ws;
+        
+        // On message, parse it
+        ws.on('message', function (msg) {
+            parent.debug('email', 'FBWS-Data(' + this.relayId + '): ' + msg);
+            if (typeof msg == 'string') {
+
+                // Parse the incoming push request
+                var data = null;
+                try { data = JSON.parse(msg) } catch (ex) { return; }
+                if (typeof data != 'object') return;
+                if (typeof data.pmt != 'string') return;
+                if (typeof data.payload != 'object') return;
+                if (typeof data.payload.notification == 'object') {
+                    if (typeof data.payload.notification.title != 'string') return;
+                    if (typeof data.payload.notification.body != 'string') return;
+                }
+                if (typeof data.options != 'object') return;
+                if ((data.options.priority != 'Normal') && (data.options.priority != 'High')) return;
+                if ((typeof data.options.timeToLive != 'number') || (data.options.timeToLive < 1)) return;
+                if (typeof data.payload.data != 'object') { data.payload.data = {}; }
+                data.payload.data.r = ws.relayId; // Set the relay id.
+
+                // Send the push notification
+                obj.sendToDevice({ pmt: data.pmt }, data.payload, data.options, function (id, err, errdesc) {
+                    if (err == null) {
+                        try { wsrelay.send(JSON.stringify({ sent: true })); } catch (ex) { }
+                    } else {
+                        try { wsrelay.send(JSON.stringify({ sent: false })); } catch (ex) { }
+                    }
+                });
+            }
+        });
+
+        // If error, close the relay
+        ws.on('error', function (err) {
+            parent.debug('email', 'FBWS-Error(' + this.relayId + '): ' + err);
+            delete obj.relays[this.relayId];
+        });
+
+        // Close the relay
+        ws.on('close', function () {
+            parent.debug('email', 'FBWS-Close(' + this.relayId + ')');
+            delete obj.relays[this.relayId];
+        });
+
+    }
+
+    function getRandomPassword() { return Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
+
     return obj;
 };
 
@@ -118,40 +184,102 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
         receivedNoRoute: 0,
         receivedBadArgs: 0
     }
-    obj.pushOnly = true;
+    const WebSocket = require('ws');
     const https = require('https');
     const querystring = require('querystring');
     const relayUrl = require('url').parse(url);
-
     parent.debug('email', 'CreateFirebaseRelay-Setup');
 
-    // Send an outbound push notification
-    obj.sendToDevice = function (node, payload, options, func) {
-        parent.debug('email', 'Firebase-sendToDevice');
-        if ((node == null) || (typeof node.pmt != 'string')) return;
+    if (relayUrl.protocol == 'wss:') {
+        // Setup two-way push notification channel
+        obj.wsopen = false;
+        obj.tokenToNodeMap = {} // Token --> { nid: nodeid, mid: meshid }
+        obj.connectWebSocket = function () {
+            if (obj.wsclient != null) return;
+            obj.wsclient = new WebSocket(relayUrl.href + (key ? ('?key=' + key) : ''), { rejectUnauthorized: false })
+            obj.wsclient.on('open', function () { obj.wsopen = true; });
+            obj.wsclient.on('message', function (msg) {
+                parent.debug('email', 'FBWS-Data(' + msg.length + '): ' + msg);
+                var data = null;
+                try { data = JSON.parse(msg) } catch (ex) { }
+                if (typeof data != 'object') return;
+                if (typeof data.from != 'string') return;
+                if (typeof data.data != 'object') return;
+                if (typeof data.category != 'string') return;
+                processMessage(data.messageId, data.from, data.data, data.category);
+            });
+            obj.wsclient.on('error', function (err) {
+                obj.wsclient = null;
+                obj.wsopen = false;
+                setTimeout(obj.connectWebSocket, 2000);
+            });
+            obj.wsclient.on('close', function () {
+                obj.wsclient = null;
+                obj.wsopen = false;
+                setTimeout(obj.connectWebSocket, 2000);
+            });
+        }
 
-        const querydata = querystring.stringify({ 'msg': JSON.stringify({ pmt: node.pmt, payload: payload, options: options }) });
+        function processMessage(messageId, from, data, category) {
+            // Lookup node information from the cache
+            var ninfo = obj.tokenToNodeMap[from];
+            if (ninfo == null) { obj.stats.receivedNoRoute++; return; }
 
-        // Send the message to the relay
-        const httpOptions = {
-            hostname: relayUrl.hostname,
-            port: relayUrl.port ? relayUrl.port : 443,
-            path: relayUrl.path + (key ? ('?key=' + key) : ''),
-            method: 'POST',
-            //rejectUnauthorized: false, // DEBUG
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Content-Length': querydata.length
+            if ((data != null) && (data.con != null) && (data.s != null)) { // Console command
+                obj.stats.received++;
+                parent.webserver.routeAgentCommand({ action: 'msg', type: 'console', value: data.con, sessionid: data.s }, ninfo.did, ninfo.nid, ninfo.mid);
+            } else {
+                obj.stats.receivedBadArgs++;
             }
         }
-        const req = https.request(httpOptions, function (res) {
-            if (res.statusCode == 200) { obj.stats.sent++; } else { obj.stats.sendError++; }
-            if (func != null) { func(++obj.messageId, (res.statusCode == 200) ? null : 'error'); }
-        });
-        parent.debug('email', 'Firebase-sending');
-        req.on('error', function (error) { obj.stats.sent++; func(++obj.messageId, 'error'); });
-        req.write(querydata);
-        req.end();
+
+        obj.sendToDevice = function (node, payload, options, func) {
+            parent.debug('email', 'Firebase-sendToDevice-webSocket');
+            if ((node == null) || (typeof node.pmt != 'string')) { func(0, 'error'); return; }
+
+            // Fill in our lookup table
+            if (node._id != null) { obj.tokenToNodeMap[node.pmt] = { nid: node._id, mid: node.meshid, did: node.domain } }
+
+            // If the web socket is open, send now
+            if (obj.wsopen == true) {
+                try { obj.wsclient.send(JSON.stringify({ pmt: node.pmt, payload: payload, options: options })); } catch (ex) { func(0, 'error'); return; }
+                func(1);
+            } else {
+                // TODO: Buffer the push messages until TTL.
+                func(0, 'error');
+            }
+        }
+        obj.connectWebSocket();
+    } else if (relayUrl.protocol == 'https:') {
+        // Send an outbound push notification using an HTTPS POST
+        obj.pushOnly = true;
+        obj.sendToDevice = function (node, payload, options, func) {
+            parent.debug('email', 'Firebase-sendToDevice-httpPost');
+            if ((node == null) || (typeof node.pmt != 'string')) return;
+
+            const querydata = querystring.stringify({ 'msg': JSON.stringify({ pmt: node.pmt, payload: payload, options: options }) });
+
+            // Send the message to the relay
+            const httpOptions = {
+                hostname: relayUrl.hostname,
+                port: relayUrl.port ? relayUrl.port : 443,
+                path: relayUrl.path + (key ? ('?key=' + key) : ''),
+                method: 'POST',
+                //rejectUnauthorized: false, // DEBUG
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Length': querydata.length
+                }
+            }
+            const req = https.request(httpOptions, function (res) {
+                if (res.statusCode == 200) { obj.stats.sent++; } else { obj.stats.sendError++; }
+                if (func != null) { func(++obj.messageId, (res.statusCode == 200) ? null : 'error'); }
+            });
+            parent.debug('email', 'Firebase-sending');
+            req.on('error', function (error) { obj.stats.sent++; func(++obj.messageId, 'error'); });
+            req.write(querydata);
+            req.end();
+        }
     }
 
     return obj;

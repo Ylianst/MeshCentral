@@ -1782,7 +1782,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         parent.debug('email', 'handleFirebasePushOnlyRelayRequest');
         if ((req.body == null) || (req.body.msg == null) || (obj.parent.firebase == null)) { res.sendStatus(404); return; }
         if (obj.parent.config.firebase.pushrelayserver == null) { res.sendStatus(404); return; }
-        if ((typeof obj.parent.config.firebase.pushrelayserver == 'string') && (req.query.key != obj.parent.firebase.pushrelayserver)) { res.sendStatus(404); return; }
+        if ((typeof obj.parent.config.firebase.pushrelayserver == 'string') && (req.query.key != obj.parent.config.firebase.pushrelayserver)) { res.sendStatus(404); return; }
         var data = null;
         try { data = JSON.parse(req.body.msg) } catch (ex) { res.sendStatus(404); return; }
         if (typeof data != 'object') { res.sendStatus(404); return; }
@@ -1798,6 +1798,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.parent.firebase.sendToDevice({ pmt: data.pmt }, data.payload, data.options, function (id, err, errdesc) {
             if (err == null) { res.sendStatus(200); } else { res.sendStatus(500); }
         });
+    }
+
+    // Called to handle two-way push notification relay request
+    function handleFirebaseRelayRequest(ws, req) {
+        parent.debug('email', 'handleFirebaseRelayRequest');
+        if (obj.parent.firebase == null) { try { ws.close(); } catch (e) { } return; }
+        if (obj.parent.firebase.setupRelay == null) { try { ws.close(); } catch (e) { } return; }
+        if (obj.parent.config.firebase.relayserver == null) { try { ws.close(); } catch (e) { } return; }
+        if ((typeof obj.parent.config.firebase.relayserver == 'string') && (req.query.key != obj.parent.config.firebase.relayserver)) { res.sendStatus(404); try { ws.close(); } catch (e) { } return; }
+        obj.parent.firebase.setupRelay(ws);
     }
 
     // Called to process an agent invite request
@@ -5184,7 +5194,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Setup firebase push only server
             if ((obj.parent.firebase != null) && (obj.parent.config.firebase)) {
                 if (obj.parent.config.firebase.pushrelayserver) { parent.debug('email', 'Firebase-pushrelay-handler'); obj.app.post(url + 'firebaserelay.aspx', handleFirebasePushOnlyRelayRequest); }
-                if (obj.parent.config.firebase.relayserver) { parent.debug('email', 'Firebase-relay-handler'); /*obj.app.ws(url + 'firebaserelay.aspx', handleFirebaseRelayRequest);*/ }
+                if (obj.parent.config.firebase.relayserver) { parent.debug('email', 'Firebase-relay-handler'); obj.app.ws(url + 'firebaserelay.aspx', handleFirebaseRelayRequest); }
             }
 
             // Setup auth strategies using passport if needed
