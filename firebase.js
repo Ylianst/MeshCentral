@@ -197,7 +197,10 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
         obj.connectWebSocket = function () {
             if (obj.wsclient != null) return;
             obj.wsclient = new WebSocket(relayUrl.href + (key ? ('?key=' + key) : ''), { rejectUnauthorized: false })
-            obj.wsclient.on('open', function () { obj.wsopen = true; });
+            obj.wsclient.on('open', function () {
+                parent.debug('email', 'FBWS-Connected');
+                obj.wsopen = true;
+            });
             obj.wsclient.on('message', function (msg) {
                 parent.debug('email', 'FBWS-Data(' + msg.length + '): ' + msg);
                 var data = null;
@@ -214,6 +217,7 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
                 setTimeout(obj.connectWebSocket, 2000);
             });
             obj.wsclient.on('close', function () {
+                parent.debug('email', 'FBWS-Disconnected');
                 obj.wsclient = null;
                 obj.wsopen = false;
                 setTimeout(obj.connectWebSocket, 2000);

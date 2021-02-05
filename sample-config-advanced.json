@@ -143,6 +143,10 @@
       "_footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
       "_loginfooter": "This is a private server.",
       "_certUrl": "https://192.168.2.106:443/",
+      "_altMessenging": {
+        "name": "Jitsi",
+        "url": "https://meet.jit.si/myserver-{0}"
+      },
       "myServer": {
         "Backup": false,
         "Restore": false,
