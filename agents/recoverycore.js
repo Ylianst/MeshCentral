@@ -338,7 +338,8 @@ function windows_execve(name, agentfilename, sessionid) {
     var cmd = require('_GenericMarshal').CreateVariable(process.env['windir'] + '\\system32\\cmd.exe', { wide: true });
     var args = require('_GenericMarshal').CreateVariable(3 * require('_GenericMarshal').PointerSize);
     var arg1 = require('_GenericMarshal').CreateVariable('cmd.exe', { wide: true });
-    var arg2 = require('_GenericMarshal').CreateVariable('/C wmic service "' + name + '" call stopservice & copy "' + process.cwd() + agentfilename + '.update" "' + process.execPath + '" & wmic service "' + name + '" call startservice & erase "' + process.cwd() + agentfilename + '.update"', { wide: true });
+    var arg2 = require('_GenericMarshal').CreateVariable('/C wmic service "' + name + '" call stopservice & "' + process.cwd() + agentfilename + '.update.exe" -b64exec ' + 'dHJ5CnsKICAgIHZhciBzZXJ2aWNlTG9jYXRpb24gPSBwcm9jZXNzLmFyZ3YucG9wKCk7CiAgICByZXF1aXJlKCdwcm9jZXNzLW1hbmFnZXInKS5lbnVtZXJhdGVQcm9jZXNzZXMoKS50aGVuKGZ1bmN0aW9uIChwcm9jKQogICAgewogICAgICAgIGZvciAodmFyIHAgaW4gcHJvYykKICAgICAgICB7CiAgICAgICAgICAgIGlmIChwcm9jW3BdLnBhdGggPT0gc2VydmljZUxvY2F0aW9uKQogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICBwcm9jZXNzLmtpbGwocHJvY1twXS5waWQpOwogICAgICAgICAgICB9CiAgICAgICAgfQogICAgICAgIHByb2Nlc3MuZXhpdCgpOwogICAgfSk7Cn0KY2F0Y2goZSkKewogICAgcHJvY2Vzcy5leGl0KCk7Cn0=' +
+        ' "' + process.execPath + '" & copy "' + process.cwd() + agentfilename + '.update.exe" "' + process.execPath + '" & wmic service "' + name + '" call startservice & erase "' + process.cwd() + agentfilename + '.update.exe"', { wide: true });
 
     arg1.pointerBuffer().copy(args.toBuffer());
     arg2.pointerBuffer().copy(args.toBuffer(), require('_GenericMarshal').PointerSize);
@@ -416,7 +417,7 @@ function agentUpdate_Start(updateurl, updateoptions) {
                 agentUpdate_Start._selfupdate = null;
             });
             agentUpdate_Start._selfupdate.on('response', function (img) {
-                this._file = require('fs').createWriteStream(agentfilename + '.update', { flags: 'wb' });
+                this._file = require('fs').createWriteStream(agentfilename + (process.platform=='win32'?'.update.exe':'update'), { flags: 'wb' });
                 this._filehash = require('SHA384Stream').create();
                 this._filehash.on('hash', function (h) {
                     if (updateoptions != null && updateoptions.hash != null) {
