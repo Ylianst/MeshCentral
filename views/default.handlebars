@@ -2199,6 +2199,7 @@
                                 if (message.id != null) { n.id = message.id; }
                                 if (message.nodeid != null) { n.nodeid = message.nodeid; }
                                 if (message.tag != null) { n.tag = message.tag; }
+                                if (message.url != null) { n.url = message.url; }
                                 if (message.username != null) { n.username = message.username; }
                                 if (typeof message.maxtime == 'number') { n.maxtime = message.maxtime; }
                                 addNotification(n);
@@ -2239,6 +2240,7 @@
                             var n = { text: message.value, title: message.title, icon: message.icon, titleid: message.titleid, msgid: message.msgid, args: message.args };
                             if (message.id != null) { n.id = message.id; }
                             if (message.tag != null) { n.tag = message.tag; }
+                            if (message.url != null) { n.url = message.url; }
                             if (message.username != null) { n.username = message.username; }
                             if (typeof message.maxtime == 'number') { n.maxtime = message.maxtime; }
                             addNotification(n);
@@ -5978,6 +5980,7 @@
                 if ((meshrights & 8) && ((connectivity & 1) || ((node.pmt == 1) && ((features2 & 2) != 0)))) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
                 if ((meshrights & 8) && (connectivity & 1) || ((node.pmt == 1) && ((features2 & 2) != 0))) { x += '<input type=button value="' + "Chat" + '" title="' + "Open chat window to this computer" + '" onclick=deviceChat(event) />'; }
+                if ((serverinfo != null) && (serverinfo.altmessenging != null) && (meshrights & 8) && (connectivity & 1)) { x += '<input type=button value="' + EscapeHtml(serverinfo.altmessenging.name) + '" onclick=altDeviceChat(event) />'; }
                 if ((serverinfo.guestdevicesharing !== false) && (node.agent != null) && (node.agent.caps & 3) && (connectivity & 1) && ((meshrights & 0x80008) == 0x80008) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 0x1000) == 0))) { x += '<input type=button value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />'; }
 
                 // Custom UI
@@ -6310,6 +6313,13 @@
                 safeNewWindow(url, 'meshmessenger:' + currentNode._id, 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=400,height=560');
             }
             meshserver.send({ action: 'meshmessenger', nodeid: decodeURIComponent(currentNode._id) });
+        }
+
+        function altDeviceChat(e) {
+            if (xxdialogMode) return;
+            var url = serverinfo.altmessenging.url.split('{0}').join(currentNode._id.split('/').join('-'));
+            meshserver.send({ action: 'msg', type: 'openUrl', nodeid: currentNode._id, url: url });
+            safeNewWindow(url, 'altmessenger:' + currentNode._id, 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=400,height=560');
         }
 
         function deviceToggleBackground() {
@@ -11800,11 +11810,21 @@
         }
 
         function userChat(e, userid, name) {
+            if (xxdialogMode) return;
             haltEvent(e);
             var url = '/messenger?id=meshmessenger/' + userid + '/' + encodeURIComponentEx(userinfo._id) + '&title=' + name;
             if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
             safeNewWindow(url, 'meshmessenger:' + userid);
             meshserver.send({ action: 'meshmessenger', userid: decodeURIComponent(userid) });
+            return false;
+        }
+
+        function altUserChat(e, userid, name) {
+            if (xxdialogMode) return;
+            haltEvent(e);
+            var url = serverinfo.altmessenging.url.split('{0}').join(userid.split('/').join('-'));
+            safeNewWindow(url, 'altmessenger:' + userid);
+            meshserver.send({ action: 'notifyuser', userid: decodeURIComponent(userid), msg: serverinfo.altmessenging.name, msgid: 11, url: url });
             return false;
         }
 
@@ -12712,6 +12732,7 @@
             if (!self && (activeSessions > 0)) {
                 x += '<input type=button value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + encodeURIComponentEx(user._id) + '") />';
                 x += '<input type=button value="' + "Chat" + '" title="' + "Chat" + '" onclick=userChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '") />';
+                if ((serverinfo != null) && (serverinfo.altmessenging != null)) { x += '<input type=button value="' + EscapeHtml(serverinfo.altmessenging.name) + '" onclick=altUserChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '") />'; }
             }
 
             // Setup the panel
@@ -13351,6 +13372,7 @@
         }
 
         function notificationSelectedEx(n, id) {
+            console.log(n);
             if (n.nodeid != null) {
                 if (n.tag == 'desktop') gotoDevice(n.nodeid, 12); // Desktop
                 else if (n.tag == 'terminal') gotoDevice(n.nodeid, 11); // Terminal
@@ -13361,6 +13383,9 @@
             } else {
                 if ((n.tag != null) && n.tag.startsWith('meshmessenger/')) {
                     safeNewWindow('/messenger?id=' + n.tag + '&title=' + encodeURIComponentEx(n.username), n.tag.split('/')[2]);
+                    notificationDelete(id);
+                } else if (n.url != null) {
+                    safeNewWindow(n.url);
                     notificationDelete(id);
                 }
             }
@@ -13389,6 +13414,7 @@
 
         // Add a new notification and play the notification sound
         function addNotification(n) {
+            console.log('addNotification', n);
             // Perform message translation
             var translatedTitles = [
                 null,
@@ -13464,6 +13490,7 @@
                 }
                 notification.id = n.id;
                 notification.xtag = n.tag;
+                notification.url = n.url;
                 notification.nodeid = n.nodeid;
                 notification.username = n.username;
                 notification.onclick = function (e) { notificationSelected(e.target.id, true); }

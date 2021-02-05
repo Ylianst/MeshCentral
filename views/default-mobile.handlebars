@@ -1358,6 +1358,7 @@
                                 if (message.id != null) { n.id = message.id; }
                                 if (message.nodeid != null) { n.nodeid = message.nodeid; }
                                 if (message.tag != null) { n.tag = message.tag; }
+                                if (message.url != null) { n.url = message.url; }
                                 if (message.username != null) { n.username = message.username; }
                                 if (typeof message.maxtime == 'number') { n.maxtime = message.maxtime; }
                                 addNotification(n);
@@ -1384,6 +1385,7 @@
                             var n = { text: message.value, title: message.title, icon: message.icon, titleid: message.titleid, msgid: message.msgid, args: message.args };
                             if (message.id != null) { n.id = message.id; }
                             if (message.tag != null) { n.tag = message.tag; }
+                            if (message.url != null) { n.url = message.url; }
                             if (message.username != null) { n.username = message.username; }
                             if (typeof message.maxtime == 'number') { n.maxtime = message.maxtime; }
                             addNotification(n);
@@ -5171,6 +5173,9 @@
                 if ((n.tag != null) && n.tag.startsWith('meshmessenger/')) {
                     safeNewWindow('/messenger?id=' + n.tag + '&title=' + encodeURIComponentEx(n.username), n.tag.split('/')[2]);
                     notificationDelete(id);
+                } else if (n.url != null) {
+                    safeNewWindow(n.url);
+                    notificationDelete(id);
                 }
             }
         }
@@ -5273,6 +5278,7 @@
                 }
                 notification.id = n.id;
                 notification.xtag = n.tag;
+                notification.url = n.url;
                 notification.nodeid = n.nodeid;
                 notification.username = n.username;
                 notification.onclick = function (e) { notificationSelected(e.target.id, true); }

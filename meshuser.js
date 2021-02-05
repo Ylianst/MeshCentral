@@ -459,6 +459,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 if (matchingDomains.length > 0) { serverinfo.amtAcmFqdn = matchingDomains; }
             }
+            if ((typeof domain.altmessenging == 'object') && (typeof domain.altmessenging.name == 'string') && (typeof domain.altmessenging.url == 'string')) { serverinfo.altmessenging = { name: domain.altmessenging.name, url: domain.altmessenging.url }; }
             serverinfo.https = true;
             serverinfo.redirport = args.redirport;
 
@@ -2716,7 +2717,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Create the notification message
                     var notification = { action: 'msg', type: 'notify', id: Math.random(), value: command.msg, title: user.name, icon: 8, userid: user._id, username: user.name };
+                    if (typeof command.url == 'string') { notification.url = command.url; }
                     if ((typeof command.maxtime == 'number') && (command.maxtime > 0)) { notification.maxtime = command.maxtime; }
+                    if (command.msgid == 11) { notification.value = "Chat Request, Click here to accept."; notification.msgid = 11; } // Chat request
 
                     // Get the list of sessions for this user
                     var sessions = parent.wssessions[command.userid];
