@@ -6712,7 +6712,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function setContentDispositionHeader(res, type, name, size, altname) {
         var name = require('path').basename(name).split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split('\'').join('');
         try {
-            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename*="' + encodeURIComponent(name) + '"; filename="' + altname + '"' };
+            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename="' + encodeURIComponent(name) + '"' };
             if (typeof size == 'number') { x['Content-Length'] = size; }
             res.set(x);
         } catch (ex) {

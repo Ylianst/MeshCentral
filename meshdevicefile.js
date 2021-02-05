@@ -296,7 +296,7 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
     function setContentDispositionHeader(res, type, name, size, altname) {
         if (name != null) { name = require('path').basename(name).split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split('\'').join(''); } else { name = altname; }
         try {
-            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename*="' + encodeURIComponent(name) + '"; filename="' + altname + '"' };
+            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename="' + encodeURIComponent(name) + '"' };
             if (typeof size == 'number') { x['Content-Length'] = size; }
             res.set(x);
         } catch (ex) {
