@@ -1272,8 +1272,10 @@ function onFileWatcher(a, b) {
 */
 
 function getSystemInformation(func) {
-    try {
+    try
+    {
         var results = { hardware: require('identifiers').get() }; // Hardware info
+
         if (results.hardware && results.hardware.windows) {
             // Remove extra entries and things that change quickly
             var x = results.hardware.windows.osinfo;
@@ -1290,43 +1292,39 @@ function getSystemInformation(func) {
                 if (results.hardware.windows.partitions) { for (var i in results.hardware.windows.partitions) { delete results.hardware.windows.partitions[i].Node; } }
             } catch (e) { }
         }
-        if (process.platform == 'win32') {
-            results.pendingReboot = require('win-info').pendingReboot(); // Pending reboot
-            if (require('identifiers').volumes != null) {
-                try {
-                    results.volumes = require('identifiers').volumes();
-                }
-                catch (e) {
-                }
-            }
-        }
         results.hardware.agentvers = process.versions;
 
-        /*
-        if (process.platform == 'win32') {
-            var defragResult = function (r) {
-                if (typeof r == 'object') { results[this.callname] = r; }
-                if (this.callname == 'defrag') {
-                    var pr = require('win-info').installedApps(); // Installed apps
-                    pr.callname = 'installedApps';
-                    pr.sessionid = data.sessionid;
-                    pr.then(defragResult, defragResult);
-                }
-                else {
-                    results.winpatches = require('win-info').qfe(); // Windows patches
+        if (process.platform == 'win32')
+        {
+            results.pendingReboot = require('win-info').pendingReboot(); // Pending reboot
+
+            if (require('identifiers').volumes_promise != null)
+            {
+                var p = require('identifiers').volumes_promise();
+                p.then(function (res)
+                {
+                    results.volumes = res;
                     results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
                     func(results);
-                }
+                });
             }
-            var pr = require('win-info').defrag({ volume: 'C:' }); // Defrag TODO
-            pr.callname = 'defrag';
-            pr.sessionid = data.sessionid;
-            pr.then(defragResult, defragResult);
-        } else {
-        */
-        results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
-        func(results);
-        //}
+            else if (require('identifiers').volumes != null)
+            {
+                results.volumes = require('identifiers').volumes();
+                results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
+                func(results);
+            }
+            else
+            {
+                results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
+                func(results);
+            }
+        }
+        else
+        {
+            results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
+            func(results);
+        }
     } catch (e) { func(null, e); }
 }
 
