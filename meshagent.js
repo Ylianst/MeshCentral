@@ -889,6 +889,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (disconnectCount > 6) {
             parent.parent.debug('agent', 'Agent in big trouble: NodeId=' + obj.nodeid + ', IP=' + obj.remoteaddrport + ', Agent=' + obj.agentInfo.agentId + '.');
             console.log('Agent in big trouble: NodeId=' + obj.nodeid + ', IP=' + obj.remoteaddrport + ', Agent=' + obj.agentInfo.agentId + '.');
+            parent.agentStats.agentInBigTrouble++;
             // TODO: Log or do something to recover?
             return;
         }
@@ -896,20 +897,22 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Command 4, inform mesh agent that it's authenticated.
         obj.sendBinary(common.ShortToStr(4));
 
+        // Not sure why, but in rare cases, obj.agentInfo is undefined here.
+        if ((obj.agentInfo == null) || (typeof obj.agentInfo.capabilities != 'number')) { return; } // This is an odd case.
+        obj.agentExeInfo = parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
+
+        // Check if this agent is reconnecting too often.
         if (disconnectCount > 4) {
             // Too many disconnections, this agent has issues. Just clear the core.
             obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0));
             parent.parent.debug('agent', 'Agent in trouble: NodeId=' + obj.nodeid + ', IP=' + obj.remoteaddrport + ', Agent=' + obj.agentInfo.agentId + '.');
+            parent.agentStats.agentInTrouble++;
             //console.log('Agent in trouble: NodeId=' + obj.nodeid + ', IP=' + obj.remoteaddrport + ', Agent=' + obj.agentInfo.agentId + '.');
             // TODO: Log or do something to recover?
             return;
         }
 
-        // Not sure why, but in rare cases, obj.agentInfo is undefined here.
-        if ((obj.agentInfo == null) || (typeof obj.agentInfo.capabilities != 'number')) { return; } // This is an odd case.
-
         // Check if we need to make an native update check
-        obj.agentExeInfo = parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
         var corename = null;
         if (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId] != null) {
             corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
