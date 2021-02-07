@@ -1551,9 +1551,9 @@ function CreateMeshCentralServer(config, args) {
                 } else if ((typeof config.firebaserelay == 'object') && (typeof config.firebaserelay.url == 'string')) {
                     // Setup the push messaging relay
                     obj.firebase = require('./firebase').CreateFirebaseRelay(obj, config.firebaserelay.url, config.firebaserelay.key);
-                } else if (typeof config.firebaserelay == true) {
-                    // Setup the push messaging relay using https://meshcentral.com
-                    obj.firebase = require('./firebase').CreateFirebaseRelay(obj, 'https://central.mesh.meshcentral.com/firebaserelay.aspx');
+                } else if (obj.config.settings.publicpushnotifications === true) {
+                    // Setup the Firebase push messaging relay using https://meshcentral.com, this is the public push notification server.
+                    obj.firebase = require('./firebase').CreateFirebaseRelay(obj, 'https://meshcentral.com/firebaserelay.aspx');
                 }
 
                 // Start periodic maintenance
