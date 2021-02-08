@@ -1293,7 +1293,11 @@ function getSystemInformation(func) {
             } catch (e) { }
         }
         results.hardware.agentvers = process.versions;
+        results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
+        func(results);
 
+        /*
+        // On Windows platforms, get volume information - Needs more testing.
         if (process.platform == 'win32')
         {
             results.pendingReboot = require('win-info').pendingReboot(); // Pending reboot
@@ -1325,6 +1329,7 @@ function getSystemInformation(func) {
             results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
             func(results);
         }
+        */
     } catch (e) { func(null, e); }
 }
 
