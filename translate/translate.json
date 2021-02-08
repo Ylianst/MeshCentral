@@ -5155,6 +5155,7 @@
     {
       "en": "Android APK Download",
       "nl": "Android APK Download",
+      "fr": "Télécharger l'APK Android",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->5->1"
       ]
@@ -5182,6 +5183,7 @@
     {
       "en": "Android Installation",
       "nl": "Android installatie",
+      "fr": "Installation pour Android",
       "xloc": [
         "default-mobile.handlebars->11->513"
       ]
@@ -7626,7 +7628,7 @@
     {
       "en": "Chat Request, Click here to accept.",
       "nl": "Chatverzoek, klik hier om te accepteren.",
-      "fr": "Demande de chat, cliquez ici pour accepter.",
+      "fr": "Demande de discussion, cliquez ici pour accepter.",
       "xloc": [
         "default-mobile.handlebars->11->581",
         "default.handlebars->31->2173"
@@ -7638,7 +7640,7 @@
       "en": "ChatSession",
       "es": "Sesión de Chat",
       "fi": "Chat istunto",
-      "fr": "Session Chat",
+      "fr": "Session de discussion",
       "hi": "ChatSession",
       "ja": "ChatSession",
       "ko": "ChatSession",
@@ -8658,6 +8660,7 @@
     {
       "en": "Compile time",
       "nl": "Compileer tijd",
+      "fr": "Temps de compilation",
       "xloc": [
         "default-mobile.handlebars->11->411",
         "default.handlebars->31->1028"
@@ -12183,6 +12186,7 @@
     {
       "en": "Device Pairing Link",
       "nl": "Apparaat koppelingslink",
+      "fr": "Lien de jumelage de l'appareil",
       "xloc": [
         "default-mobile.handlebars->11->512"
       ]
@@ -13618,6 +13622,7 @@
     {
       "en": "Download the agent software using the Google Play store or APK file, install it and use the QR code on the right or the pairing link below to setup your device on this server.",
       "nl": "Download de agentsoftware via de Google Play Store of APK-bestand, installeer het en gebruik de QR-code aan de rechterkant of de koppelingslink hieronder om uw apparaat aan deze server te koppelen.",
+      "fr": "Installez l'agent depuis le store Google Play ou le fichier APK et utilisez le QR code ci-contre ou le lien de jumelage pour associer votre appareil à ce serveur",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->1"
       ]
@@ -17900,6 +17905,7 @@
     {
       "en": "Google Play Store",
       "nl": "Google Play Store",
+      "fr": "Google Play Store",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->3->1"
       ]
@@ -19435,6 +19441,7 @@
     {
       "en": "Install on this device",
       "nl": "Installeren on dit apparaat",
+      "fr": "Installer sur cet appareil",
       "xloc": [
         "default-mobile.handlebars->11->498"
       ]
@@ -19442,6 +19449,7 @@
     {
       "en": "Install the MeshCentral Agent on your Android device. Once installed, click the pairing link to connect your device to this server.",
       "nl": "Installeer de MeshCentral Agent op uw Android apparaat. Na installatie klikt u op de koppelingslink om uw apparaat met deze server te verbinden.",
+      "fr": "Installez l'agent MeshCentral sur votre appareil android puis cliquez sur ce lien pour le connecter au serveur.",
       "xloc": [
         "default-mobile.handlebars->11->510"
       ]
@@ -24502,6 +24510,7 @@
     {
       "en": "MeshCentral Agent for Android",
       "nl": "MeshCentral Agent voor Android",
+      "fr": "Agent MeshCentral pour Android",
       "xloc": [
         "default-mobile.handlebars->11->511"
       ]
@@ -28403,6 +28412,7 @@
     },
     {
       "en": "PUSH",
+      "fr": "Envoyer",
       "xloc": [
         "default-mobile.handlebars->11->477",
         "default.handlebars->31->1105"
@@ -30258,6 +30268,7 @@
     },
     {
       "en": "Push",
+      "fr": "Envoyer",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10console->consoleTable->1->4->1->1->1->0->p15outputselecttd->p15outputselect->p15outputselect3",
         "default.handlebars->container->column_l->p15->consoleTable->1->6->1->1->1->0->p15outputselecttd->p15outputselect->p15outputselect3"
@@ -30265,6 +30276,7 @@
     },
     {
       "en": "Push notification failed.",
+      "fr": "Echec de l'envoi de la notification",
       "xloc": [
         "messenger.handlebars->13->7"
       ]
@@ -34398,6 +34410,7 @@
     },
     {
       "en": "Sent as push notification.",
+      "fr": "Envoyer une notification.",
       "xloc": [
         "messenger.handlebars->13->6"
       ]
@@ -34561,6 +34574,7 @@
     {
       "en": "Server Pairing Link",
       "nl": "Server koppelingslink",
+      "fr": "Lien de jumelage au serveur",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->7->1"
       ]
