@@ -13842,6 +13842,7 @@
         //
 
         function setupServiceWorker() {
+            if ((features2 & 8) == 0) return; // Web push not enabled on this server
             if ((typeof serverinfo.vapidpublickey != 'string') || (Notification == null) || (Notification.permission != 'granted')) return;
             // Register the service worker
             if ('serviceWorker' in navigator) {

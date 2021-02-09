@@ -2457,6 +2457,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (obj.parent.amtManager != null) { features2 += 0x00000001; } // Indicates that the Intel AMT manager is active
                 if (obj.parent.firebase != null) { features2 += 0x00000002; } // Indicates the server supports Firebase push messaging
                 if ((obj.parent.firebase != null) && (obj.parent.firebase.pushOnly != true)) { features2 += 0x00000004; } // Indicates the server supports Firebase two-way push messaging
+                if (obj.parent.webpush != null) { features2 += 0x00000008; } // Indicates web push is enabled
 
                 // Create a authentication cookie
                 const authCookie = obj.parent.encodeCookie({ userid: dbGetFunc.user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
@@ -6340,6 +6341,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((typeof user2.otpsecret == 'string') && (user2.otpsecret != null)) { user2.otpsecret = 1; } // Indicates a time secret is present.
         if ((typeof user2.otpkeys == 'object') && (user2.otpkeys != null)) { user2.otpkeys = 0; if (user.otpkeys != null) { for (var i = 0; i < user.otpkeys.keys.length; i++) { if (user.otpkeys.keys[i].u == true) { user2.otpkeys = 1; } } } } // Indicates the number of one time backup codes that are active.
         if ((typeof user2.otphkeys == 'object') && (user2.otphkeys != null)) { user2.otphkeys = user2.otphkeys.length; } // Indicates the number of hardware keys setup
+        if ((typeof user2.webpush == 'object') && (user2.webpush != null)) { user2.webpush = user2.webpush.length; } // Indicates the number of web push sessions we have
         return user2;
     }
 
