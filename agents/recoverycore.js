@@ -417,7 +417,7 @@ function agentUpdate_Start(updateurl, updateoptions) {
                 agentUpdate_Start._selfupdate = null;
             });
             agentUpdate_Start._selfupdate.on('response', function (img) {
-                this._file = require('fs').createWriteStream(agentfilename + (process.platform=='win32'?'.update.exe':'update'), { flags: 'wb' });
+                this._file = require('fs').createWriteStream(agentfilename + (process.platform=='win32'?'.update.exe':'.update'), { flags: 'wb' });
                 this._filehash = require('SHA384Stream').create();
                 this._filehash.on('hash', function (h) {
                     if (updateoptions != null && updateoptions.hash != null) {
