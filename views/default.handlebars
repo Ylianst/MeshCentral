@@ -354,6 +354,7 @@
                         <p class="mL">
                             <span id="managePhoneNumber2" style="display:none"><a href=# onclick="return account_managePhone()">Manage phone number</a><br /></span>
                             <span id="verifyEmailId" style="display:none"><a href=# onclick="return account_showVerifyEmail()">Verify email</a><br /></span>
+                            <span id="accountEnablePushNotificationsSpan" style="display:none"><a href=# onclick="return account_enablePushNotifications()">Enable push notifications</a><br /></span>
                             <span id="accountEnableNotificationsSpan" style="display:none"><a href=# onclick="return account_enableNotifications()">Enable web notifications</a><br /></span>
                             <a href=# onclick="return account_showLocalizationSettings()">Localization Settings</a><br />
                             <a href=# onclick="return account_showAccountNotifySettings()">Notification Settings</a><br />
@@ -1359,6 +1360,37 @@
             // Fix links if a loginKey is used
             if (urlargs.key) { Q('termsLinkFooter').href += '?key=' + urlargs.key; }
 
+            /*
+            // Register the service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.addEventListener('message', function(event) {
+                    console.log("Client message from service worker: " + event);
+                });
+
+                navigator.serviceWorker.register('serviceworker.js')
+                .then(function(reg) {
+                    // Registration worked
+                    console.log('Registration succeeded. Scope is ' + reg.scope);
+
+                    reg.pushManager.getSubscription().then(function(sub) {
+                        if (sub === null) {
+                            // Update UI to ask user to register for Push
+                            console.log('Not subscribed to push service.');
+                        } else {
+                            // We have a subscription, update the database
+                            console.log('Subscription object: ', sub);
+
+                            navigator.serviceWorker.controller.postMessage({type: 'sync', text: 'Hello!'})
+                        }
+                    });
+
+                }).catch((error) => {
+                    // Registration failed
+                    console.log('Registration failed with ' + error);
+                });
+            }
+            */
+
             // Check if we are in debug mode
             args = parseUriArgs();
             if (args.key && (isAlphaNumeric(args.key) == false)) { delete args.key; }
@@ -2066,6 +2098,7 @@
                     serverinfo = message.serverinfo;
                     if (serverinfo.timeout) { setInterval(checkIdleSessionTimeout, 10000); checkIdleSessionTimeout(); }
                     if (debugmode == 1) { console.log('Server time: ', printDateTime(new Date(serverinfo.serverTime))); }
+                    //console.log(serverinfo);
                     break;
                 }
                 case 'userinfo': {
@@ -9659,6 +9692,11 @@
             }
         }
 
+        function account_enablePushNotifications() {
+            if ((serverinfo == null) || (serverinfo.vapidpublickey == null)) return;
+            return false;
+        }
+
         function account_enableNotifications() {
             if (Notification) { Notification.requestPermission().then(function (permission) { QV('accountEnableNotificationsSpan', permission != 'granted'); }); }
             return false;
@@ -14043,6 +14081,7 @@
 
             // Setup web notifications
             if ((x == 2) && Notification) { QV('accountEnableNotificationsSpan', Notification.permission != 'granted'); }
+            //QV('accountEnablePushNotificationsSpan', true);
 
             // Fetch the server timeline stats if needed
             if ((x == 40) && (serverTimelineStats == null)) { refreshServerTimelineStats(); }
@@ -14448,16 +14487,6 @@
         function getUserName(userid) {  if (users && users[userid] != null) return users[userid].name; return userid.split('/')[2]; }
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
-
-        // Used to convert Base64 public VAPID key to bytearray.
-        function urlBase64ToUint8Array(base64String) {
-            const padding = '='.repeat((4 - base64String.length % 4) % 4);
-            const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-            const rawData = window.atob(base64);
-            const outputArray = new Uint8Array(rawData.length);
-            for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
-            return outputArray;
-        }
 
         // Webkit seems to have a problem with "download" tag causing "network error", but openning the download in a hidden frame fixes it.
         // So we do that for all browsers except FireFox
