@@ -6686,6 +6686,48 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
+    // Perform a web push to a user
+    // If any of the push fail, remove the subscription from the user's webpush subscription list.
+    obj.performWebPush = function (domain, user, payload, options) {
+        if ((parent.webpush == null) || (Array.isArray(user.webpush) == false) || (user.webpush.length == 0)) return;
+
+        var completionFunc = function pushCompletionFunc(sub, fail) {
+            pushCompletionFunc.failCount += fail;
+            if (--pushCompletionFunc.pushCount == 0) {
+                if (pushCompletionFunc.failCount > 0) {
+                    var user = pushCompletionFunc.user, newwebpush = [];
+                    for (var i in user.webpush) { if (user.webpush[i].fail == null) { newwebpush.push(user.webpush[i]); } }
+                    user.webpush = newwebpush;
+
+                    // Update the database
+                    obj.db.SetUser(user);
+
+                    // Event the change
+                    var message = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', domain: domain.id, nolog: 1 };
+                    if (db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                    var targets = ['*', 'server-users', user._id];
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    parent.DispatchEvent(targets, obj, message);
+                }
+            }
+        }
+        completionFunc.pushCount = user.webpush.length;
+        completionFunc.user = user;
+        completionFunc.domain = domain;
+        completionFunc.failCount = 0;
+
+        for (var i in user.webpush) {
+            var errorFunc = function pushErrorFunc(error) { pushErrorFunc.sub.fail = 1; pushErrorFunc.call(pushErrorFunc.sub, 1); }
+            errorFunc.sub = user.webpush[i];
+            errorFunc.call = completionFunc;
+            var successFunc = function pushSuccessFunc(value) { pushSuccessFunc.call(pushSuccessFunc.sub, 0); }
+            successFunc.sub = user.webpush[i];
+            successFunc.call = completionFunc;
+            parent.webpush.sendNotification(user.webpush[i], JSON.stringify(payload), options).then(successFunc, errorFunc);
+        }
+
+    }
+
     // Return true if a mobile browser is detected.
     // This code comes from "http://detectmobilebrowsers.com/" and was modified, This is free and unencumbered software released into the public domain. For more information, please refer to the http://unlicense.org/
     function isMobileBrowser(req) {

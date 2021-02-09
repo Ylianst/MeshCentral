@@ -2746,6 +2746,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (parent.parent.multiServer != null) {
                         // TODO: Add multi-server support
                     }
+
+                    // If the user is not connected, use web push if available.
+                    if ((parent.wssessions[chguser._id] == null) && (parent.sessionsCount[chguser._id] == null)) {
+                        // Perform web push notification
+                        var payload = { body: command.msg, icon: 8 }; // Icon 8 is the user icon.
+                        if (command.url) { payload.url = command.url; }
+                        if (domain.title != null) { payload.title = domain.title; } else { payload.title = "MeshCentral"; }
+                        payload.title += ' - ' + user.name;
+                        parent.performWebPush(domain, chguser, payload, { TTL: 60 }); // For now, 1 minute TTL
+                    }
+
                     break;
                 }
             case 'meshmessenger':
@@ -2772,6 +2783,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (parent.parent.multiServer != null) {
                             // TODO: Add multi-server support
                         }
+
+                        // If the user is not connected, use web push if available.
+                        if ((parent.wssessions[chguser._id] == null) && (parent.sessionsCount[chguser._id] == null)) {
+                            // Create the server url
+                            var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
+                            var xdomain = (domain.dns == null) ? domain.id : '';
+                            if (xdomain != '') xdomain += "/";
+                            var url = "https://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.userid) + "/" + encodeURIComponent(user._id);
+
+                            // Perform web push notification
+                            var payload = { body: "Chat Request, Click here to accept.", icon: 8, url: url }; // Icon 8 is the user icon.
+                            if (domain.title != null) { payload.title = domain.title; } else { payload.title = "MeshCentral"; }
+                            payload.title += ' - ' + user.name;
+                            parent.performWebPush(domain, chguser, payload, { TTL: 60 }); // For now, 1 minute TTL
+                        }
+                        return;
                     }
 
                     // User-to-device chat is not support in LAN-only mode yet. We need the agent to replace the IP address of the server??
