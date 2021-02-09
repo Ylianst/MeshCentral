@@ -5292,7 +5292,45 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'webpush': {
-                //console.log(command);
+                // Check if web push is enabled
+                if (parent.parent.webpush == null) break;
+
+                // Adds a web push session to the user. Start by sanitizing the input.
+                if ((typeof command.sub != 'object') && (typeof command.sub.keys != 'object') && (typeof command.sub.endpoint != 'string')) break;
+                if (common.validateString(command.sub.endpoint, 1, 1024) == false) break; // Check endpoint
+                if (common.validateString(command.sub.keys.auth, 1, 64) == false) break; // Check key auth
+                if (common.validateString(command.sub.keys.p256dh, 1, 256) == false) break; // Check key dh
+                var newWebPush = { endpoint: command.sub.endpoint, keys: { auth: command.sub.keys.auth, p256dh: command.sub.keys.p256dh } }
+                
+                // See if we need to add this session
+                var changed = false;
+                if (user.webpush == null) {
+                    changed = true;
+                    user.webpush = [newWebPush];
+                } else {
+                    var found = false;
+                    for (var i in user.webpush) {
+                        if ((user.webpush[i].endpoint == newWebPush.endpoint) && (user.webpush[i].keys.auth == newWebPush.keys.auth) && (user.webpush[i].keys.p256dh == newWebPush.keys.p256dh)) { found = true; }
+                    }
+                    if (found == true) break;
+                    changed = true;
+                    user.webpush.push(newWebPush);
+                    while (user.webpush.length > 5) { user.webpush.shift(); }
+                }
+
+                // If we added the session, update the user
+                if (changed == true) {
+                    // Update the database
+                    parent.db.SetUser(user);
+
+                    // Event the change
+                    var message = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id, nolog: 1 };
+                    if (db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                    var targets = ['*', 'server-users', user._id];
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    parent.parent.DispatchEvent(targets, obj, message);
+                }
+
                 break;
             }
             case 'print': {
