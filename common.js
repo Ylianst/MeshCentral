@@ -95,8 +95,14 @@ module.exports.data2blob = function (data) {
     return blob;
 };
 
-// Generate random numbers
-module.exports.random = function (max) { (require('crypto').randomBytes(4).readUInt32BE(0) % max); };
+// Generate random numbers between 0 and max without bias.
+module.exports.random = function (max) {
+    const crypto = require('crypto');
+    var maxmask = 1, r;
+    while (maxmask < max) { maxmask = (maxmask << 1) + 1; }
+    do { r = (crypto.randomBytes(4).readUInt32BE(0) & maxmask); } while (r > max);
+    return r;
+};
 
 // Split a comma seperated string, ignoring commas in quotes.
 module.exports.quoteSplit = function (str) {
