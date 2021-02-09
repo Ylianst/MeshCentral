@@ -463,6 +463,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             if (Array.isArray(domain.altmessenging)) { serverinfo.altmessenging = []; for (var i in domain.altmessenging) { if ((typeof domain.altmessenging[i] == 'object') && (typeof domain.altmessenging[i].name == 'string') && (typeof domain.altmessenging[i].url == 'string')) { serverinfo.altmessenging.push({ name: domain.altmessenging[i].name, url: domain.altmessenging[i].url }); } } }
             serverinfo.https = true;
             serverinfo.redirport = args.redirport;
+            if (parent.parent.webpush != null) { serverinfo.vapidpublickey = parent.parent.webpush.vapidPublicKey; } // Web push public key
 
             // Build the mobile agent URL, this is used to connect mobile devices
             var agentServerName = parent.getWebServerName(domain);
@@ -4254,7 +4255,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         try { otplib = require('otplib'); } catch (ex) { }
                         if (otplib == null) { break; }
                         const secret = otplib.authenticator.generateSecret(); // TODO: Check the random source of this value.
-                        ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(user.name, parent.certificates.CommonName, secret) }));
+
+                        var domainName = parent.certificates.CommonName;
+                        if (domain.dns != null) { domainName = domain.dns; }
+                        ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(user.name, domainName, secret) }));
                     }
                     break;
                 }

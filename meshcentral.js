@@ -1544,6 +1544,21 @@ function CreateMeshCentralServer(config, args) {
                     if ((obj.smsserver != null) && (obj.args.lanonly == true)) { addServerWarning("SMS gateway has limited use in LAN mode."); }
                 }
 
+                // Setup web based push notifications
+                if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) {
+                    obj.webpush = require('web-push');
+                    var vapidKeys = null;
+                    try { vapidKeys = JSON.parse(obj.fs.readFileSync(obj.path.join(obj.datapath, 'vapid.json')).toString()); } catch (ex) { }
+                    if ((vapidKeys == null) || (typeof vapidKeys.publicKey != 'string') || (typeof vapidKeys.privateKey != 'string')) {
+                        console.log("Generating web push VAPID keys...");
+                        vapidKeys = obj.webpush.generateVAPIDKeys();
+                        obj.fs.writeFileSync(obj.path.join(obj.datapath, 'vapid.json'), JSON.stringify(vapidKeys));
+                    }
+                    obj.webpush.vapidPublicKey = vapidKeys.publicKey;
+                    obj.webpush.setVapidDetails('mailto:' + config.settings.webpush.email, vapidKeys.publicKey, vapidKeys.privateKey);
+                    if (typeof config.settings.webpush.gcmapi == 'string') { webpush.setGCMAPIKey(config.settings.webpush.gcmapi); }
+                }
+
                 // Setup Firebase
                 if ((config.firebase != null) && (typeof config.firebase.senderid == 'string') && (typeof config.firebase.serverkey == 'string')) {
                     const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
@@ -3064,6 +3079,9 @@ function mainStart() {
             const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
             if (NodeJSVer < 8) { console.log("SMS Plivo support requires Node v8 or above, current version is " + process.version + "."); } else { modules.push('plivo'); }
         }
+
+        // Setup web based push notifications
+        if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push'); }
 
         // Firebase Support
         if (config.firebase != null) {
