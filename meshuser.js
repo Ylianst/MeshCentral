@@ -907,6 +907,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                             break;
                         }
+                        case 'webpush': {
+                            if (parent.parent.webpush == null) {
+                                r = "Web push not supported.";
+                            } else {
+                                if (cmdargs['_'].length != 1) {
+                                    r = "Usage: WebPush \"Message\"";
+                                } else {
+                                    const pushSubscription = { "endpoint": "https://updates.push.services.mozilla.com/wpush/v2/gAAAAABgIkO9hjXHWhMPiuk-ppNRw7r_pUZitddwCEK4ykdzeIxOIjFnYhIt_nr-qUca2mpZziwQsSEhYTUCiuYrhWnVDRweMtiUj16yJJq8V5jneaEaUYjEIe5jp3DOMNpoTm1aHgX74gCR8uTXSITcM97bNi-hRxcQ4f6Ie4WSAmoXpd89B_g", "keys": { "auth": "UB2sbLVK7ALnSHw5P1dahg", "p256dh": "BIoRbcNSxBuTjN39CCCUCHo1f4NxBJ1YDdu_k4MbPW_q3NK1_RufnydUzLPDp8ibBVItSI72-s48QJvOjQ_S8Ok" } }
+                                    parent.parent.webpush.sendNotification(pushSubscription, cmdargs['_'][0]).then(
+                                        function (value) { try { ws.send(JSON.stringify({ action: 'OK', value: r, tag: command.tag })); } catch (ex) { } },
+                                        function (error) { try { ws.send(JSON.stringify({ action: 'Error', value: r, tag: command.tag })); } catch (ex) { } }
+                                    );
+                                }
+                            }
+                            break;
+                        }
                         case 'amtmanager': {
                             if (parent.parent.amtManager == null) { r = 'Intel AMT Manager not active.'; } else { r = parent.parent.amtManager.getStatusString(); }
                             break;
@@ -5273,6 +5289,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     }
                 });
+                break;
+            }
+            case 'webpush': {
+                //console.log(command);
                 break;
             }
             case 'print': {
