@@ -175,6 +175,7 @@
     <Compile Include="public\novnc\vendor\pako\lib\zlib\zstream.js" />
     <Compile Include="public\novnc\vendor\promise.js" />
     <Compile Include="public\scripts\agent-redir-rtc-0.1.0.js" />
+    <Compile Include="public\serviceworker.js" />
     <Compile Include="swarmserver.js" />
     <Compile Include="multiserver.js" />
     <Compile Include="pass.js" />
