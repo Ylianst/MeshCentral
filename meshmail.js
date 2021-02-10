@@ -17,32 +17,39 @@
 // TODO: Add NTML support with "nodemailer-ntlm-auth" https://github.com/nodemailer/nodemailer-ntlm-auth
 
 // Construct a MeshAgent object, called upon connection
-module.exports.CreateMeshMail = function (parent) {
+module.exports.CreateMeshMail = function (parent, domain) {
     var obj = {};
     obj.pendingMails = [];
     obj.parent = parent;
     obj.retry = 0;
     obj.sendingMail = false;
     obj.mailCookieEncryptionKey = null;
+    obj.verifyemail = false;
+    obj.domain = domain;
     //obj.mailTemplates = {};
     const constants = (obj.parent.crypto.constants ? obj.parent.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
 
-    if (parent.config.sendgrid != null) {
+    // Setup where we read our configuration from
+    if (obj.domain == null) { obj.config = parent.config; } else { obj.config = domain; }
+
+    if (obj.config.sendgrid != null) {
         // Setup SendGrid mail server
         obj.sendGridServer = require('@sendgrid/mail');
-        obj.sendGridServer.setApiKey(parent.config.sendgrid.apikey);
-    } else if (parent.config.smtp != null) {
+        obj.sendGridServer.setApiKey(obj.config.sendgrid.apikey);
+        if (obj.config.sendgrid.verifyemail == true) { obj.verifyemail = true; }
+    } else if (obj.config.smtp != null) {
         // Setup SMTP mail server
         const nodemailer = require('nodemailer');
-        var options = { host: parent.config.smtp.host, secure: (parent.config.smtp.tls == true), tls: {} };
-        //var options = { host: parent.config.smtp.host, secure: (parent.config.smtp.tls == true), tls: { secureProtocol: 'SSLv23_method', ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false } };
-        if (parent.config.smtp.port != null) { options.port = parent.config.smtp.port; }
-        if (parent.config.smtp.tlscertcheck === false) { options.tls.rejectUnauthorized = false; }
-        if (parent.config.smtp.tlsstrict === true) { options.tls.secureProtocol = 'SSLv23_method'; options.tls.ciphers = 'RSA+AES:!aNULL:!MD5:!DSS'; options.tls.secureOptions = constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE; }
-        if ((parent.config.smtp.user != null) && (parent.config.smtp.pass != null)) { options.auth = { user: parent.config.smtp.user, pass: parent.config.smtp.pass }; }
+        var options = { host: obj.config.smtp.host, secure: (obj.config.smtp.tls == true), tls: {} };
+        //var options = { host: obj.config.smtp.host, secure: (obj.config.smtp.tls == true), tls: { secureProtocol: 'SSLv23_method', ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false } };
+        if (obj.config.smtp.port != null) { options.port = obj.config.smtp.port; }
+        if (obj.config.smtp.tlscertcheck === false) { options.tls.rejectUnauthorized = false; }
+        if (obj.config.smtp.tlsstrict === true) { options.tls.secureProtocol = 'SSLv23_method'; options.tls.ciphers = 'RSA+AES:!aNULL:!MD5:!DSS'; options.tls.secureOptions = constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE; }
+        if ((obj.config.smtp.user != null) && (obj.config.smtp.pass != null)) { options.auth = { user: obj.config.smtp.user, pass: obj.config.smtp.pass }; }
+        if (obj.config.smtp.verifyemail == true) { obj.verifyemail = true; }
         obj.smtpServer = nodemailer.createTransport(options);
     }
 
@@ -149,10 +156,10 @@ module.exports.CreateMeshMail = function (parent) {
 
     // Send a generic email
     obj.sendMail = function (to, subject, text, html) {
-        if (parent.config.sendgrid != null) {
-            obj.pendingMails.push({ to: to, from: parent.config.sendgrid.from, subject: subject, text: text, html: html });
-        } else if (parent.config.smtp != null) {
-            obj.pendingMails.push({ to: to, from: parent.config.smtp.from, subject: subject, text: text, html: html });
+        if (obj.config.sendgrid != null) {
+            obj.pendingMails.push({ to: to, from: obj.config.sendgrid.from, subject: subject, text: text, html: html });
+        } else if (obj.config.smtp != null) {
+            obj.pendingMails.push({ to: to, from: obj.config.smtp.from, subject: subject, text: text, html: html });
         }
         sendNextMail();
     };
@@ -180,8 +187,8 @@ module.exports.CreateMeshMail = function (parent) {
 
                 // Get from field
                 var from = null;
-                if (parent.config.sendgrid && (typeof parent.config.sendgrid.from == 'string')) { from = parent.config.sendgrid.from; }
-                else if (parent.config.smtp && (typeof parent.config.smtp.from == 'string')) { from = parent.config.smtp.from; }
+                if (obj.config.sendgrid && (typeof obj.config.sendgrid.from == 'string')) { from = obj.config.sendgrid.from; }
+                else if (obj.config.smtp && (typeof obj.config.smtp.from == 'string')) { from = obj.config.smtp.from; }
 
                 // Send the email
                 obj.pendingMails.push({ to: email, from: from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
@@ -213,8 +220,8 @@ module.exports.CreateMeshMail = function (parent) {
 
                 // Get from field
                 var from = null;
-                if (parent.config.sendgrid && (typeof parent.config.sendgrid.from == 'string')) { from = parent.config.sendgrid.from; }
-                else if (parent.config.smtp && (typeof parent.config.smtp.from == 'string')) { from = parent.config.smtp.from; }
+                if (obj.config.sendgrid && (typeof obj.config.sendgrid.from == 'string')) { from = obj.config.sendgrid.from; }
+                else if (obj.config.smtp && (typeof obj.config.smtp.from == 'string')) { from = obj.config.smtp.from; }
 
                 // Send the email
                 obj.pendingMails.push({ to: email, from: from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
@@ -247,8 +254,8 @@ module.exports.CreateMeshMail = function (parent) {
 
                 // Get from field
                 var from = null;
-                if (parent.config.sendgrid && (typeof parent.config.sendgrid.from == 'string')) { from = parent.config.sendgrid.from; }
-                else if (parent.config.smtp && (typeof parent.config.smtp.from == 'string')) { from = parent.config.smtp.from; }
+                if (obj.config.sendgrid && (typeof obj.config.sendgrid.from == 'string')) { from = obj.config.sendgrid.from; }
+                else if (obj.config.smtp && (typeof obj.config.smtp.from == 'string')) { from = obj.config.smtp.from; }
 
                 // Send the email
                 obj.pendingMails.push({ to: email, from: from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
@@ -281,8 +288,8 @@ module.exports.CreateMeshMail = function (parent) {
 
                 // Get from field
                 var from = null;
-                if (parent.config.sendgrid && (typeof parent.config.sendgrid.from == 'string')) { from = parent.config.sendgrid.from; }
-                else if (parent.config.smtp && (typeof parent.config.smtp.from == 'string')) { from = parent.config.smtp.from; }
+                if (obj.config.sendgrid && (typeof obj.config.sendgrid.from == 'string')) { from = obj.config.sendgrid.from; }
+                else if (obj.config.smtp && (typeof obj.config.smtp.from == 'string')) { from = obj.config.smtp.from; }
 
                 // Send the email
                 obj.pendingMails.push({ to: email, from: from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
@@ -319,8 +326,8 @@ module.exports.CreateMeshMail = function (parent) {
 
                 // Get from field
                 var from = null;
-                if (parent.config.sendgrid && (typeof parent.config.sendgrid.from == 'string')) { from = parent.config.sendgrid.from; }
-                else if (parent.config.smtp && (typeof parent.config.smtp.from == 'string')) { from = parent.config.smtp.from; }
+                if (obj.config.sendgrid && (typeof obj.config.sendgrid.from == 'string')) { from = obj.config.sendgrid.from; }
+                else if (obj.config.smtp && (typeof obj.config.smtp.from == 'string')) { from = obj.config.smtp.from; }
 
                 // Send the email
                 obj.pendingMails.push({ to: email, from: from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
@@ -399,13 +406,13 @@ module.exports.CreateMeshMail = function (parent) {
         if (obj.smtpServer == null) return;
         obj.smtpServer.verify(function (err, info) {
             if (err == null) {
-                console.log('SMTP mail server ' + parent.config.smtp.host + ' working as expected.');
+                console.log('SMTP mail server ' + obj.config.smtp.host + ' working as expected.');
             } else {
                 // Remove all non-object types from error to avoid a JSON stringify error.
                 var err2 = {};
                 for (var i in err) { if (typeof (err[i]) != 'object') { err2[i] = err[i]; } }
-                parent.debug('email', 'SMTP mail server ' + parent.config.smtp.host + ' failed: ' + JSON.stringify(err2));
-                console.log('SMTP mail server ' + parent.config.smtp.host + ' failed: ' + JSON.stringify(err2));
+                parent.debug('email', 'SMTP mail server ' + obj.config.smtp.host + ' failed: ' + JSON.stringify(err2));
+                console.log('SMTP mail server ' + obj.config.smtp.host + ' failed: ' + JSON.stringify(err2));
             }
         });
     };
@@ -430,8 +437,7 @@ module.exports.CreateMeshMail = function (parent) {
     // Check the email domain DNS MX record.
     obj.approvedEmailDomains = {};
     obj.checkEmail = function (email, func) {
-        if ((parent.config.smtp) && (parent.config.smtp.verifyemail === false)) { func(true); return; }
-        if ((parent.config.sendgrid) && (parent.config.sendgrid.verifyemail === false)) { func(true); return; }
+        if (obj.verifyemail == false) { func(true); return; }
         var emailSplit = email.split('@');
         if (emailSplit.length != 2) { func(false); return; }
         if (obj.approvedEmailDomains[emailSplit[1]] === true) { func(true); return; }
