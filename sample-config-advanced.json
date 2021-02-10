@@ -51,6 +51,7 @@
     "_npmPath": "c:\\npm.exe",
     "_npmProxy": "http://1.2.3.4:80",
     "_allowHighQualityDesktop": true,
+    "_webPush": { "email": "xxxxx@xxxxx.com" },
     "_publicPushNotifications": true,
     "_desktopMultiplex": true,
     "_userAllowedIP": "127.0.0.1,192.168.1.0/24",

@@ -65,6 +65,15 @@
         "npmPath": { "type": "string" },
         "npmProxy": { "type": "string", "format": "uri" },
         "allowHighQualityDesktop": { "type": "boolean", "default": true },
+        "webPush": {
+          "type": "object",
+          "description": "When set with a valid email address, enables the MeshCentral web push notification feature. Allows administrators to send browser notifications to users even if they are not looking at the MeshCentral web site.",
+          "additionalProperties": false,
+          "properties": {
+            "email": { "type": "string", "description": "Server administrator email given to the FireFox and Chrome push notification services." }
+          },
+          "required": [ "email" ]
+        },
         "publicPushNotifications": { "type": "boolean", "default": false, "description": "When true, this server uses MeshCentral.com a push notification relay for Android notifications. Push notifications work even if the Android app is not open." },
         "desktopMultiplex": { "type": "boolean", "default": false, "description": "When true, enabled a server modules that efficiently splits a remote desktop stream to multiple browsers. Also allows slow browsers to not slow down the session for fast ones, this comes at the cost of extra server memory and processing for all remote desktop sessions." },
         "userAllowedIP": { "type": [ "string", "array" ] },
