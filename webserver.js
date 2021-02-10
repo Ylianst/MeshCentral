@@ -2371,6 +2371,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // If a user exists and is logged in, serve the default app, otherwise server the login app.
         if (req.session && req.session.userid && obj.users[req.session.userid]) {
             const user = obj.users[req.session.userid];
+
+            // If the request has a "meshmessengerid", redirect to MeshMessenger
+            // This situation happens when you get a push notification for a chat session, but are not logged in.
+            if (req.query.meshmessengerid != null) {
+                res.redirect(domain.url + 'messenger?id=' + req.query.meshmessengerid + ((req.query.key != null) ? ('&key=' + req.query.key) : ''));
+                return;
+            }
+
             const xdbGetFunc = function dbGetFunc(err, states) {
                 if (dbGetFunc.req.session.domainid != domain.id) { // Check if the session is for the correct domain
                     parent.debug('web', 'handleRootRequestEx: incorrect domain.');
@@ -2808,6 +2816,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             return;
         }
 
+        // Check if this session is for a user
+        if (req.query.id == null) { res.sendStatus(404); return; }
+        var idSplit = decodeURIComponent(req.query.id).split('/');
+        if ((idSplit.length != 7) || (idSplit[0] != 'meshmessenger')) { res.sendStatus(404); return; }
+        if ((idSplit[1] == 'user') && (idSplit[4] == 'user')) {
+            // This is a user to user conversation, both users must be logged in.
+            var user1 = idSplit[1] + '/' + idSplit[2] + '/' + idSplit[3]
+            var user2 = idSplit[4] + '/' + idSplit[5] + '/' + idSplit[6]
+            if (!req.session || !req.session.userid) {
+                // Redirect to login page
+                if (req.query.key != null) { res.redirect(domain.url + '?key=' + req.query.key + '&meshmessengerid=' + req.query.id); } else { res.redirect(domain.url + '?meshmessengerid=' + req.query.id); }
+                return;
+            }
+            if ((req.session.userid != user1) && (req.session.userid != user2)) { res.sendStatus(404); return; }
+        }
+
         // Get WebRTC configuration
         var webRtcConfig = null;
         if (obj.parent.config.settings && obj.parent.config.settings.webrtconfig && (typeof obj.parent.config.settings.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtconfig)).replace(/'/g, '%27'); }
@@ -2819,7 +2843,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Get the userid and name
         if ((domain.meshmessengertitle != null) && (req.query.id != null) && (req.query.id.startsWith('meshmessenger/node'))) {
-            var idSplit = decodeURIComponent(req.query.id).split('/');
             if (idSplit.length == 7) {
                 const user = obj.users[idSplit[4] + '/' + idSplit[5] + '/' + idSplit[6]];
                 if (user != null) {
