@@ -706,7 +706,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
 
         // Check if a 2nd factor is present
-        return ((parent.config.settings.no2factorauth !== true) && (sms2fa || (user.otpsecret != null) || ((user.email != null) && (user.emailVerified == true) && (parent.mailserver != null) && (user.otpekey != null)) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
+        return ((parent.config.settings.no2factorauth !== true) && (sms2fa || (user.otpsecret != null) || ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null)) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
     }
 
     // Check the 2-step auth token
@@ -716,7 +716,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (twoStepLoginSupported == false) { parent.debug('web', 'checkUserOneTimePassword: not supported.'); func(true); return; };
 
         // Check if we can use OTP tokens with email
-        var otpemail = (parent.mailserver != null);
+        var otpemail = (domain.mailserver != null);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.email2factor == false)) { otpemail = false; }
         var otpsms = (parent.smsserver != null);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
@@ -919,7 +919,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     return;
                 }
 
-                var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null) && (user.email != null) && (user.emailVerified == true) && (user.otpekey != null));
+                var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.email != null) && (user.emailVerified == true) && (user.otpekey != null));
                 var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
 
                 // Check if this user has 2-step login active
@@ -928,7 +928,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
                         obj.db.SetUser(user);
                         parent.debug('web', 'Sending 2FA email to: ' + user.email);
-                        parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
+                        domain.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
                         req.session.messageid = 2; // "Email sent" message
                         req.session.loginmode = '4';
                         if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
@@ -967,7 +967,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             // Wait and redirect the user
                             setTimeout(function () {
                                 req.session.loginmode = '4';
-                                req.session.tokenemail = ((user.email != null) && (user.emailVerified == true) && (parent.mailserver != null) && (user.otpekey != null));
+                                req.session.tokenemail = ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null));
                                 req.session.tokensms = ((user.phone != null) && (parent.smsserver != null));
                                 req.session.tokenuserid = userid;
                                 req.session.tokenusername = xusername;
@@ -984,7 +984,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             }
 
                             // Check if email address needs to be confirmed
-                            var emailcheck = ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+                            var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
                             if (emailcheck && (user.emailVerified !== true)) {
                                 parent.debug('web', 'Redirecting using ' + user.name + ' to email check login page');
                                 req.session.messageid = 3; // "Email verification required" message
@@ -1005,7 +1005,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
 
                 // Check if email address needs to be confirmed
-                var emailcheck = ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+                var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
                 if (emailcheck && (user.emailVerified !== true)) {
                     parent.debug('web', 'Redirecting using ' + user.name + ' to email check login page');
                     req.session.messageid = 3; // "Email verification required" message
@@ -1261,7 +1261,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     obj.db.SetUser(user);
 
                                     // Send the verification email
-                                    if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key); }
+                                    if ((domain.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (obj.common.validateEmail(user.email, 1, 256) == true)) { domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key); }
                                 }, 0);
                                 var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id };
                                 if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
@@ -1458,8 +1458,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 } else {
                                     // Send email to perform recovery.
                                     delete req.session.tokenemail;
-                                    if (obj.parent.mailserver != null) {
-                                        obj.parent.mailserver.sendAccountResetMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key);
+                                    if (domain.mailserver != null) {
+                                        domain.mailserver.sendAccountResetMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key);
                                         if (i == 0) {
                                             parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                             req.session.loginmode = '1';
@@ -1478,8 +1478,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             });
                         } else {
                             // No second factor, send email to perform recovery.
-                            if (obj.parent.mailserver != null) {
-                                obj.parent.mailserver.sendAccountResetMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key);
+                            if (domain.mailserver != null) {
+                                domain.mailserver.sendAccountResetMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key);
                                 if (i == 0) {
                                     parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                     req.session.loginmode = '1';
@@ -1505,7 +1505,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleCheckAccountEmailRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
-        if ((obj.parent.mailserver == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.session.cuserid != 'string') || (obj.users[req.session.cuserid] == null) || (!obj.common.validateEmail(req.body.email, 1, 256))) { parent.debug('web', 'handleCheckAccountEmailRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((domain.mailserver == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.session.cuserid != 'string') || (obj.users[req.session.cuserid] == null) || (!obj.common.validateEmail(req.body.email, 1, 256))) { parent.debug('web', 'handleCheckAccountEmailRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // Always lowercase the email address
@@ -1563,7 +1563,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
 
                     // Send the verification email
-                    obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key);
+                    domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key);
 
                     // Send the response
                     req.session.messageid = 2; // Email sent.
@@ -1579,11 +1579,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleCheckMailRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
-        if ((domain.auth == 'sspi') || (domain.auth == 'ldap') || (obj.parent.mailserver == null)) { parent.debug('web', 'handleCheckMailRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((domain.auth == 'sspi') || (domain.auth == 'ldap') || (domain.mailserver == null)) { parent.debug('web', 'handleCheckMailRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         if (req.query.c != null) {
-            var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.mailserver.mailCookieEncryptionKey, 30);
+            var cookie = obj.parent.decodeCookie(req.query.c, domain.mailserver.mailCookieEncryptionKey, 30);
             if ((cookie != null) && (cookie.u != null) && (cookie.u.startsWith('user/')) && (cookie.e != null)) {
                 var idsplit = cookie.u.split('/');
                 if ((idsplit.length != 3) || (idsplit[1] != domain.id)) {
@@ -2427,7 +2427,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (domain.userQuota == -1) { features += 0x00000008; } // No server files mode
                 if (obj.args.mpstlsoffload) { features += 0x00000010; } // No mutual-auth CIRA
                 if ((parent.config.settings.allowframing != null) || (domain.allowframing != null)) { features += 0x00000020; } // Allow site within iframe
-                if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true)) { features += 0x00000040; } // Email invites
+                if ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true)) { features += 0x00000040; } // Email invites
                 if (obj.args.webrtc == true) { features += 0x00000080; } // Enable WebRTC (Default false for now)
                 // 0x00000100 --> This feature flag is free for future use.
                 if (obj.args.allowhighqualitydesktop !== false) { features += 0x00000200; } // Enable AllowHighQualityDesktop (Default true)
@@ -2453,7 +2453,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (domain.amtacmactivation) { features += 0x00100000; } // Intel AMT ACM activation/upgrade is possible
                 if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
                 if (parent.mqttbroker != null) { features += 0x00400000; } // This server supports MQTT channels
-                if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null)) { features += 0x00800000; } // using email for 2FA is allowed
+                if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null)) { features += 0x00800000; } // using email for 2FA is allowed
                 if (domain.agentinvitecodes == true) { features += 0x01000000; } // Support for agent invite codes
                 if (parent.smsserver != null) { features += 0x02000000; } // SMS messaging is supported
                 if ((parent.smsserver != null) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false))) { features += 0x04000000; } // SMS 2FA is allowed
@@ -2601,7 +2601,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             delete req.session.messageid;
             delete req.session.passhint;
         }
-        var emailcheck = ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+        var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
 
         // Check if we are allowed to create new users using the login screen
         var newAccountsAllowed = true;
@@ -2613,7 +2613,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (hardwareKeyChallenge) { hwstate = obj.parent.encodeCookie({ u: req.session.tokenusername, p: req.session.tokenpassword, c: req.session.u2fchallenge }, obj.parent.loginCookieEncryptionKey) }
 
         // Check if we can use OTP tokens with email. We can't use email for 2FA password recovery (loginmode 5).
-        var otpemail = (loginmode != 5) && (parent.mailserver != null) && (req.session != null) && ((req.session.tokenemail == true) || (typeof req.session.tokenemail == 'string'));
+        var otpemail = (loginmode != 5) && (domain.mailserver != null) && (req.session != null) && ((req.session.tokenemail == true) || (typeof req.session.tokenemail == 'string'));
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.email2factor == false)) { otpemail = false; }
         var otpsms = (parent.smsserver != null) && (req.session != null) && (req.session.tokensms == true);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
@@ -5669,7 +5669,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (domain == null) { parent.debug('web', 'WSERROR: Got no domain, user auth required.'); return; }
             }
 
-            var emailcheck = ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+            var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
 
             // A web socket session can be authenticated in many ways (Default user, session, user/pass and cookie). Check authentication here.
             if ((req.query.user != null) && (req.query.pass != null)) {
@@ -5685,7 +5685,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         // Check if a 2nd factor is needed
                         if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
                             // Figure out if email 2FA is allowed
-                            var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null) && (user.otpekey != null));
+                            var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
                             var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
                             if ((typeof req.query.token != 'string') || (req.query.token == '**email**') || (req.query.token == '**sms**')) {
                                 if ((req.query.token == '**email**') && (email2fa == true)) {
@@ -5693,7 +5693,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
                                     obj.db.SetUser(user);
                                     parent.debug('web', 'Sending 2FA email to: ' + user.email);
-                                    parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
+                                    domain.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
                                     // Ask for a login token & confirm email was sent
                                     try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                 } else if ((req.query.token == '**sms**') && (sms2fa == true)) {
@@ -5731,7 +5731,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             // Check email verification
                             if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
                                 parent.debug('web', 'Invalid login, asking for email validation');
-                                var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null) && (user.otpekey != null));
+                                var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
                                 var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true })); ws.close(); } catch (e) { }
                             } else {
@@ -5788,7 +5788,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if (typeof domain.twofactorcookiedurationdays == 'number') { twoFactorCookieDays = domain.twofactorcookiedurationdays; }
 
                             // Figure out if email 2FA is allowed
-                            var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null) && (user.otpekey != null));
+                            var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
                             var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
                             if (s.length != 3) {
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
@@ -5800,7 +5800,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                             user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
                                             obj.db.SetUser(user);
                                             parent.debug('web', 'Sending 2FA email to: ' + user.email);
-                                            parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
+                                            domain.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
                                             // Ask for a login token & confirm email was sent
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, email2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                         } else if ((s[2] == '**sms**') && (sms2fa == true)) {

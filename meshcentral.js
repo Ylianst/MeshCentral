@@ -1525,7 +1525,7 @@ function CreateMeshCentralServer(config, args) {
                     obj.swarmserver = require('./swarmserver.js').CreateSwarmServer(obj, obj.db, obj.args, obj.certificates);
                 }
 
-                // Setup email server
+                // Setup the main email server
                 if (obj.config.sendgrid != null) {
                     // Sendgrid server
                     obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
@@ -1536,6 +1536,24 @@ function CreateMeshCentralServer(config, args) {
                     obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
                     obj.mailserver.verify();
                     if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode."); }
+                }
+
+                // Setup the email server for each domain
+                for (i in obj.config.domains) {
+                    if (obj.config.domains[i].sendgrid != null) {
+                        // Sendgrid server
+                        obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
+                        obj.config.domains[i].mailserver.verify();
+                        if (obj.args.lanonly == true) { addServerWarning("SendGrid server has limited use in LAN mode."); }
+                    } else if ((obj.config.domains[i].smtp != null) && (obj.config.domains[i].smtp.host != null) && (obj.config.domains[i].smtp.from != null)) {
+                        // SMTP server
+                        obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
+                        obj.config.domains[i].mailserver.verify();
+                        if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode."); }
+                    } else {
+                        // Setup the parent mail server for this domain
+                        if (obj.mailserver != null) { obj.config.domains[i].mailserver = obj.mailserver; }
+                    }
                 }
 
                 // Setup SMS gateway
@@ -2994,10 +3012,14 @@ function mainStart() {
         var recordingIndex = false;
         var domainCount = 0;
         var wildleek = false;
+        var nodemailer = false;
+        var sendgrid = false;
         if (require('os').platform() == 'win32') { for (var i in config.domains) { domainCount++; if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } } else { allsspi = false; }
         if (domainCount == 0) { allsspi = false; }
         for (var i in config.domains) {
             if (i.startsWith('_')) continue;
+            if (config.domains[i].smtp != null) { nodemailer = true; }
+            if (config.domains[i].sendgrid != null) { sendgrid = true; }
             if (config.domains[i].yubikey != null) { yubikey = true; }
             if (config.domains[i].auth == 'ldap') { ldap = true; }
             if (config.domains[i].mstsc === true) { mstsc = true; }
@@ -3030,8 +3052,8 @@ function mainStart() {
         if (config.settings.plugins != null) {  modules.push('semver'); } // Required for version compat testing and update checks
         if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent'); } // Required for HTTP/HTTPS proxy support
         else if (config.settings.xmongodb != null) { modules.push('mongojs'); } // Add MongoJS, old driver.
-        if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
-        if (config.sendgrid != null) { modules.push('@sendgrid/mail'); } // Add SendGrid support
+        if (nodemailer || (config.smtp != null)) { modules.push('nodemailer'); } // Add SMTP support
+        if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail'); } // Add SendGrid support
         if (args.translate) { modules.push('jsdom'); modules.push('esprima'); modules.push('minify-js'); modules.push('html-minifier'); } // Translation support
 
         // If running NodeJS < 8, install "util.promisify"

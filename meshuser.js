@@ -446,7 +446,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var httpport = ((args.aliasport != null) ? args.aliasport : args.port);
 
             // Build server information object
-            var serverinfo = { domain: domain.id, name: domain.dns ? domain.dns : parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (args.lanonly != true) && (parent.certificates.CommonName != null) && (parent.certificates.CommonName.indexOf('.') != -1) && (user._id.split('/')[2].startsWith('~') == false)), domainauth: (domain.auth == 'sspi'), serverTime: Date.now() };
+            var serverinfo = { domain: domain.id, name: domain.dns ? domain.dns : parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((domain.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (args.lanonly != true) && (parent.certificates.CommonName != null) && (parent.certificates.CommonName.indexOf('.') != -1) && (user._id.split('/')[2].startsWith('~') == false)), domainauth: (domain.auth == 'sspi'), serverTime: Date.now() };
             serverinfo.languages = parent.renderLanguages;
             serverinfo.tlshash = Buffer.from(parent.webCertificateFullHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
             serverinfo.agentCertHash = parent.agentCertificateHashBase64;
@@ -978,13 +978,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'email': {
-                            if (parent.parent.mailserver == null) {
+                            if (domain.mailserver == null) {
                                 r = "No email service enabled.";
                             } else {
                                 if (cmdargs['_'].length != 3) {
                                     r = "Usage: email \"user@sample.com\" \"Subject\" \"Message\".";
                                 } else {
-                                    parent.parent.mailserver.sendMail(cmdargs['_'][0], cmdargs['_'][1], cmdargs['_'][2]);
+                                    domain.mailserver.sendMail(cmdargs['_'][0], cmdargs['_'][1], cmdargs['_'][2]);
                                     r = "Done.";
                                 }
                             }
@@ -1626,7 +1626,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' changed email from ' + oldemail + ' to ' + user.email); }
 
                                 // Send the verification email
-                                if (parent.parent.mailserver != null) { parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req)); }
+                                if (domain.mailserver != null) { domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req)); }
                             }
                         });
                     }
@@ -1644,9 +1644,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Always lowercase the email address
                     command.email = command.email.toLowerCase();
 
-                    if ((parent.parent.mailserver != null) && (obj.user.email.toLowerCase() == command.email)) {
+                    if ((domain.mailserver != null) && (obj.user.email.toLowerCase() == command.email)) {
                         // Send the verification email
-                        parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req));
+                        domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req));
                     }
                     break;
                 }
@@ -2039,8 +2039,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     parent.parent.DispatchEvent(targets, obj, event);
 
                                     // Perform email invitation
-                                    if ((command.emailInvitation == true) && (command.emailVerified == true) && command.email && parent.parent.mailserver) {
-                                        parent.parent.mailserver.sendAccountInviteMail(newuserdomain, (user.realname ? user.realname : user.name), newusername, command.email.toLowerCase(), command.pass, parent.getLanguageCodes(req));
+                                    if ((command.emailInvitation == true) && (command.emailVerified == true) && command.email && domain.mailserver) {
+                                        domain.mailserver.sendAccountInviteMail(newuserdomain, (user.realname ? user.realname : user.name), newusername, command.email.toLowerCase(), command.pass, parent.getLanguageCodes(req));
                                     }
 
                                     // Log in the auth log
@@ -2237,7 +2237,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
 
                         // In some situations, we need a verified email address to create a device group.
-                        if ((err == null) && (parent.parent.mailserver != null) && (ugrpdomain.auth != 'sspi') && (ugrpdomain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != SITERIGHT_ADMIN)) { err = "Email verification required"; } // User must verify it's email first.
+                        if ((err == null) && (domain.mailserver != null) && (ugrpdomain.auth != 'sspi') && (ugrpdomain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != SITERIGHT_ADMIN)) { err = "Email verification required"; } // User must verify it's email first.
                     } catch (ex) { err = "Validation exception: " + ex; }
 
                     // Handle any errors
@@ -2861,7 +2861,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((user.siteadmin != SITERIGHT_ADMIN) && ((user.siteadmin & 64) != 0)) { err = 'Permission denied'; }
 
                         // In some situations, we need a verified email address to create a device group.
-                        else if ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != SITERIGHT_ADMIN)) { err = 'Email verification required'; } // User must verify it's email first.
+                        else if ((domain.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != SITERIGHT_ADMIN)) { err = 'Email verification required'; } // User must verify it's email first.
 
                         // Create mesh
                         else if (common.validateString(command.meshname, 1, 128) == false) { err = 'Invalid group name'; } // Meshname is between 1 and 64 characters
@@ -4166,7 +4166,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     try {
-                        if ((parent.parent.mailserver == null) || (args.lanonly == true)) { err = 'Unsupported feature'; } // This operation requires the email server
+                        if ((domain.mailserver == null) || (args.lanonly == true)) { err = 'Unsupported feature'; } // This operation requires the email server
                         else if ((parent.parent.certificates.CommonName == null) || (parent.parent.certificates.CommonName.indexOf('.') == -1)) { err = 'Unsupported feature'; } // Server name must be configured
                         else if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check meshid
                         else {
@@ -4190,7 +4190,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Perform email invitation
-                    parent.parent.mailserver.sendAgentInviteMail(domain, (user.realname ? user.realname : user.name), command.email.toLowerCase(), command.meshid, command.name, command.os, command.msg, command.flags, command.expire, parent.getLanguageCodes(req), req.query.key);
+                    domain.mailserver.sendAgentInviteMail(domain, (user.realname ? user.realname : user.name), command.email.toLowerCase(), command.meshid, command.name, command.os, command.msg, command.flags, command.expire, parent.getLanguageCodes(req), req.query.key);
 
                     // Send a response if needed
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'inviteAgent', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
@@ -4632,7 +4632,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'emailuser': { // Send a email message to a user
                 var errMsg = null, emailuser = null;
-                if (parent.parent.mailserver == null) { errMsg = 'Email server not enabled'; }
+                if (domain.mailserver == null) { errMsg = 'Email server not enabled'; }
                 else if ((user.siteadmin & 2) == 0) { errMsg = 'No user management rights'; }
                 else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = 'Invalid userid'; }
                 else if (common.validateString(command.subject, 1, 1000) == false) { errMsg = 'Invalid subject message'; }
@@ -4645,7 +4645,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
 
                 if (errMsg != null) { displayNotificationMessage(errMsg); break; }
-                parent.parent.mailserver.sendMail(emailuser.email, command.subject, command.msg);
+                domain.mailserver.sendMail(emailuser.email, command.subject, command.msg);
                 displayNotificationMessage("Email sent.", null, null, null, 14);
                 break;
             }
@@ -5526,7 +5526,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     // Return the number of 2nd factor for this account
     function count2factoraAuths() {
-        var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.parent.mailserver != null));
+        var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null));
         var sms2fa = ((parent.parent.smsserver != null) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)));
         var authFactorCount = 0;
         if (typeof user.otpsecret == 'string') { authFactorCount++; } // Authenticator time factor
