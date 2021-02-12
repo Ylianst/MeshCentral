@@ -3296,7 +3296,7 @@
     },
     {
       "cs": "Zapnuto",
-      "de": "Aktiviert",
+      "de": "Aktiviertes",
       "en": "Activated",
       "es": "Activado",
       "fi": "Aktivoitu",
@@ -5875,7 +5875,7 @@
     },
     {
       "cs": "Zeptejte se souhlasu + bar",
-      "de": "Einwilligung anfordern + Balken",
+      "de": "Einwilligung anfordern + DS-Leiste",
       "en": "Ask Consent + Bar",
       "es": "Pedir Consentimiento + Barra",
       "fi": "Pyydä Hyväksyntää + Ilmoitus",
@@ -6412,7 +6412,7 @@
     },
     {
       "cs": "Nesprávný podpis",
-      "de": "Ungültige Unterschrift",
+      "de": "Ungültige Signatur",
       "en": "Bad Signature",
       "es": "Firma Errónea",
       "fi": "Huono allekirjoitus",
@@ -9385,7 +9385,7 @@
     },
     {
       "cs": "Připojit pomocí Intel&reg; AMT hardware KVM",
-      "de": "Verbinden per Intel&reg; AMT-Hardware-KVM",
+      "de": "Verbunden per Intel&reg; AMT-Hardware-KVM",
       "en": "Connect using Intel&reg; AMT hardware KVM",
       "es": "Conectar usando el hardware Intel&reg; AMT KVM",
       "fi": "Yhdistä käyttäen Intel&reg; AMT laitteisto KVM:ää",
@@ -11757,7 +11757,7 @@
     },
     {
       "cs": "Výzva na ploše+panel nástrojů",
-      "de": "Desktop-Einverständnis & -Werkzeugleiste",
+      "de": "Desktop-Einverständnis & Datenschutzleiste",
       "en": "Desktop Prompt+Toolbar",
       "es": "Mensaje de Escritorio + Barra de Herramientas",
       "fi": "Työpöydän kehote+työkalurivi",
@@ -12250,7 +12250,7 @@
     },
     {
       "cs": "Připojení zařízení",
-      "de": "Geräteverbindungen.",
+      "de": "Geräteverbindungen",
       "en": "Device connections.",
       "es": "Conexiones de dispositivo.",
       "fi": "Laiteyhteydet.",
@@ -12271,7 +12271,7 @@
     },
     {
       "cs": "Odpojení zařízení",
-      "de": "Gerätetrennungen.",
+      "de": "Gerätetrennungen",
       "en": "Device disconnections.",
       "es": "Desconexiones de dispositivo.",
       "fi": "Laitteen irtikytkennät.",
@@ -12843,7 +12843,7 @@
     },
     {
       "cs": "Zakázáno",
-      "de": "Deaktiviert",
+      "de": "Deaktiviertes",
       "en": "Disabled",
       "es": "Deshabilitado",
       "fi": "Poistettu käytöstä",
@@ -13581,7 +13581,7 @@
     },
     {
       "cs": "Stáhněte si vzdálenou schránku do místní schránky",
-      "de": "Laden Sie die Remote-Zwischenablage in die lokale Zwischenablage herunter",
+      "de": "Die Remote-Zwischenablage in die lokale Zwischenablage herunterladen",
       "en": "Download remote clipboard to local clipboard",
       "es": "Descargar portapapeles remoto a portapapeles local",
       "fi": "Lataa etäleikepöytä paikalliselle leikepöydälle",
@@ -17326,7 +17326,7 @@
     },
     {
       "cs": "Plně automatické",
-      "de": "Komplett automatisch",
+      "de": "Vollautomatisch",
       "en": "Fully Automatic",
       "es": "Completamente automatico",
       "fi": "Täysin automaattinen",
@@ -19729,7 +19729,7 @@
     },
     {
       "cs": "Intel® AMT zásada",
-      "de": "Intel&reg; AMT Regelwerk",
+      "de": "Intel&reg; AMT Richtlinie",
       "en": "Intel&reg; AMT Policy",
       "es": "Política de Intel&reg; AMT",
       "fi": "Intel&reg; AMT politiikka",
@@ -19850,7 +19850,7 @@
     },
     {
       "cs": "Události Intel&reg; AMT desktop a serial.",
-      "de": "Intel&reg; AMT Desktop- und Seriell-Ereignisse.",
+      "de": "Intel&reg; AMT Desktop- und Seriell-Ereignisse",
       "en": "Intel&reg; AMT desktop and serial events.",
       "es": "Eventos de escritorio y serial de Intel&reg; AMT.",
       "fi": "Intel&reg; AMT työpöytä ja sarjaliikenne ilmoitukset.",
@@ -25915,7 +25915,7 @@
     },
     {
       "cs": "Sítě",
-      "de": "Vernetzung",
+      "de": "Netzwerk",
       "en": "Networking",
       "es": "Redes",
       "fi": "Verkko",
@@ -27602,7 +27602,7 @@
     },
     {
       "cs": "Zvuk upozornění.",
-      "de": "Benachrichtigungston.",
+      "de": "Benachrichtigungston",
       "en": "Notification sound.",
       "es": "Sonido de notificación.",
       "fi": "Ilmoitusääni.",
@@ -32335,7 +32335,7 @@
     },
     {
       "cs": "Reset",
-      "de": "Zurücksetzen",
+      "de": "Neustarten",
       "en": "Reset",
       "es": "Reiniciar",
       "fi": "Nollaa",
@@ -35307,7 +35307,7 @@
     },
     {
       "cs": "Podíl",
-      "de": "Aktie",
+      "de": "Teilen",
       "en": "Share",
       "es": "Compartir",
       "fi": "Jaa",
@@ -35624,7 +35624,7 @@
     },
     {
       "cs": "Zobrazit panel nástrojů připojení",
-      "de": "Verbindungssymbolleiste anzeigen",
+      "de": "Datenschutzleiste anzeigen",
       "en": "Show connection toolbar",
       "es": "Mostrar barra de herramientas de conexión",
       "fi": "Näytä yhteystyökalurivi",
@@ -37524,7 +37524,7 @@
     },
     {
       "cs": "Úložný prostor",
-      "de": "Lager",
+      "de": "Festspeicher",
       "en": "Storage",
       "es": "Almacenamiento",
       "fi": "Tallennustila",
@@ -39380,7 +39380,7 @@
     },
     {
       "cs": "Přepnout hvězdu",
-      "de": "Stern umschalten",
+      "de": "Markierung umschalten",
       "en": "Toggle Star",
       "es": "Alternar Favorito",
       "fi": "Vaihda tähti",
@@ -39878,7 +39878,7 @@
     },
     {
       "cs": "Typ",
-      "de": "Tippen",
+      "de": "Typ",
       "en": "Type",
       "es": "Enviar Texto",
       "fi": "Tyyppi",
