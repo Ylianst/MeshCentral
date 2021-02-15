@@ -108,14 +108,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Perform hash on web certificate and agent certificate
-    obj.webCertificateHash = obj.defaultWebCertificateHash = parent.certificateOperations.getPublicKeyHashBinary(obj.certificates.web.cert);
+    obj.webCertificateHash = parent.certificateOperations.getPublicKeyHashBinary(obj.certificates.web.cert);
     obj.webCertificateHashs = { '': obj.webCertificateHash };
     obj.webCertificateHashBase64 = Buffer.from(obj.webCertificateHash, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-    obj.webCertificateFullHash = obj.defaultWebCertificateFullHash = parent.certificateOperations.getCertHashBinary(obj.certificates.web.cert);
+    obj.webCertificateFullHash = parent.certificateOperations.getCertHashBinary(obj.certificates.web.cert);
     obj.webCertificateFullHashs = { '': obj.webCertificateFullHash };
     obj.agentCertificateHashHex = parent.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert);
     obj.agentCertificateHashBase64 = Buffer.from(obj.agentCertificateHashHex, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     obj.agentCertificateAsn1 = parent.certificateOperations.forge.asn1.toDer(parent.certificateOperations.forge.pki.certificateToAsn1(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert))).getBytes();
+    obj.defaultWebCertificateHash = parent.certificateOperations.getPublicKeyHashBinary(obj.certificates.webdefault.cert);
+    obj.defaultWebCertificateFullHash = parent.certificateOperations.getCertHashBinary(obj.certificates.webdefault.cert);
 
     // Compute the hash of all of the web certificates for each domain
     for (var i in obj.parent.config.domains) {

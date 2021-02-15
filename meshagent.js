@@ -426,8 +426,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     obj.sendBinary(common.ShortToStr(1) + msg.substring(2, 50) + obj.nonce); // Command 1, hash + nonce. Use the web hash given by the agent.
                 } else {
                     // Check that the server hash matches our own web certificate hash (SHA384)
-                    const agentSeenCerthash = msg.substring(2, 50);
-                    if ((getWebCertHash(domain) != agentSeenCerthash) && (getWebCertFullHash(domain) != agentSeenCerthash) && (parent.defaultWebCertificateHash != agentSeenCerthash) && (parent.defaultWebCertificateFullHash != agentSeenCerthash)) {
+                    obj.agentSeenCerthash = msg.substring(2, 50);
+                    if ((getWebCertHash(domain) != obj.agentSeenCerthash) && (getWebCertFullHash(domain) != obj.agentSeenCerthash) && (parent.defaultWebCertificateHash != obj.agentSeenCerthash) && (parent.defaultWebCertificateFullHash != obj.agentSeenCerthash)) {
                         if (parent.parent.supportsProxyCertificatesRequest !== false) {
                             obj.badWebCert = Buffer.from(parent.crypto.randomBytes(16), 'binary').toString('base64');
                             parent.wsagentsWithBadWebCerts[obj.badWebCert] = obj; // Add this agent to the list of of agents with bad web certificates.
@@ -444,7 +444,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // The hash matched one of the acceptable values, send the agent web hash back to the agent
                         // Send 384 bits SHA384 hash of TLS cert + 384 bits nonce
                         // Command 1, hash + nonce. Use the web hash given by the agent.
-                        obj.sendBinary(common.ShortToStr(1) + agentSeenCerthash + obj.nonce);
+                        obj.sendBinary(common.ShortToStr(1) + obj.agentSeenCerthash + obj.nonce);
                     }
                 }
 
@@ -1078,7 +1078,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (isIgnoreHashCheck() == false) {
             var verified = false;
 
-            if (msg.length != 384) {
+            // Raw RSA signatures have an exact length of 256 or 384. PKCS7 is larger.
+            if ((msg.length != 384) && (msg.length != 256)) {
                 // Verify a PKCS7 signature.
                 var msgDer = null;
                 try { msgDer = forge.asn1.fromDer(forge.util.createBuffer(msg, 'binary')); } catch (ex) { }
@@ -1088,31 +1089,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         const sig = p7.rawCapture.signature;
 
                         // Verify with key hash
-                        var buf = Buffer.from(getWebCertHash(domain) + obj.nonce + obj.agentnonce, 'binary');
+                        var buf = Buffer.from(obj.agentSeenCerthash + obj.nonce + obj.agentnonce, 'binary');
                         var verifier = parent.crypto.createVerify('RSA-SHA384');
                         verifier.update(buf);
                         verified = verifier.verify(obj.unauth.nodeCertPem, sig, 'binary');
-                        if (verified !== true) {
-                            // Verify with full hash
-                            buf = Buffer.from(getWebCertFullHash(domain) + obj.nonce + obj.agentnonce, 'binary');
-                            verifier = parent.crypto.createVerify('RSA-SHA384');
-                            verifier.update(buf);
-                            verified = verifier.verify(obj.unauth.nodeCertPem, sig, 'binary');
-                        }
-                        if (verified !== true) {
-                            // Verify with default key hash
-                            buf = Buffer.from(parent.defaultWebCertificateHash + obj.nonce + obj.agentnonce, 'binary');
-                            verifier = parent.crypto.createVerify('RSA-SHA384');
-                            verifier.update(buf);
-                            verified = verifier.verify(obj.unauth.nodeCertPem, sig, 'binary');
-                        }
-                        if (verified !== true) {
-                            // Verify with default full hash
-                            buf = Buffer.from(parent.defaultWebCertificateFullHash + obj.nonce + obj.agentnonce, 'binary');
-                            verifier = parent.crypto.createVerify('RSA-SHA384');
-                            verifier.update(buf);
-                            verified = verifier.verify(obj.unauth.nodeCertPem, sig, 'binary');
-                        }
                         if (verified !== true) {
                             // Not a valid signature
                             parent.agentStats.invalidPkcsSignatureCount++;
@@ -1126,15 +1106,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (verified == false) {
                 // Verify the RSA signature. This is the fast way, without using forge.
                 const verify = parent.crypto.createVerify('SHA384');
-                verify.end(Buffer.from(getWebCertHash(domain) + obj.nonce + obj.agentnonce, 'binary')); // Test using the private key hash
+                verify.end(Buffer.from(obj.agentSeenCerthash + obj.nonce + obj.agentnonce, 'binary')); // Test using the private key hash
                 if (verify.verify(obj.unauth.nodeCertPem, Buffer.from(msg, 'binary')) !== true) {
-                    const verify2 = parent.crypto.createVerify('SHA384');
-                    verify2.end(Buffer.from(getWebCertFullHash(domain) + obj.nonce + obj.agentnonce, 'binary'));  // Test using the full cert hash
-                    if (verify2.verify(obj.unauth.nodeCertPem, Buffer.from(msg, 'binary')) !== true) {
-                        parent.agentStats.invalidRsaSignatureCount++;
-                        parent.setAgentIssue(obj, "invalidRsaSignature");
-                        return false;
-                    }
+                    parent.agentStats.invalidRsaSignatureCount++;
+                    parent.setAgentIssue(obj, "invalidRsaSignature");
+                    return false;
                 }
             }
         }
@@ -1146,6 +1122,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         delete obj.agentnonce;
         delete obj.unauth;
         delete obj.receivedCommands;
+        delete obj.agentSeenCerthash;
         if (obj.unauthsign) delete obj.unauthsign;
         parent.agentStats.verifiedAgentConnectionCount++;
         parent.parent.debug('agent', 'Verified agent connection to ' + obj.nodeid + ' (' + obj.remoteaddrport + ').');

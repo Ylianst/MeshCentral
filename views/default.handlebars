@@ -1945,14 +1945,13 @@
 
         // Return the number of 2nd factor for this account
         function count2factoraAuths() {
+            if (userinfo == null) return 0;
             var authFactorCount = 0;
-            if (userinfo != null) {
-                if (userinfo.otpsecret == 1) { authFactorCount++; } // Authenticator time factor
-                if (userinfo.otphkeys != null) { authFactorCount += userinfo.otphkeys; } // FIDO hardware factor
-            }
+            if (userinfo.otpsecret == 1) { authFactorCount++; } // Authenticator time factor
+            if (userinfo.otphkeys > 0) { authFactorCount += userinfo.otphkeys; } // FIDO hardware factor
             if ((features & 0x00800000) && (userinfo.otpekey == 1)) { authFactorCount++; } // EMail factor
-            if ((features & 0x04000000) && (userinfo.phone != null)) { authFactorCount++; } // SMS factor
-            if ((authFactorCount > 0) && (userinfo.otpkeys == 1)) { authFactorCount++; } // Backup keys
+            if ((features & 0x02000000) && (features & 0x04000000) && (userinfo.phone != null)) { authFactorCount++; } // SMS factor
+            if ((authFactorCount > 0) && (userinfo.otpkeys > 0)) { authFactorCount++; } // Backup keys
             return authFactorCount;
         }
 
@@ -9786,7 +9785,7 @@
             if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return false; }
 
             // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || ((features & 0x02000000) && (features & 0x04000000) && (userinfo.phone != null)) || ((features & 0x00800000) && (userinfo.otpekey == 1)))) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return false; }
+            if ((features & 0x00040000) && (count2factoraAuths() == 0)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return false; }
 
             // We are allowed, let's prompt to information
             var x = "Create a new device group using the options below." + '<br /><br />';
