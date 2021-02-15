@@ -2572,7 +2572,7 @@ function CreateMeshCentralServer(config, args) {
                             onZipData.x.zdata = concatData;
                             onZipData.x.zsize = concatData.length;
 
-                            console.log('Packed', onZipData.x.size, onZipData.x.zsize);
+                            //console.log('Packed', onZipData.x.size, onZipData.x.zsize);
                         }
                         const onZipError = function onZipError() { delete onZipData.x.zacc; }
                         obj.meshAgentBinaries[archid].zacc = [];
@@ -2598,6 +2598,13 @@ function CreateMeshCentralServer(config, args) {
                 var options = { sourcePath: agentpath, targetStream: hashStream, platform: obj.meshAgentsArchitectureNumbers[archid].platform };
                 if (obj.meshAgentBinaries[archid].pe != null) { options.peinfo = obj.meshAgentBinaries[archid].pe; }
                 obj.exeHandler.hashExecutableFile(options);
+
+                // If we are not loading Windows binaries to RAM, compute the RAW file hash of the signed binaries here.
+                if ((obj.args.agentsinram === false) && ((archid == 3) || (archid == 4))) {
+                    var hash = obj.crypto.createHash('sha384').update(obj.fs.readFileSync(agentpath));
+                    obj.meshAgentBinaries[archid].fileHash = hash.digest('binary');
+                    obj.meshAgentBinaries[archid].fileHashHex = Buffer.from(obj.meshAgentBinaries[archid].fileHash, 'binary').toString('hex');
+                }
             }
         }
         if ((obj.meshAgentBinaries[3] == null) && (obj.meshAgentBinaries[10003] != null)) { obj.meshAgentBinaries[3] = obj.meshAgentBinaries[10003]; } // If only the unsigned windows binaries are present, use them.

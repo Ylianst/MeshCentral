@@ -931,6 +931,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             r += 'AgentCertHash: ' + parent.agentCertificateHashHex;
                             for (var i in parent.webCertificateHashs) { r += '\r\nwebCertificateHash (' + i + '): ' + common.rstr2hex(parent.webCertificateHashs[i]); }
                             for (var i in parent.webCertificateFullHashs) { r += '\r\nwebCertificateFullHash (' + i + '): ' + common.rstr2hex(parent.webCertificateFullHashs[i]); }
+                            r += '\r\ndefaultWebCertificateHash: ' + common.rstr2hex(parent.defaultWebCertificateHash);
+                            r += '\r\ndefaultWebCertificateFullHash: ' + common.rstr2hex(parent.defaultWebCertificateFullHash);
                             break;
                         }
                         case 'amtacm': {
