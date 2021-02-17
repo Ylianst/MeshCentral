@@ -1305,7 +1305,7 @@
         var uiMode = parseInt(getstore('uiMode', 1));
         var webPageStackMenu = false;
         var webPageFullScreen = true;
-        var nightMode = (getstore('nightMode', '0') == '1');
+        var nightMode = setNightMode();
         var footerBar = (getstore('footerBar', '1') == '1');
         var sessionActivity = Date.now();
         var updateSessionTimer = null;
@@ -1749,6 +1749,7 @@
 
         // Toggle user interface menu
         function showUserInterfaceSelectMenu() {
+            if (xxdialogMode) return;
             Q('uiViewButton1').classList.remove('uiSelectorSel');
             Q('uiViewButton2').classList.remove('uiSelectorSel');
             Q('uiViewButton3').classList.remove('uiSelectorSel');
@@ -1772,9 +1773,32 @@
         }
 
         function toggleNightMode() {
-            nightMode = !nightMode;
+            if (xxdialogMode) return;
+            var cNightMode = getstore('nightMode', '0');
+            var x = '<input type=radio id=night0 name=nightmoderadio value=0 ' + ((cNightMode == 0)?'checked':'') + '><label for=night0>' + "Browser default" + '</label><br>';
+            x += '<input type=radio id=night2 name=nightmoderadio value=2 ' + ((cNightMode == 2)?'checked':'') + '><label for=night2>' + "Light mode" + '</label><br>';
+            x += '<input type=radio id=night1 name=nightmoderadio value=1 ' + ((cNightMode == 1)?'checked':'') + '><label for=night1>' + "Dark mode" + '</label><br>';
+            setDialogMode(2, "Night Mode", 3, toggleNightModeEx, x);
+            QV('uiMenu', false);
+        }
+
+        function toggleNightModeEx() {
+            // Save new night mode
+            var nNightMode = '0';
+            if (Q('night1').checked) { nNightMode = '1'; }
+            if (Q('night2').checked) { nNightMode = '2'; }
+            putstore('nightMode', nNightMode);
+            setNightMode();
+        }
+
+        function setNightMode() {
+            // Set night mode
+            var nNightMode = getstore('nightMode', '0')
+            nightMode = false;
+            if (nNightMode == '1') { nightMode = true; }
+            else if ((nNightMode == '0') && (window.matchMedia)) { nightMode = window.matchMedia('(prefers-color-scheme: dark)').matches }
             if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; } else { QC('body').remove('night'); QS('body')['background-color'] = '#d3d9d6'; }
-            putstore('nightMode', nightMode?'1':'0');
+            return nightMode;
         }
 
         function toggleFooterBarMode() {
@@ -2613,7 +2637,7 @@
                                     if ((webstate.uiMode != null) && (webstate.uiMode != oldUiMode)) { userInterfaceSelectMenu(parseInt(webstate.uiMode)); }
                                     if ((webstate.sort != null) && (webstate.sort != oldSort)) { document.getElementById('sortselect').selectedIndex = sort = parseInt(webstate.sort); mainUpdate(6); }
                                     if ((webstate.loctag != null) && (webstate.loctag != oldLoctag)) { if (webstate.loctag != null) { args.locale = webstate.loctag; } else { delete args.locale; } mainUpdate(0xFFFFFFFF); }
-                                    if ((webstate.nightMode != null) && (webstate.nightMode != oldNightMode)) { nightMode = (webstate.nightMode == '1'); if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; } else { QC('body').remove('night'); QS('body')['background-color'] = '#d3d9d6'; } }
+                                    if ((webstate.nightMode != null) && (webstate.nightMode != oldNightMode)) { putstore('nightMode', webstate.nightMode); setNightMode(); }
                                     if ((webstate.footerBar != null) && (webstate.footerBar != oldFooterBar)) { footerBar = (webstate.footerBar == '1'); QS('container')['grid-template-rows'] = null; QS('container')['-ms-grid-rows'] = null; adjustPanels(); }
                                     if ((webstate.stars != null) && (webstate.stars != JSON.stringify(stars))) {
                                         stars = JSON.parse(webstate.stars);
