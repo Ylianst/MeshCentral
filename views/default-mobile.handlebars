@@ -31,6 +31,40 @@
     <meta name="theme-color" content="#ffffff">
     <title>{{{title}}}</title>
     <style>
+        body {
+            background-color: white;
+        }
+
+        .night body {
+            background-color: black;
+        }
+
+        #MxMESH {
+            color: black;
+        }
+
+        .night #MxMESH {
+            color: lightgray;
+        }
+
+        .textOverGray { color: black; }
+
+        #dialog {
+            z-index:1000;
+            background-color:#EEE;
+            box-shadow:0px 0px 15px #666;
+            font-family:Arial,Helvetica,sans-serif;
+            border-radius:5px;
+            position:fixed;
+            top:90px;
+            width:300px;
+        }
+
+        .night #dialog {
+            color: black;
+            background-color:#AAA;
+        }
+
         :focus {
             outline: 0;
         }
@@ -40,15 +74,22 @@
             text-decoration: underline;
         }
 
+        .night a {
+            color: #99F;
+        }
+
         #footer a {
             color: #fff;
             text-decoration: underline;
         }
 
             #footer a:hover {
-                color: #fff;
                 text-decoration: none;
             }
+
+        .night #footer {
+            color: gray;
+        }
 
         .i1 {
             background: url(../images/icons50.png) 0px 0px;
@@ -233,7 +274,6 @@
             -o-user-select: none;
             cursor: default;
             -khtml-user-drag: element;
-            background-color: white;
             clear: both;
         }
 
@@ -316,6 +356,10 @@
             color: #000;
         }
 
+        .night .style10 {
+            background-color: #888;
+        }
+
         .deviceBatteryLarge {
             position:absolute;
             right:10px;
@@ -360,6 +404,22 @@
         .deviceBatterySmall10 { background: url(../images/batteries24.png) -126px 0px; }
         .deviceBatterySmall11 { background: url(../images/batteries24.png) -140px 0px; }
 
+        .meshList {
+            width:auto;
+            height:40px;
+            background-color:lightgray;
+            margin-top:5px;
+            margin-bottom:5px;
+            margin-left:60px;
+            padding-top:5px;
+            padding-bottom:5px;
+            border-radius:8px 0px 0px 8px;
+        }
+
+        .night .meshList {
+            background-color: gray;
+        }
+
         .devList1 {
             height: 50px;
             cursor: pointer;
@@ -383,15 +443,24 @@
             border-radius: 8px 0px 0px 8px;
         }
 
+        .night .devList3 {
+            background-color: gray;
+        }
+
         .devList4 {
             padding-left: 12px;
             padding-top: 2px;
+            color: black;
         }
 
         .devList5 {
             padding-left: 12px;
             padding-top: 3px;
             color: #444
+        }
+
+        .night .devList5 {
+            color: black;
         }
 
         .deskButton {
@@ -542,9 +611,25 @@
         .night #consoleTable {
             color: black;
         }
+
+        .menucurve {
+            background-color:white;
+            width:10px;
+            height:10px;
+            border-radius:10px 0 0 0;
+            border-right:1px solid white;
+            border-bottom:1px solid white;
+        }
+
+        .night .menucurve {
+            background-color:black;
+            border-right:1px solid black;
+            border-bottom:1px solid black;
+        }
+
     </style>
 </head>
-<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
+<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
     <div id=container>
         <div id="notifiyBox" class="notifiyBox" style="display:none"></div>
         <div id=mastheadx></div>
@@ -574,7 +659,7 @@
                 </div>
                 <div id=p2 style="display:none;position:absolute;top:0;left:0;right:0;bottom:0">
                     <div id=xdevices style="position:absolute;overflow-y:auto;top:0;left:0;right:0;bottom:34px" onscroll="onDevicesScroll()" ontouchstart="onDeviceTouch(true)" ontouchend="onDeviceTouch(false)"></div>
-                    <div id=xdevicesBar style="position:absolute;overflow-y:auto;height:34px;left:0;right:0;bottom:0px;background-color:#aaa">
+                    <div id=xdevicesBar style="position:absolute;overflow-y:auto;height:34px;left:0;right:0;bottom:0px;background-color:#aaa;color:black">
                         <div style="margin:4px">
                             <span style="width:20px;display:inline-block;text-align:center;cursor:pointer;font-size:16px" onclick=clearSearchInput()><b>X</b></span>
                             <input id=SearchInput autocomplete=off type=search placeholder=Filter onchange=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) style="padding:2px;margin:0;height:20px" />&nbsp;
@@ -588,7 +673,7 @@
                         <tr style=padding:0>
                             <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
                                 <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
-                                    <div style="background-color:white;width:10px;height:10px;border-radius:10px 0 0 0;border-right:1px solid white;border-bottom:1px solid white"></div>
+                                    <div class="menucurve"></div>
                                 </div>
                                 <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
                             </td>
@@ -622,6 +707,7 @@
                                         <div style="margin-top:5px"><span id="changeEmailId" style="display:none"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></span></div>
                                         <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span></div>
                                         <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
+                                        <div style="margin-top:5px"><a onclick="toggleNightMode()" style="cursor:pointer">Set dark mode</a></div>
                                     </div>
                                 <br style=clear:both />
                                 </div>
@@ -640,7 +726,7 @@
                         <tr style=padding:0>
                             <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
                                 <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
-                                    <div style="background-color:white;width:10px;height:10px;border-radius:10px 0 0 0;border-right:1px solid white;border-bottom:1px solid white"></div>
+                                    <div class="menucurve"></div>
                                 </div>
                                 <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
                             </td>
@@ -678,7 +764,7 @@
                                 <td style="background-color:#E4E9E7;height:28px">
                                     <table style="width:100%">
                                         <tr>
-                                            <td id=p5currentpath style="overflow:hidden;padding-left:4px;padding-top:2px"></td>
+                                            <td id=p5currentpath style="overflow:hidden;padding-left:4px;padding-top:2px;color:black"></td>
                                             <td style="text-align:right;padding-right:4px">
                                                 <select id=p5sortdropdown onchange=updateFiles()>
                                                     <option value=1 selected="selected">Sort by name</option>
@@ -714,7 +800,7 @@
                         <tr style=padding:0>
                             <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
                                 <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
-                                    <div style="background-color:white;width:10px;height:10px;border-radius:10px 0 0 0;border-right:1px solid white;border-bottom:1px solid white"></div>
+                                    <div class="menucurve"></div>
                                 </div>
                                 <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
                             </td>
@@ -773,7 +859,7 @@
                                     <input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" style="height:28px">
                                     <input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" style="height:28px">
                                     <input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" style="height:28px">
-                                    <span id="deskstatus">Disconnected</span>
+                                    <span id="deskstatus" style="color:black">Disconnected</span>
                                 </div>
                             </div>
                         </div>
@@ -812,7 +898,7 @@
                                     <div style="margin-left:2px">
                                         <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) onkeypress="return false" onkeydown="return false" type="button" style="display:none">
                                         <input id=p13Connect value="Connect" onclick=connectFiles(event) onkeypress="return false" onkeydown="return false" type="button">
-                                        <span id=p13Status>Disconnected</span>
+                                        <span class=textOverGray id=p13Status>Disconnected</span>
                                     </div>
                                 </td>
                             </tr>
@@ -838,7 +924,7 @@
                                 <td style="background-color:#E4E9E7;height:28px">
                                     <table style="width:100%">
                                         <tr>
-                                            <td id=p13currentpath style="overflow:hidden;padding-left:4px;padding-top:2px"></td>
+                                            <td id=p13currentpath style="overflow:hidden;padding-left:4px;padding-top:2px;color:black"></td>
                                             <td style="text-align:right;padding-right:4px">
                                                 <select id=p13sortdropdown onchange=p13updateFiles()>
                                                     <option value=1 selected="selected">Sort by name</option>
@@ -863,7 +949,7 @@
                             <span id="p13files"></span>
                         </div>
                         <table id="p13toolbarBottom" style="width:100%;height:22px;position:absolute;bottom:0px" cellpadding=0 cellspacing=0>
-                            <tr><td style="text-align:left;padding:3px;text-align:center;background-color:#D3D9D6">&nbsp;<span id="p13bottomstatus"></span></td></tr>
+                            <tr><td style="text-align:left;padding:3px;text-align:center;background-color:#D3D9D6;color:black">&nbsp;<span id="p13bottomstatus"></span></td></tr>
                         </table>
                     </div>
                     <div id=p10details style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
@@ -912,7 +998,7 @@
                         <tr style=padding:0>
                             <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
                                 <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
-                                    <div style="background-color:white;width:10px;height:10px;border-radius:10px 0 0 0;border-right:1px solid white;border-bottom:1px solid white"></div>
+                                    <div class="menucurve"></div>
                                 </div>
                                 <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
                             </td>
@@ -936,7 +1022,7 @@
             <table id=footerMenu cellpadding=0 cellspacing=0 style="height:32px;width:100%;color:white;cursor:pointer;table-layout:fixed"></table>
         </div>
     </div>
-    <div id=dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:90px;width:300px;display:none">
+    <div id=dialog style="display:none">
         <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
             <div id=id_dialogclose style=float:right;padding:5px;cursor:pointer onclick=setDialogMode()><b>X</b></div>
             <div id=id_dialogtitle style=padding:5px></div>
@@ -1086,6 +1172,7 @@
         var sessionActivity = Date.now();
         var deskPinchZoom;
         var deskKeyboardShortcuts = [];
+        var nightMode = setNightMode();
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -1111,6 +1198,7 @@
             document.onkeypress = ondeskkeypress;
             document.onkeydown = ondeskkeydown;
             document.onkeyup = ondeskkeyup;
+            document.onclick = function (e) { if ((xxdialogMode == 999) && (e.target.id != 'topMenuIcon')) { QV('topMenu', false); xxdialogMode = 0; } }
 
             // Connect to the mesh server
             meshserver = MeshServerCreateControl(domainUrl, authCookie);
@@ -1867,6 +1955,35 @@
         // MY ACCOUNT
         //
 
+        function toggleNightMode() {
+            if (xxdialogMode) return;
+            var cNightMode = getstore('nightMode', '0');
+            var x = '<input type=radio id=night0 name=nightmoderadio value=0 ' + ((cNightMode == 0) ? 'checked' : '') + '><label for=night0>' + "Browser default" + '</label><br>';
+            x += '<input type=radio id=night2 name=nightmoderadio value=2 ' + ((cNightMode == 2) ? 'checked' : '') + '><label for=night2>' + "Light mode" + '</label><br>';
+            x += '<input type=radio id=night1 name=nightmoderadio value=1 ' + ((cNightMode == 1) ? 'checked' : '') + '><label for=night1>' + "Dark mode" + '</label><br>';
+            setDialogMode(2, "Night Mode", 3, toggleNightModeEx, x);
+            QV('uiMenu', false);
+        }
+
+        function toggleNightModeEx() {
+            // Save new night mode
+            var nNightMode = '0';
+            if (Q('night1').checked) { nNightMode = '1'; }
+            if (Q('night2').checked) { nNightMode = '2'; }
+            putstore('nightMode', nNightMode);
+            setNightMode();
+        }
+
+        function setNightMode() {
+            // Set night mode
+            var nNightMode = getstore('nightMode', '0')
+            nightMode = false;
+            if (nNightMode == '1') { nightMode = true; }
+            else if ((nNightMode == '0') && (window.matchMedia)) { nightMode = window.matchMedia('(prefers-color-scheme: dark)').matches }
+            if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; QS('body')['color'] = 'lightgray'; } else { QC('body').remove('night'); QS('body')['background-color'] = '#FFF'; QS('body')['color'] = 'black'; }
+            return nightMode;
+        }
+
         function account_managePhone() {
             if (xxdialogMode || ((features & 0x02000000) == 0)) return;
             var x;
@@ -2093,8 +2210,8 @@
                 // Print the mesh information
                 r += '<div style=cursor:pointer onclick=goForward(\'' + i + '\')>';
                 r += '<div style="float:left;margin-left:4px"><img src="/images/meshicon50.png" width=50 height=50 /></div>';
-                r += '<div style="width:auto;height:40px;background-color:lightgray;margin-top:5px;margin-bottom:5px;margin-left:60px;padding-top:5px;padding-bottom:5px;border-radius:8px 0px 0px 8px">';
-                r += '<div><div style=padding-left:12px;padding-top:2px><b>' + EscapeHtml(meshes[i].name) + '</b></div><div style=padding-left:12px;padding-top:3px;color:gray>' + rights + '</div></div>';
+                r += '<div class=meshList>';
+                r += '<div><div style=color:black;padding-left:12px;padding-top:2px><b>' + EscapeHtml(meshes[i].name) + '</b></div><div style=padding-left:12px;padding-top:3px;color:black>' + rights + '</div></div>';
                 r += '</div></div>';
             }
 
@@ -2121,7 +2238,7 @@
         function updateFiles() {
             QV('MainMenuMyFiles', ((features & 8) == 0));
             if ((features & 8) != 0) return; // If running on a server without files, exit now.
-            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p5folderup(0)>' + "Root" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
+            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer;color:black onclick=p5folderup(0)>' + "Root" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
 
             // Navigate to path location, build the paths at the same time
             var filetreelocation2 = [], oldlinkpath = filetreelinkpath, checkedBoxes = [], checkboxes = document.getElementsByName('fc');
@@ -2141,7 +2258,7 @@
                         if (filetreelinkpath != '') { filetreelinkpath += '/' + filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + filetreelocation[i]; } }
                     }
                     filetreex = filetreex.f[filetreelocation[i]];
-                    displayPath += ' / <a style=cursor:pointer onclick=p5folderup(' + folderdepth + ')>' + EscapeHtml(filetreex.n != null ? filetreex.n : filetreelocation[i]) + '</a>';
+                    displayPath += ' / <a style=cursor:pointer;color:black onclick=p5folderup(' + folderdepth + ')>' + EscapeHtml(filetreex.n != null ? filetreex.n : filetreelocation[i]) + '</a>';
                     folderdepth++;
                 } else {
                     break;
@@ -4000,13 +4117,13 @@
         }
 
         function p13updateFiles(checkedNames) {
-            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p13folderup(0)>' + "Root" + '</a>', fullPath = 'Root';
+            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer;color:black onclick=p13folderup(0)>' + "Root" + '</a>', fullPath = 'Root';
 
             // Work on parsing the file path
             var x = p13filetree.path.split('\\');
             p13filetreelocation = [];
             for (var i in x) { if (x[i] != '') { p13filetreelocation.push(x[i]); } } // Remove empty spaces
-            for (var i in p13filetreelocation) { displayPath += ' / <a style=cursor:pointer onclick=p13folderup(' + (parseInt(i) + 1) + ')>' + EscapeHtml(p13filetreelocation[i]) + '</a>' } // Setup the path we display
+            for (var i in p13filetreelocation) { displayPath += ' / <a style=cursor:pointer;color:black onclick=p13folderup(' + (parseInt(i) + 1) + ')>' + EscapeHtml(p13filetreelocation[i]) + '</a>' } // Setup the path we display
             var newlinkpath = p13filetreelocation.join('/');
 
             // Sort the files
@@ -5482,7 +5599,7 @@
         function addHtmlValue(t, v) { return '<table><td style=width:120px>' + t + '<td><b>' + v + '</b></table>'; }
         function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
         function addHtmlValue4(t, v) { return '<table style=width:100%><td style=width:120px>' + t + '<td style=text-align:right><b>' + v + '</b></table>'; }
-        function addLink(x, f) { return '<a style=cursor:pointer;color:darkblue;text-decoration:none onclick=\'' + f + '\'>&diams; ' + x + '</a>'; }
+        function addLink(x, f) { return '<a style=cursor:pointer;text-decoration:none onclick=\'' + f + '\'>&diams; ' + x + '</a>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
         function getFileSizeStr(size) { if (typeof size != 'number') { size = 0; } if (size == 1) return "1 byte"; return format('{0} bytes', size); }
