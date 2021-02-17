@@ -138,7 +138,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }, 0); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'resetaccount', 'pass', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest'];
+        var validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'resetaccount', 'pass', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -184,6 +184,9 @@ function CreateMeshCentralServer(config, args) {
             obj.fs.writeFileSync(obj.getConfigFilePath(obj.args.dbfix) + '-fixed', fixedDb.join('\n'), { encoding: 'utf8' });
             return;
         }
+
+        // Perform a password hash
+        if (obj.args.hashpassword) { require('./pass').hash(obj.args.hashpassword, function (err, salt, hash, tag) { console.log(salt + ',' + hash); process.exit(); }); return; }
 
         // Perform web site translations into different languages
         if (obj.args.translate) {
@@ -728,7 +731,7 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.args.recordencryptionrecode) { obj.db.performRecordEncryptionRecode(function (count) { console.log('Re-encoded ' + count + ' record(s).'); process.exit(); }); return; }
                     if (obj.args.dbstats) { obj.db.getDbStats(function (stats) { console.log(stats); process.exit(); }); return; }
                     if (obj.args.createaccount) { // Create a new user account
-                        if ((typeof obj.args.createaccount != 'string') || (obj.args.pass == null) || (obj.args.pass == '') || (obj.args.createaccount.indexOf(' ') >= 0)) { console.log("Usage: --createaccount [userid] --pass [password] --domain (domain) --email (email) --name (name)."); process.exit(); return; }
+                        if ((typeof obj.args.createaccount != 'string') || ((obj.args.pass == null) && (obj.args.hashpass == null)) || (obj.args.pass == '') || (obj.args.hashpass == '') || (obj.args.createaccount.indexOf(' ') >= 0)) { console.log("Usage: --createaccount [userid] --pass [password] --domain (domain) --email (email) --name (name)."); process.exit(); return; }
                         var userid = 'user/' + (obj.args.domain ? obj.args.domain : '') + '/' + obj.args.createaccount.toLowerCase(), domainid = obj.args.domain ? obj.args.domain : '';
                         if (obj.args.createaccount.startsWith('user/')) { userid = obj.args.createaccount; domainid = obj.args.createaccount.split('/')[1]; }
                         if (userid.split('/').length != 3) { console.log("Invalid userid."); process.exit(); return; }
@@ -738,12 +741,22 @@ function CreateMeshCentralServer(config, args) {
                             if ((domainid != '') && ((config.domains == null) || (config.domains[domainid] == null))) { console.log("Invalid domain."); process.exit(); return; }
                             var user = { _id: userid, type: 'user', name: (typeof obj.args.name == 'string') ? obj.args.name : (userid.split('/')[2]), domain: domainid, creation: Math.floor(Date.now() / 1000), links: {} };
                             if (typeof obj.args.email == 'string') { user.email = obj.args.email; user.emailVerified = true; }
-                            require('./pass').hash(obj.args.pass, function (err, salt, hash, tag) { if (err) { console.log("Unable create account password: " + err); process.exit(); return; } user.salt = salt; user.hash = hash; obj.db.Set(user, function () { console.log("Done."); process.exit(); return; }); }, 0);
+                            if (obj.args.hashpass) {
+                                // Create an account using a pre-hashed password. Use --hashpassword to pre-hash a password.
+                                var hashpasssplit = obj.args.hashpass.split(',');
+                                if (hashpasssplit.length != 2) { console.log("Invalid hashed password."); process.exit(); return; }
+                                user.salt = hashpasssplit[0];
+                                user.hash = hashpasssplit[1];
+                                obj.db.Set(user, function () { console.log("Done."); process.exit(); return; });
+                            } else {
+                                // Hash the password and create the account.
+                                require('./pass').hash(obj.args.pass, function (err, salt, hash, tag) { if (err) { console.log("Unable create account password: " + err); process.exit(); return; } user.salt = salt; user.hash = hash; obj.db.Set(user, function () { console.log("Done."); process.exit(); return; }); }, 0);
+                            }
                         });
                         return;
                     }
                     if (obj.args.resetaccount) { // Unlock a user account, set a new password and remove 2FA
-                        if ((typeof obj.args.resetaccount != 'string') || (obj.args.pass == null) || (obj.args.pass == '') || (obj.args.resetaccount.indexOf(' ') >= 0)) { console.log("Usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
+                        if ((typeof obj.args.resetaccount != 'string') || ((obj.args.pass == null) && (obj.args.hashpass == null)) || (obj.args.pass == '') || (obj.args.hashpass == '') || (obj.args.resetaccount.indexOf(' ') >= 0)) { console.log("Usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
                         var userid = 'user/' + (obj.args.domain ? obj.args.domain : '') + '/' + obj.args.resetaccount.toLowerCase();
                         if (obj.args.resetaccount.startsWith('user/')) { userid = obj.args.resetaccount; }
                         if (userid.split('/').length != 3) { console.log("Invalid userid."); process.exit(); return; }
@@ -752,7 +765,17 @@ function CreateMeshCentralServer(config, args) {
                             if ((docs == null) || (docs.length == 0)) { console.log("Unknown userid, usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
                             var user = docs[0]; if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { user.siteadmin -= 32; } // Unlock the account.
                             delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; // Disable 2FA
-                            require('./pass').hash(obj.args.pass, user.salt, function (err, hash, tag) { if (err) { console.log("Unable to reset password: " + err); process.exit(); return; } user.hash = hash; obj.db.Set(user, function () { console.log("Done."); process.exit(); return; }); }, 0);
+                            if (obj.args.hashpass) {
+                                // Reset an account using a pre-hashed password. Use --hashpassword to pre-hash a password.
+                                var hashpasssplit = obj.args.hashpass.split(',');
+                                if (hashpasssplit.length != 2) { console.log("Invalid hashed password."); process.exit(); return; }
+                                user.salt = hashpasssplit[0];
+                                user.hash = hashpasssplit[1];
+                                obj.db.Set(user, function () { console.log("Done."); process.exit(); return; });
+                            } else {
+                                // Hash the password and reset the account.
+                                require('./pass').hash(obj.args.pass, user.salt, function (err, hash, tag) { if (err) { console.log("Unable to reset password: " + err); process.exit(); return; } user.hash = hash; obj.db.Set(user, function () { console.log("Done."); process.exit(); return; }); }, 0);
+                            }
                         });
                         return;
                     }
