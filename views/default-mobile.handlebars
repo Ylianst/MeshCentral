@@ -1135,10 +1135,21 @@
         for (var i in webState) { localStorage.setItem(i, webState[i]); }
         if (webState && !webState.loctag) { delete localStorage.removeItem('loctag'); }
 
+        // Fetch URL arguments & do sanitation
         var urlargs = parseUriArgs();
+        if (urlargs.key != null) { urlargs.key = "" + urlargs.key; }
         if (urlargs.key && (isAlphaNumeric(urlargs.key) == false)) { delete urlargs.key; }
         if (urlargs.locale && (isAlphaNumeric(urlargs.locale) == false)) { delete urlargs.locale; }
-        var args = urlargs;
+        delete urlargs.viewmode;
+        delete urlargs.gotonode;
+        delete urlargs.gotomesh;
+        delete urlargs.panel;
+
+        // Check if we are in debug mode
+        var args = parseUriArgs();
+        if (args.key && (isAlphaNumeric(args.key) == false)) { delete args.key; }
+        if (args.locale && (isAlphaNumeric(args.locale) == false)) { delete args.locale; }
+
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
         var features2 = parseInt('{{{features2}}}');
@@ -1259,7 +1270,6 @@
                 meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes' });
                 meshserver.send({ action: 'files' });
-                if (xxcurrentView < 2) { go(2); }
                 authCookieRenewTimer = setInterval(function () { meshserver.send({ action: 'authcookie' }); }, 1800000); // Request a cookie refresh every 30 minutes.
             }
             QV('topMenuIcon', state == 2);
@@ -1353,7 +1363,7 @@
                     for (var m in message.meshes) { meshes[message.meshes[m]._id] = message.meshes[m]; }
                     if (currentMesh != null) { currentMesh = meshes[currentMesh._id]; }
                     updateMeshes();
-                    updateDevices();
+                    mainUpdate(4);
                     break;
                 }
                 case 'usergroups': {
@@ -1400,7 +1410,7 @@
 
                     //onSortSelectChange();
                     //onSearchInputChanged();
-                    updateDevices();
+                    mainUpdate(4);
                     //refreshMap(false, true);
                     if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go(parseInt('{{viewmode}}')); } else { setDialogMode(0); go(2); } }
                     if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}', parseInt('{{viewmode}}')); }
@@ -1564,10 +1574,9 @@
                                 // Update the web page
                                 if ((webstate.loctag != null) && (webstate.loctag != oldLoctag)) {
                                     if (webstate.loctag != null) { args.locale = webstate.loctag; } else { delete args.locale; }
-                                    updateDevices();
-                                    updateMeshes();
+                                    mainUpdate(4 + 128);
                                 } else if (webstate.stars != null) {
-                                    updateDevices();
+                                    mainUpdate(4);
                                     if (Q('SearchInput').value == '*') { onSearchInputChanged(); }
                                 }
                                 if (currentNode) { refreshDevice(currentNode._id); }
@@ -1633,8 +1642,7 @@
                             // A new mesh was created
                             if ((meshes[message.event.meshid] == null) && ((userinfo.manageAllDeviceGroups) || (message.event.links[userinfo._id] != null))) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
-                                updateMeshes();
-                                updateDevices();
+                                mainUpdate(4 + 128);
                                 meshserver.send({ action: 'files' });
                             }
                             break;
@@ -1676,8 +1684,7 @@
                                     if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(2); currentNode = null; }
                                 }
                             }
-                            updateMeshes();
-                            updateDevices();
+                            mainUpdate(4 + 128);
                             meshserver.send({ action: 'files' });
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
@@ -1696,7 +1703,7 @@
                             var newnodes = [];
                             for (var i in nodes) { if (nodes[i].meshid != message.event.meshid) { newnodes.push(nodes[i]); } }
                             nodes = newnodes;
-                            updateDevices();
+                            mainUpdate(4);
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
                             if (xxcurrentView >= 20 && xxcurrentView < 30 && currentMesh._id == message.event.meshid) { setDialogMode(0); go(2); }
@@ -1718,7 +1725,7 @@
                             nodes.push(node);
                             //onSortSelectChange();
                             //onSearchInputChanged();
-                            updateDevices();
+                            mainUpdate(4);
                             //updateMapMarkers();
                             break;
                         }
@@ -1733,7 +1740,7 @@
                                     // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
                                 }
                                 nodes.splice(index, 1);
-                                updateDevices();
+                                mainUpdate(4);
                                 //updateMapMarkers();
                             }
                             break;
@@ -1788,7 +1795,7 @@
                                 //drawNotifications();
                                 refreshDevice(node._id);
                                 //updateMapMarkers();
-                                updateDevices();
+                                mainUpdate(4);
                                 if (currentNode == node) { updateDeviceDetails(); }
 
                                 //if ((currentNode == node) && (xxdialogMode != null) && (xxdialogTag == '@xxmap')) { p10showNodeLocationDialog(); }
@@ -1811,7 +1818,7 @@
                                     node.meshid = message.event.newMeshId;
                                     node.meshnamel = meshes[message.event.newMeshId]?meshes[message.event.newMeshId].name.toLowerCase():'*';
                                 }
-                                updateDevices();
+                                mainUpdate(4);
                                 refreshDevice(message.event.nodeid);
                             } else {
                                 // This is a new device, add it.
@@ -1828,7 +1835,7 @@
 
                                 // Web page update
                                 //mainUpdate(1 | 2 | 4 | 16);
-                                updateDevices();
+                                mainUpdate(4);
                             }
                             break;
                         }
@@ -1846,7 +1853,7 @@
                                 // Clear sesssion information if needed
                                 if ((node.conn & 1) == 0) { delete node.sessions; }
 
-                                updateDevices();
+                                mainUpdate(4);
                                 refreshDevice(node._id);
                                 //updateMapMarkers();
                             }
@@ -1885,10 +1892,8 @@
                                 if (Object.keys(node.sessions).length == 0) { delete node.sessions; }
                             }
 
-                            updateDevices();
                             refreshDevice(message.event.nodeid);
-
-                            //mainUpdate(4);
+                            mainUpdate(4);
                             //if ((currentNode != null) && (currentNode._id == message.event.nodeid)) { gotoDevice(currentNode._id, xxcurrentView, true); }
 
                             // If we are looking at the sessions dialog box for this device now, update it
@@ -1912,6 +1917,50 @@
                     //console.log('Unknown message.action', message.action);
                     break;
             }
+        }
+
+        // To boost the speed of the web page when even floods occur, this method perform a delayed update on the web page.
+        var updateNaggleTimer = null;
+        var updateNaggleFlags = 0;
+        function mainUpdate(flags) {
+            updateNaggleFlags |= flags;
+            if (updateNaggleTimer == null) {
+                updateNaggleTimer = setTimeout(function () {
+                    if (updateNaggleFlags & 4) { updateDevices(); updateDeviceDetails(); }
+                    if (updateNaggleFlags & 128) { updateMeshes(); }
+                    updateNaggleTimer = null;
+                    updateNaggleFlags = 0;
+                    gotoStartViewPage();
+                }, 150);
+            }
+        }
+
+        // Go to the correct starting view page
+        function gotoStartViewPage() {
+            var xviewmode = parseInt('{{viewmode}}');
+            if (xxcurrentView > 1) return;
+            if ('{{currentNode}}'.toLowerCase() != '') { // The .toLowerCase here is the minifier will not optimize this out.
+                if (getNodeFromId('{{currentNode}}') == null) return; // This node is not loaded yet
+                gotoDevice('{{currentNode}}', xviewmode);
+            } else if (args.gotonode != null) {
+                if (args.gotonode.length == 96) { args.gotonode = btoa(hex2rstr(args.gotonode)).split('+').join('@').split('/').join('$'); } // This is a HEX encoded NodeID, convert it to Base64
+                if (getNodeFromId('node/' + domain + '/' + args.gotonode) == null) return; // This node is not loaded yet
+                if (args.panel) { currentDevicePanel = parseInt(args.panel); }
+                gotoDevice('node/' + domain + '/' + args.gotonode, xviewmode);
+            } else if (args.gotomesh != null) {
+                if (meshes['mesh/' + domain + '/' + args.gotomesh] == null) return; // This device group is not loaded yet
+                gotoMesh('mesh/' + domain + '/' + args.gotomesh);
+                go(xviewmode);
+            } else if (!isNaN(xviewmode)) {
+                go(xviewmode);
+            } else {
+                setDialogMode(0);
+                go(1);
+            }
+            delete args.gotonode;
+            delete args.gotomesh;
+            delete args.panel;
+            if (xxcurrentView < 2) { go(2); }
         }
 
         //
@@ -2448,7 +2497,7 @@
         function onRealNameCheckBox() {
             showRealNames = Q('RealNameCheckBox').checked;
             putstore('showRealNames', showRealNames ? 1 : 0);
-            updateDevices();
+            mainUpdate(4);
         }
 
         function onOnlineCheckBox(e) {
@@ -2523,7 +2572,7 @@
             // Check power state
             var onlineOnly = Q('OnlineCheckBox').checked;
             if (onlineOnly) { for (var d in nodes) { if ((nodes[d].conn == null) || (nodes[d].conn == 0)) { nodes[d].v = false; } } }
-            updateDevices();
+            mainUpdate(4);
         }
 
         var gotKeyPressEvent = false;
@@ -2585,10 +2634,6 @@
             }
         }
 
-        // Since the update device call can be quite frequent, we can moderate it and only call it at most 5 times a second.
-        var updateDevicesTimer = null;
-        function updateDevices() { if (updateDevicesTimer != null) return; updateDevicesTimer = setTimeout(updateDevicesEx, 200); }
-
         var sort = 0;
         var deviceHeaderId = 0;
         var deviceHeaderCount;
@@ -2597,8 +2642,7 @@
         var deviceHeaderTotal = 0;
         var deviceHeaders = {};
         var deviceHeadersTitles = {};
-        function updateDevicesEx() {
-            if (updateDevicesTimer != null) { clearTimeout(updateDevicesTimer); updateDevicesTimer = null; }
+        function updateDevices() {
             var r = '', c = 0, current = null, count = 0, displayedMeshes = {}, groups = {}, groupCount = {};
 
             // 3 wide, list view or desktop view
@@ -2895,7 +2939,7 @@
         function onSortSelectChange(skipsave) {
             sort = document.getElementById('sortselect').selectedIndex;
             if (!skipsave) { putstore('sort', sort); }
-            updateDevicesEx();
+            mainUpdate(4);
         }
 
         function deviceHeaderSet() {
@@ -3216,6 +3260,7 @@
             if ((currentDevicePanel != 3) && (currentNode != null)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
             if ((currentDevicePanel != 4) && (currentNode != null) && (meshrights & 0x00000010)) { menus.push({ n: "Console", f: 'setupDeviceMenu(4)' }); }
             updateFooterMenu(menus);
+            updateCurrentUrl();
         }
 
         function deviceActionFunction() {
@@ -5427,6 +5472,21 @@
             // Edit this line when adding a new screen
             for (var i = 0; i < 32; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
+            updateCurrentUrl();
+        }
+
+        // Change the URL
+        function updateCurrentUrl() {
+            if (((features & 0x10000000) == 0) && (xxcurrentView > 0)) {
+                var urlviewmode = '';
+                if ((xxcurrentView >= 10) && (xxcurrentView <= 19)) { // Device Link
+                    if (currentNode != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotonode=' + currentNode._id.split('/')[2] + ((currentDevicePanel > 0)?('&panel=' + currentDevicePanel):''); }
+                } else if ((xxcurrentView >= 20) && (xxcurrentView <= 29)) { // Device Group Link
+                    if (currentMesh != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotomesh=' + currentMesh._id.split('/')[2]; }
+                } else if (xxcurrentView > 1) { urlviewmode = '?viewmode=' + xxcurrentView; }
+                for (var i in urlargs) { urlviewmode += (((urlviewmode == '') ? '?' : '&') + i + '=' + urlargs[i]); }
+                try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
+            }
         }
 
         //
