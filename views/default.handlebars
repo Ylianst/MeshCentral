@@ -4618,6 +4618,7 @@
                 if ((rights & 4) && ((added & 64) == 0)) { added |= 64; addedOptions += '<option value=107>' + "Edit tags" + '</option>'; }
                 if ((rights & 8) && ((added & 256) == 0)) { added |= 256; addedOptions += '<option value=109>' + "Upload files" + '</option>'; }
                 if ((rights & 32768) && ((added & 128) == 0)) { added |= 128; addedOptions += '<option value=101>' + "Delete devices" + '</option>'; }
+                if ((node.agent != null) && (features2 & 0x00000010) && (rights == 0xFFFFFFFF) && ((added & 512) == 0)) { added |= 512; addedOptions += '<option value=110>' + "Force agent update" + '</option>'; }
             }
 
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights." + '<br /><br />';
@@ -4707,6 +4708,10 @@
                 x += '<label><input type=checkbox name=overwriteFiles />' + "Overwrite if file exists?" + '</label></form>';
                 setDialogMode(2, "Batch File Upload", 3, d2batchUploadValidateOk, x);
                 d2batchUploadValidate();
+            } else if (op == 110) {
+                // Force agent update
+                var x = "Force agent update on selected devices?" + '<br /><br />';
+                setDialogMode(2, "Edit Device Tags", 3, d2groupActionFunctionAgentUpdateExec, x);
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: parseInt(op) });
@@ -4716,6 +4721,7 @@
 
         function d2batchUploadValidate() { QE('idx_dlgOkButton', (Q('d2uploadinput').files.length != 0) && ((Q('d2winuploadpath') == null) || (Q('d2winuploadpath').value != '')) && ((Q('d2linuxuploadpath') == null) || (Q('d2linuxuploadpath').value != ''))); }
         function d2batchUploadValidateOk() { Q('d2batchUploadSubmit').click(); }
+        function d2groupActionFunctionAgentUpdateExec() { meshserver.send({ action: 'updateAgents', nodeids: getCheckedDevices() }); }
 
         function d2groupActionFunctionNotifyExec() {
             var op = Q('d2deviceop').value, title = Q('dp2notifyTitle').value, msg = Q('d2notifyMsg').value, chkNodeIds = getCheckedDevices();
