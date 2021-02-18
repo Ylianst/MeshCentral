@@ -396,7 +396,7 @@
                         <td class="h2"></td>
                     </tr>
                 </table>
-                <div id=p3events style=""></div>
+                <div id=p3events></div>
             </div>
             <div id=p4 style="display:none">
                 <div id="p4title"><h1>My Users</h1></div>
@@ -897,38 +897,46 @@
                 <div id=p19pages></div>
             </div>
             <div id=p20 style="display:none">
-                <div id="p20title">
-                    <picture id=MainMeshImage style=border-width:0px;height:200px;width:200px;float:right>
-                        <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-256.webp" />
-                        <img alt="" width=200 height=200 src=images/mesh-256.png />
-                    </picture>
-                    <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>General - <span id=p20meshName></span></h1>
+                <div id=p20main style="overflow-y:auto">
+                    <div id="p20title">
+                        <picture id=MainMeshImage style=border-width:0px;height:200px;width:200px;float:right>
+                            <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-256.webp" />
+                            <img alt="" width=200 height=200 src=images/mesh-256.png />
+                        </picture>
+                        <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                        <h1>General - <span id=p20meshName></span></h1>
+                    </div>
+                    <p id=p20info></p>
                 </div>
-                <p id=p20info></p>
             </div>
             <div id=p21 style="display:none">
                 <div id="p21title">
                     <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                     <h1>Summary - <span id=p21meshName></span></h1>
                 </div>
-                <div style="width:100%">
-                    <div style="display:table;width:93%">
-                        <div id="meshPowerChartDiv" style="width:31%;display:inline-block;text-align:center;max-width:250px">
-                            <div style="margin:10px;font-size:16px">Power States</div>
-                            <canvas id="meshPowerChart" style="width:250px;height:250px"></canvas>
-                        </div>
-                        <div id="meshOsChartDiv" style="width:31%;display:inline-block;text-align:center;max-width:250px">
-                            <div style="margin:10px;font-size:16px">Agent Types</div>
-                            <canvas id="meshOsChart" style="width:250px;height:250px"></canvas>
-                        </div>
-                        <div id="meshConnChartDiv" style="width:31%;display:inline-block;text-align:center;max-width:250px">
-                            <div style="margin:10px;font-size:16px">Connectivity</div>
-                            <canvas id="meshConnChart" style="width:250px;height:250px"></canvas>
+                <div id=p21main style="overflow-y:auto">
+                    <div style="width:100%">
+                        <div style="display:table;width:93%">
+                            <div id="meshPowerChartDiv" style="width:23%;display:inline-block;text-align:center;max-width:250px">
+                                <div style="margin:10px;font-size:16px">Power States</div>
+                                <canvas id="meshPowerChart" style="width:250px;height:250px"></canvas>
+                            </div>
+                            <div id="meshOsChartDiv" style="width:23%;display:inline-block;text-align:center;max-width:250px">
+                                <div style="margin:10px;font-size:16px">Agent Types</div>
+                                <canvas id="meshOsChart" style="width:250px;height:250px"></canvas>
+                            </div>
+                            <div id="meshConnChartDiv" style="width:23%;display:inline-block;text-align:center;max-width:250px">
+                                <div style="margin:10px;font-size:16px">Connectivity</div>
+                                <canvas id="meshConnChart" style="width:250px;height:250px"></canvas>
+                            </div>
+                            <div id="meshSecurityChartDiv" style="width:23%;display:inline-block;text-align:center;max-width:250px">
+                                <div style="margin:10px;font-size:16px">Security</div>
+                                <canvas id="meshSecurityChart" style="width:250px;height:250px"></canvas>
+                            </div>
                         </div>
                     </div>
+                    <p id=p21info style="overflow-y:auto"></p>
                 </div>
-                <p id=p21info></p>
             </div>
             <div id=p30 style="display:none">
                 <div id="p30title">
@@ -1699,6 +1707,10 @@
             QS('p10info')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p17info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p17info')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
+            QS('p20main')['height'] = 'calc(100vh - ' + (-50 + xh + xh2) + 'px)';
+            QS('p20main')['max-height'] = 'calc(100vh - ' + (-50 + xh + xh2) + 'px)';
+            QS('p21main')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
+            QS('p21main')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p30info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p30info')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p51info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
@@ -4807,7 +4819,7 @@
 
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
-            var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null;
+            var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null;
             if (x.startsWith("user:".toLowerCase())) { userSearch = x.substring("user:".length); }
             else if (x.startsWith("u:".toLowerCase())) { userSearch = x.substring("u:".length); }
             else if (x.startsWith("ip:".toLowerCase())) { ipSearch = x.substring("ip:".length); }
@@ -4817,6 +4829,11 @@
             else if (x.startsWith("t:".toLowerCase())) { tagSearch = Q('SearchInput').value.trim().substring("t:".length); }
             else if (x.startsWith("atag:".toLowerCase())) { agentTagSearch = Q('SearchInput').value.trim().substring("atag:".length).toLowerCase(); }
             else if (x.startsWith("a:".toLowerCase())) { agentTagSearch = Q('SearchInput').value.trim().substring("a:".length).toLowerCase(); }
+            else if (x == 'wsc:ok') { wscSearch = 1; }
+            else if (x == 'wsc:noav') { wscSearch = 2; }
+            else if (x == 'wsc:noupdate') { wscSearch = 3; }
+            else if (x == 'wsc:nofirewall') { wscSearch = 4; }
+            else if (x == 'wsc:any') { wscSearch = 5; }
 
             if (x == '') {
                 // No search
@@ -4843,6 +4860,20 @@
                     nodes[d].v = false;
                     if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0) { nodes[d].v = true; } } }
                 }
+            } else if (wscSearch != null) {
+                // Windows Security Center
+                for (var d in nodes) {
+                    nodes[d].v = false;
+                    if (nodes[d].wsc) {
+                        if ((wscSearch == 1) && (nodes[d].wsc.antiVirus == 'OK') && (nodes[d].wsc.autoUpdate == 'OK') && (nodes[d].wsc.firewall == 'OK')) { nodes[d].v = true; }
+                        else if (((wscSearch == 2) || (wscSearch == 5)) && (nodes[d].wsc.antiVirus != 'OK')) { nodes[d].v = true; }
+                        else if (((wscSearch == 3) || (wscSearch == 5)) && (nodes[d].wsc.autoUpdate != 'OK')) { nodes[d].v = true; }
+                        else if (((wscSearch == 4) || (wscSearch == 5)) && (nodes[d].wsc.firewall != 'OK')) { nodes[d].v = true; }
+                    }
+                }
+            } else if (x == '*') {
+                // Star filter
+                for (var d in nodes) { nodes[d].v = (stars[nodes[d]._id] == 1); }
             } else {
                 // Device name search
                 try {
@@ -10926,12 +10957,17 @@
             });
             window.meshOsChart = new Chart(document.getElementById('meshOsChart').getContext('2d'), {
                 type: 'doughnut',
-                data: { datasets: [{ data: [0, 0], backgroundColor: ['#20F', '#40D', '#60B', '#809', '#A07', '#C05'] }] },
+                data: { datasets: [{ data: [0, 0], backgroundColor: ['#20F', '#30E', '#40D', '#50C', '#60B', '#70A', '#809', '#908', '#A07', '#B06', '#C05'] }] },
                 options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
             });
             window.meshConnChart = new Chart(document.getElementById('meshConnChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#20F', '#40D', '#60B', '#809', '#A07', '#C05'] }], labels: ["Not Connected", "Agent", "Intel&reg; AMT", "Agent + Intel&reg; AMT"] },
+                options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
+            });
+            window.meshSecurityChart = new Chart(document.getElementById('meshSecurityChart').getContext('2d'), {
+                type: 'doughnut',
+                data: { datasets: [{ data: [0, 0], backgroundColor: ['#20F', '#40D', '#60B', '#809', '#A07', '#C05'] }], labels: ["OK", "Anti-virus not active", "No automatic update", "Firewall not active", "Multiple Issues"] },
                 options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
             });
         }
@@ -10951,9 +10987,11 @@
             var agentTypes = {};
             var powerStates = {};
             var connectivityStates = [ 0, 0, 0, 0 ]; // None, Agent, AMT, Agent + AMT
+            var securityStates = [ 0, 0, 0, 0, 0 ]; // OK, no AV, no firewall, no update, many Issues
             var showAgents = false;
             var showPower = false;
             var showConn = false;
+            var showSecurity = false;
             for (var i in nodes) {
                 if (nodes[i].meshid == currentMesh._id) {
                     if (nodes[i].agent) { showAgents = true; if (agentTypes[nodes[i].agent.id] == null) { agentTypes[nodes[i].agent.id] = 1; } else { agentTypes[nodes[i].agent.id]++; } }
@@ -10961,6 +10999,18 @@
                     if (nodes[i].conn == 0) { showConn = true; connectivityStates[0]++; }
                     else if ((nodes[i].conn & 6) != 0) { showConn = true; if ((nodes[i].conn & 1) != 0) { connectivityStates[3]++; } else { connectivityStates[2]++; } }
                     else if ((nodes[i].conn & 1) != 0) { showConn = true; connectivityStates[1]++; }
+                    if (nodes[i].wsc) {
+                        showSecurity = true;
+                        var sok = 0;
+                        if (nodes[i].wsc.antiVirus == 'OK') { sok++; }
+                        if (nodes[i].wsc.autoUpdate == 'OK') { sok++; }
+                        if (nodes[i].wsc.firewall == 'OK') { sok++; }
+                        if (sok == 3) { securityStates[0]++; }
+                        else if (sok < 2) { securityStates[4]++; }
+                        else if (nodes[i].wsc.antiVirus != 'OK') { securityStates[1]++; }
+                        else if (nodes[i].wsc.autoUpdate != 'OK') { securityStates[2]++; }
+                        else if (nodes[i].wsc.firewall != 'OK') { securityStates[3]++; }
+                    }
                 }
             }
 
@@ -10977,6 +11027,8 @@
             }
             window.meshConnChart.config.data.datasets[0].data = connectivityStates;
             window.meshConnChart.update();
+            window.meshSecurityChart.config.data.datasets[0].data = securityStates;
+            window.meshSecurityChart.update();
 
             // Update tables
             var x = '', count = 0;
@@ -11009,15 +11061,41 @@
                 x += '</tbody></table>';
             }
 
+            if (showSecurity) {
+                count = 0;
+                var xsecurityStates = [];
+                for (var i = 0; i < 4; i++) {
+                    xsecurityStates.push([[
+                        '<img src="images/link2.png" style=cursor:pointer onclick=\'return p21setDevicesFilter("wsc:ok")\' width=10 height=10 /> ' + "OK",
+                        '<img src="images/link2.png" style=cursor:pointer onclick=\'return p21setDevicesFilter("wsc:noav")\' width=10 height=10 /> ' + "Anti-virus not active",
+                        '<img src="images/link2.png" style=cursor:pointer onclick=\'return p21setDevicesFilter("wsc:noupdate")\' width=10 height=10 /> ' + "No automatic update",
+                        '<img src="images/link2.png" style=cursor:pointer onclick=\'return p21setDevicesFilter("wsc:nofirewall")\' width=10 height=10 /> ' + "Firewall not active",
+                        '<img src="images/link2.png" style=cursor:pointer onclick=\'return p21setDevicesFilter("wsc:any")\' width=10 height=10 /> ' + "Multiple Issues"
+                    ][i], securityStates[i]]);
+                }
+                xsecurityStates.sort(function(a, b){ return -(a[1]-b[1]) });
+                x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Security" + '</th><th scope=col style=text-align:left></th></tr>';
+                for (var i = 0; i < 4; i++) { if (xsecurityStates[i][1] > 0) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + xsecurityStates[i][0] + '<div></div></div></td><td><div style=float:right>' + xsecurityStates[i][1] + ' </div><div></div></td></tr>'; } }
+                x += '</tbody></table>';
+            }
+
             if (x == '') { x = '<i>' + "No devices in this device group." + '</i>'; }
 
             QH('p21info', x);
 
             // Only show the OS chart if the mesh is agent type.
+            var graphsCount = ((showPower)?1:0) + (((currentMesh.mtype == 2) && showAgents)?1:0) + ((showConn)?1:0) + ((showSecurity)?1:0);
             QS('meshPowerChartDiv')['display'] = (showPower)?'inline-block':'none';
             QS('meshOsChartDiv')['display'] = ((currentMesh.mtype == 2) && showAgents)?'inline-block':'none';
             QS('meshConnChartDiv')['display'] = (showConn)?'inline-block':'none';
+            QS('meshSecurityChartDiv')['display'] = (showSecurity)?'inline-block':'none';
+            QS('meshPowerChartDiv')['width'] = (graphsCount > 3)?'23%':'31%';
+            QS('meshOsChartDiv')['width'] = (graphsCount > 3)?'23%':'31%';
+            QS('meshConnChartDiv')['width'] = (graphsCount > 3)?'23%':'31%';
+            QS('meshSecurityChartDiv')['width'] = (graphsCount > 3)?'23%':'31%';
         }
+
+        function p21setDevicesFilter(filter) { go(1); Q('KvmSearchInput').value = Q('SearchInput').value = filter; mainUpdate(5); }
 
         //
         // MY FILES
