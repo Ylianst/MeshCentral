@@ -4819,7 +4819,7 @@
 
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
-            QV('SearchInputClearButton', x != '');
+            QV('SearchInputClearButton', (x != '') && (navigator.userAgent.indexOf('Firefox') >= 0));
             var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null;
             if (x.startsWith("user:".toLowerCase())) { userSearch = x.substring("user:".length); }
             else if (x.startsWith("u:".toLowerCase())) { userSearch = x.substring("u:".length); }
