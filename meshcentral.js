@@ -126,7 +126,7 @@ function CreateMeshCentralServer(config, args) {
     obj.service = null;
     obj.servicelog = null;
     if (obj.platform == 'win32') {
-        var nodewindows = require('node-windows');
+        var nodewindows = require('node-windows@0.1.14');
         obj.service = nodewindows.Service;
         var eventlogger = nodewindows.EventLogger;
         obj.servicelog = new eventlogger('MeshCentral');
@@ -651,7 +651,7 @@ function CreateMeshCentralServer(config, args) {
     // Look for easy command line instructions and do them here.
     obj.StartEx = function () {
         var i;
-        //var wincmd = require('node-windows');
+        //var wincmd = require('node-windows@0.1.14');
         //wincmd.list(function (svc) { console.log(svc); }, true);
 
         // Setup syslog support
@@ -3153,7 +3153,7 @@ function mainStart() {
 
         // Install any missing modules and launch the server
         InstallModules(modules, function () {
-            if (require('os').platform() == 'win32') { try { require('node-windows'); } catch (ex) { console.log("Module node-windows can't be loaded. Restart MeshCentral."); process.exit(); return; } }
+            if (require('os').platform() == 'win32') { try { require('node-windows@0.1.14'); } catch (ex) { console.log("Module node-windows can't be loaded. Restart MeshCentral."); process.exit(); return; } }
             meshserver = CreateMeshCentralServer(config, args);
             meshserver.Start();
         });
