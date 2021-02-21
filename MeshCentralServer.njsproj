@@ -621,11 +621,14 @@
     <Folder Include="typings\" />
     <Folder Include="typings\globals\" />
     <Folder Include="typings\globals\ajv\" />
+    <Folder Include="typings\globals\axios\" />
     <Folder Include="typings\globals\connect-redis\" />
     <Folder Include="typings\globals\cookie-session\" />
     <Folder Include="typings\globals\express-handlebars\" />
     <Folder Include="typings\globals\express-session\" />
+    <Folder Include="typings\globals\handlebars\" />
     <Folder Include="typings\globals\jsbn\" />
+    <Folder Include="typings\globals\moment\" />
     <Folder Include="typings\globals\node-forge\" />
     <Folder Include="typings\globals\nodemailer\" />
     <Folder Include="typings\globals\node\" />
@@ -635,11 +638,14 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="typings\globals\ajv\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\axios\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\connect-redis\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\cookie-session\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\express-handlebars\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\express-session\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\handlebars\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\jsbn\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\moment\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\node-forge\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\nodemailer\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\node\index.d.ts" />

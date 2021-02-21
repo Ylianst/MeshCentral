@@ -2700,10 +2700,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (command.resetNextLogin === true) { chguser.passchange = -1; } else { chguser.passchange = Math.floor(Date.now() / 1000); }
                                 delete chguser.passtype; // Remove the password type if one was present.
                                 if (command.removeMultiFactor == true) {
-                                    if (chguser.otpekey) { delete chguser.otpekey; }
-                                    if (chguser.otpsecret) { delete chguser.otpsecret; }
-                                    if (chguser.otphkeys) { delete chguser.otphkeys; }
-                                    if (chguser.otpkeys) { delete chguser.otpkeys; }
+                                    if (chguser.otpekey != null) { delete chguser.otpekey; }
+                                    if (chguser.otpsecret != null) { delete chguser.otpsecret; }
+                                    if (chguser.otphkeys != null) { delete chguser.otphkeys; }
+                                    if (chguser.otpkeys != null) { delete chguser.otpkeys; }
+                                    if ((chguser.otpekey != null) && (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null))) { delete chguser.otpekey; }
+                                    if ((chguser.phone != null) && (parent.parent.smsserver != null)) { delete chguser.phone; }
                                 }
                                 db.SetUser(chguser);
 
