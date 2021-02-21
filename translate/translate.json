@@ -5211,6 +5211,7 @@
     },
     {
       "en": "Anti-virus not active",
+      "nl": "Anti-virus niet actief",
       "xloc": [
         "default.handlebars->31->1635",
         "default.handlebars->31->1649"
@@ -6712,6 +6713,7 @@
     },
     {
       "en": "Browser default",
+      "nl": "Browser standaard",
       "xloc": [
         "default-mobile.handlebars->11->74",
         "default.handlebars->31->58"
@@ -10886,6 +10888,7 @@
     },
     {
       "en": "Dark mode",
+      "nl": "Donkere modus",
       "xloc": [
         "default-mobile.handlebars->11->76",
         "default.handlebars->31->60"
@@ -15026,6 +15029,7 @@
     },
     {
       "en": "Email/SMS/Push Traffic",
+      "nl": "Email/SMS/Push verkeer",
       "xloc": [
         "default.handlebars->31->2270"
       ]
@@ -16689,6 +16693,7 @@
     },
     {
       "en": "Firewall not active",
+      "nl": "Firewall niet actief",
       "xloc": [
         "default.handlebars->31->1637",
         "default.handlebars->31->1651"
@@ -16843,12 +16848,14 @@
     },
     {
       "en": "Force agent update",
+      "nl": "Forceer agent update",
       "xloc": [
         "default.handlebars->31->471"
       ]
     },
     {
       "en": "Force agent update on selected devices?",
+      "nl": "Forceer agent update op de geselecteerde apparaten?",
       "xloc": [
         "default.handlebars->31->506"
       ]
@@ -22168,6 +22175,7 @@
     },
     {
       "en": "Light mode",
+      "nl": "Lichte modus",
       "xloc": [
         "default-mobile.handlebars->11->75",
         "default.handlebars->31->59"
@@ -25386,6 +25394,7 @@
     },
     {
       "en": "Multiple Issues",
+      "nl": "Meerdere problemen",
       "xloc": [
         "default.handlebars->31->1638",
         "default.handlebars->31->1652"
@@ -26235,6 +26244,7 @@
     },
     {
       "en": "Night Mode",
+      "nl": "Nacht Modus",
       "xloc": [
         "default-mobile.handlebars->11->77",
         "default.handlebars->31->61"
@@ -26730,6 +26740,7 @@
     },
     {
       "en": "No automatic update",
+      "nl": "Geen automatische update",
       "xloc": [
         "default.handlebars->31->1636",
         "default.handlebars->31->1650"
@@ -28483,6 +28494,7 @@
     },
     {
       "en": "PUSH",
+      "nl": "PUSH",
       "fr": "Envoyer",
       "xloc": [
         "default-mobile.handlebars->11->485",
@@ -30339,6 +30351,7 @@
     },
     {
       "en": "Push",
+      "nl": "Push",
       "fr": "Envoyer",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10console->consoleTable->1->4->1->1->1->0->p15outputselecttd->p15outputselect->p15outputselect3",
@@ -30347,6 +30360,7 @@
     },
     {
       "en": "Push notification failed.",
+      "nl": "Push melding mislukt.",
       "fr": "Echec de l'envoi de la notification",
       "xloc": [
         "messenger.handlebars->13->7"
@@ -34483,6 +34497,7 @@
     },
     {
       "en": "Sent as push notification.",
+      "nl": "Verzonden als pushmelding.",
       "fr": "Envoyer une notification.",
       "xloc": [
         "messenger.handlebars->13->6"
@@ -35175,6 +35190,7 @@
     },
     {
       "en": "Set dark mode",
+      "nl": "Stel donkere modus in",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountActions->3->11->0"
       ]
