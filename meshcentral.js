@@ -2695,7 +2695,7 @@ function CreateMeshCentralServer(config, args) {
 
     // Decode a cookie back into an object using a key using AES256-GCM or AES128-CBC/HMAC-SHA384. Return null if it's not a valid cookie. (key must be 32 bytes or more)
     obj.decodeCookie = function (cookie, key, timeout) {
-        if ((cookie == null) || (key == null)) return null;
+        if (cookie == null) return null;
         var r = obj.decodeCookieAESGCM(cookie, key, timeout);
         if (r == null) { r = obj.decodeCookieAESSHA(cookie, key, timeout); }
         if ((r == null) && (obj.args.cookieencoding == null) && (cookie.length != 64) && ((cookie == cookie.toLowerCase()) || (cookie == cookie.toUpperCase()))) {
@@ -3126,7 +3126,10 @@ function mainStart() {
         if (config.settings.desktopmultiplex === true) { modules.push('image-size'); }
 
         // SMS support
-        if ((config.sms != null) && (config.sms.provider == 'twilio')) { modules.push('twilio'); }
+        if ((config.sms != null) && (config.sms.provider == 'twilio')) {
+            const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+            if (NodeJSVer < 8) { console.log("SMS Twilio support requires Node v8 or above, current version is " + process.version + "."); } else { modules.push('twilio'); }
+        }
         if ((config.sms != null) && (config.sms.provider == 'plivo')) {
             const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
             if (NodeJSVer < 8) { console.log("SMS Plivo support requires Node v8 or above, current version is " + process.version + "."); } else { modules.push('plivo'); }
