@@ -126,7 +126,7 @@ function CreateMeshCentralServer(config, args) {
     obj.service = null;
     obj.servicelog = null;
     if (obj.platform == 'win32') {
-        var nodewindows = require('node-windows@0.1.14');
+        var nodewindows = require('node-windows');
         obj.service = nodewindows.Service;
         var eventlogger = nodewindows.EventLogger;
         obj.servicelog = new eventlogger('MeshCentral');
@@ -651,7 +651,7 @@ function CreateMeshCentralServer(config, args) {
     // Look for easy command line instructions and do them here.
     obj.StartEx = function () {
         var i;
-        //var wincmd = require('node-windows@0.1.14');
+        //var wincmd = require('node-windows');
         //wincmd.list(function (svc) { console.log(svc); }, true);
 
         // Setup syslog support
@@ -3068,7 +3068,7 @@ function mainStart() {
 
         // Build the list of required modules
         var modules = ['ws', 'cbor@5.2.0', 'nedb', 'https', 'yauzl', 'xmldom', 'ipcheck', 'express', 'archiver@4.0.2', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'cookie-session', 'express-handlebars'];
-        if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
+        if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (mstsc == true) { modules.push('node-rdpjs-2'); }
         if (passport != null) { modules.push(...passport); }
@@ -3153,7 +3153,7 @@ function mainStart() {
 
         // Install any missing modules and launch the server
         InstallModules(modules, function () {
-            if (require('os').platform() == 'win32') { try { require('node-windows@0.1.14'); } catch (ex) { console.log("Module node-windows can't be loaded. Restart MeshCentral."); process.exit(); return; } }
+            if (require('os').platform() == 'win32') { try { require('node-windows'); } catch (ex) { console.log("Module node-windows can't be loaded. Restart MeshCentral."); process.exit(); return; } }
             meshserver = CreateMeshCentralServer(config, args);
             meshserver.Start();
         });
