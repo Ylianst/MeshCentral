@@ -64,6 +64,7 @@ var minifyMeshCentralSourceFiles = [
     "../views/error4042.handlebars",
     "../views/error404-mobile.handlebars",
     "../views/login.handlebars",
+    "../views/login2.handlebars",
     "../views/login-mobile.handlebars",
     "../views/terms.handlebars",
     "../views/terms-mobile.handlebars",
