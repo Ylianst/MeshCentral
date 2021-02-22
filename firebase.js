@@ -100,6 +100,7 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
         var message = new Message('msg_' + (++obj.messageId));
         if (options.priority) { message.priority(options.priority); }
         if (payload.data) { for (var i in payload.data) { message.addData(i, payload.data[i]); } }
+        if ((payload.data == null) || (payload.data.shash == null)) { message.addData('shash', parent.webserver.agentCertificateHashBase64); } // Add the server agent hash, new Android agents will reject notifications that don't have this.
         if (notification) { message.notification(notification) }
         message.build();
 
@@ -244,6 +245,10 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
             // Fill in our lookup table
             if (node._id != null) { obj.tokenToNodeMap[node.pmt] = { nid: node._id, mid: node.meshid, did: node.domain } }
 
+            // Fill in the server agent cert hash
+            if (payload.data == null) { payload.data = {}; }
+            if (payload.data.shash == null) { payload.data.shash = parent.webserver.agentCertificateHashBase64; } // Add the server agent hash, new Android agents will reject notifications that don't have this.
+
             // If the web socket is open, send now
             if (obj.wsopen == true) {
                 try { obj.wsclient.send(JSON.stringify({ pmt: node.pmt, payload: payload, options: options })); } catch (ex) { func(0, 'error'); obj.stats.sendError++; return; }
@@ -264,6 +269,10 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
             if ((node == null) || (typeof node.pmt != 'string')) return;
 
             const querydata = querystring.stringify({ 'msg': JSON.stringify({ pmt: node.pmt, payload: payload, options: options }) });
+
+            // Fill in the server agent cert hash
+            if (payload.data == null) { payload.data = {}; }
+            if (payload.data.shash == null) { payload.data.shash = parent.webserver.agentCertificateHashBase64; } // Add the server agent hash, new Android agents will reject notifications that don't have this.
 
             // Send the message to the relay
             const httpOptions = {

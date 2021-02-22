@@ -213,7 +213,7 @@
         "desktopprivacybar": true
       },
       "_urlSwitching": false,
-      "_desktopPrivacyBarText": "Your privacy bar message",
+      "_desktopPrivacyBarText": "Privacy bar: {0}, {1}",
       "_limits": {
         "_maxDevices": 100,
         "_maxUserAccounts": 100,
