@@ -4047,12 +4047,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         if (command.desc != null && (command.desc != node.desc)) { change = 1; node.desc = command.desc; changes.push('description'); }
                         if (command.intelamt != null) {
-                            if ((parent.parent.amtManager == null) || (node.intelamt.user == null) || (node.intelamt.user == '') || ((node.intelamt.warn != null) && ((node.intelamt.warn) & 3 != 0))) { // Only allow changes to Intel AMT credentials if AMT manager is not running, or manager warned of unknown/trying credentials.
+                            if ((parent.parent.amtManager == null) || (node.intelamt.user == null) || (node.intelamt.user == '') || ((node.intelamt.warn != null) && (((node.intelamt.warn) & 9) != 0))) { // Only allow changes to Intel AMT credentials if AMT manager is not running, or manager warned of unknown/trying credentials.
                                 if ((command.intelamt.user != null) && (command.intelamt.pass != null) && ((command.intelamt.user != node.intelamt.user) || (command.intelamt.pass != node.intelamt.pass))) {
                                     change = 1;
                                     node.intelamt.user = command.intelamt.user;
                                     node.intelamt.pass = command.intelamt.pass;
-                                    node.intelamt.warn = 2; // Change warning to "Trying". Bit flags: 0 = Valid credentials, 1 = Invalid credentials, 2 = Trying new credentials.
+                                    node.intelamt.warn |= 8; // Change warning to "Trying". Bit flags: 1 = Unknown credentials, 2 = Realm Mismatch, 4 = TLS Cert Mismatch, 8 = Trying credentials
                                     changes.push('Intel AMT credentials');
                                     amtchange = 1;
                                 }

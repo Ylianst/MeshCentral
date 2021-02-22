@@ -183,7 +183,7 @@ module.exports.CreateAmtManager = function (parent) {
         parent.debug('amt', "Start Management", nodeid, connType);
         addAmtDevice(dev);
 
-        // Start the device manager the task limiter so not to flood the server. Low priority task
+        // Start the device manager in the task limiter so not to flood the server. Low priority task
         obj.parent.taskLimiter.launch(function (dev, taskid, taskLimiterQueue) {
             if (isAmtDeviceValid(dev)) {
                 // Start managing this device
@@ -255,34 +255,41 @@ module.exports.CreateAmtManager = function (parent) {
     // Handle server events
     // Make sure to only manage devices with connections to this server. In a multi-server setup, we don't want multiple managers talking to the same device.
     obj.HandleEvent = function (source, event, ids, id) {
-        if (event.noact == 1) return; // Take no action on these events. We are likely in peering mode and need to only act when the database signals the change in state.
         switch (event.action) {
             case 'removenode': { // React to node being removed
+                if (event.noact == 1) return; // Take no action on these events. We are likely in peering mode and need to only act when the database signals the change in state.
                 removeDevice(event.nodeid);
                 break;
             }
             case 'wakedevices': { // React to node wakeup command, perform Intel AMT wake if possible
+                if (event.noact == 1) return; // Take no action on these events. We are likely in peering mode and need to only act when the database signals the change in state.
                 if (Array.isArray(event.nodeids)) { for (var i in event.nodeids) { performPowerAction(event.nodeids[i], 2); } }
                 break;
             }
             case 'changenode': { // React to changes in a device
-                var devices = obj.amtDevices[event.nodeid];
-                if (devices == null) break; // We are not managing this device
-                for (var i in devices) {
-                    var dev = devices[i];
-                    if (dev.name != event.node.name) {
-                        //console.log('device name change');
+                var devices = obj.amtDevices[event.nodeid], rescan = false;
+                if (devices != null) {
+                    for (var i in devices) {
+                        var dev = devices[i];
                         dev.name = event.node.name;
+                        if (event.node.intelamt != null) { dev.intelamt = event.node.intelamt; }
+                        if ((dev.connType == 3) && (dev.host != event.node.host)) {
+                            dev.host = event.node.host; // The host has changed, if we are connected to this device locally, we need to reset.
+                            removeAmtDevice(dev); // We are going to wait for the AMT scanned to find this device again.
+                            rescan = true;
+                        }
                     }
-                    if (event.node.intelamt != null) {
-                        dev.intelamt = event.node.intelamt;
-                    }
-                    if ((dev.connType == 3) && (dev.host != event.node.host)) {
-                        //console.log('device host change', dev.host, event.node.host);
-                        dev.host = event.node.host; // The host has changed, if we are connected to this device locally, we need to reset.
-                        removeAmtDevice(dev); // We are going to wait for the AMT scanned to find this device again.
-                    }
+                } else {
+                    // If this event provides a hint that something changed with AMT and we are not managing this device, let's rescan the local network now.
+                    if (event.amtchange == 1) { rescan = true; }
                 }
+
+                // If there is a significant change to the device AMT settings and this server manages local devices, perform a re-scan of the device now.
+                if (rescan && (parent.amtScanner != null)) { parent.amtScanner.performSpecificScan(event.node); }
+                break;
+            }
+            case 'meshchange': {
+                // TODO
                 break;
             }
         }
@@ -581,7 +588,7 @@ module.exports.CreateAmtManager = function (parent) {
 
                 // Set an error that we can't login to this device
                 if (dev.aquired == null) { dev.aquired = {}; }
-                dev.aquired.warn = 1; // Intel AMT Warning Flags: 1 = Unknown credentials, 2 = Realm Mismatch, 4 = TLS Cert Mismatch
+                dev.aquired.warn = 1; // Intel AMT Warning Flags: 1 = Unknown credentials, 2 = Realm Mismatch, 4 = TLS Cert Mismatch, 8 = Trying credentials
                 UpdateDevice(dev);
             }
             //console.log(dev.nodeid, dev.name, dev.host, status, 'Bad response');
@@ -620,7 +627,7 @@ module.exports.CreateAmtManager = function (parent) {
             if ((typeof dev.aquired.tls == 'number') && (dev.aquired.tls != device.intelamt.tls)) { change = 1; log = 1; device.intelamt.tls = dev.aquired.tls; changes.push('AMT TLS'); }
             if ((typeof dev.aquired.state == 'number') && (dev.aquired.state != device.intelamt.state)) { change = 1; log = 1; device.intelamt.state = dev.aquired.state; changes.push('AMT state'); }
 
-            // Intel AMT Warning Flags: 1 = Unknown credentials, 2 = Realm Mismatch, 4 = TLS Cert Mismatch
+            // Intel AMT Warning Flags: 1 = Unknown credentials, 2 = Realm Mismatch, 4 = TLS Cert Mismatch, 8 = Trying credentials
             if ((typeof dev.aquired.warn == 'number')) { if ((dev.aquired.warn == 0) && (device.intelamt.warn != null)) { delete device.intelamt.warn; change = 1; } else if (dev.aquired.warn != device.intelamt.warn) { device.intelamt.warn = dev.aquired.warn; change = 1; } }
 
             // Update Intel AMT flags if needed
@@ -737,8 +744,8 @@ module.exports.CreateAmtManager = function (parent) {
         if (devices == null) return;
         for (var i in devices) {
             var dev = devices[i];
-            if (dev.amtstack != null) {
-                // TODO: Check if the device passed initial connection
+            // If not LMS, has a AMT stack present and is in connected state, perform power operation.
+            if ((dev.connType != 2) && (dev.state == 1) && (dev.amtstack != null)) {
                 try { dev.amtstack.RequestPowerStateChange(action, performPowerActionResponse); } catch (ex) { }
             }
         }
