@@ -1921,7 +1921,7 @@ function onTunnelData(data) {
                                 this.httprequest.desktop.kvm.users.splice(i, 1);
                                 this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
                                 this.httprequest.desktop.kvm.connectionBar.close();
-                                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.users.join(', ')).replace('{1}', this.httprequest.desktop.kvm.rusers.join(', ')), require('MeshAgent')._tsid);
+                                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid);
                                 this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
                                 this.httprequest.desktop.kvm.connectionBar.on('close', function () {
                                     MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
@@ -1993,7 +1993,7 @@ function onTunnelData(data) {
                                     this.ws.httprequest.desktop.kvm.connectionBar.close();
                                 }
                                 try {
-                                    this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace('{0}', this.ws.httprequest.desktop.kvm.users.join(', ')).replace('{1}', this.ws.httprequest.desktop.kvm.rusers.join(', ')), require('MeshAgent')._tsid);
+                                    this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace('{0}', this.ws.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.ws.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid);
                                     MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 }
                                 catch (e) {
