@@ -336,16 +336,16 @@
             }
           },
           "urlSwitching": { "type": "boolean", "default": true, "description": "When users navigate thru the web interface, the URL on top will change to point to the current screen. This allows a user to refresh or bookmark the URL and come back to the correct screen. Setting false here will disable this feature." },
-          "desktopPrivacyBarText": { "type": "string" },
+          "desktopPrivacyBarText": { "type": "string", "description": "This is the text that will be shown in the remote desktop privacy bar. You can use {0} to display the account realname or {1} to display the account identifier in the string." },
           "limits": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "MaxDevices": { "type": "integer" },
-              "MaxUserAccounts": { "type": "integer" },
-              "MaxUserSessions": { "type": "integer" },
-              "MaxAgentSessions": { "type": "integer" },
-              "MaxSingleUserSessions": { "type": "integer" }
+              "MaxDevices": { "type": "integer", "default": null, "description": "Maximum number of devices in this domain." },
+              "MaxUserAccounts": { "type": "integer", "default": null, "description": "Maximum number of devices in this domain." },
+              "MaxUserSessions": { "type": "integer", "default": null, "description": "Maximum number of user sessions that can connect to this server for this domain." },
+              "MaxAgentSessions": { "type": "integer", "default": null, "description": "Maximum number of agents that can connect to this server for this domain." },
+              "MaxSingleUserSessions": { "type": "integer", "default": null, "description": "Maximum number of sessions a single user can have. Each time a user opens a new browser tab or opens a new browser on a different computer, a new user session is created." }
             }
           },
           "terminal": {

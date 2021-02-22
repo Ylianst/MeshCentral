@@ -3039,7 +3039,7 @@ function mainStart() {
         var allsspi = true;
         var yubikey = false;
         var mstsc = false;
-        var recordingIndex = false;
+        var sessionRecording = false;
         var domainCount = 0;
         var wildleek = false;
         var nodemailer = false;
@@ -3062,7 +3062,7 @@ function mainStart() {
                 if ((typeof config.domains[i].authstrategies.azure == 'object') && (typeof config.domains[i].authstrategies.azure.clientid == 'string') && (typeof config.domains[i].authstrategies.azure.clientsecret == 'string') && (typeof config.domains[i].authstrategies.azure.tenantid == 'string') && (passport.indexOf('passport-azure-oauth2') == -1)) { passport.push('passport-azure-oauth2'); passport.push('jwt-simple'); }
                 if ((typeof config.domains[i].authstrategies.saml == 'object') || (typeof config.domains[i].authstrategies.jumpcloud == 'object')) { passport.push('passport-saml'); }
             }
-            if ((config.domains[i].sessionrecording != null) && (config.domains[i].sessionrecording.index == true)) { recordingIndex = true; }
+            if (config.domains[i].sessionrecording != null) { sessionRecording = true; }
             if ((config.domains[i].passwordrequirements != null) && (config.domains[i].passwordrequirements.bancommonpasswords == true)) { if (nodeVersion < 8) { config.domains[i].passwordrequirements = false; addServerWarning('Common password checking requires NodeJS v8 or above.'); } else { wildleek = true; } }
         }
 
@@ -3072,7 +3072,7 @@ function mainStart() {
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (mstsc == true) { modules.push('node-rdpjs-2'); }
         if (passport != null) { modules.push(...passport); }
-        if (recordingIndex == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
+        if (sessionRecording == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
         if (config.letsencrypt != null) { if (nodeVersion < 8) { addServerWarning("Let's Encrypt support requires Node v8.x or higher.", !args.launch); } else { modules.push('acme-client'); } } // Add acme-client module
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mysql != null) { modules.push('mysql'); } // Add MySQL, official driver.

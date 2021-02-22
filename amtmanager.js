@@ -255,6 +255,7 @@ module.exports.CreateAmtManager = function (parent) {
     // Handle server events
     // Make sure to only manage devices with connections to this server. In a multi-server setup, we don't want multiple managers talking to the same device.
     obj.HandleEvent = function (source, event, ids, id) {
+        if (event.noact == 1) return; // Take no action on these events. We are likely in peering mode and need to only act when the database signals the change in state.
         switch (event.action) {
             case 'removenode': { // React to node being removed
                 removeDevice(event.nodeid);
@@ -266,22 +267,21 @@ module.exports.CreateAmtManager = function (parent) {
             }
             case 'changenode': { // React to changes in a device
                 var devices = obj.amtDevices[event.nodeid];
-                if (devices = null) break; // We are not managing this device
-                if (event.amtchange === 1) {
-                    // TODO
-                } else {
-                    /*
-                    var dev = obj.amtDevices[event.nodeid];
-                    if (dev != null) {
-                        var amtchange = 0;
-                        if (dev.name != event.node.name) { dev.name = event.node.name; }
-                        if (dev.host != event.node.host) {
-                            dev.host = event.node.host;
-                            // The host has changed, if we are connected to this device locally, we need to reset.
-                            if ((dev.conn & 4) != 0) { removeDevice(dev.nodeid); return; } // We are going to wait for the AMT scanned to find this device again.
-                        }
+                if (devices == null) break; // We are not managing this device
+                for (var i in devices) {
+                    var dev = devices[i];
+                    if (dev.name != event.node.name) {
+                        //console.log('device name change');
+                        dev.name = event.node.name;
                     }
-                    */
+                    if (event.node.intelamt != null) {
+                        dev.intelamt = event.node.intelamt;
+                    }
+                    if ((dev.connType == 3) && (dev.host != event.node.host)) {
+                        //console.log('device host change', dev.host, event.node.host);
+                        dev.host = event.node.host; // The host has changed, if we are connected to this device locally, we need to reset.
+                        removeAmtDevice(dev); // We are going to wait for the AMT scanned to find this device again.
+                    }
                 }
                 break;
             }
@@ -486,7 +486,6 @@ module.exports.CreateAmtManager = function (parent) {
                     dev.amtstack.dev = dev;
                     obj.activeLocalConnections[dev.host] = dev;
                     dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], attemptLocalConnectResponse);
-                    dev.conntype = 1; // LOCAL
                 }
                 break;
         }
