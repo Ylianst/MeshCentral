@@ -3125,12 +3125,17 @@
                             } else {
                                 str += ', <i style=color:#FF0000>' + "No Credentials" + '</i>';
                             }
-                        } else if (((features2 & 1) != 0) && (node.intelamt.warn != null) && ((node.intelamt.warn & 1) != 0)) { // If AMT manager is running and warned of invalid credentials, allow setting them.
-                            if ((meshrights & 4) != 0) {
-                                str += ', <i style=color:#FF0000;cursor:pointer title="' + "Edit Intel&reg; AMT credentials" + '" onclick=editDeviceAmtSettings("' + node._id + '")>' + "Invalid Credentials" + '</i>';
-                                editUserCredentialsIcon = true;
-                            } else {
-                                str += ', <i style=color:#FF0000>' + "Invalid Credentials" + '</i>';
+                        } else if (((features2 & 1) != 0) && (node.intelamt.warn != null)) { // If AMT manager is running and warned of invalid credentials, allow setting them.
+                            var warn = null;
+                            if ((node.intelamt.warn & 1) != 0) { warn = "Invalid Credentials"; }
+                            if ((node.intelamt.warn & 2) != 0) { warn = "Trying Credentials"; }
+                            if (warn != null) {
+                                if ((meshrights & 4) != 0) {
+                                    str += ', <i style=color:#FF0000;cursor:pointer title="' + "Edit Intel&reg; AMT credentials" + '" onclick=editDeviceAmtSettings("' + node._id + '")>' + warn + '</i>';
+                                    editUserCredentialsIcon = true;
+                                } else {
+                                    str += ', <i style=color:#FF0000>' + warn + '</i>';
+                                }
                             }
                         }
 
