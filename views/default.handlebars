@@ -2772,7 +2772,7 @@
                                     meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
                                 }
                             } else {
-                                // This is an existing mesh
+                                // This is an existing device group
                                 if (message.event.name != null) {
                                     meshes[message.event.meshid].name = message.event.name;
                                     for (var i in nodes) { if (nodes[i].meshid == message.event.meshid) { nodes[i].meshnamel = message.event.name.toLowerCase(); } }
@@ -5927,7 +5927,7 @@
                         } else if (((features2 & 1) != 0) && (node.intelamt.warn != null)) { // If AMT manager is running and warned of invalid credentials, allow setting them.
                             var warn = null;
                             if ((node.intelamt.warn & 1) != 0) { warn = "Invalid Credentials"; }
-                            if ((node.intelamt.warn & 2) != 0) { warn = "Trying Credentials"; }
+                            if ((node.intelamt.warn & 8) != 0) { warn = "Trying Credentials"; }
                             if (warn != null) {
                                 if ((meshrights & 4) != 0) {
                                     str += ', <i style=color:#FF0000;cursor:pointer title="' + "Edit Intel&reg; AMT credentials" + '" onclick=editDeviceAmtSettings("' + node._id + '")>' + warn + '</i>';

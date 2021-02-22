@@ -167,7 +167,7 @@ module.exports.CreateAmtScanner = function (parent) {
                     const ciraConnections = obj.parent.mpsserver ? obj.parent.mpsserver.GetConnectionToNode(doc._id, null, true) : null; // See if any OOB connections are present
                     if ((host != '127.0.0.1') && (host != '::1') && (host.toLowerCase() != 'localhost') && (ciraConnections == null)) {
                         var scaninfo = obj.scanTable[doc._id];
-                        if (scaninfo == undefined) {
+                        if (scaninfo == null) {
                             var tag = obj.nextTag++;
                             obj.scanTableTags[tag] = obj.scanTable[doc._id] = scaninfo = { nodeinfo: doc, present: true, tag: tag, state: 0 };
                             //console.log('Scan ' + host + ', state=' + scaninfo.state + ', delta=' + delta);
@@ -210,6 +210,17 @@ module.exports.CreateAmtScanner = function (parent) {
             }
         });
         return true;
+    };
+
+    // Look for all Intel AMT computers that may be locally reachable and poll their presence
+    obj.performSpecificScan = function (node) {
+        var host = node.host.toLowerCase();
+        const ciraConnections = obj.parent.mpsserver ? obj.parent.mpsserver.GetConnectionToNode(node._id, null, true) : null; // See if any OOB connections are present
+        if ((host != '127.0.0.1') && (host != '::1') && (host.toLowerCase() != 'localhost') && (ciraConnections == null)) {
+            obj.checkTcpPresence(host, (node.intelamt.tls == 1) ? 16993 : 16992, { nodeinfo: node }, function (tag, result, version) {
+                if ((result == true) && (obj.parent.amtManager != null)) { obj.parent.amtManager.startAmtManagement(tag.nodeinfo._id, 3, tag.nodeinfo.host); }
+            });
+        }
     };
 
     // Check the presense of a specific Intel AMT computer using RMCP

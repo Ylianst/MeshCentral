@@ -439,6 +439,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         parent.parent.debug('agent', 'Agent reported web cert hash:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex')) + '.');
                         console.log('Agent bad web cert hash (Agent:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (Buffer.from(getWebCertHash(domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (Buffer.from(getWebCertFullHash(domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').');
                         console.log('Agent reported web cert hash:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex')) + '.');
+                        delete obj.agentSeenCerthash;
                         return;
                     } else {
                         // The hash matched one of the acceptable values, send the agent web hash back to the agent
@@ -1077,6 +1078,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     function processAgentSignature(msg) {
         if (isIgnoreHashCheck() == false) {
             var verified = false;
+
+            // This agent did not report a valid TLS certificate hash, fail now.
+            if (obj.agentSeenCerthash == null) return false;
 
             // Raw RSA signatures have an exact length of 256 or 384. PKCS7 is larger.
             if ((msg.length != 384) && (msg.length != 256)) {
