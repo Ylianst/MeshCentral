@@ -2424,7 +2424,6 @@
                         if (message.protocol == 'PSSH') { url += ('&appid=4'); } // Putty
                         if (message.protocol == 'WSCP') { url += ('&appid=5'); } // WinSCP
                         url += '&autoexit=1';
-                        console.log(url);
                         downloadFile(url, '');
                     } else if (message.tag == 'novnc') {
                         var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + 'meshrelay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
