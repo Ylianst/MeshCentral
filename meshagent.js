@@ -1584,7 +1584,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
 
                 // Push Messaging Token
-                if ((command.pmt != null) && (typeof command.pmt == 'string') && (device.pmt != command.pmt)) { device.pmt = command.pmt; change = 1; } // Don't save this as an event to the db.
+                if ((command.pmt != null) && (typeof command.pmt == 'string') && (device.pmt != command.pmt)) {
+                    if (typeof device.pmt == 'string') { db.Remove('pmt_' + device.pmt); }
+                    device.pmt = command.pmt;
+                    change = 1; // Don't save this change as an event to the db, so no log=1.
+                    parent.removePmtFromAllOtherNodes(device); // We need to make sure to remove this push messaging token from any other device on this server, all domains included.
+                }
 
                 if ((command.users != null) && (Array.isArray(command.users)) && (device.users != command.users)) { device.users = command.users; change = 1; } // Don't save this to the db.
                 if ((mesh.mtype == 2) && (!args.wanonly)) {

@@ -2884,6 +2884,7 @@
                                 node.rdpport = message.event.node.rdpport;
                                 node.rfbport = message.event.node.rfbport;
                                 node.consent = message.event.node.consent;
+                                node.pmt = message.event.node.pmt;
                                 if (message.event.node.links != null) { node.links = message.event.node.links; } else { delete node.links; }
                                 if (message.event.node.agent != null) {
                                     if (node.agent == null) node.agent = {};
