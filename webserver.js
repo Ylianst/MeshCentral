@@ -6754,6 +6754,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     }
 
+    // Insure exclusivity of a push messaging token for Android device
+    obj.removePmtFromAllOtherNodes = function (node) {
+        if (typeof node.pmt != 'string') return;
+        db.Get('pmt_' + node.pmt, function (err, docs) {
+            if ((err == null) && (docs.length == 1)) {
+                var oldNodeId = docs[0].nodeid;
+                db.Get(oldNodeId, function (nerr, ndocs) {
+                    if ((nerr == null) && (ndocs.length == 1)) {
+                        var oldNode = ndocs[0];
+                        if (oldNode.pmt == node.pmt) {
+                            // Remove the push messaging token and save the node.
+                            delete oldNode.pmt;
+                            db.Set(oldNode);
+
+                            // Event the node change
+                            var event = { etype: 'node', action: 'changenode', nodeid: oldNode._id, domain: oldNode.domain, node: obj.CloneSafeNode(oldNode) }
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
+                            parent.DispatchEvent(['*', oldNode.meshid, oldNode._id], obj, event);
+                        } 
+                    }
+                });
+            }
+            db.Set({ _id: 'pmt_' + node.pmt, type: 'pmt', domain: node.domain, time: Date.now(), nodeid: node._id })
+        });
+    }
+
     // Return true if a mobile browser is detected.
     // This code comes from "http://detectmobilebrowsers.com/" and was modified, This is free and unencumbered software released into the public domain. For more information, please refer to the http://unlicense.org/
     function isMobileBrowser(req) {

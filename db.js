@@ -1755,11 +1755,7 @@ module.exports.CreateDB = function (parent, func) {
     function dbNodeChange(nodeChange, added) {
         common.unEscapeLinksFieldName(nodeChange.fullDocument);
         const node = performTypedRecordDecrypt([nodeChange.fullDocument])[0];
-        if (node.intelamt != null) { // Remove the Intel AMT password and MPS password before eventing this.
-            if (node.intelamt.pass != null) { node.intelamt.pass = 1; }
-            if (node.intelamt.mpspass != null) { node.intelamt.mpspass = 1; }
-        } 
-        parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: (added ? 'addnode' : 'changenode'), node: node, nodeid: node._id, domain: node.domain, nolog: 1 });
+        parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: (added ? 'addnode' : 'changenode'), node: parent.webserver.CloneSafeNode(node), nodeid: node._id, domain: node.domain, nolog: 1 });
     }
 
     // Called when a device group has changed
@@ -1779,11 +1775,7 @@ module.exports.CreateDB = function (parent, func) {
         mesh.nolog = 1;
         delete mesh.type;
         delete mesh._id;
-        if ((mesh.amt != null) && (mesh.amt.password != null)) {
-            mesh.amt = Object.assign({}, mesh.amt); // Shallow clone
-            if (mesh.amt.password != null) { mesh.amt.password = 1; } // Remove the Intel AMT password if present
-        }
-        parent.DispatchEvent(['*', mesh.meshid], obj, mesh);
+        parent.DispatchEvent(['*', mesh.meshid], obj, parent.webserver.CloneSafeMesh(mesh));
     }
 
     // Called when a user account has changed
