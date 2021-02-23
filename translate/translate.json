@@ -14493,11 +14493,11 @@
       "zh-cht": "編輯Intel&reg; AMT憑證",
       "xloc": [
         "default-mobile.handlebars->11->258",
-        "default-mobile.handlebars->11->261",
+        "default-mobile.handlebars->11->263",
         "default-mobile.handlebars->11->264",
         "default-mobile.handlebars->11->307",
         "default.handlebars->31->598",
-        "default.handlebars->31->601",
+        "default.handlebars->31->603",
         "default.handlebars->31->604",
         "default.handlebars->31->828"
       ]
@@ -20469,10 +20469,8 @@
       "zh-chs": "无效证件",
       "zh-cht": "無效證件",
       "xloc": [
-        "default-mobile.handlebars->11->262",
-        "default-mobile.handlebars->11->263",
-        "default.handlebars->31->602",
-        "default.handlebars->31->603"
+        "default-mobile.handlebars->11->261",
+        "default.handlebars->31->601"
       ]
     },
     {
@@ -39869,6 +39867,13 @@
       "zh-cht": "嘗試安裝/更新Zenity，然後再次運行",
       "xloc": [
         "agent-translations.json"
+      ]
+    },
+    {
+      "en": "Trying Credentials",
+      "xloc": [
+        "default-mobile.handlebars->11->262",
+        "default.handlebars->31->602"
       ]
     },
     {

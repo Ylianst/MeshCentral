@@ -5896,6 +5896,7 @@
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
+                    if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDeviceAttribute("Mesh Agent", str);
                 }
 
@@ -9113,6 +9114,7 @@
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
+                    if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDetailItem("Mesh Agent", str);
                 }
                 if ((node.conn & 1) != 0) {

@@ -3096,6 +3096,7 @@
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
+                    if (node.agent.id == 14) { str = node.agent.core; }
                     if ((node.agent.root === false) && ((node.conn & 1) != 0)) { str += ', ' + "Restricted"; }
                     x += addDeviceAttribute("Agent", str);
                 }
@@ -4635,7 +4636,6 @@
                     x += addDetailItem("Antivirus", y.join('<br />'));
                 }
 
-
                 if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software' }); }
             }
 
@@ -4646,6 +4646,7 @@
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
+                    if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDetailItem("Mesh Agent", str);
                 }
                 if ((node.conn & 1) != 0) {
