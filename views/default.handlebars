@@ -7967,7 +7967,10 @@
             var displayCount = 0, displaySelector = '';
             for (var i in displays) {
                 displayCount++;
-                displaySelector += '<option' + ((selDisplay == i) ? ' selected' : '') + ' value=' + i + '>' + displays[i] + '</option>';
+                var str = displays[i];
+                if (str == 'All Displays') { str = "All Displays"; } // Language translation
+                if (str.startsWith('Display ')) { str = format("Display {0}", str.substring(8)); } // Language translation
+                displaySelector += '<option' + ((selDisplay == i) ? ' selected' : '') + ' value=' + i + '>' + str + '</option>';
                 if ((deskPreferedStickyDisplay == i) && (selDisplay != deskPreferedStickyDisplay)) { desktop.m.SetDisplay(i); }
                 deskPreferedStickyDisplay = -1;
             }
