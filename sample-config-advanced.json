@@ -157,7 +157,8 @@
           {
             "name": "HTTP",
             "protocol": "http",
-            "port": 80
+            "port": 80,
+            "_filter": [ "mesh//xxxx", "node//xxxx" ]
           },
           {
             "name": "HTTPS",
