@@ -236,7 +236,7 @@
                 "required": [ "name", "protocol", "port" ],
                 "properties": {
                   "name": {
-                    "description": "Name os the link to be displayed on the web site.",
+                    "description": "Name of the link to be displayed on the web site.",
                     "type": "string"
                   },
                   "protocol": {
