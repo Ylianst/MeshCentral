@@ -4815,7 +4815,7 @@
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
             QV('SearchInputClearButton', (x != '') && (navigator.userAgent.indexOf('Firefox') >= 0));
-            var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null;
+            var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null;
             if (x.startsWith("user:".toLowerCase())) { userSearch = x.substring("user:".length); }
             else if (x.startsWith("u:".toLowerCase())) { userSearch = x.substring("u:".length); }
             else if (x.startsWith("ip:".toLowerCase())) { ipSearch = x.substring("ip:".length); }
@@ -4826,6 +4826,7 @@
             else if (x.startsWith("atag:".toLowerCase())) { agentTagSearch = Q('SearchInput').value.trim().substring("atag:".length).toLowerCase(); }
             else if (x.startsWith("a:".toLowerCase())) { agentTagSearch = Q('SearchInput').value.trim().substring("a:".length).toLowerCase(); }
             else if (x.startsWith("os:".toLowerCase())) { osSearch = Q('SearchInput').value.trim().substring("os:".length).toLowerCase(); }
+            else if (x.startsWith("amt:".toLowerCase())) { amtSearch = Q('SearchInput').value.trim().substring("amt:".length).toLowerCase(); }
             else if (x == 'wsc:ok') { wscSearch = 1; }
             else if (x == 'wsc:noav') { wscSearch = 2; }
             else if (x == 'wsc:noupdate') { wscSearch = 3; }
@@ -4859,7 +4860,10 @@
                 }
             } else if (osSearch != null) {
                 // OS search
-                for (var d in nodes) { for (var d in nodes) { nodes[d].v = ((nodes[d].osdesc != null) && (nodes[d].osdesc.toLowerCase().indexOf(osSearch) >= 0)); } }
+                for (var d in nodes) { nodes[d].v = ((nodes[d].osdesc != null) && (nodes[d].osdesc.toLowerCase().indexOf(osSearch) >= 0)); }
+            } else if (amtSearch != null) {
+                // Intel AMT search
+                for (var d in nodes) { nodes[d].v = (nodes[d].intelamt != null) && ((amtSearch == '') || (nodes[d].intelamt.state == amtSearch)); }
             } else if (wscSearch != null) {
                 // Windows Security Center
                 for (var d in nodes) {
