@@ -11065,8 +11065,8 @@
                 var xpowerStates = [];
                 for (var i in powerStates) { xpowerStates.push([powerStatetable[i], powerStates[i]]); }
                 xpowerStates.sort(function(a, b){ return -(a[1]-b[1]) });
-                x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Power States" + '</th><th scope=col style=text-align:left></th></tr>';
-                for (var i in xpowerStates) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + xpowerStates[i][0] + '<div></div></div></td><td><div style=float:right>' + xpowerStates[i][1] + ' </div><div></div></td></tr>'; }
+                x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col colspan=2 style=text-align:left;width:430px>' + "Power States" + '</th></tr>';
+                for (var i in xpowerStates) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td style=text-align:right;width:60px>' + xpowerStates[i][1] + ' <td> ' + xpowerStates[i][0] + '</tr>'; }
                 x += '</tbody></table>';
             }
 
@@ -11075,8 +11075,8 @@
                 var xagentTypes = [];
                 for (var i in agentTypes) { xagentTypes.push([agentsStr[i], agentTypes[i]]); }
                 xagentTypes.sort(function(a, b){ return -(a[1]-b[1]) });
-                x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Agent Types" + '</th><th scope=col style=text-align:left></th></tr>';
-                for (var i in xagentTypes) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + xagentTypes[i][0] + '<div></div></div></td><td><div style=float:right>' + xagentTypes[i][1] + ' </div><div></div></td></tr>'; }
+                x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col colspan=2 style=text-align:left;width:430px>' + "Agent Types" + '</th></tr>';
+                for (var i in xagentTypes) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td style=text-align:right;width:60px>' + xagentTypes[i][1] + '<td> ' + xagentTypes[i][0] + '</tr>'; }
                 x += '</tbody></table>';
             }
 
@@ -11085,8 +11085,8 @@
                 var xconnectivityStates = [];
                 for (var i = 0; i < 4; i++) { xconnectivityStates.push([["Not Connected", "Agent", "Intel&reg; AMT", "Agent + Intel&reg; AMT"][i], connectivityStates[i]]); }
                 xconnectivityStates.sort(function(a, b){ return -(a[1]-b[1]) });
-                x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Connectivity" + '</th><th scope=col style=text-align:left></th></tr>';
-                for (var i = 0; i < 4; i++) { if (xconnectivityStates[i][1] > 0) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + xconnectivityStates[i][0] + '<div></div></div></td><td><div style=float:right>' + xconnectivityStates[i][1] + ' </div><div></div></td></tr>'; } }
+                x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col colspan=2 style=text-align:left;width:430px>' + "Connectivity" + '</th></tr>';
+                for (var i = 0; i < 4; i++) { if (xconnectivityStates[i][1] > 0) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td style=text-align:right;width:60px>' + xconnectivityStates[i][1] + '<td> ' + xconnectivityStates[i][0] + '</tr>'; } }
                 x += '</tbody></table>';
             }
 
@@ -11103,8 +11103,8 @@
                     ][i], securityStates[i]]);
                 }
                 xsecurityStates.sort(function(a, b){ return -(a[1]-b[1]) });
-                x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Security" + '</th><th scope=col style=text-align:left></th></tr>';
-                for (var i = 0; i < 4; i++) { if (xsecurityStates[i][1] > 0) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + xsecurityStates[i][0] + '<div></div></div></td><td><div style=float:right>' + xsecurityStates[i][1] + ' </div><div></div></td></tr>'; } }
+                x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col colspan=2 style=text-align:left;width:430px>' + "Security" + '</th></tr>';
+                for (var i = 0; i < 4; i++) { if (xsecurityStates[i][1] > 0) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td style=text-align:right;width:60px>' + xsecurityStates[i][1] + '<td> ' + xsecurityStates[i][0] + '</tr>'; } }
                 x += '</tbody></table>';
             }
 
