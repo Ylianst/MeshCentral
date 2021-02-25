@@ -224,6 +224,33 @@
             "additionalProperties": false,
             "required": [ "name", "url" ]
           },
+          "deviceMeshRouterLinks": {
+            "rdp": { "type": "boolean", "default": true, "description": "Display a RDP link in the device tab when supported." },
+            "ssh": { "type": "boolean", "default": true, "description": "Display a SSH link in the device tab when supported." },
+            "scp": { "type": "boolean", "default": true, "description": "Display a SCP link in the device tab when supported." },
+            "extralinks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [ "name", "protocol", "port" ],
+                "properties": {
+                  "name": {
+                    "description": "Name os the link to be displayed on the web site.",
+                    "type": "string"
+                  },
+                  "protocol": {
+                    "description": "Protocol. Valid values are: custom,http,https,rdp,ssh,scp.",
+                    "type": "string"
+                  },
+                  "port": {
+                    "description": "The port on the remote device.",
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
           "certUrl": {
             "type": "string",
             "format": "uri",

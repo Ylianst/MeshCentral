@@ -149,6 +149,23 @@
         "name": "Jitsi",
         "url": "https://meet.jit.si/myserver-{0}"
       },
+      "_deviceMeshRouterLinks": {
+        "rdp": true,
+        "ssh": true,
+        "scp": true,
+        "extralinks": [
+          {
+            "name": "HTTP",
+            "protocol": "http",
+            "port": 80
+          },
+          {
+            "name": "HTTPS",
+            "protocol": "https",
+            "port": 443
+          }
+        ]
+      },
       "myServer": {
         "Backup": false,
         "Restore": false,
