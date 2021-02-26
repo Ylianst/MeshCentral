@@ -697,6 +697,7 @@
                                         <div id="manageEmail2FA" style="margin-top:5px;display:none"><a onclick="account_manageAuthEmail()" style="cursor:pointer">Manage email authentication</a> <span id="authEmailSetupCheck"><strong>&#x2713;</strong></span></div>
                                         <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">Manage authenticator app</a> <span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div>
                                         <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">Manage backup codes</a> <span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div>
+                                        <div style="margin-top:5px"><a href=# onclick="return account_viewPreviousLogins()">View previous logins</a></div>
                                     </div>
                                 </div>
                                 <div id="p2AccountActions" style="display:none">
@@ -1551,6 +1552,26 @@
                     account_managePhoneCodeValidate();
                     break;
                 }
+                case 'previousLogins': {
+                    if ((xxdialogMode == 2) && (xxdialogTag == 'previousLogins')) {
+                        var x = '', c = 'BBB';
+                        if (message.events.length == 0) {
+                            x += 'No previous login.';
+                        } else {
+                            x += '<div style=max-height:260px;overflow-y:scroll;overflow-x:hidden>';
+                            for (var i in message.events) {
+                                var m = message.events[i].m;
+                                if (m == 107) { m = "Valid login"; c = 'BBD1BB'; }
+                                else if (m == 108) { m = "Invalid password"; c = 'E1BBBB'; }
+                                else if (m == 110) { m = "Invalid 2FA"; c = 'DD9DC3'; }
+                                x += '<div style=width:260px;background-color:#' + c + ';border-radius:6px;margin-bottom:4px;padding:4px><div><b>' + EscapeHtml(m) + '</b><br />' + printDateTime(new Date(message.events[i].t)) + '</div><div style=font-size:x-small>' + EscapeHtml(message.events[i].a.join(', ')) + '</div></div></tr>';
+                            }
+                            x += '</div>';
+                        }
+                        setDialogMode(2, "Previous Logins", 1, null, x);
+                    }
+                    break;
+                }
                 case 'event': {
                     /*
                     if (!message.event.nolog) {
@@ -2002,6 +2023,12 @@
         //
         // MY ACCOUNT
         //
+
+        function account_viewPreviousLogins() {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Previous Logins", 1, null, "Loading...", 'previousLogins');
+            meshserver.send({ action: 'previousLogins' });
+        }
 
         function toggleNightMode() {
             if (xxdialogMode) return;

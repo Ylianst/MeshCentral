@@ -194,6 +194,7 @@
     <Compile Include="public\scripts\meshcentral.js" />
     <Compile Include="redirserver.js" />
     <Compile Include="translate\translate.js" />
+    <Compile Include="ua-parser.js" />
     <Compile Include="webauthn.js" />
     <Compile Include="webserver.js" />
     <Compile Include="winservice.js" />
