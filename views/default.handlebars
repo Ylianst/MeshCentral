@@ -3271,7 +3271,9 @@
                     break;
                 }
                 case 'previousLogins':{
-                    if ((xxdialogMode == 2) && (xxdialogTag == 'previousLogins'))  {
+                    var tag = 'previousLogins';
+                    if (message.userid != null) { tag += ':' + message.userid; }
+                    if ((xxdialogMode == 2) && (xxdialogTag == tag))  {
                         var x = '', c = 'BBB', xx = '';
                         if (message.events.length == 0) {
                             x += 'No previous login.';
@@ -3280,8 +3282,9 @@
                             for (var i in message.events) {
                                 var m = message.events[i].m;
                                 if (m == 107) { m = "Valid login"; c = 'BBD1BB'; xx = ''; }
-                                else if (m == 108) { m = "Invalid password"; c ='E1BBBB'; xx = 'x'; }
-                                else if (m == 110) { m = "Invalid 2FA"; c = 'DD9DC3'; xx = 'x'; }
+                                else if (m == 108) { m = "Invalid 2FA"; c ='DD9DC3'; xx = 'x'; }
+                                else if (m == 109) { m = "Locked account"; c ='E1BBBB'; xx = 'x'; }
+                                else if (m == 110) { m = "Invalid password"; c = 'E1BBBB'; xx = 'x'; }
                                 x += '<tr><td><img src=images/user-32' + xx + '.png height=32 width=32 style=float:left srcset="images/user-64' + xx + '.png 2x"><td><div style=width:300px;background-color:#' + c + ';border-radius:6px;margin-bottom:4px;padding:4px><div>' + printDateTime(new Date(message.events[i].t)) + ', <b>' + EscapeHtml(m) + '</b></div><div style=font-size:x-small>' + EscapeHtml(message.events[i].a.join(', ')) + '</div></div></tr>';
                             }
                             x += '</table></div>';
@@ -12926,7 +12929,10 @@
             if (userAdminRights) { x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="' + "Remove this user" + '">' + "Delete User" + '</a>'; }
             x += '</div><div style=font-size:small>';
             // If user admin rights and not SSPI/LDAP and UserID does not start with ~, show change password
-            if (userAdminRights && ((features & 0x00080000) == 0) && (user._id.split('/')[2][0] != '~')) { x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>'; }
+            if (userAdminRights && ((features & 0x00080000) == 0) && (user._id.split('/')[2][0] != '~')) {
+                x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>';
+                x += ' <a href=# style=cursor:pointer onclick=\'return p30viewPreviousLogins()\' title="' + "View previous logins for this user" + '">' + "Previous Logins" + '</a>';
+            }
             x += '</div><br>'
             QH('p30html3', x);
 
@@ -13011,6 +13017,13 @@
             var x = { action: 'edituser', id: currentUser._id, email: Q('dp30email').value };
             if (serverinfo.emailcheck) { x.emailVerified = (Q('dp30verified').value == 1); }
             meshserver.send(x);
+        }
+
+        // Display the previous logins of this user
+        function p30viewPreviousLogins() {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Previous Logins", 1, null, "Loading...", 'previousLogins:' + currentUser._id);
+            meshserver.send({ action: 'previousLogins', userid: currentUser._id });
         }
 
         // Display the user's password change dialog box
