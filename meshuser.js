@@ -5383,6 +5383,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 console.log(command.value);
                 break;
             }
+            case 'previousLogins': {
+                // TODO: Make a better database call to get filtered data.
+                db.GetUserEvents([user._id], domain.id, user._id.split('/')[2], function (err, docs) {
+                    if (err != null) return;
+                    var e = [];
+                    for (var i in docs) { if ((docs[i].msgArgs) && ((docs[i].action == 'authfail') || (docs[i].action == 'login'))) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); } }
+                    try { ws.send(JSON.stringify({ action: 'previousLogins', events: e })); } catch (ex) { }
+                });
+                break;
+            }
             default: {
                 // Unknown user action
                 console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');

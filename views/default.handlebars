@@ -348,6 +348,7 @@
                             <div id="manageAuthApp"><div class="p2AccountActions"><span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageAuthApp()">Manage authenticator app</a><br /></span></div>
                             <div id="manageHardwareOtp"><div class="p2AccountActions"><span id="authKeySetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageHardwareOtp(0)">Manage security keys</a><br /></span></div>
                             <div id="manageOtp"><div class="p2AccountActions"><span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageOtp(0)">Manage backup codes</a><br /></span></div>
+                            <div class="p2AccountActions"></div><span><a href=# onclick="return account_viewPreviousLogins()">View previous logins</a><br /></span>
                         </div>
                     </div>
                     <div id="p2AccountActions">
@@ -3267,6 +3268,26 @@
                 }
                 case 'amtsetupbin': {
                     saveAs(new Blob([ Uint8Array.from(atob(message.file), function (c) { return c.charCodeAt(0) }) ], { type: 'application/octet-stream' }), 'setup.bin');
+                    break;
+                }
+                case 'previousLogins':{
+                    if ((xxdialogMode == 2) && (xxdialogTag == 'previousLogins'))  {
+                        var x = '', c = 'BBB', xx = '';
+                        if (message.events.length == 0) {
+                            x += 'No previous login.';
+                        } else {
+                            x += '<div style=max-height:260px;overflow-y:scroll;overflow-x:hidden><table>';
+                            for (var i in message.events) {
+                                var m = message.events[i].m;
+                                if (m == 107) { m = "Valid login"; c = 'BBD1BB'; xx = ''; }
+                                else if (m == 108) { m = "Invalid password"; c ='E1BBBB'; xx = 'x'; }
+                                else if (m == 110) { m = "Invalid 2FA"; c = 'DD9DC3'; xx = 'x'; }
+                                x += '<tr><td><img src=images/user-32' + xx + '.png height=32 width=32 style=float:left><td><div style=width:300px;background-color:#' + c + ';border-radius:6px;margin-bottom:4px;padding:4px><div>' + printDateTime(new Date(message.events[i].t)) + ', <b>' + EscapeHtml(m) + '</b></div><div style=font-size:x-small>' + EscapeHtml(message.events[i].a.join(', ')) + '</div></div></tr>';
+                            }
+                            x += '</table></div>';
+                        }
+                        setDialogMode(2, "Previous Logins", 1, null, x);
+                    }
                     break;
                 }
                 default:
@@ -9607,6 +9628,12 @@
         // MY ACCOUNT
         //
 
+        function account_viewPreviousLogins() {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Previous Logins", 1, null, "Loading...", 'previousLogins');
+            meshserver.send({ action: 'previousLogins' });
+        }
+
         function account_managePhone() {
             if (xxdialogMode || ((features & 0x02000000) == 0)) return;
             var x;
@@ -11575,7 +11602,11 @@
             103: "Batch upload of {0} file(s) to folder {1}",
             104: "Automated download of agent core dump file: \"{0}\"",
             105: "Upload: \"{0}\", Size: {1}",
-            106: "Download: \"{0}\", Size: {1}"
+            106: "Download: \"{0}\", Size: {1}",
+            107: "Account login from {0}, {1}, {2}",
+            108: "User login attempt with incorrect 2nd factor from {0}, {1}, {2}",
+            109: "User login attempt on locked account from {0}, {1}, {2}",
+            110: "Invalid user login attempt from {0}, {1}, {2}"
         };
 
         // Highlights the device being hovered
