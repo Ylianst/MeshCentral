@@ -3045,6 +3045,7 @@
     },
     {
       "en": "Account login from {0}, {1}, {2}",
+      "nl": "Account aanmelding van {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->31->1818"
       ]
@@ -13141,6 +13142,7 @@
     },
     {
       "en": "Display {0}",
+      "nl": "Scherm {0}",
       "xloc": [
         "default.handlebars->31->966"
       ]
@@ -20469,6 +20471,7 @@
     },
     {
       "en": "Invalid 2FA",
+      "nl": "Ongeldige 2FA",
       "xloc": [
         "default-mobile.handlebars->11->76",
         "default.handlebars->31->228"
@@ -20772,6 +20775,7 @@
     },
     {
       "en": "Invalid user login attempt from {0}, {1}, {2}",
+      "nl": "Ongeldige inlog poging {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->31->1821"
       ]
@@ -29853,7 +29857,7 @@
       "hi": "पावर स्टेट्स",
       "ja": "電力状態",
       "ko": "전원 상태",
-      "nl": "Power Status",
+      "nl": "Status",
       "pt": "Estados de potência",
       "ru": "Состояния питания",
       "tr": "Güç Durumları",
@@ -30078,6 +30082,7 @@
     },
     {
       "en": "Previous Logins",
+      "nl": "Eerdere aanmeldingen",
       "xloc": [
         "default-mobile.handlebars->11->77",
         "default-mobile.handlebars->11->78",
@@ -33861,7 +33866,7 @@
       "hi": "सुरक्षा",
       "ja": "セキュリティ",
       "ko": "보안",
-      "nl": "Veiligheid",
+      "nl": "Beveiliging",
       "pt": "Segurança",
       "ru": "Защита",
       "tr": "Güvenlik",
@@ -35230,7 +35235,7 @@
     },
     {
       "en": "Set dark mode",
-      "nl": "Stel donkere modus in",
+      "nl": "Schakel donkere modus in",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountActions->3->11->0"
       ]
@@ -39913,6 +39918,7 @@
     },
     {
       "en": "Trying Credentials",
+      "nl": "Inloggegevens proberen",
       "xloc": [
         "default-mobile.handlebars->11->272",
         "default.handlebars->31->610"
@@ -41036,7 +41042,7 @@
     },
     {
       "en": "Upload tiny core",
-      "nl": "Upload eem kleine kern",
+      "nl": "Upload een kleine kern",
       "fr": "Charger un micro noyau",
       "xloc": [
         "default-mobile.handlebars->11->503",
@@ -41846,12 +41852,14 @@
     },
     {
       "en": "User login attempt on locked account from {0}, {1}, {2}",
+      "nl": "Gebruikersaanmeldingspoging op vergrendeld account van {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->31->1820"
       ]
     },
     {
       "en": "User login attempt with incorrect 2nd factor from {0}, {1}, {2}",
+      "nl": "Gebruikersaanmeldingspoging met onjuiste 2e factor van {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->31->1819"
       ]
@@ -42035,6 +42043,7 @@
     },
     {
       "en": "Valid login",
+      "nl": "Geldige login",
       "xloc": [
         "default-mobile.handlebars->11->74",
         "default.handlebars->31->226"
@@ -42490,6 +42499,7 @@
     },
     {
       "en": "View previous logins",
+      "nl": "Bekijk eerdere aanmeldingen",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->3->9->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->12->0"
@@ -44443,6 +44453,13 @@
     },
     {
       "en": "amt:",
+      "cs": "amt:",
+      "de": "amt:",
+      "es": "amt:",
+      "fi": "amt:",
+      "fr": "amt:",
+      "nl": "amt:",
+      "pt": "amt:",
       "xloc": [
         "default-mobile.handlebars->11->174",
         "default-mobile.handlebars->11->175",
@@ -45452,6 +45469,14 @@
     },
     {
       "en": "os:",
+      "cs": "os:",
+      "de": "os:",
+      "en": "os:",
+      "es": "os:",
+      "fi": "os:",
+      "fr": "os:",
+      "nl": "os:",
+      "pt": "os:",
       "xloc": [
         "default-mobile.handlebars->11->172",
         "default-mobile.handlebars->11->173",
