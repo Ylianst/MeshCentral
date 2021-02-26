@@ -1561,9 +1561,10 @@
                             x += '<div style=max-height:260px;overflow-y:scroll;overflow-x:hidden>';
                             for (var i in message.events) {
                                 var m = message.events[i].m;
-                                if (m == 107) { m = "Valid login"; c = 'BBD1BB'; }
-                                else if (m == 108) { m = "Invalid password"; c = 'E1BBBB'; }
-                                else if (m == 110) { m = "Invalid 2FA"; c = 'DD9DC3'; }
+                                if (m == 107) { m = "Valid login"; c = 'BBD1BB'; xx = ''; }
+                                else if (m == 108) { m = "Invalid 2FA"; c = 'DD9DC3'; xx = 'x'; }
+                                else if (m == 109) { m = "Locked account"; c = 'E1BBBB'; xx = 'x'; }
+                                else if (m == 110) { m = "Invalid password"; c = 'E1BBBB'; xx = 'x'; }
                                 x += '<div style=width:260px;background-color:#' + c + ';border-radius:6px;margin-bottom:4px;padding:4px><div><b>' + EscapeHtml(m) + '</b><br />' + printDateTime(new Date(message.events[i].t)) + '</div><div style=font-size:x-small>' + EscapeHtml(message.events[i].a.join(', ')) + '</div></div></tr>';
                             }
                             x += '</div>';
