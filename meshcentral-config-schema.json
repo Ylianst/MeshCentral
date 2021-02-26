@@ -8,9 +8,10 @@
       "type": "object",
       "properties": {
         "cert": { "type": "string", "description": "Set this to the primary DNS name of this MeshCentral server." },
-        "mongoDb": { "type": "string" },
+        "mongoDb": { "type": "string", "default": null },
         "mongoDbName": { "type": "string" },
-        "mongoDbChangeStream": { "type": "boolean" },
+        "mongoDbChangeStream": { "type": "boolean", "default": false },
+        "mongoDbBulkOperations": { "type": "boolean", "default": false },
         "WANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral WAN features are enabled and agents will connect to the server using a well known DNS name." },
         "LANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral LAN features are enabled and agents will find the server using multicast LAN packets." },
         "maintenanceMode": { "type": "boolean", "default": false, "description": "When enabled the server is in maintenance mode, only administrators can login. Use the maintenance command in server console to change." },
