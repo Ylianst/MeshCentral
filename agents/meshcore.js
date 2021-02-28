@@ -971,7 +971,7 @@ function handleServerCommand(data) {
                     }
                     case 'setclip': {
                         // Set the load clipboard to a user value
-                        sendConsoleText('setClip: ' + JSON.stringify(data));
+                        //sendConsoleText('setClip: ' + JSON.stringify(data));
                         if (typeof data.data == 'string')
                         {
                             MeshServerLogEx(22, [data.data.length], "Setting clipboard content, " + data.data.length + " byte(s)", data);
