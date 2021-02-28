@@ -972,9 +972,53 @@ function handleServerCommand(data) {
                     case 'setclip': {
                         // Set the load clipboard to a user value
                         sendConsoleText('setClip: ' + JSON.stringify(data));
-                        if (typeof data.data == 'string') {
+                        if (typeof data.data == 'string')
+                        {
                             MeshServerLogEx(22, [data.data.length], "Setting clipboard content, " + data.data.length + " byte(s)", data);
-                            if (require('MeshAgent').isService) { require('clipboard').dispatchWrite(data.data); } else { require("clipboard")(data.data); } // Set the clipboard
+                            if (require('MeshAgent').isService)
+                            {
+                                if (process.platform != 'win32')
+                                {
+                                    require('clipboard').dispatchWrite(data.data);
+                                }
+                                else
+                                {
+                                    var tmp = "require('clipboard')(\"" + data.data.split('"').join('\\"') + '");process.exit();';
+                                    tmp = Buffer.from(tmp).toString('base64');
+
+                                    var taskoptions = { env: { _target: process.execPath, _args: '-b64exec ' + tmp, _user: require('user-sessions').getUsername(require('user-sessions').consoleUid()) } };
+                                    for (var c1e in process.env)
+                                    {
+                                        taskoptions.env[c1e] = process.env[c1e];
+                                    }
+
+                                    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], taskoptions);
+                                    child.stderr.on('data', function (c) { });
+                                    child.stdout.on('data', function (c) { });
+                                    child.stdin.write('SCHTASKS /CREATE /F /TN MeshUserTask /SC ONCE /ST 00:00 ');
+                                    child.stdin.write('/RU $env:_user ');
+
+                                    child.stdin.write('/TR "$env:_target $env:_args"\r\n');
+                                    child.stdin.write('$ts = New-Object -ComObject Schedule.service\r\n');
+                                    child.stdin.write('$ts.connect()\r\n');
+                                    child.stdin.write('$tsfolder = $ts.getfolder("\\")\r\n');
+                                    child.stdin.write('$task = $tsfolder.GetTask("MeshUserTask")\r\n');
+                                    child.stdin.write('$taskdef = $task.Definition\r\n');
+                                    child.stdin.write('$taskdef.Settings.StopIfGoingOnBatteries = $false\r\n');
+                                    child.stdin.write('$taskdef.Settings.DisallowStartIfOnBatteries = $false\r\n');
+                                    child.stdin.write('$taskdef.Actions.Item(1).Path = $env:_target\r\n');
+                                    child.stdin.write('$taskdef.Actions.Item(1).Arguments = $env:_args\r\n');
+                                    child.stdin.write('$tsfolder.RegisterTaskDefinition($task.Name, $taskdef, 4, $null, $null, $null)\r\n');
+
+                                    child.stdin.write('SCHTASKS /RUN /TN MeshUserTask\r\n');
+                                    child.stdin.write('SCHTASKS /DELETE /F /TN MeshUserTask\r\nexit\r\n');
+                                    child.waitExit();
+                                }
+                            }
+                            else
+                            {
+                                require("clipboard")(data.data);
+                            } // Set the clipboard
                             mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
                         }
                         break;
@@ -3195,14 +3239,54 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'setclip': {
-                if (args['_'].length != 1) {
+                if (args['_'].length != 1)
+                {
                     response = 'Proper usage: setclip "sample text"';
-                } else {
-                    if (require('MeshAgent').isService) {
-                        require('clipboard').dispatchWrite(args['_'][0]);
+                } else
+                {
+                    if (require('MeshAgent').isService)
+                    {
+                        if (process.platform != 'win32')
+                        {
+                            require('clipboard').dispatchWrite(args['_'][0]);
+                        }
+                        else
+                        {
+                            var tmp = "require('clipboard')(\"" + (args['_'][0]).split('"').join('\\"') + '");process.exit();';
+                            tmp = Buffer.from(tmp).toString('base64');
+
+                            var taskoptions = { env: { _target: process.execPath, _args: '-b64exec ' + tmp, _user: require('user-sessions').getUsername(require('user-sessions').consoleUid()) } };
+                            for (var c1e in process.env)
+                            {
+                                taskoptions.env[c1e] = process.env[c1e];
+                            }
+
+                            var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], taskoptions);
+                            child.stderr.on('data', function (c) { });
+                            child.stdout.on('data', function (c) { });
+                            child.stdin.write('SCHTASKS /CREATE /F /TN MeshUserTask /SC ONCE /ST 00:00 ');
+                            child.stdin.write('/RU $env:_user ');
+
+                            child.stdin.write('/TR "$env:_target $env:_args"\r\n');
+                            child.stdin.write('$ts = New-Object -ComObject Schedule.service\r\n');
+                            child.stdin.write('$ts.connect()\r\n');
+                            child.stdin.write('$tsfolder = $ts.getfolder("\\")\r\n');
+                            child.stdin.write('$task = $tsfolder.GetTask("MeshUserTask")\r\n');
+                            child.stdin.write('$taskdef = $task.Definition\r\n');
+                            child.stdin.write('$taskdef.Settings.StopIfGoingOnBatteries = $false\r\n');
+                            child.stdin.write('$taskdef.Settings.DisallowStartIfOnBatteries = $false\r\n');
+                            child.stdin.write('$taskdef.Actions.Item(1).Path = $env:_target\r\n');
+                            child.stdin.write('$taskdef.Actions.Item(1).Arguments = $env:_args\r\n');
+                            child.stdin.write('$tsfolder.RegisterTaskDefinition($task.Name, $taskdef, 4, $null, $null, $null)\r\n');
+
+                            child.stdin.write('SCHTASKS /RUN /TN MeshUserTask\r\n');
+                            child.stdin.write('SCHTASKS /DELETE /F /TN MeshUserTask\r\nexit\r\n');
+                            child.waitExit();
+                        }
                         response = 'Setting clipboard to: "' + args['_'][0] + '"';
                     }
-                    else {
+                    else
+                    {
                         require("clipboard")(args['_'][0]); response = 'Setting clipboard to: "' + args['_'][0] + '"';
                     }
                 }
