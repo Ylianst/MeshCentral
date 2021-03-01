@@ -3477,6 +3477,7 @@
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { p13folderup(9999); haltEvent(e); return false; } // F5 Refresh on files
             if (!xxdialogMode && xxcurrentView == 4) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
             if (xxdialogMode && e.keyCode == 27) { dialogclose(0); }
+            if ((e.shiftKey == true) && (e.keyCode == 27)) { dialogclose(0); Q('KvmSearchInput').value = Q('SearchInput').value = ''; mainUpdate(5); if (desktop != null) { connectDesktop(); } if (terminal != null) { connectTerminal(); } if (files != null) { connectFiles(); } go(1); return; } // Shift-ESC: Reset the web page
             if (xxdialogMode || xxcurrentView != 0 || e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
             if (Q('viewselect').value < 4) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
             if (Q('viewselect').value == 4) { if ((e.keyCode === 8 && mapSearchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
