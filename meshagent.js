@@ -1360,6 +1360,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                 case 'sysinfo': {
                     if ((typeof command.data == 'object') && (typeof command.data.hash == 'string')) {
+                        // Validate command.data.
+                        if (common.validateObjectForMongo(command.data, 1024) == false) break;
+
+                        // Save to database
                         command.data._id = 'si' + obj.dbNodeKey;
                         command.data.type = 'sysinfo';
                         command.data.domain = domain.id;
