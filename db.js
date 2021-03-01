@@ -981,6 +981,7 @@ module.exports.CreateDB = function (parent, func) {
                     sqlDbQuery('SELECT doc FROM meshcentral.events JOIN meshcentral.eventids ON id = fkid WHERE (domain = ? AND userid = ? AND target IN (?)) GROUP BY id ORDER BY time DESC LIMIT ?', [domain, userid, ids, limit], func);
                 }
             };
+            //obj.GetUserLoginEvents = function (domain, username, func) { } // TODO
             obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { sqlDbQuery('SELECT doc FROM meshcentral.events WHERE (nodeid = ?) AND (domain = ?) ORDER BY time DESC LIMIT ?', [nodeid, domain, limit], func); };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) { sqlDbQuery('SELECT doc FROM meshcentral.events WHERE (nodeid = ?) AND (domain = ?) AND ((userid = ?) OR (userid IS NULL)) ORDER BY time DESC LIMIT ?', [nodeid, domain, userid, limit], func); };
             obj.RemoveAllEvents = function (domain) { sqlDbQuery('DELETE FROM meshcentral.events', null, function (err, docs) { }); };
@@ -1206,6 +1207,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetEventsWithLimit = function (ids, domain, limit, func) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).toArray(func); };
             obj.GetUserEvents = function (ids, domain, username, func) { obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { username: username }] }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).toArray(func); };
             obj.GetUserEventsWithLimit = function (ids, domain, username, limit, func) { obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { username: username }] }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).toArray(func); };
+            obj.GetUserLoginEvents = function (domain, username, func) { obj.eventsfile.find({ domain: domain, action: { $in: ['authfail', 'login'] }, msgArgs: { $exists: true } }).project({ action: 1, time: 1, msgid: 1, msgArgs: 1 }).sort({ time: -1 }).toArray(func); };
             obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { obj.eventsfile.find({ domain: domain, nodeid: nodeid }).project({ type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).toArray(func); };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) { obj.eventsfile.find({ domain: domain, nodeid: nodeid, userid: { $in: [userid, null] } }).project({ type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).toArray(func); };
             obj.RemoveAllEvents = function (domain) { obj.eventsfile.deleteMany({ domain: domain }, { multi: true }); };
@@ -1383,6 +1385,13 @@ module.exports.CreateDB = function (parent, func) {
                     obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { username: username }] }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func);
                 } else {
                     obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { username: username }] }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func);
+                }
+            };
+            obj.GetUserLoginEvents = function (domain, username, func) {
+                if (obj.databaseType == 1) {
+                    obj.eventsfile.find({ domain: domain, action: { $in: ['authfail', 'login'] }, msgArgs: { $exists: true } }, { action: 1, time: 1, msgid: 1, msgArgs: 1 }).sort({ time: -1 }).exec(func);
+                } else {
+                    obj.eventsfile.find({ domain: domain, action: { $in: ['authfail', 'login'] }, msgArgs: { $exists: true } }, { action: 1, time: 1, msgid: 1, msgArgs: 1 }).sort({ time: -1 }, func);
                 }
             };
             obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { if (obj.databaseType == 1) { obj.eventsfile.find({ domain: domain, nodeid: nodeid }, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.eventsfile.find({ domain: domain, nodeid: nodeid }, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit, func); } };
