@@ -1,0 +1,1 @@
+@%LOCALAPPDATA%\..\Roaming\nvm\v8.0.0\node meshcentral %1 %2 %3 %4 %5 %6 %7 %8 %9
