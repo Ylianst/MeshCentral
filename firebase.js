@@ -35,9 +35,19 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
 
     var tokenToNodeMap = {} // Token --> { nid: nodeid, mid: meshid }
 
+    // Setup logging
+    if (parent.config.firebase && (parent.config.firebase.log === true)) {
+        obj.logpath = parent.path.join(parent.datapath, 'firebase.txt');
+        obj.log = function (msg) { try { parent.fs.appendFileSync(obj.logpath, new Date().toLocaleString() + ': ' + msg + '\r\n'); } catch (ex) { console.log('ERROR: Unable to write to firebase.txt.'); } }
+    } else {
+        obj.log = function () { }
+    }
+
     // Messages received from client (excluding receipts)
     xcs.on('message', function (messageId, from, data, category) {
-        parent.debug('email', 'Firebase-Message: ' + JSON.stringify(data));
+        const jsonData = JSON.stringify(data);
+        obj.log('Firebase-Message: ' + jsonData);
+        parent.debug('email', 'Firebase-Message: ' + jsonData);
 
         if (typeof data.r == 'string') {
             // Lookup push relay server
@@ -73,6 +83,7 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
 
     xcs.start();
 
+    obj.log('CreateFirebase-Setup');
     parent.debug('email', 'CreateFirebase-Setup');
 
     // EXAMPLE
@@ -83,6 +94,7 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
     obj.sendToDevice = function (node, payload, options, func) {
         parent.debug('email', 'Firebase-sendToDevice');
         if ((node == null) || (typeof node.pmt != 'string')) return;
+        obj.log('sendToDevice, node:' + node._id + ', payload: ' + JSON.stringify(payload) + ', options: ' + JSON.stringify(options));
 
         // Fill in our lookup table
         if (node._id != null) { tokenToNodeMap[node.pmt] = { nid: node._id, mid: node.meshid, did: node.domain } }
@@ -106,7 +118,7 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
 
         // Send the message
         function callback(result) {
-            if (result.getError() == null) { obj.stats.sent++; } else { obj.stats.sendError++; }
+            if (result.getError() == null) { obj.stats.sent++; obj.log('Success'); } else { obj.stats.sendError++; obj.log('Fail'); }
             callback.func(result.getMessageId(), result.getError(), result.getErrorDescription())
         }
         callback.func = func;
@@ -125,11 +137,13 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
         ws.on('message', function (msg) {
             parent.debug('email', 'FBWS-Data(' + this.relayId + '): ' + msg);
             if (typeof msg == 'string') {
+                obj.log('Relay: ' + msg);
 
                 // Parse the incoming push request
                 var data = null;
                 try { data = JSON.parse(msg) } catch (ex) { return; }
                 if (typeof data != 'object') return;
+                if (parent.common.validateObjectForMongo(data, 4096) == false) return; // Perform sanity checking on this object.
                 if (typeof data.pmt != 'string') return;
                 if (typeof data.payload != 'object') return;
                 if (typeof data.payload.notification == 'object') {
@@ -191,19 +205,32 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
     const relayUrl = require('url').parse(url);
     parent.debug('email', 'CreateFirebaseRelay-Setup');
 
+    // Setup logging
+    if (parent.config.firebaserelay && (parent.config.firebaserelay.log === true)) {
+        obj.logpath = parent.path.join(parent.datapath, 'firebaserelay.txt');
+        obj.log = function (msg) { try { parent.fs.appendFileSync(obj.logpath, new Date().toLocaleString() + ': ' + msg + '\r\n'); } catch (ex) { console.log('ERROR: Unable to write to firebaserelay.txt.'); } }
+    } else {
+        obj.log = function () { }
+    }
+
+    obj.log('Starting relay to: ' + relayUrl.href);
     if (relayUrl.protocol == 'wss:') {
         // Setup two-way push notification channel
         obj.wsopen = false;
-        obj.tokenToNodeMap = {} // Token --> { nid: nodeid, mid: meshid }
+        obj.tokenToNodeMap = {}; // Token --> { nid: nodeid, mid: meshid }
+        obj.backoffTimer = 0;
         obj.connectWebSocket = function () {
+            if (obj.reconnectTimer != null) { try { clearTimeout(obj.reconnectTimer); } catch (ex) { } delete obj.reconnectTimer; }
             if (obj.wsclient != null) return;
             obj.wsclient = new WebSocket(relayUrl.href + (key ? ('?key=' + key) : ''), { rejectUnauthorized: false })
             obj.wsclient.on('open', function () {
+                obj.lastConnect = Date.now();
                 parent.debug('email', 'FBWS-Connected');
                 obj.wsopen = true;
             });
             obj.wsclient.on('message', function (msg) {
                 parent.debug('email', 'FBWS-Data(' + msg.length + '): ' + msg);
+                obj.log('Received(' + msg.length + '): ' + msg);
                 var data = null;
                 try { data = JSON.parse(msg) } catch (ex) { }
                 if (typeof data != 'object') return;
@@ -212,16 +239,20 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
                 if (typeof data.category != 'string') return;
                 processMessage(data.messageId, data.from, data.data, data.category);
             });
-            obj.wsclient.on('error', function (err) {
-                obj.wsclient = null;
-                obj.wsopen = false;
-                setTimeout(obj.connectWebSocket, 2000);
-            });
-            obj.wsclient.on('close', function () {
+            obj.wsclient.on('error', function (err) { obj.log('Error: ' + err); });
+            obj.wsclient.on('close', function (a, b, c) {
                 parent.debug('email', 'FBWS-Disconnected');
                 obj.wsclient = null;
                 obj.wsopen = false;
-                setTimeout(obj.connectWebSocket, 2000);
+
+                // Compute the backoff timer
+                if (obj.reconnectTimer == null) {
+                    if ((obj.lastConnect != null) && ((Date.now() - obj.lastConnect) > 10000)) { obj.backoffTimer = 0; }
+                    obj.backoffTimer += 1000;
+                    obj.backoffTimer = obj.backoffTimer * 2;
+                    if (obj.backoffTimer > 1200000) { obj.backoffTimer = 600000; } // Maximum 10 minutes backoff.
+                    obj.reconnectTimer = setTimeout(obj.connectWebSocket, obj.backoffTimer);
+                }
             });
         }
 
@@ -241,6 +272,7 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
         obj.sendToDevice = function (node, payload, options, func) {
             parent.debug('email', 'Firebase-sendToDevice-webSocket');
             if ((node == null) || (typeof node.pmt != 'string')) { func(0, 'error'); return; }
+            obj.log('sendToDevice, node:' + node._id + ', payload: ' + JSON.stringify(payload) + ', options: ' + JSON.stringify(options));
 
             // Fill in our lookup table
             if (node._id != null) { obj.tokenToNodeMap[node.pmt] = { nid: node._id, mid: node.meshid, did: node.domain } }
@@ -253,11 +285,13 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
             if (obj.wsopen == true) {
                 try { obj.wsclient.send(JSON.stringify({ pmt: node.pmt, payload: payload, options: options })); } catch (ex) { func(0, 'error'); obj.stats.sendError++; return; }
                 obj.stats.sent++;
+                obj.log('Sent');
                 func(1);
             } else {
                 // TODO: Buffer the push messages until TTL.
-                func(0, 'error');
                 obj.stats.sendError++;
+                obj.log('Error');
+                func(0, 'error');
             }
         }
         obj.connectWebSocket();
@@ -268,6 +302,7 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
             parent.debug('email', 'Firebase-sendToDevice-httpPost');
             if ((node == null) || (typeof node.pmt != 'string')) return;
 
+            obj.log('sendToDevice, node:' + node._id + ', payload: ' + JSON.stringify(payload) + ', options: ' + JSON.stringify(options));
             const querydata = querystring.stringify({ 'msg': JSON.stringify({ pmt: node.pmt, payload: payload, options: options }) });
 
             // Fill in the server agent cert hash
@@ -287,6 +322,7 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
                 }
             }
             const req = https.request(httpOptions, function (res) {
+                obj.log('Response: ' + res.statusCode);
                 if (res.statusCode == 200) { obj.stats.sent++; } else { obj.stats.sendError++; }
                 if (func != null) { func(++obj.messageId, (res.statusCode == 200) ? null : 'error'); }
             });
