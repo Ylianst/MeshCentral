@@ -3989,7 +3989,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         // Perform an async file open
                         var callback = function onFileOpen(err, fd) {
                             onFileOpen.xws.xfile = fd;
-                            onFileOpen.xws.send(JSON.stringify({ action: 'download', sub: 'startack', id: onFileOpen.xws.xid, ack: 1 })); // Ask for a directory (test)
+                            try { onFileOpen.xws.send(JSON.stringify({ action: 'download', sub: 'startack', id: onFileOpen.xws.xid, ack: 1 })); } catch (ex) { } // Ask for a directory (test)
                         };
                         callback.xws = this;
                         obj.fs.open(this.xfilepath + '.part', 'w', callback);
@@ -4013,11 +4013,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     obj.fs.rename(onFileDataWritten.xws.xfilepath + '.part', onFileDataWritten.xws.xfilepath, function (err) { });
                                     onFileDataWritten.xws.xfile = null;
                                 }
-                                onFileDataWritten.xws.send(JSON.stringify({ action: 'markcoredump' })); // Ask to delete the core dump file
+                                try { onFileDataWritten.xws.send(JSON.stringify({ action: 'markcoredump' })); } catch (ex) { } // Ask to delete the core dump file
                                 try { onFileDataWritten.xws.close(); } catch (ex) { }
                             } else {
                                 // Send ack
-                                onFileDataWritten.xws.send(JSON.stringify({ action: 'download', sub: 'ack', id: onFileDataWritten.xws.xid })); // Ask for a directory (test)
+                                try { onFileDataWritten.xws.send(JSON.stringify({ action: 'download', sub: 'ack', id: onFileDataWritten.xws.xid })); } catch (ex) { } // Ask for a directory (test)
                             }
                         };
                         callback.xws = this;
