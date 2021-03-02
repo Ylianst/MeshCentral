@@ -6483,7 +6483,14 @@
         }
 
         function deskClipboardOutFunction() {
-            if ((navigator.clipboard != null) && (navigator.clipboard.readText != null)) { navigator.clipboard.readText().then(function(text) { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }).catch(function(err) { }); }
+            if ((navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
+                try {
+                    navigator.clipboard.readText().then(function(text) {
+                        meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text });
+                    }).catch(function(err) { console.log(err); });
+                } catch (ex) { console.log(ex); }
+            }
+            return true;
         }
 
         function deskRefreshFunction() {

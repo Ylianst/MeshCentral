@@ -38,9 +38,26 @@ module.exports.CreateDB = function (parent, func) {
     obj.dbRecordsDecryptKey = null;
     obj.changeStream = false;
     obj.pluginsActive = ((parent.config) && (parent.config.settings) && (parent.config.settings.plugins != null) && (parent.config.settings.plugins != false) && ((typeof parent.config.settings.plugins != 'object') || (parent.config.settings.plugins.enabled != false)));
+    obj.dbCounters = {
+        fileSet: 0,
+        fileRemove: 0,
+        powerSet: 0,
+        eventsSet: 0
+    }
 
     // MongoDB bulk operations state
     if (parent.config.settings.mongodbbulkoperations) {
+        // Added counters
+        obj.dbCounters.fileSetPending = 0;
+        obj.dbCounters.fileSetBulk = 0;
+        obj.dbCounters.fileRemovePending = 0;
+        obj.dbCounters.fileRemoveBulk = 0;
+        obj.dbCounters.powerSetPending = 0;
+        obj.dbCounters.powerSetBulk = 0;
+        obj.dbCounters.eventsSetPending = 0;
+        obj.dbCounters.eventsSetBulk = 0;
+
+        /// Added bulk accumulators
         obj.filePendingGet = null;
         obj.filePendingGets = null;
         obj.filePendingRemove = null;
@@ -514,12 +531,15 @@ module.exports.CreateDB = function (parent, func) {
 
             // Setup the changeStream on the MongoDB main collection if possible
             if (parent.args.mongodbchangestream == true) {
+                obj.dbCounters.changeStream = { change: 0, update: 0, insert: 0, delete: 0 };
                 if (typeof obj.file.watch != 'function') {
                     console.log('WARNING: watch() is not a function, MongoDB ChangeStream not supported.');
                 } else {
                     obj.fileChangeStream = obj.file.watch([{ $match: { $or: [{ 'fullDocument.type': { $in: ['node', 'mesh', 'user', 'ugrp'] } }, { 'operationType': 'delete' }] } }], { fullDocument: 'updateLookup' });
                     obj.fileChangeStream.on('change', function (change) {
+                        obj.dbCounters.changeStream.change++;
                         if ((change.operationType == 'update') || (change.operationType == 'replace')) {
+                            obj.dbCounters.changeStream.update++;
                             switch (change.fullDocument.type) {
                                 case 'node': { dbNodeChange(change, false); break; } // A node has changed
                                 case 'mesh': { dbMeshChange(change, false); break; } // A device group has changed
@@ -527,6 +547,7 @@ module.exports.CreateDB = function (parent, func) {
                                 case 'ugrp': { dbUGrpChange(change, false); break; } // A user account has changed
                             }
                         } else if (change.operationType == 'insert') {
+                            obj.dbCounters.changeStream.insert++;
                             switch (change.fullDocument.type) {
                                 case 'node': { dbNodeChange(change, true); break; } // A node has added
                                 case 'mesh': { dbMeshChange(change, true); break; } // A device group has created
@@ -534,6 +555,7 @@ module.exports.CreateDB = function (parent, func) {
                                 case 'ugrp': { dbUGrpChange(change, true); break; } // A user account has created
                             }
                         } else if (change.operationType == 'delete') {
+                            obj.dbCounters.changeStream.delete++;
                             if ((change.documentKey == null) || (change.documentKey._id == null)) return;
                             var splitId = change.documentKey._id.split('/');
                             switch (splitId[0]) {
@@ -898,6 +920,7 @@ module.exports.CreateDB = function (parent, func) {
         if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
             // Database actions on the main collection (MariaDB or MySQL)
             obj.Set = function (value, func) {
+                obj.dbCounters.fileSet++;
                 var extra = null, extraex = null;
                 value = common.escapeLinksFieldNameEx(value);
                 if (value.meshid) { extra = value.meshid; } else if (value.email) { extra = 'email/' + value.email; } else if (value.nodeid) { extra = value.nodeid; }
@@ -947,6 +970,7 @@ module.exports.CreateDB = function (parent, func) {
             // Database actions on the events collection
             obj.GetAllEvents = function (func) { sqlDbQuery('SELECT doc FROM meshcentral.events', null, func); };
             obj.StoreEvent = function (event, func) {
+                obj.dbCounters.eventsSet++;
                 var batchQuery = [['INSERT INTO meshcentral.events VALUE (?, ?, ?, ?, ?, ?, ?)', [null, event.time, ((typeof event.domain == 'string') ? event.domain : null), event.action, event.nodeid ? event.nodeid : null, event.userid ? event.userid : null, JSON.stringify(event)]]];
                 for (var i in event.ids) { if (event.ids[i] != '*') { batchQuery.push(['INSERT INTO meshcentral.eventids VALUE (LAST_INSERT_ID(), ?)', [event.ids[i]]]); } }
                 sqlDbBatchExec(batchQuery, function (err, docs) { if (func != null) { func(err, docs); } });
@@ -991,7 +1015,7 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the power collection
             obj.getAllPower = function (func) { sqlDbQuery('SELECT doc FROM meshcentral.power', null, func); };
-            obj.storePowerEvent = function (event, multiServer, func) { if (multiServer != null) { event.server = multiServer.serverid; } sqlDbQuery('INSERT INTO meshcentral.power VALUE (?, ?, ?, ?)', [null, event.time, event.nodeid ? event.nodeid : null, JSON.stringify(event)], func); };
+            obj.storePowerEvent = function (event, multiServer, func) { obj.dbCounters.powerSet++; if (multiServer != null) { event.server = multiServer.serverid; } sqlDbQuery('INSERT INTO meshcentral.power VALUE (?, ?, ?, ?)', [null, event.time, event.nodeid ? event.nodeid : null, JSON.stringify(event)], func); };
             obj.getPowerTimeline = function (nodeid, func) { sqlDbQuery('SELECT doc FROM meshcentral.power WHERE ((nodeid = ?) OR (nodeid = "*")) ORDER BY time DESC', [nodeid], func); };
             obj.removeAllPowerEvents = function () { sqlDbQuery('DELETE FROM meshcentral.power', null, function (err, docs) { }); };
             obj.removeAllPowerEventsForNode = function (nodeid) { sqlDbQuery('DELETE FROM meshcentral.power WHERE nodeid = ?', [nodeid], function (err, docs) { }); };
@@ -1055,11 +1079,13 @@ module.exports.CreateDB = function (parent, func) {
                 obj.Set = function (data, func) { // Fast Set operation using bulkWrite(), this is much faster then using replaceOne()
                     if (obj.filePendingSet == false) {
                         // Perform the operation now
+                        obj.dbCounters.fileSet++;
                         obj.filePendingSet = true; obj.filePendingSets = null;
                         if (func != null) { obj.filePendingCbs = [func]; }
                         obj.file.bulkWrite([{ replaceOne: { filter: { _id: data._id }, replacement: performTypedRecordEncrypt(common.escapeLinksFieldNameEx(data)), upsert: true } }], fileBulkWriteCompleted);
                     } else {
                         // Add this operation to the pending list
+                        obj.dbCounters.fileSetPending++;
                         if (obj.filePendingSets == null) { obj.filePendingSets = {} }
                         obj.filePendingSets[data._id] = data;
                         if (func != null) { if (obj.filePendingCb == null) { obj.filePendingCb = [func]; } else { obj.filePendingCb.push(func); } }
@@ -1093,7 +1119,11 @@ module.exports.CreateDB = function (parent, func) {
                     }
                 };
             } else {
-                obj.Set = function (data, func) { data = common.escapeLinksFieldNameEx(data); obj.file.replaceOne({ _id: data._id }, performTypedRecordEncrypt(data), { upsert: true }, func); };
+                obj.Set = function (data, func) {
+                    obj.dbCounters.fileSet++;
+                    data = common.escapeLinksFieldNameEx(data);
+                    obj.file.replaceOne({ _id: data._id }, performTypedRecordEncrypt(data), { upsert: true }, func);
+                };
                 obj.Get = function (id, func) {
                     if (arguments.length > 2) {
                         var parms = [func];
@@ -1145,18 +1175,20 @@ module.exports.CreateDB = function (parent, func) {
             if (parent.config.settings.mongodbbulkoperations) {
                 obj.Remove = function (id, func) { // Fast remove operation using a bulk find() to reduce round trips to the database.
                     if (obj.filePendingRemoves == null) {
-                        // No pending gets, perform the operation now.
+                        // No pending removes, perform the operation now.
+                        obj.dbCounters.fileRemove++;
                         obj.filePendingRemoves = {};
                         obj.filePendingRemoves[id] = [func];
                         obj.file.deleteOne({ _id: id }, fileBulkRemoveCompleted);
                     } else {
                         // Add remove to pending list.
+                        obj.dbCounters.fileRemovePending++;
                         if (obj.filePendingRemove == null) { obj.filePendingRemove = {}; }
                         if (obj.filePendingRemove[id] == null) { obj.filePendingRemove[id] = [func]; } else { obj.filePendingRemove[id].push(func); }
                     }
                 };
             } else {
-                obj.Remove = function (id, func) { obj.file.deleteOne({ _id: id }, func); };
+                obj.Remove = function (id, func) { obj.dbCounters.fileRemove++; obj.file.deleteOne({ _id: id }, func); };
             }
 
             obj.RemoveAll = function (func) { obj.file.deleteMany({}, { multi: true }, func); };
@@ -1189,18 +1221,20 @@ module.exports.CreateDB = function (parent, func) {
                 obj.StoreEvent = function (event, func) { // Fast MongoDB event store using bulkWrite()
                     if (obj.eventsFilePendingSet == false) {
                         // Perform the operation now
+                        obj.dbCounters.eventsSet++;
                         obj.eventsFilePendingSet = true; obj.eventsFilePendingSets = null;
                         if (func != null) { obj.eventsFilePendingCbs = [func]; }
                         obj.eventsfile.bulkWrite([{ insertOne: { document: event } }], eventsFileBulkWriteCompleted);
                     } else {
                         // Add this operation to the pending list
+                        obj.dbCounters.eventsSetPending++;
                         if (obj.eventsFilePendingSets == null) { obj.eventsFilePendingSets = [] }
                         obj.eventsFilePendingSets.push(event);
                         if (func != null) { if (obj.eventsFilePendingCb == null) { obj.eventsFilePendingCb = [func]; } else { obj.eventsFilePendingCb.push(func); } }
                     }
                 };
             } else {
-                obj.StoreEvent = function (event, func) { obj.eventsfile.insertOne(event, func); };
+                obj.StoreEvent = function (event, func) { obj.dbCounters.eventsSet++; obj.eventsfile.insertOne(event, func); };
             }
 
             obj.GetEvents = function (ids, domain, func) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).toArray(func); };
@@ -1230,18 +1264,20 @@ module.exports.CreateDB = function (parent, func) {
                     if (multiServer != null) { event.server = multiServer.serverid; }
                     if (obj.powerFilePendingSet == false) {
                         // Perform the operation now
+                        obj.dbCounters.powerSet++;
                         obj.powerFilePendingSet = true; obj.powerFilePendingSets = null;
                         if (func != null) { obj.powerFilePendingCbs = [func]; }
                         obj.powerfile.bulkWrite([{ insertOne: { document: event } }], powerFileBulkWriteCompleted);
                     } else {
                         // Add this operation to the pending list
+                        obj.dbCounters.powerSetPending++;
                         if (obj.powerFilePendingSets == null) { obj.powerFilePendingSets = [] }
                         obj.powerFilePendingSets.push(event);
                         if (func != null) { if (obj.powerFilePendingCb == null) { obj.powerFilePendingCb = [func]; } else { obj.powerFilePendingCb.push(func); } }
                     }
                 };
             } else {
-                obj.storePowerEvent = function (event, multiServer, func) { if (multiServer != null) { event.server = multiServer.serverid; } obj.powerfile.insertOne(event, func); };
+                obj.storePowerEvent = function (event, multiServer, func) { obj.dbCounters.powerSet++; if (multiServer != null) { event.server = multiServer.serverid; } obj.powerfile.insertOne(event, func); };
             }
 
             obj.getPowerTimeline = function (nodeid, func) { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }).project({ _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }).toArray(func); };
@@ -1304,7 +1340,11 @@ module.exports.CreateDB = function (parent, func) {
 
         } else {
             // Database actions on the main collection (NeDB and MongoJS)
-            obj.Set = function (data, func) { data = common.escapeLinksFieldNameEx(data); var xdata = performTypedRecordEncrypt(data); obj.file.update({ _id: xdata._id }, xdata, { upsert: true }, func); };
+            obj.Set = function (data, func) {
+                obj.dbCounters.fileSet++;
+                data = common.escapeLinksFieldNameEx(data);
+                var xdata = performTypedRecordEncrypt(data); obj.file.update({ _id: xdata._id }, xdata, { upsert: true }, func);
+            };
             obj.Get = function (id, func) {
                 if (arguments.length > 2) {
                     var parms = [func];
@@ -1578,6 +1618,7 @@ module.exports.CreateDB = function (parent, func) {
         obj.filePendingRemoves = obj.filePendingRemove;
         obj.filePendingRemove = null;
         if (obj.filePendingRemoves != null) {
+            obj.dbCounters.fileRemoveBulk++;
             var findlist = [], count = 0;
             for (var i in obj.filePendingRemoves) { findlist.push(i); count++; }
             obj.file.deleteMany({ _id: { $in: findlist } }, { multi: true }, fileBulkRemoveCompleted);
@@ -1593,6 +1634,7 @@ module.exports.CreateDB = function (parent, func) {
         }
         if (obj.filePendingSets != null) {
             // Perform pending operations
+            obj.dbCounters.fileSetBulk++;
             var ops = [];
             obj.filePendingCbs = obj.filePendingCb;
             obj.filePendingCb = null;
@@ -1611,6 +1653,7 @@ module.exports.CreateDB = function (parent, func) {
         if (obj.eventsFilePendingCbs != null) { for (var i in obj.eventsFilePendingCbs) { obj.eventsFilePendingCbs[i](); } obj.eventsFilePendingCbs = null; }
         if (obj.eventsFilePendingSets != null) {
             // Perform pending operations
+            obj.dbCounters.eventsSetBulk++;
             var ops = [];
             for (var i in obj.eventsFilePendingSets) { ops.push({ document: obj.eventsFilePendingSets[i] }); }
             obj.eventsFilePendingCbs = obj.eventsFilePendingCb;
@@ -1629,6 +1672,7 @@ module.exports.CreateDB = function (parent, func) {
         if (obj.powerFilePendingCbs != null) { for (var i in obj.powerFilePendingCbs) { obj.powerFilePendingCbs[i](); } obj.powerFilePendingCbs = null; }
         if (obj.powerFilePendingSets != null) {
             // Perform pending operations
+            obj.dbCounters.powerSetBulk++;
             var ops = [];
             for (var i in obj.powerFilePendingSets) { ops.push({ document: obj.powerFilePendingSets[i] }); }
             obj.powerFilePendingCbs = obj.powerFilePendingCb;
