@@ -6164,7 +6164,7 @@
     },
     {
       "cs": "Dostupná paměť",
-      "de": "Verfügbare Erinnerung",
+      "de": "Verfügbarer Speicher",
       "en": "Available Memory",
       "es": "Memoria Disponible",
       "fi": "Käytettävissä oleva muisti",
@@ -9473,7 +9473,7 @@
     },
     {
       "cs": "Připojené Intel® AMT",
-      "de": "Verbinden per Intel&reg; AMT",
+      "de": "Verbunden per Intel&reg; AMT",
       "en": "Connected Intel&reg; AMT",
       "es": "Conectado Intel&reg; AMT",
       "fi": "Yhdistetyt Intel&reg; AMT",
@@ -40826,7 +40826,7 @@
     },
     {
       "cs": "Aktualizace",
-      "de": "Aktualisieren",
+      "de": "Updates",
       "en": "Update",
       "es": "Actualizar",
       "fi": "Päivittää",
