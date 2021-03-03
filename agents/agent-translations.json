@@ -73,7 +73,7 @@
     "meshId": "Netzkennung",
     "serverId": "Server-ID",
     "setup": "Konfiguration",
-    "update": "Aktualisieren",
+    "update": "Updates",
     "pressok": "Drücken Sie OK, um die Verbindung zu trennen",
     "elevation": "Für die Installation / Deinstallation des Agenten sind erhöhte Berechtigungen erforderlich.",
     "sudo": "Bitte versuchen Sie es erneut mit sudo.",
