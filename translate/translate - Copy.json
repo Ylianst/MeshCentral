@@ -3046,7 +3046,6 @@
     {
       "en": "Account login from {0}, {1}, {2}",
       "nl": "Account aanmelding van {0}, {1}, {2}",
-      "fr": "Connexion de {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->31->1821"
       ]
@@ -5223,7 +5222,6 @@
     {
       "en": "Anti-virus not active",
       "nl": "Anti-virus niet actief",
-      "fr": "Antivirus désactivé",
       "xloc": [
         "default.handlebars->31->1651",
         "default.handlebars->31->1665"
@@ -6726,7 +6724,6 @@
     {
       "en": "Browser default",
       "nl": "Browser standaard",
-      "fr": "Navigateur par défaut",
       "xloc": [
         "default-mobile.handlebars->11->81",
         "default.handlebars->31->58"
@@ -10906,7 +10903,6 @@
     {
       "en": "Dark mode",
       "nl": "Donkere modus",
-      "fr": "Thême sombre",
       "xloc": [
         "default-mobile.handlebars->11->83",
         "default.handlebars->31->60"
@@ -13151,7 +13147,6 @@
     {
       "en": "Display {0}",
       "nl": "Scherm {0}",
-      "fr": "Affichage {0}",
       "xloc": [
         "default.handlebars->31->969"
       ]
@@ -16720,7 +16715,6 @@
     {
       "en": "Firewall not active",
       "nl": "Firewall niet actief",
-      "fr": "Pare-feu désactivé",
       "xloc": [
         "default.handlebars->31->1653",
         "default.handlebars->31->1667"
@@ -16876,7 +16870,6 @@
     {
       "en": "Force agent update",
       "nl": "Forceer agent update",
-      "fr": "Forcer la mise à jour de l'agent",
       "xloc": [
         "default.handlebars->31->478"
       ]
@@ -16884,7 +16877,6 @@
     {
       "en": "Force agent update on selected devices?",
       "nl": "Forceer agent update op de geselecteerde apparaten?",
-      "fr": "Forcer la mise à jour de l'agent sur les appareils sélectionnés",
       "xloc": [
         "default.handlebars->31->513"
       ]
@@ -20484,7 +20476,6 @@
     {
       "en": "Invalid 2FA",
       "nl": "Ongeldige 2FA",
-      "fr": "Authentification à double facteur invalide",
       "xloc": [
         "default-mobile.handlebars->11->75",
         "default.handlebars->31->227"
@@ -20789,7 +20780,6 @@
     {
       "en": "Invalid user login attempt from {0}, {1}, {2}",
       "nl": "Ongeldige inlog poging {0}, {1}, {2}",
-      "fr": "Tentative de connexion invalide de {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->31->1824"
       ]
@@ -22222,7 +22212,6 @@
     {
       "en": "Light mode",
       "nl": "Lichte modus",
-      "fr": "Thème clair",
       "xloc": [
         "default-mobile.handlebars->11->82",
         "default.handlebars->31->59"
@@ -26297,7 +26286,6 @@
     {
       "en": "Night Mode",
       "nl": "Nacht Modus",
-      "fr": "Mode nuit",
       "xloc": [
         "default-mobile.handlebars->11->84",
         "default.handlebars->31->61"
@@ -26794,7 +26782,6 @@
     {
       "en": "No automatic update",
       "nl": "Geen automatische update",
-      "fr": "Pas de mise à jour automatique",
       "xloc": [
         "default.handlebars->31->1652",
         "default.handlebars->31->1666"
@@ -30103,7 +30090,6 @@
     {
       "en": "Previous Logins",
       "nl": "Eerdere aanmeldingen",
-      "fr": "Logins précédents",
       "xloc": [
         "default-mobile.handlebars->11->78",
         "default-mobile.handlebars->11->79",
@@ -35259,7 +35245,6 @@
     {
       "en": "Set dark mode",
       "nl": "Schakel donkere modus in",
-      "fr": "Définir le mode sombre",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountActions->3->11->0"
       ]
@@ -41880,7 +41865,6 @@
     {
       "en": "User login attempt on locked account from {0}, {1}, {2}",
       "nl": "Gebruikersaanmeldingspoging op vergrendeld account van {0}, {1}, {2}",
-      "fr": "Tentative de connexion sur un compte bloqué de {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->31->1823"
       ]
@@ -41888,7 +41872,6 @@
     {
       "en": "User login attempt with incorrect 2nd factor from {0}, {1}, {2}",
       "nl": "Gebruikersaanmeldingspoging met onjuiste 2e factor van {0}, {1}, {2}",
-      "fr": "Tentative de connexion avec un second facteur erroné de {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->31->1822"
       ]
@@ -42073,7 +42056,6 @@
     {
       "en": "Valid login",
       "nl": "Geldige login",
-      "fr": "Connexion réussie",
       "xloc": [
         "default-mobile.handlebars->11->74",
         "default.handlebars->31->226"
@@ -42530,7 +42512,6 @@
     {
       "en": "View previous logins",
       "nl": "Bekijk eerdere aanmeldingen",
-      "fr": "Historique des connexions",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->3->9->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->12->0"
@@ -42538,7 +42519,6 @@
     },
     {
       "en": "View previous logins for this user",
-      "fr": "Historique des connexions de cet utilisateur",
       "xloc": [
         "default.handlebars->31->2102"
       ]
