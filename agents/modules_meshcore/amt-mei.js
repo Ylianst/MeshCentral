@@ -420,30 +420,32 @@ function amt_heci() {
         }, this, callback, optional);
     }
     this.startConfigurationHBased = function startConfigurationHBased(certHash, hostVpn, dnsSuffixList, callback) {
+        if ((certHash == null) || ((certHash.length != 32) && (certHash.length != 48))) { throw "Bad certHash"; }
+
         var optional = [];
         for (var i = 4; i < arguments.length; ++i) { optional.push(arguments[i]); }
 
+        // Format the command
         var data = Buffer.alloc(4 + 64 + 4 + 4 + 320);
-        data.writeUInt32LE((certHash.length == 48) ? 3 : 2, 0); // Write certificate hash: SHA256 = 2, SHA384 = 3
-        data.write(certHash, 4); // Write the hash
-        data.writeUInt32LE(hostVpn ? 1 : 0, 68);
-        data.writeUInt32LE(0, 72); // dnsSuffixList.length
-        // TODO: Write up to 4 DNS Suffix with null seperation.
+        data.writeUInt32LE((certHash.length == 48) ? 3 : 2, 0); // Write certificate hash type: SHA256 = 2, SHA384 = 3
+        certHash.copy(data, 4); // Write the hash
+        data.writeUInt32LE(hostVpn ? 1 : 0, 68); // Write is HostVPN is enabled
+        if (dnsSuffixList != null) {
+            data.writeUInt32LE(dnsSuffixList.length, 72); // Write the number of DNS Suffix, from 0 to 4
+            var ptr = 76;
+            for (var i = 0; i < dnsSuffixList.length; i++) { ptr += data.write(dnsSuffixList[i], ptr) + 1; } // Write up to 4 DNS Suffix with null seperation.
+        }
 
-        console.log('Sending', data.toString('hex'));
-
+        // Send the command
         this.sendCommand(139, data, function (header, fn, opt) {
-            console.log('Status', header.Status);
-            console.log('DataLength', header.Data.length);
-            console.log('Data', header.Data.toString('hex'));
-            /*
-            if (header.Status == 0 && header.Data.length == 68) {
-                opt.unshift({ user: trim(header.Data.slice(0, 33).toString()), pass: trim(header.Data.slice(33, 67).toString()), raw: header.Data });
+            if (header.Status == 0) {
+                var amtHash = null;
+                if (header.Data[0] == 2) { amtHash = header.Data.slice(1, 33); } // SHA256
+                if (header.Data[0] == 3) { amtHash = header.Data.slice(1, 49); } // SHA384
+                opt.unshift({ status: header.Status, hash: amtHash });
+            } else {
+                opt.unshift({ status: header.Status });
             }
-            else {
-                opt.unshift(null);
-            }
-            */
             fn.apply(this, opt);
         }, callback, optional);
     }
