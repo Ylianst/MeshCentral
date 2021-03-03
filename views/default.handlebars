@@ -4455,9 +4455,9 @@
             x += '</div>';
 
             // Linux agent install
-            x += '<div id=agins_linux style=display:none>' + format("To add a computer to {0} run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
-            x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
-            x += '<div style=\'font-size:x-small\'>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div></div>';
+            x += '<div id=agins_linux style=display:none>' + format("To add a computer to \"{0}\" run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
+            x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px></textarea>';
+            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")><img src=images/link4.png height=10 width=10 style=cursor:pointer> Copy</a></div>';
 
             // macOS agent install
             x += '<div id=agins_osx style=display:none>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
@@ -4475,8 +4475,8 @@
 
             // Linux agent uninstall
             x += '<div id=agins_linux_un style=display:none>' + "To remove a mesh agent, run the following command. Root credentials will be needed." + '<br />';
-            x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
-            x += '</div>';
+            x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px></textarea>';
+            x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un")><img src=images/link4.png height=10 width=10 style=cursor:pointer> Copy</a></div>';
 
             // Linux binary installer
             x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces. You need to 'chmod +x meshagent' and run this file." + '<br /><br />';
@@ -14082,6 +14082,7 @@
             QE('idx_dlgOkButton', true);
             QV('idx_dlgOkButton', b & 1);
             QV('idx_dlgCancelButton', b & 2);
+            Q('idx_dlgCancelButton').value = ((b == 2)?"Close":"Cancel");
             QV('id_dialogclose', (b & 2) || (b & 8));
             QV('idx_dlgDeleteButton', b & 4);
             QV('idx_dlgButtonBar', b & 7);
