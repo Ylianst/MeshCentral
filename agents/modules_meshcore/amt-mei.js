@@ -419,6 +419,34 @@ function amt_heci() {
 
         }, this, callback, optional);
     }
+    this.startConfigurationHBased = function startConfigurationHBased(certHash, hostVpn, dnsSuffixList, callback) {
+        var optional = [];
+        for (var i = 4; i < arguments.length; ++i) { optional.push(arguments[i]); }
+
+        var data = Buffer.alloc(4 + 64 + 4 + 4 + 320);
+        data.writeUInt32LE((certHash.length == 48) ? 3 : 2, 0); // Write certificate hash: SHA256 = 2, SHA384 = 3
+        data.write(certHash, 4); // Write the hash
+        data.writeUInt32LE(hostVpn ? 1 : 0, 68);
+        data.writeUInt32LE(0, 72); // dnsSuffixList.length
+        // TODO: Write up to 4 DNS Suffix with null seperation.
+
+        console.log('Sending', data.toString('hex'));
+
+        this.sendCommand(139, data, function (header, fn, opt) {
+            console.log('Status', header.Status);
+            console.log('DataLength', header.Data.length);
+            console.log('Data', header.Data.toString('hex'));
+            /*
+            if (header.Status == 0 && header.Data.length == 68) {
+                opt.unshift({ user: trim(header.Data.slice(0, 33).toString()), pass: trim(header.Data.slice(33, 67).toString()), raw: header.Data });
+            }
+            else {
+                opt.unshift(null);
+            }
+            */
+            fn.apply(this, opt);
+        }, callback, optional);
+    }
 }
 
 module.exports = amt_heci;
