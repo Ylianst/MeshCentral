@@ -246,6 +246,10 @@ module.exports.CreateAmtManager = function (parent) {
                 delete dev.pendingUpdatedMeiState;
                 attemptInitialContact(dev);
                 break;
+            case 'startTlsHostConfig':
+                if (dev.acmTlsInfo == null) break;
+                console.log(jsondata); // TODO: Start TLS activation.
+                break;
         }
     }
 
@@ -344,6 +348,9 @@ module.exports.CreateAmtManager = function (parent) {
                 }
                 if (typeof dev.mpsConnection.tag.meiState['ProvisioningState'] == 'number') {
                     dev.intelamt.state = dev.aquired.state = dev.mpsConnection.tag.meiState['ProvisioningState'];
+                }
+                if ((typeof dev.mpsConnection.tag.meiState['Versions'] == 'object') && (typeof dev.mpsConnection.tag.meiState['Versions']['AMT'] == 'string')) {
+                    dev.intelamt.ver = dev.aquired.version = dev.mpsConnection.tag.meiState['Versions']['AMT'];
                 }
                 if (typeof dev.mpsConnection.tag.meiState['Flags'] == 'number') {
                     const flags = dev.intelamt.flags = dev.mpsConnection.tag.meiState['Flags'];
@@ -459,6 +466,9 @@ module.exports.CreateAmtManager = function (parent) {
                 dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], attemptLocalConnectResponse);
                 break;
             case 3: // Local LAN
+                // Check if Intel AMT is activated. If not, stop here.
+                if ((dev.intelamt == null) || ((dev.intelamt.state != null) && (dev.intelamt.state != 2))) { removeAmtDevice(dev); return; }
+
                 // Handle the case where the Intel AMT local scanner found the device (connType 3)
                 parent.debug('amt', dev.name, "Attempt Initial Local Contact", dev.connType, dev.host);
                 if (typeof dev.host != 'string') { removeAmtDevice(dev); return; } // Local connection not valid
@@ -1666,7 +1676,15 @@ module.exports.CreateAmtManager = function (parent) {
                     deactivateIntelAmtCCM(dev);
                 } else {
                     // We are not activated now, go to ACM directly.
-                    activateIntelAmtAcm(dev, mesh.amt.password, acminfo);
+                    // If this is Intel AMT 14 or better, we are going to attempt a host-based end-to-end TLS activation.
+                    if (typeof dev.intelamt.ver == 'string') { var verSplit = dev.intelamt.ver.split('.'); if (verSplit.length >= 3) { dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); } }
+                    if (dev.aquired.majorver >= 14) {
+                        // Perform host-based TLS ACM activation
+                        activateIntelAmtTlsAcm(dev, mesh.amt.password, acminfo);
+                    } else {
+                        // Perform host-based ACM activation
+                        activateIntelAmtAcm(dev, mesh.amt.password, acminfo);
+                    }
                 }
             }
         }
@@ -1767,6 +1785,22 @@ module.exports.CreateAmtManager = function (parent) {
             }
         }
         return null; // Did not find a match
+    }
+
+    // Attempt Intel AMT TLS ACM activation
+    function activateIntelAmtTlsAcm(dev, password, acminfo) {
+        // Generate a random Intel AMT password if needed
+        if ((password == null) || (password == '')) { password = getRandomAmtPassword(); }
+        dev.temp = { pass: password, acminfo: acminfo };
+
+        // Get our ACM activation certificate chain
+        var acmTlsInfo = parent.certificateOperations.getAcmCertChain(parent.config.domains[dev.domainid], dev.temp.acminfo.fqdn, dev.temp.acminfo.hash);
+        if (acmTlsInfo.error == 1) { dev.consoleMsg(acmTlsInfo.errorText); removeAmtDevice(dev); return; }
+        dev.acmTlsInfo = acmTlsInfo;
+
+        // Send the MEI command to enable TLS connections
+        dev.consoleMsg("Performing TLS ACM activation...");
+        dev.controlMsg({ action: 'startTlsHostConfig', hash: acmTlsInfo.hash, hostVpn: false, dnsSuffixList: null });
     }
 
     // Attempt Intel AMT ACM activation

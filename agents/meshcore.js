@@ -1197,6 +1197,11 @@ function handleServerCommand(data) {
                             amtMei.unprovision(1, function (status) { if (apftunnel) apftunnel.sendMeiDeactivationState(status); }); // 0 = Success
                         }
                         if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; } // Close the CIRA-LMS connection
+                        if (data.action == 'startTlsHostConfig') { // Request start of host based TLS ACM activation
+                            amt.startConfigurationHBased(Buffer.from(data.hash, 'hex'), data.hostVpn, data.dnsSuffixList, function (response) {
+                                apftunnel.sendStartTlsHostConfigResponse(response);
+                            });
+                        }
                     }
                     apftunnel.onChannelClosed = function () { addAmtEvent('LMS tunnel closed.'); apftunnel = null; }
                     try { apftunnel.connect(); } catch (ex) { }

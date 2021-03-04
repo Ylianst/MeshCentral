@@ -157,6 +157,12 @@ function AmtManager(agent, db, isdebug) {
         }
     }
 
+    // Start host based ACM activation with TLS
+    obj.startConfigurationHBased = function startConfigurationHBased(certHash, hostVpn, dnsSuffixList, func) {
+        if ((amtMei == null) || (amtMeiState < 2)) { if (func != null) { func({ status: -100 }); } return; }
+        amtMei.startConfigurationHBased(certHash, hostVpn, dnsSuffixList, func);
+    }
+
 }
 
 module.exports = AmtManager;

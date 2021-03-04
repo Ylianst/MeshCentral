@@ -28,6 +28,42 @@ module.exports.CertificateOperations = function (parent) {
 
     const TopLevelDomainExtendedSupport = { 'net': 2, 'com': 2, 'arpa': 3, 'org': 2, 'gov': 2, 'edu': 2, 'de': 2, 'fr': 3, 'cn': 3, 'nl': 3, 'br': 3, 'mx': 3, 'uk': 3, 'pl': 3, 'tw': 3, 'ca': 3, 'fi': 3, 'be': 3, 'ru': 3, 'se': 3, 'ch': 2, 'dk': 2, 'ar': 3, 'es': 3, 'no': 3, 'at': 3, 'in': 3, 'tr': 3, 'cz': 2, 'ro': 3, 'hu': 3, 'nz': 3, 'pt': 3, 'il': 3, 'gr': 3, 'co': 3, 'ie': 3, 'za': 3, 'th': 3, 'sg': 3, 'hk': 3, 'cl': 2, 'lt': 3, 'id': 3, 'hr': 3, 'ee': 3, 'bg': 3, 'ua': 2 };
 
+    // Sign a Intel AMT TLS ACM activation request
+    obj.getAcmCertChain = function (domain, fqdn, hash) {
+        if ((domain == null) || (domain.amtacmactivation == null) || (domain.amtacmactivation.certs == null) || (fqdn == null) || (hash == null)) return { action: 'acmactivate', error: 1, errorText: 'Invalid arguments' };
+        if (parent.common.validateString(fqdn, 4, 256) == false) return { action: 'acmactivate', error: 1, errorText: "Invalid FQDN argument." };
+        if (parent.common.validateString(hash, 16, 256) == false) return { action: 'acmactivate', error: 1, errorText: "Invalid hash argument." };
+
+        // Look for the signing certificate
+        var signkey = null, certChain = null, hashAlgo = null, certIndex = null;
+        for (var i in domain.amtacmactivation.certs) {
+            const certEntry = domain.amtacmactivation.certs[i];
+            if ((certEntry.sha256 == hash) && ((certEntry.cn == '*') || (certEntry.cn == fqdn))) { hashAlgo = 'sha256'; signkey = certEntry.key; certChain = certEntry.certs; certIndex = i; break; }
+            if ((certEntry.sha1 == hash) && ((certEntry.cn == '*') || (certEntry.cn == fqdn))) { hashAlgo = 'sha1'; signkey = certEntry.key; certChain = certEntry.certs; certIndex = i; break; }
+        }
+        if (signkey == null) return { action: 'acmactivate', error: 2, errorText: "No signing certificate found." }; // Did not find a match.
+
+        // If the matching certificate our wildcard root cert, we can use the root to match any FQDN
+        if (domain.amtacmactivation.certs[certIndex].cn == '*') {
+            // Create a leaf certificate that matches the FQDN we want
+            // TODO: This is an expensive operation, work on ways to pre-generate or cache this leaf certificate.
+            var rootcert = { cert: domain.amtacmactivation.certs[certIndex].rootcert, key: obj.pki.privateKeyFromPem(domain.amtacmactivation.certs[certIndex].key) };
+            var leafcert = obj.IssueWebServerCertificate(rootcert, false, fqdn, 'mc', 'Intel(R) Client Setup Certificate', { serverAuth: true, '2.16.840.1.113741.1.2.3': true }, false);
+
+            // Setup the certificate chain and key
+            certChain = [obj.pki.certificateToPem(leafcert.cert), obj.pki.certificateToPem(domain.amtacmactivation.certs[certIndex].rootcert)];
+            signkey = obj.pki.privateKeyToPem(leafcert.key);
+        } else {
+            // Make sure the cert chain is in PEM format
+            var certChain2 = [];
+            for (var i in certChain) { certChain2.push("-----BEGIN CERTIFICATE-----\r\n" + certChain[i] + "\r\n-----END CERTIFICATE-----\r\n"); }
+            certChain = certChain2;
+        }
+
+        // Hash the leaf certificate and return the certificate chain and signing key
+        return { action: 'acmactivate', certs: certChain, signkey: signkey, hash: obj.getCertHash(certChain[0]) };
+    }
+
     // Sign a Intel AMT ACM activation request
     obj.signAcmRequest = function (domain, request, user, pass, ipport, nodeid, meshid, computerName, agentId) {
         if ((domain == null) || (domain.amtacmactivation == null) || (domain.amtacmactivation.certs == null) || (request == null) || (request.nonce == null) || (request.realm == null) || (request.fqdn == null) || (request.hash == null)) return { 'action': 'acmactivate', 'error': 1, 'errorText': 'Invalid arguments' };
