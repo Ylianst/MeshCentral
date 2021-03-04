@@ -248,7 +248,11 @@ module.exports.CreateAmtManager = function (parent) {
                 break;
             case 'startTlsHostConfig':
                 if (dev.acmTlsInfo == null) break;
-                console.log(jsondata); // TODO: Start TLS activation.
+                if ((typeof jsondata.value != 'object') || (typeof jsondata.value.status != 'number') || (jsondata.value.status != 0)) {
+                    removeAmtDevice(dev); // Failed to start TLS configuration
+                } else {
+                    activateIntelAmtTlsAcmEx(dev, jsondata.value); // Start TLS activation.
+                }
                 break;
         }
     }
@@ -1678,13 +1682,13 @@ module.exports.CreateAmtManager = function (parent) {
                     // We are not activated now, go to ACM directly.
                     // If this is Intel AMT 14 or better, we are going to attempt a host-based end-to-end TLS activation.
                     if (typeof dev.intelamt.ver == 'string') { var verSplit = dev.intelamt.ver.split('.'); if (verSplit.length >= 3) { dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); } }
-                    if (dev.aquired.majorver >= 14) {
+                    //if (dev.aquired.majorver >= 14) {
                         // Perform host-based TLS ACM activation
-                        activateIntelAmtTlsAcm(dev, mesh.amt.password, acminfo);
-                    } else {
+                        //activateIntelAmtTlsAcm(dev, mesh.amt.password, acminfo);
+                    //} else {
                         // Perform host-based ACM activation
                         activateIntelAmtAcm(dev, mesh.amt.password, acminfo);
-                    }
+                    //}
                 }
             }
         }
@@ -1801,6 +1805,27 @@ module.exports.CreateAmtManager = function (parent) {
         // Send the MEI command to enable TLS connections
         dev.consoleMsg("Performing TLS ACM activation...");
         dev.controlMsg({ action: 'startTlsHostConfig', hash: acmTlsInfo.hash, hostVpn: false, dnsSuffixList: null });
+    }
+
+    // Attempt Intel AMT TLS ACM activation after startConfiguration() is called on remote device
+    function activateIntelAmtTlsAcmEx(dev, startConfigData) {
+        console.log('activateIntelAmtTlsAcmEx');
+        // Setup the WSMAN stack, no TLS
+        var comm = CreateWsmanComm(dev.nodeid, 16993, 'admin', '', 1, { cert: dev.acmTlsInfo.certs, key: dev.acmTlsInfo.signkey }, dev.mpsConnection); // TLS with client certificate chain and key.
+        // TODO: Intel AMT leaf TLS cert need to SHA256 hash to "startConfigData.hash"
+        var wsstack = WsmanStackCreateService(comm);
+        dev.amtstack = AmtStackCreateService(wsstack);
+        dev.amtstack.dev = dev;
+        dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activateIntelAmtTlsAcmEx1);
+    }
+
+    function activateIntelAmtTlsAcmEx1(stack, name, responses, status) {
+        console.log('activateIntelAmtTlsAcmEx1', status, responses);
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { dev.consoleMsg("Failed to get Intel AMT state."); removeAmtDevice(dev); return; }
+
+        // TODO!!!
     }
 
     // Attempt Intel AMT ACM activation

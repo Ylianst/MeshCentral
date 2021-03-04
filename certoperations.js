@@ -51,7 +51,8 @@ module.exports.CertificateOperations = function (parent) {
             var leafcert = obj.IssueWebServerCertificate(rootcert, false, fqdn, 'mc', 'Intel(R) Client Setup Certificate', { serverAuth: true, '2.16.840.1.113741.1.2.3': true }, false);
 
             // Setup the certificate chain and key
-            certChain = [obj.pki.certificateToPem(leafcert.cert), obj.pki.certificateToPem(domain.amtacmactivation.certs[certIndex].rootcert)];
+            //certChain = [ obj.pki.certificateToPem(leafcert.cert), obj.pki.certificateToPem(domain.amtacmactivation.certs[certIndex].rootcert) ];
+            certChain = [ obj.pki.certificateToPem(domain.amtacmactivation.certs[certIndex].rootcert), obj.pki.certificateToPem(leafcert.cert) ];
             signkey = obj.pki.privateKeyToPem(leafcert.key);
         } else {
             // Make sure the cert chain is in PEM format
@@ -61,7 +62,7 @@ module.exports.CertificateOperations = function (parent) {
         }
 
         // Hash the leaf certificate and return the certificate chain and signing key
-        return { action: 'acmactivate', certs: certChain, signkey: signkey, hash: obj.getCertHash(certChain[0]) };
+        return { action: 'acmactivate', certs: certChain, signkey: signkey, hash: obj.getCertHash(certChain[certChain.length - 1]) };
     }
 
     // Sign a Intel AMT ACM activation request
