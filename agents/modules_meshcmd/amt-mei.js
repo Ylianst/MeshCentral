@@ -419,8 +419,8 @@ function amt_heci() {
 
         }, this, callback, optional);
     }
-    this.startConfigurationHBased = function startConfigurationHBased(certHash, hostVpn, dnsSuffixList, callback) {
-        if ((certHash == null) || ((certHash.length != 32) && (certHash.length != 48))) { throw "Bad certHash"; }
+    this.startConfigurationHBased = function startConfigurationHBased(certHash, hostVpn, dnsSuffixList, func) {
+        if ((certHash == null) || ((certHash.length != 32) && (certHash.length != 48))) { func({ status: -101 }); }
 
         var optional = [];
         for (var i = 4; i < arguments.length; ++i) { optional.push(arguments[i]); }
@@ -447,8 +447,23 @@ function amt_heci() {
                 opt.unshift({ status: header.Status });
             }
             fn.apply(this, opt);
-        }, callback, optional);
+        }, func, optional);
     }
 }
 
 module.exports = amt_heci;
+
+
+/*
+AMT_STATUS_SUCCESS = 0,
+AMT_STATUS_INTERNAL_ERROR = 1,
+AMT_STATUS_INVALID_AMT_MODE = 3,
+AMT_STATUS_INVALID_MESSAGE_LENGTH = 4,
+AMT_STATUS_MAX_LIMIT_REACHED = 23,
+AMT_STATUS_INVALID_PARAMETER = 36,
+AMT_STATUS_RNG_GENERATION_IN_PROGRESS = 47,
+AMT_STATUS_RNG_NOT_READY = 48,
+AMT_STATUS_CERTIFICATE_NOT_READY = 49,
+AMT_STATUS_INVALID_HANDLE = 2053
+AMT_STATUS_NOT_FOUND = 2068,
+*/

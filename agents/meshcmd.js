@@ -1174,6 +1174,14 @@ function configureJsonControl(data) {
             amtMei.on('error', function (e) { settings.apftunnel.sendMeiDeactivationState(1); });
             amtMei.unprovision(1, function (status) { settings.apftunnel.sendMeiDeactivationState(status); }); // 0 = Success
             break;
+        case 'startTlsHostConfig': // Request start of host based TLS ACM activation
+            var amtMeiModule, amtMei;
+            try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { settings.apftunnel.sendStartTlsHostConfigResponse({ state: -103 }); break; }
+            amtMei.on('error', function (e) { settings.apftunnel.sendStartTlsHostConfigResponse({ state: -104 }); });
+            amtMei.startConfigurationHBased(Buffer.from(data.hash, 'hex'), data.hostVpn, data.dnsSuffixList, function (response) {
+                settings.apftunnel.sendStartTlsHostConfigResponse(response);
+            });
+            break;
         case 'close': // Close the CIRA-LMS connection
             exit(0);
             break;
