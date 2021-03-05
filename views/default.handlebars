@@ -2419,6 +2419,7 @@
                         var url = 'mcrouter://' + servername + portStr + domainUrl + 'control.ashx?c=' + authCookie + '&t=' + serverinfo.tlshash + '&l={{{lang}}}' + (urlargs.key?('&key=' + urlargs.key):'');
                         if (message.nodeid != null) { url += ('&nodeid=' + message.nodeid); }
                         if (message.tcpport != null) { url += ('&protocol=1&remoteport=' + message.tcpport); }
+                        if (message.ip != null) { url += ('&remoteip=' + message.ip); }
                         url += ('&appid=' + message.protocol + '&autoexit=1'); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP
                         downloadFile(url, '');
                     } else if (message.tag == 'novnc') {
@@ -6146,7 +6147,7 @@
                                 var r = serverinfo.devicemeshrouterlinks.extralinks[i], p = 0;
                                 if ((r.filter == null) || (Array.isArray(r.filter) && ((r.filter.indexOf(mesh._id) >= 0) || (r.filter.indexOf(node._id) >= 0)))) {
                                     if (typeof r.protocol == 'number') { p = r.protocol; } else if (r.protocol == 'http') { p = 1; } else if (r.protocol == 'https') { p = 2; } else if (r.protocol == 'rdp') { p = 3; } else if (r.protocol == 'ssh') { p = 4; } else if (r.protocol == 'scp') { p = 5; }
-                                    x += '<a href=# onclick=p10MCRouter("' + node._id + '",' + p + ',' + r.port + ') title="' + "Requires installation of MeshCentral Router." + '">' + r.name + '</a>&nbsp;';
+                                    x += '<a href=# onclick=p10MCRouter("' + node._id + '",' + p + ',' + r.port + (r.ip?(',\"' + r.ip + '\"'):'') + ') title="' + "Requires installation of MeshCentral Router." + '">' + r.name + '</a>&nbsp;';
                                 }
                             }
                         }
@@ -6820,9 +6821,9 @@
             meshserver.send({ action: 'removedevices', nodeids: [ nodeid ] });
         }
 
-        function p10MCRouter(nodeid, protocol, port) {
+        function p10MCRouter(nodeid, protocol, port, ip) {
             if ((protocol == 3) && (port == null)) { if (currentNode.rdpport != null) { port = currentNode.rdpport; } else { port = 3389; } }
-            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'MCRouter', protocol: protocol }); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, ip: ip, tag: 'MCRouter', protocol: protocol }); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP
             return false;
         }
 
