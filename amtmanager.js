@@ -242,9 +242,18 @@ module.exports.CreateAmtManager = function (parent) {
                 deactivateIntelAmtCCMEx(dev, jsondata.value);
                 break;
             case 'meiState':
-                if (dev.pendingUpdatedMeiState != 1) break;
-                delete dev.pendingUpdatedMeiState;
-                attemptInitialContact(dev);
+                if (dev.acmactivate == 1) {
+                    // Continue ACM activation
+                    dev.consoleMsg("Got new Intel AMT MEI state. Holding 40 seconds prior to ACM activation...");
+                    delete dev.acmactivate;
+                    var continueAcmFunc = function continueAcm() { if (isAmtDeviceValid(continueAcm.dev)) { activateIntelAmtAcmEx0(continueAcm.dev); } }
+                    continueAcmFunc.dev = dev;
+                    setTimeout(continueAcmFunc, 40000);
+                } else {
+                    if (dev.pendingUpdatedMeiState != 1) break;
+                    delete dev.pendingUpdatedMeiState;
+                    attemptInitialContact(dev);
+                }
                 break;
             case 'startTlsHostConfig':
                 if (dev.acmTlsInfo == null) break;
@@ -256,10 +265,14 @@ module.exports.CreateAmtManager = function (parent) {
                 break;
             case 'stopConfiguration':
                 if (dev.acmactivate != 1) break;
-                delete dev.acmactivate;
-                if (jsondata.value == 3) { activateIntelAmtAcmEx0(dev); } // Intel AMT was already not in in-provisioning state, keep going right away.
-                else if (jsondata.value == 0) { dev.consoleMsg("Cleared in-provisioning state. Holding 20 seconds prior to ACM activation..."); setTimeout(function () { activateIntelAmtAcmEx0(dev); }, 20000); }
-                else { dev.consoleMsg("Unknown stopConfiguration() state of " + jsondata.value + ". Continuing with ACM activation..."); activateIntelAmtAcmEx0(dev); }
+                if (jsondata.value == 3) { delete dev.acmactivate; activateIntelAmtAcmEx0(dev); } // Intel AMT was already not in in-provisioning state, keep going right away.
+                else if (jsondata.value == 0) {
+                    dev.consoleMsg("Cleared in-provisioning state. Holding 30 seconds prior to getting Intel AMT MEI state...");
+                    var askStateFunc = function askState() { if (isAmtDeviceValid(askState.dev)) { askState.dev.controlMsg({ action: 'mestate' }); } }
+                    askStateFunc.dev = dev;
+                    setTimeout(askStateFunc, 30000);
+                }
+                else { dev.consoleMsg("Unknown stopConfiguration() state of " + jsondata.value + ". Continuing with ACM activation..."); delete dev.acmactivate; activateIntelAmtAcmEx0(dev); }
                 break;
         }
     }
@@ -1813,23 +1826,31 @@ module.exports.CreateAmtManager = function (parent) {
 
     // Attempt Intel AMT TLS ACM activation
     function activateIntelAmtTlsAcm(dev, password, acminfo) {
-        // Generate a random Intel AMT password if needed
-        if ((password == null) || (password == '')) { password = getRandomAmtPassword(); }
-        dev.temp = { pass: password, acminfo: acminfo };
+        // Check if MeshAgent/MeshCMD can support the startConfigurationhostB() call.
+        if ((dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null) && (typeof dev.mpsConnection.tag.meiState['core-ver'] == 'number') && (dev.mpsConnection.tag.meiState['core-ver'] > 0)) {
+            // Generate a random Intel AMT password if needed
+            if ((password == null) || (password == '')) { password = getRandomAmtPassword(); }
+            dev.temp = { pass: password, acminfo: acminfo };
 
-        // Get our ACM activation certificate chain
-        var acmTlsInfo = parent.certificateOperations.getAcmCertChain(parent.config.domains[dev.domainid], dev.temp.acminfo.fqdn, dev.temp.acminfo.hash);
-        if (acmTlsInfo.error == 1) { dev.consoleMsg(acmTlsInfo.errorText); removeAmtDevice(dev, 44); return; }
-        dev.acmTlsInfo = acmTlsInfo;
+            // Get our ACM activation certificate chain
+            var acmTlsInfo = parent.certificateOperations.getAcmCertChain(parent.config.domains[dev.domainid], dev.temp.acminfo.fqdn, dev.temp.acminfo.hash);
+            if (acmTlsInfo.error == 1) { dev.consoleMsg(acmTlsInfo.errorText); removeAmtDevice(dev, 44); return; }
+            dev.acmTlsInfo = acmTlsInfo;
 
-        // Send the MEI command to enable TLS connections
-        dev.consoleMsg("Performing TLS ACM activation...");
-        dev.controlMsg({ action: 'startTlsHostConfig', hash: acmTlsInfo.hash, hostVpn: false, dnsSuffixList: null });
+            // Send the MEI command to enable TLS connections
+            dev.consoleMsg("Performing TLS ACM activation...");
+            dev.controlMsg({ action: 'startTlsHostConfig', hash: acmTlsInfo.hash, hostVpn: false, dnsSuffixList: null });
+        } else {
+            // MeshCore or MeshCMD is to old
+            dev.consoleMsg("This software is to old to support ACM activation, pleasse update and try again.");
+            removeAmtDevice(dev);
+        }
     }
 
     // Attempt Intel AMT TLS ACM activation after startConfiguration() is called on remote device
     function activateIntelAmtTlsAcmEx(dev, startConfigData) {
-        console.log('activateIntelAmtTlsAcmEx');
+        console.log('activateIntelAmtTlsAcmEx', dev.mpsConnection.tag.meiState.OsAdmin.user, dev.mpsConnection.tag.meiState.OsAdmin.pass);
+
         // Setup the WSMAN stack, no TLS
         var comm = CreateWsmanComm(dev.nodeid, 16993, 'admin', '', 1, { cert: dev.acmTlsInfo.certs, key: dev.acmTlsInfo.signkey }, dev.mpsConnection); // TLS with client certificate chain and key.
         // TODO: Intel AMT leaf TLS cert need to SHA256 hash to "startConfigData.hash"
@@ -1843,25 +1864,39 @@ module.exports.CreateAmtManager = function (parent) {
         console.log('activateIntelAmtTlsAcmEx1', status, responses);
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        if (status != 200) { dev.consoleMsg("Failed to get Intel AMT state."); removeAmtDevice(dev, 45); return; }
-
-        // TODO!!!
+        if (status != 200) {
+            dev.consoleMsg("Failed to perform ACM TLS connection, falling back to legacy host-based activation.");
+            activateIntelAmtAcm(dev); // Falling back to legacy WSMAN ACM activation, start by refreshing $$OsAdmin username and password.
+        } else {
+            // TODO!!!
+        }
     }
 
     // Attempt Intel AMT ACM activation
     function activateIntelAmtAcm(dev, password, acminfo) {
-        // Generate a random Intel AMT password if needed
-        if ((password == null) || (password == '')) { password = getRandomAmtPassword(); }
-        dev.temp = { pass: password, acminfo: acminfo };
-        dev.acmactivate = 1;
+        // Check if MeshAgent/MeshCMD can support the stopConfiguration() call.
+        if ((dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null) && (typeof dev.mpsConnection.tag.meiState['core-ver'] == 'number') && (dev.mpsConnection.tag.meiState['core-ver'] > 0)) {
+            // Generate a random Intel AMT password if needed
+            if (acminfo != null) {
+                if ((password == null) || (password == '')) { password = getRandomAmtPassword(); }
+                dev.temp = { pass: password, acminfo: acminfo };
+            }
+            dev.acmactivate = 1;
 
-        // Send the MEI command to stop configuration.
-        // If Intel AMT is "in-provisioning" mode, the WSMAN ACM activation will not work, so we need to do this first.
-        dev.consoleMsg("Getting ready for ACM activation...");
-        dev.controlMsg({ action: 'stopConfiguration' });
+            // Send the MEI command to stop configuration.
+            // If Intel AMT is "in-provisioning" mode, the WSMAN ACM activation will not work, so we need to do this first.
+            dev.consoleMsg("Getting ready for ACM activation...");
+            dev.controlMsg({ action: 'stopConfiguration' });
+        } else {
+            // MeshCore or MeshCMD is to old
+            dev.consoleMsg("This software is to old to support ACM activation, pleasse update and try again.");
+            removeAmtDevice(dev);
+        }
     }
 
     function activateIntelAmtAcmEx0(dev) {
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+
         // Setup the WSMAN stack, no TLS
         var comm = CreateWsmanComm(dev.nodeid, 16992, dev.mpsConnection.tag.meiState.OsAdmin.user, dev.mpsConnection.tag.meiState.OsAdmin.pass, 0, null, dev.mpsConnection); // No TLS
         var wsstack = WsmanStackCreateService(comm);

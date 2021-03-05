@@ -1198,14 +1198,16 @@ function handleServerCommand(data) {
                         }
                         if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; } // Close the CIRA-LMS connection
                         if (data.action == 'startTlsHostConfig') { // Request start of host based TLS ACM activation
-                            amt.startConfigurationHBased(Buffer.from(data.hash, 'hex'), data.hostVpn, data.dnsSuffixList, function (response) {
-                                apftunnel.sendStartTlsHostConfigResponse(response);
-                            });
+                            var amtMeiModule, amtMei;
+                            try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { if (apftunnel) apftunnel.sendMeiDeactivationState(1); return; }
+                            amtMei.on('error', function (e) { if (apftunnel) apftunnel.sendStartTlsHostConfigResponse({ state: -104 }); });
+                            amtMei.startConfigurationHBased(Buffer.from(data.hash, 'hex'), data.hostVpn, data.dnsSuffixList, function (response) { apftunnel.sendStartTlsHostConfigResponse(response); });
                         }
                         if (data.action == 'stopConfiguration') { // Request Intel AMT stop configuration.
-                            amt.stopConfiguration(function (response) {
-                                apftunnel.sendStopConfigurationResponse(response);
-                            });
+                            var amtMeiModule, amtMei;
+                            try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { if (apftunnel) apftunnel.sendMeiDeactivationState(1); return; }
+                            amtMei.on('error', function (e) { if (apftunnel) apftunnel.sendStopConfigurationResponse({ state: -104 }); });
+                            amtMei.stopConfiguration(function (status) { apftunnel.sendStopConfigurationResponse(status); });
                         }
                     }
                     apftunnel.onChannelClosed = function () { addAmtEvent('LMS tunnel closed.'); apftunnel = null; }
@@ -1232,7 +1234,7 @@ function handleServerCommand(data) {
                 break;
             }
             case 'coredump':
-                // Set the current agent coredump situation.
+                // Set the current agent coredump situation.s
                 if (data.value === true) {
                     if (process.platform == 'win32') {
                         // TODO: This replace() below is not ideal, would be better to remove the .exe at the end instead of replace.
