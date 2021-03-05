@@ -5377,12 +5377,12 @@
 
                     r += '<div title="' + format("Occured at {0}", printDateTime(d)) + '" id="notifyx' + n.id + '" class=notification style="cursor:pointer;border-top:1px solid ' + ((r == '') ? 'transparent' : 'orange') + '">';
                     if (icon) { r += '<div class=j' + icon + ' onclick="notificationSelected(' + n.id + ')" style=margin:5px;float:left></div>'; }
-                    r += '<div onclick="notificationDelete(' + n.id + ')" class=unselectable title="' + "Clear this notification" + '" style=margin:5px;float:right;color:orange><b>X</b></div><div onclick="notificationSelected(' + n.id + ')" style=margin:5px>' + t + EscapeHtml(n.text) + '</div></div>';
+                    r += '<div onclick="notificationDelete(' + n.id + ')" class=unselectable title="' + "Clear this notification" + '" style=margin:5px;float:right;color:orange><b>X</b></div><div onclick="notificationSelected(' + n.id + ')" style=margin:5px>' + t + EscapeHtml(n.text) + '</div><div style=margin-left:5px;margin-bottom:5px;color:gray;font-size:10px>' + printDateTime(d) + '</div></div>';
                 }
             }
             var deleteall = '';
             if (notifications.length > 1) { deleteall = '<div id="notifyRemoveAll" onclick="deleteAllNotifications()" style="cursor:pointer;border-top:1px solid orange;margin:5px;color:orange;text-align:right;padding-right:3px">' + "Clear all" + '</div>'; }
-            QH('notifiyBox', '<div class=customScroll style="max-height:170px;overflow-y:auto;margin:5px">' + r + '</div>' + deleteall);
+            QH('notifiyBox', '<div class=customScroll style="max-height:170px;overflow-y:auto;margin:5px">' + r + deleteall + '</div>');
         }
 
         // A notification was selected
