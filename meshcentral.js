@@ -454,7 +454,7 @@ function CreateMeshCentralServer(config, args) {
                 if (error != null) {
                     // This is an un-expected restart
                     console.log(error);
-                    console.log('ERROR: MeshCentral failed with critical error, check MeshErrors.txt. Restarting in 5 seconds...');
+                    console.log('ERROR: MeshCentral failed with critical error, check mesherrors.txt. Restarting in 5 seconds...');
                     setTimeout(function () { obj.launchChildServer(startArgs); }, 5000);
                 }
             }

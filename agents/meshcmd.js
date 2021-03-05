@@ -2722,7 +2722,7 @@ function getMeiState(flags, func) {
     try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { func(null); return; }
     amtMei.on('error', function (e) { func(null); return; });
     try {
-        var amtMeiTmpState = { OsHostname: require('os').hostname(), Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
+        var amtMeiTmpState = { 'core-ver': 1, OsHostname: require('os').hostname(), Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
         amtMei.getProtocolVersion(function (result) { if (result != null) { amtMeiTmpState.MeiVersion = result; } });
         if ((flags & 1) != 0) { amtMei.getVersion(function (result) { if (result) { amtMeiTmpState.Versions = {}; for (var version in result.Versions) { amtMeiTmpState.Versions[result.Versions[version].Description] = result.Versions[version].Version; } } }); }
         amtMei.getProvisioningMode(function (result) { if (result) { amtMeiTmpState.ProvisioningMode = result.mode; } });

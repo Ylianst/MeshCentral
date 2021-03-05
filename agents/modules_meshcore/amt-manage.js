@@ -87,7 +87,7 @@ function AmtManager(agent, db, isdebug) {
     obj.getMeiState = function(flags, func) {
         if ((amtMei == null) || (amtMeiState < 2)) { if (func != null) { func(null); } return; }
         try {
-            var amtMeiTmpState = { OsHostname: require('os').hostname(), Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
+            var amtMeiTmpState = { 'core-ver': 1, OsHostname: require('os').hostname(), Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
             if (getMeiStateCache.MeiVersion != null) { amtMeiTmpState.MeiVersion = getMeiStateCache.MeiVersion; } else { amtMei.getProtocolVersion(function (result) { if (result != null) { getMeiStateCache.MeiVersion = amtMeiTmpState.MeiVersion = result; } }); }
             if ((flags & 1) != 0) {
                 if (getMeiStateCache.Versions != null) {
