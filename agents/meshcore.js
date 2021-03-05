@@ -1202,6 +1202,11 @@ function handleServerCommand(data) {
                                 apftunnel.sendStartTlsHostConfigResponse(response);
                             });
                         }
+                        if (data.action == 'stopConfiguration') { // Request Intel AMT stop configuration.
+                            amt.stopConfiguration(function (response) {
+                                apftunnel.sendStopConfigurationResponse(response);
+                            });
+                        }
                     }
                     apftunnel.onChannelClosed = function () { addAmtEvent('LMS tunnel closed.'); apftunnel = null; }
                     try { apftunnel.connect(); } catch (ex) { }
