@@ -928,10 +928,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                             if (obj.parent.amtManager != null) { obj.parent.amtManager.mpsControlMessage(socket.tag.nodeid, socket, socket.tag.connType, jsondata); }
                             break;
                         case 'deactivate':
-                            if (socket.tag.connType != 2) break; // Only accept MEI state on CIRA-LMS connection
-                            if (obj.parent.amtManager != null) { obj.parent.amtManager.mpsControlMessage(socket.tag.nodeid, socket, socket.tag.connType, jsondata); }
-                            break;
                         case 'startTlsHostConfig':
+                        case 'stopConfiguration':
                             if (socket.tag.connType != 2) break; // Only accept MEI state on CIRA-LMS connection
                             if (obj.parent.amtManager != null) { obj.parent.amtManager.mpsControlMessage(socket.tag.nodeid, socket, socket.tag.connType, jsondata); }
                             break;

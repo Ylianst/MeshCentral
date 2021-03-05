@@ -1194,8 +1194,19 @@ function configureJsonControl(data) {
                 settings.apftunnel.sendStartTlsHostConfigResponse(response);
             });
             break;
+        case 'stopConfiguration': // Request Intel AMT stop configuration.
+            var amtMeiModule, amtMei;
+            try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { settings.apftunnel.sendStartTlsHostConfigResponse({ state: -103 }); break; }
+            amtMei.on('error', function (e) { settings.apftunnel.sendStartTlsHostConfigResponse({ state: -104 }); });
+            amtMei.stopConfiguration(function (status) {
+                settings.apftunnel.sendStopConfigurationResponse(status);
+            });
+            break;
         case 'close': // Close the CIRA-LMS connection
             exit(0);
+            break;
+        default:
+            console.log("MeshCmd update may be needed, unknown JSON control action: " + data.action);
             break;
     }
 }
