@@ -113,7 +113,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTCONFIG', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE', 'AMTWIFI', 'AMTWAKE'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTCONFIG', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE', 'AMTWIFI', 'AMTWAKE', 'AMTSTOPCONFIGURATION'];
 
     // Load the action file
     var actionfile = null;
@@ -428,7 +428,19 @@ function run(argv) {
         console.log('Proxy set to ' + proxy[0] + ':' + proxyport);
     }
 
-    if (settings.action == 'smbios') {
+    if (settings.action == 'amtstopconfiguration') {
+        // Stop Intel AMT configuration
+        var amtMeiModule, amtMei;
+        try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
+        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+        amtMei.stopConfiguration(function (state) {
+            if (state == 3) { console.log("Intel AMT is not in in-provisionning mode."); }
+            else if (state == 1) { console.log("Intel AMT internal error."); }
+            else if (state == 0) { console.log("Success."); }
+            else { console.log("Unknown state: " + state); }
+            exit(1);
+        });
+    } else if (settings.action == 'smbios') {
         // Display SM BIOS tables in raw form
         SMBiosTables = require('smbios');
         SMBiosTables.get(function (data) {

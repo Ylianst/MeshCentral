@@ -1170,6 +1170,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 obj.agentCoreUpdateTaskId = taskid;
                                 const url = '*' + require('url').parse(obj.agentExeInfo.url).path;
                                 var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex };
+                                parent.parent.debug('agentupdate', "Sending agent update url: " + cmd.url);
 
                                 // Add the hash
                                 if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
@@ -1486,6 +1487,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             obj.agentCoreUpdateTaskId = taskid;
                             const url = '*' + require('url').parse(obj.agentExeInfo.url).path;
                             var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex, sessionid: agentUpdateFunc.sessionid };
+                            parent.parent.debug('agentupdate', "Sending user requested agent update url: " + cmd.url);
 
                             // Add the hash
                             if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }

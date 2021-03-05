@@ -2751,7 +2751,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'agentupdateex':
                 // Perform an direct agent update without requesting any information from the server, this should not typically be used.
-                agentUpdate_Start(null, { sessionid: sessionid });
+                if (args['_'].length == 1) {
+                    if (args['_'][0].startsWith('https://')) { agentUpdate_Start(args['_'][0], { sessionid: sessionid }); } else { response = "Usage: agentupdateex https://server/path"; }
+                } else {
+                    agentUpdate_Start(null, { sessionid: sessionid });
+                }
                 break;
             case 'msh':
                 response = JSON.stringify(_MSH(), null, 2);
@@ -4139,8 +4143,10 @@ function agentUpdate_Start(updateurl, updateoptions) {
     var sessionid = (updateoptions != null) ? updateoptions.sessionid : null; // If this is null, messages will be broadcast. Otherwise they will be unicasted
 
     // If the url starts with *, switch it to use the same protoco, host and port as the control channel.
-    updateurl = getServerTargetUrlEx(updateurl);
-    if (updateurl.startsWith("wss://")) { updateurl = "https://" + updateurl.substring(6); }
+    if (updateurl != null) {
+        updateurl = getServerTargetUrlEx(updateurl);
+        if (updateurl.startsWith("wss://")) { updateurl = "https://" + updateurl.substring(6); }
+    }
 
     if (agentUpdate_Start._selfupdate != null) {
         // We were already called, so we will ignore this duplicate request
@@ -4171,10 +4177,10 @@ function agentUpdate_Start(updateurl, updateoptions) {
                 return;
             }
 
-            if (sessionid != null) { sendConsoleText('Downloading update from: ' + updateurl, sessionid); }
+            if ((sessionid != null) && (updateurl != null)) { sendConsoleText('Downloading update from: ' + updateurl, sessionid); }
             var options = require('http').parseUri(updateurl != null ? updateurl : require('MeshAgent').ServerUrl);
             options.protocol = 'https:';
-            if (updateurl == null) { options.path = ('/meshagents?id=' + require('MeshAgent').ARCHID); }
+            if (updateurl == null) { options.path = ('/meshagents?id=' + require('MeshAgent').ARCHID); sendConsoleText('Downloading update from: ' + options.path, sessionid); }
             options.rejectUnauthorized = false;
             options.checkServerIdentity = function checkServerIdentity(certs) {
                 // If the tunnel certificate matches the control channel certificate, accept the connection
