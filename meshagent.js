@@ -1170,6 +1170,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 obj.agentCoreUpdateTaskId = taskid;
                                 const url = '*' + require('url').parse(obj.agentExeInfo.url).path;
                                 var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex };
+                                parent.parent.debug('agentupdate', "Sending agent update url: " + cmd.url);
 
                                 // Add the hash
                                 if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
@@ -1360,6 +1361,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                 case 'sysinfo': {
                     if ((typeof command.data == 'object') && (typeof command.data.hash == 'string')) {
+                        // Validate command.data.
+                        if (common.validateObjectForMongo(command.data, 1024) == false) break;
+
+                        // Save to database
                         command.data._id = 'si' + obj.dbNodeKey;
                         command.data.type = 'sysinfo';
                         command.data.domain = domain.id;
@@ -1482,6 +1487,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             obj.agentCoreUpdateTaskId = taskid;
                             const url = '*' + require('url').parse(obj.agentExeInfo.url).path;
                             var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex, sessionid: agentUpdateFunc.sessionid };
+                            parent.parent.debug('agentupdate', "Sending user requested agent update url: " + cmd.url);
 
                             // Add the hash
                             if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }

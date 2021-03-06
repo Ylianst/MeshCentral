@@ -242,9 +242,9 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                         var options = { socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
                         if (obj.xtlsMethod == 1) { options.secureProtocol = 'TLSv1_method'; }
                         if (obj.xtlsoptions) {
-                            if (obj.xtlsoptions.ca) options.ca = obj.xtlsoptions.ca;
-                            if (obj.xtlsoptions.cert) options.cert = obj.xtlsoptions.cert;
-                            if (obj.xtlsoptions.key) options.key = obj.xtlsoptions.key;
+                            if (obj.xtlsoptions.ca) { options.ca = obj.xtlsoptions.ca; }
+                            if (obj.xtlsoptions.cert) { options.cert = obj.xtlsoptions.cert; }
+                            if (obj.xtlsoptions.key) { options.key = obj.xtlsoptions.key; }
                         }
 
                         obj.socket = obj.tls.connect(obj.port, obj.host, options, obj.xxOnSocketConnected);

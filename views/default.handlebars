@@ -2419,6 +2419,7 @@
                         var url = 'mcrouter://' + servername + portStr + domainUrl + 'control.ashx?c=' + authCookie + '&t=' + serverinfo.tlshash + '&l={{{lang}}}' + (urlargs.key?('&key=' + urlargs.key):'');
                         if (message.nodeid != null) { url += ('&nodeid=' + message.nodeid); }
                         if (message.tcpport != null) { url += ('&protocol=1&remoteport=' + message.tcpport); }
+                        if (message.ip != null) { url += ('&remoteip=' + message.ip); }
                         url += ('&appid=' + message.protocol + '&autoexit=1'); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP
                         downloadFile(url, '');
                     } else if (message.tag == 'novnc') {
@@ -3477,6 +3478,7 @@
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { p13folderup(9999); haltEvent(e); return false; } // F5 Refresh on files
             if (!xxdialogMode && xxcurrentView == 4) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
             if (xxdialogMode && e.keyCode == 27) { dialogclose(0); }
+            if ((e.shiftKey == true) && (e.keyCode == 27)) { dialogclose(0); Q('KvmSearchInput').value = Q('SearchInput').value = ''; mainUpdate(5); if (desktop != null) { connectDesktop(); } if (terminal != null) { connectTerminal(); } if (files != null) { connectFiles(); } go(1); return; } // Shift-ESC: Reset the web page
             if (xxdialogMode || xxcurrentView != 0 || e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
             if (Q('viewselect').value < 4) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
             if (Q('viewselect').value == 4) { if ((e.keyCode === 8 && mapSearchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
@@ -4454,9 +4456,9 @@
             x += '</div>';
 
             // Linux agent install
-            x += '<div id=agins_linux style=display:none>' + format("To add a computer to {0} run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
-            x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
-            x += '<div style=\'font-size:x-small\'>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div></div>';
+            x += '<div id=agins_linux style=display:none>' + format("To add a computer to \"{0}\" run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
+            x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px></textarea>';
+            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")><img src=images/link4.png height=10 width=10 style=cursor:pointer> Copy</a></div>';
 
             // macOS agent install
             x += '<div id=agins_osx style=display:none>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
@@ -4474,8 +4476,8 @@
 
             // Linux agent uninstall
             x += '<div id=agins_linux_un style=display:none>' + "To remove a mesh agent, run the following command. Root credentials will be needed." + '<br />';
-            x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
-            x += '</div>';
+            x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px></textarea>';
+            x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un")><img src=images/link4.png height=10 width=10 style=cursor:pointer> Copy</a></div>';
 
             // Linux binary installer
             x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces. You need to 'chmod +x meshagent' and run this file." + '<br /><br />';
@@ -6145,7 +6147,7 @@
                                 var r = serverinfo.devicemeshrouterlinks.extralinks[i], p = 0;
                                 if ((r.filter == null) || (Array.isArray(r.filter) && ((r.filter.indexOf(mesh._id) >= 0) || (r.filter.indexOf(node._id) >= 0)))) {
                                     if (typeof r.protocol == 'number') { p = r.protocol; } else if (r.protocol == 'http') { p = 1; } else if (r.protocol == 'https') { p = 2; } else if (r.protocol == 'rdp') { p = 3; } else if (r.protocol == 'ssh') { p = 4; } else if (r.protocol == 'scp') { p = 5; }
-                                    x += '<a href=# onclick=p10MCRouter("' + node._id + '",' + p + ',' + r.port + ') title="' + "Requires installation of MeshCentral Router." + '">' + r.name + '</a>&nbsp;';
+                                    x += '<a href=# onclick=p10MCRouter("' + node._id + '",' + p + ',' + r.port + (r.ip?(',\"' + r.ip + '\"'):'') + ') title="' + "Requires installation of MeshCentral Router." + '">' + r.name + '</a>&nbsp;';
                                 }
                             }
                         }
@@ -6482,7 +6484,14 @@
         }
 
         function deskClipboardOutFunction() {
-            if ((navigator.clipboard != null) && (navigator.clipboard.readText != null)) { navigator.clipboard.readText().then(function(text) { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }).catch(function(err) { }); }
+            if ((navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
+                try {
+                    navigator.clipboard.readText().then(function(text) {
+                        meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text });
+                    }).catch(function(err) { console.log(err); });
+                } catch (ex) { console.log(ex); }
+            }
+            return true;
         }
 
         function deskRefreshFunction() {
@@ -6812,9 +6821,9 @@
             meshserver.send({ action: 'removedevices', nodeids: [ nodeid ] });
         }
 
-        function p10MCRouter(nodeid, protocol, port) {
+        function p10MCRouter(nodeid, protocol, port, ip) {
             if ((protocol == 3) && (port == null)) { if (currentNode.rdpport != null) { port = currentNode.rdpport; } else { port = 3389; } }
-            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'MCRouter', protocol: protocol }); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, ip: ip, tag: 'MCRouter', protocol: protocol }); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP
             return false;
         }
 
@@ -7609,7 +7618,7 @@
             QH('deskkeys', x);
         }
 
-        var keyStrings = { 8  : "BackSpace", 9  : "Tab", 13 : "Enter", 27 : "Escape", 45 : "Insert", 46 : "Del", 36 : "Home", 35 : "End", 33 : "Page Up", 34 : "Page Down", 37 : "Left", 38 : "Up", 39 : "Right", 40 : "Down", 0  : "None" }
+        var keyStrings = { 8  : "BackSpace", 9  : "Tab", 13 : "Enter", 27 : "Escape", 44 : "Print Screen", 45 : "Insert", 46 : "Del", 36 : "Home", 35 : "End", 33 : "Page Up", 34 : "Page Down", 37 : "Left", 38 : "Up", 39 : "Right", 40 : "Down", 0  : "None" }
 
         function keyShortcutTotext(n) {
             var x = [];
@@ -13540,12 +13549,12 @@
 
                     r += '<div title="' + format("Occured at {0}", printDateTime(d)) + '" id="notifyx' + n.id + '" class=notification style="cursor:pointer;border-top:1px solid ' + ((r == '') ? 'transparent' : 'orange') + '">';
                     if (icon) { r += '<div class=j' + icon + ' onclick="notificationSelected(' + n.id + ')" style=margin:5px;float:left></div>'; }
-                    r += '<div onclick="notificationDelete(' + n.id + ')" class=unselectable title="' + "Clear this notification" + '" style=margin:5px;float:right;color:orange><b>X</b></div><div onclick="notificationSelected(' + n.id + ')" style=margin:5px>' + t + EscapeHtml(n.text) + '</div></div>';
+                    r += '<div onclick="notificationDelete(' + n.id + ')" class=unselectable title="' + "Clear this notification" + '" style=margin:5px;float:right;color:orange><b>X</b></div><div onclick="notificationSelected(' + n.id + ')" style=margin:5px>' + t + EscapeHtml(n.text) + '</div><div style=margin-left:5px;margin-bottom:5px;color:gray;font-size:10px>' + printDateTime(d) + '</div></div>';
                 }
             }
             var deleteall = '';
             if (notifications.length > 1) { deleteall = '<div id="notifyRemoveAll" onclick="deleteAllNotifications()" style="cursor:pointer;border-top:1px solid orange;margin:5px;color:orange;text-align:right;padding-right:3px">' + "Clear all" + '</div>'; }
-            QH('notifiyBox', '<div class=customScroll style="max-height:170px;overflow-y:auto;margin:5px">' + r + '</div>' + deleteall );
+            QH('notifiyBox', '<div class=customScroll style="max-height:170px;overflow-y:auto;margin:5px">' + r + deleteall + '</div>' );
         }
 
         // A notification was selected
@@ -14074,6 +14083,7 @@
             QE('idx_dlgOkButton', true);
             QV('idx_dlgOkButton', b & 1);
             QV('idx_dlgCancelButton', b & 2);
+            Q('idx_dlgCancelButton').value = ((b == 2)?"Close":"Cancel");
             QV('id_dialogclose', (b & 2) || (b & 8));
             QV('idx_dlgDeleteButton', b & 4);
             QV('idx_dlgButtonBar', b & 7);

@@ -887,7 +887,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            var fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,sms,amtacm,certhashes,watchdog,amtmanager';
+                            var fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,dbcounters,sms,amtacm,certhashes,watchdog,amtmanager';
                             if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
                             availcommands = availcommands.split(',').sort();
                             while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
@@ -1135,7 +1135,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 var r2 = '';
                                 for (var i in stats) { r2 += (i + ': ' + stats[i] + '\r\n'); }
                                 try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: command.tag })); } catch (ex) { }
-                            })
+                            });
+                            break;
+                        }
+                        case 'dbcounters': {
+                            try { ws.send(JSON.stringify({ action: 'serverconsole', value: JSON.stringify(parent.parent.db.dbCounters, null, 2), tag: command.tag })); } catch (ex) { }
                             break;
                         }
                         case 'serverupdate': {
@@ -4156,6 +4160,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
                                 if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want to agent to TCP connect to a remote address
                                 if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want to agent to TCP connect to a remote port
+                                if (command.ip) { cookieContent.ip = command.ip; } // Indicates the browser want to agent to relay a TCP connection to a IP:port
                                 command.cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
                                 command.trustedCert = parent.isTrustedCert(domain);
                                 try { ws.send(JSON.stringify(command)); } catch (ex) { }
@@ -5387,23 +5392,46 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // TODO: Make a better database call to get filtered data.
                 if (command.userid == null) {
                     // Get previous logins for self
-                    db.GetUserEvents([user._id], domain.id, user._id.split('/')[2], function (err, docs) {
-                        if (err != null) return;
-                        var e = [];
-                        for (var i in docs) { if ((docs[i].msgArgs) && ((docs[i].action == 'authfail') || (docs[i].action == 'login'))) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); } }
-                        try { ws.send(JSON.stringify({ action: 'previousLogins', events: e })); } catch (ex) { }
-                    });
+                    if (db.GetUserLoginEvents) {
+                        // New way
+                        db.GetUserLoginEvents(domain.id, user._id.split('/')[2], function (err, docs) {
+                            if (err != null) return;
+                            var e = [];
+                            for (var i in docs) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); }
+                            try { ws.send(JSON.stringify({ action: 'previousLogins', events: e })); } catch (ex) { }
+                        });
+                    } else {
+                        // Old way
+                        db.GetUserEvents([user._id], domain.id, user._id.split('/')[2], function (err, docs) {
+                            console.log(docs);
+                            if (err != null) return;
+                            var e = [];
+                            for (var i in docs) { if ((docs[i].msgArgs) && ((docs[i].action == 'authfail') || (docs[i].action == 'login'))) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); } }
+                            try { ws.send(JSON.stringify({ action: 'previousLogins', events: e })); } catch (ex) { }
+                        });
+                    }
                 } else {
                     // Get previous logins for specific userid
                     if (user.siteadmin === SITERIGHT_ADMIN) {
                         var splitUser = command.userid.split('/');
                         if ((obj.crossDomain === true) || (splitUser[1] === domain.id)) {
-                            db.GetUserEvents([command.userid], splitUser[1], splitUser[2], function (err, docs) {
-                                if (err != null) return;
-                                var e = [];
-                                for (var i in docs) { if ((docs[i].msgArgs) && ((docs[i].action == 'authfail') || (docs[i].action == 'login'))) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); } }
-                                try { ws.send(JSON.stringify({ action: 'previousLogins', userid: command.userid, events: e })); } catch (ex) { }
-                            });
+                            if (db.GetUserLoginEvents) {
+                                // New way
+                                db.GetUserLoginEvents(splitUser[1], splitUser[2], function (err, docs) {
+                                    if (err != null) return;
+                                    var e = [];
+                                    for (var i in docs) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); }
+                                    try { ws.send(JSON.stringify({ action: 'previousLogins', userid: command.userid, events: e })); } catch (ex) { }
+                                });
+                            } else {
+                                // Old way
+                                db.GetUserEvents([command.userid], splitUser[1], splitUser[2], function (err, docs) {
+                                    if (err != null) return;
+                                    var e = [];
+                                    for (var i in docs) { if ((docs[i].msgArgs) && ((docs[i].action == 'authfail') || (docs[i].action == 'login'))) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); } }
+                                    try { ws.send(JSON.stringify({ action: 'previousLogins', userid: command.userid, events: e })); } catch (ex) { }
+                                });
+                            }
                         }
                     }
                 }

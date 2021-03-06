@@ -1197,6 +1197,18 @@ function handleServerCommand(data) {
                             amtMei.unprovision(1, function (status) { if (apftunnel) apftunnel.sendMeiDeactivationState(status); }); // 0 = Success
                         }
                         if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; } // Close the CIRA-LMS connection
+                        if (data.action == 'startTlsHostConfig') { // Request start of host based TLS ACM activation
+                            var amtMeiModule, amtMei;
+                            try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { if (apftunnel) apftunnel.sendMeiDeactivationState(1); return; }
+                            amtMei.on('error', function (e) { if (apftunnel) apftunnel.sendStartTlsHostConfigResponse({ state: -104 }); });
+                            amtMei.startConfigurationHBased(Buffer.from(data.hash, 'hex'), data.hostVpn, data.dnsSuffixList, function (response) { apftunnel.sendStartTlsHostConfigResponse(response); });
+                        }
+                        if (data.action == 'stopConfiguration') { // Request Intel AMT stop configuration.
+                            var amtMeiModule, amtMei;
+                            try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { if (apftunnel) apftunnel.sendMeiDeactivationState(1); return; }
+                            amtMei.on('error', function (e) { if (apftunnel) apftunnel.sendStopConfigurationResponse({ state: -104 }); });
+                            amtMei.stopConfiguration(function (status) { apftunnel.sendStopConfigurationResponse(status); });
+                        }
                     }
                     apftunnel.onChannelClosed = function () { addAmtEvent('LMS tunnel closed.'); apftunnel = null; }
                     try { apftunnel.connect(); } catch (ex) { }
@@ -1222,7 +1234,7 @@ function handleServerCommand(data) {
                 break;
             }
             case 'coredump':
-                // Set the current agent coredump situation.
+                // Set the current agent coredump situation.s
                 if (data.value === true) {
                     if (process.platform == 'win32') {
                         // TODO: This replace() below is not ideal, would be better to remove the .exe at the end instead of replace.
@@ -2746,7 +2758,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'agentupdateex':
                 // Perform an direct agent update without requesting any information from the server, this should not typically be used.
-                agentUpdate_Start(null, { sessionid: sessionid });
+                if (args['_'].length == 1) {
+                    if (args['_'][0].startsWith('https://')) { agentUpdate_Start(args['_'][0], { sessionid: sessionid }); } else { response = "Usage: agentupdateex https://server/path"; }
+                } else {
+                    agentUpdate_Start(null, { sessionid: sessionid });
+                }
                 break;
             case 'msh':
                 response = JSON.stringify(_MSH(), null, 2);
@@ -4134,8 +4150,10 @@ function agentUpdate_Start(updateurl, updateoptions) {
     var sessionid = (updateoptions != null) ? updateoptions.sessionid : null; // If this is null, messages will be broadcast. Otherwise they will be unicasted
 
     // If the url starts with *, switch it to use the same protoco, host and port as the control channel.
-    updateurl = getServerTargetUrlEx(updateurl);
-    if (updateurl.startsWith("wss://")) { updateurl = "https://" + updateurl.substring(6); }
+    if (updateurl != null) {
+        updateurl = getServerTargetUrlEx(updateurl);
+        if (updateurl.startsWith("wss://")) { updateurl = "https://" + updateurl.substring(6); }
+    }
 
     if (agentUpdate_Start._selfupdate != null) {
         // We were already called, so we will ignore this duplicate request
@@ -4166,10 +4184,10 @@ function agentUpdate_Start(updateurl, updateoptions) {
                 return;
             }
 
-            if (sessionid != null) { sendConsoleText('Downloading update from: ' + updateurl, sessionid); }
+            if ((sessionid != null) && (updateurl != null)) { sendConsoleText('Downloading update from: ' + updateurl, sessionid); }
             var options = require('http').parseUri(updateurl != null ? updateurl : require('MeshAgent').ServerUrl);
             options.protocol = 'https:';
-            if (updateurl == null) { options.path = ('/meshagents?id=' + require('MeshAgent').ARCHID); }
+            if (updateurl == null) { options.path = ('/meshagents?id=' + require('MeshAgent').ARCHID); sendConsoleText('Downloading update from: ' + options.path, sessionid); }
             options.rejectUnauthorized = false;
             options.checkServerIdentity = function checkServerIdentity(certs) {
                 // If the tunnel certificate matches the control channel certificate, accept the connection

@@ -293,3 +293,24 @@ module.exports.meshServerRightsArrayToNumber = function (val) {
     }
     return null;
 }
+
+
+// Validate an object to make sure it can be stored in MongoDB
+module.exports.validateObjectForMongo = function (obj, maxStrLen) {
+    return validateObjectForMongoRec(obj, maxStrLen);
+}
+
+function validateObjectForMongoRec(obj, maxStrLen) {
+    if (typeof obj != 'object') return false;
+    for (var i in obj) {
+        // Check the key name is not too long
+        if (i.length > 100) return false;
+        // Check if all chars are alpha-numeric or underscore.
+        for (var j in i) { const c = i.charCodeAt(j); if ((c < 48) || ((c > 57) && (c < 65)) || ((c > 90) && (c < 97) && (c != 95)) || (c > 122)) return false; }
+        // If the value is a string, check it's not too long
+        if ((typeof obj[i] == 'string') && (obj[i].length > maxStrLen)) return false;
+        // If the value is an object, check it.
+        if ((typeof obj[i] == 'object') && (Array.isArray(obj[i]) == false) && (validateObjectForMongoRec(obj[i], maxStrLen) == false)) return false;
+    }
+    return true;
+}

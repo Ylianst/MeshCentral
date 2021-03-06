@@ -913,6 +913,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var jsondata = null, jsondatastr = data.substring(5, 5 + jsondatalen);
                     try { jsondata = JSON.parse(jsondatastr); } catch (ex) { }
                     if ((jsondata == null) || (typeof jsondata.action != 'string')) return;
+                    parent.debug('mpscmd', '--> JSON_CONTROL', jsondata.action);
                     switch (jsondata.action) {
                         case 'connType':
                             if ((socket.tag.connType != 0) || (socket.tag.SystemId != null)) return; // Once set, the connection type can't be changed.
@@ -927,6 +928,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                             if (obj.parent.amtManager != null) { obj.parent.amtManager.mpsControlMessage(socket.tag.nodeid, socket, socket.tag.connType, jsondata); }
                             break;
                         case 'deactivate':
+                        case 'startTlsHostConfig':
+                        case 'stopConfiguration':
                             if (socket.tag.connType != 2) break; // Only accept MEI state on CIRA-LMS connection
                             if (obj.parent.amtManager != null) { obj.parent.amtManager.mpsControlMessage(socket.tag.nodeid, socket, socket.tag.connType, jsondata); }
                             break;
@@ -956,8 +959,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
     obj.SendJsonControl = function(socket, data) {
         if (socket.tag.connType == 0) return; // This command is valid only for connections that are not really CIRA.
-        parent.debug('mpscmd', '<-- JSON_CONTROL');
-        if (typeof data == 'object') { data = JSON.stringify(data); }
+        if (typeof data == 'object') { parent.debug('mpscmd', '<-- JSON_CONTROL', data.action); data = JSON.stringify(data); } else { parent.debug('mpscmd', '<-- JSON_CONTROL'); }
         Write(socket, String.fromCharCode(APFProtocol.JSON_CONTROL) + common.IntToStr(data.length) + data);
     }
 
