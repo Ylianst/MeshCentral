@@ -1187,29 +1187,7 @@ function handleServerCommand(data) {
                     };
                     addAmtEvent('LMS tunnel start.');
                     apftunnel = require('amt-apfclient')({ debug: false }, apfarg);
-                    apftunnel.onJsonControl = function (data) {
-                        if (data.action == 'console') { addAmtEvent(data.msg); } // Add console message to AMT event log
-                        if (data.action == 'mestate') { amt.getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
-                        if (data.action == 'deactivate') { // Request CCM deactivation
-                            var amtMeiModule, amtMei;
-                            try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { if (apftunnel) apftunnel.sendMeiDeactivationState(1); return; }
-                            amtMei.on('error', function (e) { if (apftunnel) apftunnel.sendMeiDeactivationState(1); });
-                            amtMei.unprovision(1, function (status) { if (apftunnel) apftunnel.sendMeiDeactivationState(status); }); // 0 = Success
-                        }
-                        if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; } // Close the CIRA-LMS connection
-                        if (data.action == 'startTlsHostConfig') { // Request start of host based TLS ACM activation
-                            var amtMeiModule, amtMei;
-                            try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { if (apftunnel) apftunnel.sendMeiDeactivationState(1); return; }
-                            amtMei.on('error', function (e) { if (apftunnel) apftunnel.sendStartTlsHostConfigResponse({ state: -104 }); });
-                            amtMei.startConfigurationHBased(Buffer.from(data.hash, 'hex'), data.hostVpn, data.dnsSuffixList, function (response) { apftunnel.sendStartTlsHostConfigResponse(response); });
-                        }
-                        if (data.action == 'stopConfiguration') { // Request Intel AMT stop configuration.
-                            var amtMeiModule, amtMei;
-                            try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { if (apftunnel) apftunnel.sendMeiDeactivationState(1); return; }
-                            amtMei.on('error', function (e) { if (apftunnel) apftunnel.sendStopConfigurationResponse({ state: -104 }); });
-                            amtMei.stopConfiguration(function (status) { apftunnel.sendStopConfigurationResponse(status); });
-                        }
-                    }
+                    apftunnel.onJsonControl = handleApfJsonControl;
                     apftunnel.onChannelClosed = function () { addAmtEvent('LMS tunnel closed.'); apftunnel = null; }
                     try { apftunnel.connect(); } catch (ex) { }
                 });
@@ -1275,6 +1253,24 @@ function handleServerCommand(data) {
             default:
                 // Unknown action, ignore it.
                 break;
+        }
+    }
+}
+
+// Handle APF JSON control commands
+function handleApfJsonControl(data) {
+    if (data.action == 'console') { addAmtEvent(data.msg); } // Add console message to AMT event log
+    if (data.action == 'mestate') { amt.getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
+    if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; } // Close the CIRA-LMS connection
+    if (amt.amtMei != null) {
+        if (data.action == 'deactivate') { // Request CCM deactivation
+            amt.amtMei.unprovision(1, function (status) { if (apftunnel) apftunnel.sendMeiDeactivationState(status); }); // 0 = Success
+        }
+        if (data.action == 'startTlsHostConfig') { // Request start of host based TLS ACM activation
+            amt.amtMei.startConfigurationHBased(Buffer.from(data.hash, 'hex'), data.hostVpn, data.dnsSuffixList, function (response) { apftunnel.sendStartTlsHostConfigResponse(response); });
+        }
+        if (data.action == 'stopConfiguration') { // Request Intel AMT stop configuration.
+            amt.amtMei.stopConfiguration(function (status) { apftunnel.sendStopConfigurationResponse(status); });
         }
     }
 }
@@ -3769,17 +3765,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         } else {
                             addAmtEvent('User LMS tunnel start.');
                             apftunnel = require('amt-apfclient')({ debug: false }, apfarg);
-                            apftunnel.onJsonControl = function (data) {
-                                if (data.action == 'console') { addAmtEvent(data.msg); require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); } // Display a console message
-                                if (data.action == 'mestate') { amt.getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
-                                if (data.action == 'deactivate') { // Request CCM deactivation
-                                    var amtMeiModule, amtMei;
-                                    try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { apftunnel.sendMeiDeactivationState(1); return; }
-                                    amtMei.on('error', function (e) { apftunnel.sendMeiDeactivationState(1); });
-                                    amtMei.unprovision(1, function (status) { apftunnel.sendMeiDeactivationState(status); }); // 0 = Success
-                                }
-                                if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; } // Close the CIRA-LMS connection
-                            }
+                            apftunnel.onJsonControl = handleApfJsonControl;
                             apftunnel.onChannelClosed = function () { addAmtEvent('User LMS tunnel closed.'); apftunnel = null; }
                             try {
                                 apftunnel.connect();
@@ -3816,10 +3802,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                                 response = "Unable to get Intel AMT UUID: " + apfarg.clientuuid;
                             } else {
                                 apftunnel = require('amt-apfclient')({ debug: false }, apfarg);
-                                apftunnel.onJsonControl = function (data) {
-                                    if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); }
-                                    if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; }
-                                }
+                                apftunnel.onJsonControl = handleApfJsonControl;
                                 apftunnel.onChannelClosed = function () { apftunnel = null; }
                                 try {
                                     apftunnel.connect();
