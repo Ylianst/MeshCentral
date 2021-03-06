@@ -58,11 +58,11 @@ function AmtManager(agent, db, isdebug) {
     var rebindToMeiRetrys = 0;
     obj.reset = function () {
         ++rebindToMeiRetrys;
-        amtMei = null, amtMeiState = 0, amtLms = null, amtLmsState = 0, obj.state = 0, obj.lmsstate = 0;
+        obj.amtMei = null, amtMei = null, amtMeiState = 0, amtLms = null, amtLmsState = 0, obj.state = 0, obj.lmsstate = 0;
         //debug('Binding to MEI');
         try {
             var amtMeiLib = require('amt-mei');
-            amtMei = new amtMeiLib();
+            obj.amtMei = amtMei = new amtMeiLib();
             amtMei.on('error', function (e) { debug('MEI error'); amtMei = null; amtMeiState = -1; obj.state = -1; if (obj.onStateChange != null) { obj.onStateChange(amtMeiState); } });
             amtMei.getVersion(function (result) {
                 if (result == null) {
