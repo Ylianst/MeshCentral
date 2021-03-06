@@ -287,15 +287,18 @@ module.exports.CreateAmtScanner = function (parent) {
     obj.changeConnectState = function (tag, minorVersion, majorVersion, provisioningState, openPort, dualPorts, rinfo, user) {
         //var provisioningStates = { 0: 'Pre', 1: 'in', 2: 'Post' };
         //var provisioningStateStr = provisioningStates[provisioningState];
-        //console.log('Intel AMT ' + majorVersion + '.' + minorVersion + ', ' + provisioningStateStr + '-Provisioning at ' + rinfo.address + ', Open Ports: [' + openPort + '], tag: ' + tag);
+        //console.log('Intel AMT ' + majorVersion + '.' + minorVersion + ', ' + provisioningStateStr + '-Provisioning at ' + rinfo.address + ', Open Ports: [' + openPort + '], tag: ' + tag + ', dualPorts: ' + dualPorts);
         var scaninfo = obj.scanTableTags[tag];
         if (scaninfo != undefined) {
             scaninfo.lastpong = Date.now();
             if (scaninfo.state == 0) {
                 scaninfo.state = 1;
-                scaninfo.nodeinfo.intelamt.tls = (((openPort == 16993) || (dualPorts == true)) ? 1 : 0);
-                scaninfo.nodeinfo.intelamt.ver = majorVersion + '.' + minorVersion;
-                scaninfo.nodeinfo.intelamt.state = provisioningState;
+                if ((openPort == 16993) || (dualPorts == true)) { scaninfo.nodeinfo.intelamt.tls = 1; }
+                else if (openPort == 16992) { scaninfo.nodeinfo.intelamt.tls = 0; }
+                if (majorVersion > 0) { // Older versions of Intel AMT report the AMT version.
+                    scaninfo.nodeinfo.intelamt.ver = majorVersion + '.' + minorVersion;
+                    scaninfo.nodeinfo.intelamt.state = provisioningState;
+                }
                 obj.parent.SetConnectivityState(scaninfo.nodeinfo.meshid, scaninfo.nodeinfo._id, scaninfo.lastpong, 4, 7); // Report power state as "present" (7).
                 obj.changeAmtState(scaninfo.nodeinfo._id, scaninfo.nodeinfo.intelamt.ver, provisioningState, scaninfo.nodeinfo.intelamt.tls);
                 if (obj.parent.amtManager != null) { obj.parent.amtManager.startAmtManagement(scaninfo.nodeinfo._id, 3, scaninfo.nodeinfo.host); }

@@ -183,6 +183,8 @@ function CreateAPFClient(parent, args) {
 
     obj.updateMeiState = function (state) { SendJsonControl(obj.forwardClient.ws, { action: 'meiState', value: state }); }
     obj.sendMeiDeactivationState = function (state) { SendJsonControl(obj.forwardClient.ws, { action: 'deactivate', value: state }); }
+    obj.sendStartTlsHostConfigResponse = function (state) { SendJsonControl(obj.forwardClient.ws, { action: 'startTlsHostConfig', value: state }); }
+    obj.sendStopConfigurationResponse = function (state) { SendJsonControl(obj.forwardClient.ws, { action: 'stopConfiguration', value: state }); }
 
     function SendJsonControl(socket, o) {
         var data = JSON.stringify(o)

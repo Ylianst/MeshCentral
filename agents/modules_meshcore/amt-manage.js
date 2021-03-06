@@ -87,7 +87,7 @@ function AmtManager(agent, db, isdebug) {
     obj.getMeiState = function(flags, func) {
         if ((amtMei == null) || (amtMeiState < 2)) { if (func != null) { func(null); } return; }
         try {
-            var amtMeiTmpState = { OsHostname: require('os').hostname(), Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
+            var amtMeiTmpState = { 'core-ver': 1, OsHostname: require('os').hostname(), Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
             if (getMeiStateCache.MeiVersion != null) { amtMeiTmpState.MeiVersion = getMeiStateCache.MeiVersion; } else { amtMei.getProtocolVersion(function (result) { if (result != null) { getMeiStateCache.MeiVersion = amtMeiTmpState.MeiVersion = result; } }); }
             if ((flags & 1) != 0) {
                 if (getMeiStateCache.Versions != null) {
@@ -155,6 +155,12 @@ function AmtManager(agent, db, isdebug) {
             require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "ex: " + ex });
             amtLmsState = -1; obj.lmsstate = -1; amtLms = null;
         }
+    }
+
+    // Start host based ACM activation with TLS
+    obj.startConfigurationHBased = function startConfigurationHBased(certHash, hostVpn, dnsSuffixList, func) {
+        if ((amtMei == null) || (amtMeiState < 2)) { if (func != null) { func({ status: -100 }); } return; }
+        amtMei.startConfigurationHBased(certHash, hostVpn, dnsSuffixList, func);
     }
 
 }
