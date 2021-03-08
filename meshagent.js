@@ -873,7 +873,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
             // Close the duplicate agent
             parent.agentStats.duplicateAgentCount++;
-            parent.setAgentIssue(obj, "duplicateAgent");
+            parent.setAgentIssue(obj, 'duplicateAgent');
             if (obj.nodeid != null) { parent.parent.debug('agent', 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); }
             dupAgent.close(3);
         } else {

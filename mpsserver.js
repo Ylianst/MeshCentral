@@ -440,32 +440,44 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                             console.log('Too many devices on this domain to accept the CIRA connection. meshid: ' + socket.tag.meshid);
                                             socket.end();
                                         } else {
-                                            // We are under the limit, create the new device.
-                                            // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                            var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: socket.remoteAddr, domain: domainid, intelamt: { user: (typeof socket.tag.meiState.amtuser == 'string') ? socket.tag.meiState.amtuser : '', pass: (typeof socket.tag.meiState.amtpass == 'string') ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
-                                            if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
-                                            obj.db.Set(device);
+                                            // Attempts reverse DNS loopup on the device IP address
+                                            require('dns').reverse(socket.remoteAddr, function (err, hostnames) {
+                                                var hostname = socket.remoteAddr;
+                                                if ((err == null) && (hostnames != null) && (hostnames.length > 0)) { hostname = hostnames[0]; }
 
-                                            // Event the new node
-                                            addedTlsDeviceCount++;
-                                            var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
-                                            obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: domainid });
+                                                // We are under the limit, create the new device.
+                                                // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                                var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: hostname, domain: domainid, intelamt: { user: (typeof socket.tag.meiState.amtuser == 'string') ? socket.tag.meiState.amtuser : '', pass: (typeof socket.tag.meiState.amtpass == 'string') ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
+                                                if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                                obj.db.Set(device);
 
-                                            // Add the connection to the MPS connection list
-                                            addCiraConnection(socket);
+                                                // Event the new node
+                                                addedTlsDeviceCount++;
+                                                var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
+                                                obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: domainid });
+
+                                                // Add the connection to the MPS connection list
+                                                addCiraConnection(socket);
+                                            });
                                         }
                                     });
                                     return;
                                 } else {
-                                    // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                    var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: socket.remoteAddr, domain: domainid, intelamt: { user: (typeof socket.tag.meiState.amtuser == 'string') ? socket.tag.meiState.amtuser : '', pass: (typeof socket.tag.meiState.amtpass == 'string') ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
-                                    if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
-                                    obj.db.Set(device);
+                                    // Attempts reverse DNS loopup on the device IP address
+                                    require('dns').reverse(socket.remoteAddr, function (err, hostnames) {
+                                        var hostname = socket.remoteAddr;
+                                        if ((err == null) && (hostnames != null) && (hostnames.length > 0)) { hostname = hostnames[0]; }
 
-                                    // Event the new node
-                                    addedTlsDeviceCount++;
-                                    var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
-                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: domainid });
+                                        // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                        var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: hostname, domain: domainid, intelamt: { user: (typeof socket.tag.meiState.amtuser == 'string') ? socket.tag.meiState.amtuser : '', pass: (typeof socket.tag.meiState.amtpass == 'string') ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
+                                        if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                        obj.db.Set(device);
+
+                                        // Event the new node
+                                        addedTlsDeviceCount++;
+                                        var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
+                                        obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: domainid });
+                                    });
                                 }
                             } else {
                                 // New CIRA connection for unknown node, disconnect.
@@ -596,33 +608,45 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                         console.log('Too many devices on this domain to accept the CIRA connection. meshid: ' + socket.tag.meshid);
                                         socket.end();
                                     } else {
-                                        // We are under the limit, create the new device.
-                                        // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                        var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: socket.remoteAddr, domain: mesh.domain, intelamt: { user: (typeof socket.tag.meiState.amtuser == 'string') ? socket.tag.meiState.amtuser : '', pass: (typeof socket.tag.meiState.amtpass == 'string') ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
-                                        if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
-                                        obj.db.Set(device);
+                                        // Attempts reverse DNS loopup on the device IP address
+                                        require('dns').reverse(socket.remoteAddr, function (err, hostnames) {
+                                            var hostname = socket.remoteAddr;
+                                            if ((err == null) && (hostnames != null) && (hostnames.length > 0)) { hostname = hostnames[0]; }
 
-                                        // Event the new node
-                                        addedDeviceCount++;
-                                        var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
-                                        obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
+                                            // We are under the limit, create the new device.
+                                            // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                            var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: hostname, domain: mesh.domain, intelamt: { user: (typeof socket.tag.meiState.amtuser == 'string') ? socket.tag.meiState.amtuser : '', pass: (typeof socket.tag.meiState.amtpass == 'string') ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
+                                            if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                            obj.db.Set(device);
 
-                                        // Add the connection to the MPS connection list
-                                        addCiraConnection(socket);
-                                        SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
+                                            // Event the new node
+                                            addedDeviceCount++;
+                                            var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
+                                            obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
+
+                                            // Add the connection to the MPS connection list
+                                            addCiraConnection(socket);
+                                            SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
+                                        });
                                     }
                                 });
                                 return;
                             } else {
-                                // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState && socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: socket.remoteAddr, domain: mesh.domain, intelamt: { user: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtuser == 'string')) ? socket.tag.meiState.amtuser : '', pass: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtpass == 'string')) ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
-                                if ((socket.tag.meiState != null) && (typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
-                                obj.db.Set(device);
+                                // Attempts reverse DNS loopup on the device IP address
+                                require('dns').reverse(socket.remoteAddr, function (err, hostnames) {
+                                    var hostname = socket.remoteAddr;
+                                    if ((err == null) && (hostnames != null) && (hostnames.length > 0)) { hostname = hostnames[0]; }
 
-                                // Event the new node
-                                addedDeviceCount++;
-                                var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
-                                obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
+                                    // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                    var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState && socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: hostname, domain: mesh.domain, intelamt: { user: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtuser == 'string')) ? socket.tag.meiState.amtuser : '', pass: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtpass == 'string')) ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
+                                    if ((socket.tag.meiState != null) && (typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                    obj.db.Set(device);
+
+                                    // Event the new node
+                                    addedDeviceCount++;
+                                    var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
+                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
+                                });
                             }
                         } else {
                             // Node is already present
