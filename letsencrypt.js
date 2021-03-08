@@ -156,7 +156,8 @@ module.exports.CreateLetsEncrypt = function (parent) {
 
     obj.requestCertificate = function () {
         if (obj.pendingRequest == true) return;
-        if (obj.configOk == false) { obj.log("Can't request cert, invalid configuration.");return; }
+        if (obj.configOk == false) { obj.log("Can't request cert, invalid configuration."); return; }
+        if (acme.forge == null) { obj.log("Forge not setup in ACME, unable to continue."); return; }
         obj.pendingRequest = true;
 
         // Create a private key
