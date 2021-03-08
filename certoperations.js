@@ -286,6 +286,16 @@ module.exports.CertificateOperations = function (parent) {
         var setupbin = AmtSetupBinStack.AmtSetupBinCreate(3, 1); // Version 3, 1 = Records will not be consumed.
         var certRootName = 'MeshCentral';
 
+        // Figure out what trusted FQDN to use.
+        var trustedFQDN = 'rootcert.meshcentral.com'; // Default DNS name. Any DNS name will do, we this is the fallback.
+        if (typeof domain.dns == 'string') {
+            // Use domain DNS name
+            trustedFQDN = domain.dns;
+        } else if (typeof parent.config.settings.cert == 'string') {
+            // Use main DNS name
+            trustedFQDN = parent.config.settings.cert;
+        }
+
         // Create a new record
         var r = {};
         r.typeIdentifier = 1;
@@ -325,7 +335,7 @@ module.exports.CertificateOperations = function (parent) {
         v.moduleid = 2;
         v.varid = 3;
         v.length = -1;
-        v.value = 'rootcert.meshcentral.com';
+        v.value = trustedFQDN;
         setupbin.records[0].variables.push(v);
 
         /*
