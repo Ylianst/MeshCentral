@@ -12,6 +12,27 @@
         "mongoDbName": { "type": "string" },
         "mongoDbChangeStream": { "type": "boolean", "default": false },
         "mongoDbBulkOperations": { "type": "boolean", "default": false },
+        "mariaDB": {
+          "type": "object",
+          "description": "Add this section to connect MeshCentral to a MariaDB database instance.",
+          "properties": {
+            "host": { "type": "string", "description": "MariaDB hostname" },
+            "user": { "type": "string", "description": "MariaDB username" },
+            "port": { "type": "number", "description": "MariaDB port number" },
+            "password": { "type": "string", "description": "MariaDB password" },
+            "connectionLimit": { "type": "number", "description": "MariaDB connection limit" }
+          }
+        },
+        "mySQL": {
+          "type": "object",
+          "description": "Add this section to connect MeshCentral to a MySQL database instance.",
+          "properties": {
+            "host": { "type": "string", "description": "MySQL hostname" },
+            "port": { "type": "number", "description": "MySQL port number" },
+            "user": { "type": "string", "description": "MySQL username" },
+            "password": { "type": "string", "description": "MySQL password" }
+          }
+        },
         "WANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral WAN features are enabled and agents will connect to the server using a well known DNS name." },
         "LANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral LAN features are enabled and agents will find the server using multicast LAN packets." },
         "maintenanceMode": { "type": "boolean", "default": false, "description": "When enabled the server is in maintenance mode, only administrators can login. Use the maintenance command in server console to change." },
