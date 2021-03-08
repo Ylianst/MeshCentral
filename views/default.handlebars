@@ -4652,7 +4652,12 @@
                 if ((rights & 4) && ((added & 64) == 0)) { added |= 64; addedOptions += '<option value=107>' + "Edit tags" + '</option>'; }
                 if ((rights & 8) && ((added & 256) == 0)) { added |= 256; addedOptions += '<option value=109>' + "Upload files" + '</option>'; }
                 if ((rights & 32768) && ((added & 128) == 0)) { added |= 128; addedOptions += '<option value=101>' + "Delete devices" + '</option>'; }
-                if ((node.agent != null) && (features2 & 0x00000010) && (rights == 0xFFFFFFFF) && ((added & 512) == 0)) { added |= 512; addedOptions += '<option value=110>' + "Force agent update" + '</option>'; }
+                if ((node.agent != null) && (features2 & 0x00000010) && (rights == 0xFFFFFFFF) && ((added & 512) == 0)) {
+                    added |= 512;
+                    addedOptions += '<option value=110>' + "Force agent update" + '</option>';
+                    addedOptions += '<option value=111>' + "Clear agent core" + '</option>';
+                    addedOptions += '<option value=112>' + "Upload default server core" + '</option>';
+                }
             }
 
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights." + '<br /><br />';
@@ -4745,7 +4750,15 @@
             } else if (op == 110) {
                 // Force agent update
                 var x = "Force agent update on selected devices?" + '<br /><br />';
-                setDialogMode(2, "Edit Device Tags", 3, d2groupActionFunctionAgentUpdateExec, x);
+                setDialogMode(2, "For agent update", 3, d2groupActionFunctionAgentUpdateExec, x);
+            } else if (op == 111) {
+                // Clear agent core
+                var x = "Clear agent core on selected devices?" + '<br /><br />';
+                setDialogMode(2, "Clear agent core", 3, d2groupActionFunctionAgentClearCoreExec, x);
+            } else if (op == 112) {
+                // Upload default server core
+                var x = "Upload default server core on selected devices?" + '<br /><br />';
+                setDialogMode(2, "Upload default server core", 3, d2groupActionFunctionAgentDefaultCodeExec, x);
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: parseInt(op) });
@@ -4756,6 +4769,8 @@
         function d2batchUploadValidate() { QE('idx_dlgOkButton', (Q('d2uploadinput').files.length != 0) && ((Q('d2winuploadpath') == null) || (Q('d2winuploadpath').value != '')) && ((Q('d2linuxuploadpath') == null) || (Q('d2linuxuploadpath').value != ''))); }
         function d2batchUploadValidateOk() { Q('d2batchUploadSubmit').click(); }
         function d2groupActionFunctionAgentUpdateExec() { meshserver.send({ action: 'updateAgents', nodeids: getCheckedDevices() }); }
+        function d2groupActionFunctionAgentClearCoreExec() { meshserver.send({ action: 'uploadagentcore', nodeids: getCheckedDevices(), type: 'clear' }); }
+        function d2groupActionFunctionAgentDefaultCodeExec() { meshserver.send({ action: 'uploadagentcore', nodeids: getCheckedDevices(), type: 'default' }); }
 
         function d2groupActionFunctionNotifyExec() {
             var op = Q('d2deviceop').value, title = Q('dp2notifyTitle').value, msg = Q('d2notifyMsg').value, chkNodeIds = getCheckedDevices();
@@ -9583,8 +9598,8 @@
         // Called then user presses the "Change Core" button
         function p15uploadCore(e) {
             if (xxdialogMode) return;
-            if (e.shiftKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'default' }); } // Upload default core
-            else if (e.altKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'clear' }); } // Clear the core
+            if (e.shiftKey == true) { meshserver.send({ action: 'uploadagentcore', nodeids: [ consoleNode._id ], type: 'default' }); } // Upload default core
+            else if (e.altKey == true) { meshserver.send({ action: 'uploadagentcore', nodeids: [ consoleNode._id ], type: 'clear' }); } // Clear the core
             else if (e.ctrlKey == true) { p15uploadCore2(); } // Upload the core from a file
             else { setDialogMode(2, "Perform Agent Action", 3, p15uploadCoreEx, addHtmlValue("Action", '<select id=d3coreMode style=width:230px><option value=1>' + "Upload default server core" + '</option><option value=2>' + "Clear the core" + '</option><option value=6>' + "Upload recovery core" + '</option><option value=7>' + "Upload tiny core" + '</option><option value=3>' + "Upload a core file" + '</option><option value=4>' + "Soft disconnect agent" + '</option><option value=5>' + "Hard disconnect agent" + '</option></select>')); }
         }
@@ -9592,10 +9607,10 @@
         function p15uploadCoreEx() {
             if (Q('d3coreMode').value == 1) {
                 // Upload default core
-                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'default' });
+                meshserver.send({ action: 'uploadagentcore', nodeids: [ consoleNode._id ], type: 'default' });
             } else if (Q('d3coreMode').value == 2) {
                 // Clear the core
-                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'clear' });
+                meshserver.send({ action: 'uploadagentcore', nodeids: [ consoleNode._id ], type: 'clear' });
             } else if (Q('d3coreMode').value == 3) {
                 // Upload file as core
                 p15uploadCore2();
@@ -9607,10 +9622,10 @@
                 meshserver.send({ action: 'agentdisconnect', nodeid: consoleNode._id, disconnectMode: 2 });
             } else if (Q('d3coreMode').value == 6) {
                 // Upload a recovery core
-                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type:'recovery' });
+                meshserver.send({ action: 'uploadagentcore', nodeids: [ consoleNode._id ], type:'recovery' });
             } else if (Q('d3coreMode').value == 7) {
                 // Upload a tiny core
-                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type:'tiny' });
+                meshserver.send({ action: 'uploadagentcore', nodeids: [ consoleNode._id ], type:'tiny' });
             }
         }
 
@@ -9632,7 +9647,7 @@
             } else {
                 // Upload server mesh agent code
                 var files = d3getFileSel();
-                if (files.length == 1) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'custom', path: d3filetreelocation.join('/') + '/' + files[0] }); }
+                if (files.length == 1) { meshserver.send({ action: 'uploadagentcore', nodeids: [ consoleNode._id ], type: 'custom', path: d3filetreelocation.join('/') + '/' + files[0] }); }
             }
         }
 

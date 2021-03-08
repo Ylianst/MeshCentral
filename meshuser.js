@@ -4093,39 +4093,46 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'uploadagentcore':
                 {
                     if (common.validateString(command.type, 1, 40) == false) break; // Check path
+                    if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
 
-                    // Get the node and the rights for this node
-                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if ((node == null) || (((rights & MESHRIGHT_AGENTCONSOLE) == 0) && (user.siteadmin != SITERIGHT_ADMIN))) return;
+                    // Go thru all node identifiers and run the operation
+                    for (var i in command.nodeids) {
+                        var nodeid = command.nodeids[i];
+                        if (typeof nodeid != 'string') return;
 
-                        // TODO: If we have peer servers, inform...
-                        //if (parent.parent.multiServer != null) { parent.parent.multiServer.DispatchMessage({ action: 'uploadagentcore', sessionid: ws.sessionId }); }
+                        // Get the node and the rights for this node
+                        parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
+                            if ((node == null) || (((rights & MESHRIGHT_AGENTCONSOLE) == 0) && (user.siteadmin != SITERIGHT_ADMIN))) return;
 
-                        if (command.type == 'default') {
-                            // Send the default core to the agent
-                            parent.parent.updateMeshCore(function () { parent.sendMeshAgentCore(user, domain, node._id, 'default'); });
-                        } else if (command.type == 'clear') {
-                            // Clear the mesh agent core on the mesh agent
-                            parent.sendMeshAgentCore(user, domain, node._id, 'clear');
-                        } else if (command.type == 'recovery') {
-                            // Send the recovery core to the agent
-                            parent.sendMeshAgentCore(user, domain, node._id, 'recovery');
-                        } else if (command.type == 'tiny') {
-                            // Send the tiny core to the agent
-                            parent.sendMeshAgentCore(user, domain, node._id, 'tiny');
-                        } else if ((command.type == 'custom') && (common.validateString(command.path, 1, 2048) == true)) {
-                            // Send a mesh agent core to the mesh agent
-                            var file = parent.getServerFilePath(user, domain, command.path);
-                            if (file != null) {
-                                fs.readFile(file.fullpath, 'utf8', function (err, data) {
-                                    if (err != null) {
-                                        data = common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
-                                        parent.sendMeshAgentCore(user, domain, node._id, 'custom', data);
-                                    }
-                                });
+                            // TODO: If we have peer servers, inform...
+                            //if (parent.parent.multiServer != null) { parent.parent.multiServer.DispatchMessage({ action: 'uploadagentcore', sessionid: ws.sessionId }); }
+
+                            if (command.type == 'default') {
+                                // Send the default core to the agent
+                                parent.parent.updateMeshCore(function () { parent.sendMeshAgentCore(user, domain, node._id, 'default'); });
+                            } else if (command.type == 'clear') {
+                                // Clear the mesh agent core on the mesh agent
+                                parent.sendMeshAgentCore(user, domain, node._id, 'clear');
+                            } else if (command.type == 'recovery') {
+                                // Send the recovery core to the agent
+                                parent.sendMeshAgentCore(user, domain, node._id, 'recovery');
+                            } else if (command.type == 'tiny') {
+                                // Send the tiny core to the agent
+                                parent.sendMeshAgentCore(user, domain, node._id, 'tiny');
+                            } else if ((command.type == 'custom') && (common.validateString(command.path, 1, 2048) == true)) {
+                                // Send a mesh agent core to the mesh agent
+                                var file = parent.getServerFilePath(user, domain, command.path);
+                                if (file != null) {
+                                    fs.readFile(file.fullpath, 'utf8', function (err, data) {
+                                        if (err != null) {
+                                            data = common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
+                                            parent.sendMeshAgentCore(user, domain, node._id, 'custom', data);
+                                        }
+                                    });
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                     break;
                 }
             case 'agentdisconnect':
