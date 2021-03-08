@@ -6697,7 +6697,7 @@
                         var te = Math.min(Math.min(end, block[1]), now);
                         var width = Math.round(((te - ts) * totalWidth) / 86400000);
                         if (width > 0) {
-                            var title = format('{0} from {1} to {2}.', powerStateStrings2[block[2]], printTime(new Date(ts)), printTime(new Date(te)));
+                            var title = format("{0} from {1} to {2}.", powerStateStrings2[block[2]], printTime(new Date(ts)), printTime(new Date(te)));
                             datavalue += '<div class="pwState ' + powerColor(block[2]) + '" title="' + title + '" style="width:' + width + 'px;"></div>';
                         }
                     }
