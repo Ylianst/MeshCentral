@@ -39258,7 +39258,7 @@
       "es": "Para agregar una computadora a \\\"{0}\\\" ejecute el siguiente comando. Se necesitarán credenciales de root.",
       "fi": "Lisää tietokone \\\"{0}\\\" suorittamalla seuraava komento. Tarvitaan juuretunnuksia.",
       "fr": "Pour ajouter un appareil à \\\"{0}\\\" exécutez la commande suivante. Des accès administrateurs sont nécessaires.",
-      "hi": "कंप्यूटर को {0} में जोड़ने के लिए निम्नलिखित कमांड चलाएँ। रूट क्रेडेंशियल की जरूरत होगी।",
+      "hi": "कंप्यूटर को \\\"{0}\\\" में जोड़ने के लिए निम्नलिखित कमांड चलाएँ। रूट क्रेडेंशियल की जरूरत होगी।",
       "ja": "\\\"{0}\\\"にコンピューターを追加するには、次のコマンドを実行します。ルート資格情報が必要になります。",
       "ko": "\\\"{0}\\\"에 컴퓨터를 추가하려면 다음 명령을 실행하십시오. root 계정에 대한 자격 증명이 필요합니다.",
       "nl": "Voer de volgende opdracht uit om een computer toe te voegen aan \\\"{0}\\\". Root gegevens zijn nodig.",
@@ -39266,7 +39266,7 @@
       "ru": "Чтобы добавить компьютер в группу \\\"{0}\\\", выполните следующую команду. Потребуются права root.",
       "tr": "Bir bilgisayar eklemek için \\\"{0}\\\" aşağıdaki komutu çalıştırın. Kök kimlik bilgilerine ihtiyaç duyulacaktır.",
       "zh-chs": "要将计算机添加到\\\"{0}\\\"，请运行以下命令。命令需要root凭证。",
-      "zh-cht": "要將電腦新增到\\\"{0}\\\"，請運行以下命令。命令需要root憑據。"
+      "zh-cht": "要將電腦新增到\\\"{0}\\\"，請運行以下命令。命令需要root憑據。",
       "xloc": [
         "default.handlebars->31->405"
       ]
