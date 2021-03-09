@@ -8059,6 +8059,7 @@
     },
     {
       "en": "Clear agent core",
+      "nl": "Wis agent core",
       "xloc": [
         "default.handlebars->31->479",
         "default.handlebars->31->518"
@@ -8066,6 +8067,7 @@
     },
     {
       "en": "Clear agent core on selected devices?",
+      "nl": "Wis de agent core op de geselecteerde apparaten?",
       "xloc": [
         "default.handlebars->31->517"
       ]
@@ -16887,6 +16889,7 @@
     },
     {
       "en": "For agent update",
+      "nl": "Voor agent update",
       "xloc": [
         "default.handlebars->31->516"
       ]
@@ -30133,6 +30136,7 @@
     },
     {
       "en": "Print Screen",
+      "nl": "Print Screen",
       "xloc": [
         "default-mobile.handlebars->11->341",
         "default.handlebars->31->931"
@@ -39248,24 +39252,21 @@
       ]
     },
     {
-      "cs": "Pro přidání nového zařízení do skupiny „{0}“, na něm spusťte následující příkaz. Je třeba spouštět s právy správce systému (root).",
-      "de": "Um einen Rechner zu {0} hinzuzufügen, führe den folgenden Befehl aus. Root-Zugriff wird benötigt.",
-      "en": "To add a computer to \"{0}\" run the following command. Root credentials will be needed.",
-      "es": "Para agregar una computadora a {0} ejecute el siguiente comando. Se necesitarán credenciales de root.",
-      "fi": "Lisää tietokone {0} suorittamalla seuraava komento. Tarvitaan juuretunnuksia.",
-      "fr": "Pour ajouter un appareil à {0} exécutez la commande suivante. Des accès administrateurs sont nécessaires.",
-      "hi": "कंप्यूटर को {0} में जोड़ने के लिए निम्नलिखित कमांड चलाएँ। रूट क्रेडेंशियल की जरूरत होगी।",
-      "ja": "{0}にコンピューターを追加するには、次のコマンドを実行します。ルート資格情報が必要になります。",
-      "ko": "{0}에 컴퓨터를 추가하려면 다음 명령을 실행하십시오. root 계정에 대한 자격 증명이 필요합니다.",
-      "nl": "Voer de volgende opdracht uit om een computer toe te voegen aan {0}. Root gegevens zijn nodig.",
-      "pt": "Para adicionar um computador a {0}, execute o seguinte comando.Serão necessárias credenciais raiz.",
-      "ru": "Чтобы добавить компьютер в группу \\\"{0}\\\", выполните следующую команду. Потребуются права root.",
-      "tr": "Bir bilgisayar eklemek için {0} aşağıdaki komutu çalıştırın. Kök kimlik bilgilerine ihtiyaç duyulacaktır.",
-      "zh-chs": "要将计算机添加到{0}，请运行以下命令。命令需要root凭证。",
-      "zh-cht": "要將電腦新增到{0}，請運行以下命令。命令需要root憑據。"
-    },
-    {
       "en": "To add a computer to \\\"{0}\\\" run the following command. Root credentials will be needed.",
+      "cs": "Pro přidání nového zařízení do skupiny „\\\"{0}\\\"“, na něm spusťte následující příkaz. Je třeba spouštět s právy správce systému (root).",
+      "de": "Um einen Rechner zu \\\"{0}\\\" hinzuzufügen, führe den folgenden Befehl aus. Root-Zugriff wird benötigt.",
+      "es": "Para agregar una computadora a \\\"{0}\\\" ejecute el siguiente comando. Se necesitarán credenciales de root.",
+      "fi": "Lisää tietokone \\\"{0}\\\" suorittamalla seuraava komento. Tarvitaan juuretunnuksia.",
+      "fr": "Pour ajouter un appareil à \\\"{0}\\\" exécutez la commande suivante. Des accès administrateurs sont nécessaires.",
+      "hi": "कंप्यूटर को {0} में जोड़ने के लिए निम्नलिखित कमांड चलाएँ। रूट क्रेडेंशियल की जरूरत होगी।",
+      "ja": "\\\"{0}\\\"にコンピューターを追加するには、次のコマンドを実行します。ルート資格情報が必要になります。",
+      "ko": "\\\"{0}\\\"에 컴퓨터를 추가하려면 다음 명령을 실행하십시오. root 계정에 대한 자격 증명이 필요합니다.",
+      "nl": "Voer de volgende opdracht uit om een computer toe te voegen aan \\\"{0}\\\". Root gegevens zijn nodig.",
+      "pt": "Para adicionar um computador a \\\"{0}\\\", execute o seguinte comando.Serão necessárias credenciais raiz.",
+      "ru": "Чтобы добавить компьютер в группу \\\"{0}\\\", выполните следующую команду. Потребуются права root.",
+      "tr": "Bir bilgisayar eklemek için \\\"{0}\\\" aşağıdaki komutu çalıştırın. Kök kimlik bilgilerine ihtiyaç duyulacaktır.",
+      "zh-chs": "要将计算机添加到\\\"{0}\\\"，请运行以下命令。命令需要root凭证。",
+      "zh-cht": "要將電腦新增到\\\"{0}\\\"，請運行以下命令。命令需要root憑據。"
       "xloc": [
         "default.handlebars->31->405"
       ]
@@ -41015,6 +41016,7 @@
     },
     {
       "en": "Upload default server core on selected devices?",
+      "nl": "Upload standaard server core op de geselecteerde apparaten?",
       "xloc": [
         "default.handlebars->31->519"
       ]
@@ -41102,7 +41104,7 @@
     },
     {
       "en": "Upload tiny core",
-      "nl": "Upload een kleine kern",
+      "nl": "Upload een kleine core",
       "fr": "Charger un micro noyau",
       "xloc": [
         "default-mobile.handlebars->11->505",
@@ -42571,6 +42573,7 @@
     },
     {
       "en": "View previous logins for this user",
+      "nl": "Bekijk eerdere aanmeldingen voor deze gebruiker",
       "fr": "Historique des connexions de cet utilisateur",
       "xloc": [
         "default.handlebars->31->2110"
@@ -46081,6 +46084,7 @@
     },
     {
       "en": "{0} from {1} to {2}.",
+      "nl": "{0} van {1} tot {2}.",
       "xloc": [
         "default.handlebars->31->838"
       ]
