@@ -1555,6 +1555,7 @@ module.exports.CreateDB = function (parent, func) {
             // Check that we have access to MongoDump
             var backupPath = parent.backuppath;
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
+            try { parent.fs.mkdirSync(backupPath); } catch (e) { }
             var mongoDumpPath = 'mongodump';
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = parent.config.settings.autobackup.mongodumppath; }
             const child_process = require('child_process');
