@@ -54,6 +54,13 @@ CheckInstallAgent() {
     uninstall=$1
     url=$2
     meshid=$3
+    if [[ $4 =~ ^--WebProxy= ]];
+    then
+       webproxy=$4
+    fi
+
+
+
     meshidlen=${#meshid}
     if [ $meshidlen -gt 63 ]
     then
@@ -61,7 +68,7 @@ CheckInstallAgent() {
       machinetype=$( uname -m )
 
       # If we have 3 arguments...
-      if [ $# -ge 4 ]
+      if [ $# -ge 4 ] &&  [ -z "$webproxy" ]
       then
         # echo "Computer type is specified..."
         machineid=$4
@@ -164,7 +171,7 @@ DownloadAgent() {
       else
         # Install the agent
         UpdateMshFile
-        ./meshagent -fullinstall --copy-msh=1
+        ./meshagent -fullinstall --copy-msh=1 $webproxy
       fi
     else
       echo "Unable to download device group settings at: $url/meshsettings?id=$meshid."
