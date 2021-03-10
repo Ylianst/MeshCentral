@@ -564,12 +564,11 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             
         switch (command) {
             case 3: // Tile, check dimentions and store
-                if (data.length < 10) break;
+                if ((data.length < 10) || (obj.lastData == null)) break;
                 var x = data.readUInt16BE(4), y = data.readUInt16BE(6);
                 var dimensions = require('image-size')(data.slice(8));
                 var sx = (x / 16), sy = (y / 16), sw = (dimensions.width / 16), sh = (dimensions.height / 16);
                 obj.counter++;
-                //console.log("Tile", x, y, dimensions.width, dimensions.height);
                 
                 // Keep a reference to this image & how many tiles it covers
                 obj.images[obj.counter] = { next: null, prev: obj.lastData, data: jumboData };
