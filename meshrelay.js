@@ -342,7 +342,18 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                                 } else {
                                     // Write the recording file header
                                     parent.parent.debug('relay', 'Relay: Started recoding to file: ' + recFullFilename);
-                                    var metadata = { magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: obj.req.clientIp, ipaddr2: obj.peer.req.clientIp, time: new Date().toLocaleString(), protocol: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.p), nodeid: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.nodeid ) };
+                                    var metadata = {
+                                        magic: 'MeshCentralRelaySession',
+                                        ver: 1,
+                                        userid: sessionUser._id,
+                                        username: sessionUser.name,
+                                        sessionid: obj.id,
+                                        ipaddr1: (obj.req == null) ? null : obj.req.clientIp,
+                                        ipaddr2: ((obj.peer == null) || (obj.peer.req == null)) ? null : obj.peer.req.clientIp,
+                                        time: new Date().toLocaleString(),
+                                        protocol: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.p),
+                                        nodeid: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.nodeid)
+                                    };
                                     if (xdevicename2 != null) { metadata.devicename = xdevicename2; }
                                     var firstBlock = JSON.stringify(metadata);
                                     var logfile = { fd: fd, lock: false, filename: recFullFilename, startTime: Date.now(), size: 0 };
