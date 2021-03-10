@@ -5412,7 +5412,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.GetUserEvents([user._id], domain.id, user._id.split('/')[2], function (err, docs) {
                             if (err != null) return;
                             var e = [];
-                            for (var i in docs) { if ((docs[i].msgArgs) && (docs[i].userid == command.userid) && ((docs[i].action == 'authfail') || (docs[i].action == 'login'))) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); } }
+                            for (var i in docs) {
+                                if ((docs[i].msgArgs) && (docs[i].userid == user._id) && ((docs[i].action == 'authfail') || (docs[i].action == 'login'))) {
+                                    e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs });
+                                }
+                            }
                             try { ws.send(JSON.stringify({ action: 'previousLogins', events: e })); } catch (ex) { }
                         });
                     }
@@ -5423,7 +5427,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((obj.crossDomain === true) || (splitUser[1] === domain.id)) {
                             if (db.GetUserLoginEvents) {
                                 // New way
-                                db.GetUserLoginEvents(splitUser[1], user._id, function (err, docs) {
+                                db.GetUserLoginEvents(splitUser[1], command.userid, function (err, docs) {
                                     if (err != null) return;
                                     var e = [];
                                     for (var i in docs) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); }

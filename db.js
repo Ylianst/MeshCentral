@@ -450,7 +450,7 @@ module.exports.CreateDB = function (parent, func) {
         }
         //sqlDbQuery('DROP DATABASE MeshCentral', null, function (err, docs) { console.log('DROP'); }); return;
         sqlDbQuery('USE meshcentral', null, function (err, docs) {
-            if (err != null) { parent.debug('db', 'ERROR: USE meshcentral: ' + err); }
+            if (err != null) { console.log(err); parent.debug('db', 'ERROR: USE meshcentral: ' + err); }
             if (err == null) { setupFunctions(func); } else {
                 parent.debug('db', 'Creating database...');
                 sqlDbBatchExec([
@@ -994,7 +994,7 @@ module.exports.CreateDB = function (parent, func) {
                 if (ids.indexOf('*') >= 0) {
                     sqlDbQuery('SELECT doc FROM meshcentral.events WHERE (domain = ? AND userid = ?) ORDER BY time DESC', [domain, userid], func);
                 } else {
-                    sqlDbQuery('SELECT doc FROM meshcentral.events JOIN meshcentral.eventids ON id = fkid WHERE (domain = ? AND userid = ? AND target IN (?)) GROUP BY id ORDER BY time DESC', [domain, userid, ids, limit], func);
+                    sqlDbQuery('SELECT doc FROM meshcentral.events JOIN meshcentral.eventids ON id = fkid WHERE (domain = ? AND userid = ? AND target IN (?)) GROUP BY id ORDER BY time DESC', [domain, userid, ids], func);
                 }
             };
             obj.GetUserEventsWithLimit = function (ids, domain, username, limit, func) {
