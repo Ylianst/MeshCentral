@@ -451,7 +451,33 @@ module.exports.CreateDB = function (parent, func) {
         //sqlDbQuery('DROP DATABASE MeshCentral', null, function (err, docs) { console.log('DROP'); }); return;
         sqlDbQuery('USE meshcentral', null, function (err, docs) {
             if (err != null) { console.log(err); parent.debug('db', 'ERROR: USE meshcentral: ' + err); }
-            if (err == null) { setupFunctions(func); } else {
+            if (err == null) {
+                parent.debug('db', 'Checking tables...');
+                sqlDbBatchExec([
+                    'CREATE TABLE IF NOT EXISTS meshcentral.main (id VARCHAR(256) NOT NULL, type CHAR(32), domain CHAR(64), extra CHAR(255), extraex CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
+                    'CREATE TABLE IF NOT EXISTS meshcentral.events(id INT NOT NULL AUTO_INCREMENT, time DATETIME, domain CHAR(64), action CHAR(255), nodeid CHAR(255), userid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK(json_valid(doc)))',
+                    'CREATE TABLE IF NOT EXISTS meshcentral.eventids(fkid INT NOT NULL, target CHAR(255), CONSTRAINT fk_eventid FOREIGN KEY (fkid) REFERENCES events (id) ON DELETE CASCADE ON UPDATE RESTRICT)',
+                    'CREATE TABLE IF NOT EXISTS meshcentral.serverstats (time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(time), CHECK (json_valid(doc)))',
+                    'CREATE TABLE IF NOT EXISTS meshcentral.power (id INT NOT NULL AUTO_INCREMENT, time DATETIME, nodeid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
+                    'CREATE TABLE IF NOT EXISTS meshcentral.smbios (id CHAR(255), time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
+                    'CREATE TABLE IF NOT EXISTS meshcentral.plugin (id INT NOT NULL AUTO_INCREMENT, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))'
+                ], function (err) {
+                    parent.debug('db', 'Checking indexes...');
+                    sqlDbExec('CREATE INDEX ndxtypedomainextra ON meshcentral.main (type, domain, extra)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxextra ON meshcentral.main (extra)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxextraex ON meshcentral.main (extraex)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxeventstime ON meshcentral.events(time)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxeventsusername ON meshcentral.events(domain, userid, time)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxeventsdomainnodeidtime ON meshcentral.events(domain, nodeid, time)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxeventids ON meshcentral.eventids(target)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxserverstattime ON meshcentral.serverstats (time)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxserverstatexpire ON meshcentral.serverstats (expire)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxpowernodeidtime ON meshcentral.power (nodeid, time)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxsmbiostime ON meshcentral.smbios (time)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxsmbiosexpire ON meshcentral.smbios (expire)', null, function (err, response) { });
+                    setupFunctions(func);
+                });
+            } else {
                 parent.debug('db', 'Creating database...');
                 sqlDbBatchExec([
                     'CREATE DATABASE meshcentral',
@@ -890,7 +916,7 @@ module.exports.CreateDB = function (parent, func) {
                     }).catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
         } else if (obj.databaseType == 5) { // MySQL
             Datastore.query(query, args, function (error, results, fields) {
-                if (func) try { func(error, results[0]); } catch (ex) { console.log(ex); }
+                if (func) try { func(error, results?results[0]:null); } catch (ex) { console.log(ex); }
             });
         }
     }
