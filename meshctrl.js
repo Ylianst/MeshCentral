@@ -1356,9 +1356,10 @@ function serverConnect() {
                 break;
             }
             case 'deviceinfo': {
-                settings.deviceinfocount = 3;
-                ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: args.id, nodeinfo: true, responseid: 'meshctrl' }));
-                ws.send(JSON.stringify({ action: 'lastconnect', nodeid: args.id, nodeinfo: true, responseid: 'meshctrl' }));
+                settings.deviceinfocount = 4;
+                ws.send(JSON.stringify({ action: 'nodes' }));
+                ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: args.id, responseid: 'meshctrl' }));
+                ws.send(JSON.stringify({ action: 'lastconnect', nodeid: args.id, responseid: 'meshctrl' }));
                 ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: args.id, nodeinfo: true, responseid: 'meshctrl' }));
                 break;
             }
@@ -1641,27 +1642,22 @@ function serverConnect() {
             }
             case 'getsysinfo': { // DEVICEINFO
                 if (settings.cmd == 'deviceinfo') {
-                    if (data.result) {
-                        console.log(data.result);
-                        process.exit();
-                    } else {
-                        settings.sysinfo = data;
-                        if (--settings.deviceinfocount == 0) { displayDeviceInfo(settings.sysinfo, settings.lastconnect, settings.networking); process.exit(); }
-                    }
+                    settings.sysinfo = (data.result) ? null : data;
+                    if (--settings.deviceinfocount == 0) { displayDeviceInfo(settings.sysinfo, settings.lastconnect, settings.networking, settings.nodes); process.exit(); }
                 }
                 break;
             }
             case 'lastconnect': {
                 if (settings.cmd == 'deviceinfo') {
-                    settings.lastconnect = (data.result)?null:data;
-                    if (--settings.deviceinfocount == 0) { displayDeviceInfo(settings.sysinfo, settings.lastconnect, settings.networking); process.exit(); }
+                    settings.lastconnect = (data.result) ? null : data;
+                    if (--settings.deviceinfocount == 0) { displayDeviceInfo(settings.sysinfo, settings.lastconnect, settings.networking, settings.nodes); process.exit(); }
                 }
                 break;
             }
             case 'getnetworkinfo': {
                 if (settings.cmd == 'deviceinfo') {
                     settings.networking = (data.result) ? null : data;
-                    if (--settings.deviceinfocount == 0) { displayDeviceInfo(settings.sysinfo, settings.lastconnect, settings.networking); process.exit(); }
+                    if (--settings.deviceinfocount == 0) { displayDeviceInfo(settings.sysinfo, settings.lastconnect, settings.networking, settings.nodes); process.exit(); }
                 }
                 break;
             }
@@ -1791,6 +1787,10 @@ function serverConnect() {
                 break;
             }
             case 'nodes': {
+                if (settings.cmd == 'deviceinfo') {
+                    settings.nodes = (data.result) ? null : data;
+                    if (--settings.deviceinfocount == 0) { displayDeviceInfo(settings.sysinfo, settings.lastconnect, settings.networking, settings.nodes); process.exit(); }
+                }
                 if ((settings.cmd == 'listdevices') && (data.responseid == 'meshctrl')) {
                     if ((data.result != null) && (data.result != 'ok')) {
                         console.log(data.result);
@@ -2075,18 +2075,37 @@ function csvFormatArray(x) {
     return y.join(',');
 }
 
-function displayDeviceInfo(sysinfo, lastconnect, network) {
-    var node = sysinfo.node;
-    var hardware = sysinfo.hardware;
+function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
+    //console.log('displayDeviceInfo', sysinfo, lastconnect, network, nodes);
+
+    // Fetch the node information
+    var node = null;;
+    if (sysinfo != null && (sysinfo.node != null)) {
+        // Node information came with system information
+        node = sysinfo.node;
+    } else {
+        // This device does not have system information, get node information from the nodes list.
+        for (var m in nodes.nodes) {
+            for (var n in nodes.nodes[m]) {
+                if (nodes.nodes[m][n]._id.indexOf(args.id) >= 0) { node = nodes.nodes[m][n]; }
+            }
+        }
+    }
+    if (node == null) {
+        console.log("Invalid device id");
+        process.exit(); return;
+    }
+
     var info = {};
 
-    if (network != null) { sysinfo.netif = network.netif; }
+    //if (network != null) { sysinfo.netif = network.netif; }
     if (lastconnect != null) { node.lastconnect = lastconnect.time; node.lastaddr = lastconnect.addr; }
     if (args.raw) { console.log(JSON.stringify(sysinfo, ' ', 2)); return; }
 
     // General
     var output = {}, outputCount = 0;
-    if (node.rname) { output["Server Name"] = node.name; outputCount++; }
+    if (node.name) { output["Server Name"] = node.name; outputCount++; }
+    if (node.rname) { output["Computer Name"] = node.rname; outputCount++; }
     if (node.host != null) { output["Hostname"] = node.host; outputCount++; }
     if (node.ip != null) { output["IP Address"] = node.ip; outputCount++; }
     if (node.desc != null) { output["Description"] = node.desc; outputCount++; }
@@ -2106,14 +2125,19 @@ function displayDeviceInfo(sysinfo, lastconnect, network) {
         }
         output["AntiVirus"] = av; outputCount++;
     }
+    if (typeof node.wsc == 'object') {
+        output["WindowsSecurityCenter"] = node.wsc; outputCount++;
+    }
     if (outputCount > 0) { info["General"] = output; }
 
     // Operating System
-    if ((hardware.windows && hardware.windows.osinfo) || node.osdesc) {
+    var hardware = null;
+    if ((sysinfo != null) && (sysinfo.hardware != null)) { hardware = sysinfo.hardware; }
+    if ((hardware && hardware.windows && hardware.windows.osinfo) || node.osdesc) {
         var output = {}, outputCount = 0;
         if (node.rname) { output["Name"] = node.rname; outputCount++; }
         if (node.osdesc) { output["Version"] = node.osdesc; outputCount++; }
-        if (hardware.windows && hardware.windows.osinfo) { var m = hardware.windows.osinfo; if (m.OSArchitecture) { output["Architecture"] = m.OSArchitecture; outputCount++; } }
+        if (hardware && hardware.windows && hardware.windows.osinfo) { var m = hardware.windows.osinfo; if (m.OSArchitecture) { output["Architecture"] = m.OSArchitecture; outputCount++; } }
         if (outputCount > 0) { info["Operating System"] = output; }
     }
 
@@ -2180,52 +2204,54 @@ function displayDeviceInfo(sysinfo, lastconnect, network) {
         if (outputCount > 0) { info["Intel Active Management Technology (Intel AMT)"] = output; }
     }
 
-    if (hardware.identifiers) {
-        var output = {}, outputCount = 0, ident = hardware.identifiers;
-        // BIOS
-        if (ident.bios_vendor) { output["Vendor"] = ident.bios_vendor; outputCount++; }
-        if (ident.bios_version) { output["Version"] = ident.bios_version; outputCount++; }
-        if (outputCount > 0) { info["BIOS"] = output; }
-        output = {}, outputCount = 0;
+    if (hardware != null) {
+        if (hardware.identifiers) {
+            var output = {}, outputCount = 0, ident = hardware.identifiers;
+            // BIOS
+            if (ident.bios_vendor) { output["Vendor"] = ident.bios_vendor; outputCount++; }
+            if (ident.bios_version) { output["Version"] = ident.bios_version; outputCount++; }
+            if (outputCount > 0) { info["BIOS"] = output; }
+            output = {}, outputCount = 0;
 
-        // Motherboard
-        if (ident.board_vendor) { output["Vendor"] = ident.board_vendor; outputCount++; }
-        if (ident.board_name) { output["Name"] = ident.board_name; outputCount++; }
-        if (ident.board_serial && (ident.board_serial != '')) { output["Serial"] = ident.board_serial; outputCount++; }
-        if (ident.board_version) { output["Version"] = ident.board_version; }
-        if (ident.product_uuid) { output["Identifier"] = ident.product_uuid; }
-        if (ident.cpu_name) { output["CPU"] = ident.cpu_name; }
-        if (ident.gpu_name) { for (var i in ident.gpu_name) { output["GPU" + (parseInt(i) + 1)] = ident.gpu_name[i]; } }
-        if (outputCount > 0) { info["Motherboard"] = output; }
-    }
+            // Motherboard
+            if (ident.board_vendor) { output["Vendor"] = ident.board_vendor; outputCount++; }
+            if (ident.board_name) { output["Name"] = ident.board_name; outputCount++; }
+            if (ident.board_serial && (ident.board_serial != '')) { output["Serial"] = ident.board_serial; outputCount++; }
+            if (ident.board_version) { output["Version"] = ident.board_version; }
+            if (ident.product_uuid) { output["Identifier"] = ident.product_uuid; }
+            if (ident.cpu_name) { output["CPU"] = ident.cpu_name; }
+            if (ident.gpu_name) { for (var i in ident.gpu_name) { output["GPU" + (parseInt(i) + 1)] = ident.gpu_name[i]; } }
+            if (outputCount > 0) { info["Motherboard"] = output; }
+        }
 
-    // Memory
-    if (hardware.windows) {
-        if (hardware.windows.memory) {
-            var output = {}, outputCount = 0, minfo = {};
-            hardware.windows.memory.sort(function (a, b) { if (a.BankLabel > b.BankLabel) return 1; if (a.BankLabel < b.BankLabel) return -1; return 0; });
-            for (var i in hardware.windows.memory) {
-                var m = hardware.windows.memory[i], moutput = {}, moutputCount = 0;
-                if (m.Capacity) { moutput["Capacity/Speed"] = (m.Capacity / 1024 / 1024) + " Mb, " + m.Speed + " Mhz"; moutputCount++; }
-                if (m.PartNumber) { moutput["Part Number"] = ((m.Manufacturer && m.Manufacturer != 'Undefined') ? (m.Manufacturer + ', ') : '') + m.PartNumber; moutputCount++; }
-                if (moutputCount > 0) { minfo[m.BankLabel] = moutput; info["Memory"] = minfo; }
+        // Memory
+        if (hardware.windows) {
+            if (hardware.windows.memory) {
+                var output = {}, outputCount = 0, minfo = {};
+                hardware.windows.memory.sort(function (a, b) { if (a.BankLabel > b.BankLabel) return 1; if (a.BankLabel < b.BankLabel) return -1; return 0; });
+                for (var i in hardware.windows.memory) {
+                    var m = hardware.windows.memory[i], moutput = {}, moutputCount = 0;
+                    if (m.Capacity) { moutput["Capacity/Speed"] = (m.Capacity / 1024 / 1024) + " Mb, " + m.Speed + " Mhz"; moutputCount++; }
+                    if (m.PartNumber) { moutput["Part Number"] = ((m.Manufacturer && m.Manufacturer != 'Undefined') ? (m.Manufacturer + ', ') : '') + m.PartNumber; moutputCount++; }
+                    if (moutputCount > 0) { minfo[m.BankLabel] = moutput; info["Memory"] = minfo; }
+                }
             }
         }
-    }
 
-    // Storage
-    if (hardware.identifiers && ident.storage_devices) {
-        var output = {}, outputCount = 0, minfo = {};
-        // Sort Storage
-        ident.storage_devices.sort(function (a, b) { if (a.Caption > b.Caption) return 1; if (a.Caption < b.Caption) return -1; return 0; });
-        for (var i in ident.storage_devices) {
-            var m = ident.storage_devices[i], moutput = {};
-            if (m.Size) {
-                if (m.Model && (m.Model != m.Caption)) { moutput["Model"] = m.Model; outputCount++; }
-                if ((typeof m.Size == 'string') && (parseInt(m.Size) == m.Size)) { m.Size = parseInt(m.Size); }
-                if (typeof m.Size == 'number') { moutput["Capacity"] = Math.floor(m.Size / 1024 / 1024) + 'Mb'; outputCount++; }
-                if (typeof m.Size == 'string') { moutput["Capacity"] = m.Size; outputCount++; }
-                if (moutputCount > 0) { minfo[m.Caption] = moutput; info["Storage"] = minfo; }
+        // Storage
+        if (hardware.identifiers && ident.storage_devices) {
+            var output = {}, outputCount = 0, minfo = {};
+            // Sort Storage
+            ident.storage_devices.sort(function (a, b) { if (a.Caption > b.Caption) return 1; if (a.Caption < b.Caption) return -1; return 0; });
+            for (var i in ident.storage_devices) {
+                var m = ident.storage_devices[i], moutput = {};
+                if (m.Size) {
+                    if (m.Model && (m.Model != m.Caption)) { moutput["Model"] = m.Model; outputCount++; }
+                    if ((typeof m.Size == 'string') && (parseInt(m.Size) == m.Size)) { m.Size = parseInt(m.Size); }
+                    if (typeof m.Size == 'number') { moutput["Capacity"] = Math.floor(m.Size / 1024 / 1024) + 'Mb'; outputCount++; }
+                    if (typeof m.Size == 'string') { moutput["Capacity"] = m.Size; outputCount++; }
+                    if (moutputCount > 0) { minfo[m.Caption] = moutput; info["Storage"] = minfo; }
+                }
             }
         }
     }
