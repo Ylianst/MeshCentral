@@ -734,8 +734,10 @@ module.exports.CertificateOperations = function (parent) {
             var altNames = webCertificate.getExtension('subjectAltName');
             if (altNames) {
                 for (i = 0; i < altNames.altNames.length; i++) {
-                    var acn = altNames.altNames[i].value.toLowerCase();
-                    if (r.CommonNames.indexOf(acn) == -1) { r.CommonNames.push(acn); }
+                    if ((altNames.altNames[i] != null) && (altNames.altNames[i].type === 2) && (typeof altNames.altNames[i].value === 'string')) {
+                        var acn = altNames.altNames[i].value.toLowerCase();
+                        if (r.CommonNames.indexOf(acn) == -1) { r.CommonNames.push(acn); }
+                    }
                 }
             }
             var rootCertificate = obj.pki.certificateFromPem(r.root.cert);
@@ -900,7 +902,14 @@ module.exports.CertificateOperations = function (parent) {
         }
         r.CommonNames = [r.CommonName.toLowerCase()];
         var altNames = webCertificate.getExtension('subjectAltName');
-        if (altNames) { for (i = 0; i < altNames.altNames.length; i++) { r.CommonNames.push(altNames.altNames[i].value.toLowerCase()); } }
+        if (altNames) {
+            for (i = 0; i < altNames.altNames.length; i++) {
+                if ((altNames.altNames[i] != null) && (altNames.altNames[i].type === 2) && (typeof altNames.altNames[i].value === 'string')) {
+                    var acn = altNames.altNames[i].value.toLowerCase();
+                    if (r.CommonNames.indexOf(acn) == -1) { r.CommonNames.push(acn); }
+                }
+            }
+        }
         var rootCertificate = obj.pki.certificateFromPem(r.root.cert);
         r.RootName = rootCertificate.subject.getField('CN').value;
 
