@@ -1649,6 +1649,11 @@ function CreateMeshCentralServer(config, args) {
                     }
                 });
 
+                // Setup Intel AMT hello server
+                if ((typeof config.settings.amthelloserver == 'object') && (typeof config.settings.amthelloserver.devicegroup == 'string')) {
+                    obj.amthelloserver = require('./amthelloserver').CreateAmtHelloServer(obj, config.settings.amthelloserver);
+                }
+
                 // Start collecting server stats every 5 minutes
                 setInterval(function () {
                     obj.serverStatsCounter++;
