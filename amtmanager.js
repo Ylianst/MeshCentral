@@ -930,7 +930,7 @@ module.exports.CreateAmtManager = function (parent) {
                     var extKeyUsage = { name: 'extKeyUsage', serverAuth: true, clientAuth: true }
 
                     // Sign the key pair using the CA certifiate
-                    const cert = amtcert_createCertificate(certattributes, xxCaPrivateKey, DERKey, issuerattributes, extKeyUsage);
+                    const cert = obj.amtcert_createCertificate(certattributes, xxCaPrivateKey, DERKey, issuerattributes, extKeyUsage);
                     if (cert == null) { dev.consoleMsg("Failed to sign the TLS certificate."); removeAmtDevice(dev, 23); return; }
 
                     // Place the resulting signed certificate back into AMT
@@ -2080,7 +2080,7 @@ module.exports.CreateAmtManager = function (parent) {
 
     /*
     function amtcert_signWithCaKey(DERKey, caPrivateKey, certAttributes, issuerAttributes, extKeyUsage) {
-        return amtcert_createCertificate(certAttributes, caPrivateKey, DERKey, issuerAttributes, extKeyUsage);
+        return obj.amtcert_createCertificate(certAttributes, caPrivateKey, DERKey, issuerAttributes, extKeyUsage);
     }
     */
 
@@ -2092,7 +2092,7 @@ module.exports.CreateAmtManager = function (parent) {
     // 2.16.840.1.113741.1.2.3      = Intel AMT Client Setup Certificate (Zero-Touch)
 
     // Generate a certificate with a set of attributes signed by a rootCert. If the rootCert is obmitted, the generated certificate is self-signed.
-    function amtcert_createCertificate(certAttributes, caPrivateKey, DERKey, issuerAttributes, extKeyUsage) {
+    obj.amtcert_createCertificate = function(certAttributes, caPrivateKey, DERKey, issuerAttributes, extKeyUsage) {
         // Generate a keypair and create an X.509v3 certificate
         var keys, cert = obj.parent.certificateOperations.forge.pki.createCertificate();
         cert.publicKey = obj.parent.certificateOperations.forge.pki.publicKeyFromPem('-----BEGIN PUBLIC KEY-----' + DERKey + '-----END PUBLIC KEY-----');
