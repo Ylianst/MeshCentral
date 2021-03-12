@@ -172,11 +172,11 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         if (typeof e.data == 'string') {
             obj.xxOnControlCommand(e.data);
         } else {
-            // If only 1 byte
-            if ((cmdAccLen == 0) && (e.data.byteLength == 1)) return; // Ignore single byte data, this is a keep alive.
-
             // Send the data to the module
             if (obj.m.ProcessBinaryCommand) {
+                // If only 1 byte
+                if ((cmdAccLen == 0) && (e.data.byteLength < 4)) return; // Ignore any commands less than 4 bytes.
+
                 // Send as Binary Command
                 if (cmdAccLen != 0) {
                     // Accumulator is active

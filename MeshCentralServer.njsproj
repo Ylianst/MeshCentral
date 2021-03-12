@@ -98,7 +98,7 @@
     <Compile Include="amt\amt-xml.js" />
     <Compile Include="amt\amt.js" />
     <Compile Include="exeHandler.js" />
-    <Compile Include="amthelloserver.js" />
+    <Compile Include="amtprovisioningserver.js" />
     <Compile Include="letsencrypt.js" />
     <Compile Include="mcrec.js" />
     <Compile Include="meshaccelerator.js" />

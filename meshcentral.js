@@ -1650,8 +1650,8 @@ function CreateMeshCentralServer(config, args) {
                 });
 
                 // Setup Intel AMT hello server
-                if ((typeof config.settings.amthelloserver == 'object') && (typeof config.settings.amthelloserver.devicegroup == 'string') && (typeof config.settings.amthelloserver.newmebxpassword == 'string') && (typeof config.settings.amthelloserver.trustedfqdn == 'string')) {
-                    obj.amthelloserver = require('./amthelloserver').CreateAmtHelloServer(obj, config.settings.amthelloserver);
+                if ((typeof config.settings.amtprovisioningserver == 'object') && (typeof config.settings.amtprovisioningserver.devicegroup == 'string') && (typeof config.settings.amtprovisioningserver.newmebxpassword == 'string') && (typeof config.settings.amtprovisioningserver.trustedfqdn == 'string')) {
+                    obj.amtProvisioningServer = require('./amtprovisioningserver').CreateAmtProvisioningServer(obj, config.settings.amtprovisioningserver);
                 }
 
                 // Start collecting server stats every 5 minutes
