@@ -16,8 +16,14 @@
 
 // Construct the Intel AMT hello server. This is used for Intel AMT bare-metal activation on the local LAN.
 // This server can receive a notification from Intel AMT and attempt activation.
+// In Intel documentation, this is called the Setup and Configuration Application (SCA)
 module.exports.CreateAmtHelloServer = function (parent, config) {
     var obj = {};
+
+    // WSMAN stack
+    const CreateWsmanComm = require('./amt/amt-wsman-comm');
+    const WsmanStackCreateService = require('./amt/amt-wsman');
+    const AmtStackCreateService = require('./amt/amt');
 
     // Start the Intel AMT hello server
     var port = 9971;
@@ -45,7 +51,7 @@ module.exports.CreateAmtHelloServer = function (parent, config) {
     console.log('MeshCentral Intel(R) AMT provisioning server running on port ' + port + '.');
 
     // Example hello data for testing
-    //processHelloData(Buffer.from('01000300000000004b529b93d413181de4871c697a6b7a2b170220c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4022045140b3247eb9cc8c5b4f0d7b53091f73292089e6e5a63e2749dd3aca9198eda0220d7a7a0fb5d7e2731d771e9484ebcdef71d5f0c3e0a2948782bc83ee0ea699ef402201465fa205397b876faa6f0a9958e5590e40fcc7faa4fb7c2c8677521fb5fb65802202ce1cb0bf9d2f9e102993fbe215152c3b2dd0cabde1c68e5319b839154dbb7f502209acfab7e43c8d880d06b262a94deeee4b4659989c3d0caf19baf6405e41ab7df022016af57a9f676b0ab126095aa5ebadef22ab31119d644ac95cd4b93dbf3f26aeb0220960adf0063e96356750c2965dd0a0867da0b9cbd6e77714aeafb2349ab393da3022068ad50909b04363c605ef13581a939ff2c96372e3f12325b0a6861e1d59f660302206dc47172e01cbcb0bf62580d895fe2b8ac9ad4f873801e0c10b9c837d21eb177022073c176434f1bc6d5adf45b0e76e727287c8de57616c1e6e6141a2b2cbc7d8e4c022043df5774b03e7fef5fe40d931a7bedf1bb2e6b42738c4e6d3841103d3aa7f33902202399561127a57125de8cefea610ddf2fa078b5c8067f4e828290bfb860e84b3c022070a73f7f376b60074248904534b11482d5bf0e698ecc498df52577ebf2e93b9a02204348a0e9444c78cb265e058d5e8944b4d84f9662bd26db257f8934a443c701610220cb3ccbb76031e5e0138f8dd39a23f9de47ffc35e43c1144cea27d46a5ab1cb5f022031ad6648f8104138c738f39ea4320133393e3a18cc02296ef97c2ac9ef6731d00220552f7bdcf1a7af9e6ce672017f4f12abf77240c78e761ac203d1d9d20ac89988022067540a47aa5b9f34570a99723cfefa96a96ee3f0d9b8bf4def9440b8065d665d02207224395222cd588c4f2683716922addb41e39b581ac34fa87b39efa896fbb39e0220cbb522d7b7f127ad6a0113865bdf1cd4102e7d0759af635a7cf4720dc963c53b0220179fbc148a3dd00fd24ea13458cc43bfa7f59c8182d783a513f6ebec100c892402202cabeafe37d06ca22aba7391c0033d25982952c453647349763a3ab5ad6ccf69', 'hex'), '192.168.2.148');
+    setTimeout(function () { processHelloData(Buffer.from('01000300000000004b529b93d413181de4871c697a6b7a2b170220c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4022045140b3247eb9cc8c5b4f0d7b53091f73292089e6e5a63e2749dd3aca9198eda0220d7a7a0fb5d7e2731d771e9484ebcdef71d5f0c3e0a2948782bc83ee0ea699ef402201465fa205397b876faa6f0a9958e5590e40fcc7faa4fb7c2c8677521fb5fb65802202ce1cb0bf9d2f9e102993fbe215152c3b2dd0cabde1c68e5319b839154dbb7f502209acfab7e43c8d880d06b262a94deeee4b4659989c3d0caf19baf6405e41ab7df022016af57a9f676b0ab126095aa5ebadef22ab31119d644ac95cd4b93dbf3f26aeb0220960adf0063e96356750c2965dd0a0867da0b9cbd6e77714aeafb2349ab393da3022068ad50909b04363c605ef13581a939ff2c96372e3f12325b0a6861e1d59f660302206dc47172e01cbcb0bf62580d895fe2b8ac9ad4f873801e0c10b9c837d21eb177022073c176434f1bc6d5adf45b0e76e727287c8de57616c1e6e6141a2b2cbc7d8e4c022043df5774b03e7fef5fe40d931a7bedf1bb2e6b42738c4e6d3841103d3aa7f33902202399561127a57125de8cefea610ddf2fa078b5c8067f4e828290bfb860e84b3c022070a73f7f376b60074248904534b11482d5bf0e698ecc498df52577ebf2e93b9a02204348a0e9444c78cb265e058d5e8944b4d84f9662bd26db257f8934a443c701610220cb3ccbb76031e5e0138f8dd39a23f9de47ffc35e43c1144cea27d46a5ab1cb5f022031ad6648f8104138c738f39ea4320133393e3a18cc02296ef97c2ac9ef6731d00220552f7bdcf1a7af9e6ce672017f4f12abf77240c78e761ac203d1d9d20ac89988022067540a47aa5b9f34570a99723cfefa96a96ee3f0d9b8bf4def9440b8065d665d02207224395222cd588c4f2683716922addb41e39b581ac34fa87b39efa896fbb39e0220cbb522d7b7f127ad6a0113865bdf1cd4102e7d0759af635a7cf4720dc963c53b0220179fbc148a3dd00fd24ea13458cc43bfa7f59c8182d783a513f6ebec100c892402202cabeafe37d06ca22aba7391c0033d25982952c453647349763a3ab5ad6ccf69', 'hex'), '192.168.2.148'); }, 500);
 
     // Parse Intel AMT hello data
     function parseHelloData(data, addr) {
@@ -91,14 +97,96 @@ module.exports.CreateAmtHelloServer = function (parent, config) {
     // Process incoming Intel AMT hello data
     function processHelloData(data, addr) {
         // Check if we can parse the incoming data
-        const amtHello = parseHelloData(data, addr);
-        if (amtHello == null) return; // Invalid Intel AMT hello
+        const dev = parseHelloData(data, addr);
+        if (dev == null) { parent.debug('amtsca', addr, 'Got invalid hello from: ' + addr); return; } // Invalid Intel AMT hello
+        parent.debug('amtsca', 'Got hello from ' + addr);
 
-        console.log(JSON.stringify(amtHello, null, 2));
-        // TODO: Compute the nodeid for this device using the device GUID
-        // TODO: Get device group and assumed trusted FQDN
-        // TODO: Get an activation certificate chain
-        // TODO: Setup a connection to the Intel AMT device
+        // Get assumed trusted FQDN and device group
+        dev.trustedFqdn = config.trustedfqdn;
+        var mesh = parent.webserver.meshes[config.devicegroup];
+        if ((mesh == null) || (mesh.mtype !== 1) || (typeof mesh.amt !== 'object') || (typeof mesh.amt.type !== 'number')) { parent.debug('amtsca', addr, 'Invalid device group for Intel AMT activation.'); return; }
+        if ((mesh.amt.type != 3) && (mesh.amt.type != 4)) { parent.debug('amtsca', addr, 'Device group does not have ACM activation policy.'); return; }
+        dev.mesh = mesh;
+        dev.domainid = mesh.domain;
+
+        // Compute the nodeid for this device using the device GUID
+        const g = dev.guid.split('-').join('');
+        const id = Buffer.from(g + g + g, 'hex').toString('base64');
+        dev.nodeid = 'node/' + mesh.domain + '/' + id;
+
+        // Attempts reverse DNS loopup on the device IP address
+        const func = function dnsReverseLoopup(err, hostnames) {
+            var hostname = dnsReverseLoopup.addr;
+            if ((err == null) && (hostnames != null) && (hostnames.length > 0)) { hostname = hostnames[0]; }
+            dnsReverseLoopup.dev.hostname = hostname;
+            processHelloDataEx1(dnsReverseLoopup.dev);
+        }
+        func.addr = addr;
+        func.dev = dev;
+        require('dns').reverse(addr, func);
+    }
+
+    // Check if this device has any way to be activated in ACM using our server certificates.
+    function checkAcmActivation(hello) {
+        var domain = parent.config.domains[hello.domainid];
+        if ((domain == null) || (domain.amtacmactivation == null) || (domain.amtacmactivation.certs == null) || (domain.amtacmactivation.certs.length == 0)) return null;
+        const activationCerts = domain.amtacmactivation.certs;
+
+        // Get the trusted FQDN of the device
+        var trustedFqdn = hello.trustedFqdn;
+
+        // Find a matching certificate
+        for (var i in activationCerts) {
+            var cert = activationCerts[i];
+            if ((cert.cn == '*') || (cert.cn == trustedFqdn)) {
+                for (var j in hello.hashes) {
+                    var hash = hello.hashes[j];
+                    if (hash == cert.sha256) { return { cert: cert, fqdn: trustedFqdn, hash: cert.sha256 }; } // Found a match
+                    else if (hash == cert.sha1) { return { cert: cert, fqdn: trustedFqdn, hash: cert.sha1 }; } // Found a match
+                }
+            }
+        }
+        return null; // Did not find a match
+    }
+
+    function processHelloDataEx1(dev) {
+        // Get an activation certificate chain
+        const certinfo = checkAcmActivation(dev);
+        if (certinfo == null) { parent.debug('amtsca', dev.hostname, 'Unable to find a matching ACM activation certificate.'); destroyDevice(dev); return; }
+        dev.certinfo = certinfo;
+        dev.certinfo.cert.certs = dev.certinfo.cert.certs.reverse();
+
+        // Turn DER encoded certs into PEM
+        for (var i in dev.certinfo.cert.certs) {
+            if (dev.certinfo.cert.certs[i].indexOf('-----BEGIN CERTIFICATE-----') == -1) {
+                dev.certinfo.cert.certs[i] = '-----BEGIN CERTIFICATE-----\r\n' + dev.certinfo.cert.certs[i] + '\r\n-----END CERTIFICATE-----';
+            }
+        }
+
+        //console.log(JSON.stringify(dev.certinfo, null, 2));
+
+        // Setup a connection to the Intel AMT device
+        parent.debug('amtsca', dev.hostname, 'Launching TLS connection...');
+        var comm = CreateWsmanComm(dev.hostname, 16993, 'admin', 'P@ssw0rd', 1, { cert: dev.certinfo.cert.certs, key: dev.certinfo.cert.key }); // Perform TLS connection
+        comm.xtlsFingerprint = 0; // No Intel AMT certificate checking.
+        var wsstack = WsmanStackCreateService(comm);
+        dev.amtstack = AmtStackCreateService(wsstack);
+        dev.amtstack.dev = dev;
+        dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], processHelloDataEx2);
+    }
+
+    function processHelloDataEx2(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (status != 200) { parent.debug('amtsca', dev.hostname, 'Failed TLS connection, status=' + status + '.'); destroyDevice(dev); return; }
+        parent.debug('amtsca', dev.hostname, 'Succesful TLS connection.');
+
+        //console.log('processHelloDataEx2', status, responses);
+    }
+
+    // Do aggressive cleanup on the device
+    function destroyDevice(dev) {
+        if (dev.amtstack != null) { delete dev.amtstack.dev; delete dev.amtstack; }
+        delete dev.certinfo;
     }
 
     return obj;
