@@ -1650,7 +1650,7 @@ function CreateMeshCentralServer(config, args) {
                 });
 
                 // Setup Intel AMT hello server
-                if ((typeof config.settings.amthelloserver == 'object') && (typeof config.settings.amthelloserver.devicegroup == 'string')) {
+                if ((typeof config.settings.amthelloserver == 'object') && (typeof config.settings.amthelloserver.devicegroup == 'string') && (typeof config.settings.amthelloserver.newmebxpassword == 'string') && (typeof config.settings.amthelloserver.trustedfqdn == 'string')) {
                     obj.amthelloserver = require('./amthelloserver').CreateAmtHelloServer(obj, config.settings.amthelloserver);
                 }
 
