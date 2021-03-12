@@ -17,7 +17,7 @@
 // Construct the Intel AMT hello server. This is used for Intel AMT bare-metal activation on the local LAN.
 // This server can receive a notification from Intel AMT and attempt activation.
 // In Intel documentation, this is called the Setup and Configuration Application (SCA)
-module.exports.CreateAmtHelloServer = function (parent, config) {
+module.exports.CreateAmtProvisioningServer = function (parent, config) {
     var obj = {};
 
     // WSMAN stack

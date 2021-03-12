@@ -5283,8 +5283,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'amtsetupbin': {
                 if ((command.oldmebxpass != 'admin') && (common.validateString(command.oldmebxpass, 8, 16) == false)) break; // Check password
                 if (common.validateString(command.newmebxpass, 8, 16) == false) break; // Check password
-                var bin = parent.parent.certificateOperations.GetSetupBinFile(domain.amtacmactivation, command.oldmebxpass, command.newmebxpass, domain, user);
-                try { ws.send(JSON.stringify({ action: 'amtsetupbin', file: Buffer.from(bin, 'binary').toString('base64') })); } catch (ex) { }
+                if ((command.baremetal) && (parent.parent.amtProvisioningServer != null)) {
+                    // Create bare metal setup.bin
+                    var bin = parent.parent.certificateOperations.GetBareMetalSetupBinFile(domain.amtacmactivation, command.oldmebxpass, command.newmebxpass, domain, user);
+                    try { ws.send(JSON.stringify({ action: 'amtsetupbin', file: Buffer.from(bin, 'binary').toString('base64') })); } catch (ex) { }
+                } else {
+                    // Create standard setup.bin
+                    var bin = parent.parent.certificateOperations.GetSetupBinFile(domain.amtacmactivation, command.oldmebxpass, command.newmebxpass, domain, user);
+                    try { ws.send(JSON.stringify({ action: 'amtsetupbin', file: Buffer.from(bin, 'binary').toString('base64') })); } catch (ex) { }
+                }
                 break;
             }
             case 'meshToolInfo': {

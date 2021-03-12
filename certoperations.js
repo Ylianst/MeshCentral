@@ -355,6 +355,113 @@ module.exports.CertificateOperations = function (parent) {
         return AmtSetupBinStack.AmtSetupBinEncode(setupbin);
     }
 
+
+    // Get a bare metal setup.bin file
+    obj.GetBareMetalSetupBinFile = function (amtacmactivation, oldmebxpass, newmebxpass, domain, user) {
+        // Create a setup.bin file for our own root cert
+        // Get the wiadcard certificate hash
+        var wildcardCertSha256 = null;
+        for (var i = 0; i < amtacmactivation.acmmatch.length; i++) { if (amtacmactivation.acmmatch[i].cn == '*') { wildcardCertSha256 = amtacmactivation.acmmatch[i].sha256; } }
+
+        // Create the Setup.bin stack
+        const AmtSetupBinStack = require('./amt/amt-setupbin')();
+        var setupbin = AmtSetupBinStack.AmtSetupBinCreate(3, 1); // Version 3, 1 = Records will not be consumed.
+        var certRootName = 'MeshCentral';
+
+        // Figure out what trusted FQDN to use.
+        var trustedFQDN = parent.config.settings.amtprovisioningserver.trustedfqdn
+
+        // Figure out the provisioning server port
+        var port = 9971;
+        if (typeof parent.config.settings.amtprovisioningserver.port == 'number') { port = parent.config.settings.amtprovisioningserver.port; }
+
+        // Figure out the provisioning server IP address
+        var ipaddr = '192.168.2.147'; // TODO
+        if (typeof parent.config.settings.amtprovisioningserver.ip == 'string') { ipaddr = parent.config.settings.amtprovisioningserver.ip; }
+        var ipaddrSplit = ipaddr.split('.');
+        var ipaddrStr = String.fromCharCode(parseInt(ipaddrSplit[3])) + String.fromCharCode(parseInt(ipaddrSplit[2])) + String.fromCharCode(parseInt(ipaddrSplit[1])) + String.fromCharCode(parseInt(ipaddrSplit[0]));
+
+        // Create a new record
+        var r = {};
+        r.typeIdentifier = 1;
+        r.flags = 1; // Valid, unscrambled record.
+        r.chunkCount = 0;
+        r.headerByteCount = 0;
+        r.number = 0;
+        r.variables = [];
+        setupbin.records.push(r);
+
+        // Create "Current MEBx Password" variable
+        var v = {};
+        v.moduleid = 1;
+        v.varid = 1;
+        v.length = -1;
+        v.value = oldmebxpass;
+        setupbin.records[0].variables.push(v);
+
+        // Create "New MEBx Password" variable
+        v = {};
+        v.moduleid = 1;
+        v.varid = 2;
+        v.length = -1;
+        v.value = newmebxpass;
+        setupbin.records[0].variables.push(v);
+
+        // Create "User Defined Certificate Addition" variable
+        v = {};
+        v.moduleid = 2;
+        v.varid = 8;
+        v.length = -1;
+        v.value = String.fromCharCode(2) + Buffer.from(wildcardCertSha256, 'hex').toString('binary') + String.fromCharCode(certRootName.length) + certRootName; // 2 = SHA256 hash type
+        setupbin.records[0].variables.push(v);
+
+        // Create "PKI DNS Suffix" variable
+        v = {};
+        v.moduleid = 2;
+        v.varid = 3;
+        v.length = -1;
+        v.value = trustedFQDN;
+        setupbin.records[0].variables.push(v);
+
+        // Create "Configuration Server FQDN" variable
+        v = {};
+        v.moduleid = 2;
+        v.varid = 4;
+        v.length = -1;
+        v.value = trustedFQDN;
+        setupbin.records[0].variables.push(v);
+
+        // Create "Provisioning Server Address" variable
+        v = {};
+        v.moduleid = 2;
+        v.varid = 17;
+        v.length = -1;
+        v.value = ipaddrStr;
+        setupbin.records[0].variables.push(v);
+
+        // Create "Provisioning Server Port Number" variable
+        v = {};
+        v.moduleid = 2;
+        v.varid = 18;
+        v.length = -1;
+        v.value = port;
+        setupbin.records[0].variables.push(v);
+
+        // Create "Remote Configuration Enabled (RCFG)" variable
+        v = {};
+        v.moduleid = 2;
+        v.varid = 5;
+        v.length = -1;
+        v.value = '1'; // Turn on
+        setupbin.records[0].variables.push(v);
+
+        // Write to log file
+        obj.logAmtActivation(domain, { time: new Date(), action: 'setupbin', domain: domain.id, userid: user._id, oldmebx: oldmebxpass, newmebx: newmebxpass, rootname: certRootName, hash: wildcardCertSha256, dns: 'rootcert.meshcentral.com' });
+
+        // Encode the setup.bin file
+        return AmtSetupBinStack.AmtSetupBinEncode(setupbin);
+    }
+
     // Return the certificate of the remote HTTPS server
     obj.loadPfxCertificate = function (filename, password) {
         var r = { certs: [], keys: [] };
