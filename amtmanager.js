@@ -1852,7 +1852,7 @@ module.exports.CreateAmtManager = function (parent) {
         console.log('activateIntelAmtTlsAcmEx', dev.mpsConnection.tag.meiState.OsAdmin.user, dev.mpsConnection.tag.meiState.OsAdmin.pass);
 
         // Setup the WSMAN stack, no TLS
-        var comm = CreateWsmanComm(dev.nodeid, 16993, 'admin', '', 1, { cert: dev.acmTlsInfo.certs, key: dev.acmTlsInfo.signkey }, dev.mpsConnection); // TLS with client certificate chain and key.
+        var comm = CreateWsmanComm(dev.nodeid, 16993, 'admin', '', 1, { cert: dev.acmTlsInfo.certs.reverse().join(''), key: dev.acmTlsInfo.signkey }, dev.mpsConnection); // TLS with client certificate chain and key.
         // TODO: Intel AMT leaf TLS cert need to SHA256 hash to "startConfigData.hash"
         var wsstack = WsmanStackCreateService(comm);
         dev.amtstack = AmtStackCreateService(wsstack);
