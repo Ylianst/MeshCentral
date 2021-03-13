@@ -40,7 +40,7 @@ var CreateAmtSetupBinStack = function () {
     //   - Setup.bin should always start with "CurrentMEBx Pwd", "newMebx Pwd", "manageability selection" (if present).
 
     // Intel(R) AMT variable identifiers
-    // Type: 0 = Binar Stringy, 1 = Char, 2 = Short, 3 = Int
+    // Type: 0 = Binar String, 1 = Char, 2 = Short, 3 = Int
     var AmtSetupBinVarIds =
         {
             1: {
@@ -94,7 +94,7 @@ var CreateAmtSetupBinStack = function () {
                     { 0: "Disabled", 1: "KVM", 255: "All" }],
                 27: [1, "Opt-in Remote IT Consent Policy",         // 0 = Disabled, 1 = Enabled. Allows user consent to be configured remotely.
                     { 0: "Disabled", 1: "Enabled" }],
-                28: [1, "ME Provision Halt Active",                // 0 = Stop, 1 = Start. The "ME provisioning Halt/Activate" command must appear in the file only after "PKIDNSSuffix", "ConfigServerFQDN" and "Provisioning Server Address"
+                28: [1, "ME Provision Halt/Active",                // 0 = Stop, 1 = Start. The "ME provisioning Halt/Activate" command must appear in the file only after "PKIDNSSuffix", "ConfigServerFQDN" and "Provisioning Server Address"
                     { 0: "Stop", 1: "Start" }],
                 29: [1, "Manual Setup and Configuration",          // 0 = Automated, 1 = Manual
                     { 0: "Automated", 1: "Manual" }],
@@ -134,11 +134,11 @@ var CreateAmtSetupBinStack = function () {
         // RecordNumber(4)          - uniquely identifies the record among all records in the file. The field contains a non-negative ordinal value. The value of this field is always zero in the Local Provisioning File Header Record.
         // MajorVersion(1)          - identifies the major version of the file format specification. This is a positive integer that is greater than or equal to 1. The Major Version number is incremented to indicate that changes have been introduced that will cause code written against a lower Major Version number to fail.
         // MinorVersion(1)          - identifies the minor version of the file format specification. This is an integer that is greater than or equal to 0. The Minor Version number is incremented to indicate that changes have been introduced that will not cause code written against the same Major Version and a lower Minor Version number to fail. The purpose of this behavior is to allow a single local provisioning file to be used for multiple generations of Intel® AMT platform.
-        // Flags (2)                - File Flags,  1 = Do not consume records
+        // Flags (2)                - file Flags,  1 = Do not consume records
         // DataRecordCount(4)       - indicates the total number of data records written in the file when it was created.
         // DataRecordsConsumed(4)   - is a counter value that begins at 0 and is incremented by 1 by each platform BIOS when it consumes a data record from the file. This value is used to determine the offset of the next data record in the file.
         // DataRecordChunkCount(2)  - contains the number of 512-byte chunks in each data record. All data records are the same length.
-        // Reserved (2)             - Reserved
+        // Reserved (2)             - reserved
         // ModuleList               - contains a list of module identifiers. A module’s identifier appears in the list if and only if the data records contain entries for that module. Each module identifier is two bytes in length. The list is terminated by an identifier value of 0. 
 
         var obj = {}, UUID = file.substring(0, 16);

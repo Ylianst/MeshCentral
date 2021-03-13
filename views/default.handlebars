@@ -4912,7 +4912,7 @@
                 for (var d in nodes) { nodes[d].v = (nodes[d].intelamt != null) && ((amtSearch == '') || (nodes[d].intelamt.state == amtSearch)); }
             } else if (descSearch != null) {
                 // Device description search
-                for (var d in nodes) { nodes[d].v = (nodes[d].desc != null) && (nodes[d].desc != '') && ((descSearch == '') || (nodes[d].desc.indexOf(descSearch) >= 0)); }
+                for (var d in nodes) { nodes[d].v = (nodes[d].desc != null) && (nodes[d].desc != '') && ((descSearch == '') || (nodes[d].desc.toLowerCase().indexOf(descSearch) >= 0)); }
             } else if (wscSearch != null) {
                 // Windows Security Center
                 for (var d in nodes) {

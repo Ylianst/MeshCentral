@@ -375,9 +375,9 @@ module.exports.CertificateOperations = function (parent) {
         var port = 9971;
         if (typeof parent.config.settings.amtprovisioningserver.port == 'number') { port = parent.config.settings.amtprovisioningserver.port; }
 
-        // Figure out the provisioning server IP address
-        var ipaddr = '192.168.2.147'; // TODO
-        if (typeof parent.config.settings.amtprovisioningserver.ip == 'string') { ipaddr = parent.config.settings.amtprovisioningserver.ip; }
+        // Get the provisioning server IP address from the config file
+        if (typeof parent.config.settings.amtprovisioningserver.ip != 'string') return null;
+        var ipaddr = parent.config.settings.amtprovisioningserver.ip;
         var ipaddrSplit = ipaddr.split('.');
         var ipaddrStr = String.fromCharCode(parseInt(ipaddrSplit[3])) + String.fromCharCode(parseInt(ipaddrSplit[2])) + String.fromCharCode(parseInt(ipaddrSplit[1])) + String.fromCharCode(parseInt(ipaddrSplit[0]));
 
