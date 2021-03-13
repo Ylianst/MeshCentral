@@ -447,12 +447,12 @@ module.exports.CertificateOperations = function (parent) {
         v.value = port;
         setupbin.records[0].variables.push(v);
 
-        // Create "Remote Configuration Enabled (RCFG)" variable
+        // Create "ME Provision Halt Active" variable
         v = {};
         v.moduleid = 2;
-        v.varid = 5;
+        v.varid = 28;
         v.length = -1;
-        v.value = '1'; // Turn on
+        v.value = 1; // Start
         setupbin.records[0].variables.push(v);
 
         // Write to log file
