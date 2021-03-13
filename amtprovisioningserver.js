@@ -441,7 +441,8 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
             // Update device in the database
             dev.aquired.tls = 1;
             dev.aquired.hash = dev.aquired.xhash;
-            dev.aquired.state = 2; // Activated in ACM
+            dev.aquired.state = 2; // Activated
+            dev.aquired.controlMode = 2; // Activated in ACM
             delete dev.aquired.xhash;
             if (UpdateDevice(dev) == false) return;
 
@@ -488,6 +489,13 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
                 if (dev.addr != dev.aquired.host) { devicename = dev.aquired.host.split('.')[0]; }
                 var device = { type: 'node', _id: dev.nodeid, meshid: dev.meshid, name: devicename, host: dev.aquired.host, domain: dev.domainid, intelamt: { ver: dev.aquired.version, user: dev.aquired.user, pass: dev.aquired.pass, tls: dev.aquired.tls, state: 2, realm: dev.aquired.realm } };
                 if (dev.aquired.hash != null) { device.intelamt.hash = dev.aquired.hash; }
+
+                // Set Intel AMT flags
+                // dev.aquired.controlMode // 1 = CCM, 2 = ACM
+                // (node.intelamt.flags & 2) == CCM, (node.intelamt.flags & 4) == ACM
+                if (dev.aquired.controlMode == 1) { device.intelamt.flags = 2; } // CCM
+                if (dev.aquired.controlMode == 2) { device.intelamt.flags = 4; } // ACM
+                
                 parent.db.Set(device);
 
                 // Event the new node
