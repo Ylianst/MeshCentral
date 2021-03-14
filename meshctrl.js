@@ -368,6 +368,7 @@ if (args['_'].length == 0) {
                         console.log("  --count                - Only return the device count.");
                         console.log("  --json                 - Show result as JSON.");
                         console.log("  --csv                  - Show result as comma seperated values.");
+                        console.log("  --filterid [id,id...]  - Show only results for devices with included id.");
                         break;
                     }
                     case 'listusersofdevicegroup': {
@@ -1795,6 +1796,28 @@ function serverConnect() {
                     if ((data.result != null) && (data.result != 'ok')) {
                         console.log(data.result);
                     } else {
+                        // Filder devices based on device id.
+                        if (args.filterid) {
+                            var filteridSplit = args.filterid.split(','), filters = [];
+                            for (var i in filteridSplit) {
+                                var f = filteridSplit[i].trim();
+                                var g = f.split('/'); // If there is any / in the id, just grab the last part.
+                                if (g.length > 0) { f = g[g.length - 1]; }
+                                if (f != '') { filters.push(f); }
+                            }
+                            if (filters.length > 0) {
+                                for (var mid in data.nodes) {
+                                    var filteredNodes = [];
+                                    for (var nid in data.nodes[mid]) {
+                                        var n = data.nodes[mid][nid], match = false;
+                                        for (var f in filters) { if (n._id.indexOf(filters[f]) >= 0) { match = true; } }
+                                        if (match) { filteredNodes.push(n); }
+                                    }
+                                    data.nodes[mid] = filteredNodes;
+                                }
+                            }
+                        }
+
                         if (args.csv) {
                             // Return a flat list
                             var nodecount = 0;

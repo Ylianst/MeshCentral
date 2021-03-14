@@ -1716,13 +1716,13 @@ module.exports.CreateAmtManager = function (parent) {
                     // We are not activated now, go to ACM directly.
                     // If this is Intel AMT 14 or better, we are going to attempt a host-based end-to-end TLS activation.
                     if (typeof dev.intelamt.ver == 'string') { var verSplit = dev.intelamt.ver.split('.'); if (verSplit.length >= 3) { dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); } }
-                    //if (dev.aquired.majorver >= 14) {
+                    if (dev.aquired.majorver >= 14) {
                         // Perform host-based TLS ACM activation
-                        //activateIntelAmtTlsAcm(dev, mesh.amt.password, acminfo);
-                    //} else {
+                        activateIntelAmtTlsAcm(dev, mesh.amt.password, acminfo);
+                    } else {
                         // Perform host-based ACM activation
                         activateIntelAmtAcm(dev, mesh.amt.password, acminfo);
-                    //}
+                    }
                 }
             }
         }
