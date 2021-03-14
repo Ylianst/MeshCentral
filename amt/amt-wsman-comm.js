@@ -164,7 +164,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                 obj.kerberosDone = 1;
             }
         } else if (obj.challengeParams != null) {
-            var response = hex_md5(hex_md5(obj.user + ':' + obj.challengeParams['realm'] + ':' + obj.pass) + ':' + obj.challengeParams['nonce'] + ':' + obj.noncecounter + ':' + obj.cnonce + ':' + obj.challengeParams['qop'] + ':' + hex_md5(action + ':' + url));
+            var response = hex_md5(hex_md5(obj.user + ':' + obj.challengeParams['realm'] + ':' + obj.pass) + ':' + obj.challengeParams['nonce'] + ':' + obj.noncecounter + ':' + obj.cnonce + ':' + obj.challengeParams['qop'] + ':' + hex_md5(action + ':' + url + ((obj.challengeParams['qop'] == 'auth-int') ? (':' + hex_md5(postdata)) : '')));
             h += 'Authorization: ' + obj.renderDigest({ 'username': obj.user, 'realm': obj.challengeParams['realm'], 'nonce': obj.challengeParams['nonce'], 'uri': url, 'qop': obj.challengeParams['qop'], 'response': response, 'nc': obj.noncecounter++, 'cnonce': obj.cnonce }) + '\r\n';
         }
         h += 'Host: ' + obj.host + ':' + obj.port + '\r\nContent-Length: ' + postdata.length + '\r\n\r\n' + postdata; // Use Content-Length
@@ -423,6 +423,11 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
         if (isNaN(s)) s = 500;
         if (s == 401 && ++(obj.authcounter) < 3) {
             obj.challengeParams = obj.parseDigest(header['www-authenticate']); // Set the digest parameters, after this, the socket will close and we will auto-retry            
+            if (obj.challengeParams['qop'] != null) {
+                var qopList = obj.challengeParams['qop'].split(',');
+                for (var i in qopList) { qopList[i] = qopList[i].trim(); }
+                if (qopList.indexOf('auth-int') >= 0) { obj.challengeParams['qop'] = 'auth-int'; } else { obj.challengeParams['qop'] = 'auth'; }
+            }
             if (obj.mpsConnection == null) { obj.socket.end(); } else { obj.socket.close(); }
         } else {
             var r = obj.pendingAjaxCall.shift();

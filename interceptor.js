@@ -166,6 +166,17 @@ module.exports.CreateHttpInterceptor = function (args) {
             if (obj.args.user && obj.args.pass && HttpInterceptorAuthentications[obj.args.host + ':' + obj.args.port]) {
                 // We have authentication data, lets use it.
                 var AuthArgs = obj.GetAuthArgs(HttpInterceptorAuthentications[obj.args.host + ':' + obj.args.port]);
+
+                AuthArgs.qop = 'auth'; // If different QOP options are proposed, always use 'auth' for now.
+                // In the future, we should support auth-int, but that will required the body of the request to be accumulated and hashed.
+                /*
+                if (AuthArgs.qop != null) { // If Intel AMT supports auth-int, use it.
+                    var qopList = AuthArgs.qop.split(',');
+                    for (var i in qopList) { qopList[i] = qopList[i].trim(); }
+                    if (qopList.indexOf('auth-int') >= 0) { AuthArgs.qop = 'auth-int'; } else { AuthArgs.qop = 'auth'; }
+                }
+                */
+
                 var hash = obj.ComputeDigesthash(obj.args.user, obj.args.pass, AuthArgs.realm, obj.ws.directive[0], obj.ws.directive[1], AuthArgs.qop, AuthArgs.nonce, obj.ws.authCNonceCount, obj.ws.authCNonce);
                 var authstr = 'Digest username="' + obj.args.user + '",realm="' + AuthArgs.realm + '",nonce="' + AuthArgs.nonce + '",uri="' + obj.ws.directive[1] + '",qop=' + AuthArgs.qop + ',nc=' + obj.ws.authCNonceCount + ',cnonce="' + obj.ws.authCNonce + '",response="' + hash + '"';
                 if (AuthArgs.opaque) { authstr += (',opaque="' + AuthArgs.opaque + '"'); }
@@ -311,7 +322,7 @@ module.exports.CreateRedirInterceptor = function (args) {
                     var authstatus = obj.amt.acc.charCodeAt(1);
                     var authType = obj.amt.acc.charCodeAt(4);
 
-                    if (authType == obj.AuthenticationType.DIGEST && authstatus == obj.AuthenticationStatus.FALIURE) {
+                    if ((authType == obj.AuthenticationType.DIGEST) && (authstatus == obj.AuthenticationStatus.FALIURE)) {
                         // Grab and keep all authentication parameters
                         var realmlen = obj.amt.acc.charCodeAt(9);
                         obj.amt.digestRealm = obj.amt.acc.substring(10, 10 + realmlen);
