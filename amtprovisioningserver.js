@@ -19,6 +19,7 @@
 // In Intel documentation, this is called the Setup and Configuration Application (SCA)
 module.exports.CreateAmtProvisioningServer = function (parent, config) {
     var obj = {};
+    obj.meshid = config.devicegroup; // This is the device group identifier that all activated devices will be added to.
 
     // WSMAN stack
     const CreateWsmanComm = require('./amt/amt-wsman-comm');
