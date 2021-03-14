@@ -465,6 +465,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             serverinfo.https = true;
             serverinfo.redirport = args.redirport;
             if (parent.parent.webpush != null) { serverinfo.vapidpublickey = parent.parent.webpush.vapidPublicKey; } // Web push public key
+            if (parent.parent.amtProvisioningServer != null) { serverinfo.amtProvServerMeshId = parent.parent.amtProvisioningServer.meshid; } // Device group that allows for bare-metal Intel AMT activation
 
             // Build the mobile agent URL, this is used to connect mobile devices
             var agentServerName = parent.getWebServerName(domain);
