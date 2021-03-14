@@ -62,7 +62,7 @@ module.exports.CertificateOperations = function (parent) {
         }
 
         // Hash the leaf certificate and return the certificate chain and signing key
-        return { action: 'acmactivate', certs: certChain, signkey: signkey, hash: obj.getCertHash(certChain[certChain.length - 1]) };
+        return { action: 'acmactivate', certs: certChain, signkey: signkey, hash384: obj.getCertHash(certChain[certChain.length - 1]), hash256: obj.getCertHashSha256(certChain[certChain.length - 1]) };
     }
 
     // Sign a Intel AMT ACM activation request
@@ -550,7 +550,7 @@ module.exports.CertificateOperations = function (parent) {
         return obj.pki.getPublicKeyFingerprint(publickey, { encoding: 'hex', md: obj.forge.md.sha384.create() });
     };
 
-    // Return the SHA384 hash of the certificate, return hex
+    // Return the SHA1 hash of the certificate, return hex
     obj.getCertHashSha1 = function (cert) {
         try {
             var md = obj.forge.md.sha1.create();
@@ -561,6 +561,21 @@ module.exports.CertificateOperations = function (parent) {
             var x1 = cert.indexOf('-----BEGIN CERTIFICATE-----'), x2 = cert.indexOf('-----END CERTIFICATE-----');
             if ((x1 >= 0) && (x2 > x1)) {
                 return obj.crypto.createHash('sha1').update(Buffer.from(cert.substring(x1 + 27, x2), 'base64')).digest('hex');
+            } else { console.log("ERROR: Unable to decode certificate."); return null; }
+        }
+    };
+
+    // Return the SHA256 hash of the certificate, return hex
+    obj.getCertHashSha256 = function (cert) {
+        try {
+            var md = obj.forge.md.sha256.create();
+            md.update(obj.forge.asn1.toDer(obj.pki.certificateToAsn1(obj.pki.certificateFromPem(cert))).getBytes());
+            return md.digest().toHex();
+        } catch (ex) {
+            // If this is not an RSA certificate, hash the raw PKCS7 out of the PEM file
+            var x1 = cert.indexOf('-----BEGIN CERTIFICATE-----'), x2 = cert.indexOf('-----END CERTIFICATE-----');
+            if ((x1 >= 0) && (x2 > x1)) {
+                return obj.crypto.createHash('sha256').update(Buffer.from(cert.substring(x1 + 27, x2), 'base64')).digest('hex');
             } else { console.log("ERROR: Unable to decode certificate."); return null; }
         }
     };

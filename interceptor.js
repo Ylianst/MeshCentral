@@ -167,7 +167,9 @@ module.exports.CreateHttpInterceptor = function (args) {
                 // We have authentication data, lets use it.
                 var AuthArgs = obj.GetAuthArgs(HttpInterceptorAuthentications[obj.args.host + ':' + obj.args.port]);
 
-                AuthArgs.qop = 'auth'; // If different QOP options are proposed, always use 'auth' for now.
+                // If different QOP options are proposed, always use 'auth' for now.
+                AuthArgs.qop = 'auth';
+
                 // In the future, we should support auth-int, but that will required the body of the request to be accumulated and hashed.
                 /*
                 if (AuthArgs.qop != null) { // If Intel AMT supports auth-int, use it.
