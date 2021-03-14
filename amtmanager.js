@@ -167,6 +167,7 @@ module.exports.CreateAmtManager = function (parent) {
     }
 
     // Start Intel AMT management
+    // connType: 0 = CIRA, 1 = CIRA-Relay, 2 = CIRA-LMS, 3 = LAN
     obj.startAmtManagement = function (nodeid, connType, connection) {
         //if (connType == 3) return; // DEBUG
         var devices = obj.amtDevices[nodeid], dev = null;
