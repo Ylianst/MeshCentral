@@ -38,7 +38,6 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
         socket.on('error', function (err) { })
         socket.on('close', function () { if (this.data != null) { processHelloData(this.data, this.ra); } delete this.ra; this.removeAllListeners(); })
         socket.on('data', function (data) {
-            console.log('HELLO:', data.toString('HEX'));
             if (this.data == null) { this.data = data; } else { Buffer.concat([this.data, data]); }
             var str = this.data.toString();
             if (str.startsWith('GET ') && (str.indexOf('\r\n\r\n') >= 0)) {
@@ -258,12 +257,22 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
         if (status != 200) { dev.consoleMsg('Failed to set admin password, status=' + status + '.'); destroyDevice(dev); return; }
         dev.consoleMsg('Admin password set.');
 
-        // Setup TLS and commit.
-        attemptTlsSync(dev, function (dev) {
-            dev.consoleMsg('Intel AMT ACM activation completed.');
-            destroyDevice(dev)
+        // Perform Intel AMT clock sync
+        attemptSyncClock(dev, function (dev) {
+            // Setup TLS and commit.
+            attemptTlsSync(dev, function (dev) {
+                dev.consoleMsg('Intel AMT ACM activation completed.');
+                parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), 4, 7); // Report power state as "present" (7).
+                if (obj.parent.amtManager != null) { obj.parent.amtManager.startAmtManagement(dev.nodeid, 3, dev.aquired.host); } // Request that Intel AMT manager take a look at this device.
+                destroyDevice(dev); // We are done, clean up.
+            });
         });
     }
+
+
+    //
+    // Intel AMT TLS setup
+    //
 
     // Check if Intel AMT TLS state is correct
     function attemptTlsSync(dev, func) {
@@ -302,7 +311,6 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
         }
 
         // This is a managed device and TLS is not enabled, turn it on.
-        /*
         if (xxTlsCurrentCert === null) {
             // Start by generating a key pair
             dev.consoleMsg("No TLS certificate. Generating key pair...");
@@ -358,9 +366,9 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
                     // Set the certificate finderprint (SHA1)
                     var md = obj.parent.certificateOperations.forge.md.sha1.create();
                     md.update(obj.parent.certificateOperations.forge.asn1.toDer(obj.parent.certificateOperations.forge.pki.certificateToAsn1(cert)).getBytes());
-                    dev.aquired.xhash = md.digest().toHex();
+                    dev.aquired.hash = md.digest().toHex();
 
-                    dev.consoleMsg("Adding certificate...");
+                    dev.consoleMsg("Adding certificate, hash: " + dev.aquired.hash);
                     dev.amtstack.AMT_PublicKeyManagementService_AddCertificate(pem.substring(27, pem.length - 25), function (stack, name, responses, status) {
                         const dev = stack.dev;
                         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
@@ -370,7 +378,7 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
                         if (certInstanceId == null) { dev.consoleMsg("Failed to get TLS certificate identifier."); removeAmtDevice(dev, 25); return; }
 
                         // Set the TLS certificate
-                        dev.setTlsSecurityPendingCalls = 3;
+                        dev.setTlsSecurityPendingCalls = 2;
                         if (dev.policy.tlsCredentialContext.length > 0) {
                             // Modify the current context
                             var newTLSCredentialContext = Clone(dev.policy.tlsCredentialContext[0]);
@@ -394,34 +402,28 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
                         xxTlsSettings2[remoteNdx]['AcceptNonSecureConnections'] = true;
                         delete xxTlsSettings2[remoteNdx]['TrustedCN'];
 
-                        // Local TLS settings
-                        xxTlsSettings2[localNdx]['Enabled'] = true;
-                        delete xxTlsSettings2[localNdx]['TrustedCN'];
-
-                        // Update TLS settings
-                        dev.consoleMsg("Enabling TLS...");
-                        dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[0], amtSwitchToTls, 0, 1, xxTlsSettings2[0]);
-                        dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[1], amtSwitchToTls, 0, 1, xxTlsSettings2[1]);
+                        // Update TLS settings. Enable on remote port only. If you enable on local port, the commit() will succeed but be ignored.
+                        dev.consoleMsg("Enabling TLS on remote port...");
+                        if (remoteNdx == 0) { dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[0], amtSwitchToTls, 0, 1, xxTlsSettings2[0]); }
+                        else { dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[1], amtSwitchToTls, 0, 1, xxTlsSettings2[1]); }
                     });
 
                 }, responses.Body['KeyPair']['ReferenceParameters']['SelectorSet']['Selector']['Value']);
             });
         } else {
-        */
             // TLS already enabled, update device in the database
             dev.consoleMsg("Intel AMT has TLS already enabled.");
 
             // Perform commit
             dev.taskCount = 1;
             amtPerformCommit(dev);
-        //}
+        }
     }
 
     function amtSwitchToTls(stack, name, responses, status) {
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
         if (status != 200) { dev.consoleMsg("Failed setup TLS (" + status + ")."); removeAmtDevice(dev, 26); return; }
-        dev.consoleMsg("Switched to TLS.");
 
         // Check if all the calls are done & perform a commit
         if ((--dev.setTlsSecurityPendingCalls) == 0) {
@@ -438,12 +440,16 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
             if (status != 200) { dev.consoleMsg("Failed perform commit (" + status + ")."); removeAmtDevice(dev, 27); return; }
             dev.consoleMsg("Commited, holding 5 seconds...");
 
-            // Update device in the database
+            // Update the device state
             dev.aquired.tls = 1;
-            dev.aquired.hash = dev.aquired.xhash;
             dev.aquired.state = 2; // Activated
             dev.aquired.controlMode = 2; // Activated in ACM
-            delete dev.aquired.xhash;
+
+            // Save activation data to amtactivation.log
+            var domain = parent.config.domains[dev.domainid];
+            obj.logAmtActivation(domain, { time: new Date(), action: 'acmactivate-bare-metal', domain: dev.domainid, amtUuid: dev.guid, newmebx: config.newmebxpassword, mesh: dev.meshid, amtRealm: dev.aquired.realm, amtver: dev.aquired.version, host: dev.aquired.host, ip: dev.addr, user: dev.aquired.user, pass: dev.aquired.pass, tls: dev.aquired.tls, tlshash: dev.aquired.hash });
+
+            // Update device in the database
             if (UpdateDevice(dev) == false) return;
 
             // Switch our communications to TLS (Restart our management of this node)
@@ -457,22 +463,57 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
         });
     }
 
+
+    //
+    // Intel AMT Clock Syncronization
+    //
+
+    // Attempt to sync the Intel AMT clock if needed, call func back when done.
+    // Care should be take not to have many pending WSMAN called when performing clock sync.
+    function attemptSyncClock(dev, func) {
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        dev.taskCount = 1;
+        dev.taskCompleted = func;
+        dev.amtstack.AMT_TimeSynchronizationService_GetLowAccuracyTimeSynch(attemptSyncClockEx);
+    }
+
+    // Intel AMT clock query response
+    function attemptSyncClockEx(stack, name, response, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { dev.consoleMsg("Failed to get clock (" + status + ")."); removeAmtDevice(dev, 17); return; }
+
+        // Compute how much drift between Intel AMT and our clock.
+        var t = new Date(), now = new Date();
+        t.setTime(response.Body['Ta0'] * 1000);
+        if (Math.abs(t - now) > 10000) { // If the Intel AMT clock is more than 10 seconds off, set it.
+            dev.consoleMsg("Performing clock sync.");
+            var Tm1 = Math.round(now.getTime() / 1000);
+            dev.amtstack.AMT_TimeSynchronizationService_SetHighAccuracyTimeSynch(response.Body['Ta0'], Tm1, Tm1, attemptSyncClockSet);
+        } else {
+            // Clock is fine, we are done.
+            devTaskCompleted(dev)
+        }
+    }
+
+    // Intel AMT clock set response
+    function attemptSyncClockSet(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { dev.consoleMsg("Failed to sync clock (" + status + ")."); removeAmtDevice(dev, 18); }
+        devTaskCompleted(dev)
+    }
+
+
+    //
+    // Device Management Methods
+    //
+
     // Do aggressive cleanup on the device
     function destroyDevice(dev) {
-        delete obj.devices[dev.addr];
-        if (dev.amtstack != null) { delete dev.amtstack.dev; delete dev.amtstack; }
-        delete dev.guid;
-        delete dev.mesh;
-        delete dev.realm;
-        delete dev.meshid;
-        delete dev.aquired;
-        delete dev.guidhex;
-        delete dev.domainid;
-        delete dev.certchain;
-        delete dev.retryCount;
-        delete dev.amtversion;
-        delete dev.amtversionmin;
-        delete dev.amtversionstr;
+        delete obj.devices[dev.addr]; // Remove the device from the list of currently active devices.
+        if (dev.amtstack != null) { delete dev.amtstack.dev; delete dev.amtstack; } // Clean up the AMT stack.
+        for (var i in dev) { delete dev[i]; } // Aggressive cleanup or everything else.
     }
 
     // Update the device in the database and event any changes
@@ -495,11 +536,11 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
                 // (node.intelamt.flags & 2) == CCM, (node.intelamt.flags & 4) == ACM
                 if (dev.aquired.controlMode == 1) { device.intelamt.flags = 2; } // CCM
                 if (dev.aquired.controlMode == 2) { device.intelamt.flags = 4; } // ACM
-                
+
                 parent.db.Set(device);
 
                 // Event the new node
-                parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(dev.meshid, [dev.nodeid]), obj, { etype: 'node', action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [devicename, mesh.name], msg: 'Added device ' + devicename + ' to device group ' + mesh.name, domain: domain.id });
+                parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(dev.meshid, [dev.nodeid]), obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msgid: 84, msgArgs: [devicename, mesh.name], msg: 'Added device ' + devicename + ' to device group ' + mesh.name, domain: dev.domainid });
             } else {
                 // Update an existing device
                 const device = nodes[0];
@@ -549,9 +590,23 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
         return true;
     }
 
+
     //
     // General Methods
     //
+
+    // Log the Intel AMT activation operation in the domain log
+    obj.logAmtActivation = function (domain, x) {
+        if (x == null) return true;
+        var logpath = null;
+        if ((domain.amtacmactivation == null) || (domain.amtacmactivation.log == null) || (typeof domain.amtacmactivation.log != 'string')) {
+            if (domain.id == '') { logpath = parent.path.join(obj.parent.datapath, 'amtactivation.log'); } else { logpath = parent.path.join(obj.parent.datapath, 'amtactivation-' + domain.id + '.log'); }
+        } else {
+            if ((domain.amtacmactivation.log.length >= 2) && ((domain.amtacmactivation.log[0] == '/') || (domain.amtacmactivation.log[1] == ':'))) { logpath = domain.amtacmactivation.log; } else { logpath = parent.path.join(obj.parent.datapath, domain.amtacmactivation.log); }
+        }
+        try { parent.fs.appendFileSync(logpath, JSON.stringify(x) + '\r\n'); } catch (ex) { console.log(ex); return false; }
+        return true;
+    }
 
     // Called this when a task is completed, when all tasks are completed the call back function will be called.
     function devTaskCompleted(dev) {

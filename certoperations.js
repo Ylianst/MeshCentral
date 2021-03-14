@@ -338,18 +338,16 @@ module.exports.CertificateOperations = function (parent) {
         v.value = trustedFQDN;
         setupbin.records[0].variables.push(v);
 
-        /*
         // Create "ME Provision Halt Active" variable
         v = {};
         v.moduleid = 2;
         v.varid = 28;
         v.length = -1;
-        v.value = 1;
+        v.value = 0; // Stop
         setupbin.records[0].variables.push(v);
-        */
 
         // Write to log file
-        obj.logAmtActivation(domain, { time: new Date(), action: 'setupbin', domain: domain.id, userid: user._id, oldmebx: oldmebxpass, newmebx: newmebxpass, rootname: certRootName, hash: wildcardCertSha256, dns: 'rootcert.meshcentral.com' });
+        obj.logAmtActivation(domain, { time: new Date(), action: 'setupbin', domain: domain.id, userid: user._id, oldmebx: oldmebxpass, newmebx: newmebxpass, rootname: certRootName, hash: wildcardCertSha256, dns: trustedFQDN });
 
         // Encode the setup.bin file
         return AmtSetupBinStack.AmtSetupBinEncode(setupbin);
@@ -456,7 +454,7 @@ module.exports.CertificateOperations = function (parent) {
         setupbin.records[0].variables.push(v);
 
         // Write to log file
-        obj.logAmtActivation(domain, { time: new Date(), action: 'setupbin', domain: domain.id, userid: user._id, oldmebx: oldmebxpass, newmebx: newmebxpass, rootname: certRootName, hash: wildcardCertSha256, dns: 'rootcert.meshcentral.com' });
+        obj.logAmtActivation(domain, { time: new Date(), action: 'setupbin-bare-metal', domain: domain.id, userid: user._id, oldmebx: oldmebxpass, newmebx: newmebxpass, rootname: certRootName, hash: wildcardCertSha256, dns: trustedFQDN, ip: ipaddr, port: port });
 
         // Encode the setup.bin file
         return AmtSetupBinStack.AmtSetupBinEncode(setupbin);
