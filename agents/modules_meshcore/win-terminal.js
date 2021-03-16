@@ -251,7 +251,14 @@ function windows_terminal() {
     {
         if (require('os').arch() == 'x64')
         {
-            return (this.StartEx(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT, process.env['windir'] + '\\SysWow64\\WindowsPowerShell\\v1.0\\powershell.exe'));
+            if (require('fs').existsSync(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'))
+            {
+                return (this.StartEx(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT, process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'));
+            }
+            else
+            {
+                return (this.StartEx(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT, process.env['windir'] + '\\SysWow64\\WindowsPowerShell\\v1.0\\powershell.exe'));
+            }
         }
         else
         {
