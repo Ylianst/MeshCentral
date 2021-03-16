@@ -1842,7 +1842,7 @@ module.exports.CreateAmtManager = function (parent) {
 
             // Send the MEI command to enable TLS connections
             dev.consoleMsg("Performing TLS ACM activation...");
-            dev.controlMsg({ action: 'startTlsHostConfig', hash: acmTlsInfo.hash256, hostVpn: false, dnsSuffixList: null });
+            dev.controlMsg({ action: 'startTlsHostConfig', hash: acmTlsInfo.hash256, hostVpn: false, dnsSuffixList: null }); // TODO: Use SHA384 is possible.
         } else {
             // MeshCore or MeshCMD is to old
             dev.consoleMsg("This software is to old to support ACM activation, pleasse update and try again.");
@@ -1852,15 +1852,19 @@ module.exports.CreateAmtManager = function (parent) {
 
     // Attempt Intel AMT TLS ACM activation after startConfiguration() is called on remote device
     function activateIntelAmtTlsAcmEx(dev, startConfigData) {
-        //console.log('activateIntelAmtTlsAcmEx', dev.mpsConnection.tag.meiState.OsAdmin.user, dev.mpsConnection.tag.meiState.OsAdmin.pass);
-
-        // Setup the WSMAN stack, no TLS
-        var comm = CreateWsmanComm(dev.nodeid, 16993, 'admin', '', 1, { cert: dev.acmTlsInfo.certs.join(''), key: dev.acmTlsInfo.signkey }, dev.mpsConnection); // TLS with client certificate chain and key.
-        // TODO: Intel AMT leaf TLS cert need to SHA256 hash to "startConfigData.hash"
-        var wsstack = WsmanStackCreateService(comm);
-        dev.amtstack = AmtStackCreateService(wsstack);
-        dev.amtstack.dev = dev;
-        dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activateIntelAmtTlsAcmEx1);
+        if ((startConfigData == null) || (startConfigData.status != 0) || (typeof startConfigData.hash != 'string')) {
+            // Unable to call startTlsHostConfig on remote host.
+            dev.consoleMsg("Failed to startConfigurationHBased(), status = " + startConfigData.status);
+            removeAmtDevice(dev);
+        } else {
+            // Setup the WSMAN stack, no TLS
+            var comm = CreateWsmanComm(dev.nodeid, 16993, 'admin', '', 1, { cert: dev.acmTlsInfo.certs.join(''), key: dev.acmTlsInfo.signkey }, dev.mpsConnection); // TLS with client certificate chain and key.
+            comm.xtlsFingerprint = startConfigData.hash.toLowerCase(); // Intel AMT leaf TLS cert need to match this hash (SHA256 or SHA384)
+            var wsstack = WsmanStackCreateService(comm);
+            dev.amtstack = AmtStackCreateService(wsstack);
+            dev.amtstack.dev = dev;
+            dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activateIntelAmtTlsAcmEx1);
+        }
     }
 
     function activateIntelAmtTlsAcmEx1(stack, name, responses, status) {
@@ -1868,14 +1872,36 @@ module.exports.CreateAmtManager = function (parent) {
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
 
+        // Check if we succesfully connected
         if (status != 200) {
-            dev.consoleMsg("Failed to perform ACM TLS connection, falling back to legacy host-based activation.");
-            activateIntelAmtAcm(dev); // Falling back to legacy WSMAN ACM activation, start by refreshing $$OsAdmin username and password.
+            dev.consoleMsg("Failed to perform ACM TLS connection.");
+            //activateIntelAmtAcm(dev); // It's possible to fallback to legacy WSMAN ACM activation here if we needed to..
+            removeAmtDevice(dev);
         } else {
             // TODO!!!
             console.log('TODO!!!!!');
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Attempt Intel AMT ACM activation
     function activateIntelAmtAcm(dev, password, acminfo) {

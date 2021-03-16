@@ -290,7 +290,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                 obj.socket.on('data', obj.xxOnSocketData);
                 obj.socket.on('close', obj.xxOnSocketClosed);
                 obj.socket.on('timeout', obj.xxOnSocketTimeout);
-                obj.socket.on('error', function (e) { if (e.message && e.message.indexOf('sslv3 alert bad record mac') >= 0) { obj.xtlsMethod = 1 - obj.xtlsMethod; } });
+                obj.socket.on('error', function (ex) { if (ex.message && ex.message.indexOf('sslv3 alert bad record mac') >= 0) { obj.xtlsMethod = 1 - obj.xtlsMethod; } });
             }
             obj.socket.setNoDelay(true); // Disable nagle. We will encode each WSMAN request as a single send block and want to send it at once. This may help Intel AMT handle pipelining?
         }
@@ -300,6 +300,23 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
     obj.getPeerCertificate = function () { if (obj.xtls == 1) { return obj.socket.getPeerCertificate(); } return null; }
     obj.getPeerCertificateFingerprint = function () { if (obj.xtls == 1) { return obj.socket.getPeerCertificate().fingerprint.split(':').join('').toLowerCase(); } return null; }
 
+    // Check if the certificate matched the certificate hash.
+    function checkCertHash(cert, hash) {
+        // Check not required
+        if (hash == 0) return true;
+
+        // SHA1 compare
+        if (cert.fingerprint.split(':').join('').toLowerCase() == hash) return true;
+
+        // SHA256 compare
+        if ((hash.length == 64) && (obj.crypto.createHash('sha256').update(cert.raw).digest('hex') == hash)) { return true; }
+
+        // SHA384 compare
+        if ((hash.length == 96) && (obj.crypto.createHash('sha384').update(cert.raw).digest('hex') == hash)) { return true; }
+
+        return false;
+    }
+
     // NODE.js specific private method
     obj.xxOnSocketConnected = function () {
         if (obj.socket == null) return;
@@ -307,7 +324,6 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
         if (obj.xtls == 1) {
             obj.xtlsCertificate = obj.socket.getPeerCertificate();
 
-            // ###BEGIN###{Certificates}
             // Setup the forge certificate check
             var camatch = 0;
             if ((obj.xtlsoptions != null) && (obj.xtlsoptions.ca != null)) {
@@ -327,21 +343,12 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                     if (amtcertname.toLowerCase() != obj.host.toLowerCase()) { camatch = 0; }
                 }
             }
-            if ((camatch == 0) && (obj.xtlsFingerprint != 0) && (obj.xtlsCertificate.fingerprint.split(':').join('').toLowerCase() != obj.xtlsFingerprint)) {
+            if ((camatch == 0) && (checkCertHash(obj.xtlsCertificate, obj.xtlsFingerprint) == false)) {
                 obj.FailAllError = 998; // Cause all new responses to be silent. 998 = TLS Certificate check error
                 obj.CancelAllQueries(998);
                 return;
             }
             if ((obj.xtlsFingerprint == 0) && (camatch == 0)) { obj.xtlsCheck = 3; } else { obj.xtlsCheck = (camatch == 0) ? 2 : 1; }
-            // ###END###{Certificates}
-            // ###BEGIN###{!Certificates}
-            if ((obj.xtlsFingerprint != 0) && (obj.xtlsCertificate.fingerprint.split(':').join('').toLowerCase() != obj.xtlsFingerprint)) {
-                obj.FailAllError = 998; // Cause all new responses to be silent. 998 = TLS Certificate check error
-                obj.CancelAllQueries(998);
-                return;
-            }
-            obj.xtlsCheck = 2;
-            // ###END###{!Certificates}
         } else { obj.xtlsCheck = 0; }
         obj.socketState = 2;
         obj.socketParseState = 0;

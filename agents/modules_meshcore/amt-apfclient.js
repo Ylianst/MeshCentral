@@ -46,7 +46,10 @@ function CreateAPFClient(parent, args) {
     function rstr2hex(input) { var r = '', i; for (i = 0; i < input.length; i++) { r += char2hex(input.charCodeAt(i)); } return r; }; // Convert a raw string to a hex string
     function d2h(d) { return (d / 256 + 1 / 512).toString(16).substring(2, 4); }
     function buf2hex(input) { var r = '', i; for (i = 0; i < input.length; i++) { r += d2h(input[i]); } return r; };
-    function Debug(str) { if (obj.parent.debug) { console.log(str); } }
+    function Debug(str) {
+        //require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: str });
+        if (obj.parent.debug) { console.log(str); }
+    }
     function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + "-" + g.substring(10, 12) + g.substring(8, 10) + "-" + g.substring(14, 16) + g.substring(12, 14) + "-" + g.substring(16, 20) + "-" + g.substring(20); }
     function strToGuid(s) { s = s.replace(/-/g, ''); var ret = s.substring(6, 8) + s.substring(4, 6) + s.substring(2, 4) + s.substring(0, 2) + s.substring(10, 12) + s.substring(8, 10) + s.substring(14, 16) + s.substring(12, 14) + s.substring(16, 20) + s.substring(20); return ret; }
     function binzerostring(len) { var res = ''; for (var l = 0; l < len; l++) { res += String.fromCharCode(0 & 0xFF); } return res; }
