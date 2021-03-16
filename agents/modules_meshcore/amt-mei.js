@@ -430,7 +430,7 @@ function amt_heci() {
 
         // Send the command
         this.sendCommand(139, data, function (header, fn, opt) {
-            if (header.Status == 0) {
+            if ((header.Status == 0) && (header.Data != null)) {
                 var amtHash = null;
                 if (header.Data[0] == 2) { amtHash = header.Data.slice(1, 33); } // SHA256
                 if (header.Data[0] == 3) { amtHash = header.Data.slice(1, 49); } // SHA384
@@ -439,7 +439,7 @@ function amt_heci() {
                 opt.unshift({ status: header.Status });
             }
             fn.apply(this, opt);
-        }, func, optional);
+        }, func, optional); 
     }
 }
 

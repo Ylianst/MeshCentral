@@ -258,8 +258,8 @@ module.exports.CreateAmtManager = function (parent) {
                 break;
             case 'startTlsHostConfig':
                 if (dev.acmTlsInfo == null) break;
-                if ((typeof jsondata.value != 'object') || (typeof jsondata.value.status != 'number') || (jsondata.value.status != 0)) {
-                    removeAmtDevice(dev, 2); // Failed to start TLS configuration
+                if ((typeof jsondata.value != 'object') || (typeof jsondata.value.status != 'number')) {
+                    removeAmtDevice(dev, 2); // Invalid startTlsHostConfig response
                 } else {
                     activateIntelAmtTlsAcmEx(dev, jsondata.value); // Start TLS activation.
                 }
@@ -421,7 +421,7 @@ module.exports.CreateAmtManager = function (parent) {
                 return;
             }
             // Check if we have an ACM activation policy, but the device is in CCM
-            if (((dev.policy.amtPolicy == 3) || (dev.policy.amtPolicy == 4)) && ((dev.mpsConnection.tag.meiState.Flags & 2) != 0)) {
+            if (((dev.policy.amtPolicy == 3) || (dev.policy.amtPolicy == 4)) && (dev.mpsConnection.tag.meiState.ProvisioningState == 2) && ((dev.mpsConnection.tag.meiState.Flags & 2) != 0)) {
                 // This device in is CCM, check if we can upgrade to ACM
                 if (activateIntelAmt(dev) == false) return; // If this return true, the platform is in CCM and can't go to ACM, keep going with management.
             }
@@ -480,7 +480,7 @@ module.exports.CreateAmtManager = function (parent) {
                 // Handle the case where the Intel AMT relay or LMS is connected (connType 1 or 2)
                 // Check to see if CIRA is connected on this server.
                 var ciraconn = dev.mpsConnection;
-                if ((ciraconn == null) || (ciraconn.tag == null) || (ciraconn.tag.boundPorts == null)) { console.log('r2'); removeAmtDevice(dev, 11); return; } // Relay connection not valid
+                if ((ciraconn == null) || (ciraconn.tag == null) || (ciraconn.tag.boundPorts == null)) { removeAmtDevice(dev, 11); return; } // Relay connection not valid
 
                 // See what user/pass to try.
                 var user = null, pass = null;
@@ -491,11 +491,11 @@ module.exports.CreateAmtManager = function (parent) {
                 // Connect now
                 var comm;
                 if (dev.tlsfail !== true) {
-                    parent.debug('amt', dev.name, (dev.connType == 1) ? 'Relay-Connect' : 'LMS-Connect', "TLS", user, pass);
+                    parent.debug('amt', dev.name, (dev.connType == 1) ? 'Relay-Connect' : 'LMS-Connect', "TLS", user);
                     comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, ciraconn); // Perform TLS
                     comm.xtlsFingerprint = 0; // Perform no certificate checking
                 } else {
-                    parent.debug('amt', dev.name, (dev.connType == 1) ? 'Relay-Connect' : 'LMS-Connect', "NoTLS", user, pass);
+                    parent.debug('amt', dev.name, (dev.connType == 1) ? 'Relay-Connect' : 'LMS-Connect', "NoTLS", user);
                     comm = CreateWsmanComm(dev.nodeid, 16992, user, pass, 0, null, ciraconn); // No TLS
                 }
                 var wsstack = WsmanStackCreateService(comm);
@@ -951,7 +951,11 @@ module.exports.CreateAmtManager = function (parent) {
                         if (certInstanceId == null) { dev.consoleMsg("Failed to get TLS certificate identifier."); removeAmtDevice(dev, 25); return; }
 
                         // Set the TLS certificate
-                        dev.setTlsSecurityPendingCalls = 3;
+                        if (dev.hbacmtls == 1) {
+                            dev.setTlsSecurityPendingCalls = 2; // Set remote port only
+                        } else {
+                            dev.setTlsSecurityPendingCalls = 3; // Set local and remote port
+                        }
                         if (dev.policy.tlsCredentialContext.length > 0) {
                             // Modify the current context
                             var newTLSCredentialContext = Clone(dev.policy.tlsCredentialContext[0]);
@@ -979,9 +983,18 @@ module.exports.CreateAmtManager = function (parent) {
                         xxTlsSettings2[localNdx]['Enabled'] = true;
                         delete xxTlsSettings2[localNdx]['TrustedCN'];
 
-                        // Update TLS settings
-                        dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[0], amtSwitchToTls, 0, 1, xxTlsSettings2[0]);
-                        dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[1], amtSwitchToTls, 0, 1, xxTlsSettings2[1]);
+                        if (dev.hbacmtls == 1) {
+                            // If we are doing Host-based TLS ACM activation, you need to only enable the remote port with TLS.
+                            // If you enable on local port, the commit() will succeed but be ignored.
+                            dev.consoleMsg("Enabling TLS on remote port...");
+                            if (remoteNdx == 0) { dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[0], amtSwitchToTls, 0, 1, xxTlsSettings2[0]); }
+                            else { dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[1], amtSwitchToTls, 0, 1, xxTlsSettings2[1]); }
+                            delete dev.hbacmtls; // Remove this indication
+                        } else {
+                            // Update TLS settings
+                            dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[0], amtSwitchToTls, 0, 1, xxTlsSettings2[0]);
+                            dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[1], amtSwitchToTls, 0, 1, xxTlsSettings2[1]);
+                        }
                     });
 
                 }, responses.Body['KeyPair']['ReferenceParameters']['SelectorSet']['Selector']['Value']);
@@ -1003,11 +1016,12 @@ module.exports.CreateAmtManager = function (parent) {
 
         // Check if all the calls are done & perform a commit
         if ((--dev.setTlsSecurityPendingCalls) == 0) {
+            dev.consoleMsg("Performing Commit()...");
             dev.amtstack.AMT_SetupAndConfigurationService_CommitChanges(null, function (stack, name, responses, status) {
                 const dev = stack.dev;
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
                 if (status != 200) { dev.consoleMsg("Failed perform commit (" + status + ")."); removeAmtDevice(dev, 27); return; }
-                dev.consoleMsg("Enabled TLS, holding 5 seconds...");
+                dev.consoleMsg("Enabled TLS, holding 10 seconds...");
 
                 // Update device in the database
                 dev.intelamt.tls = dev.aquired.tls = 1;
@@ -1022,7 +1036,7 @@ module.exports.CreateAmtManager = function (parent) {
                 // Wait 5 seconds before attempting to manage this device some more
                 var f = function doManage() { if (isAmtDeviceValid(dev)) { devTaskCompleted(doManage.dev); } }
                 f.dev = dev;
-                setTimeout(f, 5000);
+                setTimeout(f, 10000);
             });
         }
     }
@@ -1816,7 +1830,7 @@ module.exports.CreateAmtManager = function (parent) {
             if ((cert.cn == '*') || (cert.cn == trustedFqdn)) {
                 for (var j in deviceHashes) {
                     var hashInfo = deviceHashes[j];
-                    if (hashInfo.isActive == 1) {
+                    if ((hashInfo != null) && (hashInfo.isActive == 1)) {
                         if ((hashInfo.hashAlgorithmStr == 'SHA256') && (hashInfo.certificateHash.toLowerCase() == cert.sha256)) { return { cert: cert, fqdn: trustedFqdn, hash: cert.sha256 }; } // Found a match
                         else if ((hashInfo.hashAlgorithmStr == 'SHA1') && (hashInfo.certificateHash.toLowerCase() == cert.sha1)) { return { cert: cert, fqdn: trustedFqdn, hash: cert.sha1 }; } // Found a match
                     }
@@ -1858,17 +1872,17 @@ module.exports.CreateAmtManager = function (parent) {
             removeAmtDevice(dev);
         } else {
             // Setup the WSMAN stack, no TLS
+            dev.consoleMsg("Attempting TLS connection...");
             var comm = CreateWsmanComm(dev.nodeid, 16993, 'admin', '', 1, { cert: dev.acmTlsInfo.certs.join(''), key: dev.acmTlsInfo.signkey }, dev.mpsConnection); // TLS with client certificate chain and key.
             comm.xtlsFingerprint = startConfigData.hash.toLowerCase(); // Intel AMT leaf TLS cert need to match this hash (SHA256 or SHA384)
             var wsstack = WsmanStackCreateService(comm);
             dev.amtstack = AmtStackCreateService(wsstack);
             dev.amtstack.dev = dev;
-            dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activateIntelAmtTlsAcmEx1);
+            dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', 'CIM_SoftwareIdentity', '*AMT_SetupAndConfigurationService'], activateIntelAmtTlsAcmEx1);
         }
     }
 
     function activateIntelAmtTlsAcmEx1(stack, name, responses, status) {
-        console.log('activateIntelAmtTlsAcmEx1', status, responses);
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
 
@@ -1877,31 +1891,105 @@ module.exports.CreateAmtManager = function (parent) {
             dev.consoleMsg("Failed to perform ACM TLS connection.");
             //activateIntelAmtAcm(dev); // It's possible to fallback to legacy WSMAN ACM activation here if we needed to..
             removeAmtDevice(dev);
+            return;
+        }
+
+        // Fetch the Intel AMT version from WSMAN
+        if ((responses != null) && (responses['CIM_SoftwareIdentity'] != null) && (responses['CIM_SoftwareIdentity'].responses != null)) {
+            var amtlogicalelements = [];
+            amtlogicalelements = responses['CIM_SoftwareIdentity'].responses;
+            if (responses['AMT_SetupAndConfigurationService'] != null && responses['AMT_SetupAndConfigurationService'].response != null) {
+                amtlogicalelements.push(responses['AMT_SetupAndConfigurationService'].response);
+            }
+            if (amtlogicalelements.length > 0) {
+                var vs = getInstance(amtlogicalelements, 'AMT')['VersionString'];
+                if (vs != null) {
+                    dev.aquired.version = vs;
+                    dev.aquired.versionmajor = parseInt(dev.aquired.version.split('.')[0]);
+                    dev.aquired.versionminor = parseInt(dev.aquired.version.split('.')[1]);
+                }
+            }
+        }
+
+        // Fetch the Intel AMT version from HTTP stack
+        if ((dev.amtversionstr == null) && (stack.wsman.comm.amtVersion != null)) {
+            var s = stack.wsman.comm.amtVersion.split('.');
+            if (s.length >= 3) {
+                dev.aquired.version = s[0] + '.' + s[1] + '.' + s[2];
+                dev.aquired.versionmajor = parseInt(s[0]);
+                dev.aquired.versionminor = parseInt(s[1]);
+            }
+        }
+
+        // If we can't get the Intel AMT version, stop here.
+        if (dev.aquired.version == null) { dev.consoleMsg('Could not get Intel AMT version.'); removeAmtDevice(dev); return; } // Could not get Intel AMT version, disconnect();
+
+        // Get the digest realm
+        if (responses['AMT_GeneralSettings'] && responses['AMT_GeneralSettings'].response && (typeof responses['AMT_GeneralSettings'].response['DigestRealm'] == 'string')) {
+            // Set the realm in the stack since we are not doing HTTP digest and this will be checked later by different code.
+            dev.aquired.realm = dev.amtstack.wsman.comm.digestRealm = responses['AMT_GeneralSettings'].response['DigestRealm'];
         } else {
-            // TODO!!!
-            console.log('TODO!!!!!');
+            dev.consoleMsg('Could not get Intel AMT digest realm.'); removeAmtDevice(dev); return;
+        }
+
+        // Looks like we are doing well.
+        dev.consoleMsg('Succesful TLS connection, Intel AMT v' + dev.aquired.version);
+
+        // Log this activation event
+        var event = { etype: 'node', action: 'amtactivate', nodeid: dev.nodeid, domain: dev.domainid, msgid: 111, msgArgs: [dev.temp.acminfo.fqdn], msg: 'Device requested Intel(R) AMT ACM TLS activation, FQDN: ' + dev.temp.acminfo.fqdn };
+        if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+        parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(dev.meshid, [dev.nodeid]), obj, event);
+
+        // Log the activation request, logging is a required step for activation.
+        var domain = parent.config.domains[dev.domainid];
+        if (domain == null) { dev.consoleMsg("Invalid domain."); removeAmtDevice(dev, 41); return; }
+        if (parent.certificateOperations.logAmtActivation(domain, { time: new Date(), action: 'acmactivate-tls', domain: dev.domainid, amtUuid: dev.mpsConnection.tag.meiState.UUID, amtRealm: dev.aquired.realm, user: 'admin', password: dev.temp.pass, ipport: dev.mpsConnection.remoteAddr + ':' + dev.mpsConnection.remotePort, nodeid: dev.nodeid, meshid: dev.meshid, computerName: dev.name }) == false) {
+            dev.consoleMsg("Unable to log operation."); removeAmtDevice(dev, 42); return;
+        }
+
+        // See what admin password to use
+        dev.aquired.user = 'admin';
+        dev.aquired.pass = dev.temp.password;
+
+        // Set the account password
+        if (typeof dev.temp.mebxpass == 'string') {
+            // Set the new MEBx password
+            dev.consoleMsg('Setting MEBx password...');
+            dev.amtstack.AMT_SetupAndConfigurationService_SetMEBxPassword(dev.temp.mebxpass, activateIntelAmtTlsAcmEx2);
+        } else {
+            // Set the admin password
+            dev.consoleMsg('Setting admin password...');
+            dev.amtstack.AMT_AuthorizationService_SetAdminAclEntryEx(dev.aquired.user, hex_md5(dev.aquired.user + ':' + dev.aquired.realm + ':' + dev.aquired.pass), activateIntelAmtTlsAcmEx3);
         }
     }
 
+    // Response from setting MEBx password
+    function activateIntelAmtTlsAcmEx2(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { dev.consoleMsg('Failed to set MEBx password, status=' + status + '.'); destroyDevice(dev); return; }
+        dev.consoleMsg('MEBx password set. Setting admin password...');
 
+        // Set the admin password
+        dev.amtstack.AMT_AuthorizationService_SetAdminAclEntryEx(dev.aquired.user, hex_md5(dev.aquired.user + ':' + dev.aquired.realm + ':' + dev.aquired.pass), activateIntelAmtTlsAcmEx3);
+    }
 
+    // Response from setting admin password
+    function activateIntelAmtTlsAcmEx3(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { dev.consoleMsg('Failed to set admin password, status=' + status + '.'); removeAmtDevice(dev); return; }
+        dev.consoleMsg('Admin password set.');
 
+        // Switch the state of Intel AMT.
+        if ((dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null)) { dev.mpsConnection.tag.meiState.ProvisioningState = 2; }
+        dev.aquired.controlMode = 2; // 1 = CCM, 2 = ACM
+        dev.aquired.state = 2; // Activated
+        dev.hbacmtls = 1; // Indicate that we are doing a Host
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        // Proceed to going the normal Intel AMT sync. This will trigger a commit when the TLS cert is setup.
+        dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], attemptLocalConnectResponse);
+    }
 
     // Attempt Intel AMT ACM activation
     function activateIntelAmtAcm(dev, password, acminfo) {
@@ -2008,7 +2096,7 @@ module.exports.CreateAmtManager = function (parent) {
                     delete dev.temp;
                     UpdateDevice(dev);
 
-                    // Wait 10 seconds before attempting to manage this device in CCM
+                    // Wait 10 seconds before attempting to manage this device in ACM
                     var f = function doManage() { if (isAmtDeviceValid(dev)) { attemptInitialContact(doManage.dev); } }
                     f.dev = dev;
                     setTimeout(f, 10000);
@@ -2096,6 +2184,7 @@ module.exports.CreateAmtManager = function (parent) {
     function getRandomAmtPassword() { var p; do { p = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
     function getRandomPassword() { return Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
     function getRandomLowerCase(len) { var r = '', random = parent.crypto.randomBytes(len); for (var i = 0; i < len; i++) { r += String.fromCharCode(97 + (random[i] % 26)); } return r; }
+    function getInstance(x, y) { for (var i in x) { if (x[i]['InstanceID'] == y) return x[i]; } return null; }
 
     function hex_md5(str) { return parent.crypto.createHash('md5').update(str).digest('hex'); }
     function Clone(v) { return JSON.parse(JSON.stringify(v)); }
