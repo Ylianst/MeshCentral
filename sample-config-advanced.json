@@ -111,6 +111,13 @@
       "coolofftime": 10
     },
     "watchDog": { "interval": 100, "timeout": 400 },
+    "_AmtProvisioningServer": {
+      "port": 9971,
+      "deviceGroup": "mesh//xxxxxxxxxxxxxxxxxxxxx",
+      "newMebxPassword": "amtpassword",
+      "trustedFqdn": "sample.com",
+      "ip": "192.168.1.1"
+    },
     "_plugins": { "enabled": true }
   },
   "_domaindefaults": {

@@ -201,6 +201,35 @@
             "coolofftime": { "type": "integer" }
           }
         },
+        "amtProvisioningServer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [ "deviceGroup", "newMebxPassword", "trustedFqdn", "ip" ],
+          "description": "When present, this section will enable the Intel AMT provisioning server on the local network. This is used for Intel AMT bare-metal ACM activation.",
+          "properties": {
+            "port": {
+              "type": "number",
+              "default": 9971,
+              "description": "Port number that provisioning server will listen to."
+            },
+            "deviceGroup": {
+              "type": "string",
+              "description": "The agent-less device group to add Intel AMT devices to once they are activated. Must be of format: mesh/domain/id"
+            },
+            "newMebxPassword": {
+              "type": "string",
+              "description": "The MEBX password to set during activation. This password must be at least 8 characters long and have 1 lower, 1 upper, 1 alpha-numeric and 1 non-alpha numeric character."
+            },
+            "trustedFqdn": {
+              "type": "string",
+              "description": "The trusted FQDN or provisioning server value the remote device will have. This can be set in MEBx or using the DHCP server option 15 on the local network."
+            },
+            "ip": {
+              "type": "string",
+              "description": "The IP address of this server. This address will be used when creating the USB setup.bin file to indicate what IP address to send the hello data to."
+            }
+          }
+        },
         "plugins": {
           "type": "object",
           "properties": { "enabled": { "type": "boolean" } },
