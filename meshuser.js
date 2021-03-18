@@ -1893,9 +1893,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         } else {
                             for (var i in command.users) {
                                 // Check if this is an existing user
-                                var newuserid = 'user/' + domain.id + '/' + command.users[i].user;
+                                var newuserid = 'user/' + domain.id + '/' + command.users[i].user.toLowerCase();
                                 var newuser = { type: 'user', _id: newuserid, name: command.users[i].user, creation: Math.floor(Date.now() / 1000), domain: domain.id };
                                 if (domain.newaccountsrights) { newuser.siteadmin = domain.newaccountsrights; }
+                                if (common.validateString(command.users[i].realname, 1, 256)) { newuser.realname = command.users[i].realname; }
                                 if (command.users[i].email != null) { newuser.email = command.users[i].email.toLowerCase(); if (command.users[i].emailVerified === true) { newuser.emailVerified = true; } } // Email, always lowercase
                                 if (command.users[i].resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
                                 if (user.groups) { newuser.groups = user.groups; } // New accounts are automatically part of our groups (Realms).
