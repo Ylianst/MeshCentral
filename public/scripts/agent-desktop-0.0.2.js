@@ -252,12 +252,12 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 obj.TouchArray = {};
                 break;
             case 17: // MNG_KVM_MESSAGE
-                var str = String.fromCharCode.apply(null, data.slice(4));
+                var str = String.fromCharCode.apply(null, view.slice(4));
                 console.log('Got KVM Message: ' + str);
                 if (obj.onMessage != null) obj.onMessage(str, obj);
                 break;
             case 65: // Alert
-                var str = String.fromCharCode.apply(null, data.slice(4));
+                var str = String.fromCharCode.apply(null, view.slice(4));
                 if (str[0] != '.') {
                     console.log(str); //alert('KVM: ' + str);
                     if (obj.parent && obj.parent.setConsoleMessage) { obj.parent.setConsoleMessage(str); }
