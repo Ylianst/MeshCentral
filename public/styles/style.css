@@ -2324,6 +2324,7 @@ a {
     padding-top: 2px;
     padding-bottom: 2px;
     background: #C0C0C0;
+    height: 22px;
 }
 
 .night .areaFoot {
@@ -2557,7 +2558,7 @@ a {
 }
 
 #DeskClip, #DeskControlSpan, #specialkeylist {
-    margin-left: 6px;
+    padding-left: 6px;
 }
 
 .serverStateTableCell {

@@ -4001,16 +4001,25 @@
             QV('p10deskTopTable', !fullscreen);
             QV('deskarea1', !fullscreen);
             QV('deskarea4', !fullscreen);
+
+            var rights = GetNodeRights(currentNode);
+            var inputAllowed = (currentNode.agent.id != 14) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
+
+            // Move the zoom button to normal or top position
+            QS('deskkeybutton5a').top = QS('deskkeybutton5b').top = (inputAllowed) ? '160px' : '60px';
+
+            // Show full screen buttons if needed
             QV('deskkeybutton1', fullscreen);
-            QV('deskkeybutton2a', fullscreen);
+            QV('deskkeybutton2a', fullscreen && inputAllowed);
             QV('deskkeybutton2b', false);
-            QV('deskkeybutton3a', fullscreen);
+            QV('deskkeybutton3a', fullscreen && inputAllowed);
             QV('deskkeybutton3b', false);
-            QV('deskkeybutton4a', fullscreen && (!desktop.m.SwapMouse));
-            QV('deskkeybutton4b', fullscreen && (desktop.m.SwapMouse));
+            QV('deskkeybutton4a', fullscreen && inputAllowed && (!desktop.m.SwapMouse));
+            QV('deskkeybutton4b', fullscreen && inputAllowed && (desktop.m.SwapMouse));
             QV('deskkeybutton5a', fullscreen && (fullscreenzoom == 1));
             QV('deskkeybutton5b', fullscreen && (fullscreenzoom != 1));
-            if (fullscreen) {
+
+            if (fullscreen) {deskkeybutton5a
                 QS('DeskParent').height = null;
                 QS('page_content').top = '0px';
                 QS('page_content').bottom = '0px';

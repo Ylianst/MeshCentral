@@ -635,8 +635,8 @@
                             <select id="deskkeys" cmenu=deskKeyShortcutContextMenu></select>
                             <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
                             <input id="DeskESC" style="display:none" type="button" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
-                            <input id="DeskClip" style="" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
-                            <input id="DeskType" style="" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
+                            <input id="DeskClip" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
+                            <input id="DeskType" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
                             <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()" />Input</span></label>&nbsp;
                         </div>
                     </div>
@@ -1530,10 +1530,6 @@
                     QH('filesCustomUiButtons', x);
                 }
             }
-
-            // Enable browser clipboard read if supported
-            QV('DeskClipboardOutButton', (navigator.clipboard != null) && (navigator.clipboard.readText != null));
-            QV('DeskClipboardInButton', (navigator.clipboard != null) && (navigator.clipboard.writeText != null));
 
             // Session Refresh Timer
             if (sessionTime >= 10) { sessionRefreshTimer = setTimeout(refreshCookieSession, Math.round((sessionTime * 60000) * 0.8)); }
@@ -7125,19 +7121,26 @@
             QV('d7meshkvm', (webRtcDesktop) || ((currentNode.agent != null) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1))));
 
             // Enable buttons
-            var inputAllowed = (rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0));
+            var inputAllowed = (currentNode.agent.id != 14) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
             var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
             QE('connectbutton1', online);
             var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
-            QV('DeskClip', (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2))); // Clipboard not supported on macOS
             QE('DeskClip', deskState == 3);
+            QV('DeskClip', (inputAllowed) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2))); // Clipboard not supported on macOS
             QE('DeskESC', deskState == 3);
+            QV('DeskESC', browserfullscreen && inputAllowed);
             QE('DeskType', deskState == 3);
-            QV('DeskWD', inputAllowed);
+            QV('DeskType', inputAllowed);
             QE('DeskWD', deskState == 3);
+            QV('DeskWD', inputAllowed);
             QV('deskkeys', inputAllowed);
+            QV('DeskTimer', deskState == 3);
+
+            // Enable browser clipboard read if supported
+            QV('DeskClipboardOutButton', inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.readText != null));
+            QV('DeskClipboardInButton', inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.writeText != null));
 
             // Display this only if we have Chat & Notify permissions
             QV('DeskSaveImageButton', (deskState == 3) && (Q('Desk')['toBlob'] != null));
@@ -7146,9 +7149,10 @@
             QV('DeskNotifyButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (currentNode.agent) && online);
             //QV('DeskLockButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (currentNode.agent) && (deskState == 3));
             QV('DeskLockButton', false); // TODO: Work on adding remote desktop lock feature.
-            QV('DeskToolsButton', (inputAllowed) && (currentNode.agent) && online);
+            QV('DeskToolsButton', (deskState == 3) && (currentNode.agent) && online);
+            QE('DeskToolsButton', inputAllowed);
             QV('DeskOpenWebButton', (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
-            QV('DeskBackgroundButton', (deskState == 3) && (desktop.contype == 1) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && online);
+            QV('DeskBackgroundButton', inputAllowed && (deskState == 3) && (desktop.contype == 1) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && online);
             QV('DeskControlSpan', inputAllowed)
             QV('DeskRefreshButton', (deskState == 3) && (desktop.contype == 1))
             QV('deskActionsSettings', (browserfullscreen == false));
