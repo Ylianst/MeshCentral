@@ -2851,6 +2851,14 @@ a {
     width: 28px;
 }
 
+.viewSelector7 {
+    margin-left: 2px;
+    margin-top: 2px;
+    background: url(../images/views.png) -364px 0px;
+    height: 28px;
+    width: 28px;
+}
+
     .fulldesk .viewSelector5 {
         background: url(../images/views.png) -252px 0px;
     }

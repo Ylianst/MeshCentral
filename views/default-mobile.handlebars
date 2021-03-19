@@ -1497,6 +1497,20 @@
                     updateDeviceDetails(getNodeFromId(message.nodeid), null, message);
                     break;
                 }
+                case 'getNotes': {
+                    var n = Q('d2devNotes');
+                    if (n && (message.id == decodeURIComponent(n.attributes['noteid'].value))) {
+                        if (message.notes) { QH('d2devNotes', decodeURIComponent(message.notes)); } else { QH('d2devNotes', ''); }
+                        var ro = (n.attributes['ro'].value == 'true');
+                        if (ro == false) { // If we have permissions, set read/write on this note.
+                            n.removeAttribute('readonly');
+                            QE('idx_dlgOkButton', true);
+                            QV('idx_dlgOkButton', true);
+                            focusTextBox('d2devNotes');
+                        }
+                    }
+                    break;
+                }
                 case 'otpauth-request': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'otpauth-request')) {
                         var secret = message.secret;
@@ -3244,8 +3258,9 @@
 
                 x += '</table><br />';
                 x += '<input type=button value=\"' + "Actions" + '\" onclick=deviceActionFunction() />';
-                //x += '<input type=button value=Notes onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
+                x += '<input type=button value=Notes onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast onclick=deviceToastFunction() />';  }
+
                 QH('p10html', x);
 
                 // Show node last 7 days timeline
@@ -3354,6 +3369,16 @@
             if (count == 0) { x = "No actions currently available for this device."; }
             setDialogMode(2, "Device Action", (count == 0) ? 1 : 3, deviceActionFunctionEx, x);
         }
+
+        function showNotes(readonly, noteid) {
+            if (xxdialogMode) return;
+            var x = '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
+            if (noteid.startsWith('node%2F%2F')) { x += '<span style=font-size:10px>' + "Device group notes can be viewed and changed by other device group administrators." + '<span>'; }
+            setDialogMode(2, "Notes", 2, showNotesEx, x, noteid);
+            meshserver.send({ action: 'getNotes', id: decodeURIComponent(noteid) });
+        }
+
+        function showNotesEx(buttons, tag) { meshserver.send({ action: 'setNotes', id: decodeURIComponent(tag), notes: encodeURIComponentEx(Q('d2devNotes').value) }); }
 
         function deviceChat(e) {
             if (xxdialogMode) return;
@@ -5107,7 +5132,7 @@
             x += addHtmlValue("Type", meshtype);
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
-            //x += '<br><input type=button value=Notes onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />';
+            x += '<br><input type=button value=Notes onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />';
 
             x += '<br style=clear:both><br>';
             var currentMeshLinks = currentMesh.links[userinfo._id];

@@ -238,6 +238,7 @@
                         <div tabindex=0 id=devViewButton1 class=viewSelector onclick=onDeviceViewChange(1) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(1); }" title="Columns"><div class="viewSelector2"></div></div>
                         <div tabindex=0 id=devViewButton2 class=viewSelector onclick=onDeviceViewChange(2) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(2); }" title="List"><div class="viewSelector1"></div></div>
                         <div tabindex=0 id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(3); }" title="Desktops"><div class="viewSelector3"></div></div>
+                        <div tabindex=0 id=devViewButton5 class=viewSelector onclick=onDeviceViewChange(5) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(5); }" title="Desktops"><div class="viewSelector7"></div></div>
                         <div tabindex=0 id=devViewButton4 class=viewSelector onclick=onDeviceViewChange(4) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(4); }" title="Map" style="display:none"><div class="viewSelector4"></div></div>
                     </div><div><h1>My Devices</h1></div>
                 </div>
@@ -283,8 +284,9 @@
                                 <select id=viewselect onchange=onDeviceViewChange()>
                                     <option value=1>Columns</option>
                                     <option value=2>List</option>
-                                    <option value=3>Desktops</option>
+                                    <option value=3>Desktops Fixed Width</option>
                                     <option id=viewselectmapoption value=4 style="display:none">Map</option>
+                                    <option value=5>Desktops</option>
                                 </select>
                             </div>
                             <div style="display:none" id=devListToolbarSort>
@@ -3357,7 +3359,7 @@
 
         function onDeviceViewChange(i) {
             if (i != null) { Q('viewselect').value = i; }
-            for (var j = 1; j < 5; j++) { Q('devViewButton' + j).classList.remove('viewSelectorSel'); }
+            for (var j = 1; j < 6; j++) { Q('devViewButton' + j).classList.remove('viewSelectorSel'); }
             Q('devViewButton' + Q('viewselect').value).classList.add('viewSelectorSel');
             putstore('deviceView', Q('viewselect').value);
             putstore('viewsize', Q('sizeselect').value);
@@ -3521,16 +3523,16 @@
         function updateDevices() {
             if ((nodes == null) || (xxcurrentView != 1)) { return; }
             var r = '', c = 0, current = null, count = 0, scount = 0, displayedMeshes = {}, view = Q('viewselect').value, groups = {}, groupCount = {};
-            QV('xdevices', view < 4);
+            QV('xdevices', view != 4);
             QV('xdevicesmap', view == 4);
             QV('devListToolbar', view < 3);
-            QV('kvmListToolbar', view == 3);
+            QV('kvmListToolbar', (view == 3) || (view == 5));
             QV('devMapToolbar', view == 4);
-            QV('devListToolbarSize', view == 3);
+            QV('devListToolbarSize', (view == 3) || (view == 5));
             QV('NoMeshesPanel', (nodes.length == 0) && (meshcount == 0));
             //QV('devListToolbarView', (meshcount != 0) && (nodes.length > 0));
             QV('devListToolbarViewIcons', nodes.length > 0);
-            QV('devListToolbarSort', (nodes.length > 0) && (view < 4));
+            QV('devListToolbarSort', (nodes.length > 0) && (view != 4));
             if (nodes.length == 0) { view = 1; sort = 0; }
             if (view == 4) {
                 setTimeout( function() { if (xxmap.map != null) { xxmap.map.updateSize(); } }, 200);
@@ -3564,7 +3566,7 @@
                     if (sort == 0) {
                         // Mesh header
                         if (((meshes[node.meshid]?node.meshid:'*') != current)) {
-                            if (((view == 1) || (view == 3)) && (current != null)) { r += '</div>'; } // Close collapse div
+                            if (((view == 1) || (view == 3) || (view == 5)) && (current != null)) { r += '</div>'; } // Close collapse div
                             deviceHeaderSet();
                             var extra = '';
                             if (view == 2) { r += '<tr><td colspan=5>'; }
@@ -3574,7 +3576,7 @@
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span style=float:right>';
                             r += '<span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx></span>' + extra;
                             r += '</span>';
-                            if ((view == 1) || (view == 2) || (view == 3)) {
+                            if ((view == 1) || (view == 2) || (view == 3) || (view == 5)) {
                                 var collapsed = CollapsedGroups[node.meshid];
                                 r += '<img class=collapseImage cmenu=expandAllContextMenu id="DevxColImg' + deviceHeaderId + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + deviceHeaderId + '","' + node.meshid + '",' + view + ')></img>'; // Collapse action
                             }
@@ -3588,19 +3590,19 @@
                             if (view == 2) { r += '</div>'; }
                             displayedMeshes[current] = 1;
                             c = 0;
-                            if ((view == 1) || (view == 3)) { r += '<div id=DevxCol' + deviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; } // Open collapse div
+                            if ((view == 1) || (view == 3) || (view == 5)) { r += '<div id=DevxCol' + deviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; } // Open collapse div
                         }
                     } else if (sort == 1) {
                         // Power header
                         var pwr = node.pwr?node.pwr:0;
                         if (pwr !== current) {
-                            if (((view == 1) || (view == 3)) && (current != null)) { r += '</div>'; } // Close collapse div
+                            if (((view == 1) || (view == 3) || (view == 5)) && (current != null)) { r += '</div>'; } // Close collapse div
                             deviceHeaderSet();
                             if ((view == 1) && (current !== null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
 
                             if (view == 2) { r += '<tr><td colspan=5>'; }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx style=float:right></span>';
-                            if ((view == 1) || (view == 2) || (view == 3)) {
+                            if ((view == 1) || (view == 2) || (view == 3) || (view == 5)) {
                                 var collapsed = CollapsedGroups['pwr:' + pwr];
                                 r += '<img class=collapseImage cmenu=expandAllContextMenu id="DevxColImg' + deviceHeaderId + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + deviceHeaderId + '","pwr:' + pwr + '",' + view + ')></img>'; // Collapse action
                             }
@@ -3608,7 +3610,7 @@
 
                             current = pwr;
                             c = 0;
-                            if ((view == 1) || (view == 3)) { r += '<div id=DevxCol' + deviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; } // Open collapse div
+                            if ((view == 1) || (view == 3) || (view == 5)) { r += '<div id=DevxCol' + deviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; } // Open collapse div
                         }
                     } else if (sort == 2) {
                         // Device header
@@ -3626,10 +3628,10 @@
                         else if ((sort == 3) || (sort == 4)) { collapseName = 'tag:**xx**xx*TaG*xx**xx**'; }
                         var collapsed = (sort != 3) & (sort != 4) & CollapsedGroups[collapseName];
                         r += '<tr name=xxdevice2 colname=DevxCol' + collapseName + ' style=height:20px' + (collapsed?';display:none':'') + ' id=xv2' + node._id + '></tr>';
-                    } else if ((view == 3) && (node.conn & 1) && (((meshrights & 8) || (meshrights & 256)) != 0) && ((node.agent.caps & 1) != 0)) { // Check if we have rights and agent is capable of KVM.
+                    } else if (((view == 3) || (view == 5)) && (node.conn & 1) && (((meshrights & 8) || (meshrights & 256)) != 0) && ((node.agent.caps & 1) != 0)) { // Check if we have rights and agent is capable of KVM.
                         // Draw the device (TODO: See if we can replace this with a standin in the future)
                         if ((Object.keys(checkedNodeids).length == 0) || checkedNodeids[node._id]) {
-                            r += updateDeviceViewHtml(3, null, node);
+                            r += updateDeviceViewHtml(view, null, node);
                             kvmDivs.push(node._id);
                         }
                     }
@@ -3643,7 +3645,7 @@
                                 var collapsed = CollapsedGroups['tag:' + tag];
                                 var r2 = r.replace('**xx**xx*TaG*xx**xx**', encodeURIComponentEx(tag) + (collapsed?' style=display:none':''));
                                 if (groups[tag] == null) { groups[tag] = r2; groupCount[tag] = 1; } else { groups[tag] += r2; groupCount[tag] += 1; }
-                                if (view == 3) break;
+                                if ((view == 3) || (view == 5)) break;
                             }
                         }
                         r = '';
@@ -3762,21 +3764,24 @@
                 p1updateInfo();
 
                 // Take care of KVM surfaces in desktop view mode
-                if ((view == 3) && (xxcurrentView == 1)) {
+                if (((view == 3) || (view == 5)) && (xxcurrentView == 1)) {
+
                     // Figure out and adjust the size to fill the width of the div
                     var vsize = [{ x: 180, y: 101 }, { x: 302, y: 169 }, { x: 454, y: 255 }][Q('sizeselect').selectedIndex];
-                    //var realw = vsize.x + 2, tw = Q('xdevices').clientWidth - 30, xw = Math.floor(tw / realw);
-                    var realw = vsize.x + 2, tw = totalDeviceViewWidth - 5, xw = Math.floor(tw / realw);
-                    xw = realw + Math.floor((tw - (xw * realw)) / xw);
-                    vsize.y = vsize.y * (xw / vsize.x);
-                    vsize.x = xw;
+                    if ((view == 3)) { // If we are in fixed width mode, correct the size for the screen width.
+                        var realw = vsize.x + 2, tw = totalDeviceViewWidth - 5, xw = Math.floor(tw / realw);
+                        xw = realw + Math.floor((tw - (xw * realw)) / xw);
+                        vsize.y = vsize.y * (xw / vsize.x);
+                        vsize.x = xw;
+                    }
 
                     for (var i in multiDesktop) { multiDesktop[i].xxdelete = true; }
                     for (var i in kvmDivs) {
                         var id = kvmDivs[i], shortid = id.split('/')[2], desk = multiDesktop[id];
                         if (desk != null) {
                             // This device already has a canvas, use it.
-                            desk.m.CanvasId.setAttribute('style', 'background-color:black;width:' + vsize.x + 'px;height:' + vsize.y + 'px');
+                            var width = (view == 5)?((desk.m.width * vsize.y) / desk.m.height):vsize.x;
+                            desk.m.CanvasId.setAttribute('style', 'background-color:black;width:' + width + 'px;height:' + vsize.y + 'px');
                             Q('xkvmid_' + shortid).appendChild(desk.m.CanvasId);
                             delete desk.xxdelete;
                             QH('skvmid_' + shortid, ["Disconnected", "Connecting...", "Setup...", '', ''][((desk.m.State == null)?desk.m.state:desk.m.State)]);
@@ -3785,8 +3790,9 @@
                             if ((desktopNode == node) && (desktop != null)) { // Check if the main desktop is this device, if it is, use that.
                                 // This device already has a canvas, use it.
                                 var c = desktop.m.CanvasId;
+                                var width = (view == 5)?((desktop.m.width * vsize.y) / desktop.m.height):vsize.x;
                                 c.setAttribute('id', 'kvmid_' + shortid);
-                                c.setAttribute('style', 'background-color:black;width:' + vsize.x + 'px;height:' + vsize.y + 'px');
+                                c.setAttribute('style', 'background-color:black;width:' + width + 'px;height:' + vsize.y + 'px');
                                 c.setAttribute('onclick', 'toggleKvmDevice(\'' + id + '\')');
                                 c.removeAttribute('onmousedown');
                                 c.removeAttribute('onmouseup');
@@ -3977,12 +3983,12 @@
                 r += '<div class=style10 style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + node._id + '\',null,null,event)><span style=width:300px>' + name + '</span></div></div>' + devNotify + '</td>';
                 r += '<td style=text-align:center>' + getUserShortStr(node) + '<td style=text-align:center>' + (node.ip != null ? node.ip : '') + '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;');
                 div.innerHTML = r;
-            } else if (view == 3) {
+            } else if ((view == 3) || (view == 5)) {
                 // Draw the device and canvas
                 var r = '<div id=devs cmenu=devsContentMenu style=display:inline-block;position:relative;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div tabindex=0 style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + node._id + '\',11,null,event) onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',11,null,event)">' + devNotify;
                 //r += '<input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox style=float:left>';
                 r += '<div class="j' + icon + '" style=width:16px;float:left></div>&nbsp;' + name + '</div>';
-                r += '<span onclick=gotoDevice(\'' + node._id + '\',null,null,event)></span><div id=xkvmid_' + node._id.split('/')[2] + '><div id=skvmid_' + node._id.split('/')[2] + ' tabindex=0 style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:1000;cursor:default" onclick=toggleKvmDevice(\'' + node._id + '\') onkeypress="if (event.key==\'Enter\') toggleKvmDevice(\'' + node._id + '\')">' + "Disconnected" + '</div></div>';
+                r += '<span onclick=gotoDevice(\'' + node._id + '\',null,null,event)></span><div id=xkvmid_' + node._id.split('/')[2] + '><div id=skvmid_' + node._id.split('/')[2] + ' tabindex=0 style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:10;cursor:default" onclick=toggleKvmDevice(\'' + node._id + '\') onkeypress="if (event.key==\'Enter\') toggleKvmDevice(\'' + node._id + '\')">' + "Disconnected" + '</div></div>';
                 r += '</div>';
                 return r;
             }
@@ -4164,8 +4170,7 @@
                     desk.m.useZRLE = true;
                     desk.m.showmouse = true;
                     desk.m.onKvmData = function (data) { console.log('KVM Data received in multi-desktop mode, this is not supported.'); }; // KVM Data Channel not supported in multi-desktop right now.
-                    //desk.m.onScreenSizeChange = deskAdjust;
-                    if (debugmode > 0) { desk.m.onScreenSizeChange = mdeskAdjust; } // Multi-Desktop Adjust
+                    desk.m.onScreenSizeChange = mdeskAdjust; // Multi-Desktop Adjust
                     desk.Start(nodeid, 16994, '*', '*', 0);
                     desk.contype = 2;
                     multiDesktop[nodeid] = desk;
@@ -4183,8 +4188,8 @@
                     if (multidesktopsettings.swapmouse) { desk.m.SwapMouse = multidesktopsettings.swapmouse; }
                     if (multidesktopsettings.remotekeymap == true) { desk.m.remoteKeyMap = multidesktopsettings.remotekeymap; }
                     //desk.m.onDisplayinfo = deskDisplayInfo;
-                    //desk.m.onScreenSizeChange = deskAdjust;
-                    if (debugmode > 0) { desk.m.onScreenSizeChange = mdeskAdjust; } // Multi-Desktop Adjust
+                    desk.m.onScreenSizeChange = mdeskAdjust; // Multi-Desktop Adjust
+                    //if (debugmode > 0) { desk.m.onScreenSizeChange = mdeskAdjust; }
                     desk.Start(nodeid);
                     desk.contype = 1;
                     multiDesktop[nodeid] = desk;
@@ -7121,7 +7126,7 @@
             QV('d7meshkvm', (webRtcDesktop) || ((currentNode.agent != null) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1))));
 
             // Enable buttons
-            var inputAllowed = (currentNode.agent.id != 14) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
+            var inputAllowed = ((currentNode.agent == null) || (currentNode.agent.id != 14)) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
             var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
             QE('connectbutton1', online);
             var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
@@ -7561,6 +7566,7 @@
         }
 
         function deskAdjust() {
+            //if (xxcurrentView == 1) return;
             var parentH = Q('DeskParent').clientHeight, parentW = Q('DeskParent').clientWidth;
             var deskH = Q('Desk').height, deskW = Q('Desk').width;
 
@@ -7582,10 +7588,10 @@
                 if ((parentH / parentW) > (deskH / deskW)) {
                     var hNew = ((deskH * parentW) / deskW) + 'px';
                     //if (webPageFullScreen || fullscreen) {
-                    //QS('deskarea3x').height = null;
+                    //  QS('deskarea3x').height = null;
                     //} else {
-                    // QS('deskarea3x').height = hNew;
-                    //QS('deskarea3x').height = null;
+                    //  QS('deskarea3x').height = hNew;
+                    //  QS('deskarea3x').height = null;
                     //}
                     QS('Desk').height = hNew;
                     QS('Desk').width = '100%';
@@ -7603,24 +7609,20 @@
             }
         }
 
-        function mdeskAdjust(mod, sw, sh, cv) {
-            if (!mod || !sw || !sh || !cv) return;
+        function mdeskAdjust(module, sw, sh, cv) {
+            if (!module || !sw || !sh || !cv) return;
+            var view = Q('viewselect').value;
+            if ((view != 3) && (view != 5)) return;
 
             // Check if we are in single desktop mode
             if (cv.id == 'Desk') { deskAdjust(); return; }
 
-            // Figure out and adjust the size to fill the width of the div
-            var vsize = [{ x: 180, y: 101 }, { x: 302, y: 169 }, { x: 454, y: 255 }][Q('sizeselect').selectedIndex];
-            var realw = vsize.x + 2, tw = Q('xdevices').clientWidth - 30, xw = Math.floor(tw / realw);
-            xw = realw + Math.floor((tw - (xw * realw)) / xw);
-            vsize.y = vsize.y * (xw / vsize.x);
-            vsize.x = xw;
-            var mh = vsize.y, mw = vsize.x;
-            if (mod.State != 0) { mh = vsize.y; mw = (sw / sh) * vsize.y; }
-            QS(cv.id)['max-height'] = mh + 'px';
-            QS(cv.id)['max-width'] = mw + 'px';
-            QS(cv.id)['margin-top'] = '0';
-            QS(cv.id)['margin-bottom'] = '0';
+            if (view == 5) { // If not in fixed width mode, compute the with
+                var vsize = [{ x: 180, y: 101 }, { x: 302, y: 169 }, { x: 454, y: 255 }][Q('sizeselect').selectedIndex];
+                QS(cv.id)['width'] = ((module.State != 0)?((sw * vsize.y) / sh):(vsize.x)) + 'px';
+            }
+            QS(cv.id)['margin-top'] = null;
+            QS(cv.id)['margin-bottom'] = null;
         }
         
         // Press ESC key
