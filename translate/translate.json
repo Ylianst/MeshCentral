@@ -11945,8 +11945,15 @@
       "zh-chs": "台式机",
       "zh-cht": "台式電腦",
       "xloc": [
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView->viewselect->5",
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView->viewselect->9",
+        "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons",
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
+      ]
+    },
+    {
+      "en": "Desktops Fixed Width",
+      "xloc": [
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView->viewselect->5"
       ]
     },
     {

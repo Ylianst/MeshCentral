@@ -78,7 +78,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         obj.UnGrabKeyInput();
         obj.UnGrabMouseInput();
         obj.touchenabled = 0;
-        if (obj.onScreenSizeChange != null) obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId);
+        if (obj.onScreenSizeChange != null) { obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId); }
         obj.Canvas.clearRect(0, 0, obj.CanvasId.width, obj.CanvasId.height);
     }
 
@@ -193,6 +193,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         while (obj.PendingOperations.length > 0) { obj.PendingOperations.shift(); }
         obj.SendCompressionLevel(1);
         obj.SendUnPause();
+        // No need to event the display size change now, it will be evented on first draw.
         if (obj.onScreenSizeChange != null) { obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId); }
     }
 
@@ -520,7 +521,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             obj.Canvas.canvas.width = obj.ScreenWidth;
             obj.Canvas.canvas.height = obj.ScreenHeight;
             obj.Canvas.fillRect(0, 0, obj.ScreenWidth, obj.ScreenHeight);
-            if (obj.onScreenSizeChange != null) obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId);
+            if (obj.onScreenSizeChange != null) { obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId); }
         }
         obj.FirstDraw = false;
         if (obj.debugmode > 1) { console.log("onResize: " + obj.ScreenWidth + " x " + obj.ScreenHeight); }
@@ -789,7 +790,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
         obj.ScreenWidth = obj.Canvas.canvas.width;
         obj.ScreenHeight = obj.Canvas.canvas.height;
-        if (obj.onScreenSizeChange != null) obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId);
+        if (obj.onScreenSizeChange != null) { console.log('s4', obj.ScreenWidth, obj.ScreenHeight); obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId); }
         return true;
     }
 
