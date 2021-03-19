@@ -1439,7 +1439,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'events':
                 {
                     // User filtered events
-                    if ((command.user != null) && ((user.siteadmin & 2) != 0)) { // SITERIGHT_MANAGEUSERS
+                    if ((command.user != null) && ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0)) {
                         // TODO: Add the meshes command.user has access to (???)
                         var filter = ['user/' + domain.id + '/' + command.user];
 
@@ -2200,18 +2200,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'updateUserImage':
                 {
-                    var chguser = parent.users[user._id], flags = 0, change = 0;
+                    var uid = user._id;
+                    if ((typeof command.userid == 'string') && ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0)) { uid = command.userid; }
+
+                    var chguser = parent.users[uid], flags = 0, change = 0;
                     if (chguser == null) break;
                     if (typeof chguser.flags == 'number') { flags = chguser.flags; }
 
                     if (command.image == 0) {
                         // Delete the image
-                        db.Remove('im' + user._id);
+                        db.Remove('im' + uid);
                         if ((flags & 1) != 0) { flags -= 1; change = 1; }
                     } else if ((typeof command.image == 'string') && (command.image.length < 600000) && ((command.image.startsWith('data:image/png;base64,') || (command.image.startsWith('data:image/jpeg;base64,'))))) {
                         // Save the new image
-                        db.Set({ _id: 'im' + user._id, image: command.image });
-                        if ((flags & 1) == 0) { flags += 1; change = 1; }
+                        db.Set({ _id: 'im' + uid, image: command.image });
+                        if ((flags & 1) == 0) { flags += 1; }
+                        change = 1;
                     }
 
                     // Update the user if needed
@@ -2222,7 +2226,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Event the change
                         var targets = ['*', 'server-users', user._id, chguser._id];
                         if (allTargetGroups) { for (var i in allTargetGroups) { targets.push('server-users:' + i); } }
-                        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 66, msgArgs: [chguser.name], msg: 'Account changed: ' + chguser.name, domain: domain.id };
+                        var event = { etype: 'user', userid: uid, username: chguser.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 66, msgArgs: [chguser.name], msg: 'Account changed: ' + chguser.name, domain: domain.id, accountImageChange: 1 };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         parent.parent.DispatchEvent(targets, obj, event);
                     }
