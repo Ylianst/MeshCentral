@@ -46,12 +46,12 @@
                             <table style="width:100%">
                                 <tr>
                                     <td>
-                                        <input id=username title="Username" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" autocomplete="username" placeholder="Username" type=text maxlength=64 name=username onchange=validateLogin(1) onkeyup=validateLogin(1,event) />
+                                        <input id=username title="Username" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" {{{autocomplete}}}="username" placeholder="Username" type=text maxlength=64 name=username onchange=validateLogin(1) onkeyup=validateLogin(1,event) />
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>
-                                        <input id=password title="Password" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" autocomplete="current-password" placeholder="Password" type=password maxlength=256 name=password onchange=validateLogin(2) onkeyup=validateLogin(2,event) />
+                                        <input id=password title="Password" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" {{{autocomplete}}}="current-password" placeholder="Password" type=password maxlength=256 name=password onchange=validateLogin(2) onkeyup=validateLogin(2,event) />
                                     </td>
                                 </tr>
                                 <tr>
@@ -99,27 +99,27 @@
                         <table>
                             <tr id="nuUserRow">
                                 <td id="nuUser" align=right width=100>Username:</td>
-                                <td><input id=ausername type=text autocomplete="username" name=username onchange=validateCreate(1) maxlength=64 onkeydown=haltReturn(event) onkeyup=validateCreate(1,event) /></td>
+                                <td><input id=ausername type=text {{{autocomplete}}}="username" name=username onchange=validateCreate(1) maxlength=64 onkeydown=haltReturn(event) onkeyup=validateCreate(1,event) /></td>
                             </tr>
                             <tr>
                                 <td id="nuEmail" align=right width=100>Email:</td>
-                                <td><input id=aemail type=text autocomplete="email" inputmode="email" name=email onchange=validateCreate(2) maxlength=256 onkeydown=haltReturn(event) onkeyup=validateCreate(2,event) /></td>
+                                <td><input id=aemail type=text {{{autocomplete}}}="email" inputmode="email" name=email onchange=validateCreate(2) maxlength=256 onkeydown=haltReturn(event) onkeyup=validateCreate(2,event) /></td>
                             </tr>
                             <tr>
                                 <td id="nuPass1" align=right>Password:</td>
-                                <td><input id=apassword1 type=password name=password1 autocomplete="new-password" maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(3,event) onkeyup=validateCreate(3,event) /></td>
+                                <td><input id=apassword1 type=password name=password1 {{{autocomplete}}}="new-password" maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(3,event) onkeyup=validateCreate(3,event) /></td>
                             </tr>
                             <tr>
                                 <td id="nuPass2" align=right>Password:</td>
-                                <td><input id=apassword2 type=password name=password2 autocomplete="new-password" maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(4,event) onkeyup=validateCreate(4,event) /></td>
+                                <td><input id=apassword2 type=password name=password2 {{{autocomplete}}}="new-password" maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(4,event) onkeyup=validateCreate(4,event) /></td>
                             </tr>
                             <tr id="createPanelHint" style="display:none">
                                 <td id="nuHint" align=right>Password Hint:</td>
-                                <td><input id=apasswordhint type=text name=apasswordhint autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(5,event) onkeyup=validateCreate(5,event) /></td>
+                                <td><input id=apasswordhint type=text name=apasswordhint {{{autocomplete}}}=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(5,event) onkeyup=validateCreate(5,event) /></td>
                             </tr>
                             <tr id=newAccountPass title="Enter the account creation token">
                                 <td id="nuToken" align=right>Creation Token:</td>
-                                <td><input id=anewaccountpass type=password name=anewaccountpass autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(6,event) onkeyup=validateCreate(6,event) /></td>
+                                <td><input id=anewaccountpass type=password name=anewaccountpass {{{autocomplete}}}=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(6,event) onkeyup=validateCreate(6,event) /></td>
                             </tr>
                             <tr>
                                 <td colspan=2>
@@ -142,7 +142,7 @@
                         <table style="width:100%;margin-top:4px;margin-bottom:4px">
                             <tr>
                                 <td>
-                                    <input id=remail title="Email" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" autocomplete="username" placeholder="Email" type=text maxlength=256 name=email onchange=validateReset() onkeyup=validateReset(event) />
+                                    <input id=remail title="Email" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" {{{autocomplete}}}="username" placeholder="Email" type=text maxlength=256 name=email onchange=validateReset() onkeyup=validateReset(event) />
                                 </td>
                             </tr>
                             <tr>
@@ -156,14 +156,14 @@
                     </form>
                 </div>
                 <div id=tokenpanel style="display:none">
-                    <form method=post autocomplete=off>
+                    <form method=post {{{autocomplete}}}=off>
                         <input type=hidden name=action value=tokenlogin />
                         <input type=hidden name=hwstate value="{{{hwstate}}}" />
                         <div id=message4></div>
                         <table style="width:100%">
                             <tr>
                                 <td>
-                                    <input id=tokenInput autocomplete="one-time-code" title="Token" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" placeholder="Token" type=text maxlength=50 name=token onchange=checkToken(event) onpaste=resetCheckToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) /><br />
+                                    <input id=tokenInput {{{autocomplete}}}="one-time-code" title="Token" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" placeholder="Token" type=text maxlength=50 name=token onchange=checkToken(event) onpaste=resetCheckToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) /><br />
                                     <input id=hwtokenInput type=text name=hwtoken style="display:none" />
                                 </td>
                             </tr>
@@ -201,7 +201,7 @@
                         <table style="width:100%">
                             <tr>
                                 <td>
-                                    <input id=resetTokenInput autocomplete="one-time-code" title="Token" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" placeholder="Token" type=text maxlength=50 name=token onchange=resetCheckToken(event) onpaste=resetCheckToken(event) onkeyup=resetCheckToken(event) onkeydown=resetCheckToken(event) /><br />
+                                    <input id=resetTokenInput {{{autocomplete}}}="one-time-code" title="Token" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" placeholder="Token" type=text maxlength=50 name=token onchange=resetCheckToken(event) onpaste=resetCheckToken(event) onkeyup=resetCheckToken(event) onkeydown=resetCheckToken(event) /><br />
                                     <input id=resetHwtokenInput type=text name=hwtoken style="display:none" />
                                 </td>
                             </tr>
@@ -235,15 +235,15 @@
                         <table>
                             <tr>
                                 <td id="rnuPass1" width=100 align=right>Password:</td>
-                                <td><input id=rapassword1 type=password name=rpassword1 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validatePassReset(3,event) onkeyup=validatePassReset(3,event) /></td>
+                                <td><input id=rapassword1 type=password name=rpassword1 {{{autocomplete}}}=off maxlength=256 onkeydown=haltReturn(event) onchange=validatePassReset(3,event) onkeyup=validatePassReset(3,event) /></td>
                             </tr>
                             <tr>
                                 <td id="rnuPass2" align=right>Password:</td>
-                                <td><input id=rapassword2 type=password name=rpassword2 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validatePassReset(4,event) onkeyup=validatePassReset(4,event) /></td>
+                                <td><input id=rapassword2 type=password name=rpassword2 {{{autocomplete}}}=off maxlength=256 onkeydown=haltReturn(event) onchange=validatePassReset(4,event) onkeyup=validatePassReset(4,event) /></td>
                             </tr>
                             <tr id="resetpasswordpanelHint" style="display:none">
                                 <td id="rnuHint" align=right>Password Hint:</td>
-                                <td><input id=rapasswordhint type=text name=rpasswordhint autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validatePassReset(5,event) onkeyup=validatePassReset(5,event) /></td>
+                                <td><input id=rapasswordhint type=text name=rpasswordhint {{{autocomplete}}}=off maxlength=256 onkeydown=haltReturn(event) onchange=validatePassReset(5,event) onkeyup=validatePassReset(5,event) /></td>
                             </tr>
                             <tr>
                                 <td colspan=2>
@@ -798,7 +798,7 @@
 
         function changeEmailAddress() {
             var email = Q('unconfirmedEmail').innerHTML;
-            var x = addHtmlValue("Email", '<input id=dp1email style=width:230px maxlength=256 value="' + email + '" autocomplete=off onchange=validateEmailAddress() onkeyup=validateEmailAddress() />');
+            var x = addHtmlValue("Email", '<input id=dp1email style=width:230px maxlength=256 value="' + email + '" {{{autocomplete}}}=off onchange=validateEmailAddress() onkeyup=validateEmailAddress() />');
             setDialogMode(1, "Email Confirmation", 3, changeEmailAddressEx, x);
             validateEmailAddress();
         }

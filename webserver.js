@@ -6510,6 +6510,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
         xargs.extitle = encodeURIComponent(xargs.title).split('\'').join('\\\'');
         xargs.domainurl = domain.url;
+        xargs.autocomplete = (domain.autocomplete === false)?'x':'autocomplete'; // This option allows autocomplete to be turned off on the login page.
         if (typeof domain.hide == 'number') { xargs.hide = domain.hide; }
         return xargs;
     }
