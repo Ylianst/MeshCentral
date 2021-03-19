@@ -342,8 +342,10 @@
             <div id=p2 style="display:none">
                 <div id="p2title"><h1>My Account</h1></div>
                 <div id="p2info" style="overflow-y:auto">
-                    <!--<img id="p2AccountImage" alt="" loading="lazy" width="128" height="128" onclick="account_manageImage()" src="images/clipboard-128.png" />-->
-                    <img id="p2AccountImage" alt="" loading="lazy" width="128" height="128" style="border-radius:8px;cursor:pointer;box-shadow: 0px 0px 7px #000;margin-top:7px" onclick="account_manageImage()" src="userimage.ashx" />
+                    <div id="p2AccountImageFrame">
+                        <img id="p2AccountImage" alt="" loading="lazy" width="128" height="128" onclick="account_manageImage(0)" src="images/user-256.png" />
+                        <div><a onclick="account_manageImage(0)">Change image</a></div>
+                    </div>
                     <div id="p2AccountSecurity" style="display:none">
                         <p><strong>Account security</strong></p>
                         <div style="margin-left:25px">
@@ -957,10 +959,11 @@
                             <td style=width:20px></td>
                             <td style=width:200px;position:relative valign=top>
                                 <img id="p30userAuthServiceLogo" loading="lazy" style="display:none" class=userAuthStrategyLogo width=64 height=64>
-                                <picture id=MainUserImage style=border-width:0px;height:200px;width:200px;float:right>
+                                <picture id=MainUserImage style="display:none;border-width:0px;height:200px;width:200px;float:right" onclick="account_manageImage(1)">
                                     <source type="image/webp" width=200 height=200 srcset="images/webp/user-256.webp" />
                                     <img alt="" width=200 height=200 src=images/user-256.png />
                                 </picture>
+                                <img id=MainUserImageEx alt="" width=200 height=200 src=images/user-256.png onclick="account_manageImage(1)" />
                                 <div style="width:100%;text-align:center"><strong><span id=MainUserState></span></strong></div>
                             </td>
                         </tr>
@@ -1929,6 +1932,14 @@
             if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { setDialogMode(0); go(1); }
             if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); }
 
+            // Update user image
+            if ((userinfo.flags != null) && (userinfo.flags & 1)) {
+                if (userinfo.accountImageRnd == null) { userinfo.accountImageRnd = Math.floor(Math.random() * 9999999999); }
+                Q('p2AccountImage').src = 'userimage.ashx?rnd=' + userinfo.accountImageRnd;
+            } else {
+                Q('p2AccountImage').src = 'images/user-256.png';
+            }
+
             // Update user management state
             if ((userinfo.siteadmin & 2) != 0) {
                 // We are user administrator
@@ -2671,10 +2682,15 @@
                             if (userinfo._id == message.event.account._id) {
                                 var newsiteadmin = message.event.account.siteadmin?message.event.account.siteadmin:0;
                                 var oldsiteadmin = userinfo.siteadmin?userinfo.siteadmin:0;
+                                var newflags = message.event.account.flags?message.event.account.flags:0;
+                                var oldflags = userinfo.flags?userinfo.flags:0;
                                 if ((message.event.account.quota != userinfo.quota) || (((userinfo.siteadmin & 8) == 0) && ((message.event.account.siteadmin & 8) != 0))) { meshserver.send({ action: 'files' }); }
                                 var oldgroups = userinfo.groups;
                                 userinfo = message.event.account;
-                                if (oldsiteadmin != newsiteadmin) updateSiteAdmin();
+                                if ((oldsiteadmin != newsiteadmin) || (message.event.accountImageChange == 1)) { // If the site admin permission or user image has changed...
+                                    if (message.event.accountImageChange == 1) { userinfo.accountImageRnd = Math.floor(Math.random() * 9999999999); }
+                                    updateSiteAdmin();
+                                }
                                 updateSelf();
 
                                 if ((userinfo.siteadmin & 2) != 0) {
@@ -9676,20 +9692,19 @@
             meshserver.send({ action: 'previousLogins' });
         }
 
-        function account_manageImage() {
+        function account_manageImage(mode) {
             if (xxdialogMode) return;
+            var user = (mode == 0)?userinfo:currentUser;
             var x = '<input id=p2file type=file style=width:100% accept="image/*" onchange=account_manageImageEx()><div style=width:100%><canvas id=p2canvas width=256 height=256 style="width:256px;height:256px;margin-left:60px;margin-top:8px;border-radius:16px;box-shadow: 0px 0px 15px #000" onclick=account_canvasClick() /></div>';
-            setDialogMode(2, "Manage Account Image", 7, account_manageImageEx2, x);
+            setDialogMode(2, "Manage Account Image", 7, account_manageImageEx2, x, user._id);
             var ctx = Q('p2canvas').getContext("2d");
-            if ((userinfo.flags != null) && (userinfo.flags & 1)) {
-                var myImg = new Image();
-                myImg.onload = function() { ctx.drawImage(myImg, 0, 0); };
-                myImg.src = 'userimage.ashx';
-            } else {
-                ctx.fillStyle = "#CCC";
-                ctx.fillRect(0, 0, 256, 256);
-            }
-            QE('idx_dlgDeleteButton', (userinfo.flags != null) && (userinfo.flags & 1));
+            if (user.accountImageRnd == null) { user.accountImageRnd = Math.floor(Math.random() * 9999999999); }
+            var arg = '';
+            if (mode == 1) { arg = '&id=' + user._id.split('/')[2]; }
+            var myImg = new Image();
+            myImg.onload = function() { ctx.drawImage(myImg, 0, 0); };
+            myImg.src = ((user.flags != null) && (user.flags & 1))?('userimage.ashx?rnd=' + user.accountImageRnd + arg):'images/user-256.png';
+            QE('idx_dlgDeleteButton', (user.flags != null) && (user.flags & 1));
             QE('idx_dlgOkButton', false);
         }
 
@@ -9712,9 +9727,9 @@
             img.src = URL.createObjectURL(file);
         }
 
-        function account_manageImageEx2(b, t) {
+        function account_manageImageEx2(b, userid) {
             // Send updated image, or 0 if we pressed the delete button
-            meshserver.send({ action: 'updateUserImage', image: (b == 2)?0:Q('p2canvas').toDataURL('image/jpeg', 0.8) });
+            meshserver.send({ action: 'updateUserImage', userid: userid, image: (b == 2)?0:Q('p2canvas').toDataURL('image/jpeg', 0.8) });
             //meshserver.send({ action: 'updateUserImage', image: (b == 2)?0:Q('p2canvas').toDataURL('image/png', 0.8) });
         }
 
@@ -12885,9 +12900,19 @@
             var self = (user._id == userinfo._id), activeSessions = 0;
             if (wssessions != null && wssessions[user._id]) { activeSessions = wssessions[user._id]; }
 
-            // Change user grayscale
-            Q('MainUserImage').classList.remove('gray');
-            if (activeSessions == 0) { Q('MainUserImage').classList.add('gray'); }
+            // Update account picture
+            if ((user.flags != null) && (user.flags & 1)) {
+                QV('MainUserImage', false);
+                QV('MainUserImageEx', true);
+                if (user.accountImageRnd == null) { user.accountImageRnd = Math.floor(Math.random() * 9999999999); }
+                Q('MainUserImageEx').src = 'userimage.ashx?id=' + (user._id.split('/')[2]) + '&rnd=' + user.accountImageRnd;
+            } else {
+                // Change user grayscale
+                Q('MainUserImage').classList.remove('gray');
+                if (activeSessions == 0) { Q('MainUserImage').classList.add('gray'); }
+                QV('MainUserImage', true);
+                QV('MainUserImageEx', false);
+            }
 
             // Add user auth strategy
             var shortuserid = user._id.split('/')[2];

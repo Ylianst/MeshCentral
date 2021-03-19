@@ -973,12 +973,21 @@ NoMeshesPanel img {
     cursor: pointer;
 }
 
-#p2AccountImage {
-    width: 128px;
-    height: 128px;
-    margin-bottom: 10px;
-    margin-right: 20px;
+#p2AccountImageFrame {
     float: right;
+    text-align: center;
+    margin-bottom: 10px;
+    margin-right: 10px;
+    margin-top: 7px;
+}
+
+#p2AccountImage, #p2AccountImage2, #MainUserImageEx {
+    width: 200px;
+    height: 200px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 8px;
+    box-shadow: 0px 0px 7px #000;
 }
 
 .p2AccountActions {
