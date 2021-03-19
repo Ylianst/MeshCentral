@@ -1871,6 +1871,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
+    // Called to process an agent invite request
+    function handleUserImageRequest(req, res) {
+        const domain = getDomain(req);
+        if (domain == null) { parent.debug('web', 'handleUserImageRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((req.session == null) || (req.session.userid == null)) { parent.debug('web', 'handleUserImageRequest: failed checks 2.'); res.sendStatus(404); return; }
+        obj.db.Get('im' + req.session.userid, function (err, docs) {
+            if ((err != null) || (docs == null) || (docs.length != 1) || (typeof docs[0].image != 'string')) { res.sendStatus(404); return; }
+            var imagebase64 = docs[0].image;
+            if (imagebase64.startsWith('data:image/png;base64,')) {
+                res.set('Content-Type', 'image/png');
+                res.send(Buffer.from(imagebase64.substring(22), 'base64'));
+            } else if (imagebase64.startsWith('data:image/jpeg;base64,')) {
+                res.set('Content-Type', 'image/jpeg');
+                res.send(Buffer.from(imagebase64.substring(23), 'base64'));
+            } else {
+                res.sendStatus(404);
+            }
+        });
+    }
+
     function handleDeleteAccountRequest(req, res, direct) {
         parent.debug('web', 'handleDeleteAccountRequest()');
         const domain = checkUserIpAddress(req, res);
@@ -1948,8 +1968,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
                 }
 
-                // Remove notes for this user
-                obj.db.Remove('nt' + deluser._id);
+                obj.db.Remove('ws' + deluser._id); // Remove user web state
+                obj.db.Remove('nt' + deluser._id); // Remove notes for this user
+                obj.db.Remove('im' + deluser._id); // Remove image for this user
 
                 // Remove the user
                 obj.db.Remove(deluser._id);
@@ -5061,8 +5082,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 const headers = {
                     'Referrer-Policy': 'no-referrer',
                     'X-XSS-Protection': '1; mode=block',
-                    'X-Content-Type-Options': 'nosniff',
-                    'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'" + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self'" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' https://*.youtube.com mcrouter:; media-src 'self'; form-action 'self'"
+                    'X-Content-Type-Options': 'nosniff'
+                    //'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'" + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self'" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' https://*.youtube.com mcrouter:; media-src 'self'; form-action 'self'"
                 };
                 if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
                 res.set(headers);
@@ -5167,6 +5188,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.post(url + 'resetaccount', handleResetAccountRequest);
             obj.app.get(url + 'checkmail', handleCheckMailRequest);
             obj.app.get(url + 'agentinvite', handleAgentInviteRequest);
+            obj.app.get(url + 'userimage.ashx', handleUserImageRequest);
             obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
             obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
             obj.app.get(url + 'messenger', handleMessengerRequest);

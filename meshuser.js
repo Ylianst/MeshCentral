@@ -1784,6 +1784,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     db.Remove('ws' + deluser._id); // Remove user web state
                     db.Remove('nt' + deluser._id); // Remove notes for this user
+                    db.Remove('im' + deluser._id); // Remove image for this user
 
                     // Delete all files on the server for this account
                     try {
@@ -2195,6 +2196,37 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // OK Response
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'edituser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+                    break;
+                }
+            case 'updateUserImage':
+                {
+                    var chguser = parent.users[user._id], flags = 0, change = 0;
+                    if (chguser == null) break;
+                    if (typeof chguser.flags == 'number') { flags = chguser.flags; }
+
+                    if (command.image == 0) {
+                        // Delete the image
+                        db.Remove('im' + user._id);
+                        if ((flags & 1) != 0) { flags -= 1; change = 1; }
+                    } else if ((typeof command.image == 'string') && (command.image.length < 600000) && ((command.image.startsWith('data:image/png;base64,') || (command.image.startsWith('data:image/jpeg;base64,'))))) {
+                        // Save the new image
+                        db.Set({ _id: 'im' + user._id, image: command.image });
+                        if ((flags & 1) == 0) { flags += 1; change = 1; }
+                    }
+
+                    // Update the user if needed
+                    if (change == 1) {
+                        chguser.flags = flags;
+                        db.SetUser(chguser);
+
+                        // Event the change
+                        var targets = ['*', 'server-users', user._id, chguser._id];
+                        if (allTargetGroups) { for (var i in allTargetGroups) { targets.push('server-users:' + i); } }
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 66, msgArgs: [chguser.name], msg: 'Account changed: ' + chguser.name, domain: domain.id };
+                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                        parent.parent.DispatchEvent(targets, obj, event);
+                    }
+
                     break;
                 }
             case 'usergroups':

@@ -854,7 +854,7 @@ function handleServerCommand(data) {
                         // Display a message box
                         if (data.title && data.msg) {
                             MeshServerLogEx(18, [data.title, data.msg], "Displaying message box, title=" + data.title + ", message=" + data.msg, data);
-                            try { require('message-box').create(data.title, data.msg, 120); } catch (e) { }
+                            try { require('message-box').create(data.title, data.msg, 120).then(function () { }).catch(function () { }); } catch (e) { }
                         }
                         break;
                     }
