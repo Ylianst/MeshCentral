@@ -2683,8 +2683,6 @@
                             if (userinfo._id == message.event.account._id) {
                                 var newsiteadmin = message.event.account.siteadmin?message.event.account.siteadmin:0;
                                 var oldsiteadmin = userinfo.siteadmin?userinfo.siteadmin:0;
-                                var newflags = message.event.account.flags?message.event.account.flags:0;
-                                var oldflags = userinfo.flags?userinfo.flags:0;
                                 if ((message.event.account.quota != userinfo.quota) || (((userinfo.siteadmin & 8) == 0) && ((message.event.account.siteadmin & 8) != 0))) { meshserver.send({ action: 'files' }); }
                                 var oldgroups = userinfo.groups;
                                 userinfo = message.event.account;
