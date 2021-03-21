@@ -1630,10 +1630,6 @@
       ]
     },
     {
-      "en": "2d",
-      "nl": "2d"
-    },
-    {
       "cs": "2-faktorové ověřování zapnuto",
       "de": "Zweifaktorauthentifizierung eingeschaltet",
       "en": "2nd factor authentication enabled",
