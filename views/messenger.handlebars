@@ -27,7 +27,7 @@
             <div style="padding-top:9px;padding-left:6px;font-size:20px;display:inline-block"><b><span id="xtitle"></span></b></div>
         </div>
         <div id="xmiddle" style="position:absolute;left:0;right:0;top:38px;bottom:36px;font-size:18px">
-            <div id="xmsgparent" style="position:absolute;left:0;right:0;top:0;bottom:0;overflow-y:scroll">
+            <div id="xmsgparent" style="position:absolute;left:0;right:0;bottom:0;max-height:100%;overflow-y:auto">
                 <div id="xmsg" style="padding:5px"></div>
                 <div id="typingIndicator" style="display:none;margin-left:5px;clear:both"><img src="images/3dots-24.gif" srcset="images/3dots-48.gif 2x" /></div>
             </div>
@@ -379,6 +379,17 @@
                 if (typeof data == 'string') {
                     try { data = JSON.parse(data); } catch (ex) { console.log('Unable to parse', data); return; }
                     //console.log('RECV', data);
+
+                    // Handle control command
+                    if (data.ctrlChannel == '102938') {
+                        switch (data.type) {
+                            case 'ping': { send({ ctrlChannel: '102938', type: 'pong' }); break; }
+                            case 'pong': { break; }
+                        }
+                        return;
+                    }
+
+                    // Handle command
                     switch (data.action) {
                         case 'chat': { displayRemote(data.msg); updateRemoteOutText(false); break; } // Incoming chat message.
                         case 'outtext': { updateRemoteOutText(data.value); break; }

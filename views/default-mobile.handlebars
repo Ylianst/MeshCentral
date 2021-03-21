@@ -678,9 +678,6 @@
                                 <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
                             </td>
                             <td>
-                                <img src="/images/user-50.png" width=50 height=50 />
-                            </td>
-                            <td>
                                 <div style=margin-left:5px>
                                     <strong style="font-size:large"><span id=p3userName></span></strong><br />
                                 </div>
@@ -688,6 +685,7 @@
                         </tr>
                     </table>
                     <div id=p3info style="overflow-y:auto;position:absolute;top:55px;bottom:0px;width:100%">
+                        <img id="p2AccountImage" alt="" loading="lazy" width="128" height="128" onclick="account_manageImage(0)" src="images/user-256.png" style="position:absolute;right:8px;top:7px;border-radius:8px;box-shadow:0px 0px 7px #000" />
                         <div style="margin-left:8px">
                             <div id="p3AccountActions">
                                 <div id="p2AccountSecurity" style="display:none">
@@ -1118,6 +1116,7 @@
         <div id="idx_dlgButtonBar" style="padding:10px;margin-bottom:20px">
             <input id="idx_dlgCancelButton" type="button" value="Cancel" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">
             <input id="idx_dlgOkButton" type="button" value="OK" style="float:right;width:80px" onclick="dialogclose(1)">
+            <div><input id="idx_dlgDeleteButton" type="button" value="Delete" style="display:none" onclick="dialogclose(2)" /></div>
         </div>
     </div>
     <div id=topMenu style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
@@ -1310,6 +1309,14 @@
             // On the mobile app, don't allow group creation (for now).
             QV('p3createMeshLink1', false);
             QV('p3createMeshLink2', false);
+
+            // Update user image
+            if ((userinfo.flags != null) && (userinfo.flags & 1)) {
+                if (userinfo.accountImageRnd == null) { userinfo.accountImageRnd = Math.floor(Math.random() * 9999999999); }
+                Q('p2AccountImage').src = 'userimage.ashx?rnd=' + userinfo.accountImageRnd;
+            } else {
+                Q('p2AccountImage').src = 'images/user-256.png';
+            }
 
             if (typeof userinfo.passchange == 'number') {
                 if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', " - Reset on next login."); }
@@ -1568,7 +1575,7 @@
                 }
                 case 'previousLogins': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'previousLogins')) {
-                        var x = '', c = 'BBB';
+                        var x = '', c = 'BBB', xx = '';
                         if (message.events.length == 0) {
                             x += 'No previous login.';
                         } else {
@@ -2043,6 +2050,48 @@
             if (xxdialogMode) return;
             setDialogMode(2, "Previous Logins", 1, null, "Loading...", 'previousLogins');
             meshserver.send({ action: 'previousLogins' });
+        }
+
+        function account_manageImage(mode) {
+            if (xxdialogMode) return;
+            var user = (mode == 0) ? userinfo : currentUser;
+            var x = '<input id=p2file type=file style=width:100% accept="image/*" onchange=account_manageImageEx()><div style=width:100%><canvas id=p2canvas width=256 height=256 style="width:256px;height:256px;margin-left:12px;margin-top:8px;border-radius:16px;box-shadow: 0px 0px 15px #000" onclick=account_canvasClick() /></div>';
+            setDialogMode(2, "Manage Account Image", 7, account_manageImageEx2, x, user._id);
+            var ctx = Q('p2canvas').getContext('2d');
+            if (user.accountImageRnd == null) { user.accountImageRnd = Math.floor(Math.random() * 9999999999); }
+            var arg = '';
+            if (mode == 1) { arg = '&id=' + user._id.split('/')[2]; }
+            var myImg = new Image();
+            myImg.onload = function () { ctx.clearRect(0, 0, 256, 256); ctx.drawImage(myImg, 0, 0); };
+            myImg.src = ((user.flags != null) && (user.flags & 1)) ? ('userimage.ashx?rnd=' + user.accountImageRnd + arg) : 'images/user-256.png';
+            QE('idx_dlgDeleteButton', (user.flags != null) && (user.flags & 1));
+            QE('idx_dlgOkButton', false);
+        }
+
+        function account_canvasClick() { Q('p2file').click(); }
+
+        function account_manageImageEx() {
+            var file = Q('p2file').files[0];
+            var img = new Image;
+            img.onload = function () {
+                var cx = 0, cy = 0, min = Math.min(img.width, img.height);
+                if (img.width > min) { cx = (img.width - min) / 2; }
+                if (img.height > min) { cy = (img.height - min) / 2; }
+                var ctx = Q('p2canvas').getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.webkitImageSmoothingEnabled = true;
+                ctx.mozImageSmoothingEnabled = true;
+                ctx.clearRect(0, 0, 256, 256);
+                ctx.drawImage(img, cx, cy, min, min, 0, 0, 256, 256);
+                QE('idx_dlgOkButton', true);
+            }
+            img.src = URL.createObjectURL(file);
+        }
+
+        function account_manageImageEx2(b, userid) {
+            // Send updated image, or 0 if we pressed the delete button
+            meshserver.send({ action: 'updateUserImage', userid: userid, image: (b == 2) ? 0 : Q('p2canvas').toDataURL('image/jpeg', 0.8) });
+            //meshserver.send({ action: 'updateUserImage', image: (b == 2)?0:Q('p2canvas').toDataURL('image/png', 0.8) });
         }
 
         function toggleNightMode() {
@@ -5621,6 +5670,7 @@
             QV('idx_dlgOkButton', b & 1);
             QV('idx_dlgCancelButton', b & 2);
             QV('id_dialogclose', (b & 2) || (b & 8));
+            QV('idx_dlgDeleteButton', b & 4);
             QV('idx_dlgButtonBar', b & 7);
             if (y) QH('id_dialogtitle', y);
             for (var i = 1; i < 24; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
