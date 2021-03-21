@@ -9698,12 +9698,12 @@
             var user = (mode == 0)?userinfo:currentUser;
             var x = '<input id=p2file type=file style=width:100% accept="image/*" onchange=account_manageImageEx()><div style=width:100%><canvas id=p2canvas width=256 height=256 style="width:256px;height:256px;margin-left:60px;margin-top:8px;border-radius:16px;box-shadow: 0px 0px 15px #000" onclick=account_canvasClick() /></div>';
             setDialogMode(2, "Manage Account Image", 7, account_manageImageEx2, x, user._id);
-            var ctx = Q('p2canvas').getContext("2d");
+            var ctx = Q('p2canvas').getContext('2d');
             if (user.accountImageRnd == null) { user.accountImageRnd = Math.floor(Math.random() * 9999999999); }
             var arg = '';
             if (mode == 1) { arg = '&id=' + user._id.split('/')[2]; }
             var myImg = new Image();
-            myImg.onload = function() { ctx.drawImage(myImg, 0, 0); };
+            myImg.onload = function() { ctx.clearRect(0, 0, 256, 256); ctx.drawImage(myImg, 0, 0); };
             myImg.src = ((user.flags != null) && (user.flags & 1))?('userimage.ashx?rnd=' + user.accountImageRnd + arg):'images/user-256.png';
             QE('idx_dlgDeleteButton', (user.flags != null) && (user.flags & 1));
             QE('idx_dlgOkButton', false);
@@ -9718,10 +9718,11 @@
                 var cx  = 0, cy = 0, min = Math.min(img.width, img.height);
                 if (img.width > min) { cx = (img.width - min) / 2; }
                 if (img.height > min) { cy = (img.height - min) / 2; }
-                var ctx = Q('p2canvas').getContext("2d");
+                var ctx = Q('p2canvas').getContext('2d');
                 ctx.imageSmoothingEnabled = true;
                 ctx.webkitImageSmoothingEnabled = true;
                 ctx.mozImageSmoothingEnabled = true;
+                ctx.clearRect(0, 0, 256, 256);
                 ctx.drawImage(img, cx, cy, min, min, 0, 0, 256, 256);
                 QE('idx_dlgOkButton', true);
             }
