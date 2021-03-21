@@ -199,6 +199,17 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
         }
     }
 
+    // Push any stored message to the peer
+    obj.sendPeerImage = function () {
+        if (obj.id.startsWith('meshmessenger/') && (obj.peer != null) && (obj.user != null) && (typeof obj.user.flags == 'number') && (obj.user.flags & 1)) {
+            parent.db.Get('im' + obj.user._id, function (err, docs) {
+                if ((err == null) && (docs != null) && (docs.length == 1) && (typeof docs[0].image == 'string')) {
+                    try { obj.peer.ws.send(JSON.stringify({ ctrlChannel: '102938', type: 'image', image: docs[0].image })); } catch (ex) { }
+                }
+            });
+        }
+    }
+
     // Send a PING/PONG message
     function sendPing() {
         try { obj.ws.send('{"ctrlChannel":"102938","type":"ping"}'); } catch (ex) { }
@@ -312,6 +323,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                                     // Send any stored push messages
                                     obj.pushStoredMessages();
                                     relayinfo.peer1.pushStoredMessages();
+
+                                    // Send other peer's image
+                                    obj.sendPeerImage();
+                                    relayinfo.peer1.sendPeerImage();
                                     return;
                                 }
                             }
@@ -339,6 +354,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                                     // Send any stored push messages
                                     obj.pushStoredMessages();
                                     relayinfo.peer1.pushStoredMessages();
+
+                                    // Send other peer's image
+                                    obj.sendPeerImage();
+                                    relayinfo.peer1.sendPeerImage();
                                 } else {
                                     // Write the recording file header
                                     parent.parent.debug('relay', 'Relay: Started recoding to file: ' + recFullFilename);
@@ -365,6 +384,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                                             // Send any stored push messages
                                             obj.pushStoredMessages();
                                             relayinfo.peer1.pushStoredMessages();
+
+                                            // Send other peer's image
+                                            obj.sendPeerImage();
+                                            relayinfo.peer1.sendPeerImage();
                                             return;
                                         }
                                         try { ws.send('cr'); } catch (ex) { } // Send connect to both peers, 'cr' indicates the session is being recorded.
@@ -373,6 +396,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                                         // Send any stored push messages
                                         obj.pushStoredMessages();
                                         relayinfo.peer1.pushStoredMessages();
+
+                                        // Send other peer's image
+                                        obj.sendPeerImage();
+                                        relayinfo.peer1.sendPeerImage();
                                     });
                                 }
                             });
@@ -385,6 +412,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         // Send any stored push messages
                         obj.pushStoredMessages();
                         relayinfo.peer1.pushStoredMessages();
+
+                        // Send other peer's image
+                        obj.sendPeerImage();
+                        relayinfo.peer1.sendPeerImage();
                     }
 
                     parent.parent.debug('relay', 'Relay connected: ' + obj.id + ' (' + obj.req.clientIp + ' --> ' + obj.peer.req.clientIp + ')');

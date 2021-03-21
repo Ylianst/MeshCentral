@@ -1,63 +1,64 @@
 <!DOCTYPE html>
 <html lang="en" style=height:100%>
-    <head>
-        <title>{{{title}}} - Messenger</title>
-        <meta http-equiv=X-UA-Compatible content="IE=edge">
-        <meta content="text/html;charset=utf-8" http-equiv=Content-Type>
-        <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
-        <meta name=format-detection content="telephone=no">
-        <meta name="robots" content="noindex,nofollow">
-        <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
-        <link type="text/css" href="styles/messenger.css" media="screen" rel="stylesheet" title="CSS" />
-        <link rel="apple-touch-icon" href="/favicon-303x303.png" />
-        <script type="text/javascript" src="scripts/common-0.0.1{{min}}.js"></script>
-        <script type="text/javascript" src="scripts/filesaver.min.js"></script>
-    </head>
-    <body style="font-family:Arial,Helvetica,sans-serif">
-        <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:38px;background-color:#036;color:#EEE;box-shadow:3px 3px 10px gray">
-            <img style="float:left" height="38" src="messenger.png" />
-            <div style="position:absolute;background-color:#036;right:0;height:38px">
-                <div id="saveButton" class="icon15 topButton" style="margin-right:4px" title="Save conversation" onclick="saveChatSession()"></div>
-                <div id="notifyButton" class="icon13 topButton" style="display:none" title="Enable browser notification" onclick="enableNotificationsButtonClick()"></div>
-                <div id="fileButton" class="icon4 topButton" title="Share a file" style="display:none" onclick="fileButtonClick()"></div>
-                <div id="camButton" class="icon2 topButton" title="Activate camera & microphone" style="display:none" onclick="camButtonClick()"></div>
-                <div id="micButton" class="icon6 topButton" title="Activate microphone" style="display:none" onclick="micButtonClick()"></div>
-                <div id="hangupButton" class="icon11 topRedButton" title="Hang up" style="display:none" onclick="hangUpButtonClick(1)"></div>
-            </div>
-            <div style="padding-top:9px;padding-left:6px;font-size:20px;display:inline-block"><b><span id="xtitle"></span></b></div>
+<head>
+    <title>{{{title}}} - Messenger</title>
+    <meta http-equiv=X-UA-Compatible content="IE=edge">
+    <meta content="text/html;charset=utf-8" http-equiv=Content-Type>
+    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
+    <meta name=format-detection content="telephone=no">
+    <meta name="robots" content="noindex,nofollow">
+    <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/messenger.css" media="screen" rel="stylesheet" title="CSS" />
+    <link rel="apple-touch-icon" href="/favicon-303x303.png" />
+    <script type="text/javascript" src="scripts/common-0.0.1{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/filesaver.min.js"></script>
+</head>
+<body style="font-family:Arial,Helvetica,sans-serif">
+    <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:38px;background-color:#036;color:#EEE;box-shadow:3px 3px 10px gray">
+        <img style="float:left" height="38" src="messenger.png" />
+        <div style="position:absolute;background-color:#036;right:0;height:38px">
+            <div id="saveButton" class="icon15 topButton" style="margin-right:4px" title="Save conversation" onclick="saveChatSession()"></div>
+            <div id="notifyButton" class="icon13 topButton" style="display:none" title="Enable browser notification" onclick="enableNotificationsButtonClick()"></div>
+            <div id="fileButton" class="icon4 topButton" title="Share a file" style="display:none" onclick="fileButtonClick()"></div>
+            <div id="camButton" class="icon2 topButton" title="Activate camera & microphone" style="display:none" onclick="camButtonClick()"></div>
+            <div id="micButton" class="icon6 topButton" title="Activate microphone" style="display:none" onclick="micButtonClick()"></div>
+            <div id="hangupButton" class="icon11 topRedButton" title="Hang up" style="display:none" onclick="hangUpButtonClick(1)"></div>
         </div>
-        <div id="xmiddle" style="position:absolute;left:0;right:0;top:38px;bottom:36px;font-size:18px">
-            <div id="xmsgparent" style="position:absolute;left:0;right:0;bottom:0;max-height:100%;overflow-y:auto">
-                <div id="xmsg" style="padding:5px"></div>
-                <div id="typingIndicator" style="display:none;margin-left:5px;clear:both"><img src="images/3dots-24.gif" srcset="images/3dots-48.gif 2x" /></div>
-            </div>
+        <div style="padding-top:9px;padding-left:6px;font-size:20px;display:inline-block"><b><span id="xtitle"></span></b></div>
+    </div>
+    <div id="xmiddle" style="position:absolute;left:0;right:0;top:38px;bottom:36px;font-size:18px">
+        <div id="xmsgparent" style="position:absolute;left:0;right:0;bottom:0;max-height:100%;overflow-y:auto">
+            <div id="xmsg" style="padding:5px"></div>
+            <div id="typingIndicator" style="display:none;margin-left:5px;clear:both"><img src="images/3dots-24.gif" srcset="images/3dots-48.gif 2x" /></div>
         </div>
-        <div id="xbottom" style="position:absolute;left:0;right:0;bottom:0px;height:36px;background-color:#036;font-size:18px">
-            <table style="width:100%">
-                <tr>
-                    <td>
-                        <input id="xouttext" type="text" style="box-sizing:border-box;width:100%;font-size:18px" onfocus=onUserInputFocus(1) onblur=onUserInputFocus(0) onkeyup="updateLocalOutText()" />
-                    </td>
-                    <td style="width:1px">
-                        <input type="button" id="sendButton" value="Send" style="box-sizing: border-box;float:right;font-size:18px" onclick="xsend(event)" />
-                    </td>
-                    <td style="width:1px">
-                        <input type="button" id="clearButton" value="Clear" style="box-sizing: border-box;float:right;font-size:18px" onclick="displayClear()" />
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div id="remoteVideo" style="position:absolute;right:24px;top:45px;width:320px;height:calc(240px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none">
-            <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Remote</div>
-            <video id="remoteVideoCanvas" autoplay style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);background-color:black" onclick="remotePlay(event)"></video>
-            <div id="remoteClickToView" style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);color:white;text-align:center;padding-top:20px;display:none" onclick="remotePlay(event)">Click here to view.</div>
-        </div>
-        <div id="localVideo" style="position:absolute;right:24px;top:320px;width:160px;height:calc(120px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none">
-            <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Local</div>
-            <video id="localVideoCanvas" autoplay muted style="position:absolute;top:20px;left:0;right:100%;height:calc(100% - 30px);background-color:black"></video>
-        </div>
-        <input id="uploadFileInput" type="file" multiple style="display:none">
-        <script type="text/javascript" onunload="onUnLoad()">
+    </div>
+    <div id="xbottom" style="position:absolute;left:0;right:0;bottom:0px;height:36px;background-color:#036;font-size:18px">
+        <table style="width:100%">
+            <tr>
+                <td>
+                    <input id="xouttext" type="text" style="box-sizing:border-box;width:100%;font-size:18px" onfocus=onUserInputFocus(1) onblur=onUserInputFocus(0) onkeyup="updateLocalOutText()" />
+                </td>
+                <td style="width:1px">
+                    <input type="button" id="sendButton" value="Send" style="box-sizing: border-box;float:right;font-size:18px" onclick="xsend(event)" />
+                </td>
+                <td style="width:1px">
+                    <input type="button" id="clearButton" value="Clear" style="box-sizing: border-box;float:right;font-size:18px" onclick="displayClear()" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="remoteVideo" style="position:absolute;right:24px;top:45px;width:320px;height:calc(240px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none">
+        <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Remote</div>
+        <video id="remoteVideoCanvas" autoplay style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);background-color:black" onclick="remotePlay(event)"></video>
+        <div id="remoteClickToView" style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);color:white;text-align:center;padding-top:20px;display:none" onclick="remotePlay(event)">Click here to view.</div>
+    </div>
+    <div id="localVideo" style="position:absolute;right:24px;top:320px;width:160px;height:calc(120px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none">
+        <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Local</div>
+        <video id="localVideoCanvas" autoplay muted style="position:absolute;top:20px;left:0;right:100%;height:calc(100% - 30px);background-color:black"></video>
+    </div>
+    <canvas width="256" height="256" id="remoteImage" style="position:absolute;right:24px;top:45px;width:200px;height:200px;background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none" />
+    <input id="uploadFileInput" type="file" multiple style="display:none">
+    <script type="text/javascript" onunload="onUnLoad()">
             var userInputFocus = 0;
             var socket = null;                  // Websocket object
             var state = 0;                      // Connection state. 0 = Disconnected, 1 = Connecting, 2 = Connected.
@@ -86,6 +87,7 @@
             var chatTextSession = new Date().toString() + '\r\n';
             var localOutText = false;
             var remoteOutText = false;
+            var remoteImage = false;
 
             // File transfer state
             var fileUploads = [];
@@ -99,6 +101,8 @@
                 if (remoteStream != null) {
                     rheight = ((320 * Q('remoteVideoCanvas').videoHeight) / Q('remoteVideoCanvas').videoWidth);
                     QS('remoteVideo').height = 'calc(' + rheight + 'px + 30px)';
+                } else {
+                    if (remoteImage == true) { rheight += 200; }
                 }
                 if (localStream != null) {
                     QS('localVideo').height = 'calc(' + ((160 * Q('localVideoCanvas').videoHeight) / Q('localVideoCanvas').videoWidth) + 'px + 30px)';
@@ -205,9 +209,12 @@
             function displayLocalVideo(active) { QV('localVideo', active); adjustVideoWindows(); }
             function displayRemoteVideo(active) { QV('remoteVideo', active); adjustVideoWindows(); }
             function adjustVideoWindows() {
-                //var lv = (QS('localVideo')['display'] != 'none');
+                var lv = (QS('localVideo')['display'] != 'none');
                 var rv = (QS('remoteVideo')['display'] != 'none');
-                QS('localVideo')['top'] = rv ? '320px' : '45px';
+                QV('remoteImage', (remoteImage == true) && (rv == false))
+                if (rv) { QS('localVideo')['top'] = '320px'; }
+                else if (remoteImage) { QS('localVideo')['top'] = '320px'; }
+                else { QS('localVideo')['top'] = '45px'; }
                 resizeVideos();
             }
 
@@ -351,6 +358,8 @@
                 if (socket != null) { socket.close(); socket = null; }
                 updateControls();
                 state = 0;
+                remoteImage = false;
+                QV('remoteImage', false);
                 updateLocalOutText();
                 updateRemoteOutText();
             }
@@ -374,6 +383,12 @@
             // WebRTC id switcher (0 -> 0, 1 -> 2, 2 -> 1)
             function webRtcIdSwitch(id) { if (id == 0) { return 0; } return 3 - id; }
 
+            function drawRemoteImage(imageBase64) {
+                var canvas = Q('remoteImage'), context = canvas.getContext('2d'), img = new Image();
+                img.onload = function () { context.drawImage(this, 0, 0, canvas.width, canvas.height); remoteImage = true; adjustVideoWindows(); }
+                img.src = imageBase64;
+            }
+
             // Process incoming messages
             function processMessage(data, transport) {
                 if (typeof data == 'string') {
@@ -383,6 +398,7 @@
                     // Handle control command
                     if (data.ctrlChannel == '102938') {
                         switch (data.type) {
+                            case 'image': { drawRemoteImage(data.image); break; }
                             case 'ping': { send({ ctrlChannel: '102938', type: 'pong' }); break; }
                             case 'pong': { break; }
                         }
@@ -765,6 +781,6 @@
                 if (remoteOutText != newState) { remoteOutText = newState; QV('typingIndicator', remoteOutText); }
             }
 
-        </script>
+    </script>
 </body>
 </html>
