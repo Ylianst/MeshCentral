@@ -1034,6 +1034,11 @@ NoMeshesPanel img {
     border-spacing: 0;
 }
 
+#p50groups {
+    max-height: calc(100vh - 244px);
+    overflow-y: auto;
+}
+
 #p3users {
     max-height: calc(100vh - 244px);
     overflow-y: auto;
