@@ -1631,6 +1631,7 @@
     },
     {
       "en": "2d",
+      "nl": "2d",
       "xloc": [
         "default.handlebars->31->1153",
         "default.handlebars->31->1154"
@@ -7394,6 +7395,7 @@
     },
     {
       "en": "Change image",
+      "nl": "Wijzig afbeelding",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountImageFrame->3->0"
       ]
@@ -11965,6 +11967,7 @@
     },
     {
       "en": "Desktops Fixed Width",
+      "nl": "Desktops met vaste breedte",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView->viewselect->5"
       ]
@@ -12863,6 +12866,7 @@
     },
     {
       "en": "Device requested Intel(R) AMT ACM TLS activation, FQDN: {0}",
+      "nl": "Apparaat verzocht om Intel (R) AMT ACM TLS-activering, FQDN: {0}",
       "xloc": [
         "default.handlebars->31->1839"
       ]
@@ -23909,6 +23913,7 @@
     },
     {
       "en": "Manage Account Image",
+      "nl": "Beheer accountafbeelding",
       "xloc": [
         "default.handlebars->31->1152"
       ]
@@ -41320,6 +41325,7 @@
     },
     {
       "en": "Use for bare-metal LAN activation.",
+      "nl": "Gebruik voor bare-metal LAN activering.",
       "xloc": [
         "default.handlebars->31->332"
       ]
@@ -44811,6 +44817,7 @@
     },
     {
       "en": "desc:",
+      "nl": "aflopend:",
       "xloc": [
         "default.handlebars->31->553",
         "default.handlebars->31->554"
