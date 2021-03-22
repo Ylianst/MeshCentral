@@ -1052,84 +1052,94 @@ module.exports.CreateAmtManager = function (parent) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
         if (dev.policy.amtPolicy == 0) { func(dev); return; } // If there is no Intel AMT policy, skip this operation.
         if (dev.connType != 2) { func(dev); return; } // Only configure wireless over a CIRA-LMS link
-        if (parent.config.domains[dev.domainid].amtmanager.wifiprofiles == null) { func(dev); return; } // No server WIFI profiles set, skip this.
+        //if (parent.config.domains[dev.domainid].amtmanager.wifiprofiles == null) { func(dev); return; } // No server WIFI profiles set, skip this.
         if ((dev.mpsConnection.tag.meiState == null) || (dev.mpsConnection.tag.meiState.net1 == null)) { func(dev); return; } // No WIFI on this device, skip this.
 
-        // Get the current list of WIFI profiles
+        // Get the current list of WIFI profiles and wireless interface state
         dev.taskCount = 1;
         dev.taskCompleted = func;
-        dev.amtstack.BatchEnum(null, ['CIM_WiFiEndpointSettings', '*CIM_WiFiPort'], function (stack, name, responses, status) {
+        dev.amtstack.BatchEnum(null, ['CIM_WiFiEndpointSettings', '*CIM_WiFiPort', '*AMT_WiFiPortConfigurationService'], function (stack, name, responses, status) {
             const dev = stack.dev;
             if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
             if (status != 200) { devTaskCompleted(dev); return; } // We can't get wireless settings, ignore and carry on.
 
-            // The server and device WIFI profiles, find profiles to add and remove
-            const sevProfiles = parent.config.domains[dev.domainid].amtmanager.wifiprofiles;
-            const devProfiles = responses['CIM_WiFiEndpointSettings'].responses;
-            var profilesToAdd = [], profilesToRemove = [];
+            // If we have server WIFI profiles to sync, do this now.
+            if (parent.config.domains[dev.domainid].amtmanager.wifiprofiles != null) {
+                // The server and device WIFI profiles, find profiles to add and remove
+                const sevProfiles = parent.config.domains[dev.domainid].amtmanager.wifiprofiles;
+                const devProfiles = responses['CIM_WiFiEndpointSettings'].responses;
+                var profilesToAdd = [], profilesToRemove = [];
 
-            // Look at the WIFI profiles in the device
-            for (var i in sevProfiles) {
-                var sevProfile = sevProfiles[i], match = false;
+                // Look at the WIFI profiles in the device
+                for (var i in sevProfiles) {
+                    var sevProfile = sevProfiles[i], match = false;
+                    for (var j in devProfiles) {
+                        var devProfile = devProfiles[j];
+                        if (
+                            (devProfile.ElementName == sevProfile.name) &&
+                            (devProfile.SSID == sevProfile.ssid) &&
+                            (devProfile.AuthenticationMethod == sevProfile.authentication) &&
+                            (devProfile.EncryptionMethod == sevProfile.encryption) &&
+                            (devProfile.BSSType == sevProfile.type)
+                        ) { match = true; devProfile.match = true; }
+                    }
+                    if (match == false) { profilesToAdd.push(sevProfile); }
+                }
                 for (var j in devProfiles) {
                     var devProfile = devProfiles[j];
-                    if (
-                        (devProfile.ElementName == sevProfile.name) &&
-                        (devProfile.SSID == sevProfile.ssid) &&
-                        (devProfile.AuthenticationMethod == sevProfile.authentication) &&
-                        (devProfile.EncryptionMethod == sevProfile.encryption) &&
-                        (devProfile.BSSType == sevProfile.type)
-                    ) { match = true; devProfile.match = true; }
+                    if (devProfile.match !== true) { profilesToRemove.push(devProfile); }
                 }
-                if (match == false) { profilesToAdd.push(sevProfile); }
-            }
-            for (var j in devProfiles) {
-                var devProfile = devProfiles[j];
-                if (devProfile.match !== true) { profilesToRemove.push(devProfile); }
-            }
 
-            // Compute what priorities are allowed
-            var prioritiesInUse = [];
-            for (var j in devProfiles) { if (devProfiles[j].match == true) { prioritiesInUse.push(devProfiles[j].Priority); } }
+                // Compute what priorities are allowed
+                var prioritiesInUse = [];
+                for (var j in devProfiles) { if (devProfiles[j].match == true) { prioritiesInUse.push(devProfiles[j].Priority); } }
 
-            // Notify of WIFI profile changes
-            if ((profilesToAdd.length > 0) || (profilesToRemove.length > 0)) { dev.consoleMsg("Changing WIFI profiles, adding " + profilesToAdd.length + ", removing " + profilesToRemove.length + "."); }
+                // Notify of WIFI profile changes
+                if ((profilesToAdd.length > 0) || (profilesToRemove.length > 0)) { dev.consoleMsg("Changing WIFI profiles, adding " + profilesToAdd.length + ", removing " + profilesToRemove.length + "."); }
 
-            // Remove any extra WIFI profiles
-            for (var i in profilesToRemove) {
-                dev.amtstack.Delete('CIM_WiFiEndpointSettings', { InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + profilesToRemove[i].ElementName }, function (stack, name, responses, status) { }, 0, 1);
-            }
-
-            // Add missing WIFI profiles
-            var nextPriority = 0;
-            for (var i in profilesToAdd) {
-                while (prioritiesInUse.indexOf(nextPriority) >= 0) { nextPriority++; } // Figure out the next available priority slot.
-                var profileToAdd = profilesToAdd[i];
-                const wifiep = {
-                    __parameterType: 'reference',
-                    __resourceUri: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpoint',
-                    Name: 'WiFi Endpoint 0'
-                };
-                const wifiepsettinginput = {
-                    __parameterType: 'instance',
-                    __namespace: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings',
-                    ElementName: profileToAdd.name,
-                    InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + profileToAdd.name,
-                    AuthenticationMethod: profileToAdd.authentication,
-                    EncryptionMethod: profileToAdd.encryption,
-                    SSID: profileToAdd.ssid,
-                    Priority: nextPriority,
-                    PSKPassPhrase: profileToAdd.password
+                // Remove any extra WIFI profiles
+                for (var i in profilesToRemove) {
+                    dev.amtstack.Delete('CIM_WiFiEndpointSettings', { InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + profilesToRemove[i].ElementName }, function (stack, name, responses, status) { }, 0, 1);
                 }
-                prioritiesInUse.push(nextPriority); // Occupy the priority slot and add the WIFI profile.
-                dev.amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, null, null, null, function (stack, name, responses, status) { });
+
+                // Add missing WIFI profiles
+                var nextPriority = 0;
+                for (var i in profilesToAdd) {
+                    while (prioritiesInUse.indexOf(nextPriority) >= 0) { nextPriority++; } // Figure out the next available priority slot.
+                    var profileToAdd = profilesToAdd[i];
+                    const wifiep = {
+                        __parameterType: 'reference',
+                        __resourceUri: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpoint',
+                        Name: 'WiFi Endpoint 0'
+                    };
+                    const wifiepsettinginput = {
+                        __parameterType: 'instance',
+                        __namespace: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings',
+                        ElementName: profileToAdd.name,
+                        InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + profileToAdd.name,
+                        AuthenticationMethod: profileToAdd.authentication,
+                        EncryptionMethod: profileToAdd.encryption,
+                        SSID: profileToAdd.ssid,
+                        Priority: nextPriority,
+                        PSKPassPhrase: profileToAdd.password
+                    }
+                    prioritiesInUse.push(nextPriority); // Occupy the priority slot and add the WIFI profile.
+                    dev.amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, null, null, null, function (stack, name, responses, status) { });
+                }
             }
 
-            // Compute how many WIFI profiles will be in the device and change the state if needed
+            // Check if local WIFI profile sync is enabled, if not, enabled it.
+            if ((responses['AMT_WiFiPortConfigurationService'] != null) && (responses['AMT_WiFiPortConfigurationService'].response != null) && (responses['AMT_WiFiPortConfigurationService'].response['localProfileSynchronizationEnabled'] == 0)) {
+                responses['AMT_WiFiPortConfigurationService'].response['localProfileSynchronizationEnabled'] = 1;
+                dev.amtstack.Put('AMT_WiFiPortConfigurationService', responses['AMT_WiFiPortConfigurationService'].response, function (stack, name, response, status) {
+                    if (status != 200) { dev.consoleMsg("Unable to enable local WIFI profile sync."); } else { dev.consoleMsg("Enabled local WIFI profile sync."); }
+                });
+            }
+
+            // Change the WIFI state if needed. Right now, we always enable it.
             // WifiState = { 3: "Disabled", 32768: "Enabled in S0", 32769: "Enabled in S0, Sx/AC" };
-            var resultingProfileCount = (devProfiles.length + profilesToAdd.length - profilesToRemove.length);
-            var wifiState = (resultingProfileCount == 0) ? 3 : 32769;
-            if (responses['CIM_WiFiPort'].responses.Body.EnabledState != wifiState) {
+            var wifiState = 32769; // For now, always enable WIFI
+            if (responses['CIM_WiFiPort'].responses.Body.EnabledState != 32769) {
                 if (wifiState == 3) {
                     dev.amtstack.CIM_WiFiPort_RequestStateChange(wifiState, null, function (stack, name, responses, status) {
                         const dev = stack.dev;
