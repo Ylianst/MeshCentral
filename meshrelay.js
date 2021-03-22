@@ -201,7 +201,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
 
     // Push any stored message to the peer
     obj.sendPeerImage = function () {
-        if (obj.id.startsWith('meshmessenger/') && (obj.peer != null) && (obj.user != null) && (typeof obj.user.flags == 'number') && (obj.user.flags & 1)) {
+        if ((typeof obj.id == 'string') && obj.id.startsWith('meshmessenger/') && (obj.peer != null) && (obj.user != null) && (typeof obj.user.flags == 'number') && (obj.user.flags & 1)) {
             parent.db.Get('im' + obj.user._id, function (err, docs) {
                 if ((err == null) && (docs != null) && (docs.length == 1) && (typeof docs[0].image == 'string')) {
                     try { obj.peer.ws.send(JSON.stringify({ ctrlChannel: '102938', type: 'image', image: docs[0].image })); } catch (ex) { }
