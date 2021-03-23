@@ -1185,36 +1185,56 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         if ((directives.length != 3) || ((directives[0] != 'GET') && (directives[0] != 'HEAD'))) { this.end(); return; }
         //console.log('WebServer, request', directives[0], directives[1]);
         var responseCode = 404, responseType = 'application/octet-stream', responseData = '', r = null;
-        if (obj.httpResponses != null) { r = obj.httpResponses[directives[1]]; }
-        if ((r != null) && (r.maxtime != null) && (r.maxtime < Date.now())) { r = null; delete obj.httpResponses[directives[1]]; } // Check if this entry is expired.
-        if (r != null) {
-            if (typeof r == 'string') {
-                responseCode = 200; responseType = 'text/html'; responseData = r;
-            } else if (typeof r == 'object') {
-                responseCode = 200;
-                if (r.type) { responseType = r.type; }
-                if (r.data) { responseData = r.data; }
-                if (r.shortfile) { try { responseData = obj.fs.readFileSync(r.shortfile); } catch (ex) { responseCode = 404; responseType = 'text/html'; responseData = 'File not found'; } }
-                if (r.file) {
-                    // Send the file header and pipe the rest of the file
-                    var filestats = null;
-                    try { filestats = obj.fs.statSync(r.file); } catch (ex) { }
-                    if ((filestats == null) || (typeof filestats.size != 'number') || (filestats.size <= 0)) {
-                        responseCode = 404; responseType = 'text/html'; responseData = 'File not found';
-                    } else {
-                        this.write('HTTP/1.1 200 OK\r\n' + hostHeader + 'Content-Type: ' + responseType + '\r\nConnection: keep-alive\r\nContent-Length: ' + filestats.size + '\r\n\r\n');
-                        if (directives[0] == 'GET') {
-                            obj.fs.createReadStream(r.file, { flags: 'r' }).pipe(this);
-                            if (typeof r.maxserve == 'number') { r.maxserve--; if (r.maxserve == 0) { delete obj.httpResponses[directives[1]]; } } // Check if this entry was server the maximum amount of times.
-                        }
-                        delete this.xdata;
-                        return;
-                    }
+
+        // Check if this is a cookie request
+        if (directives[1].startsWith('/c/')) {
+            var cookie = obj.parent.decodeCookie(directives[1].substring(3).split('.')[0], obj.parent.loginCookieEncryptionKey, 30); // 30 minute timeout
+            if ((cookie != null) && (cookie.a == 'f') && (typeof cookie.f == 'string')) {
+                // Send the file header and pipe the rest of the file
+                var filestats = null;
+                try { filestats = obj.fs.statSync(cookie.f); } catch (ex) { }
+                if ((filestats == null) || (typeof filestats.size != 'number') || (filestats.size <= 0)) {
+                    responseCode = 404; responseType = 'text/html'; responseData = 'File not found';
+                } else {
+                    this.write('HTTP/1.1 200 OK\r\n' + hostHeader + 'Content-Type: ' + responseType + '\r\nConnection: keep-alive\r\nContent-Length: ' + filestats.size + '\r\n\r\n');
+                    if (directives[0] == 'GET') { obj.fs.createReadStream(cookie.f, { flags: 'r' }).pipe(this); }
+                    delete this.xdata;
+                    return;
                 }
             }
         } else {
-            responseType = 'text/html';
-            responseData = 'Invalid request';
+            // Check if we have a preset response
+            if (obj.httpResponses != null) { r = obj.httpResponses[directives[1]]; }
+            if ((r != null) && (r.maxtime != null) && (r.maxtime < Date.now())) { r = null; delete obj.httpResponses[directives[1]]; } // Check if this entry is expired.
+            if (r != null) {
+                if (typeof r == 'string') {
+                    responseCode = 200; responseType = 'text/html'; responseData = r;
+                } else if (typeof r == 'object') {
+                    responseCode = 200;
+                    if (r.type) { responseType = r.type; }
+                    if (r.data) { responseData = r.data; }
+                    if (r.shortfile) { try { responseData = obj.fs.readFileSync(r.shortfile); } catch (ex) { responseCode = 404; responseType = 'text/html'; responseData = 'File not found'; } }
+                    if (r.file) {
+                        // Send the file header and pipe the rest of the file
+                        var filestats = null;
+                        try { filestats = obj.fs.statSync(r.file); } catch (ex) { }
+                        if ((filestats == null) || (typeof filestats.size != 'number') || (filestats.size <= 0)) {
+                            responseCode = 404; responseType = 'text/html'; responseData = 'File not found';
+                        } else {
+                            this.write('HTTP/1.1 200 OK\r\n' + hostHeader + 'Content-Type: ' + responseType + '\r\nConnection: keep-alive\r\nContent-Length: ' + filestats.size + '\r\n\r\n');
+                            if (directives[0] == 'GET') {
+                                obj.fs.createReadStream(r.file, { flags: 'r' }).pipe(this);
+                                if (typeof r.maxserve == 'number') { r.maxserve--; if (r.maxserve == 0) { delete obj.httpResponses[directives[1]]; } } // Check if this entry was server the maximum amount of times.
+                            }
+                            delete this.xdata;
+                            return;
+                        }
+                    }
+                }
+            } else {
+                responseType = 'text/html';
+                responseData = 'Invalid request';
+            }
         }
         this.write('HTTP/1.1 ' + responseCode + ' OK\r\n' + hostHeader + 'Connection: keep-alive\r\nContent-Type: ' + responseType + '\r\nContent-Length: ' + responseData.length + '\r\n\r\n');
         this.write(responseData);
