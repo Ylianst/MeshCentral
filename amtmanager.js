@@ -295,9 +295,9 @@ module.exports.CreateAmtManager = function (parent) {
                 if (Array.isArray(event.nodeids)) { for (var i in event.nodeids) { performPowerAction(event.nodeids[i], 2); } }
                 break;
             }
-            case 'clickoncerecovery': { // React to Intel AMT Click Once Recovery command
+            case 'oneclickrecovery': { // React to Intel AMT One Click Recovery command
                 if (event.noact == 1) return; // Take no action on these events. We are likely in peering mode and need to only act when the database signals the change in state.
-                if (Array.isArray(event.nodeids)) { for (var i in event.nodeids) { performClickOnceRecoveryAction(event.nodeids[i], event.file); } }
+                if (Array.isArray(event.nodeids)) { for (var i in event.nodeids) { performOneClickRecoveryAction(event.nodeids[i], event.file); } }
                 break;
             }
             case 'changenode': { // React to changes in a device
@@ -810,21 +810,51 @@ module.exports.CreateAmtManager = function (parent) {
     }
 
 
-    // Perform Intel AMT Click Once Recovery on a device
-    function performClickOnceRecoveryAction(nodeid, file) {
+    //
+    // Intel AMT One Click Recovery
+    //
+
+    // Perform Intel AMT One Click Recovery on a device
+    function performOneClickRecoveryAction(nodeid, file) {
         var devices = obj.amtDevices[nodeid];
         if (devices == null) return;
         for (var i in devices) {
             var dev = devices[i];
             // If not LMS, has a AMT stack present and is in connected state, perform operation.
             if ((dev.connType != 2) && (dev.state == 1) && (dev.amtstack != null)) {
-                console.log('Perform Click Once Recovery', nodeid, file);
-
-                // TODO: Make sure the MPS server root certificate is present.
-                // TODO: Generate the one-time URL.
-                // TODO: Issue the WSMAN command.
+                // Make sure the MPS server root certificate is present.
+                // Start by looking at existing certificates.
+                dev.ocrfile = file;
+                dev.amtstack.BatchEnum(null, ['AMT_PublicKeyCertificate'], performOneClickRecoveryActionEx);
             }
         }
+    }
+
+    // Response with list of certificates in Intel AMT
+    function performOneClickRecoveryActionEx(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { dev.consoleMsg("Failed to get security information (" + status + ")."); removeAmtDevice(dev, 19); return; }
+
+        // Organize the certificates
+        var xxCertificates = responses['AMT_PublicKeyCertificate'].responses;
+        for (var i in xxCertificates) {
+            xxCertificates[i].TrustedRootCertficate = (xxCertificates[i]['TrustedRootCertficate'] == true);
+            xxCertificates[i].X509CertificateBin = Buffer.from(xxCertificates[i]['X509Certificate'], 'base64').toString('binary');
+            xxCertificates[i].XIssuer = parseCertName(xxCertificates[i]['Issuer']);
+            xxCertificates[i].XSubject = parseCertName(xxCertificates[i]['Subject']);
+        }
+        dev.policy.certificates = xxCertificates;
+        attemptRootCertSync(dev, performOneClickRecoveryActionEx2, true);
+    }
+
+    function performOneClickRecoveryActionEx2(dev) {
+        // Generate the one-time URL.
+        var cookie = obj.parent.encodeCookie({ a: 'ocr', f: dev.ocrfile }, obj.parent.loginCookieEncryptionKey)
+        var url = 'https://' + parent.webserver.certificates.AmtMpsName + ':' + ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport) + '/ocr/' + cookie + '.iso';
+
+        // TODO: Issue the WSMAN command.
+        console.log('Perform One Click Recovery', url);
     }
 
     //
@@ -1188,10 +1218,11 @@ module.exports.CreateAmtManager = function (parent) {
     //
 
     // Check if Intel AMT has the server root certificate
-    function attemptRootCertSync(dev, func) {
+    function attemptRootCertSync(dev, func, forced) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
         if (dev.policy.amtPolicy == 0) { func(dev); return; } // If there is no Intel AMT policy, skip this operation.
-        if ((dev.connType != 2) || (dev.policy.ciraPolicy != 2) || (parent.mpsserver.server == null)) { func(dev); return; } // Server root certificate does not need to be present is CIRA is not needed
+        if (forced !== true) { if ((dev.connType != 2) || (dev.policy.ciraPolicy != 2)) { func(dev); return; } } // Server root certificate does not need to be present if CIRA is not needed and "forced" is false
+        if (parent.mpsserver.server == null) { func(dev); return; } // Root cert not needed if MPS is not active.
 
         // Find the current TLS certificate & MeshCentral root certificate
         var xxMeshCentralRoot = null;

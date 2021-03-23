@@ -3408,7 +3408,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Upload a MeshCore.js file to the server
-    function handleClickOnceRecoveryFile(req, res) {
+    function handleOneClickRecoveryFile(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
         if (domain.id !== '') { res.sendStatus(401); return; }
@@ -3439,8 +3439,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 for (var i in files.files) {
                     var file = files.files[i];
 
-                    // Event Intel AMT Click Once Recovery, this will cause Intel AMT wake operations on this and other servers.
-                    parent.DispatchEvent('*', obj, { action: 'clickoncerecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: file.path });
+                    // Event Intel AMT One Click Recovery, this will cause Intel AMT wake operations on this and other servers.
+                    parent.DispatchEvent('*', obj, { action: 'oneclickrecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: file.path });
 
                     try { obj.fs.unlinkSync(file.path); } catch (e) { } // TODO: Remove this file after 30 minutes.
                 }
@@ -5250,7 +5250,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.post(url + 'uploadfile.ashx', handleUploadFile);
             obj.app.post(url + 'uploadfilebatch.ashx', handleUploadFileBatch);
             obj.app.post(url + 'uploadmeshcorefile.ashx', handleUploadMeshCoreFile);
-            obj.app.post(url + 'clickoncerecovery.ashx', handleClickOnceRecoveryFile);
+            obj.app.post(url + 'oneclickrecovery.ashx', handleOneClickRecoveryFile);
             obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
             obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
             obj.app.ws(url + 'apf.ashx', function (ws, req) { obj.parent.mpsserver.onWebSocketConnection(ws, req); })
