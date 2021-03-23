@@ -582,7 +582,7 @@
                             <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
-                            &nbsp;<span id="deskstatus">Disconnected</span><span id="deskmetadata"></span>
+                            &nbsp;<span id="deskstatus" style="line-height:22px">Disconnected</span><span id="deskmetadata"></span>
                         </div>
                     </div>
                     <div id=deskarea2 style="">
@@ -676,7 +676,7 @@
                                     <span id="connectbutton2span"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                                     <span id="connectbutton2hspan">&nbsp;<input type="button" id="connectbutton2h" value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                                     <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
-                                    &nbsp;<span id="termstatus">Disconnected</span><span id="termtitle"></span>
+                                    &nbsp;<span id="termstatus" style="line-height:22px">Disconnected</span><span id="termtitle"></span>
                                 </div>
                             </td>
                         </tr>
@@ -6613,7 +6613,7 @@
             if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
             if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; }
             if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
-            if ((getNodeAmtVersion(currentNode) >= 15) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF) && ((features & 0x00000400) == 0)) { count++; y += '<option value=107>' + "Intel&reg; AMT Click Once Recovery" + '</option>'; } // CIRA (2) or AMT (4) connected
+            if ((getNodeAmtVersion(currentNode) >= 15) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF) && ((features & 0x00000400) == 0)) { count++; y += '<option value=107>' + "Intel&reg; AMT Click Once Recovery" + '</option>'; } // CIRA (2) or AMT (4) connected
             if (((currentNode.conn & 1) != 0) && ((rights & 32768) != 0)) { count++; y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
             y += '</select>';
             x += addHtmlValue("Operation", y);

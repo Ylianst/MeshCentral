@@ -3439,10 +3439,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 for (var i in files.files) {
                     var file = files.files[i];
 
-                    // Perform Intel AMT Click Once Recovery
-                    console.log('ClickOnceRecovery', node._id, file.path);
+                    // Event Intel AMT Click Once Recovery, this will cause Intel AMT wake operations on this and other servers.
+                    parent.DispatchEvent('*', obj, { action: 'clickoncerecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: file.path });
 
-                    try { obj.fs.unlinkSync(file.path); } catch (e) { }
+                    try { obj.fs.unlinkSync(file.path); } catch (e) { } // TODO: Remove this file after 30 minutes.
                 }
                 res.send('');
             });
