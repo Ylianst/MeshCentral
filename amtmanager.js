@@ -825,7 +825,7 @@ module.exports.CreateAmtManager = function (parent) {
                 // Make sure the MPS server root certificate is present.
                 // Start by looking at existing certificates.
                 dev.ocrfile = file;
-                dev.amtstack.BatchEnum(null, ['AMT_PublicKeyCertificate'], performOneClickRecoveryActionEx);
+                dev.amtstack.BatchEnum(null, ['AMT_PublicKeyCertificate', '*AMT_BootCapabilities'], performOneClickRecoveryActionEx);
             }
         }
     }
@@ -834,9 +834,14 @@ module.exports.CreateAmtManager = function (parent) {
     function performOneClickRecoveryActionEx(stack, name, responses, status) {
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        if (status != 200) { dev.consoleMsg("Failed to get security information (" + status + ")."); removeAmtDevice(dev, 19); return; }
+        if (status != 200) { dev.consoleMsg("Failed to get security information (" + status + ")."); delete dev.ocrfile; return; }
 
-        // Organize the certificates
+        // Check if this Intel AMT device supports OCR
+        if (responses['AMT_PublicKeyCertificate'].responses['ForceUEFIHTTPSBoot'] !== true) {
+            dev.consoleMsg("This Intel AMT device does not support UEFI HTTPS boot  (" + status + ")."); delete dev.ocrfile; return;
+        }
+
+        // Organize the certificates and add the MPS root cert if missing
         var xxCertificates = responses['AMT_PublicKeyCertificate'].responses;
         for (var i in xxCertificates) {
             xxCertificates[i].TrustedRootCertficate = (xxCertificates[i]['TrustedRootCertficate'] == true);
@@ -848,14 +853,62 @@ module.exports.CreateAmtManager = function (parent) {
         attemptRootCertSync(dev, performOneClickRecoveryActionEx2, true);
     }
 
+    // MPS root certificate was added
     function performOneClickRecoveryActionEx2(dev) {
-        // Generate the one-time URL.
-        var cookie = obj.parent.encodeCookie({ a: 'ocr', f: dev.ocrfile }, obj.parent.loginCookieEncryptionKey)
-        var url = 'https://' + parent.webserver.certificates.AmtMpsName + ':' + ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport) + '/ocr/' + cookie + '.iso';
-
-        // TODO: Issue the WSMAN command.
-        console.log('Perform One Click Recovery', url);
+        // Ask for Boot Settings Data
+        dev.amtstack.Get('AMT_BootSettingData', performOneClickRecoveryActionEx3, 0, 1);
     }
+
+    // Getting Intel AMT Boot Settings Data
+    function performOneClickRecoveryActionEx3(stack, name, response, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { dev.consoleMsg("Failed to get boot settings data (" + status + ")."); delete dev.ocrfile; return; }
+
+        // Generate the one-time URL.
+        //var cookie = obj.parent.encodeCookie({ a: 'ocr', f: dev.ocrfile }, obj.parent.loginCookieEncryptionKey)
+        //var url = 'https://' + parent.webserver.certificates.AmtMpsName + ':' + ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport) + '/ocr/' + cookie + '.iso';
+        delete dev.ocrfile;
+
+        // DEBUG
+        var url = 'https://' + parent.webserver.certificates.AmtMpsName + ':' + ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport) + '/ocr/abc.iso';
+        console.log('OCR: ' + url);
+
+        // Generate the boot data for OCR with URL
+        var r = response.Body;
+        r['UefiBootParametersArray'] = Buffer.from(makeUefiBootParam(1, url) + makeUefiBootParam(20, 1, 1) + makeUefiBootParam(30, 0, 2), 'binary').toString('base64');
+        r['UefiBootNumberOfParams'] = 3;
+        r['BootMediaIndex'] = 0; // Do not use boot media index for One Click Recovery (OCR)
+
+        // Set the boot order to null, this is needed for some Intel AMT versions that don't clear this automatically.
+        dev.amtstack.CIM_BootConfigSetting_ChangeBootOrder(null, function (stack, name, response, status) {
+            if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+            if (status != 200) { dev.consoleMsg("Failed to set boot order (" + status + ")."); return; }
+            dev.amtstack.Put('AMT_BootSettingData', r, performOneClickRecoveryActionEx4, 0, 1);
+        }, 0, 1);
+    }
+
+    // Intel AMT Put Boot Settings
+    function performOneClickRecoveryActionEx4(stack, name, response, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { dev.consoleMsg("Failed to set boot settings data (" + status + ")."); return; }
+        dev.amtstack.SetBootConfigRole(1, function (stack, name, response, status) {
+            if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+            if (status != 200) { dev.consoleMsg("Failed to set boot config role (" + status + ")."); return; }
+            var bootSource = 'Force OCR UEFI HTTPS Boot';
+            dev.amtstack.CIM_BootConfigSetting_ChangeBootOrder((bootSource == null) ? bootSource : '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_BootSourceSetting</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">Intel(r) AMT: ' + bootSource + '</Selector></SelectorSet></ReferenceParameters>', function (stack, name, response, status) {
+                if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                if (status != 200) { dev.consoleMsg("Failed to set boot config (" + status + ")."); return; }
+                dev.amtstack.RequestPowerStateChange(10, function (stack, name, response, status) { // 10 = Reset, 2 = Power Up
+                    if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                    if (status != 200) { dev.consoleMsg("Failed to perform power action (" + status + ")."); return; }
+                    console.log('One Click Recovery Completed.');
+                });
+            });
+        }, 0, 1);
+    }
+
 
     //
     // Intel AMT Clock Syncronization
@@ -2254,6 +2307,12 @@ module.exports.CreateAmtManager = function (parent) {
     function MakeToArray(v) { if (!v || v == null || typeof v == 'object') return v; return [v]; }
     function getItem(x, y, z) { for (var i in x) { if (x[i][y] == z) return x[i]; } return null; }
     function IntToStr(v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); }
+
+    // Returns a UEFI boot parameter in binary
+    function makeUefiBootParam(type, data, len) {
+        if (typeof data == 'number') { if (len == 1) { data = String.fromCharCode(data & 0xFF); } if (len == 2) { data = parent.common.ShortToStrX(data); } if (len == 4) { data = parent.common.IntToStrX(data); } }
+        return parent.common.ShortToStrX(0x8086) + parent.common.ShortToStrX(type) + parent.common.IntToStrX(data.length) + data;
+    }
 
     function parseCertName(x) {
         var j, r = {}, xx = x.split(',');
