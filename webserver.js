@@ -3438,7 +3438,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
                 for (var i in files.files) {
                     var file = files.files[i];
-                    console.log('ClickOnceRecovery', file); // TODO
+
+                    // Perform Intel AMT Click Once Recovery
+                    console.log('ClickOnceRecovery', node._id, file.path);
+
                     try { obj.fs.unlinkSync(file.path); } catch (e) { }
                 }
                 res.send('');

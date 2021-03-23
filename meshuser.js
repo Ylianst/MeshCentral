@@ -5492,8 +5492,30 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
-            case 'clickoncerecovery': {
-                console.log(command); // TODO
+            case 'clickoncerecovery': { // Intel(R) AMT Click once recovery
+                if (common.validateStrArray(command.nodeids, 1) == false) break; // Check nodeids
+                if (common.validateString(command.path, 1, 2048) == false) break; // Check file path
+                if (command.type != 'diskimage') break; // Make sure type is correct
+
+                var file = parent.getServerFilePath(user, domain, command.path);
+                if (file == null) return;
+
+                // For each nodeid, change the group
+                for (var i = 0; i < command.nodeids.length; i++) {
+                    var xnodeid = command.nodeids[i];
+                    if (xnodeid.indexOf('/') == -1) { xnodeid = 'node/' + domain.id + '/' + xnodeid; }
+
+                    // Get the node and the rights for this node
+                    parent.GetNodeWithRights(domain, user, xnodeid, function (node, rights, visible) {
+                        // Check if we found this device and if we have full rights
+                        if ((node == null) || (rights != 0xFFFFFFFF)) return;
+
+                        // Perform Intel AMT Click Once Recovery
+                        console.log('ClickOnceRecovery', node._id, file.fullpath);
+                    });
+                }
+
+                //console.log(command, file);
                 break;
             }
             default: {
