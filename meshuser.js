@@ -5492,7 +5492,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
-            case 'clickoncerecovery': { // Intel(R) AMT Click once recovery
+            case 'oneclickrecovery': { // Intel(R) AMT One Click Recovery (OCR)
                 if (common.validateStrArray(command.nodeids, 1) == false) break; // Check nodeids
                 if (common.validateString(command.path, 1, 2048) == false) break; // Check file path
                 if (command.type != 'diskimage') break; // Make sure type is correct
@@ -5510,8 +5510,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Check if we found this device and if we have full rights
                         if ((node == null) || (rights != 0xFFFFFFFF)) return;
 
-                        // Event Intel AMT Click Once Recovery, this will cause Intel AMT wake operations on this and other servers.
-                        parent.parent.DispatchEvent('*', obj, { action: 'clickoncerecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: file.fullpath });
+                        // Event Intel AMT One Click Recovery, this will cause Intel AMT wake operations on this and other servers.
+                        parent.parent.DispatchEvent('*', obj, { action: 'oneclickrecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: file.fullpath });
                     });
                 }
 

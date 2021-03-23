@@ -6613,7 +6613,7 @@
             if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
             if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; }
             if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
-            if ((getNodeAmtVersion(currentNode) >= 15) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF) && ((features & 0x00000400) == 0)) { count++; y += '<option value=107>' + "Intel&reg; AMT Click Once Recovery" + '</option>'; } // CIRA (2) or AMT (4) connected
+            if ((getNodeAmtVersion(currentNode) >= 15) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF) && ((features & 0x00000400) == 0)) { count++; y += '<option value=107>' + "Intel&reg; AMT One Click Recovery" + '</option>'; } // CIRA (2) or AMT (4) connected
             if (((currentNode.conn & 1) != 0) && ((rights & 32768) != 0)) { count++; y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
             y += '</select>';
             x += addHtmlValue("Operation", y);
@@ -6651,12 +6651,12 @@
                     //QE('idx_dlgOkButton', true);
                 }
             } else if (op == 107) {
-                // Intel AMT Click Once Recovery (OCR)
-                Q('d3localmodeform').action = 'clickoncerecovery.ashx';
+                // Intel AMT One Click Recovery (OCR)
+                Q('d3localmodeform').action = 'oneclickrecovery.ashx';
                 Q('d3auth').value = authCookie;
                 Q('d3filter').value = '.iso';
                 Q('d3attrib').value = currentNode._id;
-                setDialogMode(3, "Intel&reg; AMT Click Once Recovery", 3, deviceActionClickOnceRecovery);
+                setDialogMode(3, "Intel&reg; AMT One Click Recovery", 3, deviceActionOneClickRecovery);
                 d3init();
             } else {
                 // Power operation
@@ -6664,7 +6664,7 @@
             }
         }
 
-        function deviceActionClickOnceRecovery() {
+        function deviceActionOneClickRecovery() {
             var mode = Q('d3uploadMode').value;
             if (mode == 1) {
                 // Boot using local disk image file
@@ -6672,7 +6672,7 @@
             } else {
                 // Boot using server image file
                 var files = d3getFileSel();
-                if (files.length == 1) { meshserver.send({ action: 'clickoncerecovery', nodeids: [ Q('d3attrib').value ], type: 'diskimage', path: d3filetreelocation.join('/') + '/' + files[0] }); }
+                if (files.length == 1) { meshserver.send({ action: 'oneclickrecovery', nodeids: [ Q('d3attrib').value ], type: 'diskimage', path: d3filetreelocation.join('/') + '/' + files[0] }); }
             }
         }
 
