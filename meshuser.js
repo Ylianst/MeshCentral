@@ -5510,8 +5510,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Check if we found this device and if we have full rights
                         if ((node == null) || (rights != 0xFFFFFFFF)) return;
 
-                        // Perform Intel AMT Click Once Recovery
-                        console.log('ClickOnceRecovery', node._id, file.fullpath);
+                        // Event Intel AMT Click Once Recovery, this will cause Intel AMT wake operations on this and other servers.
+                        parent.parent.DispatchEvent('*', obj, { action: 'clickoncerecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: file.fullpath });
                     });
                 }
 

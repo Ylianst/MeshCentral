@@ -295,6 +295,11 @@ module.exports.CreateAmtManager = function (parent) {
                 if (Array.isArray(event.nodeids)) { for (var i in event.nodeids) { performPowerAction(event.nodeids[i], 2); } }
                 break;
             }
+            case 'clickoncerecovery': { // React to Intel AMT Click Once Recovery command
+                if (event.noact == 1) return; // Take no action on these events. We are likely in peering mode and need to only act when the database signals the change in state.
+                if (Array.isArray(event.nodeids)) { for (var i in event.nodeids) { performClickOnceRecoveryAction(event.nodeids[i], event.file); } }
+                break;
+            }
             case 'changenode': { // React to changes in a device
                 var devices = obj.amtDevices[event.nodeid], rescan = false;
                 if (devices != null) {
@@ -804,6 +809,23 @@ module.exports.CreateAmtManager = function (parent) {
         //console.log('performPowerActionResponse', status);
     }
 
+
+    // Perform Intel AMT Click Once Recovery on a device
+    function performClickOnceRecoveryAction(nodeid, file) {
+        var devices = obj.amtDevices[nodeid];
+        if (devices == null) return;
+        for (var i in devices) {
+            var dev = devices[i];
+            // If not LMS, has a AMT stack present and is in connected state, perform operation.
+            if ((dev.connType != 2) && (dev.state == 1) && (dev.amtstack != null)) {
+                console.log('Perform Click Once Recovery', nodeid, file);
+
+                // TODO: Make sure the MPS server root certificate is present.
+                // TODO: Generate the one-time URL.
+                // TODO: Issue the WSMAN command.
+            }
+        }
+    }
 
     //
     // Intel AMT Clock Syncronization
