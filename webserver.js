@@ -3407,6 +3407,45 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
     }
 
+    // Upload a MeshCore.js file to the server
+    function handleClickOnceRecoveryFile(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if (domain.id !== '') { res.sendStatus(401); return; }
+
+        var authUserid = null;
+        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
+
+        const multiparty = require('multiparty');
+        const form = new multiparty.Form();
+        form.parse(req, function (err, fields, files) {
+            // If an authentication cookie is embedded in the form, use that.
+            if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
+                var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
+                if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
+            }
+            if (authUserid == null) { res.sendStatus(401); return; }
+            if ((fields == null) || (fields.attrib == null) || (fields.attrib.length != 1)) { res.sendStatus(404); return; }
+
+            // Get the user
+            const user = obj.users[authUserid];
+            if (user == null) { res.sendStatus(401); return; } // Check this user exists
+
+            // Get the node and check node rights
+            const nodeid = fields.attrib[0];
+            obj.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
+                if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
+                for (var i in files.files) {
+                    var file = files.files[i];
+                    console.log('ClickOnceRecovery', file); // TODO
+                    try { obj.fs.unlinkSync(file.path); } catch (e) { }
+                }
+                res.send('');
+            });
+        });
+    }
+
     // Upload a file to the server
     function handleUploadFile(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -5208,6 +5247,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.post(url + 'uploadfile.ashx', handleUploadFile);
             obj.app.post(url + 'uploadfilebatch.ashx', handleUploadFileBatch);
             obj.app.post(url + 'uploadmeshcorefile.ashx', handleUploadMeshCoreFile);
+            obj.app.post(url + 'clickoncerecovery.ashx', handleClickOnceRecoveryFile);
             obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
             obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
             obj.app.ws(url + 'apf.ashx', function (ws, req) { obj.parent.mpsserver.onWebSocketConnection(ws, req); })

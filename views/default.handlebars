@@ -1169,6 +1169,7 @@
                         <div>Upload File</div>
                         <form id=d3localmodeform method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame>
                             <input type=text id=d3auth name=auth style="display:none" />
+                            <input type=text id=d3filter name=filter style="display:none" />
                             <input type=text id=d3attrib name=attrib style="display:none" />
                             <input type=file id=d3localFile name=files onchange=d3setActions() />
                             <input type=submit id=d3submit style="display:none" />
@@ -6612,6 +6613,7 @@
             if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
             if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; }
             if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
+            if ((getNodeAmtVersion(currentNode) >= 15) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF) && ((features & 0x00000400) == 0)) { count++; y += '<option value=107>' + "Intel&reg; AMT Click Once Recovery" + '</option>'; } // CIRA (2) or AMT (4) connected
             if (((currentNode.conn & 1) != 0) && ((rights & 32768) != 0)) { count++; y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
             y += '</select>';
             x += addHtmlValue("Operation", y);
@@ -6648,9 +6650,29 @@
                     Q('d2runcmd').focus();
                     //QE('idx_dlgOkButton', true);
                 }
+            } else if (op == 107) {
+                // Intel AMT Click Once Recovery (OCR)
+                Q('d3localmodeform').action = 'clickoncerecovery.ashx';
+                Q('d3auth').value = authCookie;
+                Q('d3filter').value = '.iso';
+                Q('d3attrib').value = currentNode._id;
+                setDialogMode(3, "Intel&reg; AMT Click Once Recovery", 3, deviceActionClickOnceRecovery);
+                d3init();
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) });
+            }
+        }
+
+        function deviceActionClickOnceRecovery() {
+            var mode = Q('d3uploadMode').value;
+            if (mode == 1) {
+                // Boot using local disk image file
+                Q('d3submit').click();
+            } else {
+                // Boot using server image file
+                var files = d3getFileSel();
+                if (files.length == 1) { meshserver.send({ action: 'clickoncerecovery', nodeids: [ Q('d3attrib').value ], type: 'diskimage', path: d3filetreelocation.join('/') + '/' + files[0] }); }
             }
         }
 
@@ -9664,6 +9686,7 @@
             if (xxdialogMode) return;
             Q('d3localmodeform').action = 'uploadmeshcorefile.ashx';
             Q('d3auth').value = authCookie;
+            Q('d3filter').value = '.js';
             Q('d3attrib').value = currentNode._id;
             setDialogMode(3, "Upload Mesh Agent Core", 3, p15uploadCoreEx2);
             d3init();
@@ -11323,7 +11346,7 @@
                 } else {
                     var link = shortname, publiclink = '', loginkey = (urlargs.key)?('&key=' + urlargs.key):'';
                     if (publicfolder) { publiclink = '<img src="images/link2.png" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\' width=10 height=10 /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '") width=10 height=10>'; }
-                    if (f.s > 0) { link = publiclink + ' <a onclick=downloadFile("downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + '")>' + shortname + '</a>'; }
+                    if (f.s > 0) { link = publiclink + '<a onclick=downloadFile("downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + '")>' + shortname + '</a>'; }
                     h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
@@ -13521,6 +13544,7 @@
 
         function d3init() {
             Q('d3localFile').value = '';
+            Q('d3localFile').accept  = Q('d3filter').value;
             d3modechange();
         }
 
@@ -13536,7 +13560,7 @@
 
         function d3updatefiles() {
             if (Q('d3uploadMode').value == 1) return;
-            var html1 = '', html2 = '', filetreex = filetree, folderdepth = 1;
+            var html1 = '', html2 = '', filetreex = filetree, folderdepth = 1, publicPath = null;
 
             // Navigate to path location, build the paths at the same time
             var d3filetreelocation2 = [], oldlinkpath = d3filetreelinkpath, checkedBoxes = [], checkboxes = document.getElementsByName('fc');
@@ -13564,10 +13588,17 @@
             // Sort the files
             var filetreexx = p5sort_files(filetreex.f);
 
+            // File filter
+            var fileFilter = Q('d3filter').value
+
             // Display all files and folders at this location
             for (var i in filetreexx) {
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
+
+                // Filter out files
+                if ((f.t == 3) && (fileFilter != '') && (f.nx.toLowerCase().endsWith(fileFilter) == false)) { continue; }
+
                 shortname = name;
                 if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
                 name = EscapeHtml(name);
@@ -13577,7 +13608,7 @@
                 if (f.s != null) { fsize = getFileSizeStr(f.s); }
 
                 var h = '';
-                if (f.t < 3) {
+                if (f.t != 3) {
                     var title = '';
                     h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
@@ -13619,7 +13650,7 @@
             drawNotifications();
         }
 
-        // Set the notification count on the upper right oft he screen
+        // Set the notification count on the upper right of the screen
         function setNotificationCount(c) {
             if (parseInt(Q('notificationCount').innerHTML) == c) return; // If the count did not change, exit now.
             QH('notificationCount', c);
@@ -14727,6 +14758,8 @@
                 meshserver.send({ action: 'userWebState', state: JSON.stringify(s) });
             }
         }
+
+        function getNodeAmtVersion(node) { if ((node == null) || (node.intelamt == null) || (typeof node.intelamt.ver != 'string')) return 0; var verSplit = node.intelamt.ver.split('.'); if (verSplit.length < 2) return 0; return parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100); }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function addLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=\'' + f + '\' onkeypress="if (event.key==\'Enter\') {' + f + '} ">' + x + ' <img class=hoverButton src=images/link5.png></span>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
