@@ -866,13 +866,9 @@ module.exports.CreateAmtManager = function (parent) {
         if (status != 200) { dev.consoleMsg("Failed to get boot settings data (" + status + ")."); delete dev.ocrfile; return; }
 
         // Generate the one-time URL.
-        //var cookie = obj.parent.encodeCookie({ a: 'ocr', f: dev.ocrfile }, obj.parent.loginCookieEncryptionKey)
-        //var url = 'https://' + parent.webserver.certificates.AmtMpsName + ':' + ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport) + '/ocr/' + cookie + '.iso';
+        var cookie = obj.parent.encodeCookie({ a: 'f', f: dev.ocrfile }, obj.parent.loginCookieEncryptionKey)
+        var url = 'https://' + parent.webserver.certificates.AmtMpsName + ':' + ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport) + '/c/' + cookie + '.iso';
         delete dev.ocrfile;
-
-        // DEBUG
-        var url = 'https://' + parent.webserver.certificates.AmtMpsName + ':' + ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport) + '/ocr/abc.iso';
-        console.log('OCR: ' + url);
 
         // Generate the boot data for OCR with URL
         var r = response.Body;
