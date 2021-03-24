@@ -159,6 +159,7 @@ function run(argv) {
     if ((typeof args.uuidoutput) == 'string' || args.uuidoutput) { settings.uuidoutput = args.uuidoutput; }
     if ((typeof args.desc) == 'string') { settings.desc = args.desc; }
     if (args.emailtoken) { settings.emailtoken = true; }
+    if (args.smstoken) { settings.smstoken = true; }
     if (args.debug === true) { settings.debuglevel = 1; }
     if (args.debug) { try { waitForDebugger(); } catch (e) { } }
     if (args.noconsole) { settings.noconsole = true; }
@@ -1950,16 +1951,31 @@ function startRouter() {
     // Start by requesting a login token, this is needed because of 2FA and check that we have correct credentials from the start
     var options;
     try {
-        var url = settings.serverurl.split('meshrelay.ashx').join('control.ashx');
+        // Parse the URL
+        options = http.parseUri(settings.serverurl.split('meshrelay.ashx').join('control.ashx'));
+
+        // Figure out the 2FA token to use if any
+        var xtoken = null;
+        if (settings.emailtoken) { xtoken = '**email**'; }
+        else if (settings.smstoken) { xtoken = '**sms**'; }
+        else if (settings.token != null) { xtoken = settings.token; }
+
+        // Complete the URL and add a x-meshauth header if needed
+        var xurlargs = [];
         if (settings.authcookie != null) {
-            url += '?auth=' + settings.authcookie;
-        } else if (settings.username != null && settings.password != null) {
-            url += '?user=' + settings.username + '&pass=' + settings.password;
+            xurlargs.push('auth=' + settings.authcookie);
+            if (xtoken != null) { xurlargs.push('token=' + xtoken); }
+        } else {
+            if (xtoken != null) {
+                options.headers = { 'x-meshauth': Buffer.from(settings.username,'binary').toString('base64') + ',' + Buffer.from(settings.password,'binary').toString('base64') + ',' + Buffer.from(xtoken,'binary').toString('base64') };
+            } else {
+                options.headers = { 'x-meshauth': Buffer.from(settings.username,'binary').toString('base64') + ',' + Buffer.from(settings.password,'binary').toString('base64') };
+            }
         }
-        if (settings.emailtoken) { url += '&token=**email**'; } else if (settings.token != null) { url += '&token=' + settings.token; }
-        if (settings.loginkey) { url += '&key=' + settings.loginkey; }
-        options = http.parseUri(url);
+        if (settings.loginkey) { xurlargs.push('key=' + settings.loginkey); }
+        if (xurlargs.length > 0) { options.path += '?' + xurlargs.join('&'); }
     } catch (e) { console.log("Unable to parse \"serverUrl\"."); process.exit(1); return; }
+
     options.checkServerIdentity = onVerifyServer;
     options.rejectUnauthorized = false;
     settings.websocket = http.request(options);
@@ -1979,7 +1995,7 @@ function OnServerWebSocket(msg, s, head) {
                         if (command.email2fasent === true) {
                             console.log("Login token email sent.");
                         } else if (command.email2fa === true) {
-                            console.log("Login token required, use --token [token], or --emailtoken get a token.");
+                            console.log("Login token required, use --token [token], or --emailtoken, --smstoken get a token.");
                         } else {
                             console.log("Login token required, use --token [token].");
                         }
