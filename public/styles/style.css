@@ -850,8 +850,8 @@ NoMeshesPanel img {
 
 .deviceBatterySmall {
     position:absolute;
-    left:20px;
-    top:28px;
+    left:26px;
+    top:32px;
     width:14px;
     height:24px;
     border:none;
@@ -1929,6 +1929,23 @@ a {
     width: 180px;
 }
 
+.g1t {
+    background-position: 0% 0%;
+    width: 14px;
+    height: 100%;
+    /* fallback (Opera) */
+    /* Mozilla: */
+    /* Chrome, Safari:*/
+    background-image: linear-gradient(to right, #fff 0%, #c9c9c9 100%);
+    background-color: #c9c9c9;
+    background-repeat: repeat;
+    background-attachment: scroll;
+}
+
+.night .g1t {
+    background-image: linear-gradient(to right, #000 0%, #333 100%);
+}
+
 .g1 {
     background-position: 0% 0%;
     width: 14px;
@@ -1970,6 +1987,23 @@ a {
 
 .night .g1s {
     background-image: linear-gradient(to right, #000 0%, #444 100%);
+}
+
+.g2t {
+    background-position: 0% 0%;
+    width: 14px;
+    height: 100%;
+    /* fallback (Opera) */
+    /* Mozilla: */
+    /* Chrome, Safari:*/
+    background-image: linear-gradient(to right, #c9c9c9 0%, #fff 100%);
+    background-color: #c9c9c9;
+    background-repeat: repeat;
+    background-attachment: scroll;
+}
+
+.night .g2t {
+    background-image: linear-gradient(to right, #333 0%, #000 100%);
 }
 
 .g2 {
@@ -2068,6 +2102,15 @@ a {
     background-image: linear-gradient(to right, #333 0%, #000 100%);
 }
 
+.e1t {
+    font-size: large;
+    margin-bottom: 3px;
+    overflow: hidden;
+    word-wrap: hyphenate;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .e1 {
     font-size: large;
     margin-top: 4px;
@@ -2085,6 +2128,16 @@ a {
 }
 
 .night .e2 {
+    color: #CCC;
+    background-color: #333;
+}
+
+.e2t {
+    height: 100%;
+    background-color: #c9c9c9;
+}
+
+.night .e2t {
     color: #CCC;
     background-color: #333;
 }
