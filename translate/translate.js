@@ -357,22 +357,27 @@ function startEx(argv) {
                 if (outname.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
                 if (outname.endsWith('.js')) { inFile = '<script>' + inFile + '</script>'; }
 
-                var minifiedOut = minify(inFile, {
-                    collapseBooleanAttributes: true,
-                    collapseInlineTagWhitespace: false, // This is not good.
-                    collapseWhitespace: true,
-                    minifyCSS: true,
-                    minifyJS: true,
-                    removeComments: true,
-                    removeOptionalTags: true,
-                    removeEmptyAttributes: true,
-                    removeAttributeQuotes: true,
-                    removeRedundantAttributes: true,
-                    removeScriptTypeAttributes: true,
-                    removeTagWhitespace: true,
-                    preserveLineBreaks: false,
-                    useShortDoctype: true
-                });
+                var minifiedOut = null;
+                try {
+                    minifiedOut = minify(inFile, {
+                        collapseBooleanAttributes: true,
+                        collapseInlineTagWhitespace: false, // This is not good.
+                        collapseWhitespace: true,
+                        minifyCSS: true,
+                        minifyJS: true,
+                        removeComments: true,
+                        removeOptionalTags: true,
+                        removeEmptyAttributes: true,
+                        removeAttributeQuotes: true,
+                        removeRedundantAttributes: true,
+                        removeScriptTypeAttributes: true,
+                        removeTagWhitespace: true,
+                        preserveLineBreaks: false,
+                        useShortDoctype: true
+                    });
+                } catch (ex) {
+                    console.log(ex);
+                }
 
                 // Perform minification post-processing
                 if (outname.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }

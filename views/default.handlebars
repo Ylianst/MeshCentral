@@ -146,11 +146,20 @@
                     <div tabindex=0 id=uiMenuButton title="User interface selection" onclick="showUserInterfaceSelectMenu()" onkeypress="if (event.key == 'Enter') showUserInterfaceSelectMenu()">
                         &diams;
                         <div id=uiMenu style="display:none">
-                            <div tabindex=0 id=uiViewButton1 class=uiSelector onclick=userInterfaceSelectMenu(1) title="Left bar interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(1)"><div class="uiSelector1"></div></div>
-                            <div tabindex=0 id=uiViewButton2 class=uiSelector onclick=userInterfaceSelectMenu(2) title="Top bar interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(2)"><div class="uiSelector2"></div></div>
-                            <div tabindex=0 id=uiViewButton3 class=uiSelector onclick=userInterfaceSelectMenu(3) title="Fixed width interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(3)"><div class="uiSelector3"></div></div>
-                            <div tabindex=0 id=uiViewButton4 class=uiSelector onclick=toggleNightMode() title="Toggle night mode" onkeypress="if (event.key == 'Enter') toggleNightMode()"><div class="uiSelector4"></div></div>
-                            <div tabindex=0 id=uiViewButton5 class=uiSelector onclick=toggleFooterBarMode() title="Toggle footer bar" onkeypress="if (event.key == 'Enter') toggleFooterBarMode()"><div class="uiSelector5"></div></div>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <div tabindex=0 id=uiViewButton1 class=uiSelector onclick=userInterfaceSelectMenu(1) title="Left bar interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(1)"><div class="uiSelector1"></div></div>
+                                        <div tabindex=0 id=uiViewButton2 class=uiSelector onclick=userInterfaceSelectMenu(2) title="Top bar interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(2)"><div class="uiSelector2"></div></div>
+                                        <div tabindex=0 id=uiViewButton3 class=uiSelector onclick=userInterfaceSelectMenu(3) title="Fixed width interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(3)"><div class="uiSelector3"></div></div>
+                                    </td>
+                                    <td>
+                                        <div tabindex=0 id=uiViewButton6 class=uiSelector onclick="showNotes(false,encodeURIComponentEx('p'+userinfo._id))" title="Personal Notes" onkeypress="if (event.key == 'Enter') showNotes(false,'p'+encodeURIComponentEx(userinfo._id))"><div class="uiSelector6"></div></div>
+                                        <div tabindex=0 id=uiViewButton4 class=uiSelector onclick=toggleNightMode() title="Toggle night mode" onkeypress="if (event.key == 'Enter') toggleNightMode()"><div class="uiSelector4"></div></div>
+                                        <div tabindex=0 id=uiViewButton5 class=uiSelector onclick=toggleFooterBarMode() title="Toggle footer bar" onkeypress="if (event.key == 'Enter') toggleFooterBarMode()"><div class="uiSelector5"></div></div>
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
                     </div>
                     <table id=MainMenuSpan cellpadding=0 cellspacing=0 class=style1>
