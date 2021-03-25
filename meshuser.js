@@ -3930,7 +3930,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'poweraction':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
-                    if (common.validateInt(command.actiontype, 2, 4) == false) break; // Check actiontype
+                    if (common.validateInt(command.actiontype, 2, 310) == false) break; // Check actiontype
                     for (i in command.nodeids) {
                         var nodeid = command.nodeids[i];
 
@@ -3947,10 +3947,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // If this device is connected on MQTT, send a power action.
                             if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.publish(node._id, 'powerAction', ['', '', 'poweroff', 'reset', 'sleep'][command.actiontype]); }
 
-                            // Get this device and send the power command
-                            const agent = parent.wsagents[node._id];
-                            if (agent != null) {
-                                try { agent.send(JSON.stringify({ action: 'poweraction', actiontype: command.actiontype })); } catch (ex) { }
+                            if (command.actiontype >= 300) {
+                                if ((command.actiontype != 302) && (command.actiontype != 308) && (command.actiontype != 310)) return; // Invalid action type.
+                                // Intel AMT power command, actiontype: 2 = Power on, 8 = Power down, 10 = reset
+                                parent.parent.DispatchEvent('*', obj, { action: 'amtpoweraction', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, actiontype: command.actiontype - 300 });
+                            } else {
+                                if ((command.actiontype < 2) && (command.actiontype > 4)) return; // Invalid action type.
+                                // Mesh Agent power command, get this device and send the power command
+                                const agent = parent.wsagents[node._id];
+                                if (agent != null) {
+                                    try { agent.send(JSON.stringify({ action: 'poweraction', actiontype: command.actiontype })); } catch (ex) { }
+                                }
                             }
                         });
 

@@ -300,6 +300,11 @@ module.exports.CreateAmtManager = function (parent) {
                 if (Array.isArray(event.nodeids)) { for (var i in event.nodeids) { performOneClickRecoveryAction(event.nodeids[i], event.file); } }
                 break;
             }
+            case 'amtpoweraction': {
+                if (event.noact == 1) return; // Take no action on these events. We are likely in peering mode and need to only act when the database signals the change in state.
+                if (Array.isArray(event.nodeids)) { for (var i in event.nodeids) { performPowerAction(event.nodeids[i], event.actiontype); } }
+                break;
+            }
             case 'changenode': { // React to changes in a device
                 var devices = obj.amtDevices[event.nodeid], rescan = false;
                 if (devices != null) {
@@ -799,6 +804,7 @@ module.exports.CreateAmtManager = function (parent) {
             var dev = devices[i];
             // If not LMS, has a AMT stack present and is in connected state, perform power operation.
             if ((dev.connType != 2) && (dev.state == 1) && (dev.amtstack != null)) {
+                // Action: 2 = Power on, 8 = Power down, 10 = reset
                 try { dev.amtstack.RequestPowerStateChange(action, performPowerActionResponse); } catch (ex) { }
             }
         }
