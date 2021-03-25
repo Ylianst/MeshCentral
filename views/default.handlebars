@@ -6613,6 +6613,12 @@
             if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
             if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; }
             if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
+            if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF)) {
+                count++;
+                y += '<option value=310>' + "Intel&reg; AMT Reset" + '</option>';
+                y += '<option value=302>' + "Intel&reg; AMT Power on" + '</option>';
+                y += '<option value=308>' + "Intel&reg; AMT Power off" + '</option>';
+            }
             if ((getNodeAmtVersion(currentNode) >= 15) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF) && ((features & 0x00000400) == 0)) { count++; y += '<option value=107>' + "Intel&reg; AMT One Click Recovery" + '</option>'; } // CIRA (2) or AMT (4) connected
             if (((currentNode.conn & 1) != 0) && ((rights & 32768) != 0)) { count++; y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
             y += '</select>';
@@ -6658,6 +6664,12 @@
                 Q('d3attrib').value = currentNode._id;
                 setDialogMode(3, "Intel&reg; AMT One Click Recovery", 3, deviceActionOneClickRecovery);
                 d3init();
+            } else if (op == 302) { // Intel AMT power on
+                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function() { meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power on?");
+            } else if (op == 308) { // Intel AMT power off
+                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function() { meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power off?");
+            } else if (op == 310) { // Intel AMT reset
+                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function() { meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT reset?");
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) });
@@ -9378,7 +9390,8 @@
                 if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { provisioningMode = (', ' + "Client Control Mode (CCM)"); } else if (node.intelamt.flags & 4) { provisioningMode = (', ' + "Admin Control Mode (ACM)"); } }
                 x += addDetailItem("Provisioning State", ((node.intelamt.state)?(provisioningStates[node.intelamt.state]):('<i>' + "Unknown" + '</i>')) + provisioningMode, s);
                 x += addDetailItem("Security", (node.intelamt.tls == 1)?"Secured using TLS":"TLS is not setup", s);
-                x += addDetailItem("Admin Credentials", (node.intelamt.user == null || node.intelamt.user == '')?"Not Known":"Known", s);
+                // Check that the Intel AMT user is setup and there is no warnings (1 = invalid credentials, 8 = trying)
+                x += addDetailItem("Admin Credentials", ((node.intelamt.user) == null || (node.intelamt.user == '') || ((node.intelamt.warn != null) && ((node.intelamt.warn & 9) != 0)))?"Not Known":"Known", s);
                 if (x != '') { sections.push({ name: "Intel&reg; Active Management Technology (Intel&reg; AMT)", html: x, img: 'amt64.png' }); }
             }
 

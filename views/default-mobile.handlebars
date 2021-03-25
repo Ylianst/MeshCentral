@@ -4861,7 +4861,8 @@
                 if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { provisioningMode = (', ' + "Client Control Mode (CCM)"); } else if (node.intelamt.flags & 4) { provisioningMode = (', ' + "Admin Control Mode (ACM)"); } }
                 x += addDetailItem("Provisioning State", ((node.intelamt.state) ? (provisioningStates[node.intelamt.state]) : ('<i>' + "Unknown" + '</i>')) + provisioningMode, s);
                 x += addDetailItem("Security", (node.intelamt.tls == 1) ? "Secured using TLS" : "TLS is not setup", s);
-                x += addDetailItem("Admin Credentials", (node.intelamt.user == null || node.intelamt.user == '') ? "Not Known" : "Known", s);
+                // Check that the Intel AMT user is setup and there is no warnings (1 = invalid credentials, 8 = trying)
+                x += addDetailItem("Admin Credentials", ((node.intelamt.user) == null || (node.intelamt.user == '') || ((node.intelamt.warn != null) && ((node.intelamt.warn & 9) != 0))) ? "Not Known" : "Known", s);
                 if (x != '') { sections.push({ name: "Intel&reg; Active Management Technology (Intel&reg; AMT)", html: x, img: 'amt' }); }
             }
 
