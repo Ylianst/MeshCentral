@@ -1782,9 +1782,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     }
 
-                    db.Remove('ws' + deluser._id); // Remove user web state
-                    db.Remove('nt' + deluser._id); // Remove notes for this user
-                    db.Remove('im' + deluser._id); // Remove image for this user
+                    db.Remove('ws' + deluser._id);  // Remove user web state
+                    db.Remove('nt' + deluser._id);  // Remove notes for this user
+                    db.Remove('ntp' + deluser._id); // Remove personal notes for this user
+                    db.Remove('im' + deluser._id);  // Remove image for this user
 
                     // Delete all files on the server for this account
                     try {
@@ -4289,7 +4290,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var splitid = command.id.split('/');
                     if ((splitid.length != 3) || (splitid[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                     var idtype = splitid[0];
-                    if ((idtype != 'user') && (idtype != 'mesh') && (idtype != 'node')) return;
+                    if ((idtype != 'puser') && (idtype != 'user') && (idtype != 'mesh') && (idtype != 'node')) return;
 
                     if (idtype == 'node') {
                         // Get the node and the rights for this node
@@ -4327,6 +4328,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (chguser == null) break; // This user does not exists
                             if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
                             db.Set({ _id: 'nt' + command.id, type: 'note', value: command.notes }); // Set the note for this user
+                        }
+                    } else if (idtype == 'puser') {
+                        // Set the user's personal note, starts with 'ntp' + userid.
+                        if (common.validateString(command.notes, 1) == false) {
+                            db.Remove('ntp' + user._id); // Delete the note for this node
+                        } else {
+                            db.Set({ _id: 'ntp' + user._id, type: 'note', value: command.notes }); // Set the note for this user
                         }
                     }
 
@@ -4761,7 +4769,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var splitid = command.id.split('/');
                     if ((splitid.length != 3) || (splitid[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                     var idtype = splitid[0];
-                    if ((idtype != 'user') && (idtype != 'mesh') && (idtype != 'node')) return;
+                    if ((idtype != 'puser') && (idtype != 'user') && (idtype != 'mesh') && (idtype != 'node')) return;
 
                     if (idtype == 'node') {
                         // Get the node and the rights for this node
@@ -4794,6 +4802,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     } else if ((idtype == 'user') && ((user.siteadmin & 2) != 0)) {
                         // Get the notes about this node
                         db.Get('nt' + command.id, function (err, notes) {
+                            try {
+                                if ((notes == null) || (notes.length != 1)) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
+                            } catch (ex) { }
+                        });
+                    } else if (idtype == 'puser') {
+                        // Get personal note, starts with 'ntp' + userid
+                        db.Get('ntp' + user._id, function (err, notes) {
                             try {
                                 if ((notes == null) || (notes.length != 1)) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
                                 ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));

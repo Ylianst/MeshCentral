@@ -2995,6 +2995,13 @@ a {
     width: 28px;
 }
 
+.uiSelector6 {
+    margin: 2px;
+    background: url(../images/views.png) -392px 0px;
+    height: 28px;
+    width: 28px;
+}
+
 .backButton {
     width: 32px;
     height: 32px;

@@ -1976,9 +1976,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
                 }
 
-                obj.db.Remove('ws' + deluser._id); // Remove user web state
-                obj.db.Remove('nt' + deluser._id); // Remove notes for this user
-                obj.db.Remove('im' + deluser._id); // Remove image for this user
+                obj.db.Remove('ws' + deluser._id);  // Remove user web state
+                obj.db.Remove('nt' + deluser._id);  // Remove notes for this user
+                obj.db.Remove('ntp' + deluser._id); // Remove personal notes for this user
+                obj.db.Remove('im' + deluser._id);  // Remove image for this user
 
                 // Remove the user
                 obj.db.Remove(deluser._id);
