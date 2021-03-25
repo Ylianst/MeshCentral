@@ -3509,14 +3509,14 @@
             setSessionActivity();
             var view = Q('viewselect').value;
             if (view == 1) {
-                var e = element.children[1].children[1];
-                e.children[0].classList.remove('g1s');
-                e.children[1].classList.remove('e2s');
-                e.children[2].classList.remove('g2s');
+                var e = element.children[0].children[0].children[1].children[0].children[0].children[0];
+                e.children[1].classList.remove('g1s');
+                e.children[2].classList.remove('e2s');
+                e.children[3].classList.remove('g2s');
                 if (over == 1) {
-                    e.children[0].classList.add('g1s');
-                    e.children[1].classList.add('e2s');
-                    e.children[2].classList.add('g2s');
+                    e.children[1].classList.add('g1s');
+                    e.children[2].classList.add('e2s');
+                    e.children[3].classList.add('g2s');
                 }
             } else if (view == 2) {
                 var e = element;
@@ -3978,7 +3978,7 @@
             if ((!node.conn) || (node.conn == 0)) { icon += ' gray'; }
 
             if (view == 1) {
-                div.innerHTML = '<div id=devs cmenu=devsContentMenu onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=width:100%;height:100%><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + node.meshid + ' DeviceCheckbox" onchange=p1devcheck(event) value=devid_' + node._id + ' type=checkbox ' + (checkedNodeids[node._id]?' checked':'') + '></div><div style=height:100%;cursor:pointer tabindex=0 onclick=gotoDevice(\'' + node._id + '\',null,null,event) onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)"><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2 style=width:' + ((div.clientWidth) - 100) + 'px><div class=e1 title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></div><div class=g2></div></div></div>' + devNotify + '</div>';
+                div.innerHTML = '<table id=devs cmenu=devsContentMenu onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=width:100%;height:100%><tr><td style=width:22px><input class="' + node.meshid + ' DeviceCheckbox" onchange=p1devcheck(event) value=devid_' + node._id + ' type=checkbox ' + (checkedNodeids[node._id]?' checked':'') + '></td><td><table onclick=gotoDevice(\'' + node._id + '\',null,null,event) border=0 cellspacing=0 style=width:100%;height:100%;cursor:pointer><tr><td style=width:50px tabindex=0 onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)"><div class="i' + icon + '" style=width:50px></div></td><td class=g1t></td><td class=e2t><div class=e1t title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></td><td class=g2t></td></tr></table></td></tr></table>' + devNotify;
             } else if (view == 2) {
                 var states = [];
                 if (node.conn) {
@@ -4600,6 +4600,7 @@
                 if ((node.conn & 16) != 0) { states.push('<span title="' + "MQTT connection to the device is active." + '">' + "MQTT" + '</span>'); }
             }
             if ((node.pwr != null) && (node.pwr != 0)) { states.push(powerStateStrings[node.pwr]); }
+            if (states.length == 0) return '&nbsp;';
             return states.join(', ');
         }
 
@@ -5017,7 +5018,12 @@
                     showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
 
                     // Get the node and set the menu options
-                    var nodeid = contextelement.children[1].attributes.onclick.value;
+                    var nodeid;
+                    if (Q('viewselect').value == 1) {
+                        nodeid = contextelement.children[0].children[0].children[1].children[0].attributes.onclick.value;
+                    } else {
+                        nodeid = contextelement.children[1].attributes.onclick.value;
+                    }
                     var node = getNodeFromId(nodeid.substring(12, nodeid.length - 18));
                     var mesh = meshes[node.meshid];
                     var rights = GetNodeRights(node);
@@ -5059,7 +5065,12 @@
         }
 
         function cmaction(action,event) {
-            var nodeid = contextelement.children[1].attributes.onclick.value;
+            var nodeid;
+            if (Q('viewselect').value == 1) {
+                nodeid = contextelement.children[0].children[0].children[1].children[0].attributes.onclick.value;
+            } else {
+                nodeid = contextelement.children[1].attributes.onclick.value;
+            }
             nodeid = nodeid.substring(12, nodeid.length - 18);
             if (action == 9) { Q('viewselect').value = 3; Q('viewselect').onchange(); Q('autoConnectDesktopCheckbox').checked = true; Q('autoConnectDesktopCheckbox').onclick(); } // Multi-Desktop
             if ((action > 0) && (action < 9)) {
