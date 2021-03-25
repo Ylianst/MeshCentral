@@ -793,10 +793,9 @@ function run(argv) {
         // Accepted option for boot device are: pxe, hdd, cd 
         var bootdevices = ['pxe','hdd','cd'];       
         if (args.bootdevice) {
-            console.log() 
             if (bootdevices.indexOf(args.bootdevice.toLowerCase())>=0) {
                 settings.bootdevice = args.bootdevice
-                // set bootindex to 0 by default, unless overriden
+                // Set bootindex to 0 by default, unless overriden
                 settings.bootindex = 0
             } else {
                 console.log('Supported boot devices are pxe, hdd, cd'); exit(1); return; 
@@ -809,7 +808,7 @@ function run(argv) {
 
         performAmtPowerAction();
     } else {
-        console.log('Invalid \"action\" specified.'); exit(1); return;
+        console.log('Invalid "action" specified.'); exit(1); return;
     }
 }
 
@@ -2725,9 +2724,9 @@ function performAmtPowerAction() {
     wsstack = new wsman(transport, settings.hostname, settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls);
     amtstack = new amt(wsstack);
     if (settings.poweraction != 0) {
-        // check if there is bootdevice and the command is either poweron, powercycle or reset
+        // Check if there is bootdevice and the command is either poweron, powercycle or reset
         if (settings.bootdevice && [2,5,10].indexOf(settings.poweraction)>=0) {
-            // change boot order
+            // Change boot order
             amtstack.Get('AMT_BootSettingData', powerActionResponse1, 0, 1);
         } else {
             // Set the power state
