@@ -12026,7 +12026,7 @@
             x += '<div class=baricon><input class=UserCheckbox value=' + encodeURIComponentEx(user._id) + ' onclick=p3updateInfo() type=checkbox' + ((user._id == userinfo._id)?' disabled':'') + '></div><div style=cursor:pointer onclick=gotoUser("' + encodeURIComponentEx(user._id) + '",false,event)>';
             x += '<div class=baricon><div class="' + icon + gray + '"></div></div>';
             x += '<div class=g1></div><div class=g2></div><div>';
-            x += '<div><span>' + username + '</span>' + msg + '</div></div><td style=text-align:center>' + groups + '<td style=text-align:center>' + lastAccess + '<td style=text-align:center>' + permissions;
+            x += '<div><span style=line-height:24px>' + username + '</span>' + msg + '</div></div><td style=text-align:center>' + groups + '<td style=text-align:center>' + lastAccess + '<td style=text-align:center>' + permissions;
             return x;
         }
 
@@ -12539,7 +12539,7 @@
             x += '<div class=baricon><input class=UserGroupCheckbox value=' + encodeURIComponentEx(group._id) + ' onclick=p50updateInfo() type=checkbox></div>';
             x += '<div class=baricon onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")><div class=m4></div></div>';
             x += '<div class=g1 onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")></div><div class=g2 onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")></div>';
-            x += '<div onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")><span style=font-size:16px>' + name + '</span></div></div><td style=text-align:center>' + usercount + '<td style=text-align:center>' + meshcount + '<td style=text-align:center>' + devicecount;
+            x += '<div style=line-height:24px onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")><span style=font-size:16px>' + name + '</span></div></div><td style=text-align:center>' + usercount + '<td style=text-align:center>' + meshcount + '<td style=text-align:center>' + devicecount;
             return x;
         }
 
@@ -13520,7 +13520,7 @@
             x += '<div></div>';
             x += '<div class=baricon onclick=showRecordingDialog(event,"' + i + '")><div class=' + icon + '></div></div>';
             x += '<div class=g1 onclick=showRecordingDialog(event,"' + i + '")></div><div class=g2 onclick=showRecordingDialog("' + i + '")></div>';
-            x += '<div onclick=showRecordingDialog(event,"' + i + '")>' + actions + '<div style=font-size:16px>' + sessionName + '</div></div></div><td style=text-align:center>' + sessionStartStr + '<td style=text-align:center>' + sessionLengthStr + '<td style=text-align:center>' + sessionSize;
+            x += '<div style=line-height:24px onclick=showRecordingDialog(event,"' + i + '")>' + actions + '<div style=font-size:16px>' + sessionName + '</div></div></div><td style=text-align:center>' + sessionStartStr + '<td style=text-align:center>' + sessionLengthStr + '<td style=text-align:center>' + sessionSize;
             return x;
         }
 
