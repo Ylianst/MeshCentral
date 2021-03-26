@@ -7388,6 +7388,7 @@
     {
       "en": "Change image",
       "nl": "Wijzig afbeelding",
+      "fr": "Modifier ma photo",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountImageFrame->3->0"
       ]
@@ -8067,6 +8068,7 @@
     {
       "en": "Clear agent core",
       "nl": "Wis agent core",
+      "fr": "Nettoyer l'agent",
       "xloc": [
         "default.handlebars->31->480",
         "default.handlebars->31->519"
@@ -8075,6 +8077,7 @@
     {
       "en": "Clear agent core on selected devices?",
       "nl": "Wis de agent core op de geselecteerde apparaten?",
+      "fr": "Nettoyer l'agent sur les appareils sélectionnés ?",
       "xloc": [
         "default.handlebars->31->518"
       ]
@@ -11961,6 +11964,7 @@
     {
       "en": "Desktops Fixed Width",
       "nl": "Desktops met vaste breedte",
+      "fr": "Bureau figé à",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView->viewselect->5"
       ]
@@ -12860,6 +12864,7 @@
     {
       "en": "Device requested Intel(R) AMT ACM TLS activation, FQDN: {0}",
       "nl": "Apparaat verzocht om Intel (R) AMT ACM TLS-activering, FQDN: {0}",
+      "fr": "L'appareil a demandé l'activation d'Intel (R) AMT ACM TLS, nom de domaine complet: {0} ",
       "xloc": [
         "default.handlebars->31->1848"
       ]
@@ -19851,6 +19856,7 @@
     },
     {
       "en": "Intel&reg; AMT One Click Recovery",
+      "fr": "Récupération en un clic Intel® AMT",
       "xloc": [
         "default.handlebars->31->832",
         "default.handlebars->31->845"
@@ -19878,6 +19884,7 @@
     },
     {
       "en": "Intel&reg; AMT Power Operation",
+      "fr": "Fonctionnement de l'alimentation Intel® AMT ",
       "xloc": [
         "default.handlebars->31->846",
         "default.handlebars->31->848",
@@ -19886,12 +19893,14 @@
     },
     {
       "en": "Intel&reg; AMT Power off",
+      "fr": "Extinction Intel® AMT",
       "xloc": [
         "default.handlebars->31->831"
       ]
     },
     {
       "en": "Intel&reg; AMT Power on",
+      "fr": "Démarrage Intel® AMT",
       "xloc": [
         "default.handlebars->31->830"
       ]
@@ -19919,6 +19928,7 @@
     },
     {
       "en": "Intel&reg; AMT Reset",
+      "fr": "Redémarrage Intel® AMT",
       "xloc": [
         "default.handlebars->31->829"
       ]
@@ -23940,6 +23950,7 @@
     {
       "en": "Manage Account Image",
       "nl": "Beheer accountafbeelding",
+      "fr": "Gérer la photo du compte",
       "xloc": [
         "default-mobile.handlebars->11->81",
         "default.handlebars->31->1163"
@@ -25533,6 +25544,7 @@
     {
       "en": "Multiple Issues",
       "nl": "Meerdere problemen",
+      "fr": "Questions multiples",
       "xloc": [
         "default.handlebars->31->1677",
         "default.handlebars->31->1691"
@@ -29309,18 +29321,21 @@
     },
     {
       "en": "Perform Intel&reg; AMT power off?",
+      "fr": "Éteindre par Intel® AMT ?",
       "xloc": [
         "default.handlebars->31->849"
       ]
     },
     {
       "en": "Perform Intel&reg; AMT power on?",
+      "fr": "Démarrage par Intel® AMT ?",
       "xloc": [
         "default.handlebars->31->847"
       ]
     },
     {
       "en": "Perform Intel&reg; AMT reset?",
+      "fr": "Redémarrage par Intel® AMT ?",
       "xloc": [
         "default.handlebars->31->851"
       ]
@@ -29461,12 +29476,14 @@
     },
     {
       "en": "Personal Notes",
+      "fr": "Notes personnelles",
       "xloc": [
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu->1->1->0->3"
       ]
     },
     {
       "en": "Personal notes",
+      "fr": "Notes personnelles",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->13->0"
       ]
@@ -30233,6 +30250,7 @@
     {
       "en": "Print Screen",
       "nl": "Print Screen",
+      "fr": "Impression écran",
       "xloc": [
         "default-mobile.handlebars->11->344",
         "default.handlebars->31->945"
@@ -40068,6 +40086,7 @@
     {
       "en": "Trying Credentials",
       "nl": "Inloggegevens proberen",
+      "fr": "Vérification des identifiants",
       "xloc": [
         "default-mobile.handlebars->11->274",
         "default.handlebars->31->622"
@@ -41113,6 +41132,7 @@
     {
       "en": "Upload default server core on selected devices?",
       "nl": "Upload standaard server core op de geselecteerde apparaten?",
+      "fr": "Charger le noyau du serveur par défaut sur les appareils sélectionnés ?",
       "xloc": [
         "default.handlebars->31->520"
       ]
@@ -41383,6 +41403,7 @@
     {
       "en": "Use for bare-metal LAN activation.",
       "nl": "Gebruik voor bare-metal LAN activering.",
+      "fr": "A utiliser pour l'activation directe du réseau local",
       "xloc": [
         "default.handlebars->31->332"
       ]
@@ -44875,6 +44896,7 @@
     {
       "en": "desc:",
       "nl": "aflopend:",
+      "fr": "description :",
       "xloc": [
         "default.handlebars->31->553",
         "default.handlebars->31->554"
@@ -46196,6 +46218,7 @@
     {
       "en": "{0} from {1} to {2}.",
       "nl": "{0} van {1} tot {2}.",
+      "fr": "{0} de {1} à {2}.",
       "xloc": [
         "default.handlebars->31->852"
       ]
