@@ -786,7 +786,7 @@ function run(argv) {
         if (args.poweron) { settings.poweraction = 2; }
         if (args.sleep) { settings.poweraction = 3; }
         if (args.powercycle) { settings.poweraction = 5; }
-        if (args.poweroff) { settings.poweraction = 6; }
+        if (args.poweroff) { settings.poweraction = 8; }
         if (args.hibernate) { settings.poweraction = 7; }
         if (args.reset) { settings.poweraction = 10; }
         //if (settings.poweraction == 0) { console.log('No power action, specify --poweron, --sleep, --powercycle, --poweroff, --hibernate, --reset.'); exit(1); return; }
@@ -2794,6 +2794,7 @@ function powerActionResponse3(stack, name, response, status) {
     if (status != 200) { console.log('SetBootConfigRole failed.'); exit(1); return; }
     var bootsources = { 'pxe' : 'Force PXE Boot', 'hdd' : 'Force Hard-drive Boot', 'cd' : 'Force CD/DVD Boot'};
     var cbparam='<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_BootSourceSetting</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">Intel(r) AMT: ' + bootsources[settings.bootdevice] + '</Selector></SelectorSet></ReferenceParameters>';
+    if (!settings.bootdevice) { cbparam=null;}
     amtstack.CIM_BootConfigSetting_ChangeBootOrder(cbparam, function(st, nm, resp, sts) {
         if (resp.Body['ReturnValue'] != 0) { console.log('(2) Change Boot Order returns '+ response.Body.ReturnValueStr); exit(1); return; }
         amtstack.RequestPowerStateChange(settings.poweraction, performAmtPowerActionEx);
