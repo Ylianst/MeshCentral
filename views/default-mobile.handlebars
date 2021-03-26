@@ -707,7 +707,7 @@
                                         <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span></div>
                                         <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
                                         <div style="margin-top:5px"><a onclick="toggleNightMode()" style="cursor:pointer">Set dark mode</a></div>
-                                        <div style="margin-top:5px"><a onclick="showNotes(false,encodeURIComponentEx('p'+userinfo._id))" style="cursor:pointer">Personal notes</a></div>
+                                        <div style="margin-top:5px"><a onclick="showNotes(false)" style="cursor:pointer">Personal notes</a></div>
                                     </div>
                                 <br style=clear:both />
                                 </div>
@@ -3422,9 +3422,10 @@
 
         function showNotes(readonly, noteid) {
             if (xxdialogMode) return;
+            if (noteid == null) { noteid = encodeURIComponentEx('p' + userinfo._id); }
             var x = '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
             if (noteid.startsWith('node%2F%2F')) { x += '<span style=font-size:10px>' + "Device group notes can be viewed and changed by other device group administrators." + '<span>'; }
-            setDialogMode(2, "Notes", 2, showNotesEx, x, noteid);
+            setDialogMode(2, "Notes", 3, showNotesEx, x, noteid);
             meshserver.send({ action: 'getNotes', id: decodeURIComponent(noteid) });
         }
 

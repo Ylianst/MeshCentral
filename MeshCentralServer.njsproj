@@ -553,7 +553,6 @@
     <Content Include="translate\translate.json" />
     <Content Include="views\agentinvite.handlebars" />
     <Content Include="views\default-mobile.handlebars" />
-    <Content Include="views\default2.handlebars" />
     <Content Include="views\desktop.handlebars" />
     <Content Include="views\download.handlebars" />
     <Content Include="views\download2.handlebars" />
