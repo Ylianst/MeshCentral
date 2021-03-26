@@ -288,6 +288,7 @@
                             <input type=button id=refreshmap title="Reset map view" value=Reset onclick=refreshMap(false,true) />
                         </td>
                         <td class="auto-style1" style=height:100%>
+                            <img style="display:none;cursor:pointer" id=devListToolbarSettings src="images/icon-gear.png" loading=lazy width=16 height=16 onclick="onDeviceViewSettings()" />
                             <div style="display:none" id=devListToolbarView>
                                 View
                                 <select id=viewselect onchange=onDeviceViewChange()>
@@ -1343,6 +1344,8 @@
         var goBackStack = [];
         var CollapsedGroups = {};
         try { CollapsedGroups = JSON.parse(getstore('_collapse', '{}')); } catch(ex) {}
+        var deviceViewSettings = {};
+        try { deviceViewSettings = JSON.parse(getstore('_deviceViewSettings', '{}')); } catch(ex) {}
         var xterm = null;
         var xtermfit = null;
         var xtermResizeTimer = null;
@@ -3393,6 +3396,33 @@
             setTimeout(function () { mainUpdate(512); }, 200);
         }
 
+        function onDeviceViewSettings() {
+            if (xxdialogMode) return;
+
+            // Use defaults if needed
+            if (deviceViewSettings == null) { deviceViewSettings = {}; }
+            if (!Array.isArray(deviceViewSettings.devsCols)) { deviceViewSettings.devsCols = ['user','ip','conn']; }
+
+            // Display the dialog box
+            var x = '';
+            x += '<label><input id=d2c1 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('links') >= 0)?' checked':'') + '>' + "MeshCentral Router Links" + '</label><br />';
+            x += '<label><input id=d2c2 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('user') >= 0)?' checked':'') + '>' + "Logged in users" + '</label><br />';
+            x += '<label><input id=d2c3 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0)?' checked':'') + '>' + "Agent IP address" + '</label><br />';
+            x += '<label><input id=d2c4 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('conn') >= 0)?' checked':'') + '>' + "Server Connectivity" + '</label><br />';
+            setDialogMode(2, "Device View Columns", 3, onDeviceViewSettingsEx, x);
+        }
+
+        function onDeviceViewSettingsEx() {
+            var cols = [];
+            if (Q('d2c1').checked) { cols.push('links'); }
+            if (Q('d2c2').checked) { cols.push('user'); }
+            if (Q('d2c3').checked) { cols.push('ip'); }
+            if (Q('d2c4').checked) { cols.push('conn'); }
+            deviceViewSettings.devsCols = cols;
+            putstore('_deviceViewSettings', JSON.stringify(deviceViewSettings));
+            mainUpdate(4);
+        }
+
         function ondockeypress(e) {
             setSessionActivity();
             if (!xxdialogMode && xxcurrentView == 11 && desktop && Q('DeskControl').checked) {
@@ -3513,6 +3543,21 @@
         // TODO: Add handleReleaseKeys() for Intel AMT.
         function ondocblur() { if (!xxdialogMode && xxcurrentView == 11 && desktop && Q('DeskControl').checked && desktop.m.handleReleaseKeys) { return desktop.m.handleReleaseKeys(); } }
 
+        // Highlights the device group hovered
+        function devGrpMouseHover(element, over) {
+            setSessionActivity();
+            var view = Q('viewselect').value;
+            var e = element.children[1].children[1];
+            e.children[0].classList.remove('g1s');
+            e.children[1].classList.remove('e2s');
+            e.children[2].classList.remove('g2s');
+            if (over == 1) {
+                e.children[0].classList.add('g1s');
+                e.children[1].classList.add('e2s');
+                e.children[2].classList.add('g2s');
+            }
+        }
+
         // Highlights the device being hovered
         function devMouseHover(element, over) {
             setSessionActivity();
@@ -3555,6 +3600,7 @@
             QV('kvmListToolbar', (view == 3) || (view == 5));
             QV('devMapToolbar', view == 4);
             QV('devListToolbarSize', (view == 3) || (view == 5));
+            QV('devListToolbarSettings', view == 2);
             QV('NoMeshesPanel', (nodes.length == 0) && (meshcount == 0));
             //QV('devListToolbarView', (meshcount != 0) && (nodes.length > 0));
             QV('devListToolbarViewIcons', nodes.length > 0);
@@ -3763,8 +3809,20 @@
                 if ((r != '') && (viewNothing == false)) {
                     r += '</table>';
                     if (view == 2) {
+                        var colums = '';
+
+                        // Use defaults if needed
+                        if (deviceViewSettings == null) { deviceViewSettings = {}; }
+                        if (!Array.isArray(deviceViewSettings.devsCols)) { deviceViewSettings.devsCols = ['user','ip','conn']; }
+
+                        // Display configured columns
+                        if (deviceViewSettings.devsCols.indexOf('links') >= 0) { colums += '<th style=color:gray;width:120px>' + "Links"; }
+                        if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
+                        if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:120px>' + "Address"; }
+                        if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { colums += '<th style=color:gray;width:100px>' + "Connectivity"; }
+
                         // This height of 1 div at the end to fix a problem in Linux firefox browsers
-                        r = '<table style=width:100%;margin-top:4px cellpadding=0 cellspacing=0><th style=color:gray><th style=color:gray;width:120px>' + "User" + '<th style=color:gray;width:120px>' + "Address" + '<th style=color:gray;width:100px>' + "Connectivity" + r + '</tr></table><div style=height:1px></div>'; //<th style=color:gray;width:100px>State';
+                        r = '<table style=width:100%;margin-top:4px cellpadding=0 cellspacing=0><th style=color:gray>' + colums + r + '</tr></table><div style=height:1px></div>';
                     }
                 } else {
                     r += '</table>';
@@ -4007,7 +4065,17 @@
                 r += '<div class=deviceBarIcon onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class="j' + icon + '" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                 r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
                 r += '<div class=style10 style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + node._id + '\',null,null,event)><span style=width:300px>' + name + '</span></div></div>' + devNotify + '</td>';
-                r += '<td style=text-align:center>' + getUserShortStr(node) + '<td style=text-align:center>' + (node.ip != null ? node.ip : '') + '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;');
+
+                // Use defaults if needed
+                if (deviceViewSettings == null) { deviceViewSettings = {}; }
+                if (!Array.isArray(deviceViewSettings.devsCols)) { deviceViewSettings.devsCols = ['user','ip','conn']; }
+
+                // Display configured columns
+                if (deviceViewSettings.devsCols.indexOf('links') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + getShortRouterLinks(node); } // Links
+                if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
+                if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { r += '<td style=text-align:center>' + (node.ip != null ? node.ip : ''); } // IP address
+                if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
+
                 div.innerHTML = r;
             } else if ((view == 3) || (view == 5)) {
                 // Draw the device and canvas
@@ -4018,6 +4086,48 @@
                 r += '</div>';
                 return r;
             }
+        }
+
+        // Return HTML with a list of MeshCentral Router links
+        function getShortRouterLinks(node) {
+            var x = '';
+            var meshrights = GetNodeRights(node);
+
+            // RDP link, show this link only of the remote machine is Windows.
+            if (((node.conn & 1) != 0) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
+                if ((node.agent.id > 0) && (node.agent.id < 5)) {
+                    if (navigator.platform.toLowerCase() == 'win32') {
+                        if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false)) {
+                            x += '<a href=# cmenu=altPortContextMenu id=rdpMCRouterLink onclick=p10MCRouter("' + node._id + '",3)>' + "RDP" + '</a>&nbsp;';
+                        }
+                    }
+                }
+                if (node.agent.id > 4) {
+                    if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
+                        if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.ssh != false)) {
+                            x += '<a href=# onclick=p10MCRouter("' + node._id + '",4,22)>' + "SSH" + '</a>&nbsp;';
+                        }
+                    }
+                    if (navigator.platform.toLowerCase() == 'win32') {
+                        if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.scp != false)) {
+                            x += '<a href=# onclick=p10MCRouter("' + node._id + '",5,22)>' + "SCP" + '</a>&nbsp;';
+                        }
+                    }
+                }
+                if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
+                    if ((serverinfo.devicemeshrouterlinks != null) && (Array.isArray(serverinfo.devicemeshrouterlinks.extralinks))) {
+                        for (var i in serverinfo.devicemeshrouterlinks.extralinks) {
+                            var r = serverinfo.devicemeshrouterlinks.extralinks[i], p = 0;
+                            if ((r.filter == null) || (Array.isArray(r.filter) && ((r.filter.indexOf(mesh._id) >= 0) || (r.filter.indexOf(node._id) >= 0)))) {
+                                if (typeof r.protocol == 'number') { p = r.protocol; } else if (r.protocol == 'http') { p = 1; } else if (r.protocol == 'https') { p = 2; } else if (r.protocol == 'rdp') { p = 3; } else if (r.protocol == 'ssh') { p = 4; } else if (r.protocol == 'scp') { p = 5; }
+                                x += '<a href=# onclick=p10MCRouter("' + node._id + '",' + p + ',' + r.port + (r.ip?(',\"' + r.ip + '\"'):'') + ')>' + r.name + '</a>&nbsp;';
+                            }
+                        }
+                    }
+                }
+            }
+
+            return x;
         }
 
         // Show device help requests
@@ -6917,18 +7027,21 @@
         }
 
         function p10MCRouter(nodeid, protocol, port, ip) {
-            if ((protocol == 3) && (port == null)) { if (currentNode.rdpport != null) { port = currentNode.rdpport; } else { port = 3389; } }
+            var node = getNodeFromId(nodeid);
+            if ((protocol == 3) && (port == null)) { if (node.rdpport != null) { port = node.rdpport; } else { port = 3389; } }
             meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, ip: ip, tag: 'MCRouter', protocol: protocol }); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP
             return false;
         }
 
         function p10rfb(nodeid, port) {
-            if (port == null) { if (currentNode.rfbport != null) { port = currentNode.rfbport; } else { port = 5900; } }
+            var node = getNodeFromId(nodeid);
+            if (port == null) { if (node.rfbport != null) { port = node.rfbport; } else { port = 5900; } }
             meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'novnc' });
         }
 
         function p10mstsc(nodeid, port) {
-            if (port == null) { if (currentNode.rdpport != null) { port = currentNode.rdpport; } else { port = 3389; } }
+            var node = getNodeFromId(nodeid);
+            if (port == null) { if (node.rdpport != null) { port = node.rdpport; } else { port = 3389; } }
             meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'mstsc' });
         }
 
@@ -10159,7 +10272,7 @@
                 if (meshrights == 0xFFFFFFFF) rights = "Full Administrator"; else if (meshrights == 0) rights = "No Rights";
 
                 // Print the mesh information
-                r += '<div onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:431px;height:50px;padding-top:1px;padding-bottom:1px;float:left><div style=float:left;width:30px;height:100%></div><div tabindex=0 style=height:100%;cursor:pointer onclick=gotoMesh(\'' + sortedMeshes[i]._id + '\') onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + sortedMeshes[i]._id + '\')"><div class=mi style=float:left;width:50px;height:50px></div><div style=height:100%><div class=g1></div><div class=e2 style=width:300px><div class=e1>' + EscapeHtml(sortedMeshes[i].name) + '</div><div>' + rights + '</div></div><div class=g2 style=float:left></div></div></div></div>';
+                r += '<div onmouseover=devGrpMouseHover(this,1) onmouseout=devGrpMouseHover(this,0) style=display:inline-block;width:431px;height:50px;padding-top:1px;padding-bottom:1px;float:left><div style=float:left;width:30px;height:100%></div><div tabindex=0 style=height:100%;cursor:pointer onclick=gotoMesh(\'' + sortedMeshes[i]._id + '\') onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + sortedMeshes[i]._id + '\')"><div class=mi style=float:left;width:50px;height:50px></div><div style=height:100%><div class=g1></div><div class=e2 style=width:300px><div class=e1>' + EscapeHtml(sortedMeshes[i].name) + '</div><div>' + rights + '</div></div><div class=g2 style=float:left></div></div></div></div>';
             }
 
             meshcount = count;
