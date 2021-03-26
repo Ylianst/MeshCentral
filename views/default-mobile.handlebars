@@ -1637,6 +1637,7 @@
                         }
                         case 'accountchange': {
                             // An account was created or changed
+                            if ((typeof message.event.account != 'object') || (message.event.account == null)) { console.log(message.event); return; };
                             if (userinfo.name == message.event.account.name) {
                                 var newsiteadmin = message.event.account.siteadmin ? message.event.account.siteadmin : 0;
                                 var oldsiteadmin = userinfo.siteadmin ? userinfo.siteadmin : 0;
