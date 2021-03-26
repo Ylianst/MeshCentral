@@ -3772,7 +3772,7 @@
                 }
 
                 // Add a "Add Device Group" option
-                r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:small>';
+                r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:small;margin-top:4px>';
                 if ((view < 3) && (sort == 0) && (Object.keys(meshes).length > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) {
                     r += '<a href=# onclick="return account_createMesh()" title="' + "Create a new group of devices." + '" style=cursor:pointer>' + "Add Device Group" + '</a>&nbsp';
                 }
@@ -3987,7 +3987,7 @@
             if ((!node.conn) || (node.conn == 0)) { icon += ' gray'; }
 
             if (view == 1) {
-                div.innerHTML = '<table id=devs cmenu=devsContentMenu onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=width:100%;height:100%><tr><td style=width:22px><input class="' + node.meshid + ' DeviceCheckbox" onchange=p1devcheck(event) value=devid_' + node._id + ' type=checkbox ' + (checkedNodeids[node._id]?' checked':'') + '></td><td><table onclick=gotoDevice(\'' + node._id + '\',null,null,event) border=0 cellspacing=0 style=width:100%;height:100%;cursor:pointer><tr><td style=width:50px tabindex=0 onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)"><div class="i' + icon + '" style=width:50px></div></td><td class=g1t></td><td class=e2t><div class=e1t title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></td><td class=g2t></td></tr></table></td></tr></table>' + devNotify;
+                div.innerHTML = '<table id=devs cmenu=devsContentMenu onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=width:100%;height:100%><tr><td style=width:22px><input class="' + node.meshid + ' DeviceCheckbox" onchange=p1devcheck(event) value=devid_' + node._id + ' type=checkbox ' + (checkedNodeids[node._id]?' checked':'') + '></td><td><table onclick=gotoDevice(\'' + node._id + '\',null,null,event) border=0 cellspacing=0 style=width:100%;height:100%;cursor:pointer><tr><td style=width:50px tabindex=0 onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)"><div class="i' + icon + '" style=width:50px></div></td><td class=g1t></td><td class=e2t><div class=e1t style=width:' + ((div.clientWidth) - 120) + 'px title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></td><td class=g2t></td></tr></table></td></tr></table>' + devNotify;
             } else if (view == 2) {
                 var states = [];
                 if (node.conn) {
