@@ -717,7 +717,7 @@ body {
     width: 120px;
 }
 
-#devListToolbarView, #devListToolbarSort, #devListToolbarSize {
+#devListToolbarView, #devListToolbarSort, #devListToolbarSize, #devListToolbarSettings {
     float: right;
 }
 
