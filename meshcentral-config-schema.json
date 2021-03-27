@@ -303,7 +303,7 @@
                     "type": "string"
                   },
                   "filter": {
-                    "description": "Array of node/domain/id or mesh/domain/id strings. When set, the link will only show up for the specified devices or device groups.",
+                    "description": "Array of node/<domain>/<id> or mesh/<domain>/<id> or tag:<tag> strings. When set, the link will only show up for the specified devices, device groups or device tag.",
                     "type": "array",
                     "items": { "type": "string" }
                   }
