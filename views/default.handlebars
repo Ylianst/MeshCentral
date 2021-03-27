@@ -2693,7 +2693,7 @@
                         case 'accountcreate':
                         case 'accountchange': {
                             // An account was created or changed
-                            if ((typeof message.event.account != 'object') || (message.event.account == null)) console.log(message.event); return;
+                            if ((typeof message.event.account != 'object') || (message.event.account == null)) { console.log(message.event); return; }
                             if (userinfo._id == message.event.account._id) {
                                 var newsiteadmin = message.event.account.siteadmin?message.event.account.siteadmin:0;
                                 var oldsiteadmin = userinfo.siteadmin?userinfo.siteadmin:0;
@@ -4091,8 +4091,7 @@
 
         // Return HTML with a list of MeshCentral Router links
         function getShortRouterLinks(node) {
-            var x = '';
-            var meshrights = GetNodeRights(node);
+            var x = '', meshrights = GetNodeRights(node);
 
             // RDP link, show this link only of the remote machine is Windows.
             if (((node.conn & 1) != 0) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
@@ -4119,7 +4118,7 @@
                     if ((serverinfo.devicemeshrouterlinks != null) && (Array.isArray(serverinfo.devicemeshrouterlinks.extralinks))) {
                         for (var i in serverinfo.devicemeshrouterlinks.extralinks) {
                             var r = serverinfo.devicemeshrouterlinks.extralinks[i], p = 0;
-                            if ((r.filter == null) || (Array.isArray(r.filter) && ((r.filter.indexOf(mesh._id) >= 0) || (r.filter.indexOf(node._id) >= 0)))) {
+                            if ((r.filter == null) || (Array.isArray(r.filter) && ((r.filter.indexOf(node.meshid) >= 0) || (r.filter.indexOf(node._id) >= 0)))) {
                                 if (typeof r.protocol == 'number') { p = r.protocol; } else if (r.protocol == 'http') { p = 1; } else if (r.protocol == 'https') { p = 2; } else if (r.protocol == 'rdp') { p = 3; } else if (r.protocol == 'ssh') { p = 4; } else if (r.protocol == 'scp') { p = 5; }
                                 x += '<a href=# onclick=p10MCRouter("' + node._id + '",' + p + ',' + r.port + (r.ip?(',\"' + r.ip + '\"'):'') + ')>' + r.name + '</a>&nbsp;';
                             }
