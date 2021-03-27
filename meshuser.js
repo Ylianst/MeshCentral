@@ -2905,6 +2905,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     var err = null;
                     try {
+                        // Support for old web pages that sent the meshtype as a string.
+                        if (typeof command.meshtype == 'string') { command.meshtype = parseInt(command.meshtype); }
+
                         // Check if we have new group restriction
                         if ((user.siteadmin != SITERIGHT_ADMIN) && ((user.siteadmin & 64) != 0)) { err = 'Permission denied'; }
 
