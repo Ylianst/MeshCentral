@@ -4118,7 +4118,7 @@
                     if ((serverinfo.devicemeshrouterlinks != null) && (Array.isArray(serverinfo.devicemeshrouterlinks.extralinks))) {
                         for (var i in serverinfo.devicemeshrouterlinks.extralinks) {
                             var r = serverinfo.devicemeshrouterlinks.extralinks[i], p = 0;
-                            if ((r.filter == null) || (Array.isArray(r.filter) && ((r.filter.indexOf(node.meshid) >= 0) || (r.filter.indexOf(node._id) >= 0)))) {
+                            if (doesDeviceMatchFilterTags(node, r.filter)) {
                                 if (typeof r.protocol == 'number') { p = r.protocol; } else if (r.protocol == 'http') { p = 1; } else if (r.protocol == 'https') { p = 2; } else if (r.protocol == 'rdp') { p = 3; } else if (r.protocol == 'ssh') { p = 4; } else if (r.protocol == 'scp') { p = 5; }
                                 x += '<a href=# onclick=p10MCRouter("' + node._id + '",' + p + ',' + r.port + (r.ip?(',\"' + r.ip + '\"'):'') + ')>' + r.name + '</a>&nbsp;';
                             }
@@ -4128,6 +4128,16 @@
             }
 
             return x;
+        }
+
+        // Check if this device matches any of the given filters
+        function doesDeviceMatchFilterTags(node, filter) {
+            if (filter == null) return true; // No filters, every device matches.
+            if (!Array.isArray(filter)) return false; // Bad filter
+            if (filter.indexOf(node.meshid) >= 0) return true; // Device group match
+            if (filter.indexOf(node._id) >= 0) return true; // Nodeid match
+            if (Array.isArray(node.tags)) { for (var i in node.tags) { if (filter.indexOf('tag:' + node.tags[i]) >= 0) return true; } } // Tag match
+            return false;
         }
 
         // Show device help requests
@@ -6316,7 +6326,7 @@
                         if ((serverinfo.devicemeshrouterlinks != null) && (Array.isArray(serverinfo.devicemeshrouterlinks.extralinks))) {
                             for (var i in serverinfo.devicemeshrouterlinks.extralinks) {
                                 var r = serverinfo.devicemeshrouterlinks.extralinks[i], p = 0;
-                                if ((r.filter == null) || (Array.isArray(r.filter) && ((r.filter.indexOf(mesh._id) >= 0) || (r.filter.indexOf(node._id) >= 0)))) {
+                                if (doesDeviceMatchFilterTags(node, r.filter)) {
                                     if (typeof r.protocol == 'number') { p = r.protocol; } else if (r.protocol == 'http') { p = 1; } else if (r.protocol == 'https') { p = 2; } else if (r.protocol == 'rdp') { p = 3; } else if (r.protocol == 'ssh') { p = 4; } else if (r.protocol == 'scp') { p = 5; }
                                     x += '<a href=# onclick=p10MCRouter("' + node._id + '",' + p + ',' + r.port + (r.ip?(',\"' + r.ip + '\"'):'') + ') title="' + "Requires installation of MeshCentral Router." + '">' + r.name + '</a>&nbsp;';
                                 }
