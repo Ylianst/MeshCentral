@@ -4458,6 +4458,7 @@
     },
     {
       "en": "Agent IP address",
+      "nl": "IP-adres agent",
       "xloc": [
         "default.handlebars->31->233"
       ]
@@ -12333,6 +12334,7 @@
     },
     {
       "en": "Device View Columns",
+      "nl": "Kolomweergave apparaat",
       "xloc": [
         "default.handlebars->31->235"
       ]
@@ -19868,6 +19870,7 @@
     },
     {
       "en": "Intel&reg; AMT One Click Recovery",
+      "en": "Intel&reg; AMT herstel met één klik",
       "fr": "Récupération en un clic Intel® AMT",
       "xloc": [
         "default.handlebars->31->841",
@@ -19896,6 +19899,7 @@
     },
     {
       "en": "Intel&reg; AMT Power Operation",
+      "en": "Intel&reg; AMT Stroomvoorziening",
       "fr": "Fonctionnement de l'alimentation Intel® AMT ",
       "xloc": [
         "default.handlebars->31->855",
@@ -19905,6 +19909,7 @@
     },
     {
       "en": "Intel&reg; AMT Power off",
+      "nl": "Intel&reg; AMT Afsluiten",
       "fr": "Extinction Intel® AMT",
       "xloc": [
         "default.handlebars->31->840"
@@ -19912,6 +19917,7 @@
     },
     {
       "en": "Intel&reg; AMT Power on",
+      "nl": "Intel&reg; AMT Opstarten",
       "fr": "Démarrage Intel® AMT",
       "xloc": [
         "default.handlebars->31->839"
@@ -19940,6 +19946,7 @@
     },
     {
       "en": "Intel&reg; AMT Reset",
+      "nl": "Intel&reg; AMT Reset",
       "fr": "Redémarrage Intel® AMT",
       "xloc": [
         "default.handlebars->31->838"
@@ -22478,6 +22485,7 @@
     },
     {
       "en": "Links",
+      "nl": "Links",
       "xloc": [
         "default.handlebars->31->247"
       ]
@@ -23361,6 +23369,7 @@
     },
     {
       "en": "Logged in users",
+      "nl": "Ingelogde gebruikers",
       "xloc": [
         "default.handlebars->31->232"
       ]
@@ -24806,6 +24815,7 @@
     },
     {
       "en": "MeshCentral Router Links",
+      "nl": "MeshCentral Router Links",
       "xloc": [
         "default.handlebars->31->231"
       ]
@@ -29351,6 +29361,7 @@
     },
     {
       "en": "Perform Intel&reg; AMT power off?",
+      "nl": "Uitvoeren Intel&reg; AMT uitschakelen?",
       "fr": "Éteindre par Intel® AMT ?",
       "xloc": [
         "default.handlebars->31->858"
@@ -29358,6 +29369,7 @@
     },
     {
       "en": "Perform Intel&reg; AMT power on?",
+      "nl": "Uitvoeren Intel&reg; AMT inschakelen?",
       "fr": "Démarrage par Intel® AMT ?",
       "xloc": [
         "default.handlebars->31->856"
@@ -29365,6 +29377,7 @@
     },
     {
       "en": "Perform Intel&reg; AMT reset?",
+      "nl": "Uitvoeren Intel&reg; AMT reset?",
       "fr": "Redémarrage par Intel® AMT ?",
       "xloc": [
         "default.handlebars->31->860"
@@ -29506,6 +29519,7 @@
     },
     {
       "en": "Personal Notes",
+      "nl": "Persoonlijke notities",
       "fr": "Notes personnelles",
       "xloc": [
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu->1->1->0->3"
@@ -29513,6 +29527,7 @@
     },
     {
       "en": "Personal notes",
+      "nl": "Persoonlijke notities",
       "fr": "Notes personnelles",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->13->0"
@@ -34830,6 +34845,7 @@
     },
     {
       "en": "Server Connectivity",
+      "nl": "Server connectiviteit",
       "xloc": [
         "default.handlebars->31->234"
       ]
