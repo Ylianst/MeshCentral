@@ -603,8 +603,16 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         SendUserAuthFail(socket);
                         return -1;
                     }
-                    var meshIdStart = '/' + username, mesh = null;
-                    if (obj.parent.webserver.meshes) { for (var i in obj.parent.webserver.meshes) { if (obj.parent.webserver.meshes[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) { mesh = obj.parent.webserver.meshes[i]; break; } } }
+                    // Find the device group for this CIRA connection. Since Intel AMT does not allow @ or $ in the username, we escape these.
+                    // For possible for CIRA-LMS connections to still send @ or $, so we need to escape both sides.
+                    var meshIdStart = ('/' + username).replace(/\@/g, 'X').replace(/\$/g, 'X'), mesh = null;
+                    if (obj.parent.webserver.meshes) {
+                        for (var i in obj.parent.webserver.meshes) {
+                            if (obj.parent.webserver.meshes[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) {
+                                mesh = obj.parent.webserver.meshes[i]; break;
+                            }
+                        }
+                    }
                     if (mesh == null) {
                         meshNotFoundCount++;
                         socket.ControlMsg({ action: 'console', msg: 'Device group not found' });
