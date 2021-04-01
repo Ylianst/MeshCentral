@@ -561,8 +561,20 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 // If the login uses a cookie, check this now
                 if ((username == '**MeshAgentApfTunnel**') && (password != null)) {
                     const cookie = parent.decodeCookie(password, parent.loginCookieEncryptionKey);
-                    if ((cookie == null) || (cookie.a !== 'apf')) { incorrectPasswordCount++; parent.debug('mps', 'Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
-                    if (obj.parent.webserver.meshes[cookie.m] == null) { meshNotFoundCount++; parent.debug('mps', 'Device group not found', username, password); SendUserAuthFail(socket); return -1; }
+                    if ((cookie == null) || (cookie.a !== 'apf')) {
+                        incorrectPasswordCount++;
+                        socket.ControlMsg({ action: 'console', msg: 'Invalid login username/password' });
+                        parent.debug('mps', 'Incorrect password', username, password);
+                        SendUserAuthFail(socket);
+                        return -1;
+                    }
+                    if (obj.parent.webserver.meshes[cookie.m] == null) {
+                        meshNotFoundCount++;
+                        socket.ControlMsg({ action: 'console', msg: 'Device group not found' });
+                        parent.debug('mps', 'Device group not found', username, password);
+                        SendUserAuthFail(socket);
+                        return -1;
+                    }
 
                     // Setup the connection
                     socket.tag.nodeid = cookie.n;
@@ -575,13 +587,31 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     return 18 + usernameLen + serviceNameLen + methodNameLen + passwordLen;
                 } else {
                     // Check the CIRA password
-                    if ((args.mpspass != null) && (password != args.mpspass)) { incorrectPasswordCount++; parent.debug('mps', 'Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
+                    if ((args.mpspass != null) && (password != args.mpspass)) {
+                        incorrectPasswordCount++;
+                        socket.ControlMsg({ action: 'console', msg: 'Invalid login username/password' });
+                        parent.debug('mps', 'Incorrect password', username, password);
+                        SendUserAuthFail(socket);
+                        return -1;
+                    }
 
                     // Check the CIRA username, which should be the start of the MeshID.
-                    if (usernameLen != 16) { badUserNameLengthCount++; parent.debug('mps', 'Username length not 16', username, password); SendUserAuthFail(socket); return -1; }
+                    if (usernameLen != 16) {
+                        badUserNameLengthCount++;
+                        socket.ControlMsg({ action: 'console', msg: 'Username length not 16' });
+                        parent.debug('mps', 'Username length not 16', username, password);
+                        SendUserAuthFail(socket);
+                        return -1;
+                    }
                     var meshIdStart = '/' + username, mesh = null;
                     if (obj.parent.webserver.meshes) { for (var i in obj.parent.webserver.meshes) { if (obj.parent.webserver.meshes[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) { mesh = obj.parent.webserver.meshes[i]; break; } } }
-                    if (mesh == null) { meshNotFoundCount++; parent.debug('mps', 'Device group not found', username, password); SendUserAuthFail(socket); return -1; }
+                    if (mesh == null) {
+                        meshNotFoundCount++;
+                        socket.ControlMsg({ action: 'console', msg: 'Device group not found' });
+                        parent.debug('mps', 'Device group not found', username, password);
+                        SendUserAuthFail(socket);
+                        return -1;
+                    }
                 }
 
                 // If this is a agent-less mesh, use the device guid 3 times as ID.
