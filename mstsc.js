@@ -67,7 +67,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 if (args.tlsoffload) { protocol = 'ws'; }
                 var domainadd = '';
                 if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-                var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + 'meshrelay.ashx?auth=' + obj.infos.ip;
+                var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + 'meshrelay.ashx?noping=1&auth=' + obj.infos.ip;
                 parent.parent.debug('relay', 'RDP: Connection websocket to ' + url);
                 obj.wsClient = new WebSocket(url, options);
                 obj.wsClient.on('open', function () { parent.parent.debug('relay', 'RDP: Relay websocket open'); });

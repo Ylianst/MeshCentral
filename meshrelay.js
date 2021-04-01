@@ -299,9 +299,11 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     // Remove the timeout
                     if (relayinfo.timeout) { clearTimeout(relayinfo.timeout); delete relayinfo.timeout; }
 
-                    // Setup the agent PING/PONG timers
-                    if ((typeof parent.parent.args.agentping == 'number') && (obj.pingtimer == null)) { obj.pingtimer = setInterval(sendPing, parent.parent.args.agentping * 1000); }
-                    else if ((typeof parent.parent.args.agentpong == 'number') && (obj.pongtimer == null)) { obj.pongtimer = setInterval(sendPong, parent.parent.args.agentpong * 1000); }
+                    // Setup the agent PING/PONG timers unless requested not to
+                    if ((obj.req.query.noping != 1) && (obj.peer.req != null) && (obj.peer.req.query != null) && (obj.peer.req.query.noping != 1)) {
+                        if ((typeof parent.parent.args.agentping == 'number') && (obj.pingtimer == null)) { obj.pingtimer = setInterval(sendPing, parent.parent.args.agentping * 1000); }
+                        else if ((typeof parent.parent.args.agentpong == 'number') && (obj.pongtimer == null)) { obj.pongtimer = setInterval(sendPong, parent.parent.args.agentpong * 1000); }
+                    }
 
                     // Setup session recording
                     var sessionUser = obj.user;
