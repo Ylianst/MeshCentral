@@ -5544,6 +5544,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 //console.log(command, file);
                 break;
             }
+            case 'serverAuth': { // This command is used to perform server "inner" authentication.
+                if (common.validateString(command.cnonce, 1, 256) == false) break; // Check the client nonce
+                if (common.validateString(command.tlshash, 1, 512) == false) break; // Check the TLS hash
+
+                // Check that the TLS hash is an acceptable one.
+                var h = Buffer.from(command.tlshash, 'hex').toString('binary');
+                if ((parent.webCertificateHashs[domain.id] != h) && (parent.webCertificateFullHashs[domain.id] != h) && (parent.defaultWebCertificateHash != h) && (parent.defaultWebCertificateFullHash != h)) { obj.close(); return; }
+
+                // TLS hash check is a success, sign the request.
+                // Perform the hash signature using the server agent certificate
+                var nonce = parent.crypto.randomBytes(48);
+                var signData = Buffer.from(command.cnonce, 'base64').toString('binary') + h + nonce.toString('binary'); // Client Nonce + TLS Hash + Server Nonce
+                parent.parent.certificateOperations.acceleratorPerformSignature(0, signData, null, function (tag, signature) {
+                    // Send back our certificate + nonce + signature
+                    ws.send(JSON.stringify({ 'action': 'serverAuth', 'cert': Buffer.from(parent.agentCertificateAsn1, 'binary').toString('base64'), 'nonce': nonce.toString('base64'), 'signature': Buffer.from(signature,'binary').toString('base64') }));
+                });
+                break;
+            }
             default: {
                 // Unknown user action
                 console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');

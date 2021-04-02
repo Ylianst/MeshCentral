@@ -1344,7 +1344,8 @@ function getSystemInformation(func) {
             } catch (e) { }
         }
         results.hardware.agentvers = process.versions;
-        results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
+        var hasher = require('SHA384Stream').create();
+        results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
         func(results);
 
         /*
@@ -1359,25 +1360,25 @@ function getSystemInformation(func) {
                 p.then(function (res)
                 {
                     results.volumes = res;
-                    results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
+                    results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                     func(results);
                 });
             }
             else if (require('identifiers').volumes != null)
             {
                 results.volumes = require('identifiers').volumes();
-                results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
+                results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                 func(results);
             }
             else
             {
-                results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
+                results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                 func(results);
             }
         }
         else
         {
-            results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
+            results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
             func(results);
         }
         */
