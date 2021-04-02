@@ -68,6 +68,7 @@ var FullSite_IntelAmtLocalWebApp = "H4sIAAAAAAAEAMQ5h3ajvNKvwu/9SnI2JICNa7zn4JLu
 // Check the server certificate fingerprint
 function onVerifyServer(clientName, certs) {
     if (certs == null) { certs = clientName; } // Temporary thing until we fix duktape
+    settings.meshServerTlsHash = certs[certs.length - 1].fingerprint.split(':').join(''); // This is used to delayed server authentication
     try { for (var i in certs) { if (certs[i].fingerprint.replace(/:/g, '') == settings.serverhttpshash) { return; } } } catch (e) { }
     if (settings.serverhttpshash != null) {
         console.log('Error: Failed to verify server certificate.');
@@ -2038,10 +2039,28 @@ function OnServerWebSocket(msg, s, head) {
                 }
                 break;
             }
+            case 'serverAuth': {
+                // Check that the server certificate matches the serverid we have
+                var hasher = require('SHA384Stream').create();
+                var certDer = Buffer.from(command.cert, 'base64');
+                var cert = require('tls').loadCertificate({ der: certDer });
+                if (cert.getKeyHash().toString('hex') != settings.serverid) { console.log("Unable to authenticate the server, invalid server identifier."); process.exit(1); return; }
+
+                // Hash the signed data and verify the server signature
+                var signDataHash = hasher.syncHash(Buffer.concat([Buffer.from(settings.serverAuthClientNonce, 'base64'), Buffer.from(settings.meshServerTlsHash, 'hex'), Buffer.from(command.nonce, 'base64')]));
+                if (require('RSA').verify(require('RSA').TYPES.SHA384, cert, signDataHash, Buffer.from(command.signature, 'base64')) == false) { console.log("Unable to authenticate the server, invalid signature."); process.exit(1); return; }
+
+                console.log('Server is authenticated'); // TODO: Send username/password to server.
+                break;
+            }
         }
     });
     s.on('error', function () { console.log("Server connection error."); process.exit(1); return; });
     s.on('close', function () { console.log("Server closed the connection."); process.exit(1); return; });
+
+    // Perform inner server authentication
+    //settings.serverAuthClientNonce = require('EncryptionStream').GenerateRandom(48).toString('base64');
+    //s.write("{\"action\":\"serverAuth\",\"cnonce\":\"" + settings.serverAuthClientNonce + "\",\"tlshash\":\"" + settings.meshServerTlsHash + "\"}"); // Ask for server authentication
 }
 
 function startRouterEx() {
