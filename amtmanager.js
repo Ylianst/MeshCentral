@@ -2293,7 +2293,7 @@ module.exports.CreateAmtManager = function (parent) {
                         cert.XPrivateKey = keys[j]; // Link the certificate to the key pair
                     }
                 }
-            } catch (e) { console.log(e); }
+            } catch (ex) { console.log(ex); }
         }
     }
 
