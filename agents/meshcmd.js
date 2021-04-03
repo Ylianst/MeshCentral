@@ -486,8 +486,11 @@ function run(argv) {
         if ((settings.remotenodeid == null) || (typeof settings.remotenodeid != 'string')) { console.log('No or invalid \"remoteNodeId\" specified.'); exit(1); return; }
         if (((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) && (settings.authcookie == null || typeof settings.authcookie != 'string' || settings.authcookie == '')) { console.log('No or invalid \"username\" specified, use --username [username].'); exit(1); return; }
         if (((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) && (settings.authcookie == null || typeof settings.authcookie != 'string' || settings.authcookie == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
-        if ((settings.serverid == null) || (typeof settings.serverid != 'string') || (settings.serverid.length != 96)) { console.log('No or invalid \"serverId\" specified.'); exit(1); return; }
-        if ((settings.serverhttpshash == null) || (typeof settings.serverhttpshash != 'string') || (settings.serverhttpshash.length != 96)) { console.log('No or invalid \"serverHttpsHash\" specified.'); exit(1); return; }
+        if (settings.serverid != null) {
+            if ((typeof settings.serverid != 'string') || (settings.serverid.length != 96)) { console.log('No or invalid \"serverId\" specified.'); exit(1); return; }
+        } else {
+            if ((settings.serverhttpshash == null) || (typeof settings.serverhttpshash != 'string') || (settings.serverhttpshash.length != 96)) { console.log('No or invalid \"serverHttpsHash\" or \"serverId\" specified.'); exit(1); return; }
+        }
         if ((settings.remoteport == null) || (typeof settings.remoteport != 'number') || (settings.remoteport < 0) || (settings.remoteport > 65535)) { console.log('No or invalid \"remotePort\" specified, use --remoteport [remoteport].'); exit(1); return; }
         if (settings.serverurl != null) { startRouter(); } else { discoverMeshServer(); } // Start MeshCentral Router
     } else if ((settings.action == 'amtloadwebapp') || (settings.action == 'amtloadsmallwebapp') || (settings.action == 'amtloadlargewebapp') || (settings.action == 'amtclearwebapp') || (settings.action == 'amtstoragestate')) { // Intel AMT Web Application Actions
@@ -1997,7 +2000,7 @@ function startRouter() {
                     options.headers = { 'x-meshauth': Buffer.from(settings.username, 'binary').toString('base64') + ',' + Buffer.from(settings.password, 'binary').toString('base64') };
                 }
             }
-        }
+        } else { options.headers = { 'x-meshauth': '*' }; } // Request inner authentication
         if (settings.loginkey) { xurlargs.push('key=' + settings.loginkey); }
         if (xurlargs.length > 0) { options.path += '?' + xurlargs.join('&'); }
     } catch (e) { console.log("Unable to parse \"serverUrl\"."); process.exit(1); return; }
