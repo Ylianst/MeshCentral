@@ -5263,7 +5263,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { ws.close(); return; } // Check 3FA URL key
                 PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) {
                     if (user == null) { // User is not authenticated, perform inner server authentication
-                        PerformWSSessionInnerAuth(ws, req, domain, function (ws1, req1, domain, user) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); // User is authenticated
+                        if (req.headers['x-meshauth'] === '*') {
+                            PerformWSSessionInnerAuth(ws, req, domain, function (ws1, req1, domain, user) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); // User is authenticated
+                        } else {
+                            try { ws.close(); } catch (ex) { } // user is not authenticated and inner authentication was not requested, disconnect now.
+                        }
                     } else {
                         obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); // User is authenticated
                     }
@@ -5881,6 +5885,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 domain = checkUserIpAddress(ws, req);
                 if (domain == null) { parent.debug('web', 'WSERROR: Got no domain, user auth required.'); return; }
             }
+
+            // Check if inner authentication is requested
+            if (req.headers['x-meshauth'] === '*') { func(ws, req, domain, null); return; }
 
             var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
 
