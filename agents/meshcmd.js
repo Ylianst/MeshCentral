@@ -2023,8 +2023,12 @@ function OnServerWebSocket(msg, s, head) {
                     if (command.msg == 'tokenrequired') {
                         if (command.email2fasent === true) {
                             console.log("Login token email sent.");
-                        } else if (command.email2fa === true) {
+                        } else if ((command.email2fa === true) && (command.sms2fa === true)) {
                             console.log("Login token required, use --token [token], or --emailtoken, --smstoken get a token.");
+                        } else if (command.sms2fa === true) {
+                            console.log("Login token required, use --token [token], or --smstoken get a token.");
+                        } else if (command.email2fa === true) {
+                            console.log("Login token required, use --token [token], or --emailtoken get a token.");
                         } else {
                             console.log("Login token required, use --token [token].");
                         }

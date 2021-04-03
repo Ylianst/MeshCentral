@@ -5782,12 +5782,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if ((err == null) && (user)) {
                                 // Check if a 2nd factor is needed
                                 var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+
+                                // See if we support two-factor trusted cookies
+                                var twoFactorCookieDays = 30;
+                                if (typeof domain.twofactorcookiedurationdays == 'number') { twoFactorCookieDays = domain.twofactorcookiedurationdays; }
+
                                 if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
                                     // Figure out if email 2FA is allowed
                                     var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
                                     var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
-                                    if ((typeof req.query.token != 'string') || (req.query.token == '**email**') || (req.query.token == '**sms**')) {
-                                        if ((req.query.token == '**email**') && (email2fa == true)) {
+                                    if ((typeof command.token != 'string') || (command.token == '**email**') || (command.token == '**sms**')) {
+                                        if ((command.token == '**email**') && (email2fa == true)) {
                                             // Cause a token to be sent to the user's registered email
                                             user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
                                             obj.db.SetUser(user);
@@ -5795,7 +5800,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                             domain.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
                                             // Ask for a login token & confirm email was sent
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
-                                        } else if ((req.query.token == '**sms**') && (sms2fa == true)) {
+                                        } else if ((command.token == '**sms**') && (sms2fa == true)) {
                                             // Cause a token to be sent to the user's phone number
                                             user.otpsms = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
                                             obj.db.SetUser(user);
@@ -5806,10 +5811,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         } else {
                                             // Ask for a login token
                                             parent.debug('web', 'Asking for login token');
-                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (ex) { console.log(ex); }
                                         }
                                     } else {
-                                        checkUserOneTimePassword(req, domain, user, req.query.token, null, function (result) {
+                                        checkUserOneTimePassword(req, domain, user, command.token, null, function (result) {
                                             if (result == false) {
                                                 // Failed, ask for a login token again
                                                 parent.debug('web', 'Invalid login token, asking again');
