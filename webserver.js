@@ -4585,7 +4585,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 res.send(JSON.stringify(meshaction, null, ' '));
                 return;
             } else if (req.query.meshaction == 'winrouter') {
-                console.log('t2');
                 var p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe');
                 if (obj.fs.existsSync(p)) {
                     setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.exe', null, 'MeshCentralRouter.exe');
@@ -5071,7 +5070,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             name: 'xid', // Recommended security practice to not use the default cookie name
             httpOnly: true,
             keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
-            secure: (obj.args.tlsoffload == null) // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
+            secure: true // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
         }
         if (obj.args.sessionsamesite != null) { sessionOptions.sameSite = obj.args.sessionsamesite; } else { sessionOptions.sameSite = 'strict'; }
         if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60 * 1000); }
@@ -5262,7 +5261,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.ws(url + 'control.ashx', function (ws, req) {
                 const domain = getDomain(req);
                 if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { ws.close(); return; } // Check 3FA URL key
-                PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); });
+                PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) {
+                    if (user == null) { // User is not authenticated, perform inner server authentication
+                        PerformWSSessionInnerAuth(ws, req, domain, function (ws1, req1, domain, user) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); // User is authenticated
+                    } else {
+                        obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); // User is authenticated
+                    }
+                });
             });
             obj.app.ws(url + 'devicefile.ashx', function (ws, req) { obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, ws, null, req, domain); });
             obj.app.get(url + 'devicefile.ashx', handleDeviceFile);
@@ -5733,6 +5738,129 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Start on a second agent-only alternative port if needed.
         if (obj.args.agentport) { CheckListenPort(obj.args.agentport, obj.args.agentportbind, StartAltWebServer); }
+    }
+
+    // Perform server inner authentication
+    // This is a type of server authentication where the client will open the socket regardless of the TLS certificate and request that the server
+    // sign a client nonce with the server agent cert and return the response. Only after that will the client send the client authentication username
+    // and password or authentication cookie.
+    function PerformWSSessionInnerAuth(ws, req, domain, func) {
+        // When data is received from the web socket
+        ws.on('message', function (data) {
+            var command;
+            try { command = JSON.parse(data.toString('utf8')); } catch (e) { return; }
+            if (obj.common.validateString(command.action, 3, 32) == false) return; // Action must be a string between 3 and 32 chars
+
+            switch (command.action) {
+                case 'serverAuth': { // This command is used to perform server "inner" authentication.
+                    if (obj.common.validateString(command.cnonce, 1, 256) == false) break; // Check the client nonce
+                    if (obj.common.validateString(command.tlshash, 1, 512) == false) break; // Check the TLS hash
+
+                    // Check that the TLS hash is an acceptable one.
+                    var h = Buffer.from(command.tlshash, 'hex').toString('binary');
+                    if ((obj.webCertificateHashs[domain.id] != h) && (obj.webCertificateFullHashs[domain.id] != h) && (obj.defaultWebCertificateHash != h) && (obj.defaultWebCertificateFullHash != h)) { try { ws.close(); } catch (ex) { } return; }
+
+                    // TLS hash check is a success, sign the request.
+                    // Perform the hash signature using the server agent certificate
+                    var nonce = obj.crypto.randomBytes(48);
+                    var signData = Buffer.from(command.cnonce, 'base64').toString('binary') + h + nonce.toString('binary'); // Client Nonce + TLS Hash + Server Nonce
+                    parent.certificateOperations.acceleratorPerformSignature(0, signData, null, function (tag, signature) {
+                        // Send back our certificate + nonce + signature
+                        ws.send(JSON.stringify({ 'action': 'serverAuth', 'cert': Buffer.from(obj.agentCertificateAsn1, 'binary').toString('base64'), 'nonce': nonce.toString('base64'), 'signature': Buffer.from(signature, 'binary').toString('base64') }));
+                    });
+                    break;
+                }
+                case 'userAuth': { // This command is used to perform user authentication.
+                    // Check username and password authentication
+                    if ((typeof command.username == 'string') && (typeof command.password == 'string')) {
+                        obj.authenticate(Buffer.from(command.username, 'base64').toString(), Buffer.from(command.password, 'base64').toString(), domain, function (err, userid) {
+                            var user = obj.users[userid];
+                            if ((err == null) && (user)) {
+                                // Check if a 2nd factor is needed
+                                var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+                                if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
+                                    // Figure out if email 2FA is allowed
+                                    var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
+                                    var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
+                                    if ((typeof req.query.token != 'string') || (req.query.token == '**email**') || (req.query.token == '**sms**')) {
+                                        if ((req.query.token == '**email**') && (email2fa == true)) {
+                                            // Cause a token to be sent to the user's registered email
+                                            user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
+                                            obj.db.SetUser(user);
+                                            parent.debug('web', 'Sending 2FA email to: ' + user.email);
+                                            domain.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
+                                            // Ask for a login token & confirm email was sent
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
+                                        } else if ((req.query.token == '**sms**') && (sms2fa == true)) {
+                                            // Cause a token to be sent to the user's phone number
+                                            user.otpsms = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
+                                            obj.db.SetUser(user);
+                                            parent.debug('web', 'Sending 2FA SMS to: ' + user.phone);
+                                            parent.smsserver.sendToken(domain, user.phone, user.otpsms.k, obj.getLanguageCodes(req));
+                                            // Ask for a login token & confirm sms was sent
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, sms2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
+                                        } else {
+                                            // Ask for a login token
+                                            parent.debug('web', 'Asking for login token');
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
+                                        }
+                                    } else {
+                                        checkUserOneTimePassword(req, domain, user, req.query.token, null, function (result) {
+                                            if (result == false) {
+                                                // Failed, ask for a login token again
+                                                parent.debug('web', 'Invalid login token, asking again');
+                                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
+                                            } else {
+                                                // We are authenticated with 2nd factor.
+                                                // Check email verification
+                                                if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                                    parent.debug('web', 'Invalid login, asking for email validation');
+                                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                                } else {
+                                                    // We are authenticated
+                                                    ws._socket.pause();
+                                                    ws.removeAllListeners(['message', 'close', 'error']);
+                                                    func(ws, req, domain, user);
+                                                }
+                                            }
+                                        });
+                                    }
+                                } else {
+                                    // Check email verification
+                                    if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                        parent.debug('web', 'Invalid login, asking for email validation');
+                                        var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
+                                        var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
+                                        try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                    } else {
+                                        // We are authenticated
+                                        ws._socket.pause();
+                                        ws.removeAllListeners(['message', 'close', 'error']);
+                                        func(ws, req, domain, user);
+                                    }
+                                }
+
+                            }
+                        });
+                    } else {
+                        // Invalid authentication
+                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2c' })); } catch (ex) { }
+                        try { ws.close(); } catch (ex) { }
+                    }
+                    break;
+                }
+            }
+
+        });
+
+        // If error, do nothing
+        ws.on('error', function (err) { try { ws.close(); } catch (e) { console.log(e); } });
+
+        // If the web socket is closed
+        ws.on('close', function (req) { try { ws.close(); } catch (e) { console.log(e); } });
+
+        // Resume the socket to perform inner authentication
+        try { ws._socket.resume(); } catch (ex) { }
     }
 
     // Authenticates a session and forwards

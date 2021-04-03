@@ -68,7 +68,11 @@ var FullSite_IntelAmtLocalWebApp = "H4sIAAAAAAAEAMQ5h3ajvNKvwu/9SnI2JICNa7zn4JLu
 // Check the server certificate fingerprint
 function onVerifyServer(clientName, certs) {
     if (certs == null) { certs = clientName; } // Temporary thing until we fix duktape
-    settings.meshServerTlsHash = certs[certs.length - 1].fingerprint.split(':').join(''); // This is used to delayed server authentication
+
+    // If we have the serverid, used delayed server authentication
+    if (settings.serverid != null) { settings.meshServerTlsHash = certs[certs.length - 1].fingerprint.split(':').join(''); return; }
+
+    // Otherwise, use server HTTPS certificate hash
     try { for (var i in certs) { if (certs[i].fingerprint.replace(/:/g, '') == settings.serverhttpshash) { return; } } } catch (e) { }
     if (settings.serverhttpshash != null) {
         console.log('Error: Failed to verify server certificate.');
@@ -1981,14 +1985,17 @@ function startRouter() {
 
         // Complete the URL and add a x-meshauth header if needed
         var xurlargs = [];
-        if (settings.authcookie != null) {
-            xurlargs.push('auth=' + settings.authcookie);
-            if (xtoken != null) { xurlargs.push('token=' + xtoken); }
-        } else {
-            if (xtoken != null) {
-                options.headers = { 'x-meshauth': Buffer.from(settings.username,'binary').toString('base64') + ',' + Buffer.from(settings.password,'binary').toString('base64') + ',' + Buffer.from(xtoken,'binary').toString('base64') };
+        if (settings.serverid == null) {
+            // Authenticate the server using HTTPS cert hash
+            if (settings.authcookie != null) {
+                xurlargs.push('auth=' + settings.authcookie);
+                if (xtoken != null) { xurlargs.push('token=' + xtoken); }
             } else {
-                options.headers = { 'x-meshauth': Buffer.from(settings.username,'binary').toString('base64') + ',' + Buffer.from(settings.password,'binary').toString('base64') };
+                if (xtoken != null) {
+                    options.headers = { 'x-meshauth': Buffer.from(settings.username, 'binary').toString('base64') + ',' + Buffer.from(settings.password, 'binary').toString('base64') + ',' + Buffer.from(xtoken, 'binary').toString('base64') };
+                } else {
+                    options.headers = { 'x-meshauth': Buffer.from(settings.username, 'binary').toString('base64') + ',' + Buffer.from(settings.password, 'binary').toString('base64') };
+                }
             }
         }
         if (settings.loginkey) { xurlargs.push('key=' + settings.loginkey); }
@@ -2050,7 +2057,26 @@ function OnServerWebSocket(msg, s, head) {
                 var signDataHash = hasher.syncHash(Buffer.concat([Buffer.from(settings.serverAuthClientNonce, 'base64'), Buffer.from(settings.meshServerTlsHash, 'hex'), Buffer.from(command.nonce, 'base64')]));
                 if (require('RSA').verify(require('RSA').TYPES.SHA384, cert, signDataHash, Buffer.from(command.signature, 'base64')) == false) { console.log("Unable to authenticate the server, invalid signature."); process.exit(1); return; }
 
-                console.log('Server is authenticated'); // TODO: Send username/password to server.
+                // Figure out the 2FA token to use if any
+                var xtoken = null;
+                if (settings.emailtoken) { xtoken = '**email**'; }
+                else if (settings.smstoken) { xtoken = '**sms**'; }
+                else if (settings.token != null) { xtoken = settings.token; }
+
+                // Authenticate the server using HTTPS cert hash
+                if (settings.authcookie != null) {
+                    if (xtoken != null) {
+                        s.write("{\"action\":\"userAuth\",\"auth\":\"" + settings.authcookie + "\",\"token\":\"" + xtoken + "\"}");
+                    } else {
+                        s.write("{\"action\":\"userAuth\",\"auth\":\"" + settings.authcookie + "\"}");
+                    }
+                } else {
+                    if (xtoken != null) {
+                        s.write("{\"action\":\"userAuth\",\"username\":\"" + Buffer.from(settings.username, 'binary').toString('base64') + "\",\"password\":\"" + Buffer.from(settings.password, 'binary').toString('base64') + "\",\"token\":\"" + xtoken + "\"}");
+                    } else {
+                        s.write("{\"action\":\"userAuth\",\"username\":\"" + Buffer.from(settings.username, 'binary').toString('base64') + "\",\"password\":\"" + Buffer.from(settings.password, 'binary').toString('base64') + "\"}");
+                    }
+                }
                 break;
             }
         }
@@ -2059,8 +2085,10 @@ function OnServerWebSocket(msg, s, head) {
     s.on('close', function () { console.log("Server closed the connection."); process.exit(1); return; });
 
     // Perform inner server authentication
-    //settings.serverAuthClientNonce = require('EncryptionStream').GenerateRandom(48).toString('base64');
-    //s.write("{\"action\":\"serverAuth\",\"cnonce\":\"" + settings.serverAuthClientNonce + "\",\"tlshash\":\"" + settings.meshServerTlsHash + "\"}"); // Ask for server authentication
+    if (settings.serverid != null) {
+        settings.serverAuthClientNonce = require('EncryptionStream').GenerateRandom(48).toString('base64');
+        s.write("{\"action\":\"serverAuth\",\"cnonce\":\"" + settings.serverAuthClientNonce + "\",\"tlshash\":\"" + settings.meshServerTlsHash + "\"}"); // Ask for server authentication
+    }
 }
 
 function startRouterEx() {
