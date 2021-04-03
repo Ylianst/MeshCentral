@@ -19870,8 +19870,6 @@
     },
     {
       "en": "Intel&reg; AMT One Click Recovery",
-      "en": "Intel&reg; AMT herstel met één klik",
-      "fr": "Récupération en un clic Intel® AMT",
       "xloc": [
         "default.handlebars->31->841",
         "default.handlebars->31->854"
@@ -19899,8 +19897,6 @@
     },
     {
       "en": "Intel&reg; AMT Power Operation",
-      "en": "Intel&reg; AMT Stroomvoorziening",
-      "fr": "Fonctionnement de l'alimentation Intel® AMT ",
       "xloc": [
         "default.handlebars->31->855",
         "default.handlebars->31->857",
@@ -19951,6 +19947,10 @@
       "xloc": [
         "default.handlebars->31->838"
       ]
+    },
+    {
+      "en": "Intel&reg; AMT Stroomvoorziening",
+      "fr": "Fonctionnement de l'alimentation Intel® AMT "
     },
     {
       "cs": "Intel® AMT štítek",
@@ -20075,6 +20075,10 @@
         "default.handlebars->31->729",
         "default.handlebars->31->730"
       ]
+    },
+    {
+      "en": "Intel&reg; AMT herstel met één klik",
+      "fr": "Récupération en un clic Intel® AMT"
     },
     {
       "cs": "Intel&reg; AMT je aktivováno v režimu správce",

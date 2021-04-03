@@ -14258,7 +14258,7 @@
             for (var i in serverTrace) {
                 var args = [];
                 for (var j in serverTrace[i].args) { if (typeof serverTrace[i].args[j] == 'object') { args.push(JSON.stringify(serverTrace[i].args[j])); } else { args.push(serverTrace[i].args[j]); } }
-                x += '<div class=traceEvent onclick=showTraceEvent(' + j + ')>' + EscapeHtml(new Date(serverTrace[i].time).toLocaleTimeString()) + ' - <b>' + EscapeHtml(serverTrace[i].source.toUpperCase()) + '</b>: ' + EscapeHtml(args.join(', ')) + '</div>';
+                x += '<div class=traceEvent onclick=showTraceEvent(' + i + ')>' + EscapeHtml(new Date(serverTrace[i].time).toLocaleTimeString()) + ' - <b>' + EscapeHtml(serverTrace[i].source.toUpperCase()) + '</b>: ' + EscapeHtml(args.join(', ')) + '</div>';
             }
             QH('p41events', x);
         }
