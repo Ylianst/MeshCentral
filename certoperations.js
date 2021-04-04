@@ -131,6 +131,22 @@ module.exports.CertificateOperations = function (parent) {
     // Log the Intel AMT activation operation in the domain log
     obj.logAmtActivation = function (domain, x) {
         if (x == null) return true;
+
+        // Add the password to the Intel AMT list of UUID to passwords
+        if ((typeof x.amtUuid == 'string') && (typeof x.password == 'string')) {
+            if (parent.amtPasswords == null) { parent.amtPasswords = {}; }
+            if (parent.amtPasswords[x.amtUuid] == null) {
+                parent.amtPasswords[x.amtUuid] = [x.password]; // Add password to array
+                parent.amtPasswords = parent.common.sortObj(parent.amtPasswords);
+            } else {
+                if (parent.amtPasswords[x.amtUuid].indexOf(x.password) == -1) {
+                    parent.amtPasswords[x.amtUuid].unshift(x.password); // Add password at the start of the array
+                    while (parent.amtPasswords[x.amtUuid].length > 3) { parent.amtPasswords[x.amtUuid].pop(); } // Only keep the 3 last passwords for any given device
+                }
+            }
+        }
+
+        // Append to the log file
         var logpath = null;
         if ((domain.amtacmactivation == null) || (domain.amtacmactivation.log == null) || (typeof domain.amtacmactivation.log != 'string')) {
             if (domain.id == '') { logpath = parent.path.join(obj.parent.datapath, 'amtactivation.log'); } else { logpath = parent.path.join(obj.parent.datapath, 'amtactivation-' + domain.id + '.log'); }
