@@ -2438,7 +2438,7 @@ a {
     grid-area: deskarea1;
     -ms-grid-column: 1;
     -ms-grid-row: 1;
-    height: 24px;
+    min-height: 20px;
 }
 
 
