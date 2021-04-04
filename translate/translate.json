@@ -15875,7 +15875,7 @@
       "en": "Error, invite code \\\"{0}\\\" already in use.",
       "nl": "Fout, uitnodigingscode \\\"{0}\\\" al in gebruik.",
       "fr": "Erreur, code d'invitation \\\"{0}\\\" déjà utilisé.",
-      "de": "Fehler, Einladungscode \"{0}\" wird bereits verwendet.",
+      "de": "Fehler, Einladungscode \\\"{0}\\\" wird bereits verwendet.",
       "xloc": [
         "default-mobile.handlebars->11->615",
         "default.handlebars->31->2259"
@@ -39546,7 +39546,7 @@
       "en": "To add a mobile device to group \\\"{0}\\\", download the MeshAgent application and scan this QR code.",
       "nl": "Om een mobiel apparaat toe te voegen aan de groep \\\"{0}\\\", downloadt u de MeshAgent applicatie en scant u deze QR-code.",
       "fr": "Pour ajouter un appareil mobile au groupe \\\"{0}\\\", téléchargez l'applicatin MeshAgent et scannez ce QR Code.",
-      "de": "Laden Sie die MeshAgent-Anwendung herunter und scannen Sie diesen QR-Code, um der Gruppe \"{0}\" ein mobiles Gerät hinzuzufügen.",
+      "de": "Laden Sie die MeshAgent-Anwendung herunter und scannen Sie diesen QR-Code, um der Gruppe \\\"{0}\\\" ein mobiles Gerät hinzuzufügen.",
       "xloc": [
         "default.handlebars->31->422"
       ]
