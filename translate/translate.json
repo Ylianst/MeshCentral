@@ -557,6 +557,7 @@
       "en": ", No Consent",
       "fr": ", Pas de consentement",
       "nl": ", Geen toestemming",
+      "de": ", keine Zustimmung",
       "xloc": [
         "default.handlebars->31->749"
       ]
@@ -614,6 +615,7 @@
       "en": ", View only",
       "nl": ", Alleen kijken",
       "fr": ", Visualisation seulement",
+      "de": ", nur ansehen",
       "xloc": [
         "default.handlebars->31->748"
       ]
@@ -2850,6 +2852,7 @@
       "en": "Account Settings",
       "nl": "Account instellingen",
       "fr": "Paramètres du compte",
+      "de": "Konto Einstellungen",
       "xloc": [
         "default-mobile.handlebars->11->591",
         "default.handlebars->31->2235"
@@ -3047,6 +3050,7 @@
       "en": "Account login from {0}, {1}, {2}",
       "nl": "Account aanmelding van {0}, {1}, {2}",
       "fr": "Connexion de {0}, {1}, {2}",
+      "de": "Konto Login von {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->31->1853"
       ]
@@ -3388,6 +3392,7 @@
       "en": "Add",
       "fr": "Ajouter",
       "nl": "Toevoegen",
+      "de": "hinzufügen",
       "xloc": [
         "default-mobile.handlebars->11->364",
         "default.handlebars->31->974"
@@ -4459,6 +4464,7 @@
     {
       "en": "Agent IP address",
       "nl": "IP-adres agent",
+      "de": "Agent IP Adresse",
       "xloc": [
         "default.handlebars->31->233"
       ]
@@ -4923,6 +4929,7 @@
       "en": "Allowed",
       "nl": "Toegestaan",
       "fr": "Autorisé",
+      "de": "Erlaubt",
       "xloc": [
         "default.handlebars->31->205"
       ]
@@ -5231,6 +5238,7 @@
       "en": "Anti-virus not active",
       "nl": "Anti-virus niet actief",
       "fr": "Antivirus désactivé",
+      "de": "Anti-virus ist nicht aktiv",
       "xloc": [
         "default.handlebars->31->1683",
         "default.handlebars->31->1697"
@@ -6215,6 +6223,7 @@
       "en": "BAD",
       "nl": "Uitgeschakeld",
       "fr": "Désactivé",
+      "de": "SCHLECHT",
       "xloc": [
         "default-mobile.handlebars->11->412",
         "default-mobile.handlebars->11->416",
@@ -6324,6 +6333,7 @@
       "en": "BackSpace",
       "fr": "Backspace",
       "nl": "BackSpace",
+      "de": "Rücktaste",
       "xloc": [
         "default-mobile.handlebars->11->340",
         "default.handlebars->31->950"
@@ -6734,6 +6744,7 @@
       "en": "Browser default",
       "nl": "Browser standaard",
       "fr": "Navigateur par défaut",
+      "de": "Browser Standard",
       "xloc": [
         "default-mobile.handlebars->11->82",
         "default.handlebars->31->58"
@@ -7396,6 +7407,7 @@
       "en": "Change image",
       "nl": "Wijzig afbeelding",
       "fr": "Modifier ma photo",
+      "de": "Ändere das Bild",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountImageFrame->3->0"
       ]
@@ -7674,6 +7686,7 @@
       "en": "Chat Request, Click here to accept.",
       "nl": "Chatverzoek, klik hier om te accepteren.",
       "fr": "Demande de discussion, cliquez ici pour accepter.",
+      "de": "Chat Anfrage, Drücke hier zum annehmen.",
       "xloc": [
         "default-mobile.handlebars->11->604",
         "default.handlebars->31->2248"
@@ -8076,6 +8089,7 @@
       "en": "Clear agent core",
       "nl": "Wis agent core",
       "fr": "Nettoyer l'agent",
+      "de": "Entferne Agent.",
       "xloc": [
         "default.handlebars->31->489",
         "default.handlebars->31->528"
@@ -8085,6 +8099,7 @@
       "en": "Clear agent core on selected devices?",
       "nl": "Wis de agent core op de geselecteerde apparaten?",
       "fr": "Nettoyer l'agent sur les appareils sélectionnés ?",
+      "de": "Agent auf ausgewählten Geräten löschen?",
       "xloc": [
         "default.handlebars->31->527"
       ]
@@ -8340,6 +8355,7 @@
       "en": "Click here to view.",
       "fr": "Cliquer ici pour voir.",
       "nl": "Klik hier om te bekijken.",
+      "de": "Klicke hier zum ansehen.",
       "xloc": [
         "messenger.handlebars->remoteVideo->remoteClickToView"
       ]
@@ -8724,6 +8740,7 @@
       "en": "Compile time",
       "nl": "Compileer tijd",
       "fr": "Temps de compilation",
+      "de": "Kompilierungszeit",
       "xloc": [
         "default-mobile.handlebars->11->434",
         "default.handlebars->31->1080"
@@ -10831,6 +10848,7 @@
       "en": "Current password not correct.",
       "nl": "Huidig wachtwoord is niet correct.",
       "fr": "Le mot de passe actuel n'est pas correct.",
+      "de": "Aktuelles Password nicht in korrekt.",
       "xloc": [
         "default-mobile.handlebars->11->614",
         "default.handlebars->31->2258"
@@ -10840,6 +10858,7 @@
       "en": "Customize",
       "nl": "Aanpassen",
       "fr": "Personnaliser",
+      "de": "Anpassen",
       "xloc": [
         "default-mobile.handlebars->11->339"
       ]
@@ -10848,6 +10867,7 @@
       "en": "Customize...",
       "fr": "Personnaliser ...",
       "nl": "Aanpassen...",
+      "de": "Anpassen",
       "xloc": [
         "default.handlebars->deskKeyShortcutContextMenu->1"
       ]
@@ -10939,6 +10959,7 @@
       "en": "Dark mode",
       "nl": "Donkere modus",
       "fr": "Thême sombre",
+      "de": "Dunklen Modus",
       "xloc": [
         "default-mobile.handlebars->11->84",
         "default.handlebars->31->60"
@@ -11111,6 +11132,7 @@
       "en": "Del",
       "fr": "Suppr",
       "nl": "Del",
+      "de": "Löschen",
       "xloc": [
         "default-mobile.handlebars->11->346",
         "default.handlebars->31->956"
@@ -11922,6 +11944,7 @@
       "en": "Desktop, View only",
       "nl": "Desktop, Alleen kijken",
       "fr": "Bureau en visualisation seulement",
+      "de": "Desktop, nur Ansehen",
       "xloc": [
         "default.handlebars->31->806"
       ]
@@ -11972,6 +11995,7 @@
       "en": "Desktops Fixed Width",
       "nl": "Desktops met vaste breedte",
       "fr": "Bureau figé à",
+      "de": "Feste Breite der Desktops",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView->viewselect->5"
       ]
@@ -12271,6 +12295,7 @@
       "en": "Device Pairing Link",
       "nl": "Apparaat koppelingslink",
       "fr": "Lien de jumelage de l'appareil",
+      "de": "Gerät Verbindungs-Link",
       "xloc": [
         "default-mobile.handlebars->11->535"
       ]
@@ -12335,6 +12360,7 @@
     {
       "en": "Device View Columns",
       "nl": "Kolomweergave apparaat",
+      "de": "Aufteilen der Geräteansicht",
       "xloc": [
         "default.handlebars->31->235"
       ]
@@ -12879,6 +12905,7 @@
       "en": "Device requested Intel(R) AMT ACM TLS activation, FQDN: {0}",
       "nl": "Apparaat verzocht om Intel (R) AMT ACM TLS-activering, FQDN: {0}",
       "fr": "L'appareil a demandé l'activation d'Intel (R) AMT ACM TLS, nom de domaine complet: {0} ",
+      "de": "Gerät angefordert Intel(R) AMT ACM TLS activation, FQDN: {0}",
       "xloc": [
         "default.handlebars->31->1857"
       ]
@@ -13417,6 +13444,7 @@
       "en": "Down",
       "fr": "Bas",
       "nl": "Omlaag",
+      "de": "runter",
       "xloc": [
         "default-mobile.handlebars->11->354",
         "default.handlebars->31->964"
@@ -13731,6 +13759,7 @@
       "en": "Download the agent software using the Google Play store or APK file, install it and use the QR code on the right or the pairing link below to setup your device on this server.",
       "nl": "Download de agentsoftware via de Google Play Store of APK-bestand, installeer het en gebruik de QR-code aan de rechterkant of de koppelingslink hieronder om uw apparaat aan deze server te koppelen.",
       "fr": "Installez l'agent depuis le store Google Play ou le fichier APK et utilisez le QR code ci-contre ou le lien de jumelage pour associer votre appareil à ce serveur",
+      "de": "Laden Sie die Agentensoftware über den Google Play Store oder die APK-Datei herunter, installieren Sie sie und verwenden Sie den QR-Code rechts oder den unten stehenden Link, um Ihr Gerät auf diesem Server einzurichten.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->1"
       ]
@@ -13900,6 +13929,7 @@
       "en": "Download: \\\"{0}\\\", Size: {1}",
       "nl": "Download: \\\"{0}\\\", Grootte: {1}",
       "fr": "Téléchargement : \\\"{0}\\\", Taille : {1}",
+      "de": "Download: \\\"{0}\\\", Größe: {1}",
       "xloc": [
         "default.handlebars->31->1852"
       ]
@@ -15113,6 +15143,7 @@
     {
       "en": "Email/SMS/Push Traffic",
       "nl": "Email/SMS/Push verkeer",
+      "de": "Email/SMS/Push-Verkehr",
       "xloc": [
         "default.handlebars->31->2327"
       ]
@@ -15288,6 +15319,7 @@
       "en": "End",
       "fr": "Fin",
       "nl": "End",
+      "de": "Ende",
       "xloc": [
         "default-mobile.handlebars->11->348",
         "default.handlebars->31->958"
@@ -15843,6 +15875,7 @@
       "en": "Error, invite code \\\"{0}\\\" already in use.",
       "nl": "Fout, uitnodigingscode \\\"{0}\\\" al in gebruik.",
       "fr": "Erreur, code d'invitation \\\"{0}\\\" déjà utilisé.",
+      "de": "Fehler, Einladungscode \"{0}\" wird bereits verwendet.",
       "xloc": [
         "default-mobile.handlebars->11->615",
         "default.handlebars->31->2259"
@@ -15852,6 +15885,7 @@
       "en": "Error, password not changed.",
       "nl": "Fout, wachtwoord niet gewijzigd.",
       "fr": "Erreur, mot de passe non modifié.",
+      "de": "Fehler, Password wurde nicht geändert.",
       "xloc": [
         "default-mobile.handlebars->11->612",
         "default.handlebars->31->2256"
@@ -15861,6 +15895,7 @@
       "en": "Error, unable to change to commonly used password.",
       "nl": "Fout, het is niet mogelijk om naar algemeen gebruikt wachtwoord te veranderen.",
       "fr": "Erreur, impossible de changer le mot de passe couramment utilisé.",
+      "de": "Fehler, kann nicht zu häufig verwendeten Passwörtern geändert werden.",
       "xloc": [
         "default-mobile.handlebars->11->611",
         "default.handlebars->31->2255"
@@ -15870,6 +15905,7 @@
       "en": "Error, unable to change to previously used password.",
       "nl": "Fout, kan niet wijzigen naar eerder gebruikt wachtwoord.",
       "fr": "Erreur, impossible de changer le mot de passe précédemment utilisé.",
+      "de": "Fehler, Änderung des zuvor verwendeten Kennworts nicht möglich.",
       "xloc": [
         "default-mobile.handlebars->11->610",
         "default.handlebars->31->2254"
@@ -16298,6 +16334,7 @@
       "en": "Failed to change email address, another account already using: {0}.",
       "nl": "E-mailadres kan niet worden gewijzigd, een ander account gebruikt al: {0}.",
       "fr": "Échec de la modification de l'adresse e-mail, un autre compte utilise déjà: {0}.",
+      "de": "Fehler beim ändern der E-Mail-Adresse, wird bereits von einem anderen Konto verwendet: {0}.",
       "xloc": [
         "default-mobile.handlebars->11->606",
         "default.handlebars->31->2250"
@@ -16778,6 +16815,7 @@
       "en": "Firewall not active",
       "nl": "Firewall niet actief",
       "fr": "Pare-feu désactivé",
+      "de": "Firewall nicht aktiv",
       "xloc": [
         "default.handlebars->31->1685",
         "default.handlebars->31->1699"
@@ -16933,6 +16971,7 @@
     {
       "en": "For agent update",
       "nl": "Voor agent update",
+      "de": "Für die Aktualisierung des Agenten",
       "xloc": [
         "default.handlebars->31->526"
       ]
@@ -16941,6 +16980,7 @@
       "en": "Force agent update",
       "nl": "Forceer agent update",
       "fr": "Forcer la mise à jour de l'agent",
+      "de": "Aktualisierung des Agenten erzwingen",
       "xloc": [
         "default.handlebars->31->488"
       ]
@@ -16949,6 +16989,7 @@
       "en": "Force agent update on selected devices?",
       "nl": "Forceer agent update op de geselecteerde apparaten?",
       "fr": "Forcer la mise à jour de l'agent sur les appareils sélectionnés",
+      "de": "Agentenaktualisierung auf ausgewählten Geräten erzwingen?",
       "xloc": [
         "default.handlebars->31->525"
       ]
@@ -18302,6 +18343,7 @@
     {
       "en": "Guest Share",
       "nl": "Gast delen",
+      "de": "Mit einem Gast Teilen",
       "xloc": [
         "default.handlebars->31->759",
         "default.handlebars->31->781"
@@ -18310,6 +18352,7 @@
     {
       "en": "Guest Sharing",
       "nl": "Gastdeling",
+      "de": "Mit einem Gast Teilen",
       "xloc": [
         "default.handlebars->31->1598"
       ]
@@ -19480,6 +19523,7 @@
       "en": "Insert",
       "fr": "Insérer",
       "nl": "Insert",
+      "de": "Einfügen",
       "xloc": [
         "default-mobile.handlebars->11->345",
         "default.handlebars->31->955"
@@ -19583,6 +19627,7 @@
       "en": "Install on this device",
       "nl": "Installeren on dit apparaat",
       "fr": "Installer sur cet appareil",
+      "de": "Auf diesem Gerät installieren",
       "xloc": [
         "default-mobile.handlebars->11->521"
       ]
@@ -19591,6 +19636,7 @@
       "en": "Install the MeshCentral Agent on your Android device. Once installed, click the pairing link to connect your device to this server.",
       "nl": "Installeer de MeshCentral Agent op uw Android apparaat. Na installatie klikt u op de koppelingslink om uw apparaat met deze server te verbinden.",
       "fr": "Installez l'agent MeshCentral sur votre appareil android puis cliquez sur ce lien pour le connecter au serveur.",
+      "de": "Installieren Sie den MeshCentral Agent auf Ihrem Android-Gerät. Klicken Sie nach der Installation auf den Link, um Ihr Gerät mit diesem Server zu verbinden.",
       "xloc": [
         "default-mobile.handlebars->11->533"
       ]
@@ -19870,6 +19916,7 @@
     },
     {
       "en": "Intel&reg; AMT One Click Recovery",
+      "de": "Intel® AMT mit einem Klick Wiederherstellen",
       "xloc": [
         "default.handlebars->31->841",
         "default.handlebars->31->854"
@@ -19897,6 +19944,7 @@
     },
     {
       "en": "Intel&reg; AMT Power Operation",
+      "de": "Intel® AMT in Betrieb",
       "xloc": [
         "default.handlebars->31->855",
         "default.handlebars->31->857",
@@ -19907,6 +19955,7 @@
       "en": "Intel&reg; AMT Power off",
       "nl": "Intel&reg; AMT Afsluiten",
       "fr": "Extinction Intel® AMT",
+      "de": "Intel® AMT Ausschalten",
       "xloc": [
         "default.handlebars->31->840"
       ]
@@ -19915,6 +19964,7 @@
       "en": "Intel&reg; AMT Power on",
       "nl": "Intel&reg; AMT Opstarten",
       "fr": "Démarrage Intel® AMT",
+      "de": "Intel® AMT Einschalten",
       "xloc": [
         "default.handlebars->31->839"
       ]
@@ -19944,6 +19994,7 @@
       "en": "Intel&reg; AMT Reset",
       "nl": "Intel&reg; AMT Reset",
       "fr": "Redémarrage Intel® AMT",
+      "de": "Intel® AMT Zurücksetzen",
       "xloc": [
         "default.handlebars->31->838"
       ]
@@ -20596,6 +20647,7 @@
       "en": "Invalid 2FA",
       "nl": "Ongeldige 2FA",
       "fr": "Authentification à double facteur invalide",
+      "de": "Ungültige 2FA",
       "xloc": [
         "default-mobile.handlebars->11->75",
         "default.handlebars->31->227"
@@ -20747,6 +20799,7 @@
       "en": "Invalid SMS message",
       "nl": "Ongeldig SMS bericht",
       "fr": "Message SMS non valide",
+      "de": "Ungültige SMS Nachricht",
       "xloc": [
         "default-mobile.handlebars->11->618",
         "default.handlebars->31->2262"
@@ -20778,6 +20831,7 @@
       "en": "Invalid domain",
       "nl": "Ongeldig domein",
       "fr": "Domaine non valide",
+      "de": "Ungültige Domain",
       "xloc": [
         "default-mobile.handlebars->11->598",
         "default.handlebars->31->2242"
@@ -20787,6 +20841,7 @@
       "en": "Invalid email",
       "nl": "Ongeldig email",
       "fr": "Email invalide",
+      "de": "Ungültige Email",
       "xloc": [
         "default-mobile.handlebars->11->597",
         "default.handlebars->31->2241"
@@ -20859,6 +20914,7 @@
       "en": "Invalid password",
       "nl": "Ongeldig wachtwoord",
       "fr": "Mot de passe incorrect",
+      "de": "Ungültiges Passwort",
       "xloc": [
         "default-mobile.handlebars->11->596",
         "default-mobile.handlebars->11->77",
@@ -20870,6 +20926,7 @@
       "en": "Invalid site permissions",
       "nl": "Ongeldige sitemachtigingen",
       "fr": "Autorisations de site non valides",
+      "de": "Ungültige Berechtigung der Seite",
       "xloc": [
         "default-mobile.handlebars->11->599",
         "default.handlebars->31->2243"
@@ -20901,6 +20958,7 @@
       "en": "Invalid user login attempt from {0}, {1}, {2}",
       "nl": "Ongeldige inlog poging {0}, {1}, {2}",
       "fr": "Tentative de connexion invalide de {0}, {1}, {2}",
+      "de": "Ungültiger Anmeldeversuch von",
       "xloc": [
         "default.handlebars->31->1856"
       ]
@@ -20909,6 +20967,7 @@
       "en": "Invalid username",
       "nl": "Ongeldige gebruikersnaam",
       "fr": "Nom d'utilisateur invalide",
+      "de": "Ungültiger Benutzername",
       "xloc": [
         "default-mobile.handlebars->11->595",
         "default.handlebars->31->2239"
@@ -21424,6 +21483,7 @@
       "en": "Keyboard Shortcuts Customization",
       "fr": "Personnalisation des raccourcis clavier",
       "nl": "Toetsenbord sneltoetsen aanpassen",
+      "de": "Anpassung der Tastaturkürzel",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10dialog->1->1",
         "default.handlebars->31->975"
@@ -22260,6 +22320,7 @@
       "en": "Left",
       "fr": "Gauche",
       "nl": "Links",
+      "de": "links",
       "xloc": [
         "default-mobile.handlebars->11->351",
         "default.handlebars->31->961"
@@ -22334,6 +22395,7 @@
       "en": "Light mode",
       "nl": "Lichte modus",
       "fr": "Thème clair",
+      "de": "Heller Modus",
       "xloc": [
         "default-mobile.handlebars->11->83",
         "default.handlebars->31->59"
@@ -23217,6 +23279,7 @@
       "en": "Lock the remote computer",
       "nl": "Vergrendel de externe computer",
       "fr": "Verrouiller l'appareil distant",
+      "de": "Sperre den Remote Computer",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -23374,6 +23437,7 @@
     {
       "en": "Logged in users",
       "nl": "Ingelogde gebruikers",
+      "de": "Eingeloggte Benutzer",
       "xloc": [
         "default.handlebars->31->232"
       ]
@@ -23988,6 +24052,7 @@
       "en": "Manage Account Image",
       "nl": "Beheer accountafbeelding",
       "fr": "Gérer la photo du compte",
+      "de": "Verwaltetes Konto Bild",
       "xloc": [
         "default-mobile.handlebars->11->81",
         "default.handlebars->31->1172"
@@ -24753,6 +24818,7 @@
       "en": "MeshCentral Agent for Android",
       "nl": "MeshCentral Agent voor Android",
       "fr": "Agent MeshCentral pour Android",
+      "de": "MeshCentral Agent für Android",
       "xloc": [
         "default-mobile.handlebars->11->534"
       ]
@@ -25368,6 +25434,7 @@
       "en": "Mobile Device",
       "nl": "Mobiel apparaat",
       "fr": "Appareil mobile",
+      "de": "Mobiles Gerät",
       "xloc": [
         "default-mobile.handlebars->11->441",
         "default.handlebars->31->1087"
@@ -25377,6 +25444,7 @@
       "en": "Mobile device",
       "nl": "Mobiel apparaat",
       "fr": "Appareil mobile",
+      "de": "Mobiles Gerät",
       "xloc": [
         "default.handlebars->31->395"
       ]
@@ -25589,6 +25657,7 @@
       "en": "Multiple Issues",
       "nl": "Meerdere problemen",
       "fr": "Questions multiples",
+      "de": "Mehrere Probleme",
       "xloc": [
         "default.handlebars->31->1686",
         "default.handlebars->31->1700"
@@ -26238,6 +26307,7 @@
       "en": "New Account",
       "nl": "Nieuw account",
       "fr": "Nouveau compte",
+      "de": "Neuer Account",
       "xloc": [
         "default-mobile.handlebars->11->588",
         "default.handlebars->31->2232"
@@ -26440,6 +26510,7 @@
       "en": "Night Mode",
       "nl": "Nacht Modus",
       "fr": "Mode nuit",
+      "de": "Nacht Modus",
       "xloc": [
         "default-mobile.handlebars->11->85",
         "default.handlebars->31->61"
@@ -26937,6 +27008,7 @@
       "en": "No automatic update",
       "nl": "Geen automatische update",
       "fr": "Pas de mise à jour automatique",
+      "de": "Kein Automatisches Update",
       "xloc": [
         "default.handlebars->31->1684",
         "default.handlebars->31->1698"
@@ -27232,6 +27304,7 @@
       "en": "No keyboard shortcuts defined",
       "fr": "Aucun raccourci clavier défini",
       "nl": "Geen toetsenbord snelkoppelingen gedefinieerd",
+      "de": "Kein Tastatur Kürzel definiert",
       "xloc": [
         "default-mobile.handlebars->11->365",
         "default.handlebars->31->976"
@@ -27301,6 +27374,7 @@
       "en": "No phone number for this user",
       "nl": "Geen telefoonnummer voor deze gebruiker",
       "fr": "Aucun numéro de téléphone pour cet utilisateur",
+      "de": "Keine Telefonnummer für diese Benutzer",
       "xloc": [
         "default-mobile.handlebars->11->619",
         "default.handlebars->31->2263"
@@ -27390,6 +27464,7 @@
       "en": "No user management rights",
       "nl": "Geen gebruikersbeheerrechten",
       "fr": "Aucun droit de gestion des utilisateurs",
+      "de": "Keine Benutzer Verwaltungsrechte",
       "xloc": [
         "default-mobile.handlebars->11->617",
         "default.handlebars->31->2261"
@@ -27724,6 +27799,7 @@
       "en": "Not allowed, view only",
       "nl": "Niet toegestaan, alleen kijken",
       "fr": "Non autorisé, visualisation seulement",
+      "de": "Nicht erlaubt, nur ansehen",
       "xloc": [
         "default.handlebars->31->204"
       ]
@@ -28702,6 +28778,7 @@
       "en": "Page Down",
       "fr": "Bas de page",
       "nl": "Page Down",
+      "de": "Seite runter",
       "xloc": [
         "default-mobile.handlebars->11->350",
         "default.handlebars->31->960"
@@ -28711,6 +28788,7 @@
       "en": "Page Up",
       "fr": "Haut de page",
       "nl": "Page Up",
+      "de": "Seite hoch",
       "xloc": [
         "default-mobile.handlebars->11->349",
         "default.handlebars->31->959"
@@ -28986,6 +29064,7 @@
       "en": "Password changed.",
       "nl": "Wachtwoord gewijzigd.",
       "fr": "Mot de passe changé.",
+      "de": "Passwort geändert.",
       "xloc": [
         "default-mobile.handlebars->11->613",
         "default.handlebars->31->2257"
@@ -29367,6 +29446,7 @@
       "en": "Perform Intel&reg; AMT power off?",
       "nl": "Uitvoeren Intel&reg; AMT uitschakelen?",
       "fr": "Éteindre par Intel® AMT ?",
+      "de": "Intel® AMT Ausschalten?",
       "xloc": [
         "default.handlebars->31->858"
       ]
@@ -29375,6 +29455,7 @@
       "en": "Perform Intel&reg; AMT power on?",
       "nl": "Uitvoeren Intel&reg; AMT inschakelen?",
       "fr": "Démarrage par Intel® AMT ?",
+      "de": "Intel® AMT Einschalten?",
       "xloc": [
         "default.handlebars->31->856"
       ]
@@ -29383,6 +29464,7 @@
       "en": "Perform Intel&reg; AMT reset?",
       "nl": "Uitvoeren Intel&reg; AMT reset?",
       "fr": "Redémarrage par Intel® AMT ?",
+      "de": "Intel® AMT Zurücksetzen?",
       "xloc": [
         "default.handlebars->31->860"
       ]
@@ -29474,6 +29556,7 @@
       "en": "Permission denied",
       "nl": "Toestemming geweigerd",
       "fr": "Permission refusée",
+      "de": "Zugriff verboten",
       "xloc": [
         "default-mobile.handlebars->11->594",
         "default.handlebars->31->2238"
@@ -29525,6 +29608,7 @@
       "en": "Personal Notes",
       "nl": "Persoonlijke notities",
       "fr": "Notes personnelles",
+      "de": "Persönliche Notizen",
       "xloc": [
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu->1->1->0->3"
       ]
@@ -29533,6 +29617,7 @@
       "en": "Personal notes",
       "nl": "Persoonlijke notities",
       "fr": "Notes personnelles",
+      "de": "Persönliche Notizen",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->13->0"
       ]
@@ -30287,6 +30372,7 @@
       "en": "Previous Logins",
       "nl": "Eerdere aanmeldingen",
       "fr": "Logins précédents",
+      "de": "Bisherige Logins",
       "xloc": [
         "default-mobile.handlebars->11->78",
         "default-mobile.handlebars->11->79",
@@ -30300,6 +30386,7 @@
       "en": "Print Screen",
       "nl": "Print Screen",
       "fr": "Impression écran",
+      "de": "Bildschirm Drucken",
       "xloc": [
         "default-mobile.handlebars->11->344",
         "default.handlebars->31->954"
@@ -30621,6 +30708,7 @@
       "en": "Push notification failed.",
       "nl": "Push melding mislukt.",
       "fr": "Echec de l'envoi de la notification",
+      "de": "Push Benachrichtigung fehlgeschlagen",
       "xloc": [
         "messenger.handlebars->remoteImage->3->7"
       ]
@@ -33494,6 +33582,7 @@
       "en": "SMS error",
       "nl": "SMS fout",
       "fr": "Erreur SMS",
+      "de": "SMS Fehler",
       "xloc": [
         "default-mobile.handlebars->11->621",
         "default.handlebars->31->2265"
@@ -33503,6 +33592,7 @@
       "en": "SMS error: {0}",
       "nl": "SMS fout: {0}",
       "fr": "Erreur SMS: {0}",
+      "de": "SMS Fehler: {0}",
       "xloc": [
         "default-mobile.handlebars->11->622",
         "default.handlebars->31->2266"
@@ -33512,6 +33602,7 @@
       "en": "SMS gateway not enabled",
       "nl": "SMS gateway niet ingeschakeld",
       "fr": "Passerelle SMS non activée",
+      "de": "SMS-Gateway nicht aktiviert",
       "xloc": [
         "default-mobile.handlebars->11->616",
         "default.handlebars->31->2260"
@@ -33543,6 +33634,7 @@
       "en": "SMS succesfuly sent.",
       "nl": "SMS succesvol verzonden.",
       "fr": "SMS envoyé avec succès.",
+      "de": "SMS Erfolgreich gesendet.",
       "xloc": [
         "default-mobile.handlebars->11->620",
         "default.handlebars->31->2264"
@@ -34125,6 +34217,7 @@
       "en": "Security Warning",
       "nl": "Beveiligingswaarschuwing",
       "fr": "Avertissement de sécurité",
+      "de": "Sicherheits Warnung",
       "xloc": [
         "default-mobile.handlebars->11->590",
         "default.handlebars->31->2234"
@@ -34762,6 +34855,7 @@
       "en": "Sent as push notification.",
       "nl": "Verzonden als pushmelding.",
       "fr": "Envoyer une notification.",
+      "de": "Senden als Push Benachrichtigung.",
       "xloc": [
         "messenger.handlebars->remoteImage->3->6"
       ]
@@ -34850,6 +34944,7 @@
     {
       "en": "Server Connectivity",
       "nl": "Server connectiviteit",
+      "de": "Server Verbindung",
       "xloc": [
         "default.handlebars->31->234"
       ]
@@ -35462,6 +35557,7 @@
       "en": "Set dark mode",
       "nl": "Schakel donkere modus in",
       "fr": "Définir le mode sombre",
+      "de": "Setze den Dunkel Modus",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->11->0"
       ]
@@ -37503,6 +37599,7 @@
       "en": "Start chat session?",
       "fr": "Démarrer la discussion ?",
       "nl": "Chat sessie starten?",
+      "de": "Starten eines Chats?",
       "xloc": [
         "default-mobile.handlebars->11->313"
       ]
@@ -38940,6 +39037,7 @@
       "en": "There has been {0} failed login attempts on this account since the last login.",
       "nl": "Er zijn {0} mislukte inlogpogingen voor dit account sinds de laatste keer inloggen.",
       "fr": "Il y a eu {0} tentatives de connexion infructueuses sur ce compte depuis la dernière connexion.",
+      "de": "Seit der letzten Anmeldung sind {0} Anmeldeversuche für dieses Konto fehlgeschlagen.",
       "xloc": [
         "default-mobile.handlebars->11->605",
         "default.handlebars->31->2249"
@@ -39448,6 +39546,7 @@
       "en": "To add a mobile device to group \\\"{0}\\\", download the MeshAgent application and scan this QR code.",
       "nl": "Om een mobiel apparaat toe te voegen aan de groep \\\"{0}\\\", downloadt u de MeshAgent applicatie en scant u deze QR-code.",
       "fr": "Pour ajouter un appareil mobile au groupe \\\"{0}\\\", téléchargez l'applicatin MeshAgent et scannez ce QR Code.",
+      "de": "Laden Sie die MeshAgent-Anwendung herunter und scannen Sie diesen QR-Code, um der Gruppe \"{0}\" ein mobiles Gerät hinzuzufügen.",
       "xloc": [
         "default.handlebars->31->422"
       ]
@@ -40146,6 +40245,7 @@
       "en": "Trying Credentials",
       "nl": "Inloggegevens proberen",
       "fr": "Vérification des identifiants",
+      "de": "Anmeldeinformationen versuchen",
       "xloc": [
         "default-mobile.handlebars->11->274",
         "default.handlebars->31->631"
@@ -40504,6 +40604,7 @@
       "en": "Unable to add user in this mode",
       "nl": "Kan geen gebruiker toevoegen in deze modus",
       "fr": "Impossible d'ajouter un utilisateur dans ce mode",
+      "de": "In diesem Modus kann kein Benutzer hinzugefügt werden",
       "xloc": [
         "default-mobile.handlebars->11->601",
         "default.handlebars->31->2245"
@@ -41192,6 +41293,7 @@
       "en": "Upload default server core on selected devices?",
       "nl": "Upload standaard server core op de geselecteerde apparaten?",
       "fr": "Charger le noyau du serveur par défaut sur les appareils sélectionnés ?",
+      "de": "Standard-Server auf ausgewählten Geräten hochladen?",
       "xloc": [
         "default.handlebars->31->529"
       ]
@@ -41281,6 +41383,7 @@
       "en": "Upload tiny core",
       "nl": "Upload een kleine core",
       "fr": "Charger un micro noyau",
+      "de": "Laden Sie den winzigen Kern hoch",
       "xloc": [
         "default-mobile.handlebars->11->508",
         "default.handlebars->31->1165"
@@ -41371,6 +41474,7 @@
       "en": "Upload: \\\"{0}\\\", Size: {1}",
       "nl": "Upload: \\\"{0}\\\", Grootte: {1}",
       "fr": "Chargement : \\\"{0}\\\", Taille : {1}",
+      "de": "Hochladen: \\\"{0}\\\", Größe: {1}",
       "xloc": [
         "default.handlebars->31->1851"
       ]
@@ -41463,6 +41567,7 @@
       "en": "Use for bare-metal LAN activation.",
       "nl": "Gebruik voor bare-metal LAN activering.",
       "fr": "A utiliser pour l'activation directe du réseau local",
+      "de": "Zur Bare-Metal-LAN-Aktivierung verwenden.",
       "xloc": [
         "default.handlebars->31->341"
       ]
@@ -41776,6 +41881,7 @@
       "en": "User Input",
       "nl": "Gebruikers invoer",
       "fr": "Saisie utilisateur",
+      "de": "Benutzereingabe",
       "xloc": [
         "default.handlebars->31->203"
       ]
@@ -41984,6 +42090,7 @@
       "en": "User already exists",
       "nl": "Gebruiker bestaat al",
       "fr": "L'utilisateur existe déjà",
+      "de": "Benutzer existiert bereits.",
       "xloc": [
         "default-mobile.handlebars->11->600",
         "default.handlebars->31->2244"
@@ -42099,6 +42206,7 @@
       "en": "User login attempt on locked account from {0}, {1}, {2}",
       "nl": "Gebruikersaanmeldingspoging op vergrendeld account van {0}, {1}, {2}",
       "fr": "Tentative de connexion sur un compte bloqué de {0}, {1}, {2}",
+      "de": "Benutzeranmeldeversuch für gesperrtes Konto von {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->31->1855"
       ]
@@ -42107,6 +42215,7 @@
       "en": "User login attempt with incorrect 2nd factor from {0}, {1}, {2}",
       "nl": "Gebruikersaanmeldingspoging met onjuiste 2e factor van {0}, {1}, {2}",
       "fr": "Tentative de connexion avec un second facteur erroné de {0}, {1}, {2}",
+      "de": "Benutzeranmeldeversuch mit falschem 2. Faktor von {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->31->1854"
       ]
@@ -42115,6 +42224,7 @@
       "en": "User {0} not found.",
       "nl": "Gebruiker {0} niet gevonden.",
       "fr": "Utilisateur {0} introuvable.",
+      "de": "Benutzer {0} nicht gefunden",
       "xloc": [
         "default-mobile.handlebars->11->608",
         "default.handlebars->31->2252"
@@ -42262,6 +42372,7 @@
       "en": "Users {0} not found.",
       "nl": "Gebruikers {0} niet gevonden.",
       "fr": "Utilisateurs {0} introuvables.",
+      "de": "Benutzer {0} nicht gefunden",
       "xloc": [
         "default-mobile.handlebars->11->609",
         "default.handlebars->31->2253"
@@ -42292,6 +42403,7 @@
       "en": "Valid login",
       "nl": "Geldige login",
       "fr": "Connexion réussie",
+      "de": "Gültige Anmeldung",
       "xloc": [
         "default-mobile.handlebars->11->74",
         "default.handlebars->31->226"
@@ -42321,6 +42433,7 @@
       "en": "Validation exception",
       "nl": "Validatie uitzondering",
       "fr": "Exception de validation",
+      "de": "Validierungsausnahme",
       "xloc": [
         "default-mobile.handlebars->11->602",
         "default.handlebars->31->2246"
@@ -42749,6 +42862,7 @@
       "en": "View previous logins",
       "nl": "Bekijk eerdere aanmeldingen",
       "fr": "Historique des connexions",
+      "de": "Vorherige Anmeldungen anzeigen",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountSecurity->3->9->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->12->0"
@@ -42758,6 +42872,7 @@
       "en": "View previous logins for this user",
       "nl": "Bekijk eerdere aanmeldingen voor deze gebruiker",
       "fr": "Historique des connexions de cet utilisateur",
+      "de": "Vorherige Anmeldungen anzeigen für diesen Benutzer",
       "xloc": [
         "default.handlebars->31->2135"
       ]
@@ -43889,6 +44004,7 @@
       "en": "Windows Security",
       "nl": "Windows Beveiliging",
       "fr": "Sécurité Windows",
+      "de": "Windows Sicherheit",
       "xloc": [
         "default-mobile.handlebars->11->421",
         "default.handlebars->31->655"
@@ -46278,6 +46394,7 @@
       "en": "{0} from {1} to {2}.",
       "nl": "{0} van {1} tot {2}.",
       "fr": "{0} de {1} à {2}.",
+      "de": "{0} von {1} zu {2}.",
       "xloc": [
         "default.handlebars->31->861"
       ]
