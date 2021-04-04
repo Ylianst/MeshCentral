@@ -888,7 +888,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            var fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,dbcounters,sms,amtacm,certhashes,watchdog,amtmanager';
+                            var fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,dbcounters,sms,amtacm,certhashes,watchdog,amtmanager,amtpasswords';
                             if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
                             availcommands = availcommands.split(',').sort();
                             while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
@@ -1150,6 +1150,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         case 'print': {
                             console.log(cmdargs['_'][0]);
+                            break;
+                        }
+                        case 'amtpasswords': {
+                            if (parent.parent.amtPasswords == null) {
+                                r = "No Intel AMT password table."
+                            } else {
+                                for (var i in parent.parent.amtPasswords) { r += (i + ' - ' + parent.parent.amtPasswords[i].join(', ') + '\r\n'); }
+                            }
                             break;
                         }
                         case 'updatecheck': {

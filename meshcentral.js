@@ -1696,6 +1696,11 @@ function CreateMeshCentralServer(config, args) {
                 if (obj.config.settings.autobackup == null) { obj.config.settings.autobackup = { backupintervalhours: 24, keeplastdaysbackup: 10 }; }
                 else if (obj.config.settings.autobackup === false) { delete obj.config.settings.autobackup; }
 
+                // Load Intel AMT passwords from the "amtactivation.log" file
+                obj.loadAmtActivationLogPasswords(function (amtPasswords) {
+                    obj.amtPasswords = amtPasswords;
+                });
+
                 // Setup users that can see all device groups
                 if (typeof obj.config.settings.managealldevicegroups == 'string') { obj.config.settings.managealldevicegroups = obj.config.settings.managealldevicegroups.split(','); }
                 else if (Array.isArray(obj.config.settings.managealldevicegroups) == false) { obj.config.settings.managealldevicegroups = []; }
@@ -2679,6 +2684,34 @@ function CreateMeshCentralServer(config, args) {
             }
         });
     };
+
+    // Load the list of Intel AMT UUID and passwords from "amtactivation.log"
+    obj.loadAmtActivationLogPasswords = function (func) {
+        var amtlogfilename = obj.path.join(obj.datapath, 'amtactivation.log');
+        obj.fs.readFile(amtlogfilename, 'utf8', function (err, data) {
+            var amtPasswords = {}; // UUID --> [Passwords]
+            if ((err == null) && (data != null)) {
+                const lines = data.split('\r\n');
+                for (var i in lines) {
+                    var line = lines[i];
+                    if (line.startsWith('{')) {
+                        var j = JSON.parse(line);
+                        if ((typeof j.amtUuid == 'string') && (typeof j.password == 'string')) {
+                            if (amtPasswords[j.amtUuid] == null) {
+                                amtPasswords[j.amtUuid] = [j.password]; // Add password to array
+                            } else {
+                                if (amtPasswords[j.amtUuid].indexOf(j.password) == -1) {
+                                    amtPasswords[j.amtUuid].unshift(j.password); // Add password at the start of the array
+                                    while (amtPasswords[j.amtUuid].length > 3) { amtPasswords[j.amtUuid].pop(); } // Only keep the 3 last passwords for any given device
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            func(obj.common.sortObj(amtPasswords)); // Sort by UUID
+        });
+    }
 
     // Generate a cryptographic key used to encode and decode cookies
     obj.generateCookieKey = function () {

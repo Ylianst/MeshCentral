@@ -294,6 +294,8 @@ module.exports.meshServerRightsArrayToNumber = function (val) {
     return null;
 }
 
+// Sort an object by key
+module.exports.sortObj = function (obj) { return Object.keys(obj).sort().reduce(function (result, key) { result[key] = obj[key]; return result; }, {}); }
 
 // Validate an object to make sure it can be stored in MongoDB
 module.exports.validateObjectForMongo = function (obj, maxStrLen) {
