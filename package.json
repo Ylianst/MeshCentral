@@ -68,11 +68,17 @@
     "ws": "^6.2.1",
     "xmldom": "^0.5.0",
     "yauzl": "^2.10.0",
-    "yubikeyotp": "^0.2.0"
+    "yubikeyotp": "^0.2.0",
+    "snyk": "^1.522.0"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/Ylianst/MeshCentral.git"
   },
-  "readme": "readme.txt"
+  "readme": "readme.txt",
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
+  },
+  "snyk": true
 }
