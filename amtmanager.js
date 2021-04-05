@@ -606,6 +606,11 @@ module.exports.CreateAmtManager = function (parent) {
             if (stack.wsman.comm.xtls == 1) { dev.aquired.hash = stack.wsman.comm.xtlsCertificate.fingerprint.split(':').join('').toLowerCase(); } else { delete dev.aquired.hash; }
             UpdateDevice(dev);
 
+            // If this is the new first user/pass for the device UUID, update the activation log now.
+            if ((parent.amtPasswords != null) && (dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null) && (dev.mpsConnection.tag.meiState.UUID != null) && (parent.amtPasswords[dev.mpsConnection.tag.meiState.UUID] != null) && (parent.amtPasswords[dev.mpsConnection.tag.meiState.UUID][0] != dev.aquired.pass)) {
+                parent.certificateOperations.logAmtActivation(parent.config.domains[dev.domainid], { time: new Date(), action: 'amtpassword', domain: dev.domainid, amtUuid: dev.mpsConnection.tag.meiState.UUID, amtRealm: dev.aquired.realm, user: dev.aquired.user, password: dev.aquired.pass, computerName: dev.name });
+            }
+
             // Perform Intel AMT clock sync
             attemptSyncClock(dev, function (dev) {
                 // Check Intel AMT TLS state

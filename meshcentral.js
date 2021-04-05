@@ -2700,13 +2700,15 @@ function CreateMeshCentralServer(config, args) {
                             if (amtPasswords[j.amtUuid] == null) {
                                 amtPasswords[j.amtUuid] = [j.password]; // Add password to array
                             } else {
-                                if (amtPasswords[j.amtUuid].indexOf(j.password) == -1) {
-                                    amtPasswords[j.amtUuid].unshift(j.password); // Add password at the start of the array
-                                    while (amtPasswords[j.amtUuid].length > 3) { amtPasswords[j.amtUuid].pop(); } // Only keep the 3 last passwords for any given device
-                                }
+                                amtPasswords[j.amtUuid].unshift(j.password); // Add password at the start of the array
                             }
                         }
                     }
+                }
+                // Remove all duplicates and only keep the 3 last passwords for any given device
+                for (var i in amtPasswords) {
+                    amtPasswords[i] = [...new Set(amtPasswords[i])];
+                    while (amtPasswords[i].length > 3) { amtPasswords[i].pop(); }
                 }
             }
             func(obj.common.sortObj(amtPasswords)); // Sort by UUID
