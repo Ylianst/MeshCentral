@@ -252,7 +252,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                         obj.socket.setTimeout(60000); // Set socket idle timeout
                         obj.socket.on('error', function (ex) { obj.xtlsMethod = 1 - obj.xtlsMethod; });
                         obj.socket.on('close', obj.xxOnSocketClosed);
-                        obj.socket.on('timeout', obj.xxOnSocketTimeout);
+                        obj.socket.on('timeout', obj.destroy);
 
                         // Decrypted tunnel from TLS communcation to be forwarded to websocket
                         obj.socket.on('data', function (data) { try { obj.xxOnSocketData(data.toString('binary')); } catch (e) { } }); // AMT/TLS ---> WS
@@ -272,7 +272,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                 obj.socket.setTimeout(60000); // Set socket idle timeout
                 obj.socket.on('data', obj.xxOnSocketData);
                 obj.socket.on('close', obj.xxOnSocketClosed);
-                obj.socket.on('timeout', obj.xxOnSocketTimeout);
+                obj.socket.on('timeout', obj.destroy);
                 obj.socket.on('error', obj.xxOnSocketClosed);
                 obj.socket.connect(obj.port, obj.host, obj.xxOnSocketConnected);
             } else {
@@ -289,7 +289,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                 obj.socket.setTimeout(60000); // Set socket idle timeout
                 obj.socket.on('data', obj.xxOnSocketData);
                 obj.socket.on('close', obj.xxOnSocketClosed);
-                obj.socket.on('timeout', obj.xxOnSocketTimeout);
+                obj.socket.on('timeout', obj.destroy);
                 obj.socket.on('error', function (ex) { if (ex.message && ex.message.indexOf('sslv3 alert bad record mac') >= 0) { obj.xtlsMethod = 1 - obj.xtlsMethod; } });
             }
             obj.socket.setNoDelay(true); // Disable nagle. We will encode each WSMAN request as a single send block and want to send it at once. This may help Intel AMT handle pipelining?
@@ -452,6 +452,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
         //obj.Debug("xxOnSocketClosed");
         obj.socketState = 0;
         if (obj.socket != null) {
+            if (obj.socket.removeAllListeners) { obj.socket.removeAllListeners(); }
             try {
                 if (obj.mpsConnection == null) {
                     obj.socket.destroy();
@@ -468,17 +469,19 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
         }
     }
 
-    obj.xxOnSocketTimeout = function () {
+    obj.destroy = function () {
         if (obj.socket != null) {
+            if (obj.socket.removeAllListeners) { obj.socket.removeAllListeners(); }
             try {
                 if (obj.mpsConnection == null) {
                     obj.socket.destroy();
                 } else {
-                    if (obj.cirasocket != null) { obj.cirasocket.close(); } else { obj.socket.close(); } 
+                    if (obj.cirasocket != null) { obj.cirasocket.close(); } else { obj.socket.close(); }
                 }
             } catch (ex) { }
-            obj.socket = null;
-            obj.cirasocket = null;
+            delete obj.socket;
+            delete obj.cirasocket;
+            obj.socketState = 0;
         }
     }
 
@@ -492,7 +495,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
     obj.CancelAllQueries = function (s) {
         obj.FailAllError = s;
         while (obj.PendingAjax.length > 0) { var x = obj.PendingAjax.shift(); x[1](null, s, x[2]); }
-        if (obj.socket != null) { obj.socket.end(); obj.socket = null; obj.socketState = 0; }
+        obj.destroy();
     }
 
     // Private method
