@@ -453,6 +453,7 @@ module.exports.CreateAmtManager = function (parent) {
         }
 
         // See what username/password we need to try
+        // We create an efficient strategy for trying different Intel AMT passwords.
         if (dev.acctry == null) {
             dev.acctry = [];
 
@@ -661,7 +662,10 @@ module.exports.CreateAmtManager = function (parent) {
                     if (dev.acctry.length > 0) { dev.acctry.shift(); }
 
                     // We have another password to try, hold 20 second and try the next user/password.
-                    if (dev.acctry.length > 0) { setTimeout(function () { if (isAmtDeviceValid(dev)) { attemptInitialContact(dev); } }, 20000); return; }
+                    if (dev.acctry.length > 0) {
+                        dev.consoleMsg("Holding 20 seconds and trying again with different credentials...");
+                        setTimeout(function () { if (isAmtDeviceValid(dev)) { attemptInitialContact(dev); } }, 20000); return;
+                    }
                 }
 
                 // If this devics is in CCM mode and we have a bad password reset policy, do it now.
