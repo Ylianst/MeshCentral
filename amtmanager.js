@@ -127,7 +127,7 @@ module.exports.CreateAmtManager = function (parent) {
         if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
 
         // Clean up this device
-        if (dev.amtstack != null) { dev.amtstack.wsman.comm.FailAllError = 999; delete dev.amtstack; } // Disconnect any active connections.
+        if (dev.amtstack != null) { dev.amtstack.CancelAllQueries(999); delete dev.amtstack.dev; delete dev.amtstack; }
         if (dev.polltimer != null) { clearInterval(dev.polltimer); delete dev.polltimer; }
 
         // Remove the device from the list
@@ -419,7 +419,14 @@ module.exports.CreateAmtManager = function (parent) {
 
     // Attempt to perform initial contact with Intel AMT
     function attemptInitialContact(dev) {
-        delete dev.amtstack; // If there is a WSMAn stack setup, clean it up now.
+        // If there is a WSMAN stack setup, clean it up now.
+        if (dev.amtstack != null) {
+            dev.amtstack.CancelAllQueries(999);
+            delete dev.amtstack.dev;
+            delete dev.amtstack;
+        }
+
+        delete dev.amtstack; 
         parent.debug('amt', dev.name, "Attempt Initial Contact", ["CIRA", "CIRA-Relay", "CIRA-LMS", "Local"][dev.connType]);
 
         // Check Intel AMT policy when CIRA-LMS connection is in use.
@@ -445,10 +452,41 @@ module.exports.CreateAmtManager = function (parent) {
             }
         }
 
-        // See if we need to try different credentials
-        if ((dev.acctry == null) && ((typeof dev.intelamt.user != 'string') || (typeof dev.intelamt.pass != 'string'))) {
-            if ((obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > 0)) { dev.acctry = 0; } else { removeAmtDevice(dev, 8); return; }
+        // See what username/password we need to try
+        if (dev.acctry == null) {
+            dev.acctry = [];
+
+            // Add the know Intel AMT password for this device if available
+            if ((typeof dev.intelamt.user == 'string') && (typeof dev.intelamt.pass == 'string')) { dev.acctry.push([dev.intelamt.user, dev.intelamt.pass]); }
+
+            // Add the policy password as an alternative
+            if ((typeof dev.policy.password == 'string') && (dev.policy.password != '')) { dev.acctry.push(['admin', dev.policy.password]); }
+
+            // Add any configured admin account as alternatives
+            if (obj.amtAdminAccounts[dev.domainid] != null) { for (var i in obj.amtAdminAccounts[dev.domainid]) { dev.acctry.push([obj.amtAdminAccounts[dev.domainid][i].user, obj.amtAdminAccounts[dev.domainid][i].pass]); } }
+
+            // Add any previous passwords for the device UUID as alternative
+            if ((parent.amtPasswords != null) && (dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null) && (dev.mpsConnection.tag.meiState.UUID != null) && (parent.amtPasswords[dev.mpsConnection.tag.meiState.UUID] != null)) {
+                for (var i in parent.amtPasswords[dev.mpsConnection.tag.meiState.UUID]) {
+                    dev.acctry.push(['admin', parent.amtPasswords[dev.mpsConnection.tag.meiState.UUID][i]]);
+                }
+            }
+
+            // Remove any duplicates user/passwords
+            var acctry2 = [];
+            for (var i = 0; i < dev.acctry.length; i++) {
+                var found = false;
+                for (var j = 0; j < acctry2.length; j++) { if ((dev.acctry[i][0] == acctry2[j][0]) && (dev.acctry[i][1] == acctry2[j][1])) { found = true; } }
+                if (found == false) { acctry2.push(dev.acctry[i]); }
+            }
+            dev.acctry = acctry2;
+
+            // If we have passwords to try, try the first one now.
+            if (dev.acctry.length == 0) { removeAmtDevice(dev, 8); return; }
         }
+
+        if ((dev.acctry == null) || (dev.acctry.length == 0)) { removeAmtDevice(dev, 9); return; } // No Intel AMT credentials to try
+        var user = dev.acctry[0][0], pass = dev.acctry[0][1]; // Try the first user/pass in the list
 
         switch (dev.connType) {
             case 0: // CIRA
@@ -458,12 +496,6 @@ module.exports.CreateAmtManager = function (parent) {
                 // Check to see if CIRA is connected on this server.
                 var ciraconn = dev.mpsConnection;
                 if ((ciraconn == null) || (ciraconn.tag == null) || (ciraconn.tag.boundPorts == null)) { removeAmtDevice(dev, 9); return; } // CIRA connection is not on this server, no need to deal with this device anymore.
-
-                // See what user/pass to try.
-                var user = null, pass = null;
-                if (dev.acctry == null) { user = dev.intelamt.user; pass = dev.intelamt.pass; }
-                else if (dev.acctry == 'policy') { user = 'admin'; pass = dev.policy.password; }
-                else if (typeof dev.acctry == 'number') { user = obj.amtAdminAccounts[dev.domainid][dev.acctry].user; pass = obj.amtAdminAccounts[dev.domainid][dev.acctry].pass; }
 
                 // See if we need to perform TLS or not. We prefer not to do TLS within CIRA.
                 var dotls = -1;
@@ -491,12 +523,6 @@ module.exports.CreateAmtManager = function (parent) {
                 // Check to see if CIRA is connected on this server.
                 var ciraconn = dev.mpsConnection;
                 if ((ciraconn == null) || (ciraconn.tag == null) || (ciraconn.tag.boundPorts == null)) { removeAmtDevice(dev, 11); return; } // Relay connection not valid
-
-                // See what user/pass to try.
-                var user = null, pass = null;
-                if (dev.acctry == null) { user = dev.intelamt.user; pass = dev.intelamt.pass; }
-                else if (dev.acctry == 'policy') { user = 'admin'; pass = dev.policy.password; }
-                else if (typeof dev.acctry == 'number') { user = obj.amtAdminAccounts[dev.domainid][dev.acctry].user; pass = obj.amtAdminAccounts[dev.domainid][dev.acctry].pass; }
 
                 // Connect now
                 var comm;
@@ -529,12 +555,6 @@ module.exports.CreateAmtManager = function (parent) {
                     setTimeout(tryAgainFunc, 5000);
                 } else {
                     // No active connections
-
-                    // See what user/pass to try.
-                    var user = null, pass = null;
-                    if (dev.acctry == null) { user = dev.intelamt.user; pass = dev.intelamt.pass; }
-                    else if (dev.acctry == 'policy') { user = 'admin'; pass = dev.policy.password; }
-                    else if (typeof dev.acctry == 'number') { user = obj.amtAdminAccounts[dev.domainid][dev.acctry].user; pass = obj.amtAdminAccounts[dev.domainid][dev.acctry].pass; }
 
                     // Connect now
                     var comm;
@@ -631,9 +651,13 @@ module.exports.CreateAmtManager = function (parent) {
                 dev.tlsfail = true; attemptInitialContact(dev); return;
             } else if (status == 401) {
                 // Authentication error, see if we can use alternative credentials
-                if ((dev.acctry == null) && (typeof dev.policy.password == 'string') && (dev.policy.password != '')) { dev.acctry = 'policy'; attemptInitialContact(dev); return; }
-                if (((dev.acctry == null) || (dev.acctry == 'policy')) && (obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > 0)) { dev.acctry = 0; attemptInitialContact(dev); return; }
-                if ((dev.acctry != null) && (obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > (dev.acctry + 1))) { dev.acctry++; attemptInitialContact(dev); return; }
+                if (dev.acctry != null) {
+                    // Remove the first password from the trial list since it did not work.
+                    if (dev.acctry.length > 0) { dev.acctry.shift(); }
+
+                    // We have another password to try, hold 20 second and try the next user/password.
+                    if (dev.acctry.length > 0) { setTimeout(function () { if (isAmtDeviceValid(dev)) { attemptInitialContact(dev); } }, 20000); return; }
+                }
 
                 // If this devics is in CCM mode and we have a bad password reset policy, do it now.
                 if ((dev.connType == 2) && (dev.policy.badPass == 1) && (dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null) && (dev.mpsConnection.tag.meiState.Flags != null) && ((dev.mpsConnection.tag.meiState.Flags & 2) != 0)) {
