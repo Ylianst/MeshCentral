@@ -169,6 +169,7 @@
         var installFlags = '{{{installflags}}}';
         var magenturl = '{{{magenturl}}}';
         var groupName = decodeURIComponent('{{{meshname}}}');
+        var urlargs = parseUriArgs();
         if (groupName != '') {
             QH('groupname', format("Remote Agent Installation for {0}", escapeHtml(groupName)));
             document.title = format("{0} - Agent Installation", groupName);
@@ -274,6 +275,10 @@
             var servername = window.location.hostname;
             var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
 
+            // Loginkey
+            var loginkey = '';
+            if (urlargs.key != null) { loginkey = ('&key=' + urlargs.key); }
+
             // Windows 64bit Setup
             var url = 'meshagents?id=4&meshid=' + meshid;
             if (installFlags != 0) { url += ('&installflags=' + installFlags); }
@@ -292,22 +297,22 @@
             if (serverHttps == 1) {
                 var portStr = (serverPort == 443) ? '' : (':' + serverPort);
                 if (serverNoProxy == 0) {
-                    linuxInstall = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-check-certificate -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
-                    linuxUnInstall = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-check-certificate -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
+                    linuxInstall = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + loginkey + '" --no-check-certificate -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + loginkey + '" --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
+                    linuxUnInstall = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + loginkey + '" --no-check-certificate -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + loginkey + '" --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
                 } else {
                     // Server asked that agent be installed to preferably not use a HTTP proxy.
-                    linuxInstall = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
-                    linuxUnInstall = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
+                    linuxInstall = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + loginkey + '" --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
+                    linuxUnInstall = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + loginkey + '" --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
                 }
             } else {
                 var portStr = (serverPort == 80) ? '' : (':' + serverPort);
                 if (serverNoProxy == 0) {
-                    linuxInstall = '(wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" -O ./meshinstall.sh || wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
-                    linuxUnInstall = '(wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" -O ./meshinstall.sh || wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
+                    linuxInstall = '(wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1' + loginkey + '" -O ./meshinstall.sh || wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1' + loginkey + '" --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
+                    linuxUnInstall = '(wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1' + loginkey + '" -O ./meshinstall.sh || wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1' + loginkey + '" --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
                 } else {
                     // Server asked that agent be installed to preferably not use a HTTP proxy.
-                    linuxInstall = 'wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
-                    linuxUnInstall = 'wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
+                    linuxInstall = 'wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1' + loginkey + '" --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
+                    linuxUnInstall = 'wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1' + loginkey + '" --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
                 }
             }
             QH('linuxinstall', linuxInstall);
