@@ -3115,7 +3115,7 @@ function mainStart() {
         if (passport != null) { modules.push(...passport); }
         if (sessionRecording == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
         if (config.letsencrypt != null) { if (nodeVersion < 8) { addServerWarning("Let's Encrypt support requires Node v8.x or higher.", !args.launch); } else { modules.push('acme-client'); } } // Add acme-client module
-        if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
+        if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
         if (config.settings.mysql != null) { modules.push('mysql'); } // Add MySQL.
         //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
         if (config.settings.mongodb != null) { modules.push('mongodb'); modules.push('saslprep'); } // Add MongoDB, official driver.

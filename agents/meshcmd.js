@@ -70,7 +70,7 @@ function onVerifyServer(clientName, certs) {
     if (certs == null) { certs = clientName; } // Temporary thing until we fix duktape
 
     // If we have the serverid, used delayed server authentication
-    if (settings.serverid != null) { settings.meshServerTlsHash = certs[certs.length - 1].fingerprint.split(':').join(''); return; }
+    if (settings.serverid != null) { settings.meshServerTlsHash = certs[certs.length - 1].fingerprint.replace(/:/g, ''); return; }
 
     // Otherwise, use server HTTPS certificate hash
     try { for (var i in certs) { if (certs[i].fingerprint.replace(/:/g, '') == settings.serverhttpshash) { return; } } } catch (e) { }
@@ -2063,6 +2063,11 @@ function OnServerWebSocket(msg, s, head) {
                 // Hash the signed data and verify the server signature
                 var signDataHash = hasher.syncHash(Buffer.concat([Buffer.from(settings.serverAuthClientNonce, 'base64'), Buffer.from(settings.meshServerTlsHash, 'hex'), Buffer.from(command.nonce, 'base64')]));
                 if (require('RSA').verify(require('RSA').TYPES.SHA384, cert, signDataHash, Buffer.from(command.signature, 'base64')) == false) { console.log("Unable to authenticate the server, invalid signature."); process.exit(1); return; }
+
+                // Switch to using HTTPS TLS certificate for authentication
+                delete settings.serverid;
+                settings.serverhttpshash = settings.meshServerTlsHash;
+                delete settings.meshServerTlsHash;
 
                 // Figure out the 2FA token to use if any
                 var xtoken = null;
