@@ -13,9 +13,9 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
     obj.db = db;
     obj.args = args;
     obj.connections = {}; // NodesID --> client array
-    const aedes = require("aedes")();
+    const aedes = require('aedes')();
     obj.handle = aedes.handle;
-    const allowedSubscriptionTopics = [ 'presence' ];
+    const allowedSubscriptionTopics = ['presence', 'console', 'powerAction'];
     const denyError = new Error('denied');
     var authError = new Error('Auth error')
     authError.returnCode = 1
@@ -127,7 +127,9 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
         if (typeof message == 'string') { message = Buffer.from(message); }
         for (var i in clients) {
             // Only publish to client that subscribe to the topic
-            if (clients[i].subscriptions[topic] != null) { clients[i].publish({ cmd: 'publish', qos: 0, topic: topic, payload: message, retain: false }); }
+            if (clients[i].subscriptions[topic] != null) {
+                clients[i].publish({ cmd: 'publish', qos: 0, topic: topic, payload: message, retain: false }, function () { });
+            }
         }
     }
 
