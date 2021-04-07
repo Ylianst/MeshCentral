@@ -3725,6 +3725,14 @@
                                 if (groups[tag] == null) { groups[tag] = r2; groupCount[tag] = 1; } else { groups[tag] += r2; groupCount[tag] += 1; }
                                 if ((view == 3) || (view == 5)) break;
                             }
+                        } else {
+                            // If sorted by "Groups-Tags" and a device has not tags, put in a group only section.
+                            if ((sort == 4) && ((node.tags == null) || (node.tags.length == 0))) {
+                                var tag = mesh2.name;
+                                var collapsed = CollapsedGroups['tag:' + tag];
+                                var r2 = r.replace('**xx**xx*TaG*xx**xx**', encodeURIComponentEx(tag) + (collapsed?' style=display:none':''));
+                                if (groups[tag] == null) { groups[tag] = r2; groupCount[tag] = 1; } else { groups[tag] += r2; groupCount[tag] += 1; }
+                            }
                         }
                         r = '';
                     }
