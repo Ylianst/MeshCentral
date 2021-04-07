@@ -3471,7 +3471,7 @@
             ) { menus.push({ n: "Desktop", f: 'setupDeviceMenu(1)' }); }
 
             if ((currentDevicePanel != 5) &&
-                (urlargs.term == 1) &&
+                //(urlargs.term == 1) &&
                 (currentNode != null) &&
                 ((meshrights & 8) || (meshrights & 256)) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 65536) == 0)) &&
                 (((currentNode.agent == null) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 2)))
