@@ -1590,10 +1590,13 @@ module.exports.CreateDB = function (parent, func) {
             var backupPath = parent.backuppath;
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
             try { parent.fs.mkdirSync(backupPath); } catch (e) { }
+            const dburl = parent.args.mongodb;
             var mongoDumpPath = 'mongodump';
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = parent.config.settings.autobackup.mongodumppath; }
+            var cmd = '"' + mongoDumpPath + '"';
+            if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + dburl.replace('?', '/?') + '\"'; }
             const child_process = require('child_process');
-            child_process.exec('"' + mongoDumpPath + '"', { cwd: backupPath }, function (error, stdout, stderr) {
+            child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                 try {
                     if ((error != null) && (error != '')) {
                         if (parent.platform == 'win32') {
