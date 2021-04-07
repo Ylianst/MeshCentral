@@ -5567,7 +5567,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 // Node information
                                 if (nodeinfo.node != null) {
                                     const n = nodeinfo.node;
-                                    output += csvClean(n._id) + ',' + csvClean(n.name) + ',' + csvClean(n.rname ? n.rname : '') + ',' + csvClean(n.host ? n.host : '') + ',' + n.icon + ',' + (n.ip ? n.ip : '') + ',' + (n.osdesc ? csvClean(n.osdesc) : '') + ',' + csvClean(parent.meshes[n.meshid].name);
+                                    output += csvClean(n._id) + ',' + csvClean(n.name) + ',' + csvClean(n.rname ? n.rname : '') + ',' + csvClean(n.host ? n.host : '') + ',' + (n.icon ? n.icon : 1) + ',' + (n.ip ? n.ip : '') + ',' + (n.osdesc ? csvClean(n.osdesc) : '') + ',' + csvClean(parent.meshes[n.meshid].name);
                                 } else {
                                     output += ',,,,,,,';
                                 }
