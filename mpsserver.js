@@ -1234,7 +1234,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 if ((filestats == null) || (typeof filestats.size != 'number') || (filestats.size <= 0)) {
                     responseCode = 404; responseType = 'text/html'; responseData = 'File not found';
                 } else {
-                    this.write('HTTP/1.1 200 OK\r\n' + hostHeader + 'Content-Type: ' + responseType + '\r\nConnection: keep-alive\r\nContent-Length: ' + filestats.size + '\r\n\r\n');
+                    this.write('HTTP/1.1 200 OK\r\n' + hostHeader + 'Content-Type: ' + responseType + '\r\nConnection: keep-alive\r\nCache-Control: no-cache\r\nContent-Length: ' + filestats.size + '\r\n\r\n');
                     if (directives[0] == 'GET') { obj.fs.createReadStream(cookie.f, { flags: 'r' }).pipe(this); }
                     delete this.xdata;
                     return;
@@ -1259,7 +1259,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         if ((filestats == null) || (typeof filestats.size != 'number') || (filestats.size <= 0)) {
                             responseCode = 404; responseType = 'text/html'; responseData = 'File not found';
                         } else {
-                            this.write('HTTP/1.1 200 OK\r\n' + hostHeader + 'Content-Type: ' + responseType + '\r\nConnection: keep-alive\r\nContent-Length: ' + filestats.size + '\r\n\r\n');
+                            this.write('HTTP/1.1 200 OK\r\n' + hostHeader + 'Content-Type: ' + responseType + '\r\nConnection: keep-alive\r\nCache-Control: no-cache\r\nContent-Length: ' + filestats.size + '\r\n\r\n');
                             if (directives[0] == 'GET') {
                                 obj.fs.createReadStream(r.file, { flags: 'r' }).pipe(this);
                                 if (typeof r.maxserve == 'number') { r.maxserve--; if (r.maxserve == 0) { delete obj.httpResponses[directives[1]]; } } // Check if this entry was server the maximum amount of times.
@@ -1274,7 +1274,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 responseData = 'Invalid request';
             }
         }
-        this.write('HTTP/1.1 ' + responseCode + ' OK\r\n' + hostHeader + 'Connection: keep-alive\r\nContent-Type: ' + responseType + '\r\nContent-Length: ' + responseData.length + '\r\n\r\n');
+        this.write('HTTP/1.1 ' + responseCode + ' OK\r\n' + hostHeader + 'Connection: keep-alive\r\nCache-Control: no-cache\r\nContent-Type: ' + responseType + '\r\nContent-Length: ' + responseData.length + '\r\n\r\n');
         this.write(responseData);
         delete this.xdata;
     }
