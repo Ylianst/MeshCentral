@@ -484,7 +484,7 @@
             width:120px;
             background-color:#AAA;
             text-align:center;
-            padding:10px;
+            padding:8px;
             cursor:pointer;
             margin:10px;
             z-index:1000;
@@ -576,7 +576,6 @@
         }
 
         .areaHead {
-            padding-left: 4px;
             padding-top: 2px;
             padding-bottom: 2px;
             background: #C0C0C0;
@@ -601,7 +600,6 @@
         .toright2 {
             float: right;
             text-align: right;
-            padding-right: 4px;
         }
 
         #consoleTable {
@@ -633,7 +631,6 @@
         #termTable {
             width: 100%;
             padding: 0px;
-            padding: 0px;
             margin-top: 0px;
         }
 
@@ -648,14 +645,8 @@
         #termarea3x {
             background: black;
             text-align: center;
-            height: 500px;
+            height: 400px;
             position: relative;
-        }
-
-        #Term {
-            background: black;
-            margin: 0;
-            padding: 0;
         }
     </style>
 </head>
@@ -875,7 +866,7 @@
                     <img id="deskkeybutton2a" src="images/mobile-desk-keyboard-open.png" class="deskButton" style="top:210px;display:none" onclick="toggleKeyboard()" />
                     <img id="deskkeybutton2b" src="images/mobile-desk-keyboard-close.png" class="deskButton" style="top:210px;display:none" onclick="toggleKeyboard()" />
                     <div style="position:absolute;top:0;left:0;z-index:200;opacity:0;width:1px;height:1px">
-                        <input id="softKeyboard" autocomplete="off" type="password" style="z-index:200;opacity:0;width:1px;height:1px" onfocus="keyboardFocusChange()" onblur="keyboardFocusChange()" onkeypress="return ondeskkeypress(event)" onkeydown="return ondeskkeydown(event)" onkeyup="return ondeskkeyup(event)" />
+                        <input id="softKeyboard" autocomplete="off" type="password" style="z-index:200;opacity:0;width:1px;height:1px" onfocus="keyboardFocusChange()" onblur="keyboardFocusChange()" onkeypress="return ondeskkeypress(event,1)" onkeydown="return ondeskkeydown(event,1)" onkeyup="return ondeskkeyup(event,1)" />
                     </div>
                     <div id="deskButtonMenu" style="display:none;position:absolute;top:10px;left:10px;right:55px;bottom:10px;z-index:1000"></div>
                     <div id=p10desktop style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%;display:none">
@@ -918,38 +909,34 @@
                             </div>
                         </div>
                     </div>
-                    <div id=p10terminal style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%;display:none">
-                        <div id=termTable style="position:relative">
-                            <table style="width:100%" cellpadding=0 cellspacing=0>
-                                <tr>
-                                    <td class="areaHead">
-                                        <div class="toright2">
-                                        </div>
-                                        <div>
-                                            <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none" />
-                                            <span id="connectbutton2span"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                                            <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
-                                            &nbsp;<span id="termstatus" style="line-height:22px">Disconnected</span><span id="termtitle"></span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td id="termarea3x">
-                                        <div id="termarea3xdiv" style="width:100%;height:100%"></div>
-                                        <pre id="Term"></pre>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="areaFoot">
-                                        <div class="toright2">
-                                        </div>
-                                        <div>
-                                            &nbsp;
-                                            <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
+                    <div id="termButtonMenu" style="display:none;position:absolute;top:10px;left:10px;right:55px;bottom:10px;z-index:1000"></div>
+                    <div id=p10terminal style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%;display:none;background-color:#333">
+                        <div id=termTable style="position:absolute;top:0;bottom:0;left:0;right:0">
+                            <div id="termarea1" style="position:absolute;top:0;height:32px;left:0;right:0">
+                                <div class="areaHead">
+                                    <div class="toright2">
+                                        <input type=button id=termFullScreen value="Full Screen" onclick=deskToggleFull(event) onkeypress="return false" onkeydown="return false" disabled="disabled" style="height:28px;margin-right:3px;">
+                                    </div>
+                                    <div>
+                                        <span id="connectbutton2span" style="margin-left:3px"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" style="height:28px" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                                        <span id="disconnectbutton2span" style="margin-left:3px"><input type="button" id="disconnectbutton2" value="Disconnect" style="height:28px" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
+                                        <span id="termstatus" style="line-height:22px">Disconnected</span><span id="termtitle"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="termarea3" style="position:absolute;top:32px;left:0;bottom:32px" cellpadding=0 cellspacing=0>
+                                <div id="termarea3x">
+                                    <div id="termarea3xdiv" style="overflow:hidden"></div>
+                                </div>
+                            </div>
+                            <div id="termarea4" style="position:absolute;bottom:0;height:32px;left:0;right:0">
+                                <div class="areaFoot">
+                                    <div class="toright2"></div>
+                                    <div>
+                                        <input id="termActionsBtn" style="margin-left:3px;height:28px" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style="height:28px" />
+                                    </div>
+                                </div>
+                            </div>
                             <div id=p12TermConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:45px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p12clearConsoleMsg()></div>
                         </div>
                     </div>
@@ -1252,8 +1239,8 @@
         var deskKeyboardShortcuts = [];
         var nightMode = setNightMode();
         var xterm = null;
-        var xtermfit = null;
-        var xtermResizeTimer = null;
+        //var xtermfit = null;
+        //var xtermResizeTimer = null;
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -1312,6 +1299,7 @@
             var deskKeyboardShortcutsStr = getstore('deskKeyShortcuts', '0x0A002E,0x100000,0x100028,0x100026,0x10004C,0x10004D,0x11004D,0x100052,0x020073,0x080057,0x020009,0x100025,0x100027').split(',');
             for (var i in deskKeyboardShortcutsStr) { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); }
             updateDeskShortcutKeys();
+            updateTermShortcutKeys();
         }
 
         function refreshCookieSession() {
@@ -2770,7 +2758,7 @@
         }
 
         var gotKeyPressEvent = false;
-        function ondeskkeypress(e) {
+        function ondeskkeypress(e, t) {
             setSessionActivity();
             if (desktop && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 1)) {
                 gotKeyPressEvent = true;
@@ -2785,9 +2773,18 @@
                 }
                 return desktop.m.handleKeys(e);
             }
+            if (terminal && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 5) && (t !== 1)) {
+                if (e.altKey == true) { return true; }
+                gotKeyPressEvent = true;
+                Q('softKeyboard').value = '';
+                var k = 0;
+                if (e.charCode != 0) { k = e.charCode; } else if (e.keyCode != 0) { k = e.keyCode; }
+                if (k != 0) { terminal.sendText(String.fromCharCode(k)); }
+                return false;
+            }
         }
 
-        function ondeskkeydown(e) {
+        function ondeskkeydown(e, t) {
             setSessionActivity();
             if (desktop && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 1)) {
                 gotKeyPressEvent = false;
@@ -2802,9 +2799,14 @@
                 }
                 return desktop.m.handleKeyDown(e);
             }
+            if (terminal && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 5) && (t !== 1)) {
+                if (e.altKey == true) { return true; }
+                Q('softKeyboard').value = '';
+                gotKeyPressEvent = false;
+            }
         }
 
-        function ondeskkeyup(e) {
+        function ondeskkeyup(e, t) {
             setSessionActivity();
             if (desktop && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 1)) {
                 var inputStr = Q('softKeyboard').value;
@@ -2825,6 +2827,15 @@
                 } else {
                     return desktop.m.handleKeyUp(e);
                 }
+            }
+            if (terminal && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 5) && (gotKeyPressEvent == false) && (t !== 1)) {
+                if (e.altKey == true) { return true; }
+                Q('softKeyboard').value = '';
+                var k = 0;
+                if (e.charCode != 0) { k = e.charCode; } else if (e.keyCode != 0) { k = e.keyCode; }
+                if ((k == 8) || (k == 13)) { terminal.sendText(String.fromCharCode(k)); } // Enter and backspace
+                else if (e.ctrlKey && (k >= 64) && (k <= 95)) { console.log(k - 64); terminal.sendText(String.fromCharCode(k - 64)); } // Ctrl keys
+                return false;
             }
         }
 
@@ -3471,7 +3482,6 @@
             ) { menus.push({ n: "Desktop", f: 'setupDeviceMenu(1)' }); }
 
             if ((currentDevicePanel != 5) &&
-                //(urlargs.term == 1) &&
                 (currentNode != null) &&
                 ((meshrights & 8) || (meshrights & 256)) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 65536) == 0)) &&
                 (((currentNode.agent == null) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 2)))
@@ -3482,6 +3492,7 @@
             if ((currentDevicePanel != 4) && (currentNode != null) && (meshrights & 0x00000010)) { menus.push({ n: "Console", f: 'setupDeviceMenu(4)' }); }
             updateFooterMenu(menus);
             updateCurrentUrl();
+            if (currentDevicePanel == 1) { deskAdjust(); }
         }
 
         function deviceActionFunction() {
@@ -3930,26 +3941,11 @@
             }, 10);
         }
 
-        function openFullscreen() {
-            var elem = Q('p10');
-            if (elem.requestFullscreen) { elem.requestFullscreen(); }
-            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } // Safari
-            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); } // IE11
-            fullScreenMode = true;
-        }
-
         function exitButton() {
             if (xxdialogMode) return;
             QV('deskButtonMenu', false);
+            QV('termButtonMenu', false);
             deskToggleFull();
-        }
-
-        function closeFullscreen() {
-            if (fullScreenMode = false) return;
-            if (document.exitFullscreen) { document.exitFullscreen(); }
-            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } // Safari
-            else if (document.msExitFullscreen) { document.msExitFullscreen(); } // IE11
-            fullScreenMode = false;
         }
 
         function deskMenuButton(x) {
@@ -4119,7 +4115,8 @@
 
         function toggleMenu(x) {
             if (xxdialogMode) return;
-            QV('deskButtonMenu', fullscreen && !x);
+            QV('deskButtonMenu', fullscreen && !x && (currentDevicePanel == 1));
+            QV('termButtonMenu', fullscreen && !x && (currentDevicePanel == 5));
             QV('deskkeybutton3a', fullscreen && x);
             QV('deskkeybutton3b', fullscreen && !x);
         }
@@ -4134,13 +4131,19 @@
 
         function deskChangeFullscreenZoom() {
             if (xxdialogMode) return;
-            if (desktop == null) return;
-            if (fullscreenzoom == 1) { fullscreenzoom = 0.5; } else { fullscreenzoom = 1; }
-            QV('deskkeybutton5a', fullscreen && (fullscreenzoom == 1));
-            QV('deskkeybutton5b', fullscreen && (fullscreenzoom != 1));
-            QS('deskarea3').width = (desktop.m.ScreenWidth * fullscreenzoom) + 'px';
-            QS('deskarea3').height = (desktop.m.ScreenHeight * fullscreenzoom) + 'px';
-            deskAdjust();
+            if (currentDevicePanel == 1) {
+                if (desktop == null) return;
+                if (fullscreenzoom == 1) { fullscreenzoom = 0.5; } else { fullscreenzoom = 1; }
+                QV('deskkeybutton5a', fullscreen && (fullscreenzoom == 1));
+                QV('deskkeybutton5b', fullscreen && (fullscreenzoom != 1));
+                QS('deskarea3').width = (desktop.m.ScreenWidth * fullscreenzoom) + 'px';
+                QS('deskarea3').height = (desktop.m.ScreenHeight * fullscreenzoom) + 'px';
+                deskAdjust();
+            }
+            if (currentDevicePanel == 5) {
+                if (terminal == null) return;
+                xterm.setOption('fontSize', (xterm.getOption('fontSize') == 15) ? 10 : 15)
+            }
         }
 
         var fullscreen = false;
@@ -4158,58 +4161,101 @@
             QV('p10deskTopTable', !fullscreen);
             QV('deskarea1', !fullscreen);
             QV('deskarea4', !fullscreen);
+            QV('termarea1', !fullscreen);
+            QV('termarea4', !fullscreen);
 
             var rights = GetNodeRights(currentNode);
             var inputAllowed = (currentNode.agent.id != 14) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
 
-            // Move the zoom button to normal or top position
-            QS('deskkeybutton5a').top = QS('deskkeybutton5b').top = (inputAllowed) ? '160px' : '60px';
-
             // Show full screen buttons if needed
             QV('deskkeybutton1', fullscreen);
-            QV('deskkeybutton2a', fullscreen && inputAllowed);
-            QV('deskkeybutton2b', false);
-            QV('deskkeybutton3a', fullscreen && inputAllowed);
-            QV('deskkeybutton3b', false);
-            QV('deskkeybutton4a', fullscreen && inputAllowed && (!desktop.m.SwapMouse));
-            QV('deskkeybutton4b', fullscreen && inputAllowed && (desktop.m.SwapMouse));
-            QV('deskkeybutton5a', fullscreen && (fullscreenzoom == 1));
-            QV('deskkeybutton5b', fullscreen && (fullscreenzoom != 1));
+            if (currentDevicePanel == 1) { // Desktop panel is being shown (1 = Desktop, 5 = Terminal)
+                // Move shortcut key to desktop position
+                QS('deskkeybutton2a').top = QS('deskkeybutton2b').top = '210px';
+                // Move the zoom button to normal or top position
+                QS('deskkeybutton5a').top = QS('deskkeybutton5b').top = (inputAllowed) ? '160px' : '60px'; // Zoom
+                QV('deskkeybutton2a', fullscreen && inputAllowed);
+                QV('deskkeybutton2b', false);
+                QV('deskkeybutton3a', fullscreen && inputAllowed);
+                QV('deskkeybutton3b', false);
+                QV('deskkeybutton4a', fullscreen && inputAllowed && (!desktop.m.SwapMouse));
+                QV('deskkeybutton4b', fullscreen && inputAllowed && (desktop.m.SwapMouse));
+                QV('deskkeybutton5a', fullscreen && (fullscreenzoom == 1));
+                QV('deskkeybutton5b', fullscreen && (fullscreenzoom != 1));
+            }
+            if (currentDevicePanel == 5) {
+                // Move right buttons to terminal position
+                //QS('deskkeybutton3a').top = QS('deskkeybutton3b').top = '60px'; // Shortcuts
+                //QS('deskkeybutton5a').top = QS('deskkeybutton5b').top = '110px'; // Zoom
+                QS('deskkeybutton2a').top = QS('deskkeybutton2b').top = '110px'; // Keyboard
+                QV('deskkeybutton2a', fullscreen);
+                QV('deskkeybutton2b', false);
+                QV('deskkeybutton3a', fullscreen);
+                QV('deskkeybutton3b', false);
+                QV('deskkeybutton4a', false);
+                QV('deskkeybutton4b', false);
+                QV('deskkeybutton5a', false);
+                QV('deskkeybutton5a', false);
+                //QV('deskkeybutton5a', xterm.getOption('fontSize') == 15);
+                //QV('deskkeybutton5b', xterm.getOption('fontSize') != 15);
+            }
 
-            if (fullscreen) {deskkeybutton5a
+            if (fullscreen) {
                 QS('DeskParent').height = null;
                 QS('page_content').top = '0px';
                 QS('page_content').bottom = '0px';
-                QS('p10desktop').top = '0px';
-                QS('p10desktop').overflow = 'scroll';
-                QS('deskarea3').top = '0px';
-                QS('deskarea3').width = (desktop.m.ScreenWidth * fullscreenzoom) + 'px';
-                QS('deskarea3').height = (desktop.m.ScreenHeight * fullscreenzoom) + 'px';
-                QS('deskarea3')['padding-right'] = '55px';
+                if (currentDevicePanel == 1) {
+                    QS('p10desktop').top = '0px';
+                    QS('p10desktop').overflow = 'scroll';
+                    QS('deskarea3').top = '0px';
+                    QS('deskarea3').width = (desktop.m.ScreenWidth * fullscreenzoom) + 'px';
+                    QS('deskarea3').height = (desktop.m.ScreenHeight * fullscreenzoom) + 'px';
+                    QS('deskarea3')['padding-right'] = '55px';
+                }
+                if (currentDevicePanel == 5) {
+                    QS('p10terminal').top = '0px';
+                    QS('p10terminal').overflow = 'scroll';
+                    QS('termarea3').top = '0px';
+                    QS('termarea3').bottom = null;
+                    QS('termarea3').right = null;
+                    QS('termarea3')['padding-right'] = '55px';
+                }
                 QS('body')['background-color'] = '#000';
                 QS('p10')['background-color'] = '#000';
-                openFullscreen();
             } else {
                 QS('DeskParent').height = '100%';
                 QS('page_content').top = '50px';
                 QS('page_content').bottom = '32px';
-                QS('p10desktop').top = '55px';
-                QS('p10desktop').overflow = 'hidden';
-                QS('deskarea3').top = '32px';
-                QS('deskarea3').left = null;
-                QS('deskarea3').width = '100%';
-                QS('deskarea3').height = 'calc(100% - 64px)';
-                QS('deskarea3')['padding-right'] = '';
-                QS('DeskParent')['margin-top'] = null;
-                QS('DeskParent')['margin-left'] = null;
+                if (currentDevicePanel == 1) {
+                    QS('p10desktop').top = '55px';
+                    QS('p10desktop').overflow = 'hidden';
+                    QS('deskarea3').top = '32px';
+                    QS('deskarea3').left = null;
+                    QS('deskarea3').width = '100%';
+                    QS('deskarea3').height = 'calc(100% - 64px)';
+                    QS('deskarea3')['padding-right'] = '';
+                    QS('DeskParent')['margin-top'] = null;
+                    QS('DeskParent')['margin-left'] = null;
+                }
+                if (currentDevicePanel == 5) {
+                    //xterm.setOption('fontSize', 15)
+                    QS('p10terminal').top = '55px';
+                    QS('p10terminal').overflow = 'hidden';
+                    Q('p10terminal').scrollTop = 0;
+                    Q('p10terminal').scrollLeft = 0;
+                    QS('termarea3').top = '32px';
+                    QS('termarea3').bottom = '32px';
+                    //QS('termarea3').right = '0px';
+                    QS('termarea3')['padding-right'] = null;
+                }
                 QS('body')['background-color'] = nightMode ? '#000' : '#FFF';
                 QS('p10')['background-color'] = null;
-                closeFullscreen();
             }
-            deskAdjust();
+            if (currentDevicePanel == 1) { deskAdjust(); }
         }
 
         function deskAdjust() {
+            if (currentDevicePanel != 1) return; // If not on desktop tab, ignore this.
             if (fullscreen) {
                 QS('Desk')['margin-top'] = null;
                 QS('Desk')['margin-bottom'] = null;
@@ -4298,6 +4344,7 @@
         function updateTerminalButtons() {
             var mtype = (currentNode.agent == 1) ? 1 : 2;
             var termState = ((terminal != null) && (terminal.state != 0));
+            QE('termFullScreen', (termState != 0));
 
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
@@ -4318,9 +4365,8 @@
             switch (state) {
                 case 0:
                     // Disconnected, clear the terminal
-                    QH('termtitle', '');
                     xterm.dispose();
-                    xterm = xtermfit = null;
+                    xterm = null;
                     if (terminal != null) { terminal.Stop(); terminal = null; }
                     break;
                 case 3:
@@ -4349,18 +4395,13 @@
 
         function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
 
-        // Send the new terminal size to the agent
-        function xTermSendResize() {
-            xtermResizeTimer = null;
-            if ((xterm != null) && (terminal != null) && (terminal.sendCtrlMsg != null)) { terminal.sendCtrlMsg(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: xterm.cols, rows: xterm.rows })); }
-        }
-
         function connectTerminal(e, contype, options) {
             p12clearConsoleMsg();
             if (!terminal) {
                 // Terminal setup
                 var termoptions = { protocol: ((options != null) && (typeof options.protocol == 'number')) ? options.protocol : 1 };
                 if (options && options.requireLogin) { termoptions.requireLogin = true; }
+
                 /*
                 if ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) == -1) {
                     if (Q('termSizeList').value == 1) { termoptions.cols = 80; termoptions.rows = 25; termoptions.xterm = true; }
@@ -4389,24 +4430,22 @@
                     if (serverinfo.linuxshell == 'login') { termoptions.protocol = 1; termoptions.requireLogin = true; }
                 }
                 */
+
                 // Setup a mesh agent xterm terminal
                 QV('termarea3xdiv', true);
-                QV('Term', false);
 
                 // Setup the terminal with auto-fit
                 if (xterm != null) { xterm.dispose(); }
-                xtermfit = new FitAddon.FitAddon();
                 xterm = new Terminal();
-                if (xtermfit) { xterm.loadAddon(xtermfit); }
-                xterm.open(Q('termarea3xdiv')); // termarea3x
+                xterm.setOption('scrollback', 0);
+                //xterm.setOption('fontSize', 15);
+                xterm.open(Q('termarea3xdiv'));
                 xterm.onData(function (data) { if (terminal != null) { terminal.sendText(data); } })
-                if (xtermfit) { xtermfit.fit(); }
-                xterm.onTitleChange(function (title) { QH('termtitle', ' - ' + EscapeHtml(title)); });
-                xterm.onResize(function (size) {
-                    // Despam resize
-                    if (xtermResizeTimer) clearTimeout(xtermResizeTimer);
-                    xtermResizeTimer = setTimeout(xTermSendResize, 200);
-                });
+                xterm.resize(80,34);
+
+                // Remove terminal textarea and scrollbar.
+                document.getElementsByClassName('xterm-helper-textarea')[0].style.display = 'none';
+                document.getElementsByClassName('xterm-viewport')[0].style.overflow = 'hidden';
 
                 // Setup a terminal tunnel to the agent
                 terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel(tunnelUpdate, termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
@@ -4430,13 +4469,24 @@
                     }
                 };
             } else {
-                //QH('Term', '');
                 terminal.Stop();
                 terminal = null;
                 if (fullscreen) { deskToggleFull(); }
             }
             Q('connectbutton2').blur(); // Deselect the connect button so the button does not get key presses.
         }
+
+        //
+        // Terminal Shortcut Keys
+        //
+
+        function updateTermShortcutKeys() {
+            var x = '';
+            for (var i = 64; i <= 95; i++) { x += '<div class="menuButton" style="width:70px" onclick="termMenuButton(' + i + ')">' + "Ctrl + " + String.fromCharCode(i) + '</div>'; }
+            QH('termButtonMenu', x);
+        }
+
+        function termMenuButton(c) { toggleMenu(true); terminal.sendText(String.fromCharCode(c - 64)); }
 
 
         //
