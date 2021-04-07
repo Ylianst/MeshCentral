@@ -3323,6 +3323,11 @@
                     }
                     break;
                 }
+                case 'getDeviceDetails':{
+                    console.log(message);
+                    saveAs(new Blob([message.data], { type: 'application/octet-stream' }), "devicelist" + '.' + message.type);
+                    break;
+                }
                 default:
                     //console.log('Unknown message.action', message.action);
                     break;
@@ -4959,23 +4964,36 @@
             var x = "Download the list of devices with one of the file formats below." + '<br /><br />';
             x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoCSV()\'>' + "devicelist.csv" + '</a>');
             x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoJSON()\'>' + "devicelist.json" + '</a>');
+            x += '<div style=margin-top:8px><label><input type=checkbox id=d2DevInfoDetailsCheck />' + "Include device details" + '</label></div>';
             setDialogMode(2, "Device Information Export", 1, null, x);
         }
 
         function p2downloadDeviceInfoCSV() {
-            var csv = "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr" + '\r\n', chkNodeIds = getCheckedDevices(), r = [];
-            for (var i in chkNodeIds) {
-                var n = getNodeFromId(chkNodeIds[i]);
-                csv += '"' + n._id.split(',').join('') + '","' + n.name.split(',').join('') + '","' + (n.rname?(n.rname.split(',').join('')):'') + '","' + (n.host?(n.host.split(',').join('')):'') + '","' + n.icon + '","' + (n.ip?n.ip:'') + '","' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '","' + n.state + '","' + meshes[n.meshid].name.split(',').join('') + '","' + (n.conn?n.conn:'') + '","' + (n.pwr?n.pwr:'') + '"\r\n';
+            var chkNodeIds = getCheckedDevices();
+            if (Q('d2DevInfoDetailsCheck').checked) {
+                meshserver.send({ action: 'getDeviceDetails', nodeids: chkNodeIds, type: 'csv' }); // With details
+            } else {
+                // Without details
+                var csv = "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr" + '\r\n', r = [];
+                for (var i in chkNodeIds) {
+                    var n = getNodeFromId(chkNodeIds[i]);
+                    csv += '"' + n._id.split(',').join('') + '","' + n.name.split(',').join('') + '","' + (n.rname?(n.rname.split(',').join('')):'') + '","' + (n.host?(n.host.split(',').join('')):'') + '","' + n.icon + '","' + (n.ip?n.ip:'') + '","' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '","' + n.state + '","' + meshes[n.meshid].name.split(',').join('') + '","' + (n.conn?n.conn:'') + '","' + (n.pwr?n.pwr:'') + '"\r\n';
+                }
+                saveAs(new Blob([csv], { type: 'application/octet-stream' }), "devicelist.csv");
             }
-            saveAs(new Blob([csv], { type: 'application/octet-stream' }), "devicelist.csv");
             return false;
         }
 
         function p2downloadDeviceInfoJSON() {
-            var chkNodeIds = getCheckedDevices(), r = [];
-            for (var i in chkNodeIds) { r.push(getNodeFromId(chkNodeIds[i])); }
-            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "devicelist.json");
+            var chkNodeIds = getCheckedDevices();
+            if (Q('d2DevInfoDetailsCheck').checked) {
+                meshserver.send({ action: 'getDeviceDetails', nodeids: chkNodeIds, type: 'json' }); // With details
+            } else {
+                // Without details
+                var r = [];
+                for (var i in chkNodeIds) { r.push(getNodeFromId(chkNodeIds[i])); }
+                saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "devicelist.json");
+            }
             return false;
         }
 

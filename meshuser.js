@@ -5550,8 +5550,127 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.parent.DispatchEvent('*', obj, { action: 'oneclickrecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: file.fullpath });
                     });
                 }
+                break;
+            }
+            case 'getDeviceDetails': {
+                if (common.validateStrArray(command.nodeids, 1) == false) break; // Check nodeids
+                if (common.validateString(command.type, 3, 4) == false) break; // Check type
+                getDeviceDetailedInfo(command.nodeids, command.type, function (results, type) {
+                    var output = null;
+                    if (type == 'csv') {
+                        try {
+                            // Create the CSV file
+                            output = 'id,name,rname,host,icon,ip,osdesc,groupname,cpu,osbuild,biosDate,biosVendor,biosVersion,boardName,boardVendor,boardVersion,productUuid,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses\r\n';
+                            for (var i = 0; i < results.length; i++) {
+                                const nodeinfo = results[i];
 
-                //console.log(command, file);
+                                // Node information
+                                if (nodeinfo.node != null) {
+                                    const n = nodeinfo.node;
+                                    output += csvClean(n._id) + ',' + csvClean(n.name) + ',' + csvClean(n.rname ? n.rname : '') + ',' + csvClean(n.host ? n.host : '') + ',' + n.icon + ',' + (n.ip ? n.ip : '') + ',' + (n.osdesc ? csvClean(n.osdesc) : '') + ',' + csvClean(parent.meshes[n.meshid].name);
+                                } else {
+                                    output += ',,,,,,,';
+                                }
+
+                                // System infomation
+                                if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.windows) && (nodeinfo.sys.hardware.windows)) {
+                                    // Windows
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.windows.cpu && (nodeinfo.sys.hardware.windows.cpu.length > 0) && (typeof nodeinfo.sys.hardware.windows.cpu[0].Name == 'string')) { output += csvClean(nodeinfo.sys.hardware.windows.cpu[0].Name); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.windows.osinfo && (nodeinfo.sys.hardware.windows.osinfo.BuildNumber)) { output += csvClean(nodeinfo.sys.hardware.windows.osinfo.BuildNumber); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.bios_date)) { output += csvClean(nodeinfo.sys.hardware.identifiers.bios_date); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.bios_vendor)) { output += csvClean(nodeinfo.sys.hardware.identifiers.bios_vendor); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.bios_version)) { output += csvClean(nodeinfo.sys.hardware.identifiers.bios_version); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.board_name)) { output += csvClean(nodeinfo.sys.hardware.identifiers.board_name); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.board_vendor)) { output += csvClean(nodeinfo.sys.hardware.identifiers.board_vendor); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.board_version)) { output += csvClean(nodeinfo.sys.hardware.identifiers.board_version); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.product_uuid)) { output += csvClean(nodeinfo.sys.hardware.identifiers.product_uuid); }
+                                } else if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.mobile)) {
+                                    // Mobile
+                                    output += ',';
+                                    output += ',';
+                                    output += ',';
+                                    output += ',';
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.mobile && (nodeinfo.sys.hardware.mobile.bootloader)) { output += csvClean(nodeinfo.sys.hardware.mobile.bootloader); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.mobile && (nodeinfo.sys.hardware.mobile.model)) { output += csvClean(nodeinfo.sys.hardware.mobile.model); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.mobile && (nodeinfo.sys.hardware.mobile.brand)) { output += csvClean(nodeinfo.sys.hardware.mobile.brand); }
+                                    output += ',';
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.mobile && (nodeinfo.sys.hardware.mobile.id)) { output += csvClean(nodeinfo.sys.hardware.mobile.id); }
+                                } else if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.windows) && (nodeinfo.sys.hardware.linux)) {
+                                    // Linux
+                                    output += ',';
+                                    output += ',';
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_date)) { output += csvClean(nodeinfo.sys.hardware.linux.bios_date); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_vendor)) { output += csvClean(nodeinfo.sys.hardware.linux.bios_vendor); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_version)) { output += csvClean(nodeinfo.sys.hardware.linux.bios_version); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.board_name)) { output += csvClean(nodeinfo.sys.hardware.linux.board_name); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.board_vendor)) { output += csvClean(nodeinfo.sys.hardware.linux.board_vendor); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.board_version)) { output += csvClean(nodeinfo.sys.hardware.linux.board_version); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.product_uuid)) { output += csvClean(nodeinfo.sys.hardware.linux.product_uuid); }
+                                } else {
+                                    output += ',,,,,,,,,';
+                                }
+
+                                // Agent information
+                                if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.agentvers)) {
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.agentvers.openssl) { output += csvClean(nodeinfo.sys.hardware.agentvers.openssl); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.agentvers.commitDate) { output += csvClean(nodeinfo.sys.hardware.agentvers.commitDate); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.agentvers.commitHash) { output += csvClean(nodeinfo.sys.hardware.agentvers.commitHash); }
+                                    output += ',';
+                                    if (nodeinfo.sys.hardware.agentvers.compileTime) { output += csvClean(nodeinfo.sys.hardware.agentvers.compileTime); }
+                                } else {
+                                    output += ',,,,';
+                                }
+
+                                // Network interfaces
+                                if ((nodeinfo.net) && (nodeinfo.net.netif2)) {
+                                    output += ',';
+                                    output += Object.keys(nodeinfo.net.netif2).length; // Interface count
+                                    var macs = [], addresses = [];
+                                    for (var j in nodeinfo.net.netif2) {
+                                        if (Array.isArray(nodeinfo.net.netif2[j])) {
+                                            for (var k = 0; k < nodeinfo.net.netif2[j].length; k++) {
+                                                if (typeof nodeinfo.net.netif2[j][k].mac == 'string') { macs.push(nodeinfo.net.netif2[j][k].mac); }
+                                                if (typeof nodeinfo.net.netif2[j][k].address == 'string') { addresses.push(nodeinfo.net.netif2[j][k].address); }
+                                            }
+                                        }
+                                    }
+                                    output += ',';
+                                    output += csvClean(macs.join(' ')); // MACS
+                                    output += ',';
+                                    output += csvClean(addresses.join(' ')); // Addresses
+                                } else {
+                                    output += ',,,';
+                                }
+
+                                output += '\r\n';
+                            }
+                        } catch (ex) { console.log(ex); }
+                    } else { output = JSON.stringify(results, null, 2); }
+                    try { ws.send(JSON.stringify({ action: 'getDeviceDetails', data: output, type: type })); } catch (ex) { }
+                });
                 break;
             }
             default: {
@@ -5561,6 +5680,48 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
         }
     }
+
+    function csvClean(s) { return '\"' + s.split('\"').join('').split(',').join('').split('\r').join('').split('\n').join('') + '\"'; }
+
+    // Return detailed information about an array of nodeid's
+    function getDeviceDetailedInfo(nodeids, type, func) {
+        var results = [], resultPendingCount = 0;
+        for (var i in nodeids) {
+            // Fetch the node from the database
+            resultPendingCount++;
+            const getNodeFunc = function (node, rights, visible) {
+                if ((node != null) && (visible == true)) {
+                    const getNodeSysInfoFunc = function (err, docs) {
+                        const getNodeNetInfoFunc = function (err, docs) {
+                            var netinfo = null;
+                            if ((err == null) && (docs != null) && (docs.length == 1)) { netinfo = docs[0]; }
+                            resultPendingCount--;
+                            getNodeNetInfoFunc.results.push({ node: parent.CloneSafeNode(getNodeNetInfoFunc.node), sys: getNodeNetInfoFunc.sysinfo, net: netinfo });
+                            if (resultPendingCount == 0) { func(getNodeFunc.results, type); }
+                        }
+                        getNodeNetInfoFunc.results = getNodeSysInfoFunc.results;
+                        getNodeNetInfoFunc.nodeid = getNodeSysInfoFunc.nodeid;
+                        getNodeNetInfoFunc.node = getNodeSysInfoFunc.node;
+                        if ((err == null) && (docs != null) && (docs.length == 1)) { getNodeNetInfoFunc.sysinfo = docs[0]; }
+
+                        // Query the database for network information
+                        db.Get('if' + getNodeSysInfoFunc.nodeid, getNodeNetInfoFunc);
+                    }
+                    getNodeSysInfoFunc.results = getNodeFunc.results;
+                    getNodeSysInfoFunc.nodeid = getNodeFunc.nodeid;
+                    getNodeSysInfoFunc.node = node;
+
+                    // Query the database for system information
+                    db.Get('si' + getNodeFunc.nodeid, getNodeSysInfoFunc);
+                } else { resultPendingCount--; }
+                if (resultPendingCount == 0) { func(getNodeFunc.results.join('\r\n'), type); }
+            }
+            getNodeFunc.results = results;
+            getNodeFunc.nodeid = nodeids[i];
+            parent.GetNodeWithRights(domain, user, nodeids[i], getNodeFunc);
+        }
+    }
+
 
     // Display a notification message for this session only.
     function displayNotificationMessage(msg, title, tag, titleid, msgid, args) {
