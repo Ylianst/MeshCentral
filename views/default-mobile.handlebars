@@ -12,6 +12,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{{domainurl}}}favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="{{{domainurl}}}favicon-32x32.png">
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
+    <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
     <meta name="apple-mobile-web-app-title" content="{{{title}}}">
@@ -22,6 +23,8 @@
     <script type="text/javascript" src="scripts/amt-0.2.0{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/amt-redir-ws-0.1.0{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/amt-desktop-0.0.2{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/zlib{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-inflate{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-adler32{{{min}}}.js"></script>
@@ -627,6 +630,33 @@
             border-bottom:1px solid black;
         }
 
+        #termTable {
+            width: 100%;
+            padding: 0px;
+            padding: 0px;
+            margin-top: 0px;
+        }
+
+        .fulldesk #termTable {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        #termarea3x {
+            background: black;
+            text-align: center;
+            height: 500px;
+            position: relative;
+        }
+
+        #Term {
+            background: black;
+            margin: 0;
+            padding: 0;
+        }
     </style>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
@@ -886,6 +916,41 @@
                                     <label><span id="DeskControlSpan" style="display:none"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span></label>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    <div id=p10terminal style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%;display:none">
+                        <div id=termTable style="position:relative">
+                            <table style="width:100%" cellpadding=0 cellspacing=0>
+                                <tr>
+                                    <td class="areaHead">
+                                        <div class="toright2">
+                                        </div>
+                                        <div>
+                                            <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none" />
+                                            <span id="connectbutton2span"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                                            <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
+                                            &nbsp;<span id="termstatus" style="line-height:22px">Disconnected</span><span id="termtitle"></span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td id="termarea3x">
+                                        <div id="termarea3xdiv" style="width:100%;height:100%"></div>
+                                        <pre id="Term"></pre>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="areaFoot">
+                                        <div class="toright2">
+                                        </div>
+                                        <div>
+                                            &nbsp;
+                                            <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div id=p12TermConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:45px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p12clearConsoleMsg()></div>
                         </div>
                     </div>
                     <div id=p10files style="position:absolute;top:55px;bottom:0px;width:100%;display:none">
@@ -1179,15 +1244,20 @@
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
         var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android ARM", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit (glibc/2.24 NOKVM)", "Alpine Linux x86 64 Bit (MUSL)", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)"];
         var files;
+        var terminal;
         var passRequirements = '{{{passRequirements}}}';
         if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
         var sessionActivity = Date.now();
         var deskPinchZoom;
         var deskKeyboardShortcuts = [];
         var nightMode = setNightMode();
+        var xterm = null;
+        var xtermfit = null;
+        var xtermResizeTimer = null;
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
+        var p12TermConsoleMsgTimer = null;
         var p13FilesConsoleMsgTimer = null;
 
         function startup() {
@@ -3316,6 +3386,7 @@
 
                 // Show node last 7 days timeline
                 //drawDeviceTimeline();
+                setupTerminal();
                 setupFiles();
                 if (meshrights & 16) { setupConsole(); }
 
@@ -3389,6 +3460,7 @@
             QV('p10files', currentDevicePanel == 2);
             QV('p10details', currentDevicePanel == 3);
             QV('p10console', currentDevicePanel == 4);
+            QV('p10terminal', currentDevicePanel == 5);
             var menus = [];
             if (currentDevicePanel != 0) { menus.push({ n: "General", f: 'setupDeviceMenu(0)' }); }
 
@@ -3397,6 +3469,13 @@
                 ((meshrights & 8) || (meshrights & 256)) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 65536) == 0)) &&
                 (((currentNode.agent == null) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 1)))
             ) { menus.push({ n: "Desktop", f: 'setupDeviceMenu(1)' }); }
+
+            if ((currentDevicePanel != 5) &&
+                (urlargs.term == 1) &&
+                (currentNode != null) &&
+                ((meshrights & 8) || (meshrights & 256)) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 65536) == 0)) &&
+                (((currentNode.agent == null) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 2)))
+            ) { menus.push({ n: "Terminal", f: 'setupDeviceMenu(5)' }); }
 
             if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: "Files", f: 'setupDeviceMenu(2)' }); }
             if ((currentDevicePanel != 3) && (currentNode != null)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
@@ -3766,6 +3845,7 @@
         }
 
         function p11clearConsoleMsg() { QH('p11DeskConsoleMsg', ''); QV('p11DeskConsoleMsg', false); if (p11DeskConsoleMsgTimer) { clearTimeout(p11DeskConsoleMsgTimer); p11DeskConsoleMsgTimer = null; } }
+        function p12clearConsoleMsg() { QH('p12TermConsoleMsg', ''); QV('p12TermConsoleMsg', false); if (p12TermConsoleMsgTimer) { clearTimeout(p12TermConsoleMsgTimer); p12TermConsoleMsgTimer = null; } }
         function p13clearConsoleMsg() { QH('p13FilesConsoleMsg', ''); QV('p13FilesConsoleMsg', false); if (p13FilesConsoleMsgTimer) { clearTimeout(p13FilesConsoleMsgTimer); p13FilesConsoleMsgTimer = null; } }
 
         function onDesktopStateChange(xdesktop, state) {
@@ -4200,6 +4280,164 @@
         function dmousemove(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft * (1 / fullscreenzoom); e.addy = Q('p10desktop').scrollTop * (1 / fullscreenzoom); } desktop.m.mousemove(e); } }
         function dmousewheel(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && desktop.m.mousewheel) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft * (1 / fullscreenzoom); e.addy = Q('p10desktop').scrollTop * (1 / fullscreenzoom); } desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); } }
+
+
+        //
+        // TERMINAL
+        //
+
+        var terminalNode;
+        function setupTerminal() {
+            // Setup the terminal
+            if ((terminalNode != currentNode) && (terminal != null)) { terminal.Stop(); terminal = null; }
+            terminalNode = currentNode;
+            updateTerminalButtons();
+        }
+
+        // Show and enable the right buttons
+        function updateTerminalButtons() {
+            var mtype = (currentNode.agent == 1) ? 1 : 2;
+            var termState = ((terminal != null) && (terminal.state != 0));
+
+            // Show the right buttons
+            QV('disconnectbutton2span', (termState == true));
+            QV('connectbutton2span', (termState == false) && (currentNode.agent != null) && (currentNode.agent.caps & 2));
+
+            // Enable buttons
+            var online = ((terminalNode.conn & 1) != 0); // If Agent (1) connected, enable Terminal
+            QE('connectbutton2', online);
+        }
+
+        // Called when the terminal state changes
+        function onTerminalStateChange(xterminal, state) {
+            var xstate = state;
+            if ((xstate == 3) && (xterminal.contype == 2)) { xstate++; }
+            var str = StatusStrs[xstate];
+            if (terminal.webRtcActive == true) { str += ", WebRTC"; }
+            QH('termstatus', str);
+            switch (state) {
+                case 0:
+                    // Disconnected, clear the terminal
+                    QH('termtitle', '');
+                    xterm.dispose();
+                    xterm = xtermfit = null;
+                    if (terminal != null) { terminal.Stop(); terminal = null; }
+                    break;
+                case 3:
+                    xterm.focus();
+                    break;
+                default:
+                    //console.log('Unhandled onTerminalStateChange state', state);
+                    break;
+            }
+            updateTerminalButtons();
+        }
+
+        // Handles a tunnel to a remote shell
+        function CreateRemoteTunnel(onTunnelUpdate, options) {
+            var obj = { protocol: 1 };
+            if ((options != null) && (typeof options.protocol == 'number')) { obj.protocol = options.protocol; }
+            obj.onTunnelUpdate = onTunnelUpdate;
+            obj.xxStateChange = function (state) { }
+            obj.ProcessBinaryData = function (data) { obj.onTunnelUpdate(data); }
+            obj.ProcessData = function (data) { obj.onTunnelUpdate(data); }
+            obj.terminalEmulation = 1;
+            obj.fxEmulation = 0;
+            obj.lineFeed = '\r\n';
+            return obj;
+        }
+
+        function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
+
+        // Send the new terminal size to the agent
+        function xTermSendResize() {
+            xtermResizeTimer = null;
+            if ((xterm != null) && (terminal != null) && (terminal.sendCtrlMsg != null)) { terminal.sendCtrlMsg(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: xterm.cols, rows: xterm.rows })); }
+        }
+
+        function connectTerminal(e, contype, options) {
+            p12clearConsoleMsg();
+            if (!terminal) {
+                // Terminal setup
+                var termoptions = { protocol: ((options != null) && (typeof options.protocol == 'number')) ? options.protocol : 1 };
+                if (options && options.requireLogin) { termoptions.requireLogin = true; }
+                /*
+                if ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) == -1) {
+                    if (Q('termSizeList').value == 1) { termoptions.cols = 80; termoptions.rows = 25; termoptions.xterm = true; }
+                    else if (Q('termSizeList').value == 2) { termoptions.cols = 100; termoptions.rows = 30; termoptions.xterm = true; }
+                    else if (Q('termSizeList').value == 3) {
+                        // TODO: Try to improve terminal auto-size.
+                        termoptions.cols = Math.floor((Q('column_l').clientWidth - 60) / 10);
+                        termoptions.rows = Math.floor((Q('column_l').clientHeight - 120) / 20);
+                        termoptions.xterm = true;
+                    }
+                }
+
+                // If shift is pressed
+                if ((e && (e.shiftKey == true))) {
+                    if (currentNode.agent.id > 4) {
+                        if (termoptions.protocol == 1) { termoptions.protocol = 7; } // Switch to user shell
+                    } else {
+                        if (termoptions.protocol == 1) { termoptions.protocol = 6; } // Switch to Powershell
+                    }
+                }
+
+                // If the server requires a shell type
+                if ((serverinfo.linuxshell) != null && (currentNode.agent.id > 4)) {
+                    if (serverinfo.linuxshell == 'root') { termoptions.protocol = 1; delete termoptions.requireLogin; }
+                    if (serverinfo.linuxshell == 'user') { termoptions.protocol = 8; delete termoptions.requireLogin; }
+                    if (serverinfo.linuxshell == 'login') { termoptions.protocol = 1; termoptions.requireLogin = true; }
+                }
+                */
+                // Setup a mesh agent xterm terminal
+                QV('termarea3xdiv', true);
+                QV('Term', false);
+
+                // Setup the terminal with auto-fit
+                if (xterm != null) { xterm.dispose(); }
+                xtermfit = new FitAddon.FitAddon();
+                xterm = new Terminal();
+                if (xtermfit) { xterm.loadAddon(xtermfit); }
+                xterm.open(Q('termarea3xdiv')); // termarea3x
+                xterm.onData(function (data) { if (terminal != null) { terminal.sendText(data); } })
+                if (xtermfit) { xtermfit.fit(); }
+                xterm.onTitleChange(function (title) { QH('termtitle', ' - ' + EscapeHtml(title)); });
+                xterm.onResize(function (size) {
+                    // Despam resize
+                    if (xtermResizeTimer) clearTimeout(xtermResizeTimer);
+                    xtermResizeTimer = setTimeout(xTermSendResize, 200);
+                });
+
+                // Setup a terminal tunnel to the agent
+                terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel(tunnelUpdate, termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                terminal.debugmode = debugmode;
+                terminal.m.debugmode = debugmode;
+                terminal.options = termoptions;
+                terminal.options = { cols: xterm.cols, rows: xterm.rows };
+                if (termoptions.requireLogin) { terminal.options.requireLogin = true; }
+                terminal.Start(terminalNode._id);
+                terminal.onStateChanged = onTerminalStateChange;
+                terminal.contype = 1;
+                terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
+                terminal.onConsoleMessageChange = function (server, msg) {
+                    if (terminal.consoleMessage) {
+                        Q('p12TermConsoleMsg').innerHTML += formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs);
+                        QV('p12TermConsoleMsg', true);
+                        if (p12TermConsoleMsgTimer != null) { clearTimeout(p12TermConsoleMsgTimer); }
+                        if (terminal.consoleMessageTimeout) { p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, terminal.consoleMessageTimeout * 1000); }
+                    } else {
+                        p12clearConsoleMsg();
+                    }
+                };
+            } else {
+                //QH('Term', '');
+                terminal.Stop();
+                terminal = null;
+                if (fullscreen) { deskToggleFull(); }
+            }
+            Q('connectbutton2').blur(); // Deselect the connect button so the button does not get key presses.
+        }
+
 
         //
         // FILES
