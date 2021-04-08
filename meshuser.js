@@ -4216,20 +4216,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Check if this user has rights on this nodeid
                     if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                    db.Get(command.nodeid, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
-                        if ((err == null) && (nodes.length == 1)) {
-                            if ((parent.GetMeshRights(user, nodes[0].meshid) & MESHRIGHT_REMOTECONTROL) != 0) {
-                                // Add a user authentication cookie to a url
-                                var cookieContent = { userid: user._id, domainid: user.domain };
-                                if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
-                                if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want to agent to TCP connect to a remote address
-                                if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want to agent to TCP connect to a remote port
-                                if (command.ip) { cookieContent.ip = command.ip; } // Indicates the browser want to agent to relay a TCP connection to a IP:port
-                                command.cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
-                                command.trustedCert = parent.isTrustedCert(domain);
-                                try { ws.send(JSON.stringify(command)); } catch (ex) { }
-                            }
-                        }
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                        if ((node == null) || ((rights & MESHRIGHT_REMOTECONTROL) == 0) || (visible == false)) return; // Access denied.
+
+                        // Add a user authentication cookie to a url
+                        var cookieContent = { userid: user._id, domainid: user.domain };
+                        if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
+                        if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want to agent to TCP connect to a remote address
+                        if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want to agent to TCP connect to a remote port
+                        if (command.ip) { cookieContent.ip = command.ip; } // Indicates the browser want to agent to relay a TCP connection to a IP:port
+                        command.cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
+                        command.trustedCert = parent.isTrustedCert(domain);
+                        try { ws.send(JSON.stringify(command)); } catch (ex) { }
                     });
                     break;
                 }
