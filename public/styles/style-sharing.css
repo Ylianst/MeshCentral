@@ -1,0 +1,65 @@
+﻿.slbbutton {
+    width: 44px;
+    height: 44px;
+    border-radius: 5px;
+    background-color: #BBB;
+    margin-left: 4px;
+    margin-top: 8px;
+    position: relative;
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+    .night .slbbutton {
+        background-color: black;
+    }
+
+    .slbbutton:hover {
+        opacity: 1;
+    }
+
+.slbbuttonsel {
+    opacity: 0.9;
+}
+
+.slbbuttonsel2 {
+    width: 70px;
+    border-radius: 5px 0px 0px 5px;
+    opacity: 1;
+}
+
+.slb1 {
+    background: url(../images/sharing-32.png) 0px 0px;
+    background-image: image-set(url(../images/sharing-32.png) 1x, url(../images/sharing-64.png) 2x);
+    height: 32px;
+    width: 32px;
+    cursor: pointer;
+    border: none;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+}
+
+.slb2 {
+    background: url(../images/sharing-32.png) -32px 0px;
+    background-image: image-set(url(../images/sharing-32.png) 1x, url(../images/sharing-64.png) 2x);
+    height: 32px;
+    width: 32px;
+    cursor: pointer;
+    border: none;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+}
+
+.slb3 {
+    background: url(../images/sharing-32.png) -64px 0px;
+    background-image: image-set(url(../images/sharing-32.png) 1x, url(../images/sharing-64.png) 2x);
+    height: 32px;
+    width: 32px;
+    cursor: pointer;
+    border: none;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+}
