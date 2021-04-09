@@ -30,7 +30,7 @@
     <title>{{{title}}}</title>
 </head>
 <body style="overflow:hidden;background-color:black">
-    <div id=LeftSideToolBar style="position:absolute;left:0;bottom:0;width:52px;top:0;background:#113962;background:linear-gradient(to bottom, #104893 0%,#113962 100%);color:white;border-right: 5px solid #BBB;">
+    <div id=LeftSideToolBar style="display:none;position:absolute;left:0;bottom:0;width:52px;top:0;background:#113962;background:linear-gradient(to bottom, #104893 0%,#113962 100%);color:white;border-right: 5px solid #BBB;">
         <div id=LeftMenuDesktop class="slbbutton slbbuttonsel2" title="Desktop" onclick=go(11)>
             <div class="slb1" style="position:absolute;top:6px;left:6px"></div>
         </div>
@@ -66,7 +66,7 @@
                 <div id=DeskParent>
                     <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
                 </div>
-                <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
+                <div id=p11DeskConsoleMsg style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
             </div>
             <div id=deskarea4 class="areaFoot" style="min-height:24px">
                 <div class="toright2">
@@ -146,7 +146,7 @@
                 <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="pastebutton" value="Paste" title="Paste text into the terminal" onclick="showTermPasteDialog()" style="display:none" />
             </div>
         </div>
-        <div id=p12TermConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:45px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p12clearConsoleMsg()></div>
+        <div id=p12TermConsoleMsg style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:45px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p12clearConsoleMsg()></div>
     </div>
     <div id=p13 class="noselect" style="overflow:hidden;position:absolute;left:54px;top:0;right:0;bottom:0;display:none;background-color:white">
         <div id="p13toolbar" style="position:absolute;left:0;top:0;right:0;bottom:28px">
@@ -192,7 +192,7 @@
                 <div>&nbsp;&nbsp;<span id="p13currentpath"></span></div>
             </div>
             <div id="fileArea4" style="height:calc(100vh - 146px)">
-                <div id=p13FilesConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:165px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p13clearConsoleMsg()></div>
+                <div id=p13FilesConsoleMsg style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:165px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p13clearConsoleMsg()></div>
                 <div id="p13filetable" style="width:100%;height:100%">
                     <div id="p13bigok" style="display:none"><b>&checkmark;</b></div>
                     <div id="p13bigfail" style="display:none"><b>&#10007;</b></div>
@@ -285,7 +285,6 @@
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
         var authCookie = '{{{authCookie}}}';
-        var nodeid = '{{{nodeid}}}';
         var viewOnly = parseInt('{{{viewOnly}}}');
         var urlargs = parseUriArgs();
         var debugmode = urlargs.debug;
@@ -300,6 +299,7 @@
             QH('p12power', printFlexDateTime(new Date(parseInt(expire))));
             QH('p13power', printFlexDateTime(new Date(parseInt(expire))));
         }
+        var features = parseInt('{{{features}}}');
 
         // Terminal
         var terminal = null;
@@ -341,7 +341,24 @@
             Q('p13filetable').addEventListener('dragover', p13fileDragOver, false);
             Q('p13filetable').addEventListener('dragleave', p13fileDragLeave, false);
 
-            go(11); // Go to desktop
+            // Setup feature visibility
+            QV('LeftMenuDesktop', features & 2);
+            QV('LeftMenuTerminal', features & 1);
+            QV('LeftMenuFiles', features & 4);
+            if (features & 2) { go(11); } // Goto desktop
+            else if (features & 1) { go(12); } // Goto terminal
+            else if (features & 4) { go(13); } // Goto files
+
+            // Only show left bar if two or more features are visible
+            var featureCount = 0;
+            if (features & 1) { featureCount++; }
+            if (features & 2) { featureCount++; }
+            if (features & 4) { featureCount++; }
+            QV('LeftSideToolBar', featureCount > 1);
+            QS('p11')['left'] = (featureCount > 1) ? '54px' : '0px';
+            QS('p12')['left'] = (featureCount > 1) ? '54px' : '0px';
+            QS('p13')['left'] = (featureCount > 1) ? '54px' : '0px';
+
             deskAdjust();
         }
 
@@ -1717,7 +1734,7 @@
                         //link = '<a href="devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '" download="' + name + '" style=cursor:pointer>' + shortname + '</a>';
                         // Server link
                         //link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
-                        link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&n=' + nodeid.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
+                        link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                     }
                     h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }

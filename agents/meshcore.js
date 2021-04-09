@@ -1608,6 +1608,10 @@ function onTunnelData(data) {
             if ((data.length > 3) && (data[0] == '{')) { onTunnelControlData(data, this); return; }
             this.httprequest.protocol = parseInt(data);
             if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
+
+            // See if this protocol request is allowed.
+            if ((this.httprequest.soptions != null) && (this.httprequest.soptions.usages != null) && (this.httprequest.soptions.usages.indexOf(this.httprequest.protocol) == -1)) { this.httprequest.protocol = 0; }
+
             if (this.httprequest.protocol == 10) {
                 //
                 // Basic file transfer
@@ -1882,7 +1886,7 @@ function onTunnelData(data) {
             }
             else if (this.httprequest.protocol == 2) {
                 //
-                // Remote KVM
+                // Remote Desktop
                 //
 
                 // Check user access rights for desktop

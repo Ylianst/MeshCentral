@@ -2992,7 +2992,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleDeviceFile(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
-        if ((req.query.c == null) || (req.query.n == null) || (req.query.f == null)) { res.sendStatus(404); return; }
+        if ((req.query.c == null) || (req.query.f == null)) { res.sendStatus(404); return; }
 
         // Check the inbound desktop sharing cookie
         var c = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
@@ -3001,6 +3001,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Check userid
         const user = obj.users[c.userid];
         if ((c == user)) { res.sendStatus(404); return; }
+
+        // If this cookie has restricted usages, check that it's allowed to perform downloads
+        if (Array.isArray(c.usages) && (c.usages.indexOf(10) < 0)) { res.sendStatus(404); return; } // Check protocol #10
+
+        if (c.nid != null) { req.query.n = c.nid.split('/')[2]; } // This cookie is restricted to a specific nodeid.
+        if (req.query.n == null) { res.sendStatus(404); return; }
 
         // Check if this user has permission to manage this computer
         obj.GetNodeWithRights(domain, user, 'node/' + domain.id + '/' + req.query.n, function (node, rights, visible) {
@@ -3310,7 +3316,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Check the inbound desktop sharing cookie
         var c = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey, 60); // 60 minute timeout
-        if ((c == null) || (c.a !== 5) || ((c.p !== 2) && (c.p != null)) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.start != 'number') || (typeof c.expire != 'number') || (typeof c.pid != 'string')) { res.sendStatus(404); return; }
+        if ((c == null) || (c.a !== 5) || (typeof c.p !== 'number') || (c.p < 1) || (c.p > 7) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.start != 'number') || (typeof c.expire != 'number') || (typeof c.pid != 'string')) { res.sendStatus(404); return; }
 
         // Check the expired time, expire message.
         if (c.expire <= Date.now()) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
@@ -3335,13 +3341,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // Looks good, let's create the outbound session cookies.
                 // Consent flags are 1 = Notify, 8 = Prompt, 64 = Privacy Bar.
-                const authCookie = obj.parent.encodeCookie({ userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: 2, gn: c.gn, cf: 65 | c.cf, r: 8, expire: c.expire, pid: c.pid, vo: c.vo }, obj.parent.loginCookieEncryptionKey);
+                const authCookie = obj.parent.encodeCookie({ userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: c.p, gn: c.gn, cf: c.cf, r: 8, expire: c.expire, pid: c.pid, vo: c.vo }, obj.parent.loginCookieEncryptionKey);
 
                 // Lets respond by sending out the desktop viewer.
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
                 parent.debug('web', 'handleDesktopRequest: Sending guest sharing page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
                 res.set({ 'Cache-Control': 'no-store' });
-                render(req, res, getRenderPage('sharing', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire, viewOnly: (c.vo == 1) ? 1 : 0, nodeName: encodeURIComponent(node.name) }, req, domain));
+                render(req, res, getRenderPage('sharing', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire, viewOnly: (c.vo == 1) ? 1 : 0, nodeName: encodeURIComponent(node.name), features: c.p }, req, domain));
             });
         });
     }
