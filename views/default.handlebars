@@ -626,7 +626,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px;text-align:left" onclick=p11clearConsoleMsg()></div>
+                        <div id=p11DeskConsoleMsg style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px;text-align:left" onclick=p11clearConsoleMsg()></div>
                         <div id=p11DeskSessionSelector style="display:none;position:absolute;left:30px;top:17px;right:30px;bottom:17px;overflow-y:auto"></div>
                     </div>
                     <div id=deskarea4 class="areaFoot">
@@ -729,7 +729,7 @@
                             </td>
                         </tr>
                     </table>
-                    <div id=p12TermConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:45px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p12clearConsoleMsg()></div>
+                    <div id=p12TermConsoleMsg style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:45px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p12clearConsoleMsg()></div>
                 </div>
             </div>
             <div id=p13 style="display:none">
@@ -788,7 +788,7 @@
                         </td>
                     </tr>
                 </table>
-                <div id=p13FilesConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:165px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p13clearConsoleMsg()></div>
+                <div id=p13FilesConsoleMsg style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:165px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p13clearConsoleMsg()></div>
                 <div id="p13filetable" style="">
                     <div id="p13bigok" style="display:none"><b>&checkmark;</b></div>
                     <div id="p13bigfail" style="display:none"><b>&#10007;</b></div>
@@ -3211,7 +3211,7 @@
                     QV('agentInvitationLinkDiv', true);
                     break;
                 }
-                case 'createDeviceShareLink': { // Remote desktop sharing link
+                case 'createDeviceShareLink': { // Guest sharing link
                     if (xxdialogTag) break;
                     var node = getNodeFromId(message.nodeid), x = '';
                     if (node == null) break;
@@ -3221,12 +3221,13 @@
                     x += addHtmlValue("Start Time", printDateTime(new Date(message.start)));
                     x += addHtmlValue("Expire Time", printDateTime(new Date(message.expire)));
                     var y = [];
-                    if (message.consent & 1) { y.push("Notify"); }
-                    if (message.consent & 8) { y.push("Prompt"); }
-                    if (message.consent & 64) { y.push("Privacy bar"); }
+                    if (message.consent & 0x0007) { y.push("Notify"); }
+                    if (message.consent & 0x0038) { y.push("Prompt"); }
+                    if (message.consent & 0x0040) { y.push("Privacy bar"); }
                     if (y.length == 0) { y.push("None"); }
                     x += addHtmlValue("User Consent", y.join(', '));
-                    x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px"><a href="' + message.url + '" id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer>' + ((message.p == 1)?"Remote Terminal Link":"Remote Desktop Link") + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
+                    var type = ['', "Remote Terminal Link", "Remote Desktop Link", "Remote Desktop + Terminal Link", "Remote Files Link", "Remote Terminal + Files Link", "Remote Desktop + Files Link", "Remote Desktop + Terminal + Files Link"][message.p];
+                    x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px"><a href="' + message.url + '" id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer>' + type + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
                     setDialogMode(2, "Share Device", 1, null, x);
                     break;
                 }
@@ -6524,12 +6525,13 @@
                     for (var i = 0; i < deviceShares.length; i++) {
                         var dshare = deviceShares[i];
                         var trash = '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><img src=images/link2.png border=0 height=10 width=10></a> <a href=# onclick=\'return p30removeDeviceSharing(event,"' + encodeURIComponentEx(currentNode._id) + '","' + encodeURIComponentEx(dshare.publicid) + '","' + encodeURIComponentEx(dshare.guestName) + '")\' title="' + "Remove device sharing" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                        var details = format("{0}, {1} to {2}", ((dshare.p == 1)?"Terminal":"Desktop"), printFlexDateTime(new Date(dshare.startTime)), printFlexDateTime(new Date(dshare.expireTime)));
+                        var type = ['', "Terminal", "Desktop", "Desktop + Terminal", "Files", "Terminal + Files", "Desktop + Files", "Desktop + Terminal + Files"][dshare.p];
+                        var details = format("{0}, {1} to {2}", type, printFlexDateTime(new Date(dshare.startTime)), printFlexDateTime(new Date(dshare.expireTime)));
                         if (dshare.viewOnly === true) { details += ", View only"; }
                         if (dshare.consent != null) {
                             if (dshare.consent == 0) { details += ", No Consent"; } else {
-                                if (((dshare.consent & 8) != 0) || ((dshare.consent & 16) != 0)) { details += ", Prompt for consent"; }
-                                if ((dshare.consent & 0x40) != 0) { details += ", Toolbar"; }
+                                if ((dshare.consent & 0x0038) != 0) { details += ", Prompt for consent"; }
+                                if ((dshare.consent & 0x0040) != 0) { details += ", Toolbar"; }
                             }
                         }
                         x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div class=m' + 2 + '></div><div>&nbsp;' + dshare.guestName + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + details + '</div></td></tr>';
@@ -6731,8 +6733,26 @@
             if ((rights != 0xFFFFFFFF) && ((rights & 0x100) != 0)) { deskFull = ''; }
             var fullTerm = '<option value=1>' + "Terminal" + '</option>';
             if ((rights != 0xFFFFFFFF) && ((rights & 0x200) != 0)) { fullTerm = ''; }
-            x += addHtmlValue("Type", '<select id=d2shareType style=float:right;width:250px onchange=showShareDeviceValidate()>' + ((currentNode.agent.caps & 1)?(deskFull + '<option value=3>' + "Desktop, View only" + '</option>'):'') + ((currentNode.agent.caps & 2)?fullTerm:'') + '</select>');
+            var fullFiles = '<option value=4>' + "Files" + '</option>';
+            if ((rights != 0xFFFFFFFF) && ((rights & 0x400) != 0)) { fullFiles = ''; }
+            var deskFiles = '<option value=5>' + "Desktop + Files" + '</option>';
+            if ((rights != 0xFFFFFFFF) && ((rights & 0x500) != 0)) { deskFiles = ''; }
+            var termFiles = '<option value=6>' + "Terminal + Files" + '</option>';
+            if ((rights != 0xFFFFFFFF) && ((rights & 0x600) != 0)) { termFiles = ''; }
+            var allFeatures = '<option value=7>' + "Desktop + Terminal + Files" + '</option>';
+            if ((rights != 0xFFFFFFFF) && ((rights & 0x700) != 0)) { allFeatures = ''; }
+
+            var y = '';
+            if (currentNode.agent.caps & 1) { y += (deskFull + '<option value=3>' + "Desktop, View only" + '</option>'); } // Agent is desktop capable
+            if (currentNode.agent.caps & 2) { y += fullTerm; } // Agent is terminal capable
+            if (currentNode.agent.caps & 4) { y += fullFiles; } // Agent is files capable
+            if (currentNode.agent.caps & 5) { y += deskFiles; } // Agent is desktop + files capable
+            if (currentNode.agent.caps & 6) { y += termFiles; } // Agent is terminal + files capable
+            if (currentNode.agent.caps & 7) { y += allFeatures; } // Agent is desktop + terminal + files capable
+            
+            x += addHtmlValue("Type", '<select id=d2shareType style=float:right;width:250px onchange=showShareDeviceValidate()>' + y + '</select>');
             var options = { 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days" }
+            y = '';
             for (var i in options) { y += '<option value=' + i + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Validity", '<select id=d2timeRange style=float:right;width:250px onchange=showShareDeviceValidate()><option value=0>' + "Starting now" + '</option><option value=1>' + "Time range" + '</option></select>');
             x += '<div id=d2modenow>';
@@ -6758,16 +6778,28 @@
         }
 
         function showShareDeviceEx(b, tag) {
-            var consent = 0, p = parseInt(Q('d2shareType').value), viewOnly = false;
-            if (currentNode.agent.caps & 1) {
-                if (Q('d2shareType').value == 1) { if (Q('d2userConsent').value == 1) { consent = 18; } else { consent = 2; } } // Terminal Consent: 2 = Notify, 16 = Prompt
-                if (Q('d2shareType').value > 1) { if (Q('d2userConsent').value == 1) { consent = 73; } else { consent = 65; } } // Desktop Consent: 1 = Notify, 8 = Prompt, 64 = Privacy bar
+            var consent = 0, p = parseInt(Q('d2shareType').value), viewOnly = false, q = 0;
+            if (p == 3) { viewOnly = true; }
+            var q = [0, 1, 2, 2, 4, 6, 5, 7][p]; // Protocol flags: 1 = Terminal, 2 = Desktop, 4 = Files.
+
+            if (q & 1) {
+                consent |= 0x0002; // Terminal notify
+                if (Q('d2userConsent').value == 1) { consent |= 0x0010; } // Terminal prompt for user consent
             }
-            if (p == 3) { p = 2; viewOnly = true; }
+            if (q & 2) {
+                consent |= 0x0001; // Desktop notify
+                consent |= 0x0040; // Desktop connection toolbar
+                if (Q('d2userConsent').value == 1) { consent |= 0x0008; } // Desktop prompt for user consent
+            }
+            if (q & 4) {
+                consent |= 0x0004; // Files notify
+                if (Q('d2userConsent').value == 1) { consent |= 0x0020; } // Files prompt for user consent
+            }
+
             if (Q('d2timeRange').value == 0) {
-                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: p, expire: parseInt(Q('d2inviteExpire').value), consent: consent, viewOnly: viewOnly });
+                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, expire: parseInt(Q('d2inviteExpire').value), consent: consent, viewOnly: viewOnly });
             } else {
-                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: p, start: Math.floor(tag.selectedDates[0].getTime() / 1000), end: Math.floor(tag.selectedDates[1].getTime() / 1000), consent: consent, viewOnly: viewOnly });
+                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.selectedDates[0].getTime() / 1000), end: Math.floor(tag.selectedDates[1].getTime() / 1000), consent: consent, viewOnly: viewOnly });
             }
         }
 

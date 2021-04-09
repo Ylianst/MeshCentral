@@ -5015,7 +5015,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 else if ((command.start != null) && (typeof command.start != 'number')) { err = 'Invalid start time'; } // Check the start time in seconds
                 else if ((command.end != null) && (typeof command.end != 'number')) { err = 'Invalid end time'; } // Check the end time in seconds
                 else if (common.validateInt(command.consent, 0, 256) == false) { err = 'Invalid flags'; } // Check the flags
-                else if (common.validateInt(command.p, 1, 2) == false) { err = 'Invalid protocol'; } // Check the protocol, 1 = Terminal, 2 = Desktop
+                else if (common.validateInt(command.p, 1, 7) == false) { err = 'Invalid protocol'; } // Check the protocol, 1 = Terminal, 2 = Desktop, 4 = Files
                 else if ((command.expire == null) && ((command.start == null) || (command.end == null) || (command.start > command.end))) { err = 'No time specified'; } // Check that a time range is present
                 else {
                     if (command.nodeid.split('/').length == 1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
@@ -5047,13 +5047,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // If we are limited to no terminal, don't allow terminal sharing
-                    if ((command.p == 1) && (rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOTERMINAL) != 0)) {
+                    if (((command.p & 1) != 0) && (rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOTERMINAL) != 0)) {
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deviceShares', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } }
-                        return;                        
+                        return;
+                    }
+
+                    // If we are limited to no desktop, don't allow desktop sharing
+                    if (((command.p & 2) != 0) && (rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NODESKTOP) != 0)) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deviceShares', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } }
+                        return;
+                    }
+
+                    // If we are limited to no files, don't allow file sharing
+                    if (((command.p & 4) != 0) && (rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOFILES) != 0)) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deviceShares', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } }
+                        return;
                     }
 
                     // If we have view only remote desktop rights, force view-only on the guest share.
-                    if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_REMOTEVIEWONLY) != 0)) { command.viewOnly = true; }
+                    if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_REMOTEVIEWONLY) != 0)) { command.viewOnly = true; command.p = (command.p & 1); }
 
                     // Create cookie
                     var publicid = getRandomPassword(), startTime, expireTime;
@@ -5079,8 +5091,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
                     var xdomain = (domain.dns == null) ? domain.id : '';
                     if (xdomain != '') xdomain += '/';
-                    var page = (command.p == 1) ? 'terminal' : 'desktop';
-                    var url = 'https://' + serverName + ':' + httpsPort + '/' + xdomain + page + '?c=' + inviteCookie;
+                    var url = 'https://' + serverName + ':' + httpsPort + '/' + xdomain + 'sharing?c=' + inviteCookie;
                     if (serverName.split('.') == 1) { url = '/' + xdomain + page + '?c=' + inviteCookie; }
                     command.url = url;
                     if (command.responseid != null) { command.result = 'OK'; }
