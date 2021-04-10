@@ -1808,6 +1808,48 @@ module.exports.CreateDB = function (parent, func) {
                         archive.finalize();
                     } catch (ex) { console.log(ex); }
                 });
+            } else if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
+                // Perform a MySqlDump backup
+                const newBackupFile = 'mysqldump-' + fileSuffix;
+                var newBackupPath = parent.path.join(backupPath, newBackupFile);
+                var props = (obj.databaseType == 4) ? parent.args.mariadb : parent.args.mysql;
+                var mysqldumpPath = 'mysqldump';
+                if (parent.config.settings.autobackup && parent.config.settings.autobackup.mysqldumppath) { mysqldumpPath = parent.config.settings.autobackup.mysqldumppath; }
+                var cmd = '\"' + mysqldumpPath + '\" --user=\'' + props.user + '\' --password=\'' + props.password + '\'';
+                if (props.host) { cmd += ' -h ' + props.host; }
+                if (props.port) { cmd += ' -P ' + props.port; }
+                cmd += ' meshcentral --result-file=\"' + newBackupPath + '.sql\"';
+                const child_process = require('child_process');
+                var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
+                    try {
+                        var sqlDumpSuccess = true;
+                        backupProcess = null;
+                        if ((error != null) && (error != '')) { sqlDumpSuccess = false; console.log('ERROR: Unable to perform MySQL/MariaDB backup: ' + error + '\r\n'); }
+
+                        var archiver = require('archiver');
+                        var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
+                        var archive = null;
+                        if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
+                            try { archiver.registerFormat('zip-encrypted', require("archiver-zip-encrypted")); } catch (ex) { }
+                            archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                        } else {
+                            archive = archiver('zip', { zlib: { level: 9 } });
+                        }
+                        output.on('close', function () {
+                            obj.performingBackup = false;
+                            if (func) { if (sqlDumpSuccess) { func('Auto-backup completed.'); } else { func('Auto-backup completed without mongodb database: ' + error); } }
+                            obj.performCloudBackup(newAutoBackupPath + '.zip', func);
+                            setTimeout(function () { try { parent.fs.unlink(newBackupPath + '.sql', function () { }); } catch (ex) { console.log(ex); } }, 5000);
+                        });
+                        output.on('end', function () { });
+                        archive.on('warning', function (err) { console.log('Backup warning: ' + err); if (func) { func('Backup warning: ' + err); } });
+                        archive.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
+                        archive.pipe(output);
+                        if (sqlDumpSuccess == true) { archive.file(newBackupPath + '.sql', { name: newBackupFile + '.sql' }); }
+                        archive.directory(parent.datapath, 'meshcentral-data');
+                        archive.finalize();
+                    } catch (ex) { console.log(ex); }
+                });
             } else {
                 // Perform a NeDB backup
                 var archiver = require('archiver');
