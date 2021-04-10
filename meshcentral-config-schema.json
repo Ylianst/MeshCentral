@@ -141,6 +141,7 @@
           "type": "object",
           "properties": {
             "mongoDumpPath": { "type": "string" },
+            "mysqlDumpPath": { "type": "string"},
             "backupIntervalHours": { "type": "integer" },
             "keepLastDaysBackup": { "type": "integer" },
             "zipPassword": { "type": "string" },
