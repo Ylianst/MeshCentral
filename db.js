@@ -1610,6 +1610,32 @@ module.exports.CreateDB = function (parent, func) {
                     }
                 } catch (ex) { console.log(ex); }
             });
+        } else if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
+            // Check that we have access to mysqldump
+            var backupPath = parent.backuppath;
+            if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
+            try { parent.fs.mkdirSync(backupPath); } catch (e) { }
+            var props = (obj.databaseType == 4) ? parent.args.mariadb : parent.args.mysql;
+            var mysqldumpPath = 'mysqldump';
+            if (parent.config.settings.autobackup && parent.config.settings.autobackup.mysqldumppath) { mysqldumpPath = parent.config.settings.autobackup.mysqldumppath; }
+            var cmd = '\"' + mysqldumpPath + '\" --user=\'' + props.user + '\' --password=\'' + props.password + '\'';
+            if (props.host) { cmd += ' -h ' + props.host; }
+            if (props.port) { cmd += ' -P ' + props.port; }
+            cmd += ' meshcentral --result-file=' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
+            const child_process = require('child_process');
+            child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
+                try {
+                    if ((error != null) && (error != '')) {
+                        if (parent.platform == 'win32') {
+                            func(1, "Unable to find mysqldump.exe, MySQL/MariaDB database auto-backup will not be performed.");
+                        } else {
+                            func(1, "Unable to find mysqldump, MySQL/MariaDB database auto-backup will not be performed.");
+                        }
+                    } else {
+                        func();
+                    }
+                } catch (ex) { console.log(ex); }
+            });
         } else {
             func();
         }
