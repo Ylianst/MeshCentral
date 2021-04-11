@@ -1618,10 +1618,12 @@ module.exports.CreateDB = function (parent, func) {
             var props = (obj.databaseType == 4) ? parent.args.mariadb : parent.args.mysql;
             var mysqldumpPath = 'mysqldump';
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.mysqldumppath) { mysqldumpPath = parent.config.settings.autobackup.mysqldumppath; }
-            var cmd = '\"' + mysqldumpPath + '\" --user=\'' + props.user + '\' --password=\'' + props.password + '\'';
+            var cmd = '\"' + mysqldumpPath + '\" --user=\'' + props.user + '\'';
+            // Windows will treat ' as part of the pw. Linux/Unix requires it to escape.
+            cmd += (parent.platform == 'win32') ? ' --password=\"' + props.password + '\"' : ' --password=\'' + props.password + '\'';
             if (props.host) { cmd += ' -h ' + props.host; }
             if (props.port) { cmd += ' -P ' + props.port; }
-            cmd += ' meshcentral --result-file=' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
+            cmd += ' meshcentral > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
                 try {
@@ -1815,7 +1817,9 @@ module.exports.CreateDB = function (parent, func) {
                 var props = (obj.databaseType == 4) ? parent.args.mariadb : parent.args.mysql;
                 var mysqldumpPath = 'mysqldump';
                 if (parent.config.settings.autobackup && parent.config.settings.autobackup.mysqldumppath) { mysqldumpPath = parent.config.settings.autobackup.mysqldumppath; }
-                var cmd = '\"' + mysqldumpPath + '\" --user=\'' + props.user + '\' --password=\'' + props.password + '\'';
+                var cmd = '\"' + mysqldumpPath + '\" --user=\'' + props.user + '\'';
+                // Windows will treat ' as part of the pw. Linux/Unix requires it to escape.
+                cmd += (parent.platform == 'win32') ? ' --password=\"' + props.password + '\"' : ' --password=\'' + props.password + '\'';
                 if (props.host) { cmd += ' -h ' + props.host; }
                 if (props.port) { cmd += ' -P ' + props.port; }
                 cmd += ' meshcentral --result-file=\"' + newBackupPath + '.sql\"';
