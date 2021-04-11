@@ -1841,7 +1841,7 @@ module.exports.CreateDB = function (parent, func) {
                         }
                         output.on('close', function () {
                             obj.performingBackup = false;
-                            if (func) { if (sqlDumpSuccess) { func('Auto-backup completed.'); } else { func('Auto-backup completed without mongodb database: ' + error); } }
+                            if (func) { if (sqlDumpSuccess) { func('Auto-backup completed.'); } else { func('Auto-backup completed without MySQL/MariaDB database: ' + error); } }
                             obj.performCloudBackup(newAutoBackupPath + '.zip', func);
                             setTimeout(function () { try { parent.fs.unlink(newBackupPath + '.sql', function () { }); } catch (ex) { console.log(ex); } }, 5000);
                         });
