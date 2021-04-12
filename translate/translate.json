@@ -512,12 +512,12 @@
       ]
     },
     {
-      "cs": ", Pouze Intel® AMT",
+      "cs": ", Pouze Intel&reg; AMT",
       "de": ", nur Intel&reg; AMT",
       "en": ", Intel&reg; AMT only",
       "es": ", solo Intel&reg; AMT",
       "fi": ", vain Intel&reg; AMT",
-      "fr": ", Intel® AMT uniquement",
+      "fr": ", Intel&reg; AMT uniquement",
       "hi": ", Intel&reg; AMT केवल",
       "ja": "、Intel&reg; AMTのみ",
       "ko": ", Intel&reg; AMT 만",
@@ -3563,12 +3563,12 @@
       ]
     },
     {
-      "cs": "Přidat Intel® AMT CIRA zařízení",
+      "cs": "Přidat Intel&reg; AMT CIRA zařízení",
       "de": "Intel&reg;-AMT-CIRA-Gerät hinzufügen",
       "en": "Add Intel&reg; AMT CIRA device",
       "es": "Agregar dispositivo Intel&reg; AMT CIRA",
       "fi": "Lisää Intel&reg; AMT CIRA laite",
-      "fr": "Ajouter un appareil Intel® AMT CIRA",
+      "fr": "Ajouter un appareil Intel&reg; AMT CIRA",
       "hi": "Intel&reg; AMT CIRA डिवाइस जोड़ें",
       "ja": "Intel&reg;を追加AMT CIRAデバイス",
       "ko": "Intel&reg; AMT CIRA 장치 추가",
@@ -3580,7 +3580,7 @@
       "zh-cht": "新增Intel&reg; AMT CIRA裝置"
     },
     {
-      "cs": "Přidat Intel® AMT zařízení",
+      "cs": "Přidat Intel&reg; AMT zařízení",
       "de": "Intel&reg;-AMT-Gerät hinzufügen",
       "en": "Add Intel&reg; AMT device",
       "es": "Agregar dispositivo Intel&reg; AMT",
@@ -3892,7 +3892,7 @@
       "en": "Add YubiKey&reg; OTP",
       "es": "Agregar YubiKey&reg; OTP",
       "fi": "Lisää YubiKey&reg; OTP",
-      "fr": "Ajouter une clé YubiKey® OTP",
+      "fr": "Ajouter une clé YubiKey&reg; OTP",
       "hi": "YubiKey&reg; OTP जोड़ें",
       "ja": "YubiKey&reg;を追加OTP",
       "ko": "YubiKey&reg; OTP 추가",
@@ -3907,7 +3907,7 @@
       ]
     },
     {
-      "cs": "Přidat nový Intel® AMT počítač pomocí skenu lokální sítě.",
+      "cs": "Přidat nový Intel&reg; AMT počítač pomocí skenu lokální sítě.",
       "de": "Füge einen neuen Intel&reg;-AMT-Rechner durch Scannen des lokalen Netzwerks hinzu.",
       "en": "Add a new Intel&reg; AMT computer by scanning the local network.",
       "es": "Agregue una nueva computadora Intel&reg; AMT escaneando la red Local.",
@@ -3927,7 +3927,7 @@
       ]
     },
     {
-      "cs": "Přidat nový Intel® AMT počítač, který je umístěn v síti Internet.",
+      "cs": "Přidat nový Intel&reg; AMT počítač, který je umístěn v síti Internet.",
       "de": "Füge einen neuen Intel&reg;-AMT-Rechner hinzu, der sich im Internet befindet.",
       "en": "Add a new Intel&reg; AMT computer that is located on the internet.",
       "es": "Agregue una nueva computadora Intel&reg; AMT localizada en internet.",
@@ -3944,7 +3944,7 @@
       "zh-cht": "新增位於互聯網上的新Intel&reg; AMT電腦。"
     },
     {
-      "cs": "Přidat nový Intel® AMT počítač, který je umístěn v lokální síti.",
+      "cs": "Přidat nový Intel&reg; AMT počítač, který je umístěn v lokální síti.",
       "de": "Füge einen neuen Intel&reg;-AMT-Rechner hinzu, der sich im lokalen Netzwerk befindet.",
       "en": "Add a new Intel&reg; AMT computer that is located on the local network.",
       "es": "Agregue una nueva computadora Intel&reg; AMT localizada en la red Local.",
@@ -3964,12 +3964,12 @@
       ]
     },
     {
-      "cs": "Přidat nové Intel® AMT zařízení do skupiny „{0}“.",
+      "cs": "Přidat nové Intel&reg; AMT zařízení do skupiny „{0}“.",
       "de": "Füge ein neues Intel&reg;-AMT-Gerät zur Gerätegruppe \\\"{0}\\\" hinzu.",
       "en": "Add a new Intel&reg; AMT device to device group \\\"{0}\\\".",
       "es": "Agregue un nuevo dispositivo Intel&reg; AMT al grupo de dispositivos \\\"{0}\\\".",
       "fi": "Lisää uusi Intel&reg; AMT -laite laiteryhmään \\\"{0}\\\".",
-      "fr": "Ajouter un appareil Intel® AM au groupe d'appareils \\\"{0}\\\".",
+      "fr": "Ajouter un appareil Intel&reg; AM au groupe d'appareils \\\"{0}\\\".",
       "hi": "उपकरण समूह \\\"{0}\\\" में एक नया Intel&reg; AMT उपकरण जोड़ें।",
       "ja": "新しいIntel&reg;を追加しますAMTデバイスからデバイスグループ\\\"{0}\\\"へ。",
       "ko": "장치 그룹 \\\"{0}\\\"에 새 Intel&reg; AMT 장치를 추가하십시오.",
@@ -9575,12 +9575,12 @@
       ]
     },
     {
-      "cs": "Připojené Intel® AMT",
+      "cs": "Připojené Intel&reg; AMT",
       "de": "Verbunden per Intel&reg; AMT",
       "en": "Connected Intel&reg; AMT",
       "es": "Conectado Intel&reg; AMT",
       "fi": "Yhdistetyt Intel&reg; AMT",
-      "fr": "Nombre d'appareils Intel® AMT connectés",
+      "fr": "Nombre d'appareils Intel&reg; AMT connectés",
       "hi": "कनेक्टेड Intel&reg; AMT",
       "ja": "接続されたインテル&reg;AMT",
       "ko": "연결된 Intel&reg; AMT",
@@ -10802,6 +10802,7 @@
     },
     {
       "en": "Ctrl + ",
+      "nl": "Ctrl + ",
       "xloc": [
         "default-mobile.handlebars->11->371"
       ]
@@ -11865,6 +11866,7 @@
     },
     {
       "en": "Desktop + Files",
+      "nl": "Desktop + Bestanden",
       "xloc": [
         "default.handlebars->31->757",
         "default.handlebars->31->818"
@@ -11872,12 +11874,14 @@
     },
     {
       "en": "Desktop + Terminal",
+      "nl": "Desktop + Terminal",
       "xloc": [
         "default.handlebars->31->754"
       ]
     },
     {
       "en": "Desktop + Terminal + Files",
+      "nl": "Desktop + Terminal + Bestanden",
       "xloc": [
         "default.handlebars->31->758",
         "default.handlebars->31->820"
@@ -11974,6 +11978,7 @@
     },
     {
       "en": "Desktop Session",
+      "nl": "Desktop sessie",
       "xloc": [
         "default.handlebars->31->2224"
       ]
@@ -14705,12 +14710,12 @@
       ]
     },
     {
-      "cs": "Upravit přihlašovací údaje k Intel® AMT",
+      "cs": "Upravit přihlašovací údaje k Intel&reg; AMT",
       "de": "Zugangsdaten für Intel&reg; AMT bearbeiten",
       "en": "Edit Intel&reg; AMT credentials",
       "es": "Editar Credenciales de Intel&reg; AMT",
       "fi": "Muokkaa Intel&reg; AMT -tilitietoja",
-      "fr": "Éditer les certificats Intel® AMT",
+      "fr": "Éditer les certificats Intel&reg; AMT",
       "hi": "Intel&reg; AMT क्रेडेंशियल संपादित करें",
       "ja": "Intelを編集&reg; AMTクレデンシャル",
       "ko": "Intel&reg; AMT 자격 증명 편집",
@@ -15504,6 +15509,7 @@
     },
     {
       "en": "Ended messenger session \\\"{0}\\\" from {1} to {2}, {3} second(s)",
+      "nl": "Beëindigde messengersessie  \\\"{0}\\\" van {1} naar {2}, {3} second(s)",
       "xloc": [
         "default.handlebars->31->1874"
       ]
@@ -16721,6 +16727,7 @@
     },
     {
       "en": "File Transfer",
+      "nl": "Bestandsoverdracht",
       "xloc": [
         "default.handlebars->31->2225"
       ]
@@ -19551,6 +19558,7 @@
     },
     {
       "en": "Include device details",
+      "nl": "Voeg apparaatdetails toe",
       "xloc": [
         "default.handlebars->31->542"
       ]
@@ -19938,7 +19946,7 @@
       "en": "Intel&reg; AMT ACM",
       "es": "Intel&reg; AMT ACM",
       "fi": "Intel&reg; AMT ACM",
-      "fr": "Intel® AMT ACM",
+      "fr": "Intel&reg; AMT ACM",
       "hi": "इंटेल&reg; एएमटी एसीएम",
       "ja": "インテル&reg;AMTACM",
       "ko": "인텔 &reg; AMT ACM",
@@ -19953,7 +19961,7 @@
       ]
     },
     {
-      "cs": "Intel® AMT CIRA",
+      "cs": "Intel&reg; AMT CIRA",
       "de": "Intel&reg; AMT CIRA",
       "en": "Intel&reg; AMT CIRA",
       "es": "Intel&reg; AMT CIRA",
@@ -20014,12 +20022,12 @@
       ]
     },
     {
-      "cs": "Intel® AMT CIRA je připojeno a připraveno k použití.",
+      "cs": "Intel&reg; AMT CIRA je připojeno a připraveno k použití.",
       "de": "Intel&reg; AMT CIRA ist verbunden und einsatzbereit.",
       "en": "Intel&reg; AMT CIRA is connected and ready for use.",
       "es": "Intel&reg; AMT CIRA está conectado y listo para usar.",
       "fi": "Intel&reg; AMT CIRA yhdistetty ja valmis käytettäväksi.",
-      "fr": "Intel® AMT CIRA est connecté et prêt à être utilisé.",
+      "fr": "Intel&reg; AMT CIRA est connecté et prêt à être utilisé.",
       "hi": "Intel&reg; AMT CIRA जुड़ा हुआ है और उपयोग के लिए तैयार है।",
       "ja": "Intel&reg; AMT CIRAが接続され、使用できる状態になりました。",
       "ko": "Intel&reg; AMT CIRA가 연결되어 사용할 준비가되었습니다.",
@@ -20036,12 +20044,12 @@
       ]
     },
     {
-      "cs": "Intel® AMT připojeno",
+      "cs": "Intel&reg; AMT připojeno",
       "de": "Intel&reg; AMT verbunden",
       "en": "Intel&reg; AMT Connected",
       "es": "Intel&reg; AMT Conectado",
       "fi": "Intel&reg; AMT Yhdistetty",
-      "fr": "Intel® AMT Connecté",
+      "fr": "Intel&reg; AMT Connecté",
       "hi": "Intel&reg; AMT कनेक्टेड है",
       "ja": "Intel&reg;接続されたAMT",
       "ko": "Intel&reg; AMT 연결",
@@ -20082,19 +20090,20 @@
     },
     {
       "en": "Intel&reg; AMT One Click Recovery",
-      "de": "Intel® AMT mit einem Klick Wiederherstellen",
+      "de": "Intel&reg; AMT mit einem Klick Wiederherstellen",
+      "nl": "Intel&reg; AMT herstel met één klik",
       "xloc": [
         "default.handlebars->31->857",
         "default.handlebars->31->870"
       ]
     },
     {
-      "cs": "Intel® AMT zásada",
+      "cs": "Intel&reg; AMT zásada",
       "de": "Intel&reg; AMT Richtlinie",
       "en": "Intel&reg; AMT Policy",
       "es": "Política de Intel&reg; AMT",
       "fi": "Intel&reg; AMT politiikka",
-      "fr": "Restrictions Intel® AMT",
+      "fr": "Restrictions Intel&reg; AMT",
       "hi": "Intel&reg; AMT नीति",
       "ja": "Intel&reg; AMTポリシー",
       "ko": "Intel&reg; AMT 정책",
@@ -20110,7 +20119,8 @@
     },
     {
       "en": "Intel&reg; AMT Power Operation",
-      "de": "Intel® AMT in Betrieb",
+      "de": "Intel&reg; AMT in Betrieb",
+      "nl": "Intel&reg; AMT in werking",
       "xloc": [
         "default.handlebars->31->871",
         "default.handlebars->31->873",
@@ -20120,8 +20130,8 @@
     {
       "en": "Intel&reg; AMT Power off",
       "nl": "Intel&reg; AMT Afsluiten",
-      "fr": "Extinction Intel® AMT",
-      "de": "Intel® AMT Ausschalten",
+      "fr": "Extinction Intel&reg; AMT",
+      "de": "Intel&reg; AMT Ausschalten",
       "xloc": [
         "default.handlebars->31->856"
       ]
@@ -20129,14 +20139,14 @@
     {
       "en": "Intel&reg; AMT Power on",
       "nl": "Intel&reg; AMT Opstarten",
-      "fr": "Démarrage Intel® AMT",
-      "de": "Intel® AMT Einschalten",
+      "fr": "Démarrage Intel&reg; AMT",
+      "de": "Intel&reg; AMT Einschalten",
       "xloc": [
         "default.handlebars->31->855"
       ]
     },
     {
-      "cs": "Intel® AMT přesměrování",
+      "cs": "Intel&reg; AMT přesměrování",
       "de": "Intel&reg; AMT Umleitung",
       "en": "Intel&reg; AMT Redirection",
       "es": "Redirección de Intel&reg; AMT",
@@ -20160,18 +20170,18 @@
     {
       "en": "Intel&reg; AMT Reset",
       "nl": "Intel&reg; AMT Reset",
-      "fr": "Redémarrage Intel® AMT",
-      "de": "Intel® AMT Zurücksetzen",
+      "fr": "Redémarrage Intel&reg; AMT",
+      "de": "Intel&reg; AMT Zurücksetzen",
       "xloc": [
         "default.handlebars->31->854"
       ]
     },
     {
       "en": "Intel&reg; AMT Stroomvoorziening",
-      "fr": "Fonctionnement de l'alimentation Intel® AMT "
+      "fr": "Fonctionnement de l'alimentation Intel&reg; AMT "
     },
     {
-      "cs": "Intel® AMT štítek",
+      "cs": "Intel&reg; AMT štítek",
       "de": "Intel&reg; AMT Kennzeichen",
       "en": "Intel&reg; AMT Tag",
       "es": "Etiqueta de Intel&reg; AMT",
@@ -20191,7 +20201,7 @@
       ]
     },
     {
-      "cs": "Intel® AMT WSMAN",
+      "cs": "Intel&reg; AMT WSMAN",
       "de": "Intel&reg; AMT WSMAN",
       "en": "Intel&reg; AMT WSMAN",
       "es": "Intel&reg; AMT WSMAN",
@@ -20213,7 +20223,7 @@
       ]
     },
     {
-      "cs": "Intel® AMT aktivace",
+      "cs": "Intel&reg; AMT aktivace",
       "de": "Intel&reg; AMT Aktivierung",
       "en": "Intel&reg; AMT activation",
       "es": "Activación de Intel&reg; AMT",
@@ -20230,12 +20240,12 @@
       "zh-cht": "Intelreg; AMT啟動"
     },
     {
-      "cs": "Intel® AMT připojeno",
+      "cs": "Intel&reg; AMT připojeno",
       "de": "Intel&reg; AMT verbunden",
       "en": "Intel&reg; AMT connected",
       "es": "Intel&reg; AMT conectado",
       "fi": "Intel&reg; AMT yhdistetty",
-      "fr": "Intel® AMT connecté",
+      "fr": "Intel&reg; AMT connecté",
       "hi": "Intel&reg; AMT जुड़ा हुआ है",
       "ja": "Intel&reg;接続されたAMT",
       "ko": "Intel&reg; AMT 연결",
@@ -20273,12 +20283,12 @@
       ]
     },
     {
-      "cs": "Intel® AMT zjištěno",
+      "cs": "Intel&reg; AMT zjištěno",
       "de": "Intel&reg; AMT erkannt",
       "en": "Intel&reg; AMT detected",
       "es": "Intel&reg; AMT detectado",
       "fi": "Intel&reg; AMT havaittu",
-      "fr": "Intel® AMT detecté",
+      "fr": "Intel&reg; AMT detecté",
       "hi": "Intel&reg; AMT का पता चला",
       "ja": "Intel&reg; AMTが検出されました",
       "ko": "Intel&reg; AMT 감지",
@@ -20297,7 +20307,7 @@
     },
     {
       "en": "Intel&reg; AMT herstel met één klik",
-      "fr": "Récupération en un clic Intel® AMT"
+      "fr": "Récupération en un clic Intel&reg; AMT"
     },
     {
       "cs": "Intel&reg; AMT je aktivováno v režimu správce",
@@ -20340,7 +20350,7 @@
       ]
     },
     {
-      "cs": "Intel® AMT je směrovatelné a připraveno k použití.",
+      "cs": "Intel&reg; AMT je směrovatelné a připraveno k použití.",
       "de": "Intel&reg; AMT ist routebar und einsatzbereit.",
       "en": "Intel&reg; AMT is routable and ready for use.",
       "es": "Intel&reg; AMT es enrutable y está listo para usar.",
@@ -20360,7 +20370,7 @@
       ]
     },
     {
-      "cs": "Intel® AMT je směrovatelné.",
+      "cs": "Intel&reg; AMT je směrovatelné.",
       "de": "Intel&reg; AMT ist routebar.",
       "en": "Intel&reg; AMT is routable.",
       "es": "Intel&reg; AMT es enrutable.",
@@ -20422,12 +20432,12 @@
       ]
     },
     {
-      "cs": "Pouze Intel® AMT",
+      "cs": "Pouze Intel&reg; AMT",
       "de": "Nur Intel&reg; AMT",
       "en": "Intel&reg; AMT only",
       "es": "Sólo Intel&reg; AMT",
       "fi": "Vain Intel&reg; AMT",
-      "fr": "Intel® AMT uniquement",
+      "fr": "Intel&reg; AMT uniquement",
       "hi": "केवल Intel&reg; AMT",
       "ja": "Intel&reg; AMTのみ",
       "ko": "오직 Intel&reg; AMT만",
@@ -20442,12 +20452,12 @@
       ]
     },
     {
-      "cs": "Pouze Intel® AMT, bez agenta",
+      "cs": "Pouze Intel&reg; AMT, bez agenta",
       "de": "Nur Intel&reg; AMT, kein Agent",
       "en": "Intel&reg; AMT only, no agent",
       "es": "Sólo Intel&reg; AMT, sin agente",
       "fi": "Vain Intel&reg; AMT, ei agenttia",
-      "fr": "Intel® AMT uniquement, aucun agent",
+      "fr": "Intel&reg; AMT uniquement, aucun agent",
       "hi": "Intel&reg; AMT केवल, कोई एजेंट नहीं",
       "ja": "Intel&reg; AMTのみ、エージェントなし",
       "ko": "오직 Intel&reg; AMT만, 에이전트 없음",
@@ -20501,7 +20511,7 @@
       "zh-cht": "Intel&reg; AMT將需要在MEBx中設置受信任的FQDN，或者在有線的網絡上："
     },
     {
-      "cs": "Intel® Active Management Technology",
+      "cs": "Intel&reg; Active Management Technology",
       "de": "Intel&reg; Active Management Technology",
       "en": "Intel&reg; Active Management Technology",
       "es": "Intel&reg; Active Management Technology",
@@ -20542,7 +20552,7 @@
       ]
     },
     {
-      "cs": "Intel® ME",
+      "cs": "Intel&reg; ME",
       "de": "Intel&reg; ME",
       "en": "Intel&reg; ME",
       "es": "Intel&reg; ME",
@@ -20583,7 +20593,7 @@
       ]
     },
     {
-      "cs": "Intel® SM",
+      "cs": "Intel&reg; SM",
       "de": "Intel&reg; SM",
       "en": "Intel&reg; SM",
       "es": "Intel&reg; SM",
@@ -20604,7 +20614,7 @@
       ]
     },
     {
-      "cs": "Intel® Standard Manageability",
+      "cs": "Intel&reg; Standard Manageability",
       "de": "Intel&reg; Standard Manageability",
       "en": "Intel&reg; Standard Manageability",
       "es": "Intel&reg; Standard Manageability",
@@ -25544,6 +25554,7 @@
     },
     {
       "en": "Messenger",
+      "nl": "Messenger",
       "xloc": [
         "default.handlebars->31->2228"
       ]
@@ -26910,12 +26921,12 @@
       ]
     },
     {
-      "cs": "Žádné Intel® AMT",
+      "cs": "Žádné Intel&reg; AMT",
       "de": "Kein Intel&reg; AMT",
       "en": "No Intel&reg; AMT",
       "es": "Sin Intel&reg; AMT",
       "fi": "Ei Intel&reg; AMT",
-      "fr": "Pas d'appareil Intel® AMT",
+      "fr": "Pas d'appareil Intel&reg; AMT",
       "hi": "कोई Intel&reg; AMT नहीं",
       "ja": "Intel&reg;なしAMT",
       "ko": "Intel&reg; AMT 없음",
@@ -26933,12 +26944,12 @@
       ]
     },
     {
-      "cs": "Žádné Intel® AMT zařízení v této skupině",
+      "cs": "Žádné Intel&reg; AMT zařízení v této skupině",
       "de": "Keine Intel&reg;-AMT-Geräte in dieser Gruppe",
       "en": "No Intel&reg; AMT devices in this group",
       "es": "No hay dispositivos Intel&reg; AMT en este grupo",
       "fi": "Tässä ryhmässä ei ole Intel&reg; AMT-laitteita",
-      "fr": "Aucun appareil Intel® AMT dans ce groupe",
+      "fr": "Aucun appareil Intel&reg; AMT dans ce groupe",
       "hi": "इस समूह में कोई Intel&reg; AMT डिवाइस नहीं है",
       "ja": "Intel&reg;なしこのグループのAMTデバイス",
       "ko": "이 그룹에 Intel&reg; AMT 장치가 없습니다",
@@ -26953,7 +26964,7 @@
       ]
     },
     {
-      "cs": "Žádné Intel® AMT zařízení",
+      "cs": "Žádné Intel&reg; AMT zařízení",
       "de": "Keine Intel&reg;-AMT-Geräte in diesem Mesh",
       "en": "No Intel&reg; AMT devices in this mesh",
       "es": "No hay dispositivos Intel&reg; AMT en este grupo",
@@ -29636,8 +29647,8 @@
     {
       "en": "Perform Intel&reg; AMT power off?",
       "nl": "Uitvoeren Intel&reg; AMT uitschakelen?",
-      "fr": "Éteindre par Intel® AMT ?",
-      "de": "Intel® AMT Ausschalten?",
+      "fr": "Éteindre par Intel&reg; AMT ?",
+      "de": "Intel&reg; AMT Ausschalten?",
       "xloc": [
         "default.handlebars->31->874"
       ]
@@ -29645,8 +29656,8 @@
     {
       "en": "Perform Intel&reg; AMT power on?",
       "nl": "Uitvoeren Intel&reg; AMT inschakelen?",
-      "fr": "Démarrage par Intel® AMT ?",
-      "de": "Intel® AMT Einschalten?",
+      "fr": "Démarrage par Intel&reg; AMT ?",
+      "de": "Intel&reg; AMT Einschalten?",
       "xloc": [
         "default.handlebars->31->872"
       ]
@@ -29654,8 +29665,8 @@
     {
       "en": "Perform Intel&reg; AMT reset?",
       "nl": "Uitvoeren Intel&reg; AMT reset?",
-      "fr": "Redémarrage par Intel® AMT ?",
-      "de": "Intel® AMT Zurücksetzen?",
+      "fr": "Redémarrage par Intel&reg; AMT ?",
+      "de": "Intel&reg; AMT Zurücksetzen?",
       "xloc": [
         "default.handlebars->31->876"
       ]
@@ -31236,12 +31247,12 @@
       ]
     },
     {
-      "cs": "Znovu aktivovat Intel® AMT",
+      "cs": "Znovu aktivovat Intel&reg; AMT",
       "de": "Intel&reg; AMT reaktivieren",
       "en": "Reactivate Intel&reg; AMT",
       "es": "Reactivar Intel&reg; AMT",
       "fi": "Uudelleen aktivoi Intel&reg; AMT",
-      "fr": "Réactiver Intel® AMT",
+      "fr": "Réactiver Intel&reg; AMT",
       "hi": "Intel&reg; AMT को पुनः सक्रिय करें",
       "ja": "インテルを再アクティブ化&reg; AMT",
       "ko": "Intel&reg; AMT 재활성화",
@@ -31822,18 +31833,21 @@
     },
     {
       "en": "Remote Desktop + Files Link",
+      "nl": "Extern bureaublad + Bestanden koppeling",
       "xloc": [
         "default.handlebars->31->218"
       ]
     },
     {
       "en": "Remote Desktop + Terminal + Files Link",
+      "nl": "Extern bureaublad + Terminal + Bestanden koppeling",
       "xloc": [
         "default.handlebars->31->219"
       ]
     },
     {
       "en": "Remote Desktop + Terminal Link",
+      "nl": "Extern bureaublad + Terminal koppeling",
       "xloc": [
         "default.handlebars->31->215"
       ]
@@ -31967,6 +31981,7 @@
     },
     {
       "en": "Remote Files Link",
+      "nl": "Koppeling naar externe bestanden",
       "xloc": [
         "default.handlebars->31->216"
       ]
@@ -32015,6 +32030,7 @@
     },
     {
       "en": "Remote Terminal + Files Link",
+      "nl": "Externe Terminal + Bestandend koppeling",
       "xloc": [
         "default.handlebars->31->217"
       ]
@@ -34180,7 +34196,7 @@
       ]
     },
     {
-      "cs": "Hledat Intel® AMT zařízení",
+      "cs": "Hledat Intel&reg; AMT zařízení",
       "de": "Nach Intel&reg;-AMT-Geräten suchen",
       "en": "Scan for Intel&reg; AMT devices",
       "es": "Escanear en busca de dispositivos Intel&reg; AMT",
@@ -38991,6 +39007,7 @@
     },
     {
       "en": "Terminal + Files",
+      "nl": "Terminal + Bestanden",
       "xloc": [
         "default.handlebars->31->756",
         "default.handlebars->31->819"
@@ -39064,6 +39081,7 @@
     },
     {
       "en": "Terminal Session",
+      "nl": "Terminal sessie",
       "xloc": [
         "default.handlebars->31->2223"
       ]
@@ -39469,7 +39487,7 @@
       "en": "This is the recommended policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management.",
       "es": "Esta es la política recomendada. La activación y administración de Intel&reg; AMT está completamente automatizada y el servidor intentará hacer el mejor uso posible de la administración de hardware.",
       "fi": "Tämä on suositeltava käytäntö. Intel&reg; AMT: n aktivointi ja hallinta on täysin automatisoitu, ja palvelin yrittää hyödyntää laitteiston hallintaa parhaalla mahdollisella tavalla.",
-      "fr": "Cette option est recommandée. L'activation et la gestion d'Intel® AMT sont entièrement automatisées. Le serveur tentera de faire le meilleur usage possible de la gestion du matériel.",
+      "fr": "Cette option est recommandée. L'activation et la gestion d'Intel&reg; AMT sont entièrement automatisées. Le serveur tentera de faire le meilleur usage possible de la gestion du matériel.",
       "hi": "यह अनुशंसित नीति है। Intel&reg; AMT सक्रियण और प्रबंधन पूरी तरह से स्वचालित है और सर्वर हार्डवेयर प्रबंधन का सर्वोत्तम संभव उपयोग करने का प्रयास करेगा।",
       "ja": "これが推奨されるポリシーです。インテル&reg;AMTのアクティブ化と管理は完全に自動化されており、サーバーはハードウェア管理を最大限に活用しようとします。",
       "ko": "이것이 권장되는 정책입니다. 인텔 &reg; AMT 활성화 및 관리는 완전히 자동화되어 있으며 서버는 하드웨어 관리를 최대한 활용하려고 시도합니다.",
@@ -39505,7 +39523,7 @@
       ]
     },
     {
-      "cs": "Tato zásada nebude mít vliv na zařízení s Intel® AMT v ACM režimu.",
+      "cs": "Tato zásada nebude mít vliv na zařízení s Intel&reg; AMT v ACM režimu.",
       "de": "Diese Richtlinie hat keine Wirkung auf Intel&reg;-AMT-Geräte im ACM-Modus.",
       "en": "This policy will not impact devices with Intel&reg; AMT in ACM mode.",
       "es": "Esta política no afectará a los dispositivos con Intel&reg; AMT en modo ACM.",
@@ -39839,12 +39857,12 @@
       ]
     },
     {
-      "cs": "Pro přidání nového Intel® AMT zařízení do skupiny „{0}“ s CIRA, je třeba si stáhnout následující skript <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> a spustit pro nastavení počítačů.",
+      "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny „{0}“ s CIRA, je třeba si stáhnout následující skript <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> a spustit pro nastavení počítačů.",
       "de": "Um ein neues Intel&reg;-AMT-Gerät zur Gerätegruppe \\\"{0}\\\" mit CIRA hinzuzufügen, laden Sie die folgenden Script-Dateien herunter und verwenden Sie <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a>, um das Script auf den zu konfigurierenden Rechnern auszuführen.",
       "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, download the following script files and use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> to run the script to configure computers.",
       "es": "Para agregar un nuevo dispositivo Intel&reg; AMT al grupo de dispositivos \\\"{0}\\\" con CIRA, descargue los siguientes archivos de comandos y use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> para ejecutar el script para configurar computadoras.",
       "fi": "Jos haluat lisätä uuden Intel&reg; AMT -laitteen laiteryhmään \\\"{0}\\\" CIRA: lla, lataa seuraavat komentotiedostot ja käytä <a href = 'http: //meshcommander.com' rel = 'noreferrer noopener' target = ' _blank '> MeshCommander </a> komentosarjan suorittamiseksi tietokoneiden määrittämiseksi.",
-      "fr": "Pour ajouter un appareil Intel® AMT au groupe \\\"{0}\\# en utilisant CIRA, téléchargez le script suivant et exécutez le à l'aide de <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a>.",
+      "fr": "Pour ajouter un appareil Intel&reg; AMT au groupe \\\"{0}\\# en utilisant CIRA, téléchargez le script suivant et exécutez le à l'aide de <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a>.",
       "hi": "CIRA के साथ डिवाइस समूह \\\"{0}\\\" में एक नया Intel&reg; AMT डिवाइस जोड़ने के लिए, निम्नलिखित स्क्रिप्ट फ़ाइलों को डाउनलोड करें और <a href = 'http: //meshcommander.com' rel = 'noreferrer noopener' 'target =' कंप्यूटर को कॉन्फ़िगर करने के लिए स्क्रिप्ट चलाने के लिए _blank '> MeshCommander </a>।",
       "ja": "新しいIntel&reg;を追加するにはCIRAを使用してAMTデバイスからデバイスグループ\\\"{0}\\\"に移動し、次のスクリプトファイルをダウンロードして、<a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'> MeshCommander </を使用しますa>スクリプトを実行してコンピューターを構成します。",
       "ko": "CIRA를 사용하여 장치 그룹 \\\"{0}\\\"에 새 Intel&reg; AMT 장치를 추가하려면 다음 스크립트 파일을 다운로드하고, 스크립트를 실행하여 컴퓨터를 구성하려면 <a href = 'http://meshcommander.com' rel='noreferrer noopener' target='_blank '>MeshCommander</a>를 사용하십시오.",
@@ -39856,7 +39874,7 @@
       "zh-cht": "要將新的Intel&reg; AMT裝置新增到具有CIRA的裝置群“ {0} ”中，請下載以下腳本檔案並使用<a href ='http：//meshcommander.com'rel ='noreferrer noopener'target =' _blank'> MeshCommander </a>來運行腳本來配置電腦。"
     },
     {
-      "cs": "Pro přidání nového Intel® AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel&reg; AMT",
+      "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel&reg; AMT",
       "de": "Um ein neues Intel&reg;-AMT-Gerät zur Gerätegruppe \\\"{0}\\\" mit CIRA hinzuzufügen, laden Sie das folgende Zertifikat als bekanntes Stammzertifikat in Intel&reg; AMT",
       "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, load the following certificate as trusted root within Intel&reg; AMT",
       "es": "Para agregar un nuevo dispositivo Intel&reg; AMT al grupo de dispositivos \\\"{0}\\\" con CIRA, cargue el siguiente certificado como certificado raíz de confianza dentro de Intel&reg; AMT",
@@ -39873,7 +39891,7 @@
       "zh-cht": "要將新的Intel&reg; AMT裝置新增到具有CIRA的裝置群“ {0} ”，請在Intel AMT中加載以下憑證作為可信賴的根憑證"
     },
     {
-      "cs": "Pro přidání nového Intel® AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel&reg; AMT, tímto klientským certifikátem se pak bude ověřovat s následujícím běžným názvem a připojí se k následujícímu serveru.",
+      "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel&reg; AMT, tímto klientským certifikátem se pak bude ověřovat s následujícím běžným názvem a připojí se k následujícímu serveru.",
       "de": "Um ein neues Intel&reg;-AMT-Gerät zur Gerätegruppe \\\"{0}\\\" mit CIRA hinzuzufügen, laden Sie das folgende Zertifikat als bekanntes Stammzertifikat in Intel&reg; AMT, authentifizieren Sie sich mittels eines Clientzertifikats mit dem folgenden Common Name und verbinden Sie sich zu folgendem Server.",
       "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, load the following certificate as trusted root within Intel&reg; AMT, authenticate using a client certificate with the following common name and connect to the following server.",
       "es": "Para agregar un nuevo dispositivo Intel&reg; AMT al grupo de dispositivos \\\"{0}\\\" con CIRA, cargue el siguiente certificado como certificado raíz de confianza dentro de Intel&reg; AMT, autentíquese utilizando un certificado de cliente con el siguiente nombre común y conéctese al siguiente servidor.",
@@ -45397,6 +45415,7 @@
     },
     {
       "en": "devicelist",
+      "nl": "apparaatlijst",
       "xloc": [
         "default.handlebars->31->236"
       ]
