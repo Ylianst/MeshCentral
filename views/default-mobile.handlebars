@@ -2803,6 +2803,10 @@
                 if (e.altKey == true) { return true; }
                 Q('softKeyboard').value = '';
                 gotKeyPressEvent = false;
+                var k = 0;
+                if (e.charCode != 0) { k = e.charCode; } else if (e.keyCode != 0) { k = e.keyCode; }
+                if (k == 8) { terminal.sendText(String.fromCharCode(k)); } // Enter and backspace
+                else if (e.ctrlKey && (k >= 64) && (k <= 95)) { console.log(k - 64); terminal.sendText(String.fromCharCode(k - 64)); } // Ctrl keys
             }
         }
 
@@ -2830,11 +2834,8 @@
             }
             if (terminal && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 5) && (gotKeyPressEvent == false) && (t !== 1)) {
                 if (e.altKey == true) { return true; }
+                terminal.sendText(Q('softKeyboard').value);
                 Q('softKeyboard').value = '';
-                var k = 0;
-                if (e.charCode != 0) { k = e.charCode; } else if (e.keyCode != 0) { k = e.keyCode; }
-                if ((k == 8) || (k == 13)) { terminal.sendText(String.fromCharCode(k)); } // Enter and backspace
-                else if (e.ctrlKey && (k >= 64) && (k <= 95)) { console.log(k - 64); terminal.sendText(String.fromCharCode(k - 64)); } // Ctrl keys
                 return false;
             }
         }
