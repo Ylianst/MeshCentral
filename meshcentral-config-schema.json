@@ -588,7 +588,7 @@
               "index": { "type": "boolean", "default": false },
               "maxRecordings": { "type": "integer" },
               "maxRecordingSizeMegabytes": { "type": "integer" },
-              "protocols": { "type": "array", "uniqueItems": true, "items": { "type": "integer" } }
+              "protocols": { "type": "array", "uniqueItems": true, "items": { "type": "integer" }, "description": "This is an array: 1 = Terminal, 2 = Desktop, 5 = Files, 100 = Intel AMT WSMAN, 101 = Intel AMT Redirection, 200 = Messenger" }
             },
             "required": [ "protocols" ]
           },

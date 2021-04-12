@@ -11943,7 +11943,8 @@
             108: "User login attempt with incorrect 2nd factor from {0}, {1}, {2}",
             109: "User login attempt on locked account from {0}, {1}, {2}",
             110: "Invalid user login attempt from {0}, {1}, {2}",
-            111: "Device requested Intel(R) AMT ACM TLS activation, FQDN: {0}"
+            111: "Device requested Intel(R) AMT ACM TLS activation, FQDN: {0}",
+            112: "Ended messenger session \"{0}\" from {1} to {2}, {3} second(s)"
         };
 
         // Highlights the device being hovered
@@ -13702,6 +13703,14 @@
                     }
                 }
             }
+
+            if (rec.protocol == 1) { sessionName += ' - ' + "Terminal Session"; }
+            if (rec.protocol == 2) { sessionName += ' - ' + "Desktop Session"; }
+            if (rec.protocol == 5) { sessionName += ' - ' + "File Transfer"; }
+            if (rec.protocol == 100) { sessionName += ' - ' + "Intel&reg; AMT WSMAN"; }
+            if (rec.protocol == 101) { sessionName += ' - ' + "Intel&reg; AMT Redirection"; }
+            if (rec.protocol == 200) { sessionName += ' - ' + "Messenger"; }
+
             var actions = '', icon = 'm0';
             if (rec.present == 1) { icon = 'm1'; actions = '<div style=cursor:pointer;float:right><a onclick=downloadFile("recordings.ashx?file=' + encodeURIComponentEx(rec.filename) + '")><img src=images/link4.png height=10 width=10 title="Download Recording"></a>&nbsp;</div>'; }
             var x = '<tr tabindex=0 onmouseover=userMouseHover2(this,1) onmouseout=userMouseHover2(this,0) onkeypress="if (event.key==\'Enter\') showRecordingDialog(event,\'' + i + '\')"><td style=cursor:pointer>';
