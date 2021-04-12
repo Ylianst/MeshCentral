@@ -471,7 +471,12 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
 
     obj.destroy = function () {
         if (obj.socket != null) {
-            if (obj.socket.removeAllListeners) { obj.socket.removeAllListeners(); }
+            if (obj.socket.removeAllListeners) {
+                // Do not remove the error handler since it may still get triggered.
+                obj.socket.removeAllListeners('data');
+                obj.socket.removeAllListeners('close');
+                obj.socket.removeAllListeners('timeout');
+            }
             try {
                 if (obj.mpsConnection == null) {
                     obj.socket.destroy();
