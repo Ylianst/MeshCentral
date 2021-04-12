@@ -689,7 +689,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                             if (typeof x.action == 'string') {
                                 if ((x.action == 'chat') && (typeof x.msg == 'string')) { out = utcDate.toUTCString() + ', ' + (((flags & 2) ? '--> ' : '<-- ') + x.msg + '\r\n'); }
                                 else if ((x.action == 'file') && (typeof x.name == 'string') && (typeof x.size == 'number')) { out = utcDate.toUTCString() + ', ' + (((flags & 2) ? '--> ' : '<-- ') + "File Transfer" + ', \"' + x.name + '\" (' + x.size + ' ' + "bytes" + ')\r\n'); }
-                            } else { out = utcDate.toUTCString() + ', ' + data + '\r\n'; }
+                            } else if (x.ctrlChannel == null) { out = utcDate.toUTCString() + ', ' + data + '\r\n'; }
                         } catch (ex) {
                             out = utcDate.toUTCString() + ', ' + data + '\r\n';
                         }
