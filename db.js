@@ -1802,6 +1802,7 @@ module.exports.CreateDB = function (parent, func) {
                             setTimeout(function () { try { parent.fs.unlink(newBackupPath + '.archive', function () { }); } catch (ex) { console.log(ex); } }, 5000);
                         });
                         output.on('end', function () { });
+                        output.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
                         archive.on('warning', function (err) { console.log('Backup warning: ' + err); if (func) { func('Backup warning: ' + err); } });
                         archive.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
                         archive.pipe(output);
@@ -1846,6 +1847,7 @@ module.exports.CreateDB = function (parent, func) {
                             setTimeout(function () { try { parent.fs.unlink(newBackupPath + '.sql', function () { }); } catch (ex) { console.log(ex); } }, 5000);
                         });
                         output.on('end', function () { });
+                        output.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
                         archive.on('warning', function (err) { console.log('Backup warning: ' + err); if (func) { func('Backup warning: ' + err); } });
                         archive.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
                         archive.pipe(output);
@@ -1867,6 +1869,7 @@ module.exports.CreateDB = function (parent, func) {
                 }
                 output.on('close', function () { obj.performingBackup = false; if (func) { func('Auto-backup completed.'); } obj.performCloudBackup(newAutoBackupPath + '.zip', func); });
                 output.on('end', function () { });
+                output.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
                 archive.on('warning', function (err) { console.log('Backup warning: ' + err); if (func) { func('Backup warning: ' + err); } });
                 archive.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
                 archive.pipe(output);
