@@ -308,16 +308,29 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     // Setup session recording
                     var sessionUser = obj.user;
                     if (sessionUser == null) { sessionUser = obj.peer.user; }
-                    if ((obj.req.query.p != null) && (obj.req.query.nodeid != null) && (sessionUser != null) && (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(parseInt(obj.req.query.p)) >= 0))))) {
+
+                    // If this is a MeshMessenger session, set the protocol to 200.
+                    var xtextSession = 0;
+                    var recordSession = false;
+                    if ((obj.id.startsWith('meshmessenger/node/') == true) && (sessionUser != null) && (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(parseInt(200)) >= 0))))) {
+                        var split = obj.id.split('/');
+                        obj.req.query.nodeid = split[1] + '/' + split[2] + '/' + split[3];
+                        recordSession = true;
+                        xtextSession = 2; // 1 = Raw recording of all strings, 2 = Record chat session messages only.
+                    }
+                    if ((obj.req.query.p != null) && (obj.req.query.nodeid != null) && (sessionUser != null) && (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(parseInt(obj.req.query.p)) >= 0))))) { recordSession = true; }
+
+                    if (recordSession) {
                         // Get the computer name
                         parent.db.Get(obj.req.query.nodeid, function (err, nodes) {
                             var xusername = '', xdevicename = '', xdevicename2 = null, node = null;
                             if ((nodes != null) && (nodes.length == 1)) { node = nodes[0]; xdevicename2 = node.name; xdevicename = '-' + parent.common.makeFilename(node.name); }
 
                             // Check again if we need to do recording
-                            if (domain.sessionrecording.onlyselecteddevicegroups === true) {
-                                var mesh = parent.meshes[node.meshid];
-                                if ((mesh.flags == null) || ((mesh.flags & 4) == 0)) {
+                            if ((node == null) || (domain.sessionrecording.onlyselecteddevicegroups === true)) {
+                                var mesh = null;
+                                if (node != null) { mesh = parent.meshes[node.meshid]; }
+                                if ((node == null) || (mesh == null) || (mesh.flags == null) || ((mesh.flags & 4) == 0)) {
                                     // Do not record the session, just send session start
                                     try { ws.send('c'); } catch (ex) { } // Send connect to both peers
                                     try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
@@ -337,7 +350,9 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                             if (sessionUser._id) { xusername = '-' + parent.common.makeFilename(sessionUser._id.split('/')[2]); }
 
                             var now = new Date(Date.now());
-                            var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth(), 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + xusername + xdevicename + '-' + obj.id + '.mcrec'
+                            var xsessionid = obj.id;
+                            if ((typeof xsessionid == 'string') && (xsessionid.startsWith('meshmessenger/node/') == true)) { xsessionid = 'Messenger' }
+                            var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth(), 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + xusername + xdevicename + '-' + xsessionid + (xtextSession ? '.txt' : '.mcrec');
                             var recFullFilename = null;
                             if (domain.sessionrecording.filepath) {
                                 try { parent.parent.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
@@ -375,9 +390,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                                         protocol: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.p),
                                         nodeid: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.nodeid)
                                     };
+
                                     if (xdevicename2 != null) { metadata.devicename = xdevicename2; }
                                     var firstBlock = JSON.stringify(metadata);
-                                    var logfile = { fd: fd, lock: false, filename: recFullFilename, startTime: Date.now(), size: 0 };
+                                    var logfile = { fd: fd, lock: false, filename: recFullFilename, startTime: Date.now(), size: 0, text: xtextSession };
                                     if (node != null) { logfile.nodeid = node._id; logfile.meshid = node.meshid; logfile.name = node.name; logfile.icon = node.icon; }
                                     recordingEntry(logfile, 1, 0, firstBlock, function () {
                                         try { relayinfo.peer1.ws.logfile = ws.logfile = logfile; } catch (ex) {
@@ -441,6 +457,9 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     return null;
                 }
             } else {
+                // Set authenticated side as browser side for messenger sessions
+                if ((obj.id.startsWith('meshmessenger/node/') == true) && obj.authenticated) { obj.req.query.browser = 1; }
+
                 // Wait for other relay connection
                 if ((obj.id.startsWith('meshmessenger/node/') == true) && obj.authenticated && (parent.parent.firebase != null)) {
                     // This is an authenticated messenger session, push messaging may be allowed. Don't hold traffic.
@@ -578,6 +597,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         if (obj.req.query.p == 1) { msg = 'Ended terminal session', msgid = 10; }
                         else if (obj.req.query.p == 2) { msg = 'Ended desktop session', msgid = 11; }
                         else if (obj.req.query.p == 5) { msg = 'Ended file management session', msgid = 12; }
+                        else if (obj.req.query.p == 200) { msg = 'Ended messenger session', msgid = 112; }
                         if (user) {
                             var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [obj.id, obj.req.clientIp, obj.peer.req.clientIp, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.peer.req.clientIp + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
                             parent.parent.DispatchEvent(['*', user._id], obj, event);
@@ -617,6 +637,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: tag.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: tag.logfile.size };
                         if (user) { event.userids = [user._id]; } else if (peer.user) { event.userids = [peer.user._id]; }
                         var xprotocol = (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.p);
+                        if ((xprotocol == null) && (logfile.text == 2)) { xprotocol = 200; }
                         if (xprotocol != null) { event.protocol = parseInt(xprotocol); }
                         var mesh = parent.meshes[tag.logfile.meshid];
                         if (mesh != null) { event.meshname = mesh.name; event.meshid = mesh._id; }
@@ -648,26 +669,64 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
     // Record a new entry in a recording log
     function recordingEntry(logfile, type, flags, data, func, tag) {
         try {
-            if (typeof data == 'string') {
-                // String write
-                var blockData = Buffer.from(data), header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
-                header.writeInt16BE(flags, 2); // Flags (1 = Binary, 2 = User)
-                header.writeInt32BE(blockData.length, 4); // Size
-                header.writeIntBE(new Date(), 10, 6); // Time
-                var block = Buffer.concat([header, blockData]);
-                parent.parent.fs.write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
-                logfile.size += block.length;
+            if (logfile.text) {
+                // Text recording format
+                var out = '';
+                const utcDate = new Date(Date.now());
+                if (type == 1) {
+                    // End of start
+                    out = data + '\r\n' + utcDate.toUTCString() + ', ' + "<<<START>>>" + '\r\n';
+                } else if (type == 3) {
+                    // End of log
+                    out = utcDate.toUTCString() + ', ' + "<<<END>>>" + '\r\n';
+                } else if (typeof data == 'string') {
+                    // Log message
+                    if (logfile.text == 1) {
+                        out = utcDate.toUTCString() + ', ' + data + '\r\n';
+                    } else if (logfile.text == 2) {
+                        try {
+                            var x = JSON.parse(data);
+                            if (typeof x.action == 'string') {
+                                if ((x.action == 'chat') && (typeof x.msg == 'string')) { out = utcDate.toUTCString() + ', ' + (((flags & 2) ? '--> ' : '<-- ') + x.msg + '\r\n'); }
+                                else if ((x.action == 'file') && (typeof x.name == 'string') && (typeof x.size == 'number')) { out = utcDate.toUTCString() + ', ' + (((flags & 2) ? '--> ' : '<-- ') + "File Transfer" + ', \"' + x.name + '\" (' + x.size + ' ' + "bytes" + ')\r\n'); }
+                            } else { out = utcDate.toUTCString() + ', ' + data + '\r\n'; }
+                        } catch (ex) {
+                            out = utcDate.toUTCString() + ', ' + data + '\r\n';
+                        }
+                    }
+                }
+                if (out != null) {
+                    // Log this event
+                    const block = Buffer.from(out);
+                    parent.parent.fs.write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
+                    logfile.size += block.length;
+                } else {
+                    // Skip logging this.
+                    func(logfile, tag);
+                }
             } else {
-                // Binary write
-                var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
-                header.writeInt16BE(flags | 1, 2); // Flags (1 = Binary, 2 = User)
-                header.writeInt32BE(data.length, 4); // Size
-                header.writeIntBE(new Date(), 10, 6); // Time
-                var block = Buffer.concat([header, data]);
-                parent.parent.fs.write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
-                logfile.size += block.length;
+                // Binary recording format
+                if (typeof data == 'string') {
+                    // String write
+                    var blockData = Buffer.from(data), header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+                    header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+                    header.writeInt16BE(flags, 2); // Flags (1 = Binary, 2 = User)
+                    header.writeInt32BE(blockData.length, 4); // Size
+                    header.writeIntBE(new Date(), 10, 6); // Time
+                    var block = Buffer.concat([header, blockData]);
+                    parent.parent.fs.write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
+                    logfile.size += block.length;
+                } else {
+                    // Binary write
+                    var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+                    header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+                    header.writeInt16BE(flags | 1, 2); // Flags (1 = Binary, 2 = User)
+                    header.writeInt32BE(data.length, 4); // Size
+                    header.writeIntBE(new Date(), 10, 6); // Time
+                    var block = Buffer.concat([header, data]);
+                    parent.parent.fs.write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
+                    logfile.size += block.length;
+                }
             }
         } catch (ex) { console.log(ex); func(logfile, tag); }
     }

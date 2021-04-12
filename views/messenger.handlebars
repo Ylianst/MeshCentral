@@ -23,6 +23,7 @@
             <div id="camButton" class="icon2 topButton" title="Activate camera & microphone" style="display:none" onclick="camButtonClick()"></div>
             <div id="micButton" class="icon6 topButton" title="Activate microphone" style="display:none" onclick="micButtonClick()"></div>
             <div id="hangupButton" class="icon11 topRedButton" title="Hang up" style="display:none" onclick="hangUpButtonClick(1)"></div>
+            <div id="recordIcon" class='deskareaicon' title="Server is recording this session" style="background-color:red;margin:6px;margin-top:7px;border-radius:12px;height:24px;width:24px;float:right;display:none"></div>
         </div>
         <div style="padding-top:9px;padding-left:6px;font-size:20px;display:inline-block"><b><span id="xtitle"></span></b></div>
     </div>
@@ -88,6 +89,7 @@
             var localOutText = false;
             var remoteOutText = false;
             var remoteImage = false;
+            var serverRecording = false;
 
             // File transfer state
             var fileUploads = [];
@@ -279,7 +281,7 @@
                     //console.log('ondatachannel');
                     webchannel = ev.channel;
                     webchannel.onmessage = function (event) { processMessage(event.data, 2); };
-                    webchannel.onopen = function () { webchannel.ok = true; updateControls(); sendws({ action: 'rtcSwitch', v: 0 }); };
+                    webchannel.onopen = function () { webchannel.ok = true; updateControls(); if (serverRecording == false) { sendws({ action: 'rtcSwitch', v: 0 }); } };
                     webchannel.onclose = function (event) { if (webchannel && webchannel.ok) { disconnect(); } else { hangUpButtonClick(0); } }
                 }
                 webrtc.onnegotiationneeded = function (event) {
@@ -316,7 +318,7 @@
                 if (startDataChannel == true) {
                     webchannel = webrtc.createDataChannel('DataChannel', {}); // { ordered: false, maxRetransmits: 2 }
                     webchannel.onmessage = function (event) { processMessage(event.data, 2); };
-                    webchannel.onopen = function () { webchannel.ok = true; updateControls(); sendws({ action: 'rtcSwitch', v: 0 }); };
+                    webchannel.onopen = function () { webchannel.ok = true; updateControls(); if (serverRecording == false) { sendws({ action: 'rtcSwitch', v: 0 }); } };
                     webchannel.onclose = function (event) { if (webchannel && webchannel.ok) { disconnect(); } else { hangUpButtonClick(0); } }
                 }
 
@@ -344,11 +346,13 @@
 
             // Indicate to peer that data traffic will no longer be sent over websocket and start holding traffic.
             function performWebRtcSwitch() {
-                if (webchannel && webchannel.ok) { sendws({ action: 'rtcSwitch', v: 1 }); webchannel.xoutBuffer = []; }
+                if (!serverRecording && webchannel && webchannel.ok) { sendws({ action: 'rtcSwitch', v: 1 }); webchannel.xoutBuffer = []; }
             }
 
             // Disconnect everything
             function disconnect() {
+                serverRecording = false;
+                QV('recordIcon', false);
                 if (state > 0) { displayControl("Connection closed."); }
                 if (state > 1) { setTimeout(start, 500); }
                 cancelAllFileTransfers();
@@ -368,7 +372,7 @@
             function send(data) {
                 if ((state != 2) && (pushMessaging == false)) return; // If not in connected state, ignore this.
                 if (typeof data == 'object') { data = JSON.stringify(data); } // If this is an object, convert it to a string.
-                if (webchannel && webchannel.ok) { if (webchannel.xoutBuffer != null) { webchannel.xoutBuffer.push(data); } else { webchannel.send(data); } } // If WebRTC channel is possible, use it or hold until we can use it.
+                if (!serverRecording && webchannel && webchannel.ok) { if (webchannel.xoutBuffer != null) { webchannel.xoutBuffer.push(data); } else { webchannel.send(data); } } // If WebRTC channel is possible, use it or hold until we can use it.
                 else { if (socket != null) { try { socket.send(data); } catch (ex) { } } } // If a websocket channel is present, use that.
             }
 
@@ -520,7 +524,7 @@
                 file.id = Math.random();
                 fileUploads.push(file);
                 chatTextSession += ((new Date()).toLocaleTimeString() + ' - ' + "Upload" + '> ' + file.name + ' (' + file.size + ' ' + "bytes" + ')\r\n');
-                QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="localBubble" style="width:240px;cursor:pointer" onclick="cancelFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:16px;overflow:hidden;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
+                QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="localBubble" style="font-size:14px;width:240px;cursor:pointer" onclick="cancelFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:20px;overflow:hidden;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
                 Q('xmsgparent').scrollTop = Q('xmsgparent').scrollHeight;
                 send({ action: 'file', size: file.size, id: file.id, type: file.type, name: file.name });
                 if (currentFileUpload == null) continueFileUpload();
@@ -530,7 +534,7 @@
                 if (state != 2) return;
                 fileDownloads[file.id] = file;
                 chatTextSession += ((new Date()).toLocaleTimeString() + ' - ' + "Download" + '> ' + file.name + ' (' + file.size + ' ' + "bytes" + ')\r\n');
-                QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="remoteBubble" style="width:240px;cursor:pointer" onclick="saveFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:16px;overflow:hidden;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
+                QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="remoteBubble" style="font-size:14px;width:240px;cursor:pointer" onclick="saveFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:20px;overflow:hidden;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
                 Q('xmsgparent').scrollTop = Q('xmsgparent').scrollHeight;
             }
 
@@ -717,6 +721,8 @@
                     socket.onclose = function () { disconnect(); }
                     socket.onmessage = function (msg) {
                         if ((state < 2) && (typeof msg.data == 'string') && ((msg.data == 'c') || (msg.data == 'cr'))) {
+                            serverRecording = (msg.data == 'cr');
+                            QV('recordIcon', serverRecording);
                             hangUpButtonClick(0, true);
                             hangUpButtonClick(1, true);
                             hangUpButtonClick(2, true);
@@ -742,9 +748,9 @@
             start();
 
             function onUnLoad() {
-                for (var i = 0; i < 3; i++) { if (webrtcSessions[i]) { webrtcSessions[i].close(); delete webrtcSessions[i]; } }
-                if (webchannel != null) { try { webchannel.close(); } catch (e) { } webchannel = null; }
-                if (socket != null) { try { socket.close(); } catch (e) { } socket = null; }
+                for (var i = 0; i < 3; i++) { if (webrtcSessions[i]) { try { webrtcSessions[i].close(); delete webrtcSessions[i]; } catch (ex) { } } }
+                if (webchannel != null) { try { webchannel.close(); } catch (ex) { } webchannel = null; }
+                if (socket != null) { try { socket.close(); } catch (ex) { } socket = null; }
             }
 
             function isSafeString3(str) { return ((typeof str == 'string') && (str.indexOf('<') == -1) && (str.indexOf('>') == -1) && (str.indexOf('&') == -1) && (str.indexOf('"') == -1) && (str.indexOf('\'') == -1) && (str.indexOf('+') == -1) && (str.indexOf('(') == -1) && (str.indexOf(')') == -1) && (str.indexOf('#') == -1) && (str.indexOf(':') == -1)) };
