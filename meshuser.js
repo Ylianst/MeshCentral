@@ -3942,7 +3942,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'poweraction':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
-                    if (common.validateInt(command.actiontype, 2, 310) == false) break; // Check actiontype
+                    if (common.validateInt(command.actiontype, 2, 401) == false) break; // Check actiontype
                     for (i in command.nodeids) {
                         var nodeid = command.nodeids[i];
 
@@ -3953,22 +3953,28 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
-                            // Check we have the rights to delete this device
-                            if ((rights & MESHRIGHT_RESETOFF) == 0) return;
-
-                            // If this device is connected on MQTT, send a power action.
-                            if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.publish(node._id, 'powerAction', ['', '', 'poweroff', 'reset', 'sleep'][command.actiontype]); }
-
-                            if (command.actiontype >= 300) {
-                                if ((command.actiontype != 302) && (command.actiontype != 308) && (command.actiontype != 310)) return; // Invalid action type.
-                                // Intel AMT power command, actiontype: 2 = Power on, 8 = Power down, 10 = reset
-                                parent.parent.DispatchEvent('*', obj, { action: 'amtpoweraction', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, actiontype: command.actiontype - 300 });
+                            if ((command.actiontype >= 400) && ((rights & MESHRIGHT_REMOTECONTROL) != 0)) {
+                                // Flash and vibrate
+                                if ((command.actiontype == 400) && common.validateInt(command.time, 1, 30000)) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: node._id, value: 'flash ' + command.time }, MESHRIGHT_ADMIN, 0); }
+                                if ((command.actiontype == 401) && common.validateInt(command.time, 1, 30000)) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: node._id, value: 'vibrate ' + command.time }, MESHRIGHT_ADMIN, 0); }
                             } else {
-                                if ((command.actiontype < 2) && (command.actiontype > 4)) return; // Invalid action type.
-                                // Mesh Agent power command, get this device and send the power command
-                                const agent = parent.wsagents[node._id];
-                                if (agent != null) {
-                                    try { agent.send(JSON.stringify({ action: 'poweraction', actiontype: command.actiontype })); } catch (ex) { }
+                                // Check we have the rights to delete this device
+                                if ((rights & MESHRIGHT_RESETOFF) == 0) return;
+
+                                // If this device is connected on MQTT, send a power action.
+                                if ((parent.parent.mqttbroker != null) && (command.actiontype >= 0) && (command.actiontype <= 4)) { parent.parent.mqttbroker.publish(node._id, 'powerAction', ['', '', 'poweroff', 'reset', 'sleep'][command.actiontype]); }
+
+                                if ((command.actiontype >= 300) && (command.actiontype < 400)) {
+                                    if ((command.actiontype != 302) && (command.actiontype != 308) && (command.actiontype != 310)) return; // Invalid action type.
+                                    // Intel AMT power command, actiontype: 2 = Power on, 8 = Power down, 10 = reset
+                                    parent.parent.DispatchEvent('*', obj, { action: 'amtpoweraction', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, actiontype: command.actiontype - 300 });
+                                } else {
+                                    if ((command.actiontype < 2) && (command.actiontype > 4)) return; // Invalid action type.
+                                    // Mesh Agent power command, get this device and send the power command
+                                    const agent = parent.wsagents[node._id];
+                                    if (agent != null) {
+                                        try { agent.send(JSON.stringify({ action: 'poweraction', actiontype: command.actiontype })); } catch (ex) { }
+                                    }
                                 }
                             }
                         });

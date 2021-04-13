@@ -6239,7 +6239,7 @@
                 if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute(((node.users.length > 1)?'Active Users':'Active User'), EscapeHtml(node.users.join(', '))); }
 
                 // Display device user consent
-                if (node.agent != null) {
+                if ((node.agent != null) && (node.agent.id != 14)) {
                     var meshFeatures = [];
                     var consent = 0;
                     if (node.consent) { consent = node.consent; }
@@ -6278,9 +6278,7 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if ((node.agent == null) || (node.agent.id != 14)) {
-                    x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />';
-                }
+                if ((meshrights & (4 + 8 + 64)) != 0) { x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponentEx(node._id) + '") />';
                 x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
                 if ((meshrights & 8) && ((connectivity & 1) || ((node.pmt == 1) && ((features2 & 2) != 0)))) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
@@ -6806,23 +6804,39 @@
             if (xxdialogMode) return;
             var rights = GetNodeRights(currentNode), count = 0;
             var x = "Select an operation to perform on this device." + '<br /><br />';
-            var y = '<select id=d2deviceop style=float:right;width:250px>';
-            if ((rights & 64) != 0) { count++; y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
-            if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
-            if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; }
-            if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
-            if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF)) {
-                count++;
-                y += '<option value=310>' + "Intel&reg; AMT Reset" + '</option>';
-                y += '<option value=302>' + "Intel&reg; AMT Power on" + '</option>';
-                y += '<option value=308>' + "Intel&reg; AMT Power off" + '</option>';
+            var y = '<select id=d2deviceop style=float:right;width:250px onchange=deviceActionFunctionValidate()>';
+            var z = '';
+            if ((currentNode.agent != null) && (currentNode.agent.id == 14)) {
+                if (((currentNode.conn & 1) != 0) && ((rights & 8) != 0)) {
+                    count++;
+                    y += '<option value=400>' + "Flash" + '</option>';
+                    y += '<option value=401>' + "Vibrate" + '</option>';
+                    z += '<div id=d2devicetimediv>' + addHtmlValue("Time", '<select id=d2devicetime style=float:right;width:250px><option value=1000>' + "1 second" + '</option><option value=5000>' + "5 seconds" + '</option><option value=10000>' + "10 seconds" + '</option></select>') + '</div>';
+                }
+            } else {
+                if ((rights & 64) != 0) { count++; y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
+                if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
+                if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; }
+                if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
+                if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF)) {
+                    count++;
+                    y += '<option value=310>' + "Intel&reg; AMT Reset" + '</option>';
+                    y += '<option value=302>' + "Intel&reg; AMT Power on" + '</option>';
+                    y += '<option value=308>' + "Intel&reg; AMT Power off" + '</option>';
+                }
+                if ((getNodeAmtVersion(currentNode) >= 15) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF) && ((features & 0x00000400) == 0)) { count++; y += '<option value=107>' + "Intel&reg; AMT One Click Recovery" + '</option>'; } // CIRA (2) or AMT (4) connected
+                if (((currentNode.conn & 1) != 0) && ((rights & 32768) != 0)) { count++; y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
             }
-            if ((getNodeAmtVersion(currentNode) >= 15) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF) && ((features & 0x00000400) == 0)) { count++; y += '<option value=107>' + "Intel&reg; AMT One Click Recovery" + '</option>'; } // CIRA (2) or AMT (4) connected
-            if (((currentNode.conn & 1) != 0) && ((rights & 32768) != 0)) { count++; y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
             y += '</select>';
             x += addHtmlValue("Operation", y);
             if (count == 0) { x = "No actions currently available for this device."; }
-            setDialogMode(2, "Device Action", (count == 0)?1:3, deviceActionFunctionEx, x);
+            setDialogMode(2, "Device Action", (count == 0)?2:3, deviceActionFunctionEx, x + z);
+            if (count > 0) { deviceActionFunctionValidate(); }
+        }
+
+        function deviceActionFunctionValidate() {
+            var op = Q('d2deviceop').value;
+            try { QV('d2devicetimediv', (op == 400) || (op == 401)); } catch (ex) {}
         }
 
         function deviceActionFunctionEx() {
@@ -6868,6 +6882,9 @@
                 setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function() { meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power off?");
             } else if (op == 310) { // Intel AMT reset
                 setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function() { meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT reset?");
+            } else if ((op == 400) || (op == 401)) {
+                // Flash / vibrate
+                meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op), time: parseInt(Q('d2devicetime').value) });
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) });
