@@ -3390,7 +3390,8 @@
                 }
 
                 x += '</table><br />';
-                x += '<input type=button value=\"' + "Actions" + '\" onclick=deviceActionFunction() />';
+                // Show action button, only show if we have permissions 4, 8, 64
+                if ((meshrights & (4 + 8 + 64)) != 0) { x += '<input type=button value="' + "Actions" + '" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value=Notes onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast onclick=deviceToastFunction() />';  }
 
@@ -3496,6 +3497,7 @@
             if (currentDevicePanel == 1) { deskAdjust(); }
         }
 
+        /*
         function deviceActionFunction() {
             if (xxdialogMode) return;
             var rights = GetNodeRights(currentNode), count = 0;
@@ -3510,6 +3512,113 @@
             x += addHtmlValue("Operation", y);
             if (count == 0) { x = "No actions currently available for this device."; }
             setDialogMode(2, "Device Action", (count == 0) ? 1 : 3, deviceActionFunctionEx, x);
+        }
+
+        function deviceActionFunctionEx() {
+            var op = Q('d2deviceop').value;
+            if (op == 100) {
+                // Device wake
+                meshserver.send({ action: 'wakedevices', nodeids: [currentNode._id] });
+            } else {
+                // Power operation
+                meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: op });
+            }
+        }
+        */
+
+        function deviceActionFunction() {
+            if (xxdialogMode) return;
+            var rights = GetNodeRights(currentNode), count = 0;
+            var x = "Select an operation to perform on this device." + '<br /><br />';
+            var y = '<select id=d2deviceop style=float:right;width:170px onchange=deviceActionFunctionValidate()>';
+            var z = '';
+            if ((currentNode.agent != null) && (currentNode.agent.id == 14)) {
+                if (((currentNode.conn & 1) != 0) && ((rights & 8) != 0)) {
+                    count++;
+                    y += '<option value=400>' + "Flash" + '</option>';
+                    y += '<option value=401>' + "Vibrate" + '</option>';
+                    z += '<div id=d2devicetimediv>' + addHtmlValue("Time", '<select id=d2devicetime style=float:right;width:170px><option value=1000>' + "1 second" + '</option><option value=5000>' + "5 seconds" + '</option><option value=10000>' + "10 seconds" + '</option></select>') + '</div>';
+                }
+            } else {
+                if ((rights & 64) != 0) { count++; y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
+                //if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
+                if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; }
+                //if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
+                if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF)) {
+                    count++;
+                    y += '<option value=310>' + "Intel&reg; AMT Reset" + '</option>';
+                    y += '<option value=302>' + "Intel&reg; AMT Power on" + '</option>';
+                    y += '<option value=308>' + "Intel&reg; AMT Power off" + '</option>';
+                }
+                //if ((getNodeAmtVersion(currentNode) >= 15) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF) && ((features & 0x00000400) == 0)) { count++; y += '<option value=107>' + "Intel&reg; AMT One Click Recovery" + '</option>'; } // CIRA (2) or AMT (4) connected
+                //if (((currentNode.conn & 1) != 0) && ((rights & 32768) != 0)) { count++; y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
+            }
+            y += '</select>';
+            x += addHtmlValue("Operation", y);
+            if (count == 0) { x = "No actions currently available for this device."; }
+            setDialogMode(2, "Device Action", (count == 0) ? 2 : 3, deviceActionFunctionEx, x + z);
+            if (count > 0) { deviceActionFunctionValidate(); }
+        }
+
+        function deviceActionFunctionValidate() {
+            var op = Q('d2deviceop').value;
+            try { QV('d2devicetimediv', (op == 400) || (op == 401)); } catch (ex) { }
+        }
+
+        function deviceActionFunctionEx() {
+            var op = Q('d2deviceop').value;
+            if (op == 100) {
+                // Device wake
+                meshserver.send({ action: 'wakedevices', nodeids: [currentNode._id] });
+            } else if (op == 103) {
+                // Send MQTT Message
+                //p10showSendMqttMsgDialog([currentNode._id]);
+            } else if (op == 104) {
+                // Uninstall agent
+                //p10showSendUninstallAgentDialog([currentNode._id]);
+            } else if (op == 106) {
+                // Run commands
+                /*
+                var wintype = false, linuxtype = false;
+                if (currentNode.agent) { if ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+                if ((wintype == true) || (linuxtype == true)) {
+                    var x = "Run commands on selected devices." + '<br />';
+                    if (wintype == true) {
+                        x += '<select id=d2cmdtype style=width:100%;margin-bottom:4px;margin-top:4px>';
+                        x += '<option value=1>' + "Windows Command Prompt" + '</option><option value=2>' + "Windows PowerShell" + '</option>';
+                        if (linuxtype == true) { x += '<option value=3>' + "Linux/BSD/macOS Command Shell" + '</option>'; }
+                        x += '</select>';
+                    }
+                    x += '<select id=d2cmduser style=width:100%;margin-bottom:4px><option value=0>' + "Run as agent" + '</option><option value=1>' + "Run as user, agent if no user" + '</option><option value=2>' + "Must run as user" + '</option></select>';
+                    x += '<textarea id=d2runcmd style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
+                    setDialogMode(2, "Run Commands", 3, deviceRunCmdsFunctionEx, x);
+                    Q('d2runcmd').focus();
+                    //QE('idx_dlgOkButton', true);
+                }
+                */
+            } else if (op == 107) {
+                // Intel AMT One Click Recovery (OCR)
+                /*
+                Q('d3localmodeform').action = 'oneclickrecovery.ashx';
+                Q('d3auth').value = authCookie;
+                Q('d3filter').value = '.iso';
+                Q('d3attrib').value = currentNode._id;
+                setDialogMode(3, "Intel&reg; AMT One Click Recovery", 3, deviceActionOneClickRecovery);
+                d3init();
+                */
+            } else if (op == 302) { // Intel AMT power on
+                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power on?");
+            } else if (op == 308) { // Intel AMT power off
+                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power off?");
+            } else if (op == 310) { // Intel AMT reset
+                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT reset?");
+            } else if ((op == 400) || (op == 401)) {
+                // Flash / vibrate
+                meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op), time: parseInt(Q('d2devicetime').value) });
+            } else {
+                // Power operation
+                meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) });
+            }
         }
 
         function showNotes(readonly, noteid) {
@@ -3535,17 +3644,6 @@
                 }
                 meshserver.send({ action: 'meshmessenger', nodeid: decodeURIComponent(currentNode._id) });
             }, "Start chat session?");
-        }
-
-        function deviceActionFunctionEx() {
-            var op = Q('d2deviceop').value;
-            if (op == 100) {
-                // Device wake
-                meshserver.send({ action: 'wakedevices', nodeids: [currentNode._id] });
-            } else {
-                // Power operation
-                meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: op });
-            }
         }
 
         // Look to see if we need to update the device timeline
@@ -6098,6 +6196,7 @@
         // Generic Methods
         //
 
+        function getNodeAmtVersion(node) { if ((node == null) || (node.intelamt == null) || (typeof node.intelamt.ver != 'string')) return 0; var verSplit = node.intelamt.ver.split('.'); if (verSplit.length < 2) return 0; return parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100); }
         function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); } } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function center() { onDevicesScroll(); QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); deskAdjust(); if (currentNode != null) { drawDeviceTimeline(); } }
