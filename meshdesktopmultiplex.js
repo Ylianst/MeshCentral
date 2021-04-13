@@ -919,7 +919,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
         if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug('relay', 'DesktopRelay: Soft disconnect (' + obj.req.clientIp + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug('relay', 'DesktopRelay: Hard disconnect (' + obj.req.clientIp + ')'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         if (obj.relaySessionCounted) { parent.relaySessionCount--; delete obj.relaySessionCounted; }
-        if (obj.deskMultiplexor != null) { if (obj.deskMultiplexor.removePeer(obj) == true) { delete parent.desktoprelays[obj.nodeid]; } }
+        if ((obj.deskMultiplexor != null) && (typeof obj.deskMultiplexor == 'object') && (obj.deskMultiplexor.removePeer(obj) == true)) { delete parent.desktoprelays[obj.nodeid]; }
 
         // Aggressive cleanup
         delete obj.id;
