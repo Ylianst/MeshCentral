@@ -493,6 +493,7 @@
                     } else if (r.sent === false) {
                         // Request failed to send
                         QH('message8', '<span class="msg error"><b style=color:#8C001A>' + "Failed to send request." + '<b></span><br /><br />');
+                        QV('tokenInputRememberLabel2', false);
                         this.close();
                     } else if (r.approved === true) {
                         // Request approved
@@ -504,6 +505,7 @@
                     } else {
                         // Request rejected
                         QH('message8', '<span class="msg error"><b style=color:#8C001A>' + "Access Rejected." + '<b></span><br /><br />');
+                        QV('tokenInputRememberLabel2', false);
                         this.close();
                     }
                 }
