@@ -284,20 +284,26 @@
                     </form>
                 </div>
                 <div id=waitpushpanel style="display:none">
-                    <div id=message8></div>
-                    <table style="width:100%">
-                        <tr>
-                            <td style="align-content:center;padding-top:10px">
-                                <img src="images/login/push-150.png" srcset="images/login/push-300.png 2x" loading="lazy" width="265" height="150" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="align-content:center;padding-top:10px">
-                                <label id=tokenInputRememberLabel2><input id=tokenInputRemember2 name=remembertoken type=checkbox /><span id=tokenInputRememberSpan2></span></label>
-                            </td>
-                        </tr>
-                    </table>
-                    <hr /><a onclick="return xgo(1,event);" href="#" style=cursor:pointer>Back to login</a>
+                    <form method=post>
+                        <input type=hidden name=action value=pushlogin />
+                        <div id=message8></div>
+                        <table style="width:100%">
+                            <tr>
+                                <td style="align-content:center;padding-top:10px">
+                                    <img id="waitpushpanelimage" src="images/login/push-150.png" srcset="images/login/push-300.png 2x" style="opacity:0.3" loading="lazy" width="265" height="150" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="align-content:center;padding-top:10px">
+                                    <label id=tokenInputRememberLabel2><input id=tokenInputRemember2 name=remembertoken type=checkbox /><span id=tokenInputRememberSpan2></span></label>
+                                </td>
+                            </tr>
+                        </table>
+                        <hr /><a onclick="return xgo(1,event);" href="#" style=cursor:pointer>Back to login</a>
+                        <input id=pushtokenformargs name="urlargs" type="hidden" value="" />
+                        <input id=pushtokenInput name="hwstate" type="hidden" value="" />
+                        <input id=pushOkButton type=submit style="display:none" />
+                    </form>
                 </div>
             </td>
         </tr>
@@ -351,6 +357,7 @@
         var otppush = (decodeURIComponent('{{{otppush}}}') === 'true');
         var twoFactorCookieDays = parseInt('{{{twoFactorCookieDays}}}');
         var authStrategies = '{{{authStrategies}}}'.split(',');
+        var websocket = null;
 
         function startup() {
             if (decodeURIComponent('{{{loginpicture}}}') == 'true') { Q('loginPicture').src = "loginlogo.png"; }
@@ -361,13 +368,12 @@
             // Display the right server message
             var i;
             var messageid = parseInt('{{{messageid}}}');
-            var okmessages = ['', "If valid, reset mail sent.", "Email sent.", "Email verification required, check your mailbox and click the confirmation link.", "SMS sent.", "Notification sent, {0}."];
+            var okmessages = ['', "If valid, reset mail sent.", "Email sent.", "Email verification required, check your mailbox and click the confirmation link.", "SMS sent.", "Sending notification..."];
             var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later.", "Server under maintenance.", "Unable to send device notification."];
             if (messageid > 0) {
                 var msg = '';
                 if ((messageid < 100) && (messageid < okmessages.length)) { msg = okmessages[messageid]; }
                 else if ((messageid >= 100) && ((messageid - 100) < failmessages.length)) { msg = failmessages[messageid - 100]; }
-                if (messageid == 5) { msg = format(msg, passhint); }
                 if (msg != '') {
                     if (messageid >= 100) { msg = ('<span class="msg error"><b style=color:#8C001A>' + msg + '<b></span><br /><br />'); } else { msg = ('<span class="msg success"><b>' + msg + '</b></span><br /><br />'); }
                     for (i = 1; i < 9; i++) { QH('message' + i, msg); }
@@ -403,15 +409,11 @@
                 Q('createformargs').value = xurlargs;
                 Q('resetformargs').value = xurlargs;
                 Q('tokenformargs').value = xurlargs;
+                Q('pushtokenformargs').value = xurlargs;
                 Q('resettokenformargs').value = xurlargs;
                 Q('resetpasswordformargs').value = xurlargs;
                 Q('checkemailformargs').value = xurlargs;
             }
-
-            //var webPageFullScreen = getstore('webPageFullScreen', true);
-            //if (webPageFullScreen == 'false') { webPageFullScreen = false; }
-            //if (webPageFullScreen == 'true') { webPageFullScreen = true; }
-            //toggleFullScreen();
 
             if ((features & 32) == 0) {
                 // Guard against other site's top frames (web bugs).
@@ -441,16 +443,6 @@
                 if (authStrategies.indexOf('intel') >= 0) { QV('auth-intel', true); }
                 if (authStrategies.indexOf('saml') >= 0) { QV('auth-saml', true); }
             }
-
-            // Display the welcome text
-            /*
-            if (welcomeText) {
-                QH('welcomeText', welcomeText);
-            } else {
-                QH('welcomeText', addTextLink('MeshCentral', Q('welcomeText').innerHTML, 'http://www.meshcommander.com/meshcentral2'));
-            }
-            QV('welcomeText', true);
-            */
 
             validateLogin();
             validateCreate();
@@ -487,38 +479,40 @@
                 QV('2farow2', twofakey || emailkey || smskey || pushkey);
             }
 
-            /*
-            if (loginMode == '5') {
-                try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
-                if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
-                    if (typeof hardwareKeyChallenge.challenge == 'string') { hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer; }
-
-                    publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
-                    for (var i = 0; i < hardwareKeyChallenge.keyIds.length; i++) {
-                        publicKeyCredentialRequestOptions.allowCredentials.push(
-                            { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), function (c) { return c.charCodeAt(0) }), type: 'public-key', transports: ['usb', 'ble', 'nfc', 'internal'] }
-                        );
+            if (loginMode == '8') {
+                // Perform websocket connection to server to wait for device authentication
+                websocket = new WebSocket(passhint);
+                websocket.onopen = function (e) { QS('waitpushpanelimage')['opacity'] = '1'; }
+                websocket.onmessage = function (e) {
+                    if (typeof e.data != 'string') { this.close(); }
+                    var r = null;
+                    try { r = JSON.parse(e.data); } catch (ex) { }
+                    if (r.sent === true) {
+                        // Request was sent
+                        QH('message8', '<span class="msg success"><b>' + format("Request sent, {0}.", r.code) + '</b></span><br /><br />');
+                    } else if (r.sent === false) {
+                        // Request failed to send
+                        QH('message8', '<span class="msg error"><b style=color:#8C001A>' + "Failed to send request." + '<b></span><br /><br />');
+                        this.close();
+                    } else if (r.approved === true) {
+                        // Request approved
+                        this.close();
+                        QV('tokenInputRememberLabel2', false);
+                        QH('message8', '<span class="msg success"><b>' + "Request Accepted." + '</b></span><br /><br />');
+                        Q('pushtokenInput').value = r.token;
+                        Q('pushOkButton').click();
+                    } else {
+                        // Request rejected
+                        QH('message8', '<span class="msg error"><b style=color:#8C001A>' + "Access Rejected." + '<b></span><br /><br />');
+                        this.close();
                     }
-
-                    // New WebAuthn hardware keys
-                    navigator.credentials.get({ publicKey: publicKeyCredentialRequestOptions }).then(
-                        function (rawAssertion) {
-                            var assertion = {
-                                id: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.rawId))),
-                                clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.clientDataJSON))),
-                                userHandle: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.userHandle))),
-                                signature: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.signature))),
-                                authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.authenticatorData))),
-                            };
-                            Q('resetHwtokenInput').value = JSON.stringify(assertion);
-                            QE('resetTokenOkButton', true);
-                            Q('resetTokenOkButton').click();
-                        },
-                        function (error) { console.log('credentials-get error', error); }
-                    );
+                }
+                websocket.onclose = function (e) { QS('waitpushpanelimage')['opacity'] = '0.3'; }
+                websocket.onerror = function (e) {
+                    QH('message8', '<span class="msg error"><b style=color:#8C001A>' + "Connection Error" + '<b></span><br /><br />');
+                    QS('waitpushpanelimage')['opacity'] = '0.5';
                 }
             }
-            */
         }
 
         // Use a hardware security key

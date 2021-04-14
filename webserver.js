@@ -953,17 +953,59 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
 
                     if ((req.body.hwtoken == '**push**') && push2fa) {
-                        // Cause push notification to device
-                        const logincode = obj.common.zeroPad(getRandomSixDigitInteger(), 6);
-                        const code = Buffer.from(logincode).toString('base64');
-                        const authCookie = parent.encodeCookie({ a: 'checkAuth', c: code, u: user._id, n: user.otpdev });
-                        var payload = { notification: { title: "MeshCentral", body: user.name + " authentication" }, data: { url: '2fa://auth?code=' + code + '&c=' + authCookie } };
+                        const logincodeb64 = Buffer.from(obj.common.zeroPad(getRandomSixDigitInteger(), 6)).toString('base64');
+                        const sessioncode = obj.crypto.randomBytes(24).toString('base64');
+
+                        // Create a browser cookie so the browser can connect using websocket and wait for device accept/reject.
+                        const browserCookie = parent.encodeCookie({ a: 'waitAuth', c: logincodeb64, u: user._id, n: user.otpdev, s: sessioncode, d: domain.id });
+
+                        // Get the HTTPS port
+                        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port if specified
+                        if (obj.args.agentport != null) { httpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
+                        if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
+
+                        // Get the agent connection server name
+                        var serverName = obj.getWebServerName(domain);
+                        if (typeof obj.args.agentaliasdns == 'string') { serverName = obj.args.agentaliasdns; }
+
+                        // Build the connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
+                        var xdomain = (domain.dns == null) ? domain.id : '';
+                        if (xdomain != '') xdomain += '/';
+                        var url = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + '2fahold.ashx?c=' + browserCookie;
+
+                        // Request that the login page wait for device auth
+                        req.session.messageid = 5; // "Sending notification..." message
+                        req.session.passhint = url;
+                        req.session.loginmode = '8';
+                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+
+                        /*
+                        // Perform push notification to device
+                        const deviceCookie = parent.encodeCookie({ a: 'checkAuth', c: logincodeb64, u: user._id, n: user.otpdev, s: sessioncode });
+                        var payload = { notification: { title: "MeshCentral", body: "Authentication - " + logincode }, data: { url: '2fa://auth?code=' + logincodeb64 + '&c=' + deviceCookie } };
                         var options = { priority: 'High', timeToLive: 60 }; // TTL: 1 minute
                         parent.firebase.sendToDevice(user.otpdev, payload, options, function (id, err, errdesc) {
                             if (err == null) {
+                                // Create a browser cookie so the browser can connect using websocket and wait for device accept/reject.
+                                const browserCookie = parent.encodeCookie({ a: 'waitAuth', c: logincodeb64, u: user._id, n: user.otpdev, s: sessioncode, d: domain.id });
+
+                                // Get the HTTPS port
+                                var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port if specified
+                                if (obj.args.agentport != null) { httpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
+                                if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
+
+                                // Get the agent connection server name
+                                var serverName = obj.getWebServerName(domain);
+                                if (typeof obj.args.agentaliasdns == 'string') { serverName = obj.args.agentaliasdns; }
+
+                                // Build the connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
+                                var xdomain = (domain.dns == null) ? domain.id : '';
+                                if (xdomain != '') xdomain += '/';
+                                var url = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + '2fahold.ashx?c=' + browserCookie;
+
                                 // Request that the login page wait for device auth
                                 req.session.messageid = 5; // "Notification sent." message
-                                req.session.passhint = logincode;
+                                req.session.passhint = logincode + '|' + url;
                                 req.session.loginmode = '8';
                             } else {
                                 // Indicate the push notification failed
@@ -972,6 +1014,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             }
                             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                         });
+                        */
                         return;
                     }
 
@@ -1116,6 +1159,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Regenerate session when signing in to prevent fixation
         //req.session.regenerate(function () {
         // Store the user's primary key in the session store to be retrieved, or in this case the entire user object
+        delete req.session.u2fchallenge;
         delete req.session.loginmode;
         delete req.session.tokenuserid;
         delete req.session.tokenusername;
@@ -1318,6 +1362,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Check everything is ok
         if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
             parent.debug('web', 'handleResetPasswordRequest: checks failed');
+            delete req.session.u2fchallenge;
             delete req.session.loginmode;
             delete req.session.tokenuserid;
             delete req.session.tokenusername;
@@ -1400,6 +1445,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } else {
                 // Failed, error out.
                 parent.debug('web', 'handleResetPasswordRequest: failed authenticate()');
+                delete req.session.u2fchallenge;
                 delete req.session.loginmode;
                 delete req.session.tokenuserid;
                 delete req.session.tokenusername;
@@ -2754,6 +2800,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (req.body.hwstate) {
                     var cookie = obj.parent.decodeCookie(req.body.hwstate, obj.parent.loginCookieEncryptionKey, 10);
                     if (cookie != null) { req.session.tokenusername = cookie.u; req.session.tokenpassword = cookie.p; req.session.u2fchallenge = cookie.c; }
+                }
+                handleLoginRequest(req, res, true); break;
+            }
+            case 'pushlogin': {
+                if (req.body.hwstate) {
+                    var cookie = obj.parent.decodeCookie(req.body.hwstate, obj.parent.loginCookieEncryptionKey, 1);
+                    if ((cookie != null) && (typeof cookie.u == 'string') && (cookie.d == domain.id) && (cookie.a == 'pushAuth')) {
+                        req.session = { userid: cookie.u, domainid: cookie.d } // Push authentication is a success, login the user
+                        handleRootRequestEx(req, res, domain);
+                        return;
+                    }
                 }
                 handleLoginRequest(req, res, true); break;
             }
@@ -4233,6 +4290,58 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         ws.on('close', function (req) { });
     }
 
+    // Handle the 2FA hold web socket
+    // Accept an hold a web socket connection until the 2FA response is received.
+    function handle2faHoldWebSocket(ws, req) {
+        const domain = checkUserIpAddress(ws, req);
+        if (domain == null) { return; }
+        ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
+        if (typeof req.query.c !== 'string') { ws.close(); return; }
+        const cookie = parent.decodeCookie(req.query.c, null, 1);
+        if ((cookie == null) || (cookie.d != domain.id)) { ws.close(); return; }
+        var user = obj.users[cookie.u];
+        if ((user == null) || (typeof user.otpdev != 'string')) { ws.close(); return; }
+
+        // 2FA event subscription
+        obj.parent.AddEventDispatch(['2fadev-' + cookie.s], ws);
+        ws.cookie = cookie;
+        ws.HandleEvent = function (source, event, ids, id) {
+            obj.parent.RemoveAllEventDispatch(this);
+            if ((event.approved === true) && (event.userid == this.cookie.u)) {
+                // Create a login cookie
+                const loginCookie = obj.parent.encodeCookie({ a: 'pushAuth', u: event.userid, d: event.domain }, obj.parent.loginCookieEncryptionKey);
+                try { ws.send(JSON.stringify({ approved: true, token: loginCookie })); } catch (ex) { }
+            } else {
+                // Reject the login
+                try { ws.send(JSON.stringify({ approved: false })); } catch (ex) { }
+            }
+        }
+
+        // We do not accept any data on this connection.
+        ws.on('message', function (data) { this.close(); });
+
+        // If error, do nothing.
+        ws.on('error', function (err) { });
+
+        // If closed, unsubscribe
+        ws.on('close', function (req) { obj.parent.RemoveAllEventDispatch(this); });
+
+        // Perform push notification to device
+        try {
+            const deviceCookie = parent.encodeCookie({ a: 'checkAuth', c: cookie.c, u: cookie.u, n: cookie.n, s: cookie.s });
+            var code = Buffer.from(cookie.c, 'base64').toString();
+            var payload = { notification: { title: (domain.title ? domain.title : 'MeshCentral'), body: "Authentication - " + code }, data: { url: '2fa://auth?code=' + cookie.c + '&c=' + deviceCookie } };
+            var options = { priority: 'High', timeToLive: 60 }; // TTL: 1 minute
+            parent.firebase.sendToDevice(user.otpdev, payload, options, function (id, err, errdesc) {
+                if (err == null) {
+                    try { ws.send(JSON.stringify({ sent: true, code: code })); } catch (ex) { }
+                } else {
+                    try { ws.send(JSON.stringify({ sent: false })); } catch (ex) { }
+                }
+            });
+        } catch (ex) { console.log(ex); }
+    }
+
     // Get the total size of all files in a folder and all sub-folders. (TODO: try to make all async version)
     function readTotalFileSize(path) {
         var r = 0, dir;
@@ -5336,6 +5445,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.post(url + 'oneclickrecovery.ashx', handleOneClickRecoveryFile);
             obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
             obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
+            obj.app.ws(url + '2fahold.ashx', handle2faHoldWebSocket);
             obj.app.ws(url + 'apf.ashx', function (ws, req) { obj.parent.mpsserver.onWebSocketConnection(ws, req); })
             obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
             obj.app.get(url + 'health.ashx', function (req, res) { res.send('ok'); }); // TODO: Perform more server checking.
