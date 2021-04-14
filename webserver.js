@@ -952,7 +952,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         return;
                     }
 
-                    if ((req.body.hwtoken == '**push**') && push2fa) {
+                    // Handle device push notification 2FA request
+                    // We create a browser cookie, send it back and when the browser connects it's web socket, it will trigger the push notification.
+                    if ((req.body.hwtoken == '**push**') && push2fa && ((domain.passwordrequirements == null) || (domain.passwordrequirements.push2factor != false))) {
                         const logincodeb64 = Buffer.from(obj.common.zeroPad(getRandomSixDigitInteger(), 6)).toString('base64');
                         const sessioncode = obj.crypto.randomBytes(24).toString('base64');
 
@@ -978,43 +980,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         req.session.passhint = url;
                         req.session.loginmode = '8';
                         if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-
-                        /*
-                        // Perform push notification to device
-                        const deviceCookie = parent.encodeCookie({ a: 'checkAuth', c: logincodeb64, u: user._id, n: user.otpdev, s: sessioncode });
-                        var payload = { notification: { title: "MeshCentral", body: "Authentication - " + logincode }, data: { url: '2fa://auth?code=' + logincodeb64 + '&c=' + deviceCookie } };
-                        var options = { priority: 'High', timeToLive: 60 }; // TTL: 1 minute
-                        parent.firebase.sendToDevice(user.otpdev, payload, options, function (id, err, errdesc) {
-                            if (err == null) {
-                                // Create a browser cookie so the browser can connect using websocket and wait for device accept/reject.
-                                const browserCookie = parent.encodeCookie({ a: 'waitAuth', c: logincodeb64, u: user._id, n: user.otpdev, s: sessioncode, d: domain.id });
-
-                                // Get the HTTPS port
-                                var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port if specified
-                                if (obj.args.agentport != null) { httpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
-                                if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
-
-                                // Get the agent connection server name
-                                var serverName = obj.getWebServerName(domain);
-                                if (typeof obj.args.agentaliasdns == 'string') { serverName = obj.args.agentaliasdns; }
-
-                                // Build the connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
-                                var xdomain = (domain.dns == null) ? domain.id : '';
-                                if (xdomain != '') xdomain += '/';
-                                var url = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + '2fahold.ashx?c=' + browserCookie;
-
-                                // Request that the login page wait for device auth
-                                req.session.messageid = 5; // "Notification sent." message
-                                req.session.passhint = logincode + '|' + url;
-                                req.session.loginmode = '8';
-                            } else {
-                                // Indicate the push notification failed
-                                req.session.messageid = 116; // "Unable to send device notification." message
-                                req.session.loginmode = '4';
-                            }
-                            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                        });
-                        */
                         return;
                     }
 
@@ -2581,6 +2546,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (obj.parent.webpush != null) { features2 += 0x00000008; } // Indicates web push is enabled
                 if (((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true))) { features2 += 0x00000010; } // No agent update
                 if (parent.amtProvisioningServer != null) { features2 += 0x00000020; } // Intel AMT LAN provisioning server
+                if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.push2factor != false)) && (obj.parent.firebase != null)) { features2 += 0x00000040; } // Indicates device push notification 2FA is enabled
 
                 // Create a authentication cookie
                 const authCookie = obj.parent.encodeCookie({ userid: dbGetFunc.user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
@@ -2733,7 +2699,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var otpsms = (parent.smsserver != null) && (req.session != null) && (req.session.tokensms == true);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
         var otppush = (parent.firebase != null) && (req.session != null) && (req.session.tokenpush == true);
-        //if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.push2factor == false)) { otppush = false; }
+        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.push2factor == false)) { otppush = false; }
 
         // See if we support two-factor trusted cookies
         var twoFactorCookieDays = 30;
@@ -2807,7 +2773,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (req.body.hwstate) {
                     var cookie = obj.parent.decodeCookie(req.body.hwstate, obj.parent.loginCookieEncryptionKey, 1);
                     if ((cookie != null) && (typeof cookie.u == 'string') && (cookie.d == domain.id) && (cookie.a == 'pushAuth')) {
-                        req.session = { userid: cookie.u, domainid: cookie.d } // Push authentication is a success, login the user
+                        // Push authentication is a success, login the user
+                        req.session = { userid: cookie.u, domainid: cookie.d }
+
+                        // Check if we need to remember this device
+                        if ((req.body.remembertoken === 'on') && ((domain.twofactorcookiedurationdays == null) || (domain.twofactorcookiedurationdays > 0))) {
+                            var maxCookieAge = domain.twofactorcookiedurationdays;
+                            if (typeof maxCookieAge != 'number') { maxCookieAge = 30; }
+                            const twoFactorCookie = obj.parent.encodeCookie({ userid: cookie.u, expire: maxCookieAge * 24 * 60 /*, ip: req.clientIp*/ }, obj.parent.loginCookieEncryptionKey);
+                            res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: 'strict', secure: true });
+                        }
+
                         handleRootRequestEx(req, res, domain);
                         return;
                     }
@@ -4295,12 +4271,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handle2faHoldWebSocket(ws, req) {
         const domain = checkUserIpAddress(ws, req);
         if (domain == null) { return; }
-        ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
+        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.push2factor == false)) { ws.close(); return; } // Push 2FA is disabled
         if (typeof req.query.c !== 'string') { ws.close(); return; }
         const cookie = parent.decodeCookie(req.query.c, null, 1);
         if ((cookie == null) || (cookie.d != domain.id)) { ws.close(); return; }
         var user = obj.users[cookie.u];
         if ((user == null) || (typeof user.otpdev != 'string')) { ws.close(); return; }
+        ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
 
         // 2FA event subscription
         obj.parent.AddEventDispatch(['2fadev-' + cookie.s], ws);
