@@ -90,8 +90,16 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
     //var payload = { notification: { title: command.title, body: command.msg }, data: { url: obj.msgurl } };
     //var options = { priority: 'High', timeToLive: 5 * 60 }; // TTL: 5 minutes, priority 'Normal' or 'High'
 
-    // Send an outbound push notification
     obj.sendToDevice = function (node, payload, options, func) {
+        if (typeof node == 'string') {
+            parent.db.Get(node, function (err, docs) { if ((err == null) && (docs != null) && (docs.length == 1)) { obj.sendToDeviceEx(docs[0], payload, options, func); } else { func(0, 'error'); } })
+        } else {
+            obj.sendToDeviceEx(node, payload, options, func);
+        }
+    }
+
+    // Send an outbound push notification
+    obj.sendToDeviceEx = function (node, payload, options, func) {
         parent.debug('email', 'Firebase-sendToDevice');
         if ((node == null) || (typeof node.pmt != 'string')) return;
         obj.log('sendToDevice, node:' + node._id + ', payload: ' + JSON.stringify(payload) + ', options: ' + JSON.stringify(options));
@@ -270,6 +278,14 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
         }
 
         obj.sendToDevice = function (node, payload, options, func) {
+            if (typeof node == 'string') {
+                parent.db.Get(node, function (err, docs) { if ((err == null) && (docs != null) && (docs.length == 1)) { obj.sendToDeviceEx(docs[0], payload, options, func); } else { func(0, 'error'); } })
+            } else {
+                obj.sendToDeviceEx(node, payload, options, func);
+            }
+        }
+
+        obj.sendToDeviceEx = function (node, payload, options, func) {
             parent.debug('email', 'Firebase-sendToDevice-webSocket');
             if ((node == null) || (typeof node.pmt != 'string')) { func(0, 'error'); return; }
             obj.log('sendToDevice, node:' + node._id + ', payload: ' + JSON.stringify(payload) + ', options: ' + JSON.stringify(options));
@@ -298,7 +314,16 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
     } else if (relayUrl.protocol == 'https:') {
         // Send an outbound push notification using an HTTPS POST
         obj.pushOnly = true;
+
         obj.sendToDevice = function (node, payload, options, func) {
+            if (typeof node == 'string') {
+                parent.db.Get(node, function (err, docs) { if ((err == null) && (docs != null) && (docs.length == 1)) { obj.sendToDeviceEx(docs[0], payload, options, func); } else { func(0, 'error'); } })
+            } else {
+                obj.sendToDeviceEx(node, payload, options, func);
+            }
+        }
+
+        obj.sendToDeviceEx = function (node, payload, options, func) {
             parent.debug('email', 'Firebase-sendToDevice-httpPost');
             if ((node == null) || (typeof node.pmt != 'string')) return;
 

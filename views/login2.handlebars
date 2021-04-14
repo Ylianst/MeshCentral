@@ -186,6 +186,7 @@
                                         <img id=securityKeyButton src="images/login/2fa-key-48.png" srcset="images/login/2fa-key-96.png 2x" title="Use Security Key" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useSecurityKey(1)" />
                                         <img id=smsKeyButton src="images/login/2fa-sms-48.png" srcset="images/login/2fa-sms-96.png 2x" title="SMS" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useSMSToken(1)" />
                                         <img id=emailKeyButton src="images/login/2fa-mail-48.png" srcset="images/login/2fa-mail-96.png 2x" title="Email" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useEmailToken(1)" />
+                                        <img id=pushKeyButton src="images/login/2fa-push-48.png" srcset="images/login/2fa-push-96.png 2x" title="Device Authentication" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="usePushToken(1)" />
                                     </div>
                                 </td>
                             </tr>
@@ -219,6 +220,7 @@
                                         <img id=securityKeyButton2 src="images/login/2fa-key-48.png" srcset="images/login/2fa-key-96.png 2x" title="Use Security Key" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useSecurityKey(2)" />
                                         <img id=smsKeyButton2 src="images/login/2fa-sms-48.png" srcset="images/login/2fa-sms-96.png 2x" title="SMS" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useSMSToken(2)" />
                                         <img id=emailKeyButton2 src="images/login/2fa-mail-48.png" srcset="images/login/2fa-mail-96.png 2x" title="Email" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useEmailToken(2)" />
+                                        <img id=pushKeyButton2 src="images/login/2fa-push-48.png" srcset="images/login/2fa-push-96.png 2x" title="Device Authentication" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="usePushToken(2)" />
                                     </div>
                                 </td>
                             </tr>
@@ -281,6 +283,22 @@
                         <input id=checkemailformargs name="urlargs" type="hidden" value="" />
                     </form>
                 </div>
+                <div id=waitpushpanel style="display:none">
+                    <div id=message8></div>
+                    <table style="width:100%">
+                        <tr>
+                            <td style="align-content:center;padding-top:10px">
+                                <img src="images/login/push-150.png" srcset="images/login/push-300.png 2x" loading="lazy" width="265" height="150" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="align-content:center;padding-top:10px">
+                                <label id=tokenInputRememberLabel2><input id=tokenInputRemember2 name=remembertoken type=checkbox /><span id=tokenInputRememberSpan2></span></label>
+                            </td>
+                        </tr>
+                    </table>
+                    <hr /><a onclick="return xgo(1,event);" href="#" style=cursor:pointer>Back to login</a>
+                </div>
             </td>
         </tr>
         <tr id="welcomeTextRow"><td><div id="welcomeText" style="color:white;text-align:center;margin-left:20px;margin-right:20px"></div></td></tr>
@@ -330,6 +348,7 @@
         var publicKeyCredentialRequestOptions = null;
         var otpemail = (decodeURIComponent('{{{otpemail}}}') === 'true');
         var otpsms = (decodeURIComponent('{{{otpsms}}}') === 'true');
+        var otppush = (decodeURIComponent('{{{otppush}}}') === 'true');
         var twoFactorCookieDays = parseInt('{{{twoFactorCookieDays}}}');
         var authStrategies = '{{{authStrategies}}}'.split(',');
 
@@ -342,15 +361,16 @@
             // Display the right server message
             var i;
             var messageid = parseInt('{{{messageid}}}');
-            var okmessages = ['', "If valid, reset mail sent.", "Email sent.", "Email verification required, check your mailbox and click the confirmation link.", "SMS sent."];
-            var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later.", "Server under maintenance."];
+            var okmessages = ['', "If valid, reset mail sent.", "Email sent.", "Email verification required, check your mailbox and click the confirmation link.", "SMS sent.", "Notification sent, {0}."];
+            var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later.", "Server under maintenance.", "Unable to send device notification."];
             if (messageid > 0) {
                 var msg = '';
                 if ((messageid < 100) && (messageid < okmessages.length)) { msg = okmessages[messageid]; }
                 else if ((messageid >= 100) && ((messageid - 100) < failmessages.length)) { msg = failmessages[messageid - 100]; }
+                if (messageid == 5) { msg = format(msg, passhint); }
                 if (msg != '') {
                     if (messageid >= 100) { msg = ('<span class="msg error"><b style=color:#8C001A>' + msg + '<b></span><br /><br />'); } else { msg = ('<span class="msg success"><b>' + msg + '</b></span><br /><br />'); }
-                    for (i = 1; i < 8; i++) { QH('message' + i, msg); }
+                    for (i = 1; i < 9; i++) { QH('message' + i, msg); }
                 }
             }
 
@@ -369,8 +389,11 @@
             if (twoFactorCookieDays > 0) {
                 QV('tokenInputRememberLabel', true);
                 QH('tokenInputRememberSpan', format("Remember this device for {0} days.", twoFactorCookieDays));
+                QV('tokenInputRememberLabel2', true);
+                QH('tokenInputRememberSpan2', format("Remember this device for {0} days.", twoFactorCookieDays));
             } else {
                 QV('tokenInputRememberLabel', false);
+                QV('tokenInputRememberLabel2', false);
             }
 
             // If URL arguments are provided, add them to form posts
@@ -443,10 +466,12 @@
                 var twofakey = (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn');
                 var emailkey = otpemail && (messageid != 2) && (messageid != 4);
                 var smskey = otpsms && (messageid != 2) && (messageid != 4);
+                var pushkey = otppush && (messageid != 2) && (messageid != 4);
                 QV('securityKeyButton', twofakey);
                 QV('emailKeyButton', emailkey);
                 QV('smsKeyButton', smskey);
-                QV('2farow', twofakey || emailkey || smskey);
+                QV('pushKeyButton', pushkey);
+                QV('2farow', twofakey || emailkey || smskey || pushkey);
             }
 
             if (loginMode == '5') {
@@ -454,10 +479,12 @@
                 var twofakey = (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn');
                 var emailkey = otpemail && (messageid != 2) && (messageid != 4);
                 var smskey = otpsms && (messageid != 2) && (messageid != 4);
+                var pushkey = otppush && (messageid != 2) && (messageid != 4);
                 QV('securityKeyButton2', twofakey);
                 QV('emailKeyButton2', emailkey);
                 QV('smsKeyButton2', smskey);
-                QV('2farow2', twofakey || emailkey || smskey);
+                QV('pushKeyButton', pushkey);
+                QV('2farow2', twofakey || emailkey || smskey || pushkey);
             }
 
             /*
@@ -565,6 +592,18 @@
             }
         }
 
+        function usePushToken(panelAction) {
+            if (panelAction == 1) {
+                Q('hwtokenInput').value = '**push**';
+                QE('tokenOkButton', true);
+                Q('tokenOkButton').click();
+            } else if (panelAction == 2) {
+                Q('resetHwtokenInput').value = '**push**';
+                QE('resetTokenOkButton', true);
+                Q('resetTokenOkButton').click();
+            }
+        }
+
         function showPassHint(e) {
             messagebox("Password Hint", passhint);
             haltEvent(e);
@@ -595,6 +634,7 @@
             QV('resettokenpanel', x == 5);
             QV('resetpasswordpanel', x == 6);
             QV('checkemailpanel', x == 7);
+            QV('waitpushpanel', x == 8);
             if (x == 1) { Q('username').focus(); }
             if (x == 2) { if (features & 0x200000) { Q('aemail').focus(); } else { Q('ausername').focus(); } } // Email is username
             if (x == 3) { Q('remail').focus(); }
