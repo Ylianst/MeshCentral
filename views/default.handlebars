@@ -2030,9 +2030,9 @@
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
-            QV('authPushAuthDevCheck', (userinfo.otpdev > 0) && ((features2 & 2) != 0));
+            QV('authPushAuthDevCheck', (userinfo.otpdev > 0) && ((features2 & 0x40) != 0));
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
-            QV('managePushAuthDev', (features2 & 2) && (count2factoraAuths() > 0));
+            QV('managePushAuthDev', (features2 & 0x40) && (count2factoraAuths() > 0));
             mainUpdate(4 + 128 + 4096);
 
             // Check if none or at least 2 factors are enabled.
@@ -10056,7 +10056,7 @@
         }
 
         function account_managePushAuthDev() {
-            if (xxdialogMode || ((features2 & 2) == 0)) return;
+            if (xxdialogMode || ((features2 & 0x40) == 0)) return;
             if (userinfo.otpdev == 1) {
                 // Remove the 2FA device
                 setDialogMode(2, "Authentication Device", 3, function () { meshserver.send({ action: 'otpdev-clear' }); }, "Confirm removal of push authentication device?");
