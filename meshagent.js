@@ -1525,9 +1525,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     try { url = require('url').parse(command.url); } catch (ex) { }
                     if (url == null) return;
 
-                    // For now, do nothing if authentication is not approved.
-                    if (command.approve == false) return;
-
                     // Decode the cookie
                     var urlSplit = url.query.split('&c=');
                     if (urlSplit.length != 2) return;
@@ -1541,6 +1538,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                     // Add this device as the authentication push notification device for this user
                     if (authCookie.a == 'addAuth') {
+                        // Do nothing if authentication is not approved.
+                        // We do not want to indicate that the remote user responded to this.
+                        if (command.approved !== true) return;
+
                         // Change the user
                         user.otpdev = obj.dbNodeKey;
                         parent.db.SetUser(user);
@@ -1555,8 +1556,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                     // Complete 2FA checking
                     if (authCookie.a == 'checkAuth') {
-                        // TODO
-                        //console.log(authCookie);
+                        if (typeof authCookie.s != 'string') return;
+                        // Notify 2FA response
+                        parent.parent.DispatchEvent(['2fadev-' + authCookie.s], obj, { etype: '2fadev', action: '2faresponse', domain: domain.id, nodeid: obj.dbNodeKey, code: authCookie.a, userid: user._id, approved: command.approved, sessionid: authCookie.s, nolog: 1 });
                     }
 
                     break;
