@@ -2032,7 +2032,8 @@
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authPushAuthDevCheck', (userinfo.otpdev > 0) && ((features2 & 2) != 0));
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
-            QV('managePushAuthDev', (features2 & 2) && (count2factoraAuths() > 0));
+            //QV('managePushAuthDev', (features2 & 2) && (count2factoraAuths() > 0));
+            QV('managePushAuthDev', false);
             mainUpdate(4 + 128 + 4096);
 
             // Check if none or at least 2 factors are enabled.

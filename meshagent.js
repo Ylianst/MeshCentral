@@ -1556,7 +1556,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // Complete 2FA checking
                     if (authCookie.a == 'checkAuth') {
                         // TODO
-                        console.log(authCookie);
+                        //console.log(authCookie);
                     }
 
                     break;
