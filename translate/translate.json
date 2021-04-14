@@ -1114,6 +1114,7 @@
     },
     {
       "en": "1 second",
+      "nl": "1 seconde",
       "xloc": [
         "default-mobile.handlebars->11->307",
         "default.handlebars->31->851"
@@ -1299,6 +1300,7 @@
     },
     {
       "en": "10 seconds",
+      "nl": "10 seconden",
       "xloc": [
         "default-mobile.handlebars->11->309",
         "default.handlebars->31->853"
@@ -2008,6 +2010,7 @@
     },
     {
       "en": "5 seconds",
+      "nl": "5 seconden",
       "xloc": [
         "default-mobile.handlebars->11->308",
         "default.handlebars->31->852"
@@ -4128,6 +4131,7 @@
     },
     {
       "en": "Added push notification authentication device",
+      "nl": "Verificatie apparaat voor pushmeldingen toegevoegd",
       "xloc": [
         "default.handlebars->31->1888"
       ]
@@ -6062,6 +6066,7 @@
     },
     {
       "en": "Authentication Device",
+      "nl": "Verificatieapparaat",
       "xloc": [
         "default.handlebars->31->1208",
         "default.handlebars->31->1210",
@@ -9332,6 +9337,7 @@
     },
     {
       "en": "Confirm removal of push authentication device?",
+      "nl": "Verwijderen van push-authenticatieapparaat bevestigen?",
       "xloc": [
         "default.handlebars->31->1209"
       ]
@@ -12243,6 +12249,7 @@
     },
     {
       "en": "Device Authentication",
+      "nl": "Apparaatverificatie",
       "xloc": [
         "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->2farow2->1->3",
         "login2.handlebars->centralTable->1->0->logincell->tokenpanel->1->7->1->2farow->1->3"
@@ -17052,6 +17059,7 @@
     },
     {
       "en": "Flash",
+      "nl": "Flits",
       "xloc": [
         "default-mobile.handlebars->11->304",
         "default.handlebars->31->848"
@@ -19615,6 +19623,7 @@
     },
     {
       "en": "In order to use push notification authentication, a mobile device must be setup in your account with full rights.",
+      "nl": "Om authenticatie met pushmeldingen te gebruiken, moet een mobiel apparaat met volledige rechten in uw account zijn ingesteld.",
       "xloc": [
         "default.handlebars->31->1211"
       ]
@@ -20155,6 +20164,7 @@
       "en": "Intel&reg; AMT One Click Recovery",
       "de": "Intel&reg; AMT mit einem Klick Wiederherstellen",
       "nl": "Intel&reg; AMT herstel met één klik",
+      "fr": "Récupération en un clic Intel&reg; AMT"
       "xloc": [
         "default.handlebars->31->863",
         "default.handlebars->31->876"
@@ -20184,6 +20194,7 @@
       "en": "Intel&reg; AMT Power Operation",
       "de": "Intel&reg; AMT in Betrieb",
       "nl": "Intel&reg; AMT in werking",
+      "fr": "Fonctionnement de l'alimentation Intel&reg; AMT "
       "xloc": [
         "default-mobile.handlebars->11->320",
         "default-mobile.handlebars->11->322",
@@ -20244,10 +20255,6 @@
         "default-mobile.handlebars->11->314",
         "default.handlebars->31->860"
       ]
-    },
-    {
-      "en": "Intel&reg; AMT Stroomvoorziening",
-      "fr": "Fonctionnement de l'alimentation Intel&reg; AMT "
     },
     {
       "cs": "Intel&reg; AMT štítek",
@@ -20373,10 +20380,6 @@
         "default.handlebars->31->736",
         "default.handlebars->31->737"
       ]
-    },
-    {
-      "en": "Intel&reg; AMT herstel met één klik",
-      "fr": "Récupération en un clic Intel&reg; AMT"
     },
     {
       "cs": "Intel&reg; AMT je aktivováno v režimu správce",
@@ -24566,6 +24569,7 @@
     },
     {
       "en": "Manage push authentication",
+      "nl": "Beheer push-authenticatie",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->managePushAuthDev->1->0"
       ]
@@ -28204,6 +28208,7 @@
     },
     {
       "en": "Notification sent, {0}.",
+      "nl": "Melding verzonden, {0}.",
       "xloc": [
         "login2.handlebars->7->6"
       ]
@@ -32806,6 +32811,7 @@
     },
     {
       "en": "Removed push notification authentication device",
+      "nl": "Verificatieapparaat voor pushmeldingen verwijderd",
       "xloc": [
         "default.handlebars->31->1889"
       ]
@@ -34654,6 +34660,7 @@
     },
     {
       "en": "Select a device to register for push notification authentication. Once selected, the device will prompt for confirmation.",
+      "nl": "Selecteer een apparaat om te registreren voor verificatie via pushmeldingen. Eenmaal geselecteerd, zal het apparaat om bevestiging vragen.",
       "xloc": [
         "default.handlebars->31->1212"
       ]
@@ -41107,6 +41114,7 @@
     },
     {
       "en": "Unable to send device notification.",
+      "nl": "Kan geen apparaatmelding verzenden.",
       "xloc": [
         "login2.handlebars->7->23"
       ]
@@ -43146,6 +43154,7 @@
     },
     {
       "en": "Vibrate",
+      "nl": "Trillen",
       "xloc": [
         "default-mobile.handlebars->11->305",
         "default.handlebars->31->849"
