@@ -2736,7 +2736,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help': { // Displays available commands
-                var fin = '', f = '', availcommands = 'agentupdate,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
+                var fin = '', f = '', availcommands = 'agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
@@ -2762,6 +2762,22 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     if (args['_'][0].startsWith('https://')) { agentUpdate_Start(args['_'][0], { sessionid: sessionid }); } else { response = "Usage: agentupdateex https://server/path"; }
                 } else {
                     agentUpdate_Start(null, { sessionid: sessionid });
+                }
+                break;
+            case 'errorlog':
+                switch(args['_'].length)
+                {
+                    case 0:
+                        // All Error Logs
+                        response = JSON.stringify(require('util-agentlog').read(), null, 1);
+                        break;
+                    case 1:
+                        // Error Logs, by either count or timestamp
+                        response = JSON.stringify(require('util-agentlog').read(parseInt(args['_'][0])), null, 1);
+                        break;
+                    default:
+                        response = "Proper usage:\r\n  errorlog [lastCount|linuxEpoch]";
+                        break;
                 }
                 break;
             case 'msh':
