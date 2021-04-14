@@ -99,6 +99,7 @@
     <Compile Include="amt\amt.js" />
     <Compile Include="exeHandler.js" />
     <Compile Include="amtprovisioningserver.js" />
+    <Compile Include="firebase.js" />
     <Compile Include="letsencrypt.js" />
     <Compile Include="mcrec.js" />
     <Compile Include="meshaccelerator.js" />

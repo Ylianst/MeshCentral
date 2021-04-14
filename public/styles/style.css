@@ -394,7 +394,7 @@ body {
     color: blue;
 }
 
-#loginpanel, #createpanel, #resetpanel, #tokenpanel, #resettokenpanel, #resetpasswordpanel, #resetpasswordpanel, #checkemailpanel {
+#loginpanel, #createpanel, #resetpanel, #tokenpanel, #resettokenpanel, #resetpasswordpanel, #resetpasswordpanel, #checkemailpanel, #waitpushpanel {
     display: inline-block;
     margin: 0;
     background-color: #979797;

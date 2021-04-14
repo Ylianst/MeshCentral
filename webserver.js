@@ -924,6 +924,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.email != null) && (user.emailVerified == true) && (user.otpekey != null));
                 var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
+                var push2fa = ((parent.firebase != null) && (user.otpdev != null));
 
                 // Check if this user has 2-step login active
                 if ((req.session.loginmode != '6') && checkUserOneTimePasswordRequired(domain, user, req)) {
@@ -951,6 +952,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         return;
                     }
 
+                    if ((req.body.hwtoken == '**push**') && push2fa) {
+                        // Cause push notification to device
+                        const logincode = obj.common.zeroPad(getRandomSixDigitInteger(), 6);
+                        const code = Buffer.from(logincode).toString('base64');
+                        const authCookie = parent.encodeCookie({ a: 'checkAuth', c: code, u: user._id, n: user.otpdev });
+                        var payload = { notification: { title: "MeshCentral", body: user.name + " authentication" }, data: { url: '2fa://auth?code=' + code + '&c=' + authCookie } };
+                        var options = { priority: 'High', timeToLive: 60 }; // TTL: 1 minute
+                        parent.firebase.sendToDevice(user.otpdev, payload, options, function (id, err, errdesc) {
+                            if (err == null) {
+                                // Request that the login page wait for device auth
+                                req.session.messageid = 5; // "Notification sent." message
+                                req.session.passhint = logincode;
+                                req.session.loginmode = '8';
+                            } else {
+                                // Indicate the push notification failed
+                                req.session.messageid = 116; // "Unable to send device notification." message
+                                req.session.loginmode = '4';
+                            }
+                            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                        });
+                        return;
+                    }
+
                     checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
                         if (result == false) {
                             var randomWaitTime = 0;
@@ -973,6 +997,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 req.session.loginmode = '4';
                                 req.session.tokenemail = ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null));
                                 req.session.tokensms = ((user.phone != null) && (parent.smsserver != null));
+                                req.session.tokenpush = ((user.otpdev != null) && (parent.firebase != null));
                                 req.session.tokenuserid = userid;
                                 req.session.tokenusername = xusername;
                                 req.session.tokenpassword = xpassword;
@@ -1097,6 +1122,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         delete req.session.tokenpassword;
         delete req.session.tokenemail;
         delete req.session.tokensms;
+        delete req.session.tokenpush;
         delete req.session.messageid;
         delete req.session.passhint;
         delete req.session.cuserid;
@@ -1301,6 +1327,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             delete req.session.resettokenpassword;
             delete req.session.tokenemail;
             delete req.session.tokensms;
+            delete req.session.tokenpush;
             delete req.session.messageid;
             delete req.session.passhint;
             delete req.session.cuserid;
@@ -1382,6 +1409,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 delete req.session.resettokenpassword;
                 delete req.session.tokenemail;
                 delete req.session.tokensms;
+                delete req.session.tokenpush;
                 delete req.session.messageid;
                 delete req.session.passhint;
                 delete req.session.cuserid;
@@ -2638,7 +2666,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var passhint = null, msgid = 0;
         if (req.session != null) {
             msgid = req.session.messageid;
-            if ((loginmode == '7') || ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true))) { passhint = EscapeHtml(req.session.passhint); }
+            if ((msgid == 5) || (loginmode == '7') || ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true))) { passhint = EscapeHtml(req.session.passhint); }
             delete req.session.messageid;
             delete req.session.passhint;
         }
@@ -2658,6 +2686,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.email2factor == false)) { otpemail = false; }
         var otpsms = (parent.smsserver != null) && (req.session != null) && (req.session.tokensms == true);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
+        var otppush = (parent.firebase != null) && (req.session != null) && (req.session.tokenpush == true);
+        //if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.push2factor == false)) { otppush = false; }
 
         // See if we support two-factor trusted cookies
         var twoFactorCookieDays = 30;
@@ -2704,6 +2734,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 hwstate: hwstate,
                 otpemail: otpemail,
                 otpsms: otpsms,
+                otppush: otppush,
                 twoFactorCookieDays: twoFactorCookieDays,
                 authStrategies: authStrategies.join(','),
                 loginpicture: (typeof domain.loginpicture == 'string')
@@ -5844,7 +5875,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     // Figure out if email 2FA is allowed
                                     var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
                                     var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
-                                    if ((typeof command.token != 'string') || (command.token == '**email**') || (command.token == '**sms**')) {
+                                    //var push2fa = ((parent.firebase != null) && (user.otpdev != null));
+                                    if ((typeof command.token != 'string') || (command.token == '**email**') || (command.token == '**sms**')/* || (command.token == '**push**')*/) {
                                         if ((command.token == '**email**') && (email2fa == true)) {
                                             // Cause a token to be sent to the user's registered email
                                             user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
@@ -5861,6 +5893,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                             parent.smsserver.sendToken(domain, user.phone, user.otpsms.k, obj.getLanguageCodes(req));
                                             // Ask for a login token & confirm sms was sent
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, sms2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
+                                            /*
+                                        } else if ((command.token == '**push**') && (push2fa == true)) {
+                                            // Cause push notification to device
+                                            const code = Buffer.from(obj.common.zeroPad(getRandomSixDigitInteger(), 6)).toString('base64');
+                                            const authCookie = parent.encodeCookie({ a: 'checkAuth', c: code, u: user._id, n: user.otpdev });
+                                            var payload = { notification: { title: "MeshCentral", body: user.name + " authentication" }, data: { url: '2fa://auth?code=' + code + '&c=' + authCookie } };
+                                            var options = { priority: 'High', timeToLive: 60 }; // TTL: 1 minute
+                                            parent.firebase.sendToDevice(user.otpdev, payload, options, function (id, err, errdesc) {
+                                                if (err == null) { parent.debug('email', 'Successfully auth check send push message to device'); } else { parent.debug('email', 'Failed auth check push message to device, error: ' + errdesc); }
+                                            });
+                                            */
                                         } else {
                                             // Ask for a login token
                                             parent.debug('web', 'Asking for login token');
@@ -5965,7 +6008,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             // Figure out if email 2FA is allowed
                             var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
                             var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
-                            if ((typeof req.query.token != 'string') || (req.query.token == '**email**') || (req.query.token == '**sms**')) {
+                            //var push2fa = ((parent.firebase != null) && (user.otpdev != null));
+                            if ((typeof req.query.token != 'string') || (req.query.token == '**email**') || (req.query.token == '**sms**')/* || (req.query.token == '**push**')*/) {
                                 if ((req.query.token == '**email**') && (email2fa == true)) {
                                     // Cause a token to be sent to the user's registered email
                                     user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
@@ -5982,6 +6026,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     parent.smsserver.sendToken(domain, user.phone, user.otpsms.k, obj.getLanguageCodes(req));
                                     // Ask for a login token & confirm sms was sent
                                     try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, sms2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
+                                    /*
+                                } else if ((command.token == '**push**') && (push2fa == true)) {
+                                    // Cause push notification to device
+                                    const code = Buffer.from(obj.common.zeroPad(getRandomSixDigitInteger(), 6)).toString('base64');
+                                    const authCookie = parent.encodeCookie({ a: 'checkAuth', c: code, u: user._id, n: user.otpdev });
+                                    var payload = { notification: { title: "MeshCentral", body: user.name + " authentication" }, data: { url: '2fa://auth?code=' + code + '&c=' + authCookie } };
+                                    var options = { priority: 'High', timeToLive: 60 }; // TTL: 1 minute
+                                    parent.firebase.sendToDevice(user.otpdev, payload, options, function (id, err, errdesc) {
+                                        if (err == null) { parent.debug('email', 'Successfully auth check send push message to device'); } else { parent.debug('email', 'Failed auth check push message to device, error: ' + errdesc); }
+                                    });
+                                    */
                                 } else {
                                     // Ask for a login token
                                     parent.debug('web', 'Asking for login token');
