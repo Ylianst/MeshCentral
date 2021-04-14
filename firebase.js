@@ -327,12 +327,12 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
             parent.debug('email', 'Firebase-sendToDevice-httpPost');
             if ((node == null) || (typeof node.pmt != 'string')) return;
 
-            obj.log('sendToDevice, node:' + node._id + ', payload: ' + JSON.stringify(payload) + ', options: ' + JSON.stringify(options));
-            const querydata = querystring.stringify({ 'msg': JSON.stringify({ pmt: node.pmt, payload: payload, options: options }) });
-
             // Fill in the server agent cert hash
             if (payload.data == null) { payload.data = {}; }
             if (payload.data.shash == null) { payload.data.shash = parent.webserver.agentCertificateHashBase64; } // Add the server agent hash, new Android agents will reject notifications that don't have this.
+
+            obj.log('sendToDevice, node:' + node._id + ', payload: ' + JSON.stringify(payload) + ', options: ' + JSON.stringify(options));
+            const querydata = querystring.stringify({ 'msg': JSON.stringify({ pmt: node.pmt, payload: payload, options: options }) });
 
             // Send the message to the relay
             const httpOptions = {
