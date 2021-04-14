@@ -1284,7 +1284,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'showpaths': {
-                            r =  'Parent:     ' + parent.parent.parentpath + '\r\n';
+                            r = 'Parent:     ' + parent.parent.parentpath + '\r\n';
                             r += 'Data:       ' + parent.parent.datapath + '\r\n';
                             r += 'Files:      ' + parent.parent.filespath + '\r\n';
                             r += 'Backup:     ' + parent.parent.backuppath + '\r\n';
@@ -1338,7 +1338,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         case 'relays': {
                             for (var i in parent.wsrelays) {
-                                r += 'id: ' + i + ', ' + ((parent.wsrelays[i].state == 2)?'connected':'pending');
+                                r += 'id: ' + i + ', ' + ((parent.wsrelays[i].state == 2) ? 'connected' : 'pending');
                                 if (parent.wsrelays[i].peer1 != null) {
                                     r += ', ' + cleanRemoteAddr(parent.wsrelays[i].peer1.req.clientIp);
                                     if (parent.wsrelays[i].peer1.user) { r += ' (User:' + parent.wsrelays[i].peer1.user.name + ')' }
@@ -1864,7 +1864,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'adduserbatch':
                 {
                     var err = null;
-                    
+
                     // Add many new user accounts
                     if ((user.siteadmin & 2) == 0) { err = 'Access denied'; }
                     else if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { err = 'Unable to create users when in SSPI or LDAP mode'; }
@@ -1881,13 +1881,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             userCount++;
                         }
                     }
-                    
+
                     // Handle any errors
                     if (err != null) {
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduserbatch', responseid: command.responseid, result: err })); } catch (ex) { } }
                         break;
                     }
-                    
+
                     // Check if we exceed the maximum number of user accounts
                     db.isMaxType(domain.limits.maxuseraccounts + userCount, 'user', domain.id, function (maxExceed) {
                         if (maxExceed) {
@@ -2249,7 +2249,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // We are not user group administrator, return a list with limited data for our domain.
                         var groups = {}, groupCount = 0;
                         for (var i in parent.userGroups) { if (parent.userGroups[i].domain == domain.id) { groupCount++; groups[i] = { name: parent.userGroups[i].name }; } }
-                        try { ws.send(JSON.stringify({ action: 'usergroups', ugroups: groupCount?groups:null, tag: command.tag })); } catch (ex) { }
+                        try { ws.send(JSON.stringify({ action: 'usergroups', ugroups: groupCount ? groups : null, tag: command.tag })); } catch (ex) { }
                     } else {
                         // We are user group administrator, return a full user group list for our domain.
                         var groups = {}, groupCount = 0;
@@ -2750,14 +2750,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     chguser.passhint = hint;
                                 }
                                 if (command.resetNextLogin === true) { chguser.passchange = -1; } else { chguser.passchange = Math.floor(Date.now() / 1000); }
-                                delete chguser.passtype; // Remove the password type if one was present.
-                                if (command.removeMultiFactor == true) {
-                                    if (chguser.otpekey != null) { delete chguser.otpekey; }
-                                    if (chguser.otpsecret != null) { delete chguser.otpsecret; }
-                                    if (chguser.otphkeys != null) { delete chguser.otphkeys; }
-                                    if (chguser.otpkeys != null) { delete chguser.otpkeys; }
-                                    if ((chguser.otpekey != null) && (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null))) { delete chguser.otpekey; }
-                                    if ((chguser.phone != null) && (parent.parent.smsserver != null)) { delete chguser.phone; }
+                                delete chguser.passtype;      // Remove the password type if one was present.
+                                if (command.removeMultiFactor === true) {
+                                    delete chguser.otpkeys;   // One time backup codes
+                                    delete chguser.otpsecret; // OTP Google Authenticator
+                                    delete chguser.otphkeys;  // FIDO keys
+                                    delete chguser.otpekey;   // Email 2FA
+                                    delete chguser.phone;     // SMS 2FA
+                                    delete chguser.otpdev;    // Push notification 2FA
                                 }
                                 db.SetUser(chguser);
 
@@ -3096,7 +3096,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Handle any errors
                     if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'editmesh', responseid: command.responseid, result: err })); } catch (ex) { } } break; }
-                    
+
                     change = '';
 
                     // Check if this user has rights to do this
@@ -3126,7 +3126,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 }
                                 if (dup != null) {
                                     // A duplicate was found, don't allow this change.
-                                    displayNotificationMessage("Error, invite code \"" + dup + "\" already in use.", "Invite Codes", null, 6, 22, [ dup ]);
+                                    displayNotificationMessage("Error, invite code \"" + dup + "\" already in use.", "Invite Codes", null, 6, 22, [dup]);
                                     return;
                                 }
                                 mesh.invite = { codes: command.invite.codes, flags: command.invite.flags };
@@ -3366,7 +3366,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 node.links[newuserid] = { rights: command.rights }
                                 nodeChanged = true;
                             }
-                            
+
                             // Save the user to the database
                             if (newuserid.startsWith('user/')) {
                                 db.SetUser(newuser);
@@ -4003,13 +4003,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             command.nodeids = nodeids;
                         }
                     } catch (ex) { console.log(ex); err = "Validation exception: " + ex; }
-                    
+
                     // Handle any errors
                     if (err != null) {
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'toast', responseid: command.responseid, result: err })); } catch (ex) { } }
                         break;
                     }
-                    
+
                     for (i in command.nodeids) {
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
@@ -4361,7 +4361,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Check input
                     if (typeof command.enabled != 'boolean') return;
-                    
+
                     // See if we really need to change the state
                     if ((command.enabled === true) && (user.otpekey != null)) return;
                     if ((command.enabled === false) && (user.otpekey == null)) return;
@@ -4374,7 +4374,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Notify change
                     var targets = ['*', 'server-users', user._id];
                     if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: command.enabled ? 88 : 89, msg: command.enabled ? "Enabled email two-factor authentication." :"Disabled email two-factor authentication.", domain: domain.id };
+                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: command.enabled ? 88 : 89, msg: command.enabled ? "Enabled email two-factor authentication." : "Disabled email two-factor authentication.", domain: domain.id };
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
                     break;
@@ -4588,6 +4588,49 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     });
 
+                    break;
+                }
+            case 'otpdev-clear':
+                {
+                    // Remove the authentication push notification device
+                    if (user.otpdev != null) {
+                        // Change the user
+                        user.otpdev = obj.dbNodeKey;
+                        parent.db.SetUser(user);
+
+                        // Notify change
+                        var targets = ['*', 'server-users', user._id];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 114, msg: "Removed push notification authentication device", domain: domain.id };
+                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                        parent.parent.DispatchEvent(targets, obj, event);
+                    }
+                    break;
+                }
+            case 'otpdev-set':
+                {
+                    // Attempt to add a authentication push notification device
+                    // This will only send a push notification to the device, the device needs to confirm for the auth device to be added.
+                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                        // Only allow use of devices with full rights
+                        if ((node == null) || (visible == false) || (rights != 0xFFFFFFFF) || (node.agent == null) || (node.agent.id != 14) || (node.pmt == null)) return;
+
+                        // Encode the cookie
+                        const code = Buffer.from(user.name).toString('base64');
+                        const authCookie = parent.parent.encodeCookie({ a: 'addAuth', c: code, u: user._id, n: node._id });
+
+                        // Send out a push message to the device
+                        var payload = { notification: { title: "MeshCentral", body: user.name + " authentication" }, data: { url: '2fa://auth?code=' + code + '&c=' + authCookie } };
+                        var options = { priority: 'High', timeToLive: 60 }; // TTL: 1 minute
+                        parent.parent.firebase.sendToDevice(node, payload, options, function (id, err, errdesc) {
+                            if (err == null) {
+                                parent.parent.debug('email', 'Successfully auth addition send push message to device ' + node.name);
+                            } else {
+                                parent.parent.debug('email', 'Failed auth addition push message to device ' + node.name + ', error: ' + errdesc);
+                            }
+                        });
+                    });
                     break;
                 }
             case 'webauthn-startregister':

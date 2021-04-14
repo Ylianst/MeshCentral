@@ -1516,6 +1516,50 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                     break;
                 }
+                case '2faauth': {
+                    // Validate input
+                    if ((typeof command.url != 'string') || (typeof command.approved != 'boolean') || (command.url.startsWith('2fa://') == false)) return;
+
+                    // parse the URL
+                    var url = null;
+                    try { url = require('url').parse(command.url); } catch (ex) { }
+                    if (url == null) return;
+
+                    // For now, do nothing if authentication is not approved.
+                    if (command.approve == false) return;
+
+                    // Decode the cookie
+                    var urlSplit = url.query.split('&c=');
+                    if (urlSplit.length != 2) return;
+                    const authCookie = parent.parent.decodeCookie(urlSplit[1], null, 1);
+                    if ((authCookie == null) || (typeof authCookie.c != 'string') || (('code=' + authCookie.c) != urlSplit[0])) return;
+                    if ((typeof authCookie.n != 'string') || (authCookie.n != obj.dbNodeKey) || (typeof authCookie.u != 'string')) return;
+
+                    // Fetch the user
+                    const user = parent.users[authCookie.u];
+                    if (user == null) return;
+
+                    // Add this device as the authentication push notification device for this user
+                    if (authCookie.a == 'addAuth') {
+                        // Change the user
+                        user.otpdev = obj.dbNodeKey;
+                        parent.db.SetUser(user);
+
+                        // Notify change
+                        var targets = ['*', 'server-users', user._id];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 113, msg: "Added push notification authentication device", domain: domain.id };
+                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                        parent.parent.DispatchEvent(targets, obj, event);
+                    }
+
+                    // Complete 2FA checking
+                    if (authCookie.a == 'checkAuth') {
+                        // TODO
+                    }
+
+                    break;
+                }
                 default: {
                     parent.agentStats.unknownAgentActionCount++;
                     parent.parent.debug('agent', 'Unknown agent action (' + obj.remoteaddrport + '): ' + JSON.stringify(command) + '.');
