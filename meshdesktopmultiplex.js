@@ -94,6 +94,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
     // Add an agent or viewer
     obj.addPeer = function (peer) {
         if (obj.viewers == null) { parent.parent.debug('relay', 'DesktopRelay: Error, addingPeer on disposed session'); return; }
+        if (peer.req == null) return; // This peer is already disposed, don't add it.
         if (peer.req.query.browser) {
             //console.log('addPeer-viewer', obj.nodeid);
                         
