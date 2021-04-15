@@ -1018,7 +1018,7 @@ function serverConnect() {
         if (args.loginuser != null) { username = args.loginuser; }
         var token = '';
         if (args.token != null) { token = ',' + Buffer.from('' + args.token).toString('base64'); }
-        options.headers = { 'x-meshauth': Buffer.from(username).toString('base64') + ',' + Buffer.from(args.loginpass).toString('base64') + token }
+        options.headers = { 'x-meshauth': Buffer.from('' + username).toString('base64') + ',' + Buffer.from('' + args.loginpass).toString('base64') + token }
     }
 
     // Cookie authentication
