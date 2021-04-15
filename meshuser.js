@@ -5610,6 +5610,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
+            case 'createLoginToken': {
+                if ((typeof domain.passwordrequirements != 'object') && (domain.passwordrequirements.logintokens == false)) break; // Login tokens are not supported on this server
+                if (common.validateString(command.name, 1, 100) == false) break; // Check name
+                if ((typeof command.expire != 'number') || (command.expire < 0)) break; // Check expire
+
+                console.log(command);
+
+                break;
+            }
             case 'getDeviceDetails': {
                 if (common.validateStrArray(command.nodeids, 1) == false) break; // Check nodeids
                 if (common.validateString(command.type, 3, 4) == false) break; // Check type
