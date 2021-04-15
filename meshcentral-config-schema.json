@@ -345,7 +345,8 @@
               "force2factor": { "type": "boolean", "default": false, "description": "Requires that all accounts setup 2FA." },
               "skip2factor": { "type": "string", "description": "IP addresses where 2FA login is skipped, for example: 127.0.0.1,192.168.2.0/24" },
               "oldPasswordBan": { "type": "integer", "description": "Number of old passwords the server should remember and not allow the user to switch back to." },
-              "banCommonPasswords": { "type": "boolean", "default": false, "description": "Uses WildLeek to block use of the 10000 most commonly used passwords." }
+              "banCommonPasswords": { "type": "boolean", "default": false, "description": "Uses WildLeek to block use of the 10000 most commonly used passwords." },
+              "loginTokens": { "type": "boolean", "default": true, "description": "Allows users to create alternative username/passwords for their account." }
             }
           },
           "twoFactorCookieDurationDays": { "type": "integer", "default": 30, "description": "Number of days that a user is allowed to remember this device for when completing 2FA. Set this to 0 to remove this option." },

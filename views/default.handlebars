@@ -381,6 +381,7 @@
                                 <a href=# onclick="return account_showChangePassword()">Change password</a><span id="p2nextPasswordUpdateTime"></span><br />
                                 <a href=# onclick="return account_showDeleteAccount()">Delete account</a><br />
                             </span>
+                            <span id="accountCreateLoginTokenSpan" style="display:none"><a href=# onclick="return account_createLoginToken()">Create login token</a><br /></span>
                         </p>
                         <br style=clear:both />
                     </div>
@@ -1934,6 +1935,7 @@
             QV('manageEmail2FA', features & 0x00800000);
             QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null) && (userinfo._id.split('/')[2].startsWith('~') == false)); // Hide Account Actions if in single user mode or domain authentication
             //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
+            QV('accountCreateLoginTokenSpan', features2 & 0x00000080);
             QV('p2AccountImage', !accountSettingsLocked)
             QV('p2ServerActions', (siteRights & 21) && ((serverFeatures & 15) != 0));
             QV('LeftMenuMyServer', (siteRights & 21) && ((serverFeatures & 64) != 0)); // 16 + 4 + 1
@@ -10167,6 +10169,25 @@
         function account_enableNotifications() {
             if (Notification) { Notification.requestPermission().then(function (permission) { QV('accountEnableNotificationsSpan', permission != 'granted'); setupServiceWorker(); }); }
             return false;
+        }
+
+        function account_createLoginToken() {
+            if (xxdialogMode) return false;
+            var y = '', x = "Create a temporary username and password that can be used as alternative login to your account. This is useful for allowing tools or other services to access your account." + '<br /><br />';
+            var options = { 0 : "Unlimited", 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days" }
+            for (var i in options) { y += '<option value=' + i + '>' + options[i] + '</option>'; }
+            x += addHtmlValue("Token Name", '<input id=d2tokenName style=width:250px maxlength=100 type=text onchange=account_createLoginTokenValidate() onkeyup=account_createLoginTokenValidate() />');
+            x += addHtmlValue("Expire Time", '<select id=d2tokenExpire style=width:250px>' + y + '</select>');
+            setDialogMode(2, "Create Login Token", 3, account_createLoginTokenEx, x);
+            QE('idx_dlgOkButton', false);
+        }
+
+        function account_createLoginTokenValidate() {
+            QE('idx_dlgOkButton', Q('d2tokenName').value.length > 0);
+        }
+
+        function account_createLoginTokenEx() {
+            meshserver.send({ action: 'createLoginToken', name: Q('d2tokenName').value, expire: parseInt(Q('d2tokenExpire').value) });
         }
 
         function account_showAccountNotifySettings() {

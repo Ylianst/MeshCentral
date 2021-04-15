@@ -2547,6 +2547,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true))) { features2 += 0x00000010; } // No agent update
                 if (parent.amtProvisioningServer != null) { features2 += 0x00000020; } // Intel AMT LAN provisioning server
                 if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.push2factor != false)) && (obj.parent.firebase != null)) { features2 += 0x00000040; } // Indicates device push notification 2FA is enabled
+                if ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.logintokens != false)) { features2 += 0x00000080; } // Indicates login tokens are allowed
 
                 // Create a authentication cookie
                 const authCookie = obj.parent.encodeCookie({ userid: dbGetFunc.user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
