@@ -385,8 +385,9 @@
                         </p>
                         <br style=clear:both />
                     </div>
+                    <div id=p2logintokens></div>
                     <strong>Device Groups</strong>
-                    <span id="p2createMeshLink1">( <a href=# onclick="return account_createMesh()" class="newMeshBtn"> New</a> )</span>
+                    <span id="p2createMeshLink1"> - <a href=# onclick="return account_createMesh()" class="newMeshBtn"> New</a></span>
                     <br /><br />
                     <div id=p2meshes></div>
                     <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a href=# onclick="return account_createMesh()"><strong>Get started here!</strong></a></span></div>
@@ -2004,6 +2005,7 @@
                     if (updateNaggleFlags & 8192) { updateUserGroups(); }
                     if (updateNaggleFlags & 16384) { updateUsers(); }
                     if (updateNaggleFlags & 32768) { updateRecordings(); }
+                    if (updateNaggleFlags & 65536) { updateLoginTokens(); }
                     updateNaggleTimer = null;
                     updateNaggleFlags = 0;
                     gotoStartViewPage();
@@ -3169,11 +3171,17 @@
                             if ((Q('DevFilterSelect').value == 2) || (Q('DevFilterSelect').value == 6)) { mainUpdate(1); }
                             break;
                         }
-                        case 'loginTokenChanged': {
+                        case 'loginTokenChanged': { // Login tokens have changed
                             if (message.event.userid != userinfo._id) return;
                             loginTokens = message.event.loginTokens;
-                            // TODO: Update
-                            console.log('t1', loginTokens);
+                            mainUpdate(65536);
+                            break;
+                        }
+                        case 'loginTokenAdded': { // A login token was added
+                            if (message.event.userid != userinfo._id) return;
+                            if (loginTokens == null) { loginTokens = []; }
+                            loginTokens.push(message.event.newToken);
+                            mainUpdate(65536);
                             break;
                         }
                         case 'stopped': { // Server is stopping.
@@ -3342,7 +3350,7 @@
                     saveAs(new Blob([message.data], { type: 'application/octet-stream' }), "devicelist" + '.' + message.type);
                     break;
                 }
-                case 'createLoginToken': {
+                case 'createLoginToken': { // A new login token was created
                     if (xxdialogMode) return;
                     var x = "Take note of this username and password, the password cannot be shown again." + '<br /><br />';
                     x += addHtmlValue("Name", EscapeHtml(message.name))
@@ -3352,10 +3360,9 @@
                     setDialogMode(2, "Create Login Token", 1, null, x);
                     break;
                 }
-                case 'loginTokens': {
+                case 'loginTokens': { // Reveiced the list of login tokens
                     loginTokens = message.loginTokens;
-                    // TODO: Update
-                    console.log('t2', loginTokens);
+                    mainUpdate(65536);
                     break;
                 }
                 default:
@@ -10435,6 +10442,38 @@
             meshcount = count;
             QH('p2meshes', r);
             QV('p2noMeshFound', count == 0);
+        }
+
+
+        function updateLoginTokens() {
+            var x = '', count = 1;
+            if ((loginTokens != null) && (loginTokens.length > 0)) {
+                x += '<p><strong>' + "Active Login Tokens" + '</strong> - <span id="p2createMeshLink1"> <a href=# onclick="return account_createLoginToken()" class="newMeshBtn"> ' + "New" + '</a></span></p><div style=margin-left:40px><table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Name" + '</th><th scope=col style=text-align:left>' + "Username" + '</th></tr>';
+                for (var i = 0; i < loginTokens.length; i++) {
+                    var ltoken = loginTokens[i];
+                    var trash = '<a href=# onclick=\'return p2removeLoginToken(event,"' + encodeURIComponentEx(ltoken.tokenUser) + '")\' title="' + "Remove login token" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                    var details = '';
+                    if (ltoken.expire != 0) { details = EscapeHtml(format("Expires {0}", printDateTime(new Date(ltoken.expire)))) + ' '; }
+                    x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div class=m' + 2 + '></div><div>&nbsp;' + EscapeHtml(ltoken.name) + '<div></div></div></td><td style=width:70%><div style=float:right>' + details + trash + '</div><div>' + EscapeHtml(ltoken.tokenUser) + '</div></td></tr>';
+                }
+                x += '</tbody></table></div><br />';
+                QV('accountCreateLoginTokenSpan', false);
+            } else {
+                QV('accountCreateLoginTokenSpan', features2 & 0x00000080);
+            }
+            QH('p2logintokens', x);
+        }
+
+        function p2removeLoginToken(e, tokenUser) {
+            tokenUser = decodeURIComponent(tokenUser);
+            if (loginTokens == null) return;
+            var token = null;
+            for (var i = 0; i < loginTokens.length; i++) { if (loginTokens[i].tokenUser == tokenUser) { token = loginTokens[i]; } }
+            if (token == null) return;
+            var x = "Confirm removal of this login token?" + '<br /><br />';
+            x += addHtmlValue("Name", EscapeHtml(token.name));
+            x += addHtmlValue("Username", EscapeHtml(token.tokenUser));
+            setDialogMode(2, "Remove Login Token", 3, function(b, tokenUser) { meshserver.send({ action: 'loginTokens', remove: [ tokenUser ] }); }, x, tokenUser);
         }
 
         function gotoMesh(meshid) {
