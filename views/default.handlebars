@@ -1293,6 +1293,7 @@
         var showRealNames = false;
         var meshserver = null;
         var meshes = {};
+        var loginTokens = {};
         var meshcount = 0;
         var nodes = null;
         var usergroups = null;
@@ -1895,6 +1896,7 @@
                 meshserver.send({ action: 'usergroups' });
                 meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes', id: '{{currentNode}}' });
+                meshserver.send({ action: 'loginTokens' });
                 if (pluginHandler != null) { meshserver.send({ action: 'plugins' }); }
                 if ('{{currentNode}}'.toLowerCase() == '') { meshserver.send({ action: 'files' }); }
                 if ('{{viewmode}}'.toLowerCase() == '') { go(1); }
@@ -3167,6 +3169,13 @@
                             if ((Q('DevFilterSelect').value == 2) || (Q('DevFilterSelect').value == 6)) { mainUpdate(1); }
                             break;
                         }
+                        case 'loginTokenChanged': {
+                            if (message.event.userid != userinfo._id) return;
+                            loginTokens = message.event.loginTokens;
+                            // TODO: Update
+                            console.log('t1', loginTokens);
+                            break;
+                        }
                         case 'stopped': { // Server is stopping.
                             // Disconnect
                             //console.log(message.msg);
@@ -3329,9 +3338,24 @@
                     }
                     break;
                 }
-                case 'getDeviceDetails':{
-                    console.log(message);
+                case 'getDeviceDetails': {
                     saveAs(new Blob([message.data], { type: 'application/octet-stream' }), "devicelist" + '.' + message.type);
+                    break;
+                }
+                case 'createLoginToken': {
+                    if (xxdialogMode) return;
+                    var x = "Take note of this username and password, the password cannot be shown again." + '<br /><br />';
+                    x += addHtmlValue("Name", EscapeHtml(message.name))
+                    if (message.expire != 0) { x += addHtmlValue("Expire", EscapeHtml(printDateTime(new Date(message.expire)))); }
+                    x += addHtmlValue("Username", '<img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenUser) + '") width=10 height=10><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenUser) + '</div>');
+                    x += addHtmlValue("Password", '<img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenPass) + '") width=10 height=10><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenPass) + '</div>');
+                    setDialogMode(2, "Create Login Token", 1, null, x);
+                    break;
+                }
+                case 'loginTokens': {
+                    loginTokens = message.loginTokens;
+                    // TODO: Update
+                    console.log('t2', loginTokens);
                     break;
                 }
                 default:
@@ -12012,7 +12036,9 @@
             111: "Device requested Intel(R) AMT ACM TLS activation, FQDN: {0}",
             112: "Ended messenger session \"{0}\" from {1} to {2}, {3} second(s)",
             113: "Added push notification authentication device",
-            114: "Removed push notification authentication device"
+            114: "Removed push notification authentication device",
+            115: "Added login token",
+            116: "Removed login token"
         };
 
         // Highlights the device being hovered
