@@ -5543,7 +5543,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.GetUserLoginEvents(domain.id, user._id, function (err, docs) {
                             if (err != null) return;
                             var e = [];
-                            for (var i in docs) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); }
+                            for (var i in docs) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs, tn: docs[i].tokenName }); }
                             try { ws.send(JSON.stringify({ action: 'previousLogins', events: e })); } catch (ex) { }
                         });
                     } else {
@@ -5553,7 +5553,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var e = [];
                             for (var i in docs) {
                                 if ((docs[i].msgArgs) && (docs[i].userid == user._id) && ((docs[i].action == 'authfail') || (docs[i].action == 'login'))) {
-                                    e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs });
+                                    e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs, tn: docs[i].tokenName });
                                 }
                             }
                             try { ws.send(JSON.stringify({ action: 'previousLogins', events: e })); } catch (ex) { }
