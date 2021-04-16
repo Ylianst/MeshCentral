@@ -5610,12 +5610,67 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
-            case 'createLoginToken': {
+            case 'loginTokens': { // Respond with the list of currently valid login tokens
+                parent.db.GetAllTypeNodeFiltered(['logintoken-' + user._id], domain.id, 'logintoken', null, function (err, docs) {
+                    if (err != null) return;
+                    var now = Date.now(), removed = 0, okDocs = [];
+                    for (var i = 0; i < docs.length; i++) {
+                        const doc = docs[i];
+                        if (doc.expireTime < now) {
+                            // This share is expired.
+                            parent.db.Remove(doc._id, function () { }); delete docs[i]; removed++;
+                        } else {
+                            // This share is ok, remove extra data we don't need to send.
+                            delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type; delete doc.userid; delete doc.salt; delete doc.hash;
+                            okDocs.push(doc);
+                        }
+                    }
+                    try { ws.send(JSON.stringify({ action: 'loginTokens', loginTokens: okDocs })); } catch (ex) { }
+
+                    // If any login tokens where removed, event the change.
+                    if (removed > 0) {
+                        // Dispatch the new event
+                        var targets = ['*', 'server-users', user._id];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        var event = { etype: 'user', userid: user._id, username: user.name, action: 'loginTokenChanged', domain: domain.id, loginTokens: okDocs, nolog: 1 };
+                        parent.parent.DispatchEvent(targets, obj, event);
+                    }
+                });
+                break;
+            }
+            case 'createLoginToken': { // Create a new login token
                 if ((typeof domain.passwordrequirements != 'object') && (domain.passwordrequirements.logintokens == false)) break; // Login tokens are not supported on this server
                 if (common.validateString(command.name, 1, 100) == false) break; // Check name
                 if ((typeof command.expire != 'number') || (command.expire < 0)) break; // Check expire
 
-                console.log(command);
+                // Generate a token username. Don't have any + or / in the username or password
+                var tokenUser = '~t:' + Buffer.from(parent.parent.crypto.randomBytes(12), 'binary').toString('base64');
+                while ((tokenUser.indexOf('+') >= 0) || (tokenUser.indexOf('/') >= 0)) { tokenUser = '~t:' + Buffer.from(parent.parent.crypto.randomBytes(12), 'binary').toString('base64'); };
+                var tokenPass = Buffer.from(parent.parent.crypto.randomBytes(15), 'binary').toString('base64');
+                while ((tokenPass.indexOf('+') >= 0) || (tokenPass.indexOf('/') >= 0)) { tokenPass = Buffer.from(parent.parent.crypto.randomBytes(15), 'binary').toString('base64'); };
+
+                // Create a user, generate a salt and hash the password
+                require('./pass').hash(tokenPass, function (err, salt, hash, tag) {
+                    if (err) throw err;
+
+                    // Compute expire time
+                    const created = Date.now();
+                    var expire = 0;
+                    if (command.expire > 0) { expire = created + (command.expire * 60000); }
+
+                    // Generate the token password
+                    const dbentry = { _id: 'logintoken-' + tokenUser, type: 'logintoken', nodeid: 'logintoken-' + user._id, userid: user._id, name: command.name, tokenUser: tokenUser, salt: salt, hash: hash, domain: domain.id, created: created, expire: expire };
+                    parent.db.Set(dbentry);
+
+                    // Send the token information back
+                    try { ws.send(JSON.stringify({ action: 'createLoginToken', name: command.name, tokenUser: tokenUser, tokenPass: tokenPass, created: created, expire: expire })); } catch (ex) { }
+
+                    // Dispatch the new event
+                    var targets = ['*', 'server-users', user._id];
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    var event = { etype: 'user', userid: user._id, username: user.name, action: 'loginTokenAdded', msgid: 115, msg: "Added login token", domain: domain.id };
+                    parent.parent.DispatchEvent(targets, obj, event);
+                });
 
                 break;
             }
