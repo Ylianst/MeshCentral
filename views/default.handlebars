@@ -3334,7 +3334,7 @@
                             x += '<div style=max-height:260px;overflow-y:scroll;overflow-x:hidden><table>';
                             for (var i in message.events) {
                                 var m = message.events[i].m;
-                                if (m == 107) { m = "Valid login"; c = 'BBD1BB'; xx = ''; }
+                                if (m == 107) {  m = "Valid login"; c = 'BBD1BB'; xx = ''; if (message.events[i].tn != null) { m = format("Token: {0}", message.events[i].tn); c = '88D188' } }
                                 else if (m == 108) { m = "Invalid 2FA"; c ='DD9DC3'; xx = 'x'; }
                                 else if (m == 109) { m = "Locked account"; c ='E1BBBB'; xx = 'x'; }
                                 else if (m == 110) { m = "Invalid password"; c = 'E1BBBB'; xx = 'x'; }

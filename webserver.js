@@ -588,9 +588,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
 
                         // Succesful login token authentication
-                        var loginOptions = { logintoken: 1 };
+                        var loginOptions = { tokenName: loginToken.name, tokenUser: loginToken.tokenUser };
                         if (loginToken.expire != 0) { loginOptions.expire = loginToken.expire; }
-                        return fn(null, user._id, loginOptions);
+                        return fn(null, user._id, null, loginOptions);
                     }
                     fn(new Error('invalid password'));
                 }, 0);
@@ -713,7 +713,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Return true if this user has 2-step auth active
-    function checkUserOneTimePasswordRequired(domain, user, req) {
+    function checkUserOneTimePasswordRequired(domain, user, req, loginOptions) {
+        // If this login occured using a login token, no 2FA needed.
+        if ((loginOptions != null) && (typeof loginOptions.tokenName === 'string')) { return false; }
+
         // Check if we can skip 2nd factor auth because of the source IP address
         if ((req != null) && (req.clientIp != null) && (domain.passwordrequirements != null) && (domain.passwordrequirements.skip2factor != null)) {
             for (var i in domain.passwordrequirements.skip2factor) { if (require('ipcheck').match(req.clientIp, domain.passwordrequirements.skip2factor[i]) === true) return false; }
@@ -935,7 +938,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((xusername == null) && (xpassword == null) && (req.body.token != null)) { xusername = req.session.tokenusername; xpassword = req.session.tokenpassword; }
 
         // Authenticate the user
-        obj.authenticate(xusername, xpassword, domain, function (err, userid, passhint) {
+        obj.authenticate(xusername, xpassword, domain, function (err, userid, passhint, loginOptions) {
             if (userid) {
                 var user = obj.users[userid];
 
@@ -952,7 +955,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var push2fa = ((parent.firebase != null) && (user.otpdev != null));
 
                 // Check if this user has 2-step login active
-                if ((req.session.loginmode != '6') && checkUserOneTimePasswordRequired(domain, user, req)) {
+                if ((req.session.loginmode != '6') && checkUserOneTimePasswordRequired(domain, user, req, loginOptions)) {
                     if ((req.body.hwtoken == '**email**') && email2fa) {
                         user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
                         obj.db.SetUser(user);
@@ -1060,7 +1063,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             // Login successful
                             if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + xusername + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
                             parent.debug('web', 'handleLoginRequest: successful 2FA login');
-                            completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct);
+                            completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct, loginOptions);
                         }
                     });
                     return;
@@ -1081,7 +1084,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Login successful
                 if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + xusername + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
                 parent.debug('web', 'handleLoginRequest: successful login');
-                completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct);
+                completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct, loginOptions);
             } else {
                 // Login failed, log the error
                 if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed password for ' + xusername + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
@@ -1120,7 +1123,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
     }
 
-    function completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct) {
+    function completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct, loginOptions) {
         // Check if we need to change the password
         if ((typeof user.passchange == 'number') && ((user.passchange == -1) || ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.reset == 'number') && (user.passchange + (domain.passwordrequirements.reset * 86400) < Math.floor(Date.now() / 1000))))) {
             // Request a password change
@@ -1144,6 +1147,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
         const ua = getUserAgentInfo(req);
         const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'] };
+        if ((loginOptions != null) && (loginOptions.tokenName != null) && (loginOptions.tokenUser != null)) { loginEvent.tokenName = loginOptions.tokenName; loginEvent.tokenUser = loginOptions.tokenUser; } // If a login token was used, add it to the event.
         obj.parent.DispatchEvent(targets, obj, loginEvent);
 
         // Regenerate session when signing in to prevent fixation
@@ -1164,6 +1168,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         req.session.domainid = domain.id;
         req.session.currentNode = '';
         req.session.ip = req.clientIp;
+
+        // If a login token was used, add this information and expire time to the session.
+        if ((loginOptions != null) && (loginOptions.tokenName != null) && (loginOptions.tokenUser != null)) {
+            req.session.loginToken = loginOptions.tokenUser;
+            if (loginOptions.expire != null) { req.session.expire = loginOptions.expire; }
+        }
+
         if (req.body.viewmode) { req.session.viewmode = req.body.viewmode; }
         if (req.body.host) {
             // TODO: This is a terrible search!!! FIX THIS.
@@ -1371,7 +1382,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
 
         // Authenticate the user
-        obj.authenticate(req.session.resettokenusername, req.session.resettokenpassword, domain, function (err, userid, passhint) {
+        obj.authenticate(req.session.resettokenusername, req.session.resettokenpassword, domain, function (err, userid, passhint, loginOptions) {
             if (userid) {
                 // Login
                 var user = obj.users[userid];
@@ -1428,7 +1439,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             req.session.userid = userid;
                             req.session.domainid = domain.id;
                             req.session.ip = req.clientIp; // Bind this session to the IP address of the request
-                            completeLoginRequest(req, res, domain, obj.users[userid], userid, req.session.tokenusername, req.session.tokenpassword, direct);
+                            completeLoginRequest(req, res, domain, obj.users[userid], userid, req.session.tokenusername, req.session.tokenpassword, direct, loginOptions);
                         }, 0);
                     }
                 }, 0);
@@ -1989,7 +2000,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) { parent.debug('web', 'handleDeleteAccountRequest: account settings locked.'); res.sendStatus(404); return; }
 
         // Check if the password is correct
-        obj.authenticate(user._id.split('/')[2], req.body.apassword1, domain, function (err, userid) {
+        obj.authenticate(user._id.split('/')[2], req.body.apassword1, domain, function (err, userid, passhint, loginOptions) {
             var deluser = obj.users[userid];
             if ((userid != null) && (deluser != null)) {
                 // Remove all links to this user
@@ -2336,7 +2347,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             });
         } else if (req.query.user && req.query.pass) {
             // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is bad security... but people are requesting this option.
-            obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
+            obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
                 if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + req.connection.user + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
                 parent.debug('web', 'handleRootRequest: user/pass in URL auth ok.');
                 req.session.userid = userid;
@@ -5975,7 +5986,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 case 'userAuth': { // This command is used to perform user authentication.
                     // Check username and password authentication
                     if ((typeof command.username == 'string') && (typeof command.password == 'string')) {
-                        obj.authenticate(Buffer.from(command.username, 'base64').toString(), Buffer.from(command.password, 'base64').toString(), domain, function (err, userid) {
+                        obj.authenticate(Buffer.from(command.username, 'base64').toString(), Buffer.from(command.password, 'base64').toString(), domain, function (err, userid, passhint, loginOptions) {
                             var user = obj.users[userid];
                             if ((err == null) && (user)) {
                                 // Check if a 2nd factor is needed
@@ -5985,7 +5996,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 var twoFactorCookieDays = 30;
                                 if (typeof domain.twofactorcookiedurationdays == 'number') { twoFactorCookieDays = domain.twofactorcookiedurationdays; }
 
-                                if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
+                                if (checkUserOneTimePasswordRequired(domain, user, req, loginOptions) == true) {
                                     // Figure out if email 2FA is allowed
                                     var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
                                     var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
@@ -6109,7 +6120,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // A web socket session can be authenticated in many ways (Default user, session, user/pass and cookie). Check authentication here.
             if ((req.query.user != null) && (req.query.pass != null)) {
                 // A user/pass is provided in URL arguments
-                obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
+                obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
 
                     // See if we support two-factor trusted cookies
                     var twoFactorCookieDays = 30;
@@ -6118,7 +6129,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var user = obj.users[userid];
                     if ((err == null) && (user)) {
                         // Check if a 2nd factor is needed
-                        if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
+                        if (checkUserOneTimePasswordRequired(domain, user, req, loginOptions) == true) {
                             // Figure out if email 2FA is allowed
                             var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
                             var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
@@ -6224,11 +6235,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var s = req.headers['x-meshauth'].split(',');
                 for (var i in s) { s[i] = Buffer.from(s[i], 'base64').toString(); }
                 if ((s.length < 2) || (s.length > 3)) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2c' })); ws.close(); } catch (e) { } return; }
-                obj.authenticate(s[0], s[1], domain, function (err, userid) {
+                obj.authenticate(s[0], s[1], domain, function (err, userid, passhint, loginOptions) {
                     var user = obj.users[userid];
                     if ((err == null) && (user)) {
                         // Check if a 2nd factor is needed
-                        if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
+                        if (checkUserOneTimePasswordRequired(domain, user, req, loginOptions) == true) {
 
                             // See if we support two-factor trusted cookies
                             var twoFactorCookieDays = 30;
