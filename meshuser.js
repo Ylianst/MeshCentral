@@ -4961,7 +4961,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             const doc = docs[i];
                             if (doc.expireTime < now) {
                                 // This share is expired.
-                                parent.db.Remove(doc._id, function () { }); delete docs[i]; removed = true;
+                                parent.db.Remove(doc._id, function () { }); removed = true;
                             } else {
                                 // This share is ok, remove extra data we don't need to send.
                                 delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type;
@@ -5611,14 +5611,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'loginTokens': { // Respond with the list of currently valid login tokens
+                if ((typeof domain.passwordrequirements != 'object') && (domain.passwordrequirements.logintokens == false)) break; // Login tokens are not supported on this server
+
+                // If remove is an array or strings, we are going to be removing these and returning the results.
+                if (common.validateStrArray(command.remove, 1) == false) { delete command.remove; }
+
                 parent.db.GetAllTypeNodeFiltered(['logintoken-' + user._id], domain.id, 'logintoken', null, function (err, docs) {
                     if (err != null) return;
                     var now = Date.now(), removed = 0, okDocs = [];
                     for (var i = 0; i < docs.length; i++) {
                         const doc = docs[i];
-                        if (doc.expireTime < now) {
+                        if (((doc.expire != 0) && (doc.expire < now)) || (doc.tokenUser == null) || ((command.remove != null) && (command.remove.indexOf(doc.tokenUser) >= 0))) {
                             // This share is expired.
-                            parent.db.Remove(doc._id, function () { }); delete docs[i]; removed++;
+                            parent.db.Remove(doc._id, function () { }); removed++;
                         } else {
                             // This share is ok, remove extra data we don't need to send.
                             delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type; delete doc.userid; delete doc.salt; delete doc.hash;
@@ -5668,10 +5673,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Dispatch the new event
                     var targets = ['*', 'server-users', user._id];
                     if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                    var event = { etype: 'user', userid: user._id, username: user.name, action: 'loginTokenAdded', msgid: 115, msg: "Added login token", domain: domain.id };
+                    var event = { etype: 'user', userid: user._id, username: user.name, action: 'loginTokenAdded', msgid: 115, msg: "Added login token", domain: domain.id, newToken: { name: command.name, tokenUser: tokenUser, created: created, expire: expire } };
                     parent.parent.DispatchEvent(targets, obj, event);
                 });
-
                 break;
             }
             case 'getDeviceDetails': {
