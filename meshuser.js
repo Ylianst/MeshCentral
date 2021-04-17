@@ -5704,7 +5704,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'loginTokens': { // Respond with the list of currently valid login tokens
                 if (req.session.loginToken != null) break; // Do not allow this command when logged in using a login token
-                if ((typeof domain.passwordrequirements != 'object') && (domain.passwordrequirements.logintokens == false)) break; // Login tokens are not supported on this server
+                if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.logintokens == false)) break; // Login tokens are not supported on this server
 
                 // If remove is an array or strings, we are going to be removing these and returning the results.
                 if (common.validateStrArray(command.remove, 1) == false) { delete command.remove; }
@@ -5738,7 +5738,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'createLoginToken': { // Create a new login token
                 if (req.session.loginToken != null) break; // Do not allow this command when logged in using a login token
-                if ((typeof domain.passwordrequirements != 'object') && (domain.passwordrequirements.logintokens == false)) break; // Login tokens are not supported on this server
+                if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.logintokens == false)) break; // Login tokens are not supported on this server
                 if (common.validateString(command.name, 1, 100) == false) break; // Check name
                 if ((typeof command.expire != 'number') || (command.expire < 0)) break; // Check expire
 
