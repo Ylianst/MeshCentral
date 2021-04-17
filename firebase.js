@@ -110,7 +110,7 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
         // Built the on-screen notification
         var notification = null;
         if (payload.notification) {
-            var notification = new Notification('ic_launcher')
+            var notification = new Notification('ic_message')
                 .title(payload.notification.title)
                 .body(payload.notification.body)
                 .build();
