@@ -1164,6 +1164,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         delete req.session.messageid;
         delete req.session.passhint;
         delete req.session.cuserid;
+        delete req.session.expire;
         req.session.userid = userid;
         req.session.domainid = domain.id;
         req.session.currentNode = '';
@@ -1205,6 +1206,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) { return; }
         if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handleCreateAccountRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+        if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
 
         // Check if we are in maintenance mode
         if (parent.config.settings.maintenancemode != null) {
@@ -1359,6 +1361,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+        if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
 
         // Check everything is ok
         if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
@@ -1472,6 +1475,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) { return; }
         if ((domain.auth == 'sspi') || (domain.auth == 'ldap') || (obj.args.lanonly == true) || (obj.parent.certificates.CommonName == null) || (obj.parent.certificates.CommonName.indexOf('.') == -1)) { parent.debug('web', 'handleResetAccountRequest: check failed'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+        if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
 
         // Always lowercase the email address
         if (req.body.email) { req.body.email = req.body.email.toLowerCase(); }
@@ -1591,6 +1595,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) { return; }
         if ((domain.mailserver == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.session.cuserid != 'string') || (obj.users[req.session.cuserid] == null) || (!obj.common.validateEmail(req.body.email, 1, 256))) { parent.debug('web', 'handleCheckAccountEmailRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+        if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
 
         // Always lowercase the email address
         if (req.body.email) { req.body.email = req.body.email.toLowerCase(); }
@@ -1980,6 +1985,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) { return; }
         if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handleDeleteAccountRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+        if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
 
         var user = null;
         if (req.body.authcookie) {
@@ -2055,6 +2061,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.db.Remove('nt' + deluser._id);  // Remove notes for this user
                 obj.db.Remove('ntp' + deluser._id); // Remove personal notes for this user
                 obj.db.Remove('im' + deluser._id);  // Remove image for this user
+
+                // Delete any login tokens
+                parent.db.GetAllTypeNodeFiltered(['logintoken-' + deluser._id], domain.id, 'logintoken', null, function (err, docs) {
+                    if ((err == null) && (docs != null)) { for (var i = 0; i < docs.length; i++) { parent.db.Remove(docs[i]._id, function () { }); } }
+                });
+
+                // Delete all files on the server for this account
+                try {
+                    var deluserpath = obj.getServerRootFilePath(deluser);
+                    if (deluserpath != null) { obj.deleteFolderRec(deluserpath); }
+                } catch (e) { }
 
                 // Remove the user
                 obj.db.Remove(deluser._id);
@@ -2151,6 +2168,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) { return; }
         if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handlePasswordChangeRequest: failed checks (1).'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+        if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
 
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword0 || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) {
@@ -2324,6 +2342,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if (!obj.args) { parent.debug('web', 'handleRootRequest: no obj.args.'); res.sendStatus(500); return; }
+
+        // If the session is expired, clear it.
+        if ((req.session != null) && (typeof req.session.expire == 'number') && ((req.session.expire - Date.now()) <= 0)) { for (var i in req.session) { delete req.session[i]; } }
 
         // Check if we are in maintenance mode
         if ((parent.config.settings.maintenancemode != null) && (req.query.admin !== '1')) {
@@ -2584,6 +2605,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (parent.amtProvisioningServer != null) { features2 += 0x00000020; } // Intel AMT LAN provisioning server
                 if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.push2factor != false)) && (obj.parent.firebase != null)) { features2 += 0x00000040; } // Indicates device push notification 2FA is enabled
                 if ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.logintokens != false)) { features2 += 0x00000080; } // Indicates login tokens are allowed
+                if (req.session.loginToken != null) { features2 += 0x00000100; } // LoginToken mode, no account changes.
 
                 // Create a authentication cookie
                 const authCookie = obj.parent.encodeCookie({ userid: dbGetFunc.user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
@@ -6095,6 +6117,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Authenticates a session and forwards
     function PerformWSSessionAuth(ws, req, noAuthOk, func) {
+        // Check if the session expired
+        if ((req.session != null) && (typeof req.session.expire == 'number') && (req.session.expire <= Date.now())) {
+            parent.debug('web', 'WSERROR: Session expired.'); try { ws.send(JSON.stringify({ action: 'close', cause: 'expired', msg: 'expired-1' })); ws.close(); } catch (e) { } return;
+        }
+
         // Check if this is a banned ip address
         if (obj.checkAllowLogin(req) == false) { parent.debug('web', 'WSERROR: Banned connection.'); try { ws.send(JSON.stringify({ action: 'close', cause: 'banned', msg: 'banned-1' })); ws.close(); } catch (e) { } return; }
         try {

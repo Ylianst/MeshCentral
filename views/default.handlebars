@@ -1928,7 +1928,7 @@
         function updateSiteAdmin() {
             var serverFeatures = parseInt('{{{serverfeatures}}}');
             var siteRights = userinfo.siteadmin;
-            var accountSettingsLocked = ((siteRights != 0xFFFFFFFF) && ((siteRights & 1024) != 0));
+            var accountSettingsLocked = ((siteRights != 0xFFFFFFFF) && ((siteRights & 1024) != 0)) || ((features2 & 0x100) != 0); // Not admin and have account features locked, or using a loginToken
 
             // Update account actions
             QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0) && (accountSettingsLocked == false)); // Hide Account Security if in single user mode or domain authentication, 2 factor auth not supported.
@@ -1939,7 +1939,7 @@
             QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null) && (userinfo._id.split('/')[2].startsWith('~') == false)); // Hide Account Actions if in single user mode or domain authentication
             //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
             QV('accountCreateLoginTokenSpan', features2 & 0x00000080);
-            QV('p2AccountImage', !accountSettingsLocked)
+            QV('p2AccountImageFrame', !accountSettingsLocked)
             QV('p2ServerActions', (siteRights & 21) && ((serverFeatures & 15) != 0));
             QV('LeftMenuMyServer', (siteRights & 21) && ((serverFeatures & 64) != 0)); // 16 + 4 + 1
             QV('MainMenuMyServer', siteRights & 21);
@@ -10211,6 +10211,7 @@
             x += addHtmlValue("Expire Time", '<select id=d2tokenExpire style=width:250px>' + y + '</select>');
             setDialogMode(2, "Create Login Token", 3, account_createLoginTokenEx, x);
             QE('idx_dlgOkButton', false);
+            Q('d2tokenName').focus();
         }
 
         function account_createLoginTokenValidate() {

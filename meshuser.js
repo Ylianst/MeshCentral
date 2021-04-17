@@ -95,6 +95,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const Wsman = require('./amt/amt-wsman.js');
     const Amt = require('./amt/amt.js');
 
+    // If this session has an expire time, setup a timer now.
+    if ((req.session != null) && (typeof req.session.expire == 'number')) {
+        var delta = (req.session.expire - Date.now());
+        if (delta <= 0) { req.session = {}; try { ws.close(); } catch (ex) { } return; } // Session is already expired, close now.
+        obj.expireTimer = setTimeout(function () { for (var i in req.session) { delete req.session[i]; } obj.close(); }, delta);
+    }
+
     // Send a message to the user
     //obj.send = function (data) { try { if (typeof data == 'string') { ws.send(Buffer.from(data, 'binary')); } else { ws.send(data); } } catch (e) { } }
 
@@ -117,6 +124,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Perform timer cleanup
         if (obj.pingtimer) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
         if (obj.pongtimer) { clearInterval(obj.pongtimer); delete obj.pongtimer; }
+
+        // Clear expire timeout
+        if (obj.expireTimer != null) { clearTimeout(obj.expireTimer); delete obj.expireTimer; }
 
         // Perform cleanup
         parent.parent.RemoveAllEventDispatch(ws);
@@ -340,6 +350,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // Handle events
             ws.HandleEvent = function (source, event, ids, id) {
+                // If this session is logged in using a loginToken and the token is removed, disconnect.
+                if ((req.session.loginToken != null) && (typeof event == 'object') && (event.action == 'loginTokenChanged') && (event.removed != null) && (event.removed.indexOf(req.session.loginToken) >= 0)) { delete req.session; obj.close(); return; }
+
                 // Normally, only allow this user to receive messages from it's own domain.
                 // If the user is a cross domain administrator, allow some select messages from different domains.
                 if ((event.domain == null) || (event.domain == domain.id) || ((obj.crossDomain === true) && (allowedCrossDomainMessages.indexOf(event.action) >= 0))) {
@@ -874,6 +887,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'serverconsole':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     // This is a server console message, only process this if full administrator
                     if (user.siteadmin != SITERIGHT_ADMIN) break;
 
@@ -1573,6 +1589,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'changelang':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     // If this account is settings locked, return here.
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
 
@@ -1599,6 +1618,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'changeemail':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     // If the email is the username, this command is not allowed.
                     if (domain.usernameisemail) return;
 
@@ -1650,6 +1672,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'verifyemail':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     // If this account is settings locked, return here.
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
 
@@ -1794,6 +1819,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     db.Remove('nt' + deluser._id);  // Remove notes for this user
                     db.Remove('ntp' + deluser._id); // Remove personal notes for this user
                     db.Remove('im' + deluser._id);  // Remove image for this user
+
+                    // Delete any login tokens
+                    parent.parent.db.GetAllTypeNodeFiltered(['logintoken-' + deluser._id], domain.id, 'logintoken', null, function (err, docs) {
+                        if ((err == null) && (docs != null)) { for (var i = 0; i < docs.length; i++) { parent.parent.db.Remove(docs[i]._id, function () { }); } }
+                    });
 
                     // Delete all files on the server for this account
                     try {
@@ -2209,6 +2239,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'updateUserImage':
                 {
+                    if (req.session.loginToken != null) break; // Do not allow this command when logged in using a login token
+
                     var uid = user._id;
                     if ((typeof command.userid == 'string') && ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0)) { uid = command.userid; }
 
@@ -2653,6 +2685,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'changepassword':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     // If this account is settings locked, return here.
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
 
@@ -2878,6 +2913,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'serverversion':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     // Check the server version
                     if ((user.siteadmin & 16) == 0) break;
                     if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.upgrade !== true))) break;
@@ -2887,6 +2925,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'serverupdate':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     // Perform server update
                     if ((user.siteadmin & 16) == 0) break;
                     if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.upgrade !== true))) break;
@@ -4357,6 +4398,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpemail':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
                     // Check input
@@ -4381,6 +4425,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-request':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
                     // Check if 2-step login is supported
@@ -4400,6 +4447,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-setup':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
                     // Check if 2-step login is supported
@@ -4430,6 +4480,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-clear':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
                     // Check if 2-step login is supported
@@ -4455,6 +4508,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-getpasswords':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
@@ -4500,6 +4556,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-get':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
@@ -4513,6 +4572,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-remove':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
                     // Check if 2-step login is supported
@@ -4537,6 +4599,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-yubikey-add':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
                     // Yubico API id and signature key can be requested from https://upgrade.yubico.com/getapikey/
@@ -4592,6 +4657,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpdev-clear':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     // Remove the authentication push notification device
                     if (user.otpdev != null) {
                         // Change the user
@@ -4609,6 +4677,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpdev-set':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     // Attempt to add a authentication push notification device
                     // This will only send a push notification to the device, the device needs to confirm for the auth device to be added.
                     if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
@@ -4635,6 +4706,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'webauthn-startregister':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
                     // Check if 2-step login is supported
@@ -4649,6 +4723,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'webauthn-endregister':
                 {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if ((twoStepLoginSupported == false) || (obj.webAuthnReqistrationRequest == null)) return;
@@ -4689,6 +4766,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
             case 'verifyPhone': {
+                // Do not allow this command when logged in using a login token
+                if (req.session.loginToken != null) break;
+
                 if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
                 if (parent.parent.smsserver == null) return;
                 if (common.validateString(command.phone, 1, 18) == false) break; // Check phone length
@@ -4702,6 +4782,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'confirmPhone': {
+                // Do not allow this command when logged in using a login token
+                if (req.session.loginToken != null) break;
+
                 if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
                 if ((parent.parent.smsserver == null) || (typeof command.cookie != 'string') || (typeof command.code != 'string') || (obj.failedSmsCookieCheck == 1)) break; // Input checks
                 var cookie = parent.parent.decodeCookie(command.cookie);
@@ -4729,6 +4812,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'removePhone': {
+                // Do not allow this command when logged in using a login token
+                if (req.session.loginToken != null) break;
+
                 if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
                 if (user.phone == null) break;
 
@@ -5381,6 +5467,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'serverBackup': {
+                // Do not allow this command when logged in using a login token
+                if (req.session.loginToken != null) break;
+
                 if ((user.siteadmin != SITERIGHT_ADMIN) || (typeof parent.parent.config.settings.autobackup.googledrive != 'object')) return;
                 if (command.service == 'googleDrive') {
                     if (command.state == 0) {
@@ -5403,6 +5492,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'twoFactorCookie': {
+                // Do not allow this command when logged in using a login token
+                if (req.session.loginToken != null) break;
+
                 // Generate a two-factor cookie
                 if (((domain.twofactorcookiedurationdays == null) || (domain.twofactorcookiedurationdays > 0))) {
                     var maxCookieAge = domain.twofactorcookiedurationdays;
@@ -5611,6 +5703,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'loginTokens': { // Respond with the list of currently valid login tokens
+                if (req.session.loginToken != null) break; // Do not allow this command when logged in using a login token
                 if ((typeof domain.passwordrequirements != 'object') && (domain.passwordrequirements.logintokens == false)) break; // Login tokens are not supported on this server
 
                 // If remove is an array or strings, we are going to be removing these and returning the results.
@@ -5618,12 +5711,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 parent.db.GetAllTypeNodeFiltered(['logintoken-' + user._id], domain.id, 'logintoken', null, function (err, docs) {
                     if (err != null) return;
-                    var now = Date.now(), removed = 0, okDocs = [];
+                    var now = Date.now(), removed = [], okDocs = [];
                     for (var i = 0; i < docs.length; i++) {
                         const doc = docs[i];
                         if (((doc.expire != 0) && (doc.expire < now)) || (doc.tokenUser == null) || ((command.remove != null) && (command.remove.indexOf(doc.tokenUser) >= 0))) {
                             // This share is expired.
-                            parent.db.Remove(doc._id, function () { }); removed++;
+                            parent.db.Remove(doc._id, function () { }); removed.push(doc.tokenUser);
                         } else {
                             // This share is ok, remove extra data we don't need to send.
                             delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type; delete doc.userid; delete doc.salt; delete doc.hash;
@@ -5633,17 +5726,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     try { ws.send(JSON.stringify({ action: 'loginTokens', loginTokens: okDocs })); } catch (ex) { }
 
                     // If any login tokens where removed, event the change.
-                    if (removed > 0) {
+                    if (removed.length > 0) {
                         // Dispatch the new event
                         var targets = ['*', 'server-users', user._id];
                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                        var event = { etype: 'user', userid: user._id, username: user.name, action: 'loginTokenChanged', domain: domain.id, loginTokens: okDocs, nolog: 1 };
+                        var event = { etype: 'user', userid: user._id, username: user.name, action: 'loginTokenChanged', domain: domain.id, loginTokens: okDocs, removed: removed, nolog: 1 };
                         parent.parent.DispatchEvent(targets, obj, event);
                     }
                 });
                 break;
             }
             case 'createLoginToken': { // Create a new login token
+                if (req.session.loginToken != null) break; // Do not allow this command when logged in using a login token
                 if ((typeof domain.passwordrequirements != 'object') && (domain.passwordrequirements.logintokens == false)) break; // Login tokens are not supported on this server
                 if (common.validateString(command.name, 1, 100) == false) break; // Check name
                 if ((typeof command.expire != 'number') || (command.expire < 0)) break; // Check expire
