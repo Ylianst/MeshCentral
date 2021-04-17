@@ -1249,6 +1249,9 @@ function handleServerCommand(data) {
                 agentFileHttpPendingRequests.push(data);
                 serverFetchFile();
                 break;
+            case 'errorlog': // Return agent error log
+                try { mesh.SendCommand(JSON.stringify({ action: 'errorlog', log: require('util-agentlog').read(data.startTime) })); } catch (ex) { }
+                break;
             default:
                 // Unknown action, ignore it.
                 break;
