@@ -1349,12 +1349,12 @@
         }
 
         function updateSelf() {
-            var accountSettingsLocked = false;
-            if (userinfo) { accountSettingsLocked = ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 1024) != 0)); }
+            var accountSettingsLocked = ((features2 & 0x100) != 0);
+            if (userinfo) { accountSettingsLocked = ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 1024) != 0)) || ((features2 & 0x100) != 0); } // Not admin and have account features locked, or using a loginToken
             QV('p3AccountActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (accountSettingsLocked == false)); // Hide Account Actions if in single user mode or domain authentication
             QV('logoutMenuOption', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide logout if in single user mode or domain authentication
             QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0) && (accountSettingsLocked == false)); // Hide Account Security if in single user mode or domain authentication, 2 factor auth not supported.
-
+            QV('p2AccountImage', !accountSettingsLocked);
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
             QV('manageAuthApp', features & 4096);
             QV('manageOtp', ((features & 4096) != 0) && ((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0)));
