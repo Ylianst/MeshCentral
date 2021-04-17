@@ -1308,6 +1308,11 @@ function CreateMeshCentralServer(config, args) {
             return;
         }
 
+        // Setup agent error log
+        if ((obj.config) && (obj.config.settings) && (obj.config.settings.agentlogdump != null)) {
+            obj.fs.open(obj.path.join(obj.datapath, 'agenterrorlogs.txt'), 'a', function (err, fd) { obj.agentErrorLog = fd; })
+        }
+
         // Perform other database cleanup
         obj.db.cleanup();
 

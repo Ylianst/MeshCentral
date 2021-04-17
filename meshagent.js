@@ -68,6 +68,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             db.Remove('nt' + obj.dbNodeKey);                          // Remove notes
             db.Remove('lc' + obj.dbNodeKey);                          // Remove last connect time
             db.Remove('si' + obj.dbNodeKey);                          // Remove system information
+            db.Remove('al' + obj.dbNodeKey);                          // Remove error log last time
             if (db.RemoveSMBIOS) { db.RemoveSMBIOS(obj.dbNodeKey); }  // Remove SMBios data
             db.RemoveAllNodeEvents(obj.dbNodeKey);                    // Remove all events for this node
             db.removeAllPowerEventsForNode(obj.dbNodeKey);            // Remove all power events for this node
@@ -1005,6 +1006,17 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if ((results != null) && (results.length == 1)) { obj.send(JSON.stringify({ action: 'sysinfo', hash: results[0].hash })); } else { obj.send(JSON.stringify({ action: 'sysinfo' })); }
         });
 
+        // Agent error log dump
+        if (parent.parent.agentErrorLog != null) {
+            db.Get('al' + obj.dbNodeKey, function (err, docs) { // Agent Log
+                if ((docs != null) && (docs.length == 1) && (typeof docs[0].lastEvent)) {
+                    obj.send('{"action":"errorlog","startTime":' + docs[0].lastEvent + '}'); // Ask all events after a given time
+                } else {
+                    obj.send('{"action":"errorlog"}'); // Ask all
+                }
+            });
+        }
+
         // Set agent core dump
         if ((parent.parent.config.settings != null) && ((parent.parent.config.settings.agentcoredump === true) || (parent.parent.config.settings.agentcoredump === false))) {
             obj.send(JSON.stringify({ action: 'coredump', value: parent.parent.config.settings.agentcoredump }));
@@ -1513,6 +1525,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Indicate this udpate task is complete
                         parent.parent.taskLimiter.completed(obj.agentCoreUpdateTaskId);
                         delete obj.agentCoreUpdateTaskId;
+                    }
+                    break;
+                }
+                case 'errorlog': { // This is the agent error log
+                    if ((!Array.isArray(command.log)) || (command.log.length == 0) || (parent.parent.agentErrorLog == null)) break;
+                    var lastLogEntry = command.log[command.log.length - 1];
+                    if ((lastLogEntry != null) && (typeof lastLogEntry == 'object') && (typeof lastLogEntry.t == 'number')) {
+                        parent.fs.write(parent.parent.agentErrorLog, obj.dbNodeKey + ', ' + Date.now() + ', ' + str + '\r\n', function (err) { });
+                        db.Set({ _id: 'al' + obj.dbNodeKey, lastEvent: lastLogEntry.t });
                     }
                     break;
                 }
