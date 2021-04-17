@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower'];
+const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -75,6 +75,7 @@ if (args['_'].length == 0) {
     var ok = false;
     switch (settings.cmd) {
         case 'config': { performConfigOperations(args); return; }
+        case 'indexagenterrorlog': { indexAgentErrorLog(); return; }
         case 'serverinfo': { ok = true; break; }
         case 'userinfo': { ok = true; break; }
         case 'listusers': { ok = true; break; }
@@ -2297,4 +2298,37 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
             }
         }
     }
+}
+
+// Read the Mesh Agent error log and index it.
+function indexAgentErrorLog() {
+    // Index the messages
+    const lines = require('fs').readFileSync('../meshcentral-data/agenterrorlogs.txt', { encoding: 'utf8', flag: 'r' }).split('\r\n');
+    var errorIndex = {}; // "msg" --> [ { lineNumber, elemenetNumber } ]
+    for (var i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (line.length > 88) {
+            var nodeid = line.substring(0, 70);
+            var fetchTime = parseInt(line.substring(72, 85));
+            var data = JSON.parse(line.substring(87));
+            if ((data != null) && (data.action == 'errorlog') && (Array.isArray(data.log))) {
+                for (var j = 0; j < data.log.length; j++) {
+                    var entry = data.log[j];
+                    if ((entry != null) && (typeof entry.t == 'number') && (typeof entry.m == 'string')) {
+                        const msg = entry.m;
+                        if (errorIndex[msg] == null) { errorIndex[msg] = []; }
+                        errorIndex[msg].push({ l: i, e: j });
+                    }
+                }
+            }
+        }
+    }
+
+    // Sort the messages by frequency
+    var errorIndexCount = []; // [ { m: "msg", c: count } ]
+    for (var i in errorIndex) { errorIndexCount.push({ m: i, c: errorIndex[i].length }); }
+    errorIndexCount = errorIndexCount.sort(function (a, b) { return b.c - a.c })
+
+    // Display the results
+    for (var i = 0; i < errorIndexCount.length; i++) { if (errorIndexCount[i].c > 100) { console.log(errorIndexCount[i].c, errorIndexCount[i].m); } }
 }
