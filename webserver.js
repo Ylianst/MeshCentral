@@ -2377,6 +2377,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session.ip = req.clientIp; // Bind this session to the IP address of the request
                 handleRootRequestEx(req, res, domain, direct);
             });
+        } else if ((req.session != null) && (typeof req.session.loginToken == 'string')) {
+            // Check if the loginToken is still valid
+            obj.db.Get('logintoken-' + req.session.loginToken, function (err, docs) {
+                if ((err != null) || (docs == null) || (docs.length != 1) || (docs[0].tokenUser != req.session.loginToken)) { for (var i in req.session) { delete req.session[i]; } }
+                handleRootRequestEx(req, res, domain, direct); // Login using a different system
+            });
         } else {
             // Login using a different system
             handleRootRequestEx(req, res, domain, direct);
