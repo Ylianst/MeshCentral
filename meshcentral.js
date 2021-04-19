@@ -2844,7 +2844,7 @@ function CreateMeshCentralServer(config, args) {
                 const d = new Date();
                 if (obj.xxLogFile == null) {
                     try {
-                        obj.xxLogFile = obj.fs.openSync(obj.getConfigFilePath('log.txt'), 'a+', 666);
+                        obj.xxLogFile = obj.fs.openSync(obj.getConfigFilePath('log.txt'), 'a+', 0o666);
                         obj.fs.writeSync(obj.xxLogFile, '---- Log start at ' + new Date().toLocaleString() + ' ----\r\n');
                         obj.xxLogDateStr = d.toLocaleDateString();
                     } catch (ex) { }
