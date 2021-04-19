@@ -17,6 +17,13 @@ limitations under the License.
 process.on('uncaughtException', function (ex) {
     require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "uncaughtException1: " + ex });
 });
+if (process.platform == 'win32' && require('user-sessions').getDomain == null)
+{
+    require('user-sessions').getDomain = function getDomain(uid)
+    {
+        return (this.getSessionAttribute(uid, this.InfoClass.WTSDomainName));
+    };
+}
 
 // NOTE: This seems to cause big problems, don't enable the debugger in the server's meshcore. 
 //attachDebugger({ webport: 9999, wait: 1 }).then(function (prt) { console.log('Point Browser for Debug to port: ' + prt); });
@@ -984,8 +991,11 @@ function handleServerCommand(data) {
                                 {
                                     var tmp = "require('clipboard')(\"" + data.data.split('"').join('\\"') + '");process.exit();';
                                     tmp = Buffer.from(tmp).toString('base64');
+                                    var uid = require('user-sessions').consoleUid();
+                                    var user = require('user-sessions').getUsername(uid);
+                                    var domain = require('user-sessions').getDomain(uid);
 
-                                    var taskoptions = { env: { _target: process.execPath, _args: '-b64exec ' + tmp, _user: require('user-sessions').getUsername(require('user-sessions').consoleUid()) } };
+                                    var taskoptions = { env: { _target: process.execPath, _args: '-b64exec ' + tmp, _user: user } };
                                     for (var c1e in process.env)
                                     {
                                         taskoptions.env[c1e] = process.env[c1e];
@@ -1766,7 +1776,8 @@ function onTunnelData(data) {
                                     userPromise.then(function (u) {
                                         var that = this.that;
                                         if (u.Active.length > 0) {
-                                            var username = u.Active[0].Username;
+                                            var username = '"' + u.Active[0].Domain + '\\' + u.Active[0].Username + '"';
+                                            sendConsoleText('Terminal: ' + username);
                                             if (require('win-virtual-terminal').supported) {
                                                 // ConPTY PseudoTerminal
                                                 that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
@@ -2692,8 +2703,10 @@ function openUserDesktopUrl(url) {
     try {
         switch (process.platform) {
             case 'win32':
-                var user = require('user-sessions').getUsername(require('user-sessions').consoleUid());
-                var taskoptions = { env: { _target: process.env['windir'] + '\\system32\\cmd.exe', _args: '/C START ' + url.split('&').join('^&'), _user: '"' + user + '"' } };
+                var uid = require('user-sessions').consoleUid();
+                var user = require('user-sessions').getUsername(uid);
+                var domain = require('user-sessions').getDomain(uid);
+                var taskoptions = { env: { _target: process.env['windir'] + '\\system32\\cmd.exe', _args: '/C START ' + url.split('&').join('^&'), _user: '"' + domain + '\\' + user + '"' } };
                 for (var c1e in process.env)
                 {
                     taskoptions.env[c1e] = process.env[c1e];
@@ -3290,7 +3303,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                             var tmp = "require('clipboard')(\"" + (args['_'][0]).split('"').join('\\"') + '");process.exit();';
                             tmp = Buffer.from(tmp).toString('base64');
 
-                            var taskoptions = { env: { _target: process.execPath, _args: '-b64exec ' + tmp, _user: require('user-sessions').getUsername(require('user-sessions').consoleUid()) } };
+                            var uid = require('user-sessions').consoleUid();
+                            var user = require('user-sessions').getUsername(uid);
+                            var domain = require('user-sessions').getDomain(uid);
+
+                            var taskoptions = { env: { _target: process.execPath, _args: '-b64exec ' + tmp, _user: domain + '\\' + user } };
                             for (var c1e in process.env)
                             {
                                 taskoptions.env[c1e] = process.env[c1e];
