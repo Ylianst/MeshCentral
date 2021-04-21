@@ -2762,7 +2762,7 @@
                                 ugroup.name = message.event.name;
                                 if (message.event.desc) { ugroup.desc = message.event.desc; } else { delete ugroup.desc; }
                                 if (message.event.links) { ugroup.links = message.event.links; } else { delete ugroup.links; }
-                                if (message.event.consent !== null) { ugroup.consent = message.event.consent; }
+                                if (typeof message.event.consent == 'number') { ugroup.consent = message.event.consent; }
                             }
                             mainUpdate(4096 + 8192 + 16384);
 
