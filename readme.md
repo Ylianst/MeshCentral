@@ -32,10 +32,10 @@ The [Design and Architecture Guide](https://info.meshcentral.com/downloads/MeshC
 ## Video Tutorials
 You can watch many tutorial videos on the [MeshCentral YouTube Channel](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos). Two videos to get started involve installation and basic usages.
 
-Installing MeshCentral on Windows, Linux and macOS.
+Installing MeshCentral on Windows, Linux and macOS.  
 [![MeshCentral - Installation](https://img.youtube.com/vi/GsQbWZmRRAU/mqdefault.jpg)](https://www.youtube.com/watch?v=GsQbWZmRRAU)
 
-Basic Usages including installing the agent and remote desktop, terminal and file access.
+Basic Usages including installing the agent and remote desktop, terminal and file access.  
 [![MeshCentral - Basics](https://img.youtube.com/vi/1E3NqGJzYds/mqdefault.jpg)](https://www.youtube.com/watch?v=1E3NqGJzYds)
 
 ## Feedback
