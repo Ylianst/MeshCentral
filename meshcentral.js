@@ -445,11 +445,16 @@ function CreateMeshCentralServer(config, args) {
                 var npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
                 var env = Object.assign({}, process.env); // Shallow clone
                 if (typeof obj.args.npmproxy == 'string') { env['HTTP_PROXY'] = env['HTTPS_PROXY'] = env['http_proxy'] = env['https_proxy'] = obj.args.npmproxy; }
-                var xxprocess = child_process.exec(npmpath + ' install meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
+                var xxprocess = child_process.exec(npmpath + ' install meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) {
+                    if ((error != null) && (error != '')) { console.log('Update failed: ' + error); }
+                 });
                 xxprocess.data = '';
                 xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
                 xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
-                xxprocess.on('close', function (code) { console.log('Update completed...'); setTimeout(function () { obj.launchChildServer(startArgs); }, 1000); });
+                xxprocess.on('close', function (code) {
+                    if (code == 0) { console.log('Update completed...'); }
+                    setTimeout(function () { obj.launchChildServer(startArgs); }, 1000);
+                });
             } else {
                 if (error != null) {
                     // This is an un-expected restart
@@ -2839,7 +2844,7 @@ function CreateMeshCentralServer(config, args) {
                 const d = new Date();
                 if (obj.xxLogFile == null) {
                     try {
-                        obj.xxLogFile = obj.fs.openSync(obj.getConfigFilePath('log.txt'), 'a+', 666);
+                        obj.xxLogFile = obj.fs.openSync(obj.getConfigFilePath('log.txt'), 'a+', 0o666);
                         obj.fs.writeSync(obj.xxLogFile, '---- Log start at ' + new Date().toLocaleString() + ' ----\r\n');
                         obj.xxLogDateStr = d.toLocaleDateString();
                     } catch (ex) { }
