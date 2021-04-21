@@ -17,10 +17,10 @@ To try out this software on the public server, please visit [MeshCentral.com/log
 For more information, [visit MeshCentral.com](https://www.meshcentral.com).
 
 ## Social Media
-[YouTube](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos)
-[Reddit](https://www.reddit.com/r/MeshCentral/)
-[Twitter](https://twitter.com/MeshCentral)
-[BlogSpot](https://meshcentral2.blogspot.com/)
+[YouTube](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos)  
+[Reddit](https://www.reddit.com/r/MeshCentral/)  
+[Twitter](https://twitter.com/MeshCentral)  
+[BlogSpot](https://meshcentral2.blogspot.com/)  
 
 ## Documentation
 The [User's Guide](https://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2UserGuide.pdf) contains information every adminstrator should know including usage, the server configuration file, databases, TLS offloading, Lets Encrypt, IP Filtering, Email setup, embedding, server port aliasing, reverse proxy setup, multi factor authentication, branding & terms of use, HashiCorp Vault support, and SSO.
@@ -36,7 +36,7 @@ Installing MeshCentral on Windows, Linux and macOS.
 [![MeshCentral - Installation](https://img.youtube.com/vi/GsQbWZmRRAU/mqdefault.jpg)](https://www.youtube.com/watch?v=GsQbWZmRRAU)
 
 Basic Usages including installing the agent and remote desktop, terminal and file access.  
-[![MeshCentral - Basics](https://img.youtube.com/vi/1E3NqGJzYds/mqdefault.jpg)](https://www.youtube.com/watch?v=1E3NqGJzYds)
+[![MeshCentral - Basics](https://img.youtube.com/vi/D9Q7M7PdTg0/mqdefault.jpg)](https://www.youtube.com/watch?v=D9Q7M7PdTg0)
 
 ## Feedback
 If you encounter a problem or have a suggestion to improve the product, you may file an [issue report](https://github.com/Ylianst/MeshCentral/issues/)
