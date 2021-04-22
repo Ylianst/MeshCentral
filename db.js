@@ -439,13 +439,24 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     if (parent.args.mariadb || parent.args.mysql) {
+        var connectinArgs = (parent.args.mariadb) ? parent.args.mariadb : parent.args.mysql;
+        var connectionObject = { 
+            'host': connectinArgs.host,
+            'port': connectinArgs.port,
+            'user': connectinArgs.user,
+            'password': connectinArgs.password,
+            'connectionLimit': null,
+            'database': null
+        };
+        if (connectinArgs.connectionLimit != null) connectionObject.connectionLimit = connectinArgs.connectionLimit;
+        connectionObject.database = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
         if (parent.args.mariadb) {
             // Use MariaDB
             obj.databaseType = 4;
-            Datastore = require('mariadb').createPool(parent.args.mariadb);
+            Datastore = require('mariadb').createPool(connectionObject);
         } else if (parent.args.mysql) {
             // Use MySQL
-            Datastore = require('mysql').createConnection(parent.args.mysql);
+            Datastore = require('mysql').createConnection(connectionObject);
             obj.databaseType = 5;
         }
         //sqlDbQuery('DROP DATABASE MeshCentral', null, function (err, docs) { console.log('DROP'); }); return;
