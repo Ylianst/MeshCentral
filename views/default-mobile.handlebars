@@ -1398,6 +1398,12 @@
                     serverinfo = message.serverinfo;
                     if (serverinfo.timeout) { setInterval(checkIdleSessionTimeout, 10000); checkIdleSessionTimeout(); }
                     if (userinfo != null) updateSelf();
+                    if (serverinfo.certExpire != null) {
+                        var days = Math.floor((serverinfo.certExpire - Date.now()) / 86400000);
+                        if ((days >= 0) && (days < 20)) {
+                            addNotification({ text: format("Certificate expires in {0} day(s)", days) });
+                        }
+                    }
                     break;
                 }
                 case 'authcookie': {

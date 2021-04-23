@@ -495,6 +495,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             if (user.siteadmin === SITERIGHT_ADMIN) {
                 if (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) { serverinfo.manageAllDeviceGroups = true; }
                 if (obj.crossDomain === true) { serverinfo.crossDomain = []; for (var i in parent.parent.config.domains) { serverinfo.crossDomain.push(i); } }
+                if (typeof parent.webCertificateExpire[domain.id] == 'number') { serverinfo.certExpire = parent.webCertificateExpire[domain.id]; }
             }
             if (typeof domain.terminal == 'object') { // Settings used for remote terminal feature
                 if ((typeof domain.terminal.linuxshell == 'string') && (domain.terminal.linuxshell != 'any')) { serverinfo.linuxshell = domain.terminal.linuxshell; }
@@ -904,7 +905,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            var fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,dbcounters,sms,amtacm,certhashes,watchdog,amtmanager,amtpasswords';
+                            var fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,dbcounters,sms,amtacm,certhashes,watchdog,amtmanager,amtpasswords,certexpire';
                             if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
                             availcommands = availcommands.split(',').sort();
                             while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
@@ -922,6 +923,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     case 'tasklimiter': { r = "tasklimiter: Returns the internal status of the tasklimiter. This is a system used to smooth out work done by the server. It's used by, for example, agent updates so that not all agents are updated at the same time."; break; }
                                     default: { r = 'No help information about this command.'; break; }
                                 }
+                            }
+                            break;
+                        }
+                        case 'certexpire': {
+                            const now = Date.now();
+                            for (var i in parent.webCertificateExpire) {
+                                const domainName = (i == '') ? '[Default]' : i;
+                                r += domainName + ', expires in ' + Math.floor((parent.webCertificateExpire[i] - now) / 86400000) + ' day(s)\r\n';
                             }
                             break;
                         }

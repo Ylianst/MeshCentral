@@ -1024,7 +1024,7 @@ NoMeshesPanel img {
     padding-left: 15px;
 }
 
-#p2noMeshFound, #serverStats, #serverWarnings {
+#p2noMeshFound, #serverStats, #serverWarnings, #serverCertWarnings {
     margin-left: 40px;
 }
 
