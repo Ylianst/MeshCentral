@@ -20,7 +20,8 @@
             "user": { "type": "string", "description": "MariaDB username" },
             "port": { "type": "number", "description": "MariaDB port number" },
             "password": { "type": "string", "description": "MariaDB password" },
-            "connectionLimit": { "type": "number", "description": "MariaDB connection limit" }
+            "connectionLimit": { "type": "number", "description": "MariaDB connection limit" },
+            "database": { "type": "string", "default": "meshcentral", "description": "Name of MariaDB database used" }
           }
         },
         "mySQL": {
@@ -30,7 +31,8 @@
             "host": { "type": "string", "description": "MySQL hostname" },
             "port": { "type": "number", "description": "MySQL port number" },
             "user": { "type": "string", "description": "MySQL username" },
-            "password": { "type": "string", "description": "MySQL password" }
+            "password": { "type": "string", "description": "MySQL password" },
+            "database": { "type": "string", "default": "meshcentral", "description": "Name of MySQL database used" }
           }
         },
         "WANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral WAN features are enabled and agents will connect to the server using a well known DNS name." },
