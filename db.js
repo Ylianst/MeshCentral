@@ -1606,7 +1606,8 @@ module.exports.CreateDB = function (parent, func) {
             cmd += (parent.platform == 'win32') ? ' --password=\"' + props.password + '\"' : ' --password=\'' + props.password + '\'';
             if (props.host) { cmd += ' -h ' + props.host; }
             if (props.port) { cmd += ' -P ' + props.port; }
-            cmd += ' meshcentral > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
+            var dbname = (props.database) ? props.database : 'meshcentral';
+            cmd += ' ' + dbname + ' > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
                 try {
