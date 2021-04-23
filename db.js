@@ -440,16 +440,19 @@ module.exports.CreateDB = function (parent, func) {
 
     if (parent.args.mariadb || parent.args.mysql) {
         var connectinArgs = (parent.args.mariadb) ? parent.args.mariadb : parent.args.mysql;
+        var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
+
+        // Including the db name in the connection obj will cause a connection failure if it does not exist
         var connectionObject = { 
             'host': connectinArgs.host,
             'port': connectinArgs.port,
             'user': connectinArgs.user,
             'password': connectinArgs.password,
-            'connectionLimit': null,
-            'database': null
+            'connectionLimit': null
         };
         if (connectinArgs.connectionLimit != null) connectionObject.connectionLimit = connectinArgs.connectionLimit;
-        connectionObject.database = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
+        
+
         if (parent.args.mariadb) {
             // Use MariaDB
             obj.databaseType = 4;
@@ -459,8 +462,10 @@ module.exports.CreateDB = function (parent, func) {
             Datastore = require('mysql').createConnection(connectionObject);
             obj.databaseType = 5;
         }
+        sqlDbQuery('CREATE DATABASE IF NOT EXISTS ' + dbname);
 
-        var useDatabase = 'USE ' + connectionObject.database;
+        // Set the default database for the rest of this connections lifetime
+        var useDatabase = 'USE ' + dbname;
         sqlDbQuery(useDatabase, null, function (err, docs) {
             if (err != null) { console.log(err); parent.debug('db', 'ERROR: ' + useDatabase + ': ' + err); }
             if (err == null) {
@@ -487,40 +492,6 @@ module.exports.CreateDB = function (parent, func) {
                     sqlDbExec('CREATE INDEX ndxpowernodeidtime ON power (nodeid, time)', null, function (err, response) { });
                     sqlDbExec('CREATE INDEX ndxsmbiostime ON smbios (time)', null, function (err, response) { });
                     sqlDbExec('CREATE INDEX ndxsmbiosexpire ON smbios (expire)', null, function (err, response) { });
-                    setupFunctions(func);
-                });
-            } else {
-                parent.debug('db', 'Creating database...');
-                sqlDbBatchExec([
-                    'CREATE DATABASE ' + connectionObject.database,
-                    // Main table
-                    'CREATE TABLE main (id VARCHAR(256) NOT NULL, type CHAR(32), domain CHAR(64), extra CHAR(255), extraex CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
-                    'CREATE INDEX ndxtypedomainextra ON main (type, domain, extra)',
-                    'CREATE INDEX ndxextra ON main (extra)',
-                    'CREATE INDEX ndxextraex ON main (extraex)',
-                    // Events table
-                    'CREATE TABLE events(id INT NOT NULL AUTO_INCREMENT, time DATETIME, domain CHAR(64), action CHAR(255), nodeid CHAR(255), userid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK(json_valid(doc)))',
-                    'CREATE INDEX ndxeventstime ON events(time)',
-                    'CREATE INDEX ndxeventsusername ON events(domain, userid, time)',
-                    'CREATE INDEX ndxeventsdomainnodeidtime ON events(domain, nodeid, time)',
-                    // Events ID table
-                    'CREATE TABLE eventids(fkid INT NOT NULL, target CHAR(255), CONSTRAINT fk_eventid FOREIGN KEY (fkid) REFERENCES events (id) ON DELETE CASCADE ON UPDATE RESTRICT)',
-                    'CREATE INDEX ndxeventids ON eventids(target)',
-                    // Server stats table
-                    'CREATE TABLE serverstats (time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(time), CHECK (json_valid(doc)))',
-                    'CREATE INDEX ndxserverstattime ON serverstats (time)',
-                    'CREATE INDEX ndxserverstatexpire ON serverstats (expire)',
-                    // Power events table
-                    'CREATE TABLE power (id INT NOT NULL AUTO_INCREMENT, time DATETIME, nodeid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
-                    'CREATE INDEX ndxpowernodeidtime ON power (nodeid, time)',
-                    // SMBIOS table
-                    'CREATE TABLE smbios (id CHAR(255), time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
-                    'CREATE INDEX ndxsmbiostime ON smbios (time)',
-                    'CREATE INDEX ndxsmbiosexpire ON smbios (expire)',
-                    // Plugins table
-                    'CREATE TABLE plugin (id INT NOT NULL AUTO_INCREMENT, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))'
-                ], function (err) {
-                    if (err != null) { parent.debug('db', 'BatchSetupDb: ' + err); }
                     setupFunctions(func);
                 });
             }
