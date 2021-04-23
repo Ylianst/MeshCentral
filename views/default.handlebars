@@ -525,6 +525,7 @@
                     </div>
                     <div id="serverWarningsDiv" style="display:none">
                         <br /><strong>Server Warnings</strong><br /><br />
+                        <div id="serverCertWarnings"></div>
                         <div id="serverWarnings"></div>
                     </div>
                 </div>
@@ -2138,6 +2139,14 @@
                     if (serverinfo.timeout) { setInterval(checkIdleSessionTimeout, 10000); checkIdleSessionTimeout(); }
                     if (debugmode == 1) { console.log('Server time: ', printDateTime(new Date(serverinfo.serverTime))); }
                     setupServiceWorker();
+                    if (serverinfo.certExpire != null) {
+                        var days = Math.floor((serverinfo.certExpire - Date.now()) / 86400000);
+                        if ((days >= 0) && (days < 20)) {
+                            QH('serverCertWarnings', '<div style=color:red;padding-bottom:6px><b>' + "WARNING: " + format("Certificate expires in {0} day(s)", days) + '</b></div>');
+                            QV('serverWarningsDiv', true);
+                            addNotification({ text: format("Certificate expires in {0} day(s)", days) });
+                        }
+                    }
                     break;
                 }
                 case 'userinfo': {

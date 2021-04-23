@@ -1443,9 +1443,6 @@ function CreateMeshCentralServer(config, args) {
             }
         }
 
-        // Update proxy certificates
-        if (obj.supportsProxyCertificatesRequest == true) { obj.updateProxyCertificates(true); }
-
         // Load CloudFlare trusted proxies list if needed
         if ((obj.config.settings.trustedproxy != null) && (typeof obj.config.settings.trustedproxy == 'string') && (obj.config.settings.trustedproxy.toLowerCase() == 'cloudflare')) {
             obj.config.settings.extrascriptsrc = 'ajax.cloudflare.com'; // Add CloudFlare as a trusted script source. This allows for CloudFlare's RocketLoader feature.
@@ -1535,6 +1532,9 @@ function CreateMeshCentralServer(config, args) {
                 // Start the web server and if needed, the redirection web server.
                 obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.certificates);
                 if (obj.redirserver != null) { obj.redirserver.hookMainWebServer(obj.certificates); }
+
+                // Update proxy certificates
+                if (obj.supportsProxyCertificatesRequest == true) { obj.updateProxyCertificates(true); }
 
                 // Setup the Intel AMT event handler
                 obj.amtEventHandler = require('./amtevents.js').CreateAmtEventsHandler(obj);
@@ -1789,8 +1789,10 @@ function CreateMeshCentralServer(config, args) {
                                 // Decode a RSA certificate and hash the public key, if this is not RSA, skip this.
                                 var forgeCert = obj.certificateOperations.forge.pki.certificateFromAsn1(obj.certificateOperations.forge.asn1.fromDer(cert));
                                 xdomain.certkeyhash = obj.certificateOperations.forge.pki.getPublicKeyFingerprint(forgeCert.publicKey, { md: obj.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
+                                obj.webserver.webCertificateExpire[xdomain.id] = Date.parse(forgeCert.validity.notAfter); // Update certificate expire time
                                 //console.log('V1: ' + xdomain.certkeyhash);
                             } catch (ex) {
+                                delete obj.webserver.webCertificateExpire[xdomain.id]; // Remove certificate expire time
                                 delete xdomain.certkeyhash;
                             }
 
