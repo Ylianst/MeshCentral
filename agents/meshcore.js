@@ -989,12 +989,11 @@ function handleServerCommand(data) {
                                 }
                                 else
                                 {
-                                    var tmp = "require('clipboard')(\"" + data.data.split('"').join('\\"') + '");process.exit();';
+                                    var tmp = "require('clipboard')(" + JSON.stringify(data.data) + ');process.exit();';
                                     tmp = Buffer.from(tmp).toString('base64');
                                     var uid = require('user-sessions').consoleUid();
-                                    var user = require('user-sessions').getUsername(uid);
                                     var domain = require('user-sessions').getDomain(uid);
-
+                                    var user = domain + '\\' + require('user-sessions').getUsername(uid);
                                     var taskoptions = { env: { _target: process.execPath, _args: '-b64exec ' + tmp, _user: user } };
                                     for (var c1e in process.env)
                                     {
