@@ -2330,5 +2330,8 @@ function indexAgentErrorLog() {
     errorIndexCount = errorIndexCount.sort(function (a, b) { return b.c - a.c })
 
     // Display the results
-    for (var i = 0; i < errorIndexCount.length; i++) { if (errorIndexCount[i].c > 100) { console.log(errorIndexCount[i].c, errorIndexCount[i].m); } }
+    for (var i = 0; i < errorIndexCount.length; i++) {
+        const m = errorIndexCount[i].m;
+        if ((m.indexOf('STUCK') >= 0) || (m.indexOf('FATAL') >= 0)) { console.log(errorIndexCount[i].c, m); }
+    }
 }
