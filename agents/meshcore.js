@@ -2753,7 +2753,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'help': { // Displays available commands
                 var fin = '', f = '', availcommands = 'agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
-                if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
+                if (process.platform == 'win32') { availcommands += ',cs,safemode,wpfhwacceleration,uac'; }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
                 if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
@@ -2768,6 +2768,51 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 response = "Available commands: \r\n" + fin + ".";
                 break;
             }
+            case 'cs':
+                if (process.platform != 'win32')
+                {
+                    response = 'Unknown command "cs", type "help" for list of avaialble commands.';
+                    break;
+                }
+                switch (args['_'].length)
+                {
+                    case 0:
+                        try
+                        {
+                            var cs = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Power', 'CsEnabled');
+                            response = "Connected Standby: " + (cs == 1 ? "ENABLED" : "DISABLED");
+                        }
+                        catch(e)
+                        {
+                            response = "This machine does not support Connected Standby";
+                        }
+                        break;
+                    case 1:
+                        if ((args['_'][0].toUpperCase() != 'ENABLE' && args['_'][0].toUpperCase() != 'DISABLE'))
+                        {
+                            response = "Proper usage:\r\n  cs [ENABLE|DISABLE]";
+                        }
+                        else
+                        {
+                            try
+                            {
+                                var cs = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Power', 'CsEnabled');
+                                require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Power', 'CsEnabled', args['_'][0].toUpperCase() == 'ENABLE' ? 1 : 0);
+
+                                cs = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Power', 'CsEnabled');
+                                response = "Connected Standby: " + (cs == 1 ? "ENABLED" : "DISABLED");
+                            }
+                            catch (e)
+                            {
+                                response = "This machine does not support Connected Standby";
+                            }
+                        }
+                        break;
+                    default:
+                        response = "Proper usage:\r\n  cs [ENABLE|DISABLE]";
+                        break;
+                }
+                break;
             case 'agentupdate':
                 require('MeshAgent').SendCommand({ action: 'agentupdate', sessionid: sessionid });
                 break;
