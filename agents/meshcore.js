@@ -745,38 +745,76 @@ function getServerTargetUrlEx(url) {
     return url;
 }
 
-// Send a wake-on-lan packet
-function sendWakeOnLan(hexMac) {
-    hexMac = hexMac.split(':').join('');
-    var count = 0;
-    try {
-        var interfaces = require('os').networkInterfaces();
-        var magic = 'FFFFFFFFFFFF';
-        for (var x = 1; x <= 16; ++x) { magic += hexMac; }
-        var magicbin = Buffer.from(magic, 'hex');
+function sendWakeOnLanEx_interval()
+{
+    var t = require('MeshAgent').wakesockets;
+    if (t.list.length == 0)
+    {
+        clearInterval(t);
+        require('MeshAgent').wakesockets = null;
+        return;
+    }
 
-        for (var adapter in interfaces) {
-            if (interfaces.hasOwnProperty(adapter)) {
-                for (var i = 0; i < interfaces[adapter].length; ++i) {
+    var mac = t.list.shift().split(':').join('')
+    var magic = 'FFFFFFFFFFFF';
+    for (var x = 1; x <= 16; ++x) { magic += mac; }
+    var magicbin = Buffer.from(magic, 'hex');
+
+    for(var i in t.sockets)
+    {
+        t.sockets[i].send(magicbin, 7, '255.255.255.255');
+        //sendConsoleText('Sending wake packet on ' + JSON.stringify(t.sockets[i].address()));
+    }
+}
+function sendWakeOnLanEx(hexMacList)
+{
+    var ret = 0;
+
+    if (require('MeshAgent').wakesockets == null)
+    {
+        // Create a new interval timer
+        require('MeshAgent').wakesockets = setInterval(sendWakeOnLanEx_interval, 10);
+        require('MeshAgent').wakesockets.sockets = [];
+        require('MeshAgent').wakesockets.list = hexMacList;
+
+        var interfaces = require('os').networkInterfaces();
+        for (var adapter in interfaces)
+        {
+            if (interfaces.hasOwnProperty(adapter))
+            {
+                for (var i = 0; i < interfaces[adapter].length; ++i)
+                {
                     var addr = interfaces[adapter][i];
-                    if ((addr.family == 'IPv4') && (addr.mac != '00:00:00:00:00:00')) {
-                        try {
+                    if ((addr.family == 'IPv4') && (addr.mac != '00:00:00:00:00:00'))
+                    {
+                        try
+                        {
                             var socket = require('dgram').createSocket({ type: 'udp4' });
                             socket.bind({ address: addr.address });
                             socket.setBroadcast(true);
                             socket.setMulticastInterface(addr.address);
                             socket.setMulticastTTL(1);
-                            socket.send(magicbin, 7, '255.255.255.255');
-                            socket.descriptorMetadata = 'WoL (' + addr.address + ' => ' + hexMac + ')';
-                            count++;
+                            socket.descriptorMetadata = 'WoL (' + addr.address + ')';
+                            require('MeshAgent').wakesockets.sockets.push(socket);
+                            ++ret;
                         }
                         catch (e) { }
                     }
                 }
             }
         }
-    } catch (e) { }
-    return count;
+    }
+    else
+    {
+        // Append to an existing interval timer
+        for(var i in hexMacList)
+        {
+            require('MeshAgent').wakesockets.list.push(hexMacList[i]);
+        }
+        ret = require('MeshAgent').wakesockets.sockets.length;
+    }
+
+    return (ret);
 }
 
 // Handle a mesh agent command
@@ -1079,7 +1117,7 @@ function handleServerCommand(data) {
             case 'wakeonlan': {
                 // Send wake-on-lan on all interfaces for all MAC addresses in data.macs array. The array is a list of HEX MAC addresses.
                 //sendConsoleText("Server requesting wake-on-lan for: " + data.macs.join(', '));
-                for (var i in data.macs) { sendWakeOnLan(data.macs[i]); }
+                sendWakeOnLanEx(data.macs);
                 break;
             }
             case 'runcommands': {
@@ -3733,8 +3771,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if ((args['_'].length != 1) || (args['_'][0].length != 12)) {
                     response = 'Proper usage: wakeonlan [mac], for example "wakeonlan 010203040506".';
                 } else {
-                    var count = sendWakeOnLan(args['_'][0]);
-                    response = 'Sent wake-on-lan on ' + count + ' interface(s).';
+                    var count = sendWakeOnLanEx([args['_'][0]]);
+                    response = 'Sending wake-on-lan on ' + count + ' interface(s).';
                 }
                 break;
             }
