@@ -194,6 +194,10 @@ function AmtStackCreateService(wsmanStack) {
         obj.CIM_PowerManagementService_RequestPowerStateChange(PowerState, "<Address xmlns=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\"><ResourceURI xmlns=\"http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd\">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem</ResourceURI><SelectorSet xmlns=\"http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd\"><Selector Name=\"CreationClassName\">CIM_ComputerSystem</Selector><Selector Name=\"Name\">ManagedSystem</Selector></SelectorSet></ReferenceParameters>", null, null, callback_func);
     }
 
+    obj.RequestOSPowerStateChange = function (PowerState, callback_func) {
+        obj.IPS_PowerManagementService_RequestOSPowerSavingStateChange(PowerState, '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd\">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="CreationClassName">CIM_ComputerSystem</Selector><Selector Name="Name">ManagedSystem</Selector></SelectorSet></ReferenceParameters>', null, null, callback_func);
+    }
+
     obj.SetBootConfigRole = function (Role, callback_func) {
         obj.CIM_BootService_SetBootConfigRole("<Address xmlns=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\"><ResourceURI xmlns=\"http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd\">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_BootConfigSetting</ResourceURI><SelectorSet xmlns=\"http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd\"><Selector Name=\"InstanceID\">Intel(r) AMT: Boot Configuration 0</Selector></SelectorSet></ReferenceParameters>", Role, callback_func);
     }
@@ -384,9 +388,12 @@ function AmtStackCreateService(wsmanStack) {
     obj.IPS_OptInService_StartService = function (callback_func) { obj.Exec("IPS_OptInService", "StartService", {}, callback_func); }
     obj.IPS_OptInService_StopService = function (callback_func) { obj.Exec("IPS_OptInService", "StopService", {}, callback_func); }
     obj.IPS_OptInService_RequestStateChange = function (RequestedState, TimeoutPeriod, callback_func) { obj.Exec("IPS_OptInService", "RequestStateChange", { "RequestedState": RequestedState, "TimeoutPeriod": TimeoutPeriod }, callback_func); }
+    obj.IPS_PowerManagementService_RequestOSPowerSavingStateChange = function (PowerState, ManagedElement, Time, TimeoutPeriod, callback_func) { obj.Exec('IPS_PowerManagementService', 'RequestOSPowerSavingStateChange', { 'OSPowerSavingState': PowerState, 'ManagedElement': ManagedElement, 'Time': Time, 'TimeoutPeriod': TimeoutPeriod }, callback_func, 0, 1); }
     obj.IPS_ProvisioningRecordLog_RequestStateChange = function (RequestedState, TimeoutPeriod, callback_func) { obj.Exec("IPS_ProvisioningRecordLog", "RequestStateChange", { "RequestedState": RequestedState, "TimeoutPeriod": TimeoutPeriod }, callback_func); }
     obj.IPS_ProvisioningRecordLog_ClearLog = function (_method_dummy, callback_func) { obj.Exec("IPS_ProvisioningRecordLog", "ClearLog", { "_method_dummy": _method_dummy }, callback_func); }
+    obj.IPS_ScreenConfigurationService_SetSessionState = function (SessionState, ConsecutiveRebootsNum, callback_func) { obj.Exec('IPS_ScreenConfigurationService', 'SetSessionState', { 'SessionState': SessionState, 'ConsecutiveRebootsNum': ConsecutiveRebootsNum }, callback_func); }
     obj.IPS_SecIOService_RequestStateChange = function (RequestedState, TimeoutPeriod, callback_func) { obj.Exec("IPS_SecIOService", "RequestStateChange", { "RequestedState": RequestedState, "TimeoutPeriod": TimeoutPeriod }, callback_func); }
+    obj.IPS_HTTPProxyService_AddProxyAccessPoint = function (AccessInfo, InfoFormat, Port, NetworkDnsSuffix, callback_func) { obj.Exec('IPS_HTTPProxyService', 'AddProxyAccessPoint', { 'AccessInfo': AccessInfo, 'InfoFormat': InfoFormat, 'Port': Port, 'NetworkDnsSuffix': NetworkDnsSuffix }, callback_func); }
 
     obj.AmtStatusToStr = function (code) { if (obj.AmtStatusCodes[code]) return obj.AmtStatusCodes[code]; else return "UNKNOWN_ERROR" }
     obj.AmtStatusCodes = {

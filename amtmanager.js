@@ -838,6 +838,7 @@ module.exports.CreateAmtManager = function (parent) {
             // If not LMS, has a AMT stack present and is in connected state, perform power operation.
             if ((dev.connType != 2) && (dev.state == 1) && (dev.amtstack != null)) {
                 // Action: 2 = Power on, 8 = Power down, 10 = reset
+                dev.powerAction = action;
                 try { dev.amtstack.RequestPowerStateChange(action, performPowerActionResponse); } catch (ex) { }
             }
         }
@@ -845,7 +846,17 @@ module.exports.CreateAmtManager = function (parent) {
 
     // Response to Intel AMT power action
     function performPowerActionResponse(stack, name, responses, status) {
-        //console.log('performPowerActionResponse', status);
+        const dev = stack.dev;
+        const action = dev.powerAction;
+        delete dev.powerAction;
+        if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this response.
+        if (status != 200) return;
+
+        // If this is Intel AMT 10 or higher and we are trying to wake the device, send an OS wake.
+        // This will wake the device from "Modern Standby".
+        if ((action == 2) && (dev.aquired.majorver > 9)) {
+            try { dev.amtstack.RequestOSPowerStateChange(2, function (stack, name, response, status) { }); } catch (ex) { }
+        }
     }
 
 

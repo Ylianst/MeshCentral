@@ -28,6 +28,8 @@ module.exports.CreateMeshScanner = function (parent) {
     const membershipIPv6 = 'FF02:0:0:0:0:0:0:FE';
     obj.agentCertificateHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'hex' }).toUpperCase();
     obj.error = 0;
+    obj.pendingOutboundPackets = [];
+    obj.pendingOutboundTimer = null;
 
     // Setup the multicast key if present
     if ((typeof obj.parent.args.localdiscovery == 'object') && (typeof obj.parent.args.localdiscovery.key == 'string') && (obj.parent.args.localdiscovery.key.length > 0)) {
@@ -227,34 +229,37 @@ module.exports.CreateMeshScanner = function (parent) {
         }
     }
 
+    // Send the next packet in the pending list, stop the timer if we are done.
+    function sendPendingPacket() {
+        if (obj.pendingOutboundPackets.length == 0) { if (obj.pendingOutboundTimer != null) { clearInterval(obj.pendingOutboundTimer); obj.pendingOutboundTimer = null; } return; }
+        var packet = obj.pendingOutboundPackets.shift();
+        if (packet != null) { packet[0].send(packet[1], 0, packet[1].length, packet[2], packet[3]); }
+    }
+
     // As a side job, we also send server wake-on-lan packets
     obj.wakeOnLan = function (macs, host) {
-        var i, j;
+        var i, j, futureTime = 0;
         for (i in macs) {
             var mac = macs[i].split(':').join('');
             var hexpacket = 'FFFFFFFFFFFF';
             for (j = 0; j < 16; j++) { hexpacket += mac; }
             var wakepacket = Buffer.from(hexpacket, 'hex');
-            //console.log(wakepacket.toString('hex'));
 
-            // Setup the wake function
-            const func = function wakeFunc() {
+            // Add all wake packets to the pending list
+            for (var k = 0; k < 2; k++) {
                 for (j in obj.servers4) {
-                    obj.servers4[j].send(wakeFunc.wakepacket, 0, wakeFunc.wakepacket.length, 7, '255.255.255.255');
-                    obj.servers4[j].send(wakeFunc.wakepacket, 0, wakeFunc.wakepacket.length, 16990, membershipIPv4);
-                    if (wakeFunc.host != null) { obj.servers4[j].send(wakeFunc.wakepacket, 0, wakeFunc.wakepacket.length, 7, wakeFunc.host); }
+                    obj.pendingOutboundPackets.push([obj.servers4[j], wakepacket, 7, '255.255.255.255']); // IPv4 Broadcast
+                    obj.pendingOutboundPackets.push([obj.servers4[j], wakepacket, 16990, membershipIPv4]); // IPv4 Multicast
+                    if (host != null) { obj.pendingOutboundPackets.push([obj.servers4[j], wakepacket, 7, host]); } // IPv4 Directed
                 }
                 for (j in obj.servers6) {
-                    obj.servers6[j].send(wakeFunc.wakepacket, 0, wakeFunc.wakepacket.length, 16990, membershipIPv6);
+                    obj.pendingOutboundPackets.push([obj.servers6[j], wakepacket, 16990, membershipIPv6]); // IPv6 Multicast
                 }
             }
-            func.wakepacket = wakepacket;
-            func.host = host;
 
-            // Call the wake function 3 times with small time intervals
-            func();
-            setTimeout(func, 200);
-            setTimeout(func, 500);
+            // Send each packet at 10ms interval
+            // This packet spacing is absolutly required, otherwise the outbound buffer gets filled up and packets get lost which often causes the machine not to wake.
+            if (obj.pendingOutboundTimer == null) { obj.pendingOutboundTimer = setInterval(sendPendingPacket, 10); }
         }
     };
 
