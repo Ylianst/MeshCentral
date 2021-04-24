@@ -246,7 +246,7 @@ module.exports.CreateMeshScanner = function (parent) {
             var wakepacket = Buffer.from(hexpacket, 'hex');
 
             // Add all wake packets to the pending list
-            for (var k = 0; k < 2; k++) {
+            for (var k = 0; k < 5; k++) {
                 for (j in obj.servers4) {
                     obj.pendingOutboundPackets.push([obj.servers4[j], wakepacket, 7, '255.255.255.255']); // IPv4 Broadcast
                     obj.pendingOutboundPackets.push([obj.servers4[j], wakepacket, 16990, membershipIPv4]); // IPv4 Multicast
