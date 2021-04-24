@@ -1118,6 +1118,8 @@ function handleServerCommand(data) {
                 // Send wake-on-lan on all interfaces for all MAC addresses in data.macs array. The array is a list of HEX MAC addresses.
                 //sendConsoleText("Server requesting wake-on-lan for: " + data.macs.join(', '));
                 sendWakeOnLanEx(data.macs);
+                sendWakeOnLanEx(data.macs);
+                sendWakeOnLanEx(data.macs);
                 break;
             }
             case 'runcommands': {
@@ -3768,10 +3770,14 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'wakeonlan': { // Send wake-on-lan
-                if ((args['_'].length != 1) || (args['_'][0].length != 12)) {
+                if ((args['_'].length != 1) || (args['_'][0].length != 12))
+                {
                     response = 'Proper usage: wakeonlan [mac], for example "wakeonlan 010203040506".';
-                } else {
+                } else
+                {
                     var count = sendWakeOnLanEx([args['_'][0]]);
+                    sendWakeOnLanEx([args['_'][0]]);
+                    sendWakeOnLanEx([args['_'][0]]);
                     response = 'Sending wake-on-lan on ' + count + ' interface(s).';
                 }
                 break;
