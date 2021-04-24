@@ -17,10 +17,8 @@ limitations under the License.
 process.on('uncaughtException', function (ex) {
     require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "uncaughtException1: " + ex });
 });
-if (process.platform == 'win32' && require('user-sessions').getDomain == null)
-{
-    require('user-sessions').getDomain = function getDomain(uid)
-    {
+if (process.platform == 'win32' && require('user-sessions').getDomain == null) {
+    require('user-sessions').getDomain = function getDomain(uid) {
         return (this.getSessionAttribute(uid, this.InfoClass.WTSDomainName));
     };
 }
@@ -745,13 +743,11 @@ function getServerTargetUrlEx(url) {
     return url;
 }
 
-function sendWakeOnLanEx_interval()
-{
+function sendWakeOnLanEx_interval() {
     var t = require('MeshAgent').wakesockets;
-    if (t.list.length == 0)
-    {
+    if (t.list.length == 0) {
         clearInterval(t);
-        require('MeshAgent').wakesockets = null;
+        delete require('MeshAgent').wakesockets;
         return;
     }
 
@@ -760,35 +756,27 @@ function sendWakeOnLanEx_interval()
     for (var x = 1; x <= 16; ++x) { magic += mac; }
     var magicbin = Buffer.from(magic, 'hex');
 
-    for(var i in t.sockets)
-    {
+    for (var i in t.sockets) {
         t.sockets[i].send(magicbin, 7, '255.255.255.255');
         //sendConsoleText('Sending wake packet on ' + JSON.stringify(t.sockets[i].address()));
     }
 }
-function sendWakeOnLanEx(hexMacList)
-{
+function sendWakeOnLanEx(hexMacList) {
     var ret = 0;
 
-    if (require('MeshAgent').wakesockets == null)
-    {
+    if (require('MeshAgent').wakesockets == null) {
         // Create a new interval timer
         require('MeshAgent').wakesockets = setInterval(sendWakeOnLanEx_interval, 10);
         require('MeshAgent').wakesockets.sockets = [];
         require('MeshAgent').wakesockets.list = hexMacList;
 
         var interfaces = require('os').networkInterfaces();
-        for (var adapter in interfaces)
-        {
-            if (interfaces.hasOwnProperty(adapter))
-            {
-                for (var i = 0; i < interfaces[adapter].length; ++i)
-                {
+        for (var adapter in interfaces) {
+            if (interfaces.hasOwnProperty(adapter)) {
+                for (var i = 0; i < interfaces[adapter].length; ++i) {
                     var addr = interfaces[adapter][i];
-                    if ((addr.family == 'IPv4') && (addr.mac != '00:00:00:00:00:00'))
-                    {
-                        try
-                        {
+                    if ((addr.family == 'IPv4') && (addr.mac != '00:00:00:00:00:00')) {
+                        try {
                             var socket = require('dgram').createSocket({ type: 'udp4' });
                             socket.bind({ address: addr.address });
                             socket.setBroadcast(true);
@@ -804,11 +792,9 @@ function sendWakeOnLanEx(hexMacList)
             }
         }
     }
-    else
-    {
+    else {
         // Append to an existing interval timer
-        for(var i in hexMacList)
-        {
+        for (var i in hexMacList) {
             require('MeshAgent').wakesockets.list.push(hexMacList[i]);
         }
         ret = require('MeshAgent').wakesockets.sockets.length;
@@ -1016,25 +1002,20 @@ function handleServerCommand(data) {
                     case 'setclip': {
                         // Set the load clipboard to a user value
                         //sendConsoleText('setClip: ' + JSON.stringify(data));
-                        if (typeof data.data == 'string')
-                        {
+                        if (typeof data.data == 'string') {
                             MeshServerLogEx(22, [data.data.length], "Setting clipboard content, " + data.data.length + " byte(s)", data);
-                            if (require('MeshAgent').isService)
-                            {
-                                if (process.platform != 'win32')
-                                {
+                            if (require('MeshAgent').isService) {
+                                if (process.platform != 'win32') {
                                     require('clipboard').dispatchWrite(data.data);
                                 }
-                                else
-                                {
+                                else {
                                     var tmp = "require('clipboard')(" + JSON.stringify(data.data) + ');process.exit();';
                                     tmp = Buffer.from(tmp).toString('base64');
                                     var uid = require('user-sessions').consoleUid();
                                     var domain = require('user-sessions').getDomain(uid);
                                     var user = domain + '\\' + require('user-sessions').getUsername(uid);
                                     var taskoptions = { env: { _target: process.execPath, _args: '-b64exec ' + tmp, _user: user } };
-                                    for (var c1e in process.env)
-                                    {
+                                    for (var c1e in process.env) {
                                         taskoptions.env[c1e] = process.env[c1e];
                                     }
 
@@ -1061,8 +1042,7 @@ function handleServerCommand(data) {
                                     child.waitExit();
                                 }
                             }
-                            else
-                            {
+                            else {
                                 require("clipboard")(data.data);
                             } // Set the clipboard
                             mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
@@ -1375,8 +1355,7 @@ function onFileWatcher(a, b) {
 */
 
 function getSystemInformation(func) {
-    try
-    {
+    try {
         var results = { hardware: require('identifiers').get() }; // Hardware info
 
         if (results.hardware && results.hardware.windows) {
@@ -2746,8 +2725,7 @@ function openUserDesktopUrl(url) {
                 var user = require('user-sessions').getUsername(uid);
                 var domain = require('user-sessions').getDomain(uid);
                 var taskoptions = { env: { _target: process.env['windir'] + '\\system32\\cmd.exe', _args: '/C START ' + url.split('&').join('^&'), _user: '"' + domain + '\\' + user + '"' } };
-                for (var c1e in process.env)
-                {
+                for (var c1e in process.env) {
                     taskoptions.env[c1e] = process.env[c1e];
                 }
                 var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], taskoptions);
@@ -2809,41 +2787,33 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'cs':
-                if (process.platform != 'win32')
-                {
+                if (process.platform != 'win32') {
                     response = 'Unknown command "cs", type "help" for list of avaialble commands.';
                     break;
                 }
-                switch (args['_'].length)
-                {
+                switch (args['_'].length) {
                     case 0:
-                        try
-                        {
+                        try {
                             var cs = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Power', 'CsEnabled');
                             response = "Connected Standby: " + (cs == 1 ? "ENABLED" : "DISABLED");
                         }
-                        catch(e)
-                        {
+                        catch (e) {
                             response = "This machine does not support Connected Standby";
                         }
                         break;
                     case 1:
-                        if ((args['_'][0].toUpperCase() != 'ENABLE' && args['_'][0].toUpperCase() != 'DISABLE'))
-                        {
+                        if ((args['_'][0].toUpperCase() != 'ENABLE' && args['_'][0].toUpperCase() != 'DISABLE')) {
                             response = "Proper usage:\r\n  cs [ENABLE|DISABLE]";
                         }
-                        else
-                        {
-                            try
-                            {
+                        else {
+                            try {
                                 var cs = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Power', 'CsEnabled');
                                 require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Power', 'CsEnabled', args['_'][0].toUpperCase() == 'ENABLE' ? 1 : 0);
 
                                 cs = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Power', 'CsEnabled');
                                 response = "Connected Standby: " + (cs == 1 ? "ENABLED" : "DISABLED");
                             }
-                            catch (e)
-                            {
+                            catch (e) {
                                 response = "This machine does not support Connected Standby";
                             }
                         }
@@ -2865,8 +2835,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'errorlog':
-                switch(args['_'].length)
-                {
+                switch (args['_'].length) {
                     case 0:
                         // All Error Logs
                         response = JSON.stringify(require('util-agentlog').read(), null, 1);
@@ -2884,17 +2853,14 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 response = JSON.stringify(_MSH(), null, 2);
                 break;
             case 'dnsinfo':
-                if (require('os').dns == null)
-                {
+                if (require('os').dns == null) {
                     response = "Unknown command \"" + cmd + "\", type \"help\" for list of avaialble commands.";
                 }
-                else
-                {
+                else {
                     response = 'DNS Servers: ';
                     var dns = require('os').dns();
-                    for(var i=0;i<dns.length;++i)
-                    {
-                        if (i > 0) { response += ', ';}
+                    for (var i = 0; i < dns.length; ++i) {
+                        if (i > 0) { response += ', '; }
                         response += dns[i];
                     }
                 }
@@ -3371,19 +3337,14 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'setclip': {
-                if (args['_'].length != 1)
-                {
+                if (args['_'].length != 1) {
                     response = 'Proper usage: setclip "sample text"';
-                } else
-                {
-                    if (require('MeshAgent').isService)
-                    {
-                        if (process.platform != 'win32')
-                        {
+                } else {
+                    if (require('MeshAgent').isService) {
+                        if (process.platform != 'win32') {
                             require('clipboard').dispatchWrite(args['_'][0]);
                         }
-                        else
-                        {
+                        else {
                             var tmp = "require('clipboard')(\"" + (args['_'][0]).split('"').join('\\"') + '");process.exit();';
                             tmp = Buffer.from(tmp).toString('base64');
 
@@ -3392,8 +3353,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                             var domain = require('user-sessions').getDomain(uid);
 
                             var taskoptions = { env: { _target: process.execPath, _args: '-b64exec ' + tmp, _user: domain + '\\' + user } };
-                            for (var c1e in process.env)
-                            {
+                            for (var c1e in process.env) {
                                 taskoptions.env[c1e] = process.env[c1e];
                             }
 
@@ -3421,8 +3381,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         }
                         response = 'Setting clipboard to: "' + args['_'][0] + '"';
                     }
-                    else
-                    {
+                    else {
                         require("clipboard")(args['_'][0]); response = 'Setting clipboard to: "' + args['_'][0] + '"';
                     }
                 }
@@ -3537,8 +3496,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                             thermals: require('sysinfo').thermals == null ? [] : require('sysinfo').thermals()
                         }, null, 1), this.sessionid);
                 }, function (e) {
-                        sendConsoleText(e);
-                    });
+                    sendConsoleText(e);
+                });
                 break;
             }
             case 'sysinfo': { // Return system information
@@ -3770,11 +3729,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'wakeonlan': { // Send wake-on-lan
-                if ((args['_'].length != 1) || (args['_'][0].length != 12))
-                {
+                if ((args['_'].length != 1) || (args['_'][0].length != 12)) {
                     response = 'Proper usage: wakeonlan [mac], for example "wakeonlan 010203040506".';
-                } else
-                {
+                } else {
                     var count = sendWakeOnLanEx([args['_'][0]]);
                     sendWakeOnLanEx([args['_'][0]]);
                     sendWakeOnLanEx([args['_'][0]]);
@@ -3998,10 +3955,8 @@ function sendAgentMessage(msg, icon) {
     sendAgentMessage.messages[sendAgentMessage.nextid++] = { msg: msg, icon: icon };
     require('MeshAgent').SendCommand({ action: 'sessions', type: 'msg', value: sendAgentMessage.messages });
 }
-function getOpenDescriptors()
-{
-    switch (process.platform)
-    {
+function getOpenDescriptors() {
+    switch (process.platform) {
         case "freebsd":
             var child = require('child_process').execFile('/bin/sh', ['sh']);
             child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
@@ -4026,12 +3981,10 @@ function getOpenDescriptors()
             child.stdin.write('\nexit\n');
             child.waitExit();
 
-            try
-            {
+            try {
                 return (JSON.parse(child.stdout.str.trim()));
             }
-            catch (e)
-            {
+            catch (e) {
                 return ([]);
             }
             break;
@@ -4054,12 +4007,10 @@ function getOpenDescriptors()
             child.stdin.write('\nexit\n');
             child.waitExit();
 
-            try
-            {
+            try {
                 return (JSON.parse(child.stdout.str.trim()));
             }
-            catch (e)
-            {
+            catch (e) {
                 return ([]);
             }
             break;
@@ -4067,49 +4018,39 @@ function getOpenDescriptors()
             return ([]);
     }
 }
-function closeDescriptors(libc, descriptors)
-{
+function closeDescriptors(libc, descriptors) {
     var fd = null;
-    while (descriptors.length > 0)
-    {
+    while (descriptors.length > 0) {
         fd = descriptors.pop();
-        if (fd > 2)
-        {
+        if (fd > 2) {
             libc.close(fd);
         }
     }
 }
-function linux_execv(name, agentfilename, sessionid)
-{
+function linux_execv(name, agentfilename, sessionid) {
     var libs = require('monitor-info').getLibInfo('libc');
     var libc = null;
 
-    if ((libs.length == 0 || libs.length == null) && require('MeshAgent').ARCHID == 33)
-    {
+    if ((libs.length == 0 || libs.length == null) && require('MeshAgent').ARCHID == 33) {
         var child = require('child_process').execFile('/bin/sh', ['sh']);
         child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
         child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
         child.stdin.write("ls /lib/libc.* | tr '\\n' '`' | awk -F'`' '{ " + ' printf "["; DEL=""; for(i=1;i<NF;++i) { printf "%s{\\"path\\":\\"%s\\"}",DEL,$i; DEL=""; } printf "]"; }\'\nexit\n');
         child.waitExit();
 
-        try
-        {
+        try {
             libs = JSON.parse(child.stdout.str.trim());
         }
-        catch(e)
-        {
+        catch (e) {
         }
     }
 
-    while (libs.length > 0)
-    {
-        try
-        {
+    while (libs.length > 0) {
+        try {
             libc = require('_GenericMarshal').CreateNativeProxy(libs.pop().path);
             break;
         }
-        catch (e)
-        {
+        catch (e) {
             libc = null;
             continue;
         }
@@ -4228,16 +4169,13 @@ function bsd_execv(name, agentfilename, sessionid) {
     sendAgentMessage('Self Update failed because execv() failed', 3);
 }
 
-function windows_execve(name, agentfilename, sessionid)
-{
+function windows_execve(name, agentfilename, sessionid) {
     var libc;
-    try
-    {
+    try {
         libc = require('_GenericMarshal').CreateNativeProxy('msvcrt.dll');
         libc.CreateMethod('_wexecve');
     }
-    catch (xx)
-    {
+    catch (xx) {
         sendConsoleText('Self Update failed because msvcrt.dll is missing', sessionid);
         sendAgentMessage('Self Update failed because msvcrt.dll is missing', 3);
         return;
