@@ -1532,14 +1532,19 @@ module.exports.CreateDB = function (parent, func) {
     obj.getBackupConfig = function () {
         var r = '', backupPath = parent.backuppath;
         if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
-        const dbname = (parent.args.mongodbname) ? (parent.args.mongodbname) : 'meshcentral';
+
+        var dbname = 'meshcentral';
+        if (parent.args.mongodbname) { dbname = parent.args.mongodbname; }
+        else if (parent.args.mariadb.database) { dbname = parent.args.mariadb.database; }
+        else if (parent.args.mysql.database) { dbname = parent.args.mysql.database; }
+
         const currentDate = new Date();
         const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
         const newAutoBackupFile = 'meshcentral-autobackup-' + fileSuffix;
         const newAutoBackupPath = parent.path.join(backupPath, newAutoBackupFile);
 
         r += 'DB Name: ' + dbname + '\r\n';
-        r += 'DB Type: ' + ['None', 'NeDB', 'MongoJS', 'MongoDB'][obj.databaseType] + '\r\n';
+        r += 'DB Type: ' + ['None', 'NeDB', 'MongoJS', 'MongoDB', 'MariaDB', 'MySQL'][obj.databaseType] + '\r\n';
         r += 'BackupPath: ' + backupPath + '\r\n';
         r += 'newAutoBackupFile: ' + newAutoBackupFile + '\r\n';
         r += 'newAutoBackupPath: ' + newAutoBackupPath + '\r\n';
@@ -1562,6 +1567,10 @@ module.exports.CreateDB = function (parent, func) {
             if (parent.config.settings.autobackup.mongodumppath != null) {
                 if (typeof parent.config.settings.autobackup.mongodumppath != 'string') { r += 'Bad mongodumppath type\r\n'; }
                 else { r += 'MongoDump Path: ' + parent.config.settings.autobackup.mongodumppath + '\r\n'; }
+            }
+            if (parent.config.settings.autobackup.mysqldumppath != null) {
+                if (typeof parent.config.settings.autobackup.mysqldumppath != 'string') { r += 'Bad mysqldump type\r\n'; }
+                else { r += 'MySqlDump Path: ' + parent.config.settings.autobackup.mysqldumppath + '\r\n'; }
             }
         }
 
