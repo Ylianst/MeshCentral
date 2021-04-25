@@ -467,7 +467,10 @@ module.exports.CreateDB = function (parent, func) {
         // Set the default database for the rest of this connections lifetime
         var useDatabase = 'USE ' + dbname;
         sqlDbQuery(useDatabase, null, function (err, docs) {
-            if (err != null) { console.log(err); parent.debug('db', 'ERROR: ' + useDatabase + ': ' + err); }
+            if (err != null) {
+                console.log("Unable to connect to database: " + err);
+                process.exit();
+            }
             if (err == null) {
                 parent.debug('db', 'Checking tables...');
                 sqlDbBatchExec([
