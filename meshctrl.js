@@ -1968,6 +1968,12 @@ function connectTunnel(url) {
         settings.tunnelws.on('message', function (rawdata) {
             var data = rawdata.toString();
             if (settings.tunnelwsstate == 1) {
+                // If the incoming text looks exactly like a control command, ignore it.
+                if ((typeof data == 'string') && (data.startsWith('{"ctrlChannel":"102938","type":"'))) {
+                    var ctrlCmd = null;
+                    try { ctrlCmd = JSON.parse(data); } catch (ex) { }
+                    if ((ctrlCmd != null) && (ctrlCmd.ctrlChannel == '102938') && (ctrlCmd.type != null)) return; // This is a control command, like ping/pong. Ignore it.
+                }
                 process.stdout.write(data);
             } else if (settings.tunnelwsstate == 0) {
                 if (data == 'c') { console.log('Connected.'); } else if (data == 'cr') { console.log('Connected, session is being recorded.'); } else return;

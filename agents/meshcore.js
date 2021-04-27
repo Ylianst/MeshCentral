@@ -1610,7 +1610,7 @@ function onTunnelClosed() {
 function onTunnelSendOk() { /*sendConsoleText("Tunnel #" + this.index + " SendOK.", this.sessionid);*/ }
 function onTunnelData(data) {
     //console.log("OnTunnelData");
-    sendConsoleText('OnTunnelData, ' + data.length + ', ' + typeof data + ', ' + data);
+    //sendConsoleText('OnTunnelData, ' + data.length + ', ' + typeof data + ', ' + data);
 
     // If this is upload data, save it to file
     if ((this.httprequest.uploadFile) && (typeof data == 'object') && (data[0] != 123)) {
@@ -2547,7 +2547,7 @@ function onTunnelControlData(data, ws) {
     if (ws == null) { ws = this; }
     if (typeof data == 'string') { try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON: ' + data); return; } }
     else if (typeof data == 'object') { obj = data; } else { return; }
-    sendConsoleText('onTunnelControlData(' + ws.httprequest.protocol + '): ' + JSON.stringify(data));
+    //sendConsoleText('onTunnelControlData(' + ws.httprequest.protocol + '): ' + JSON.stringify(data));
     //console.log('onTunnelControlData: ' + JSON.stringify(data));
 
     switch (obj.type) {
