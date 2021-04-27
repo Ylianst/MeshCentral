@@ -2975,7 +2975,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Create mesh
                         else if (common.validateString(command.meshname, 1, 128) == false) { err = 'Invalid group name'; } // Meshname is between 1 and 64 characters
                         else if ((command.desc != null) && (common.validateString(command.desc, 0, 1024) == false)) { err = 'Invalid group description'; } // Mesh description is between 0 and 1024 characters
-                        else if ((command.meshtype !== 1) && (command.meshtype !== 2)) { err = 'Invalid group type'; }
+                        else if ((command.meshtype < 1) && (command.meshtype > 3)) { err = 'Invalid group type'; } // Device group types are 1 = AMT, 2 = Agent, 3 = Local
+                        else if ((parent.args.wanonly == true) && (command.meshtype == 3)) { err = 'Invalid group type'; } // Local device group type is not allowed in WAN mode
                     } catch (ex) { err = 'Validation exception: ' + ex; }
 
                     // Handle any errors
@@ -3617,6 +3618,37 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
+            case 'addlocaldevice':
+                {
+                    if (args.wanonly == true) return; // This is a WAN-only server, local Intel AMT computers can't be added
+                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
+                    if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+                    if (common.validateString(command.devicename, 1, 256) == false) break; // Check device name
+                    if (common.validateString(command.hostname, 1, 256) == false) break; // Check hostname
+                    if ((command.type != 4) && (command.type != 6) && (command.type != 29)) break; // Check device type
+
+                    // Get the mesh
+                    mesh = parent.meshes[command.meshid];
+                    if (mesh) {
+                        if (mesh.mtype != 3) return; // This operation is only allowed for mesh type 3, local device agentless mesh.
+
+                        // Check if this user has rights to do this
+                        if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_MANAGECOMPUTERS) == 0) return;
+
+                        // Create a new nodeid
+                        parent.crypto.randomBytes(48, function (err, buf) {
+                            // Create the new node
+                            nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                            var device = { type: 'node', _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, mtype: 3, agent: { id: command.type, caps: 0 } };
+                            db.Set(device);
+
+                            // Event the new node
+                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id });
+                        });
+                    }
+
+                    break;
+                }
             case 'addamtdevice':
                 {
                     if (args.wanonly == true) return; // This is a WAN-only server, local Intel AMT computers can't be added
@@ -3642,7 +3674,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Create a new nodeid
                         parent.crypto.randomBytes(48, function (err, buf) {
-                            // create the new node
+                            // Create the new node
                             nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                             var device = { type: 'node', _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: command.amttls } };
                             db.Set(device);

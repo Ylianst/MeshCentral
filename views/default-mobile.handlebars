@@ -3397,7 +3397,7 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if ((meshrights & (4 + 8 + 64)) != 0) { x += '<input type=button value="' + "Actions" + '" onclick=deviceActionFunction() />'; }
+                if (((meshrights & (4 + 8 + 64)) != 0) && (node.mtype != 3)) { x += '<input type=button value="' + "Actions" + '" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value=Notes onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast onclick=deviceToastFunction() />';  }
 
@@ -3496,8 +3496,8 @@
             ) { menus.push({ n: "Terminal", f: 'setupDeviceMenu(5)' }); }
 
             if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: "Files", f: 'setupDeviceMenu(2)' }); }
-            if ((currentDevicePanel != 3) && (currentNode != null)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
-            if ((currentDevicePanel != 4) && (currentNode != null) && (meshrights & 0x00000010)) { menus.push({ n: "Console", f: 'setupDeviceMenu(4)' }); }
+            if ((currentDevicePanel != 3) && (currentNode != null) && (currentNode.mtype != 3)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
+            if ((currentDevicePanel != 4) && (currentNode != null) && (meshrights & 0x00000010) && (currentNode.mtype == 2)) { menus.push({ n: "Console", f: 'setupDeviceMenu(4)' }); }
             updateFooterMenu(menus);
             updateCurrentUrl();
             if (currentDevicePanel == 1) { deskAdjust(); }
