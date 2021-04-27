@@ -3695,6 +3695,7 @@
                             var extra = '';
                             if (view == 2) { r += '<tr><td colspan=5>'; }
                             if (meshes[node.meshid] && (meshes[node.meshid].mtype == 1)) { extra = '<span class=devHeaderx>' + ", Intel&reg; AMT only" + '</span>'; }
+                            if (meshes[node.meshid] && (meshes[node.meshid].mtype == 3)) { extra = '<span class=devHeaderx>' + ", Local Devices" + '</span>'; }
                             if ((view == 1) && (current != null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                             if (view == 2) { r += '<div>'; }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span style=float:right>';
@@ -3849,13 +3850,16 @@
                             r += getMeshActions(mesh, meshrights);
                             r += '</span></td></tr><tr>';
                             if (mesh.mtype == 1) {
-                                r += '<td><div style=padding:10px><i>' + "No Intel&reg; AMT devices in this mesh";
+                                r += '<td><div style=padding:10px><i>' + "No Intel&reg; AMT devices in this device group";
                                 if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addDeviceToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
                             } else if (mesh.mtype == 2) {
                                 r += '<td>';
                                 r += '<div id=DevxCol' + deviceHeaderId2 + ((collapsed === true)?' style=display:none':'') + '>'; // Open collapse div
-                                r += '<div style=padding:10px><i>' + "No devices in this group";
+                                r += '<div style=padding:10px><i>' + "No devices in this device group";
                                 if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
+                            } else if (mesh.mtype == 3) {
+                                r += '<td><div style=padding:10px><i>' + "No local devices in this device group";
+                                if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addLocalDeviceToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
                             }
                             r += '.</i></div></td>';
                             r += '</div>'; // End collapsing area
@@ -4418,14 +4422,39 @@
                     r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel&reg; AMT activation and configuration." + '" onclick=\'return showAmtSetup("' + mesh._id + '")\'>' + "Setup" + '</a>';
                 }
             }
-            if (mesh.mtype == 2) {
+            if (mesh.mtype == 2) { // Agent device group
                 r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new computer to this device group by installing the mesh agent." + '" onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "Add Agent" + '</a>';
                 if ((features & 2) == 0) { r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Invite someone to install the mesh agent on this device group." + '" onclick=\'return inviteAgentToMesh("' + mesh._id + '")\'>' + "Invite" + '</a>'; }
+            }
+            if ((mesh.mtype == 3) && ((features & 1) == 0)) { // Local device group & if not WAN-Only
+                r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add device located on the local network." + '" onclick=\'return addLocalDeviceToMesh("' + mesh._id + '")\'>' + "Add Device" + '</a>';
             }
             //if (mesh.amt && (mesh.amt.type > 2)) { // ACM activation or Full Automatic
             //    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'>' + "ACM" + '</a>';
             //}
             return r;
+        }
+
+        function addLocalDeviceToMesh(meshid) {
+            if (xxdialogMode) return false;
+            var mesh = meshes[meshid];
+            var x = format("Add a local device to device group \"{0}\".", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue("Device Name", '<input id=dp1devicename style=width:230px maxlength=32 autocomplete=off onchange=validateLocalDeviceToMesh() onkeyup=validateLocalDeviceToMesh() />');
+            x += addHtmlValue("Hostname", '<input id=dp1hostname style=width:230px maxlength=32 autocomplete=off placeholder="' + "Same as device name" + '" onchange=validateLocalDeviceToMesh() onkeyup=validateLocalDeviceToMesh() />');
+            x += addHtmlValue("Type", '<select id=dp1type style=width:236px><option value=4>' + "Windows (RDP)" + '</option><option value=6>' + "Linux (SSH/SCP/VNC)" + '</option><option value=29>' + "macOS (SSH/SCP/VNC)" + '</option></select>');
+            setDialogMode(2, "Add local device", 3, addLocalDeviceToMeshEx, x, meshid);
+            validateLocalDeviceToMesh();
+            Q('dp1devicename').focus();
+        }
+
+        function validateLocalDeviceToMesh() {
+            QE('idx_dlgOkButton', Q('dp1devicename').value.length > 0);
+        }
+
+        function addLocalDeviceToMeshEx(button, meshid) {
+            var host = Q('dp1hostname').value;
+            if (host == '') host = Q('dp1devicename').value;
+            meshserver.send({ action: 'addlocaldevice', meshid: meshid, devicename: Q('dp1devicename').value, hostname: host, type: Q('dp1type').value });
         }
 
         function addDeviceToMesh(meshid) {
@@ -6284,7 +6313,7 @@
                 if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute(((node.users.length > 1)?'Active Users':'Active User'), EscapeHtml(node.users.join(', '))); }
 
                 // Display device user consent
-                if ((node.agent != null) && (node.agent.id != 14)) {
+                if ((node.agent != null) && (node.agent.id != 14) && (node.mtype != 3)) {
                     var meshFeatures = [];
                     var consent = 0;
                     if (node.consent) { consent = node.consent; }
@@ -6323,7 +6352,7 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if ((meshrights & (4 + 8 + 64)) != 0) { x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
+                if (((meshrights & (4 + 8 + 64)) != 0) && (node.mtype != 3)) { x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponentEx(node._id) + '") />';
                 x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
                 if ((meshrights & 8) && ((connectivity & 1) || ((node.pmt == 1) && ((features2 & 2) != 0)))) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
@@ -6364,7 +6393,7 @@
                     x += '&nbsp;<a href=# onclick=p10showDeleteNodeDialog("' + node._id + '") title="' + "Remove this device" + '">' + "Delete Device" + '</a>';
                 }
                 x += '</div><div class="p10html3left">';
-                if (node.agent) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title="' + "Show device network interface information" + '">' + "Interfaces" + '</a>&nbsp;';
+                if ((node.agent) && (node.mtype != 3)) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title="' + "Show device network interface information" + '">' + "Interfaces" + '</a>&nbsp;';
                 if ((features & 0x00008000) && (xxmap != null)) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title="' + "Show device locations information" + '">' + "Location" + '</a>&nbsp;';
                 if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) { // Check if we should view tools
                     if ((terminalAccess) && ((meshrights & 8) != 0) && (node.agent != null) && (node.agent.id != 14)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="' + "Traffic router used to connect to a device thru this server" + '.">' + "MeshCmd" + '</a>&nbsp;';
@@ -6445,7 +6474,7 @@
                 if (consoleRights) { setupConsole(); } else { if (panel == 15) { panel = 10; } }
 
                 // Show or hide the tabs
-                // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent
+                // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent, 3 = Local Device
                 // node.agent.caps (bitmask): 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console
                 QV('MainDevDesktop', desktopAccess && ((((node.agent == null) && ((typeof node.intelamt.sku !== 'number') || ((node.intelamt.sku & 8) != 0)))
                     || ((node.agent != null) && ((node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2)))))
@@ -6453,6 +6482,7 @@
                     );
                 QV('MainDevTerminal', (((node.agent == null) && (node.intelamt != null)) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
                 QV('MainDevFiles', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 4) != 0) && (meshrights & 8) && fileAccess);
+                QV('MainDevInfo', (node.mtype != 3));
                 QV('MainDevAmt', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8) && amtAccess);
                 QV('MainDevConsole', (consoleRights && ((node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 8) != 0))) && (meshrights & 8));
                 QV('MainDevPlugins', false);
@@ -10354,9 +10384,10 @@
             if ((features & 0x00040000) && (count2factoraAuths() == 0)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return false; }
 
             // We are allowed, let's prompt to information
-            var x = "Create a new device group using the options below." + '<br /><br />';
+            var x = "Create a new device group using the options below." + '<br /><br />', localGroupType = '';
             x += addHtmlValue("Name", '<input id=dp2meshname style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
-            x += addHtmlValue("Type", '<div style=width:230px;margin:0;padding:0><select id=dp2meshtype style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) ><option value=2>' + "Manage using a software agent" + '</option><option value=1>' + "Intel&reg; AMT only, no agent" + '</option></select></div>');
+            if ((features & 1) == 0) { localGroupType += '<option value=3>' + "Local devices, no agent" + '</option>'; }
+            x += addHtmlValue("Type", '<div style=width:230px;margin:0;padding:0><select id=dp2meshtype style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) ><option value=2>' + "Manage using a software agent" + '</option><option value=1>' + "Intel&reg; AMT only, no agent" + '</option>' + localGroupType + '</select></div>');
             x += addHtmlValue("Description", '<div style=width:230px;margin:0;padding:0><textarea id=dp2meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
             setDialogMode(2, "New Device Group", 3, account_createMeshEx, x);
             account_validateMeshCreate();
@@ -10585,6 +10616,7 @@
             var meshtype = format("Unknown #{0}", currentMesh.mtype);
             if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMT only, no agent";
             if (currentMesh.mtype == 2) meshtype = "Managed using a software agent";
+            if (currentMesh.mtype == 3) meshtype = "Local devices, no agent";
 
             var x = '';
             if ((args.hide & 8) != 0) { x += addHtmlValue("Name", mname); } // If title bar is hidden, display the mesh name here
@@ -10635,15 +10667,17 @@
                 x += addHtmlValue("User Consent", addLinkConditional(meshFeatures, 'p20editmeshconsent(1)', meshrights & 1));
             }
 
-            if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 1024) == 0)) {
-                // Display user notification
-                var meshNotify = 0, meshNotifyStr = [];
-                if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
-                if (meshNotify & 2) { meshNotifyStr.push("Connect"); }
-                if (meshNotify & 4) { meshNotifyStr.push("Disconnect"); }
-                if (meshNotify & 8) { meshNotifyStr.push("Intel&reg; AMT"); }
-                if (meshNotifyStr.length == 0) { meshNotifyStr.push('<i>' + "None" + '</i>'); }
-                x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
+            if (currentMesh.mtype != 3) {
+                if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 1024) == 0)) {
+                    // Display user notification
+                    var meshNotify = 0, meshNotifyStr = [];
+                    if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
+                    if (meshNotify & 2) { meshNotifyStr.push("Connect"); }
+                    if (meshNotify & 4) { meshNotifyStr.push("Disconnect"); }
+                    if (meshNotify & 8) { meshNotifyStr.push("Intel&reg; AMT"); }
+                    if (meshNotifyStr.length == 0) { meshNotifyStr.push('<i>' + "None" + '</i>'); }
+                    x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
+                }
             }
 
             // Display invitation codes
@@ -10654,7 +10688,7 @@
             }
 
             // If the Intel AMT manager is active on the server, show the Intel AMT policy edit box.
-            if ((features2 & 1) != 0) {
+            if ((currentMesh.mtype != 3) && ((features2 & 1) != 0)) {
                 // Intel AMT setup
                 var intelAmtPolicy = "No Policy";
                 if (currentMesh.amt) {
