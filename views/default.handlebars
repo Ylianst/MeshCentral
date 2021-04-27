@@ -558,6 +558,7 @@
                     <div id=p10html2></div>
                     <div id=p10html3></div>
                     <div id=p10html4></div>
+                    <div id=p10html5></div>
                 </div>
             </div>
             <div id=p11 class="noselect" style="display:none">
@@ -4106,7 +4107,7 @@
 
             // Node
             var icon = node.icon;
-            if ((!node.conn) || (node.conn == 0)) { icon += ' gray'; }
+            if (((!node.conn) || (node.conn == 0)) && (node.mtype != 3)) { icon += ' gray'; }
 
             if (view == 1) {
                 div.innerHTML = '<table id=devs cmenu=devsContentMenu onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=width:100%;height:100%><tr><td style=width:22px><input class="' + node.meshid + ' DeviceCheckbox" onchange=p1devcheck(event) value=devid_' + node._id + ' type=checkbox ' + (checkedNodeids[node._id]?' checked':'') + '></td><td><table onclick=gotoDevice(\'' + node._id + '\',null,null,event) border=0 cellspacing=0 style=width:100%;height:100%;cursor:pointer><tr><td style=width:50px tabindex=0 onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)"><div class="i' + icon + '" style=width:50px></div></td><td class=g1t></td><td class=e2t><div class=e1t style=width:' + ((div.clientWidth) - 120) + 'px title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></td><td class=g2t></td></tr></table></td></tr></table>' + devNotify;
@@ -5255,7 +5256,6 @@
                         nodeid = contextelement.children[1].attributes.onclick.value;
                     }
                     var node = getNodeFromId(nodeid.substring(12, nodeid.length - 18));
-                    var mesh = meshes[node.meshid];
                     var rights = GetNodeRights(node);
                     var consoleRights = ((rights & 16) != 0);
 
@@ -5264,11 +5264,12 @@
                     var terminalAccess = ((rights == 0xFFFFFFFF) || ((rights & 512) == 0));
                     var fileAccess = ((rights == 0xFFFFFFFF) || ((rights & 1024) == 0));
 
-                    QV('cxdesktop', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2))) && ((rights & 8) || (rights & 256)) && desktopAccess);
-                    QV('cxterminal', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (rights & 8) && terminalAccess);
-                    QV('cxfiles', ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (rights & 8) && fileAccess);
+                    QV('cxdesktop', ((node.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2))) && ((rights & 8) || (rights & 256)) && desktopAccess);
+                    QV('cxterminal', ((node.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (rights & 8) && terminalAccess);
+                    QV('cxfiles', ((node.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (rights & 8) && fileAccess);
                     QV('cxevents', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (rights & 8));
-                    QV('cxconsole', (consoleRights && (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (rights & 8));
+                    QV('cxdetails', node.mtype != 3);
+                    QV('cxconsole', (consoleRights && (node.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (rights & 8));
                     QV('cxmgroupsplit', true);
                     QV('cxstar', true);
                     break;
@@ -6401,7 +6402,7 @@
                 if ((args.xterm === 0) && (node.agent) && ((node.agent.caps & 2) != 0) && ((meshrights & 8) != 0) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0))) { x += '<a href=# onclick=p10openxterm(event,"' + node._id + '") title="' + "Open XTerm terminal" + '">' + "XTerm" + '</a>&nbsp;'; }
 
                 // RDP link, show this link only of the remote machine is Windows.
-                if (((connectivity & 1) != 0) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
+                if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
                     if ((node.agent.id > 0) && (node.agent.id < 5)) {
                         if (navigator.platform.toLowerCase() == 'win32') {
                             if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false)) {
@@ -6435,12 +6436,12 @@
                 }
 
                 // noVNC link
-                if (((connectivity & 1) != 0) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x20000000) == 0) && (node.agent.id != 14)) {
+                if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x20000000) == 0) && (node.agent.id != 14)) {
                     x += '<a href=# cmenu=rfbPortContextMenu id=rfbLink onclick=p10rfb("' + node._id + '") title="' + "Launch noVNC session to this device" + '.">' + "noVNC" + '</a>&nbsp;';
                 }
 
                 // MSTSC.js link
-                if (((connectivity & 1) != 0) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x40000000) == 0) && (node.agent.id != 14)) {
+                if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x40000000) == 0) && (node.agent.id != 14)) {
                     x += '<a href=# cmenu=altPortContextMenu id=mstscLink onclick=p10mstsc("' + node._id + '") title="' + "Launch web-based RDP session to this device" + '.">' + "Web-RDP" + '</a>&nbsp;';
                 }
 
@@ -6448,7 +6449,15 @@
                 if ((meshrights == 0xFFFFFFFF) && (features & 0x00400000)) { x += '<a href=# onclick=p10showMqttLoginDialog("' + node._id + '") title="' + "Get MQTT login credentials for this device." + '">' + "MQTT Login" + '</a>&nbsp;'; }
                 x += '</div><br>'
 
-                QH('p10html3', x);
+                if (node.mtype == 3) {
+                    // If this is a local device, there is no power timeline so display the links below the user rights.
+                    QH('p10html3', '');
+                    QH('p10html5', x);
+                } else {
+                    // This is a normal device, display the links below the power timeline.
+                    QH('p10html3', x);
+                    QH('p10html5', '');
+                }
 
                 // Set the node power state
                 var powerstate = PowerStateStr(node.state);
@@ -6465,7 +6474,7 @@
 
                 // Set the node icon
                 Q('MainComputerImage').setAttribute('src', 'images/icons256-' + node.icon + '-1.png');
-                Q('MainComputerImage').className = ((!node.conn) || (node.conn == 0)?'gray':'');
+                Q('MainComputerImage').className = ((((!node.conn) || (node.conn == 0)) && (node.mtype != 3))?'gray':'');
 
                 // Setup/Refresh the desktop tab
                 if (terminalAccess) { setupTerminal(); }
@@ -7000,7 +7009,7 @@
 
         // Look to see if we need to update the device timeline
         function updateDeviceTimeline() {
-            if ((meshserver.State != 2) || (powerTimelineNode == null) || (powerTimelineUpdate == null) || (currentNode == null)) return;
+            if ((meshserver.State != 2) || (powerTimelineNode == null) || (powerTimelineUpdate == null) || (currentNode == null) || (currentNode.mtype == 3)) return;
             if ((powerTimelineNode == powerTimelineReq) && (currentNode._id == powerTimelineNode) && (powerTimelineUpdate < Date.now())) {
                 powerTimelineUpdate = null;
                 meshserver.send({ action: 'powertimeline', nodeid: currentNode._id });
@@ -7010,7 +7019,7 @@
 
         // Draw device power bars. The bars are 766px wide.
         function drawDeviceTimeline() {
-            if ((currentNode == null) || (xxcurrentView < 10) || (xxcurrentView > 19)) return;
+            if ((currentNode == null) || (xxcurrentView < 10) || (xxcurrentView > 19) || (currentNode.mtype == 3)) return;
             var timeline = null, now = Date.now();
             if (currentNode._id == powerTimelineNode) { timeline = powerTimeline; }
 
