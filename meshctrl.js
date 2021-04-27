@@ -2007,18 +2007,26 @@ function connectTunnel(url) {
                 try { cmd = JSON.parse(rawdata.toString()); } catch (ex) { return; }
                 if (cmd.reqid == 'up') {
                     if ((cmd.action == 'uploadack') || (cmd.action == 'uploadstart')) {
-                        var buf = Buffer.alloc(16384);
-                        var len = require('fs').readSync(settings.uploadFile, buf, 1, 16383, settings.uploadPtr);
-                        var start = 1;
-                        settings.uploadPtr += len;
-                        if (len > 0) {
-                            if ((buf[1] == 0) || (buf[1] == 123)) { start = 0; buf[0] = 0; len++; } // If the buffer starts with 0 or 123, we must add an extra 0 at the start of the buffer
-                            settings.tunnelws.send(buf.slice(start, start + len));
-                        } else {
-                            console.log('Upload done, ' + settings.uploadPtr + ' bytes sent.');
-                            if (settings.uploadFile != null) { require('fs').closeSync(settings.uploadFile); }
-                            process.exit();
+                        settings.inFlight--;
+                        if (settings.uploadFile == null) { if (settings.inFlight == 0) { process.exit(); } return; } // If the file is closed and there is no more in-flight data, exit.
+                        var loops = (cmd.action == 'uploadstart')?16:1; // If this is the first data to be sent, hot start now. We are going to have 16 blocks of data in-flight.
+                        for (var i = 0; i < loops; i++) {
+                            if (settings.uploadFile == null) continue;
+                            var buf = Buffer.alloc(65565);
+                            var len = require('fs').readSync(settings.uploadFile, buf, 1, 65564, settings.uploadPtr);
+                            var start = 1;
+                            settings.uploadPtr += len;
+                            if (len > 0) {
+                                if ((buf[1] == 0) || (buf[1] == 123)) { start = 0; buf[0] = 0; len++; } // If the buffer starts with 0 or 123, we must add an extra 0 at the start of the buffer
+                                settings.inFlight++;
+                                settings.tunnelws.send(buf.slice(start, start + len));
+                            } else {
+                                console.log('Upload done, ' + settings.uploadPtr + ' bytes sent.');
+                                if (settings.uploadFile != null) { require('fs').closeSync(settings.uploadFile); delete settings.uploadFile; }
+                                if (settings.inFlight == 0) { process.exit(); return; } // File is closed, if there is no more in-flight data, exit.
+                            }
                         }
+
                     } else if (cmd.action == 'uploaderror') {
                         if (settings.uploadFile != null) { require('fs').closeSync(settings.uploadFile); }
                         console.log('Upload error.');
@@ -2033,6 +2041,8 @@ function connectTunnel(url) {
                 settings.uploadSize = require('fs').statSync(args.file).size;
                 settings.uploadFile = require('fs').openSync(args.file, 'r');
                 settings.uploadPtr = 0;
+                settings.inFlight = 1;
+                console.log('Uploading...');
                 settings.tunnelws.send(JSON.stringify({ action: 'upload', reqid: 'up', path: args.target, name: require('path').basename(args.file), size: settings.uploadSize }));
             }
         });
