@@ -1610,7 +1610,7 @@ function onTunnelClosed() {
 function onTunnelSendOk() { /*sendConsoleText("Tunnel #" + this.index + " SendOK.", this.sessionid);*/ }
 function onTunnelData(data) {
     //console.log("OnTunnelData");
-    //sendConsoleText('OnTunnelData, ' + data.length + ', ' + typeof data + ', ' + data);
+    sendConsoleText('OnTunnelData, ' + data.length + ', ' + typeof data + ', ' + data);
 
     // If this is upload data, save it to file
     if ((this.httprequest.uploadFile) && (typeof data == 'object') && (data[0] != 123)) {
@@ -2547,30 +2547,25 @@ function onTunnelControlData(data, ws) {
     if (ws == null) { ws = this; }
     if (typeof data == 'string') { try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON: ' + data); return; } }
     else if (typeof data == 'object') { obj = data; } else { return; }
-    //sendConsoleText('onTunnelControlData(' + ws.httprequest.protocol + '): ' + JSON.stringify(data));
+    sendConsoleText('onTunnelControlData(' + ws.httprequest.protocol + '): ' + JSON.stringify(data));
     //console.log('onTunnelControlData: ' + JSON.stringify(data));
 
-    if (obj.action) {
-        switch (obj.action) {
-            case 'lock': {
-                // Lock the current user out of the desktop
-                try {
-                    if (process.platform == 'win32') {
-                        MeshServerLogEx(53, null, "Locking remote user out of desktop", ws.httprequest);
-                        var child = require('child_process');
-                        child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 });
-                    }
-                } catch (e) { }
-                break;
-            }
-            default:
-                // Unknown action, ignore it.
-                break;
-        }
-        return;
-    }
-
     switch (obj.type) {
+        case 'lock': {
+            // Look for a TSID
+            var tsid = null;
+            if ((ws.httprequest.xoptions != null) && (typeof ws.httprequest.xoptions.tsid == 'number')) { tsid = ws.httprequest.xoptions.tsid; }
+
+            // Lock the current user out of the desktop
+            try {
+                if (process.platform == 'win32') {
+                    MeshServerLogEx(53, null, "Locking remote user out of desktop", ws.httprequest);
+                    var child = require('child_process');
+                    child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1, uid: tsid });
+                }
+            } catch (e) { }
+            break;
+        }
         case 'options': {
             // These are additional connection options passed in the control channel.
             //sendConsoleText('options: ' + JSON.stringify(obj));
