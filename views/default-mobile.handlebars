@@ -3064,7 +3064,7 @@
 
                 // Node
                 var icon = node.icon, nodestate = NodeStateStr(node);
-                if ((!node.conn) || (node.conn == 0)) { icon += ' gray'; }
+                if (((!node.conn) || (node.conn == 0)) && (node.mtype != 3)) { icon += ' gray'; }
                 div.innerHTML = '<div>' + devNotify + '<div class="i' + icon + ' devList2"></div><div class=devList3><div class=devList4><b>' + name + '</b></div><div class=devList5>' + nodestate + '</div></div></div>';
             } else {
                 div.innerHTML = ''; // Hide
@@ -3654,12 +3654,13 @@
 
         // Look to see if we need to update the device timeline
         function updateDeviceTimeline() {
-            if ((meshserver.State != 2) || (powerTimelineNode == null) || (powerTimelineUpdate == null) || (currentNode == null)) return;
+            if ((meshserver.State != 2) || (powerTimelineNode == null) || (powerTimelineUpdate == null) || (currentNode == null) || (currentNode.mtype == 3)) return;
             if ((powerTimelineNode == powerTimelineReq) && (currentNode._id == powerTimelineNode) && (powerTimelineUpdate < Date.now())) { powerTimelineUpdate = null; meshserver.send({ action: 'powertimeline', nodeid: currentNode._id }); }
         }
 
         // Draw device power bars. The bars are 766px wide.
         function drawDeviceTimeline() {
+            if (currentNode.mtype == 3) return;
             var timeline = null, now = Date.now();
             if (currentNode._id == powerTimelineNode) { timeline = powerTimeline; }
 
