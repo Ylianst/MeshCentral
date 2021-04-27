@@ -3120,7 +3120,7 @@ function mainStart() {
         }
 
         // Build the list of required modules
-        var modules = ['ws', 'cbor@5.2.0', 'nedb', 'https', 'yauzl', 'xmldom', 'ipcheck', 'express', 'archiver@4.0.2', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'cookie-session', 'express-handlebars'];
+        var modules = ['ws', 'cbor@5.2.0', 'nedb', 'https', 'yauzl', 'xmldom', 'ipcheck', 'express', 'archiver@4.0.2', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'cookie-session', 'express-handlebars'];
         if (require('os').platform() == 'win32') { modules.push('node-windows'); modules.push('loadavg-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (mstsc == true) { modules.push('node-rdpjs-2'); }
