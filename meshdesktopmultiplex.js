@@ -444,6 +444,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             try { json = JSON.parse(data); } catch (ex) { }
             if (json == null) return;
             if ((json.type == 'options') && (obj.protocolOptions == null)) { obj.protocolOptions = json; }
+            if ((json.ctrlChannel == '102938') && (json.type == 'lock') && (viewer.viewOnly == false)) { obj.sendToAgent('{"ctrlChannel":"102938","type":"lock"}'); } // Account lock support
             return;
         }
 
