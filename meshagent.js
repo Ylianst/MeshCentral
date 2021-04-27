@@ -1479,13 +1479,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     break;
                 }
                 case 'meshToolInfo': {
+                    // Return information about a MeshCentral tool. Current tools are 'MeshCentralRouter' and 'MeshCentralAssistant'
+                    // Information includes file hash and download location URL
                     if (typeof command.name != 'string') break;
                     var info = parent.parent.meshToolsBinaries[command.name];
                     if ((command.hash != null) && (info.hash == command.hash)) return;
-                    const responseCmd = { action: 'meshToolInfo', name: command.name, hash: info.hash, size: info.size, url: info.url };
+                    const responseCmd = { action: 'meshToolInfo', name: command.name, tag: command.tag, sessionid: command.sessionid, hash: info.hash, size: info.size, url: info.url };
                     if (command.cookie === true) { responseCmd.url += ('&auth=' + parent.parent.encodeCookie({ download: info.dlname }, parent.parent.loginCookieEncryptionKey)); }
                     if (command.pipe === true) { responseCmd.pipe = true; }
-                    if (parent.webCertificateHashs[domain.id] != null) { responseCmd.serverhash = Buffer.from(parent.webCertificateHashs[domain.id], 'binary').toString('hex'); }
+                    if (parent.webCertificateHashs[domain.id] != null) { responseCmd.serverhash = Buffer.from(parent.webCertificateHashs[domain.id],'binary').toString('hex'); }
                     try { ws.send(JSON.stringify(responseCmd)); } catch (ex) { }
                     break;
                 }
