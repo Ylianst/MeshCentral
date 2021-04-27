@@ -1273,6 +1273,17 @@ function handleServerCommand(data) {
                 break;
             case 'meshToolInfo':
                 if (data.pipe == true) { delete data.pipe; delete data.action; data.cmd = 'meshToolInfo'; broadcastToRegisteredApps(data); }
+                if (data.tag == 'info') { sendConsoleText(JSON.stringify(data, null, 2)); }
+                if (data.tag == 'install') {
+                    data.func = function (options, success) {
+                        sendConsoleText('Download of MeshCentral Assistant ' + (success?'succeed':'failed'));
+                        if (success) {
+                            // TODO: Install & Run
+                        }
+                    }
+                    data.filename = 'MeshAssistant.exe';
+                    downloadFile(data);
+                }
                 break;
             case 'wget': // Server uses this command to tell the agent to download a file using HTTPS/GET and place it in a given path. This is used for one-to-many file uploads.
                 agentFileHttpPendingRequests.push(data);
@@ -1286,6 +1297,34 @@ function handleServerCommand(data) {
                 break;
         }
     }
+}
+
+// Download a file from the server and check the hash.
+// This download is similar to the one used for meshcore self-update.
+var trustedDownloads = {};
+function downloadFile(downloadoptions) {
+    var options = require('http').parseUri(downloadoptions.url);
+    options.rejectUnauthorized = false;
+    options.checkServerIdentity = function checkServerIdentity(certs) {
+        // If the tunnel certificate matches the control channel certificate, accept the connection
+        try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { }
+        try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { }
+        // Check that the certificate is the one expected by the server, fail if not.
+        if (checkServerIdentity.servertlshash == null) { if (require('MeshAgent').ServerInfo == null || require('MeshAgent').ServerInfo.ControlChannelCertificate == null) return; throw new Error('BadCert'); }
+        if (certs[0].digest == null) return;
+        if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') }
+    }
+    //options.checkServerIdentity.servertlshash = downloadoptions.serverhash;
+    trustedDownloads[downloadoptions.name] = downloadoptions;
+    trustedDownloads[downloadoptions.name].dl = require('https').get(options);
+    trustedDownloads[downloadoptions.name].dl.on('error', function (e) { downloadoptions.func(downloadoptions, false); delete trustedDownloads[downloadoptions.name]; });
+    trustedDownloads[downloadoptions.name].dl.on('response', function (img) {
+        this._file = require('fs').createWriteStream(trustedDownloads[downloadoptions.name].filename, { flags: 'wb' });
+        this._filehash = require('SHA384Stream').create();
+        this._filehash.on('hash', function (h) { if ((downloadoptions.hash != null) && (downloadoptions.hash.toLowerCase() != h.toString('hex').toLowerCase())) { downloadoptions.func(downloadoptions, false); delete trustedDownloads[downloadoptions.name]; return; } downloadoptions.func(downloadoptions, true); });
+        img.pipe(this._file);
+        img.pipe(this._filehash);
+    });
 }
 
 // Handle APF JSON control commands
@@ -2816,6 +2855,18 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     default:
                         response = "Proper usage:\r\n  cs [ENABLE|DISABLE]";
                         break;
+                }
+                break;
+            case 'assistant':
+                if (process.platform == 'win32') {
+                    // Install MeshCentral Assistant on this device
+                    response = "Usage: Assistant [info|install|uninstall]";
+                    if (args['_'].length == 1) {
+                        if ((args['_'][0] == 'install') || (args['_'][0] == 'info')) { response = ''; require('MeshAgent').SendCommand({ action: 'meshToolInfo', sessionid: sessionid, name: 'MeshCentralAssistant', cookie: true, tag: args['_'][0] }); }
+                        // TODO: Uninstall
+                    }
+                } else {
+                    response = "MeshCentral Assistant is not supported on this platform.";
                 }
                 break;
             case 'agentupdate':
