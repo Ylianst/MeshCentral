@@ -3625,6 +3625,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                     if (common.validateString(command.devicename, 1, 256) == false) break; // Check device name
                     if (common.validateString(command.hostname, 1, 256) == false) break; // Check hostname
+                    if (typeof command.type != 'number') break; // Type must be a number
                     if ((command.type != 4) && (command.type != 6) && (command.type != 29)) break; // Check device type
 
                     // Get the mesh
@@ -3639,7 +3640,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.crypto.randomBytes(48, function (err, buf) {
                             // Create the new node
                             nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                            var device = { type: 'node', _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, mtype: 3, agent: { id: command.type, caps: 0 } };
+                            var device = { type: 'node', _id: nodeid, meshid: command.meshid, mtype: 3, icon: 1, name: command.devicename, host: command.hostname, domain: domain.id, agent: { id: command.type, caps: 0 } };
                             db.Set(device);
 
                             // Event the new node
@@ -3676,7 +3677,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.crypto.randomBytes(48, function (err, buf) {
                             // Create the new node
                             nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                            var device = { type: 'node', _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: command.amttls } };
+                            var device = { type: 'node', _id: nodeid, meshid: command.meshid, mtype: 1, icon: 1, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: command.amttls } };
                             db.Set(device);
 
                             // Event the new node
@@ -4316,6 +4317,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.ip) { cookieContent.ip = command.ip; } // Indicates the browser want to agent to relay a TCP connection to a IP:port
                         command.cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
                         command.trustedCert = parent.isTrustedCert(domain);
+                        if (node.mtype == 3) { command.localRelay = true; }
                         try { ws.send(JSON.stringify(command)); } catch (ex) { }
                     });
                     break;
