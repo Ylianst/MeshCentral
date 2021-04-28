@@ -524,6 +524,9 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             case 85: // Unicode Key Events, forward to agent
                 if (viewer.viewOnly == false) { obj.sendToAgent(data); }
                 break;
+            case 87: // Remote input lock, forward to agent
+                if (viewer.viewOnly == false) { obj.sendToAgent(data); }
+                break;
             default:
                 console.log('Un-handled viewer command: ' + command);
                 break;
@@ -670,6 +673,11 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 break;
             case 65: // Alert
                 // Send this to all viewers right away
+                obj.sendToAllViewers(data);
+                break;
+            case 87: // MNG_KVM_INPUT_LOCK
+                // Send this to all viewers right away
+                // This will update all views on the current state of the input lock
                 obj.sendToAllViewers(data);
                 break;
             case 88: // MNG_KVM_MOUSE_CURSOR
