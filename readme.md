@@ -38,16 +38,16 @@ Installing MeshCentral on Windows, Linux and macOS.
 Basic Usages including installing the agent and remote desktop, terminal and file access.  
 [![MeshCentral - Basics](https://img.youtube.com/vi/D9Q7M7PdTg0/mqdefault.jpg)](https://www.youtube.com/watch?v=D9Q7M7PdTg0)
 
-MeshCentral support for two-factor authentication.
+MeshCentral support for two-factor authentication.  
 [![MeshCentral - Two Factor Authentication](https://img.youtube.com/vi/luLZKcma9l0/mqdefault.jpg)](https://www.youtube.com/watch?v=luLZKcma9l0)
 
-How to setup MeshCentral with the NGINX reverse proxy.
+How to setup MeshCentral with the NGINX reverse proxy.  
 [![MeshCentral - NGINX Reverse Proxy](https://img.youtube.com/vi/YSmiLyKSX2I/mqdefault.jpg)](https://www.youtube.com/watch?v=YSmiLyKSX2I)
 
-Installing and using the MeshCentral Android agent
+Installing and using the MeshCentral Android agent.  
 [![MeshCentral - Android](https://img.youtube.com/vi/wi1HYdW00Bk/mqdefault.jpg)](https://www.youtube.com/watch?v=wi1HYdW00Bk)
 
-Using MeshCentral Router to port map TCP connections.
+Using MeshCentral Router to port map TCP connections.  
 [![MeshCentral - Basics](https://img.youtube.com/vi/BubeVRmbCRM/mqdefault.jpg)](https://www.youtube.com/watch?v=BubeVRmbCRM)
 
 
