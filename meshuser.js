@@ -4315,9 +4315,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want to agent to TCP connect to a remote address
                         if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want to agent to TCP connect to a remote port
                         if (command.ip) { cookieContent.ip = command.ip; } // Indicates the browser want to agent to relay a TCP connection to a IP:port
+                        if (node.mtype == 3) { cookieContent.lc = 1; command.localRelay = true; } // Indicate this is for a local connection
                         command.cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
                         command.trustedCert = parent.isTrustedCert(domain);
-                        if (node.mtype == 3) { command.localRelay = true; }
                         try { ws.send(JSON.stringify(command)); } catch (ex) { }
                     });
                     break;

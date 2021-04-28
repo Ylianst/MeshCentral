@@ -958,6 +958,12 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
     // If there is no authentication, drop this connection
     if (obj.user == null) { try { ws.close(); parent.parent.debug('relay', 'Relay: Connection with no authentication'); } catch (e) { console.log(e); } return; }
 
+    // Use cookie values when present
+    if (cookie != null) {
+        if (cookie.nodeid) { req.query.nodeid = cookie.nodeid; }
+        if (cookie.tcpport) { req.query.tcpport = cookie.tcpport; }
+    }
+
     // Check for nodeid and tcpport
     if ((req.query == null) || (req.query.nodeid == null) || (req.query.tcpport == null)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Connection with invalid arguments'); } catch (e) { console.log(e); } return; }
     const tcpport = parseInt(req.query.tcpport);
@@ -1057,16 +1063,20 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
 
             // Setup TCP client
             obj.client = new net.Socket();
-            obj.client.connect(obj.tcpport, node.host, function () { ws.send('c'); ws._socket.resume(); });
+            obj.client.connect(obj.tcpport, node.host, function () {
+                // Log the start of the connection
+                obj.time = Date.now();
+                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.user._id, username: obj.user.name, msgid: 13, msgArgs: [obj.id, obj.req.clientIp, obj.host], msg: 'Started relay session \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.host, nodeid: req.query.nodeid };
+                parent.parent.DispatchEvent(['*', obj.user._id, obj.meshid, obj.nodeid], obj, event);
+
+                // Start the session
+                ws.send('c');
+                ws._socket.resume();
+            });
             obj.client.on('data', function (data) { try { this.pause(); ws.send(data, this.clientResume); } catch (ex) { console.log(ex); } }); // Perform relay
             obj.client.on('close', function () { obj.close(); });
             obj.client.on('error', function (err) { obj.close(); });
             obj.client.clientResume = function () { try { obj.client.resume(); } catch (ex) { console.log(ex); } };
-
-            // Log the start of the connection
-            obj.time = Date.now();
-            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.user._id, username: obj.user.name, msgid: 13, msgArgs: [obj.id, obj.req.clientIp, obj.host], msg: 'Started relay session \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.host, nodeid: req.query.nodeid };
-            parent.parent.DispatchEvent(['*', obj.user._id, obj.meshid, obj.nodeid], obj, event);
         });
     }
 
