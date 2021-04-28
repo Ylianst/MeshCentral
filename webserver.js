@@ -5355,7 +5355,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             parent.debug('webrequest', '(' + req.clientIp + ') ' + req.url);
 
             // Skip the rest is this is an agent connection
-            if ((req.url.indexOf('/meshrelay.ashx/.websocket') >= 0) || (req.url.indexOf('/agent.ashx/.websocket') >= 0)) { next(); return; }
+            if ((req.url.indexOf('/meshrelay.ashx/.websocket') >= 0) || (req.url.indexOf('/agent.ashx/.websocket') >= 0) || (req.url.indexOf('/localrelay.ashx/.websocket') >= 0)) { next(); return; }
 
             // If this domain has configured headers, use them.
             // Example headers: { 'Strict-Transport-Security': 'max-age=360000;includeSubDomains' };
@@ -5538,6 +5538,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
                 });
             });
+            if (obj.args.wanonly != true) { // If the server is not in WAN mode, allow server relayed connections.
+                obj.app.ws(url + 'localrelay.ashx', function (ws, req) {
+                    PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) {
+                        if ((user == null) || (cookie == null)) {
+                            try { ws1.close(); } catch (ex) { } 
+                        } else {
+                            obj.meshRelayHandler.CreateLocalRelay(obj, ws1, req1, domain, user, cookie); // Local relay
+                        }
+                    });
+                });
+            }
             if (domain.agentinvitecodes == true) {
                 obj.app.get(url + 'invite', handleInviteRequest);
                 obj.app.post(url + 'invite', handleInviteRequest);

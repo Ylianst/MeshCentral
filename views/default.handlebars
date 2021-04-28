@@ -2463,11 +2463,12 @@
                         var url = 'mcrouter://' + servername + portStr + domainUrl + 'control.ashx?c=' + authCookie + '&t=' + serverinfo.tlshash + '&l={{{lang}}}' + (urlargs.key?('&key=' + urlargs.key):'');
                         if (message.nodeid != null) { url += ('&nodeid=' + message.nodeid); }
                         if (message.tcpport != null) { url += ('&protocol=1&remoteport=' + message.tcpport); }
+                        if (message.localRelay) { url += '&local=1'; }
                         if (message.ip != null) { url += ('&remoteip=' + message.ip); }
                         url += ('&appid=' + message.protocol + '&autoexit=1'); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP
                         downloadFile(url, '');
                     } else if (message.tag == 'novnc') {
-                        var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + 'meshrelay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
+                        var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + (message.localRelay?'local':'mesh') + 'relay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { vncurl += '&name=' + encodeURIComponentEx(node.name); }
                         safeNewWindow(vncurl, 'mcnovnc/' + message.nodeid);
@@ -2475,6 +2476,7 @@
                         var rdpurl = window.location.origin + domainUrl + 'mstsc.html?ws=' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'');
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { rdpurl += '&name=' + encodeURIComponentEx(node.name); }
+                        if (message.localRelay) { url += '&local=1'; }
                         safeNewWindow(rdpurl, 'mcmstsc/' + message.nodeid);
                     }
                     break;
@@ -4455,7 +4457,7 @@
         function addLocalDeviceToMeshEx(button, meshid) {
             var host = Q('dp1hostname').value;
             if (host == '') host = Q('dp1devicename').value;
-            meshserver.send({ action: 'addlocaldevice', meshid: meshid, devicename: Q('dp1devicename').value, hostname: host, type: Q('dp1type').value });
+            meshserver.send({ action: 'addlocaldevice', meshid: meshid, devicename: Q('dp1devicename').value, hostname: host, type: parseInt(Q('dp1type').value) });
         }
 
         function addDeviceToMesh(meshid) {
@@ -7154,7 +7156,7 @@
         function p10showChangeGroupDialog(nodeids) {
             if (xxdialogMode) return false;
             var targetMeshId = null;
-            if (nodeids.length == 1) { try { targetMeshId = meshes[getNodeFromId(nodeids[0])]._id; } catch (ex) { } }
+            if (nodeids.length == 1) { try { targetMeshId = meshes[getNodeFromId(nodeids[0]).meshid]._id; } catch (ex) { } }
 
             // List all available alternative groups
             var y = '<select id=p10newGroup style=width:236px>', count = 0, altGroups = [];
