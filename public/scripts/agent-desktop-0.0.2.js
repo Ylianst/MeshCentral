@@ -47,6 +47,10 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.SwapMouse = false;
     obj.FirstDraw = false;
 
+    // Remote user mouse and keyboard lock
+    obj.onRemoteInputLockChanged = null;
+    obj.RemoteInputLock = null;
+
     obj.ScreenWidth = 960;
     obj.ScreenHeight = 701;
     obj.width = 960;
@@ -193,6 +197,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         while (obj.PendingOperations.length > 0) { obj.PendingOperations.shift(); }
         obj.SendCompressionLevel(1);
         obj.SendUnPause();
+        obj.SendRemoteInputLock(2); // Query input lock state
         // No need to event the display size change now, it will be evented on first draw.
         if (obj.onScreenSizeChange != null) { obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId); }
     }
@@ -264,6 +269,13 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                     if (obj.parent && obj.parent.setConsoleMessage) { obj.parent.setConsoleMessage(str); }
                 } else {
                     console.log('KVM: ' + str.substring(1));
+                }
+                break;
+            case 87: // MNG_KVM_INPUT_LOCK
+                if (cmdsize != 5) break;
+                if (obj.RemoteInputLock != (view[4] != 0)) {
+                    obj.RemoteInputLock = (view[4] != 0);
+                    if (obj.onRemoteInputLockChanged) { obj.onRemoteInputLockChanged(obj, obj.RemoteInputLock); }
                 }
                 break;
             case 88: // MNG_KVM_MOUSE_CURSOR
@@ -384,6 +396,9 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             obj.SendKeyMsgKC(action, kc);
         }
     }
+
+    // Send remote input lock. 0 = Unlock, 1 = Lock, 2 = Query
+    obj.SendRemoteInputLock = function (code) { obj.send(String.fromCharCode(0x00, obj.InputType.KEYUNICODE, 0x00, 0x05, code)); }
 
     obj.SendMessage = function (msg) {
         if (obj.State == 3) obj.send(String.fromCharCode(0x00, 0x11) + obj.shortToStr(4 + msg.length) + msg); // 0x11 = 17 MNG_KVM_MESSAGE

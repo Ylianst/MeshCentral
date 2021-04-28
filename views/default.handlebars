@@ -650,6 +650,8 @@
                             <span id=DeskClipboardInButton title="Download remote clipboard to local clipboard" style="display:none"><img id=DeskClipboardInButtonImage src='images/icon-clipboard-in.png' onclick=deskClipboardInFunction() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskClipboardOutButton title="Upload local clipboard to remote device"><img id=DeskClipboardOutButtonImage src='images/icon-clipboard-out.png' onclick=deskClipboardOutFunction() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskRefreshButton title="Refresh the desktop"><img id=DeskRefreshButtonImage src='images/icon-refresh.png' onclick=deskRefreshFunction() height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskInputLockedButton title="Remote input is locked"><img id=DeskInputLockedButtonImage src='images/icon-keylock-red.png' onclick=deskInputLockFunction(0) height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskInputUnLockedButton title="Remote input is unlocked"><img id=DeskInputUnLockedButtonImage src='images/icon-keylock.png' onclick=deskInputLockFunction(1) height=16 width=16 style=padding-top:2px /></span>
                         </div>
                         <div>
                             <select id="deskkeys" cmenu=deskKeyShortcutContextMenu></select>
@@ -3953,6 +3955,7 @@
                                 if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(1, multidesktopsettings.quality, multidesktopsettings.scaling, multidesktopsettings.framerate); }
                                 desktop.shortid = shortid;
                                 desktop.onStateChanged = onMultiDesktopStateChange;
+                                desktop.m.onRemoteInputLockChanged = null;
                                 multiDesktop[id] = desktop;
                                 desktop = desktopNode = currentNode = null;
                                 // Setup a replacement desktop
@@ -6777,6 +6780,12 @@
             meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 2 });
         }
 
+        // Called to lock or unlock remote desktop user input
+        function deskInputLockFunction(value) {
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
+            setDialogMode(2, "Remote Input Lock", 3, function() { try { desktop.m.SendRemoteInputLock(value); } catch (ex) {} }, (value == 1)?"Lock remote user's mouse and keyboard?":"Unlock remote user's mouse and keyboard?");
+        }
+
         function deskClipboardOutFunction() {
             if ((navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
                 try {
@@ -7424,6 +7433,9 @@
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.onMetadataChange = function(metadata) { updateMetadata(desktop, 'deskmetadata'); }
                     if (desktop && desktop.m.mouseCursorActive) { desktop.m.mouseCursorActive(true); }
+                    QV('DeskInputLockedButton', desktop.m.RemoteInputLock === 1);
+                    QV('DeskInputUnLockedButton', desktop.m.RemoteInputLock === 0);
+                    desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state === 1); QV('DeskInputUnLockedButton', state === 0); }
                     desktopNode = currentNode;
                     onDesktopStateChange(desktop, desktop.State);
                     delete multiDesktop[currentNode._id];
@@ -7500,6 +7512,8 @@
             // Enable browser clipboard read if supported
             QV('DeskClipboardOutButton', inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.readText != null));
             QV('DeskClipboardInButton', inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.writeText != null));
+
+            if (deskState != 3) { QV('DeskInputLockedButton', false); QV('DeskInputUnLockedButton', false); }
 
             // Display this only if we have Chat & Notify permissions
             QV('DeskSaveImageButton', (deskState == 3) && (Q('Desk')['toBlob'] != null));
@@ -7636,6 +7650,7 @@
                     if (tsid != null) { desktop.options.tsid = tsid; }
                     if (consent != null) { desktop.options.consent = consent; }
                     desktop.onStateChanged = onDesktopStateChange;
+                    desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state === 1); QV('DeskInputUnLockedButton', state === 0); }
                     desktop.onConsoleMessageChange = function () {
                         if (desktop.consoleMessage) {
                             Q('p11DeskConsoleMsg').innerHTML += formatAgentConsoleMessage(desktop.consoleMessage, desktop.consoleMessageId, desktop.consoleMessageArgs);
@@ -7745,6 +7760,8 @@
                     QV('DeskFocus', false);
                     QV('termdisplays', false);
                     QV('deskRecordIcon', false);
+                    QV('DeskInputLockedButton', false);
+                    QV('DeskInputUnLockedButton', false);
                     deskFocusBtn.value = "All Focus";
                     if (fullscreen == true) { deskToggleFull(); }
                     webRtcDesktopReset();
