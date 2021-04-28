@@ -2476,7 +2476,7 @@
                         var rdpurl = window.location.origin + domainUrl + 'mstsc.html?ws=' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'');
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { rdpurl += '&name=' + encodeURIComponentEx(node.name); }
-                        if (message.localRelay) { url += '&local=1'; }
+                        if (message.localRelay) { rdpurl += '&local=1'; }
                         safeNewWindow(rdpurl, 'mcmstsc/' + message.nodeid);
                     }
                     break;

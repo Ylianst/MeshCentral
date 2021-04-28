@@ -60,6 +60,10 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 obj.relaySocket.on('end', function () { obj.close(); });
                 obj.relaySocket.on('error', function (err) { obj.close(); });
 
+                // Decode the authentication cookie
+                var cookie = parent.parent.decodeCookie(obj.infos.ip, parent.parent.loginCookieEncryptionKey);
+                if (cookie == null) return;
+
                 // Setup the correct URL with domain and use TLS only if needed.
                 var options = { rejectUnauthorized: false };
                 if (domain.dns != null) { options.servername = domain.dns; }
@@ -67,7 +71,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 if (args.tlsoffload) { protocol = 'ws'; }
                 var domainadd = '';
                 if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-                var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + 'meshrelay.ashx?noping=1&auth=' + obj.infos.ip;
+                var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((cookie.lc == 1)?'local':'mesh') + 'relay.ashx?noping=1&auth=' + obj.infos.ip;
                 parent.parent.debug('relay', 'RDP: Connection websocket to ' + url);
                 obj.wsClient = new WebSocket(url, options);
                 obj.wsClient.on('open', function () { parent.parent.debug('relay', 'RDP: Relay websocket open'); });
