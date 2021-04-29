@@ -3092,6 +3092,7 @@ function mainStart() {
         var allsspi = true;
         var yubikey = false;
         var mstsc = false;
+        var ssh = false;
         var sessionRecording = false;
         var domainCount = 0;
         var wildleek = false;
@@ -3106,6 +3107,7 @@ function mainStart() {
             if (config.domains[i].yubikey != null) { yubikey = true; }
             if (config.domains[i].auth == 'ldap') { ldap = true; }
             if (config.domains[i].mstsc === true) { mstsc = true; }
+            if (config.domains[i].ssh === true) { ssh = true; }
             if ((typeof config.domains[i].authstrategies == 'object')) {
                 if (passport == null) { passport = ['passport']; }
                 if ((typeof config.domains[i].authstrategies.twitter == 'object') && (typeof config.domains[i].authstrategies.twitter.clientid == 'string') && (typeof config.domains[i].authstrategies.twitter.clientsecret == 'string') && (passport.indexOf('passport-twitter') == -1)) { passport.push('passport-twitter'); }
@@ -3124,6 +3126,7 @@ function mainStart() {
         if (require('os').platform() == 'win32') { modules.push('node-windows'); modules.push('loadavg-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (mstsc == true) { modules.push('node-rdpjs-2'); }
+        if (ssh == true) { modules.push('ssh2'); }
         if (passport != null) { modules.push(...passport); }
         if (sessionRecording == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
         if (config.letsencrypt != null) { if (nodeVersion < 8) { addServerWarning("Let's Encrypt support requires Node v8.x or higher.", !args.launch); } else { modules.push('acme-client'); } } // Add acme-client module

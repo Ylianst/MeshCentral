@@ -178,6 +178,7 @@
     <Compile Include="public\novnc\vendor\promise.js" />
     <Compile Include="public\scripts\agent-redir-rtc-0.1.0.js" />
     <Compile Include="public\serviceworker.js" />
+    <Compile Include="ssh.js" />
     <Compile Include="swarmserver.js" />
     <Compile Include="multiserver.js" />
     <Compile Include="pass.js" />
@@ -570,6 +571,8 @@
     <Content Include="views\messenger.handlebars" />
     <Content Include="views\mstsc.handlebars" />
     <Content Include="views\player.handlebars" />
+    <Content Include="views\sharing.handlebars" />
+    <Content Include="views\ssh.handlebars" />
     <Content Include="views\terminal.handlebars" />
     <Content Include="views\terms-mobile.handlebars" />
     <Content Include="views\terms.handlebars" />
