@@ -1801,8 +1801,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         render(req, res, getRenderPage('invite', req, domain), getRenderArgs({ messageid: 100 }, req, domain)); // Bad invitation code
     }
 
-    // Called to render the MSTSC (RDP) web page
-    function handleMSTSCRequest(req, res) {
+    // Called to render the MSTSC (RDP) or SSH web page
+    function handleMSTSCRequest(req, res, page) {
         const domain = getDomain(req);
         if (domain == null) { parent.debug('web', 'handleMSTSCRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
@@ -1817,7 +1817,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // This is a query with a websocket relay cookie, check that the cookie is valid and use it.
             var rcookie = parent.decodeCookie(req.query.ws, parent.loginCookieEncryptionKey, 60); // Cookie with 1 hour timeout
             if ((rcookie != null) && (rcookie.domainid == domain.id) && (rcookie.nodeid != null) && (rcookie.tcpport != null)) {
-                render(req, res, getRenderPage('mstsc', req, domain), getRenderArgs({ cookie: req.query.ws, name: encodeURIComponent(req.query.name).replace(/'/g, '%27') }, req, domain)); return;
+                render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: req.query.ws, name: encodeURIComponent(req.query.name).replace(/'/g, '%27') }, req, domain)); return;
             }
         }
 
@@ -1852,7 +1852,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
 
         // If there is no nodeid, exit now
-        if (req.query.node == null) { render(req, res, getRenderPage('mstsc', req, domain), getRenderArgs({ cookie: '', name: '' }, req, domain)); return; }
+        if (req.query.node == null) { render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: '', name: '' }, req, domain)); return; }
 
         // Fetch the node from the database
         obj.db.Get(req.query.node, function (err, nodes) {
@@ -1864,15 +1864,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Figure out the target port
             var port = 3389;
-            if (typeof node.rdpport == 'number') { port = node.rdpport; }
+            if (page == 'ssh') {
+                // SSH port
+                port = 22;
+            } else {
+                // RDP port
+                if (typeof node.rdpport == 'number') { port = node.rdpport; }
+            }
             if (req.query.port != null) { var qport = 0; try { qport = parseInt(req.query.port); } catch (ex) { } if ((typeof qport == 'number') && (qport > 0) && (qport < 65536)) { port = qport; } }
 
             // Generate a cookie and respond
             var cookie = parent.encodeCookie({ userid: user._id, domainid: user.domain, nodeid: node._id, tcpport: port }, parent.loginCookieEncryptionKey);
-            render(req, res, getRenderPage('mstsc', req, domain), getRenderArgs({ cookie: cookie, name: encodeURIComponent(node.name).replace(/'/g, '%27') }, req, domain));
+            render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: cookie, name: encodeURIComponent(node.name).replace(/'/g, '%27') }, req, domain));
         });
     }
-
+    
     // Called to handle push-only requests
     function handleFirebasePushOnlyRelayRequest(req, res) {
         parent.debug('email', 'handleFirebasePushOnlyRelayRequest');
@@ -5561,11 +5567,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Setup MSTSC.js if needed
             if (domain.mstsc === true) {
-                obj.app.get(url + 'mstsc.html', handleMSTSCRequest);
+                obj.app.get(url + 'mstsc.html', function (req, res) { handleMSTSCRequest(req, res, 'mstsc'); });
                 obj.app.ws(url + 'mstsc/relay.ashx', function (ws, req) {
                     const domain = getDomain(req);
                     if (domain == null) { parent.debug('web', 'mstsc: failed checks.'); try { ws.close(); } catch (e) { } return; }
                     require('./mstsc.js').CreateMstscRelay(obj, obj.db, ws, req, obj.args, domain);
+                });
+            }
+
+            // Setup SSH if needed
+            if (domain.mstsc === true) {
+                obj.app.get(url + 'ssh.html', function (req, res) { handleMSTSCRequest(req, res, 'ssh'); });
+                obj.app.ws(url + 'ssh/relay.ashx', function (ws, req) {
+                    const domain = getDomain(req);
+                    if (domain == null) { parent.debug('web', 'ssh: failed checks.'); try { ws.close(); } catch (e) { } return; }
+                    require('./ssh.js').CreateSshRelay(obj, obj.db, ws, req, obj.args, domain);
                 });
             }
 
