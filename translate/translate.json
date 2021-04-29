@@ -653,7 +653,6 @@
         "sharing.handlebars->11->19",
         "sharing.handlebars->11->27",
         "sharing.handlebars->11->44",
-        "ssh.handlebars->9->6",
         "terminal.handlebars->3->9",
         "xterm.handlebars->9->6"
       ]
@@ -4363,7 +4362,6 @@
       "zh-cht": "管理員PowerShell",
       "xloc": [
         "default.handlebars->termShellContextMenu->3",
-        "ssh.handlebars->termShellContextMenu->cxtermps",
         "xterm.handlebars->termShellContextMenu->cxtermps"
       ]
     },
@@ -4405,7 +4403,6 @@
       "zh-cht": "管理控制台",
       "xloc": [
         "default.handlebars->termShellContextMenu->1->0",
-        "ssh.handlebars->termShellContextMenu->cxtermnorm->0",
         "xterm.handlebars->termShellContextMenu->cxtermnorm->0"
       ]
     },
@@ -9704,7 +9701,7 @@
         "default.handlebars->31->11",
         "desktop.handlebars->3->4",
         "sharing.handlebars->11->4",
-        "ssh.handlebars->9->4",
+        "ssh.handlebars->3->4",
         "terminal.handlebars->3->4",
         "xterm.handlebars->9->4"
       ]
@@ -9818,7 +9815,7 @@
         "desktop.handlebars->3->2",
         "sharing.handlebars->11->2",
         "sharing.handlebars->11->93",
-        "ssh.handlebars->9->2",
+        "ssh.handlebars->3->2",
         "terminal.handlebars->3->2",
         "xterm.handlebars->9->2"
       ]
@@ -13384,7 +13381,7 @@
         "sharing.handlebars->p11->deskarea0->deskarea1->3->deskstatus",
         "sharing.handlebars->p12->5->3->termstatus",
         "sharing.handlebars->p13->p13toolbar->1->3->p13Status",
-        "ssh.handlebars->9->1",
+        "ssh.handlebars->3->1",
         "terminal.handlebars->3->1",
         "terminal.handlebars->p12->5->3->termstatus",
         "xterm.handlebars->9->1"
@@ -17988,6 +17985,9 @@
       ]
     },
     {
+      "en": "Geen Intel&reg; AMT apparaten in deze apparaatgroep"
+    },
+    {
       "cs": "Obecné",
       "de": "Allgemein",
       "en": "General",
@@ -20275,7 +20275,6 @@
         "default.handlebars->31->12",
         "desktop.handlebars->3->5",
         "sharing.handlebars->11->5",
-        "ssh.handlebars->9->5",
         "terminal.handlebars->3->5",
         "xterm.handlebars->9->5"
       ]
@@ -23925,7 +23924,6 @@
       "zh-cht": "登入控制台",
       "xloc": [
         "default.handlebars->termShellContextMenuLinux->5",
-        "ssh.handlebars->termShellContextMenuLinux->cxtermps",
         "xterm.handlebars->termShellContextMenuLinux->cxtermps"
       ]
     },
@@ -27216,7 +27214,6 @@
     },
     {
       "en": "No Intel&reg; AMT devices in this device group",
-      "en": "Geen Intel&reg; AMT apparaten in deze apparaatgroep",
       "xloc": [
         "default.handlebars->31->262"
       ]
@@ -33820,7 +33817,6 @@
       "zh-cht": "Root Shell",
       "xloc": [
         "default.handlebars->termShellContextMenuLinux->1->0",
-        "ssh.handlebars->termShellContextMenuLinux->cxtermnorm->0",
         "xterm.handlebars->termShellContextMenuLinux->cxtermnorm->0"
       ]
     },
@@ -36413,7 +36409,7 @@
         "default.handlebars->31->331",
         "desktop.handlebars->3->3",
         "sharing.handlebars->11->3",
-        "ssh.handlebars->9->3",
+        "ssh.handlebars->3->3",
         "terminal.handlebars->3->3",
         "xterm.handlebars->9->3"
       ]
@@ -42715,7 +42711,6 @@
       "zh-cht": "用戶PowerShell",
       "xloc": [
         "default.handlebars->termShellContextMenu->7",
-        "ssh.handlebars->termShellContextMenu->cxtermups",
         "xterm.handlebars->termShellContextMenu->cxtermups"
       ]
     },
@@ -42758,8 +42753,6 @@
       "xloc": [
         "default.handlebars->termShellContextMenu->5",
         "default.handlebars->termShellContextMenuLinux->3",
-        "ssh.handlebars->termShellContextMenu->cxtermunorm",
-        "ssh.handlebars->termShellContextMenuLinux->cxtermps",
         "xterm.handlebars->termShellContextMenu->cxtermunorm",
         "xterm.handlebars->termShellContextMenuLinux->cxtermps"
       ]
