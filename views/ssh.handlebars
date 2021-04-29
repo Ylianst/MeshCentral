@@ -80,6 +80,8 @@
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected"];
         var state = 0;
         var socket = null;
+        var user = '';
+        var pass = '';
 
         function start() {
             // When the user resizes the window, re-fit
@@ -94,9 +96,7 @@
             term = new Terminal();
             if (termfit) { term.loadAddon(termfit); }
             term.open(Q('terminal'));
-            term.onData(function (data) {
-                //if (tunnel != null) { tunnel.sendText(data); }
-            });
+            term.onData(function (data) { if (state == 3) { socket.send('~' + data); } });
             if (termfit) { termfit.fit(); }
             term.onResize(function (size) {
                 // Despam resize
@@ -109,27 +109,67 @@
         // Send the new terminal size to the agent
         function sendResize() {
             resizeTimer = null;
-            //if ((term != null) && (tunnel != null)) { tunnel.sendCtrlMsg(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: term.cols, rows: term.rows })); }
+            if (socket != null) { socket.send(JSON.stringify({ action: 'resize', cols: term.cols, rows: term.rows, width: Q('terminal').offsetWidth, height: Q('terminal').offsetHeight })); }
         }
 
         function connectButton() {
             if (state == 0) {
-                state = 1;
-                var url = window.location.protocol.replace('http', 'ws') + '//' + window.location.host + domainurl + 'ssh/relay.ashx?auth=' + cookie + (urlargs.key ? ('&key=' + urlargs.key) : '');
-                console.log('Connecting to ' + url);
-                socket = new WebSocket(url);
-                socket.onopen = function (e) { console.log('open'); state = 2; updateState(); }
-                socket.onmessage = function (e) { console.log('message'); }
-                socket.onclose = function (e) { console.log('close'); disconnect(); }
-                socket.onerror = function (e) { console.log('error'); disconnect(); }
-                updateState();
+                var x = '';
+                x += addHtmlValue("Username", '<input id=dp2user style=width:230px maxlength=64 autocomplete=off onkeyup=authKeyUp(event) />');
+                x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:230px maxlength=64 autocomplete=off onkeyup=authKeyUp(event) />');
+                setDialogMode(2, "Authentication", 3, connectEx, x);
+                Q('dp2user').value = user;
+                Q('dp2pass').value = pass;
+                if (user == '') { Q('dp2user').focus(); } else { Q('dp2pass').focus(); }
+                setTimeout(authKeyUp, 50);
             } else {
                 disconnect();
             }
         }
 
+        function authKeyUp(e) { QE('idx_dlgOkButton', (Q('dp2user').value.length > 0) && (Q('dp2pass').value.length > 0)); }
+
+        function connectEx() {
+            user = Q('dp2user').value;
+            pass = Q('dp2pass').value;
+            state = 1;
+            var url = window.location.protocol.replace('http', 'ws') + '//' + window.location.host + domainurl + 'ssh/relay.ashx?auth=' + cookie + (urlargs.key ? ('&key=' + urlargs.key) : '');
+            socket = new WebSocket(url);
+            socket.onopen = function (e) {
+                state = 2;
+                updateState();
+                term.reset();
+
+                // Send username and terminal width and height
+                socket.send(JSON.stringify({ action: 'connect', username: user, password: pass, cols: term.cols, rows: term.rows, width: Q('terminal').offsetWidth, height: Q('terminal').offsetHeight }));
+                pass = '';
+            }
+            socket.onmessage = function (data) {
+                if (typeof data.data != 'string') return;
+                if (data.data[0] == '{') {
+                    var json = JSON.parse(data.data);
+                    switch (json.action) {
+                        case 'connected': {
+                            state = 3;
+                            updateState();
+                            term.focus();
+                            break;
+                        }
+                        case 'autherror': {
+                            setDialogMode(2, "Authentication", 1, null, "Unable to authenticate.");
+                            break;
+                        }
+                    }
+                } else if (data.data[0] == '~') {
+                    term.writeUtf8(data.data.substring(1));
+                }
+            }
+            socket.onclose = function (e) { disconnect(); }
+            socket.onerror = function (e) { disconnect(); }
+            updateState();
+        }
+
         function disconnect() {
-            console.log('disconnect');
             if (socket != null) { socket.close(); socket = null; }
             state = 0;
             updateState();
@@ -186,6 +226,7 @@
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
         function isAlphaNumeric(str) { return (str.match(/^[A-Za-z0-9]+$/) != null); };
         function isSafeString(str) { return ((typeof str == 'string') && (str.indexOf('<') == -1) && (str.indexOf('>') == -1) && (str.indexOf('&') == -1) && (str.indexOf('"') == -1) && (str.indexOf('\'') == -1) && (str.indexOf('+') == -1) && (str.indexOf('(') == -1) && (str.indexOf(')') == -1) && (str.indexOf('#') == -1) && (str.indexOf('%') == -1) && (str.indexOf(':') == -1)) };
+        function addHtmlValue(t, v) { return '<table><td style=width:120px>' + t + '<td><b>' + v + '</b></table>'; }
 
         // Parse URL arguments, only keep safe values
         function parseUriArgs() {

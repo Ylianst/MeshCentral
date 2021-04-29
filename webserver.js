@@ -5576,7 +5576,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
 
             // Setup SSH if needed
-            if (domain.mstsc === true) {
+            if (domain.ssh === true) {
                 obj.app.get(url + 'ssh.html', function (req, res) { handleMSTSCRequest(req, res, 'ssh'); });
                 obj.app.ws(url + 'ssh/relay.ashx', function (ws, req) {
                     const domain = getDomain(req);
