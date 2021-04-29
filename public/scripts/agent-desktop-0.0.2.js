@@ -216,6 +216,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             }
         }
 
+        console.log('cmd', cmd);
         switch (cmd) {
             case 3: // Tile
                 if (obj.FirstDraw) obj.onResize();
@@ -273,7 +274,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 break;
             case 87: // MNG_KVM_INPUT_LOCK
                 if (cmdsize != 5) break;
-                if (obj.RemoteInputLock != (view[4] != 0)) {
+                if ((obj.RemoteInputLock == null) || (obj.RemoteInputLock !== (view[4] != 0))) {
                     obj.RemoteInputLock = (view[4] != 0);
                     if (obj.onRemoteInputLockChanged) { obj.onRemoteInputLockChanged(obj, obj.RemoteInputLock); }
                 }
