@@ -7435,7 +7435,7 @@
                     if (desktop && desktop.m.mouseCursorActive) { desktop.m.mouseCursorActive(true); }
                     QV('DeskInputLockedButton', desktop.m.RemoteInputLock === 1);
                     QV('DeskInputUnLockedButton', desktop.m.RemoteInputLock === 0);
-                    desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state === 1); QV('DeskInputUnLockedButton', state === 0); }
+                    desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
                     desktopNode = currentNode;
                     onDesktopStateChange(desktop, desktop.State);
                     delete multiDesktop[currentNode._id];
@@ -7650,7 +7650,7 @@
                     if (tsid != null) { desktop.options.tsid = tsid; }
                     if (consent != null) { desktop.options.consent = consent; }
                     desktop.onStateChanged = onDesktopStateChange;
-                    desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state === 1); QV('DeskInputUnLockedButton', state === 0); }
+                    desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
                     desktop.onConsoleMessageChange = function () {
                         if (desktop.consoleMessage) {
                             Q('p11DeskConsoleMsg').innerHTML += formatAgentConsoleMessage(desktop.consoleMessage, desktop.consoleMessageId, desktop.consoleMessageArgs);
