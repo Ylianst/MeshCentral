@@ -398,7 +398,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     // Send remote input lock. 0 = Unlock, 1 = Lock, 2 = Query
-    obj.SendRemoteInputLock = function (code) { obj.send(String.fromCharCode(0x00, obj.InputType.KEYUNICODE, 0x00, 0x05, code)); }
+    obj.SendRemoteInputLock = function (code) { obj.send(String.fromCharCode(0x00, 87, 0x00, 0x05, code)); }
 
     obj.SendMessage = function (msg) {
         if (obj.State == 3) obj.send(String.fromCharCode(0x00, 0x11) + obj.shortToStr(4 + msg.length) + msg); // 0x11 = 17 MNG_KVM_MESSAGE
