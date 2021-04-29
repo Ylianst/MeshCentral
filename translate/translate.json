@@ -532,6 +532,7 @@
     },
     {
       "en": ", Local Devices",
+      "nl": ", Lokale apparaten",
       "xloc": [
         "default.handlebars->31->255"
       ]
@@ -2781,6 +2782,7 @@
     },
     {
       "en": "Access Rejected.",
+      "nl": "Toegang geweigerd.",
       "xloc": [
         "login2.handlebars->7->31"
       ]
@@ -3446,6 +3448,7 @@
     },
     {
       "en": "Active Login Tokens",
+      "nl": "Actieve login-tokens",
       "xloc": [
         "default.handlebars->31->1529"
       ]
@@ -3967,6 +3970,7 @@
     },
     {
       "en": "Add a local device to device group \\\"{0}\\\".",
+      "nl": "Voeg een lokaal apparaat toe aan apparaatgroep \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->31->345"
       ]
@@ -4071,12 +4075,14 @@
     },
     {
       "en": "Add device located on the local network.",
+      "nl": "Voeg een apparaat toe dat zich op het lokale netwerk bevindt.",
       "xloc": [
         "default.handlebars->31->343"
       ]
     },
     {
       "en": "Add local device",
+      "nl": "Voeg een lokaal apparaat toe",
       "xloc": [
         "default.handlebars->31->353"
       ]
@@ -4184,6 +4190,7 @@
     },
     {
       "en": "Added login token",
+      "nl": "Inlogtoken toegevoegd",
       "xloc": [
         "default.handlebars->31->1955"
       ]
@@ -7372,6 +7379,7 @@
     },
     {
       "en": "Certificate expires in {0} day(s)",
+      "nl": "Certificaat verloopt over {0} dag((en)",
       "xloc": [
         "default-mobile.handlebars->11->59",
         "default.handlebars->31->81",
@@ -9454,6 +9462,7 @@
     },
     {
       "en": "Confirm removal of this login token?",
+      "nl": "Bevestig de verwijdering van dit inlogtoken?",
       "xloc": [
         "default.handlebars->31->1535"
       ]
@@ -9836,6 +9845,7 @@
     },
     {
       "en": "Connection Error",
+      "nl": "verbindingsfout",
       "xloc": [
         "login2.handlebars->7->32"
       ]
@@ -10575,6 +10585,7 @@
     },
     {
       "en": "Create a temporary username and password that can be used as alternative login to your account. This is useful for allowing tools or other services to access your account.",
+      "nl": "Maak een tijdelijke gebruikersnaam en wachtwoord aan die kunnen worden gebruikt als alternatieve login voor uw account. Dit is handig om tools of andere services toegang te geven tot uw account.",
       "xloc": [
         "default.handlebars->31->1463"
       ]
@@ -10621,6 +10632,7 @@
     },
     {
       "en": "Create login token",
+      "nl": "Maak een login-token aan",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->accountCreateLoginTokenSpan->0"
       ]
@@ -16405,6 +16417,7 @@
     },
     {
       "en": "Expire",
+      "nl": "Verlopen",
       "xloc": [
         "default.handlebars->31->243"
       ]
@@ -16652,6 +16665,7 @@
     },
     {
       "en": "Failed to send request.",
+      "nl": "Verzoek verzenden is mislukt.",
       "xloc": [
         "login2.handlebars->7->29"
       ]
@@ -20383,10 +20397,6 @@
       ]
     },
     {
-      "en": "Intel&reg; AMT Stroomvoorziening",
-      "fr": "Fonctionnement de l'alimentation Intel&reg; AMT "
-    },
-    {
       "cs": "Intel&reg; AMT štítek",
       "de": "Intel&reg; AMT Kennzeichen",
       "en": "Intel&reg; AMT Tag",
@@ -20510,10 +20520,6 @@
         "default.handlebars->31->764",
         "default.handlebars->31->765"
       ]
-    },
-    {
-      "en": "Intel&reg; AMT herstel met één klik",
-      "fr": "Récupération en un clic Intel&reg; AMT"
     },
     {
       "cs": "Intel&reg; AMT je aktivováno v režimu správce",
@@ -22683,12 +22689,14 @@
     },
     {
       "en": "Launch web-based SSH session to this device",
+      "nl": "Start een webgebaseerde SSH-sessie op dit apparaat",
       "xloc": [
         "default.handlebars->31->754"
       ]
     },
     {
       "en": "Launch web-based VNC session to this device",
+      "nl": "Start een webgebaseerde VNC-sessie op dit apparaat",
       "xloc": [
         "default.handlebars->31->750"
       ]
@@ -22976,6 +22984,7 @@
     },
     {
       "en": "Linux (SSH/SCP/VNC)",
+      "nl": "Linux (SSH/SCP/VNC)",
       "xloc": [
         "default.handlebars->31->351"
       ]
@@ -23500,6 +23509,7 @@
     },
     {
       "en": "Local devices, no agent",
+      "nl": "Lokale apparaten, geen agent",
       "xloc": [
         "default.handlebars->31->1514",
         "default.handlebars->31->1564"
@@ -23668,6 +23678,7 @@
     },
     {
       "en": "Lock Desktop",
+      "nl": "Vergrendel het bureaublad",
       "xloc": [
         "default.handlebars->31->844"
       ]
@@ -23694,6 +23705,7 @@
     },
     {
       "en": "Lock remote user's mouse and keyboard?",
+      "nl": "Muis en toetsenbord van externe gebruiker vergrendelen?",
       "xloc": [
         "default.handlebars->31->841"
       ]
@@ -23709,6 +23721,7 @@
     },
     {
       "en": "Lock user desktop?",
+      "nl": "Bureaublad van gebruiker vergrendelen?",
       "xloc": [
         "default.handlebars->31->845"
       ]
@@ -27203,6 +27216,7 @@
     },
     {
       "en": "No Intel&reg; AMT devices in this device group",
+      "en": "Geen Intel&reg; AMT apparaten in deze apparaatgroep",
       "xloc": [
         "default.handlebars->31->262"
       ]
@@ -27612,6 +27626,7 @@
     },
     {
       "en": "No devices in this device group",
+      "nl": "Geen apparaten in deze apparaatgroep.",
       "xloc": [
         "default.handlebars->31->264"
       ]
@@ -27772,6 +27787,7 @@
     },
     {
       "en": "No local devices in this device group",
+      "nl": "Geen lokale apparaten in deze apparaatgroep",
       "xloc": [
         "default.handlebars->31->266"
       ]
@@ -32270,6 +32286,7 @@
     },
     {
       "en": "Remote Input Lock",
+      "nl": "Externe invoer vergrendeling",
       "xloc": [
         "default.handlebars->31->840"
       ]
@@ -32428,12 +32445,14 @@
     },
     {
       "en": "Remote input is locked",
+      "nl": "Externe invoer is vergrendeld",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
       "en": "Remote input is unlocked",
+      "nl": "Externe invoer is ontgrendeld",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -32576,6 +32595,7 @@
     },
     {
       "en": "Remove Login Token",
+      "nl": "Inlogtoken verwijderen",
       "xloc": [
         "default.handlebars->31->1538"
       ]
@@ -32761,6 +32781,7 @@
     },
     {
       "en": "Remove login token",
+      "nl": "Inlogtoken verwijderen",
       "xloc": [
         "default.handlebars->31->1533"
       ]
@@ -33013,6 +33034,7 @@
     },
     {
       "en": "Removed login token",
+      "nl": "Inlogtoken verwijderd",
       "xloc": [
         "default.handlebars->31->1956"
       ]
@@ -33240,12 +33262,14 @@
     },
     {
       "en": "Request Accepted.",
+      "nl": "Verzoek geaccepteerd.",
       "xloc": [
         "login2.handlebars->7->30"
       ]
     },
     {
       "en": "Request sent, {0}.",
+      "nl": "Verzoek verzonden, {0}.",
       "xloc": [
         "login2.handlebars->7->28"
       ]
@@ -35464,6 +35488,7 @@
     },
     {
       "en": "Sending notification...",
+      "nl": "Melding verzenden...",
       "xloc": [
         "login2.handlebars->7->6"
       ]
@@ -39270,6 +39295,7 @@
     },
     {
       "en": "Take note of this username and password, the password cannot be shown again.",
+      "nl": "Noteer deze gebruikersnaam en wachtwoord, het wachtwoord kan niet opnieuw worden weergegeven.",
       "xloc": [
         "default.handlebars->31->241"
       ]
@@ -40749,12 +40775,14 @@
     },
     {
       "en": "Token Name",
+      "nl": "Token naam",
       "xloc": [
         "default.handlebars->31->1480"
       ]
     },
     {
       "en": "Token: {0}",
+      "nl": "Token: {0}",
       "xloc": [
         "default.handlebars->31->235"
       ]
@@ -41777,6 +41805,7 @@
     },
     {
       "en": "Unlock remote user's mouse and keyboard?",
+      "nl": "De muis en het toetsenbord van de externe gebruiker ontgrendelen?",
       "xloc": [
         "default.handlebars->31->842"
       ]
@@ -44013,12 +44042,14 @@
     },
     {
       "en": "Web-SSH",
+      "nl": "Web-SSH",
       "xloc": [
         "default.handlebars->31->755"
       ]
     },
     {
       "en": "Web-VNC",
+      "nl": "Web-VNC",
       "xloc": [
         "default.handlebars->31->751"
       ]
@@ -44501,6 +44532,7 @@
     },
     {
       "en": "Windows (RDP)",
+      "nl": "Windows (RDP)",
       "xloc": [
         "default.handlebars->31->350"
       ]
@@ -46382,6 +46414,7 @@
     },
     {
       "en": "macOS (SSH/SCP/VNC)",
+      "nl": "macOS (SSH/SCP/VNC)",
       "xloc": [
         "default.handlebars->31->352"
       ]
