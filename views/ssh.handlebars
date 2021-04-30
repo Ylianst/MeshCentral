@@ -104,6 +104,8 @@
                 resizeTimer = setTimeout(sendResize, 200);
             });
             //term.setOption('convertEol', true); // Consider \n to be \r\n, this should be taken care of by "termios"
+
+            connectButton();
         }
 
         // Send the new terminal size to the agent
@@ -149,16 +151,9 @@
                 if (data.data[0] == '{') {
                     var json = JSON.parse(data.data);
                     switch (json.action) {
-                        case 'connected': {
-                            state = 3;
-                            updateState();
-                            term.focus();
-                            break;
-                        }
-                        case 'autherror': {
-                            setDialogMode(2, "Authentication", 1, null, "Unable to authenticate.");
-                            break;
-                        }
+                        case 'connected': { state = 3; updateState(); term.focus(); break; }
+                        case 'autherror': { setDialogMode(2, "Authentication", 1, null, "Unable to authenticate."); break; }
+                        case 'sessionerror': { setDialogMode(2, "Session", 1, null, "Session expired."); break; }
                     }
                 } else if (data.data[0] == '~') {
                     term.writeUtf8(data.data.substring(1));

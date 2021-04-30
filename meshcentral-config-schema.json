@@ -373,8 +373,9 @@
             }
           },
           "geoLocation": { "type": "boolean", "default": false, "description": "Enables the geo-location feature and device location map in the user interface, this feature is not being worked on." },
-          "novnc": { "type": "boolean", "default": true, "description": "When enabled, activates the built-in web-based noVNC client." },
+          "novnc": { "type": "boolean", "default": true, "description": "When enabled, activates the built-in web-based VNC client." },
           "mstsc": { "type": "boolean", "default": false, "description": "When enabled, activates the built-in web-based RDP client." },
+          "ssh": { "type": "boolean", "default": false, "description": "When enabled, activates the built-in web-based SSH client." },
           "webEmailsPath": { "type": "string", "description": "Path where to find custom email templates for this domain." },
           "customUI": { "type": "object" },
           "consentMessages": {

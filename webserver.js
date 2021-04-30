@@ -5571,7 +5571,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.app.ws(url + 'mstsc/relay.ashx', function (ws, req) {
                     const domain = getDomain(req);
                     if (domain == null) { parent.debug('web', 'mstsc: failed checks.'); try { ws.close(); } catch (e) { } return; }
-                    require('./mstsc.js').CreateMstscRelay(obj, obj.db, ws, req, obj.args, domain);
+                    require('./apprelays.js').CreateMstscRelay(obj, obj.db, ws, req, obj.args, domain);
                 });
             }
 
@@ -5581,7 +5581,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.app.ws(url + 'ssh/relay.ashx', function (ws, req) {
                     const domain = getDomain(req);
                     if (domain == null) { parent.debug('web', 'ssh: failed checks.'); try { ws.close(); } catch (e) { } return; }
-                    require('./ssh.js').CreateSshRelay(obj, obj.db, ws, req, obj.args, domain);
+                    try {
+                        require('./apprelays.js').CreateSshRelay(obj, obj.db, ws, req, obj.args, domain);
+                    } catch (ex) { console.log(ex); }
                 });
             }
 
