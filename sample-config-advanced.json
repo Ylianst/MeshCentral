@@ -202,6 +202,7 @@
       "_geoLocation": true,
       "_novnc": false,
       "_mstsc": true,
+      "_ssh": true,
       "_WebEmailsPath": "/myserver/email-templates",
       "_consentMessages": {
         "title": "MeshCentral",
