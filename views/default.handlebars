@@ -6457,7 +6457,7 @@
                 }
 
                 // SSH link
-                if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x40000000) == 0) && (node.agent.id != 14)) {
+                if ((features2 & 0x200) && (((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x40000000) == 0) && (node.agent.id != 14)) {
                     x += '<a href=# id=sshLink onclick=p10ssh("' + node._id + '") title="' + "Launch web-based SSH session to this device" + '.">' + "Web-SSH" + '</a>&nbsp;';
                 }
 
