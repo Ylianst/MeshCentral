@@ -119,7 +119,7 @@
     <Compile Include="meshuser.js" />
     <Compile Include="mpsserver.js" />
     <Compile Include="mqttbroker.js" />
-    <Compile Include="mstsc.js" />
+    <Compile Include="apprelays.js" />
     <Compile Include="pluginHandler.js" />
     <Compile Include="public\mstsc\client.js" />
     <Compile Include="public\mstsc\js\keyboard.js" />
@@ -178,7 +178,6 @@
     <Compile Include="public\novnc\vendor\promise.js" />
     <Compile Include="public\scripts\agent-redir-rtc-0.1.0.js" />
     <Compile Include="public\serviceworker.js" />
-    <Compile Include="ssh.js" />
     <Compile Include="swarmserver.js" />
     <Compile Include="multiserver.js" />
     <Compile Include="pass.js" />
