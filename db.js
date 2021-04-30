@@ -443,15 +443,8 @@ module.exports.CreateDB = function (parent, func) {
         var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
 
         // Including the db name in the connection obj will cause a connection failure if it does not exist
-        var connectionObject = { 
-            'host': connectinArgs.host,
-            'port': connectinArgs.port,
-            'user': connectinArgs.user,
-            'password': connectinArgs.password,
-            'connectionLimit': null
-        };
-        if (connectinArgs.connectionLimit != null) connectionObject.connectionLimit = connectinArgs.connectionLimit;
-        
+        var connectionObject = Clone(connectinArgs);
+        delete connectionObject.database;
 
         if (parent.args.mariadb) {
             // Use MariaDB
