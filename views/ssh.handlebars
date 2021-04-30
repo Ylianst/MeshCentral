@@ -27,7 +27,7 @@
                 <div>
                     <input id="ConnectButton" style="display:none" type=button value="Connect" onclick="connectButton()">
                     <input id="DisconnectButton" type=button value="Disconnect" onclick="connectButton()">
-                    <span><b>{{{name}}}</b></span> - <span id="termstatus"></span>
+                    <span><b id="computerName"></b></span> - <span id="termstatus"></span>
                 </div>
             </div>
             <div id=deskarea2 style="">
@@ -84,6 +84,9 @@
         var pass = '';
 
         function start() {
+            // Set the computer name
+            QH('computerName', name);
+
             // When the user resizes the window, re-fit
             window.onresize = function () { if (termfit != null) { termfit.fit(); } }
 
