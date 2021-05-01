@@ -446,6 +446,15 @@ module.exports.CreateDB = function (parent, func) {
         var connectionObject = Clone(connectinArgs);
         delete connectionObject.database;
 
+        try {
+            if (connectinArgs.ssl.cacertpath) { connectionObject.ssl.ca = [require('fs').readFileSync(connectinArgs.ssl.cacertpath, 'utf8')]; }
+            if (connectinArgs.ssl.clientcertpath) { connectionObject.ssl.cert = [require('fs').readFileSync(connectinArgs.ssl.clientcertpath, 'utf8')]; }
+            if (connectinArgs.ssl.clientkeypath) { connectionObject.ssl.key = [require('fs').readFileSync(connectinArgs.ssl.clientkeypath, 'utf8')]; }
+        } catch (ex) {
+            console.log('Error loading SQL Connector certificate: ' + ex);
+            process.exit();
+        }
+
         if (parent.args.mariadb) {
             // Use MariaDB
             obj.databaseType = 4;
