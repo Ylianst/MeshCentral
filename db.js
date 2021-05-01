@@ -1579,6 +1579,37 @@ module.exports.CreateDB = function (parent, func) {
         return r;
     }
 
+    function buildSqlDumpCommand() {
+        var props = (obj.databaseType == 4) ? parent.args.mariadb : parent.args.mysql;
+
+        var mysqldumpPath = 'mysqldump';
+        if (parent.config.settings.autobackup && parent.config.settings.autobackup.mysqldumppath) { 
+            mysqldumpPath = parent.config.settings.autobackup.mysqldumppath;
+        }
+
+        var cmd = '\"' + mysqldumpPath + '\" --user=\'' + props.user + '\'';
+        // Windows will treat ' as part of the pw. Linux/Unix requires it to escape.
+        cmd += (parent.platform == 'win32') ? ' --password=\"' + props.password + '\"' : ' --password=\'' + props.password + '\'';
+        if (props.host) { cmd += ' -h ' + props.host; }
+        if (props.port) { cmd += ' -P ' + props.port; }
+
+        // SSL options different on mariadb/mysql
+        var sslOptions = '';
+        if (obj.databaseType == 4) {
+            if (props.ssl) sslOptions = ' --ssl';
+            if (props.ssl.cacertpath) sslOptions = ' --ssl-verify-server-cert --ssl-ca=' + props.ssl.cacertpath;
+        } else {
+            if (props.ssl) sslOptions = ' --ssl-mode=required';
+            if (props.ssl.cacertpath) sslOptions = ' --ssl-mode=verify_identity --ssl-ca=' + props.ssl.cacertpath;
+        }
+        cmd += sslOptions;
+
+        var dbname = (props.database) ? props.database : 'meshcentral';
+        cmd += ' ' + dbname
+
+        return cmd;
+    }
+
     // Check that the server is capable of performing a backup
     obj.checkBackupCapability = function (func) {
         if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { func(); }
@@ -1612,16 +1643,9 @@ module.exports.CreateDB = function (parent, func) {
             var backupPath = parent.backuppath;
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
             try { parent.fs.mkdirSync(backupPath); } catch (e) { }
-            var props = (obj.databaseType == 4) ? parent.args.mariadb : parent.args.mysql;
-            var mysqldumpPath = 'mysqldump';
-            if (parent.config.settings.autobackup && parent.config.settings.autobackup.mysqldumppath) { mysqldumpPath = parent.config.settings.autobackup.mysqldumppath; }
-            var cmd = '\"' + mysqldumpPath + '\" --user=\'' + props.user + '\'';
-            // Windows will treat ' as part of the pw. Linux/Unix requires it to escape.
-            cmd += (parent.platform == 'win32') ? ' --password=\"' + props.password + '\"' : ' --password=\'' + props.password + '\'';
-            if (props.host) { cmd += ' -h ' + props.host; }
-            if (props.port) { cmd += ' -P ' + props.port; }
-            var dbname = (props.database) ? props.database : 'meshcentral';
-            cmd += ' ' + dbname + ' > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
+
+            var cmd = buildSqlDumpCommand();
+            cmd += ' > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
                 try {
@@ -1813,16 +1837,9 @@ module.exports.CreateDB = function (parent, func) {
                 // Perform a MySqlDump backup
                 const newBackupFile = 'mysqldump-' + fileSuffix;
                 var newBackupPath = parent.path.join(backupPath, newBackupFile);
-                var props = (obj.databaseType == 4) ? parent.args.mariadb : parent.args.mysql;
-                var mysqldumpPath = 'mysqldump';
-                if (parent.config.settings.autobackup && parent.config.settings.autobackup.mysqldumppath) { mysqldumpPath = parent.config.settings.autobackup.mysqldumppath; }
-                var cmd = '\"' + mysqldumpPath + '\" --user=\'' + props.user + '\'';
-                // Windows will treat ' as part of the pw. Linux/Unix requires it to escape.
-                cmd += (parent.platform == 'win32') ? ' --password=\"' + props.password + '\"' : ' --password=\'' + props.password + '\'';
-                if (props.host) { cmd += ' -h ' + props.host; }
-                if (props.port) { cmd += ' -P ' + props.port; }
-                var sqldbname = (props.database) ? props.database : 'meshcentral';
-                cmd += ' ' + sqldbname + ' --result-file=\"' + newBackupPath + '.sql\"';
+           
+                var cmd = buildSqlDumpCommand();
+                cmd += ' --result-file=\"' + newBackupPath + '.sql\"';
                 const child_process = require('child_process');
                 var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                     try {
