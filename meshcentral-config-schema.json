@@ -21,7 +21,16 @@
             "port": { "type": "number", "description": "MariaDB port number" },
             "password": { "type": "string", "description": "MariaDB password" },
             "connectionLimit": { "type": "number", "description": "MariaDB connection limit" },
-            "database": { "type": "string", "default": "meshcentral", "description": "Name of MariaDB database used" }
+            "database": { "type": "string", "default": "meshcentral", "description": "Name of MariaDB database used" },
+            "ssl": { 
+              "type": "object",
+              "description": "SSL Options. Set to true (boolean) for default options.",
+              "properties": {
+                "caCertPath": { "type": "string", "description": "Absolute path to the CA certificate. Required for self-signed certificates" },
+                "clientCertPath": { "type": "string", "description": "Absolute path to the client certificate. Required for two-way SSL Authentication" },
+                "clientKeyPath": { "type": "string", "description": "Absolute path to the client key. Required for two-way SSL Authentication" }
+              }
+            }
           }
         },
         "mySQL": {
@@ -32,7 +41,16 @@
             "port": { "type": "number", "description": "MySQL port number" },
             "user": { "type": "string", "description": "MySQL username" },
             "password": { "type": "string", "description": "MySQL password" },
-            "database": { "type": "string", "default": "meshcentral", "description": "Name of MySQL database used" }
+            "database": { "type": "string", "default": "meshcentral", "description": "Name of MySQL database used" },
+            "ssl": { 
+              "type": "object",
+              "description": "SSL Options. Set to true (boolean) for default options.",
+              "properties": {
+                "caCertPath": { "type": "string", "description": "Absolute path to the CA certificate. Required for self-signed certificates" },
+                "clientCertPath": { "type": "string", "description": "Absolute path to the client certificate. Required for two-way SSL Authentication" },
+                "clientKeyPath": { "type": "string", "description": "Absolute path to the client key. Required for two-way SSL Authentication" }
+              }
+            }
           }
         },
         "WANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral WAN features are enabled and agents will connect to the server using a well known DNS name." },
