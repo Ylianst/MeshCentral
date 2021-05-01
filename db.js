@@ -447,9 +447,11 @@ module.exports.CreateDB = function (parent, func) {
         delete connectionObject.database;
 
         try {
-            if (connectinArgs.ssl.cacertpath) { connectionObject.ssl.ca = [require('fs').readFileSync(connectinArgs.ssl.cacertpath, 'utf8')]; }
-            if (connectinArgs.ssl.clientcertpath) { connectionObject.ssl.cert = [require('fs').readFileSync(connectinArgs.ssl.clientcertpath, 'utf8')]; }
-            if (connectinArgs.ssl.clientkeypath) { connectionObject.ssl.key = [require('fs').readFileSync(connectinArgs.ssl.clientkeypath, 'utf8')]; }
+            if (connectinArgs.ssl) {
+                if (connectinArgs.ssl.cacertpath) { connectionObject.ssl.ca = [require('fs').readFileSync(connectinArgs.ssl.cacertpath, 'utf8')]; }
+                if (connectinArgs.ssl.clientcertpath) { connectionObject.ssl.cert = [require('fs').readFileSync(connectinArgs.ssl.clientcertpath, 'utf8')]; }
+                if (connectinArgs.ssl.clientkeypath) { connectionObject.ssl.key = [require('fs').readFileSync(connectinArgs.ssl.clientkeypath, 'utf8')]; }
+            }
         } catch (ex) {
             console.log('Error loading SQL Connector certificate: ' + ex);
             process.exit();
@@ -1596,11 +1598,15 @@ module.exports.CreateDB = function (parent, func) {
         // SSL options different on mariadb/mysql
         var sslOptions = '';
         if (obj.databaseType == 4) {
-            if (props.ssl) sslOptions = ' --ssl';
-            if (props.ssl.cacertpath) sslOptions = ' --ssl-verify-server-cert --ssl-ca=' + props.ssl.cacertpath;
+            if (props.ssl) {
+                sslOptions = ' --ssl';
+                if (props.ssl.cacertpath) sslOptions = ' --ssl-verify-server-cert --ssl-ca=' + props.ssl.cacertpath;
+            } 
         } else {
-            if (props.ssl) sslOptions = ' --ssl-mode=required';
-            if (props.ssl.cacertpath) sslOptions = ' --ssl-mode=verify_identity --ssl-ca=' + props.ssl.cacertpath;
+            if (props.ssl) {
+                sslOptions = ' --ssl-mode=required';
+                if (props.ssl.cacertpath) sslOptions = ' --ssl-mode=verify_identity --ssl-ca=' + props.ssl.cacertpath;
+            }
         }
         cmd += sslOptions;
 
