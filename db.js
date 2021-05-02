@@ -1621,11 +1621,15 @@ module.exports.CreateDB = function (parent, func) {
             if (props.ssl) {
                 sslOptions = ' --ssl';
                 if (props.ssl.cacertpath) sslOptions = ' --ssl-verify-server-cert --ssl-ca=' + props.ssl.cacertpath;
+                if (props.ssl.clientcertpath) sslOptions += ' --ssl-cert=' + props.ssl.clientcertpath;
+                if (props.ssl.clientkeypath) sslOptions += ' --ssl-key=' + props.ssl.clientkeypath;
             } 
         } else {
             if (props.ssl) {
                 sslOptions = ' --ssl-mode=required';
                 if (props.ssl.cacertpath) sslOptions = ' --ssl-mode=verify_identity --ssl-ca=' + props.ssl.cacertpath;
+                if (props.ssl.clientcertpath) sslOptions += ' --ssl-cert=' + props.ssl.clientcertpath;
+                if (props.ssl.clientkeypath) sslOptions += ' --ssl-key=' + props.ssl.clientkeypath;
             }
         }
         cmd += sslOptions;
