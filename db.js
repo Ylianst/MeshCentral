@@ -438,35 +438,8 @@ module.exports.CreateDB = function (parent, func) {
         obj.dbRecordsDecryptKey = parent.crypto.createHash('sha384').update(parent.args.dbrecordsdecryptkey).digest('raw').slice(0, 32);
     }
 
-    if (parent.args.mariadb || parent.args.mysql) {
-        var connectinArgs = (parent.args.mariadb) ? parent.args.mariadb : parent.args.mysql;
-        var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
 
-        // Including the db name in the connection obj will cause a connection failure if it does not exist
-        var connectionObject = Clone(connectinArgs);
-        delete connectionObject.database;
-
-        try {
-            if (connectinArgs.ssl.cacertpath) { connectionObject.ssl.ca = [require('fs').readFileSync(connectinArgs.ssl.cacertpath, 'utf8')]; }
-            if (connectinArgs.ssl.clientcertpath) { connectionObject.ssl.cert = [require('fs').readFileSync(connectinArgs.ssl.clientcertpath, 'utf8')]; }
-            if (connectinArgs.ssl.clientkeypath) { connectionObject.ssl.key = [require('fs').readFileSync(connectinArgs.ssl.clientkeypath, 'utf8')]; }
-        } catch (ex) {
-            console.log('Error loading SQL Connector certificate: ' + ex);
-            process.exit();
-        }
-
-        if (parent.args.mariadb) {
-            // Use MariaDB
-            obj.databaseType = 4;
-            Datastore = require('mariadb').createPool(connectionObject);
-        } else if (parent.args.mysql) {
-            // Use MySQL
-            Datastore = require('mysql').createConnection(connectionObject);
-            obj.databaseType = 5;
-        }
-        sqlDbQuery('CREATE DATABASE IF NOT EXISTS ' + dbname);
-
-        // Set the default database for the rest of this connections lifetime
+    function createTablesIfNotExist(dbname) {
         var useDatabase = 'USE ' + dbname;
         sqlDbQuery(useDatabase, null, function (err, docs) {
             if (err != null) {
@@ -501,6 +474,55 @@ module.exports.CreateDB = function (parent, func) {
                 });
             }
         });
+    }
+
+    if (parent.args.mariadb || parent.args.mysql) {
+        var connectinArgs = (parent.args.mariadb) ? parent.args.mariadb : parent.args.mysql;
+        var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
+
+        // Including the db name in the connection obj will cause a connection failure if it does not exist
+        var connectionObject = Clone(connectinArgs);
+        delete connectionObject.database;
+
+        try {
+            if (connectinArgs.ssl) {
+                if (connectinArgs.ssl.cacertpath) { connectionObject.ssl.ca = [require('fs').readFileSync(connectinArgs.ssl.cacertpath, 'utf8')]; }
+                if (connectinArgs.ssl.clientcertpath) { connectionObject.ssl.cert = [require('fs').readFileSync(connectinArgs.ssl.clientcertpath, 'utf8')]; }
+                if (connectinArgs.ssl.clientkeypath) { connectionObject.ssl.key = [require('fs').readFileSync(connectinArgs.ssl.clientkeypath, 'utf8')]; }
+            }
+        } catch (ex) {
+            console.log('Error loading SQL Connector certificate: ' + ex);
+            process.exit();
+        }
+
+        if (parent.args.mariadb) {
+            // Use MariaDB
+            obj.databaseType = 4;
+            var tempDatastore = require('mariadb').createPool(connectionObject);
+            tempDatastore.getConnection().then(function (conn) {
+                conn.query('CREATE DATABASE IF NOT EXISTS ' + dbname).then(function (result) {
+                    conn.release();
+                }).catch(function (ex) { console.log('Auto-create database failed: ' + ex); });
+            }).catch(function (ex) { console.log('Auto-create database failed: ' + ex); });
+            setTimeout(function () { tempDatastore.end(); }, 2000);
+
+            connectionObject.database = dbname;
+            Datastore = require('mariadb').createPool(connectionObject);
+            createTablesIfNotExist(dbname);
+        } else if (parent.args.mysql) {
+            // Use MySQL
+            obj.databaseType = 5;
+            var tempDatastore = require('mysql').createConnection(connectionObject);
+            tempDatastore.query('CREATE DATABASE IF NOT EXISTS ' + dbname, function (error) {
+                if (error != null) {
+                    console.log('Auto-create database failed: ' + error);
+                }
+                connectionObject.database = dbname;
+                Datastore = require('mysql').createConnection(connectionObject);
+                createTablesIfNotExist(dbname);
+            });
+            setTimeout(function () { tempDatastore.end(); }, 2000);
+        }
     } else if (parent.args.mongodb) {
         // Use MongoDB
         obj.databaseType = 3;
@@ -1579,6 +1601,41 @@ module.exports.CreateDB = function (parent, func) {
         return r;
     }
 
+    function buildSqlDumpCommand() {
+        var props = (obj.databaseType == 4) ? parent.args.mariadb : parent.args.mysql;
+
+        var mysqldumpPath = 'mysqldump';
+        if (parent.config.settings.autobackup && parent.config.settings.autobackup.mysqldumppath) { 
+            mysqldumpPath = parent.config.settings.autobackup.mysqldumppath;
+        }
+
+        var cmd = '\"' + mysqldumpPath + '\" --user=\'' + props.user + '\'';
+        // Windows will treat ' as part of the pw. Linux/Unix requires it to escape.
+        cmd += (parent.platform == 'win32') ? ' --password=\"' + props.password + '\"' : ' --password=\'' + props.password + '\'';
+        if (props.host) { cmd += ' -h ' + props.host; }
+        if (props.port) { cmd += ' -P ' + props.port; }
+
+        // SSL options different on mariadb/mysql
+        var sslOptions = '';
+        if (obj.databaseType == 4) {
+            if (props.ssl) {
+                sslOptions = ' --ssl';
+                if (props.ssl.cacertpath) sslOptions = ' --ssl-verify-server-cert --ssl-ca=' + props.ssl.cacertpath;
+            } 
+        } else {
+            if (props.ssl) {
+                sslOptions = ' --ssl-mode=required';
+                if (props.ssl.cacertpath) sslOptions = ' --ssl-mode=verify_identity --ssl-ca=' + props.ssl.cacertpath;
+            }
+        }
+        cmd += sslOptions;
+
+        var dbname = (props.database) ? props.database : 'meshcentral';
+        cmd += ' ' + dbname
+
+        return cmd;
+    }
+
     // Check that the server is capable of performing a backup
     obj.checkBackupCapability = function (func) {
         if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { func(); }
@@ -1612,16 +1669,9 @@ module.exports.CreateDB = function (parent, func) {
             var backupPath = parent.backuppath;
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
             try { parent.fs.mkdirSync(backupPath); } catch (e) { }
-            var props = (obj.databaseType == 4) ? parent.args.mariadb : parent.args.mysql;
-            var mysqldumpPath = 'mysqldump';
-            if (parent.config.settings.autobackup && parent.config.settings.autobackup.mysqldumppath) { mysqldumpPath = parent.config.settings.autobackup.mysqldumppath; }
-            var cmd = '\"' + mysqldumpPath + '\" --user=\'' + props.user + '\'';
-            // Windows will treat ' as part of the pw. Linux/Unix requires it to escape.
-            cmd += (parent.platform == 'win32') ? ' --password=\"' + props.password + '\"' : ' --password=\'' + props.password + '\'';
-            if (props.host) { cmd += ' -h ' + props.host; }
-            if (props.port) { cmd += ' -P ' + props.port; }
-            var dbname = (props.database) ? props.database : 'meshcentral';
-            cmd += ' ' + dbname + ' > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
+
+            var cmd = buildSqlDumpCommand();
+            cmd += ' > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
                 try {
@@ -1813,16 +1863,9 @@ module.exports.CreateDB = function (parent, func) {
                 // Perform a MySqlDump backup
                 const newBackupFile = 'mysqldump-' + fileSuffix;
                 var newBackupPath = parent.path.join(backupPath, newBackupFile);
-                var props = (obj.databaseType == 4) ? parent.args.mariadb : parent.args.mysql;
-                var mysqldumpPath = 'mysqldump';
-                if (parent.config.settings.autobackup && parent.config.settings.autobackup.mysqldumppath) { mysqldumpPath = parent.config.settings.autobackup.mysqldumppath; }
-                var cmd = '\"' + mysqldumpPath + '\" --user=\'' + props.user + '\'';
-                // Windows will treat ' as part of the pw. Linux/Unix requires it to escape.
-                cmd += (parent.platform == 'win32') ? ' --password=\"' + props.password + '\"' : ' --password=\'' + props.password + '\'';
-                if (props.host) { cmd += ' -h ' + props.host; }
-                if (props.port) { cmd += ' -P ' + props.port; }
-                var sqldbname = (props.database) ? props.database : 'meshcentral';
-                cmd += ' ' + sqldbname + ' --result-file=\"' + newBackupPath + '.sql\"';
+           
+                var cmd = buildSqlDumpCommand();
+                cmd += ' --result-file=\"' + newBackupPath + '.sql\"';
                 const child_process = require('child_process');
                 var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                     try {
