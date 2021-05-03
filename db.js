@@ -486,6 +486,7 @@ module.exports.CreateDB = function (parent, func) {
 
         try {
             if (connectinArgs.ssl) {
+                if (connectinArgs.ssl.dontcheckserveridentity == true) { connectionObject.ssl.checkServerIdentity = function(name, cert) { return undefined; } };
                 if (connectinArgs.ssl.cacertpath) { connectionObject.ssl.ca = [require('fs').readFileSync(connectinArgs.ssl.cacertpath, 'utf8')]; }
                 if (connectinArgs.ssl.clientcertpath) { connectionObject.ssl.cert = [require('fs').readFileSync(connectinArgs.ssl.clientcertpath, 'utf8')]; }
                 if (connectinArgs.ssl.clientkeypath) { connectionObject.ssl.key = [require('fs').readFileSync(connectinArgs.ssl.clientkeypath, 'utf8')]; }
@@ -1620,12 +1621,19 @@ module.exports.CreateDB = function (parent, func) {
         if (obj.databaseType == 4) {
             if (props.ssl) {
                 sslOptions = ' --ssl';
-                if (props.ssl.cacertpath) sslOptions = ' --ssl-verify-server-cert --ssl-ca=' + props.ssl.cacertpath;
+                if (props.ssl.cacertpath) sslOptions = ' --ssl-ca=' + props.ssl.cacertpath;
+                if (props.ssl.dontcheckserveridentity != true) sslOptions += ' --ssl-verify-server-cert';
+                if (props.ssl.clientcertpath) sslOptions += ' --ssl-cert=' + props.ssl.clientcertpath;
+                if (props.ssl.clientkeypath) sslOptions += ' --ssl-key=' + props.ssl.clientkeypath;
             } 
         } else {
             if (props.ssl) {
                 sslOptions = ' --ssl-mode=required';
-                if (props.ssl.cacertpath) sslOptions = ' --ssl-mode=verify_identity --ssl-ca=' + props.ssl.cacertpath;
+                if (props.ssl.cacertpath) sslOptions = ' --ssl-ca=' + props.ssl.cacertpath;
+                if (props.ssl.dontcheckserveridentity != true) sslOptions += ' --ssl-mode=verify_identity';
+                else sslOptions += ' --ssl-mode=required';
+                if (props.ssl.clientcertpath) sslOptions += ' --ssl-cert=' + props.ssl.clientcertpath;
+                if (props.ssl.clientkeypath) sslOptions += ' --ssl-key=' + props.ssl.clientkeypath;
             }
         }
         cmd += sslOptions;
