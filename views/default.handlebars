@@ -1388,6 +1388,8 @@
             if (urlargs.key != null) { urlargs.key = "" + urlargs.key; }
             if (urlargs.key && (isAlphaNumeric(urlargs.key) == false)) { delete urlargs.key; }
             if (urlargs.locale && (isAlphaNumeric(urlargs.locale) == false)) { delete urlargs.locale; }
+            delete urlargs.user;
+            delete urlargs.pass;
             delete urlargs.viewmode;
             delete urlargs.gotonode;
             delete urlargs.gotomesh;
