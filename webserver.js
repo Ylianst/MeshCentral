@@ -352,7 +352,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         localRelayIn: {},
         localRelayOut: {},
         AgentCtrlIn: 0,
-        AgentCtrlOut: 0
+        AgentCtrlOut: 0,
+        LMSIn: 0,
+        LMSOut: 0,
+        CIRAIn: 0,
+        CIRAOut: 0
     }
     obj.getTrafficStats = function () { return obj.trafficStats; }
 
