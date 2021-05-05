@@ -43,14 +43,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Perform data accounting
     function dataAccounting() {
-        const datain = (ws._socket.bytesRead - ws._socket.bytesReadEx);
-        const dataout = (ws._socket.bytesWritten - ws._socket.bytesWrittenEx);
+        parent.trafficStats.AgentCtrlIn += (ws._socket.bytesRead - ws._socket.bytesReadEx);
+        parent.trafficStats.AgentCtrlOut += (ws._socket.bytesWritten - ws._socket.bytesWrittenEx);
         ws._socket.bytesReadEx = ws._socket.bytesRead;
         ws._socket.bytesWrittenEx = ws._socket.bytesWritten;
-
-        // Add to counters
-        parent.trafficStats.AgentCtrlIn += datain;
-        parent.trafficStats.AgentCtrlOut += dataout;
     }
 
     // Send a message to the mesh agent
