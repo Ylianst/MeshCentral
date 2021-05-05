@@ -290,10 +290,19 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         socket.ControlMsg.conn = socket;
         socket.remoteAddr = req.clientIp;
         socket.remotePort = socket._socket.remotePort;
+        socket._socket.bytesReadEx = 0;
+        socket._socket.bytesWrittenEx = 0;
         parent.debug('mps', "New CIRA websocket connection");
 
         socket.on('message', function (data) {
             if (args.mpsdebug) { var buf = Buffer.from(data, 'binary'); console.log("MPS <-- (" + buf.length + "):" + buf.toString('hex')); } // Print out received bytes
+
+            // Traffic accounting
+            parent.webserver.trafficStats.LMSIn += (this._socket.bytesRead - this._socket.bytesReadEx);
+            parent.webserver.trafficStats.LMSOut += (this._socket.bytesWritten - this._socket.bytesWrittenEx);
+            this._socket.bytesReadEx = this._socket.bytesRead;
+            this._socket.bytesWrittenEx = this._socket.bytesWritten;
+
             this.tag.accumulator += data.toString('binary'); // Append as binary string
             try {
                 // Parse all of the APF data we can
@@ -306,6 +315,12 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         });
 
         socket.addListener('close', function () {
+            // Traffic accounting
+            parent.webserver.trafficStats.LMSIn += (this._socket.bytesRead - this._socket.bytesReadEx);
+            parent.webserver.trafficStats.LMSOut += (this._socket.bytesWritten - this._socket.bytesWrittenEx);
+            this._socket.bytesReadEx = this._socket.bytesRead;
+            this._socket.bytesWrittenEx = this._socket.bytesWritten;
+
             socketClosedCount++;
             parent.debug('mps', "CIRA websocket closed", this.tag.meshid, this.tag.nodeid);
             removeCiraConnection(socket);
@@ -332,6 +347,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         socket.ControlMsg = function ControlMsg(message) { return ControlMsg.parent.SendJsonControl(ControlMsg.conn, message); }
         socket.ControlMsg.parent = obj;
         socket.ControlMsg.conn = socket;
+        socket.bytesReadEx = 0;
+        socket.bytesWrittenEx = 0;
         socket.remoteAddr = cleanRemoteAddr(socket.remoteAddress);
         //socket.remotePort is already present, no need to set it.
         socket.setEncoding('binary');
@@ -342,6 +359,12 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         socket.on('timeout', () => { ciraTimeoutCount++; parent.debug('mps', "CIRA timeout, disconnecting."); try { socket.end(); } catch (e) { } });
 
         socket.addListener('close', function () {
+            // Traffic accounting
+            parent.webserver.trafficStats.CIRAIn += (this.bytesRead - this.bytesReadEx);
+            parent.webserver.trafficStats.CIRAOut += (this.bytesWritten - this.bytesWrittenEx);
+            this.bytesReadEx = this.bytesRead;
+            this.bytesWrittenEx = this.bytesWritten;
+
             socketClosedCount++;
             parent.debug('mps', 'CIRA connection closed');
             removeCiraConnection(socket);
@@ -355,6 +378,13 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
         socket.addListener('data', function (data) {
             if (args.mpsdebug) { var buf = Buffer.from(data, 'binary'); console.log("MPS --> (" + buf.length + "):" + buf.toString('hex')); } // Print out received bytes
+
+            // Traffic accounting
+            parent.webserver.trafficStats.CIRAIn +=  (this.bytesRead - this.bytesReadEx);
+            parent.webserver.trafficStats.CIRAOut += (this.bytesWritten - this.bytesWrittenEx);
+            this.bytesReadEx = this.bytesRead;
+            this.bytesWrittenEx = this.bytesWritten;
+
             socket.tag.accumulator += data;
 
             // Detect if this is an HTTPS request, if it is, return a simple answer and disconnect. This is useful for debugging access to the MPS port.
