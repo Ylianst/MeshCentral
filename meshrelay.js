@@ -310,6 +310,22 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     // Remove the timeout
                     if (relayinfo.timeout) { clearTimeout(relayinfo.timeout); delete relayinfo.timeout; }
 
+                    // Check the protocol in use
+                    req.query.p = parseInt(req.query.p);
+                    if (typeof req.query.p != 'number') { req.query.p = parseInt(obj.peer.req.query.p); if (typeof req.query.p != 'number') { req.query.p = 0; } }
+                    obj.peer.req.query.p = req.query.p;
+
+                    // Setup traffic accounting
+                    obj.ws._socket.bytesReadEx = 0;
+                    obj.ws._socket.bytesWrittenEx = 0;
+                    obj.ws._socket.p = req.query.p;
+                    obj.peer.ws._socket.bytesReadEx = 0;
+                    obj.peer.ws._socket.bytesWrittenEx = 0;
+                    obj.peer.ws._socket.p = req.query.p;
+                    if (parent.trafficStats.relayIn[req.query.p] == null) { parent.trafficStats.relayIn[req.query.p] = 0; }
+                    if (parent.trafficStats.relayOut[req.query.p] == null) { parent.trafficStats.relayOut[req.query.p] = 0; }
+                    if (parent.trafficStats.relayCount[req.query.p] == null) { parent.trafficStats.relayCount[req.query.p] = 1; } else { parent.trafficStats.relayCount[req.query.p]++; }
+
                     // Setup the agent PING/PONG timers unless requested not to
                     if ((obj.req.query.noping != 1) && (obj.peer.req != null) && (obj.peer.req.query != null) && (obj.peer.req.query.noping != 1)) {
                         if ((typeof parent.parent.args.agentping == 'number') && (obj.pingtimer == null)) { obj.pingtimer = setInterval(sendPing, parent.parent.args.agentping * 1000); }
@@ -516,6 +532,17 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
 
     // When data is received from the mesh relay web socket
     ws.on('message', function (data) {
+        // Perform traffic accounting
+        parent.trafficStats.relayIn[this._socket.p] += (this._socket.bytesRead - this._socket.bytesReadEx);
+        parent.trafficStats.relayOut[this._socket.p] += (this._socket.bytesWritten - this._socket.bytesWrittenEx);
+
+        // Check the protocol in use
+        req.query.p = parseInt(req.query.p);
+        if (typeof req.query.p != 'number') { req.query.p = parseInt(obj.peer.req.query.p); if (typeof req.query.p != 'number') { req.query.p = 0; } }
+        obj.peer.req.query.p = req.query.p;
+
+
+
         if (this.peer != null) {
             //if (typeof data == 'string') { console.log('Relay: ' + data); } else { console.log('Relay:' + data.length + ' byte(s)'); }
             if (this.peer.slowRelay == null) {
@@ -584,6 +611,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
 
     // If the relay web socket is closed, close both sides.
     ws.on('close', function (req) {
+        // Perform traffic accounting
+        parent.trafficStats.relayIn[this._socket.p] += (this._socket.bytesRead - this._socket.bytesReadEx);
+        parent.trafficStats.relayOut[this._socket.p] += (this._socket.bytesWritten - this._socket.bytesWrittenEx);
+
         if (obj.relaySessionCounted) { parent.relaySessionCount--; delete obj.relaySessionCounted; }
         closeBothSides();
     });
