@@ -905,7 +905,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            var fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,trafficstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,dbcounters,sms,amtacm,certhashes,watchdog,amtmanager,amtpasswords,certexpire';
+                            var fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,trafficstats,trafficdelta,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,dbcounters,sms,amtacm,certhashes,watchdog,amtmanager,amtpasswords,certexpire';
                             if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
                             availcommands = availcommands.split(',').sort();
                             while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
@@ -1117,6 +1117,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var stats = parent.getTrafficStats();
                             for (var i in stats) {
                                 if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+                            }
+                            break;
+                        }
+                        case 'trafficdelta': {
+                            const stats = parent.getTrafficDelta(obj.trafficStats);
+                            obj.trafficStats = stats.current;
+                            for (var i in stats.delta) {
+                                if (typeof stats.delta[i] == 'object') { r += (i + ': ' + JSON.stringify(stats.delta[i]) + '\r\n'); } else { r += (i + ': ' + stats.delta[i] + '\r\n'); }
                             }
                             break;
                         }
@@ -5821,6 +5829,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var event = { etype: 'user', userid: user._id, username: user.name, action: 'loginTokenAdded', msgid: 115, msg: "Added login token", domain: domain.id, newToken: { name: command.name, tokenUser: tokenUser, created: created, expire: expire } };
                     parent.parent.DispatchEvent(targets, obj, event);
                 });
+                break;
+            }
+            case 'trafficstats': {
+                try { ws.send(JSON.stringify({ action: 'trafficstats', stats: parent.getTrafficStats() })); } catch (ex) { }
+                break;
+            }
+            case 'trafficdelta': {
+                const stats = parent.getTrafficDelta(obj.trafficStats);
+                obj.trafficStats = stats.current;
+                try { ws.send(JSON.stringify({ action: 'trafficdelta', delta: stats.delta })); } catch (ex) { }
                 break;
             }
             case 'getDeviceDetails': {

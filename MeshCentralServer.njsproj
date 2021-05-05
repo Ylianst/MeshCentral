@@ -572,7 +572,6 @@
     <Content Include="views\player.handlebars" />
     <Content Include="views\sharing.handlebars" />
     <Content Include="views\ssh.handlebars" />
-    <Content Include="views\terminal.handlebars" />
     <Content Include="views\terms-mobile.handlebars" />
     <Content Include="views\terms.handlebars" />
     <Content Include="views\xterm.handlebars" />
