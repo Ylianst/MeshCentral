@@ -3384,84 +3384,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         render(req, res, getRenderPage('player', req, domain), getRenderArgs({}, req, domain));
     }
 
-    // Serve the guest desktop page
-    function handleDesktopRequest(req, res) {
-        const domain = getDomain(req, res);
-        if (domain == null) { return; }
-        if (req.query.c == null) { res.sendStatus(404); return; }
-        if (domain.guestdevicesharing === false) { res.sendStatus(404); return; } // This feature is not allowed.
-
-        // Check the inbound desktop sharing cookie
-        var c = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey, 60); // 60 minute timeout
-        if ((c == null) || (c.a !== 5) || ((c.p !== 2) && (c.p != null)) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.start != 'number') || (typeof c.expire != 'number') || (typeof c.pid != 'string')) { res.sendStatus(404); return; }
-
-        // Check the expired time, expire message.
-        if (c.expire <= Date.now()) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
-
-        // Check the public id
-        obj.db.GetAllTypeNodeFiltered([c.nid], domain.id, 'deviceshare', null, function (err, docs) {
-            // Check if any desktop sharing links are present, expire message.
-            if ((err != null) || (docs.length == 0)) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
-
-            // Search for the device share public identifier, expire message.
-            var found = false;
-            for (var i = 0; i < docs.length; i++) { if (docs[i].publicid == c.pid) { found = true; } }
-            if (found == false) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
-
-            // Check the start time, not yet valid message.
-            if ((c.start > Date.now()) || (c.start > c.expire)) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 11, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
-
-            // Looks good, let's create the outbound session cookies.
-            // Consent flags are 1 = Notify, 8 = Prompt, 64 = Privacy Bar.
-            const authCookie = obj.parent.encodeCookie({ userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: 2, gn: c.gn, cf: 65 | c.cf, r: 8, expire: c.expire, pid: c.pid, vo: c.vo }, obj.parent.loginCookieEncryptionKey);
-
-            // Lets respond by sending out the desktop viewer.
-            var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-            parent.debug('web', 'handleDesktopRequest: Sending guest desktop page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
-            res.set({ 'Cache-Control': 'no-store' });
-            render(req, res, getRenderPage('desktop', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire, viewOnly: (c.vo == 1) ? 1 : 0 }, req, domain));
-        });
-    }
-
-    // Serve the guest terminal page
-    function handleTerminalRequest(req, res) {
-        const domain = getDomain(req, res);
-        if (domain == null) { return; }
-        if (req.query.c == null) { res.sendStatus(404); return; }
-        if (domain.guestdevicesharing === false) { res.sendStatus(404); return; } // This feature is not allowed.
-
-        // Check the inbound desktop sharing cookie
-        var c = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey, 60); // 60 minute timeout
-        if ((c == null) || (c.a !== 5) || (c.p !== 1) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.start != 'number') || (typeof c.expire != 'number') || (typeof c.pid != 'string')) { res.sendStatus(404); return; }
-
-        // Check the expired time, expire message.
-        if (c.expire <= Date.now()) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 4, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
-
-        // Check the public id
-        obj.db.GetAllTypeNodeFiltered([c.nid], domain.id, 'deviceshare', null, function (err, docs) {
-            // Check if any desktop sharing links are present, expire message.
-            if ((err != null) || (docs.length == 0)) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 4, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
-
-            // Search for the device share public identifier, expire message.
-            var found = false;
-            for (var i = 0; i < docs.length; i++) { if (docs[i].publicid == c.pid) { found = true; } }
-            if (found == false) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 4, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
-
-            // Check the start time, not yet valid message.
-            if ((c.start > Date.now()) || (c.start > c.expire)) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 4, msgid: 11, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
-
-            // Looks good, let's create the outbound session cookies.
-            // Consent flags are 2 = Notify, 16 = Prompt
-            const authCookie = obj.parent.encodeCookie({ userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: 1, gn: c.gn, cf: 2 | c.cf, r: 8, expire: c.expire, pid: c.pid }, obj.parent.loginCookieEncryptionKey);
-
-            // Lets respond by sending out the desktop viewer.
-            var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-            parent.debug('web', 'handleTerminalRequest: Sending guest terminal page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
-            res.set({ 'Cache-Control': 'no-store' });
-            render(req, res, getRenderPage('terminal', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire }, req, domain));
-        });
-    }
-
     // Serve the guest sharing page
     function handleSharingRequest(req, res) {
         const domain = getDomain(req, res);
@@ -3500,7 +3422,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // Lets respond by sending out the desktop viewer.
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-                parent.debug('web', 'handleDesktopRequest: Sending guest sharing page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
+                parent.debug('web', 'handleSharingRequest: Sending guest sharing page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
                 res.set({ 'Cache-Control': 'no-store' });
                 render(req, res, getRenderPage('sharing', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire, viewOnly: (c.vo == 1) ? 1 : 0, nodeName: encodeURIComponent(node.name), features: c.p }, req, domain));
             });
@@ -5549,8 +5471,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'recordings.ashx', handleGetRecordings);
             obj.app.get(url + 'player.htm', handlePlayerRequest);
             obj.app.get(url + 'player', handlePlayerRequest);
-            obj.app.get(url + 'desktop', handleDesktopRequest);
-            obj.app.get(url + 'terminal', handleTerminalRequest);
             obj.app.get(url + 'sharing', handleSharingRequest);
             obj.app.ws(url + 'agenttransfer.ashx', handleAgentFileTransfer); // Setup agent to/from server file transfer handler
             obj.app.ws(url + 'meshrelay.ashx', function (ws, req) {

@@ -245,6 +245,13 @@
                             <option value=1000>Very slow</option>
                         </select>
                     </div>
+                    <div id="d7desktopOtherSettings">
+                        <div>Other Settings</div>
+                        <div id="d7otherset2" style="display:block">
+                            <label style="display:block"><input type="checkbox" id="d7deskSwapMouse" />Swap Mouse Buttons</label>
+                            <label style="display:block"><input type="checkbox" id="d7deskRemoteKeyMap" />Use Remote Keyboard Map</label>
+                        </div>
+                    </div>
                 </div>
                 <div id="d7amtkvm">
                     <h4>Intel&reg; AMT Hardware KVM</h4>
@@ -744,11 +751,15 @@
             desktopsettings.quality = d7bitmapquality.value;
             desktopsettings.scaling = d7bitmapscaling.value;
             desktopsettings.framerate = d7framelimiter.value;
+            desktopsettings.swapmouse = d7deskSwapMouse.checked;
+            desktopsettings.remotekeymap = d7deskRemoteKeyMap.checked;
             desktopsettings.localkeymap = d7localKeyMap.checked;
             localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
             if (desktop) {
                 if (desktop.contype == 1) {
+                    desktop.m.SwapMouse = desktopsettings.swapmouse;
+                    desktop.m.remoteKeyMap = desktopsettings.remotekeymap;
                     if (desktop.State != 0) {
                         desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate);
                     }
@@ -770,6 +781,8 @@
             if (ops.indexOf(parseInt(desktopsettings.quality)) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
             d7bitmapscaling.value = desktopsettings.scaling;
             if (desktopsettings.framerate) { d7framelimiter.value = desktopsettings.framerate; } else { d7framelimiter.value = 100; }
+            if (desktopsettings.swapmouse != null) { d7deskSwapMouse.checked = desktopsettings.swapmouse; }
+            if (desktopsettings.remotekeymap != null) { d7deskRemoteKeyMap.checked = desktopsettings.remotekeymap; }
             if (desktopsettings.localkeymap) { d7localKeyMap.checked = desktopsettings.localkeymap; }
         }
 
