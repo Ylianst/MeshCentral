@@ -21,26 +21,30 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
     const WebSocket = require('ws');
 
     var obj = {};
-    obj.domain = domain;
     obj.ws = ws;
-    obj.wsClient = null;
-    obj.tcpServer = null;
     obj.tcpServerPort = 0;
-    obj.relaySocket = null;
     obj.relayActive = false;
-    obj.infos = null;
     var rdpClient = null;
 
     parent.parent.debug('relay', 'RDP: Request for RDP relay (' + req.clientIp + ')');
 
     // Disconnect
     obj.close = function (arg) {
+        if (obj.ws == null) return;
+
+        // Collect how many raw bytes where received and sent.
+        // We sum both the websocket and TCP client in this case.
+        //var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
+        //if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
+        //console.log('WinRDP - in', inTraffc, 'out', outTraffc);
+
+        if (obj.wsClient) { obj.wsClient.close(); delete obj.wsClient; }
+        if (obj.tcpServer) { obj.tcpServer.close(); obj.tcpServer.destroy(); delete obj.tcpServer; }
+        if (rdpClient) { rdpClient.close(); rdpClient = null; }
         if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { ws._socket._parent.end(); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
-        if (obj.wsClient) { obj.wsClient.close(); obj.wsClient = null; }
-        if (obj.tcpServer) { obj.tcpServer.close(); obj.tcpServer = null; }
-        if (rdpClient) { rdpClient.close(); rdpClient = null; }
-        delete obj.domain;
+        obj.ws.removeAllListeners();
+        obj.relayActive = false;
         delete obj.ws;
     };
 
@@ -67,11 +71,10 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 // Setup the correct URL with domain and use TLS only if needed.
                 var options = { rejectUnauthorized: false };
                 if (domain.dns != null) { options.servername = domain.dns; }
-                var protocol = 'wss';
-                if (args.tlsoffload) { protocol = 'ws'; }
+                var protocol = (args.tlsoffload) ? 'ws' : 'wss';
                 var domainadd = '';
                 if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-                var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((cookie.lc == 1)?'local':'mesh') + 'relay.ashx?noping=1&auth=' + obj.infos.ip;
+                var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((cookie.lc == 1) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=10&auth=' + obj.infos.ip;  // Protocol 10 is Web-RDP
                 parent.parent.debug('relay', 'RDP: Connection websocket to ' + url);
                 obj.wsClient = new WebSocket(url, options);
                 obj.wsClient.on('open', function () { parent.parent.debug('relay', 'RDP: Relay websocket open'); });
@@ -170,48 +173,56 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
         var obj = new require('stream').Duplex(options);
         obj.forwardwrite = null;
         obj.updateBuffer = function (chunk) { this.push(chunk); };
-        obj._write = function (chunk, encoding, callback) { if (obj.forwardwrite != null) { obj.forwardwrite(chunk); } else { console.err("Failed to fwd _write."); } if (callback) callback(); }; // Pass data written to forward
+        obj._write = function (chunk, encoding, callback) { if (obj.forwardwrite != null) { obj.forwardwrite(chunk); } if (callback) callback(); }; // Pass data written to forward
         obj._read = function (size) { }; // Push nothing, anything to read should be pushed from updateBuffer()
+        obj.destroy = function () { delete obj.forwardwrite; }
         return obj;
     }
 
     const obj = {};
-    obj.domain = domain;
     obj.ws = ws;
     obj.relayActive = false;
-    obj.sshClient = null;
-    obj.sshShell = null;
-    obj.termSize = null;
-    obj.relayActive = false;
-    obj.wsClient = null;
 
     parent.parent.debug('relay', 'SSH: Request for SSH relay (' + req.clientIp + ')');
 
     // Disconnect
     obj.close = function (arg) {
-        if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { ws._socket._parent.end(); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
-        //if (obj.wsClient) { obj.wsClient.close(); obj.wsClient = null; }
-        //if (obj.tcpServer) { obj.tcpServer.close(); obj.tcpServer = null; }
-        //if (sshClient) { sshClient.close(); sshClient = null; }
+        if (obj.ws == null) return;
 
-        if (obj.wsClient != null) {
-            try { obj.wsClient.close(); } catch (ex) { console.log(ex); }
-            delete obj.wsClient;
-        }
-        if (obj.sshClient != null) {
-            try { obj.sshClient.end(); } catch (ex) { console.log(ex); }
-            delete obj.sshClient;
-        }
-        if (obj.sshShell != null) {
+        // Collect how many raw bytes where received and sent.
+        // We sum both the websocket and TCP client in this case.
+        //var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
+        //if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
+        //console.log('WinSSH - in', inTraffc, 'out', outTraffc);
+
+        if (obj.sshShell) {
+            obj.sshShell.destroy();
+            obj.sshShell.removeAllListeners('data');
+            obj.sshShell.removeAllListeners('close');
             try { obj.sshShell.end(); } catch (ex) { console.log(ex); }
             delete obj.sshShell;
         }
+        if (obj.sshClient) {
+            obj.sshClient.destroy();
+            obj.sshClient.removeAllListeners('ready');
+            try { obj.sshClient.end(); } catch (ex) { console.log(ex); }
+            delete obj.sshClient;
+        }
+        if (obj.wsClient) {
+            obj.wsClient.removeAllListeners('open');
+            obj.wsClient.removeAllListeners('message');
+            obj.wsClient.removeAllListeners('close');
+            try { obj.wsClient.close(); } catch (ex) { console.log(ex); }
+            delete obj.wsClient;
+        }
+
+        if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { ws._socket._parent.end(); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        obj.ws.removeAllListeners();
 
         obj.relayActive = false;
         delete obj.termSize;
         delete obj.cookie;
-        delete obj.domain;
         delete obj.ws;
     };
 
@@ -229,7 +240,7 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
             if (args.tlsoffload) { protocol = 'ws'; }
             var domainadd = '';
             if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((obj.cookie.lc == 1) ? 'local' : 'mesh') + 'relay.ashx?noping=1&auth=' + req.query.auth;
+            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((obj.cookie.lc == 1) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=11&auth=' + req.query.auth; // Protocol 11 is Web-SSH
             parent.parent.debug('relay', 'SSH: Connection websocket to ' + url);
             obj.wsClient = new WebSocket(url, options);
             obj.wsClient.on('open', function () { parent.parent.debug('relay', 'SSH: Relay websocket open'); });
@@ -306,10 +317,7 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                 // Terminal data
                 if (obj.sshShell != null) { obj.sshShell.write(msg.substring(1)); }
             }
-        } catch (ex) {
-            console.log('SSHMessageException', msg, ex);
-            obj.close();
-        }
+        } catch (ex) { obj.close(); }
     });
 
     // If error, do nothing
@@ -317,9 +325,6 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
 
     // If the web socket is closed
     ws.on('close', function (req) { parent.parent.debug('relay', 'SSH: Browser websocket closed'); obj.close(); });
-
-    // Send data on the web socket
-    //function send(obj) { try { ws.send(JSON.stringify(obj), function () { }); } catch (ex) { } }
     
     return obj;
 };

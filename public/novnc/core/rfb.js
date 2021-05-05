@@ -397,7 +397,7 @@ export default class RFB extends EventTargetMixin {
 
         try {
             // WebSocket.onopen transitions to the RFB init states
-            this._sock.open(this._url, ['binary']);
+            this._sock.open(this._url + '&p=12', ['binary']);
         } catch (e) {
             if (e.name === 'SyntaxError') {
                 this._fail("Invalid host or port (" + e + ")");

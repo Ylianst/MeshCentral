@@ -36,6 +36,17 @@ const MESHRIGHT_RESETOFF = 0x00040000;
 const MESHRIGHT_GUESTSHARING = 0x00080000;
 const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
+// Protocol:
+// 1 = Terminal
+// 2 = Desktop
+// 5 = Files
+// 10 = Web-RDP
+// 11 = Web-SSH
+// 12 = Web-VNC
+// 100 = Intel AMT WSMAN
+// 101 = Intel AMT Redirection
+// 200 = Messenger
+
 function checkDeviceSharePublicIdentifier(parent, domain, nodeid, pid, func) {
     // Check the public id
     parent.db.GetAllTypeNodeFiltered([nodeid], domain.id, 'deviceshare', null, function (err, docs) {
@@ -1011,15 +1022,24 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
 
     // Disconnect
     obj.close = function (arg) {
-        if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug('relay', 'Relay: Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        // If the web socket is already closed, stop here.
+        if (obj.ws == null) return;
+
+        // Collect how many raw bytes where received and sent.
+        // We sum both the websocket and TCP client in this case.
+        var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
+        if (obj.client != null) { inTraffc += obj.client.bytesRead; outTraffc += obj.client.bytesWritten; }
+
+        // Close the web socket
+        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); parent.parent.debug('relay', 'Relay: Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { obj.ws._socket._parent.end(); parent.parent.debug('relay', 'Relay: Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
 
         // Update the relay session count
         if (obj.relaySessionCounted) { parent.relaySessionCount--; delete obj.relaySessionCounted; }
 
-        // Log the disconnection
+        // Log the disconnection, traffic will be credited to the authenticated user
         if (obj.time) {
-            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.user._id, username: obj.user.name, msgid: 9, msgArgs: [obj.id, obj.req.clientIp, obj.host, Math.floor((Date.now() - obj.time) / 1000)], msg: 'Ended relay session \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.host + ', ' + Math.floor((Date.now() - obj.time) / 1000) + ' second(s)', nodeid: obj.req.query.nodeid };
+            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.user._id, username: obj.user.name, msgid: 9, msgArgs: [obj.id, obj.req.clientIp, obj.host, Math.floor((Date.now() - obj.time) / 1000)], msg: 'Ended relay session \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.host + ', ' + Math.floor((Date.now() - obj.time) / 1000) + ' second(s)', nodeid: obj.req.query.nodeid, protocol: req.query.p, in: inTraffc, out: outTraffc };
             parent.parent.DispatchEvent(['*', user._id], obj, event);
         }
 
@@ -1031,7 +1051,7 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
         delete obj.meshid;
         delete obj.tcpport;
         delete obj.expireTimer;
-        if (obj.client != null) { obj.client.destroy(); delete obj.client; }
+        if (obj.client != null) { obj.client.destroy(); delete obj.client; } // Close the client socket
         if (obj.pingtimer != null) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
         if (obj.pongtimer != null) { clearInterval(obj.pongtimer); delete obj.pongtimer; }
 
@@ -1066,7 +1086,7 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
             obj.client.connect(obj.tcpport, node.host, function () {
                 // Log the start of the connection
                 obj.time = Date.now();
-                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.user._id, username: obj.user.name, msgid: 13, msgArgs: [obj.id, obj.req.clientIp, obj.host], msg: 'Started relay session \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.host, nodeid: req.query.nodeid };
+                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.user._id, username: obj.user.name, msgid: 13, msgArgs: [obj.id, obj.req.clientIp, obj.host], msg: 'Started relay session \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.host, nodeid: req.query.nodeid, protocol: req.query.p };
                 parent.parent.DispatchEvent(['*', obj.user._id, obj.meshid, obj.nodeid], obj, event);
 
                 // Start the session
