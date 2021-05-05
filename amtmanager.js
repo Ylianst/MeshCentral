@@ -314,6 +314,7 @@ module.exports.CreateAmtManager = function (parent) {
 
                         // If there are any changes, apply them.
                         if (event.node.intelamt != null) {
+                            if (dev.intelamt == null) { dev.intelamt = {}; }
                             if ((typeof event.node.intelamt.version == 'string') && (event.node.intelamt.version != dev.intelamt.ver)) { dev.intelamt.ver = event.node.intelamt.version; }
                             if ((typeof event.node.intelamt.user == 'string') && (event.node.intelamt.user != dev.intelamt.user)) { dev.intelamt.user = event.node.intelamt.user; }
                             if ((typeof event.node.intelamt.pass == 'string') && (event.node.intelamt.pass != dev.intelamt.pass)) { dev.intelamt.pass = event.node.intelamt.pass; }
