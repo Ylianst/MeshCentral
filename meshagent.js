@@ -38,12 +38,29 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     //obj.connectTime = null;
     //obj.agentInfo = null;
 
+    ws._socket.bytesReadEx = 0;
+    ws._socket.bytesWrittenEx = 0;
+
+    // Perform data accounting
+    function dataAccounting() {
+        const datain = (ws._socket.bytesRead - ws._socket.bytesReadEx);
+        const dataout = (ws._socket.bytesWritten - ws._socket.bytesWrittenEx);
+        ws._socket.bytesReadEx = ws._socket.bytesRead;
+        ws._socket.bytesWrittenEx = ws._socket.bytesWritten;
+
+        // Add to counters
+        parent.trafficStats.AgentCtrlIn += datain;
+        parent.trafficStats.AgentCtrlOut += dataout;
+    }
+
     // Send a message to the mesh agent
     obj.send = function (data, func) { try { if (typeof data == 'string') { ws.send(Buffer.from(data), func); } else { ws.send(data, func); } } catch (e) { } };
     obj.sendBinary = function (data, func) { try { if (typeof data == 'string') { ws.send(Buffer.from(data, 'binary'), func); } else { ws.send(data, func); } } catch (e) { } };
 
     // Disconnect this agent
     obj.close = function (arg) {
+        dataAccounting();
+
         if ((arg == 1) || (arg == null)) { try { ws.close(); if (obj.nodeid != null) { parent.parent.debug('agent', 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { ws._socket._parent.end(); if (obj.nodeid != null) { parent.parent.debug('agent', 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         // If arg == 3, don't communicate with this agent anymore, but don't disconnect (Duplicate agent).
@@ -125,6 +142,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // When data is received from the mesh agent web socket
     ws.on('message', function (msg) {
+        dataAccounting();
         if (msg.length < 2) return;
         if (typeof msg == 'object') { msg = msg.toString('binary'); } // TODO: Could change this entire method to use Buffer instead of binary string
         if (obj.authenticated == 2) { // We are authenticated
