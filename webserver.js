@@ -345,6 +345,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Traffic counters
     obj.trafficStats = {
         httpRequestCount: 0,
+        httpWebSocketCount: 0,
+        httpIn: 0,
+        httpOut: 0,
         relayCount: {},
         relayIn: {},
         relayOut: {},
@@ -5267,8 +5270,31 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Useful for debugging reverse proxy issues
             parent.debug('httpheaders', req.method, req.url, req.headers);
 
-            // Count the HTTP request
-            obj.trafficStats.httpRequestCount++;
+            // Perform traffic accounting
+            if (req.headers.upgrade == 'websocket') {
+                // We don't count traffic on WebSockets since it's counted by the handling modules.
+                obj.trafficStats.httpWebSocketCount++;
+            } else {
+                // Normal HTTP traffic is counted
+                obj.trafficStats.httpRequestCount++;
+                if (typeof req.socket.xbytesRead != 'number') {
+                    req.socket.xbytesRead = 0;
+                    req.socket.xbytesWritten = 0;
+                    req.socket.on('close', function () {
+                        // Perform final accounting
+                        obj.trafficStats.httpIn += (this.bytesRead - this.xbytesRead);
+                        obj.trafficStats.httpOut += (this.bytesWritten - this.xbytesWritten);
+                        this.xbytesRead = this.bytesRead;
+                        this.xbytesWritten = this.bytesWritten;
+                    });
+                } else {
+                    // Update counters
+                    obj.trafficStats.httpIn += (req.socket.bytesRead - req.socket.xbytesRead);
+                    obj.trafficStats.httpOut += (req.socket.bytesWritten - req.socket.xbytesWritten);
+                    req.socket.xbytesRead = req.socket.bytesRead;
+                    req.socket.xbytesWritten = req.socket.bytesWritten;
+                }
+            }
 
             // Set the real IP address of the request
             // If a trusted reverse-proxy is sending us the remote IP address, use it.
