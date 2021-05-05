@@ -966,6 +966,10 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
     obj.ws = ws;
     obj.user = user;
 
+    // Check the protocol in use
+    var protocolInUse = parseInt(req.query.p);
+    if (typeof protocolInUse != 'number') { protocolInUse = 0; }
+
     // If there is no authentication, drop this connection
     if (obj.user == null) { try { ws.close(); parent.parent.debug('relay', 'Relay: Connection with no authentication'); } catch (e) { console.log(e); } return; }
 
@@ -997,6 +1001,8 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
 
     // Hold traffic until we connect to the target
     ws._socket.pause();
+    ws._socket.bytesReadEx = 0;
+    ws._socket.bytesWrittenEx = 0;
 
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;
@@ -1020,10 +1026,27 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
     // Clean a IPv6 address that encodes a IPv4 address
     function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }
 
+    // Perform data accounting
+    function dataAccounting() {
+        const datain = ((obj.client.bytesRead - obj.client.bytesReadEx) + (ws._socket.bytesRead - ws._socket.bytesReadEx));
+        const dataout = ((obj.client.bytesWritten - obj.client.bytesWrittenEx) + (ws._socket.bytesWritten - ws._socket.bytesWrittenEx));
+        obj.client.bytesReadEx = obj.client.bytesRead;
+        obj.client.bytesWrittenEx = obj.client.bytesWritten;
+        ws._socket.bytesReadEx = ws._socket.bytesRead;
+        ws._socket.bytesWrittenEx = ws._socket.bytesWritten;
+
+        // Add to counters
+        if (parent.trafficStats.localRelayIn[protocolInUse]) { parent.trafficStats.localRelayIn[protocolInUse] += datain; } else { parent.trafficStats.localRelayIn[protocolInUse] = datain; }
+        if (parent.trafficStats.localRelayOut[protocolInUse]) { parent.trafficStats.localRelayOut[protocolInUse] += dataout; } else { parent.trafficStats.localRelayOut[protocolInUse] = dataout; }
+    }
+
     // Disconnect
     obj.close = function (arg) {
         // If the web socket is already closed, stop here.
         if (obj.ws == null) return;
+
+        // Perform data accounting
+        dataAccounting();
 
         // Collect how many raw bytes where received and sent.
         // We sum both the websocket and TCP client in this case.
@@ -1083,17 +1106,27 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
 
             // Setup TCP client
             obj.client = new net.Socket();
+            obj.client.bytesReadEx = 0;
+            obj.client.bytesWrittenEx = 0;
             obj.client.connect(obj.tcpport, node.host, function () {
                 // Log the start of the connection
                 obj.time = Date.now();
                 var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.user._id, username: obj.user.name, msgid: 13, msgArgs: [obj.id, obj.req.clientIp, obj.host], msg: 'Started relay session \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.host, nodeid: req.query.nodeid, protocol: req.query.p };
                 parent.parent.DispatchEvent(['*', obj.user._id, obj.meshid, obj.nodeid], obj, event);
 
+                // Count the session
+                if (parent.trafficStats.localRelayCount[protocolInUse]) { parent.trafficStats.localRelayCount[protocolInUse] += 1; } else { parent.trafficStats.localRelayCount[protocolInUse] = 1; }
+
                 // Start the session
                 ws.send('c');
                 ws._socket.resume();
             });
-            obj.client.on('data', function (data) { try { this.pause(); ws.send(data, this.clientResume); } catch (ex) { console.log(ex); } }); // Perform relay
+            obj.client.on('data', function (data) {
+                // Perform data accounting
+                dataAccounting();
+                // Perform relay
+                try { this.pause(); ws.send(data, this.clientResume); } catch (ex) { console.log(ex); }
+            }); 
             obj.client.on('close', function () { obj.close(); });
             obj.client.on('error', function (err) { obj.close(); });
             obj.client.clientResume = function () { try { obj.client.resume(); } catch (ex) { console.log(ex); } };
