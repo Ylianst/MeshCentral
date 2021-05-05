@@ -342,6 +342,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
     obj.getAgentStats = function () { return obj.agentStats; }
 
+    // Traffic counters
+    obj.trafficStats = {
+        httpRequestCount: 0,
+        relayCount: {},
+        relayIn: {},
+        relayOut: {},
+        localRelayCount: {},
+        localRelayIn: {},
+        localRelayOut: {}
+    }
+    obj.getTrafficStats = function () { return obj.trafficStats; }
+
     // Keep a record of the last agent issues.
     obj.getAgentIssues = function () { return obj.agentIssues; }
     obj.setAgentIssue = function (agent, issue) { obj.agentIssues.push([new Date().toLocaleTimeString(), agent.remoteaddrport, issue]); while (obj.setAgentIssue.length > 50) { obj.agentIssues.shift(); } }
@@ -5326,6 +5338,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.use(function (req, res, next) {
             // Useful for debugging reverse proxy issues
             parent.debug('httpheaders', req.method, req.url, req.headers);
+
+            // Count the HTTP request
+            obj.trafficStats.httpRequestCount++;
 
             // Set the real IP address of the request
             // If a trusted reverse-proxy is sending us the remote IP address, use it.
