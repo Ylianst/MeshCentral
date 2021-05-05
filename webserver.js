@@ -361,7 +361,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         CIRAIn: 0,
         CIRAOut: 0
     }
+    obj.trafficStats.time = Date.now();
     obj.getTrafficStats = function () { return obj.trafficStats; }
+    obj.getTrafficDelta = function (oldTraffic) { // Return the difference between the old and new data along with the delta time.
+        const data = obj.common.Clone(obj.trafficStats);
+        data.time = Date.now();
+        const delta = calcDelta(oldTraffic ? oldTraffic : {}, data);
+        if (oldTraffic && oldTraffic.time) { delta.delta = (data.time - oldTraffic.time); }
+        delta.time = data.time;
+        return { current: data, delta: delta }
+    }
+    function calcDelta(oldData, newData) { // Recursive function that computes the difference of all numbers
+        const r = {};
+        for (var i in newData) {
+            if (typeof newData[i] == 'object') { r[i] = calcDelta(oldData[i] ? oldData[i] : {}, newData[i]); }
+            if (typeof newData[i] == 'number') { if (typeof oldData[i] == 'number') { r[i] = (newData[i] - oldData[i]); } else { r[i] = newData[i]; } }
+        }
+        return r;
+    }
 
     // Keep a record of the last agent issues.
     obj.getAgentIssues = function () { return obj.agentIssues; }
