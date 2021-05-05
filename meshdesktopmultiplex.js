@@ -91,6 +91,9 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
     obj.startTime = null;               // Starting time of the multiplex session.
     obj.userIds = [];                   // List of userid's that have intertracted with this session.
 
+    // Accounting
+    parent.trafficStats.desktopMultiplex.sessions++;
+
     // Add an agent or viewer
     obj.addPeer = function (peer) {
         if (obj.viewers == null) { parent.parent.debug('relay', 'DesktopRelay: Error, addingPeer on disposed session'); return; }
@@ -877,6 +880,11 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
     obj.req = req; // Used in multi-server.js
     obj.viewOnly = ((cookie != null) && (cookie.vo == 1)); // set view only mode
 
+    // Setup traffic accounting
+    if (parent.trafficStats.desktopMultiplex == null) { parent.trafficStats.desktopMultiplex = { connections: 1, sessions: 0, in: 0, out: 0 }; } else { parent.trafficStats.desktopMultiplex.connections++; }
+    ws._socket.bytesReadEx = 0;
+    ws._socket.bytesWrittenEx = 0;
+
     // Setup subscription for desktop sharing public identifier
     // If the identifier is removed, drop the connection
     if ((cookie != null) && (typeof cookie.pid == 'string')) {
@@ -1067,6 +1075,12 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
 
     // When data is received from the mesh relay web socket
     ws.on('message', function (data) {
+        // Data accounting
+        parent.trafficStats.desktopMultiplex.in += (this._socket.bytesRead - this._socket.bytesReadEx);
+        parent.trafficStats.desktopMultiplex.out += (this._socket.bytesWritten - this._socket.bytesWrittenEx);
+        this._socket.bytesReadEx = this._socket.bytesRead;
+        this._socket.bytesWrittenEx = this._socket.bytesWritten;
+
         // If this data was received by the agent, decode it.
         if (this.me.deskMultiplexor != null) { this.me.deskMultiplexor.processData(this.me, data); }
     });
@@ -1081,6 +1095,12 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
 
     // If the relay web socket is closed, close both sides.
     ws.on('close', function (req) {
+        // Data accounting
+        parent.trafficStats.desktopMultiplex.in += (this._socket.bytesRead - this._socket.bytesReadEx);
+        parent.trafficStats.desktopMultiplex.out += (this._socket.bytesWritten - this._socket.bytesWrittenEx);
+        this._socket.bytesReadEx = this._socket.bytesRead;
+        this._socket.bytesWrittenEx = this._socket.bytesWritten;
+
         //console.log('ws-close', req);
         obj.close();
     });
