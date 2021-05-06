@@ -255,7 +255,9 @@
                     <tr>
                         <td class=h1></td>
                         <td id=devListToolbar class=style14 style="display:none">
-                            &nbsp;&nbsp;<input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
+                            &nbsp;&nbsp;
+                            <input type="button" id="CollapseAllButton" onclick="collapseallButtonFunction();" value="Collapse All" />&nbsp;
+                            <input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
                             <input id=SearchInput type=search autocomplete=off placeholder=Filter onchange=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
                             <span id=SearchInputClearButton style="display:none;position:relative"><img src="images/x16.png" type="button" onclick="clearDeviceSearch()" style="position:absolute;cursor:pointer;left:-18px;top:-8px" srcset="images/x32.png 2x"/></span>
@@ -1570,6 +1572,9 @@
             var deskKeyboardShortcutsStr = getstore('deskKeyShortcuts', '0x0A002E,0x100000,0x100028,0x100026,0x10004C,0x10004D,0x11004D,0x100052,0x020073,0x080057,0x020009,0x100025,0x100027').split(',');
             for (var i in deskKeyboardShortcutsStr) { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); }
             updateDeskShortcutKeys();
+
+            // Override the collapse button text
+            updateCollapseallButtonText();
         }
 
         function refreshCookieSession() {
@@ -4311,6 +4316,7 @@
             }
             Q('DevxColImg' + id).src = x?'images/c2.png':'images/c1.png';
             putstore('_collapse', JSON.stringify(CollapsedGroups));
+            updateCollapseallButtonText();
             onDevicesScrollEx();
         }
 
@@ -4849,6 +4855,22 @@
         function PowerStateStr2(x) {
             if ((x != 0) && (x < powerStatetable.length)) return powerStatetable[x];
             return "Unknown";
+        }
+
+        function collapseallButtonFunction() {
+            if (Q('CollapseAllButton').value == "Collapse All") {
+                cmexpandaction(2);
+            } else {
+                cmexpandaction(1);
+            }
+        }
+
+        function updateCollapseallButtonText() {
+            if ((JSON.stringify(getstore('_collapse', '{}')).length - 4) > 0) {
+                Q('CollapseAllButton').value = "Expand All";
+            } else {
+                Q('CollapseAllButton').value = "Collapse All";
+            }
         }
 
         function selectallButtonFunction() {
@@ -5456,6 +5478,7 @@
                 }
             }
             putstore('_collapse', JSON.stringify(CollapsedGroups));
+            updateCollapseallButtonText();
             mainUpdate(4);
         }
 
