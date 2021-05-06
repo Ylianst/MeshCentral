@@ -1023,6 +1023,8 @@
                         <select id=p40type onchange=updateServerTimelineStats()>
                             <option value=0>Connections</option>
                             <option value=1>Memory</option>
+                            <option value=3>Inbound Traffic</option>
+                            <option value=4>Outbound Traffic</option>
                         </select>&nbsp;
                         <select id=p40time onchange=updateServerTimelineHours()>
                             <option value=3>Last 3 hours</option>
@@ -14381,6 +14383,7 @@
                 maintainAspectRatio: false,
                 elements: { line: { cubicInterpolationMode: 'monotone' } },
                 scales: {
+                    y: { stacked: true },
                     xAxes: [{ type: 'time', time: { tooltipFormat: 'll HH:mm' }, display: true, scaleLabel: { display: false, labelString: '' } }],
                     yAxes: [{ type: 'linear', display: true, scaleLabel: { display: true, labelString: '' } }]
                 }
@@ -14497,7 +14500,45 @@
                     data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].mem.heapTotal / (1024 * 1024) });
                     data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].mem.rss / (1024 * 1024) });
                 }
-            } /*else if (chartType == 2) { // Database
+            } else if ((chartType == 3) || (chartType == 4)) { // Inbound/Outbound traffic
+                serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = "Megabytes";
+                data = {
+                    labels: [pastDate(0), timeAfter],
+                    datasets: [
+                        { label: "Agent", data: [], backgroundColor: 'rgba(158, 151, 16, .1)', borderColor: 'rgb(158, 151, 16)', fill: true, steppedLine: true },
+                        { label: "CIRA", data: [], backgroundColor: 'rgba(16, 84, 158, .1)', borderColor: 'rgb(16, 84, 158)', fill: true, steppedLine: true },
+                        { label: "LMS", data: [], backgroundColor: 'rgba(255, 99, 132, .1)', borderColor: 'rgb(255, 99, 132)', fill: true, steppedLine: true },
+                        { label: "HTTP", data: [], backgroundColor: 'rgba(39, 158, 16, .1)', borderColor: 'rgb(39, 158, 16)', fill: true, steppedLine: true }
+                    ]
+                };
+                for (var i = 0; i < serverTimelineStats.length; i++) {
+                    if (serverTimelineStats[i].traffic == null) continue;
+                    if ((serverTimelineStats[i].s != null) && (servers.indexOf(serverTimelineStats[i].s) == -1)) {
+                        servers.push(serverTimelineStats[i].s);
+                        if (serverAutoSelect) { selectedServer = serverTimelineStats[i].s; serverAutoSelect = false; }
+                    }
+                    if (serverTimelineStats[i].s == null) { serverEmptyExists = true; }
+                    if (serverTimelineStats[i].s != selectedServer) { continue; }
+                    if (serverTimelineStats[i].first == true) {
+                        data.datasets[0].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                        data.datasets[1].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                        data.datasets[2].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                        data.datasets[3].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                    }
+                    if (chartType == 3) {
+                        data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.AgentCtrlIn ? (serverTimelineStats[i].traffic.AgentCtrlIn / (1024 * 1024)) : 0 });
+                        data.datasets[1].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.CIRAIn ? (serverTimelineStats[i].traffic.CIRAIn / (1024 * 1024)) : 0 });
+                        data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.LMSIn ? (serverTimelineStats[i].traffic.LMSIn / (1024 * 1024)) : 0 });
+                        data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.httpIn ? (serverTimelineStats[i].traffic.httpIn / (1024 * 1024)) : 0 });
+                    } else if (chartType == 4) {
+                        data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.AgentCtrlOut ? (serverTimelineStats[i].traffic.AgentCtrlOut / (1024 * 1024)) : 0 });
+                        data.datasets[1].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.CIRAOut ? (serverTimelineStats[i].traffic.CIRAOut / (1024 * 1024)) : 0 });
+                        data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.LMSOut ? (serverTimelineStats[i].traffic.LMSOut / (1024 * 1024)) : 0 });
+                        data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.httpOut ? (serverTimelineStats[i].traffic.httpOut / (1024 * 1024)) : 0 });
+                    }
+                }
+            }
+            /*else if (chartType == 2) { // Database
                 serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = 'Records';
                 data = {
                     labels: [pastDate(0), timeAfter],
