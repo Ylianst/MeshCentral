@@ -1665,6 +1665,7 @@ function CreateMeshCentralServer(config, args) {
                 }
 
                 // Start collecting server stats every 5 minutes
+                obj.trafficStats = obj.webserver.getTrafficStats();
                 setInterval(function () {
                     obj.serverStatsCounter++;
                     var hours = 720; // Start with all events lasting 30 days.
@@ -1676,6 +1677,10 @@ function CreateMeshCentralServer(config, args) {
                     var expire = new Date();
                     expire.setTime(expire.getTime() + (60 * 60 * 1000 * hours));
 
+                    // Get traffic data
+                    var trafficStats = obj.webserver.getTrafficDelta(obj.trafficStats);
+                    obj.trafficStats = trafficStats.current;
+
                     var data = {
                         time: new Date(),
                         expire: expire,
@@ -1686,7 +1691,8 @@ function CreateMeshCentralServer(config, args) {
                             cu: Object.keys(obj.webserver.wssessions).length,
                             us: Object.keys(obj.webserver.wssessions2).length,
                             rs: obj.webserver.relaySessionCount
-                        }
+                        },
+                        traffic: trafficStats.delta
                     };
                     if (obj.mpsserver != null) {
                         data.conn.am = 0;
