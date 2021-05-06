@@ -216,7 +216,6 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             }
         }
 
-        console.log('cmd', cmd);
         switch (cmd) {
             case 3: // Tile
                 if (obj.FirstDraw) obj.onResize();
