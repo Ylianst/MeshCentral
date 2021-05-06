@@ -17,6 +17,16 @@ var esprima = null; //require('esprima'); // https://www.npmjs.com/package/espri
 var minifyLib = 2; // 0 = None, 1 = minify-js, 2 = HTMLMinifier
 var minify = null;
 
+
+var meshCentralSourceFiles = [
+    "../views/default.handlebars"
+];
+
+var minifyMeshCentralSourceFiles = [
+    "../views/default.handlebars"
+];
+
+/*
 var meshCentralSourceFiles = [
     "../views/agentinvite.handlebars",
     "../views/invite.handlebars",
@@ -101,6 +111,7 @@ var minifyMeshCentralSourceFiles = [
     "../public/scripts/zlib-inflate.js",
     "../public/scripts/zlib.js"
 ];
+*/
 
 // True is this module is run directly using NodeJS
 var directRun = (require.main === module);

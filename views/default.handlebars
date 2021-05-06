@@ -14430,12 +14430,18 @@
             serverTimelineConfig.options.scales.xAxes[0].time = { min: pastDate(Q('p40time').value) };
             window.serverMainStats.update();
         }
+
         function setupServerTimelineStats() { window.serverMainStats = new Chart(document.getElementById('serverMainStats').getContext('2d'), serverTimelineConfig); }
+        const trafficSeriesNames = ["Agent", "CIRA", "AMT-OS", "HTTP", "Relay", "Terminal", "Desktop", "Files", "WebRDP", "WebSSH", "WebVNC", "Desktop Multiplex"];
+        const seriesColors = [[158, 151, 16], [16, 84, 158], [255, 99, 132], [39, 158, 16], [134, 16, 158], [0, 148, 255], [255, 216, 0], [255, 127, 237], [109, 213, 255], [89, 94, 255], [179, 104, 255], [179, 104, 255]];
+        function seriesColor1(n) { return 'rgba('+(seriesColors[n][0] + ((255 - seriesColors[n][0]) / 1.5))+','+(seriesColors[n][1] + ((255 - seriesColors[n][1]) / 1.5))+','+(seriesColors[n][2] + ((255 - seriesColors[n][2]) / 1.5))+')'; }
+        function seriesColor2(n) { return 'rgba('+seriesColors[n][0]+','+seriesColors[n][1]+','+seriesColors[n][2]+')'; }
 
         function updateServerTimelineStats() {
             var data, chartType = Q('p40type').value, timeAfter = pastDate(Q('p40time').value), servers = [], selectedServer = null, serverEmptyExists = false, serverAutoSelect = true;
             if (Q('p40server').value != null) { selectedServer = decodeURIComponent(Q('p40server').value); if (selectedServer == "") { selectedServer = null; } serverAutoSelect = false; }
             serverTimelineConfig.options.scales.xAxes[0].time = { min: timeAfter };
+            serverTimelineConfig.options.scales.yAxes[0].stacked = ((chartType == 3) || (chartType == 4));
             if (chartType == 0) { // Connections
                 serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = "Connection Count";
                 data = {
@@ -14502,15 +14508,10 @@
                 }
             } else if ((chartType == 3) || (chartType == 4)) { // Inbound/Outbound traffic
                 serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = "Megabytes";
-                data = {
-                    labels: [pastDate(0), timeAfter],
-                    datasets: [
-                        { label: "Agent", data: [], backgroundColor: 'rgba(158, 151, 16, .1)', borderColor: 'rgb(158, 151, 16)', fill: true, steppedLine: true },
-                        { label: "CIRA", data: [], backgroundColor: 'rgba(16, 84, 158, .1)', borderColor: 'rgb(16, 84, 158)', fill: true, steppedLine: true },
-                        { label: "LMS", data: [], backgroundColor: 'rgba(255, 99, 132, .1)', borderColor: 'rgb(255, 99, 132)', fill: true, steppedLine: true },
-                        { label: "HTTP", data: [], backgroundColor: 'rgba(39, 158, 16, .1)', borderColor: 'rgb(39, 158, 16)', fill: true, steppedLine: true }
-                    ]
-                };
+                data = { labels: [pastDate(0), timeAfter], datasets: [] };
+                var seriesWithData = 0;
+
+                // See that series have non-zero values
                 for (var i = 0; i < serverTimelineStats.length; i++) {
                     if (serverTimelineStats[i].traffic == null) continue;
                     if ((serverTimelineStats[i].s != null) && (servers.indexOf(serverTimelineStats[i].s) == -1)) {
@@ -14519,22 +14520,66 @@
                     }
                     if (serverTimelineStats[i].s == null) { serverEmptyExists = true; }
                     if (serverTimelineStats[i].s != selectedServer) { continue; }
-                    if (serverTimelineStats[i].first == true) {
-                        data.datasets[0].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
-                        data.datasets[1].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
-                        data.datasets[2].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
-                        data.datasets[3].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                    if (serverTimelineStats[i].traffic) {
+                        if (serverTimelineStats[i].traffic.AgentCtrlIn > 0) { seriesWithData |= 0x0001; } // Agent control traffic
+                        if (serverTimelineStats[i].traffic.CIRAIn > 0) { seriesWithData |= 0x0002; } // Intel AMT CIRA traffic
+                        if (serverTimelineStats[i].traffic.LMSIn > 0) { seriesWithData |= 0x0004; } // Intel AMT LMS traffic
+                        if (serverTimelineStats[i].traffic.httpIn > 0) { seriesWithData |= 0x0008; } // HTTP traffic
+                        if (serverTimelineStats[i].traffic.relayIn) { 
+                            if (serverTimelineStats[i].traffic.relayIn[0] > 0) { seriesWithData |= 0x0010; } // Relay traffic = 0
+                            if (serverTimelineStats[i].traffic.relayIn[1] > 0) { seriesWithData |= 0x0020; } // Terminal traffic = 1
+                            if (serverTimelineStats[i].traffic.relayIn[2] > 0) { seriesWithData |= 0x0040; } // Desktop traffic = 2
+                            if (serverTimelineStats[i].traffic.relayIn[5] > 0) { seriesWithData |= 0x0080; } // Files traffic = 5
+                            if (serverTimelineStats[i].traffic.relayIn[10] > 0) { seriesWithData |= 0x0100; } // WebRDP traffic = 10
+                            if (serverTimelineStats[i].traffic.relayIn[11] > 0) { seriesWithData |= 0x0200; } // WebSSH traffic = 11
+                            if (serverTimelineStats[i].traffic.relayIn[12] > 0) { seriesWithData |= 0x0400; } // WebVNC traffic = 12
+                        }
+                        if (serverTimelineStats[i].traffic.desktopMultiplex) {
+                            if (serverTimelineStats[i].traffic.desktopMultiplex.in > 0) { seriesWithData |= 0x0800; } // Desktop Multiplex traffic
+                        }
                     }
+                }
+
+                // Setup data series labels
+                for (var i = 0; i < 13; i ++) { if (seriesWithData & (1 << i)) { data.datasets.push({ label: trafficSeriesNames[i], data: [], backgroundColor: seriesColor1(i), borderColor: seriesColor2(i), fill: true, steppedLine: true }); } }
+
+                // Place all of the series data
+                for (var i = 0; i < serverTimelineStats.length; i++) {
+                    if (serverTimelineStats[i].traffic == null) continue;
+                    if ((serverTimelineStats[i].s != null) && (servers.indexOf(serverTimelineStats[i].s) == -1)) {
+                        servers.push(serverTimelineStats[i].s);
+                        if (serverAutoSelect) { selectedServer = serverTimelineStats[i].s; serverAutoSelect = false; }
+                    }
+                    if (serverTimelineStats[i].s == null) { serverEmptyExists = true; }
+                    if (serverTimelineStats[i].s != selectedServer) { continue; }
+                    if (serverTimelineStats[i].first == true) { for (var j = 1; j < 0xF000; j = j << 1) { if (seriesWithData & j) { data.datasets[0].data.push({ x: serverTimelineStats[i].time - 1, y: NaN }); } } }
+                    var z = 0;
                     if (chartType == 3) {
-                        data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.AgentCtrlIn ? (serverTimelineStats[i].traffic.AgentCtrlIn / (1024 * 1024)) : 0 });
-                        data.datasets[1].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.CIRAIn ? (serverTimelineStats[i].traffic.CIRAIn / (1024 * 1024)) : 0 });
-                        data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.LMSIn ? (serverTimelineStats[i].traffic.LMSIn / (1024 * 1024)) : 0 });
-                        data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.httpIn ? (serverTimelineStats[i].traffic.httpIn / (1024 * 1024)) : 0 });
+                        if (seriesWithData & 0x0001) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.AgentCtrlIn ? (serverTimelineStats[i].traffic.AgentCtrlIn / (1024 * 1024)) : 0 }); }
+                        if (seriesWithData & 0x0002) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.CIRAIn ? (serverTimelineStats[i].traffic.CIRAIn / (1024 * 1024)) : 0 }); }
+                        if (seriesWithData & 0x0004) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.LMSIn ? (serverTimelineStats[i].traffic.LMSIn / (1024 * 1024)) : 0 }); }
+                        if (seriesWithData & 0x0008) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.httpIn ? (serverTimelineStats[i].traffic.httpIn / (1024 * 1024)) : 0 }); }
+                        if (seriesWithData & 0x0010) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayIn && serverTimelineStats[i].traffic.relayIn[0]) ? (serverTimelineStats[i].traffic.relayIn[0] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0020) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayIn && serverTimelineStats[i].traffic.relayIn[1]) ? (serverTimelineStats[i].traffic.relayIn[1] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0040) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayIn && serverTimelineStats[i].traffic.relayIn[2]) ? (serverTimelineStats[i].traffic.relayIn[2] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0080) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayIn && serverTimelineStats[i].traffic.relayIn[5]) ? (serverTimelineStats[i].traffic.relayIn[5] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0100) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayIn && serverTimelineStats[i].traffic.relayIn[10]) ? (serverTimelineStats[i].traffic.relayIn[10] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0200) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayIn && serverTimelineStats[i].traffic.relayIn[11]) ? (serverTimelineStats[i].traffic.relayIn[11] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0400) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayIn && serverTimelineStats[i].traffic.relayIn[12]) ? (serverTimelineStats[i].traffic.relayIn[12] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0800) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.desktopMultiplex && serverTimelineStats[i].traffic.desktopMultiplex.in) ? (serverTimelineStats[i].traffic.desktopMultiplex['in'] / 0x100000) : 0 }); } // We have to put ['in'] here because the language translator will fail if using .in
                     } else if (chartType == 4) {
-                        data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.AgentCtrlOut ? (serverTimelineStats[i].traffic.AgentCtrlOut / (1024 * 1024)) : 0 });
-                        data.datasets[1].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.CIRAOut ? (serverTimelineStats[i].traffic.CIRAOut / (1024 * 1024)) : 0 });
-                        data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.LMSOut ? (serverTimelineStats[i].traffic.LMSOut / (1024 * 1024)) : 0 });
-                        data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.httpOut ? (serverTimelineStats[i].traffic.httpOut / (1024 * 1024)) : 0 });
+                        if (seriesWithData & 0x0001) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.AgentCtrlOut ? (serverTimelineStats[i].traffic.AgentCtrlOut / (1024 * 1024)) : 0 }); }
+                        if (seriesWithData & 0x0002) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.CIRAOut ? (serverTimelineStats[i].traffic.CIRAOut / (1024 * 1024)) : 0 }); }
+                        if (seriesWithData & 0x0004) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.LMSOut ? (serverTimelineStats[i].traffic.LMSOut / (1024 * 1024)) : 0 }); }
+                        if (seriesWithData & 0x0008) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].traffic.httpOut ? (serverTimelineStats[i].traffic.httpOut / (1024 * 1024)) : 0 }); }
+                        if (seriesWithData & 0x0010) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayOut && serverTimelineStats[i].traffic.relayOut[0]) ? (serverTimelineStats[i].traffic.relayOut[0] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0020) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayOut && serverTimelineStats[i].traffic.relayOut[1]) ? (serverTimelineStats[i].traffic.relayOut[1] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0040) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayOut && serverTimelineStats[i].traffic.relayOut[2]) ? (serverTimelineStats[i].traffic.relayOut[2] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0080) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayOut && serverTimelineStats[i].traffic.relayOut[5]) ? (serverTimelineStats[i].traffic.relayOut[5] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0100) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayOut && serverTimelineStats[i].traffic.relayOut[10]) ? (serverTimelineStats[i].traffic.relayOut[10] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0200) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayOut && serverTimelineStats[i].traffic.relayOut[11]) ? (serverTimelineStats[i].traffic.relayOut[11] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0400) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayOut && serverTimelineStats[i].traffic.relayOut[12]) ? (serverTimelineStats[i].traffic.relayOut[12] / 0x100000) : 0 }); }
+                        if (seriesWithData & 0x0800) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.desktopMultiplex && serverTimelineStats[i].traffic.desktopMultiplex.out) ? (serverTimelineStats[i].traffic.desktopMultiplex.out / 0x100000) : 0 }); }
                     }
                 }
             }
