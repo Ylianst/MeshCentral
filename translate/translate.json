@@ -6216,7 +6216,7 @@
       "zh-chs": "自动",
       "zh-cht": "自動",
       "xloc": [
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar->5"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar->9"
       ]
     },
     {
@@ -6300,7 +6300,7 @@
       "zh-chs": "自动连接",
       "zh-cht": "自動連接",
       "xloc": [
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar->5"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar->9"
       ]
     },
     {
@@ -8746,6 +8746,8 @@
       "zh-chs": "全部收缩",
       "zh-cht": "全部收縮",
       "xloc": [
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar",
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar",
         "default.handlebars->expandAllContextMenu->3"
       ]
     },
@@ -16375,6 +16377,8 @@
       "zh-chs": "展开全部",
       "zh-cht": "展開全部",
       "xloc": [
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar",
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar",
         "default.handlebars->expandAllContextMenu->1"
       ]
     },
@@ -28589,7 +28593,7 @@
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p2->xdevicesBar->1->5",
         "default.handlebars->31->642",
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->11->1"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->15->1"
       ]
     },
     {
@@ -28773,7 +28777,7 @@
       "zh-cht": "線上",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p2->xdevicesBar->1->7",
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->13->1",
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->17->1",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->3"
       ]
     },
@@ -28837,7 +28841,7 @@
       "zh-chs": "仅显示在线设备",
       "zh-cht": "只顯示在線裝置",
       "xloc": [
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->13"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->17"
       ]
     },
     {
@@ -36776,7 +36780,7 @@
       "zh-chs": "显示设备操作系统名称",
       "zh-cht": "顯示裝置操作系統名稱",
       "xloc": [
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->11"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->15"
       ]
     },
     {
