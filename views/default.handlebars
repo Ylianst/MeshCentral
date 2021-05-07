@@ -14434,7 +14434,10 @@
                 serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.mem.heapUsed / (1024 * 1024) });
                 serverTimelineConfig.data.datasets[2].data.push({ x: stats.time, y: stats.mem.heapTotal / (1024 * 1024) });
                 serverTimelineConfig.data.datasets[3].data.push({ x: stats.time, y: stats.mem.rss / (1024 * 1024) });
-            } /* else if (chartType == 2) {
+            } else if ((chartType == 3) || (chartType == 4)) {
+                updateServerTimelineStats();
+            }
+            /* else if (chartType == 2) {
                 serverTimelineConfig.data.datasets[0].data.push({ x: stats.time, y: stats.db.meshes });
                 serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.db.nodes });
                 serverTimelineConfig.data.datasets[2].data.push({ x: stats.time, y: stats.db.users });
