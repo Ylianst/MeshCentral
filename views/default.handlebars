@@ -938,6 +938,7 @@
                         <h1>General - <span id=p20meshName></span></h1>
                     </div>
                     <p id=p20info></p>
+                    <p id=p20info2></p>
                 </div>
             </div>
             <div id=p21 style="display:none">
@@ -3008,6 +3009,9 @@
                                 mainUpdate(2 | 8 | 16);
                                 refreshDevice(node._id);
 
+                                // If we are looking at the device group for this device, update that.
+                                if ((xxcurrentView == 20) && (currentMesh != null) && (currentMesh._id == node.meshid)) { mainUpdate(4096); }
+
                                 if ((currentNode == node) && (xxdialogMode != null) && (xxdialogTag == '@xxmap')) { p10showNodeLocationDialog(); }
                             }
                             break;
@@ -3103,6 +3107,9 @@
                                     mainUpdate(1 | 16);
                                 }
                                 refreshDevice(node._id);
+
+                                // If we are looking at the device group for this device, update that.
+                                if ((xxcurrentView == 20) && (currentMesh != null) && (currentMesh._id == node.meshid)) { mainUpdate(4096); }
                             }
                             break;
                         }
@@ -10862,11 +10869,31 @@
             }
 
             x += '</tbody></table>';
+            
+            // Display list of devices in this device group
+            count = 0;
+            nodes.sort(deviceSort);
+            var y = '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Devices" + '</th><th scope=col style=text-align:left></th></tr>';
+            for (var i in nodes) {
+                var node = nodes[i], gray = ((node.conn > 0)?'':' gray');
+                if (currentMesh._id != node.meshid) continue;
+                y += '<tr style=' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td style=width:30%><div onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\' style=float:left class="j' + node.icon + gray + '"></div>&nbsp;<a onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\'>' + EscapeHtml(node.name) + '</a></div></div></td><td style=width:70%><div style=float:right>' + PowerStateStr(node.pwr) + '&nbsp;</div><div>' + (node.osdesc ? EscapeHtml(node.osdesc) : '') + '</div></td></tr>';
+                ++count;
+            }
+            y += '</tbody></table>';
+            if (count == 0) { y = ''; }
 
             // If we are full administrator on this mesh, allow deletion of the mesh
-            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:small;text-align:right><span><a href=# onclick=p20showDeleteMeshDialog() style=cursor:pointer>' + "Delete Group" + '</a></span></div>'; }
+            if (meshrights == 0xFFFFFFFF) {
+                if (count == 0) {
+                    x += '<div style=font-size:small;text-align:right><span><a href=# onclick=p20showDeleteMeshDialog() style=cursor:pointer>' + "Delete Group" + '</a></span></div>';
+                } else {
+                    y += '<div style=font-size:small;text-align:right><span><a href=# onclick=p20showDeleteMeshDialog() style=cursor:pointer>' + "Delete Group" + '</a></span></div>';
+                }
+            }
 
             QH('p20info', x);
+            QH('p20info2', y);
 
             // Change the URL
             var urlviewmode = '';
