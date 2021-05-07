@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog'];
+const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -25,6 +25,7 @@ if (args['_'].length == 0) {
     console.log("  ListDeviceGroups            - List device groups.");
     console.log("  ListUsersOfDeviceGroup      - List the users in a device group.");
     console.log("  ListEvents                  - List server events.");
+    console.log("  LoginTokens                 - List, create and remove login tokens.");
     console.log("  DeviceInfo                  - Show information about a device.");
     console.log("  Config                      - Perform operation on config.json file.");
     console.log("  AddUser                     - Create a new user account.");
@@ -84,6 +85,7 @@ if (args['_'].length == 0) {
         case 'listdevicegroups': { ok = true; break; }
         case 'listdevices': { ok = true; break; }
         case 'listevents': { ok = true; break; }
+        case 'logintokens': { ok = true; break; }
         case 'listusersofdevicegroup': {
             if (args.id == null) { console.log(winRemoveSingleQuotes("Missing group id, use --id '[groupid]'")); }
             else { ok = true; }
@@ -394,6 +396,16 @@ if (args['_'].length == 0) {
                         console.log("  --limit [number]       - Maximum number of events to list.");
                         console.log("  --raw                  - Output raw data in JSON format.");
                         console.log("  --json                 - Give results in JSON format.");
+                        break;
+                    }
+                    case 'logintokens': {
+                        console.log("List account login tokens and allow addition and removal. Example usage:\r\n");
+                        console.log("  MeshCtrl LoginTokens ");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --remove [name]        - Remove a login token.");
+                        console.log("  --add [name]           - Add a login token.");
+                        console.log("  --expire [minutes]     - When adding a token, minutes until expire.");
+                        console.log("  --json                 - Show login tokens in JSON format.");
                         break;
                     }
                     case 'adduser': {
@@ -1089,6 +1101,18 @@ function serverConnect() {
                 if (typeof limit == 'number') { cmd.limit = limit; }
                 console.log(cmd);
                 ws.send(JSON.stringify(cmd));
+                break;
+            }
+            case 'logintokens': {
+                if (args.add) {
+                    var cmd = { action: 'createLoginToken', name: args.add, expire: 0, responseid: 'meshctrl' };
+                    if (args.expire) { cmd.expire = parseInt(args.expire); }
+                    ws.send(JSON.stringify(cmd));
+                } else {
+                    var cmd = { action: 'loginTokens', responseid: 'meshctrl' };
+                    if (args.remove) { cmd.remove = [args.remove]; }
+                    ws.send(JSON.stringify(cmd));
+                }
                 break;
             }
             case 'adduser': {
@@ -1939,11 +1963,46 @@ function serverConnect() {
                 process.exit();
                 break;
             }
+            case 'createLoginToken': {
+                if (data.result != null) {
+                    console.log(data.result);
+                    process.exit();
+                } else {
+                    ws.send(JSON.stringify({ action: 'loginTokens', responseid: 'meshctrl' }));
+                }
+                break;
+            }
+            case 'loginTokens': {
+                if (args.json) {
+                    console.log(data.loginTokens);
+                } else {
+                    console.log("Name                        Username                    Expire");
+                    console.log("-------------------------------------------------------------------------------------");
+                    if (data.loginTokens.length == 0) {
+                        console.log("No login tokens");
+                    } else {
+                        for (var i in data.loginTokens) {
+                            var t = data.loginTokens[i];
+                            var e = (t.expire == 0) ? "Unlimited" : new Date(t.expire).toLocaleString();
+                            console.log(padString(t.name, 28) + padString(t.tokenUser, 28) + e);
+                        }
+                    }
+                }
+                process.exit();
+                break;
+            }
             default: { break; }
         }
         //console.log('Data', data);
         //setTimeout(function timeout() { ws.send(Date.now()); }, 500);
     });
+}
+
+// String padding function
+
+function padString(str, pad) {
+    var xpad = '                                                                                                         ';
+    if (str.length >= pad) return str; return str + xpad.substring(0, pad - str.length)
 }
 
 // Connect tunnel to a remote agent

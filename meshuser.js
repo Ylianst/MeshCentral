@@ -5796,10 +5796,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'createLoginToken': { // Create a new login token
-                if (req.session.loginToken != null) break; // Do not allow this command when logged in using a login token
-                if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.logintokens == false)) break; // Login tokens are not supported on this server
-                if (common.validateString(command.name, 1, 100) == false) break; // Check name
-                if ((typeof command.expire != 'number') || (command.expire < 0)) break; // Check expire
+                var err = null;
+
+                if (req.session.loginToken != null) { err = "Access denied"; } // Do not allow this command when logged in using a login token
+                else if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.logintokens == false)) { err = "Not supported"; } // Login tokens are not supported on this server
+                else if (common.validateString(command.name, 1, 100) == false) { err = "Invalid name"; } // Check name
+                else if ((typeof command.expire != 'number') || (command.expire < 0)) { err = "Invalid expire value"; } // Check expire
+
+                // Handle any errors
+                if (err != null) {
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createLoginToken', responseid: command.responseid, result: err })); } catch (ex) { } }
+                    break;
+                }
 
                 // Generate a token username. Don't have any + or / in the username or password
                 var tokenUser = '~t:' + Buffer.from(parent.parent.crypto.randomBytes(12), 'binary').toString('base64');
