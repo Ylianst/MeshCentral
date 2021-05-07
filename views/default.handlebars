@@ -82,6 +82,9 @@
     <div id="altPortContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmaltportaction(1,event)">Alternate Port</div>
     </div>
+    <div id="sshPortContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div class="cmtext" onclick="cmsshportaction(1,event)">Alternate Port</div>
+    </div>
     <div id="rfbPortContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmrfbportaction(1,event)">Alternate Port</div>
     </div>
@@ -2948,6 +2951,7 @@
                                 node.userloc = message.event.node.userloc;
                                 node.rdpport = message.event.node.rdpport;
                                 node.rfbport = message.event.node.rfbport;
+                                node.sshport = message.event.node.sshport;
                                 node.consent = message.event.node.consent;
                                 node.pmt = message.event.node.pmt;
                                 if (message.event.node.links != null) { node.links = message.event.node.links; } else { delete node.links; }
@@ -5412,21 +5416,35 @@
                 // Save the new RDP port to the server
                 var rdpport = ((Q('d10rdpport').value.length > 0) ? parseInt(Q('d10rdpport').value) : 3389);
                 meshserver.send({ action: 'changedevice', nodeid: currentNode._id, rdpport: rdpport });
-                if (currentNode != null) { p10MCRouter(currentNode._id, 3, rdpport); }
+                //if (currentNode != null) { p10MCRouter(currentNode._id, 3, rdpport); }
             }, x, currentNode);
             Q('d10rdpport').focus();
             if (currentNode.rdpport != null) { Q('d10rdpport').value = currentNode.rdpport; }
         }
 
+        function cmsshportaction(action) {
+            if (xxdialogMode) return;
+            var x = "SSH remote connection port:" + '<br /><br /><input type=text placeholder="22" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10sshport type=text>';
+            setDialogMode(2, "SSH Connection", 3, function() {
+                setDialogMode(0);
+                // Save the new SSH port to the server
+                var sshport = ((Q('d10sshport').value.length > 0) ? parseInt(Q('d10sshport').value) : 22);
+                meshserver.send({ action: 'changedevice', nodeid: currentNode._id, sshport: sshport });
+                //if (currentNode != null) { p10MCRouter(currentNode._id, 3, sshport); }
+            }, x, currentNode);
+            Q('d10sshport').focus();
+            if (currentNode.sshport != null) { Q('d10sshport').value = currentNode.sshport; }
+        }
+
         function cmrfbportaction(action) {
             if (xxdialogMode) return;
-            var x = "noVNC remote connection port:" + '<br /><br /><input type=text placeholder="5900" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10rfbport type=text>';
-            setDialogMode(2, "noVNC Connection", 3, function() {
+            var x = "VNC remote connection port:" + '<br /><br /><input type=text placeholder="5900" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10rfbport type=text>';
+            setDialogMode(2, "VNC Connection", 3, function() {
                 setDialogMode(0);
                 // Save the new RFB port to the server
                 var rfbport = ((Q('d10rfbport').value.length > 0) ? parseInt(Q('d10rfbport').value) : 3389);
                 meshserver.send({ action: 'changedevice', nodeid: currentNode._id, rfbport: rfbport });
-                if (currentNode != null) { p10rfb(currentNode._id, rfbport); }
+                //if (currentNode != null) { p10rfb(currentNode._id, rfbport); }
             }, x, currentNode);
             Q('d10rfbport').focus();
             if (currentNode.rfbport != null) { Q('d10rfbport').value = currentNode.rfbport; }
@@ -5511,6 +5529,7 @@
             QV('deskConnectContextMenu', false);
             QV('altPortContextMenu', false);
             QV('rfbPortContextMenu', false);
+            QV('sshPortContextMenu', false);
             QV('filesContextMenu', false);
             QV('deskPlayerContextMenu', false);
             QV('deskKeyShortcutContextMenu', false);
@@ -6449,12 +6468,12 @@
                     if (node.agent.id > 4) {
                         if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
                             if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.ssh != false)) {
-                                x += '<a href=# onclick=p10MCRouter("' + node._id + '",4,22) title="' + "Requires installation of MeshCentral Router." + '">' + "SSH" + '</a>&nbsp;';
+                                x += '<a href=# cmenu=sshPortContextMenu onclick=p10MCRouter("' + node._id + '",4,22) title="' + "Requires installation of MeshCentral Router." + '">' + "SSH" + '</a>&nbsp;';
                             }
                         }
                         if (navigator.platform.toLowerCase() == 'win32') {
                             if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.scp != false)) {
-                                x += '<a href=# onclick=p10MCRouter("' + node._id + '",5,22) title="' + "Requires installation of MeshCentral Router." + '">' + "SCP" + '</a>&nbsp;';
+                                x += '<a href=# cmenu=sshPortContextMenu onclick=p10MCRouter("' + node._id + '",5,22) title="' + "Requires installation of MeshCentral Router." + '">' + "SCP" + '</a>&nbsp;';
                             }
                         }
                     }
@@ -6483,7 +6502,7 @@
 
                 // SSH link
                 if ((features2 & 0x200) && (((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
-                    x += '<a href=# id=sshLink onclick=p10ssh("' + node._id + '") title="' + "Launch web-based SSH session to this device" + '.">' + "Web-SSH" + '</a>&nbsp;';
+                    x += '<a href=# cmenu=sshPortContextMenu id=sshLink onclick=p10ssh("' + node._id + '") title="' + "Launch web-based SSH session to this device" + '.">' + "Web-SSH" + '</a>&nbsp;';
                 }
 
                 // MQTT options

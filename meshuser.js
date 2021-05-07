@@ -4202,6 +4202,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                         }
 
+                        if ((typeof command.sshport == 'number') && (command.sshport > 0) && (command.sshport < 65536)) {
+                            if ((command.sshport == 22) && (node.sshport != null)) {
+                                delete node.sshport; change = 1; changes.push('sshport'); // Delete the SSH port
+                            } else {
+                                node.sshport = command.sshport; change = 1; changes.push('sshport'); // Set the SSH port
+                            }
+                        }
+
                         if (domain.geolocation && command.userloc && ((node.userloc == null) || (command.userloc[0] != node.userloc[0]) || (command.userloc[1] != node.userloc[1]))) {
                             change = 1;
                             if ((command.userloc.length == 0) && (node.userloc)) {
