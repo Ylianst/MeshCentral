@@ -536,13 +536,6 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
         parent.trafficStats.relayIn[this._socket.p] += (this._socket.bytesRead - this._socket.bytesReadEx);
         parent.trafficStats.relayOut[this._socket.p] += (this._socket.bytesWritten - this._socket.bytesWrittenEx);
 
-        // Check the protocol in use
-        req.query.p = parseInt(req.query.p);
-        if (typeof req.query.p != 'number') { req.query.p = parseInt(obj.peer.req.query.p); if (typeof req.query.p != 'number') { req.query.p = 0; } }
-        obj.peer.req.query.p = req.query.p;
-
-
-
         if (this.peer != null) {
             //if (typeof data == 'string') { console.log('Relay: ' + data); } else { console.log('Relay:' + data.length + ' byte(s)'); }
             if (this.peer.slowRelay == null) {
