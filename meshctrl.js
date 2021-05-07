@@ -1099,7 +1099,6 @@ function serverConnect() {
                     cmd = { action: 'events', responseid: 'meshctrl' };
                 }
                 if (typeof limit == 'number') { cmd.limit = limit; }
-                console.log(cmd);
                 ws.send(JSON.stringify(cmd));
                 break;
             }
