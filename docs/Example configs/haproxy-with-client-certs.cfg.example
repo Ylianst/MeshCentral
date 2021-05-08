@@ -1,0 +1,284 @@
+# This example config is designed for HAProxy.  It allows MeshCentral to use and validate Client Certificates.
+# Usernames/Passwords are still required.  This will provide a layer for authorization.
+# 
+# The MeshID enviorment variable is used for the binary paths.  Simply put your MeshID for an incoming group
+# into this variable and the binary paths will use the ID for downloading the agent directly to the client.
+# Simply type in your specific url (https://reallycoolmeshsystem.com/win10full) and the agent will download
+# with the proper meshid for the specified group.  In my usage, I have an incoming group assigned.
+#
+# The config also ensures a split between IPv4 and IPv6.  Thus if a client attempts to connect on IPv4,
+# it will connect to Meshcentral with IPv4.  And if IPv6 is used, IPv6 connection to Meshcentral will be used.
+# This config is written in *long* form, it is written for simplicity and clarity.  I'm confident that someone
+# can shorten the script size easily.
+# 
+# Please examine the MeshID, location of the certificates, certificate names and OU test for the certificates.
+# CRL and guest connections are not integrated yet.
+#
+# 
+# The following specific path names do not require a validated client certificate:
+# 
+# /win10background - Windows 10 Background Binary Installer
+# /win10full - Windows 10 Binary Interactive and Background Installer
+# /macosxfull - MacOS 10 Binary Interactive and Background Installer
+# /linuxscript - Linux Script ( See Docs)
+# /linux64full - Linux AMD64 Binary Interactive and Background Installer
+# /linux64background - Linux AMD64 Binary Background Installer
+# /linuxarmfull - Linux ARMhf Binary Interactive and Background Installer
+# /linuxarmbackground - Linux ARMhf Binary Background Installer
+#
+# /agent.ashx - Agent to server connection (Websockets)
+# /meshrelay.ashx - Agent to server relay
+# /meshagents - Default agent download path
+# /meshosxagent - Default agent download path for Mac OS X
+
+
+global
+	log /dev/log	local0
+	log /dev/log	local1 info
+	chroot /var/lib/haproxy
+	stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners
+	stats timeout 30s
+	user haproxy
+	group haproxy
+	daemon
+	
+	# Set the meshID to the incoming group ID
+	setenv meshID {{really long mesh group ID}}
+
+	# Default SSL material locations
+	# Probably needs a more secure location
+	ca-base /etc/haproxy/
+	crt-base /etc/haproxy/
+
+
+	# Default ciphers to use on SSL-enabled listening sockets.
+	# For more information, see ciphers(1SSL). This list is from:
+	#  https://hynek.me/articles/hardening-your-web-servers-ssl-ciphers/
+	# An alternative list with additional directives can be obtained from
+	#  https://mozilla.github.io/server-side-tls/ssl-config-generator/?server=haproxy
+	ssl-default-bind-ciphers ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:!aNULL:!MD5:!DSS
+	ssl-default-bind-options no-sslv3 
+
+
+defaults
+	log	global
+	mode	http
+	option	httplog
+	option	dontlognull
+        timeout connect 5000
+        timeout client  50000
+        timeout server  50000
+	errorfile 400 /etc/haproxy/errors/400.http
+	errorfile 403 /etc/haproxy/errors/403.http
+	errorfile 408 /etc/haproxy/errors/408.http
+	errorfile 500 /etc/haproxy/errors/500.http
+	errorfile 502 /etc/haproxy/errors/502.http
+	errorfile 503 /etc/haproxy/errors/503.http
+	errorfile 504 /etc/haproxy/errors/504.http
+
+frontend http
+	bind :::80 v4v6
+	redirect scheme http code 301 if !{ ssl_fc }
+
+frontend https
+	# Replace Root-ca.pem and mesh.pem with proper certs
+	bind :::443 v4v6 ssl crt mesh.pem ca-file Root-ca.pem verify optional crt-ignore-err all ca-ignore-err all 
+	http-request add-header X-Forwarded-Proto https
+
+# Testing for Client Certificate used
+ 	acl clientssl ssl_c_used
+ 	
+# Set SSL Cert OU here to verify a proper user
+	acl clientssl ssl_c_s_dn(OU) "Bad Ass Mesh Services Inc" 
+
+# Agents for download
+	acl meshagent path_beg /meshagents
+	acl macmeshagent path_beg /meshosxagent
+
+# IPV4 vs IPV6 test
+	acl meshipv4 src 0.0.0.0/0
+	acl meshipv6 src ::/0
+
+# Websockets ACL
+	acl host_ws path_beg /agent.ashx
+
+# MeshRelay
+	acl meshrelay path_beg /meshrelay.ashx
+
+# Specific Agent installers for each platform
+	acl winback path_beg /win10background
+	acl winfull path_beg /win10full
+	acl macosx path_beg /macosxfull
+	acl linuxscript path_beg /linuxscript
+	acl linux64full path_beg /linux64full
+	acl linux64back path_beg /linux64background
+	acl linuxarmfull path_beg /linuxarmfull
+	acl linuxarmback path_beg /linuxarmbackground
+
+# WebSockets
+	use_backend meshWebSocket4 if host_ws meshipv4 !clientssl
+ 	use_backend meshWebSocket6 if host_ws meshipv6 !clientssl
+
+# Mesh Relay
+	use_backend meshcentralv4 if meshrelay meshipv4 
+ 	use_backend meshcentralv6 if meshrelay meshipv6 
+
+# Client SSL Specific
+	use_backend meshcentralv4 if meshipv4 !meshagent !macmeshagent clientssl
+	use_backend meshcentralv6 if meshipv6 !meshagent !macmeshagent clientssl
+
+# Direct Mesh Agent download
+	use_backend meshcentralv4 if meshipv4 meshagent
+	use_backend meshcentralv6 if meshipv6 meshagent
+
+	use_backend meshcentralv4 if meshipv4 macmeshagent
+	use_backend meshcentralv6 if meshipv6 macmeshagent
+
+# Windows Custom Download
+	use_backend Win10full4 if meshipv4 winfull
+	use_backend Win10full6 if meshipv6 winfull
+
+	use_backend Win10back4 if meshipv4 winback
+	use_backend Win10back6 if meshipv6 winback
+
+# Mac CUstom Download
+	use_backend macosx4 if meshipv4 macosx
+	use_backend macosx6 if meshipv6 macosx
+
+# Linux Script Custom Download
+	use_backend linuxSCRIPT4 if meshipv4 linuxscript
+	use_backend linuxSCRIPT6 if meshipv6 linuxscript
+
+# Linux Script Custom Download
+	use_backend linux64-bin-full4 if meshipv4 linux64full
+	use_backend linux64-bin-full6 if meshipv6 linux64full
+
+	use_backend linux64-bin-back4 if meshipv4 linux64back
+	use_backend linux64-bin-back6 if meshipv6 linux64back
+
+	use_backend linuxarm-bin-full4 if meshipv4 linuxarmfull
+	use_backend linuxarm-bin-full6 if meshipv6 linuxarmfull
+
+	use_backend linuxarm-bin-back4 if meshipv4 linuxarmback
+	use_backend linuxarm-bin-back6 if meshipv6 linuxarmback
+# Fail if none of the above
+	http-request deny if !macmeshagent !meshagent !clientssl !host_ws !winback !winfull !macosx !linuxscript !linux64full !linux64back !linuxarmfull !linuxarmback !meshrelay
+
+
+# Websockets
+backend meshWebSocket4
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	server ipv4 127.0.0.1:444 
+
+backend meshWebSocket6
+ 	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+ 	server ipv6 [::1]:444 
+
+# Standard Interface
+backend meshcentralv4
+ 	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+ 	server ipv4 127.0.0.1:444
+
+backend meshcentralv6
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	server ipv6 [::1]:444
+
+# Windows Agent Download
+backend Win10back4
+ 	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query id=4&meshid=%[env(meshID)]&installflags=2
+ 	server ipv4  127.0.0.1:444
+
+backend Win10back6
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query id=4&meshid=%[env(meshID)]&installflags=2
+	server ipv6 [::1]:444
+
+backend Win10full4
+ 	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query id=4&meshid=%[env(meshdID)]&installflags=0
+ 	server ipv4  127.0.0.1:444
+
+backend Win10full6
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query id=4&meshid=%[env(meshID)]&installflags=0
+	server ipv6 [::1]:444
+
+# MacOS Agent Download
+backend macosx6
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshosxagents
+	http-request set-query id=100054&meshid=%[env(meshID)]
+	server ipv6 [::1]:444
+
+backend macosx4
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshosxagents
+	http-request set-query id=100054&meshid=%[env(meshID)]
+ 	server ipv4 127.0.0.1:444
+
+# Linux Script Downloads 
+backend linuxSCRIPT6
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query scrpot=1
+	server ipv6 [::1]:444
+
+backend linuxSCRIPT4
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query scrpot=1
+	server ipv4  127.0.0.1:444
+
+# Linux Binary Downloads
+backend linux64-bin-full6
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query id=%[env(meshID)]&installflags=0&meshinstall=6
+	server ipv6 [::1]:444
+
+backend linux64-bin-full4
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query id=%[env(meshID)]&installflags=0&meshinstall=6
+	server ipv4  127.0.0.1:444
+
+backend linux64-bin-back6
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query id=%[env(meshID)]&installflags=2&meshinstall=6
+	server ipv6 [::1]:444
+
+backend linux64-bin-back4
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query id=%[env(meshID)]&installflags=2&meshinstall=6
+	server ipv4  127.0.0.1:444
+
+backend linuxarm-bin-full6
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query id=%[env(meshID)]&installflags=0&meshinstall=25
+	server ipv6 [::1]:444
+
+backend linuxarm-bin-full4
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query id=%[env(meshID)]&installflags=0&meshinstall=25
+	server ipv4  127.0.0.1:444
+
+backend linuxarm-bin-back6
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query id=%[env(meshID)]&installflags=2&meshinstall=25`
+	server ipv6 [::1]:444
+
+backend linuxarm-bin-back4
+	http-request add-header X-Forwarded-Host %[req.hdr(Host)]
+	http-request set-path /meshagents
+	http-request set-query id=%[env(meshID)]&installflags=2&meshinstall=25
+	server ipv4  127.0.0.1:444
