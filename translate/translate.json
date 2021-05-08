@@ -2628,6 +2628,7 @@
     },
     {
       "en": "AMT-OS",
+      "nl": "AMT-OS",
       "xloc": [
         "default.handlebars->33->2416"
       ]
@@ -6099,6 +6100,7 @@
     },
     {
       "en": "Authentication",
+      "nl": "Authenticatie",
       "xloc": [
         "ssh.handlebars->3->7",
         "ssh.handlebars->3->8"
@@ -10478,6 +10480,7 @@
     },
     {
       "en": "Create Login Token",
+      "nl": "Maak een login-token aan",
       "xloc": [
         "default.handlebars->33->1486",
         "default.handlebars->33->248"
@@ -12047,6 +12050,7 @@
     },
     {
       "en": "Desktop Multiplex",
+      "nl": "Desktop Multiplex",
       "xloc": [
         "default.handlebars->33->2425"
       ]
@@ -17949,9 +17953,6 @@
       ]
     },
     {
-      "en": "Geen Intel&reg; AMT apparaten in deze apparaatgroep"
-    },
-    {
       "cs": "Obecné",
       "de": "Allgemein",
       "en": "General",
@@ -18702,6 +18703,7 @@
     },
     {
       "en": "HTTP",
+      "nl": "HTTP",
       "xloc": [
         "default.handlebars->33->2417"
       ]
@@ -19737,6 +19739,7 @@
     },
     {
       "en": "Inbound Traffic",
+      "nl": "Inkomend verkeer",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1->p40type->5"
       ]
@@ -27177,6 +27180,7 @@
     },
     {
       "en": "No Intel&reg; AMT devices in this device group",
+      "nl": "Geen Intel&reg; AMT apparaten in deze appaatgroep",
       "xloc": [
         "default.handlebars->33->263"
       ]
@@ -28573,6 +28577,7 @@
     },
     {
       "en": "OS",
+      "nl": "OS",
       "xloc": [
         "default.handlebars->33->269"
       ]
@@ -29160,7 +29165,8 @@
       ]
     },
     {
-      "en": "Outbound Traffic",
+        "en": "Outbound Traffic",
+        "nl": "Uitgaand verkeer",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1->p40type->7"
       ]
@@ -34234,12 +34240,14 @@
     },
     {
       "en": "SSH Connection",
+      "nl": "SSH verbinding",
       "xloc": [
         "default.handlebars->33->602"
       ]
     },
     {
       "en": "SSH remote connection port:",
+      "nl": "SSH externe verbindingspoort:",
       "xloc": [
         "default.handlebars->33->601"
       ]
@@ -36098,6 +36106,7 @@
     },
     {
       "en": "Session expired.",
+      "nl": "Sessie verlopen.",
       "xloc": [
         "ssh.handlebars->3->11"
       ]
@@ -41275,6 +41284,7 @@
     },
     {
       "en": "Unable to authenticate.",
+      "nl": "Kan niet verifiëren.",
       "xloc": [
         "ssh.handlebars->3->9"
       ]
@@ -43076,12 +43086,14 @@
     },
     {
       "en": "VNC Connection",
+      "nl": "VNC verbinding",
       "xloc": [
         "default.handlebars->33->604"
       ]
     },
     {
       "en": "VNC remote connection port:",
+      "nl": "VNC extrne verbindingspoort:",
       "xloc": [
         "default.handlebars->33->603"
       ]
@@ -44017,18 +44029,21 @@
     },
     {
       "en": "WebRDP",
+      "nl": "WebRDP",
       "xloc": [
         "default.handlebars->33->2422"
       ]
     },
     {
       "en": "WebSSH",
+      "nl": "WebSSH",
       "xloc": [
         "default.handlebars->33->2423"
       ]
     },
     {
       "en": "WebVNC",
+      "nl": "WebVNC",
       "xloc": [
         "default.handlebars->33->2424"
       ]
