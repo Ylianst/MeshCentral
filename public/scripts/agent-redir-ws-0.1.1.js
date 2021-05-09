@@ -28,6 +28,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     obj.webrtc = null;
     obj.debugmode = 0;
     obj.serverIsRecording = false;
+    obj.urlname = 'meshrelay.ashx';
     obj.latency = { lastSend: null, current: -1, callback: null };
     if (domainUrl == null) { domainUrl = '/'; }
 
@@ -43,7 +44,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     //obj.debug = function (msg) { console.log(msg); }
 
     obj.Start = function (nodeid) {
-        var url2, url = window.location.protocol.replace('http', 'ws') + '//' + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?browser=1&p=' + obj.protocol + (nodeid?('&nodeid=' + nodeid):'') + '&id=' + obj.tunnelid;
+        var url2, url = window.location.protocol.replace('http', 'ws') + '//' + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/' + obj.urlname + '?browser=1&p=' + obj.protocol + (nodeid?('&nodeid=' + nodeid):'') + '&id=' + obj.tunnelid;
         //if (serverPublicNamePort) { url2 = window.location.protocol.replace('http', 'ws') + '//' + serverPublicNamePort + '/meshrelay.ashx?id=' + obj.tunnelid; } else { url2 = url; }
         if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
         if ((urlargs != null) && (urlargs.slowrelay != null)) { url += '&slowrelay=' + urlargs.slowrelay; }
@@ -170,7 +171,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         // Control messages, most likely WebRTC setup 
         //console.log('New data', e.data.byteLength);
         if (typeof e.data == 'string') {
-            obj.xxOnControlCommand(e.data);
+            if (e.data[0] == '~') { obj.m.ProcessData(e.data); } else { obj.xxOnControlCommand(e.data); }
         } else {
             // Send the data to the module
             if (obj.m.ProcessBinaryCommand) {

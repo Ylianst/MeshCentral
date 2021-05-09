@@ -138,7 +138,7 @@
             user = Q('dp2user').value;
             pass = Q('dp2pass').value;
             state = 1;
-            var url = window.location.protocol.replace('http', 'ws') + '//' + window.location.host + domainurl + 'ssh/relay.ashx?auth=' + cookie + (urlargs.key ? ('&key=' + urlargs.key) : '');
+            var url = window.location.protocol.replace('http', 'ws') + '//' + window.location.host + domainurl + 'sshrelay.ashx?auth=' + cookie + (urlargs.key ? ('&key=' + urlargs.key) : '');
             socket = new WebSocket(url);
             socket.onopen = function (e) {
                 state = 2;

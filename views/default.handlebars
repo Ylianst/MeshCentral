@@ -6265,7 +6265,11 @@
                 }
 
                 // Attribute: Mesh Agent
-                if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
+                if ((node.agent != null) && (node.agent.id != null) && (mesh.mtype == 3)) {
+                    if (node.agent.id == 4) { x += addDeviceAttribute("Device Type", "Windows"); }
+                    if (node.agent.id == 6) { x += addDeviceAttribute("Device Type", "Linux"); }
+                    if (node.agent.id == 29) { x += addDeviceAttribute("Device Type", "macOS"); }
+                } else if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
@@ -6548,6 +6552,9 @@
                 if (fileAccess) { setupFiles(); }
                 var consoleRights = ((meshrights & 16) != 0);
                 if (consoleRights) { setupConsole(); } else { if (panel == 15) { panel = 10; } }
+
+                // If we are looking at a local non-windows device, enable terminal capability.
+                if ((mesh.mtype == 3) && (node.agent != null) && (node.agent.id > 4)) { node.agent.caps = 2; }
 
                 // Show or hide the tabs
                 // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent, 3 = Local Device
@@ -8541,13 +8548,12 @@
 
         // Show and enable the right buttons
         function updateTerminalButtons() {
-            var mtype = (currentNode.agent == 1) ? 1 : 2;
             var termState = ((terminal != null) && (terminal.state != 0));
 
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
             QV('connectbutton2span', (termState == false) && (currentNode.agent != null) && (currentNode.agent.caps & 2));
-            if (mtype == 1) {
+            if (currentNode.mtype == 1) {
                 QV('connectbutton2hspan', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
                 QV('terminalSizeDropDown', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
             } else {
@@ -8555,8 +8561,11 @@
                 QV('terminalSizeDropDown', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2) && (terminalNode.intelamt.ver != null));
             }
 
+            // Enable action button if mesh type is not "local devices"
+            QV('termActionsBtn', currentNode.mtype != 3);
+
             // Enable buttons
-            var online = ((terminalNode.conn & 1) != 0); // If Agent (1) connected, enable Terminal
+            var online = ((terminalNode.conn & 1) != 0) || (currentNode.mtype == 3); // If Agent (1) connected, enable Terminal
             QE('connectbutton2', online);
             var hwonline = ((terminalNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton2h', hwonline);
@@ -8640,12 +8649,40 @@
             return obj;
         }
 
-        function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
+        function tunnelUpdate(data) {
+            if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); }
+        }
+
+        function sshTunnelUpdate(data) {
+            if (typeof data == 'string') {
+                if (data[0] == '{') {
+                    var j = JSON.parse(data);
+                    switch (j.action) {
+                        case 'sshauth': {
+                            var x = '';
+                            x += addHtmlValue("Username", '<input id=dp2user style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
+                            x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
+                            setDialogMode(2, "Authentication", 3, sshConnectEx, x);
+                            setTimeout(sshAuthKeyUp, 50);
+                        }
+                    }
+                } else if (data[0] == '~') { xterm.writeUtf8(data.substring(1)); }
+            }
+        }
+
+        function sshAuthKeyUp(e) { QE('idx_dlgOkButton', (Q('dp2user').value.length > 0) && (Q('dp2pass').value.length > 0)); }
+        function sshConnectEx() { terminal.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight })); }
 
         // Send the new terminal size to the agent
         function xTermSendResize() {
             xtermResizeTimer = null;
-            if ((xterm != null) && (terminal != null) && (terminal.sendCtrlMsg != null)) { terminal.sendCtrlMsg(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: xterm.cols, rows: xterm.rows })); }
+            if ((xterm != null) && (terminal != null) && (terminal.sendCtrlMsg != null)) {
+                if (terminal.urlname == 'sshterminalrelay.ashx') {
+                    terminal.socket.send(JSON.stringify({ action: 'resize', cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight }));
+                } else {
+                    terminal.sendCtrlMsg(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: xterm.cols, rows: xterm.rows }));
+                }
+            }
         }
 
         function connectTerminal(e, contype, options) {
@@ -8714,7 +8751,7 @@
                         xterm = new Terminal();
                         if (xtermfit) { xterm.loadAddon(xtermfit); }
                         xterm.open(Q('termarea3xdiv')); // termarea3x
-                        xterm.onData(function (data) { if (terminal != null) { terminal.sendText(data); } })
+                        xterm.onData(function (data) { if (terminal != null) { if (terminal.urlname == 'sshterminalrelay.ashx') { terminal.socket.send('~' + data); } else { terminal.sendText(data); } } })
                         if (xtermfit) { xtermfit.fit(); }
                         xterm.onTitleChange(function (title) { QH('termtitle', ' - ' + EscapeHtml(title)); });
                         xterm.onResize(function (size) {
@@ -8724,7 +8761,8 @@
                         });
 
                         // Setup a terminal tunnel to the agent
-                        terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel(tunnelUpdate, termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                        terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel((currentNode.mtype == 3)? sshTunnelUpdate : tunnelUpdate, termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                        if (currentNode.mtype == 3) { terminal.urlname = 'sshterminalrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
                         terminal.debugmode = debugmode;
                         terminal.m.debugmode = debugmode;
                         terminal.options = termoptions;
@@ -8808,7 +8846,10 @@
         function termSendKey(key, id) {
             if (!terminal || xxdialogMode) return;
             if (xterm != null) {
-                if (terminal.sendText) {
+                if (terminal.urlname == 'sshterminalrelay.ashx') {
+                    // SSH
+                    terminal.socket.send('~' + String.fromCharCode(key));
+                } else if (terminal.sendText) {
                     // MeshAgent
                     terminal.sendText(String.fromCharCode(key));
                 } else {
@@ -8837,9 +8878,16 @@
         // Send special key
         function sendSpecialKey() {
             if (xterm != null) {
-                terminal.sendText(String.fromCharCode(Q('specialkeylist').value));
+                if (terminal.urlname == 'sshterminalrelay.ashx') {
+                    // SSH
+                    terminal.socket.send('~' + String.fromCharCode(Q('specialkeylist').value));
+                } else {
+                    // Agent terminal
+                    terminal.sendText(String.fromCharCode(Q('specialkeylist').value));
+                }
                 xterm.focus();
             } else if (terminal != null) {
+                // Legacy terminal
                 terminal.m.TermSendKey(Q('specialkeylist').value);
                 Q('specialkeylist').blur();
                 Q('specialkeylistinput').blur();

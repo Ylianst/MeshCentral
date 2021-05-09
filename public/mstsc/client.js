@@ -150,7 +150,7 @@
 		connect : function (ip, domain, username, password, next) {
 			// Start connection
             var self = this;
-            this.socket = new WebSocket('wss://' + window.location.host + '/mstsc/relay.ashx');
+            this.socket = new WebSocket('wss://' + window.location.host + '/mstscrelay.ashx');
             this.socket.binaryType = 'arraybuffer';
             this.socket.onopen = function () {
                 //console.log("WS-OPEN");
