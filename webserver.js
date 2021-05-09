@@ -957,7 +957,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleRootRedirect(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         res.redirect(domain.rootredirect + getQueryPortion(req));
     }
 
