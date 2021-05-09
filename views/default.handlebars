@@ -6555,7 +6555,7 @@
                 if (consoleRights) { setupConsole(); } else { if (panel == 15) { panel = 10; } }
 
                 // If we are looking at a local non-windows device, enable terminal capability.
-                if ((mesh.mtype == 3) && (node.agent != null) && (node.agent.id > 4)) { node.agent.caps = 2; }
+                if ((mesh.mtype == 3) && (node.agent != null) && (node.agent.id > 4) && (features2 & 0x00000200)) { node.agent.caps = 2; }
 
                 // Show or hide the tabs
                 // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent, 3 = Local Device
@@ -8552,7 +8552,7 @@
             var termState = ((terminal != null) && (terminal.state != 0));
 
             // If we are looking at a local non-windows device, enable terminal capability.
-            if ((terminalNode.mtype == 3) && (terminalNode.agent != null) && (terminalNode.agent.id > 4)) { terminalNode.agent.caps = 2; }
+            if ((terminalNode.mtype == 3) && (terminalNode.agent != null) && (terminalNode.agent.id > 4) && (features2 & 0x00000200)) { terminalNode.agent.caps = 2; }
 
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
