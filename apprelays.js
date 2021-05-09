@@ -302,7 +302,10 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                 if (typeof msg.action != 'string') return;
                 switch (msg.action) {
                     case 'connect': {
-                        // TODO: Verify inputs
+                        // Verify inputs
+                        if ((typeof msg.username != 'string') || (typeof msg.password != 'string')) break;
+                        if ((typeof msg.rows != 'number') || (typeof msg.cols != 'number') || (typeof msg.height != 'number') || (typeof msg.width != 'number')) break;
+
                         obj.termSize = msg;
                         obj.username = msg.username;
                         obj.password = msg.password;
@@ -310,6 +313,9 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                         break;
                     }
                     case 'resize': {
+                        // Verify inputs
+                        if ((typeof msg.rows != 'number') || (typeof msg.cols != 'number') || (typeof msg.height != 'number') || (typeof msg.width != 'number')) break;
+
                         obj.termSize = msg;
                         if (obj.sshShell != null) { obj.sshShell.setWindow(obj.termSize.rows, obj.termSize.cols, obj.termSize.height, obj.termSize.width); }
                         break;
@@ -466,7 +472,10 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                 if (typeof msg.action != 'string') return;
                 switch (msg.action) {
                     case 'sshauth': {
-                        // TODO: Verify inputs
+                        // Verify inputs
+                        if ((typeof msg.username != 'string') || (typeof msg.password != 'string')) break;
+                        if ((typeof msg.rows != 'number') || (typeof msg.cols != 'number') || (typeof msg.height != 'number') || (typeof msg.width != 'number')) break;
+
                         obj.termSize = msg;
                         obj.username = msg.username;
                         obj.password = msg.password;
@@ -478,6 +487,9 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                         break;
                     }
                     case 'resize': {
+                        // Verify inputs
+                        if ((typeof msg.rows != 'number') || (typeof msg.cols != 'number') || (typeof msg.height != 'number') || (typeof msg.width != 'number')) break;
+
                         obj.termSize = msg;
                         if (obj.sshShell != null) { obj.sshShell.setWindow(obj.termSize.rows, obj.termSize.cols, obj.termSize.height, obj.termSize.width); }
                         break;
