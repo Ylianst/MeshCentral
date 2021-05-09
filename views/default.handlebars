@@ -5270,7 +5270,7 @@
             switch (cmenu) {
                 case 'termConnectButton': {
                     // Terminal connect button context menu
-                    if ((currentNode == null) || (currentNode.agent == null)) return true;
+                    if ((currentNode == null) || (currentNode.agent == null) || (currentNode.mtype == 3)) return true;
 
                     // If the server has a specific terminal shell mode, don't show connection options
                     if (serverinfo.linuxshell && (currentNode.agent.id > 4)) return;
@@ -8662,7 +8662,7 @@
                             var x = '';
                             x += addHtmlValue("Username", '<input id=dp2user style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
                             x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
-                            setDialogMode(2, "Authentication", 3, sshConnectEx, x);
+                            setDialogMode(2, "Authentication", 11, sshConnectEx, x, 'ssh');
                             setTimeout(sshAuthKeyUp, 50);
                         }
                     }
@@ -8671,7 +8671,13 @@
         }
 
         function sshAuthKeyUp(e) { QE('idx_dlgOkButton', (Q('dp2user').value.length > 0) && (Q('dp2pass').value.length > 0)); }
-        function sshConnectEx() { terminal.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight })); }
+        function sshConnectEx(b) {
+            if (b == 0) {
+                if (terminal != null) { connectTerminal(); } // Disconnect
+            } else {
+                terminal.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight }));
+            }
+        }
 
         // Send the new terminal size to the agent
         function xTermSendResize() {
@@ -8814,6 +8820,7 @@
                 }
             } else {
                 //QH('Term', '');
+                if (xxdialogTag == 'ssh') { setDialogMode(0); }
                 terminal.Stop();
                 terminal = null;
                 if (fullscreen) { deskToggleFull(); }
