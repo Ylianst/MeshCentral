@@ -913,9 +913,10 @@
                     <div id=p10terminal style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%;display:none;background-color:#333">
                         <div id=termTable style="position:absolute;top:0;bottom:0;left:0;right:0">
                             <div id="termarea1" style="position:absolute;top:0;height:32px;left:0;right:0">
-                                <div class="areaHead">
+                                <div class="areaHead" style="line-height:24px">
                                     <div class="toright2">
                                         <input type=button id=termFullScreen value="Full Screen" onclick=deskToggleFull(event) onkeypress="return false" onkeydown="return false" disabled="disabled" style="height:28px;margin-right:3px;">
+                                        <div id="terminalCustomUpperRight" style="float:left;margin-right:6px"></div>
                                     </div>
                                     <div>
                                         <span id="connectbutton2span" style="margin-left:3px"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" style="height:28px" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
@@ -932,8 +933,8 @@
                             <div id="termarea4" style="position:absolute;bottom:0;height:32px;left:0;right:0">
                                 <div class="areaFoot">
                                     <div class="toright2"></div>
-                                    <div>
-                                        <input id="termActionsBtn" style="margin-left:3px;height:28px" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style="height:28px" />
+                                    <div style="height:28px">
+                                        <input id="termActionsBtn" style="margin-left:3px;height:28px" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
                                     </div>
                                 </div>
                             </div>
@@ -1874,6 +1875,8 @@
                                 node.tags = message.event.node.tags;
                                 node.userloc = message.event.node.userloc;
                                 node.rdpport = message.event.node.rdpport;
+                                node.rfbport = message.event.node.rfbport;
+                                node.sshport = message.event.node.sshport;
                                 node.consent = message.event.node.consent;
                                 node.pmt = message.event.node.pmt;
                                 if (message.event.node.agent != null) {
@@ -2787,7 +2790,15 @@
                 Q('softKeyboard').value = '';
                 var k = 0;
                 if (e.charCode != 0) { k = e.charCode; } else if (e.keyCode != 0) { k = e.keyCode; }
-                if (k != 0) { terminal.sendText(String.fromCharCode(k)); }
+                if (k != 0) {
+                    if (terminal.urlname == 'sshterminalrelay.ashx') {
+                        // SSH
+                        terminal.socket.send('~' + String.fromCharCode(k));
+                    } else {
+                        // Agent
+                        terminal.sendText(String.fromCharCode(k));
+                    }
+                }
                 return false;
             }
         }
@@ -2814,7 +2825,16 @@
                 var k = 0;
                 if (e.charCode != 0) { k = e.charCode; } else if (e.keyCode != 0) { k = e.keyCode; }
                 if (k == 8) { terminal.sendText(String.fromCharCode(k)); } // Enter and backspace
-                else if (e.ctrlKey && (k >= 64) && (k <= 95)) { console.log(k - 64); terminal.sendText(String.fromCharCode(k - 64)); } // Ctrl keys
+                else if (e.ctrlKey && (k >= 64) && (k <= 95)) {
+                    // Ctrl keys
+                    if (terminal.urlname == 'sshterminalrelay.ashx') {
+                        // SSH
+                        terminal.socket.send('~' + String.fromCharCode(k - 64));
+                    } else {
+                        // Agent
+                        terminal.sendText(String.fromCharCode(k - 64));
+                    }
+                }
             }
         }
 
@@ -2842,7 +2862,13 @@
             }
             if (terminal && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 5) && (gotKeyPressEvent == false) && (t !== 1)) {
                 if (e.altKey == true) { return true; }
-                terminal.sendText(Q('softKeyboard').value);
+                if (terminal.urlname == 'sshterminalrelay.ashx') {
+                    // SSH
+                    terminal.socket.send('~' + Q('softKeyboard').value);
+                } else {
+                    // Agent
+                    terminal.sendText(Q('softKeyboard').value);
+                }
                 Q('softKeyboard').value = '';
                 return false;
             }
@@ -3284,22 +3310,25 @@
                 }
 
                 // Attribute: Mesh Agent
-                if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
+                if ((node.agent != null) && (node.agent.id != null) && (mesh.mtype == 3)) {
+                    if (node.agent.id == 4) { x += addDeviceAttribute("Device Type", "Windows"); }
+                    if (node.agent.id == 6) { x += addDeviceAttribute("Device Type", "Linux"); }
+                    if (node.agent.id == 29) { x += addDeviceAttribute("Device Type", "macOS"); }
+                } else if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
                     if (node.agent.id == 14) { str = node.agent.core; }
                     if ((node.agent.root === false) && ((node.conn & 1) != 0)) { str += ', ' + "Restricted"; }
-                    x += addDeviceAttribute("Agent", str);
+                    x += addDeviceAttribute("Mesh Agent", str);
                 }
 
                 // Attribute: Intel AMT
                 if (node.intelamt != null) {
                     var str = '';
                     var provisioningStates = { 0: nobreak("Not Activated (Pre)"), 1: nobreak("Not Activated (In)"), 2: nobreak("Activated") };
-                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>' + nobreak("Unknown State") + '</i>, v' + EscapeHtml(node.intelamt.ver); } else
-
-                    if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "Activated" + '</i>'; }
+                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>' + nobreak("Unknown State") + '</i>, v' + EscapeHtml(node.intelamt.ver); }
+                    else if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "Activated" + '</i>'; }
                     else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "Unknown Version & State" + '</i>'; }
                     else {
                         str += provisioningStates[node.intelamt.state];
@@ -3404,6 +3433,9 @@
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast onclick=deviceToastFunction() />';  }
 
                 QH('p10html', x);
+
+                // If we are looking at a local non-windows device, enable terminal capability.
+                if ((mesh.mtype == 3) && (node.agent != null) && (node.agent.id > 4) && (features2 & 0x00000200)) { node.agent.caps = 2; }
 
                 // Show node last 7 days timeline
                 //drawDeviceTimeline();
@@ -4454,13 +4486,36 @@
             var termState = ((terminal != null) && (terminal.state != 0));
             QE('termFullScreen', (termState != 0));
 
+            // If we are looking at a local non-windows device, enable terminal capability.
+            if ((terminalNode.mtype == 3) && (terminalNode.agent != null) && (terminalNode.agent.id > 4) && (features2 & 0x00000200)) { terminalNode.agent.caps = 2; }
+
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
             QV('connectbutton2span', (termState == false) && (currentNode.agent != null) && (currentNode.agent.caps & 2));
 
             // Enable buttons
-            var online = ((terminalNode.conn & 1) != 0); // If Agent (1) connected, enable Terminal
+            var online = ((terminalNode.conn & 1) != 0) || (terminalNode.mtype == 3); // If Agent (1) connected, enable Terminal
             QE('connectbutton2', online);
+
+            // Enable action button if mesh type is not "local devices"
+            QV('termActionsBtn', terminalNode.mtype != 3);
+            if (terminalNode.mtype != 3) {
+                QH('terminalCustomUpperRight', '');
+            } else {
+                QH('terminalCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (terminalNode.sshport ? terminalNode.sshport : 22)) + '</a>');
+            }
+        }
+
+        function cmsshportaction(action) {
+            if (xxdialogMode) return;
+            var x = "SSH remote connection port:" + '<br /><br /><input type=text placeholder="22" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10sshport type=text>';
+            setDialogMode(2, "SSH Connection", 3, function () {
+                // Save the new SSH port to the server
+                var sshport = ((Q('d10sshport').value.length > 0) ? parseInt(Q('d10sshport').value) : 22);
+                meshserver.send({ action: 'changedevice', nodeid: currentNode._id, sshport: sshport });
+            }, x, currentNode);
+            Q('d10sshport').focus();
+            if (currentNode.sshport != null) { Q('d10sshport').value = currentNode.sshport; }
         }
 
         // Called when the terminal state changes
@@ -4502,6 +4557,32 @@
         }
 
         function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
+
+        function sshTunnelUpdate(data) {
+            if (typeof data == 'string') {
+                if (data[0] == '{') {
+                    var j = JSON.parse(data);
+                    switch (j.action) {
+                        case 'sshauth': {
+                            var x = '';
+                            x += addHtmlValue("Username", '<input id=dp2user style=width:190px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
+                            x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:190px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
+                            setDialogMode(2, "Authentication", 11, sshConnectEx, x, 'ssh');
+                            setTimeout(sshAuthKeyUp, 50);
+                        }
+                    }
+                } else if (data[0] == '~') { xterm.writeUtf8(data.substring(1)); }
+            }
+        }
+
+        function sshAuthKeyUp(e) { QE('idx_dlgOkButton', (Q('dp2user').value.length > 0) && (Q('dp2pass').value.length > 0)); }
+        function sshConnectEx(b) {
+            if (b == 0) {
+                if (terminal != null) { connectTerminal(); } // Disconnect
+            } else {
+                terminal.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight }));
+            }
+        }
 
         function connectTerminal(e, contype, options) {
             p12clearConsoleMsg();
@@ -4548,7 +4629,7 @@
                 xterm.setOption('scrollback', 0);
                 //xterm.setOption('fontSize', 15);
                 xterm.open(Q('termarea3xdiv'));
-                xterm.onData(function (data) { if (terminal != null) { terminal.sendText(data); } })
+                xterm.onData(function (data) { if (terminal.urlname == 'sshterminalrelay.ashx') { terminal.socket.send('~' + data); } else { terminal.sendText(data); } })
                 xterm.resize(80,34);
 
                 // Remove terminal textarea and scrollbar.
@@ -4556,7 +4637,8 @@
                 document.getElementsByClassName('xterm-viewport')[0].style.overflow = 'hidden';
 
                 // Setup a terminal tunnel to the agent
-                terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel(tunnelUpdate, termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel((currentNode.mtype == 3) ? sshTunnelUpdate : tunnelUpdate, termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                if (currentNode.mtype == 3) { terminal.urlname = 'sshterminalrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
                 terminal.debugmode = debugmode;
                 terminal.m.debugmode = debugmode;
                 terminal.options = termoptions;
@@ -4594,7 +4676,16 @@
             QH('termButtonMenu', x);
         }
 
-        function termMenuButton(c) { toggleMenu(true); terminal.sendText(String.fromCharCode(c - 64)); }
+        function termMenuButton(c) {
+            toggleMenu(true);
+            if (terminal.urlname == 'sshterminalrelay.ashx') {
+                // SSH
+                terminal.socket.send('~' + String.fromCharCode(c - 64));
+            } else {
+                // Agent
+                terminal.sendText(String.fromCharCode(c - 64));
+            }
+        }
 
 
         //
