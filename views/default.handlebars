@@ -5420,7 +5420,6 @@
             if (xxdialogMode) return;
             var x = "RDP remote connection port:" + '<br /><br /><input type=text placeholder="3389" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10rdpport type=text>';
             setDialogMode(2, "RDP Connection", 3, function() {
-                setDialogMode(0);
                 // Save the new RDP port to the server
                 var rdpport = ((Q('d10rdpport').value.length > 0) ? parseInt(Q('d10rdpport').value) : 3389);
                 meshserver.send({ action: 'changedevice', nodeid: currentNode._id, rdpport: rdpport });
@@ -5434,7 +5433,6 @@
             if (xxdialogMode) return;
             var x = "SSH remote connection port:" + '<br /><br /><input type=text placeholder="22" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10sshport type=text>';
             setDialogMode(2, "SSH Connection", 3, function() {
-                setDialogMode(0);
                 // Save the new SSH port to the server
                 var sshport = ((Q('d10sshport').value.length > 0) ? parseInt(Q('d10sshport').value) : 22);
                 meshserver.send({ action: 'changedevice', nodeid: currentNode._id, sshport: sshport });
@@ -5448,7 +5446,6 @@
             if (xxdialogMode) return;
             var x = "VNC remote connection port:" + '<br /><br /><input type=text placeholder="5900" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10rfbport type=text>';
             setDialogMode(2, "VNC Connection", 3, function() {
-                setDialogMode(0);
                 // Save the new RFB port to the server
                 var rfbport = ((Q('d10rfbport').value.length > 0) ? parseInt(Q('d10rfbport').value) : 3389);
                 meshserver.send({ action: 'changedevice', nodeid: currentNode._id, rfbport: rfbport });
@@ -6275,6 +6272,7 @@
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
                     if (node.agent.id == 14) { str = node.agent.core; }
+                    if ((node.agent.root === false) && ((node.conn & 1) != 0)) { str += ', ' + "Restricted"; }
                     x += addDeviceAttribute("Mesh Agent", str);
                 }
 
@@ -6282,15 +6280,14 @@
                 if (node.intelamt != null) {
                     var str = '';
                     var provisioningStates = { 0: nobreak("Not Activated (Pre)"), 1: nobreak("Not Activated (In)"), 2: nobreak("Activated") };
-                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>' + "Unknown State" + '</i>, v' + EscapeHtml(node.intelamt.ver); } else
-
-                        if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "Activated" + '</i>'; }
-                        else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "Unknown Version & State" + '</i>'; }
-                        else {
-                            str += provisioningStates[node.intelamt.state];
-                            if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { str += ' <span title="' + "Intel&reg; AMT is activated in Client Control Mode" + '">' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { str += ' <span title="' + "Intel&reg; AMT is activated in Admin Control Mode" + '">' + "ACM" + '</span>'; } }
-                            str += (', v' + EscapeHtml(node.intelamt.ver));
-                        }
+                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>' + "Unknown State" + '</i>, v' + EscapeHtml(node.intelamt.ver); }
+                    else if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "Activated" + '</i>'; }
+                    else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "Unknown Version & State" + '</i>'; }
+                    else {
+                        str += provisioningStates[node.intelamt.state];
+                        if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { str += ' <span title="' + "Intel&reg; AMT is activated in Client Control Mode" + '">' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { str += ' <span title="' + "Intel&reg; AMT is activated in Admin Control Mode" + '">' + "ACM" + '</span>'; } }
+                        str += (', v' + EscapeHtml(node.intelamt.ver));
+                    }
 
                     // If Intel AMT is activated, show additional options
                     if (node.intelamt.state == 2) {
@@ -6548,14 +6545,14 @@
                 Q('MainComputerImage').setAttribute('src', 'images/icons256-' + node.icon + '-1.png');
                 Q('MainComputerImage').className = ((((!node.conn) || (node.conn == 0)) && (node.mtype != 3))?'gray':'');
 
+                // If we are looking at a local non-windows device, enable terminal capability.
+                if ((mesh.mtype == 3) && (node.agent != null) && (node.agent.id > 4) && (features2 & 0x00000200)) { node.agent.caps = 2; }
+
                 // Setup/Refresh the desktop tab
                 if (terminalAccess) { setupTerminal(); }
                 if (fileAccess) { setupFiles(); }
                 var consoleRights = ((meshrights & 16) != 0);
                 if (consoleRights) { setupConsole(); } else { if (panel == 15) { panel = 10; } }
-
-                // If we are looking at a local non-windows device, enable terminal capability.
-                if ((mesh.mtype == 3) && (node.agent != null) && (node.agent.id > 4) && (features2 & 0x00000200)) { node.agent.caps = 2; }
 
                 // Show or hide the tabs
                 // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent, 3 = Local Device
