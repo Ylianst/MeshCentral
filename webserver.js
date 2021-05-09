@@ -1901,12 +1901,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((obj.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { res.sendStatus(401); return; }
 
             // Figure out the target port
-            var port = 3389;
+            var port = 0;
             if (page == 'ssh') {
                 // SSH port
                 port = 22;
+                if (typeof node.sshport == 'number') { port = node.sshport; }
             } else {
                 // RDP port
+                port = 3389;
                 if (typeof node.rdpport == 'number') { port = node.rdpport; }
             }
             if (req.query.port != null) { var qport = 0; try { qport = parseInt(req.query.port); } catch (ex) { } if ((typeof qport == 'number') && (qport > 0) && (qport < 65536)) { port = qport; } }
@@ -5553,7 +5555,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Setup MSTSC.js if needed
             if (domain.mstsc === true) {
                 obj.app.get(url + 'mstsc.html', function (req, res) { handleMSTSCRequest(req, res, 'mstsc'); });
-                obj.app.ws(url + 'mstsc/relay.ashx', function (ws, req) {
+                obj.app.ws(url + 'mstscrelay.ashx', function (ws, req) {
                     const domain = getDomain(req);
                     if (domain == null) { parent.debug('web', 'mstsc: failed checks.'); try { ws.close(); } catch (e) { } return; }
                     require('./apprelays.js').CreateMstscRelay(obj, obj.db, ws, req, obj.args, domain);
@@ -5563,12 +5565,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Setup SSH if needed
             if (domain.ssh === true) {
                 obj.app.get(url + 'ssh.html', function (req, res) { handleMSTSCRequest(req, res, 'ssh'); });
-                obj.app.ws(url + 'ssh/relay.ashx', function (ws, req) {
+                obj.app.ws(url + 'sshrelay.ashx', function (ws, req) {
                     const domain = getDomain(req);
                     if (domain == null) { parent.debug('web', 'ssh: failed checks.'); try { ws.close(); } catch (e) { } return; }
                     try {
                         require('./apprelays.js').CreateSshRelay(obj, obj.db, ws, req, obj.args, domain);
                     } catch (ex) { console.log(ex); }
+                });
+                obj.app.ws(url + 'sshterminalrelay.ashx', function (ws, req) {
+                    PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) {
+                        require('./apprelays.js').CreateSshTerminalRelay(obj, obj.db, ws1, req1, domain, user, cookie, obj.args);
+                    });
                 });
             }
 
