@@ -688,10 +688,11 @@
                 <div id=termTable style="position:relative">
                     <table style="width:100%" cellpadding=0 cellspacing=0>
                         <tr>
-                            <td class="areaHead">
+                            <td class="areaHead" style="line-height:24px">
                                 <div class="toright2">
                                     <div id="termRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
                                     <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
+                                    <div id="terminalCustomUpperRight" style="float:left;margin-right:6px"></div>
                                     <div id="terminalCustomUiButtons" style="float:left"></div>
                                 </div>
                                 <div>
@@ -8550,10 +8551,13 @@
         function updateTerminalButtons() {
             var termState = ((terminal != null) && (terminal.state != 0));
 
+            // If we are looking at a local non-windows device, enable terminal capability.
+            if ((terminalNode.mtype == 3) && (terminalNode.agent != null) && (terminalNode.agent.id > 4)) { terminalNode.agent.caps = 2; }
+
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
-            QV('connectbutton2span', (termState == false) && (currentNode.agent != null) && (currentNode.agent.caps & 2));
-            if (currentNode.mtype == 1) {
+            QV('connectbutton2span', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2));
+            if (terminalNode.mtype == 1) {
                 QV('connectbutton2hspan', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
                 QV('terminalSizeDropDown', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
             } else {
@@ -8562,10 +8566,15 @@
             }
 
             // Enable action button if mesh type is not "local devices"
-            QV('termActionsBtn', currentNode.mtype != 3);
+            QV('termActionsBtn', terminalNode.mtype != 3);
+            if (terminalNode.mtype != 3) {
+                QH('terminalCustomUpperRight', '');
+            } else {
+                QH('terminalCustomUpperRight', '<a onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (terminalNode.sshport?terminalNode.sshport:22)) + '</a>');
+            }
 
             // Enable buttons
-            var online = ((terminalNode.conn & 1) != 0) || (currentNode.mtype == 3); // If Agent (1) connected, enable Terminal
+            var online = ((terminalNode.conn & 1) != 0) || (terminalNode.mtype == 3); // If Agent (1) connected, enable Terminal
             QE('connectbutton2', online);
             var hwonline = ((terminalNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton2h', hwonline);
