@@ -338,6 +338,7 @@
     </div>
     <script>
         'use strict';
+        var welcomePictureFullScreen = (decodeURIComponent('{{{welcomePictureFullScreen}}}') === 'true');
         var passlogin = '{{{passlogin}}}';
         var passhint = '{{{passhint}}}';
         var loginMode = '{{{loginmode}}}';
@@ -364,6 +365,11 @@
 
             QV('welcomeTextRow', welcomeText != '');
             QH('welcomeText', welcomeText);
+
+            // Change the background image to full screen
+            if (welcomePictureFullScreen) {
+
+            }
 
             // Display the right server message
             var i;
