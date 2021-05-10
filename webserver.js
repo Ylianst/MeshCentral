@@ -2859,6 +2859,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 messageid: msgid,
                 passhint: passhint,
                 welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null,
+                welcomePictureFullScreen: ((typeof domain.welcomepicturefullscreen == 'boolean') ? domain.welcomepicturefullscreen : false),
                 hwstate: hwstate,
                 otpemail: otpemail,
                 otpsms: otpsms,
