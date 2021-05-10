@@ -1873,7 +1873,7 @@ function serverConnect() {
                             for (var i in data.nodes) {
                                 var devicesInMesh = data.nodes[i];
                                 if (settings.xmeshes) { console.log('\r\nDevice group: \"' + settings.xmeshes[i].name.split('\"').join('') + '\"'); }
-                                console.log('id, name, icon, conn, pwr, ip\r\n-----------------------------');
+                                console.log('id, name, icon, conn, pwr\r\n-------------------------');
                                 for (var j in devicesInMesh) {
                                     var n = devicesInMesh[j];
                                     nodecount++;
