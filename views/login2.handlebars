@@ -31,7 +31,7 @@
     </style>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" class="arg_hide login">
-    <div style="position:absolute;left:0;bottom:0;z-index:-1;height:60%;width:100%;opacity:0.1;background-image:url('welcome.png');background-repeat:no-repeat;background-position:left bottom;background-size:contain"></div>
+    <div id="backgroundImage" style="position:absolute;left:0;bottom:0;z-index:-1;height:60%;width:100%;opacity:0.1;background-image:url('welcome.png');background-repeat:no-repeat;background-position:left bottom;background-size:contain"></div>
     <table id="centralTable" class="container" style="height:100%;z-index:1">
         <tr>
             <td id="logincell">
@@ -368,7 +368,10 @@
 
             // Change the background image to full screen
             if (welcomePictureFullScreen) {
-
+                QS('backgroundImage').height = '100%';
+                QS('backgroundImage').opacity = '1';
+                QS('backgroundImage')['background-position'] = 'center center';
+                QS('backgroundImage')['background-size'] = 'cover';
             }
 
             // Display the right server message
