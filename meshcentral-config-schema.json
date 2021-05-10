@@ -284,6 +284,7 @@
           "newAccountsRights": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
           "welcomeText": { "type": "string", "description": "Text that will be shown on the login screen." },
           "welcomePicture": { "type": "string", "description": "Name of the PNG or JPEG file that will be shown on the login screen. Put this file in the meshcentral-data folder and place the file name here." },
+          "welcomePictureFullScreen": { "type": "boolean", "default": false, "description": "When enabled, the welcomePicture will show as a fullscreen background on the login screen." },
           "meshMessengerTitle": { "type": "string", "default": "MeshMessenger", "description": "Text that will be displayed on the top of the messenger window when no username or device name is displayed." },
           "meshMessengerPicture": { "type": "string", "default": null, "description": "Name of a .png image file that is placed in meshcentral-data that is displayed on the top of the messenger web page. When null, the default image is displayed." },
           "hide": { "type": "integer", "default": 0 },
