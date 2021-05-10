@@ -145,6 +145,7 @@
       "_newAccountsRights": [ "nonewgroups", "notools" ],
       "_welcomeText": "Sample Text on Login Page.",
       "_welcomePicture": "mainwelcome.jpg",
+      "_welcomePictureFullScreen": false,
       "_meshMessengerTitle": "MeshMessenger",
       "_meshMessengerPicture": "messenger.png",
       "___hide__": "Sum of: 1 = Hide header, 2 = Hide tab, 4 = Hide footer, 8 = Hide title, 16 = Hide left bar",
