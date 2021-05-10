@@ -293,6 +293,8 @@ if (args['_'].length == 0) {
                         }
                         console.log("  --group [groupname]    - Device group name (or --id).");
                         console.log("  --hours [hours]        - Validity period in hours or 0 for infinit.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --flags [mode]         - Mode flag for link type (0 = both, 1 = interactive only, 2 = background only)");
                         break;
                     }
                     case 'showevents': {
@@ -1367,6 +1369,7 @@ function serverConnect() {
             case 'generateinvitelink': {
                 var op = { action: 'createInviteLink', expire: args.hours, flags: 0, responseid: 'meshctrl' }
                 if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
+                if (args.flags) { op.flags = args.flags; }
                 ws.send(JSON.stringify(op));
                 break;
             }
