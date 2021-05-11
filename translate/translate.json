@@ -6071,6 +6071,13 @@
       ]
     },
     {
+      "en": "Assistant (Windows)",
+      "xloc": [
+        "default-mobile.handlebars->11->40",
+        "default.handlebars->33->47"
+      ]
+    },
+    {
       "cs": "asturština",
       "de": "Asturisch",
       "en": "Asturian",
@@ -41616,7 +41623,6 @@
       "xloc": [
         "default-mobile.handlebars->11->240",
         "default-mobile.handlebars->11->37",
-        "default-mobile.handlebars->11->40",
         "default-mobile.handlebars->11->41",
         "default-mobile.handlebars->11->42",
         "default-mobile.handlebars->11->43",
@@ -41639,7 +41645,6 @@
         "default.handlebars->33->2321",
         "default.handlebars->33->2328",
         "default.handlebars->33->44",
-        "default.handlebars->33->47",
         "default.handlebars->33->48",
         "default.handlebars->33->49",
         "default.handlebars->33->50",
