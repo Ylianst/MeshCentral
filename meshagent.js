@@ -1426,7 +1426,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                     // Any "help" session must have an associated app, if not, remove it.
                     if (obj.sessions.help != null) {
-                        for (var i in obj.sessions.help) { if (obj.sessions.app[i] == null) { delete obj.sessions.help[i]; } }
+                        for (var i in obj.sessions.help) { if (obj.sessions.help[i] == null) { delete obj.sessions.help[i]; } }
                         if (Object.keys(obj.sessions.help).length == 0) { delete obj.sessions.help; }
                     }
 
