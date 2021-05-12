@@ -216,8 +216,8 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
             delete obj.wsClient;
         }
 
-        if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { ws._socket._parent.end(); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (ex) { console.log(ex); } } // Soft close, close the websocket
+        if (arg == 2) { try { ws._socket._parent.end(); } catch (ex) { console.log(ex); } } // Hard close, close the TCP socket
         obj.ws.removeAllListeners();
 
         obj.relayActive = false;
@@ -229,7 +229,6 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
     // Decode the authentication cookie
     obj.cookie = parent.parent.decodeCookie(req.query.auth, parent.parent.loginCookieEncryptionKey);
     if (obj.cookie == null) { obj.ws.send(JSON.stringify({ action: 'sessionerror' })); obj.close(); return; }
-    console.log(obj.cookie);
 
     // Start the looppback server
     function startRelayConnection() {
@@ -391,8 +390,8 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
             delete obj.wsClient;
         }
 
-        if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { ws._socket._parent.end(); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (ex) { console.log(ex); } } // Soft close, close the websocket
+        if (arg == 2) { try { ws._socket._parent.end(); } catch (ex) { console.log(ex); } } // Hard close, close the TCP socket
         obj.ws.removeAllListeners();
 
         obj.relayActive = false;

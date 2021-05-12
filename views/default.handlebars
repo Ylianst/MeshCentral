@@ -6417,7 +6417,7 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if (((meshrights & (4 + 8 + 64)) != 0) && (node.mtype != 3) && (node.agent.id != 34)) { x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
+                if (((meshrights & (4 + 8 + 64)) != 0) && (node.mtype != 3) && ((node.agent == null) || (node.agent.id != 34))) { x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponentEx(node._id) + '") />';
                 x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
                 if ((meshrights & 8) && ((connectivity & 1) || ((node.pmt == 1) && ((features2 & 2) != 0)))) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
@@ -6460,7 +6460,7 @@
                 x += '</div><div class="p10html3left">';
                 if ((node.agent) && (node.mtype != 3)) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title="' + "Show device network interface information" + '">' + "Interfaces" + '</a>&nbsp;';
                 if ((features & 0x00008000) && (xxmap != null)) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title="' + "Show device locations information" + '">' + "Location" + '</a>&nbsp;';
-                if ((node.agent.id != 14) && (node.agent.id != 34)) {
+                if ((node.agent == null) || ((node.agent.id != 14) && (node.agent.id != 34))) {
                     if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) { // Check if we should view tools
                         if ((terminalAccess) && ((meshrights & 8) != 0) && (node.agent != null) && (node.agent.id != 14)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="' + "Traffic router used to connect to a device thru this server" + '.">' + "MeshCmd" + '</a>&nbsp;';
                     }
