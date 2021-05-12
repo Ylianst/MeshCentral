@@ -4335,8 +4335,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Add a user authentication cookie to a url
                         var cookieContent = { userid: user._id, domainid: user.domain };
                         if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
-                        if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want to agent to TCP connect to a remote address
-                        if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want to agent to TCP connect to a remote port
+                        if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want the agent to TCP connect to a remote address
+                        if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want the agent to TCP connect to a remote port
+                        //if (command.localport) { cookieContent.localport = command.localport; } // Indicates the browser want MeshCenral Router to use a local port
                         if (command.ip) { cookieContent.ip = command.ip; } // Indicates the browser want to agent to relay a TCP connection to a IP:port
                         if (node.mtype == 3) { cookieContent.lc = 1; command.localRelay = true; } // Indicate this is for a local connection
                         command.cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
