@@ -7320,7 +7320,7 @@
             if (xxdialogMode) return;
             var x = '<div>' + "MeshCentral Router is a Windows tool for TCP port mapping. You can, for example, RDP into a remote device thru this server." + '</div><br />';
             x += addHtmlValue("Win32 Executable", '<a style=cursor:pointer onclick=downloadFile("meshagents?meshaction=winrouter' + (urlargs.key?('&key=' + urlargs.key):'') + '",null,true)>MeshCentralRouter.exe</a>');
-            x += addHtmlValue("MacOS Installer", '<a style=cursor:pointer onclick=downloadFile("meshagents?meshaction=macrouter' + (urlargs.key?('&key=' + urlargs.key):'') + '",null,true)>MeshCentralRouter.dwg</a>');
+            x += addHtmlValue("MacOS Installer", '<a style=cursor:pointer onclick=downloadFile("meshagents?meshaction=macrouter' + (urlargs.key?('&key=' + urlargs.key):'') + '",null,true)>MeshCentralRouter.dmg</a>');
             var servername = serverinfo.name;
             if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
             var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
