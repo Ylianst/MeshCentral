@@ -9123,7 +9123,7 @@
 
         function p13findfileEx(b, t) {
             if (Q('d2findFilter').value.length == 0) return;
-            var winagent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5));
+            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
             var slash = winagent ? '\\' : '/';
             var path = p13filetreelocation.join(slash) + slash;
             if (!winagent) { path = slash + path; }
@@ -9168,7 +9168,7 @@
                 QE('p13PasteButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
-                var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14);
+                var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
                 QE('p13DeleteFileButton', (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13NewFolderButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false) || (currentNode.agent.id == 14)));
@@ -9377,7 +9377,7 @@
             if (xxdialogMode) return;
 
             // Check if we are going to overwrite any files
-            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5));
+            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
             var targetFiles = [], overWriteCount = 0;
             for (var i in p13filetree.dir) { if (winAgent) { targetFiles.push(p13filetree.dir[i].n.toLowerCase()); } else { targetFiles.push(p13filetree.dir[i].n); } }
             for (var i = 0; i < files.length; i++) {
