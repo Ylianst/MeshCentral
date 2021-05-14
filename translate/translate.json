@@ -6072,6 +6072,7 @@
     },
     {
       "en": "Assistant (Windows)",
+      "nl": "Assistent (Windows)",
       "xloc": [
         "default-mobile.handlebars->11->40",
         "default.handlebars->33->47"
@@ -7390,7 +7391,7 @@
     },
     {
       "en": "Certificate expires in {0} day(s)",
-      "nl": "Certificaat verloopt over {0} dag((en)",
+      "nl": "Certificaat verloopt over {0} dag(en)",
       "fr": "Le certificat expire dans {0} jour(s)",
       "xloc": [
         "default-mobile.handlebars->11->59",
@@ -12665,6 +12666,7 @@
     },
     {
       "en": "Device Type",
+      "nl": "Apparaatsoort",
       "xloc": [
         "default-mobile.handlebars->11->259",
         "default-mobile.handlebars->11->261",
@@ -34344,6 +34346,7 @@
     },
     {
       "en": "SSH Port {0}",
+      "nl": "SSH poort {0}",
       "xloc": [
         "default-mobile.handlebars->11->392",
         "default.handlebars->33->1066"
@@ -46512,6 +46515,20 @@
     },
     {
       "en": "macOS",
+      "cs": "macOS",
+      "de": "macOS",
+      "es": "macOS",
+      "fi": "macOS",
+      "fr": "macOS",
+      "hi": "मैकओएस",
+      "ja": "macOS",
+      "ko": "macOS",
+      "nl": "macOS",
+      "pt": "macOS",
+      "ru": "macOS",
+      "tr": "macOS",
+      "zh-chs": "macOS",
+      "zh-cht": "macOS"
       "xloc": [
         "default-mobile.handlebars->11->264",
         "default.handlebars->33->653"
