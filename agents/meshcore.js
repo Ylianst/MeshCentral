@@ -62,7 +62,7 @@ if (require('MeshAgent').ARCHID == null) {
             catch (xx) {
                 id = 16;
             }
-            break; break;
+            break;
     }
     if (id != null) { Object.defineProperty(require('MeshAgent'), 'ARCHID', { value: id }); }
 }
