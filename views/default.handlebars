@@ -4192,6 +4192,47 @@
             }
         }
 
+        // Return HTML with a list of MeshCentral Router links
+        function getShortRouterLinks(node) {
+            var x = '', meshrights = GetNodeRights(node);
+
+            // RDP link, show this link only of the remote machine is Windows.
+            if (((node.conn & 1) != 0) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
+                if ((node.agent.id > 0) && (node.agent.id < 5)) {
+                    if (navigator.platform.toLowerCase() == 'win32') {
+                        if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false)) {
+                            x += '<a href=# cmenu=altPortContextMenu id=rdpMCRouterLink onclick=p10MCRouter("' + node._id + '",3)>' + "RDP" + '</a>&nbsp;';
+                        }
+                    }
+                }
+                if (node.agent.id > 4) {
+                    if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
+                        if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.ssh != false)) {
+                            x += '<a href=# onclick=p10MCRouter("' + node._id + '",4,22)>' + "SSH" + '</a>&nbsp;';
+                        }
+                    }
+                    if (navigator.platform.toLowerCase() == 'win32') {
+                        if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.scp != false)) {
+                            x += '<a href=# onclick=p10MCRouter("' + node._id + '",5,22)>' + "SCP" + '</a>&nbsp;';
+                        }
+                    }
+                }
+                if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
+                    if ((serverinfo.devicemeshrouterlinks != null) && (Array.isArray(serverinfo.devicemeshrouterlinks.extralinks))) {
+                        for (var i in serverinfo.devicemeshrouterlinks.extralinks) {
+                            var r = serverinfo.devicemeshrouterlinks.extralinks[i], p = 0;
+                            if (doesDeviceMatchFilterTags(node, r.filter)) {
+                                if (typeof r.protocol == 'number') { p = r.protocol; } else if (r.protocol == 'http') { p = 1; } else if (r.protocol == 'https') { p = 2; } else if (r.protocol == 'rdp') { p = 3; } else if (r.protocol == 'ssh') { p = 4; } else if (r.protocol == 'scp') { p = 5; }
+                                x += '<a href=# onclick=p10MCRouter("' + node._id + '",' + p + ',' + r.port + (r.ip?(',\"' + r.ip + '\"'):'') + ')>' + r.name + '</a>&nbsp;';
+                            }
+                        }
+                    }
+                }
+            }
+
+            return x;
+        }
+
         // Check if this device matches any of the given filters
         function doesDeviceMatchFilterTags(node, filter) {
             if (filter == null) return true; // No filters, every device matches.
@@ -8291,7 +8332,7 @@
         function showDeskClipSet() {
             if (desktop == null || desktop.State != 3) return;
             meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: Q('d2clipText').value });
-            QV('linuxClipWarn', currentNode && currentNode.agent && (currentNode.agent.id > 4) && (currentNode.agent.id != 21) && (currentNode.agent.id != 22));
+            QV('linuxClipWarn', currentNode && currentNode.agent && (currentNode.agent.id > 4) && (currentNode.agent.id != 21) && (currentNode.agent.id != 22) && (currentNode.agent.id != 34));
         }
 
         // Send CTRL-ALT-DEL

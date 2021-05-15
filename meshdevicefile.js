@@ -302,7 +302,7 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
         } catch (ex) {
             var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename="' + altname + '"' };
             if (typeof size == 'number') { x['Content-Length'] = size; }
-            res.set(x);
+            try { res.set(x); } catch (ex) { }
         }
     }
 
