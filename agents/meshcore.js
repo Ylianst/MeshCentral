@@ -261,6 +261,9 @@ obj.DAIPC.on('connection', function (c) {
                 case 'meshToolInfo':
                     try { mesh.SendCommand({ action: 'meshToolInfo', name: data.name, hash: data.hash, cookie: data.cookie ? true : false, pipe: true }); } catch (e) { }
                     break;
+                case 'getUserImage':
+                    try { mesh.SendCommand({ action: 'getUserImage', userid: data.userid, pipe: true }); } catch (e) { }
+                    break;
                 case 'console':
                     if (debugConsole) {
                         var args = splitArgs(data.value);
@@ -281,7 +284,9 @@ function broadcastSessionsToRegisteredApps(x) {
 // Send this object to all registered local applications
 function broadcastToRegisteredApps(x) {
     if ((obj.DAIPC == null) || (obj.DAIPC._daipc == null)) return;
-    for (var i in obj.DAIPC._daipc) { if (obj.DAIPC._daipc[i]._registered != null) { obj.DAIPC._daipc[i]._send(x); } }
+    for (var i in obj.DAIPC._daipc) {
+        if (obj.DAIPC._daipc[i]._registered != null) { obj.DAIPC._daipc[i]._send(x); }
+    }
 }
 
 // Send this object to a specific registered local applications
@@ -1276,6 +1281,10 @@ function handleServerCommand(data) {
                     data.filename = 'MeshAssistant.exe';
                     downloadFile(data);
                 }
+                break;
+            case 'getUserImage':
+                if (data.pipe == true) { delete data.pipe; delete data.action; data.cmd = 'getUserImage'; broadcastToRegisteredApps(data); }
+                if (data.tag == 'info') { sendConsoleText(JSON.stringify(data, null, 2)); }
                 break;
             case 'wget': // Server uses this command to tell the agent to download a file using HTTPS/GET and place it in a given path. This is used for one-to-many file uploads.
                 agentFileHttpPendingRequests.push(data);
@@ -2860,6 +2869,10 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 } else {
                     response = "MeshCentral Assistant is not supported on this platform.";
                 }
+                break;
+            case 'userimage':
+                require('MeshAgent').SendCommand({ action: 'getUserImage', sessionid: sessionid, userid: args['_'][0], tag: 'info' });
+                response = 'ok';
                 break;
             case 'agentupdate':
                 require('MeshAgent').SendCommand({ action: 'agentupdate', sessionid: sessionid });
