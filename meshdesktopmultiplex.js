@@ -54,7 +54,8 @@ MNG_FILEDELETEREC = 62,					// Same as MNG_FILEDELETE but recursive
 MNG_USERCONSENT = 63,					// Used to notify management console of user consent state
 MNG_DEBUG = 64,							// Debug/Logging Message for ILibRemoteLogging
 MNG_ERROR = 65,
-MNG_ENCAPSULATE_AGENT_COMMAND = 70
+MNG_ENCAPSULATE_AGENT_COMMAND = 70,
+MNG_KVM_DISPLAY_INFO = 82
 */
 
 function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
@@ -79,6 +80,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
     obj.firstData = null;               // Index in the image table of the first image in the table, generally this points to the display resolution command.
     obj.lastData = null;                // Index in the images table of the last image in the table.
     obj.lastDisplayInfoData = null;     // Pointer to the last display information command from the agent (Number of displays).
+    obj.lastDisplayLocationData = null; // Pointer to the last display location and size command from the agent.
     obj.desktopPaused = true;           // Current desktop pause state, it's true if all viewers are paused.
     obj.imageCompression = 50;          // Current image compression, this is the highest value of all viewers.
     obj.imageScaling = 1024;            // Current image scaling, this is the highest value of all viewers.
@@ -130,6 +132,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
             // If the agent sent display information or console message, send it to the viewer
             if (obj.lastDisplayInfoData != null) { obj.sendToViewer(peer, obj.lastDisplayInfoData); }
+            if (obj.lastDisplayLocationData != null) { obj.sendToViewer(peer, obj.lastDisplayLocationData); }
             if (obj.lastConsoleMessage != null) { obj.sendToViewer(peer, obj.lastConsoleMessage); }
 
             // Log joining the multiplex session
@@ -524,6 +527,9 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 break;
             case 14: // Touch setup
                 break;
+            case 82: // Request display information
+                if (obj.lastDisplayLocationData != null) { obj.sendToAgent(obj.lastDisplayLocationData); }
+                break;
             case 85: // Unicode Key Events, forward to agent
                 if (viewer.viewOnly == false) { obj.sendToAgent(data); }
                 break;
@@ -676,6 +682,12 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 break;
             case 65: // Alert
                 // Send this to all viewers right away
+                obj.sendToAllViewers(data);
+                break;
+            case 82:
+                // Display information
+                if ((data.length < 14) || (((data.length - 4) % 10) != 0)) break; // Command must be 14 bytes and have header + 10 byte for each display.
+                obj.lastDisplayLocationData = data;
                 obj.sendToAllViewers(data);
                 break;
             case 87: // MNG_KVM_INPUT_LOCK
