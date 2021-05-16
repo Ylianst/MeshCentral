@@ -1600,6 +1600,26 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                     break;
                 }
+                case 'getUserImage': {
+                    // Validate input
+                    if (typeof command.userid != 'string') return;
+                    var useridsplit = command.userid.split('/');
+                    if ((useridsplit.length != 3) || (useridsplit[1] != domain.id)) return;
+
+                    // Add the user's real name if present
+                    var u = parent.users[command.userid];
+                    if (u == null) return;
+                    if (u.realname) { command.realname = u.realname; }
+
+                    // An agent can only request images of accounts with rights to the device.
+                    if (parent.GetNodeRights(command.userid, obj.dbMeshKey, obj.dbNodeKey) != 0) {
+                        parent.db.Get('im' + command.userid, function (err, images) {
+                            if ((err == null) && (images != null) && (images.length == 1)) { command.image = images[0].image; }
+                            obj.send(JSON.stringify(command));
+                        });
+                    }
+                    break;
+                }
                 default: {
                     parent.agentStats.unknownAgentActionCount++;
                     parent.parent.debug('agent', 'Unknown agent action (' + obj.remoteaddrport + '): ' + JSON.stringify(command) + '.');
