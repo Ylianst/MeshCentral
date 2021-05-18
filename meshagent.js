@@ -1501,7 +1501,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     const responseCmd = { action: 'meshToolInfo', name: command.name, tag: command.tag, sessionid: command.sessionid, hash: info.hash, size: info.size, url: info.url };
                     if (command.cookie === true) { responseCmd.url += ('&auth=' + parent.parent.encodeCookie({ download: info.dlname }, parent.parent.loginCookieEncryptionKey)); }
                     if (command.pipe === true) { responseCmd.pipe = true; }
-                    if (parent.webCertificateHashs[domain.id] != null) { responseCmd.serverhash = Buffer.from(parent.webCertificateHashs[domain.id],'binary').toString('hex'); }
+                    if (parent.webCertificateHashs[domain.id] != null) { responseCmd.serverhash = Buffer.from(parent.webCertificateHashs[domain.id], 'binary').toString('hex'); }
                     try { ws.send(JSON.stringify(responseCmd)); } catch (ex) { }
                     break;
                 }
