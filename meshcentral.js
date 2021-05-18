@@ -2401,40 +2401,58 @@ function CreateMeshCentralServer(config, args) {
     // List of possible mesh agent install scripts
     var meshToolsList = {
         'MeshCentralRouter': { localname: 'MeshCentralRouter.exe', dlname: 'winrouter' },
-        'MeshCentralAssistant': { localname: 'MeshCentralAssistant.exe', dlname: 'winassistant' }
+        'MeshCentralAssistant': { localname: 'MeshCentralAssistant.exe', dlname: 'winassistant', winhash: true }
         //'MeshCentralRouterMacOS': { localname: 'MeshCentralRouter.dmg', dlname: 'MeshCentralRouter.dmg' }
     };
 
     // Update the list of available mesh agents
     obj.updateMeshTools = function () {
         for (var toolname in meshToolsList) {
-            var toolpath = obj.path.join(__dirname, 'agents', meshToolsList[toolname].localname);
-            var stream = null;
-            try {
-                stream = obj.fs.createReadStream(toolpath);
-                stream.on('data', function (data) { this.hash.update(data, 'binary'); this.hashx += data.length; });
-                stream.on('error', function (data) {
-                    // If there is an error reading this file, make sure this agent is not in the agent table
-                    if (obj.meshToolsBinaries[this.toolname] != null) { delete obj.meshToolsBinaries[this.toolname]; }
-                });
-                stream.on('end', function () {
-                    // Add the agent to the agent table with all information and the hash
-                    obj.meshToolsBinaries[this.toolname] = {};
-                    obj.meshToolsBinaries[this.toolname].hash = this.hash.digest('hex');
-                    obj.meshToolsBinaries[this.toolname].hashx = this.hashx;
-                    obj.meshToolsBinaries[this.toolname].path = this.agentpath;
-                    obj.meshToolsBinaries[this.toolname].dlname = this.dlname;
+            if (meshToolsList[toolname].winhash === true) {
+                var toolpath = obj.path.join(__dirname, 'agents', meshToolsList[toolname].localname);
+                var hashStream = obj.crypto.createHash('sha384');
+                hashStream.toolname = toolname;
+                hashStream.toolpath = toolpath;
+                hashStream.dlname = meshToolsList[toolname].dlname;
+                hashStream.hashx = 0;
+                hashStream.on('data', function (data) {
+                    obj.meshToolsBinaries[this.toolname] = { hash: data.toString('hex'), hashx: this.hashx, path: this.toolpath, dlname: this.dlname, url: this.url };
                     obj.meshToolsBinaries[this.toolname].url = 'https://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?meshaction=' + this.dlname;
                     var stats = null;
-                    try { stats = obj.fs.statSync(this.agentpath); } catch (e) { }
+                    try { stats = obj.fs.statSync(this.toolpath); } catch (e) { }
                     if (stats != null) { obj.meshToolsBinaries[this.toolname].size = stats.size; }
                 });
-                stream.toolname = toolname;
-                stream.agentpath = toolpath;
-                stream.dlname = meshToolsList[toolname].dlname;
-                stream.hash = obj.crypto.createHash('sha384', stream);
-                stream.hashx = 0;
-            } catch (e) { }
+                var options = { sourcePath: toolpath, targetStream: hashStream };
+                obj.exeHandler.hashExecutableFile(options);
+            } else {
+                var toolpath = obj.path.join(__dirname, 'agents', meshToolsList[toolname].localname);
+                var stream = null;
+                try {
+                    stream = obj.fs.createReadStream(toolpath);
+                    stream.on('data', function (data) { this.hash.update(data, 'binary'); this.hashx += data.length; });
+                    stream.on('error', function (data) {
+                        // If there is an error reading this file, make sure this agent is not in the agent table
+                        if (obj.meshToolsBinaries[this.toolname] != null) { delete obj.meshToolsBinaries[this.toolname]; }
+                    });
+                    stream.on('end', function () {
+                        // Add the agent to the agent table with all information and the hash
+                        obj.meshToolsBinaries[this.toolname] = {};
+                        obj.meshToolsBinaries[this.toolname].hash = this.hash.digest('hex');
+                        obj.meshToolsBinaries[this.toolname].hashx = this.hashx;
+                        obj.meshToolsBinaries[this.toolname].path = this.agentpath;
+                        obj.meshToolsBinaries[this.toolname].dlname = this.dlname;
+                        obj.meshToolsBinaries[this.toolname].url = 'https://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?meshaction=' + this.dlname;
+                        var stats = null;
+                        try { stats = obj.fs.statSync(this.agentpath); } catch (e) { }
+                        if (stats != null) { obj.meshToolsBinaries[this.toolname].size = stats.size; }
+                    });
+                    stream.toolname = toolname;
+                    stream.agentpath = toolpath;
+                    stream.dlname = meshToolsList[toolname].dlname;
+                    stream.hash = obj.crypto.createHash('sha384', stream);
+                    stream.hashx = 0;
+                } catch (e) { }
+            }
         }
     };
 
