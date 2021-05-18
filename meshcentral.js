@@ -2520,7 +2520,8 @@ function CreateMeshCentralServer(config, args) {
         41: { id: 41, localname: 'meshagent_aarch64-cortex-a53', rname: 'meshagent', desc: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // OpenWRT Routers
         10003: { id: 3, localname: 'MeshService.exe', rname: 'meshagent.exe', desc: 'Win x86-32 service, unsigned', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Unsigned version of the Windows MeshAgent x86
         10004: { id: 4, localname: 'MeshService64.exe', rname: 'meshagent.exe', desc: 'Win x86-64 service, unsigned', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Unsigned version of the Windows MeshAgent x64
-        10005: { id: 10005, localname: 'meshagent_osx-universal-64', rname: 'meshagent', desc: 'Apple macOS Universal Binary', update: true, amt: false, platform: 'osx', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' } // Apple Silicon + x86 universal binary
+        10005: { id: 10005, localname: 'meshagent_osx-universal-64', rname: 'meshagent', desc: 'Apple macOS Universal Binary', update: true, amt: false, platform: 'osx', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Apple Silicon + x86 universal binary
+        10006: { id: 10006, localname: 'MeshCentralAssistant.exe', rname: 'MeshCentralAssistant.exe', desc: 'MeshCentral Assistant for Windows', update: false, amt: false, platform: 'win32' } // MeshCentral Assistant
     };
 
     // Update the list of available mesh agents
