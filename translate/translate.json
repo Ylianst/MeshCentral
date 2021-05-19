@@ -6072,7 +6072,7 @@
     },
     {
       "en": "Assistant (Windows)",
-      "nl": "Assistent (Windows)",
+      "nl": "Assistant (Windows)",
       "xloc": [
         "default-mobile.handlebars->11->40",
         "default.handlebars->33->47"
@@ -6080,6 +6080,7 @@
     },
     {
       "en": "Assistant for Windows (.exe)",
+      "nl": "Assistant voor Windows (.exe)",
       "xloc": [
         "default.handlebars->33->461"
       ]
@@ -10087,6 +10088,7 @@
     },
     {
       "en": "Copy URL to clipboard",
+      "nl": "Kopieer URL naar het klembord",
       "xloc": [
         "default.handlebars->33->462"
       ]
@@ -25329,18 +25331,21 @@
     },
     {
       "en": "MeshCentral Assistant",
+      "nl": "MeshCentral Assistant",
       "xloc": [
         "default.handlebars->33->430"
       ]
     },
     {
       "en": "MeshCentral Assistant for Windows",
+      "nl": "MeshCentral Assistant voor Windows",
       "xloc": [
         "default.handlebars->33->460"
       ]
     },
     {
       "en": "MeshCentral Assistant is a Windows system tray tool that users can use to ask for help. Use the link below to download a version that will connect to device group \\\"{0}\\\" when requested by the user.",
+      "nl": "MeshCentral Assistant is een Windows systeemvak tool die gebruikers kunnen gebruiken om hulp te vragen. Gebruik de onderstaande link om een versie te downloaden die op verzoek van de gebruiker verbinding maakt met apparaatgroep \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->33->459"
       ]
