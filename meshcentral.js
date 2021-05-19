@@ -659,7 +659,7 @@ function CreateMeshCentralServer(config, args) {
         //var wincmd = require('node-windows');
         //wincmd.list(function (svc) { console.log(svc); }, true);
 
-        // Setup syslog support
+        // Setup syslog support. Not supported on Windows.
         if ((require('os').platform() != 'win32') && ((config.settings.syslog != null) || (config.settings.syslogjson != null) || (config.settings.syslogauth != null))) {
             if (config.settings.syslog === true) { config.settings.syslog = 'meshcentral'; }
             if (config.settings.syslogjson === true) { config.settings.syslogjson = 'meshcentral-json'; }
@@ -683,6 +683,17 @@ function CreateMeshCentralServer(config, args) {
                 obj.syslogauth.init(config.settings.syslogauth, obj.syslogauth.LOG_PID | obj.syslogauth.LOG_ODELAY, obj.syslogauth.LOG_LOCAL0);
                 obj.syslogauth.log(obj.syslogauth.LOG_INFO, "MeshCentral v" + getCurrentVersion() + " Server Start");
             }
+        }
+        // Setup TCP syslog support, this works on all OS's.
+        if (config.settings.syslogtcp != null) {
+            const syslog = require('syslog');
+            if (config.settings.syslogtcp === true) {
+                obj.syslogtcp = syslog.createClient(514, 'localhost');
+            } else {
+                const sp = config.settings.syslogtcp.split(':');
+                obj.syslogtcp = syslog.createClient(parseInt(sp[1]), sp[0]);
+            }
+            obj.syslogtcp.log("MeshCentral v" + getCurrentVersion() + " Server Start", obj.syslogtcp.LOG_INFO);
         }
 
         // Check top level configuration for any unreconized values
@@ -1945,6 +1956,7 @@ function CreateMeshCentralServer(config, args) {
         // Send event to syslog if needed
         if (obj.syslog && event.msg) { obj.syslog.log(obj.syslog.LOG_INFO, event.msg); }
         if (obj.syslogjson) { obj.syslogjson.log(obj.syslogjson.LOG_INFO, JSON.stringify(event)); }
+        if (obj.syslogtcp && event.msg) { obj.syslogtcp.log(event.msg, obj.syslogtcp.LOG_INFO); }
 
         obj.debug('dispatch', 'DispatchEvent', ids);
         if ((typeof event == 'object') && (!event.nolog)) {
@@ -3229,6 +3241,7 @@ function mainStart() {
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog'); }
+        if (config.settings.syslogtcp) { modules.push('syslog'); }
 
         // Setup heapdump support if needed, useful for memory leak debugging
         // https://www.arbazsiddiqui.me/a-practical-guide-to-memory-leaks-in-nodejs/

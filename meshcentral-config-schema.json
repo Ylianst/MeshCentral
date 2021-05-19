@@ -151,6 +151,7 @@
         "syslog": { "type": "string" },
         "syslogauth": { "type": "string" },
         "syslogjson": { "type": "string" },
+        "syslogtcp": { "type": "string", "default": null, "description": "Send syslog events over the network (RFC3164) to a target hostname:port. For example: localhost:514" },
         "webrtcConfig": {
           "type": "object",
           "additionalProperties": false,
