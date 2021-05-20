@@ -4684,12 +4684,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     res.sendFile(meshCmd64Path); return;
                 }
             }
+
             // No signed agents, we are going to merge a new MeshCmd.
-            if ((agentid < 10000) && (obj.parent.meshAgentBinaries[agentid + 10000] != null)) { agentid += 10000; } // Avoid merging javascript to a signed mesh agent.
+            if (((agentid == 3) || (agentid == 4)) && (obj.parent.meshAgentBinaries[agentid + 10000] != null)) { agentid += 10000; } // Avoid merging javascript to a signed mesh agent.
             var argentInfo = obj.parent.meshAgentBinaries[agentid];
             if ((argentInfo == null) || (obj.parent.defaultMeshCmd == null)) { try { res.sendStatus(404); } catch (ex) { } return; }
             setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : ''), null, 'meshcmd');
             res.statusCode = 200;
+
             if (argentInfo.signedMeshCmdPath != null) {
                 // If we have a pre-signed MeshCmd, send that.
                 res.sendFile(argentInfo.signedMeshCmdPath);
@@ -4697,6 +4699,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Merge JavaScript to a unsigned agent and send that.
                 obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: Buffer.from(obj.parent.defaultMeshCmd, 'utf8'), peinfo: argentInfo.pe });
             }
+            return;
         } else if (req.query.meshaction != null) {
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { try { res.sendStatus(404); } catch (ex) { } return; } // Check 3FA URL key
             var user = obj.users[req.session.userid];
