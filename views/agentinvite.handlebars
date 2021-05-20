@@ -85,6 +85,7 @@
                     <button id="tlinuxtab" class="tablinks" onclick="openTab(event, 'linuxtab')">Linux</button>
                     <button id="tmacostab" class="tablinks" onclick="openTab(event, 'macostab')">MacOS</button>
                     <button id="tandrotab" class="tablinks" onclick="openTab(event, 'androtab')">Android</button>
+                    <button id="tandrotab" class="tablinks" onclick="openTab(event, 'assistab')">Assistant</button>
                 </div>
 
                 <div id="wintab64" class="tabcontent" style="background-color:white;color:black">
@@ -141,6 +142,18 @@
                             <a rel="noreferrer noopener" target=_blank href="{{{magenturl}}}">Server Pairing Link</a>
                         </p>
                     </div>
+                </div>
+
+                <div id="assistab" class="tabcontent" style="background-color:white;color:black">
+                    <h3>Assistant</h3>
+                    <div style="min-height:220px">
+                        <img src="images/assistant-312.png" style="float:right;margin-left:8px" width="148" height="200" />
+                        <p>Assistant is a Windows system tray tool that can be used when help is needed. This is not an agent that runs in the background of the managed computer, instead, it's a tool that connects to the server only when requested.</p>
+                        <p>
+                            <a id="assisturl" rel="noreferrer noopener" target=_blank>Download Assistant for Windows</a>
+                        </p>
+                    </div>
+                    <br style="clear:both" />
                 </div>
             </div>
         </div>
@@ -317,6 +330,10 @@
             }
             QH('linuxinstall', linuxInstall);
             QH('unlinuxinstall', linuxUnInstall);
+
+            // MeshCentral Assistant
+            url = 'meshosxagent?id=10006&meshid=' + meshid;
+            Q('assisturl').href = url;
 
             // Attempt to detect the most likely operating system for this browser
             if (navigator.userAgent.indexOf('Win64') >= 0) { openTab(null, 'wintab64'); }
