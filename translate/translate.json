@@ -6071,6 +6071,13 @@
       ]
     },
     {
+      "en": "Assistant",
+      "xloc": [
+        "agentinvite.handlebars->container->column_l->5->1->tandrotab",
+        "agentinvite.handlebars->container->column_l->5->assistab->1"
+      ]
+    },
+    {
       "en": "Assistant (Windows)",
       "nl": "Assistant (Windows)",
       "xloc": [
@@ -6083,6 +6090,12 @@
       "nl": "Assistant voor Windows (.exe)",
       "xloc": [
         "default.handlebars->33->461"
+      ]
+    },
+    {
+      "en": "Assistant is a Windows system tray tool that can be used when help is needed. This is not an agent that runs in the background of the managed computer, instead, it's a tool that connects to the server only when requested.",
+      "xloc": [
+        "agentinvite.handlebars->container->column_l->5->assistab->3->3"
       ]
     },
     {
@@ -13808,6 +13821,12 @@
       "xloc": [
         "download.handlebars->container->page_content->column_l->1",
         "messenger.handlebars->remoteImage->3->12"
+      ]
+    },
+    {
+      "en": "Download Assistant for Windows",
+      "xloc": [
+        "agentinvite.handlebars->container->column_l->5->assistab->3->5->assisturl"
       ]
     },
     {
