@@ -6915,12 +6915,12 @@
             if ((rights != 0xFFFFFFFF) && ((rights & 0x700) != 0)) { allFeatures = ''; }
 
             var y = '';
-            if (currentNode.agent.caps & 1) { y += (deskFull + '<option value=3>' + "Desktop, View only" + '</option>'); } // Agent is desktop capable
-            if (currentNode.agent.caps & 2) { y += fullTerm; } // Agent is terminal capable
-            if (currentNode.agent.caps & 4) { y += fullFiles; } // Agent is files capable
-            if (currentNode.agent.caps & 5) { y += deskFiles; } // Agent is desktop + files capable
-            if (currentNode.agent.caps & 6) { y += termFiles; } // Agent is terminal + files capable
-            if (currentNode.agent.caps & 7) { y += allFeatures; } // Agent is desktop + terminal + files capable
+            if ((currentNode.agent.caps & 1) == 1) { y += (deskFull + '<option value=3>' + "Desktop, View only" + '</option>'); } // Agent is desktop capable
+            if ((currentNode.agent.caps & 2) == 2) { y += fullTerm; } // Agent is terminal capable
+            if ((currentNode.agent.caps & 4) == 4) { y += fullFiles; } // Agent is files capable
+            if ((currentNode.agent.caps & 5) == 5) { y += deskFiles; } // Agent is desktop + files capable
+            if ((currentNode.agent.caps & 6) == 6) { y += termFiles; } // Agent is terminal + files capable
+            if ((currentNode.agent.caps & 7) == 7) { y += allFeatures; } // Agent is desktop + terminal + files capable
             
             x += addHtmlValue("Type", '<select id=d2shareType style=float:right;width:250px onchange=showShareDeviceValidate()>' + y + '</select>');
             var options = { 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days" }
@@ -6956,15 +6956,15 @@
 
             if (q & 1) {
                 consent |= 0x0002; // Terminal notify
-                if (Q('d2userConsent').value == 1) { consent |= 0x0010; } // Terminal prompt for user consent
+                if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 1)) { consent |= 0x0010; } // Terminal prompt for user consent
             }
             if (q & 2) {
                 consent |= 0x0041; // Desktop connection toolbar + Desktop notify
-                if (Q('d2userConsent').value == 1) { consent |= 0x0008; } // Desktop prompt for user consent
+                if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 1)) { consent |= 0x0008; } // Desktop prompt for user consent
             }
             if (q & 4) {
                 consent |= 0x0004; // Files notify
-                if (Q('d2userConsent').value == 1) { consent |= 0x0020; } // Files prompt for user consent
+                if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 1)) { consent |= 0x0020; } // Files prompt for user consent
             }
 
             if (Q('d2timeRange').value == 0) {
