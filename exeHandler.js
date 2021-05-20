@@ -49,7 +49,7 @@ module.exports.streamExeWithJavaScript = function (options) {
     if ((options.platform == 'win32') && (!options.peinfo)) { options.peinfo = module.exports.parseWindowsExecutable(options.sourceFileName); }
 
     // If unsigned Windows or Linux, we merge at the end with the GUID and no padding.
-    if ((options.platform == 'win32' && options.peinfo.CertificateTableAddress == 0) || options.platform != 'win32') {
+    if (((options.platform == 'win32') && (options.peinfo.CertificateTableAddress == 0)) || (options.platform != 'win32')) {
         // This is not a signed binary, so we can just send over the EXE then the MSH
         options.destinationStream.sourceStream = require('fs').createReadStream(options.sourceFileName, { flags: 'r' });
         options.destinationStream.sourceStream.options = options;
@@ -64,7 +64,7 @@ module.exports.streamExeWithJavaScript = function (options) {
         // Pipe the entire source binary without ending the stream.
         options.destinationStream.sourceStream.pipe(options.destinationStream, { end: false });
     } else {
-        throw ('js content not specified');
+        throw ('streamExeWithJavaScript(): Cannot stream JavaScript with signed executable.');
     }
 };
 
