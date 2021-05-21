@@ -165,6 +165,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
 
 // Construct a SSH Relay object, called upon connection
 module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
+    console.log('CreateSshRelay');
     const Net = require('net');
     const WebSocket = require('ws');
 
@@ -293,6 +294,7 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
     // When data is received from the web socket
     // SSH default port is 22
     ws.on('message', function (msg) {
+        console.log('message', msg);
         try {
             if (typeof msg != 'string') return;
             if (msg[0] == '{') {
@@ -400,6 +402,28 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
         delete obj.ws;
     };
 
+    // Save SSH credentials into device
+    function saveSshCredentials() {
+        console.log('Save SSH credentials', obj.username, obj.password, obj.nodeid);
+        parent.parent.db.Get(obj.nodeid, function (err, nodes) {
+            if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
+            const node = nodes[0];
+            const changed = (node.ssh == null);
+
+            // Save the credentials
+            node.ssh = { u: obj.username, p: obj.password };
+            parent.parent.db.Set(node);
+
+            // Event node change if needed
+            if (changed) {
+                // Event the node change
+                var event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: user._id, username: user.name, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
+                if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
+            }
+        });
+    }
+
     // Start the looppback server
     function startRelayConnection(authCookie) {
         try {
@@ -423,6 +447,9 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                     const Client = require('ssh2').Client;
                     obj.sshClient = new Client();
                     obj.sshClient.on('ready', function () { // Authentication was successful.
+                        // If requested, save the credentials
+                        if (obj.keep === true) saveSshCredentials();
+
                         obj.sshClient.shell(function (err, stream) { // Start a remote shell
                             if (err) { obj.close(); return; }
                             obj.sshShell = stream;
@@ -433,7 +460,8 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                         obj.ws.send('c');
                     });
                     obj.sshClient.on('error', function (err) {
-                        if (err.level == 'client-authentication') { obj.ws.send(JSON.stringify({ action: 'autherror' })); }
+                        if (err.level == 'client-authentication') { try { obj.ws.send(JSON.stringify({ action: 'autherror' })); } catch (ex) { } }
+                        if (err.level == 'client-timeout') { try { obj.ws.send(JSON.stringify({ action: 'sessiontimeout' })); } catch (ex) { } }
                         obj.close();
                     });
 
@@ -442,8 +470,8 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
 
                     // Connect the SSH module to the serial tunnel
                     var connectionOptions = { sock: obj.ser }
-                    if (typeof obj.username == 'string') { connectionOptions.username = obj.username; delete obj.username; }
-                    if (typeof obj.password == 'string') { connectionOptions.password = obj.password; delete obj.password; }
+                    if (typeof obj.username == 'string') { connectionOptions.username = obj.username; }
+                    if (typeof obj.password == 'string') { connectionOptions.password = obj.password; }
                     obj.sshClient.connect(connectionOptions);
 
                     // We are all set, start receiving data
@@ -475,9 +503,23 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                         if ((typeof msg.username != 'string') || (typeof msg.password != 'string')) break;
                         if ((typeof msg.rows != 'number') || (typeof msg.cols != 'number') || (typeof msg.height != 'number') || (typeof msg.width != 'number')) break;
 
+                        obj.keep = msg.keep; // If true, keep store credentials on the server if the SSH tunnel connected succesfully.
                         obj.termSize = msg;
                         obj.username = msg.username;
                         obj.password = msg.password;
+
+                        // Create a mesh relay authentication cookie
+                        var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
+                        if (obj.mtype == 3) { cookieContent.lc = 1; } // This is a local device
+                        startRelayConnection(parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey));
+                        break;
+                    }
+                    case 'sshautoauth': {
+                        // Verify inputs
+                        if ((typeof msg.rows != 'number') || (typeof msg.cols != 'number') || (typeof msg.height != 'number') || (typeof msg.width != 'number')) break;
+                        obj.termSize = msg;
+
+                        if ((obj.username == null) || (obj.password == null)) return;
 
                         // Create a mesh relay authentication cookie
                         var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
@@ -531,8 +573,22 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
         // We are all set, start receiving data
         ws._socket.resume();
 
-        // Send a request for SSH authentication
-        try { ws.send(JSON.stringify({ action:'sshauth' })) } catch (ex) { }
+        // Check if we have SSH credentials for this device
+        parent.parent.db.Get(obj.nodeid, function (err, nodes) {
+            if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
+            const node = nodes[0];
+
+            if ((node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || (typeof node.ssh.p != 'string')) {
+                // Send a request for SSH authentication
+                try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
+            } else {
+                // Use our existing credentials
+                obj.username = node.ssh.u;
+                obj.password = node.ssh.p;
+                try { ws.send(JSON.stringify({ action: 'sshautoauth' })) } catch (ex) { }
+            }
+        });
+
     });
 
     return obj;
