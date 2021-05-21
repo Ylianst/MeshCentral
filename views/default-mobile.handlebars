@@ -3310,7 +3310,7 @@
                 }
 
                 // Attribute: Mesh Agent
-                if ((node.agent != null) && (node.agent.id != null) && (mesh.mtype == 3)) {
+                if ((node.agent != null) && (node.agent.id != null) && (node.mtype == 3)) {
                     if (node.agent.id == 4) { x += addDeviceAttribute("Device Type", "Windows"); }
                     if (node.agent.id == 6) { x += addDeviceAttribute("Device Type", "Linux"); }
                     if (node.agent.id == 29) { x += addDeviceAttribute("Device Type", "macOS"); }
@@ -3435,7 +3435,7 @@
                 QH('p10html', x);
 
                 // If we are looking at a local non-windows device, enable terminal capability.
-                if ((mesh.mtype == 3) && (node.agent != null) && (node.agent.id > 4) && (features2 & 0x00000200)) { node.agent.caps = 2; }
+                if ((node.mtype == 3) && (node.agent != null) && (node.agent.id > 4) && (features2 & 0x00000200)) { node.agent.caps = 2; }
 
                 // Show node last 7 days timeline
                 //drawDeviceTimeline();
