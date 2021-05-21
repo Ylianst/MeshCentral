@@ -7606,7 +7606,7 @@
             QV('DeskChatButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
             QV('DeskNotifyButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (currentNode.agent) && online);
             QV('DeskLockButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (currentNode.agent) && (deskState == 3));
-            QV('DeskToolsButton', (deskState == 3) && (currentNode.agent) && online);
+            QV('DeskToolsButton', (currentNode.agent) && online);
             QE('DeskToolsButton', inputAllowed);
             QV('DeskOpenWebButton', (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
             QV('DeskBackgroundButton', inputAllowed && (deskState == 3) && (desktop.contype == 1) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && online);
