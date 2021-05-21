@@ -708,6 +708,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Remove push messaging token if present
                             if (docs[i].pmt != null) { docs[i].pmt = 1; }
 
+                            // Remove SSH credentials if present
+                            if (docs[i].ssh != null) { docs[i].ssh = 1; }
+
                             // Remove Intel AMT credential if present
                             if (docs[i].intelamt != null) {
                                 if (docs[i].intelamt.pass != null) { docs[i].intelamt.pass = 1; }
@@ -4211,6 +4214,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             } else {
                                 node.sshport = command.sshport; change = 1; changes.push('sshport'); // Set the SSH port
                             }
+                        }
+
+                        if ((typeof command.ssh == 'number') && (command.ssh == 0)) {
+                            if (node.ssh != null) { delete node.ssh; change = 1; changes.push('ssh'); } // Delete the SSH cendentials
                         }
 
                         if (domain.geolocation && command.userloc && ((node.userloc == null) || (command.userloc[0] != node.userloc[0]) || (command.userloc[1] != node.userloc[1]))) {

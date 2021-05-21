@@ -404,7 +404,6 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
 
     // Save SSH credentials into device
     function saveSshCredentials() {
-        console.log('Save SSH credentials', obj.username, obj.password, obj.nodeid);
         parent.parent.db.Get(obj.nodeid, function (err, nodes) {
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];

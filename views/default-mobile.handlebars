@@ -1873,6 +1873,7 @@
                                 node.wifiloc = message.event.node.wifiloc;
                                 node.gpsloc = message.event.node.gpsloc;
                                 node.tags = message.event.node.tags;
+                                node.ssh = message.event.node.ssh;
                                 node.userloc = message.event.node.userloc;
                                 node.rdpport = message.event.node.rdpport;
                                 node.rfbport = message.event.node.rfbport;
@@ -3426,6 +3427,15 @@
                     x += addDeviceAttribute("Tags", '<span style=color:black>' + groupingTags + '</span>');
                 }
 
+                // SSH Credentials
+                if (node.ssh != null) {
+                    if ((meshrights & 4) != 0) {
+                        x += addDeviceAttribute("Credentials", '<span onclick=showClearSshDialog(3) style=cursor:pointer>' + "SSH" + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>');
+                    } else {
+                        x += addDeviceAttribute("Credentials", "SSH");
+                    }
+                }
+
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
                 if (((meshrights & (4 + 8 + 64)) != 0) && (node.mtype != 3)) { x += '<input type=button value="' + "Actions" + '" onclick=deviceActionFunction() />'; }
@@ -3826,6 +3836,9 @@
             setDialogMode(0);
             meshserver.send({ action: 'changedevice', nodeid: currentNode._id, icon: icon });
         }
+
+        function showClearSshDialog() { setDialogMode(2, "Edit Device", 3, showClearSshDialogEx, "Clear SSH credentials?"); }
+        function showClearSshDialogEx(button, mode) { meshserver.send({ action: 'changedevice', nodeid: currentNode._id, ssh: 0 }); }
 
         var showEditNodeValueDialog_modes = ["Device Name", "Hostname", "Description", "Tags"];
         var showEditNodeValueDialog_modes2 = ['name', 'host', 'desc', 'tags'];
@@ -4578,7 +4591,7 @@
                             var x = '';
                             x += addHtmlValue("Username", '<input id=dp2user style=width:190px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
                             x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:190px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
-                            x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>');
+                            x += '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>';
                             setDialogMode(2, "Authentication", 11, sshConnectEx, x, 'ssh');
                             setTimeout(sshAuthKeyUp, 50);
                         }
