@@ -7804,6 +7804,17 @@
         function p12clearConsoleMsg() { QH('p12TermConsoleMsg', ''); QV('p12TermConsoleMsg', false); if (p12TermConsoleMsgTimer) { clearTimeout(p12TermConsoleMsgTimer); p12TermConsoleMsgTimer = null; } }
         function p13clearConsoleMsg() { QH('p13FilesConsoleMsg', ''); QV('p13FilesConsoleMsg', false); if (p13FilesConsoleMsgTimer) { clearTimeout(p13FilesConsoleMsgTimer); p13FilesConsoleMsgTimer = null; } }
 
+        function p12setConsoleMsg(msg, timeout) {
+            if (msg) {
+                Q('p12TermConsoleMsg').innerHTML += msg;
+                QV('p12TermConsoleMsg', true);
+                if (p12TermConsoleMsgTimer != null) { clearTimeout(p12TermConsoleMsgTimer); }
+                if (timeout) { p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, timeout); }
+            } else {
+                p12clearConsoleMsg();
+            }
+        }
+
         var webRtcDesktop = null;
         function webRtcDesktopReset() {
             if (webRtcDesktop == null) return;
@@ -8680,9 +8691,18 @@
                             var x = '';
                             x += addHtmlValue("Username", '<input id=dp2user style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
                             x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
+                            x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>');
                             setDialogMode(2, "Authentication", 11, sshConnectEx, x, 'ssh');
                             setTimeout(sshAuthKeyUp, 50);
+                            break;
                         }
+                        case 'sshautoauth': {
+                            terminal.socket.send(JSON.stringify({ action: 'sshautoauth', cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight }));
+                            break;
+                        }
+                        case 'autherror': { p12setConsoleMsg("Authentication Error", 5000); break; }
+                        case 'sessionerror': { p12setConsoleMsg("Session expired", 5000); break; }
+                        case 'sessiontimeout': { p12setConsoleMsg("Session timeout", 5000); break; }
                     }
                 } else if (data[0] == '~') { xterm.writeUtf8(data.substring(1)); }
             }
@@ -8693,7 +8713,7 @@
             if (b == 0) {
                 if (terminal != null) { connectTerminal(); } // Disconnect
             } else {
-                terminal.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight }));
+                terminal.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, keep: Q('dp2keep').checked, cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight }));
             }
         }
 
@@ -8796,16 +8816,7 @@
                         terminal.onStateChanged = onTerminalStateChange;
                         terminal.contype = 1;
                         terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
-                        terminal.onConsoleMessageChange = function (server, msg) {
-                            if (terminal.consoleMessage) {
-                                Q('p12TermConsoleMsg').innerHTML += formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs);
-                                QV('p12TermConsoleMsg', true);
-                                if (p12TermConsoleMsgTimer != null) { clearTimeout(p12TermConsoleMsgTimer); }
-                                if (terminal.consoleMessageTimeout) { p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, terminal.consoleMessageTimeout * 1000); }
-                            } else {
-                                p12clearConsoleMsg();
-                            }
-                        };
+                        terminal.onConsoleMessageChange = function () { p12setConsoleMsg(terminal.consoleMessage ? formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs) : null, terminal.consoleMessageTimeout); }
                     } else {
                         QV('termarea3xdiv', false);
                         QV('Term', true);
@@ -8819,16 +8830,7 @@
                         terminal.m.lineFeed = ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) >= 0) ? '\r\n' : '\r'; // On windows, send \r\n, on Linux only \r
                         terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
                         terminal.onStateChanged = onTerminalStateChange;
-                        terminal.onConsoleMessageChange = function () {
-                            if (terminal.consoleMessage) {
-                                Q('p12TermConsoleMsg').innerHTML += formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs);
-                                QV('p12TermConsoleMsg', true);
-                                if (p12TermConsoleMsgTimer != null) { clearTimeout(p12TermConsoleMsgTimer); }
-                                if (terminal.consoleMessageTimeout) { p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, terminal.consoleMessageTimeout * 1000); }
-                            } else {
-                                p12clearConsoleMsg();
-                            }
-                        }
+                        terminal.onConsoleMessageChange = function () { p12setConsoleMsg(terminal.consoleMessage ? formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs) : null, terminal.consoleMessageTimeout); }
                         terminal.Start(terminalNode._id);
                         terminal.contype = 1;
                         terminal.m.terminalEmulation = 0;

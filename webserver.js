@@ -6898,6 +6898,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((r.pmt != null) || ((r.intelamt != null) && ((r.intelamt.pass != null) || (r.intelamt.mpspass != null)))) {
             r = Object.assign({}, r); // Shallow clone
             if (r.pmt != null) { r.pmt = 1; }
+            if (r.ssh != null) { r.ssh = 1; }
             if ((r.intelamt != null) && ((r.intelamt.pass != null) || (r.intelamt.mpspass != null))) {
                 r.intelamt = Object.assign({}, r.intelamt); // Shallow clone
                 if (r.intelamt.pass != null) { r.intelamt.pass = 1; }; // Remove the Intel AMT administrator password from the node
