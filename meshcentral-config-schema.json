@@ -317,7 +317,7 @@
                     "type": "string"
                   },
                   "protocol": {
-                    "description": "Protocol. Valid values are: custom,http,https,rdp,ssh,scp.",
+                    "description": "Protocol. Valid values are: custom,http,https,rdp,ssh,scp,mcrdesktop,mcrfiles.",
                     "type": "string"
                   },
                   "port": {
