@@ -1644,12 +1644,6 @@ module.exports.CreateDB = function (parent, func) {
         return cmd;
     }
 
-    // MongoDB mongodump requires that the URL have a / at the end of the path. If not present, this will add it.
-    function terminateUrlPathWithSlash(str) {
-        const u = require('url').parse(str);
-        return u.protocol + '//' + u.host + (u.pathname ? u.pathname : '') + '/' + (u.search ? u.search : '');
-    }
-
     // Check that the server is capable of performing a backup
     obj.checkBackupCapability = function (func) {
         if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { func(); }
@@ -1662,12 +1656,15 @@ module.exports.CreateDB = function (parent, func) {
             var mongoDumpPath = 'mongodump';
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = parent.config.settings.autobackup.mongodumppath; }
             var cmd = '"' + mongoDumpPath + '"';
-            if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + terminateUrlPathWithSlash(dburl) + '\"'; }
+            if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + dburl + '\"'; }
             cmd += (parent.platform == 'win32') ? ' --archive=\"nul\"' : ' --archive=\"/dev/null\"';
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                 try {
                     if ((error != null) && (error != '')) {
+
+                        console.log(error);
+
                         if (parent.platform == 'win32') {
                             func(1, "Unable to find mongodump.exe, MongoDB database auto-backup will not be performed.");
                         } else {
@@ -1840,7 +1837,7 @@ module.exports.CreateDB = function (parent, func) {
                 if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = parent.config.settings.autobackup.mongodumppath; }
                 const child_process = require('child_process');
                 var cmd = '\"' + mongoDumpPath + '\" --db=\"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
-                if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + terminateUrlPathWithSlash(dburl) + '\" --archive=\"' + newBackupPath + '.archive\"'; }
+                if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + dburl + '\" --archive=\"' + newBackupPath + '.archive\"'; }
                 var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                     try {
                         var mongoDumpSuccess = true;

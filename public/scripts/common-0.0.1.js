@@ -9,8 +9,8 @@ if (!String.prototype.startsWith) { String.prototype.startsWith = function (str)
 if (!String.prototype.endsWith) { String.prototype.endsWith = function (str) { return this.indexOf(str, this.length - str.length) !== -1; }; }
 
 // Quick UI functions, a bit of a replacement for jQuery
-function Q(x) { if (document.getElementById(x) == null) { console.log('Invalid element: ' + x); } return document.getElementById(x); }                            // "Q"
-//function Q(x) { return document.getElementById(x); }                            // "Q"
+//function Q(x) { if (document.getElementById(x) == null) { console.log('Invalid element: ' + x); } return document.getElementById(x); }                            // "Q"
+function Q(x) { return document.getElementById(x); }                            // "Q"
 function QS(x) { try { return Q(x).style; } catch (x) { } }                     // "Q" style
 function QE(x, y) { try { Q(x).disabled = !y; } catch (x) { } }                 // "Q" enable
 function QV(x, y) { try { QS(x).display = (y ? '' : 'none'); } catch (x) { } }  // "Q" visible
