@@ -201,6 +201,9 @@ module.exports.CreateDB = function (parent, func) {
                                 // Make sure all mesh types are number type, if not, fix it.
                                 if (typeof docs[i].mtype == 'string') { docs[i].mtype = parseInt(docs[i].mtype); meshChange = true; }
 
+                                // If the device group is deleted, remove any invite codes
+                                if (docs[i].deleted && docs[i].invite) { delete docs[i].invite; meshChange = true; }
+
                                 // Take a look at the links
                                 if (docs[i].links != null) {
                                     for (var j in docs[i].links) {
