@@ -3113,6 +3113,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     }
 
+                    // Delete any invitation codes
+                    delete mesh.invite;
+
                     // Delete all files on the server for this mesh
                     try {
                         var meshpath = parent.getServerRootFilePath(mesh);
@@ -3187,7 +3190,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 var dup = null;
                                 for (var i in command.invite.codes) {
                                     for (var j in parent.meshes) {
-                                        if ((j != command.meshid) && (parent.meshes[j].domain == domain.id) && (parent.meshes[j].invite != null) && (parent.meshes[j].invite.codes.indexOf(command.invite.codes[i]) >= 0)) { dup = command.invite.codes[i]; break; }
+                                        if ((j != command.meshid) && (parent.meshes[j].deleted == null) && (parent.meshes[j].domain == domain.id) && (parent.meshes[j].invite != null) && (parent.meshes[j].invite.codes.indexOf(command.invite.codes[i]) >= 0)) { dup = command.invite.codes[i]; break; }
                                     }
                                 }
                                 if (dup != null) {
