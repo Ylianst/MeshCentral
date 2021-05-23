@@ -33,10 +33,10 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
     // Perform an HTTP to HTTPS redirection
     function performRedirection(req, res) {
         var host = req.headers.host;
-        if (typeof host == 'string') { host = host.split(":")[0]; }
+        if (typeof host == 'string') { host = host.split(':')[0]; }
         if ((host == null) && (obj.certificates != null)) { host = obj.certificates.CommonName; if (obj.certificates.CommonName.indexOf('.') == -1) { host = req.headers.host; } }
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-        res.redirect("https://" + host + ":" + httpsPort + req.url);
+        res.redirect('https://' + host + ':' + httpsPort + req.url);
     }
 
     /*
@@ -59,7 +59,7 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
             if (i >= 0) { rootcert = rootcert.substring(i + 29); }
             i = rootcert.indexOf('-----END CERTIFICATE-----');
             if (i >= 0) { rootcert = rootcert.substring(i, 0); }
-            res.send(Buffer.from(rootcert, "base64"));
+            res.send(Buffer.from(rootcert, 'base64'));
         } else {
             res.sendStatus(404);
         }
