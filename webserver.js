@@ -5294,6 +5294,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Useful for debugging reverse proxy issues
             parent.debug('httpheaders', req.method, req.url, req.headers);
 
+            // If this request came over HTTP, redirect to HTTPS
+            if (req.headers['x-forwarded-proto'] == 'http') {
+                var host = req.headers.host;
+                if (typeof host == 'string') { host = host.split(':')[0]; }
+                if ((host == null) && (obj.certificates != null)) { host = obj.certificates.CommonName; if (obj.certificates.CommonName.indexOf('.') == -1) { host = req.headers.host; } }
+                var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+                res.redirect('https://' + host + ':' + httpsPort + req.url);
+                return;
+            }
+
             // Perform traffic accounting
             if (req.headers.upgrade == 'websocket') {
                 // We don't count traffic on WebSockets since it's counted by the handling modules.
