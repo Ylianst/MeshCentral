@@ -5592,6 +5592,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         require('./apprelays.js').CreateSshTerminalRelay(obj, obj.db, ws1, req1, domain, user, cookie, obj.args);
                     });
                 });
+                obj.app.ws(url + 'sshfilesrelay.ashx', function (ws, req) {
+                    PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) {
+                        require('./apprelays.js').CreateSshFilesRelay(obj, obj.db, ws1, req1, domain, user, cookie, obj.args);
+                    });
+                });
             }
 
             // Setup firebase push only server
