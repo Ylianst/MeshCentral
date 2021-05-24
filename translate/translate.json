@@ -534,6 +534,7 @@
       "en": ", Local Devices",
       "nl": ", Lokale apparaten",
       "fr": "appareils locaux",
+      "ru": ", Локальные устройства",
       "xloc": [
         "default.handlebars->33->256"
       ]
@@ -564,6 +565,7 @@
       "fr": ", Pas de consentement",
       "nl": ", Geen toestemming",
       "de": ", keine Zustimmung",
+      "ru": ", Нет согласия",
       "xloc": [
         "default.handlebars->33->809"
       ]
@@ -613,6 +615,7 @@
       "en": ", Toolbar",
       "fr": ", barre d'outils",
       "nl": ", Werkbalk",
+      "ru": ", Панель инструментов",
       "xloc": [
         "default.handlebars->33->811"
       ]
@@ -622,6 +625,7 @@
       "nl": ", Alleen kijken",
       "fr": ", Visualisation seulement",
       "de": ", nur ansehen",
+      "ru": ", Только просмотр",
       "xloc": [
         "default.handlebars->33->808"
       ]
@@ -1119,6 +1123,7 @@
       "en": "1 second",
       "nl": "1 seconde",
       "fr": "1 seconde",
+      "ru": "1 секунда",
       "xloc": [
         "default-mobile.handlebars->11->318",
         "default.handlebars->33->904"
@@ -1307,6 +1312,7 @@
       "en": "10 seconds",
       "nl": "10 seconden",
       "fr": "10 secondes",
+      "ru": "10 секунд",
       "xloc": [
         "default-mobile.handlebars->11->320",
         "default.handlebars->33->906"
@@ -2024,6 +2030,7 @@
       "en": "5 seconds",
       "nl": "5 seconden",
       "fr": "5 secondes",
+      "ru": "5 секунд",
       "xloc": [
         "default-mobile.handlebars->11->319",
         "default.handlebars->33->905"
@@ -2403,12 +2410,14 @@
     {
       "en": "</div></div>",
       "nl": "</div></div>",
-      "fr": "</div></div>"
+      "fr": "</div></div>",
+      "ru": "</div></div>"
     },
     {
       "en": "</div><div><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=margin-top:20px;margin-left:5px;cursor:pointer width=40 height=40 src=\\\"images/android-40.png\\\" srcset=\\\"images/android-80.png 2x\\\" /></a></div></div>",
       "nl": "</div><div><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=margin-top:20px;margin-left:5px;cursor:pointer width=40 height=40 src=\\\"images/android-40.png\\\" srcset=\\\"images/android-80.png 2x\\\" /></a></div></div>",
       "fr": "</div><div><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=margin-top:20px;margin-left:5px;cursor:pointer width=40 height=40 src=\\\"images/android-40.png\\\" srcset=\\\"images/android-80.png 2x\\\" /></a></div></div>",
+      "ru": "</div><div><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=margin-top:20px;margin-left:5px;cursor:pointer width=40 height=40 src=\\\"images/android-40.png\\\" srcset=\\\"images/android-80.png 2x\\\" /></a></div></div>",
       "xloc": [
         "default.handlebars->33->458"
       ]
@@ -2634,6 +2643,7 @@
       "en": "AMT-OS",
       "nl": "AMT-OS",
       "fr": "AMT-OS",
+      "ru": "AMT-OS",
       "xloc": [
         "default.handlebars->33->2442"
       ]
@@ -2747,6 +2757,7 @@
       "en": "AV",
       "nl": "Anti-virus",
       "fr": "Antivirus",
+      "ru": "Антивирус",
       "xloc": [
         "default-mobile.handlebars->11->450",
         "default-mobile.handlebars->11->452",
@@ -2779,6 +2790,7 @@
       "en": "Access Rejected.",
       "nl": "Toegang geweigerd.",
       "fr": "Accès refusé.",
+      "ru": "Доступ отклонен.",
       "xloc": [
         "login2.handlebars->7->31"
       ]
@@ -2923,6 +2935,7 @@
       "nl": "Account instellingen",
       "fr": "Paramètres du compte",
       "de": "Konto Einstellungen",
+      "ru": "Настройки аккаунта",
       "xloc": [
         "default-mobile.handlebars->11->632",
         "default.handlebars->33->2372"
@@ -3121,6 +3134,7 @@
       "nl": "Account aanmelding van {0}, {1}, {2}",
       "fr": "Connexion de {0}, {1}, {2}",
       "de": "Konto Login von {0}, {1}, {2}",
+      "ru": "Вход в аккаунт с {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->33->1979"
       ]
@@ -3446,6 +3460,7 @@
       "en": "Active Login Tokens",
       "nl": "Actieve login-tokens",
       "fr": "Jetons de connexion actifs",
+      "ru": "Активные токены входа",
       "xloc": [
         "default.handlebars->33->1559"
       ]
@@ -3472,6 +3487,7 @@
       "fr": "Ajouter",
       "nl": "Toevoegen",
       "de": "hinzufügen",
+      "ru": "Добавить",
       "xloc": [
         "default-mobile.handlebars->11->393",
         "default.handlebars->33->1051"
@@ -3969,6 +3985,7 @@
       "en": "Add a local device to device group \\\"{0}\\\".",
       "nl": "Voeg een lokaal apparaat toe aan apparaatgroep \\\"{0}\\\".",
       "fr": "Ajouter un appareil local au groupe \\\"{0}\\\".",
+      "ru": "Добавить локальное устройство в группу \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->33->347"
       ]
@@ -4075,6 +4092,7 @@
       "en": "Add device located on the local network.",
       "nl": "Voeg een apparaat toe dat zich op het lokale netwerk bevindt.",
       "fr": "Ajouter un appareil du réseau local.",
+      "ru": "Добавить устройство, находящееся в локальной сети.",
       "xloc": [
         "default.handlebars->33->345"
       ]
@@ -4083,6 +4101,7 @@
       "en": "Add local device",
       "nl": "Voeg een lokaal apparaat toe",
       "fr": "Ajouter un appareil local",
+      "ru": "Добавить локальное устройство",
       "xloc": [
         "default.handlebars->33->355"
       ]
@@ -4192,6 +4211,7 @@
       "en": "Added login token",
       "nl": "Inlogtoken toegevoegd",
       "fr": "Jeton de connexion ajouté",
+      "ru": "Добавлен токен входа",
       "xloc": [
         "default.handlebars->33->1987"
       ]
@@ -4586,6 +4606,7 @@
       "nl": "IP-adres agent",
       "de": "Agent IP Adresse",
       "fr": "Adresse IP de l'agent",
+      "ru": "IP-адрес агента",
       "xloc": [
         "default.handlebars->33->252"
       ]
@@ -5051,6 +5072,7 @@
       "nl": "Toegestaan",
       "fr": "Autorisé",
       "de": "Erlaubt",
+      "ru": "Разрешено",
       "xloc": [
         "default.handlebars->33->208"
       ]
@@ -5080,6 +5102,7 @@
       "en": "Alt",
       "fr": "Alt",
       "nl": "Alt",
+      "ru": "Alt",
       "xloc": [
         "default-mobile.handlebars->11->386",
         "default-mobile.handlebars->11->390",
@@ -5303,6 +5326,7 @@
       "en": "Android APK Download",
       "nl": "Android APK Download",
       "fr": "Télécharger l'APK Android",
+      "ru": "Скачать Android APK",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->5->1"
       ]
@@ -5331,6 +5355,7 @@
       "en": "Android Installation",
       "nl": "Android installatie",
       "fr": "Installation pour Android",
+      "ru": "Установка Android",
       "xloc": [
         "default-mobile.handlebars->11->577"
       ]
@@ -5361,6 +5386,7 @@
       "nl": "Anti-virus niet actief",
       "fr": "Antivirus désactivé",
       "de": "Anti-virus ist nicht aktiv",
+      "ru": "Антивирус не активен",
       "xloc": [
         "default.handlebars->33->1809",
         "default.handlebars->33->1823"
@@ -6073,6 +6099,7 @@
     {
       "en": "Assistant",
       "fr": "Assistant",
+      "ru": "Ассистент",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tandrotab",
         "agentinvite.handlebars->container->column_l->5->assistab->1"
@@ -6082,6 +6109,7 @@
       "en": "Assistant (Windows)",
       "nl": "Assistant (Windows)",
       "fr": "Assistant (Windows)",
+      "ru": "Ассистент (Windows)",
       "xloc": [
         "default-mobile.handlebars->11->40",
         "default.handlebars->33->47"
@@ -6091,6 +6119,7 @@
       "en": "Assistant for Windows (.exe)",
       "nl": "Assistant voor Windows (.exe)",
       "fr": "Assistant pour Windows (.exe)",
+      "ru": "Ассистент для Windows (.exe)",
       "xloc": [
         "default.handlebars->33->461"
       ]
@@ -6098,6 +6127,7 @@
     {
       "en": "Assistant is a Windows system tray tool that can be used when help is needed. This is not an agent that runs in the background of the managed computer, instead, it's a tool that connects to the server only when requested.",
       "fr": "Assistant est un outil Windows vous permettant de demander de l'assistance quand vous en avez besoin. Une fois installé, il est disponible dans la barre des tâches. Assistant se connecte au serveur uniquement le temps des demandes d'assistance. La connexion n'est donc pas permanente.",
+      "ru": "Ассистент - это инструмент на панели задач Windows, который можно использовать, когда требуется помощь..Это не агент, который работает в фоновом режиме управляемого компьютера, это инструмент, который подключается к серверу только по запросу..",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->assistab->3->3"
       ]
@@ -6146,6 +6176,7 @@
       "en": "Authentication",
       "nl": "Authenticatie",
       "fr": "Authentification",
+      "ru": "Аутентификация",
       "xloc": [
         "default-mobile.handlebars->11->405",
         "default.handlebars->33->1087",
@@ -6177,6 +6208,7 @@
       "en": "Authentication Device",
       "nl": "Verificatieapparaat",
       "fr": "Dispositif d'authentification",
+      "ru": "Устройство аутентификации",
       "xloc": [
         "default.handlebars->33->1271",
         "default.handlebars->33->1273",
@@ -6406,6 +6438,7 @@
       "nl": "Uitgeschakeld",
       "fr": "Désactivé",
       "de": "SCHLECHT",
+      "ru": "BAD",
       "xloc": [
         "default-mobile.handlebars->11->453",
         "default-mobile.handlebars->11->457",
@@ -6517,6 +6550,7 @@
       "fr": "Backspace",
       "nl": "BackSpace",
       "de": "Rücktaste",
+      "ru": "Backspace",
       "xloc": [
         "default-mobile.handlebars->11->369",
         "default.handlebars->33->1027"
@@ -6817,6 +6851,7 @@
       "en": "Bootloader",
       "nl": "Bootloader",
       "fr": "Chargeur de démarrage",
+      "ru": "Загрузчик",
       "xloc": [
         "default-mobile.handlebars->11->479",
         "default.handlebars->33->1169"
@@ -6928,6 +6963,7 @@
       "nl": "Browser standaard",
       "fr": "Navigateur par défaut",
       "de": "Browser Standard",
+      "ru": "Использовать предпочтения браузера",
       "xloc": [
         "default-mobile.handlebars->11->83",
         "default.handlebars->33->58"
@@ -7424,6 +7460,7 @@
       "en": "Certificate expires in {0} day(s)",
       "nl": "Certificaat verloopt over {0} dag(en)",
       "fr": "Le certificat expire dans {0} jour(s)",
+      "ru": "Срок действия сертификата истекает через {0} дн.",
       "xloc": [
         "default-mobile.handlebars->11->59",
         "default.handlebars->33->81",
@@ -7603,6 +7640,7 @@
       "fr": "Modifier ma photo",
       "de": "Ändere das Bild",
       "es": "Cambiar imágen",
+      "ru": "Сменить изображение",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountImageFrame->3->0"
       ]
@@ -7882,6 +7920,7 @@
       "nl": "Chatverzoek, klik hier om te accepteren.",
       "fr": "Demande de discussion, cliquez ici pour accepter.",
       "de": "Chat Anfrage, Drücke hier zum annehmen.",
+      "ru": "Запрос чата, Нажмите здесь, чтобы принять.",
       "xloc": [
         "default-mobile.handlebars->11->645",
         "default.handlebars->33->2385"
@@ -8266,6 +8305,7 @@
     },
     {
       "en": "Clear SSH credentials?",
+      "ru": "Очистить учетные данные SSH?",
       "xloc": [
         "default-mobile.handlebars->11->354",
         "default.handlebars->33->1000"
@@ -8296,6 +8336,7 @@
       "nl": "Wis agent core",
       "fr": "Nettoyer l'agent",
       "de": "Entferne Agent.",
+      "ru": "Очистить ядро агента",
       "xloc": [
         "default.handlebars->33->528",
         "default.handlebars->33->567"
@@ -8306,6 +8347,7 @@
       "nl": "Wis de agent core op de geselecteerde apparaten?",
       "fr": "Nettoyer l'agent sur les appareils sélectionnés ?",
       "de": "Agent auf ausgewählten Geräten löschen?",
+      "ru": "Очистить ядро агента на выбранных устройствах?",
       "xloc": [
         "default.handlebars->33->566"
       ]
@@ -8562,6 +8604,7 @@
       "fr": "Cliquer ici pour voir.",
       "nl": "Klik hier om te bekijken.",
       "de": "Klicke hier zum ansehen.",
+      "ru": "Щелкните здесь, чтобы просмотреть.",
       "xloc": [
         "messenger.handlebars->remoteVideo->remoteClickToView"
       ]
@@ -8951,6 +8994,7 @@
       "fr": "Temps de compilation",
       "de": "Kompilierungszeit",
       "es": "Fecha de compilación",
+      "ru": "Время компиляции",
       "xloc": [
         "default-mobile.handlebars->11->475",
         "default.handlebars->33->1165"
@@ -9519,6 +9563,7 @@
       "en": "Confirm removal of this login token?",
       "nl": "Bevestig de verwijdering van dit inlogtoken?",
       "fr": "Supprimer ce jeton de connexion ?",
+      "ru": "Подтвердить удаление этого токена входа?",
       "xloc": [
         "default.handlebars->33->1565"
       ]
@@ -9896,6 +9941,7 @@
       "en": "Connection Error",
       "nl": "verbindingsfout",
       "fr": "Erreur de connexion",
+      "ru": "Ошибка соединения",
       "xloc": [
         "login2.handlebars->7->32"
       ]
@@ -10121,6 +10167,7 @@
       "en": "Copy URL to clipboard",
       "nl": "Kopieer URL naar het klembord",
       "fr": "Copier l'URL dans le presse-papier ",
+      "ru": "Скопировать URL в буфер обмена",
       "xloc": [
         "default.handlebars->33->462"
       ]
@@ -10559,6 +10606,7 @@
       "nl": "Maak een login-token aan",
       "fr": "Créer un jeton de connexion",
       "es": "Crear Token de inicio de sesión",
+      "ru": "Создать токен входа",
       "xloc": [
         "default.handlebars->33->1512",
         "default.handlebars->33->248"
@@ -10648,6 +10696,7 @@
       "en": "Create a temporary username and password that can be used as alternative login to your account. This is useful for allowing tools or other services to access your account.",
       "nl": "Maak een tijdelijke gebruikersnaam en wachtwoord aan die kunnen worden gebruikt als alternatieve login voor uw account. Dit is handig om tools of andere services toegang te geven tot uw account.",
       "fr": "Créer des identifiants temporaires pour se connecter à votre compte. Utile pour permettre à des outils ou services de se connecter à votre compte.",
+      "ru": "Создайте временные имя пользователя и пароль, которые можно использовать в качестве альтернативы для входа в вашу учетную запись. Это полезно для того, чтобы инструменты или другие службы могли получить доступ к вашей учетной записи.",
       "xloc": [
         "default.handlebars->33->1493"
       ]
@@ -10696,6 +10745,7 @@
       "en": "Create login token",
       "nl": "Maak een login-token aan",
       "fr": "Créer un jeton de connexion",
+      "ru": "Создать токен входа",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->accountCreateLoginTokenSpan->0"
       ]
@@ -11034,6 +11084,7 @@
       "en": "Ctrl + ",
       "nl": "Ctrl + ",
       "fr": "Ctrl + ",
+      "ru": "Ctrl + ",
       "xloc": [
         "default-mobile.handlebars->11->409"
       ]
@@ -11142,6 +11193,7 @@
       "nl": "Huidig wachtwoord is niet correct.",
       "fr": "Le mot de passe actuel n'est pas correct.",
       "de": "Aktuelles Password nicht in korrekt.",
+      "ru": "Текущий пароль неверен.",
       "xloc": [
         "default-mobile.handlebars->11->655",
         "default.handlebars->33->2395"
@@ -11152,6 +11204,7 @@
       "nl": "Aanpassen",
       "fr": "Personnaliser",
       "de": "Anpassen",
+      "ru": "Настроить",
       "xloc": [
         "default-mobile.handlebars->11->368"
       ]
@@ -11161,6 +11214,7 @@
       "fr": "Personnaliser ...",
       "nl": "Aanpassen...",
       "de": "Anpassen",
+      "ru": "Настроить...",
       "xloc": [
         "default.handlebars->deskKeyShortcutContextMenu->1"
       ]
@@ -11254,6 +11308,7 @@
       "nl": "Donkere modus",
       "fr": "Thême sombre",
       "de": "Dunklen Modus",
+      "ru": "Темный режим",
       "xloc": [
         "default-mobile.handlebars->11->85",
         "default.handlebars->33->60"
@@ -11427,6 +11482,7 @@
       "fr": "Suppr",
       "nl": "Del",
       "de": "Löschen",
+      "ru": "Del",
       "xloc": [
         "default-mobile.handlebars->11->375",
         "default.handlebars->33->1033"
@@ -12094,6 +12150,7 @@
       "en": "Desktop + Files",
       "nl": "Desktop + Bestanden",
       "fr": "Bureau + Fichiers",
+      "ru": "Рабочий стол + Файлы",
       "xloc": [
         "default.handlebars->33->805",
         "default.handlebars->33->871"
@@ -12103,6 +12160,7 @@
       "en": "Desktop + Terminal",
       "nl": "Desktop + Terminal",
       "fr": "Bureau + Terminal",
+      "ru": "Рабочий стол + Терминал",
       "xloc": [
         "default.handlebars->33->802"
       ]
@@ -12111,6 +12169,7 @@
       "en": "Desktop + Terminal + Files",
       "nl": "Desktop + Terminal + Bestanden",
       "fr": "Bureau + Terminal + Fichiers",
+      "ru": "Рабочий стол + Терминал + Файлы",
       "xloc": [
         "default.handlebars->33->806",
         "default.handlebars->33->873"
@@ -12217,6 +12276,7 @@
       "en": "Desktop Session",
       "nl": "Desktop sessie",
       "fr": "Session de bureau",
+      "ru": "Сеанс рабочего стола",
       "xloc": [
         "default.handlebars->33->2338"
       ]
@@ -12291,6 +12351,7 @@
       "nl": "Desktop, Alleen kijken",
       "fr": "Bureau en visualisation seulement",
       "de": "Desktop, nur Ansehen",
+      "ru": "Рабочий стол, только просмотр",
       "xloc": [
         "default.handlebars->33->874"
       ]
@@ -12342,6 +12403,7 @@
       "nl": "Desktops met vaste breedte",
       "fr": "Bureau figé à",
       "de": "Feste Breite der Desktops",
+      "ru": "Экраны фиксированной ширины",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView->viewselect->5"
       ]
@@ -12653,6 +12715,7 @@
       "nl": "Apparaat koppelingslink",
       "fr": "Lien de jumelage de l'appareil",
       "de": "Gerät Verbindungs-Link",
+      "ru": "Ссылка для сопряжения устройства",
       "xloc": [
         "default-mobile.handlebars->11->576"
       ]
@@ -12718,6 +12781,7 @@
       "en": "Device Type",
       "nl": "Apparaatsoort",
       "fr": "Type d'appareil",
+      "ru": "Тип устройства",
       "xloc": [
         "default-mobile.handlebars->11->259",
         "default-mobile.handlebars->11->261",
@@ -13276,6 +13340,7 @@
       "nl": "Apparaat verzocht om Intel (R) AMT ACM TLS-activering, FQDN: {0}",
       "fr": "L'appareil a demandé l'activation d'Intel (R) AMT ACM TLS, nom de domaine complet: {0} ",
       "de": "Gerät angefordert Intel(R) AMT ACM TLS activation, FQDN: {0}",
+      "ru": "Устройство Intel(R) AMT ACM запросило активацию TLS, полное доменное имя: {0}",
       "xloc": [
         "default.handlebars->33->1983"
       ]
@@ -13613,6 +13678,7 @@
       "en": "Display {0}",
       "nl": "Scherm {0}",
       "fr": "Affichage {0}",
+      "ru": "Экран {0}",
       "xloc": [
         "default.handlebars->33->1077"
       ]
@@ -13821,6 +13887,7 @@
       "fr": "Bas",
       "nl": "Omlaag",
       "de": "runter",
+      "ru": "Down",
       "xloc": [
         "default-mobile.handlebars->11->383",
         "default.handlebars->33->1041"
@@ -13850,6 +13917,7 @@
     {
       "en": "Download Assistant for Windows",
       "fr": "Télécharger \"Assistant\" pour Windows",
+      "ru": "Скачать Ассистент для Windows",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->assistab->3->5->assisturl"
       ]
@@ -14144,6 +14212,7 @@
       "nl": "Download de agentsoftware via de Google Play Store of APK-bestand, installeer het en gebruik de QR-code aan de rechterkant of de koppelingslink hieronder om uw apparaat aan deze server te koppelen.",
       "fr": "Installez l'agent depuis le store Google Play ou le fichier APK et utilisez le QR code ci-contre ou le lien de jumelage pour associer votre appareil à ce serveur",
       "de": "Laden Sie die Agentensoftware über den Google Play Store oder die APK-Datei herunter, installieren Sie sie und verwenden Sie den QR-Code rechts oder den unten stehenden Link, um Ihr Gerät auf diesem Server einzurichten.",
+      "ru": "Загрузите программное обеспечение агента с помощью магазина Google Play или APK-файла, установите его и используйте QR-код справа или ссылку для сопряжения ниже, чтобы настроить свое устройство на этом сервере..",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->1"
       ]
@@ -14314,6 +14383,7 @@
       "nl": "Download: \\\"{0}\\\", Grootte: {1}",
       "fr": "Téléchargement : \\\"{0}\\\", Taille : {1}",
       "de": "Download: \\\"{0}\\\", Größe: {1}",
+      "ru": "Скачивание: \\\"{0}\\\", Размер: {1}",
       "xloc": [
         "default.handlebars->33->1978"
       ]
@@ -15532,6 +15602,7 @@
       "nl": "Email/SMS/Push verkeer",
       "de": "Email/SMS/Push-Verkehr",
       "fr": "Traffic Email/SMS/Push",
+      "ru": "Email/SMS/Push трафик",
       "xloc": [
         "default.handlebars->33->2477"
       ]
@@ -15708,6 +15779,7 @@
       "fr": "Fin",
       "nl": "End",
       "de": "Ende",
+      "ru": "Конец",
       "xloc": [
         "default-mobile.handlebars->11->377",
         "default.handlebars->33->1035"
@@ -15777,6 +15849,7 @@
       "en": "Ended messenger session \\\"{0}\\\" from {1} to {2}, {3} second(s)",
       "nl": "Beëindigde messengersessie  \\\"{0}\\\" van {1} naar {2}, {3} second(s)",
       "fr": "Fin de la session de messagerie \\\"{0}\\\" de {1} à {2}, {3} seconde(s)",
+      "ru": "Завершился сеанс обмена сообщениями \\\"{0}\\\" с {1} до {2}, {3} сек.",
       "xloc": [
         "default.handlebars->33->1984"
       ]
@@ -16273,6 +16346,7 @@
       "nl": "Fout, uitnodigingscode \\\"{0}\\\" al in gebruik.",
       "fr": "Erreur, code d'invitation \\\"{0}\\\" déjà utilisé.",
       "de": "Fehler, Einladungscode \\\"{0}\\\" wird bereits verwendet.",
+      "ru": "Ошибка, пригласительный код \\\"{0}\\\" уже используется.",
       "xloc": [
         "default-mobile.handlebars->11->656",
         "default.handlebars->33->2396"
@@ -16283,6 +16357,7 @@
       "nl": "Fout, wachtwoord niet gewijzigd.",
       "fr": "Erreur, mot de passe non modifié.",
       "de": "Fehler, Password wurde nicht geändert.",
+      "ru": "Ошибка, пароль не изменен.",
       "xloc": [
         "default-mobile.handlebars->11->653",
         "default.handlebars->33->2393"
@@ -16332,6 +16407,7 @@
       "en": "Escape",
       "fr": "Echap",
       "nl": "Escape",
+      "ru": "Escape",
       "xloc": [
         "default-mobile.handlebars->11->372",
         "default.handlebars->33->1030"
@@ -16508,6 +16584,7 @@
       "en": "Expire",
       "nl": "Verlopen",
       "fr": "Expire",
+      "ru": "Срок действия",
       "xloc": [
         "default.handlebars->33->243"
       ]
@@ -16524,7 +16601,7 @@
       "ko": "만료 시간",
       "nl": "Verval datum",
       "pt": "Tempo de expiração",
-      "ru": "Истекает время",
+      "ru": "Срок действия",
       "tr": "Vade zamanı",
       "zh-chs": "到期时间",
       "zh-cht": "到期時間",
@@ -16742,6 +16819,7 @@
       "nl": "E-mailadres kan niet worden gewijzigd, een ander account gebruikt al: {0}.",
       "fr": "Échec de la modification de l'adresse e-mail, un autre compte utilise déjà: {0}.",
       "de": "Fehler beim ändern der E-Mail-Adresse, wird bereits von einem anderen Konto verwendet: {0}.",
+      "ru": "Не удалось изменить адрес электронной почты, другой аккаунт уже использует: {0}.",
       "xloc": [
         "default-mobile.handlebars->11->647",
         "default.handlebars->33->2387"
@@ -16751,6 +16829,7 @@
       "en": "Failed to send request.",
       "nl": "Verzoek verzenden is mislukt.",
       "fr": "Echec de la requête",
+      "ru": "Не удалось отправить запрос.",
       "xloc": [
         "login2.handlebars->7->29"
       ]
@@ -17006,6 +17085,7 @@
       "en": "File Transfer",
       "nl": "Bestandsoverdracht",
       "fr": "Transfert de fichiers",
+      "ru": "Передача файлов",
       "xloc": [
         "default.handlebars->33->2339"
       ]
@@ -17237,6 +17317,7 @@
       "en": "Firewall",
       "nl": "Firewall",
       "fr": "Parefeu",
+      "ru": "Брандмауэр",
       "xloc": [
         "default-mobile.handlebars->11->458",
         "default-mobile.handlebars->11->460",
@@ -17249,6 +17330,7 @@
       "nl": "Firewall niet actief",
       "fr": "Pare-feu désactivé",
       "de": "Firewall nicht aktiv",
+      "ru": "Брандмауэр не активен",
       "xloc": [
         "default.handlebars->33->1811",
         "default.handlebars->33->1825"
@@ -17283,6 +17365,7 @@
       "en": "Flash",
       "nl": "Flits",
       "fr": "Flash",
+      "ru": "Вспышка",
       "xloc": [
         "default-mobile.handlebars->11->315",
         "default.handlebars->33->901"
@@ -17415,6 +17498,7 @@
       "nl": "Voor agent update",
       "de": "Für die Aktualisierung des Agenten",
       "fr": "Mise à jour de l'agent",
+      "ru": "Для обновления агента",
       "xloc": [
         "default.handlebars->33->565"
       ]
@@ -17424,6 +17508,7 @@
       "nl": "Forceer agent update",
       "fr": "Forcer la mise à jour de l'agent",
       "de": "Aktualisierung des Agenten erzwingen",
+      "ru": "Принудительно обновить агент",
       "xloc": [
         "default.handlebars->33->527"
       ]
@@ -17433,6 +17518,7 @@
       "nl": "Forceer agent update op de geselecteerde apparaten?",
       "fr": "Forcer la mise à jour de l'agent sur les appareils sélectionnés",
       "de": "Agentenaktualisierung auf ausgewählten Geräten erzwingen?",
+      "ru": "Принудительно обновить агенты на выбранных устройствах?",
       "xloc": [
         "default.handlebars->33->564"
       ]
@@ -18532,6 +18618,7 @@
       "en": "Google Play Store",
       "nl": "Google Play Store",
       "fr": "Google Play Store",
+      "ru": "Google Play Store",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->3->1"
       ]
@@ -18788,6 +18875,7 @@
       "en": "Guest Share",
       "nl": "Gast delen",
       "de": "Mit einem Gast Teilen",
+      "ru": "Поделиться с гостем",
       "xloc": [
         "default.handlebars->33->819",
         "default.handlebars->33->841"
@@ -18797,6 +18885,7 @@
       "en": "Guest Sharing",
       "nl": "Gastdeling",
       "de": "Mit einem Gast Teilen",
+      "ru": "Делиться с гостями",
       "xloc": [
         "default.handlebars->33->1724"
       ]
@@ -18825,6 +18914,7 @@
       "en": "HTTP",
       "nl": "HTTP",
       "fr": "HTTP",
+      "ru": "HTTP",
       "xloc": [
         "default.handlebars->33->2443"
       ]
@@ -19329,6 +19419,7 @@
       "en": "Home",
       "fr": "Home",
       "nl": "Home",
+      "ru": "Home",
       "xloc": [
         "default-mobile.handlebars->11->376",
         "default.handlebars->33->1034"
@@ -19863,6 +19954,7 @@
       "en": "Inbound Traffic",
       "nl": "Inkomend verkeer",
       "fr": "Traffic entrant",
+      "ru": "Входящий трафик",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1->p40type->5"
       ]
@@ -19871,6 +19963,7 @@
       "en": "Include device details",
       "nl": "Voeg apparaatdetails toe",
       "fr": "Inclure les détails de l'appareil",
+      "ru": "Включить детали об устройстве",
       "xloc": [
         "default.handlebars->33->575"
       ]
@@ -20005,6 +20098,7 @@
       "fr": "Insérer",
       "nl": "Insert",
       "de": "Einfügen",
+      "ru": "Insert",
       "xloc": [
         "default-mobile.handlebars->11->374",
         "default.handlebars->33->1032"
@@ -20109,6 +20203,7 @@
       "nl": "Installeren on dit apparaat",
       "fr": "Installer sur cet appareil",
       "de": "Auf diesem Gerät installieren",
+      "ru": "Установить на это устройство",
       "xloc": [
         "default-mobile.handlebars->11->562"
       ]
@@ -20118,6 +20213,7 @@
       "nl": "Installeer de MeshCentral Agent op uw Android apparaat. Na installatie klikt u op de koppelingslink om uw apparaat met deze server te verbinden.",
       "fr": "Installez l'agent MeshCentral sur votre appareil android puis cliquez sur ce lien pour le connecter au serveur.",
       "de": "Installieren Sie den MeshCentral Agent auf Ihrem Android-Gerät. Klicken Sie nach der Installation auf den Link, um Ihr Gerät mit diesem Server zu verbinden.",
+      "ru": "Установите MeshCentral Agent на свое устройство Android..После установки щелкните ссылку сопряжения, чтобы подключить ваше устройство к этому серверу..",
       "xloc": [
         "default-mobile.handlebars->11->574"
       ]
@@ -21132,6 +21228,7 @@
       "nl": "Ongeldige 2FA",
       "fr": "Authentification à double facteur invalide",
       "de": "Ungültige 2FA",
+      "ru": "Неверный 2FA",
       "xloc": [
         "default-mobile.handlebars->11->76",
         "default.handlebars->33->236"
@@ -21284,6 +21381,7 @@
       "nl": "Ongeldig SMS bericht",
       "fr": "Message SMS non valide",
       "de": "Ungültige SMS Nachricht",
+      "ru": "Неверное SMS-сообщение",
       "xloc": [
         "default-mobile.handlebars->11->659",
         "default.handlebars->33->2399"
@@ -21316,6 +21414,7 @@
       "nl": "Ongeldig domein",
       "fr": "Domaine non valide",
       "de": "Ungültige Domain",
+      "ru": "Неверный домен",
       "xloc": [
         "default-mobile.handlebars->11->639",
         "default.handlebars->33->2379"
@@ -21326,6 +21425,7 @@
       "nl": "Ongeldig email",
       "fr": "Email invalide",
       "de": "Ungültige Email",
+      "ru": "Неверный адрес электронной почты",
       "xloc": [
         "default-mobile.handlebars->11->638",
         "default.handlebars->33->2378"
@@ -21399,6 +21499,7 @@
       "nl": "Ongeldig wachtwoord",
       "fr": "Mot de passe incorrect",
       "de": "Ungültiges Passwort",
+      "ru": "Неверный пароль",
       "xloc": [
         "default-mobile.handlebars->11->637",
         "default-mobile.handlebars->11->78",
@@ -21411,6 +21512,7 @@
       "nl": "Ongeldige sitemachtigingen",
       "fr": "Autorisations de site non valides",
       "de": "Ungültige Berechtigung der Seite",
+      "ru": "Недействительные разрешения сайта",
       "xloc": [
         "default-mobile.handlebars->11->640",
         "default.handlebars->33->2380"
@@ -21443,6 +21545,7 @@
       "nl": "Ongeldige inlog poging {0}, {1}, {2}",
       "fr": "Tentative de connexion invalide de {0}, {1}, {2}",
       "de": "Ungültiger Anmeldeversuch von",
+      "ru": "Некорректная попытка входа пользователя из {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->33->1982"
       ]
@@ -21452,6 +21555,7 @@
       "nl": "Ongeldige gebruikersnaam",
       "fr": "Nom d'utilisateur invalide",
       "de": "Ungültiger Benutzername",
+      "ru": "Неверное имя пользователя",
       "xloc": [
         "default-mobile.handlebars->11->636",
         "default.handlebars->33->2376"
@@ -21968,6 +22072,7 @@
       "fr": "Personnalisation des raccourcis clavier",
       "nl": "Toetsenbord sneltoetsen aanpassen",
       "de": "Anpassung der Tastaturkürzel",
+      "ru": "Настройка сочетаний клавиш",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10dialog->1->1",
         "default.handlebars->33->1052"
@@ -22781,6 +22886,7 @@
       "en": "Launch web-based SSH session to this device",
       "nl": "Start een webgebaseerde SSH-sessie op dit apparaat",
       "fr": "Lancer la session SSH en mode web pour cet appareil",
+      "ru": "Запустить веб-сеанс SSH на это устройство",
       "xloc": [
         "default.handlebars->33->774"
       ]
@@ -22789,6 +22895,7 @@
       "en": "Launch web-based VNC session to this device",
       "nl": "Start een webgebaseerde VNC-sessie op dit apparaat",
       "fr": "Lancer la session VNC en mode web pour cet appareil",
+      "ru": "Запустить веб-сеанс VNC на этом устройстве",
       "xloc": [
         "default.handlebars->33->770"
       ]
@@ -22818,6 +22925,7 @@
       "fr": "Gauche",
       "nl": "Links",
       "de": "links",
+      "ru": "Left",
       "xloc": [
         "default-mobile.handlebars->11->380",
         "default.handlebars->33->1038"
@@ -22893,6 +23001,7 @@
       "nl": "Lichte modus",
       "fr": "Thème clair",
       "de": "Heller Modus",
+      "ru": "Легкий режим",
       "xloc": [
         "default-mobile.handlebars->11->84",
         "default.handlebars->33->59"
@@ -23050,6 +23159,7 @@
       "en": "Links",
       "nl": "Links",
       "fr": "Liens",
+      "ru": "Ссылки",
       "xloc": [
         "default.handlebars->33->270"
       ]
@@ -23081,6 +23191,7 @@
       "en": "Linux (SSH/SCP/VNC)",
       "nl": "Linux (SSH/SCP/VNC)",
       "fr": "Linux (SSH/SCP/VNC)",
+      "ru": "Linux (SSH/SCP/VNC)",
       "xloc": [
         "default.handlebars->33->353"
       ]
@@ -23606,6 +23717,7 @@
       "en": "Local devices, no agent",
       "nl": "Lokale apparaten, geen agent",
       "fr": "Appareils locaux, aucun agent",
+      "ru": "Локальные устройства, без агентов",
       "xloc": [
         "default.handlebars->33->1544",
         "default.handlebars->33->1594"
@@ -23776,6 +23888,7 @@
       "en": "Lock Desktop",
       "nl": "Vergrendel het bureaublad",
       "fr": "Verrouiller le bureau",
+      "ru": "Заблокировать рабочий стол",
       "xloc": [
         "default.handlebars->33->864"
       ]
@@ -23804,6 +23917,7 @@
       "en": "Lock remote user's mouse and keyboard?",
       "nl": "Muis en toetsenbord van externe gebruiker vergrendelen?",
       "fr": "Bloquer la souris et le clavier de l'utilisateur ?",
+      "ru": "Заблокировать мышь и клавиатуру удаленного пользователя?",
       "xloc": [
         "default.handlebars->33->861"
       ]
@@ -23813,6 +23927,7 @@
       "nl": "Vergrendel de externe computer",
       "fr": "Verrouiller l'appareil distant",
       "de": "Sperre den Remote Computer",
+      "ru": "Заблокировать удаленный компьютер",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -23821,6 +23936,7 @@
       "en": "Lock user desktop?",
       "nl": "Bureaublad van gebruiker vergrendelen?",
       "fr": "Verrouiller le bureau de l'utilisateur ?",
+      "ru": "Заблокировать рабочий стол пользователя?",
       "xloc": [
         "default.handlebars->33->865"
       ]
@@ -23980,6 +24096,7 @@
       "nl": "Ingelogde gebruikers",
       "de": "Eingeloggte Benutzer",
       "fr": "Utilisateurs connectés",
+      "ru": "Авторизованные пользователи",
       "xloc": [
         "default.handlebars->33->251"
       ]
@@ -24272,6 +24389,7 @@
       "en": "MIPSEL24KC (OpenWRT)",
       "fr": "MIPSEL24KC (OpenWRT)",
       "nl": "MIPSEL24KC (OpenWRT)",
+      "ru": "MIPSEL24KC (OpenWRT)",
       "xloc": [
         "default-mobile.handlebars->11->46",
         "default.handlebars->33->53"
@@ -24506,6 +24624,7 @@
       "en": "MacOS Installer",
       "nl": "MacOS installatieprogramma",
       "fr": "Installateur MacOS",
+      "ru": "Установщик MacOS",
       "xloc": [
         "default.handlebars->33->969"
       ]
@@ -24595,6 +24714,7 @@
       "nl": "Beheer accountafbeelding",
       "fr": "Gérer la photo du compte",
       "de": "Verwaltetes Konto Bild",
+      "ru": "Управление изображением учетной записи",
       "xloc": [
         "default-mobile.handlebars->11->82",
         "default.handlebars->33->1257"
@@ -25371,6 +25491,7 @@
       "nl": "MeshCentral Agent voor Android",
       "fr": "Agent MeshCentral pour Android",
       "de": "MeshCentral Agent für Android",
+      "ru": "Агент MeshCentral для Android",
       "xloc": [
         "default-mobile.handlebars->11->575"
       ]
@@ -25379,6 +25500,7 @@
       "en": "MeshCentral Assistant",
       "nl": "MeshCentral Assistant",
       "fr": "Assistant MeshCentral",
+      "ru": "MeshCentral Ассистент",
       "xloc": [
         "default.handlebars->33->430"
       ]
@@ -25387,6 +25509,7 @@
       "en": "MeshCentral Assistant for Windows",
       "nl": "MeshCentral Assistant voor Windows",
       "fr": "Assistant MeshCentral pour Windows",
+      "ru": "MeshCentral Ассистент для Windows",
       "xloc": [
         "default.handlebars->33->460"
       ]
@@ -25395,6 +25518,7 @@
       "en": "MeshCentral Assistant is a Windows system tray tool that users can use to ask for help. Use the link below to download a version that will connect to device group \\\"{0}\\\" when requested by the user.",
       "nl": "MeshCentral Assistant is een Windows systeemvak tool die gebruikers kunnen gebruiken om hulp te vragen. Gebruik de onderstaande link om een versie te downloaden die op verzoek van de gebruiker verbinding maakt met apparaatgroep \\\"{0}\\\".",
       "fr": "Assistant est un outil Windows permettant de faire de l'assistance à la demande. Utilisez le lien ci-dessous pour télécharger une version qui se connectera au groupe d'appareil \\\"{0}\\\" lors des demandes d'assistance.",
+      "ru": "MeshCentral Ассистент - это инструмент на панели задач Windows, который пользователи могут использовать, чтобы попросить о помощи..Воспользуйтесь ссылкой ниже, чтобы загрузить версию, которая будет подключаться к группе устройств \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->33->459"
       ]
@@ -25462,6 +25586,7 @@
     {
       "en": "MeshCentral Router Links",
       "nl": "MeshCentral Router Links",
+      "ru": "Ссылки MeshCentral Router ",
       "xloc": [
         "default.handlebars->33->250"
       ]
@@ -26019,6 +26144,7 @@
       "nl": "Mobiel apparaat",
       "fr": "Appareil mobile",
       "de": "Mobiles Gerät",
+      "ru": "Мобильное устройство",
       "xloc": [
         "default-mobile.handlebars->11->482",
         "default.handlebars->33->1172"
@@ -26029,6 +26155,7 @@
       "nl": "Mobiel apparaat",
       "fr": "Appareil mobile",
       "de": "Mobiles Gerät",
+      "ru": "Мобильное устройство",
       "xloc": [
         "default.handlebars->33->429"
       ]
@@ -26242,6 +26369,7 @@
       "nl": "Meerdere problemen",
       "fr": "Questions multiples",
       "de": "Mehrere Probleme",
+      "ru": "Множественные проблемы",
       "xloc": [
         "default.handlebars->33->1812",
         "default.handlebars->33->1826"
@@ -26896,6 +27024,7 @@
       "nl": "Nieuw account",
       "fr": "Nouveau compte",
       "de": "Neuer Account",
+      "ru": "Новый аккаунт",
       "xloc": [
         "default-mobile.handlebars->11->629",
         "default.handlebars->33->2369"
@@ -27101,6 +27230,7 @@
       "nl": "Nacht Modus",
       "fr": "Mode nuit",
       "de": "Nacht Modus",
+      "ru": "Ночной режим",
       "xloc": [
         "default-mobile.handlebars->11->86",
         "default.handlebars->33->61"
@@ -27344,6 +27474,7 @@
       "en": "No Intel&reg; AMT devices in this device group",
       "nl": "Geen Intel&reg; AMT apparaten in deze appaatgroep",
       "fr": "Aucun appareil Intel&reg; AMT dans ce groupe",
+      "ru": "В этой группе нет устройств Intel&reg; AMT",
       "xloc": [
         "default.handlebars->33->263"
       ]
@@ -27604,6 +27735,7 @@
       "nl": "Geen automatische update",
       "fr": "Pas de mise à jour automatique",
       "de": "Kein Automatisches Update",
+      "ru": "Без автоматического обновления",
       "xloc": [
         "default.handlebars->33->1810",
         "default.handlebars->33->1824"
@@ -27755,6 +27887,7 @@
       "en": "No devices in this device group",
       "nl": "Geen apparaten in deze apparaatgroep.",
       "fr": "Aucun appareil dans ce groupe",
+      "ru": "В этой группе нет устройств",
       "xloc": [
         "default.handlebars->33->265"
       ]
@@ -27908,6 +28041,7 @@
       "fr": "Aucun raccourci clavier défini",
       "nl": "Geen toetsenbord snelkoppelingen gedefinieerd",
       "de": "Kein Tastatur Kürzel definiert",
+      "ru": "Сочетания клавиш не определены",
       "xloc": [
         "default-mobile.handlebars->11->394",
         "default.handlebars->33->1053"
@@ -27917,6 +28051,7 @@
       "en": "No local devices in this device group",
       "nl": "Geen lokale apparaten in deze apparaatgroep",
       "fr": "Aucun appareil local dans ce groupe",
+      "ru": "В этой группе нет локальных устройств",
       "xloc": [
         "default.handlebars->33->267"
       ]
@@ -27986,6 +28121,7 @@
       "nl": "Geen telefoonnummer voor deze gebruiker",
       "fr": "Aucun numéro de téléphone pour cet utilisateur",
       "de": "Keine Telefonnummer für diese Benutzer",
+      "ru": "У этого пользователя нет номера телефона",
       "xloc": [
         "default-mobile.handlebars->11->660",
         "default.handlebars->33->2400"
@@ -28076,6 +28212,7 @@
       "nl": "Geen gebruikersbeheerrechten",
       "fr": "Aucun droit de gestion des utilisateurs",
       "de": "Keine Benutzer Verwaltungsrechte",
+      "ru": "Нет прав на управление пользователями",
       "xloc": [
         "default-mobile.handlebars->11->658",
         "default.handlebars->33->2398"
@@ -28411,6 +28548,7 @@
       "nl": "Niet toegestaan, alleen kijken",
       "fr": "Non autorisé, visualisation seulement",
       "de": "Nicht erlaubt, nur ansehen",
+      "ru": "Не разрешено, только просмотр",
       "xloc": [
         "default.handlebars->33->207"
       ]
@@ -28547,7 +28685,8 @@
     {
       "en": "Notification sent, {0}.",
       "nl": "Melding verzonden, {0}.",
-      "fr": "Notification envoyée, {0}."
+      "fr": "Notification envoyée, {0}.",
+      "ru": "Уведомление отправлено, {0}."
     },
     {
       "cs": "Je třeba, aby nastavení upozorňování byla zapnutá také v nastavení účtu.",
@@ -28696,6 +28835,7 @@
       "en": "Null",
       "fr": "Null",
       "nl": "Null",
+      "ru": "Null",
       "xloc": [
         "default.handlebars->33->2464"
       ]
@@ -28745,6 +28885,7 @@
       "en": "OS",
       "nl": "OS",
       "fr": "Système d'exploitation",
+      "ru": "ОС",
       "xloc": [
         "default.handlebars->33->269"
       ]
@@ -29335,6 +29476,7 @@
       "en": "Outbound Traffic",
       "nl": "Uitgaand verkeer",
       "fr": "Traffic sortant",
+      "ru": "Исходящий трафик",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1->p40type->7"
       ]
@@ -29414,6 +29556,7 @@
       "fr": "Bas de page",
       "nl": "Page Down",
       "de": "Seite runter",
+      "ru": "Page Down",
       "xloc": [
         "default-mobile.handlebars->11->379",
         "default.handlebars->33->1037"
@@ -29424,6 +29567,7 @@
       "fr": "Haut de page",
       "nl": "Page Up",
       "de": "Seite hoch",
+      "ru": "Page Up",
       "xloc": [
         "default-mobile.handlebars->11->378",
         "default.handlebars->33->1036"
@@ -29704,6 +29848,7 @@
       "nl": "Wachtwoord gewijzigd.",
       "fr": "Mot de passe changé.",
       "de": "Passwort geändert.",
+      "ru": "Пароль изменен.",
       "xloc": [
         "default-mobile.handlebars->11->654",
         "default.handlebars->33->2394"
@@ -30202,6 +30347,7 @@
       "nl": "Toestemming geweigerd",
       "fr": "Permission refusée",
       "de": "Zugriff verboten",
+      "ru": "В доступе отказано",
       "xloc": [
         "default-mobile.handlebars->11->635",
         "default.handlebars->33->2375"
@@ -30254,6 +30400,7 @@
       "nl": "Persoonlijke notities",
       "fr": "Notes personnelles",
       "de": "Persönliche Notizen",
+      "ru": "Личные заметки",
       "xloc": [
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu->1->1->0->3"
       ]
@@ -30263,6 +30410,7 @@
       "nl": "Persoonlijke notities",
       "fr": "Notes personnelles",
       "de": "Persönliche Notizen",
+      "ru": "Личные заметки",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->13->0"
       ]
@@ -31018,6 +31166,7 @@
       "nl": "Eerdere aanmeldingen",
       "fr": "Logins précédents",
       "de": "Bisherige Logins",
+      "ru": "Предыдущие входы",
       "xloc": [
         "default-mobile.handlebars->11->79",
         "default-mobile.handlebars->11->80",
@@ -31032,6 +31181,7 @@
       "nl": "Print Screen",
       "fr": "Impression écran",
       "de": "Bildschirm Drucken",
+      "ru": "Print Screen",
       "xloc": [
         "default-mobile.handlebars->11->373",
         "default.handlebars->33->1031"
@@ -32081,6 +32231,7 @@
     },
     {
       "en": "Remember credentials",
+      "ru": "Запомнить учетные данные",
       "xloc": [
         "default-mobile.handlebars->11->404",
         "default.handlebars->33->1086"
@@ -32278,6 +32429,7 @@
       "en": "Remote Desktop + Files Link",
       "nl": "Extern bureaublad + Bestanden koppeling",
       "fr": "Bureau et lien avec les fichiers distants",
+      "ru": "Ссылка на Удаленный рабочий стол + Файлы",
       "xloc": [
         "default.handlebars->33->221"
       ]
@@ -32286,6 +32438,7 @@
       "en": "Remote Desktop + Terminal + Files Link",
       "nl": "Extern bureaublad + Terminal + Bestanden koppeling",
       "fr": "Bureau, terminal et lien vers les fichiers distants",
+      "ru": "Ссылка на Удаленный рабочий стол + Терминал + Файлы",
       "xloc": [
         "default.handlebars->33->222"
       ]
@@ -32294,6 +32447,7 @@
       "en": "Remote Desktop + Terminal Link",
       "nl": "Extern bureaublad + Terminal koppeling",
       "fr": "Bureau distant et lien vers le terminal distant",
+      "ru": "Ссылка на Удаленный рабочий стол + Терминал",
       "xloc": [
         "default.handlebars->33->218"
       ]
@@ -32428,6 +32582,7 @@
       "en": "Remote Files Link",
       "nl": "Koppeling naar externe bestanden",
       "fr": "Lien vers les fichiers distants",
+      "ru": "Ссылка на Файлы",
       "xloc": [
         "default.handlebars->33->219"
       ]
@@ -32436,6 +32591,7 @@
       "en": "Remote Input Lock",
       "nl": "Externe invoer vergrendeling",
       "fr": "Saisie distante verrouillé",
+      "ru": "Блокировка удаленного ввода",
       "xloc": [
         "default.handlebars->33->860"
       ]
@@ -32485,6 +32641,7 @@
       "en": "Remote Terminal + Files Link",
       "nl": "Externe Terminal + Bestandend koppeling",
       "fr": "Terminal et lien vers les fichiers distants",
+      "ru": "Ссылка на Терминал + Файлы",
       "xloc": [
         "default.handlebars->33->220"
       ]
@@ -32595,6 +32752,7 @@
       "en": "Remote input is locked",
       "nl": "Externe invoer is vergrendeld",
       "fr": "La saisie distante est verrouillée",
+      "ru": "Удаленный вход заблокирован",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -32603,6 +32761,7 @@
       "en": "Remote input is unlocked",
       "nl": "Externe invoer is ontgrendeld",
       "fr": "La saisie distante est déverrouillée",
+      "ru": "Удаленный вход разблокирован",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -32747,6 +32906,7 @@
       "en": "Remove Login Token",
       "nl": "Inlogtoken verwijderen",
       "fr": "Supprimer le jeton d'authentification",
+      "ru": "Удалить токен входа",
       "xloc": [
         "default.handlebars->33->1568"
       ]
@@ -32934,6 +33094,7 @@
       "en": "Remove login token",
       "nl": "Inlogtoken verwijderen",
       "fr": "Supprimer le jeton d'authentification",
+      "ru": "Удалить токен входа",
       "xloc": [
         "default.handlebars->33->1563"
       ]
@@ -33188,6 +33349,7 @@
       "en": "Removed login token",
       "nl": "Inlogtoken verwijderd",
       "fr": "Jeton d'authentification supprimé",
+      "ru": "Удален токен входа",
       "xloc": [
         "default.handlebars->33->1988"
       ]
@@ -33418,6 +33580,7 @@
       "en": "Request Accepted.",
       "nl": "Verzoek geaccepteerd.",
       "fr": "Requête acceptée.",
+      "ru": "Запрос принят.",
       "xloc": [
         "login2.handlebars->7->30"
       ]
@@ -33426,6 +33589,7 @@
       "en": "Request sent, {0}.",
       "nl": "Verzoek verzonden, {0}.",
       "fr": "Requête envoyée, {0}.",
+      "ru": "Запрос отправлен, {0}.",
       "xloc": [
         "login2.handlebars->7->28"
       ]
@@ -33856,6 +34020,7 @@
       "en": "Right",
       "fr": "Droit",
       "nl": "Rechts",
+      "ru": "Right",
       "xloc": [
         "default-mobile.handlebars->11->382",
         "default.handlebars->33->1040"
@@ -34354,6 +34519,7 @@
       "nl": "SMS fout",
       "fr": "Erreur SMS",
       "de": "SMS Fehler",
+      "ru": "Ошибка SMS",
       "xloc": [
         "default-mobile.handlebars->11->662",
         "default.handlebars->33->2402"
@@ -34364,6 +34530,7 @@
       "nl": "SMS fout: {0}",
       "fr": "Erreur SMS: {0}",
       "de": "SMS Fehler: {0}",
+      "ru": "Ошибка SMS: {0}",
       "xloc": [
         "default-mobile.handlebars->11->663",
         "default.handlebars->33->2403"
@@ -34374,6 +34541,7 @@
       "nl": "SMS gateway niet ingeschakeld",
       "fr": "Passerelle SMS non activée",
       "de": "SMS-Gateway nicht aktiviert",
+      "ru": "SMS-шлюз не включен",
       "xloc": [
         "default-mobile.handlebars->11->657",
         "default.handlebars->33->2397"
@@ -34406,6 +34574,7 @@
       "nl": "SMS succesvol verzonden.",
       "fr": "SMS envoyé avec succès.",
       "de": "SMS Erfolgreich gesendet.",
+      "ru": "SMS успешно отправлено.",
       "xloc": [
         "default-mobile.handlebars->11->661",
         "default.handlebars->33->2401"
@@ -34438,6 +34607,7 @@
       "en": "SSH Connection",
       "nl": "SSH verbinding",
       "fr": "Connexion SSH",
+      "ru": "SSH соединение",
       "xloc": [
         "default-mobile.handlebars->11->400",
         "default.handlebars->33->607"
@@ -34447,6 +34617,7 @@
       "en": "SSH Port {0}",
       "nl": "SSH poort {0}",
       "fr": "Port SSH {0}",
+      "ru": "Порт SSH {0}",
       "xloc": [
         "default-mobile.handlebars->11->398",
         "default.handlebars->33->1080"
@@ -34456,6 +34627,7 @@
       "en": "SSH remote connection port:",
       "nl": "SSH externe verbindingspoort:",
       "fr": "Port de connexion distant SSH :",
+      "ru": "Порт удаленного подключения SSH:",
       "xloc": [
         "default-mobile.handlebars->11->399",
         "default.handlebars->33->606"
@@ -35022,6 +35194,7 @@
       "nl": "Beveiligingswaarschuwing",
       "fr": "Avertissement de sécurité",
       "de": "Sicherheits Warnung",
+      "ru": "Предупреждение безопасности",
       "xloc": [
         "default-mobile.handlebars->11->631",
         "default.handlebars->33->2371"
@@ -35671,6 +35844,7 @@
       "en": "Sending notification...",
       "nl": "Melding verzenden...",
       "fr": "Envoi de la notification ...",
+      "ru": "Отправка уведомления...",
       "xloc": [
         "login2.handlebars->7->6"
       ]
@@ -35770,6 +35944,7 @@
       "nl": "Server connectiviteit",
       "de": "Server Verbindung",
       "fr": "Moyen de connexion au serveur",
+      "ru": "Подключение к серверу",
       "xloc": [
         "default.handlebars->33->253"
       ]
@@ -35853,6 +36028,7 @@
       "en": "Server Pairing Link",
       "nl": "Server koppelingslink",
       "fr": "Lien de jumelage au serveur",
+      "ru": "Ссылка для подключения к серверу",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->7->1"
       ]
@@ -36002,6 +36178,7 @@
       "en": "Server Tracing Event",
       "nl": "Server Tracing Event",
       "fr": "Évènement du serveur",
+      "ru": "Событие трассировки сервера",
       "xloc": [
         "default.handlebars->33->2467"
       ]
@@ -36318,6 +36495,7 @@
     },
     {
       "en": "Session expired",
+      "ru": "Сессия истекла",
       "xloc": [
         "default-mobile.handlebars->11->407",
         "default.handlebars->33->1089"
@@ -36327,6 +36505,7 @@
       "en": "Session expired.",
       "nl": "Sessie verlopen.",
       "fr": "Session expirée.",
+      "ru": "Сессия истекла.",
       "xloc": [
         "ssh.handlebars->3->11"
       ]
@@ -36356,6 +36535,7 @@
     },
     {
       "en": "Session timeout",
+      "ru": "Тайм-аут сеанса",
       "xloc": [
         "default-mobile.handlebars->11->408",
         "default.handlebars->33->1090"
@@ -36408,6 +36588,7 @@
       "nl": "Schakel donkere modus in",
       "fr": "Définir le mode sombre",
       "de": "Setze den Dunkel Modus",
+      "ru": "Установить темный режим",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->11->0"
       ]
@@ -36629,7 +36810,7 @@
       "ko": "공유",
       "nl": "Delen",
       "pt": "Compartilhar",
-      "ru": "доля",
+      "ru": "Поделиться",
       "tr": "Paylaş",
       "zh-chs": "共享",
       "zh-cht": "共享",
@@ -36744,6 +36925,7 @@
       "en": "Shift",
       "fr": "Shift",
       "nl": "Shift",
+      "ru": "Shift",
       "xloc": [
         "default-mobile.handlebars->11->385",
         "default-mobile.handlebars->11->389",
@@ -38457,6 +38639,7 @@
       "fr": "Démarrer la discussion ?",
       "nl": "Chat sessie starten?",
       "de": "Starten eines Chats?",
+      "ru": "Начать сеанс чата?",
       "xloc": [
         "default-mobile.handlebars->11->340"
       ]
@@ -38493,7 +38676,7 @@
       "ko": "{1}에서 {2} (으)로 \\\"{0}\\\"데스크톱 세션을 시작했습니다.",
       "nl": "Bureaubladsessie \\\"{0}\\\" gestart van {1} tot {2}",
       "pt": "Sessão de desktop iniciada \\\"{0}\\\" de {1} a {2}",
-      "ru": "Начат сеанс рабочего стола \\\"{0}\\\" с {1} по {2}",
+      "ru": "Начат сеанс рабочего стола \\\"{0}\\\" с {1} до {2}",
       "tr": "{1} ile {2} arasında \\\"{0}\\\" masaüstü oturumu başlatıldı",
       "zh-chs": "从{1}到{2}开始了桌面会话“{0}”",
       "zh-cht": "從{1}到{2}開始了桌面會話“{0}”",
@@ -38513,7 +38696,7 @@
       "ko": "{1}에서 {2} (으)로 파일 관리 세션 \\\"{0}\\\"을 (를) 시작했습니다.",
       "nl": "Bestandsbeheersessie \\\"{0}\\\" gestart van {1} tot {2}",
       "pt": "Sessão de gerenciamento de arquivo iniciada \\\"{0}\\\" de {1} a {2}",
-      "ru": "Начат сеанс управления файлами \\\"{0}\\\" с {1} по {2}",
+      "ru": "Начат сеанс управления файлами \\\"{0}\\\" с {1} до {2}",
       "tr": "Dosya yönetimi oturumu \\\"{0}\\\" {1} ile {2} arasında başlatıldı",
       "zh-chs": "从{1}到{2}开始文件管理会话“{0}”",
       "zh-cht": "從{1}到{2}開始文件管理會話“{0}”",
@@ -38533,7 +38716,7 @@
       "ko": "{1}에서 {2} (으)로 릴레이 세션 \\\"{0}\\\"을 (를) 시작했습니다.",
       "nl": "Relaysessie \\\"{0}\\\" gestart van {1} tot {2}",
       "pt": "Sessão de retransmissão iniciada \\\"{0}\\\" de {1} para {2}",
-      "ru": "Начат сеанс ретрансляции \\\"{0}\\\" с {1} по {2}",
+      "ru": "Начат сеанс ретрансляции \\\"{0}\\\" с {1} до {2}",
       "tr": "\\\"{0}\\\" geçiş oturumu {1} ile {2} arasında başlatıldı",
       "zh-chs": "从{1}到{2}开始中继会话“{0}”",
       "zh-cht": "從{1}到{2}開始中繼會話“{0}”",
@@ -38633,7 +38816,7 @@
       "ko": "{1}에서 {2} (으)로 \\\"{0}\\\"터미널 세션을 시작했습니다.",
       "nl": "Terminal-sessie \\\"{0}\\\" gestart van {1} tot {2}",
       "pt": "Sessão de terminal iniciada \\\"{0}\\\" de {1} a {2}",
-      "ru": "Начат сеанс терминала \\\"{0}\\\" с {1} по {2}",
+      "ru": "Начат сеанс терминала \\\"{0}\\\" с {1} до {2}",
       "tr": "{1} ile {2} arasında \\\"{0}\\\" terminal oturumu başlatıldı",
       "zh-chs": "从{1}到{2}开始了终端会话“{0}”",
       "zh-cht": "從{1}到{2}開始了終端會話“{0}”",
@@ -39491,6 +39674,7 @@
       "en": "Take note of this username and password, the password cannot be shown again.",
       "nl": "Noteer deze gebruikersnaam en wachtwoord, het wachtwoord kan niet opnieuw worden weergegeven.",
       "fr": "Notez ces identifiants. Le mot de passe ne pourra pas être réaffiché ultérieurement.",
+      "ru": "Обратите внимание на это имя пользователя и пароль, пароль не может быть показан снова.",
       "xloc": [
         "default.handlebars->33->241"
       ]
@@ -39590,6 +39774,7 @@
       "en": "Terminal + Files",
       "nl": "Terminal + Bestanden",
       "fr": "Terminal + Fichiers",
+      "ru": "Терминал + Файлы",
       "xloc": [
         "default.handlebars->33->804",
         "default.handlebars->33->872"
@@ -39923,6 +40108,7 @@
       "nl": "Er zijn {0} mislukte inlogpogingen voor dit account sinds de laatste keer inloggen.",
       "fr": "Il y a eu {0} tentatives de connexion infructueuses sur ce compte depuis la dernière connexion.",
       "de": "Seit der letzten Anmeldung sind {0} Anmeldeversuche für dieses Konto fehlgeschlagen.",
+      "ru": "С момента последнего входа в этот аккаунт было {0} неудачных попыток входа..",
       "xloc": [
         "default-mobile.handlebars->11->646",
         "default.handlebars->33->2386"
@@ -40434,6 +40620,7 @@
       "nl": "Om een mobiel apparaat toe te voegen aan de groep \\\"{0}\\\", downloadt u de MeshAgent applicatie en scant u deze QR-code.",
       "fr": "Pour ajouter un appareil mobile au groupe \\\"{0}\\\", téléchargez l'applicatin MeshAgent et scannez ce QR Code.",
       "de": "Laden Sie die MeshAgent-Anwendung herunter und scannen Sie diesen QR-Code, um der Gruppe \\\"{0}\\\" ein mobiles Gerät hinzuzufügen.",
+      "ru": "Чтобы добавить мобильное устройство в группу \\\"{0}\\\", загрузите приложение MeshAgent и отсканируйте этот QR-код.",
       "xloc": [
         "default.handlebars->33->457"
       ]
@@ -40967,6 +41154,7 @@
       "en": "Token Name",
       "nl": "Token naam",
       "fr": "Nom du jeton",
+      "ru": "Имя токена",
       "xloc": [
         "default.handlebars->33->1510"
       ]
@@ -40975,6 +41163,7 @@
       "en": "Token: {0}",
       "nl": "Token: {0}",
       "fr": "Jeton : {0}",
+      "ru": "Токен: {0}",
       "xloc": [
         "default.handlebars->33->235"
       ]
@@ -41149,6 +41338,7 @@
       "nl": "Inloggegevens proberen",
       "fr": "Vérification des identifiants",
       "de": "Anmeldeinformationen versuchen",
+      "ru": "Проверка учетных данных",
       "xloc": [
         "default-mobile.handlebars->11->281",
         "default.handlebars->33->680"
@@ -41509,6 +41699,7 @@
       "nl": "Kan geen gebruiker toevoegen in deze modus",
       "fr": "Impossible d'ajouter un utilisateur dans ce mode",
       "de": "In diesem Modus kann kein Benutzer hinzugefügt werden",
+      "ru": "Невозможно добавить пользователя в этом режиме",
       "xloc": [
         "default-mobile.handlebars->11->642",
         "default.handlebars->33->2382"
@@ -41518,6 +41709,7 @@
       "en": "Unable to authenticate.",
       "nl": "Kan niet verifiëren.",
       "fr": "Authentification impossible.",
+      "ru": "Невозможно аутентифицировать.",
       "xloc": [
         "ssh.handlebars->3->9"
       ]
@@ -42004,6 +42196,7 @@
       "en": "Unlock remote user's mouse and keyboard?",
       "nl": "De muis en het toetsenbord van de externe gebruiker ontgrendelen?",
       "fr": "Déverrouiller la souris et le clavier de l'utilisateur ?",
+      "ru": "Разблокировать мышь и клавиатуру удаленного пользователя?",
       "xloc": [
         "default.handlebars->33->862"
       ]
@@ -42040,7 +42233,7 @@
       "ko": "상위 항목으로",
       "nl": "Omhoog",
       "pt": "Acima",
-      "ru": "Вверх",
+      "ru": "Up",
       "tr": "Gmp",
       "zh-chs": "向上",
       "zh-cht": "向上",
@@ -42226,6 +42419,7 @@
       "nl": "Upload standaard server core op de geselecteerde apparaten?",
       "fr": "Charger le noyau du serveur par défaut sur les appareils sélectionnés ?",
       "de": "Standard-Server auf ausgewählten Geräten hochladen?",
+      "ru": "Загрузить серверное ядро по умолчанию на выбранные устройства?",
       "xloc": [
         "default.handlebars->33->568"
       ]
@@ -42409,6 +42603,7 @@
       "nl": "Upload: \\\"{0}\\\", Grootte: {1}",
       "fr": "Chargement : \\\"{0}\\\", Taille : {1}",
       "de": "Hochladen: \\\"{0}\\\", Größe: {1}",
+      "ru": "Загрузка: \\\"{0}\\\", Размер: {1}",
       "xloc": [
         "default.handlebars->33->1977"
       ]
@@ -43026,6 +43221,7 @@
       "nl": "Gebruiker bestaat al",
       "fr": "L'utilisateur existe déjà",
       "de": "Benutzer existiert bereits.",
+      "ru": "Пользователь уже существует",
       "xloc": [
         "default-mobile.handlebars->11->641",
         "default.handlebars->33->2381"
@@ -43142,6 +43338,7 @@
       "nl": "Gebruikersaanmeldingspoging op vergrendeld account van {0}, {1}, {2}",
       "fr": "Tentative de connexion sur un compte bloqué de {0}, {1}, {2}",
       "de": "Benutzeranmeldeversuch für gesperrtes Konto von {0}, {1}, {2}",
+      "ru": "Попытка входа пользователя в заблокированный аккаунт из {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->33->1981"
       ]
@@ -43160,6 +43357,7 @@
       "nl": "Gebruiker {0} niet gevonden.",
       "fr": "Utilisateur {0} introuvable.",
       "de": "Benutzer {0} nicht gefunden",
+      "ru": "Пользователь {0} не найден.",
       "xloc": [
         "default-mobile.handlebars->11->649",
         "default.handlebars->33->2389"
@@ -43314,6 +43512,7 @@
       "nl": "Gebruikers {0} niet gevonden.",
       "fr": "Utilisateurs {0} introuvables.",
       "de": "Benutzer {0} nicht gefunden",
+      "ru": "Пользователи {0} не найдены.",
       "xloc": [
         "default-mobile.handlebars->11->650",
         "default.handlebars->33->2390"
@@ -43323,6 +43522,7 @@
       "en": "VNC Connection",
       "nl": "VNC verbinding",
       "fr": "Connexion VNC",
+      "ru": "VNC соединение",
       "xloc": [
         "default.handlebars->33->609"
       ]
@@ -43331,6 +43531,7 @@
       "en": "VNC remote connection port:",
       "nl": "VNC extrne verbindingspoort:",
       "fr": "Port de connexion distant VNC :",
+      "ru": "Порт удаленного подключения VNC:",
       "xloc": [
         "default.handlebars->33->608"
       ]
@@ -43678,6 +43879,7 @@
       "en": "Vibrate",
       "nl": "Trillen",
       "fr": "Vibrer",
+      "ru": "Вибрировать",
       "xloc": [
         "default-mobile.handlebars->11->316",
         "default.handlebars->33->902"
@@ -43830,6 +44032,7 @@
       "fr": "Historique des connexions",
       "de": "Vorherige Anmeldungen anzeigen",
       "es": "Ver inicios de sesión anteriores",
+      "ru": "Посмотреть предыдущие входы в систему ",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountSecurity->3->9->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->14->0"
@@ -43841,6 +44044,7 @@
       "fr": "Historique des connexions de cet utilisateur",
       "de": "Vorherige Anmeldungen anzeigen für diesen Benutzer",
       "es": "Ver inicios de sesión anteriores de éste usuario",
+      "ru": "Посмотреть предыдущие входы в систему для этого пользователя",
       "xloc": [
         "default.handlebars->33->2266"
       ]
@@ -44189,6 +44393,7 @@
       "en": "Web Server HTTP Headers",
       "nl": "Webserver HTTP Headers",
       "fr": "Entêtes du serveur web HTTP",
+      "ru": "Заголовки HTTP веб-сервера",
       "xloc": [
         "default.handlebars->33->2482"
       ]
@@ -44257,6 +44462,7 @@
       "en": "Web-SSH",
       "nl": "Web-SSH",
       "fr": "Web-SSH",
+      "ru": "Web-SSH",
       "xloc": [
         "default.handlebars->33->775"
       ]
@@ -44265,6 +44471,7 @@
       "en": "Web-VNC",
       "nl": "Web-VNC",
       "fr": "Web-VNC",
+      "ru": "Web-VNC",
       "xloc": [
         "default.handlebars->33->771"
       ]
@@ -44273,6 +44480,7 @@
       "en": "WebRDP",
       "nl": "WebRDP",
       "fr": "WebRDP",
+      "ru": "WebRDP",
       "xloc": [
         "default.handlebars->33->2448"
       ]
@@ -44281,6 +44489,7 @@
       "en": "WebSSH",
       "nl": "WebSSH",
       "fr": "WebSSH",
+      "ru": "WebSSH",
       "xloc": [
         "default.handlebars->33->2449"
       ]
@@ -44289,6 +44498,7 @@
       "en": "WebVNC",
       "nl": "WebVNC",
       "fr": "WebVNC",
+      "ru": "WebVNC",
       "xloc": [
         "default.handlebars->33->2450"
       ]
@@ -44767,6 +44977,7 @@
       "en": "Windows (RDP)",
       "nl": "Windows (RDP)",
       "fr": "Windows (RDP)",
+      "ru": "Windows (RDP)",
       "xloc": [
         "default.handlebars->33->352"
       ]
@@ -45024,6 +45235,7 @@
       "nl": "Windows Beveiliging",
       "fr": "Sécurité Windows",
       "de": "Windows Sicherheit",
+      "ru": "Безопасность Windows",
       "xloc": [
         "default-mobile.handlebars->11->462",
         "default.handlebars->33->704"
@@ -45857,6 +46069,7 @@
       "fr": "amt:",
       "nl": "amt:",
       "pt": "amt:",
+      "ru": "amt:",
       "xloc": [
         "default-mobile.handlebars->11->177",
         "default-mobile.handlebars->11->178",
@@ -46096,6 +46309,7 @@
       "en": "desc:",
       "nl": "aflopend:",
       "fr": "description :",
+      "ru": "desc:",
       "xloc": [
         "default.handlebars->33->602",
         "default.handlebars->33->603"
@@ -46105,6 +46319,7 @@
       "en": "devicelist",
       "nl": "apparaatlijst",
       "fr": "Liste des appareils",
+      "ru": "список устройств",
       "xloc": [
         "default.handlebars->33->240"
       ]
@@ -46672,6 +46887,7 @@
       "en": "macOS (SSH/SCP/VNC)",
       "nl": "macOS (SSH/SCP/VNC)",
       "fr": "macOS (SSH/SCP/VNC)",
+      "ru": "macOS (SSH/SCP/VNC)",
       "xloc": [
         "default.handlebars->33->354"
       ]
@@ -46910,6 +47126,7 @@
       "fr": "os:",
       "nl": "os:",
       "pt": "os:",
+      "ru": "os:",
       "xloc": [
         "default-mobile.handlebars->11->175",
         "default-mobile.handlebars->11->176",
@@ -47093,7 +47310,7 @@
       "ko": "u:",
       "nl": "u:",
       "pt": "u:",
-      "ru": "п:",
+      "ru": "u:",
       "tr": "u:",
       "zh-chs": "u：",
       "zh-cht": "u：",
@@ -47448,6 +47665,7 @@
       "nl": "{0} van {1} tot {2}.",
       "fr": "{0} de {1} à {2}.",
       "de": "{0} von {1} zu {2}.",
+      "ru": "{0} с {1} по {2}.",
       "xloc": [
         "default.handlebars->33->936"
       ]
@@ -47887,6 +48105,7 @@
       "en": "{0}, Mask: {1}, Gateway: {2}",
       "nl": "{0}, Mask: {1}, Gateway: {2}",
       "fr": "{0}, Masque : {1}, Passerelle : {2}",
+      "ru": "{0}, маска: {1}, шлюз: {2}",
       "xloc": [
         "default-mobile.handlebars->11->489",
         "default-mobile.handlebars->11->493"
