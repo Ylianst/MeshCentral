@@ -294,7 +294,6 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
     // When data is received from the web socket
     // SSH default port is 22
     ws.on('message', function (msg) {
-        console.log('message', msg);
         try {
             if (typeof msg != 'string') return;
             if (msg[0] == '{') {
@@ -585,6 +584,345 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                 obj.username = node.ssh.u;
                 obj.password = node.ssh.p;
                 try { ws.send(JSON.stringify({ action: 'sshautoauth' })) } catch (ex) { }
+            }
+        });
+
+    });
+
+    return obj;
+};
+
+
+
+// Construct a SSH Files Relay object, called upon connection
+module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user, cookie, args) {
+    const Net = require('net');
+    const WebSocket = require('ws');
+
+    // SerialTunnel object is used to embed SSH within another connection.
+    function SerialTunnel(options) {
+        var obj = new require('stream').Duplex(options);
+        obj.forwardwrite = null;
+        obj.updateBuffer = function (chunk) { this.push(chunk); };
+        obj._write = function (chunk, encoding, callback) { if (obj.forwardwrite != null) { obj.forwardwrite(chunk); } if (callback) callback(); }; // Pass data written to forward
+        obj._read = function (size) { }; // Push nothing, anything to read should be pushed from updateBuffer()
+        obj.destroy = function () { delete obj.forwardwrite; }
+        return obj;
+    }
+
+    const obj = {};
+    obj.ws = ws;
+    obj.path = require('path');
+    obj.relayActive = false;
+    obj.firstMessage = true;
+
+    parent.parent.debug('relay', 'SSH: Request for SSH files relay (' + req.clientIp + ')');
+
+    // Disconnect
+    obj.close = function (arg) {
+        if (obj.ws == null) return;
+
+        // Collect how many raw bytes where received and sent.
+        // We sum both the websocket and TCP client in this case.
+        //var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
+        //if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
+        //console.log('WinSSH - in', inTraffc, 'out', outTraffc);
+
+        if (obj.sshClient) {
+            obj.sshClient.destroy();
+            obj.sshClient.removeAllListeners('ready');
+            try { obj.sshClient.end(); } catch (ex) { console.log(ex); }
+            delete obj.sshClient;
+        }
+        if (obj.wsClient) {
+            obj.wsClient.removeAllListeners('open');
+            obj.wsClient.removeAllListeners('message');
+            obj.wsClient.removeAllListeners('close');
+            try { obj.wsClient.close(); } catch (ex) { console.log(ex); }
+            delete obj.wsClient;
+        }
+
+        if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (ex) { console.log(ex); } } // Soft close, close the websocket
+        if (arg == 2) { try { ws._socket._parent.end(); } catch (ex) { console.log(ex); } } // Hard close, close the TCP socket
+        obj.ws.removeAllListeners();
+
+        obj.relayActive = false;
+        delete obj.cookie;
+        delete obj.sftp;
+        delete obj.ws;
+    };
+
+    // Save SSH credentials into device
+    function saveSshCredentials() {
+        parent.parent.db.Get(obj.nodeid, function (err, nodes) {
+            if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
+            const node = nodes[0];
+            const changed = (node.ssh == null);
+
+            // Save the credentials
+            node.ssh = { u: obj.username, p: obj.password };
+            parent.parent.db.Set(node);
+
+            // Event node change if needed
+            if (changed) {
+                // Event the node change
+                var event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: user._id, username: user.name, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
+                if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
+            }
+        });
+    }
+
+    // Start the looppback server
+    function startRelayConnection(authCookie) {
+        try {
+            // Setup the correct URL with domain and use TLS only if needed.
+            var options = { rejectUnauthorized: false };
+            if (domain.dns != null) { options.servername = domain.dns; }
+            var protocol = 'wss';
+            if (args.tlsoffload) { protocol = 'ws'; }
+            var domainadd = '';
+            if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
+            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((obj.mtype == 3) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=11&auth=' + authCookie // Protocol 11 is Web-SSH
+            parent.parent.debug('relay', 'SSH: Connection websocket to ' + url);
+            obj.wsClient = new WebSocket(url, options);
+            obj.wsClient.on('open', function () { parent.parent.debug('relay', 'SSH: Relay websocket open'); });
+            obj.wsClient.on('message', function (data) { // Make sure to handle flow control.
+                if ((obj.relayActive == false) && (data == 'c')) {
+                    obj.relayActive = true;
+
+                    // Create a serial tunnel && SSH module
+                    obj.ser = new SerialTunnel();
+                    const Client = require('ssh2').Client;
+                    obj.sshClient = new Client();
+                    obj.sshClient.on('ready', function () { // Authentication was successful.
+                        // If requested, save the credentials
+                        if (obj.keep === true) saveSshCredentials();
+                        obj.sshClient.sftp(function(err, sftp) {
+                            if (err) { obj.close(); return; }
+                            obj.sftp = sftp;
+                            obj.ws.send('c');
+                        });
+                    });
+                    obj.sshClient.on('error', function (err) {
+                        if (err.level == 'client-authentication') { try { obj.ws.send(JSON.stringify({ action: 'autherror' })); } catch (ex) { } }
+                        if (err.level == 'client-timeout') { try { obj.ws.send(JSON.stringify({ action: 'sessiontimeout' })); } catch (ex) { } }
+                        obj.close();
+                    });
+
+                    // Setup the serial tunnel, SSH ---> Relay WS
+                    obj.ser.forwardwrite = function (data) { if ((data.length > 0) && (obj.wsClient != null)) { try { obj.wsClient.send(data); } catch (ex) { } } };
+
+                    // Connect the SSH module to the serial tunnel
+                    var connectionOptions = { sock: obj.ser }
+                    if (typeof obj.username == 'string') { connectionOptions.username = obj.username; }
+                    if (typeof obj.password == 'string') { connectionOptions.password = obj.password; }
+                    obj.sshClient.connect(connectionOptions);
+
+                    // We are all set, start receiving data
+                    ws._socket.resume();
+                } else {
+                    // Relay WS --> SSH
+                    if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
+                }
+            });
+            obj.wsClient.on('close', function () { parent.parent.debug('relay', 'SSH: Files relay websocket closed'); obj.close(); });
+            obj.wsClient.on('error', function (err) { parent.parent.debug('relay', 'SSH: Files relay websocket error: ' + err); obj.close(); });
+        } catch (ex) {
+            console.log(ex);
+        }
+    }
+
+    // When data is received from the web socket
+    // SSH default port is 22
+    ws.on('message', function (msg) {
+        if ((obj.firstMessage === true) && (msg != 5)) { obj.close(); return; } else { delete obj.firstMessage; }
+        try {
+            if (typeof msg != 'string') {
+                if (msg[0] == 123) {
+                    msg = msg.toString();
+                } else if ((obj.sftp != null) && (obj.uploadHandle != null)) {
+                    var off = (msg[0] == 0) ? 1 : 0;
+                    obj.sftp.write(obj.uploadHandle, msg, off, msg.length - off, obj.uploadPosition, function (err) {
+                        if (err != null) {
+                            obj.sftp.close(obj.uploadHandle, function () { });
+                            try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'uploaddone', reqid: obj.uploadReqid }))) } catch (ex) { }
+                            delete obj.uploadHandle;
+                            delete obj.uploadFullpath;
+                            delete obj.uploadSize;
+                            delete obj.uploadReqid;
+                            delete obj.uploadPosition;
+                        } else {
+                            try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'uploadack', reqid: obj.uploadReqid }))) } catch (ex) { }
+                        }
+                    });
+                    obj.uploadPosition += (msg.length - off);
+                    return;
+                }
+            }
+            if (msg[0] == '{') {
+                // Control data
+                msg = JSON.parse(msg);
+                if (typeof msg.action != 'string') return;
+                switch (msg.action) {
+                    case 'ls': {
+                        if (obj.sftp == null) return;
+                        var requestedPath = msg.path;
+                        if (requestedPath.startsWith('/') == false) { requestedPath = '/' + requestedPath; }
+                        obj.sftp.readdir(requestedPath, function(err, list) {
+                            if (err) { console.log(err); obj.close(); }
+                            var r = { path: requestedPath, reqid: msg.reqid, dir: [] };
+                            for (var i in list) {
+                                var file = list[i];
+                                if (file.longname[0] == 'd') { r.dir.push({ t: 2, n: file.filename, d: new Date(file.attrs.mtime * 1000).toISOString() }); }
+                                else { r.dir.push({ t: 3, n: file.filename, d: new Date(file.attrs.mtime * 1000).toISOString(), s: file.attrs.size }); }
+                            }
+                            try { obj.ws.send(Buffer.from(JSON.stringify(r))) } catch (ex) { }
+                        });
+                        break;
+                    }
+                    case 'mkdir': {
+                        if (obj.sftp == null) return;
+                        var requestedPath = msg.path;
+                        if (requestedPath.startsWith('/') == false) { requestedPath = '/' + requestedPath; }
+                        obj.sftp.mkdir(requestedPath, function (err) { console.log(err); });
+                        break;
+                    }
+                    case 'rm': {
+                        if (obj.sftp == null) return;
+                        var requestedPath = msg.path;
+                        if (requestedPath.startsWith('/') == false) { requestedPath = '/' + requestedPath; }
+                        for (var i in msg.delfiles) {
+                            const ul = obj.path.join(requestedPath, msg.delfiles[i]).split('\\').join('/');
+                            obj.sftp.unlink(ul, function (err) { });
+                            if (msg.rec === true) { obj.sftp.rmdir(ul + '/', function (err) { }); }
+                        }
+                        break;
+                    }
+                    case 'rename': {
+                        if (obj.sftp == null) return;
+                        var requestedPath = msg.path;
+                        if (requestedPath.startsWith('/') == false) { requestedPath = '/' + requestedPath; }
+                        const oldpath = obj.path.join(requestedPath, msg.oldname).split('\\').join('/');
+                        const newpath = obj.path.join(requestedPath, msg.newname).split('\\').join('/');
+                        obj.sftp.rename(oldpath, newpath, function (err) { });
+                        break;
+                    }
+                    case 'upload': {
+                        if (obj.sftp == null) return;
+                        var requestedPath = msg.path;
+                        if (requestedPath.startsWith('/') == false) { requestedPath = '/' + requestedPath; }
+                        obj.uploadFullpath = obj.path.join(requestedPath, msg.name).split('\\').join('/');
+                        obj.uploadSize = msg.size;
+                        obj.uploadReqid = msg.reqid;
+                        obj.uploadPosition = 0;
+                        obj.sftp.open(obj.uploadFullpath, 'w', 0o666, function (err, handle) {
+                            if (err != null) {
+                                try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'uploaderror', reqid: obj.uploadReqid }))) } catch (ex) { }
+                            } else {
+                                obj.uploadHandle = handle;
+                                try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: obj.uploadReqid }))) } catch (ex) { }
+                            }
+
+                        });
+                        break;
+                    }
+                    case 'uploaddone': {
+                        if (obj.sftp == null) return;
+                        if (obj.uploadHandle != null) {
+                            obj.sftp.close(obj.uploadHandle, function () { });
+                            try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'uploaddone', reqid: obj.uploadReqid }))) } catch (ex) { }
+                            delete obj.uploadHandle;
+                            delete obj.uploadFullpath;
+                            delete obj.uploadSize;
+                            delete obj.uploadReqid;
+                            delete obj.uploadPosition;
+                        }
+                        break;
+                    }
+                    case 'uploadcancel': {
+                        if (obj.sftp == null) return;
+                        if (obj.uploadHandle != null) {
+                            obj.sftp.close(obj.uploadHandle, function () { });
+                            obj.sftp.unlink(obj.uploadFullpath, function (err) { });
+                            try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'uploadcancel', reqid: obj.uploadReqid }))) } catch (ex) { }
+                            delete obj.uploadHandle;
+                            delete obj.uploadFullpath;
+                            delete obj.uploadSize;
+                            delete obj.uploadReqid;
+                            delete obj.uploadPosition;
+                        }
+                        break;
+                    }
+                    case 'sshauth': {
+                        if (obj.sshClient != null) return;
+
+                        // Verify inputs
+                        if ((typeof msg.username != 'string') || (typeof msg.password != 'string')) break;
+                        if ((typeof msg.rows != 'number') || (typeof msg.cols != 'number') || (typeof msg.height != 'number') || (typeof msg.width != 'number')) break;
+
+                        obj.keep = msg.keep; // If true, keep store credentials on the server if the SSH tunnel connected succesfully.
+                        obj.username = msg.username;
+                        obj.password = msg.password;
+
+                        // Create a mesh relay authentication cookie
+                        var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
+                        if (obj.mtype == 3) { cookieContent.lc = 1; } // This is a local device
+                        startRelayConnection(parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey));
+                        break;
+                    }
+                }
+            }
+        } catch (ex) { console.log(ex); obj.close(); }
+    });
+
+    // If error, do nothing
+    ws.on('error', function (err) { parent.parent.debug('relay', 'SSH: Browser websocket error: ' + err); obj.close(); });
+
+    // If the web socket is closed
+    ws.on('close', function (req) { parent.parent.debug('relay', 'SSH: Browser websocket closed'); obj.close(); });
+
+    // Decode the authentication cookie
+    var userCookie = parent.parent.decodeCookie(req.query.auth, parent.parent.loginCookieEncryptionKey);
+    if ((userCookie == null) || (userCookie.a != null)) { obj.close(); return; } // Invalid cookie
+
+    // Fetch the user
+    var user = parent.users[userCookie.userid]
+    if (user == null) { obj.close(); return; } // Invalid userid
+
+    // Check that we have a nodeid
+    if (req.query.nodeid == null) { obj.close(); return; } // Invalid nodeid
+    parent.GetNodeWithRights(domain, user, req.query.nodeid, function (node, rights, visible) {
+        // Check permissions
+        if ((rights & 8) == 0) { obj.close(); return; } // No MESHRIGHT_REMOTECONTROL rights
+        if ((rights != 0xFFFFFFFF) && (rights & 0x00000200)) { obj.close(); return; } // MESHRIGHT_NOTERMINAL is set
+        obj.mtype = node.mtype; // Store the device group type
+        obj.nodeid = node._id; // Store the NodeID
+
+        // Check the SSH port
+        obj.tcpport = 22;
+        if (typeof node.sshport == 'number') { obj.tcpport = node.sshport; }
+
+        // We are all set, start receiving data
+        ws._socket.resume();
+
+        // Check if we have SSH credentials for this device
+        parent.parent.db.Get(obj.nodeid, function (err, nodes) {
+            if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
+            const node = nodes[0];
+
+            if ((node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || (typeof node.ssh.p != 'string')) {
+                // Send a request for SSH authentication
+                try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
+            } else {
+                // Use our existing credentials
+                obj.username = node.ssh.u;
+                obj.password = node.ssh.p;
+
+                // Create a mesh relay authentication cookie
+                var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
+                if (obj.mtype == 3) { cookieContent.lc = 1; } // This is a local device
+                startRelayConnection(parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey));
             }
         });
 

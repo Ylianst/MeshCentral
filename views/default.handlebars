@@ -604,7 +604,7 @@
                             <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
-                            &nbsp;<span id="deskstatus" style="line-height:22px">Disconnected</span><span id="deskmetadata"></span>
+                            <span id="deskstatus" style="line-height:22px">Disconnected</span><span id="deskmetadata"></span>
                         </div>
                     </div>
                     <div id=deskarea2 style="">
@@ -701,7 +701,7 @@
                                     <span id="connectbutton2span"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                                     <span id="connectbutton2hspan">&nbsp;<input type="button" id="connectbutton2h" value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                                     <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
-                                    &nbsp;<span id="termstatus" style="line-height:22px">Disconnected</span><span id="termtitle"></span>
+                                    <span id="termstatus" style="line-height:22px">Disconnected</span><span id="termtitle"></span>
                                 </div>
                             </td>
                         </tr>
@@ -754,10 +754,11 @@
                 </div>
                 <table id="p13toolbar" cellpadding="0" cellspacing="0">
                     <tr>
-                        <td class="areaHead">
+                        <td class="areaHead" style="line-height:24px">
                             <div class="toright2">
                                 <input id="filesActionsBtn" type=button title="Perform power actions on the device" value=Actions onclick=deviceActionFunction() />
                                 <div id="filesRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
+                                <div id="filesCustomUpperRight" style="float:left;margin-right:6px"></div>
                                 <div id="filesCustomUiButtons" style="float:left"></div>
                             </div>
                             <div>
@@ -771,19 +772,19 @@
                         <td class="areaHead2" valign=bottom>
                             <div id="p13rightOfButtons" class="toright2"></div>
                             <div>
-                                <input type=button id=p13FolderUp disabled="disabled" onclick="p13folderup()" value="Up" />&nbsp;
-                                <input type=button id=p13SelectAllButton disabled="disabled" onclick="p13selectallfile()" value="Select All" />&nbsp;
-                                <input type=button id=p13RenameFileButton disabled="disabled" value="Rename" onclick="p13renamefile()" />&nbsp;
-                                <input type=button id=p13DeleteFileButton disabled="disabled" value="Delete" onclick="p13deletefile()" />&nbsp;
-                                <input type=button id=p13ViewFileButton disabled="disabled" value="Edit" onclick="p13viewfile()" />&nbsp;
-                                <input type=button id=p13NewFolderButton disabled="disabled" value="New Folder" onclick="p13createfolder()" />&nbsp;
-                                <input type=button id=p13UploadButton disabled="disabled" value="Upload" onclick="p13uploadFile()" />&nbsp;
-                                <input type=button id=p13CutButton disabled="disabled" value="Cut" onclick="p13copyFile(1)" />&nbsp;
-                                <input type=button id=p13CopyButton disabled="disabled" value="Copy" onclick="p13copyFile(0)" />&nbsp;
-                                <input type=button id=p13PasteButton disabled="disabled" value="Paste" onclick="p13pasteFile()" />&nbsp;
-                                <input type=button id=p13ZipButton disabled="disabled" value="Zip" onclick="p13zipFiles()" />&nbsp;
-                                <input type=button id=p13RefreshButton disabled="disabled" value="Refresh" onclick="p13folderup(9999)" />&nbsp;
-                                <input type=button id=p13FindButton disabled="disabled" value="Find" onclick="p13findfile()" />&nbsp;
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13FolderUp value="Up" onclick="p13folderup()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13SelectAllButton value="Select All" onclick="p13selectallfile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13RenameFileButton value="Rename" onclick="p13renamefile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13DeleteFileButton value="Delete" onclick="p13deletefile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13ViewFileButton value="Edit" onclick="p13viewfile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13NewFolderButton value="New Folder" onclick="p13createfolder()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13UploadButton value="Upload" onclick="p13uploadFile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13CutButton value="Cut" onclick="p13copyFile(1)" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13CopyButton value="Copy" onclick="p13copyFile(0)" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13PasteButton value="Paste" onclick="p13pasteFile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13ZipButton value="Zip" onclick="p13zipFiles()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13RefreshButton value="Refresh" onclick="p13folderup(9999)" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13FindButton value="Find" onclick="p13findfile()" />
                             </div>
                         </td>
                     </tr>
@@ -6569,7 +6570,7 @@
                 Q('MainComputerImage').className = ((((!node.conn) || (node.conn == 0)) && (node.mtype != 3))?'gray':'');
 
                 // If we are looking at a local non-windows device, enable terminal capability.
-                if ((node.mtype == 3) && (node.agent != null) && (node.agent.id > 4) && (features2 & 0x00000200)) { node.agent.caps = 2; }
+                if ((node.mtype == 3) && (node.agent != null) && (node.agent.id > 4) && (features2 & 0x00000200)) { node.agent.caps = 6; } // 1 = Terminal, 2 = Desktop, 4 = files
 
                 // Setup/Refresh the desktop tab
                 if (terminalAccess) { setupTerminal(); }
@@ -6596,7 +6597,7 @@
                 // Setup/Refresh Intel AMT tab
                 var amtFrameNode = Q('p14iframe').contentWindow.getCurrentMeshNode();
                 if ((amtFrameNode != null) && (amtFrameNode._id != currentNode._id)) { Q('p14iframe').contentWindow.disconnect(); }
-                var online = ((node.conn & 6) != 0)?true:false; // If CIRA (2) or AMT (4) connected, enable Commander
+                var online = ((node.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable Commander
                 Q('p14iframe').contentWindow.setConnectionState(online);
                 Q('p14iframe').contentWindow.setFrameHeight('650px');
                 Q('p14iframe').contentWindow.setAuthCallback(updateAmtCredentials);
@@ -8586,7 +8587,7 @@
             var termState = ((terminal != null) && (terminal.state != 0));
 
             // If we are looking at a local non-windows device, enable terminal capability.
-            if ((terminalNode.mtype == 3) && (terminalNode.agent != null) && (terminalNode.agent.id > 4) && (features2 & 0x00000200)) { terminalNode.agent.caps = 2; }
+            if ((terminalNode.mtype == 3) && (terminalNode.agent != null) && (terminalNode.agent.id > 4) && (features2 & 0x00000200)) { terminalNode.agent.caps = 6; } // 1 = Terminal, 2 = Desktop, 4 = files
 
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
@@ -8944,9 +8945,10 @@
             // Setup the files tab
             var samenode = (filesNode == currentNode);
             filesNode = currentNode;
-            var online = ((filesNode.conn & 1) != 0)?true:false; // If Agent (1) connected, enable Terminal
+            var online = ((filesNode.conn & 1) != 0) || (filesNode.mtype == 3); // If Agent (1) connected, enable Terminal
             QE('p13Connect', online);
             if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
+            p13setActions();
         }
 
         function onFilesStateChange(xfiles, state) {
@@ -8997,6 +8999,7 @@
             if (!files) {
                 // Setup a mesh agent files
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                if (filesNode.mtype == 3) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
@@ -9249,6 +9252,17 @@
                 QE('p13ZipButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
             }
+            if (filesNode.mtype != 3) {
+                QH('filesCustomUpperRight', '');
+            } else {
+                QH('filesCustomUpperRight', '<a onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (filesNode.sshport?filesNode.sshport:22)) + '</a>');
+            }
+            QV('filesActionsBtn', filesNode.mtype != 3);
+            QV('p13FindButton', filesNode.mtype != 3);
+            QV('p13CutButton', filesNode.mtype != 3);
+            QV('p13CopyButton', filesNode.mtype != 3);
+            QV('p13ZipButton', filesNode.mtype != 3);
+            QV('p13PasteButton', filesNode.mtype != 3);
         }
 
         function p13getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == '3'))) cc++; } return cc; }
