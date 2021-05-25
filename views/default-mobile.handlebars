@@ -1277,6 +1277,7 @@
             meshserver = MeshServerCreateControl(domainUrl, authCookie);
             meshserver.onStateChanged = onStateChanged;
             meshserver.onMessage = onMessage;
+            meshserver.trace = args.trace;
             meshserver.Start();
 
             // Setup stared devices
