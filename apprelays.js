@@ -357,7 +357,7 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
     obj.ws = ws;
     obj.relayActive = false;
 
-    parent.parent.debug('relay', 'SSH: Request for SSH relay (' + req.clientIp + ')');
+    parent.parent.debug('relay', 'SSH: Request for SSH terminal relay (' + req.clientIp + ')');
 
     // Disconnect
     obj.close = function (arg) {
