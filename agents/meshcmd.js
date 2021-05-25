@@ -70,7 +70,7 @@ function onVerifyServer(clientName, certs) {
     if (certs == null) { certs = clientName; } // Temporary thing until we fix duktape
 
     // If we have the serverid, used delayed server authentication
-    if (settings.serverid != null) { settings.meshServerTlsHash = certs[certs.length - 1].fingerprint.replace(/:/g, ''); return; }
+    if (settings.serverid != null) { settings.meshServerTlsHash = certs[0].fingerprint.replace(/:/g, ''); return; }
 
     // Otherwise, use server HTTPS certificate hash
     try { for (var i in certs) { if (certs[i].fingerprint.replace(/:/g, '') == settings.serverhttpshash) { return; } } } catch (e) { }
