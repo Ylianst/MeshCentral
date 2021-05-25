@@ -615,6 +615,19 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
         closeBothSides();
     });
 
+    // Set the session expire timer
+    function setExpireTimer() {
+        if (obj.expireTimer != null) { clearTimeout(obj.expireTimer); delete obj.expireTimer; }
+        if (cookie && (typeof cookie.expire == 'number')) {
+            const timeToExpire = (cookie.expire - currentTime);
+            if (timeToExpire >= 0x7FFFFFFF) {
+                obj.expireTimer = setTimeout(setExpireTimer, 0x7FFFFFFF);
+            } else {
+                obj.expireTimer = setTimeout(closeBothSides, timeToExpire);
+            }
+        }
+    }
+
     // Close both our side and the peer side.
     function closeBothSides() {
         if (obj.id != null) {
@@ -770,10 +783,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
     }
 
     // If this session has a expire time, setup the expire timer now.
-    if (cookie && (typeof cookie.expire == 'number')) {
-        const timeToExpire = (cookie.expire - currentTime);
-        if (timeToExpire < 0x7FFFFFFF) { obj.expireTimer = setTimeout(closeBothSides, timeToExpire); } // Only set the timeout if it fits in 32bit signed integer.
-    }
+    setExpireTimer();
 
     // Mark this relay session as authenticated if this is the user end.
     obj.authenticated = (user != null);
