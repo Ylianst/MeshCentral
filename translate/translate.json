@@ -6098,6 +6098,7 @@
     },
     {
       "en": "Assistant",
+      "nl": "Assistant",
       "fr": "Assistant",
       "ru": "Ассистент",
       "xloc": [
@@ -6126,6 +6127,7 @@
     },
     {
       "en": "Assistant is a Windows system tray tool that can be used when help is needed. This is not an agent that runs in the background of the managed computer, instead, it's a tool that connects to the server only when requested.",
+      "nl": "Assistant is een Windows-tool in het systeemvak die kan worden gebruikt als er hulp nodig is. Dit is geen agent die op de achtergrond van de beheerde computer draait, maar een tool die alleen verbinding maakt met de server wanneer daarom wordt gevraagd.",
       "fr": "Assistant est un outil Windows vous permettant de demander de l'assistance quand vous en avez besoin. Une fois installé, il est disponible dans la barre des tâches. Assistant se connecte au serveur uniquement le temps des demandes d'assistance. La connexion n'est donc pas permanente.",
       "ru": "Ассистент - это инструмент на панели задач Windows, который можно использовать, когда требуется помощь..Это не агент, который работает в фоновом режиме управляемого компьютера, это инструмент, который подключается к серверу только по запросу..",
       "xloc": [
@@ -6219,6 +6221,7 @@
     },
     {
       "en": "Authentication Error",
+      "nl": "Authenticatiefout",
       "xloc": [
         "default-mobile.handlebars->11->406",
         "default-mobile.handlebars->11->417",
@@ -8309,6 +8312,7 @@
     },
     {
       "en": "Clear SSH credentials?",
+      "nl": "SSH-inloggegevens wissen?",
       "ru": "Очистить учетные данные SSH?",
       "xloc": [
         "default-mobile.handlebars->11->354",
@@ -13923,6 +13927,7 @@
     },
     {
       "en": "Download Assistant for Windows",
+      "nl": "Download Assistant voor Windows",
       "fr": "Télécharger \"Assistant\" pour Windows",
       "ru": "Скачать Ассистент для Windows",
       "xloc": [
@@ -32240,6 +32245,7 @@
     },
     {
       "en": "Remember credentials",
+      "nl": "Onthoud inloggegevens",
       "ru": "Запомнить учетные данные",
       "xloc": [
         "default-mobile.handlebars->11->404",
@@ -36508,6 +36514,8 @@
     },
     {
       "en": "Session expired",
+      "nl": "Sessie verlopen",
+      "fr": "Session expirée",
       "ru": "Сессия истекла",
       "xloc": [
         "default-mobile.handlebars->11->407",
@@ -36550,6 +36558,7 @@
     },
     {
       "en": "Session timeout",
+      "nl": "Sessie timeout",
       "ru": "Тайм-аут сеанса",
       "xloc": [
         "default-mobile.handlebars->11->408",
