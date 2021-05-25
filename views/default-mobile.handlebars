@@ -944,9 +944,10 @@
                     <div id=p10files style="position:absolute;top:55px;bottom:0px;width:100%;display:none">
                         <table id="p13toolbar" style="width:100%;height:111px" cellpadding="0" cellspacing="0">
                             <tr>
-                                <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
+                                <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px;line-height:24px">
                                     <div style="float:right;text-align:right">
                                         <input id="filesActionsBtn" type=button onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:2px />
+                                        <div id="filesCustomUpperRight" style="float:left;margin-right:6px"></div>
                                     </div>
                                     <div style="margin-left:2px">
                                         <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) onkeypress="return false" onkeydown="return false" type="button" style="display:none">
@@ -3444,8 +3445,8 @@
 
                 QH('p10html', x);
 
-                // If we are looking at a local non-windows device, enable terminal capability.
-                if ((node.mtype == 3) && (node.agent != null) && (node.agent.id > 4) && (features2 & 0x00000200)) { node.agent.caps = 2; }
+                // If we are looking at a local non-windows device, enable terminal and files capability.
+                if ((node.mtype == 3) && (node.agent != null) && (node.agent.id > 4) && (features2 & 0x00000200)) { node.agent.caps = 6; }
 
                 // Show node last 7 days timeline
                 //drawDeviceTimeline();
@@ -3539,7 +3540,7 @@
                 (((currentNode.agent == null) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 2)))
             ) { menus.push({ n: "Terminal", f: 'setupDeviceMenu(5)' }); }
 
-            if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: "Files", f: 'setupDeviceMenu(2)' }); }
+            if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype != 1) && (currentNode.agent.caps & 4))) { menus.push({ n: "Files", f: 'setupDeviceMenu(2)' }); }
             if ((currentDevicePanel != 3) && (currentNode != null) && (currentNode.mtype != 3)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
             if ((currentDevicePanel != 4) && (currentNode != null) && (meshrights & 0x00000010) && (currentNode.mtype == 2)) { menus.push({ n: "Console", f: 'setupDeviceMenu(4)' }); }
             updateFooterMenu(menus);
@@ -4020,6 +4021,17 @@
                 if (timeout) { p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, timeout); }
             } else {
                 p12clearConsoleMsg();
+            }
+        }
+
+        function p13setConsoleMsg(msg, timeout) {
+            if (msg) {
+                Q('p13FilesConsoleMsg').innerHTML += msg;
+                QV('p13FilesConsoleMsg', true);
+                if (p13FilesConsoleMsgTimer != null) { clearTimeout(p13FilesConsoleMsgTimer); }
+                if (timeout) { p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, timeout); }
+            } else {
+                p13clearConsoleMsg();
             }
         }
 
@@ -4510,8 +4522,8 @@
             var termState = ((terminal != null) && (terminal.state != 0));
             QE('termFullScreen', (termState != 0));
 
-            // If we are looking at a local non-windows device, enable terminal capability.
-            if ((terminalNode.mtype == 3) && (terminalNode.agent != null) && (terminalNode.agent.id > 4) && (features2 & 0x00000200)) { terminalNode.agent.caps = 2; }
+            // If we are looking at a local non-windows device, enable terminal and files capability.
+            if ((terminalNode.mtype == 3) && (terminalNode.agent != null) && (terminalNode.agent.id > 4) && (features2 & 0x00000200)) { terminalNode.agent.caps = 6; }
 
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
@@ -4720,9 +4732,10 @@
             // Setup the files tab
             var samenode = (filesNode == currentNode);
             filesNode = currentNode;
-            var online = ((filesNode.conn & 1) != 0) ? true : false; // If Agent (1) connected, enable Terminal
+            var online = ((filesNode.conn & 1) != 0) || (filesNode.mtype == 3); // If Agent (1) connected, enable Terminal
             QE('p13Connect', online);
             if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
+            p13setActions();
         }
 
         function onFilesStateChange(xfiles, state) {
@@ -4769,6 +4782,7 @@
             if (!files) {
                 // Setup a mesh agent files
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                if (filesNode.mtype == 3) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
@@ -4802,6 +4816,23 @@
             try { data = JSON.parse(decode_utf8(data)); } catch (ex) { data = JSON.parse(data); }
             if (data.action == 'download') { p13gotDownloadCommand(data); return; }
 
+            // Process any SSH actions
+            switch (data.action) {
+                case 'sshauth': {
+                    var x = '';
+                    x += addHtmlValue("Username", '<input id=dp2user style=width:190px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
+                    x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:190px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
+                    x += '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>';
+                    setDialogMode(2, "Authentication", 11, p13sshConnectEx, x, 'ssh');
+                    setTimeout(sshAuthKeyUp, 50);
+                    return;
+                }
+                case 'autherror': { p13setConsoleMsg("Authentication Error", 5000); return; }
+                case 'connectionerror': { p13setConsoleMsg("Connection Error", 5000); return; }
+                case 'sessionerror': { p13setConsoleMsg("Session expired", 5000); return; }
+                case 'sessiontimeout': { p13setConsoleMsg("Session timeout", 5000); return; }
+            }
+
             // Process file upload commands
             if ((data.action != null) && (data.action.startsWith('upload'))) { p13gotUploadData(data); return; }
 
@@ -4823,6 +4854,14 @@
                         p13updateFiles();
                     }
                 }
+            }
+        }
+
+        function p13sshConnectEx(b) {
+            if (b == 0) {
+                if (files != null) { connectFiles(); } // Disconnect
+            } else {
+                files.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, keep: Q('dp2keep').checked }));
             }
         }
 
@@ -4933,10 +4972,16 @@
                 QE('p13SelectAllButton', tc > 0);
                 Q('p13SelectAllButton').value = (cc > 0 ? "None" : "All");
                 QE('p13RefreshButton', true);
-                QE('p13CutButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
-                QE('p13CopyButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
-                QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
+                QE('p13CutButton', advancedFeatures && (cc > 0) && (cc == sfc) && (currentNode.mtype != 3) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13CopyButton', advancedFeatures && (cc > 0) && (cc == sfc) && (currentNode.mtype != 3) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13PasteButton', advancedFeatures && (currentNode.mtype != 3) && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
             }
+            if (filesNode.mtype != 3) {
+                QH('filesCustomUpperRight', '');
+            } else {
+                QH('filesCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (filesNode.sshport ? filesNode.sshport : 22)) + '</a>');
+            }
+            QV('filesActionsBtn', filesNode.mtype != 3);
         }
 
         function p13getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == '3'))) cc++; } return cc; }
