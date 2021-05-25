@@ -295,12 +295,8 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         }
                     }
 
-                    // Check that both sides have websocket connections
-                    if ((obj.ws == null) || (relayinfo.peer1.ws == null)) {
-                        relayinfo.peer1.close();
-                        obj.close();
-                        return null;
-                    }
+                    // Check that both sides have websocket connections, this should never happen.
+                    if ((obj.ws == null) || (relayinfo.peer1.ws == null)) { relayinfo.peer1.close(); obj.close(); return null; }
 
                     // Connect to peer
                     obj.peer = relayinfo.peer1;
