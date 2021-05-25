@@ -551,16 +551,8 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
     // If the web socket is closed
     ws.on('close', function (req) { parent.parent.debug('relay', 'SSH: Browser websocket closed'); obj.close(); });
 
-    // Decode the authentication cookie
-    var userCookie = parent.parent.decodeCookie(req.query.auth, parent.parent.loginCookieEncryptionKey);
-    if ((userCookie == null) || (userCookie.a != null)) { obj.close(); return; } // Invalid cookie
-
-    // Fetch the user
-    var user = parent.users[userCookie.userid]
-    if (user == null) { obj.close(); return; } // Invalid userid
-
-    // Check that we have a nodeid
-    if (req.query.nodeid == null) { obj.close(); return; } // Invalid nodeid
+    // Check that we have a user and nodeid
+    if ((user == null) || (req.query.nodeid == null)) { obj.close(); return; } // Invalid nodeid
     parent.GetNodeWithRights(domain, user, req.query.nodeid, function (node, rights, visible) {
         // Check permissions
         if ((rights & 8) == 0) { obj.close(); return; } // No MESHRIGHT_REMOTECONTROL rights
@@ -988,16 +980,8 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
     // If the web socket is closed
     ws.on('close', function (req) { parent.parent.debug('relay', 'SSH: Browser websocket closed'); obj.close(); });
 
-    // Decode the authentication cookie
-    var userCookie = parent.parent.decodeCookie(req.query.auth, parent.parent.loginCookieEncryptionKey);
-    if ((userCookie == null) || (userCookie.a != null)) { obj.close(); return; } // Invalid cookie
-
-    // Fetch the user
-    var user = parent.users[userCookie.userid]
-    if (user == null) { obj.close(); return; } // Invalid userid
-
-    // Check that we have a nodeid
-    if (req.query.nodeid == null) { obj.close(); return; } // Invalid nodeid
+    // Check that we have a user and nodeid
+    if ((user == null) || (req.query.nodeid == null)) { obj.close(); return; } // Invalid nodeid
     parent.GetNodeWithRights(domain, user, req.query.nodeid, function (node, rights, visible) {
         // Check permissions
         if ((rights & 8) == 0) { obj.close(); return; } // No MESHRIGHT_REMOTECONTROL rights
