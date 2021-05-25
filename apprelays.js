@@ -823,7 +823,6 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                                 obj.uploadHandle = handle;
                                 try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: obj.uploadReqid }))) } catch (ex) { }
                             }
-
                         });
                         break;
                     }
@@ -854,6 +853,52 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         }
                         break;
                     }
+                    case 'download': {
+                        if (obj.sftp == null) return;
+                        switch (msg.sub) {
+                            case 'start': {
+                                var requestedPath = msg.path;
+                                if (requestedPath.startsWith('/') == false) { requestedPath = '/' + requestedPath; }
+                                obj.downloadFullpath = requestedPath;
+                                obj.downloadId = msg.id;
+                                obj.downloadPosition = 0;
+                                obj.downloadBuffer = Buffer.alloc(16384);
+                                obj.sftp.open(obj.downloadFullpath, 'r', function (err, handle) {
+                                    if (err != null) {
+                                        try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'download', sub: 'cancel', id: obj.downloadId }))) } catch (ex) { }
+                                    } else {
+                                        obj.downloadHandle = handle;
+                                        // MeshServerLogEx((cmd.ask == 'coredump') ? 104 : 49, [cmd.path], 'Download: \"' + cmd.path + '\"', this.httprequest);
+                                        try { obj.ws.send(JSON.stringify({ action: 'download', sub: 'start', id: obj.downloadId })) } catch (ex) { }
+                                    }
+                                });
+                                break;
+                            }
+                            case 'startack': {
+                                if ((obj.downloadHandle == null) || (obj.downloadId != msg.id)) break;
+                                obj.downloadPendingBlockCount = (typeof msg.ack == 'number') ? msg.ack : 8;
+                                uploadNextBlock();
+                                break;
+                            }
+                            case 'ack': {
+                                if ((obj.downloadHandle == null) || (obj.downloadId != msg.id)) break;
+                                if (obj.downloadPendingBlockCount == 0) { obj.downloadPendingBlockCount = 1; uploadNextBlock(); }
+                                break;
+                            }
+                            case 'stop': {
+                                if ((obj.downloadHandle == null) || (obj.downloadId != msg.id)) break;
+                                if (obj.downloadHandle != null) { obj.sftp.close(obj.downloadHandle, function () { }); }
+                                delete obj.downloadId;
+                                delete obj.downloadBuffer;
+                                delete obj.downloadHandle;
+                                delete obj.downloadFullpath;
+                                delete obj.downloadPosition;
+                                delete obj.downloadPendingBlockCount;
+                                break;
+                            }
+                        }
+                        break;
+                    }
                     case 'sshauth': {
                         if (obj.sshClient != null) return;
 
@@ -875,6 +920,35 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
             }
         } catch (ex) { console.log(ex); obj.close(); }
     });
+
+    function uploadNextBlock() {
+        if (obj.downloadBuffer == null) return;
+        obj.sftp.read(obj.downloadHandle, obj.downloadBuffer, 4, obj.downloadBuffer.length - 4, obj.downloadPosition, function (err, len, buf) {
+            obj.downloadPendingBlockCount--;
+            if (obj.downloadBuffer == null) return;
+            if (err != null) {
+                try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'download', sub: 'cancel', id: obj.downloadId }))) } catch (ex) { }
+            } else {
+                obj.downloadPosition += len;
+                if (len < (obj.downloadBuffer.length - 4)) {
+                    obj.downloadBuffer.writeInt32BE(0x01000001, 0)
+                    if (len > 0) { try { obj.ws.send(obj.downloadBuffer.slice(0, len + 4)); } catch (ex) { console.log(ex); } }
+                } else {
+                    obj.downloadBuffer.writeInt32BE(0x01000000, 0);
+                    try { obj.ws.send(obj.downloadBuffer.slice(0, len + 4)); } catch (ex) { console.log(ex); }
+                    if (obj.downloadPendingBlockCount > 0) { uploadNextBlock(); }
+                    return;
+                }
+            }
+            if (obj.downloadHandle != null) { obj.sftp.close(obj.downloadHandle, function () { }); }
+            delete obj.downloadId;
+            delete obj.downloadBuffer;
+            delete obj.downloadHandle;
+            delete obj.downloadFullpath;
+            delete obj.downloadPosition;
+            delete obj.downloadPendingBlockCount;
+        });
+    }
 
     // If error, do nothing
     ws.on('error', function (err) { parent.parent.debug('relay', 'SSH: Browser websocket error: ' + err); obj.close(); });

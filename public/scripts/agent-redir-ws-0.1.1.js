@@ -214,7 +214,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
                 } else { // Process large data block
                     var bb = new Blob([new Uint8Array(e.data)]), f = new FileReader();
                     f.onload = function (e) { obj.m.ProcessData(e.target.result); };
-                    f.readAsText(bb);
+                    f.readAsBinaryString(bb);
                 }
             }
         }
