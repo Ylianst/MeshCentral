@@ -699,8 +699,8 @@
                                     <div id="idx_termFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
                                     <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none" />
                                     <span id="connectbutton2span"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                                    <span id="connectbutton2hspan">&nbsp;<input type="button" id="connectbutton2h" value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                                    <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
+                                    <span id="connectbutton2hspan"><input type="button" id="connectbutton2h" value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                                    <span id="disconnectbutton2span"><input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
                                     <span id="termstatus" style="line-height:22px">Disconnected</span><span id="termtitle"></span>
                                 </div>
                             </td>
@@ -7830,6 +7830,17 @@
             }
         }
 
+        function p13setConsoleMsg(msg, timeout) {
+            if (msg) {
+                Q('p13FilesConsoleMsg').innerHTML += msg;
+                QV('p13FilesConsoleMsg', true);
+                if (p13FilesConsoleMsgTimer != null) { clearTimeout(p13FilesConsoleMsgTimer); }
+                if (timeout) { p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, timeout); }
+            } else {
+                p13clearConsoleMsg();
+            }
+        }
+
         var webRtcDesktop = null;
         function webRtcDesktopReset() {
             if (webRtcDesktop == null) return;
@@ -8715,6 +8726,7 @@
                             terminal.socket.send(JSON.stringify({ action: 'sshautoauth', cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight }));
                             break;
                         }
+                        case 'connectionerror': { p12setConsoleMsg("Connection Error", 5000); break; }
                         case 'autherror': { p12setConsoleMsg("Authentication Error", 5000); break; }
                         case 'sessionerror': { p12setConsoleMsg("Session expired", 5000); break; }
                         case 'sessiontimeout': { p12setConsoleMsg("Session timeout", 5000); break; }
@@ -9053,6 +9065,23 @@
             // Process file upload commands
             if ((data.action != null) && (data.action.startsWith('upload'))) { p13gotUploadData(data); return; }
 
+            // Process any SSH actions
+            switch (data.action) {
+                case 'sshauth': {
+                    var x = '';
+                    x += addHtmlValue("Username", '<input id=dp2user style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
+                    x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthKeyUp(event) />');
+                    x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>');
+                    setDialogMode(2, "Authentication", 11, p13sshConnectEx, x, 'ssh');
+                    setTimeout(sshAuthKeyUp, 50);
+                    return;
+                }
+                case 'autherror': { p13setConsoleMsg("Authentication Error", 5000); return; }
+                case 'connectionerror': { p13setConsoleMsg("Connection Error", 5000); return; }
+                case 'sessionerror': { p13setConsoleMsg("Session expired", 5000); return; }
+                case 'sessiontimeout': { p13setConsoleMsg("Session timeout", 5000); return; }
+            }
+
             // Display a dialog message
             if (data.action == 'dialogmessage') {
                 if ((data.msg == null) && (xxdialogTag == 'fileMsgDialog')) {
@@ -9088,6 +9117,14 @@
                         p13updateFiles();
                     }
                 }
+            }
+        }
+
+        function p13sshConnectEx(b) {
+            if (b == 0) {
+                if (files != null) { connectFiles(); } // Disconnect
+            } else {
+                files.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, keep: Q('dp2keep').checked }));
             }
         }
 
