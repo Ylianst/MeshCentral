@@ -1841,7 +1841,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // Check if we are in maintenance mode
-        if ((parent.config.settings.maintenancemode != null) && (req.query.admin !== '1')) {
+        if ((parent.config.settings.maintenancemode != null) && (req.query.loginscreen !== '1')) {
             render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
             return;
         }
@@ -2391,7 +2391,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((req.session != null) && (typeof req.session.expire == 'number') && ((req.session.expire - Date.now()) <= 0)) { for (var i in req.session) { delete req.session[i]; } }
 
         // Check if we are in maintenance mode
-        if ((parent.config.settings.maintenancemode != null) && (req.query.admin !== '1')) {
+        if ((parent.config.settings.maintenancemode != null) && (req.query.loginscreen !== '1')) {
             parent.debug('web', 'handleLoginRequest: Server under maintenance.');
             render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
             return;
@@ -2551,6 +2551,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // If a user exists and is logged in, serve the default app, otherwise server the login app.
         if (req.session && req.session.userid && obj.users[req.session.userid]) {
             const user = obj.users[req.session.userid];
+
+            // Check if we are in maintenance mode
+            if ((parent.config.settings.maintenancemode != null) && (user.siteadmin != 4294967295)) {
+                req.session.messageid = 115; // Server under maintenance
+                req.session.loginmode = 1;
+                res.redirect(domain.url);
+                return;
+            }
 
             // If the request has a "meshmessengerid", redirect to MeshMessenger
             // This situation happens when you get a push notification for a chat session, but are not logged in.
