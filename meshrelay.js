@@ -144,7 +144,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
         delete obj.id;
         delete obj.ws;
         delete obj.peer;
-        delete obj.expireTimer;
+        if (obj.expireTimer != null) { clearTimeout(obj.expireTimer); delete obj.expireTimer; }
 
         // Unsubscribe
         if (obj.pid != null) { parent.parent.RemoveAllEventDispatch(obj); }
@@ -293,6 +293,13 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                             delete obj.peer;
                             return null;
                         }
+                    }
+
+                    // Check that both sides have websocket connections
+                    if ((obj.ws == null) || (relayinfo.peer1.ws == null)) {
+                        relayinfo.peer1.close();
+                        obj.close();
+                        return null;
                     }
 
                     // Connect to peer
@@ -767,7 +774,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
     }
 
     // If this session has a expire time, setup the expire timer now.
-    if (cookie && (typeof cookie.expire == 'number')) { obj.expireTimer = setTimeout(closeBothSides, cookie.expire - currentTime); }
+    if (cookie && (typeof cookie.expire == 'number')) {
+        const timeToExpire = (cookie.expire - currentTime);
+        if (timeToExpire < 0x7FFFFFFF) { obj.expireTimer = setTimeout(closeBothSides, timeToExpire); } // Only set the timeout if it fits in 32bit signed integer.
+    }
 
     // Mark this relay session as authenticated if this is the user end.
     obj.authenticated = (user != null);
@@ -1097,7 +1107,7 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
         delete obj.nodeid;
         delete obj.meshid;
         delete obj.tcpport;
-        delete obj.expireTimer;
+        if (obj.expireTimer != null) { clearTimeout(obj.expireTimer); delete obj.expireTimer; }
         if (obj.client != null) { obj.client.destroy(); delete obj.client; } // Close the client socket
         if (obj.pingtimer != null) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
         if (obj.pongtimer != null) { clearInterval(obj.pongtimer); delete obj.pongtimer; }
