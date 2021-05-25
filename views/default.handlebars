@@ -8616,7 +8616,7 @@
             if (terminalNode.mtype != 3) {
                 QH('terminalCustomUpperRight', '');
             } else {
-                QH('terminalCustomUpperRight', '<a onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (terminalNode.sshport?terminalNode.sshport:22)) + '</a>');
+                QH('terminalCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (terminalNode.sshport?terminalNode.sshport:22)) + '</a>');
             }
 
             // Enable buttons
@@ -9295,7 +9295,7 @@
             if (filesNode.mtype != 3) {
                 QH('filesCustomUpperRight', '');
             } else {
-                QH('filesCustomUpperRight', '<a onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (filesNode.sshport?filesNode.sshport:22)) + '</a>');
+                QH('filesCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (filesNode.sshport?filesNode.sshport:22)) + '</a>');
             }
             QV('filesActionsBtn', filesNode.mtype != 3);
             QV('p13FindButton', filesNode.mtype != 3);

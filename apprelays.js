@@ -710,7 +710,6 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         });
                     });
                     obj.sshClient.on('error', function (err) {
-                        console.log('error', err);
                         if (err.level == 'client-authentication') { try { obj.ws.send(JSON.stringify({ action: 'autherror' })); } catch (ex) { } }
                         if (err.level == 'client-timeout') { try { obj.ws.send(JSON.stringify({ action: 'sessiontimeout' })); } catch (ex) { } }
                         obj.close();
