@@ -455,6 +455,8 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                             obj.sshShell.on('close', function () { obj.close(); });
                             obj.sshShell.on('data', function (data) { obj.ws.send('~' + data.toString()); });
                         });
+
+                        obj.connected = true;
                         obj.ws.send('c');
                     });
                     obj.sshClient.on('error', function (err) {
@@ -479,7 +481,10 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                     if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                 }
             });
-            obj.wsClient.on('close', function () { parent.parent.debug('relay', 'SSH: Relay websocket closed'); obj.close(); });
+            obj.wsClient.on('close', function () {
+                if (obj.connected !== true) { try { obj.ws.send(JSON.stringify({ action: 'connectionerror' })); } catch (ex) { } }
+                parent.parent.debug('relay', 'SSH: Relay websocket closed'); obj.close();
+            });
             obj.wsClient.on('error', function (err) { parent.parent.debug('relay', 'SSH: Relay websocket error: ' + err); obj.close(); });
         } catch (ex) {
             console.log(ex);
@@ -700,11 +705,13 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         if (obj.keep === true) saveSshCredentials();
                         obj.sshClient.sftp(function(err, sftp) {
                             if (err) { obj.close(); return; }
+                            obj.connected = true;
                             obj.sftp = sftp;
                             obj.ws.send('c');
                         });
                     });
                     obj.sshClient.on('error', function (err) {
+                        console.log('error', err);
                         if (err.level == 'client-authentication') { try { obj.ws.send(JSON.stringify({ action: 'autherror' })); } catch (ex) { } }
                         if (err.level == 'client-timeout') { try { obj.ws.send(JSON.stringify({ action: 'sessiontimeout' })); } catch (ex) { } }
                         obj.close();
@@ -726,7 +733,10 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                     if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                 }
             });
-            obj.wsClient.on('close', function () { parent.parent.debug('relay', 'SSH: Files relay websocket closed'); obj.close(); });
+            obj.wsClient.on('close', function () {
+                if (obj.connected !== true) { try { obj.ws.send(JSON.stringify({ action: 'connectionerror' })); } catch (ex) { } }
+                parent.parent.debug('relay', 'SSH: Files relay websocket closed'); obj.close();
+            });
             obj.wsClient.on('error', function (err) { parent.parent.debug('relay', 'SSH: Files relay websocket error: ' + err); obj.close(); });
         } catch (ex) {
             console.log(ex);
@@ -736,7 +746,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
     // When data is received from the web socket
     // SSH default port is 22
     ws.on('message', function (msg) {
-        if ((obj.firstMessage === true) && (msg != 5)) { obj.close(); return; } else { delete obj.firstMessage; }
+        //if ((obj.firstMessage === true) && (msg != 5)) { obj.close(); return; } else { delete obj.firstMessage; }
         try {
             if (typeof msg != 'string') {
                 if (msg[0] == 123) {
@@ -904,9 +914,8 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
 
                         // Verify inputs
                         if ((typeof msg.username != 'string') || (typeof msg.password != 'string')) break;
-                        if ((typeof msg.rows != 'number') || (typeof msg.cols != 'number') || (typeof msg.height != 'number') || (typeof msg.width != 'number')) break;
 
-                        obj.keep = msg.keep; // If true, keep store credentials on the server if the SSH tunnel connected succesfully.
+                        obj.keep = (msg.keep === true); // If true, keep store credentials on the server if the SSH tunnel connected succesfully.
                         obj.username = msg.username;
                         obj.password = msg.password;
 
