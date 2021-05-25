@@ -10,7 +10,7 @@ var MeshServerCreateControl = function (domain, authCookie) {
     obj.connectstate = 0;
     obj.pingTimer = null;
     obj.authCookie = authCookie;
-    obj.trace = false;
+    //obj.trace = false;
     
     obj.xxStateChange = function (newstate, errCode) {
         if (obj.State == newstate) return;
@@ -48,13 +48,17 @@ var MeshServerCreateControl = function (domain, authCookie) {
         if ((typeof message != 'object') || (message.action == 'pong')) { return; }
         if (message.action == 'ping') { obj.send({ action: 'pong' }); }
         if (message.action == 'close') { if (message.msg) { console.log(message.msg); } obj.Stop(message.cause); return; }
-        if (obj.trace) { console.log('RECV', message); }
+        if (obj.trace == 1) { console.log('RECV', message); }
+        else if (obj.trace == 2) { console.log('RECV', JSON.stringify(message)); }
         if (obj.onMessage) obj.onMessage(obj, message);
     };
     
     obj.send = function (x) {
         if (obj.socket != null && obj.connectstate == 1) {
-            if (obj.trace && (x.action != 'ping')) { console.log('SEND', x); }
+            if (x.action != 'ping') {
+                if (obj.trace == 1) { console.log('SEND', x); }
+                else if (obj.trace == 2) { console.log('SEND', JSON.stringify(x)); }
+            }
             obj.socket.send(JSON.stringify(x));
         }
     }
