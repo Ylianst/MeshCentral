@@ -165,7 +165,6 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
 
 // Construct a SSH Relay object, called upon connection
 module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
-    console.log('CreateSshRelay');
     const Net = require('net');
     const WebSocket = require('ws');
 
@@ -795,7 +794,12 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         if (obj.sftp == null) return;
                         var requestedPath = msg.path;
                         if (requestedPath.startsWith('/') == false) { requestedPath = '/' + requestedPath; }
-                        obj.sftp.mkdir(requestedPath, function (err) { console.log(err); });
+                        obj.sftp.mkdir(requestedPath, function (err) { });
+
+                        // Event the file delete
+                        var targets = ['*', 'server-users'];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 44, msgArgs: [requestedPath], msg: 'Create folder: \"' + requestedPath + '\"', domain: domain.id });
                         break;
                     }
                     case 'rm': {
@@ -806,7 +810,13 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                             const ul = obj.path.join(requestedPath, msg.delfiles[i]).split('\\').join('/');
                             obj.sftp.unlink(ul, function (err) { });
                             if (msg.rec === true) { obj.sftp.rmdir(ul + '/', function (err) { }); }
+
+                            // Event the file delete
+                            var targets = ['*', 'server-users'];
+                            if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                            parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 45, msgArgs: [ul], msg: 'Delete: \"' + ul + '\"', domain: domain.id });
                         }
+
                         break;
                     }
                     case 'rename': {
@@ -816,6 +826,11 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         const oldpath = obj.path.join(requestedPath, msg.oldname).split('\\').join('/');
                         const newpath = obj.path.join(requestedPath, msg.newname).split('\\').join('/');
                         obj.sftp.rename(oldpath, newpath, function (err) { });
+
+                        // Event the file rename
+                        var targets = ['*', 'server-users'];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 48, msgArgs: [oldpath, msg.newname], msg: 'Rename: \"' + oldpath + '\" to \"' + msg.newname + '\"', domain: domain.id });
                         break;
                     }
                     case 'upload': {
@@ -832,6 +847,11 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                             } else {
                                 obj.uploadHandle = handle;
                                 try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: obj.uploadReqid }))) } catch (ex) { }
+
+                                // Event the file upload
+                                var targets = ['*', 'server-users'];
+                                if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                                parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 105, msgArgs: [obj.uploadFullpath, obj.uploadSize], msg: 'Upload: ' + obj.uploadFullpath + ', Size: ' + obj.uploadSize, domain: domain.id });
                             }
                         });
                         break;
@@ -878,8 +898,12 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                                         try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'download', sub: 'cancel', id: obj.downloadId }))) } catch (ex) { }
                                     } else {
                                         obj.downloadHandle = handle;
-                                        // MeshServerLogEx((cmd.ask == 'coredump') ? 104 : 49, [cmd.path], 'Download: \"' + cmd.path + '\"', this.httprequest);
                                         try { obj.ws.send(JSON.stringify({ action: 'download', sub: 'start', id: obj.downloadId })) } catch (ex) { }
+
+                                        // Event the file download
+                                        var targets = ['*', 'server-users'];
+                                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                                        parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 49, msgArgs: [obj.downloadFullpath], msg: 'Download: ' + obj.downloadFullpath, domain: domain.id });
                                     }
                                 });
                                 break;
@@ -927,7 +951,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                     }
                 }
             }
-        } catch (ex) { console.log(ex); obj.close(); }
+        } catch (ex) { obj.close(); }
     });
 
     function uploadNextBlock() {
