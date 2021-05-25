@@ -2005,6 +2005,7 @@ function startRouter() {
         if (xurlargs.length > 0) { options.path += '?' + xurlargs.join('&'); }
     } catch (e) { console.log("Unable to parse \"serverUrl\"."); process.exit(1); return; }
 
+    console.log("Connecting...", options);
     options.checkServerIdentity = onVerifyServer;
     options.rejectUnauthorized = false;
     settings.websocket = http.request(options);
