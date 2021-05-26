@@ -2005,7 +2005,7 @@ function startRouter() {
         if (xurlargs.length > 0) { options.path += '?' + xurlargs.join('&'); }
     } catch (e) { console.log("Unable to parse \"serverUrl\"."); process.exit(1); return; }
 
-    console.log("Connecting...", options);
+    debug(1, "Connecting to " + options.host + ".");
     options.checkServerIdentity = onVerifyServer;
     options.rejectUnauthorized = false;
     settings.websocket = http.request(options);
@@ -2015,6 +2015,7 @@ function startRouter() {
 }
 
 function OnServerWebSocket(msg, s, head) {
+    debug(1, "Connected...");
     settings.webchannel = s;
     s.on('data', function (msg) {
         var command = JSON.parse(msg);
@@ -2064,6 +2065,7 @@ function OnServerWebSocket(msg, s, head) {
                 // Hash the signed data and verify the server signature
                 var signDataHash = hasher.syncHash(Buffer.concat([Buffer.from(settings.serverAuthClientNonce, 'base64'), Buffer.from(settings.meshServerTlsHash, 'hex'), Buffer.from(command.nonce, 'base64')]));
                 if (require('RSA').verify(require('RSA').TYPES.SHA384, cert, signDataHash, Buffer.from(command.signature, 'base64')) == false) { console.log("Unable to authenticate the server, invalid signature."); process.exit(1); return; }
+                debug(1, "Authenticated the server.");
 
                 // Switch to using HTTPS TLS certificate for authentication
                 delete settings.serverid;
@@ -2099,6 +2101,7 @@ function OnServerWebSocket(msg, s, head) {
 
     // Perform inner server authentication
     if (settings.serverid != null) {
+        debug(1, "Authenticating the server...");
         settings.serverAuthClientNonce = require('EncryptionStream').GenerateRandom(48).toString('base64');
         s.write("{\"action\":\"serverAuth\",\"cnonce\":\"" + settings.serverAuthClientNonce + "\",\"tlshash\":\"" + settings.meshServerTlsHash + "\"}"); // Ask for server authentication
     }
