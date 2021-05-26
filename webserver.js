@@ -6048,12 +6048,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             switch (command.action) {
                 case 'serverAuth': { // This command is used to perform server "inner" authentication.
-                    if (obj.common.validateString(command.cnonce, 1, 256) == false) break; // Check the client nonce
-                    if (obj.common.validateString(command.tlshash, 1, 512) == false) break; // Check the TLS hash
+                    // Check the client nonce and TLS hash
+                    if ((obj.common.validateString(command.cnonce, 1, 256) == false) || (obj.common.validateString(command.tlshash, 1, 512) == false)) {
+                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'badargs' })); } catch (ex) { }
+                        try { ws.close(); } catch (ex) { }
+                        break; 
+                    }
 
                     // Check that the TLS hash is an acceptable one.
                     var h = Buffer.from(command.tlshash, 'hex').toString('binary');
-                    if ((obj.webCertificateHashs[domain.id] != h) && (obj.webCertificateFullHashs[domain.id] != h) && (obj.defaultWebCertificateHash != h) && (obj.defaultWebCertificateFullHash != h)) { try { ws.close(); } catch (ex) { } return; }
+                    if ((obj.webCertificateHashs[domain.id] != h) && (obj.webCertificateFullHashs[domain.id] != h) && (obj.defaultWebCertificateHash != h) && (obj.defaultWebCertificateFullHash != h)) {
+                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'badtlscert' })); } catch (ex) { }
+                        try { ws.close(); } catch (ex) { }
+                        return;
+                    }
 
                     // TLS hash check is a success, sign the request.
                     // Perform the hash signature using the server agent certificate
@@ -6069,89 +6077,94 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // Check username and password authentication
                     if ((typeof command.username == 'string') && (typeof command.password == 'string')) {
                         obj.authenticate(Buffer.from(command.username, 'base64').toString(), Buffer.from(command.password, 'base64').toString(), domain, function (err, userid, passhint, loginOptions) {
-                            var user = obj.users[userid];
-                            if ((err == null) && (user)) {
-                                // Check if a 2nd factor is needed
-                                var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+                            if ((err != null) || (userid == null)) {
+                                // Invalid authentication
+                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2c' })); } catch (ex) { }
+                                try { ws.close(); } catch (ex) { }
+                            } else {
+                                var user = obj.users[userid];
+                                if ((err == null) && (user)) {
+                                    // Check if a 2nd factor is needed
+                                    var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
 
-                                // See if we support two-factor trusted cookies
-                                var twoFactorCookieDays = 30;
-                                if (typeof domain.twofactorcookiedurationdays == 'number') { twoFactorCookieDays = domain.twofactorcookiedurationdays; }
+                                    // See if we support two-factor trusted cookies
+                                    var twoFactorCookieDays = 30;
+                                    if (typeof domain.twofactorcookiedurationdays == 'number') { twoFactorCookieDays = domain.twofactorcookiedurationdays; }
 
-                                if (checkUserOneTimePasswordRequired(domain, user, req, loginOptions) == true) {
-                                    // Figure out if email 2FA is allowed
-                                    var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
-                                    var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
-                                    //var push2fa = ((parent.firebase != null) && (user.otpdev != null));
-                                    if ((typeof command.token != 'string') || (command.token == '**email**') || (command.token == '**sms**')/* || (command.token == '**push**')*/) {
-                                        if ((command.token == '**email**') && (email2fa == true)) {
-                                            // Cause a token to be sent to the user's registered email
-                                            user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
-                                            obj.db.SetUser(user);
-                                            parent.debug('web', 'Sending 2FA email to: ' + user.email);
-                                            domain.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
-                                            // Ask for a login token & confirm email was sent
-                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
-                                        } else if ((command.token == '**sms**') && (sms2fa == true)) {
-                                            // Cause a token to be sent to the user's phone number
-                                            user.otpsms = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
-                                            obj.db.SetUser(user);
-                                            parent.debug('web', 'Sending 2FA SMS to: ' + user.phone);
-                                            parent.smsserver.sendToken(domain, user.phone, user.otpsms.k, obj.getLanguageCodes(req));
-                                            // Ask for a login token & confirm sms was sent
-                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, sms2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
-                                            /*
-                                        } else if ((command.token == '**push**') && (push2fa == true)) {
-                                            // Cause push notification to device
-                                            const code = Buffer.from(obj.common.zeroPad(getRandomSixDigitInteger(), 6)).toString('base64');
-                                            const authCookie = parent.encodeCookie({ a: 'checkAuth', c: code, u: user._id, n: user.otpdev });
-                                            var payload = { notification: { title: "MeshCentral", body: user.name + " authentication" }, data: { url: '2fa://auth?code=' + code + '&c=' + authCookie } };
-                                            var options = { priority: 'High', timeToLive: 60 }; // TTL: 1 minute
-                                            parent.firebase.sendToDevice(user.otpdev, payload, options, function (id, err, errdesc) {
-                                                if (err == null) { parent.debug('email', 'Successfully auth check send push message to device'); } else { parent.debug('email', 'Failed auth check push message to device, error: ' + errdesc); }
-                                            });
-                                            */
-                                        } else {
-                                            // Ask for a login token
-                                            parent.debug('web', 'Asking for login token');
-                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (ex) { console.log(ex); }
-                                        }
-                                    } else {
-                                        checkUserOneTimePassword(req, domain, user, command.token, null, function (result) {
-                                            if (result == false) {
-                                                // Failed, ask for a login token again
-                                                parent.debug('web', 'Invalid login token, asking again');
-                                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
-                                            } else {
-                                                // We are authenticated with 2nd factor.
-                                                // Check email verification
-                                                if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
-                                                    parent.debug('web', 'Invalid login, asking for email validation');
-                                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true })); ws.close(); } catch (e) { }
-                                                } else {
-                                                    // We are authenticated
-                                                    ws._socket.pause();
-                                                    ws.removeAllListeners(['message', 'close', 'error']);
-                                                    func(ws, req, domain, user);
-                                                }
-                                            }
-                                        });
-                                    }
-                                } else {
-                                    // Check email verification
-                                    if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
-                                        parent.debug('web', 'Invalid login, asking for email validation');
+                                    if (checkUserOneTimePasswordRequired(domain, user, req, loginOptions) == true) {
+                                        // Figure out if email 2FA is allowed
                                         var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
                                         var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
-                                        try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                        //var push2fa = ((parent.firebase != null) && (user.otpdev != null));
+                                        if ((typeof command.token != 'string') || (command.token == '**email**') || (command.token == '**sms**')/* || (command.token == '**push**')*/) {
+                                            if ((command.token == '**email**') && (email2fa == true)) {
+                                                // Cause a token to be sent to the user's registered email
+                                                user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
+                                                obj.db.SetUser(user);
+                                                parent.debug('web', 'Sending 2FA email to: ' + user.email);
+                                                domain.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
+                                                // Ask for a login token & confirm email was sent
+                                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
+                                            } else if ((command.token == '**sms**') && (sms2fa == true)) {
+                                                // Cause a token to be sent to the user's phone number
+                                                user.otpsms = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
+                                                obj.db.SetUser(user);
+                                                parent.debug('web', 'Sending 2FA SMS to: ' + user.phone);
+                                                parent.smsserver.sendToken(domain, user.phone, user.otpsms.k, obj.getLanguageCodes(req));
+                                                // Ask for a login token & confirm sms was sent
+                                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, sms2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
+                                                /*
+                                            } else if ((command.token == '**push**') && (push2fa == true)) {
+                                                // Cause push notification to device
+                                                const code = Buffer.from(obj.common.zeroPad(getRandomSixDigitInteger(), 6)).toString('base64');
+                                                const authCookie = parent.encodeCookie({ a: 'checkAuth', c: code, u: user._id, n: user.otpdev });
+                                                var payload = { notification: { title: "MeshCentral", body: user.name + " authentication" }, data: { url: '2fa://auth?code=' + code + '&c=' + authCookie } };
+                                                var options = { priority: 'High', timeToLive: 60 }; // TTL: 1 minute
+                                                parent.firebase.sendToDevice(user.otpdev, payload, options, function (id, err, errdesc) {
+                                                    if (err == null) { parent.debug('email', 'Successfully auth check send push message to device'); } else { parent.debug('email', 'Failed auth check push message to device, error: ' + errdesc); }
+                                                });
+                                                */
+                                            } else {
+                                                // Ask for a login token
+                                                parent.debug('web', 'Asking for login token');
+                                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (ex) { console.log(ex); }
+                                            }
+                                        } else {
+                                            checkUserOneTimePassword(req, domain, user, command.token, null, function (result) {
+                                                if (result == false) {
+                                                    // Failed, ask for a login token again
+                                                    parent.debug('web', 'Invalid login token, asking again');
+                                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
+                                                } else {
+                                                    // We are authenticated with 2nd factor.
+                                                    // Check email verification
+                                                    if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                                        parent.debug('web', 'Invalid login, asking for email validation');
+                                                        try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                                    } else {
+                                                        // We are authenticated
+                                                        ws._socket.pause();
+                                                        ws.removeAllListeners(['message', 'close', 'error']);
+                                                        func(ws, req, domain, user);
+                                                    }
+                                                }
+                                            });
+                                        }
                                     } else {
-                                        // We are authenticated
-                                        ws._socket.pause();
-                                        ws.removeAllListeners(['message', 'close', 'error']);
-                                        func(ws, req, domain, user);
+                                        // Check email verification
+                                        if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                            parent.debug('web', 'Invalid login, asking for email validation');
+                                            var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
+                                            var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                        } else {
+                                            // We are authenticated
+                                            ws._socket.pause();
+                                            ws.removeAllListeners(['message', 'close', 'error']);
+                                            func(ws, req, domain, user);
+                                        }
                                     }
                                 }
-
                             }
                         });
                     } else {

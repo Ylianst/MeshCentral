@@ -2034,7 +2034,13 @@ function OnServerWebSocket(msg, s, head) {
                         } else {
                             console.log("Login token required, use --token [token].");
                         }
-                    } else { console.log("Invalid username or password."); }
+                    } else if (command.msg == 'badtlscert') {
+                        console.log("Invalid TLS certificate detected.");
+                    } else if (command.msg == 'badargs') {
+                        console.log("Invalid protocol arguments.");
+                    } else {
+                        console.log("Invalid username/password.");
+                    }
                 } else { console.log("Server disconnected: " + command.msg); }
                 process.exit(1);
                 return;
