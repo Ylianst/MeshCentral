@@ -1363,13 +1363,7 @@ function CreateMeshCentralServer(config, args) {
 
             // Start plugin manager if configuration allows this.
             if ((obj.config) && (obj.config.settings) && (obj.config.settings.plugins != null) && (obj.config.settings.plugins != false) && ((typeof obj.config.settings.plugins != 'object') || (obj.config.settings.plugins.enabled != false))) {
-                const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
-                if (nodeVersion < 7) {
-                    addServerWarning("Plugin support requires Node v7.x or higher.");
-                    delete obj.config.settings.plugins;
-                } else {
-                    obj.pluginHandler = require('./pluginHandler.js').pluginHandler(obj);
-                }
+                obj.pluginHandler = require('./pluginHandler.js').pluginHandler(obj);
             }
 
             // Load the default meshcore and meshcmd
@@ -1390,8 +1384,7 @@ function CreateMeshCentralServer(config, args) {
         // Load server certificates
         obj.certificateOperations.GetMeshServerCertificate(obj.args, obj.config, function (certs) {
             // Get the current node version
-            const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
-            if ((obj.config.letsencrypt == null) || (obj.redirserver == null) || (nodeVersion < 8)) {
+            if ((obj.config.letsencrypt == null) || (obj.redirserver == null)) {
                 obj.StartEx3(certs); // Just use the configured certificates
             } else if ((obj.config.letsencrypt != null) && (obj.config.letsencrypt.nochecks == true)) {
                 // Use Let's Encrypt with no checking
@@ -1624,8 +1617,7 @@ function CreateMeshCentralServer(config, args) {
 
                 // Setup Firebase
                 if ((config.firebase != null) && (typeof config.firebase.senderid == 'string') && (typeof config.firebase.serverkey == 'string')) {
-                    const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
-                    if (NodeJSVer >= 10) { obj.firebase = require('./firebase').CreateFirebase(obj, config.firebase.senderid, config.firebase.serverkey); }
+                    obj.firebase = require('./firebase').CreateFirebase(obj, config.firebase.senderid, config.firebase.serverkey);
                 } else if ((typeof config.firebaserelay == 'object') && (typeof config.firebaserelay.url == 'string')) {
                     // Setup the push messaging relay
                     obj.firebase = require('./firebase').CreateFirebaseRelay(obj, config.firebaserelay.url, config.firebaserelay.key);
@@ -3087,8 +3079,8 @@ var meshserver = null;
 var childProcess = null;
 var previouslyInstalledModules = {};
 function mainStart() {
-    // Check the NodeJS is version 6 or better.
-    if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 6) { console.log("MeshCentral requires Node v6 or above, current version is " + process.version + "."); return; }
+    // Check the NodeJS is version 10 or better.
+    if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 10) { console.log("MeshCentral requires Node v10 or above, current version is " + process.version + "."); return; }
 
     // If running within the node_modules folder, move working directory to the parent of the node_modules folder.
     if (__dirname.endsWith('\\node_modules\\meshcentral') || __dirname.endsWith('/node_modules/meshcentral')) { process.chdir(require('path').join(__dirname, '..', '..')); }
@@ -3156,18 +3148,18 @@ function mainStart() {
                 if ((typeof config.domains[i].authstrategies.saml == 'object') || (typeof config.domains[i].authstrategies.jumpcloud == 'object')) { passport.push('passport-saml'); }
             }
             if (config.domains[i].sessionrecording != null) { sessionRecording = true; }
-            if ((config.domains[i].passwordrequirements != null) && (config.domains[i].passwordrequirements.bancommonpasswords == true)) { if (nodeVersion < 8) { config.domains[i].passwordrequirements = false; addServerWarning('Common password checking requires NodeJS v8 or above.'); } else { wildleek = true; } }
+            if ((config.domains[i].passwordrequirements != null) && (config.domains[i].passwordrequirements.bancommonpasswords == true)) { wildleek = true; }
         }
 
         // Build the list of required modules
-        var modules = ['ws', 'cbor@5.2.0', 'nedb', 'https', 'yauzl', 'xmldom', 'ipcheck', 'express', 'archiver@4.0.2', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'cookie-session', 'express-handlebars'];
+        var modules = ['ws@7.4.6', 'cbor@5.2.0', 'nedb', 'https', 'yauzl', 'xmldom', 'ipcheck', 'express', 'archiver@4.0.2', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'cookie-session', 'express-handlebars'];
         if (require('os').platform() == 'win32') { modules.push('node-windows'); modules.push('loadavg-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (mstsc == true) { modules.push('node-rdpjs-2'); }
         if (ssh == true) { modules.push('ssh2'); }
         if (passport != null) { modules.push(...passport); }
         if (sessionRecording == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
-        if (config.letsencrypt != null) { if (nodeVersion < 8) { addServerWarning("Let's Encrypt support requires Node v8.x or higher.", !args.launch); } else { modules.push('acme-client'); } } // Add acme-client module
+        if (config.letsencrypt != null) { modules.push('acme-client'); } // Add acme-client module
         if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
         if (config.settings.mysql != null) { modules.push('mysql'); } // Add MySQL.
         //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
@@ -3181,29 +3173,14 @@ function mainStart() {
         if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail'); } // Add SendGrid support
         if (args.translate) { modules.push('jsdom'); modules.push('esprima'); modules.push('minify-js'); modules.push('html-minifier'); } // Translation support
 
-        // If running NodeJS < 8, install "util.promisify"
-        if (nodeVersion < 8) { modules.push('util.promisify'); }
-
         // Setup encrypted zip support if needed
         if (config.settings.autobackup && config.settings.autobackup.zippassword) {
             modules.push('archiver-zip-encrypted');
             // Enable Google Drive Support
-            if (typeof config.settings.autobackup.googledrive == 'object') {
-                if (nodeVersion >= 8) {
-                    modules.push('googleapis');
-                } else {
-                    addServerWarning("Google Drive requires Node v8.x or higher.", !args.launch);
-                    delete config.settings.autobackup.googledrive;
-                }
-            }
+            if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis'); }
             // Enable WebDAV Support
             if (typeof config.settings.autobackup.webdav == 'object') {
-                if (nodeVersion >= 10) {
-                    if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", !args.launch); } else { modules.push('webdav'); }
-                } else {
-                    addServerWarning("WebDAV requires Node v10.x or higher.", !args.launch);
-                    delete config.settings.autobackup.webdav;
-                }
+                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", !args.launch); } else { modules.push('webdav'); }
             }
         }
 
@@ -3221,23 +3198,14 @@ function mainStart() {
         if (config.settings.desktopmultiplex === true) { modules.push('image-size'); }
 
         // SMS support
-        if ((config.sms != null) && (config.sms.provider == 'twilio')) {
-            const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
-            if (NodeJSVer < 8) { console.log("SMS Twilio support requires Node v8 or above, current version is " + process.version + "."); } else { modules.push('twilio'); }
-        }
-        if ((config.sms != null) && (config.sms.provider == 'plivo')) {
-            const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
-            if (NodeJSVer < 8) { console.log("SMS Plivo support requires Node v8 or above, current version is " + process.version + "."); } else { modules.push('plivo'); }
-        }
+        if ((config.sms != null) && (config.sms.provider == 'twilio')) { modules.push('twilio'); }
+        if ((config.sms != null) && (config.sms.provider == 'plivo')) { modules.push('plivo'); }
 
         // Setup web based push notifications
         if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push'); }
 
         // Firebase Support
-        if (config.firebase != null) {
-            const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
-            if (NodeJSVer < 10) { console.log("Firebase support required Node v10 or above, current version is " + process.version + "."); } else { modules.push('node-xcs'); }
-        }
+        if (config.firebase != null) { modules.push('node-xcs'); }
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog'); }
