@@ -106,6 +106,8 @@
         "compression": { "type": "boolean", "default": true, "description": "Enables GZIP compression for web requests." },
         "wscompression": { "type": "boolean", "default": false, "description": "Enables server-side, websocket per-message deflate compression." },
         "agentwscompression": { "type": "boolean", "default": true, "description": "Enables agent-side, websocket per-message deflate compression. wscompression must also be true for this to work." },
+        "noagentupdate": { "type": "integer", "default": 0, "description": "Set to 1 to present the server from updating any agent." },
+        "temporaryAgentUpdate": { "type": "boolean", "default": true, "description": "Set to false to not allow temporary agents to be updated." },
         "meshErrorLogPath": { "type": "string" },
         "npmPath": { "type": "string" },
         "npmProxy": { "type": "string", "format": "uri" },
