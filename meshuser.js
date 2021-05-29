@@ -1192,11 +1192,37 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             if (cmdargs['_'].length > 0) {
                                 version = cmdargs['_'][0];
+
+                                // This call is SLOW. We only want to validate version if we have to
+                                if (version != 'stable' && version != 'latest') {
+                                    parent.parent.getServerVersions((data) => {
+                                        var versions = JSON.parse(data);
+
+                                        if (versions.includes(version)) {
+                                            if (parent.parent.performServerUpdate(version) == false) { 
+                                                try { 
+                                                    ws.send(JSON.stringify({ action: 'serverconsole',
+                                                                             value: 'Server self-update not possible.'}));
+                                                } catch (ex) { }
+                                            }
+                                        } else {
+                                            try { 
+                                                ws.send(JSON.stringify({ action: 'serverconsole',
+                                                                         value: 'Invalid version. Aborting update'}));
+                                            } catch (ex) { }
+                                        }
+                                    });
+                                } else {
+                                    if (parent.parent.performServerUpdate(version) == false) { 
+                                        r = 'Server self-update not possible.';
+                                    }
+                                }  
+                            } else {
+                                if (parent.parent.performServerUpdate(version) == false) { 
+                                    r = 'Server self-update not possible.';
+                                }
                             }
 
-                            if (parent.parent.performServerUpdate(version) == false) { 
-                                r = 'Server self-update not possible.';
-                            }
                             break;
                         }
                         case 'print': {
