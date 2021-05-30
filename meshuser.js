@@ -924,6 +924,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     case 'usersessions': { r = "usersessions: Returns a list of active sessions grouped by user."; break; }
                                     case 'closeusersessions': { r = "closeusersessions: Disconnects all sessions for a specified user."; break; }
                                     case 'tasklimiter': { r = "tasklimiter: Returns the internal status of the tasklimiter. This is a system used to smooth out work done by the server. It's used by, for example, agent updates so that not all agents are updated at the same time."; break; }
+                                    case 'serverupdate': { r = "serverupdate: Updates server to latest version. Optional version argument to install specific version. Example: serverupdate 0.8.49"; break; }
                                     default: { r = 'No help information about this command.'; break; }
                                 }
                             }
