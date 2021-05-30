@@ -1394,7 +1394,12 @@ module.exports.CreateAmtManager = function (parent) {
             return;
         }
 
-        if ((responses['AMT_UserInitiatedConnectionService'] == null) || (responses['AMT_UserInitiatedConnectionService'].response == null)) { dev.consoleMsg("Invalid CIRA state."); removeAmtDevice(dev, 30); return; }
+        // Check if CIRA is supported
+        if ((responses['AMT_UserInitiatedConnectionService'] == null) || (responses['AMT_UserInitiatedConnectionService'].response == null)) {
+            dev.consoleMsg("This device does not support CIRA.");
+            devTaskCompleted(dev);
+            return;
+        }
 
         dev.cira = {};
         dev.cira.xxRemoteAccess = responses;
