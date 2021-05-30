@@ -540,6 +540,24 @@ function CreateMeshCentralServer(config, args) {
         } catch (ex) { callback({ current: getCurrentVersion() }, ex); } // If the system is running out of memory, an exception here can easily happen.
     };
 
+    // Use NPM to get list of versions
+    obj.getServerVersions = function (callback) {
+        try {
+            var child_process = require('child_process');
+            var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
+            var npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
+            var env = Object.assign({}, process.env); // Shallow clone
+            if (typeof obj.args.npmproxy == 'string') { env['HTTP_PROXY'] = env['HTTPS_PROXY'] = env['http_proxy'] = env['https_proxy'] = obj.args.npmproxy; }
+            var xxprocess = child_process.exec(npmpath + npmproxy + ' view meshcentral versions --json', { maxBuffer: 512000, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
+            xxprocess.data = '';
+            xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
+            xxprocess.stderr.on('data', function (data) { });
+            xxprocess.on('close', function (code) {
+                (code == 0) ? callback(xxprocess.data) : callback('{}');
+            });
+        } catch (ex) { callback('{}'); }
+    };
+
     // Initiate server self-update
     obj.performServerUpdate = function (version) {
         if (obj.serverSelfWriteAllowed != true) return false;
