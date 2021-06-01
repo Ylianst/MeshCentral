@@ -6107,6 +6107,7 @@
       "nl": "Assistant",
       "fr": "Assistant",
       "ru": "Ассистент",
+      "es": "Asistente",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tandrotab",
         "agentinvite.handlebars->container->column_l->5->assistab->1"
@@ -6117,6 +6118,7 @@
       "nl": "Assistant (Windows)",
       "fr": "Assistant (Windows)",
       "ru": "Ассистент (Windows)",
+      "es": "Asistente (Windows)",
       "xloc": [
         "default-mobile.handlebars->11->40",
         "default.handlebars->33->47"
@@ -6127,6 +6129,7 @@
       "nl": "Assistant voor Windows (.exe)",
       "fr": "Assistant pour Windows (.exe)",
       "ru": "Ассистент для Windows (.exe)",
+      "es": "Asistente para Windows (.exe)",
       "xloc": [
         "default.handlebars->33->464"
       ]
@@ -6136,6 +6139,7 @@
       "nl": "Assistant is een Windows-tool in het systeemvak die kan worden gebruikt als er hulp nodig is. Dit is geen agent die op de achtergrond van de beheerde computer draait, maar een tool die alleen verbinding maakt met de server wanneer daarom wordt gevraagd.",
       "fr": "Assistant est un outil Windows vous permettant de demander de l'assistance quand vous en avez besoin. Une fois installé, il est disponible dans la barre des tâches. Assistant se connecte au serveur uniquement le temps des demandes d'assistance. La connexion n'est donc pas permanente.",
       "ru": "Ассистент - это инструмент на панели задач Windows, который можно использовать, когда требуется помощь..Это не агент, который работает в фоновом режиме управляемого компьютера, это инструмент, который подключается к серверу только по запросу..",
+      "es": "El Asistente MeshCentral para windows es una herramienta para la bandeja del sistema (system tray) que se puede utilizar para solicitar ayuda. Este no es un agente que corre en fondo de la computadora administrada, en su lugar, es una herramienta que se conecta al servidor solo cuando es solicitado.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->assistab->3->3"
       ]
@@ -8921,7 +8925,7 @@
       "cs": "Příkaz",
       "de": "Befehl",
       "en": "Command",
-      "es": "Mando",
+      "es": "Comando",
       "fi": "Komento",
       "fr": "Commande",
       "hi": "आदेश",
@@ -13942,6 +13946,7 @@
       "nl": "Download Assistant voor Windows",
       "fr": "Télécharger \"Assistant\" pour Windows",
       "ru": "Скачать Ассистент для Windows",
+      "es": "Descargar Asistente para Windows",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->assistab->3->5->assisturl"
       ]
@@ -19970,6 +19975,7 @@
       "en": "In order to use push notification authentication, a mobile device must be setup in your account with full rights.",
       "nl": "Om authenticatie met pushmeldingen te gebruiken, moet een mobiel apparaat met volledige rechten in uw account zijn ingesteld.",
       "fr": "Afin de pousser des notifications pour l'authentification, un appareil mobile doit être configuré sur votre compte avec tous les droits.",
+      "es": "Para poder autenticarse utilizando notificaciones push, un dispositivo móvil debe ser configurado en su cuenta con privilegios totales.",
       "xloc": [
         "default.handlebars->33->1287"
       ]
@@ -23573,7 +23579,7 @@
       "cs": "Linux / BSD / macOS Command Shell",
       "de": "Linux / BSD / macOS-Befehlsshell",
       "en": "Linux/BSD/macOS Command Shell",
-      "es": "Linux/BSD/macOS Shell de Comandos",
+      "es": "Shell de comandos Linux/BSD/macOS",
       "fi": "Linux/BSD/macOS komentokehote",
       "fr": "Commandes d'installation Linux / BSD / macOS",
       "hi": "Linux / BSD / macOS कमांड शेल",
@@ -25526,6 +25532,7 @@
       "nl": "MeshCentral Assistant",
       "fr": "Assistant MeshCentral",
       "ru": "MeshCentral Ассистент",
+      "es": "Asistente MeshCentral",
       "xloc": [
         "default.handlebars->33->430"
       ]
@@ -25535,18 +25542,14 @@
       "nl": "MeshCentral Assistant voor Windows",
       "fr": "Assistant MeshCentral pour Windows",
       "ru": "MeshCentral Ассистент для Windows",
+      "es": "Asistente MeshCentral para Windows",
       "xloc": [
         "default.handlebars->33->463"
       ]
     },
     {
-      "en": "MeshCentral Assistant is a Windows system tray tool that users can use to ask for help. Use the link below to download a version that will connect to device group \\\"{0}\\\" when requested by the user.",
-      "nl": "MeshCentral Assistant is een Windows systeemvak tool die gebruikers kunnen gebruiken om hulp te vragen. Gebruik de onderstaande link om een versie te downloaden die op verzoek van de gebruiker verbinding maakt met apparaatgroep \\\"{0}\\\".",
-      "fr": "Assistant est un outil Windows permettant de faire de l'assistance à la demande. Utilisez le lien ci-dessous pour télécharger une version qui se connectera au groupe d'appareil \\\"{0}\\\" lors des demandes d'assistance.",
-      "ru": "MeshCentral Ассистент - это инструмент на панели задач Windows, который пользователи могут использовать, чтобы попросить о помощи..Воспользуйтесь ссылкой ниже, чтобы загрузить версию, которая будет подключаться к группе устройств \\\"{0}\\\"."
-    },
-    {
       "en": "MeshCentral Assistant is a Windows system tray tool that users can use to ask for help. Use the link below to download a version that will connect to device group \\\"{0}\\\".",
+      "es": "El Asistente MeshCentral para windows es una herramienta para la bandeja del sistema (system tray) que lo usuarios pueden usar para solicitar ayuda. Use el enlace debajo para descargar una version que se conectará al grupo de dispositivos \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->33->462"
       ]
@@ -26173,6 +26176,7 @@
       "fr": "Appareil mobile",
       "de": "Mobiles Gerät",
       "ru": "Мобильное устройство",
+      "es": "Dispositivo móvil",
       "xloc": [
         "default-mobile.handlebars->11->491",
         "default.handlebars->33->1185"
@@ -26184,6 +26188,7 @@
       "fr": "Appareil mobile",
       "de": "Mobiles Gerät",
       "ru": "Мобильное устройство",
+      "es": "Dispositivo móvil",
       "xloc": [
         "default.handlebars->33->429"
       ]
@@ -31301,7 +31306,7 @@
       "cs": "Zpracování příkazu konzoly: \\\"{0}\\\"",
       "de": "Konsolenbefehl verarbeiten: \\\"{0}\\\"",
       "en": "Processing console command: \\\"{0}\\\"",
-      "es": "Comando de la consola de procesamiento: \\\"{0}\\\"",
+      "es": "Procesando comando de consola: \\\"{0}\\\"",
       "fi": "Käsitellään konsolikomentoa: \\\"{0}\\\"",
       "fr": "Traitement de la commande de la console: \\\"{0}\\\"",
       "hi": "कंसोल कंसोल कमांड: \\\"{0}\\\"",
@@ -40663,6 +40668,7 @@
       "fr": "Pour ajouter un appareil mobile au groupe \\\"{0}\\\", téléchargez l'applicatin MeshAgent et scannez ce QR Code.",
       "de": "Laden Sie die MeshAgent-Anwendung herunter und scannen Sie diesen QR-Code, um der Gruppe \\\"{0}\\\" ein mobiles Gerät hinzuzufügen.",
       "ru": "Чтобы добавить мобильное устройство в группу \\\"{0}\\\", загрузите приложение MeshAgent и отсканируйте этот QR-код.",
+      "es": "Para agregar un dispositivo móvil al grupo \\\"{0}\\\", descargue la aplicación MeshAgent y escanee éste código QR.",
       "xloc": [
         "default.handlebars->33->460"
       ]
@@ -40722,7 +40728,7 @@
       "cs": "Pro přidání nového zařízení do skupiny „{0}“, si stáhněte agenta a nainstalujte na zařízení, které chcete spravovat. Tento agent už obsahuje veškeré informace pro připojení na server.",
       "de": "Um einen neuen Rechner zur Gerätegruppe \\\"{0}\\\" hinzuzufügen, laden Sie den Mesh-Agenten herunter und installieren Sie ihn auf dem zu verwaltenden Rechner. In diesen Agenten sind Server- und Gerätegruppen-Informationen bereits eingebettet.",
       "en": "To add a new computer to device group \\\"{0}\\\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.",
-      "es": "Para agregar una nueva computadora al grupo de dispositivos \\\"{0}\\\", descargue el agente de malla e instálelo en la computadora a administrar. Este agente tiene la información del servidor y grupo de dispositivos incrustada dentro de él.",
+      "es": "Para agregar una nueva computadora al grupo de dispositivos \\\"{0}\\\", descargue el agente MeshCentral e instálelo en la computadora a administrar. Este agente tiene la información del servidor y grupo de dispositivos incrustada dentro de él.",
       "fi": "Jos haluat lisätä uuden tietokoneen laiteryhmään \\\"{0}\\\", lataa verkkoagentti ja asenna se tietokone hallittavaksi. Tällä agentilla on palvelimen ja laiteryhmän tietoja.",
       "fr": "Pour ajouter un nouvel appareil au groupe \\\"{0}\\\", télécharger et installer l'agent sur l'appareil à surveiller. L'agent contient le serveur et le groupe d'appartenance.",
       "hi": "डिवाइस समूह में एक नया कंप्यूटर जोड़ने के लिए \\\"{0}\\\", मेष एजेंट डाउनलोड करें और इसे प्रबंधित करने के लिए कंप्यूटर स्थापित करें। इस एजेंट के पास सर्वर और डिवाइस समूह की जानकारी है।",
