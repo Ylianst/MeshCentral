@@ -57,8 +57,8 @@
                 </div>
                 <div>
                     <input id="OpenFileButton" type=button value="Open File..." onclick="openfile()" style="display:none">
-                    <input id="SaveServerButton" type=button value="Save to Server..." onclick="saveServerTranslations()">
-                    <input id="SaveFileButton" type=button value="Save to File..." onclick="saveToFile()">
+                    <input id="SaveServerButton" title="Ctrl-S" type=button value="Save to Server (F3)" onclick="saveServerTranslations()">
+                    <input id="SaveFileButton" title="Ctrl-Shift-S" type=button value="Save to File (F4)" onclick="saveToFile()">
                     <select id="langSelector" onchange="langSelectorChange()">
                         <option value="ar">Arabic (ar)</option>
                         <option value="fi">Finnish (fi)</option>
@@ -98,14 +98,14 @@
             </div>
             <div id=deskarea4 class="areaFoot">
                 <div class="toright2">
-                    <input id="CopySource" type=button value="Copy English" onclick="copySource()">
-                    <input id="PrevButton" type=button value="Prev" onclick="prev()">
-                    <input id="NextButton" type=button value="Next" onclick="next()">
+                    <input id="CopySource" type=button value="Copy English (F5)" onclick="copySource()">
+                    <input id="PrevButton" type=button value="Prev (PgUp)" onclick="prev()">
+                    <input id="NextButton" type=button value="Next (PgDn)" onclick="next()">
                 </div>
                 <div style="height:22px">
                     &nbsp;
-                    <input id="SetButton" type=button value="Set" onclick="setTranslation()">
-                    <input id="CancelButton" type=button value="Cancel" onclick="cancelTranslation()">
+                    <input id="SetButton" type=button value="Set (F1)" onclick="setTranslation()">
+                    <input id="CancelButton" type=button value="Cancel (F2)" onclick="cancelTranslation()">
                 </div>
             </div>
         </div>
@@ -141,6 +141,8 @@
             document.ondragover = ondragover;
             document.ondragleave = ondragleave;
             document.onkeypress = onkeypress;
+            document.onkeydown = onkeydown;
+            document.onkeyup = onkeyup;
             updateMainList();
             loadServerTranslations();
             QE('SaveServerButton', false);
@@ -201,6 +203,21 @@
         function onkeypress(e) {
             if (xxdialogMode) return;
             //if (e.key == ' ') { togglePause(); haltEvent(e); }
+        }
+
+        function onkeydown(e) {
+            if (xxdialogMode) return;
+            if (e.key == 'F1') { setTranslation(); haltEvent(e); return false; } // Set translation
+            if (e.key == 'F2') { cancelTranslation(); haltEvent(e); return false; } // Cancel translation
+            if (e.key == 'F3') { saveServerTranslations(); haltEvent(e); return false; } // Save to server
+            if (e.key == 'F4') { saveToFile(); haltEvent(e); return false; } // Save to file
+            if (e.key == 'F5') { copySource(); haltEvent(e); return false; } // Copy source
+        }
+
+        function onkeyup(e) {
+            if (xxdialogMode) return;
+            if (e.key == 'PageUp') { setTranslation(); prev(); haltEvent(e); return false; } // Save and move to previous
+            if (e.key == 'PageDown') { setTranslation(); next(); haltEvent(e); return false; } // Save and move to next
         }
 
         function deskAdjust() {
@@ -287,8 +304,8 @@
             updateButtons();
         }
 
-        function next() { select(selectedItem + 1, true); }
-        function prev() { select(selectedItem - 1, true); }
+        function next() { if (selectedItem < (translations.length - 1)) { select(selectedItem + 1, true); } }
+        function prev() { if (selectedItem > 0) { select(selectedItem - 1, true); } }
         function copySource() { Q('translatedTextArea').value = translations[selectedItem].en; Q('translatedTextArea').focus(); }
 
         function updateButtons() {
