@@ -6614,11 +6614,11 @@
       "en": "Assistant",
       "es": "Asistente",
       "fr": "Assistant",
-      "hi": "सहायक",
-      "ko": "アシスタント",
+      "hi": "Assistant",
+      "ko": "Assistant",
       "nl": "Assistant",
       "ru": "Ассистент",
-      "zh-chs": "助手",
+      "zh-chs": "Assistant",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tandrotab",
         "agentinvite.handlebars->container->column_l->5->assistab->1"

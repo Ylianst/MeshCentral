@@ -39,7 +39,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
         //console.log('WinRDP - in', inTraffc, 'out', outTraffc);
 
         if (obj.wsClient) { obj.wsClient.close(); delete obj.wsClient; }
-        if (obj.tcpServer) { obj.tcpServer.close(); obj.tcpServer.destroy(); delete obj.tcpServer; }
+        if (obj.tcpServer) { obj.tcpServer.close(); delete obj.tcpServer; }
         if (rdpClient) { rdpClient.close(); rdpClient = null; }
         if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { ws._socket._parent.end(); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
