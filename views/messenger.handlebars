@@ -90,6 +90,7 @@
             var remoteOutText = false;
             var remoteImage = false;
             var serverRecording = false;
+            var notificationSupport = true;
 
             // File transfer state
             var fileUploads = [];
@@ -120,7 +121,7 @@
             QH('xtitle', EscapeHtml(newTitle).split(' ').join('&nbsp'));
 
             // Setup web notifications
-            try { if (Notification) { QV('notifyButton', Notification.permission != 'granted'); } } catch (ex) { }
+            try { if (Notification) { QV('notifyButton', Notification.permission != 'granted'); } } catch (ex) { notificationSupport = false; }
 
             // Track window focus
             window.addEventListener('focus', function (event) { windowFocus = true; }, false);
@@ -132,14 +133,18 @@
             document.addEventListener('drop', fileDrop, false);
 
             document.onclick = function (e) {
-                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
-                if (notification != null) { notification.close(); notification = null; }
+                if (notificationSupport) {
+                    if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                    if (notification != null) { notification.close(); notification = null; }
+                }
             }
 
             // Trap document key up events
             document.onkeyup = function ondockeypress(e) {
-                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
-                if (notification != null) { notification.close(); notification = null; }
+                if (notificationSupport) {
+                    if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                    if (notification != null) { notification.close(); notification = null; }
+                }
                 if (state == 2) {
                     if ((e.keyCode == 8) && (userInputFocus == 0)) {
                         // Backspace
@@ -153,8 +158,10 @@
 
             // Trap document key presses
             document.onkeypress = function ondockeypress(e) {
-                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
-                if (notification != null) { notification.close(); notification = null; }
+                if (notificationSupport) {
+                    if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                    if (notification != null) { notification.close(); notification = null; }
+                }
                 if ((state == 2) || pushMessaging) {
                     if (e.keyCode == 13) {
                         // Return
@@ -227,17 +234,21 @@
                 Q('xmsgparent').scrollTop = Q('xmsgparent').scrollHeight;
 
                 // If web notifications are granted, use it.
-                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
-                if (Notification && (windowFocus == false) && (Notification.permission == 'granted')) {
-                    if (notification != null) { notification.close(); notification = null; }
-                    notification = new Notification(Q('xtitle').innerHTML.split('&nbsp;').join(' '), { body: msg });
+                if (notificationSupport) {
+                    if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                    if (Notification && (windowFocus == false) && (Notification.permission == 'granted')) {
+                        if (notification != null) { notification.close(); notification = null; }
+                        notification = new Notification(Q('xtitle').innerHTML.split('&nbsp;').join(' '), { body: msg });
+                    }
                 }
             }
 
             // Display and send a message from the local user
             function xsend(event) {
-                if (notification != null) { notification.close(); notification = null; }
-                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                if (notificationSupport) {
+                    if (notification != null) { notification.close(); notification = null; }
+                    if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                }
                 var outtext = Q('xouttext').value;
                 if (outtext.length > 0) {
                     chatTextSession += ((new Date()).toLocaleTimeString() + ' - ' + "Local" + '> ' + outtext + '\r\n');
@@ -623,7 +634,9 @@
 
             // Toggle notification
             function enableNotificationsButtonClick() {
-                if (Notification) { Notification.requestPermission().then(function (permission) { QV('notifyButton', permission != 'granted'); }); }
+                if (notificationSupport) {
+                    if (Notification) { Notification.requestPermission().then(function (permission) { QV('notifyButton', permission != 'granted'); }); }
+                }
                 return false;
             }
 
