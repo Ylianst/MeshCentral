@@ -168,7 +168,7 @@ function startEx(argv) {
 
     var command = null;
     if (argv.length > 2) { command = argv[2].toLowerCase(); }
-    if (['minify', 'check', 'extract', 'extractall', 'translate', 'translateall', 'minifyall', 'merge', 'totext', 'fromtext'].indexOf(command) == -1) { command = null; }
+    if (['minify', 'check', 'extract', 'extractall', 'translate', 'translateall', 'minifyall', 'merge', 'totext', 'fromtext', 'remove'].indexOf(command) == -1) { command = null; }
 
     if (directRun) { log('MeshCentral web site translator'); }
     if (command == null) {
@@ -275,6 +275,25 @@ function startEx(argv) {
             if (fs.existsSync(argv[3]) == false) { log('Unable to find: ' + argv[3]); return; } else { translationFile = argv[3]; }
         }
         extract(translationFile, meshCentralSourceFiles, translationFile);
+    }
+
+    // Remove a language from a translation file
+    if (command == 'remove') {
+        if (argv.length <= 3) { log('Usage: remove [language] (file)'); return; }
+        lang = argv[3].toLowerCase();
+        var translationFile = 'translate.json';
+        if (argv.length > 4) {
+            if (fs.existsSync(argv[4]) == false) { log('Unable to find: ' + argv[4]); return; } else { translationFile = argv[4]; }
+        }
+        sourceStrings = {};
+        if (fs.existsSync(translationFile) == false) { log('Unable to find: ' + translationFile); return; }
+        var langFileData = null;
+        try { langFileData = JSON.parse(fs.readFileSync(translationFile)); } catch (ex) { }
+        if ((langFileData == null) || (langFileData.strings == null)) { log("Invalid language file."); process.exit(); return; }
+        for (var i in langFileData.strings) { delete langFileData.strings[i][lang]; }
+        fs.writeFileSync(translationFile, translationsToJson({ strings: langFileData.strings }), { flag: 'w+' });
+        log("Done.");
+        return;
     }
 
     if (command == 'translateall') {
