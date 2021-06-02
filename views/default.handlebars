@@ -4707,10 +4707,8 @@
             var mesh = meshes[meshid], x = '', installType = 0, moreoptions = '';
 
             var opts = '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option><option value=5>' + "Linux / BSD / macOS Binary Installer" + '</option><option value=2>' + "Apple macOS" + '</option>';
-            if ((features & 2) == 0) { // Don't display mobile or assistant setup in LAN mode.
-                opts += '<option value=6>' + "Mobile device" + '</option>';
-                opts += '<option value=7>' + "MeshCentral Assistant" + '</option>';
-            }
+            if ((features & 2) == 0) { opts += '<option value=6>' + "Mobile device" + '</option>'; } // Don't display mobile setup in LAN mode.
+            opts += '<option value=7>' + "MeshCentral Assistant" + '</option>';
             opts += '<option value=3>' + "Windows (UnInstall)" + '</option><option value=4>' + "Linux / BSD (UnInstall)" + '</option></select>';
             x += addHtmlValue("Operating System", opts);
 
