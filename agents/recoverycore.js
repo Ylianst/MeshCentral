@@ -6,83 +6,9 @@ var nextTunnelIndex = 1;
 var tunnels = {};
 var fs = require('fs');
 
-
-function _getPotentialServiceNames()
-{
-    var registry = require('win-registry');
-    var ret = [];
-    var K = registry.QueryKey(registry.HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Services');
-    var service, s;
-    while (K.subkeys.length > 0)
-    {
-        service = K.subkeys.shift();
-        try
-        {
-            s = registry.QueryKey(registry.HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Services\\' + service, 'ImagePath');
-            if (s.startsWith(process.execPath) || s.startsWith('"' + process.execPath + '"'))
-            {
-                ret.push(service);
-            }
-        }
-        catch (x)
-        {
-        }
-    }
-    return (ret);
-}
-function _verifyServiceName(names)
-{
-    var i;
-    var s;
-    var ret = null;
-    for (i = 0; i < names.length; ++i)
-    {
-        try
-        {
-            s = require('service-manager').manager.getService(names[i]);
-            if (s.isMe())
-            {
-                ret = names[i];
-                s.close();
-                break;
-            }
-            s.close();
-        }
-        catch (z) { }
-    }
-    return (ret);
-}
-
-function windows_getCommandLine()
-{
-    var parms = [];
-    var GM = require('_GenericMarshal');
-    var k32 = GM.CreateNativeProxy('kernel32.dll');
-    var s32 = GM.CreateNativeProxy('shell32.dll');
-    k32.CreateMethod('GetCommandLineW');
-    k32.CreateMethod('LocalFree');
-    s32.CreateMethod('CommandLineToArgvW');
-    var v = k32.GetCommandLineW();
-    var i;
-    var len = GM.CreateVariable(4);
-    var val = s32.CommandLineToArgvW(v, len);
-    len = len.toBuffer().readInt32LE(0);
-    if (len > 0)
-    {
-        for (i = 0; i < len; ++i)
-        {
-            parms.push(val.Deref(i * GM.PointerSize, GM.PointerSize).Deref().Wide2UTF8);
-        }
-    }
-    k32.LocalFree(val);
-    return (parms);
-}
-
-if (require('MeshAgent').ARCHID == null)
-{
+if (require('MeshAgent').ARCHID == null) {
     var id = null;
-    switch (process.platform)
-    {
+    switch (process.platform) {
         case 'win32':
             id = require('_GenericMarshal').PointerSize == 4 ? 3 : 4;
             break;
@@ -90,12 +16,10 @@ if (require('MeshAgent').ARCHID == null)
             id = require('_GenericMarshal').PointerSize == 4 ? 31 : 30;
             break;
         case 'darwin':
-            try
-            {
+            try {
                 id = require('os').arch() == 'x64' ? 16 : 29;
             }
-            catch (xx)
-            {
+            catch (xx) {
                 id = 16;
             }
             break;
@@ -105,22 +29,17 @@ if (require('MeshAgent').ARCHID == null)
 
 //attachDebugger({ webport: 9994, wait: 1 }).then(function (p) { console.log('Debug on port: ' + p); });
 
-function sendConsoleText(msg, sessionid)
-{
-    if (sessionid != null)
-    {
+function sendConsoleText(msg, sessionid) {
+    if (sessionid != null) {
         require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: msg, sessionid: sessionid });
     }
-    else
-    {
+    else {
         require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: msg });
     }
 }
 
-function sendAgentMessage(msg, icon)
-{
-    if (sendAgentMessage.messages == null)
-    {
+function sendAgentMessage(msg, icon) {
+    if (sendAgentMessage.messages == null) {
         sendAgentMessage.messages = {};
         sendAgentMessage.nextid = 1;
     }
@@ -129,11 +48,9 @@ function sendAgentMessage(msg, icon)
 }
 
 // Add to the server event log
-function MeshServerLog(msg, state)
-{
+function MeshServerLog(msg, state) {
     if (typeof msg == 'string') { msg = { action: 'log', msg: msg }; } else { msg.action = 'log'; }
-    if (state)
-    {
+    if (state) {
         if (state.userid) { msg.userid = state.userid; }
         if (state.username) { msg.username = state.username; }
         if (state.sessionid) { msg.sessionid = state.sessionid; }
@@ -143,11 +60,9 @@ function MeshServerLog(msg, state)
 }
 
 // Add to the server event log, use internationalized events
-function MeshServerLogEx(id, args, msg, state)
-{
+function MeshServerLogEx(id, args, msg, state) {
     var msg = { action: 'log', msgid: id, msgArgs: args, msg: msg };
-    if (state)
-    {
+    if (state) {
         if (state.userid) { msg.userid = state.userid; }
         if (state.username) { msg.username = state.username; }
         if (state.sessionid) { msg.sessionid = state.sessionid; }
@@ -431,34 +346,6 @@ function windows_execve(name, agentfilename, sessionid) {
     var arg2 = require('_GenericMarshal').CreateVariable('/C wmic service "' + name + '" call stopservice & "' + cwd + agentfilename + '.update.exe" -b64exec ' + 'dHJ5CnsKICAgIHZhciBzZXJ2aWNlTG9jYXRpb24gPSBwcm9jZXNzLmFyZ3YucG9wKCk7CiAgICByZXF1aXJlKCdwcm9jZXNzLW1hbmFnZXInKS5lbnVtZXJhdGVQcm9jZXNzZXMoKS50aGVuKGZ1bmN0aW9uIChwcm9jKQogICAgewogICAgICAgIGZvciAodmFyIHAgaW4gcHJvYykKICAgICAgICB7CiAgICAgICAgICAgIGlmIChwcm9jW3BdLnBhdGggPT0gc2VydmljZUxvY2F0aW9uKQogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICBwcm9jZXNzLmtpbGwocHJvY1twXS5waWQpOwogICAgICAgICAgICB9CiAgICAgICAgfQogICAgICAgIHByb2Nlc3MuZXhpdCgpOwogICAgfSk7Cn0KY2F0Y2goZSkKewogICAgcHJvY2Vzcy5leGl0KCk7Cn0=' +
         ' "' + process.execPath + '" & copy "' + cwd + agentfilename + '.update.exe" "' + process.execPath + '" & wmic service "' + name + '" call startservice & erase "' + cwd + agentfilename + '.update.exe"', { wide: true });
 
-    if (name == null)
-    {
-        // We can continue with self update for Temp/Console Mode on Windows
-        var db = null;
-        var update = cwd + agentfilename + '.update.exe';
-        var updatedb = cwd + agentfilename + '.update.db';
-        var parms = windows_getCommandLine(); parms.shift();
-        
-        var updatesource = parms.find(function (v) { return (v.startsWith('--updateSourcePath=')); });
-        if (updatesource == null)
-        {
-            parms.push('--updateSourcePath="' + cwd + agentfilename + '"');
-            updatesource = (cwd + agentfilename).split('.exe'); updatesource.pop(); updatesource = updatesource.join('.exe');
-            db = updatesource + '.db';
-            updatesource = (' & move "' + updatedb + '" "' + db + '"') + (' & erase "' + updatedb + '"');
-        }
-        else
-        {
-            updatesource = updatesource.substring(19).split('.exe');
-            updatesource.pop(); updatesource = updatesource.join('.exe');
-            db = updatesource + '.db';
-            updatesource = (' & move "' + update + '" "' + updatesource + '.exe" & move "' + updatedb + '" "' + db + '" & erase "' + updatedb + '"') + (' & echo move "' + update + '" "' + updatesource + '.exe" & echo move "' + updatedb + '" "' + db + '"');
-        }
-
-        var tmp = '/C echo copy "' + db + '" "' + updatedb + '" & copy "' + db + '" "' + updatedb + '"' + ' & "' + update + '" ' + parms.join(' ') + updatesource + ' & erase "' + update + '" & echo ERASE "' + update + '"';
-        arg2 = require('_GenericMarshal').CreateVariable(tmp, { wide: true });
-    }
-
     arg1.pointerBuffer().copy(args.toBuffer());
     arg2.pointerBuffer().copy(args.toBuffer(), require('_GenericMarshal').PointerSize);
 
@@ -476,8 +363,7 @@ function agentUpdate_Start(updateurl, updateoptions) {
         if (updateurl.startsWith("wss://")) { updateurl = "https://" + updateurl.substring(6); }
     }
 
-    if (agentUpdate_Start._selfupdate != null)
-    {
+    if (agentUpdate_Start._selfupdate != null) {
         // We were already called, so we will ignore this duplicate request
         if (sessionid != null) { sendConsoleText('Self update already in progress...', sessionid); }
     }
@@ -487,58 +373,25 @@ function agentUpdate_Start(updateurl, updateoptions) {
             // This agent doesn't have the ability to tell us which ARCHID it is, so we don't know which agent to pull
             sendConsoleText('Unable to initiate update, agent ARCHID is not defined', sessionid);
         }
-        else
-        {
+        else {
             var agentfilename = process.execPath.split(process.platform == 'win32' ? '\\' : '/').pop(); // Local File Name, ie: MeshAgent.exe
             var name = require('MeshAgent').serviceName;
-            if (name == null) { name = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'; }
-            if (process.platform == 'win32')
-            {
-                // Special Processing for Temporary/Console Mode Agents on Windows
-                var parms = windows_getCommandLine();
-                if (parms.findIndex(function (val) { return (val.toUpperCase() == 'RUN' || val.toUpperCase() == 'CONNECT');})>=0)
-                {
-                    // This is a Temporary/Console Mode Agent
-                    sendConsoleText('This is a temporary/console agent, checking for conflicts with background services...');
-
-                    // Check to see if our binary conflicts with an installed agent
-                    var agents = _getPotentialServiceNames();
-                    if(_getPotentialServiceNames().length>0)
-                    {
-                        sendConsoleText('Self update cannot continue because the installed agent (' + agents[0] + ') conflicts with the currently running Temp/Console agent...', sessionid);
-                        return;
-                    }
-
-
-                    sendConsoleText('No conflicts detected...');
-                    name = null;
-                }
-                else
-                {
-                    // Not running in Temp/Console Mode... No Op here....
-                }
-            }
-            else
-            {
-                // Non Windows Self Update
-                try
-                {
-                    var s = require('service-manager').manager.getService(name);
-                    if (!s.isMe())
-                    {
-                        if (process.platform == 'win32') { s.close(); }
-                        sendConsoleText('Self Update cannot continue, this agent is not an instance of background service (' + name + ')', sessionid);
-                        return;
-                    }
+            if (name == null) { name = (process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'); }      // This is an older agent that doesn't expose the service name, so use the default
+            try {
+                var s = require('service-manager').manager.getService(name);
+                if (!s.isMe()) {
                     if (process.platform == 'win32') { s.close(); }
-                }
-                catch (zz)
-                {
-                    sendConsoleText('Self Update Failed because this agent is not an instance of (' + name + ')', sessionid);
-                    sendAgentMessage('Self Update Failed because this agent is not an instance of (' + name + ')', 3);
+                    sendConsoleText('Self Update cannot continue, this agent is not an instance of (' + name + ')', sessionid);
                     return;
                 }
+                if (process.platform == 'win32') { s.close(); }
             }
+            catch (zz) {
+                sendConsoleText('Self Update Failed because this agent is not an instance of (' + name + ')', sessionid);
+                sendAgentMessage('Self Update Failed because this agent is not an instance of (' + name + ')', 3);
+                return;
+            }
+
             if ((sessionid != null) && (updateurl != null)) { sendConsoleText('Downloading update from: ' + updateurl, sessionid); }
             var options = require('http').parseUri(updateurl != null ? updateurl : require('MeshAgent').ServerUrl);
             options.protocol = 'https:';
@@ -1154,25 +1007,7 @@ require('MeshAgent').AddCommandHandler(function (data) {
 function processConsoleCommand(cmd, args, rights, sessionid) {
     try {
         var response = null;
-        switch (cmd)
-        {
-            default:
-                { // This is an unknown command, return an error message
-                    response = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.';
-                    break;
-                }
-            case 'commandline':
-                {
-                    if (process.platform == 'win32')
-                    {
-                        response = JSON.stringify(windows_getCommandLine(), null, 1);
-                    }
-                    else
-                    {
-                        response = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.';
-                    }
-                }
-                break;
+        switch (cmd) {
             case 'help':
                 response = "Available commands are: agentupdate, agentupdateex, dbkeys, dbget, dbset, dbcompact, eval, netinfo, osinfo, setdebug, versions.";
                 break;
@@ -1262,11 +1097,10 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 response = objToString(interfaces, 0, ' ', true);
                 break;
             }
-            case 'name':
-                {
-                    response = 'Service Name = ' + require('MeshAgent').serviceName;
-                }
+            default: { // This is an unknown command, return an error message
+                response = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.';
                 break;
+            }
         }
     } catch (e) { response = "Command returned an exception error: " + e; console.log(e); }
     if (response != null) { sendConsoleText(response, sessionid); }
