@@ -1499,6 +1499,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var info = parent.parent.meshToolsBinaries[command.name];
                     if ((command.hash != null) && (info.hash == command.hash)) return;
                     const responseCmd = { action: 'meshToolInfo', name: command.name, tag: command.tag, sessionid: command.sessionid, hash: info.hash, size: info.size, url: info.url };
+                    if ((command.name == 'MeshCentralAssistant') && (command.msh == true)) { responseCmd.url = "*/meshagents?id=10006"; } // If this is Assistant and the MSH needs to be included in the executable, change the URL.
                     if (command.cookie === true) { responseCmd.url += ('&auth=' + parent.parent.encodeCookie({ download: info.dlname }, parent.parent.loginCookieEncryptionKey)); }
                     if (command.pipe === true) { responseCmd.pipe = true; }
                     if (parent.webCertificateHashs[domain.id] != null) { responseCmd.serverhash = Buffer.from(parent.webCertificateHashs[domain.id], 'binary').toString('hex'); }
