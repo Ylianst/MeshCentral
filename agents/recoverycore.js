@@ -434,11 +434,28 @@ function windows_execve(name, agentfilename, sessionid) {
     if (name == null)
     {
         // We can continue with self update for Temp/Console Mode on Windows
-        var db = process.execPath.split('.exe'); db.pop(); db = db.join('.exe') + '.db';
+        var db = null;
         var update = cwd + agentfilename + '.update.exe';
         var updatedb = cwd + agentfilename + '.update.db';
         var parms = windows_getCommandLine(); parms.shift();
-        var tmp = '/C copy "' + db + '" "' + updatedb + '" & "' + update + '" ' + parms.join(' ') + ' & move "' + update + '" "' + process.execPath + '" & move "' + updatedb + '" "' + db + '"';
+        
+        var updatesource = parms.find(function (v) { return (v.startsWith('--updateSourcePath=')); });
+        if (updatesource == null)
+        {
+            parms.push('--updateSourcePath="' + cwd + agentfilename + '"');
+            updatesource = (cwd + agentfilename).split('.exe'); updatesource.pop(); updatesource = updatesource.join('.exe');
+            db = updatesource + '.db';
+            updatesource = (' & move "' + updatedb + '" "' + db + '"') + (' & erase "' + updatedb + '"');
+        }
+        else
+        {
+            updatesource = updatesource.substring(19).split('.exe');
+            updatesource.pop(); updatesource = updatesource.join('.exe');
+            db = updatesource + '.db';
+            updatesource = (' & move "' + update + '" "' + updatesource + '.exe" & move "' + updatedb + '" "' + db + '" & erase "' + updatedb + '"') + (' & echo move "' + update + '" "' + updatesource + '.exe" & echo move "' + updatedb + '" "' + db + '"');
+        }
+
+        var tmp = '/C echo copy "' + db + '" "' + updatedb + '" & copy "' + db + '" "' + updatedb + '"' + ' & "' + update + '" ' + parms.join(' ') + updatesource + ' & erase "' + update + '" & echo ERASE "' + update + '"';
         arg2 = require('_GenericMarshal').CreateVariable(tmp, { wide: true });
     }
 
