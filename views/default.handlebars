@@ -4813,6 +4813,7 @@
             if (addflag == 1) c += Q('aginsType').value;
             c += (urlargs.key?('&key=' + urlargs.key):'');
             if (Q('aginsSelect').value == 5) { c += '&meshinstall=' + Q('aginsSysType').value; }
+            if (Q('aginsSelect').value == 7) { c += '&ac=' + Q('asinsType').value; }
             copyTextToClip(c);
         }
 
