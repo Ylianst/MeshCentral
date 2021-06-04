@@ -155,12 +155,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (parent.parent.multiServer != null) { parent.parent.multiServer.DispatchMessage({ action: 'sessionEnd', sessionid: ws.sessionId }); }
 
         // Aggressive cleanup
-        if (obj.user) { delete obj.user; }
-        if (obj.domain) { delete obj.domain; }
-        if (ws.userid) { delete ws.userid; }
-        if (ws.domainid) { delete ws.domainid; }
-        if (ws.sessionId) { delete ws.sessionId; }
-        if (ws.HandleEvent) { delete ws.HandleEvent; }
+        delete obj.user;
+        delete obj.domain;
+        delete ws.userid;
+        delete ws.domainid;
+        delete ws.clientIp;
+        delete ws.sessionId;
+        delete ws.HandleEvent;
         ws.removeAllListeners(['message', 'close', 'error']);
     };
 
@@ -329,6 +330,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Associate this websocket session with the web session
         ws.userid = user._id;
         ws.domainid = domain.id;
+        ws.clientIp = req.clientIp;
 
         // Create a new session id for this user.
         parent.crypto.randomBytes(20, function (err, randombuf) {
@@ -1299,9 +1301,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     userSessionCount++;
                                     r += (i + ', ' + parent.wssessions[i].length + ' session' + ((parent.wssessions[i].length > 1) ? 's' : '') + '.\r\n');
                                     for (var j in parent.wssessions[i]) {
-                                        var addr = parent.wssessions[i][j]._socket.remoteAddress;
-                                        if (addr.startsWith('::ffff:')) { addr = addr.substring(7); }
-                                        r += '    ' + addr + ' --> ' + parent.wssessions[i][j].sessionId + '\r\n';
+                                        r += '    ' + parent.wssessions[i][j].clientIp + ' --> ' + parent.wssessions[i][j].sessionId + '\r\n';
                                     }
                                 }
                             }
