@@ -4309,6 +4309,7 @@
             for (var i in node.sessions.msg) {
                 var msg = i, icon = 5;
                 if (typeof node.sessions.msg[i].msg == 'string') { msg = node.sessions.msg[i].msg; }
+                if ((typeof node.sessions.msg[i].msgid == 'number') && (eventsMessageId[node.sessions.msg[i].msgid] != null)) { msg = eventsMessageId[node.sessions.msg[i].msgid]; }
                 if (typeof node.sessions.msg[i].icon == 'number') { icon = node.sessions.msg[i].icon; }
                 if ((icon < 1) || (icon > 9)) { icon = 5; }
                 x += '<table style=width:96%><td style=width:24px><div class=NotifyIconSmall' + icon + '></div><td><div style="border-radius:5px;background-color:#BBB;width:100%;padding:8px">' + EscapeHtml(msg) + '</div></table>';
@@ -12386,7 +12387,8 @@
             113: "Added push notification authentication device",
             114: "Removed push notification authentication device",
             115: "Added login token",
-            116: "Removed login token"
+            116: "Removed login token",
+            117: "This is an old agent version, consider updating.xx"
         };
 
         // Highlights the device being hovered

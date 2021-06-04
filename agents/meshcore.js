@@ -2941,6 +2941,10 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 sendPeriodicServerUpdate();
                 break;
             }
+            case 'agentmsgx': {
+                try { mesh.SendCommand({ action: 'sessions', type: 'msg', value: { 0: { msg: "This is an old agent version, consider updating.", msgid: 117, icon: 3 } } }); } catch (ex) { }
+                break;
+            }
             case 'agentmsg': {
                 if (args['_'].length == 0) {
                     response = "Proper usage:\r\n  agentmsg add \"[message]\" [iconIndex]\r\n  agentmsg remove [index]\r\n  agentmsg list"; // Display usage
