@@ -452,7 +452,8 @@
             "description": "Use this section to customize the MeshCentral Assistant.",
             "properties": {
               "title": { "type": "string", "default": "MeshCentral Assistant", "description": "Name to show as MeshCentral Assistant dialog title." },
-              "image": { "type": "string", "default": null, "description": "The filename of a image file in .png format located in meshcentral-data to display in MeshCentral Assistant, image should be square and from 64x64 to 128x128." }
+              "image": { "type": "string", "default": null, "description": "The filename of a image file in .png format located in meshcentral-data to display in MeshCentral Assistant, image should be square and from 64x64 to 128x128." },
+              "fileName": { "type": "string", "default": "meshagent", "description": "The MeshCentral Assistant filename." }
             }
           },
           "userAllowedIP": { "type": "string" },
