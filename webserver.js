@@ -4637,7 +4637,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
                 if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + '\r\n'; } }
                 if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + '\r\n'; } }
-                if (domain.agentcustomization != null) { // Add agent customization
+                if ((req.query.id != '10006') && (domain.agentcustomization != null)) { // Add agent customization, not for Assistant
                     if (domain.agentcustomization.displayname != null) { meshsettings += 'displayName=' + domain.agentcustomization.displayname + '\r\n'; }
                     if (domain.agentcustomization.description != null) { meshsettings += 'description=' + domain.agentcustomization.description + '\r\n'; }
                     if (domain.agentcustomization.companyname != null) { meshsettings += 'companyName=' + domain.agentcustomization.companyname + '\r\n'; }
@@ -4645,7 +4645,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
                 }
                 if ((parent.agentTranslations != null) && (req.query.id != '10006')) { meshsettings += 'translation=' + parent.agentTranslations + '\r\n'; } // Translation strings, not for MeshCentral Assistant
-                if ((req.query.id == '10006') && (req.query.ac == '1')) { meshsettings += 'AutoConnect=1\r\n'; } // Set AutoConnect=1 for MeshCentral Assistant if requested
+                if (req.query.id == '10006') { // Assistant settings and customizations
+                    if ((req.query.ac != null)) { meshsettings += 'AutoConnect=' + req.query.ac + '\r\n'; } // Set MeshCentral Assistant flags if needed. 0x01 = Always Connected, 0x02 = Not System Tray
+                    if ((domain.assistantcustomization != null) && (typeof domain.assistantcustomization == 'object')) {
+                        if (typeof domain.assistantcustomization.title == 'string') { meshsettings += 'Title=' + domain.assistantcustomization.title + '\r\n'; }
+                        if (typeof domain.assistantcustomization.image == 'string') {
+                            try { meshsettings += 'Image=' + Buffer.from(obj.fs.readFileSync(parent.getConfigFilePath(domain.assistantcustomization.image)), 'binary').toString('base64') + '\r\n'; } catch (ex) { console.log(ex); }
+                        }
+                    }
+                }
                 setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, argentInfo.rname);
                 obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
                 return;
