@@ -190,6 +190,7 @@
     {
       "de": " MeshCentral-Router",
       "en": " MeshCentral Router",
+      "nl": " MeshCentral Router",
       "es": " Enrutador MeshCentral",
       "fr": " Routeur MeshCentral",
       "hi": " मेशसेंट्रल राउटर",
@@ -354,6 +355,7 @@
     {
       "de": "&Schließen",
       "en": "&Close",
+      "nl": "&Sluiten",
       "es": "&Cerca",
       "fr": "&Fermer",
       "hi": "&बंद करे",
@@ -363,6 +365,7 @@
     {
       "de": "&Löschen",
       "en": "&Delete",
+      "nl": "&Verwijderen",
       "es": "&Borrar",
       "fr": "&Effacer",
       "hi": "&हटाएं",
@@ -372,6 +375,7 @@
     {
       "de": "&Die Info...",
       "en": "&Info...",
+      "nl": "&Info...",
       "es": "&Info ...",
       "fr": "&Info...",
       "hi": "जानकारी...",
@@ -381,6 +385,7 @@
     {
       "de": "&Öffnen",
       "en": "&Open",
+      "nl": "&Open",
       "es": "&Abierto",
       "fr": "&Ouvert",
       "hi": "&खुला हुआ",
@@ -390,6 +395,7 @@
     {
       "de": "&Zuordnungen öffnen...",
       "en": "&Open Mappings...",
+      "nl": "&toewijzingen openen...",
       "es": "&Abrir mapeos ...",
       "fr": "&Ouvrir les mappages...",
       "hi": "&ओपन मैपिंग...",
@@ -399,6 +405,7 @@
     {
       "de": "&Öffnen...",
       "en": "&Open...",
+      "nl": "&Open...",
       "es": "&Abierto...",
       "fr": "&Ouvert...",
       "hi": "&खुला हुआ...",
@@ -408,6 +415,7 @@
     {
       "de": "&Umbenennen",
       "en": "&Rename",
+      "nl": "&Hernoemen",
       "es": "&Rebautizar",
       "fr": "&Renommer",
       "hi": "&नाम बदलें",
@@ -417,6 +425,7 @@
     {
       "de": "&Zuordnungen speichern...",
       "en": "&Save Mappings...",
+      "nl": "&Toewijzingen opslaan...",
       "es": "&Guardar asignaciones ...",
       "fr": "&Enregistrer les mappages...",
       "hi": "&मैपिंग सहेजें...",
@@ -426,6 +435,7 @@
     {
       "de": "&Agent starten",
       "en": "&Start Agent",
+      "nl": "&Start Agent",
       "es": "&Iniciar agente",
       "fr": "&Démarrer l'agent",
       "hi": "&प्रारंभ एजेंट",
@@ -435,6 +445,7 @@
     {
       "de": "&Software aktualisieren",
       "en": "&Update Software",
+      "nl": "&Software bijwerken",
       "es": "&Actualiza el software",
       "fr": "&Mettre à jour le logiciel",
       "hi": "&सॉफ्टवेयर अद्यतन करें",
@@ -479,6 +490,7 @@
     {
       "de": "(Einzelgeräte)",
       "en": "(Individual Devices)",
+      "nl": "(Individuele apparaten)",
       "es": "(Dispositivos individuales)",
       "fr": "(Appareils individuels)",
       "hi": "(व्यक्तिगत उपकरण)",
@@ -488,6 +500,7 @@
     {
       "de": "(Keiner)",
       "en": "(None)",
+      "nl": "(Geen)",
       "es": "(Ninguno)",
       "fr": "(Rien)",
       "hi": "(कोई नहीं)",
@@ -629,6 +642,7 @@
     {
       "de": ", 1 Anschluss.",
       "en": ", 1 connection.",
+      "nl": ", 1 verbinding.",
       "es": ", 1 conexión.",
       "fr": ", 1 connexion.",
       "hi": ", 1 कनेक्शन।",
@@ -728,6 +742,7 @@
     {
       "de": ", Aufgezeichnete Sitzung",
       "en": ", Recorded Session",
+      "nl": ", opgenomen sessie",
       "es": ", Sesión grabada",
       "fr": ", Séance enregistrée",
       "hi": ", रिकॉर्ड किया गया सत्र",
@@ -915,6 +930,7 @@
     {
       "de": ", {0} Verbindungen.",
       "en": ", {0} connections.",
+      "nl": ", {0} verbindingen.",
       "es": ", {0} conexiones.",
       "fr": ", {0} connexions.",
       "hi": ", {0} कनेक्शन।",
@@ -924,6 +940,7 @@
     {
       "de": ", {0} Nutzer",
       "en": ", {0} users",
+      "nl": ", {0} gebruikers",
       "es": ", {0} usuarios",
       "fr": ", {0} utilisateurs",
       "hi": ", {0} उपयोगकर्ता",
@@ -1049,6 +1066,7 @@
     {
       "de": "0 Byte",
       "en": "0 Bytes",
+      "nl": "0 Bytes",
       "es": "0 bytes",
       "fr": "0 octet",
       "hi": "0 बाइट्स",
@@ -1058,6 +1076,7 @@
     {
       "de": "0%",
       "en": "0%",
+      "nl": "0%",
       "es": "0%",
       "fr": "0%",
       "hi": "0%",
@@ -1320,6 +1339,7 @@
     {
       "de": "1 Remote-Sitzung",
       "en": "1 remote session",
+      "nl": "1 externe sessie",
       "es": "1 sesión remota",
       "fr": "1 séance à distance",
       "hi": "1 दूरस्थ सत्र",
@@ -1329,6 +1349,7 @@
     {
       "de": "1 Remote-Sitzung ist aktiv.",
       "en": "1 remote session is active.",
+      "nl": "1 externe sessie is actief.",
       "es": "1 sesión remota está activa.",
       "fr": "1 session à distance est active.",
       "hi": "1 दूरस्थ सत्र सक्रिय है।",
@@ -1653,6 +1674,7 @@
     {
       "de": "127.0.0.1",
       "en": "127.0.0.1",
+      "nl": "127.0.0.1",
       "es": "127.0.0.1",
       "fr": "127.0.0.1",
       "hi": "127.0.0.1",
@@ -2775,6 +2797,7 @@
     {
       "de": "Eine neue Version dieser Software ist verfügbar. Jetzt aktualisieren?",
       "en": "A new version of this software is available. Update now?",
+      "nl": "Er is een nieuwe versie van deze software beschikbaar. Nu bijwerken?",
       "es": "Hay disponible una nueva versión de este software. ¿Actualizar ahora?",
       "fr": "Une nouvelle version de ce logiciel est disponible. Mettez à jour maintenant?",
       "hi": "इस सॉफ़्टवेयर का एक नया संस्करण उपलब्ध है। अभी अद्यतन करें?",
@@ -3747,6 +3770,7 @@
     {
       "de": "&Zuordnen hinzufügen...",
       "en": "Add &Map...",
+      "nl": "&Toewijzing toevoegen...",
       "es": "Agregar & mapa ...",
       "fr": "Ajouter une &carte...",
       "hi": "नक्शा जोड़ें...",
@@ -3756,6 +3780,7 @@
     {
       "de": "&Relay-Karte hinzufügen...",
       "en": "Add &Relay Map...",
+      "nl": "&Relay toewijzing toevoegen...",
       "es": "Agregar y retransmitir mapa ...",
       "fr": "Ajouter une carte de &relais...",
       "hi": "मानचित्र &रिले जोड़ें...",
@@ -3986,6 +4011,7 @@
     {
       "de": "Karte hinzufügen...",
       "en": "Add Map...",
+      "nl": "Kaart toevoegen...",
       "es": "Agregar mapa ...",
       "fr": "Ajouter une carte...",
       "hi": "नक्शा जोड़ें...",
@@ -4035,6 +4061,7 @@
     {
       "de": "Relaiskarte hinzufügen...",
       "en": "Add Relay Map...",
+      "nl": "Toevoegen relay kaart...",
       "es": "Agregar mapa de retransmisiones ...",
       "fr": "Ajouter une carte de relais...",
       "hi": "रिले मैप जोड़ें...",
@@ -5013,6 +5040,7 @@
     {
       "de": "Agentenauswahl",
       "en": "Agent Select",
+      "en": "Agent selecteren",
       "es": "Seleccionar agente",
       "fr": "Sélection d'agent",
       "hi": "एजेंट चुनें",
@@ -5042,6 +5070,7 @@
     {
       "de": "Agenten-Snapshot",
       "en": "Agent Snapshot",
+      "nl": "Agent momentopname",
       "es": "Instantánea del agente",
       "fr": "Instantané de l'agent",
       "hi": "एजेंट स्नैपशॉट",
@@ -5155,6 +5184,7 @@
     {
       "de": "Agent ist weiterhin ausstehend",
       "en": "Agent is continue pending",
+      "nl": "Agent is in behandeling",
       "es": "El agente sigue pendiente",
       "fr": "L'agent est en attente de poursuite",
       "hi": "एजेंट जारी है लंबित",
@@ -5164,6 +5194,7 @@
     {
       "de": "Agent ist getrennt",
       "en": "Agent is disconnected",
+      "nl": "Verbinding met agent is verbroken",
       "es": "El agente está desconectado",
       "fr": "L'agent est déconnecté",
       "hi": "एजेंट डिस्कनेक्ट हो गया है",
@@ -5173,6 +5204,7 @@
     {
       "de": "Agent fehlt",
       "en": "Agent is missing",
+      "nl": "Agent ontbreekt",
       "es": "Falta el agente",
       "fr": "L'agent est manquant",
       "hi": "एजेंट गायब है",
@@ -5223,7 +5255,8 @@
     },
     {
       "de": "Agent ist pausiert",
-      "en": "Agent is pause pending",
+      "en": "Agent is gepause pending",
+      "nl": "Agent is gepauzeerd",
       "es": "El agente está en pausa pendiente",
       "fr": "L'agent est en attente de pause",
       "hi": "एजेंट रुका हुआ है",
@@ -5233,6 +5266,7 @@
     {
       "de": "Agent ist pausiert",
       "en": "Agent is paused",
+      "nl": "Agent is gepauzeerd",
       "es": "El agente está en pausa",
       "fr": "L'agent est en pause",
       "hi": "एजेंट रुका हुआ है",
@@ -5242,6 +5276,7 @@
     {
       "de": "Agent läuft",
       "en": "Agent is running",
+      "nl": "Agent is actief",
       "es": "El agente se está ejecutando",
       "fr": "L'agent est en cours d'exécution",
       "hi": "एजेंट चल रहा है",
@@ -5272,6 +5307,7 @@
     {
       "de": "Agent ist Start ausstehend",
       "en": "Agent is start pending",
+      "nl": "Agent wacht op start",
       "es": "El agente está pendiente de inicio",
       "fr": "L'agent est en attente de démarrage",
       "hi": "एजेंट प्रारंभ लंबित है",
@@ -5281,6 +5317,7 @@
     {
       "de": "Agent wurde gestoppt",
       "en": "Agent is stopped",
+      "nl": "Agent is gestopt",
       "es": "El agente está detenido",
       "fr": "L'agent est arrêté",
       "hi": "एजेंट रोक दिया गया है",
@@ -5290,6 +5327,7 @@
     {
       "de": "Agent ist gestoppt ausstehend",
       "en": "Agent is stopped pending",
+      "nl": "Agent is in behandeling gestopt",
       "es": "El agente está detenido pendiente",
       "fr": "L'agent est arrêté en attente",
       "hi": "एजेंट लंबित है",
@@ -5299,6 +5337,7 @@
     {
       "de": "Agent nicht installiert",
       "en": "Agent not installed",
+      "nl": "Agent is niet geïnstalleerd",
       "es": "Agente no instalado",
       "fr": "Agent non installé",
       "hi": "एजेंट स्थापित नहीं",
@@ -5453,6 +5492,7 @@
     {
       "de": "ermöglichen",
       "en": "Allow",
+      "nl": "Toestaan",
       "es": "Permitir",
       "fr": "Permettre",
       "hi": "अनुमति",
@@ -5640,6 +5680,7 @@
     {
       "de": "Alternativer Hafen",
       "en": "Alternative Port",
+      "nl": "Alternatieve poort",
       "es": "Puerto alternativo",
       "fr": "Port alternatif",
       "hi": "वैकल्पिक बंदरगाह",
@@ -5695,6 +5736,7 @@
     {
       "de": "Immer verbunden",
       "en": "Always connected",
+      "nl": "Altijd verbonden",
       "es": "Siempre conectado",
       "fr": "Toujours connecté",
       "hi": "हमेशा जुड़ा",
@@ -5991,6 +6033,7 @@
     {
       "de": "Anwendung",
       "en": "Application",
+      "nl": "Toepassing",
       "es": "Solicitud",
       "fr": "Application",
       "hi": "आवेदन",
@@ -6000,6 +6043,7 @@
     {
       "de": "Anwendungsstart",
       "en": "Application Launch",
+      "nl": "Toepassing starten",
       "es": "Lanzamiento de la aplicación",
       "fr": "Lancement de l'application",
       "hi": "एप्लिकेशन लॉन्च",
@@ -6009,6 +6053,7 @@
     {
       "de": "Bewerbungslink",
       "en": "Application Link",
+      "nl": "Applicatielink",
       "es": "Enlace de aplicación",
       "fr": "Lien d'application",
       "hi": "आवेदन लिंक",
@@ -6018,6 +6063,7 @@
     {
       "de": "Anwendungsname",
       "en": "Application Name",
+      "nl": "Naam van de toepassing",
       "es": "Nombre de la aplicación",
       "fr": "Nom de l'application",
       "hi": "आवेदन का नाम",
@@ -6026,12 +6072,14 @@
     },
     {
       "en": "Application, Always connected",
+      "nl": "Applicatie, Altijd verbonden",
       "xloc": [
         "default.handlebars->33->441"
       ]
     },
     {
       "en": "Application, Connect on user request",
+      "nl": "Applicatie, verbinding maken op gebruikersverzoek",
       "xloc": [
         "default.handlebars->33->440"
       ]
@@ -6651,6 +6699,7 @@
     {
       "de": "Assistant-Update",
       "en": "Assistant Update",
+      "nl": "Assistant Update",
       "es": "Asistente de actualización",
       "fr": "Mise à jour de l'assistant",
       "hi": "सहायक अद्यतन",
@@ -6728,6 +6777,7 @@
     {
       "de": "Authentifizierung",
       "en": "Authenticating",
+      "nl": "Authenticatie",
       "es": "Autenticando",
       "fr": "Authentification",
       "hi": "प्रमाणित कर रहा है",
@@ -7441,6 +7491,7 @@
     {
       "de": "Binden Sie den lokalen Port an alle Netzwerkschnittstellen",
       "en": "Bind local port to all network interfaces",
+      "nl": "Bind lokale poort aan alle netwerkinterfaces",
       "es": "Vincular el puerto local a todas las interfaces de red",
       "fr": "Lier le port local à toutes les interfaces réseau",
       "hi": "स्थानीय पोर्ट को सभी नेटवर्क इंटरफेस से बाइंड करें",
@@ -7982,6 +8033,7 @@
     {
       "de": "Automatisches Schließen abbrechen",
       "en": "Cancel Auto-Close",
+      "nl": "Automatisch sluiten annuleren",
       "es": "Cancelar cierre automático",
       "fr": "Annuler la fermeture automatique",
       "hi": "रद्द करें स्वतः बंद",
@@ -7991,6 +8043,7 @@
     {
       "de": "Hilfeanfrage abbrechen",
       "en": "Cancel Help Request",
+      "nl": "Annuleer hulpverzoek",
       "es": "Cancelar solicitud de ayuda",
       "fr": "Annuler la demande d'aide",
       "hi": "सहायता अनुरोध रद्द करें",
@@ -8086,6 +8139,7 @@
     {
       "de": "Zertifikat",
       "en": "Certificate",
+      "nl": "Certificaat",
       "es": "Certificado",
       "fr": "Certificat",
       "hi": "प्रमाणपत्र",
@@ -8313,6 +8367,7 @@
     {
       "de": "Remote-Desktop-Einstellungen ändern",
       "en": "Change remote desktop settings",
+      "nl": "Instellingen voor extern bureaublad wijzigen",
       "es": "Cambiar la configuración del escritorio remoto",
       "fr": "Modifier les paramètres du bureau à distance",
       "hi": "दूरस्थ डेस्कटॉप सेटिंग बदलें",
@@ -8503,6 +8558,7 @@
     {
       "de": "Wenn Sie die Sprache ändern, wird dieses Tool geschlossen. Bist du sicher?",
       "en": "Changing language will close this tool. Are you sure?",
+      "nl": "Als u de taal wijzigt, wordt deze tool gesloten.Weet je het zeker?",
       "es": "El cambio de idioma cerrará esta herramienta. ¿Está seguro?",
       "fr": "Le changement de langue fermera cet outil. Êtes-vous sûr?",
       "hi": "भाषा बदलने से यह टूल बंद हो जाएगा। क्या आपको यकीन है?",
@@ -9297,6 +9353,7 @@
     {
       "de": "Klicken Sie auf OK, um MeshCentral Router auf Ihrem System als Handler für das Protokoll \"mcrouter://\" zu registrieren. Dadurch kann die MeshCentral-Website diese Anwendung bei Bedarf starten.",
       "en": "Click ok to register MeshCentral Router on your system as the handler for the \"mcrouter://\" protocol. This will allow the MeshCentral web site to launch this application when needed.",
+      "nl": "Klik op ok om MeshCentral Router op uw systeem te registreren als de handler voor het \"mcrouter://\" protocol. Hierdoor kan de MeshCentral-website deze applicatie starten wanneer dat nodig is.",
       "es": "Haga clic en Aceptar para registrar MeshCentral Router en su sistema como el controlador del protocolo \"mcrouter: //\". Esto permitirá que el sitio web de MeshCentral inicie esta aplicación cuando sea necesario.",
       "fr": "Cliquez sur ok pour enregistrer MeshCentral Router sur votre système en tant que gestionnaire du protocole « mcrouter:// ». Cela permettra au site Web MeshCentral de lancer cette application en cas de besoin.",
       "hi": "MeshCentral राउटर को अपने सिस्टम पर \"mcrouter: //\" प्रोटोकॉल के लिए हैंडलर के रूप में पंजीकृत करने के लिए ओके पर क्लिक करें। यह मेशसेंट्रल वेब साइट को जरूरत पड़ने पर इस एप्लिकेशन को लॉन्च करने की अनुमति देगा।",
@@ -9700,6 +9757,7 @@
     {
       "de": "Komprimierter Netzwerkverkehr",
       "en": "Compressed Network Traffic",
+      "nl": "Gecomprimeerd netwerkverkeer",
       "es": "Tráfico de red comprimido",
       "fr": "Trafic réseau compressé",
       "hi": "संपीडित नेटवर्क यातायात",
@@ -9730,6 +9788,7 @@
     {
       "de": "Computername",
       "en": "ComputerName",
+      "nl": "Computernaam",
       "es": "Nombre del computador",
       "fr": "Nom de l'ordinateur",
       "hi": "कंप्यूटर का नाम",
@@ -9768,6 +9827,7 @@
     {
       "de": "Löschen bestätigen",
       "en": "Confirm Delete",
+      "nl": "Verwijderen bevestigen",
       "es": "Confirmar eliminación",
       "fr": "Confirmation de la suppression",
       "hi": "हटाने की पुष्टि करें",
@@ -10420,6 +10480,7 @@
     {
       "de": "Auf Benutzeranfrage verbinden",
       "en": "Connect on user request",
+      "nl": "Verbinden op gebruikersverzoek",
       "es": "Conectarse a petición del usuario",
       "fr": "Se connecter à la demande de l'utilisateur",
       "hi": "उपयोगकर्ता के अनुरोध पर कनेक्ट करें",
@@ -10612,6 +10673,7 @@
     {
       "de": "Mit Server verbunden",
       "en": "Connected to server",
+      "nl": "Verbonden met server",
       "es": "Conectado al servidor",
       "fr": "Connecté au serveur",
       "hi": "सर्वर से जुड़ा",
@@ -10641,6 +10703,7 @@
     {
       "de": "Anschließen",
       "en": "Connecting",
+      "nl": "Verbinden",
       "es": "Conectando",
       "fr": "De liaison",
       "hi": "कनेक्ट",
@@ -10681,6 +10744,7 @@
     {
       "de": "Verbindung",
       "en": "Connection",
+      "nl": "Verbinding",
       "es": "Conexión",
       "fr": "Lien",
       "hi": "संबंध",
@@ -11344,6 +11408,7 @@
     {
       "de": "Anzahl",
       "en": "Count",
+      "nl": "Aantal",
       "es": "Contar",
       "fr": "Compter",
       "hi": "गिनती",
@@ -11396,6 +11461,7 @@
     {
       "de": "Ordner erstellen",
       "en": "Create Folder",
+      "nl": "Map aanmaken",
       "es": "Crear carpeta",
       "fr": "Créer le dossier",
       "hi": "फोल्डर बनाएं",
@@ -12829,6 +12895,7 @@
     {
       "de": "Verweigern",
       "en": "Deny",
+      "nl": "Weigeren",
       "es": "Negar",
       "fr": "Refuser",
       "hi": "मना",
@@ -13179,6 +13246,7 @@
     {
       "de": "Desktop-Einstellungen",
       "en": "Desktop Settings",
+      "nl": "Bureaubladinstellingen",
       "es": "Configuración de escritorio",
       "fr": "Paramètres du bureau",
       "hi": "डेस्कटॉप सेटिंग्स",
@@ -13623,6 +13691,7 @@
     {
       "de": "Geräteeinstellungen",
       "en": "Device Settings",
+      "nl": "Apparaat instellingen",
       "es": "Configuración de dispositivo",
       "fr": "Réglages de l'appareil",
       "hi": "उपकरण सेटिंग्स",
@@ -13669,6 +13738,7 @@
     {
       "de": "Gerätestatus",
       "en": "Device Status",
+      "nl": "Apparaatstatus",
       "es": "Estado del dispositivo",
       "fr": "Statut du périphérique",
       "hi": "उपकरण की स्थिति",
@@ -14339,6 +14409,7 @@
     {
       "de": "Direkte Verbindung",
       "en": "Direct Connect",
+      "nl": "Directe verbinding",
       "es": "Conexión directa",
       "fr": "Connection directe",
       "hi": "प्रत्यक्ष रूप से कनेक्ट",
@@ -14558,6 +14629,7 @@
     {
       "de": "Verbindungsstatistik anzeigen",
       "en": "Display connection statistics",
+      "nl": "Verbindingsstatistieken weergeven",
       "es": "Mostrar estadísticas de conexión",
       "fr": "Afficher les statistiques de connexion",
       "hi": "कनेक्शन आंकड़े प्रदर्शित करें",
@@ -14727,6 +14799,7 @@
     {
       "de": "Frag nicht nach {0} Tagen.",
       "en": "Don't ask for {0} days.",
+      "nl": "Niet vragen voor {0} dagen.",
       "es": "No pida {0} días.",
       "fr": "Ne demandez pas {0} jours.",
       "hi": "{0} दिनों के लिए मत पूछो।",
@@ -14849,6 +14922,7 @@
     {
       "de": "Doppelklick-Aktion",
       "en": "Double Click Action",
+      "nl": "Dubbelklik actie",
       "es": "Acción de doble clic",
       "fr": "Action de double-clic",
       "hi": "डबल क्लिक एक्शन",
@@ -15558,6 +15632,7 @@
     {
       "de": "Ausgang",
       "en": "E&xit",
+      "nl": "Sluiten",
       "es": "Salida",
       "fr": "Sortir",
       "hi": "बाहर जाएं",
@@ -16517,6 +16592,7 @@
     {
       "de": "E-Mail gesendet",
       "en": "Email sent",
+      "nl": "E-mail verzonden",
       "es": "Email enviado",
       "fr": "Email envoyé",
       "hi": "ईमेल भेजा",
@@ -16550,6 +16626,7 @@
     {
       "de": "E-Mail-Verifizierung erforderlich",
       "en": "Email verification required",
+      "nl": "E-mailverificatie vereist",
       "es": "Se requiere verificación de correo electrónico",
       "fr": "Vérification de l'e-mail requise",
       "hi": "ईमेल सत्यापन आवश्यक",
@@ -17188,6 +17265,7 @@
     {
       "de": "Verbesserte Tastaturerfassung",
       "en": "Enhanced keyboard capture",
+      "nl": "Verbeterde toetsenbordopname",
       "es": "Captura de teclado mejorada",
       "fr": "Capture de clavier améliorée",
       "hi": "उन्नत कीबोर्ड कैप्चर",
@@ -17262,6 +17340,7 @@
     {
       "de": "Geben Sie die Details der Hilfeanfrage ein",
       "en": "Enter help request details",
+      "nl": "Voer de details van het hulpverzoek in",
       "es": "Ingrese los detalles de la solicitud de ayuda",
       "fr": "Entrez les détails de la demande d'aide",
       "hi": "सहायता अनुरोध विवरण दर्ज करें",
@@ -17311,6 +17390,7 @@
     {
       "de": "Geben Sie den RDP-Port des Remote-Computers ein, der Standard-RDP-Port ist 3389.",
       "en": "Enter the RDP port of the remote computer, the default RDP port is 3389.",
+      "nl": "Voer de RDP poort van de externe computer in, de standaard RDP poort is 3389.",
       "es": "Ingrese el puerto RDP de la computadora remota, el puerto RDP predeterminado es 3389.",
       "fr": "Entrez le port RDP de l'ordinateur distant, le port RDP par défaut est 3389.",
       "hi": "दूरस्थ कंप्यूटर का RDP पोर्ट दर्ज करें, डिफ़ॉल्ट RDP पोर्ट 3389 है।",
@@ -17342,6 +17422,7 @@
     {
       "de": "Geben Sie das zweite Faktor-Authentifizierungstoken ein.",
       "en": "Enter the second factor authentication token.",
+      "nl": "Voer de tweede factor authenticatie token in.",
       "es": "Ingrese el token de autenticación de segundo factor.",
       "fr": "Saisissez le jeton d'authentification du deuxième facteur.",
       "hi": "दूसरा कारक प्रमाणीकरण टोकन दर्ज करें।",
@@ -17391,6 +17472,7 @@
     {
       "de": "Fehlermeldung",
       "en": "Error Message",
+      "nl": "Foutmelding",
       "es": "Mensaje de error",
       "fr": "Message d'erreur",
       "hi": "त्रुटि संदेश",
@@ -17553,6 +17635,7 @@
     {
       "de": "Veranstaltung",
       "en": "Event",
+      "nl": "Gebeurtenis",
       "es": "Evento",
       "fr": "Événement",
       "hi": "प्रतिस्पर्धा",
@@ -17977,6 +18060,7 @@
     {
       "de": "Fehler beim Starten der Remote-Desktop-Sitzung",
       "en": "Failed to start remote desktop session",
+      "nl": "Kan extern bureaubladsessie niet starten",
       "es": "No se pudo iniciar la sesión de escritorio remoto",
       "fr": "Échec du démarrage de la session de bureau à distance",
       "hi": "दूरस्थ डेस्कटॉप सत्र प्रारंभ करने में विफल",
@@ -18006,6 +18090,7 @@
     {
       "de": "Fehler beim Starten der Remote-Terminal-Sitzung",
       "en": "Failed to start remote terminal session",
+      "nl": "Kan externe terminalsessie niet starten",
       "es": "No se pudo iniciar la sesión de terminal remota",
       "fr": "Échec du démarrage de la session de terminal distant",
       "hi": "दूरस्थ टर्मिनल सत्र प्रारंभ करने में विफल",
@@ -18799,6 +18884,7 @@
     {
       "de": "Alle Tastaturtasten weiterleiten",
       "en": "Forward all keyboard keys",
+      "nl": "Alle toetsenbordtoetsen doorsturen",
       "es": "Reenviar todas las teclas del teclado",
       "fr": "Transférer toutes les touches du clavier",
       "hi": "सभी कीबोर्ड कुंजियों को अग्रेषित करें",
@@ -20120,6 +20206,7 @@
     {
       "de": "HTTPS",
       "en": "HTTPS",
+      "nl": "HTTPS",
       "es": "HTTPS",
       "fr": "HTTPS",
       "hi": "HTTPS के",
@@ -20314,6 +20401,7 @@
     {
       "de": "Hilfe angefordert",
       "en": "Help Requested",
+      "nl": "Hulp gevraagd",
       "es": "Ayuda solicitada",
       "fr": "Aide demandée",
       "hi": "सहायता मांगी गई",
@@ -21128,6 +21216,7 @@
     {
       "de": "Ignorieren",
       "en": "Ignore",
+      "nl": "Negeren",
       "es": "Ignorar",
       "fr": "Ignorer",
       "hi": "नज़रअंदाज़ करना",
@@ -21216,6 +21305,7 @@
     {
       "de": "Eingehende Bytes",
       "en": "Incoming Bytes",
+      "nl": "Inkomende Bytes",
       "es": "Bytes entrantes",
       "fr": "Octets entrants",
       "hi": "आने वाली बाइट्स",
@@ -21225,6 +21315,7 @@
     {
       "de": "Eingehende Kompression",
       "en": "Incoming Compression",
+      "nl": "Inkomende compressie",
       "es": "Compresión entrante",
       "fr": "Compression entrante",
       "hi": "आने वाली संपीड़न",
@@ -21496,6 +21587,7 @@
     {
       "de": "Installieren...",
       "en": "Install...",
+      "nl": "Installeren...",
       "es": "Instalar en pc...",
       "fr": "Installer...",
       "hi": "इंस्टॉल...",
@@ -21505,6 +21597,7 @@
     {
       "de": "Installation",
       "en": "Installation",
+      "nl": "Installatie",
       "es": "Instalación",
       "fr": "Installation",
       "hi": "इंस्टालेशन",
@@ -22441,6 +22534,7 @@
     {
       "de": "Intel® ME-Zustand...",
       "en": "Intel® ME State...",
+      "nl": "Intel® ME status...",
       "es": "Estado Intel® ME ...",
       "fr": "État Intel® ME...",
       "hi": "इंटेल® एमई स्टेट...",
@@ -22450,6 +22544,7 @@
     {
       "de": "Intel® Management-Engine",
       "en": "Intel® Management Engine",
+      "nl": "Intel® Management Engine",
       "es": "Motor de administración Intel®",
       "fr": "Moteur de gestion Intel®",
       "hi": "इंटेल® प्रबंधन इंजन",
@@ -22459,6 +22554,7 @@
     {
       "de": "Status der Intel® Management Engine für diesen Computer.",
       "en": "Intel® Management Engine state for this computer.",
+      "nl": "Intel® Management Engine status voor deze computer.",
       "es": "Estado del motor de administración Intel® para este equipo.",
       "fr": "État du moteur de gestion Intel® pour cet ordinateur.",
       "hi": "इस कंप्यूटर के लिए Intel® प्रबंधन इंजन स्थिति।",
@@ -22780,6 +22876,7 @@
     {
       "de": "Ungültiger Download.",
       "en": "Invalid download.",
+      "nl": "Ongeldige download.",
       "es": "Descarga no válida.",
       "fr": "Téléchargement non valide.",
       "hi": "अमान्य डाउनलोड।",
@@ -22950,6 +23047,7 @@
     {
       "de": "ungültiger Benutzername oder Passwort",
       "en": "Invalid username or password",
+      "nl": "Ongeldige gebruikersnaam of wachtwoord",
       "es": "usuario o contraseña invalido",
       "fr": "Nom d'utilisateur ou mot de passe invalide",
       "hi": "अमान्य उपयोगकर्ता नाम या पासवर्ड",
@@ -23245,6 +23343,7 @@
     {
       "de": "Artikel",
       "en": "Item",
+      "nl": "Artikel",
       "es": "Artículo",
       "fr": "Article",
       "hi": "मद",
@@ -23710,6 +23809,7 @@
     {
       "de": "Sprachen",
       "en": "Languages",
+      "nl": "Talen",
       "es": "Idiomas",
       "fr": "Langues",
       "hi": "बोली",
@@ -24165,6 +24265,7 @@
     {
       "de": "Später",
       "en": "Later",
+      "nl": "Later",
       "es": "Mas tarde",
       "fr": "Plus tard",
       "hi": "बाद में",
@@ -25060,6 +25161,7 @@
     {
       "de": "Liste der auf diesem Computer aktiven Remotesitzungen.",
       "en": "List of remote sessions active on this computer.",
+      "nl": "Lijst met externe sessies die actief zijn op deze computer.",
       "es": "Lista de sesiones remotas activas en esta computadora.",
       "fr": "Liste des sessions distantes actives sur cet ordinateur.",
       "hi": "इस कंप्यूटर पर सक्रिय दूरस्थ सत्रों की सूची।",
@@ -25158,6 +25260,7 @@
     {
       "de": "Lokal - {0}",
       "en": "Local - {0}",
+      "nl": "Lokaal - {0}",
       "es": "Local: {0}",
       "fr": "Locale - {0}",
       "hi": "स्थानीय - {0}",
@@ -25188,6 +25291,7 @@
     {
       "de": "Lokaler Hafen",
       "en": "Local Port",
+      "nl": "Lokale poort",
       "es": "Puerto local",
       "fr": "Port local",
       "hi": "स्थानीय बंदरगाह",
@@ -25579,6 +25683,7 @@
     {
       "de": "Ausloggen",
       "en": "Log out",
+      "nl": "Uitloggen",
       "es": "Cerrar sesión",
       "fr": "Se déconnecter",
       "hi": "लॉग आउट",
@@ -26678,6 +26783,7 @@
     {
       "de": "Zuordnungseinstellungen",
       "en": "Mapping Settings",
+      "nl": "Kaartinstellingen",
       "es": "Configuración de mapeo",
       "fr": "Paramètres de mappage",
       "hi": "मैपिंग सेटिंग्स",
@@ -26687,6 +26793,7 @@
     {
       "de": "Zuordnungen",
       "en": "Mappings",
+      "nl": "Toewijzingen",
       "es": "Mapeos",
       "fr": "Mappages",
       "hi": "मानचित्रण",
@@ -27044,6 +27151,7 @@
     {
       "de": "MeshCentral",
       "en": "MeshCentral",
+      "nl": "MeshCentral",
       "es": "MeshCentral",
       "fr": "MeshCentral",
       "hi": "मेशसेंट्रल",
@@ -27095,6 +27203,7 @@
     {
       "de": "MeshCentral Assistant ist ein Windows-Taskleistentool, mit dem Benutzer um Hilfe bitten können. Verwenden Sie den unten stehenden Link, um eine Version herunterzuladen, die eine Verbindung zur Gerätegruppe \\\"{0}\\\" herstellt.",
       "en": "MeshCentral Assistant is a Windows system tray tool that users can use to ask for help. Use the link below to download a version that will connect to device group \\\"{0}\\\".",
+      "nl": "MeshCentral Assistant is een hulpprogramma in het Windows systeemvak dat gebruikers kunnen gebruiken om hulp te vragen. Gebruik de onderstaande link om een versie te downloaden die verbinding maakt met apparaatgroep \\\"{0}\\\".",
       "es": "El Asistente MeshCentral para windows es una herramienta para la bandeja del sistema (system tray) que lo usuarios pueden usar para solicitar ayuda. Use el enlace debajo para descargar una version que se conectará al grupo de dispositivos \\\"{0}\\\".",
       "fr": "MeshCentral Assistant est un outil de la barre d'état système Windows que les utilisateurs peuvent utiliser pour demander de l'aide. Utilisez le lien ci-dessous pour télécharger une version qui se connectera au groupe d'appareils \\\"{0}\\\".",
       "hi": "मेशसेंट्रल असिस्टेंट एक विंडोज सिस्टम ट्रे टूल है जिसका उपयोग उपयोगकर्ता मदद मांगने के लिए कर सकते हैं। डिवाइस समूह \\\"{0}\\\" से कनेक्ट होने वाले संस्करण को डाउनलोड करने के लिए नीचे दिए गए लिंक का उपयोग करें।",
@@ -27103,6 +27212,7 @@
     },
     {
       "en": "MeshCentral Assistant is a Windows tool that users can use to ask for help. Use the link below to download a version that will connect to device group \\\"{0}\\\".",
+      "nl": "MeshCentral Assistant is een Windows-tool die gebruikers kunnen gebruiken om hulp te vragen. Gebruik de onderstaande link om een versie te downloaden die verbinding maakt met de apparaatgroep \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->33->463"
       ]
@@ -27170,6 +27280,7 @@
     {
       "de": "Installation des MeshCentral-Routers",
       "en": "MeshCentral Router Installation",
+      "nl": "MeshCentral Router Installatie",
       "es": "Instalación del enrutador MeshCentral",
       "fr": "Installation du routeur MeshCentral",
       "hi": "मेशसेंट्रल राउटर इंस्टालेशन",
@@ -27193,6 +27304,7 @@
     {
       "de": "MeshCentral Router-Update",
       "en": "MeshCentral Router Update",
+      "nl": "MeshCentral Router Update",
       "es": "Actualización del enrutador MeshCentral",
       "fr": "Mise à jour du routeur MeshCentral",
       "hi": "मेशसेंट्रल राउटर अपडेट",
@@ -27202,6 +27314,7 @@
     {
       "de": "MeshCentral Router ermöglicht die Zuordnung von TCP- und UDP-Ports auf diesem Computer zu jedem Computer in Ihrem MeshCentral-Serverkonto. Melden Sie sich zunächst bei Ihrem Konto an.",
       "en": "MeshCentral Router allows mapping of TCP and UDP ports on this computer to any computer in your MeshCentral server account. Start by logging into your account.",
+      "nl": "Met MeshCentral Router kunnen TCP en UDP poorten op deze computer worden toegewezen aan elke computer in uw MeshCentral-serveraccount. Begin door in te loggen op uw account.",
       "es": "MeshCentral Router permite la asignación de puertos TCP y UDP en esta computadora a cualquier computadora en su cuenta de servidor MeshCentral. Empiece por iniciar sesión en su cuenta.",
       "fr": "Le routeur MeshCentral permet de mapper les ports TCP et UDP de cet ordinateur sur n'importe quel ordinateur de votre compte de serveur MeshCentral. Commencez par vous connecter à votre compte.",
       "hi": "MeshCentral राउटर इस कंप्यूटर पर आपके MeshCentral सर्वर खाते के किसी भी कंप्यूटर पर TCP और UDP पोर्ट की मैपिंग की अनुमति देता है। अपने खाते में लॉग इन करके प्रारंभ करें।",
@@ -28012,6 +28125,7 @@
     {
       "de": "Mehrere Benutzer",
       "en": "Multiple Users",
+      "nl": "Meerdere gebruikers",
       "es": "Múltiples usuarios",
       "fr": "Utilisateurs multiples",
       "hi": "एकाधिक उपयोगकर्ता",
@@ -28875,6 +28989,7 @@
     {
       "de": "Nächster",
       "en": "Next",
+      "nl": "Volgende",
       "es": "próximo",
       "fr": "Suivant",
       "hi": "अगला",
@@ -29274,6 +29389,7 @@
     {
       "de": "Keine Portzuordnungen\r\n\r\nKlicken Sie auf \"Hinzufügen\", um zu beginnen.",
       "en": "No Port Mappings\r\n\r\nClick \"Add\" to get started.",
+      "nl": "Geen poorttoewijzingen\r\n\r\nKlik op \"Toevoegen\" om te beginnen.",
       "es": "Sin asignaciones de puertos\r\n\r\nHaga clic en \"Agregar\" para comenzar.",
       "fr": "Aucun mappage de port\r\n\r\nCliquez sur \"Ajouter\" pour commencer.",
       "hi": "कोई पोर्ट मैपिंग नहीं\r\n\r\nआरंभ करने के लिए \"जोड़ें\" पर क्लिक करें।",
@@ -29309,6 +29425,7 @@
     {
       "de": "keine Suchergebnisse",
       "en": "No Search Results",
+      "nl": "geen resultaten gevonden",
       "es": "Sin resultados de búsqueda",
       "fr": "aucun résultat trouvé",
       "hi": "खोजने पर कोई परिणाम नहीं मिला",
@@ -29425,6 +29542,7 @@
     {
       "de": "Keine aktiven Remote-Sitzungen.",
       "en": "No active remote sessions.",
+      "nl": "Geen actieve externe sessies.",
       "es": "No hay sesiones remotas activas.",
       "fr": "Aucune session à distance active.",
       "hi": "कोई सक्रिय दूरस्थ सत्र नहीं।",
@@ -29493,6 +29611,7 @@
       "cs": "Žádná zařízení",
       "de": "Keine Geräte",
       "en": "No devices",
+      "nl": "Geen apparaten",
       "es": "Sin dispositivos",
       "fi": "Ei laitteita",
       "fr": "Aucun appareil",
@@ -29893,6 +30012,7 @@
     {
       "de": "Keine Remote-Sitzungen",
       "en": "No remote sessions",
+      "nl": "Geen externe sessies",
       "es": "Sin sesiones remotas",
       "fr": "Pas de sessions à distance",
       "hi": "कोई दूरस्थ सत्र नहीं",
@@ -30593,6 +30713,7 @@
     {
       "de": "Website öffnen...",
       "en": "O&pen Site...",
+      "nl": "O&pen website...",
       "es": "Sitio de O & pen ...",
       "fr": "&Ouvrir le site...",
       "hi": "साइट खोलें...",
@@ -30989,6 +31110,7 @@
     {
       "de": "Open Source, Apache 2.0-Lizenz",
       "en": "Open Source, Apache 2.0 License",
+      "nl": "Open Source, Apache 2.0 Licentie",
       "es": "Código abierto, licencia Apache 2.0",
       "fr": "Open Source, licence Apache 2.0",
       "hi": "ओपन सोर्स, अपाचे 2.0 लाइसेंस",
@@ -30998,6 +31120,7 @@
     {
       "de": "Website öffnen",
       "en": "Open Web Site",
+      "nl": "Website openen",
       "es": "Abrir sitio web",
       "fr": "Ouvrir le site Web",
       "hi": "वेब साइट खोलें",
@@ -31068,6 +31191,7 @@
     {
       "de": "Öffnen...",
       "en": "Open...",
+      "nl": "Open...",
       "es": "Abierto...",
       "fr": "Ouvert...",
       "hi": "खुला हुआ...",
@@ -31077,6 +31201,7 @@
     {
       "de": "OpenSSH",
       "en": "OpenSSH",
+      "nl": "OpenSSH",
       "es": "OpenSSH",
       "fr": "OpenSSH",
       "hi": "अधिभारित",
@@ -31289,6 +31414,7 @@
     {
       "de": "Ausgehende Bytes",
       "en": "Outgoing Bytes",
+      "nl": "Uitgaande Bytes",
       "es": "Bytes salientes",
       "fr": "Octets sortants",
       "hi": "आउटगोइंग बाइट्स",
@@ -31298,6 +31424,7 @@
     {
       "de": "Ausgehende Komprimierung",
       "en": "Outgoing Compression",
+      "nl": "Uitgaande compressie",
       "es": "Compresión saliente",
       "fr": "Compression sortante",
       "hi": "आउटगोइंग संपीड़न",
@@ -31909,6 +32036,7 @@
     {
       "de": "Pfad",
       "en": "Path",
+      "nl": "Pad",
       "es": "Camino",
       "fr": "Chemin",
       "hi": "पथ",
@@ -32705,6 +32833,7 @@
     {
       "de": "Port-Mapping",
       "en": "Port Mapping",
+      "nl": "Poorttoewijzing",
       "es": "La asignación de puertos",
       "fr": "Mappage des ports",
       "hi": "पोर्ट मानचित्रण",
@@ -32714,6 +32843,7 @@
     {
       "de": "Hilfe zur Portzuordnung",
       "en": "Port Mapping Help",
+      "nl": "Hulp bij poorttoewijzing",
       "es": "Ayuda de mapeo de puertos",
       "fr": "Aide sur le mappage de ports",
       "hi": "पोर्ट मैपिंग सहायता",
@@ -32723,6 +32853,7 @@
     {
       "de": "Port {0} zu Port {1}",
       "en": "Port {0} to port {1}",
+      "nl": "Poort {0} naar poort {1}",
       "es": "Puerto {0} al puerto {1}",
       "fr": "Port {0} vers port {1}",
       "hi": "पोर्ट {0} से पोर्ट {1}",
@@ -32732,6 +32863,7 @@
     {
       "de": "Port {0} nach {1}:{2}",
       "en": "Port {0} to {1}:{2}",
+      "nl": "Poort {0} naar {1}:{2}",
       "es": "Puerto {0} a {1}: {2}",
       "fr": "Port {0} vers {1} :{2}",
       "hi": "पोर्ट {0} से {1}:{2}",
@@ -33149,6 +33281,7 @@
     {
       "de": "DatenschutzBarForm",
       "en": "PrivacyBarForm",
+      "nl": "PrivacyBarForm",
       "es": "PrivacyBarForm",
       "fr": "PrivacyBarForm",
       "hi": "गोपनीयताबारफॉर्म",
@@ -33339,6 +33472,7 @@
     {
       "de": "PuTTY SSH-Client",
       "en": "PuTTY SSH client",
+      "nl": "PuTTY SSH client",
       "es": "Cliente PuTTY SSH",
       "fr": "Client SSH PuTTY",
       "hi": "पुटी एसएसएच क्लाइंट",
@@ -33369,6 +33503,7 @@
     {
       "de": "Zwischenablage von Remote-Gerät ziehen",
       "en": "Pull clipboard from remote device",
+      "nl": "Trek het klembord van het externe apparaat",
       "es": "Extraiga el portapapeles del dispositivo remoto",
       "fr": "Extraire le presse-papiers de l'appareil distant",
       "hi": "दूरस्थ डिवाइस से क्लिपबोर्ड खींचे",
@@ -33452,6 +33587,7 @@
     {
       "de": "Lokale Zwischenablage auf Remote-Gerät übertragen",
       "en": "Push local clipboard to remote device",
+      "nl": "Verplaats lokaal klembord naar extern apparaat",
       "es": "Empuje el portapapeles local al dispositivo remoto",
       "fr": "Transférer le presse-papiers local vers l'appareil distant",
       "hi": "स्थानीय क्लिपबोर्ड को दूरस्थ डिवाइस पर पुश करें",
@@ -33533,6 +33669,7 @@
     {
       "de": "Aktualisierung",
       "en": "R&efresh",
+      "nl": "Vernieuwen",
       "es": "Actualizar",
       "fr": "Rafraîchir",
       "hi": "ताज़ा करें",
@@ -33627,6 +33764,7 @@
     {
       "de": "RDP-Port",
       "en": "RDP Port",
+      "nl": "RDP poort",
       "es": "Puerto RDP",
       "fr": "Port RDP",
       "hi": "आरडीपी पोर्ट",
@@ -33999,6 +34137,7 @@
     {
       "de": "Rekursives Löschen",
       "en": "Recursive Delete",
+      "nl": "Recursief verwijderen",
       "es": "Eliminación recursiva",
       "fr": "Suppression récursive",
       "hi": "पुनरावर्ती हटाएं",
@@ -34165,6 +34304,7 @@
     {
       "de": "Relaisgerät",
       "en": "Relay Device",
+      "nl": "Doorstuur apparaat",
       "es": "Dispositivo de retransmisión",
       "fr": "Dispositif de relais",
       "hi": "रिले डिवाइस",
@@ -34180,7 +34320,7 @@
       "fr": "Erreurs de relais",
       "hi": "रिले त्रुटियां",
       "ko": "전달(Relay) 오류",
-      "nl": "Relay fouten",
+      "nl": "Doorstuurfout",
       "pt": "Erros de retransmissão",
       "ru": "Ошибки ретранслятора",
       "tr": "Röle Hataları",
@@ -34194,6 +34334,7 @@
     {
       "de": "Relaiszuordnung",
       "en": "Relay Mapping",
+      "nl": "Doorstuurtoewijzing",
       "es": "Mapeo de relés",
       "fr": "Cartographie des relais",
       "hi": "रिले मैपिंग",
@@ -34209,7 +34350,7 @@
       "fr": "Séances de relais",
       "hi": "रिले सत्र",
       "ko": "전달(Relay) 세션",
-      "nl": "Relay Sessies",
+      "nl": "Doorstuur Sessies",
       "pt": "Retransmissão de sessão ",
       "ru": "Сессии ретранслятора",
       "tr": "Geçiş Oturumları",
@@ -34258,6 +34399,7 @@
     {
       "de": "Merken Sie sich dieses Zertifikat",
       "en": "Remember this certificate",
+      "nl": "Onthoud dit certificaat",
       "es": "Recuerda este certificado",
       "fr": "Rappelez-vous ce certificat",
       "hi": "यह प्रमाणपत्र याद रखें",
@@ -34328,6 +34470,7 @@
     {
       "de": "Fernbedienung - {0}",
       "en": "Remote - {0}",
+      "nl": "Afstandsbediening - {0}",
       "es": "Remoto: {0}",
       "fr": "À distance - {0}",
       "hi": "रिमोट - {0}",
@@ -34589,6 +34732,7 @@
     {
       "de": "Remotedesktopdaten",
       "en": "Remote Desktop Data",
+      "nl": "Extern bureaublad gegevens",
       "es": "Datos de escritorio remoto",
       "fr": "Données de bureau à distance",
       "hi": "दूरस्थ डेस्कटॉप डेटा",
@@ -34641,6 +34785,7 @@
     {
       "de": "Remotedesktop-Statistiken",
       "en": "Remote Desktop Stats",
+      "nl": "Extern bureaublad statistieken",
       "es": "Estadísticas de escritorio remoto",
       "fr": "Statistiques du bureau à distance",
       "hi": "दूरस्थ डेस्कटॉप आँकड़े",
@@ -34650,6 +34795,7 @@
     {
       "de": "Remotedesktop...",
       "en": "Remote Desktop...",
+      "nl": "Extern bureaublad...",
       "es": "Escritorio remoto...",
       "fr": "Bureau à distance...",
       "hi": "रिमोट डेस्कटॉप...",
@@ -34659,6 +34805,7 @@
     {
       "de": "Remote-Gerät",
       "en": "Remote Device",
+      "nl": "Extern apparaat",
       "es": "Dispositivo remoto",
       "fr": "Périphérique distant",
       "hi": "रिमोट डिवाइस",
@@ -34668,6 +34815,7 @@
     {
       "de": "Remote-Dateien",
       "en": "Remote Files",
+      "nl": "Externe bestanden",
       "es": "Archivos remotos",
       "fr": "Fichiers distants",
       "hi": "दूरस्थ फ़ाइलें",
@@ -34691,6 +34839,7 @@
     {
       "de": "Remote-Dateien...",
       "en": "Remote Files...",
+      "nl": "Externe bestanden...",
       "es": "Archivos remotos ...",
       "fr": "Fichiers distants...",
       "hi": "दूरस्थ फ़ाइलें...",
@@ -34700,6 +34849,7 @@
     {
       "de": "Remote-IP",
       "en": "Remote IP",
+      "nl": "Extern IP",
       "es": "IP remota",
       "fr": "IP distante",
       "hi": "दूरदराज़ के आई. पी",
@@ -34764,6 +34914,7 @@
     {
       "de": "Remote-Port",
       "en": "Remote Port",
+      "nl": "Externe poort",
       "es": "Puerto remoto",
       "fr": "Port distant",
       "hi": "रिमोट पोर्ट",
@@ -34773,6 +34924,7 @@
     {
       "de": "Remote-Sitzungen",
       "en": "Remote Sessions",
+      "nl": "Externe Sessies",
       "es": "Sesiones remotas",
       "fr": "Séances à distance",
       "hi": "दूरस्थ सत्र",
@@ -34782,6 +34934,7 @@
     {
       "de": "Remote-Sitzungen...",
       "en": "Remote Sessions...",
+      "nl": "Externe Sessies...",
       "es": "Sesiones remotas ...",
       "fr": "Séances à distance...",
       "hi": "दूरस्थ सत्र...",
@@ -34791,6 +34944,7 @@
     {
       "de": "Remote-Sitzungen: {0}",
       "en": "Remote Sessions: {0}",
+      "nl": "Externe Sessies: {0}",
       "es": "Sesiones remotas: {0}",
       "fr": "Sessions à distance : {0}",
       "hi": "दूरस्थ सत्र: {0}",
@@ -34916,6 +35070,7 @@
     {
       "de": "Remote-Desktop-Qualität, Skalierung und Bildrateneinstellungen. Diese können je nach Qualität der Netzwerkverbindung angepasst werden.",
       "en": "Remote desktop quality, scaling and frame rate settings. These can be adjusted depending on the quality of the network connection.",
+      "nl": "Instellingen voor kwaliteit, schaal en framesnelheid van het externe bureaublad. Deze kunnen worden aangepast afhankelijk van de kwaliteit van de netwerkverbinding.",
       "es": "Configuración de la calidad del escritorio remoto, la escala y la velocidad de fotogramas. Estos se pueden ajustar en función de la calidad de la conexión de red.",
       "fr": "Paramètres de qualité, de mise à l'échelle et de fréquence d'images du bureau à distance. Ceux-ci peuvent être ajustés en fonction de la qualité de la connexion réseau.",
       "hi": "दूरस्थ डेस्कटॉप गुणवत्ता, स्केलिंग और फ्रेम दर सेटिंग्स। इन्हें नेटवर्क कनेक्शन की गुणवत्ता के आधार पर समायोजित किया जा सकता है।",
@@ -34973,6 +35128,7 @@
     {
       "de": "1 Artikel entfernen?",
       "en": "Remove 1 item?",
+      "nl": "1 artikel verwijderen?",
       "es": "¿Eliminar 1 artículo?",
       "fr": "Supprimer 1 élément ?",
       "hi": "1 आइटम निकालें?",
@@ -35491,6 +35647,7 @@
     {
       "de": "{0} Elemente entfernen?",
       "en": "Remove {0} items?",
+      "nl": "{0} items verwijderen?",
       "es": "¿Eliminar {0} elementos?",
       "fr": "Supprimer {0} éléments ?",
       "hi": "{0} आइटम निकालें?",
@@ -35741,6 +35898,7 @@
     {
       "de": "Datei umbenennen",
       "en": "Rename File",
+      "nl": "Bestand hernoemen",
       "es": "Renombrar archivo",
       "fr": "Renommer le fichier",
       "hi": "फाइल का नाम बदलो",
@@ -35824,6 +35982,7 @@
     {
       "de": "Hilfe anfordern",
       "en": "Request Help",
+      "nl": "Hulp vragen",
       "es": "Solicitar ayuda",
       "fr": "Demander de l'aide",
       "hi": "मदद का अनुरोध करें",
@@ -35833,6 +35992,7 @@
     {
       "de": "Hilfe anfordern...",
       "en": "Request Help...",
+      "nl": "Hulp vragen...",
       "es": "Solicitar ayuda ...",
       "fr": "Demander de l'aide...",
       "hi": "मदद का अनुरोध करें...",
@@ -36474,6 +36634,7 @@
     {
       "de": "Routing-Statistiken",
       "en": "Routing Stats",
+      "nl": "Routeringsstatistieken",
       "es": "Estadísticas de enrutamiento",
       "fr": "Statistiques de routage",
       "hi": "रूटिंग आँकड़े",
@@ -36483,6 +36644,7 @@
     {
       "de": "Routing-Status",
       "en": "Routing Status",
+      "nl": "Routeringsstatus",
       "es": "Estado de enrutamiento",
       "fr": "État du routage",
       "hi": "रूटिंग स्थिति",
@@ -36734,6 +36896,7 @@
     {
       "de": "Die Einstellungen...",
       "en": "S&ettings...",
+      "nl": "Instellingen...",
       "es": "Ajustes...",
       "fr": "Paramètres...",
       "hi": "समायोजन...",
@@ -36743,6 +36906,7 @@
     {
       "de": "Stop-Agent",
       "en": "S&top Agent",
+      "nl": "S&top Agent",
       "es": "Agente s & top",
       "fr": "Agent d'arrêt",
       "hi": "शीर्ष एजेंट",
@@ -36863,6 +37027,7 @@
     {
       "de": "SMS gesendet",
       "en": "SMS sent",
+      "nl": "SMS verzonden",
       "es": "SMS enviado",
       "fr": "SMS envoyé",
       "hi": "एसएमएस भेजा गया",
@@ -36965,6 +37130,7 @@
     {
       "de": "SSH-Benutzername",
       "en": "SSH Username",
+      "nl": "SSH gebruikersnaam",
       "es": "Nombre de usuario SSH",
       "fr": "Nom d'utilisateur SSH",
       "hi": "एसएसएच उपयोगकर्ता नाम",
@@ -37861,6 +38027,7 @@
     {
       "de": "Strg-Alt-Entf an Remote-Gerät senden",
       "en": "Send Ctrl-Alt-Del to remote device",
+      "nl": "Stuur Ctrl-Alt-Del naar extern apparaat",
       "es": "Enviar Ctrl-Alt-Del al dispositivo remoto",
       "fr": "Envoyer Ctrl-Alt-Suppr à l'appareil distant",
       "hi": "रिमोट डिवाइस पर Ctrl-Alt-Del भेजें",
@@ -38282,6 +38449,7 @@
     {
       "de": "Server",
       "en": "Server",
+      "nl": "Server",
       "es": "Servidor",
       "fr": "Serveur",
       "hi": "सर्वर",
@@ -38756,6 +38924,7 @@
     {
       "de": "Serverinformation",
       "en": "Server information",
+      "nl": "Server informatie",
       "es": "Información del servidor",
       "fr": "Informations sur le serveur",
       "hi": "सर्वर जानकारी",
@@ -38811,6 +38980,7 @@
     {
       "de": "Servername",
       "en": "ServerName",
+      "nl": "Servernaam",
       "es": "Nombre del servidor",
       "fr": "Nom du serveur",
       "hi": "सर्वर का नाम",
@@ -39035,6 +39205,7 @@
     {
       "de": "RDP-Port einstellen...",
       "en": "Set RDP port...",
+      "nl": "RDP poort instellen...",
       "es": "Establecer puerto RDP ...",
       "fr": "Définir le port RDP...",
       "hi": "आरडीपी पोर्ट सेट करें...",
@@ -39501,6 +39672,7 @@
     {
       "de": "&Veranstaltungen anzeigen...",
       "en": "Show &Events...",
+      "nl": "&Gebeurtenissen tonen...",
       "es": "Espectáculos y eventos ...",
       "fr": "Afficher les &événements...",
       "hi": "&घटनाक्रम दिखाएं...",
@@ -39510,6 +39682,7 @@
     {
       "de": "&Gruppennamen anzeigen",
       "en": "Show &Group Names",
+      "nl": "Toon &groepsnamen",
       "es": "Mostrar y nombres de grupos",
       "fr": "Afficher les noms de &groupes",
       "hi": "समूह के नाम दिखाएं",
@@ -39519,6 +39692,7 @@
     {
       "de": "&Offline-Geräte anzeigen",
       "en": "Show &Offline Devices",
+      "nl": "Toon &Offline apparaten",
       "es": "Mostrar y dispositivos sin conexión",
       "fr": "Afficher les appareils &hors ligne",
       "hi": "दिखाएँ &ऑफ़लाइन उपकरण",
@@ -39613,6 +39787,7 @@
     {
       "de": "Sitzungen anzeigen...",
       "en": "Show Sessions...",
+      "nl": "Sessies weergeven...",
       "es": "Mostrar sesiones ...",
       "fr": "Afficher les séances...",
       "hi": "सत्र दिखाएं...",
@@ -39806,6 +39981,7 @@
     {
       "de": "In der Taskleiste anzeigen",
       "en": "Show on system tray",
+      "nl": "Weergeven in systeemvak",
       "es": "Mostrar en la bandeja del sistema",
       "fr": "Afficher sur la barre d'état système",
       "hi": "सिस्टम ट्रे पर दिखाएं",
@@ -40093,6 +40269,7 @@
     {
       "de": "Seite? ˅",
       "en": "Site",
+      "nl": "Lokatie",
       "es": "Sitio",
       "fr": "Placer",
       "hi": "साइट",
@@ -40503,6 +40680,7 @@
     {
       "de": "Nach Name sortieren",
       "en": "Sort by &Name",
+      "nl": "Sorteer op &Naam",
       "es": "Ordenar por nombre",
       "fr": "Trier par nom",
       "hi": "नाम द्वारा क्रमबद्ध करें",
@@ -40512,6 +40690,7 @@
     {
       "de": "Nach Gruppe sortieren",
       "en": "Sort by G&roup",
+      "nl": "Sorteer op G&roep",
       "es": "Ordenar por grupo y grupo",
       "fr": "Trier par groupe",
       "hi": "समूह के आधार पर छाँटें",
@@ -41430,6 +41609,7 @@
     {
       "de": "Beginnend...",
       "en": "Starting...",
+      "nl": "Starten...",
       "es": "A partir de...",
       "fr": "Départ...",
       "hi": "शुरुआत...",
@@ -41480,6 +41660,7 @@
     {
       "de": "Statistiken...",
       "en": "Stats...",
+      "nl": "Statistieken...",
       "es": "Estadísticas ...",
       "fr": "Statistiques...",
       "hi": "आँकड़े...",
@@ -41588,6 +41769,7 @@
     {
       "de": "Gestoppt",
       "en": "Stopped",
+      "nl": "Gestopt",
       "es": "Detenido",
       "fr": "Arrêté",
       "hi": "रोका हुआ",
@@ -41597,6 +41779,7 @@
     {
       "de": "Gestoppt.",
       "en": "Stopped.",
+      "nl": "Gestopt.",
       "es": "Detenido.",
       "fr": "Arrêté.",
       "hi": "रोका हुआ।",
@@ -41972,12 +42155,14 @@
     },
     {
       "en": "System Tray, Always connected",
+      "nl": "Systeemvak, altijd verbonden",
       "xloc": [
         "default.handlebars->33->443"
       ]
     },
     {
       "en": "System Tray, Connect on user request",
+      "nl": "Systeemvak, verbinding maken op verzoek van de gebruiker",
       "xloc": [
         "default.handlebars->33->442"
       ]
@@ -42022,6 +42207,7 @@
     {
       "de": "TCP",
       "en": "TCP",
+      "nl": "TCP",
       "es": "TCP",
       "fr": "TCP",
       "hi": "टीसीपी",
@@ -42052,6 +42238,7 @@
     {
       "de": "TCP-Relais",
       "en": "TCP relay",
+      "nl": "TCP relay",
       "es": "Relé TCP",
       "fr": "Relais TCP",
       "hi": "टीसीपी रिले",
@@ -42785,6 +42972,7 @@
     {
       "de": "Dieser MeshCentral Server verwendet eine andere Version dieses Tools. Klicken Sie auf OK, um herunterzuladen und zu aktualisieren.",
       "en": "This MeshCentral Server uses a different version of this tool. Click ok to download and update.",
+      "nl": "Deze MeshCentral Server gebruikt een andere versie van deze tool. Klik op OK om te downloaden en bij te werken.",
       "es": "Este servidor MeshCentral utiliza una versión diferente de esta herramienta. Haga clic en Aceptar para descargar y actualizar.",
       "fr": "Ce serveur MeshCentral utilise une version différente de cet outil. Cliquez sur ok pour télécharger et mettre à jour.",
       "hi": "यह MeshCentral सर्वर इस टूल के भिन्न संस्करण का उपयोग करता है। डाउनलोड और अपडेट करने के लिए ओके पर क्लिक करें।",
@@ -42871,6 +43059,7 @@
     },
     {
       "en": "This is an old agent version, consider updating.",
+      "nl": "Dit is een oude agent versie, overweeg om te updaten.",
       "xloc": [
         "default.handlebars->33->2003"
       ]
@@ -42956,6 +43145,7 @@
     {
       "de": "Dieser Server hat ein nicht vertrauenswürdiges Zertifikat vorgelegt. Dies kann darauf hinweisen, dass dies nicht der richtige Server ist oder dass der Server nicht über ein gültiges Zertifikat verfügt. Es wird nicht empfohlen, aber Sie können die Ignorieren-Taste drücken, um die Verbindung zu diesem Server fortzusetzen.",
       "en": "This server presented a un-trusted certificate.  This may indicate that this is not the correct server or that the server does not have a valid certificate. It is not recommanded, but you can press the ignore button to continue connection to this server.",
+      "nl": "Deze server heeft een niet-vertrouwd certificaat gepresenteerd. Dit kan erop wijzen dat dit niet de juiste server is of dat de server geen geldig certificaat heeft. Het wordt niet aanbevolen, maar u kunt op de negeren drukken om de verbinding met deze server voort te zetten.",
       "es": "Este servidor presentó un certificado no confiable. Esto puede indicar que este no es el servidor correcto o que el servidor no tiene un certificado válido. No se recomienda, pero puede presionar el botón ignorar para continuar la conexión a este servidor.",
       "fr": "Ce serveur a présenté un certificat non approuvé. Cela peut indiquer qu'il ne s'agit pas du bon serveur ou que le serveur n'a pas de certificat valide. Ce n'est pas recommandé, mais vous pouvez appuyer sur le bouton ignorer pour continuer la connexion à ce serveur.",
       "hi": "इस सर्वर ने एक अविश्वसनीय प्रमाणपत्र प्रस्तुत किया। यह संकेत दे सकता है कि यह सही सर्वर नहीं है या सर्वर के पास वैध प्रमाणपत्र नहीं है। यह अनुशंसित नहीं है, लेकिन आप इस सर्वर से कनेक्शन जारी रखने के लिए अनदेखा करें बटन दबा सकते हैं।",
@@ -43723,6 +43913,7 @@
     {
       "de": "Remotedesktopverbindung umschalten",
       "en": "Toggle remote desktop connection",
+      "nl": "Verbinding met extern bureaublad wisselen",
       "es": "Alternar la conexión de escritorio remoto",
       "fr": "Basculer la connexion au bureau à distance",
       "hi": "दूरस्थ डेस्कटॉप कनेक्शन टॉगल करें",
@@ -43794,6 +43985,7 @@
     {
       "de": "Zoom-to-Fit-Modus umschalten",
       "en": "Toggle zoom-to-fit mode",
+      "nl": "Schakel inzoemen naar passend modus in",
       "es": "Alternar el modo de zoom para ajustar",
       "fr": "Basculer en mode zoom pour ajuster",
       "hi": "ज़ूम-टू-फ़िट मोड टॉगल करें",
@@ -43979,6 +44171,7 @@
     {
       "de": "Übertragungsfortschritt",
       "en": "Transfer Progress",
+      "nl": "Voortgang overdracht",
       "es": "Progreso de la transferencia",
       "fr": "Progression du transfert",
       "hi": "स्थानांतरण प्रगति",
@@ -44083,6 +44276,7 @@
     {
       "de": "Tunneling-Daten",
       "en": "Tunnelling Data",
+      "nl": "Gegevens tunnelen",
       "es": "Datos de tunelización",
       "fr": "Données de tunneling",
       "hi": "टनलिंग डेटा",
@@ -44152,6 +44346,7 @@
     {
       "de": "Zwei-Faktor-Authentifizierung",
       "en": "Two-factor Authentication",
+      "nl": "Twee-factor authenticatie",
       "es": "Autenticación de dos factores",
       "fr": "Authentification à deux facteurs",
       "hi": "दो तरीकों से प्रमाणीकरण",
@@ -44230,6 +44425,7 @@
     {
       "de": "UDP",
       "en": "UDP",
+      "nl": "UDP",
       "es": "UDP",
       "fr": "UDP",
       "hi": "यूडीपी",
@@ -44260,6 +44456,7 @@
     {
       "de": "UDP-Relais",
       "en": "UDP relay",
+      "nl": "UDP relais",
       "es": "Relé UDP",
       "fr": "relais UDP",
       "hi": "यूडीपी रिले",
@@ -44458,6 +44655,7 @@
     {
       "de": "Kann nicht an lokalen Port binden",
       "en": "Unable to bind to local port",
+      "nl": "Kan niet binden aan lokale poort",
       "es": "No se puede vincular al puerto local",
       "fr": "Impossible de se lier au port local",
       "hi": "स्थानीय पोर्ट से जुड़ने में असमर्थ",
@@ -44467,6 +44665,7 @@
     {
       "de": "Verbindung konnte nicht hergestellt werden",
       "en": "Unable to connect",
+      "nl": "Niet in staat te verbinden",
       "es": "No puede conectarse",
       "fr": "Impossible de se connecter",
       "hi": "कनेक्ट करने में असमर्थ",
@@ -45064,6 +45263,7 @@
     {
       "de": "Aktualisierung...",
       "en": "Updating...",
+      "nl": "Bijwerken...",
       "es": "Actualizando ...",
       "fr": "Mise à jour...",
       "hi": "अपडेट हो रहा है...",
@@ -45441,6 +45641,7 @@
     {
       "de": "Alternativer Port verwenden...",
       "en": "Use Alternate Port...",
+      "nl": "Alternatieve poort gebruiken...",
       "es": "Usar puerto alternativo ...",
       "fr": "Utiliser un autre port...",
       "hi": "वैकल्पिक पोर्ट का उपयोग करें...",
@@ -46467,6 +46668,7 @@
     {
       "de": "Wert",
       "en": "Value",
+      "nl": "Waarde",
       "es": "Valor",
       "fr": "Valeur",
       "hi": "मूल्य",
@@ -46712,6 +46914,7 @@
     {
       "de": "Versionen",
       "en": "Versions",
+      "nl": "Versies",
       "es": "Versiones",
       "fr": "Versions",
       "hi": "संस्करणों",
@@ -46818,6 +47021,7 @@
     {
       "de": "Zertifikatdetails anzeigen...",
       "en": "View Certificate Details...",
+      "nl": "Certificaatdetails bekijken...",
       "es": "Ver detalles del certificado ...",
       "fr": "Afficher les détails du certificat...",
       "hi": "प्रमाणपत्र विवरण देखें...",
@@ -46957,6 +47161,7 @@
     {
       "de": "WARNUNG - Ungültiges Serverzertifikat",
       "en": "WARNING - Invalid Server Certificate",
+      "nl": "WAARSCHUWING - Ongeldig servercertificaat",
       "es": "ADVERTENCIA: certificado de servidor no válido",
       "fr": "AVERTISSEMENT - Certificat de serveur non valide",
       "hi": "चेतावनी - अमान्य सर्वर प्रमाणपत्र",
@@ -47817,6 +48022,7 @@
     {
       "de": "WinSCP-Client",
       "en": "WinSCP client",
+      "nl": "WinSCP client",
       "es": "Cliente WinSCP",
       "fr": "Client WinSCP",
       "hi": "विनएससीपी क्लाइंट",
@@ -49762,6 +49968,7 @@
     {
       "de": "Etikett1",
       "en": "label1",
+      "nl": "label1",
       "es": "etiqueta1",
       "fr": "étiquette1",
       "hi": "लेबल1",
@@ -50148,6 +50355,7 @@
     {
       "de": "statusStrip1",
       "en": "statusStrip1",
+      "nl": "statusStrip1",
       "es": "statusStrip1",
       "fr": "statusStrip1",
       "hi": "स्थिति पट्टी1",
@@ -50405,6 +50613,13 @@
     },
     {
       "en": "v"
+      "nl": "v"
+      "de": "v"
+      "es": "v"
+      "cs": "v"
+      "fi": "v"
+      "fr": "v"
+      "pt": "v"
     },
     {
       "de": "v0.8.0",
@@ -50413,7 +50628,16 @@
       "fr": "v0.8.0",
       "hi": "v0.8.0",
       "ko": "v0.8.0",
-      "zh-chs": "v0.8.0"
+      "fi": "v0.8.0",
+      "fr": "v0.8.0",
+      "hi": "v0.8.0",
+      "ko": "v0.8.0",
+      "nl": "v0.8.0",
+      "pt": "v0.8.0",
+      "ru": "v0.8.0",
+      "tr": "v0.8.0",
+      "zh-cht": "v0.8.0",
+      "zh-chs": "v0.8.0",
     },
     {
       "cs": "{0}",
@@ -50459,6 +50683,7 @@
     {
       "de": "{0} - {1}",
       "en": "{0} - {1}",
+      "nl": "{0} - {1}",
       "es": "{0} - {1}",
       "fr": "{0} - {1}",
       "hi": "{0} - {1}",
@@ -50468,6 +50693,7 @@
     {
       "de": "{0} Assistent",
       "en": "{0} Assistant",
+      "nl": "{0} Assistant",
       "es": "{0} Asistente",
       "fr": "{0} Assistante",
       "hi": "{0} सहायक",
@@ -50477,6 +50703,7 @@
     {
       "de": "{0} Byte",
       "en": "{0} Byte",
+      "nl": "{0} Byte",
       "es": "{0} Byte",
       "fr": "{0} octet",
       "hi": "{0} बाइट",
@@ -50486,6 +50713,7 @@
     {
       "de": "{0} Byte",
       "en": "{0} Bytes",
+      "nl": "{0} Bytes",
       "es": "{0} bytes",
       "fr": "{0} octets",
       "hi": "{0} बाइट्स",
@@ -50948,6 +51176,7 @@
     {
       "de": "{0} Remote-Sitzungen",
       "en": "{0} remote sessions",
+      "nl": "{0} externe sessies",
       "es": "{0} sesiones remotas",
       "fr": "{0} sessions à distance",
       "hi": "{0} दूरस्थ सत्र",
@@ -50957,6 +51186,7 @@
     {
       "de": "{0} Remote-Sitzungen sind aktiv.",
       "en": "{0} remote sessions are active.",
+      "nl": "{0} sessies op afstand zijn actief..",
       "es": "{0} sesiones remotas están activas.",
       "fr": "{0} sessions à distance sont actives.",
       "hi": "{0} दूरस्थ सत्र सक्रिय हैं।",
@@ -51360,6 +51590,17 @@
     },
     {
       "en": "≡"
+      "cs": "≡",
+      "de": "≡",
+      "en": "≡",
+      "es": "≡",
+      "fi": "≡",
+      "fr": "≡",
+      "ko": "≡",
+      "nl": "≡",
+      "pt": "≡",
+      "ru": "≡",
+      "ja": "≡",
     },
     {
       "cs": "◀",
