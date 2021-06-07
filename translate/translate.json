@@ -5193,7 +5193,7 @@
     },
     {
       "de": "Agent ist pausiert",
-      "en": "Agent is gepause pending",
+      "en": "Agent is pause pending",
       "nl": "Agent is gepauzeerd",
       "es": "El agente está en pausa pendiente",
       "fr": "L'agent est en attente de pause",
@@ -5336,7 +5336,8 @@
     },
     {
       "de": "Agentenauswahl",
-      "en": "Agent selecteren",
+      "en": "Select Agent",
+      "nl": "Agent selecteren",
       "es": "Seleccionar agente",
       "fr": "Sélection d'agent",
       "hi": "एजेंट चुनें",
@@ -29137,6 +29138,7 @@
     {
       "de": "Keine Geräte",
       "en": "No Devices",
+      "nl": "Geen apparaten",
       "es": "Sin dispositivos",
       "fr": "Aucun appareil",
       "hi": "कोई उपकरण नहीं",
@@ -29260,7 +29262,7 @@
       "fr": "Aucun appareil Intel&reg; AMT dans ce groupe",
       "hi": "इस डिवाइस समूह में कोई Intel&reg; AMT डिवाइस नहीं है",
       "ko": "このデバイス グループには Intel&reg; AMT デバイスがありません",
-      "nl": "Geen Intel&reg; AMT apparaten in deze appaatgroep",
+      "nl": "Geen Intel&reg; AMT apparaten in deze apparaatgroep",
       "ru": "В этой группе нет устройств Intel&reg; AMT",
       "zh-chs": "此设备组中没有英特尔&reg; AMT 设备",
       "xloc": [
@@ -43000,12 +43002,14 @@
     },
     {
       "en": "This agent has an outstated certificate validation mechanism, consider updating.",
+      "nl": "Deze agent heeft een verouderd certificaat validatiemechanisme, overweeg om te updaten.",
       "xloc": [
         "default.handlebars->33->2004"
       ]
     },
     {
       "en": "This agent is using insecure tunnels, consider updating.",
+      "nl": "Deze agent gebruikt onveilige tunnels, overweeg om te updaten.",
       "xloc": [
         "default.handlebars->33->2005"
       ]
