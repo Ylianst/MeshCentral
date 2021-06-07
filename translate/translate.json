@@ -5192,16 +5192,6 @@
       "zh-chs": "代理已断开连接"
     },
     {
-      "de": "Agent ist pausiert",
-      "en": "Agent is pause pending",
-      "nl": "Agent is gepauzeerd",
-      "es": "El agente está en pausa pendiente",
-      "fr": "L'agent est en attente de pause",
-      "hi": "एजेंट रुका हुआ है",
-      "ko": "エージェントは一時停止保留中です",
-      "zh-chs": "代理暂停待定"
-    },
-    {
       "de": "Agent fehlt",
       "en": "Agent is missing",
       "nl": "Agent ontbreekt",
@@ -5252,6 +5242,16 @@
         "default-mobile.handlebars->11->545",
         "default.handlebars->33->1251"
       ]
+    },
+    {
+      "de": "Agent ist pausiert",
+      "en": "Agent is pause pending",
+      "nl": "Agent is gepauzeerd",
+      "es": "El agente está en pausa pendiente",
+      "fr": "L'agent est en attente de pause",
+      "hi": "एजेंट रुका हुआ है",
+      "ko": "エージェントは一時停止保留中です",
+      "zh-chs": "代理暂停待定"
     },
     {
       "de": "Agent ist pausiert",
@@ -5333,16 +5333,6 @@
       "hi": "एजेंट स्थापित नहीं",
       "ko": "エージェントがインストールされていません",
       "zh-chs": "未安装代理"
-    },
-    {
-      "de": "Agentenauswahl",
-      "en": "Select Agent",
-      "nl": "Agent selecteren",
-      "es": "Seleccionar agente",
-      "fr": "Sélection d'agent",
-      "hi": "एजेंट चुनें",
-      "ko": "エージェントセレクト",
-      "zh-chs": "代理选择"
     },
     {
       "cs": "Agenti",
@@ -5449,7 +5439,7 @@
     },
     {
       "cs": "Všechny události",
-      "de": "Alle Veranstaltungen",
+      "de": "Alle Ereignisse",
       "en": "All Events",
       "es": "Todos los Eventos",
       "fi": "Kaikki tapahtumat",
@@ -37744,6 +37734,16 @@
       ]
     },
     {
+      "de": "Agentenauswahl",
+      "en": "Select Agent",
+      "nl": "Agent selecteren",
+      "es": "Seleccionar agente",
+      "fr": "Sélection d'agent",
+      "hi": "एजेंट चुनें",
+      "ko": "エージェントセレクト",
+      "zh-chs": "代理选择"
+    },
+    {
       "cs": "Vybrat vše",
       "de": "Alle auswählen",
       "en": "Select All",
@@ -39670,7 +39670,7 @@
       ]
     },
     {
-      "de": "&Veranstaltungen anzeigen...",
+      "de": "&Ereignisse anzeigen...",
       "en": "Show &Events...",
       "nl": "&Gebeurtenissen tonen...",
       "es": "Espectáculos y eventos ...",
