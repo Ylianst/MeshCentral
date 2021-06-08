@@ -4636,8 +4636,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // Customize the mesh agent file name
                 if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) {
-                    meshfilename = meshfilename.split('meshagent').join(domain.agentcustomization.filename);
-                    meshfilename = meshfilename.split('MeshAgent').join(domain.agentcustomization.filename);
+                    meshfilename = meshfilename.split('meshagent').join(domain.agentcustomization.filename).split('MeshAgent').join(domain.agentcustomization.filename);
                 }
 
                 // Get the agent connection server name
@@ -4667,7 +4666,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (typeof domain.assistantcustomization.image == 'string') {
                             try { meshsettings += 'Image=' + Buffer.from(obj.fs.readFileSync(parent.getConfigFilePath(domain.assistantcustomization.image)), 'binary').toString('base64') + '\r\n'; } catch (ex) { console.log(ex); }
                         }
-                        if (typeof domain.assistantcustomization.filename == 'string') { meshfilename = meshfilename.split('MeshCentralAssistant').join(domain.assistantcustomization.filename); }
+                        if (req.query.ac != '4') {
+                            // Send with custom filename followed by device group name
+                            if (typeof domain.assistantcustomization.filename == 'string') { meshfilename = meshfilename.split('MeshCentralAssistant').join(domain.assistantcustomization.filename); }
+                        } else {
+                            // Send with custom filename, no device group name
+                            if (typeof domain.assistantcustomization.filename == 'string') { meshfilename = domain.assistantcustomization.filename + '.exe'; } else { meshfilename = 'MeshCentralAssistant.exe'; }
+                        }
                     }
                 } else { // Add agent customization, not for Assistant
                     if (domain.agentcustomization != null) {
