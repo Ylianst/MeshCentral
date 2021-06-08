@@ -3153,7 +3153,7 @@ function mainStart() {
             if (config.domains[i].yubikey != null) { yubikey = true; }
             if (config.domains[i].auth == 'ldap') { ldap = true; }
             if (config.domains[i].mstsc === true) { mstsc = true; }
-            if (config.domains[i].ssh === true) { if (nodeVersion < 10.04) { config.domains[i].ssh = false; } ssh = true; }
+            if (config.domains[i].ssh === true) { if (nodeVersion < 11) { config.domains[i].ssh = false; } ssh = true; }
             if ((typeof config.domains[i].authstrategies == 'object')) {
                 if (passport == null) { passport = ['passport']; }
                 if ((typeof config.domains[i].authstrategies.twitter == 'object') && (typeof config.domains[i].authstrategies.twitter.clientid == 'string') && (typeof config.domains[i].authstrategies.twitter.clientsecret == 'string') && (passport.indexOf('passport-twitter') == -1)) { passport.push('passport-twitter'); }
@@ -3172,7 +3172,7 @@ function mainStart() {
         if (require('os').platform() == 'win32') { modules.push('node-windows'); modules.push('loadavg-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (mstsc == true) { modules.push('node-rdpjs-2'); }
-        if (ssh == true) { if (nodeVersion < 10.04) { addServerWarning('MeshCentral SSH support required NodeJS 10.4 or higher.'); } else { modules.push('ssh2'); } }
+        if (ssh == true) { if (nodeVersion < 11) { addServerWarning('MeshCentral SSH support required NodeJS 11 or higher.'); } else { modules.push('ssh2'); } }
         if (passport != null) { modules.push(...passport); }
         if (sessionRecording == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
         if (config.letsencrypt != null) { modules.push('acme-client'); } // Add acme-client module
