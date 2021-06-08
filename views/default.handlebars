@@ -9276,7 +9276,7 @@
         }
 
         function p13setActions() {
-            var advancedFeatures = (currentNode.agent.id != 14); // Reduct file feature on some devices.
+            var advancedFeatures = ((currentNode.agent != null) && (currentNode.agent.id != 14)); // Reduce file feature on some devices.
             if (p13filetree == null) {
                 QE('p13DeleteFileButton', false);
                 QE('p13NewFolderButton', false);
