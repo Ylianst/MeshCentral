@@ -7655,7 +7655,7 @@
         function autoConnectDesktop(e) { if (autoConnectDesktopTimer == null) { autoConnectDesktopTimer = setInterval(function() { connectDesktop(null, 1) }, 1000); } else { clearInterval(autoConnectDesktopTimer); autoConnectDesktopTimer = null; } }
 
         // Used to translate incoming agent console messages
-        var agentConsoleMessages = [ '', "Waiting for user to grant access...", "Denied", "Failed to start remote terminal session, {0} ({1})", "Timeout", "Received invalid network data" ];
+        var agentConsoleMessages = [ '', "Waiting for user to grant access...", "Denied", "Failed to start remote terminal session, {0} ({1})", "Timeout", "Received invalid network data", "Unable to capture display" ];
         function formatAgentConsoleMessage(msg, msgid, msgargs) {
             var r;
             if (msgargs == null) { msgargs = []; }
@@ -9895,7 +9895,10 @@
                     var m = network.netif2[i];
                     if ((Array.isArray(m) == false) || (m.length < 1) || (m[0] == null) || ((typeof m[0].mac == 'string') && (m[0].mac.startsWith('00:00:00:00')))) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(i + (m[0].fqdn?(', ' + m[0].fqdn):'')) + '</b></div>';
+                    var ifTitle = [];
+                    if (i != null) { ifTitle.push(i); }
+                    if (m[0].fqdn != null) { ifTitle.push(m[0].fqdn); }
+                    if (ifTitle.length > 0) { x += '<div style=margin-bottom:3px><b>' + EscapeHtml(ifTitle.join(', ')) + '</b></div>'; }
                     if (m.desc) { x += addDetailItem("Description", EscapeHtml(m.desc).split('(R)').join('&reg;')); }
                     //if (m.dnssuffix) { x += addDetailItem("DNS Suffix", m.dnssuffix); }
                     if (typeof m[0].mac == 'string') {
