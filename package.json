@@ -42,7 +42,7 @@
     "cookie-session": "^2.0.0-beta.3",
     "express": "^4.17.0",
     "express-handlebars": "^3.1.0",
-    "express-ws": "^4.0.0",
+    "express-ws": "^5.0.1",
     "ipcheck": "^0.1.0",
     "minimist": "^1.2.0",
     "multiparty": "^4.2.2",
