@@ -46,9 +46,11 @@ var MESHRIGHT_CHATNOTIFY = 16384;
 var MESHRIGHT_UNINSTALL = 32768;
 var MESHRIGHT_NODESKTOP = 65536;
 
-if (require('MeshAgent').ARCHID == null) {
+if (require('MeshAgent').ARCHID == null)
+{
     var id = null;
-    switch (process.platform) {
+    switch (process.platform)
+    {
         case 'win32':
             id = require('_GenericMarshal').PointerSize == 4 ? 3 : 4;
             break;
@@ -56,21 +58,22 @@ if (require('MeshAgent').ARCHID == null) {
             id = require('_GenericMarshal').PointerSize == 4 ? 31 : 30;
             break;
         case 'darwin':
-            try {
+            try
+            {
                 id = require('os').arch() == 'x64' ? 16 : 29;
             }
-            catch (xx) {
+            catch (xx)
+            {
                 id = 16;
             }
             break;
     }
     if (id != null) { Object.defineProperty(require('MeshAgent'), 'ARCHID', { value: id }); }
 }
-
 var obj = {};
 var agentFileHttpRequests = {}; // Currently active agent HTTPS GET requests from the server.
 var agentFileHttpPendingRequests = []; // Pending HTTPS GET requests from the server.
-var debugConsole = (_MSH().debugConsole == 1);
+var debugConsole = (global._MSH && (_MSH().debugConsole == 1));
 
 if (process.platform == 'win32' && require('user-sessions').isRoot()) {
     // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
@@ -277,8 +280,16 @@ obj.DAIPC.on('connection', function (c) {
 });
 
 // Send current sessions to registered apps
-function broadcastSessionsToRegisteredApps(x) {
+function broadcastSessionsToRegisteredApps(x)
+{
+    var p = {}, i;
+    for (i = 0; i < sendAgentMessage.messages.length; ++i)
+    {
+        p[i] = sendAgentMessage.messages[i];
+    }
+    tunnelUserCount.msg = p;
     broadcastToRegisteredApps({ cmd: 'sessions', sessions: tunnelUserCount });
+    tunnelUserCount.msg = {};
 }
 
 // Send this object to all registered local applications
@@ -838,7 +849,8 @@ function handleServerCommand(data) {
 
                                 // Perform manual server TLS certificate checking based on the certificate hash given by the server.
                                 woptions.rejectUnauthorized = 0;
-                                woptions.checkServerIdentity = function checkServerIdentity(certs) {
+                                woptions.checkServerIdentity = function checkServerIdentity(certs)
+                                {
                                     /*
                                     try { sendConsoleText("certs[0].digest: " + certs[0].digest); } catch (ex) { sendConsoleText(ex); }
                                     try { sendConsoleText("certs[0].fingerprint: " + certs[0].fingerprint); } catch (ex) { sendConsoleText(ex); }
@@ -847,8 +859,15 @@ function handleServerCommand(data) {
                                     */
 
                                     // If the tunnel certificate matches the control channel certificate, accept the connection
-                                    try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { }
-                                    try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { }
+                                    var noErrors = true;
+                                    try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { noErrors = false; }
+                                    try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { noErrors = false; }
+                                    if (certs[0].digest == null || noErrors == true)
+                                    {
+                                        sendAgentMessage("This agent is using insecure tunnels, consider updating.", 3, 119, true);
+                                        return;
+                                    }
+
                                     // Check that the certificate is the one expected by the server, fail if not.
                                     if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') }
                                 }
@@ -2942,31 +2961,32 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'agentmsg': {
-                if (args['_'].length == 0) {
+                if (args['_'].length == 0)
+                {
                     response = "Proper usage:\r\n  agentmsg add \"[message]\" [iconIndex]\r\n  agentmsg remove [index]\r\n  agentmsg list"; // Display usage
-                } else {
-                    if ((args['_'][0] == 'add') && (args['_'].length > 1)) {
-                        var msgIndex = 1, iconIndex = 0;
-                        while (tunnelUserCount.msg[msgIndex] != null) { msgIndex++; }
+                } else
+                {
+                    if ((args['_'][0] == 'add') && (args['_'].length > 1))
+                    {
+                        var msgID, iconIndex = 0;
                         if (args['_'].length >= 3) { try { iconIndex = parseInt(args['_'][2]); } catch (e) { } }
                         if (typeof iconIndex != 'number') { iconIndex = 0; }
-                        tunnelUserCount.msg[msgIndex] = { msg: args['_'][1], icon: iconIndex };
-                        response = 'Agent message ' + msgIndex + ' added.';
-                    } else if ((args['_'][0] == 'remove') && (args['_'].length > 1)) {
-                        var msgIndex = 0;
-                        try { msgIndex = parseInt(args['_'][1]); } catch (x) { }
-                        if (tunnelUserCount.msg[msgIndex] == null) { response = "Message not found."; } else { delete tunnelUserCount.msg[msgIndex]; response = "Message removed."; }
-                    } else if (args['_'][0] == 'list') {
-                        response = JSON.stringify(tunnelUserCount.msg, null, 2);
+                        msgID = sendAgentMessage(args['_'][1], iconIndex);
+                        response = 'Agent message: ' + msgID + ' added.';
+                    } else if ((args['_'][0] == 'remove') && (args['_'].length > 1))
+                    {
+                        var r = removeAgentMessage(args['_'][1]);
+                        response = 'Message ' + (r ? 'removed' : 'NOT FOUND');
+                    } else if (args['_'][0] == 'list')
+                    {
+                        response = JSON.stringify(sendAgentMessage(), null, 2);
                     }
-                    try { mesh.SendCommand({ action: 'sessions', type: 'msg', value: tunnelUserCount.msg }); } catch (x) { }
                     broadcastSessionsToRegisteredApps();
                 }
                 break;
             }
             case 'clearagentmsg': {
-                tunnelUserCount.msg = {};
-                try { mesh.SendCommand({ action: 'sessions', type: 'msg', value: tunnelUserCount.msg }); } catch (x) { }
+                removeAgentMessage();
                 broadcastSessionsToRegisteredApps();
                 break;
             }
@@ -3985,14 +4005,58 @@ function sendConsoleText(text, sessionid) {
     if (sessionid != 'pipe') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: text, sessionid: sessionid }); }
 }
 
-// Send a mesh agent message to server, placing a bubble/badge on the agent device
-function sendAgentMessage(msg, icon) {
-    if (sendAgentMessage.messages == null) {
-        sendAgentMessage.messages = {};
-        sendAgentMessage.nextid = 1;
+function removeAgentMessage(msgid)
+{
+    var ret = false;
+    if (msgid == null)
+    {
+        // Delete all messages
+        sendAgentMessage.messages = [];
+        ret = true;
     }
-    sendAgentMessage.messages[sendAgentMessage.nextid++] = { msg: msg, icon: icon };
-    require('MeshAgent').SendCommand({ action: 'sessions', type: 'msg', value: sendAgentMessage.messages });
+    else
+    {
+        var i = sendAgentMessage.messages.findIndex(function (v) { return (v.id == msgid); });
+        if (i >= 0)
+        {
+            sendAgentMessage.messages.splice(i, 1);
+            ret = true;
+        }
+    }
+    if (ret) { sendAgentMessage(); }
+    return (ret);
+}
+
+// Send a mesh agent message to server, placing a bubble/badge on the agent device
+function sendAgentMessage(msg, icon, serverid, first)
+{
+    if (sendAgentMessage.messages == null)
+    {
+        sendAgentMessage.messages = [];
+    }
+
+    if (arguments.length > 0)
+    {
+        if (first == null || (serverid && first && sendAgentMessage.messages.findIndex(function (v) { return (v.msgid == serverid); }) < 0))
+        {
+            sendAgentMessage.messages.push({ msg: msg, icon: icon, msgid: serverid });
+            sendAgentMessage.messages.peek().id = sendAgentMessage.messages.peek()._hashCode();
+        }
+    }
+
+    var p = {}, i;
+    for (i = 0; i < sendAgentMessage.messages.length; ++i)
+    {
+        p[i] = sendAgentMessage.messages[i];
+    }
+    try
+    {
+        require('MeshAgent').SendCommand({ action: 'sessions', type: 'msg', value: p });
+    }
+    catch(ex)
+    {
+    }
+    return (arguments.length > 0 ? sendAgentMessage.messages.peek().id : sendAgentMessage.messages);
 }
 function getOpenDescriptors() {
     switch (process.platform) {
@@ -4390,14 +4454,27 @@ function agentUpdate_Start(updateurl, updateoptions) {
 //process.exit = function (code) { console.log("Exit with code: " + code.toString()); }
 
 // Called when the server connection state changes
-function handleServerConnection(state) {
+function handleServerConnection(state)
+{
     meshServerConnectionState = state;
-    if (meshServerConnectionState == 0) {
+    if (meshServerConnectionState == 0)
+    {
         // Server disconnected
         if (selfInfoUpdateTimer != null) { clearInterval(selfInfoUpdateTimer); selfInfoUpdateTimer = null; }
         lastSelfInfo = null;
-    } else {
+    } else
+    {
         // Server connected, send mesh core information
+        if (require('MeshAgent').ServerInfo == null || require('MeshAgent').ServerInfo.ControlChannelCertificate == null)
+        {
+            // Outdated Agent, will have insecure tunnels
+            sendAgentMessage("This agent has an outdated certificate validation mechanism, consider updating.", 3, 118);
+        }
+        else if (global._MSH == null)
+        {
+            sendAgentMessage("This agent is outdated, consider updating.", 3, 120);
+        }
+
         var oldNodeId = db.Get('OldNodeId');
         if (oldNodeId != null) { mesh.SendCommand({ action: 'mc1migration', oldnodeid: oldNodeId }); }
 
@@ -4407,14 +4484,16 @@ function handleServerConnection(state) {
         // Update the server on with basic info, logged in users and more advanced stuff, like Intel ME and Network Settings
         meInfoStr = null;
         sendPeriodicServerUpdate(null, true);
-        if (selfInfoUpdateTimer == null) {
+        if (selfInfoUpdateTimer == null)
+        {
             selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 1200000); // 20 minutes
             selfInfoUpdateTimer.metadata = 'meshcore (InfoUpdate Timer)';
         }
 
         // Send any state messages
-        if (Object.keys(tunnelUserCount.msg).length > 0) {
-            try { mesh.SendCommand({ action: 'sessions', type: 'msg', value: tunnelUserCount.msg }); } catch (e) { }
+        if (Object.keys(tunnelUserCount.msg).length > 0)
+        {
+            sendAgentMessage();
             broadcastSessionsToRegisteredApps();
         }
 
