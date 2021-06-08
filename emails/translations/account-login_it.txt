@@ -1,0 +1,4 @@
+[[[SERVERNAME]]] - Accesso all'account
+Il tuo token di accesso è: [[[TOKEN]]] 
+~
+Questo token può essere utilizzato solo una volta ed è valido per 5 minuti.

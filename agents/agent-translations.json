@@ -448,5 +448,35 @@
     ],
     "statusDescription": "當前代理狀態",
     "description": "單擊下面的按鈕以安裝或卸載網狀代理。安裝後，該軟件將在後台運行，從而允許該計算機由遠程管理員進行管理和控制。"
+  },
+  "it": {
+    "agent": "Agente",
+    "agentVersion": "Nuova versione dell'agente ",
+    "group": "Gruppo di dispositivi",
+    "url": "URL del server",
+    "meshName": "Nome mesh",
+    "meshId": "Identificatore di mesh",
+    "serverId": "Identificatore del server",
+    "setup": "Impostare",
+    "update": "Aggiornare",
+    "install": "Installare",
+    "uninstall": "Disinstalla",
+    "connect": "Connetti",
+    "disconnect": "Disconnetti",
+    "cancel": "Annulla",
+    "pressok": "Premi OK per disconnetterti",
+    "elevation": "Sono necessarie autorizzazioni elevate per installare / disinstallare l'agente.",
+    "sudo": "Riprova con sudo.",
+    "ctrlc": "Premi Ctrl-C per uscire.",
+    "commands": "Puoi eseguire la versione testuale dalla riga di comando con i seguenti comandi ",
+    "graphicalerror": "La versione grafica di questo programma di installazione non può essere eseguita su questo sistema",
+    "zenity": "Prova a installare/aggiornare Zenity ed esegui di nuovo",
+    "status": [
+      "NON INSTALLATO",
+      "IN ESECUZIONE",
+      "NON IN ESECUZIONE"
+    ],
+    "statusDescription": "Stato attuale dell'agente",
+    "description": "Fare clic sui pulsanti sottostanti per installare o disinstallare l'agente mesh. Una volta installato, questo software viene eseguito in background consentendo a questo computer di essere gestito e controllato da un amministratore remoto."
   }
 }
