@@ -4730,7 +4730,7 @@
             x += '<div id=aginsTypeDiv>';
             x += addHtmlValue("Installation Type", '<select id=aginsType onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Background & interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
             x += '</div><div id=asinsTypeDiv>';
-            x += addHtmlValue("Installation Type", '<select id=asinsType onchange=addAgentToMeshClick() style=width:236px><option value=2>' + "Application, Connect on user request" + '</option><option value=3>' + "Application, Always connected" + '</option><option value=0>' + "System Tray, Connect on user request" + '</option><option value=1>' + "System Tray, Always connected" + '</option></select>');
+            x += addHtmlValue("Installation Type", '<select id=asinsType onchange=addAgentToMeshClick() style=width:236px><option value=2>' + "Application, Connect on user request" + '</option><option value=3>' + "Application, Always connected" + '</option><option value=0>' + "System Tray, Connect on user request" + '</option><option value=1>' + "System Tray, Always connected" + '</option><option value=4>' + "System Tray, Monitor only" + '</option></select>');
             x += '</div><hr>';
 
             // \/:*?"<>|
@@ -4760,6 +4760,11 @@
             // MeshCentral Assistant
             x += '<div id=agins_assistant style=display:none><table><tr><td style=vertical-align:top><div>' + format("MeshCentral Assistant is a Windows tool that users can use to ask for help. Use the link below to download a version that will connect to device group \"{0}\".", EscapeHtml(mesh.name)) + '</div><div></div><br />';
             x += '<a id=asinslnk name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "MeshCentral Assistant for Windows" + '">' + "Assistant for Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '")>';
+            x += '</td><td><img src=images/assistant-100.png width=74 height=100 srcset="images/assistant-200.png 2x"></td></tr></table></div>';
+
+            // MeshCentral Assistant2
+            x += '<div id=agins_assistant2 style=display:none><table><tr><td style=vertical-align:top><div>' + "MeshCentral Assistant is a Windows tool that users can use to ask for help. Use the link below to download a version that will monitor the background agent." + '</div><div></div><br />';
+            x += '<a id=asinslnk2 name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "MeshCentral Assistant for Windows" + '">' + "Assistant for Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '")>';
             x += '</td><td><img src=images/assistant-100.png width=74 height=100 srcset="images/assistant-200.png 2x"></td></tr></table></div>';
 
             // Windows agent uninstall
@@ -4828,7 +4833,8 @@
             QV('agins_linux_inst', v == 5);
             QV('aginsSysTypeDiv', v == 5);
             QV('agins_qrcode', v == 6);
-            QV('agins_assistant', v == 7);
+            QV('agins_assistant', (v == 7) && (Q('asinsType').value != 4));
+            QV('agins_assistant2', (v == 7) && (Q('asinsType').value == 4));
             Q('aginsbinlnk').onclick = function() { downloadFile((Q('aginsbinlnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value); };
             Q('aginsbincmd').value = (Q('aginsbincmd').value.split('&installflags=')[0]) + '&installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value + '\"';
             QV('aginsTypeDiv', (v == 0) || (v == 5));
@@ -4839,6 +4845,7 @@
             Q('aginsw64lnk').onclick = function() { downloadFile((Q('aginsw64lnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):''), null, true); }
             if (debugmode > 0) { Q('aginswmshlnk').onclick = function() { downloadFile((Q('aginswmshlnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):''), null, true); } }
             Q('asinslnk').onclick = function() { downloadFile(Q('asinslnk').name + '&ac=' + Q('asinsType').value, null, true); }
+            Q('asinslnk2').onclick = function() { downloadFile(Q('asinslnk').name + '&ac=' + Q('asinsType').value, null, true); }
         }
 
         function validateDeviceToMesh() {
