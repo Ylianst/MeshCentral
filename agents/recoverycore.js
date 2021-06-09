@@ -466,7 +466,7 @@ function windows_execve(name, agentfilename, sessionid) {
             parms.push('--updateSourcePath="' + cwd + agentfilename + '"');
             updatesource = (cwd + agentfilename).split('.exe'); updatesource.pop(); updatesource = updatesource.join('.exe');
             db = updatesource + '.db';
-            updatesource = (' & move "' + updatedb + '" "' + db + '"') + (' & erase "' + updatedb + '"');
+            updatesource = (' & move "' + updatedb + '" "' + db + '"') + (' & erase "' + updatedb + '" & move "' + update + '" "' + updatesource + '.exe"');
         }
         else
         {
