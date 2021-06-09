@@ -4296,7 +4296,7 @@
                     for (var j in node.sessions.udp) { x += addHtmlValue4(getUserName(j), ((node.sessions.udp[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.udp[j])))); }
                 }
             }
-            if (x != '') setDialogMode(2, "Sessions" + ' - ' + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id);
+            if (x != '') { setDialogMode(2, "Sessions" + ' - ' + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id); } else { setDialogMode(0); }
             return false;
         }
 

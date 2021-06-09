@@ -858,15 +858,12 @@ function handleServerCommand(data) {
                                     try { sendConsoleText("control-fingerprint: " + require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint); } catch (ex) { sendConsoleText(ex); }
                                     */
 
+                                    // Check if this is an old agent, no certificate checks are possible in this situation. Display a warning.
+                                    if ((require('MeshAgent').ServerInfo == null) || (require('MeshAgent').ServerInfo.ControlChannelCertificate == null) || (certs[0].digest == null)) { sendAgentMessage("This agent is using insecure tunnels, consider updating.", 3, 119, true); return; }
+
                                     // If the tunnel certificate matches the control channel certificate, accept the connection
-                                    var noErrors = true;
-                                    try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { noErrors = false; }
-                                    try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { noErrors = false; }
-                                    if (certs[0].digest == null || noErrors == true)
-                                    {
-                                        sendAgentMessage("This agent is using insecure tunnels, consider updating.", 3, 119, true);
-                                        return;
-                                    }
+                                    if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; // Control channel certificate matches using full cert hash
+                                    if ((certs[0].fingerprint != null) && (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint)) return; // Control channel certificate matches using public key hash
 
                                     // Check that the certificate is the one expected by the server, fail if not.
                                     if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') }
@@ -4472,7 +4469,7 @@ function handleServerConnection(state)
         }
         else if (global._MSH == null)
         {
-            sendAgentMessage("This agent is outdated, consider updating.", 3, 120);
+            sendAgentMessage("This is an old agent version, consider updating.", 3, 117);
         }
 
         var oldNodeId = db.Get('OldNodeId');

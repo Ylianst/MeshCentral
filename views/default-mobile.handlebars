@@ -2014,7 +2014,7 @@
                             //if ((currentNode != null) && (currentNode._id == message.event.nodeid)) { gotoDevice(currentNode._id, xxcurrentView, true); }
 
                             // If we are looking at the sessions dialog box for this device now, update it
-                            //if (xxdialogTag == ('SESSIONS-' + message.event.nodeid)) { showDeviceSessions(message.event.nodeid, true); }
+                            if (xxdialogTag == ('SESSIONS-' + message.event.nodeid)) { showDeviceSessions(message.event.nodeid, true); }
                             //if (xxdialogTag == ('MESSAGES-' + message.event.nodeid)) { showDeviceMessages(message.event.nodeid, true); }
                             if (xxdialogTag == ('HELPREQ-' + message.event.nodeid)) { showDeviceHelpRequests(message.event.nodeid, true); }
 
@@ -3116,8 +3116,8 @@
         }
 
         // Show currently active sessions on this device
-        function showDeviceSessions() {
-            if (xxdialogMode || (currentNode == null)) return;
+        function showDeviceSessions(nodeid, force, e) {
+            if (((force !== true) && xxdialogMode) || (currentNode == null)) return;
             var node = currentNode, x = '';
             for (var i in node.sessions) {
                 if ((i == 'kvm') && (node.sessions.multidesk == null)) {
@@ -3140,7 +3140,7 @@
                     for (var j in node.sessions.udp) { x += addHtmlValue4(getUserName(j), ((node.sessions.udp[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.udp[j])))); }
                 }
             }
-            if (x != '') setDialogMode(2, "Sessions" + ' - ' + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id);
+            if (x != '') { setDialogMode(2, "Sessions" + ' - ' + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id); } else { setDialogMode(0); }
         }
 
         // Show currently active sessions on this device
