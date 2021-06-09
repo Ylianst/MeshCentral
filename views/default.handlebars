@@ -2970,6 +2970,7 @@
                                     if (message.event.node.agent.ver != null) { node.agent.ver = message.event.node.agent.ver; }
                                     if (message.event.node.agent.id != null) { node.agent.id = message.event.node.agent.id; }
                                     if (message.event.node.agent.caps != null) { node.agent.caps = message.event.node.agent.caps; }
+                                    if (message.event.node.agent.root != null) { node.agent.root = message.event.node.agent.root; }
                                     if (message.event.node.agent.core != null) { node.agent.core = message.event.node.agent.core; } else { if (node.agent.core) { delete node.agent.core; } }
                                     node.agent.tag = message.event.node.agent.tag;
                                 }
@@ -9987,7 +9988,7 @@
             }
 
             // Storage
-            if (hardware.identifiers && ident.storage_devices) {
+            if (hardware.identifiers && hardware.identifiers.storage_devices) {
                 var x = '';
                 // Sort Storage
                 ident.storage_devices.sort(function(a, b) { if (a.Caption > b.Caption) return 1; if (a.Caption < b.Caption) return -1; return 0; });
