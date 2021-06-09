@@ -283,7 +283,7 @@ obj.DAIPC.on('connection', function (c) {
 function broadcastSessionsToRegisteredApps(x)
 {
     var p = {}, i;
-    for (i = 0; i < sendAgentMessage.messages.length; ++i)
+    for (i = 0; sendAgentMessage.messages != null && i < sendAgentMessage.messages.length; ++i)
     {
         p[i] = sendAgentMessage.messages[i];
     }
