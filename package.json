@@ -39,7 +39,7 @@
     "body-parser": "^1.19.0",
     "cbor": "~5.2.0",
     "compression": "^1.7.4",
-    "connect-redis": "^3.4.1",
+    "connect-redis": "^4.0.0",
     "cookie-session": "^2.0.0-beta.3",
     "express": "^4.17.0",
     "express-handlebars": "^3.1.0",
@@ -49,7 +49,7 @@
     "multiparty": "^4.2.1",
     "nedb": "^1.8.0",
     "node-forge": "^0.10.0",
-    "xmldom": "^0.1.27",
+    "xmldom": "^0.5.0",
     "yauzl": "^2.10.0"
   },
   "repository": {
