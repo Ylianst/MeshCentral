@@ -5128,16 +5128,23 @@
             setDialogMode(2, "Device Information Export", 1, null, x);
         }
 
+        function csvClean(v) {
+            if (v == null) return '';
+            return v.split(',').join('');
+        }
+
         function p2downloadDeviceInfoCSV() {
             var chkNodeIds = getCheckedDevices();
             if (Q('d2DevInfoDetailsCheck').checked) {
                 meshserver.send({ action: 'getDeviceDetails', nodeids: chkNodeIds, type: 'csv' }); // With details
             } else {
                 // Without details
-                var csv = "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr" + '\r\n', r = [];
+                var csv = "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr, av, update, firewall" + '\r\n', r = [];
                 for (var i in chkNodeIds) {
                     var n = getNodeFromId(chkNodeIds[i]);
-                    csv += '"' + n._id.split(',').join('') + '","' + n.name.split(',').join('') + '","' + (n.rname?(n.rname.split(',').join('')):'') + '","' + (n.host?(n.host.split(',').join('')):'') + '","' + n.icon + '","' + (n.ip?n.ip:'') + '","' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '","' + n.state + '","' + meshes[n.meshid].name.split(',').join('') + '","' + (n.conn?n.conn:'') + '","' + (n.pwr?n.pwr:'') + '"\r\n';
+                    csv += '"' + n._id.split(',').join('') + '","' + n.name.split(',').join('') + '","' + (n.rname?(n.rname.split(',').join('')):'') + '","' + (n.host?(n.host.split(',').join('')):'') + '","' + n.icon + '","' + (n.ip?n.ip:'') + '","' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '","' + n.state + '","' + meshes[n.meshid].name.split(',').join('') + '","' + (n.conn?n.conn:'') + '","' + (n.pwr?n.pwr:'') + '"';
+                    if (typeof n.wsc == 'object') { csv += ',"' + csvClean(n.wsc.antiVirus) + '","' + csvClean(n.wsc.autoUpdate) + '","' + csvClean(n.wsc.firewall) + '"'; } else { csv += ',,,'; }
+                    csv += '\r\n';
                 }
                 saveAs(new Blob([csv], { type: 'application/octet-stream' }), "devicelist.csv");
             }
