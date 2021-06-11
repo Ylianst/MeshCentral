@@ -5910,7 +5910,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (type == 'csv') {
                         try {
                             // Create the CSV file
-                            output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,cpu,osbuild,biosDate,biosVendor,biosVersion,boardName,boardVendor,boardVersion,productUuid,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses\r\n';
+                            output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,avdetails,cpu,osbuild,biosDate,biosVendor,biosVersion,boardName,boardVendor,boardVersion,productUuid,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses\r\n';
                             for (var i = 0; i < results.length; i++) {
                                 const nodeinfo = results[i];
 
@@ -5920,11 +5920,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     output += csvClean(n._id) + ',' + csvClean(n.name) + ',' + csvClean(n.rname ? n.rname : '') + ',' + csvClean(n.host ? n.host : '') + ',' + (n.icon ? n.icon : 1) + ',' + (n.ip ? n.ip : '') + ',' + (n.osdesc ? csvClean(n.osdesc) : '') + ',' + csvClean(parent.meshes[n.meshid].name);
                                     if (typeof n.wsc == 'object') {
                                         output += ',' + csvClean(n.wsc.antiVirus ? n.wsc.antiVirus : '') + ',' + csvClean(n.wsc.autoUpdate ? n.wsc.autoUpdate : '') + ',' + csvClean(n.wsc.firewall ? n.wsc.firewall : '')
-                                    } else {
-                                        output += ',,,';
+                                    } else { output += ',,,'; }
+                                    if (typeof n.av == 'object') {
+                                        var avdetails = '', firstav = true;
+                                        for (var a in n.av) { if (typeof n.av[a].product == 'string') { if (firstav) { firstav = false; } else { avdetails += '|'; } avdetails += (n.av[a].product + '/' + ((n.av[a].enabled) ? 'enabled' : 'disabled') + '/' + ((n.av[a].updated) ? 'updated' : 'notupdated')); } }
+                                        output += ',' + csvClean(avdetails);
                                     }
+                                    else { output += ','; }
                                 } else {
-                                    output += ',,,,,,,,,,';
+                                    output += ',,,,,,,,,,,';
                                 }
 
                                 // System infomation
