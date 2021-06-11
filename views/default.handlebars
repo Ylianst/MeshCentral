@@ -69,6 +69,10 @@
         <div class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
         <div class="cmtext" onclick="cmtermaction(9,event)">User PowerShell</div>
     </div>
+    <div id="termShellContextMenu2" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div class="cmtext" onclick="cmtermaction(8,event)"><b>User Shell</b></div>
+        <div class="cmtext" onclick="cmtermaction(9,event)">User PowerShell</div>
+    </div>
     <div id="termShellContextMenuLinux" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmtermaction(1,event)"><b>Root Shell</b></div>
         <div class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
@@ -5315,6 +5319,7 @@
                     contextelement = elem;
                     var contextmenudiv = document.getElementById('termShellContextMenu'); // Windows options (Power Shell)
                     if (currentNode.agent.id > 4) { contextmenudiv = document.getElementById('termShellContextMenuLinux'); } // Non-Windows options
+                    if (currentNode.agent.id == 34) { contextmenudiv = document.getElementById('termShellContextMenu2'); } // Windows MeshCentral Assistant
                     showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
                     break;
                 }
@@ -5566,6 +5571,7 @@
             QV('contextMenu', false);
             QV('meshContextMenu', false);
             QV('termShellContextMenu', false);
+            QV('termShellContextMenu2', false);
             QV('termShellContextMenuLinux', false);
             QV('deskConnectContextMenu', false);
             QV('altPortContextMenu', false);
