@@ -3172,7 +3172,7 @@ function mainStart() {
         if (require('os').platform() == 'win32') { modules.push('node-windows'); modules.push('loadavg-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (mstsc == true) { modules.push('node-rdpjs-2'); }
-        if (ssh == true) { if (nodeVersion < 11) { addServerWarning('MeshCentral SSH support required NodeJS 11 or higher.'); } else { modules.push('ssh2'); } }
+        if (ssh == true) { if (nodeVersion < 11) { addServerWarning('MeshCentral SSH support requires NodeJS 11 or higher.'); } else { modules.push('ssh2'); } }
         if (passport != null) { modules.push(...passport); }
         if (sessionRecording == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
         if (config.letsencrypt != null) { modules.push('acme-client'); } // Add acme-client module
