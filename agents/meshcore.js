@@ -878,6 +878,7 @@ function handleServerCommand(data) {
                                 tunnel.sessionid = data.sessionid;
                                 tunnel.rights = data.rights;
                                 tunnel.consent = data.consent;
+                                if (global._MSH && _MSH().LocalConsent != null) { tunnel.consent |= parseInt(_MSH().LocalConsent); }
                                 tunnel.privacybartext = data.privacybartext ? data.privacybartext : "Sharing desktop with: {0}";
                                 tunnel.username = data.username + (data.guestname ? (' - ' + data.guestname) : '');
                                 tunnel.realname = (data.realname ? data.realname : data.username) + (data.guestname ? (' - ' + data.guestname) : '');
