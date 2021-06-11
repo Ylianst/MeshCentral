@@ -4154,7 +4154,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
                             // Check we have the rights to notify this device
-                            if ((rights & MESHRIGHT_CHATNOTIFY) == 0) return;
+                            if ((rights & MESHRIGHT_CHATNOTIFY) == 0) {
+                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'toast', responseid: command.responseid, result: 'Access Denied' })); } catch (ex) { } }
+                                return;
+                            }
 
                             // Get this device and send toast command
                             const agent = parent.wsagents[node._id];
@@ -4199,13 +4202,30 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'changedevice':
                 {
+                    var err = null;
+
                     // Argument validation
-                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                    if ((command.userloc) && (command.userloc.length != 2) && (command.userloc.length != 0)) return;
+                    try {
+                        if (common.validateString(command.nodeid, 1, 1024) == false) { err = "Invalid nodeid"; } // Check nodeid
+                        else {
+                            if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                            if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) { err = "Invalid nodeid"; } // Invalid domain, operation only valid for current domain
+                            else if ((command.userloc) && (command.userloc.length != 2) && (command.userloc.length != 0)) { err = "Invalid user location"; }
+                        }
+                    } catch (ex) { console.log(ex); err = "Validation exception: " + ex; }
+
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changedevice', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
 
                     // Get the node and the rights for this node
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if ((rights & MESHRIGHT_MANAGECOMPUTERS) == 0) return;
+                        if ((rights & MESHRIGHT_MANAGECOMPUTERS) == 0) {
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changedevice', responseid: command.responseid, result: 'Access Denied' })); } catch (ex) { } }
+                            return;
+                        }
                         var mesh = parent.meshes[node.meshid], amtchange = 0;
 
                         // Ready the node change event
@@ -4302,6 +4322,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                             parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
                         }
+
+                        // Send response if required
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changedevice', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     });
                     break;
                 }

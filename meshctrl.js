@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog'];
+const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'editdevice', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -27,6 +27,7 @@ if (args['_'].length == 0) {
     console.log("  ListEvents                  - List server events.");
     console.log("  LoginTokens                 - List, create and remove login tokens.");
     console.log("  DeviceInfo                  - Show information about a device.");
+    console.log("  EditDevice                  - Make changes to a device.");
     console.log("  Config                      - Perform operation on config.json file.");
     console.log("  AddUser                     - Create a new user account.");
     console.log("  EditUser                    - Change a user account.");
@@ -92,6 +93,11 @@ if (args['_'].length == 0) {
             break;
         }
         case 'deviceinfo': {
+            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
+            else { ok = true; }
+            break;
+        }
+        case 'editdevice': {
             if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
             else { ok = true; }
             break;
@@ -717,6 +723,33 @@ if (args['_'].length == 0) {
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --raw                  - Output raw data in JSON format.");
                         console.log("  --json                 - Give results in JSON format.");
+                        break;
+                    }
+                    case 'editdevice': {
+                        console.log("Change information about a device, Example usages:\r\n");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl EditDevice --id 'deviceid' --name 'device1'"));
+                        console.log("\r\nRequired arguments:\r\n");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [deviceid]        - The device identifier.");
+                        } else {
+                            console.log("  --id '[deviceid]'      - The device identifier.");
+                        }
+                        console.log("\r\nOptional arguments:\r\n");
+                        if (process.platform == 'win32') {
+                            console.log("  --name [name]          - Change device name.");
+                            console.log("  --desc [description]   - Change device description.");
+                            console.log("  --tags [tag1,tags2]    - Change device tags.");
+                        } else {
+                            console.log("  --name '[name]'        - Change device name.");
+                            console.log("  --desc '[description]' - Change device description.");
+                            console.log("  --tags '[tag1,tags2]'  - Change device tags.");
+                        }
+                        console.log("  --icon [number]        - Change the device icon (1 to 8).");
+                        console.log("  --consent [flags]      - Sum of the following numbers:");
+                        console.log("      1 = Desktop notify          2 = Terminal notify");
+                        console.log("      4 = Files notify            8 = Desktop prompt");
+                        console.log("     16 = Terminal prompt        32 = Files prompt");
+                        console.log("     64 = Desktop privacy bar");
                         break;
                     }
                     case 'runcommand': {
@@ -1391,6 +1424,17 @@ function serverConnect() {
                 ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: args.id, nodeinfo: true, responseid: 'meshctrl' }));
                 break;
             }
+            case 'editdevice': {
+                var op = { action: 'changedevice', nodeid: args.id, responseid: 'meshctrl' };
+                if (typeof args.name == 'string') { op.name = args.name; }
+                if (typeof args.name == 'number') { op.name = '' + args.name; }
+                if (args.desc) { if (args.desc === true) { op.desc = ''; } else if (typeof args.desc == 'string') { op.desc = args.desc; } else if (typeof args.desc == 'number') { op.desc = '' + args.desc; } }
+                if (args.tags) { if (args.tags === true) { op.tags = ''; } else if (typeof args.tags == 'string') { op.tags = args.tags.split(','); } else if (typeof args.tags == 'number') { op.tags = '' + args.tags; } }
+                if (args.icon) { op.icon = parseInt(args.icon); if ((typeof op.icon != 'number') || isNaN(op.icon) || (op.icon < 1) || (op.icon > 8)) { console.log("Icon must be between 1 and 8."); process.exit(1); return; } }
+                if (args.consent) { op.consent = parseInt(args.consent); if ((typeof op.consent != 'number') || isNaN(op.consent) || (op.consent < 1)) { console.log("Invalid consent flags."); process.exit(1); return; } }
+                ws.send(JSON.stringify(op));
+                break;
+            }
             case 'runcommand': {
                 var runAsUser = 0;
                 if (args.runasuser) { runAsUser = 1; } else if (args.runasuseronly) { runAsUser = 2; }
@@ -1693,6 +1737,7 @@ function serverConnect() {
             case 'toast': // TOAST
             case 'adduser': // ADDUSER
             case 'edituser': // EDITUSER
+            case 'changedevice': // EDITDEVICE
             case 'deleteuser': // REMOVEUSER
             case 'createmesh': // ADDDEVICEGROUP
             case 'deletemesh': // REMOVEDEVICEGROUP
