@@ -204,7 +204,10 @@
       "hi": " मेशसेंट्रल राउटर",
       "ko": " MeshCentral 라우터",
       "nl": " MeshCentral Router",
-      "zh-chs": " MeshCentral 路由器"
+      "zh-chs": " MeshCentral 路由器",
+      "xloc": [
+        "MainForm.resx%$this.Text"
+      ]
     },
     {
       "cs": " Je možné zadat i nápovědu pro heslo, ale nedoporučuje se to.",
@@ -377,7 +380,10 @@
       "hi": "&बंद करे",
       "ko": "&닫기",
       "nl": "&Sluiten",
-      "zh-chs": "＆关闭"
+      "zh-chs": "＆关闭",
+      "xloc": [
+        "MainForm.resx%closeToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "&Löschen",
@@ -387,7 +393,10 @@
       "hi": "&हटाएं",
       "ko": "&지우다",
       "nl": "&Verwijderen",
-      "zh-chs": "＆删除"
+      "zh-chs": "＆删除",
+      "xloc": [
+        "FileViewer.resx%deleteToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "&Die Info...",
@@ -397,7 +406,10 @@
       "hi": "जानकारी...",
       "ko": "정보 ...",
       "nl": "&Info...",
-      "zh-chs": "＆信息..."
+      "zh-chs": "＆信息...",
+      "xloc": [
+        "ServerUserControl.resx%infoToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "&Öffnen",
@@ -417,7 +429,10 @@
       "hi": "&ओपन मैपिंग...",
       "ko": "매핑 열기 ...",
       "nl": "&toewijzingen openen...",
-      "zh-chs": "打开映射 (&O)..."
+      "zh-chs": "打开映射 (&O)...",
+      "xloc": [
+        "MainForm.resx%openMappingsToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "&Öffnen...",
@@ -427,7 +442,10 @@
       "hi": "&खुला हुआ...",
       "ko": "&열다...",
       "nl": "&Open...",
-      "zh-chs": "＆打开..."
+      "zh-chs": "＆打开...",
+      "xloc": [
+        "MainForm.resx%openToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "&Umbenennen",
@@ -437,7 +455,10 @@
       "hi": "&नाम बदलें",
       "ko": "이름 바꾸기",
       "nl": "&Hernoemen",
-      "zh-chs": "＆改名"
+      "zh-chs": "＆改名",
+      "xloc": [
+        "FileViewer.resx%renameToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "&Zuordnungen speichern...",
@@ -447,7 +468,10 @@
       "hi": "&मैपिंग सहेजें...",
       "ko": "매핑 저장 ...",
       "nl": "&Toewijzingen opslaan...",
-      "zh-chs": "保存映射(&S)..."
+      "zh-chs": "保存映射(&S)...",
+      "xloc": [
+        "MainForm.resx%saveMappingsToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "&Agent starten",
@@ -457,7 +481,10 @@
       "hi": "&प्रारंभ एजेंट",
       "ko": "에이전트 시작",
       "nl": "&Start Agent",
-      "zh-chs": "启动代理 (&S)"
+      "zh-chs": "启动代理 (&S)",
+      "xloc": [
+        "MainForm.resx%startAgentToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "&Software aktualisieren",
@@ -467,7 +494,11 @@
       "hi": "&सॉफ्टवेयर अद्यतन करें",
       "ko": "소프트웨어 업데이트",
       "nl": "&Software bijwerken",
-      "zh-chs": "更新软件 (&S)"
+      "zh-chs": "更新软件 (&S)",
+      "xloc": [
+        "MainForm.resx%updateSoftwareToolStripMenuItem.Text",
+        "MainForm.resx%updateSoftwareToolStripMenuItem1.Text"
+      ]
     },
     {
       "cs": "'",
@@ -514,7 +545,10 @@
       "hi": "(व्यक्तिगत उपकरण)",
       "ko": "(개별 기기)",
       "nl": "(Individuele apparaten)",
-      "zh-chs": "（个别设备）"
+      "zh-chs": "（个别设备）",
+      "xloc": [
+        "Properties%Resources.resx%IndividualDevices"
+      ]
     },
     {
       "de": "(Keiner)",
@@ -524,7 +558,10 @@
       "hi": "(कोई नहीं)",
       "ko": "(없음)",
       "nl": "(Geen)",
-      "zh-chs": "（没有任何）"
+      "zh-chs": "（没有任何）",
+      "xloc": [
+        "Properties%Resources.resx%PNoneP"
+      ]
     },
     {
       "cs": "(volitelné)",
@@ -673,7 +710,10 @@
       "hi": ", 1 कनेक्शन।",
       "ko": ", 1 촌.",
       "nl": ", 1 verbinding.",
-      "zh-chs": ", 1 个连接。"
+      "zh-chs": ", 1 个连接。",
+      "xloc": [
+        "Properties%Resources.resx%OneConnection"
+      ]
     },
     {
       "cs": ", Pouze Intel&reg; AMT",
@@ -777,7 +817,10 @@
       "hi": ", रिकॉर्ड किया गया सत्र",
       "ko": ", 녹화 된 세션",
       "nl": ", opgenomen sessie",
-      "zh-chs": ", 录制会话"
+      "zh-chs": ", 录制会话",
+      "xloc": [
+        "Properties%Resources.resx%RecordedSession"
+      ]
     },
     {
       "cs": ", Soft-KVM",
@@ -973,7 +1016,10 @@
       "hi": ", {0} कनेक्शन।",
       "ko": ", {0} 명 연결.",
       "nl": ", {0} verbindingen.",
-      "zh-chs": ", {0} 个连接。"
+      "zh-chs": ", {0} 个连接。",
+      "xloc": [
+        "Properties%Resources.resx%ManyConnections"
+      ]
     },
     {
       "de": ", {0} Nutzer",
@@ -983,7 +1029,10 @@
       "hi": ", {0} उपयोगकर्ता",
       "ko": ", {0} 명의 사용자",
       "nl": ", {0} gebruikers",
-      "zh-chs": ", {0} 个用户"
+      "zh-chs": ", {0} 个用户",
+      "xloc": [
+        "Properties%Resources.resx%AddXUsers"
+      ]
     },
     {
       "cs": ", {0} sledování",
@@ -1033,7 +1082,13 @@
       "fr": "---",
       "hi": "---",
       "ko": "---",
-      "zh-chs": "---"
+      "zh-chs": "---",
+      "xloc": [
+        "FileDeletePromptForm.resx%mainLabel.Text",
+        "FileTransferStatusForm.resx%mainLabel1.Text",
+        "FileViewer.resx%mainToolStripStatusLabel.Text",
+        "KVMViewer.resx%mainToolStripStatusLabel.Text"
+      ]
     },
     {
       "cs": ".",
@@ -1114,7 +1169,17 @@
       "hi": "0 बाइट्स",
       "ko": "0 바이트",
       "nl": "0 Bytes",
-      "zh-chs": "0 字节"
+      "zh-chs": "0 字节",
+      "xloc": [
+        "KVMStats.resx%kvmCompInBytesLabel.Text",
+        "KVMStats.resx%kvmCompOutBytesLabel.Text",
+        "KVMStats.resx%kvmInBytesLabel.Text",
+        "KVMStats.resx%kvmOutBytesLabel.Text",
+        "MappingStats.resx%kvmCompInBytesLabel.Text",
+        "MappingStats.resx%kvmCompOutBytesLabel.Text",
+        "MappingStats.resx%kvmInBytesLabel.Text",
+        "MappingStats.resx%kvmOutBytesLabel.Text"
+      ]
     },
     {
       "de": "0%",
@@ -1124,7 +1189,13 @@
       "hi": "0%",
       "ko": "0 %",
       "nl": "0%",
-      "zh-chs": "0%"
+      "zh-chs": "0%",
+      "xloc": [
+        "KVMStats.resx%inRatioLabel.Text",
+        "KVMStats.resx%outRatioLabel.Text",
+        "MappingStats.resx%inRatioLabel.Text",
+        "MappingStats.resx%outRatioLabel.Text"
+      ]
     },
     {
       "cs": "00:00:00",
@@ -1399,7 +1470,10 @@
       "hi": "1 दूरस्थ सत्र",
       "ko": "원격 세션 1 개",
       "nl": "1 externe sessie",
-      "zh-chs": "1 个远程会话"
+      "zh-chs": "1 个远程会话",
+      "xloc": [
+        "Properties%Resources.resx%OneRemoteSession"
+      ]
     },
     {
       "de": "1 Remote-Sitzung ist aktiv.",
@@ -1409,7 +1483,10 @@
       "hi": "1 दूरस्थ सत्र सक्रिय है।",
       "ko": "1 개의 원격 세션이 활성화되었습니다.",
       "nl": "1 externe sessie is actief.",
-      "zh-chs": "1 个远程会话处于活动状态。"
+      "zh-chs": "1 个远程会话处于活动状态。",
+      "xloc": [
+        "Properties%Resources.resx%OneRemoteSessionIsActive"
+      ]
     },
     {
       "de": "1 Sekunde",
@@ -1747,7 +1824,10 @@
       "hi": "127.0.0.1",
       "ko": "127.0.0.1",
       "nl": "127.0.0.1",
-      "zh-chs": "127.0.0.1"
+      "zh-chs": "127.0.0.1",
+      "xloc": [
+        "AddRelayMapForm.resx%remoteIpTextBox.Text"
+      ]
     },
     {
       "cs": "15 minut",
@@ -2923,7 +3003,10 @@
       "hi": "इस सॉफ़्टवेयर का एक नया संस्करण उपलब्ध है। अभी अद्यतन करें?",
       "ko": "이 소프트웨어의 새 버전을 사용할 수 있습니다. 지금 업데이트 하시겠습니까?",
       "nl": "Er is een nieuwe versie van deze software beschikbaar. Nu bijwerken?",
-      "zh-chs": "此软件的新版本可用。现在更新？"
+      "zh-chs": "此软件的新版本可用。现在更新？",
+      "xloc": [
+        "UpdateForm.resx%label1.Text"
+      ]
     },
     {
       "cs": "ACM",
@@ -3002,6 +3085,7 @@
       "zh-chs": "AMT",
       "zh-cht": "AMT",
       "xloc": [
+        "Properties%Resources.resx%AMT",
         "default.handlebars->35->296",
         "default.handlebars->35->516"
       ]
@@ -3832,6 +3916,7 @@
       "zh-chs": "已激活",
       "zh-cht": "已啟動",
       "xloc": [
+        "Properties%Resources.resx%Activated",
         "default-mobile.handlebars->11->269",
         "default-mobile.handlebars->11->271",
         "default-mobile.handlebars->11->510",
@@ -3937,7 +4022,10 @@
       "hi": "नक्शा जोड़ें...",
       "ko": "지도 추가 ...",
       "nl": "&Toewijzing toevoegen...",
-      "zh-chs": "添加地图 (&M)..."
+      "zh-chs": "添加地图 (&M)...",
+      "xloc": [
+        "MainForm.resx%addMapToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "&Relay-Karte hinzufügen...",
@@ -3947,7 +4035,10 @@
       "hi": "मानचित्र &रिले जोड़ें...",
       "ko": "릴레이 맵 추가 ...",
       "nl": "&Relay toewijzing toevoegen...",
-      "zh-chs": "添加中继地图 (&R)..."
+      "zh-chs": "添加中继地图 (&R)...",
+      "xloc": [
+        "MainForm.resx%addRelayMapToolStripMenuItem.Text"
+      ]
     },
     {
       "cs": "Přidat agenta",
@@ -4189,7 +4280,10 @@
       "hi": "नक्शा जोड़ें...",
       "ko": "지도 추가 ...",
       "nl": "Kaart toevoegen...",
-      "zh-chs": "添加地图..."
+      "zh-chs": "添加地图...",
+      "xloc": [
+        "MainForm.resx%addButton.Text"
+      ]
     },
     {
       "cs": "Přidat členství",
@@ -4241,7 +4335,10 @@
       "hi": "रिले मैप जोड़ें...",
       "ko": "릴레이 맵 추가 ...",
       "nl": "Toevoegen relay kaart...",
-      "zh-chs": "添加中继地图..."
+      "zh-chs": "添加中继地图...",
+      "xloc": [
+        "MainForm.resx%addRelayButton.Text"
+      ]
     },
     {
       "cs": "Přidat bezpečnostní klíč",
@@ -5055,6 +5152,7 @@
       "zh-chs": "代理",
       "zh-cht": "代理",
       "xloc": [
+        "Properties%Resources.resx%Agent",
         "agent-translations.json",
         "default-mobile.handlebars->11->235",
         "default-mobile.handlebars->11->288",
@@ -5129,6 +5227,7 @@
       "zh-chs": "代理控制台",
       "zh-cht": "代理控制台",
       "xloc": [
+        "consoleForm.resx%$this.Text",
         "default-mobile.handlebars->11->612",
         "default.handlebars->35->1779"
       ]
@@ -5256,6 +5355,12 @@
       ]
     },
     {
+      "en": "Agent Select",
+      "xloc": [
+        "MainForm.resx%agentSelectToolStripMenuItem.Text"
+      ]
+    },
+    {
       "cs": "Relace agenta",
       "de": "Agent-Sitzungen",
       "en": "Agent Sessions",
@@ -5284,7 +5389,10 @@
       "hi": "एजेंट स्नैपशॉट",
       "ko": "에이전트 스냅 샷",
       "nl": "Agent momentopname",
-      "zh-chs": "代理快照"
+      "zh-chs": "代理快照",
+      "xloc": [
+        "SnapShotForm.resx%$this.Text"
+      ]
     },
     {
       "cs": "Štítek agenta",
@@ -5403,7 +5511,10 @@
       "hi": "एजेंट जारी है लंबित",
       "ko": "에이전트가 계속 대기 중입니다.",
       "nl": "Agent is in behandeling",
-      "zh-chs": "代理正在继续等待"
+      "zh-chs": "代理正在继续等待",
+      "xloc": [
+        "Properties%Resources.resx%AgentIsContinuePending"
+      ]
     },
     {
       "de": "Agent ist getrennt",
@@ -5413,7 +5524,10 @@
       "hi": "एजेंट डिस्कनेक्ट हो गया है",
       "ko": "에이전트 연결이 끊어졌습니다.",
       "nl": "Verbinding met agent is verbroken",
-      "zh-chs": "代理已断开连接"
+      "zh-chs": "代理已断开连接",
+      "xloc": [
+        "Properties%Resources.resx%AgentIsDisconnected"
+      ]
     },
     {
       "de": "Agent fehlt",
@@ -5477,7 +5591,10 @@
       "hi": "एजेंट रुका हुआ है",
       "ko": "에이전트가 일시 중지 대기 중입니다.",
       "nl": "Agent is gepauzeerd",
-      "zh-chs": "代理暂停待定"
+      "zh-chs": "代理暂停待定",
+      "xloc": [
+        "Properties%Resources.resx%AgentIsPausePending"
+      ]
     },
     {
       "de": "Agent ist pausiert",
@@ -5487,7 +5604,10 @@
       "hi": "एजेंट रुका हुआ है",
       "ko": "에이전트가 일시 중지되었습니다.",
       "nl": "Agent is gepauzeerd",
-      "zh-chs": "代理已暂停"
+      "zh-chs": "代理已暂停",
+      "xloc": [
+        "Properties%Resources.resx%AgentIsPaused"
+      ]
     },
     {
       "de": "Agent läuft",
@@ -5497,7 +5617,10 @@
       "hi": "एजेंट चल रहा है",
       "ko": "에이전트가 실행 중입니다.",
       "nl": "Agent is actief",
-      "zh-chs": "代理正在运行"
+      "zh-chs": "代理正在运行",
+      "xloc": [
+        "Properties%Resources.resx%AgentIsRunning"
+      ]
     },
     {
       "cs": "Agent běží na vzdáleném zařízení se sníženými oprávněními.",
@@ -5529,7 +5652,10 @@
       "hi": "एजेंट प्रारंभ लंबित है",
       "ko": "에이전트가 시작 대기 중입니다.",
       "nl": "Agent wacht op start",
-      "zh-chs": "代理正在启动待处理"
+      "zh-chs": "代理正在启动待处理",
+      "xloc": [
+        "Properties%Resources.resx%AgentIsStartPending"
+      ]
     },
     {
       "de": "Agent wurde gestoppt",
@@ -5539,7 +5665,10 @@
       "hi": "एजेंट रोक दिया गया है",
       "ko": "에이전트가 중지되었습니다.",
       "nl": "Agent is gestopt",
-      "zh-chs": "代理已停止"
+      "zh-chs": "代理已停止",
+      "xloc": [
+        "Properties%Resources.resx%AgentIsStopped"
+      ]
     },
     {
       "de": "Agent ist gestoppt ausstehend",
@@ -5549,7 +5678,10 @@
       "hi": "एजेंट लंबित है",
       "ko": "에이전트가 중지되었습니다.",
       "nl": "Agent is in behandeling gestopt",
-      "zh-chs": "代理停止等待"
+      "zh-chs": "代理停止等待",
+      "xloc": [
+        "Properties%Resources.resx%AgentIsStoppedPending"
+      ]
     },
     {
       "de": "Agent nicht installiert",
@@ -5559,7 +5691,10 @@
       "hi": "एजेंट स्थापित नहीं",
       "ko": "에이전트가 설치되지 않았습니다.",
       "nl": "Agent is niet geïnstalleerd",
-      "zh-chs": "未安装代理"
+      "zh-chs": "未安装代理",
+      "xloc": [
+        "Properties%Resources.resx%AgentNotInstalled"
+      ]
     },
     {
       "cs": "Agenti",
@@ -5666,6 +5801,7 @@
       "zh-chs": "所有显示",
       "zh-cht": "所有顯示",
       "xloc": [
+        "Properties%Resources.resx%AllDisplays",
         "default.handlebars->35->1086"
       ]
     },
@@ -5721,7 +5857,10 @@
       "hi": "अनुमति",
       "ko": "허용하다",
       "nl": "Toestaan",
-      "zh-chs": "允许"
+      "zh-chs": "允许",
+      "xloc": [
+        "ConsentForm.resx%okButton.Text"
+      ]
     },
     {
       "cs": "Umožnit uživatelům spravovat tuto skupinu a zařízení v této skupině.",
@@ -5915,7 +6054,11 @@
       "hi": "वैकल्पिक बंदरगाह",
       "ko": "대체 포트",
       "nl": "Alternatieve poort",
-      "zh-chs": "替代端口"
+      "zh-chs": "替代端口",
+      "xloc": [
+        "altPortForm.resx%$this.Text",
+        "altPortForm.resx%label2.Text"
+      ]
     },
     {
       "cs": "Vždy upozorňovat",
@@ -6281,7 +6424,11 @@
       "hi": "आवेदन",
       "ko": "신청",
       "nl": "Toepassing",
-      "zh-chs": "应用"
+      "zh-chs": "应用",
+      "xloc": [
+        "AddPortMapForm.resx%label4.Text",
+        "AddRelayMapForm.resx%label4.Text"
+      ]
     },
     {
       "de": "Anwendungsstart",
@@ -6291,7 +6438,10 @@
       "hi": "एप्लिकेशन लॉन्च",
       "ko": "응용 프로그램 시작",
       "nl": "Toepassing starten",
-      "zh-chs": "应用启动"
+      "zh-chs": "应用启动",
+      "xloc": [
+        "AppLaunchForm.resx%groupBox1.Text"
+      ]
     },
     {
       "de": "Bewerbungslink",
@@ -6301,7 +6451,10 @@
       "hi": "आवेदन लिंक",
       "ko": "응용 프로그램 링크",
       "nl": "Applicatielink",
-      "zh-chs": "申请链接"
+      "zh-chs": "申请链接",
+      "xloc": [
+        "AppLaunchForm.resx%appLinkLabel.Text"
+      ]
     },
     {
       "de": "Anwendungsname",
@@ -6311,7 +6464,10 @@
       "hi": "आवेदन का नाम",
       "ko": "응용 프로그램 이름",
       "nl": "Naam van de toepassing",
-      "zh-chs": "应用名称"
+      "zh-chs": "应用名称",
+      "xloc": [
+        "AppLaunchForm.resx%appNameLabel.Text"
+      ]
     },
     {
       "en": "Application, Always connected",
@@ -6895,6 +7051,8 @@
       "zh-chs": "询问同意",
       "zh-cht": "詢問同意",
       "xloc": [
+        "KVMViewer.resx%askConsentToolStripMenuItem.Text",
+        "MainForm.resx%askConsentToolStripMenuItem.Text",
         "default.handlebars->deskConnectContextMenu->3"
       ]
     },
@@ -6916,6 +7074,8 @@
       "zh-chs": "询问同意+工具栏",
       "zh-cht": "詢問同意+工具欄",
       "xloc": [
+        "KVMViewer.resx%askConsentBarToolStripMenuItem.Text",
+        "MainForm.resx%askConsentBarToolStripMenuItem.Text",
         "default.handlebars->deskConnectContextMenu->1"
       ]
     },
@@ -7059,7 +7219,10 @@
       "hi": "प्रमाणित कर रहा है",
       "ko": "인증 중",
       "nl": "Authenticatie",
-      "zh-chs": "认证"
+      "zh-chs": "认证",
+      "xloc": [
+        "Properties%Resources.resx%Authenticating"
+      ]
     },
     {
       "de": "Authentifizierung",
@@ -7413,6 +7576,8 @@
       "zh-chs": "返回",
       "zh-cht": "返回",
       "xloc": [
+        "MainForm.resx%backButton2.Text",
+        "MainForm.resx%backButton3.Text",
         "default.handlebars->container->column_l->p10->p10title->p10BackButton",
         "default.handlebars->container->column_l->p11->p11title->p11deviceNameHeader->p11BackButton",
         "default.handlebars->container->column_l->p12->p12title->p12BackButton",
@@ -7801,7 +7966,10 @@
       "hi": "स्थानीय पोर्ट को सभी नेटवर्क इंटरफेस से बाइंड करें",
       "ko": "모든 네트워크 인터페이스에 로컬 포트 ​​바인딩",
       "nl": "Bind lokale poort aan alle netwerkinterfaces",
-      "zh-chs": "将本地端口绑定到所有网络接口"
+      "zh-chs": "将本地端口绑定到所有网络接口",
+      "xloc": [
+        "SettingsForm.resx%allInterfacesCheckBox.Text"
+      ]
     },
     {
       "de": "Bootloader",
@@ -8042,6 +8210,7 @@
       "zh-chs": "CIRA",
       "zh-cht": "CIRA",
       "xloc": [
+        "Properties%Resources.resx%CIRA",
         "default-mobile.handlebars->11->236",
         "default.handlebars->35->2464",
         "default.handlebars->35->294",
@@ -8344,7 +8513,21 @@
       "zh-chs": "取消",
       "zh-cht": "取消",
       "xloc": [
+        "AddPortMapForm.resx%cancelButton.Text",
+        "AddRelayMapForm.resx%cancelButton.Text",
+        "AppLaunchForm.resx%cancelButton.Text",
+        "DeviceSettingsForm.resx%cancelButton.Text",
+        "FileDeletePromptForm.resx%cancelButton.Text",
+        "FileTransferStatusForm.resx%cancelButton.Text",
+        "FilenamePromptForm.resx%cancelButton.Text",
+        "InstallForm.resx%cancelButton.Text",
+        "KVMSettingsForm.resx%cancelButton.Text",
+        "RequestHelpForm.resx%cancelButton.Text",
+        "SettingsForm.resx%cancelButton.Text",
+        "SshUsernameForm.resx%cancelButton.Text",
+        "UpdateForm.resx%cancelButton.Text",
         "agent-translations.json",
+        "altPortForm.resx%cancelButton.Text",
         "default-mobile.handlebars->11->106",
         "default-mobile.handlebars->dialog->idx_dlgButtonBar",
         "default.handlebars->35->1599",
@@ -8354,6 +8537,7 @@
         "login.handlebars->dialog->idx_dlgButtonBar",
         "login2.handlebars->dialog->idx_dlgButtonBar",
         "player.handlebars->p11->dialog->idx_dlgButtonBar",
+        "rdpPortForm.resx%cancelButton.Text",
         "sharing.handlebars->dialog->idx_dlgButtonBar",
         "ssh.handlebars->p11->dialog->idx_dlgButtonBar",
         "xterm.handlebars->p11->dialog->idx_dlgButtonBar"
@@ -8367,7 +8551,11 @@
       "hi": "रद्द करें स्वतः बंद",
       "ko": "자동 닫기 취소",
       "nl": "Automatisch sluiten annuleren",
-      "zh-chs": "取消自动关闭"
+      "zh-chs": "取消自动关闭",
+      "xloc": [
+        "MainForm.resx%cancelAutoCloseButton1.Text",
+        "MainForm.resx%cancelAutoCloseButton2.Text"
+      ]
     },
     {
       "de": "Hilfeanfrage abbrechen",
@@ -8377,7 +8565,11 @@
       "hi": "सहायता अनुरोध रद्द करें",
       "ko": "도움말 요청 취소",
       "nl": "Annuleer hulpverzoek",
-      "zh-chs": "取消帮助请求"
+      "zh-chs": "取消帮助请求",
+      "xloc": [
+        "MainForm.resx%cancelHelpRequestToolStripMenuItem.Text",
+        "Properties%Resources.resx%CancelHelpRequest"
+      ]
     },
     {
       "cs": "Kapacita",
@@ -8477,7 +8669,10 @@
       "hi": "प्रमाणपत्र",
       "ko": "증명서",
       "nl": "Certificaat",
-      "zh-chs": "证书"
+      "zh-chs": "证书",
+      "xloc": [
+        "MainForm.resx%tabPage3.Text"
+      ]
     },
     {
       "de": "Zertifikat läuft in {0} Tag(en) ab",
@@ -8714,7 +8909,10 @@
       "hi": "दूरस्थ डेस्कटॉप सेटिंग बदलें",
       "ko": "원격 데스크톱 설정 변경",
       "nl": "Instellingen voor extern bureaublad wijzigen",
-      "zh-chs": "更改远程桌面设置"
+      "zh-chs": "更改远程桌面设置",
+      "xloc": [
+        "Properties%Resources.resx%ChangeRemoteDesktopSettings"
+      ]
     },
     {
       "cs": "Změnit modul Java Script kódu agenta",
@@ -8914,7 +9112,10 @@
       "hi": "भाषा बदलने से यह टूल बंद हो जाएगा। क्या आपको यकीन है?",
       "ko": "언어를 변경하면이 도구가 닫힙니다. 확실합니까?",
       "nl": "Als u de taal wijzigt, wordt deze tool gesloten.Weet je het zeker?",
-      "zh-chs": "更改语言将关闭此工具。你确定吗？"
+      "zh-chs": "更改语言将关闭此工具。你确定吗？",
+      "xloc": [
+        "Properties%Resources.resx%LanguagesChanging"
+      ]
     },
     {
       "cs": "Změna jazyka vyžaduje znovunačtení stránky.",
@@ -9377,6 +9578,7 @@
       "zh-chs": "清除",
       "zh-cht": "清除",
       "xloc": [
+        "consoleForm.resx%clearButton.Text",
         "default-mobile.handlebars->11->156",
         "default-mobile.handlebars->11->442",
         "default-mobile.handlebars->11->444",
@@ -9745,7 +9947,10 @@
       "hi": "MeshCentral राउटर को अपने सिस्टम पर \"mcrouter: //\" प्रोटोकॉल के लिए हैंडलर के रूप में पंजीकृत करने के लिए ओके पर क्लिक करें। यह मेशसेंट्रल वेब साइट को जरूरत पड़ने पर इस एप्लिकेशन को लॉन्च करने की अनुमति देगा।",
       "ko": "확인을 클릭하여 \"mcrouter : //\"프로토콜의 핸들러로 시스템에 MeshCentral 라우터를 등록하십시오. 이렇게하면 필요할 때 MeshCentral 웹 사이트에서이 응용 프로그램을 시작할 수 있습니다.",
       "nl": "Klik op ok om MeshCentral Router op uw systeem te registreren als de handler voor het \"mcrouter://\" protocol. Hierdoor kan de MeshCentral-website deze applicatie starten wanneer dat nodig is.",
-      "zh-chs": "单击确定在您的系统上注册 MeshCentral Router 作为“mcrouter://”协议的处理程序。这将允许 MeshCentral 网站在需要时启动此应用程序。"
+      "zh-chs": "单击确定在您的系统上注册 MeshCentral Router 作为“mcrouter://”协议的处理程序。这将允许 MeshCentral 网站在需要时启动此应用程序。",
+      "xloc": [
+        "InstallForm.resx%label1.Text"
+      ]
     },
     {
       "cs": "Klikněte na OK a bude vám zaslán ověřovací e-mail na:",
@@ -9937,6 +10142,12 @@
       "zh-chs": "关",
       "zh-cht": "關",
       "xloc": [
+        "EventsForm.resx%closeButton.Text",
+        "MainForm.resx%nextButton5.Text",
+        "MeInfoForm.resx%closeButton.Text",
+        "NotifyForm.resx%closeButton.Text",
+        "SessionsForm.resx%closeButton.Text",
+        "SnapShotForm.resx%closeButton.Text",
         "default-mobile.handlebars->11->69",
         "default.handlebars->35->1079",
         "default.handlebars->35->1129",
@@ -10167,7 +10378,11 @@
       "hi": "संपीडित नेटवर्क यातायात",
       "ko": "압축 된 네트워크 트래픽",
       "nl": "Gecomprimeerd netwerkverkeer",
-      "zh-chs": "压缩网络流量"
+      "zh-chs": "压缩网络流量",
+      "xloc": [
+        "KVMStats.resx%groupBox1.Text",
+        "MappingStats.resx%groupBox1.Text"
+      ]
     },
     {
       "cs": "Komprese souborů ...",
@@ -10199,7 +10414,11 @@
       "hi": "कंप्यूटर का नाम",
       "ko": "ComputerName",
       "nl": "Computernaam",
-      "zh-chs": "计算机名"
+      "zh-chs": "计算机名",
+      "xloc": [
+        "DeviceUserControl.resx%deviceNameLabel.Text",
+        "MapUserControl.resx%deviceNameLabel.Text"
+      ]
     },
     {
       "cs": "Potvrdit",
@@ -10239,7 +10458,10 @@
       "hi": "हटाने की पुष्टि करें",
       "ko": "삭제 확인",
       "nl": "Verwijderen bevestigen",
-      "zh-chs": "确认删除"
+      "zh-chs": "确认删除",
+      "xloc": [
+        "FileDeletePromptForm.resx%mainGroupBox.Text"
+      ]
     },
     {
       "cs": "Potvrdit kopírování jednoho záznamu do tohoto umístění?",
@@ -10873,6 +11095,9 @@
       "zh-chs": "连接",
       "zh-cht": "連接",
       "xloc": [
+        "FileViewer.resx%connectButton.Text",
+        "KVMViewer.resx%connectButton.Text",
+        "Properties%Resources.resx%Connect",
         "agent-translations.json",
         "default-mobile.handlebars->11->410",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3",
@@ -11045,6 +11270,7 @@
       "zh-chs": "已连接",
       "zh-cht": "已連接",
       "xloc": [
+        "Properties%Resources.resx%Connected",
         "default-mobile.handlebars->11->4",
         "default.handlebars->35->11",
         "sharing.handlebars->11->4",
@@ -11124,7 +11350,10 @@
       "hi": "सर्वर से जुड़ा",
       "ko": "서버에 연결됨",
       "nl": "Verbonden met server",
-      "zh-chs": "连接到服务器"
+      "zh-chs": "连接到服务器",
+      "xloc": [
+        "Properties%Resources.resx%ConnectedToServer"
+      ]
     },
     {
       "cs": "Připojeno.",
@@ -11175,6 +11404,7 @@
       "zh-chs": "正在连线...",
       "zh-cht": "正在連線...",
       "xloc": [
+        "Properties%Resources.resx%Connecting",
         "default-mobile.handlebars->11->2",
         "default-mobile.handlebars->11->455",
         "default-mobile.handlebars->11->48",
@@ -11197,7 +11427,11 @@
       "hi": "संबंध",
       "ko": "연결",
       "nl": "Verbinding",
-      "zh-chs": "联系"
+      "zh-chs": "联系",
+      "xloc": [
+        "SshUsernameForm.resx%groupBox1.Text",
+        "altPortForm.resx%groupBox1.Text"
+      ]
     },
     {
       "cs": "Počitadlo připojení",
@@ -11891,7 +12125,10 @@
       "hi": "गिनती",
       "ko": "카운트",
       "nl": "Aantal",
-      "zh-chs": "数数"
+      "zh-chs": "数数",
+      "xloc": [
+        "SessionsForm.resx%columnHeader3.Text"
+      ]
     },
     {
       "cs": "Vytvořit účet",
@@ -11946,7 +12183,10 @@
       "hi": "फोल्डर बनाएं",
       "ko": "폴더 생성",
       "nl": "Map aanmaken",
-      "zh-chs": "创建文件夹"
+      "zh-chs": "创建文件夹",
+      "xloc": [
+        "Properties%Resources.resx%CreateFolder"
+      ]
     },
     {
       "de": "Login-Token erstellen",
@@ -12515,7 +12755,10 @@
       "ru": "Ctrl-Alt-Del",
       "tr": "Ctrl-Alt-Del",
       "zh-chs": "Ctrl-Alt-Del",
-      "zh-cht": "Ctrl-Alt-Del"
+      "zh-cht": "Ctrl-Alt-Del",
+      "xloc": [
+        "KVMViewer.resx%cadButton.Text"
+      ]
     },
     {
       "cs": "Ctrl-W",
@@ -13429,6 +13672,7 @@
       "zh-chs": "被拒绝",
       "zh-cht": "被拒絕",
       "xloc": [
+        "Properties%Resources.resx%Denied",
         "default-mobile.handlebars->11->362",
         "default.handlebars->35->1017",
         "sharing.handlebars->11->29",
@@ -13443,7 +13687,10 @@
       "hi": "मना",
       "ko": "거부",
       "nl": "Weigeren",
-      "zh-chs": "否定"
+      "zh-chs": "否定",
+      "xloc": [
+        "ConsentForm.resx%cancelButton.Text"
+      ]
     },
     {
       "cs": "Sestupně podle data",
@@ -13597,6 +13844,7 @@
       "zh-chs": "桌面",
       "zh-cht": "桌面",
       "xloc": [
+        "Properties%Resources.resx%Desktop",
         "default-mobile.handlebars->11->309",
         "default.handlebars->35->1085",
         "default.handlebars->35->1711",
@@ -13805,7 +14053,10 @@
       "hi": "डेस्कटॉप सेटिंग्स",
       "ko": "데스크탑 설정",
       "nl": "Bureaubladinstellingen",
-      "zh-chs": "桌面设置"
+      "zh-chs": "桌面设置",
+      "xloc": [
+        "DeviceSettingsForm.resx%groupBox2.Text"
+      ]
     },
     {
       "cs": "Sdílení plochy",
@@ -14072,6 +14323,8 @@
       "zh-chs": "设备组",
       "zh-cht": "裝置群",
       "xloc": [
+        "AddPortMapForm.resx%label5.Text",
+        "AddRelayMapForm.resx%label6.Text",
         "agent-translations.json",
         "default-mobile.handlebars->11->642",
         "default.handlebars->35->1729",
@@ -14267,7 +14520,10 @@
       "hi": "उपकरण सेटिंग्स",
       "ko": "기기 설정",
       "nl": "Apparaat instellingen",
-      "zh-chs": "设备设置"
+      "zh-chs": "设备设置",
+      "xloc": [
+        "DeviceSettingsForm.resx%$this.Text"
+      ]
     },
     {
       "cs": "Sdílení zařízení",
@@ -14316,7 +14572,10 @@
       "hi": "उपकरण की स्थिति",
       "ko": "장치 상태",
       "nl": "Apparaatstatus",
-      "zh-chs": "设备状态"
+      "zh-chs": "设备状态",
+      "xloc": [
+        "DeviceUserControl.resx%deviceStatusLabel.Text"
+      ]
     },
     {
       "cs": "Device Toast",
@@ -15004,6 +15263,7 @@
       "zh-chs": "设备",
       "zh-cht": "裝置",
       "xloc": [
+        "MainForm.resx%devicesTabPage.Text",
         "default.handlebars->35->1668",
         "default.handlebars->35->2144",
         "default.handlebars->35->2184"
@@ -15017,7 +15277,10 @@
       "hi": "प्रत्यक्ष रूप से कनेक्ट",
       "ko": "직접 연결",
       "nl": "Directe verbinding",
-      "zh-chs": "直接联系"
+      "zh-chs": "直接联系",
+      "xloc": [
+        "Properties%Resources.resx%DirectConnect"
+      ]
     },
     {
       "cs": "Zakázáno",
@@ -15037,6 +15300,7 @@
       "zh-chs": "已禁用",
       "zh-cht": "已禁用",
       "xloc": [
+        "Properties%Resources.resx%Disabled",
         "default-mobile.handlebars->11->472",
         "default.handlebars->35->714"
       ]
@@ -15080,6 +15344,7 @@
       "zh-chs": "断线",
       "zh-cht": "斷線",
       "xloc": [
+        "Properties%Resources.resx%Disconnect",
         "agent-translations.json",
         "default-mobile.handlebars->11->411",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3",
@@ -15117,6 +15382,12 @@
       ]
     },
     {
+      "en": "Disconnect from server and close?",
+      "xloc": [
+        "Properties%Resources.resx%DisconnectFromServerAndClose"
+      ]
+    },
+    {
       "cs": "Odpojeno",
       "de": "Getrennt",
       "en": "Disconnected",
@@ -15134,6 +15405,7 @@
       "zh-chs": "已断线",
       "zh-cht": "已斷線",
       "xloc": [
+        "Properties%Resources.resx%Disconnected",
         "default-mobile.handlebars->11->1",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3->deskstatus",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->0->1->3->p13Status",
@@ -15246,7 +15518,10 @@
       "hi": "कनेक्शन आंकड़े प्रदर्शित करें",
       "ko": "연결 통계 표시",
       "nl": "Verbindingsstatistieken weergeven",
-      "zh-chs": "显示连接统计"
+      "zh-chs": "显示连接统计",
+      "xloc": [
+        "Properties%Resources.resx%DisplayConnectionStatistics"
+      ]
     },
     {
       "cs": "Zobrazit název skupiny zařízení",
@@ -15322,6 +15597,7 @@
       "ru": "Экран {0}",
       "zh-chs": "显示{0}",
       "xloc": [
+        "Properties%Resources.resx%DisplayX",
         "default.handlebars->35->1087"
       ]
     },
@@ -15423,7 +15699,11 @@
       "hi": "{0} दिनों के लिए मत पूछो।",
       "ko": "{0} 일을 요구하지 마세요.",
       "nl": "Niet vragen voor {0} dagen.",
-      "zh-chs": "不要要求 {0} 天。"
+      "zh-chs": "不要要求 {0} 天。",
+      "xloc": [
+        "MainForm.resx%tokenRememberCheckBox.Text",
+        "Properties%Resources.resx%DontAskXDays"
+      ]
     },
     {
       "cs": "Neměňte, ponechte CCM, pokud je nastaveno",
@@ -15552,7 +15832,10 @@
       "hi": "डबल क्लिक एक्शन",
       "ko": "더블 클릭 동작",
       "nl": "Dubbelklik actie",
-      "zh-chs": "双击操作"
+      "zh-chs": "双击操作",
+      "xloc": [
+        "DeviceSettingsForm.resx%label1.Text"
+      ]
     },
     {
       "de": "runter",
@@ -16294,7 +16577,10 @@
       "hi": "बाहर जाएं",
       "ko": "출구",
       "nl": "Sluiten",
-      "zh-chs": "出口"
+      "zh-chs": "出口",
+      "xloc": [
+        "MainForm.resx%exitToolStripMenuItem.Text"
+      ]
     },
     {
       "cs": "E-mail „{0}“ se již používá pro jiný účet. Změňte e-mailovou adresu a zkuste to znovu.",
@@ -17058,6 +17344,7 @@
       "zh-chs": "电邮",
       "zh-cht": "電郵",
       "xloc": [
+        "MainForm.resx%emailTokenButton.Text",
         "default-mobile.handlebars->11->102",
         "default.handlebars->35->2110",
         "default.handlebars->35->2237",
@@ -17299,7 +17586,11 @@
       "hi": "ईमेल भेजा",
       "ko": "이메일을 보냈습니다.",
       "nl": "E-mail verzonden",
-      "zh-chs": "邮件已发送"
+      "zh-chs": "邮件已发送",
+      "xloc": [
+        "MainForm.resx%tokenEmailSentLabel.Text",
+        "Properties%Resources.resx%EmailSent"
+      ]
     },
     {
       "cs": "Email odeslán.",
@@ -17334,7 +17625,10 @@
       "hi": "ईमेल सत्यापन आवश्यक",
       "ko": "이메일 확인 필요",
       "nl": "E-mailverificatie vereist",
-      "zh-chs": "需要电子邮件验证"
+      "zh-chs": "需要电子邮件验证",
+      "xloc": [
+        "Properties%Resources.resx%EmailVerificationRequired"
+      ]
     },
     {
       "cs": "Je vyžadováno ověření e-mailem, zkontrolujte svou poštovní schránku a klikněte na odkaz pro potvrzení.",
@@ -17542,6 +17836,7 @@
       "zh-chs": "已启用",
       "zh-cht": "已啟用",
       "xloc": [
+        "Properties%Resources.resx%Enabled",
         "default.handlebars->35->2384"
       ]
     },
@@ -18002,7 +18297,10 @@
       "hi": "उन्नत कीबोर्ड कैप्चर",
       "ko": "향상된 키보드 캡처",
       "nl": "Verbeterde toetsenbordopname",
-      "zh-chs": "增强的键盘捕获"
+      "zh-chs": "增强的键盘捕获",
+      "xloc": [
+        "DeviceSettingsForm.resx%exp_KeyboardHookCheckBox.Text"
+      ]
     },
     {
       "cs": "Zadání",
@@ -18080,7 +18378,10 @@
       "hi": "सहायता अनुरोध विवरण दर्ज करें",
       "ko": "도움 요청 세부 정보 입력",
       "nl": "Voer de details van het hulpverzoek in",
-      "zh-chs": "输入帮助请求详细信息"
+      "zh-chs": "输入帮助请求详细信息",
+      "xloc": [
+        "RequestHelpForm.resx%stateLabel.Text"
+      ]
     },
     {
       "cs": "Zadejte text a kliknutím na OK ho zadáte na dálku pomocí klávesnice (rozložení en-US). Než budete pokračovat, nezapomeňte umístnit vzdálený kurzor na správnou pozici.",
@@ -18132,7 +18433,10 @@
       "hi": "दूरस्थ कंप्यूटर का RDP पोर्ट दर्ज करें, डिफ़ॉल्ट RDP पोर्ट 3389 है।",
       "ko": "원격 컴퓨터의 RDP 포트를 입력합니다. 기본 RDP 포트는 3389입니다.",
       "nl": "Voer de RDP poort van de externe computer in, de standaard RDP poort is 3389.",
-      "zh-chs": "输入远程计算机的RDP端口，默认RDP端口为3389。"
+      "zh-chs": "输入远程计算机的RDP端口，默认RDP端口为3389。",
+      "xloc": [
+        "rdpPortForm.resx%label1.Text"
+      ]
     },
     {
       "cs": "Zadejte token pro vytvoření účtu",
@@ -18165,7 +18469,10 @@
       "hi": "दूसरा कारक प्रमाणीकरण टोकन दर्ज करें।",
       "ko": "두 번째 요소 인증 토큰을 입력하십시오.",
       "nl": "Voer de tweede factor authenticatie token in.",
-      "zh-chs": "输入第二个因素身份验证令牌。"
+      "zh-chs": "输入第二个因素身份验证令牌。",
+      "xloc": [
+        "MainForm.resx%label2.Text"
+      ]
     },
     {
       "cs": "Zadejte token pro 2-faktorové přihlášení:",
@@ -18217,7 +18524,10 @@
       "hi": "त्रुटि संदेश",
       "ko": "에러 메시지",
       "nl": "Foutmelding",
-      "zh-chs": "错误信息"
+      "zh-chs": "错误信息",
+      "xloc": [
+        "MainForm.resx%stateLabel.Text"
+      ]
     },
     {
       "cs": "Chyba, klíč nelze přidat.",
@@ -18388,7 +18698,10 @@
       "hi": "प्रतिस्पर्धा",
       "ko": "행사",
       "nl": "Gebeurtenis",
-      "zh-chs": "事件"
+      "zh-chs": "事件",
+      "xloc": [
+        "EventsForm.resx%columnHeader3.Text"
+      ]
     },
     {
       "cs": "Podrobnosti události",
@@ -18450,6 +18763,7 @@
       "zh-chs": "事件",
       "zh-cht": "事件",
       "xloc": [
+        "EventsForm.resx%$this.Text",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevEvents",
         "default.handlebars->container->topbar->1->1->UserSubMenuSpan->UserSubMenu->1->0->UserEvents",
         "default.handlebars->contextMenu->cxevents"
@@ -18832,7 +19146,10 @@
       "hi": "दूरस्थ डेस्कटॉप सत्र प्रारंभ करने में विफल",
       "ko": "원격 데스크톱 세션을 시작하지 못했습니다.",
       "nl": "Kan extern bureaubladsessie niet starten",
-      "zh-chs": "无法启动远程桌面会话"
+      "zh-chs": "无法启动远程桌面会话",
+      "xloc": [
+        "Properties%Resources.resx%FailedToStartRemoteDesktopSession"
+      ]
     },
     {
       "cs": "Po odmítnutí místního uživatele se nepodařilo spustit vzdálené soubory",
@@ -18863,7 +19180,10 @@
       "hi": "दूरस्थ टर्मिनल सत्र प्रारंभ करने में विफल",
       "ko": "원격 터미널 세션을 시작하지 못했습니다.",
       "nl": "Kan externe terminalsessie niet starten",
-      "zh-chs": "无法启动远程终端会话"
+      "zh-chs": "无法启动远程终端会话",
+      "xloc": [
+        "Properties%Resources.resx%FailedToStartRemoteTerminalSession"
+      ]
     },
     {
       "cs": "Zahájení relace vzdáleného terminálu se nezdařilo, {0} ({1})",
@@ -18928,6 +19248,7 @@
       "zh-chs": "快速",
       "zh-cht": "快速",
       "xloc": [
+        "Properties%Resources.resx%Fast",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1"
@@ -19055,6 +19376,8 @@
       "zh-chs": "档案操作",
       "zh-cht": "檔案操作",
       "xloc": [
+        "FileDeletePromptForm.resx%$this.Text",
+        "FilenamePromptForm.resx%$this.Text",
         "default.handlebars->35->1123",
         "default.handlebars->35->1125",
         "sharing.handlebars->11->46",
@@ -19093,6 +19416,7 @@
       "ru": "Передача файлов",
       "zh-chs": "文件传输",
       "xloc": [
+        "FileTransferStatusForm.resx%$this.Text",
         "default.handlebars->35->2362"
       ]
     },
@@ -19135,6 +19459,7 @@
       "zh-chs": "档案",
       "zh-cht": "檔案",
       "xloc": [
+        "Properties%Resources.resx%Files",
         "default-mobile.handlebars->11->203",
         "default-mobile.handlebars->11->311",
         "default.handlebars->35->1718",
@@ -19689,7 +20014,10 @@
       "hi": "सभी कीबोर्ड कुंजियों को अग्रेषित करें",
       "ko": "모든 키보드 키 전달",
       "nl": "Alle toetsenbordtoetsen doorsturen",
-      "zh-chs": "转发所有键盘键"
+      "zh-chs": "转发所有键盘键",
+      "xloc": [
+        "DeviceSettingsForm.resx%exp_KeyboardHookPriorityCheckBox.Text"
+      ]
     },
     {
       "cs": "Snímková frekvence",
@@ -19709,6 +20037,7 @@
       "zh-chs": "贞速率",
       "zh-cht": "框速率",
       "xloc": [
+        "KVMSettingsForm.resx%label2.Text",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->1",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->1"
       ]
@@ -21061,6 +21390,8 @@
       "ru": "HTTP",
       "zh-chs": "HTTP",
       "xloc": [
+        "DeviceUserControl.resx%httpButton.Text",
+        "MainForm.resx%httpToolStripMenuItem.Text",
         "default.handlebars->35->2466"
       ]
     },
@@ -21072,7 +21403,11 @@
       "hi": "HTTPS के",
       "ko": "HTTPS",
       "nl": "HTTPS",
-      "zh-chs": "HTTPS"
+      "zh-chs": "HTTPS",
+      "xloc": [
+        "DeviceUserControl.resx%httpsButton.Text",
+        "MainForm.resx%httpsToolStripMenuItem.Text"
+      ]
     },
     {
       "cs": "HW připojení",
@@ -21276,7 +21611,10 @@
       "hi": "सहायता मांगी गई",
       "ko": "도움 요청",
       "nl": "Hulp gevraagd",
-      "zh-chs": "请求帮助"
+      "zh-chs": "请求帮助",
+      "xloc": [
+        "Properties%Resources.resx%HelpRequested"
+      ]
     },
     {
       "cs": "Požadována pomoc, uživatel: {0}, podrobnosti: {1}",
@@ -22128,7 +22466,10 @@
       "hi": "नज़रअंदाज़ करना",
       "ko": "무시",
       "nl": "Negeren",
-      "zh-chs": "忽略"
+      "zh-chs": "忽略",
+      "xloc": [
+        "MainForm.resx%nextButton3.Text"
+      ]
     },
     {
       "cs": "Neplatné vyvolání",
@@ -22219,7 +22560,13 @@
       "hi": "आने वाली बाइट्स",
       "ko": "들어오는 바이트",
       "nl": "Inkomende Bytes",
-      "zh-chs": "传入字节"
+      "zh-chs": "传入字节",
+      "xloc": [
+        "KVMStats.resx%label12.Text",
+        "KVMStats.resx%label4.Text",
+        "MappingStats.resx%label12.Text",
+        "MappingStats.resx%label4.Text"
+      ]
     },
     {
       "de": "Eingehende Kompression",
@@ -22229,7 +22576,11 @@
       "hi": "आने वाली संपीड़न",
       "ko": "들어오는 압축",
       "nl": "Inkomende compressie",
-      "zh-chs": "传入压缩"
+      "zh-chs": "传入压缩",
+      "xloc": [
+        "KVMStats.resx%label11.Text",
+        "MappingStats.resx%label11.Text"
+      ]
     },
     {
       "cs": "Indexováno každých {0} sekund",
@@ -22512,7 +22863,10 @@
       "hi": "इंस्टॉल...",
       "ko": "설치...",
       "nl": "Installeren...",
-      "zh-chs": "安装..."
+      "zh-chs": "安装...",
+      "xloc": [
+        "MainForm.resx%installButton.Text"
+      ]
     },
     {
       "de": "Installation",
@@ -22522,7 +22876,10 @@
       "hi": "इंस्टालेशन",
       "ko": "설치",
       "nl": "Installatie",
-      "zh-chs": "安装"
+      "zh-chs": "安装",
+      "xloc": [
+        "InstallForm.resx%$this.Text"
+      ]
     },
     {
       "cs": "Typ instalace",
@@ -23499,7 +23856,11 @@
       "hi": "इंटेल® एमई स्टेट...",
       "ko": "인텔 ® ME 상태 ...",
       "nl": "Intel® ME status...",
-      "zh-chs": "英特尔® ME 状态..."
+      "zh-chs": "英特尔® ME 状态...",
+      "xloc": [
+        "MainForm.resx%intelAMTStateToolStripMenuItem.Text",
+        "MainForm.resx%intelMEStateToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "Intel® Management-Engine",
@@ -23509,7 +23870,10 @@
       "hi": "इंटेल® प्रबंधन इंजन",
       "ko": "인텔 ® 관리 엔진",
       "nl": "Intel® Management Engine",
-      "zh-chs": "英特尔® 管理引擎"
+      "zh-chs": "英特尔® 管理引擎",
+      "xloc": [
+        "MeInfoForm.resx%$this.Text"
+      ]
     },
     {
       "de": "Status der Intel® Management Engine für diesen Computer.",
@@ -23519,7 +23883,10 @@
       "hi": "इस कंप्यूटर के लिए Intel® प्रबंधन इंजन स्थिति।",
       "ko": "이 컴퓨터의 인텔 ® 관리 엔진 상태입니다.",
       "nl": "Intel® Management Engine status voor deze computer.",
-      "zh-chs": "此计算机的英特尔® 管理引擎状态。"
+      "zh-chs": "此计算机的英特尔® 管理引擎状态。",
+      "xloc": [
+        "MeInfoForm.resx%label1.Text"
+      ]
     },
     {
       "cs": "Intel®AMT",
@@ -23855,7 +24222,10 @@
       "hi": "अमान्य डाउनलोड।",
       "ko": "다운로드가 잘못되었습니다.",
       "nl": "Ongeldige download.",
-      "zh-chs": "下载无效。"
+      "zh-chs": "下载无效。",
+      "xloc": [
+        "Properties%Resources.resx%InvalidDownload"
+      ]
     },
     {
       "de": "Ungültige Email",
@@ -24034,7 +24404,10 @@
       "hi": "अमान्य उपयोगकर्ता नाम या पासवर्ड",
       "ko": "잘못된 사용자 이름 또는 비밀번호",
       "nl": "Ongeldige gebruikersnaam of wachtwoord",
-      "zh-chs": "无效的用户名或密码"
+      "zh-chs": "无效的用户名或密码",
+      "xloc": [
+        "Properties%Resources.resx%InvalidUsernameOrPassword"
+      ]
     },
     {
       "cs": "Zrušení platnosti e-mailu",
@@ -24344,7 +24717,11 @@
       "hi": "मद",
       "ko": "안건",
       "nl": "Artikel",
-      "zh-chs": "物品"
+      "zh-chs": "物品",
+      "xloc": [
+        "MeInfoForm.resx%columnHeader1.Text",
+        "MeInfoForm.resx%columnHeader4.Text"
+      ]
     },
     {
       "cs": "JSON",
@@ -24832,7 +25209,10 @@
       "hi": "बोली",
       "ko": "언어",
       "nl": "Talen",
-      "zh-chs": "语言"
+      "zh-chs": "语言",
+      "xloc": [
+        "Properties%Resources.resx%LanguagesTitle"
+      ]
     },
     {
       "cs": "Velký",
@@ -26243,7 +26623,10 @@
       "hi": "इस कंप्यूटर पर सक्रिय दूरस्थ सत्रों की सूची।",
       "ko": "이 컴퓨터에서 활성화 된 원격 세션 목록입니다.",
       "nl": "Lijst met externe sessies die actief zijn op deze computer.",
-      "zh-chs": "此计算机上活动的远程会话列表。"
+      "zh-chs": "此计算机上活动的远程会话列表。",
+      "xloc": [
+        "SessionsForm.resx%label1.Text"
+      ]
     },
     {
       "cs": "lotyština",
@@ -26305,6 +26688,7 @@
       "zh-chs": "载入中...",
       "zh-cht": "載入中...",
       "xloc": [
+        "Properties%Resources.resx%Loading",
         "default-mobile.handlebars->11->81",
         "default-mobile.handlebars->11->96",
         "default.handlebars->35->1276",
@@ -26334,6 +26718,8 @@
       "zh-chs": "本地",
       "zh-cht": "本地",
       "xloc": [
+        "FileViewer.resx%localLabel.Text",
+        "Properties%Resources.resx%Local",
         "messenger.handlebars->localVideo->1",
         "messenger.handlebars->remoteImage->3->4"
       ]
@@ -26346,7 +26732,10 @@
       "hi": "स्थानीय - {0}",
       "ko": "지역-{0}",
       "nl": "Lokaal - {0}",
-      "zh-chs": "本地 - {0}"
+      "zh-chs": "本地 - {0}",
+      "xloc": [
+        "Properties%Resources.resx%LocalPlus"
+      ]
     },
     {
       "cs": "Lokální klávesová mapa",
@@ -26378,7 +26767,11 @@
       "hi": "स्थानीय बंदरगाह",
       "ko": "로컬 포트",
       "nl": "Lokale poort",
-      "zh-chs": "本地端口"
+      "zh-chs": "本地端口",
+      "xloc": [
+        "AddPortMapForm.resx%label1.Text",
+        "AddRelayMapForm.resx%label1.Text"
+      ]
     },
     {
       "de": "Lokale Geräte, kein Agent",
@@ -26785,7 +27178,10 @@
       "hi": "लॉग आउट",
       "ko": "로그 아웃",
       "nl": "Uitloggen",
-      "zh-chs": "登出"
+      "zh-chs": "登出",
+      "xloc": [
+        "MainForm.resx%backButton5.Text"
+      ]
     },
     {
       "cs": "Log-X",
@@ -26840,6 +27236,8 @@
       "zh-chs": "登录",
       "zh-cht": "登入",
       "xloc": [
+        "MainForm.resx%nextButton1.Text",
+        "MainForm.resx%tabPage1.Text",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resettokenpanel->1->5->1->2->1->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resettokenpanel->1->5->1->2->1->1",
@@ -27170,6 +27568,7 @@
       "zh-chs": "MQTT",
       "zh-cht": "MQTT",
       "xloc": [
+        "Properties%Resources.resx%MQTT",
         "default-mobile.handlebars->11->239",
         "default-mobile.handlebars->11->292",
         "default-mobile.handlebars->11->549",
@@ -27935,7 +28334,10 @@
       "hi": "मैपिंग सेटिंग्स",
       "ko": "매핑 설정",
       "nl": "Kaartinstellingen",
-      "zh-chs": "映射设置"
+      "zh-chs": "映射设置",
+      "xloc": [
+        "SettingsForm.resx%$this.Text"
+      ]
     },
     {
       "de": "Zuordnungen",
@@ -27945,7 +28347,11 @@
       "hi": "मानचित्रण",
       "ko": "매핑",
       "nl": "Toewijzingen",
-      "zh-chs": "映射"
+      "zh-chs": "映射",
+      "xloc": [
+        "MainForm.resx%portMapTabPage.Text",
+        "MainForm.resx%tabPage5.Text"
+      ]
     },
     {
       "cs": "maráthština",
@@ -28030,6 +28436,7 @@
       "zh-chs": "中",
       "zh-cht": "中",
       "xloc": [
+        "Properties%Resources.resx%Medium",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->3",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize->sizeselect->3",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->3",
@@ -28319,7 +28726,10 @@
       "hi": "मेशसेंट्रल",
       "ko": "MeshCentral",
       "nl": "MeshCentral",
-      "zh-chs": "网格中心"
+      "zh-chs": "网格中心",
+      "xloc": [
+        "Properties%Resources.resx%MeshCentralTitle"
+      ]
     },
     {
       "de": "MeshCentral Agent für Android",
@@ -28346,6 +28756,8 @@
       "ru": "MeshCentral Ассистент",
       "zh-chs": "MeshCentral 助手",
       "xloc": [
+        "MainForm.resx%mainNotifyIcon.Text",
+        "Properties%Resources.resx%MeshCentralAssistant",
         "default.handlebars->35->430"
       ]
     },
@@ -28384,8 +28796,8 @@
     },
     {
       "en": "MeshCentral Assistant is a Windows tool that users can use to ask for help. Use the link below to download a version that will monitor the background agent.",
-      "nl": "MeshCentral Assistant is een Windows-tool die gebruikers kunnen gebruiken om hulp te vragen. Gebruik de onderstaande link om een versie te downloaden die de achtergrondagent in de gaten houdt.",
       "ko": "MeshCentral Assistant는 사용자가 도움을 요청하는 데 사용할 수있는 Windows 도구입니다. 아래 링크를 사용하여 백그라운드 에이전트를 모니터링 할 버전을 다운로드하십시오.",
+      "nl": "MeshCentral Assistant is een Windows-tool die gebruikers kunnen gebruiken om hulp te vragen. Gebruik de onderstaande link om een versie te downloaden die de achtergrondagent in de gaten houdt.",
       "xloc": [
         "default.handlebars->35->468"
       ]
@@ -28450,6 +28862,9 @@
       "zh-chs": "MeshCentral路由器",
       "zh-cht": "MeshCentral Router",
       "xloc": [
+        "AppLaunchForm.resx%$this.Text",
+        "MainForm.resx%notifyIcon.Text",
+        "Properties%Resources.resx%MeshCentralRouter",
         "default.handlebars->35->981"
       ]
     },
@@ -28461,7 +28876,10 @@
       "hi": "मेशसेंट्रल राउटर इंस्टालेशन",
       "ko": "MeshCentral 라우터 설치",
       "nl": "MeshCentral Router Installatie",
-      "zh-chs": "MeshCentral 路由器安装"
+      "zh-chs": "MeshCentral 路由器安装",
+      "xloc": [
+        "InstallForm.resx%groupBox1.Text"
+      ]
     },
     {
       "de": "MeshCentral Router-Links",
@@ -28485,7 +28903,10 @@
       "hi": "मेशसेंट्रल राउटर अपडेट",
       "ko": "MeshCentral 라우터 업데이트",
       "nl": "MeshCentral Router Update",
-      "zh-chs": "MeshCentral 路由器更新"
+      "zh-chs": "MeshCentral 路由器更新",
+      "xloc": [
+        "UpdateForm.resx%groupBox1.Text"
+      ]
     },
     {
       "de": "MeshCentral Router ermöglicht die Zuordnung von TCP- und UDP-Ports auf diesem Computer zu jedem Computer in Ihrem MeshCentral-Serverkonto. Melden Sie sich zunächst bei Ihrem Konto an.",
@@ -28495,7 +28916,10 @@
       "hi": "MeshCentral राउटर इस कंप्यूटर पर आपके MeshCentral सर्वर खाते के किसी भी कंप्यूटर पर TCP और UDP पोर्ट की मैपिंग की अनुमति देता है। अपने खाते में लॉग इन करके प्रारंभ करें।",
       "ko": "MeshCentral 라우터를 사용하면이 컴퓨터의 TCP 및 UDP 포트를 MeshCentral 서버 계정의 모든 컴퓨터에 매핑 할 수 있습니다. 계정에 로그인하여 시작하십시오.",
       "nl": "Met MeshCentral Router kunnen TCP en UDP poorten op deze computer worden toegewezen aan elke computer in uw MeshCentral-serveraccount. Begin door in te loggen op uw account.",
-      "zh-chs": "MeshCentral 路由器允许将此计算机上的 TCP 和 UDP 端口映射到您的 MeshCentral 服务器帐户中的任何计算机。首先登录您的帐户。"
+      "zh-chs": "MeshCentral 路由器允许将此计算机上的 TCP 和 UDP 端口映射到您的 MeshCentral 服务器帐户中的任何计算机。首先登录您的帐户。",
+      "xloc": [
+        "MainForm.resx%label1.Text"
+      ]
     },
     {
       "cs": "MeshCentral Router je Windows nástroj pro mapování TCP portů. Prostřednictvím tohoto serveru můžete například vzdáleně přistupovat na RDP vzdálenou plochu jiného počítače.",
@@ -29343,7 +29767,10 @@
       "hi": "एकाधिक उपयोगकर्ता",
       "ko": "여러 사용자",
       "nl": "Meerdere gebruikers",
-      "zh-chs": "多个用户"
+      "zh-chs": "多个用户",
+      "xloc": [
+        "Properties%Resources.resx%MultipleUsers"
+      ]
     },
     {
       "cs": "Multiplexor",
@@ -29779,6 +30206,13 @@
       "zh-chs": "名称",
       "zh-cht": "名稱",
       "xloc": [
+        "AddPortMapForm.resx%label8.Text",
+        "AddRelayMapForm.resx%label8.Text",
+        "AppLaunchForm.resx%label1.Text",
+        "FileViewer.resx%columnHeader1.Text",
+        "FileViewer.resx%columnHeader3.Text",
+        "FilenamePromptForm.resx%label1.Text",
+        "MainForm.resx%nameColumnHeader.Text",
         "default-mobile.handlebars->11->121",
         "default-mobile.handlebars->11->251",
         "default-mobile.handlebars->11->456",
@@ -30247,7 +30681,10 @@
       "hi": "अगला",
       "ko": "다음",
       "nl": "Volgende",
-      "zh-chs": "下一个"
+      "zh-chs": "下一个",
+      "xloc": [
+        "MainForm.resx%nextButton2.Text"
+      ]
     },
     {
       "de": "Nacht Modus",
@@ -30402,7 +30839,10 @@
       "hi": "कोई उपकरण नहीं",
       "ko": "장치 없음",
       "nl": "Geen apparaten",
-      "zh-chs": "没有设备"
+      "zh-chs": "没有设备",
+      "xloc": [
+        "MainForm.resx%noDevicesLabel.Text"
+      ]
     },
     {
       "cs": "Nenalezeny žádné události",
@@ -30665,7 +31105,10 @@
       "hi": "कोई पोर्ट मैपिंग नहीं\r\n\r\nआरंभ करने के लिए \"जोड़ें\" पर क्लिक करें।",
       "ko": "포트 매핑 없음\r\n\r\n시작하려면 \"추가\"를 클릭하십시오.",
       "nl": "Geen poorttoewijzingen\r\n\r\nKlik op \"Toevoegen\" om te beginnen.",
-      "zh-chs": "无端口映射\r\n\r\n单击“添加”开始。"
+      "zh-chs": "无端口映射\r\n\r\n单击“添加”开始。",
+      "xloc": [
+        "MainForm.resx%noMapLabel.Text"
+      ]
     },
     {
       "cs": "Žádná práva",
@@ -30702,7 +31145,10 @@
       "hi": "खोजने पर कोई परिणाम नहीं मिला",
       "ko": "검색 결과 없음",
       "nl": "geen resultaten gevonden",
-      "zh-chs": "没有搜索结果"
+      "zh-chs": "没有搜索结果",
+      "xloc": [
+        "MainForm.resx%noSearchResultsLabel.Text"
+      ]
     },
     {
       "cs": "Žádné TLS zabezpečení",
@@ -30824,7 +31270,10 @@
       "hi": "कोई सक्रिय दूरस्थ सत्र नहीं।",
       "ko": "활성 원격 세션이 없습니다.",
       "nl": "Geen actieve externe sessies.",
-      "zh-chs": "没有活动的远程会话。"
+      "zh-chs": "没有活动的远程会话。",
+      "xloc": [
+        "Properties%Resources.resx%NoActiveRemoteSessions"
+      ]
     },
     {
       "de": "Kein Automatisches Update",
@@ -31313,7 +31762,11 @@
       "hi": "कोई दूरस्थ सत्र नहीं",
       "ko": "원격 세션 없음",
       "nl": "Geen externe sessies",
-      "zh-chs": "没有远程会话"
+      "zh-chs": "没有远程会话",
+      "xloc": [
+        "MainForm.resx%remoteSessionsLabel.Text",
+        "Properties%Resources.resx%NoRemoteSessions"
+      ]
     },
     {
       "cs": "Žádná práva k serveru",
@@ -31334,6 +31787,12 @@
       "zh-cht": "沒有伺服器權限",
       "xloc": [
         "default.handlebars->35->2223"
+      ]
+    },
+    {
+      "en": "No tools allowed",
+      "xloc": [
+        "Properties%Resources.resx%NoToolsAllowed"
       ]
     },
     {
@@ -31640,6 +32099,7 @@
       "zh-chs": "未激活（输入）",
       "zh-cht": "未啟動（輸入）",
       "xloc": [
+        "Properties%Resources.resx%NotActivatedIn",
         "default-mobile.handlebars->11->268",
         "default-mobile.handlebars->11->509",
         "default.handlebars->35->674"
@@ -31663,6 +32123,7 @@
       "zh-chs": "未激活（预）",
       "zh-cht": "未啟動（預）",
       "xloc": [
+        "Properties%Resources.resx%NotActivatedPre",
         "default-mobile.handlebars->11->267",
         "default-mobile.handlebars->11->508",
         "default.handlebars->35->673"
@@ -31953,6 +32414,7 @@
       "zh-chs": "通知",
       "zh-cht": "通知",
       "xloc": [
+        "NotifyForm.resx%$this.Text",
         "default.handlebars->35->211",
         "default.handlebars->35->2281"
       ]
@@ -32044,7 +32506,10 @@
       "hi": "साइट खोलें...",
       "ko": "O 펜 사이트 (& P) ...",
       "nl": "O&pen website...",
-      "zh-chs": "打开网站 (&P)..."
+      "zh-chs": "打开网站 (&P)...",
+      "xloc": [
+        "MainForm.resx%openSiteToolStripMenuItem.Text"
+      ]
     },
     {
       "cs": "OK",
@@ -32064,6 +32529,21 @@
       "zh-chs": "OK",
       "zh-cht": "OK",
       "xloc": [
+        "AddPortMapForm.resx%okButton.Text",
+        "AddRelayMapForm.resx%okButton.Text",
+        "AppLaunchForm.resx%okButton.Text",
+        "DeviceSettingsForm.resx%okButton.Text",
+        "FileDeletePromptForm.resx%okButton.Text",
+        "FilenamePromptForm.resx%okButton.Text",
+        "InstallForm.resx%okButton.Text",
+        "KVMSettingsForm.resx%okButton.Text",
+        "KVMStats.resx%okButton.Text",
+        "MappingStats.resx%okButton.Text",
+        "RequestHelpForm.resx%okButton.Text",
+        "SettingsForm.resx%okButton.Text",
+        "SshUsernameForm.resx%okButton.Text",
+        "UpdateForm.resx%okButton.Text",
+        "altPortForm.resx%okButton.Text",
         "default-mobile.handlebars->11->107",
         "default-mobile.handlebars->11->460",
         "default-mobile.handlebars->11->464",
@@ -32083,6 +32563,7 @@
         "login.handlebars->dialog->idx_dlgButtonBar",
         "login2.handlebars->dialog->idx_dlgButtonBar",
         "player.handlebars->p11->dialog->idx_dlgButtonBar",
+        "rdpPortForm.resx%okButton.Text",
         "sharing.handlebars->dialog->idx_dlgButtonBar",
         "ssh.handlebars->p11->dialog->idx_dlgButtonBar",
         "xterm.handlebars->p11->dialog->idx_dlgButtonBar"
@@ -32186,6 +32667,7 @@
       "zh-chs": "离线",
       "zh-cht": "離線",
       "xloc": [
+        "Properties%Resources.resx%Offline",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->5"
       ]
     },
@@ -32458,7 +32940,10 @@
       "hi": "ओपन सोर्स, अपाचे 2.0 लाइसेंस",
       "ko": "오픈 소스, Apache 2.0 라이선스",
       "nl": "Open Source, Apache 2.0 Licentie",
-      "zh-chs": "开源，Apache 2.0 许可"
+      "zh-chs": "开源，Apache 2.0 许可",
+      "xloc": [
+        "MainForm.resx%licenseLinkLabel.Text"
+      ]
     },
     {
       "de": "Website öffnen",
@@ -32468,7 +32953,10 @@
       "hi": "वेब साइट खोलें",
       "ko": "웹 사이트 열기",
       "nl": "Website openen",
-      "zh-chs": "打开网站"
+      "zh-chs": "打开网站",
+      "xloc": [
+        "MainForm.resx%openWebSiteButton.Text"
+      ]
     },
     {
       "cs": "Otevřete terminál XTerm",
@@ -32542,7 +33030,10 @@
       "hi": "खुला हुआ...",
       "ko": "열다...",
       "nl": "Open...",
-      "zh-chs": "打开..."
+      "zh-chs": "打开...",
+      "xloc": [
+        "MapUserControl.resx%appButton.Text"
+      ]
     },
     {
       "de": "OpenSSH",
@@ -32552,7 +33043,10 @@
       "hi": "अधिभारित",
       "ko": "OpenSSH",
       "nl": "OpenSSH",
-      "zh-chs": "开放式SSH"
+      "zh-chs": "开放式SSH",
+      "xloc": [
+        "Properties%Resources.resx%OpenSSHAppName"
+      ]
     },
     {
       "cs": "Zahájení: {0}",
@@ -32774,7 +33268,13 @@
       "hi": "आउटगोइंग बाइट्स",
       "ko": "나가는 바이트",
       "nl": "Uitgaande Bytes",
-      "zh-chs": "传出字节"
+      "zh-chs": "传出字节",
+      "xloc": [
+        "KVMStats.resx%label2.Text",
+        "KVMStats.resx%label3.Text",
+        "MappingStats.resx%label2.Text",
+        "MappingStats.resx%label3.Text"
+      ]
     },
     {
       "de": "Ausgehende Komprimierung",
@@ -32784,7 +33284,11 @@
       "hi": "आउटगोइंग संपीड़न",
       "ko": "나가는 압축",
       "nl": "Uitgaande compressie",
-      "zh-chs": "输出压缩"
+      "zh-chs": "输出压缩",
+      "xloc": [
+        "KVMStats.resx%label10.Text",
+        "MappingStats.resx%label10.Text"
+      ]
     },
     {
       "cs": "Přepsat, pokud soubor existuje?",
@@ -33056,6 +33560,7 @@
       "zh-chs": "密码",
       "zh-cht": "密碼",
       "xloc": [
+        "MainForm.resx%label28.Text",
         "default-mobile.handlebars->11->344",
         "default-mobile.handlebars->11->403",
         "default-mobile.handlebars->11->414",
@@ -33421,7 +33926,10 @@
       "hi": "पथ",
       "ko": "통로",
       "nl": "Pad",
-      "zh-chs": "小路"
+      "zh-chs": "小路",
+      "xloc": [
+        "AppLaunchForm.resx%label3.Text"
+      ]
     },
     {
       "cs": "Pozastavit",
@@ -34254,7 +34762,10 @@
       "hi": "पोर्ट मानचित्रण",
       "ko": "포트 매핑",
       "nl": "Poorttoewijzing",
-      "zh-chs": "端口映射"
+      "zh-chs": "端口映射",
+      "xloc": [
+        "AddPortMapForm.resx%$this.Text"
+      ]
     },
     {
       "de": "Hilfe zur Portzuordnung",
@@ -34264,7 +34775,10 @@
       "hi": "पोर्ट मैपिंग सहायता",
       "ko": "포트 매핑 도움말",
       "nl": "Hulp bij poorttoewijzing",
-      "zh-chs": "端口映射帮助"
+      "zh-chs": "端口映射帮助",
+      "xloc": [
+        "MappingHelpForm.resx%$this.Text"
+      ]
     },
     {
       "de": "Port {0} zu Port {1}",
@@ -34274,7 +34788,10 @@
       "hi": "पोर्ट {0} से पोर्ट {1}",
       "ko": "포트 {0}에서 포트 {1}로",
       "nl": "Poort {0} naar poort {1}",
-      "zh-chs": "端口 {0} 到端口 {1}"
+      "zh-chs": "端口 {0} 到端口 {1}",
+      "xloc": [
+        "Properties%Resources.resx%PortXtoPortY"
+      ]
     },
     {
       "de": "Port {0} nach {1}:{2}",
@@ -34284,7 +34801,10 @@
       "hi": "पोर्ट {0} से {1}:{2}",
       "ko": "{0}에서 {1}로 포트 : {2}",
       "nl": "Poort {0} naar {1}:{2}",
-      "zh-chs": "端口 {0} 到 {1}：{2}"
+      "zh-chs": "端口 {0} 到 {1}：{2}",
+      "xloc": [
+        "Properties%Resources.resx%PortXtoIPPortY"
+      ]
     },
     {
       "cs": "portugalština",
@@ -34688,6 +35208,9 @@
       "zh-chs": "隐私栏",
       "zh-cht": "隱私欄",
       "xloc": [
+        "KVMViewer.resx%privacyBarToolStripMenuItem.Text",
+        "MainForm.resx%privacyBarToolStripMenuItem.Text",
+        "PrivacyBarForm.resx%mainLabel.Text",
         "default.handlebars->deskConnectContextMenu->5"
       ]
     },
@@ -34720,7 +35243,10 @@
       "hi": "गोपनीयताबारफॉर्म",
       "ko": "PrivacyBarForm",
       "nl": "PrivacyBarForm",
-      "zh-chs": "隐私栏表格"
+      "zh-chs": "隐私栏表格",
+      "xloc": [
+        "PrivacyBarForm.resx%$this.Text"
+      ]
     },
     {
       "cs": "Správa procesů",
@@ -34868,6 +35394,8 @@
       "zh-chs": "协议",
       "zh-cht": "協議",
       "xloc": [
+        "AddPortMapForm.resx%label6.Text",
+        "AddRelayMapForm.resx%label7.Text",
         "default.handlebars->35->2372",
         "player.handlebars->3->16"
       ]
@@ -34920,7 +35448,10 @@
       "hi": "पुटी एसएसएच क्लाइंट",
       "ko": "PuTTY SSH 클라이언트",
       "nl": "PuTTY SSH client",
-      "zh-chs": "PuTTY SSH 客户端"
+      "zh-chs": "PuTTY SSH 客户端",
+      "xloc": [
+        "Properties%Resources.resx%PuttyAppName"
+      ]
     },
     {
       "cs": "Veřejný odkaz",
@@ -34952,7 +35483,10 @@
       "hi": "दूरस्थ डिवाइस से क्लिपबोर्ड खींचे",
       "ko": "원격 장치에서 클립 보드 가져 오기",
       "nl": "Trek het klembord van het externe apparaat",
-      "zh-chs": "从远程设备拉剪贴板"
+      "zh-chs": "从远程设备拉剪贴板",
+      "xloc": [
+        "Properties%Resources.resx%PullClipboardFromRemoteDevice"
+      ]
     },
     {
       "cs": "paňdžábština",
@@ -35039,7 +35573,10 @@
       "hi": "स्थानीय क्लिपबोर्ड को दूरस्थ डिवाइस पर पुश करें",
       "ko": "로컬 클립 보드를 원격 장치로 푸시",
       "nl": "Verplaats lokaal klembord naar extern apparaat",
-      "zh-chs": "将本地剪贴板推送到远程设备"
+      "zh-chs": "将本地剪贴板推送到远程设备",
+      "xloc": [
+        "Properties%Resources.resx%PushLocaClipboardToRemoteDevice"
+      ]
     },
     {
       "de": "Push Benachrichtigung fehlgeschlagen",
@@ -35090,6 +35627,7 @@
       "zh-chs": "质量",
       "zh-cht": "品質",
       "xloc": [
+        "KVMSettingsForm.resx%label3.Text",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->0->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->3->1",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->3->1"
@@ -35124,7 +35662,10 @@
       "hi": "ताज़ा करें",
       "ko": "새롭게 하다",
       "nl": "Vernieuwen",
-      "zh-chs": "刷新"
+      "zh-chs": "刷新",
+      "xloc": [
+        "FileViewer.resx%refreshToolStripMenuItem.Text"
+      ]
     },
     {
       "cs": "RAW16, velmi pomalé",
@@ -35190,6 +35731,8 @@
       "zh-chs": "RDP",
       "zh-cht": "RDP",
       "xloc": [
+        "DeviceUserControl.resx%rdpButton.Text",
+        "MainForm.resx%rdpToolStripMenuItem.Text",
         "default.handlebars->35->302",
         "default.handlebars->35->773"
       ]
@@ -35223,7 +35766,11 @@
       "hi": "आरडीपी पोर्ट",
       "ko": "RDP 포트",
       "nl": "RDP poort",
-      "zh-chs": "RDP 端口"
+      "zh-chs": "RDP 端口",
+      "xloc": [
+        "rdpPortForm.resx%$this.Text",
+        "rdpPortForm.resx%label2.Text"
+      ]
     },
     {
       "cs": "Port vzdáleného připojení RDP:",
@@ -35495,6 +36042,7 @@
       "zh-chs": "收到无效的网络数据",
       "zh-cht": "收到無效的網絡數據",
       "xloc": [
+        "Properties%Resources.resx%ReceivedInvalidNetworkData",
         "default-mobile.handlebars->11->365",
         "default.handlebars->35->1020",
         "sharing.handlebars->11->10",
@@ -35614,7 +36162,10 @@
       "hi": "पुनरावर्ती हटाएं",
       "ko": "재귀 삭제",
       "nl": "Recursief verwijderen",
-      "zh-chs": "递归删除"
+      "zh-chs": "递归删除",
+      "xloc": [
+        "FileDeletePromptForm.resx%recursiveCheckBox.Text"
+      ]
     },
     {
       "cs": "Rekurzivní mazání",
@@ -35753,6 +36304,7 @@
       "zh-chs": "中继",
       "zh-cht": "中繼",
       "xloc": [
+        "Properties%Resources.resx%Relay",
         "default-mobile.handlebars->11->238",
         "default.handlebars->35->2467",
         "default.handlebars->35->298",
@@ -35788,7 +36340,10 @@
       "hi": "रिले डिवाइस",
       "ko": "릴레이 장치",
       "nl": "Doorstuur apparaat",
-      "zh-chs": "中继装置"
+      "zh-chs": "中继装置",
+      "xloc": [
+        "AddRelayMapForm.resx%label2.Text"
+      ]
     },
     {
       "cs": "Chyby předávání (relay)",
@@ -35819,7 +36374,10 @@
       "hi": "रिले मैपिंग",
       "ko": "릴레이 매핑",
       "nl": "Doorstuurtoewijzing",
-      "zh-chs": "中继映射"
+      "zh-chs": "中继映射",
+      "xloc": [
+        "AddRelayMapForm.resx%$this.Text"
+      ]
     },
     {
       "cs": "Předávané relace",
@@ -35886,7 +36444,10 @@
       "hi": "यह प्रमाणपत्र याद रखें",
       "ko": "이 인증서 기억",
       "nl": "Onthoud dit certificaat",
-      "zh-chs": "记住这个证书"
+      "zh-chs": "记住这个证书",
+      "xloc": [
+        "MainForm.resx%rememberCertCheckBox.Text"
+      ]
     },
     {
       "cs": "Zapamatovat toto zařízení na 30 dní.",
@@ -35948,6 +36509,8 @@
       "zh-chs": "远程",
       "zh-cht": "遠程",
       "xloc": [
+        "FileViewer.resx%remoteLabel.Text",
+        "Properties%Resources.resx%Remote",
         "messenger.handlebars->remoteImage->3->3",
         "messenger.handlebars->remoteVideo->1"
       ]
@@ -35960,7 +36523,10 @@
       "hi": "रिमोट - {0}",
       "ko": "원격-{0}",
       "nl": "Afstandsbediening - {0}",
-      "zh-chs": "远程 - {0}"
+      "zh-chs": "远程 - {0}",
+      "xloc": [
+        "Properties%Resources.resx%RemotePlus"
+      ]
     },
     {
       "cs": "Instalace agenta pro vzdálený přístup",
@@ -36089,6 +36655,7 @@
       "zh-chs": "远程桌面",
       "zh-cht": "遠程桌面",
       "xloc": [
+        "KVMViewer.resx%$this.Text",
         "default-mobile.handlebars->11->194",
         "default-mobile.handlebars->11->197",
         "default.handlebars->35->308",
@@ -36232,7 +36799,10 @@
       "hi": "दूरस्थ डेस्कटॉप डेटा",
       "ko": "원격 데스크톱 데이터",
       "nl": "Extern bureaublad gegevens",
-      "zh-chs": "远程桌面数据"
+      "zh-chs": "远程桌面数据",
+      "xloc": [
+        "KVMStats.resx%groupBox2.Text"
+      ]
     },
     {
       "cs": "Odkaz na vzdálenou plochu",
@@ -36273,6 +36843,7 @@
       "zh-chs": "远程桌面设置",
       "zh-cht": "遠程桌面設置",
       "xloc": [
+        "KVMSettingsForm.resx%$this.Text",
         "default-mobile.handlebars->11->367",
         "default.handlebars->35->1032",
         "default.handlebars->35->334",
@@ -36287,7 +36858,10 @@
       "hi": "दूरस्थ डेस्कटॉप आँकड़े",
       "ko": "원격 데스크톱 통계",
       "nl": "Extern bureaublad statistieken",
-      "zh-chs": "远程桌面统计"
+      "zh-chs": "远程桌面统计",
+      "xloc": [
+        "KVMStats.resx%$this.Text"
+      ]
     },
     {
       "de": "Remotedesktop...",
@@ -36297,7 +36871,10 @@
       "hi": "रिमोट डेस्कटॉप...",
       "ko": "원격 데스크탑...",
       "nl": "Extern bureaublad...",
-      "zh-chs": "远程桌面..."
+      "zh-chs": "远程桌面...",
+      "xloc": [
+        "MainForm.resx%remoteDesktopToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "Remote-Gerät",
@@ -36307,7 +36884,10 @@
       "hi": "रिमोट डिवाइस",
       "ko": "원격 장치",
       "nl": "Extern apparaat",
-      "zh-chs": "遥控装置"
+      "zh-chs": "遥控装置",
+      "xloc": [
+        "AddPortMapForm.resx%label2.Text"
+      ]
     },
     {
       "de": "Remote-Dateien",
@@ -36317,7 +36897,10 @@
       "hi": "दूरस्थ फ़ाइलें",
       "ko": "원격 파일",
       "nl": "Externe bestanden",
-      "zh-chs": "远程文件"
+      "zh-chs": "远程文件",
+      "xloc": [
+        "FileViewer.resx%$this.Text"
+      ]
     },
     {
       "de": "Link zu Remote-Dateien",
@@ -36341,7 +36924,10 @@
       "hi": "दूरस्थ फ़ाइलें...",
       "ko": "원격 파일 ...",
       "nl": "Externe bestanden...",
-      "zh-chs": "远程文件..."
+      "zh-chs": "远程文件...",
+      "xloc": [
+        "MainForm.resx%remoteFilesToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "Remote-IP",
@@ -36351,7 +36937,10 @@
       "hi": "दूरदराज़ के आई. पी",
       "ko": "원격 IP",
       "nl": "Extern IP",
-      "zh-chs": "远程IP"
+      "zh-chs": "远程IP",
+      "xloc": [
+        "AddRelayMapForm.resx%label5.Text"
+      ]
     },
     {
       "de": "Remote-Eingangssperre",
@@ -36418,7 +37007,11 @@
       "hi": "रिमोट पोर्ट",
       "ko": "원격 포트",
       "nl": "Externe poort",
-      "zh-chs": "远程端口"
+      "zh-chs": "远程端口",
+      "xloc": [
+        "AddPortMapForm.resx%label3.Text",
+        "AddRelayMapForm.resx%label3.Text"
+      ]
     },
     {
       "de": "Remote-Sitzungen",
@@ -36428,7 +37021,10 @@
       "hi": "दूरस्थ सत्र",
       "ko": "원격 세션",
       "nl": "Externe Sessies",
-      "zh-chs": "远程会话"
+      "zh-chs": "远程会话",
+      "xloc": [
+        "SessionsForm.resx%$this.Text"
+      ]
     },
     {
       "de": "Remote-Sitzungen...",
@@ -36448,7 +37044,10 @@
       "hi": "दूरस्थ सत्र: {0}",
       "ko": "원격 세션 : {0}",
       "nl": "Externe Sessies: {0}",
-      "zh-chs": "远程会话：{0}"
+      "zh-chs": "远程会话：{0}",
+      "xloc": [
+        "Properties%Resources.resx%RemoteSessionsX"
+      ]
     },
     {
       "de": "Remote-Terminal + Datei-Link",
@@ -36579,7 +37178,10 @@
       "hi": "दूरस्थ डेस्कटॉप गुणवत्ता, स्केलिंग और फ्रेम दर सेटिंग्स। इन्हें नेटवर्क कनेक्शन की गुणवत्ता के आधार पर समायोजित किया जा सकता है।",
       "ko": "원격 데스크톱 품질, 크기 조정 및 프레임 속도 설정. 네트워크 연결 품질에 따라 조정할 수 있습니다.",
       "nl": "Instellingen voor kwaliteit, schaal en framesnelheid van het externe bureaublad. Deze kunnen worden aangepast afhankelijk van de kwaliteit van de netwerkverbinding.",
-      "zh-chs": "远程桌面质量、缩放和帧速率设置。这些可以根据网络连接的质量进行调整。"
+      "zh-chs": "远程桌面质量、缩放和帧速率设置。这些可以根据网络连接的质量进行调整。",
+      "xloc": [
+        "KVMSettingsForm.resx%label4.Text"
+      ]
     },
     {
       "de": "Remote-Eingang ist gesperrt",
@@ -36627,6 +37229,7 @@
       "zh-chs": "删除",
       "zh-cht": "删除",
       "xloc": [
+        "MapUserControl.resx%closeButton.Text",
         "default.handlebars->35->161"
       ]
     },
@@ -36638,7 +37241,10 @@
       "hi": "1 आइटम निकालें?",
       "ko": "항목 1 개를 삭제 하시겠습니까?",
       "nl": "1 artikel verwijderen?",
-      "zh-chs": "删除 1 项？"
+      "zh-chs": "删除 1 项？",
+      "xloc": [
+        "Properties%Resources.resx%Remove1Item"
+      ]
     },
     {
       "cs": "Odebrat konfiguraci",
@@ -37181,7 +37787,10 @@
       "hi": "{0} आइटम निकालें?",
       "ko": "{0} 개 항목을 삭제 하시겠습니까?",
       "nl": "{0} items verwijderen?",
-      "zh-chs": "删除 {0} 项？"
+      "zh-chs": "删除 {0} 项？",
+      "xloc": [
+        "Properties%Resources.resx%RemoveXItems"
+      ]
     },
     {
       "cs": "Odebrána ověřovací aplikace",
@@ -37420,6 +38029,7 @@
       "zh-chs": "改名",
       "zh-cht": "改名",
       "xloc": [
+        "Properties%Resources.resx%Rename",
         "default-mobile.handlebars->11->149",
         "default-mobile.handlebars->11->432",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->1",
@@ -37442,7 +38052,10 @@
       "hi": "फाइल का नाम बदलो",
       "ko": "파일명 변경",
       "nl": "Bestand hernoemen",
-      "zh-chs": "重新命名文件"
+      "zh-chs": "重新命名文件",
+      "xloc": [
+        "FilenamePromptForm.resx%mainGroupBox.Text"
+      ]
     },
     {
       "cs": "Přejmenovat: „{0}“ na „{1}“",
@@ -37529,7 +38142,12 @@
       "hi": "मदद का अनुरोध करें",
       "ko": "도움 요청",
       "nl": "Hulp vragen",
-      "zh-chs": "请求帮助"
+      "zh-chs": "请求帮助",
+      "xloc": [
+        "MainForm.resx%requestHelpButton.Text",
+        "Properties%Resources.resx%RequestHelp",
+        "RequestHelpForm.resx%$this.Text"
+      ]
     },
     {
       "de": "Hilfe anfordern...",
@@ -37539,7 +38157,10 @@
       "hi": "मदद का अनुरोध करें...",
       "ko": "도움 요청 ...",
       "nl": "Hulp vragen...",
-      "zh-chs": "请求帮助..."
+      "zh-chs": "请求帮助...",
+      "xloc": [
+        "MainForm.resx%requestHelpToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "Anfrage gesendet, {0}.",
@@ -38210,7 +38831,10 @@
       "hi": "रूटिंग आँकड़े",
       "ko": "라우팅 통계",
       "nl": "Routeringsstatistieken",
-      "zh-chs": "路由统计"
+      "zh-chs": "路由统计",
+      "xloc": [
+        "MappingStats.resx%$this.Text"
+      ]
     },
     {
       "de": "Routing-Status",
@@ -38220,7 +38844,10 @@
       "hi": "रूटिंग स्थिति",
       "ko": "라우팅 상태",
       "nl": "Routeringsstatus",
-      "zh-chs": "路由状态"
+      "zh-chs": "路由状态",
+      "xloc": [
+        "MapUserControl.resx%routingStatusLabel.Text"
+      ]
     },
     {
       "cs": "Spustit příkazy",
@@ -38484,7 +39111,11 @@
       "hi": "समायोजन...",
       "ko": "설정 (& E) ...",
       "nl": "Instellingen...",
-      "zh-chs": "设置(&E)..."
+      "zh-chs": "设置(&E)...",
+      "xloc": [
+        "MainForm.resx%settingsToolStripMenuItem.Text",
+        "MainForm.resx%settingsToolStripMenuItem1.Text"
+      ]
     },
     {
       "de": "Stop-Agent",
@@ -38494,7 +39125,10 @@
       "hi": "शीर्ष एजेंट",
       "ko": "Stop 에이전트",
       "nl": "S&top Agent",
-      "zh-chs": "停止代理 (&T)"
+      "zh-chs": "停止代理 (&T)",
+      "xloc": [
+        "MainForm.resx%stopAgentToolStripMenuItem.Text"
+      ]
     },
     {
       "cs": "SCP",
@@ -38513,6 +39147,8 @@
       "tr": "SCP",
       "zh-chs": "SCP",
       "xloc": [
+        "DeviceUserControl.resx%scpButton.Text",
+        "MainForm.resx%scpToolStripMenuItem.Text",
         "default.handlebars->35->304",
         "default.handlebars->35->777"
       ]
@@ -38535,6 +39171,7 @@
       "zh-chs": "短信",
       "zh-cht": "短信",
       "xloc": [
+        "MainForm.resx%smsTokenButton.Text",
         "default.handlebars->35->2272",
         "default.handlebars->35->2277",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
@@ -38621,7 +39258,10 @@
       "hi": "एसएमएस भेजा गया",
       "ko": "SMS 전송",
       "nl": "SMS verzonden",
-      "zh-chs": "短信发送"
+      "zh-chs": "短信发送",
+      "xloc": [
+        "Properties%Resources.resx%SmsSent"
+      ]
     },
     {
       "cs": "SMS odeslána.",
@@ -38679,6 +39319,8 @@
       "tr": "SSH",
       "zh-chs": "SSH",
       "xloc": [
+        "DeviceUserControl.resx%sshButton.Text",
+        "MainForm.resx%sshToolStripMenuItem.Text",
         "default-mobile.handlebars->11->298",
         "default-mobile.handlebars->11->300",
         "default.handlebars->35->303",
@@ -38727,7 +39369,10 @@
       "hi": "एसएसएच उपयोगकर्ता नाम",
       "ko": "SSH 사용자 이름",
       "nl": "SSH gebruikersnaam",
-      "zh-chs": "SSH 用户名"
+      "zh-chs": "SSH 用户名",
+      "xloc": [
+        "SshUsernameForm.resx%$this.Text"
+      ]
     },
     {
       "de": "SSH-Remote-Verbindungsport:",
@@ -38990,6 +39635,7 @@
       "zh-chs": "缩放比例",
       "zh-cht": "縮放比例",
       "xloc": [
+        "KVMSettingsForm.resx%label1.Text",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->1",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->5->1"
@@ -39182,6 +39828,7 @@
       "zh-chs": "搜寻",
       "zh-cht": "搜尋",
       "xloc": [
+        "Properties%Resources.resx%SearchPlaceHolder",
         "default.handlebars->35->1130",
         "default.handlebars->35->639",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devMapToolbar",
@@ -39660,6 +40307,7 @@
       "zh-chs": "发送",
       "zh-cht": "發送",
       "xloc": [
+        "consoleForm.resx%sendButton.Text",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->specialKeyDropDown",
         "messenger.handlebars->xbottom->1->1->0->3",
@@ -39675,7 +40323,10 @@
       "hi": "रिमोट डिवाइस पर Ctrl-Alt-Del भेजें",
       "ko": "Ctrl-Alt-Del을 원격 장치로 보내기",
       "nl": "Stuur Ctrl-Alt-Del naar extern apparaat",
-      "zh-chs": "发送 Ctrl-Alt-Del 到远程设备"
+      "zh-chs": "发送 Ctrl-Alt-Del 到远程设备",
+      "xloc": [
+        "Properties%Resources.resx%SendCtrlAltDelToRemoteDevice"
+      ]
     },
     {
       "cs": "Poslat e-mailem",
@@ -39991,6 +40642,7 @@
       "zh-chs": "将保安编码发送到注册的电邮地址？",
       "zh-cht": "將保安編碼發送到註冊的電郵地址？",
       "xloc": [
+        "Properties%Resources.resx%SendTokenEmail",
         "login.handlebars->5->25",
         "login2.handlebars->7->34"
       ]
@@ -40013,6 +40665,7 @@
       "zh-chs": "将保安编码发送到注册电话号码？",
       "zh-cht": "將保安編碼發送到註冊電話號碼？",
       "xloc": [
+        "Properties%Resources.resx%SendTokenSMS",
         "login.handlebars->5->27",
         "login2.handlebars->7->36"
       ]
@@ -40116,7 +40769,10 @@
       "hi": "सर्वर",
       "ko": "섬기는 사람",
       "nl": "Server",
-      "zh-chs": "服务器"
+      "zh-chs": "服务器",
+      "xloc": [
+        "MainForm.resx%label26.Text"
+      ]
     },
     {
       "cs": "Záloha serveru",
@@ -40612,7 +41268,10 @@
       "hi": "सर्वर जानकारी",
       "ko": "서버 정보",
       "nl": "Server informatie",
-      "zh-chs": "服务器信息"
+      "zh-chs": "服务器信息",
+      "xloc": [
+        "ServerUserControl.resx%serverInfoLabel.Text"
+      ]
     },
     {
       "cs": "Server tuto relaci nahrává",
@@ -40670,7 +41329,10 @@
       "hi": "सर्वर का नाम",
       "ko": "서버 이름",
       "nl": "Servernaam",
-      "zh-chs": "服务器名称"
+      "zh-chs": "服务器名称",
+      "xloc": [
+        "ServerUserControl.resx%serverNameLabel.Text"
+      ]
     },
     {
       "cs": "ServerStats.csv",
@@ -40903,7 +41565,10 @@
       "hi": "आरडीपी पोर्ट सेट करें...",
       "ko": "RDP 포트 설정 ...",
       "nl": "RDP poort instellen...",
-      "zh-chs": "设置 RDP 端口..."
+      "zh-chs": "设置 RDP 端口...",
+      "xloc": [
+        "DeviceUserControl.resx%setRDPPortToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "Setze den Dunkel Modus",
@@ -40979,8 +41644,13 @@
       "zh-chs": "设定",
       "zh-cht": "設定",
       "xloc": [
+        "DeviceSettingsForm.resx%groupBox1.Text",
+        "KVMSettingsForm.resx%groupBox1.Text",
+        "KVMViewer.resx%settingsButton.Text",
+        "SettingsForm.resx%groupBox1.Text",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3",
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar",
+        "rdpPortForm.resx%groupBox1.Text"
       ]
     },
     {
@@ -41124,6 +41794,7 @@
       "zh-chs": "设定...",
       "zh-cht": "設定...",
       "xloc": [
+        "Properties%Resources.resx%Setup",
         "default-mobile.handlebars->11->3",
         "default.handlebars->35->10",
         "default.handlebars->35->283",
@@ -41391,7 +42062,11 @@
       "hi": "&घटनाक्रम दिखाएं...",
       "ko": "이벤트 표시 (& E) ...",
       "nl": "&Gebeurtenissen tonen...",
-      "zh-chs": "显示(&Events)..."
+      "zh-chs": "显示(&Events)...",
+      "xloc": [
+        "MainForm.resx%showEventsToolStripMenuItem.Text",
+        "MainForm.resx%showEventsToolStripMenuItem1.Text"
+      ]
     },
     {
       "de": "&Gruppennamen anzeigen",
@@ -41401,7 +42076,10 @@
       "hi": "समूह के नाम दिखाएं",
       "ko": "그룹 이름 표시",
       "nl": "Toon &groepsnamen",
-      "zh-chs": "显示组名称(&G)"
+      "zh-chs": "显示组名称(&G)",
+      "xloc": [
+        "MainForm.resx%showGroupNamesToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "&Offline-Geräte anzeigen",
@@ -41411,7 +42089,10 @@
       "hi": "दिखाएँ &ऑफ़लाइन उपकरण",
       "ko": "오프라인 장치 표시 (& O)",
       "nl": "Toon &Offline apparaten",
-      "zh-chs": "显示离线设备 (&A)"
+      "zh-chs": "显示离线设备 (&A)",
+      "xloc": [
+        "MainForm.resx%showOfflineDevicesToolStripMenuItem.Text"
+      ]
     },
     {
       "cs": "Zobrazit nástroj pro zaměření",
@@ -41510,7 +42191,11 @@
       "hi": "सत्र दिखाएं...",
       "ko": "세션 표시 ...",
       "nl": "Sessies weergeven...",
-      "zh-chs": "显示会话..."
+      "zh-chs": "显示会话...",
+      "xloc": [
+        "MainForm.resx%showSessionsToolStripMenuItem.Text",
+        "MainForm.resx%showSessionsToolStripMenuItem1.Text"
+      ]
     },
     {
       "cs": "Zobrazit panel nástrojů připojení",
@@ -41713,7 +42398,11 @@
       "hi": "सिस्टम ट्रे पर दिखाएं",
       "ko": "시스템 트레이에 표시",
       "nl": "Weergeven in systeemvak",
-      "zh-chs": "在系统托盘上显示"
+      "zh-chs": "在系统托盘上显示",
+      "xloc": [
+        "DeviceSettingsForm.resx%systemTrayCheckBox.Text",
+        "SettingsForm.resx%systemTrayCheckBox.Text"
+      ]
     },
     {
       "cs": "Zobrazit záznam chyb na serveru",
@@ -42014,7 +42703,10 @@
       "hi": "साइट",
       "ko": "대지",
       "nl": "Lokatie",
-      "zh-chs": "地点"
+      "zh-chs": "地点",
+      "xloc": [
+        "AppLaunchForm.resx%label2.Text"
+      ]
     },
     {
       "cs": "Velikost",
@@ -42034,6 +42726,8 @@
       "zh-chs": "尺寸",
       "zh-cht": "尺寸",
       "xloc": [
+        "FileViewer.resx%columnHeader2.Text",
+        "FileViewer.resx%columnHeader4.Text",
         "default.handlebars->35->2357",
         "default.handlebars->35->2378",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize"
@@ -42260,6 +42954,7 @@
       "zh-chs": "慢",
       "zh-cht": "慢",
       "xloc": [
+        "Properties%Resources.resx%Slow",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->5",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5"
@@ -42444,7 +43139,10 @@
       "hi": "नाम द्वारा क्रमबद्ध करें",
       "ko": "이름으로 분류하다",
       "nl": "Sorteer op &Naam",
-      "zh-chs": "按名称分类"
+      "zh-chs": "按名称分类",
+      "xloc": [
+        "MainForm.resx%sortByNameToolStripMenuItem.Text"
+      ]
     },
     {
       "de": "Nach Gruppe sortieren",
@@ -42454,7 +43152,10 @@
       "hi": "समूह के आधार पर छाँटें",
       "ko": "그룹 별 정렬 (& R)",
       "nl": "Sorteer op G&roep",
-      "zh-chs": "按组(&O) 排序"
+      "zh-chs": "按组(&O) 排序",
+      "xloc": [
+        "MainForm.resx%sortByGroupToolStripMenuItem.Text"
+      ]
     },
     {
       "cs": "Seřadit podle data",
@@ -43418,7 +44119,10 @@
       "hi": "शुरुआत...",
       "ko": "시작하는 중 ...",
       "nl": "Starten...",
-      "zh-chs": "开始..."
+      "zh-chs": "开始...",
+      "xloc": [
+        "Properties%Resources.resx%Starting"
+      ]
     },
     {
       "cs": "Stav",
@@ -43438,6 +44142,9 @@
       "zh-chs": "状况",
       "zh-cht": "狀態",
       "xloc": [
+        "MainForm.resx%stateColumnHeader.Text",
+        "MeInfoForm.resx%stateTabPage.Text",
+        "Properties%Resources.resx%State",
         "default.handlebars->35->1071",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsServiceTab->deskToolsServiceHeader->1"
       ]
@@ -43460,6 +44167,8 @@
       "zh-chs": "统计",
       "zh-cht": "統計",
       "xloc": [
+        "FileViewer.resx%statsButton.Text",
+        "KVMViewer.resx%statsButton.Text",
         "default.handlebars->container->topbar->1->1->ServerSubMenuSpan->ServerSubMenu->1->0->ServerStats"
       ]
     },
@@ -43471,7 +44180,10 @@
       "hi": "आँकड़े...",
       "ko": "통계 ...",
       "nl": "Statistieken...",
-      "zh-chs": "统计..."
+      "zh-chs": "统计...",
+      "xloc": [
+        "MapUserControl.resx%statsToolStripMenuItem.Text"
+      ]
     },
     {
       "cs": "Stav",
@@ -43585,7 +44297,10 @@
       "hi": "रोका हुआ",
       "ko": "중지됨",
       "nl": "Gestopt",
-      "zh-chs": "停止"
+      "zh-chs": "停止",
+      "xloc": [
+        "Properties%Resources.resx%Stopped2"
+      ]
     },
     {
       "de": "Gestoppt.",
@@ -43595,7 +44310,10 @@
       "hi": "रोका हुआ।",
       "ko": "중지되었습니다.",
       "nl": "Gestopt.",
-      "zh-chs": "停了。"
+      "zh-chs": "停了。",
+      "xloc": [
+        "Properties%Resources.resx%Stopped"
+      ]
     },
     {
       "cs": "Úložný prostor",
@@ -43873,6 +44591,7 @@
       "zh-chs": "交换鼠标按钮",
       "zh-cht": "交換鼠標按鈕",
       "xloc": [
+        "KVMSettingsForm.resx%swapMouseButtonsCheckBox.Text",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->1",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->1"
       ]
@@ -44000,8 +44719,8 @@
     },
     {
       "en": "System Tray, Monitor only",
-      "nl": "Systeemvak, alleen monitoren",
       "ko": "시스템 트레이, 모니터 만",
+      "nl": "Systeemvak, alleen monitoren",
       "xloc": [
         "default.handlebars->35->444"
       ]
@@ -44053,7 +44772,11 @@
       "hi": "टीसीपी",
       "ko": "TCP",
       "nl": "TCP",
-      "zh-chs": "TCP"
+      "zh-chs": "TCP",
+      "xloc": [
+        "AddPortMapForm.resx%tcpRadioButton.Text",
+        "AddRelayMapForm.resx%tcpRadioButton.Text"
+      ]
     },
     {
       "cs": "Směrování TCP",
@@ -44085,7 +44808,10 @@
       "hi": "टीसीपी रिले",
       "ko": "TCP 릴레이",
       "nl": "TCP relay",
-      "zh-chs": "TCP中继"
+      "zh-chs": "TCP中继",
+      "xloc": [
+        "Properties%Resources.resx%TCPrelay"
+      ]
     },
     {
       "cs": "SOFTWARE JE POSKYTOVÁN „TAK JAK JE“, BEZ ZÁRUKY, VYJÁDŘENÉ NEBO IMPLIKOVANÉ, VČETNĚ NEJEDNÁVANÝCH ZÁRUK OBCHODOVATELNOSTI, VHODNOSTI PRO URČITÝ ÚČEL A NEZÁVISLOST. V ŽÁDNÉM PŘÍPADĚ NEPOSKYTUJÍ AUTOŘI NEBO DRŽITELÉ AUTORSKÝCH PRÁV ŽÁDNÉ ZÁRUKY, ZA POŠKOZENÍ NEBO OSTATNÍ ODPOVĚDNOST, PŘI ČINNOSTI SMLOUVY, TORTU NEBO JINÉ, VYPLÝVAJÍCÍ ZE SOFTWARU NEBO POUŽITÍ NEBO OSTATNÍCH OBCHODŮ SOFTWARE.",
@@ -44413,6 +45139,7 @@
       "zh-chs": "终端",
       "zh-cht": "終端機",
       "xloc": [
+        "Properties%Resources.resx%Terminal",
         "default-mobile.handlebars->11->200",
         "default-mobile.handlebars->11->310",
         "default.handlebars->35->1715",
@@ -44851,7 +45578,10 @@
       "hi": "यह MeshCentral सर्वर इस टूल के भिन्न संस्करण का उपयोग करता है। डाउनलोड और अपडेट करने के लिए ओके पर क्लिक करें।",
       "ko": "이 MeshCentral 서버는이 도구의 다른 버전을 사용합니다. 확인을 클릭하여 다운로드하고 업데이트하십시오.",
       "nl": "Deze MeshCentral Server gebruikt een andere versie van deze tool. Klik op OK om te downloaden en bij te werken.",
-      "zh-chs": "此 MeshCentral Server 使用此工具的不同版本。单击“确定”进行下载和更新。"
+      "zh-chs": "此 MeshCentral Server 使用此工具的不同版本。单击“确定”进行下载和更新。",
+      "xloc": [
+        "UpdateForm.resx%mainLabel.Text"
+      ]
     },
     {
       "cs": "Tento účet nemá práva k vytvoření nové skupiny zařízení.",
@@ -45049,7 +45779,10 @@
       "hi": "इस सर्वर ने एक अविश्वसनीय प्रमाणपत्र प्रस्तुत किया। यह संकेत दे सकता है कि यह सही सर्वर नहीं है या सर्वर के पास वैध प्रमाणपत्र नहीं है। यह अनुशंसित नहीं है, लेकिन आप इस सर्वर से कनेक्शन जारी रखने के लिए अनदेखा करें बटन दबा सकते हैं।",
       "ko": "이 서버는 신뢰할 수없는 인증서를 제공했습니다. 이는 올바른 서버가 아니거나 서버에 유효한 인증서가 없음을 나타낼 수 있습니다. 권장되지는 않지만 무시 버튼을 눌러이 서버에 계속 연결할 수 있습니다.",
       "nl": "Deze server heeft een niet-vertrouwd certificaat gepresenteerd. Dit kan erop wijzen dat dit niet de juiste server is of dat de server geen geldig certificaat heeft. Het wordt niet aanbevolen, maar u kunt op de negeren drukken om de verbinding met deze server voort te zetten.",
-      "zh-chs": "此服务器提供了不受信任的证书。这可能表明这不是正确的服务器或服务器没有有效的证书。不推荐，但您可以按忽略按钮继续连接到此服务器。"
+      "zh-chs": "此服务器提供了不受信任的证书。这可能表明这不是正确的服务器或服务器没有有效的证书。不推荐，但您可以按忽略按钮继续连接到此服务器。",
+      "xloc": [
+        "MainForm.resx%label5.Text"
+      ]
     },
     {
       "cs": "Tento software se skládá z dobrovolných příspěvků mnoha jednotlivců (AUTHORS.txt, http://jqueryui.com/about ). Přesnou historii příspěvků naleznete v historii revizí a protokolech dostupných na adrese http://jquery-ui.googlecode.com/svn/",
@@ -45237,6 +45970,7 @@
       "zh-chs": "时间",
       "zh-cht": "時間",
       "xloc": [
+        "EventsForm.resx%columnHeader1.Text",
         "default-mobile.handlebars->11->317",
         "default.handlebars->35->912",
         "player.handlebars->3->1"
@@ -45323,6 +46057,7 @@
       "zh-chs": "超时",
       "zh-cht": "超時",
       "xloc": [
+        "Properties%Resources.resx%Timeout",
         "default-mobile.handlebars->11->364",
         "default.handlebars->35->1019",
         "sharing.handlebars->11->31",
@@ -45853,7 +46588,10 @@
       "hi": "दूरस्थ डेस्कटॉप कनेक्शन टॉगल करें",
       "ko": "원격 데스크톱 연결 전환",
       "nl": "Verbinding met extern bureaublad wisselen",
-      "zh-chs": "切换远程桌面连接"
+      "zh-chs": "切换远程桌面连接",
+      "xloc": [
+        "Properties%Resources.resx%ToggleRemoteDesktopConnection"
+      ]
     },
     {
       "cs": "Přepnout typ emulace terminálu",
@@ -45928,7 +46666,10 @@
       "hi": "ज़ूम-टू-फ़िट मोड टॉगल करें",
       "ko": "확대 / 축소 모드 전환",
       "nl": "Schakel inzoemen naar passend modus in",
-      "zh-chs": "切换缩放至适合模式"
+      "zh-chs": "切换缩放至适合模式",
+      "xloc": [
+        "Properties%Resources.resx%ToggleZoomToFitMode"
+      ]
     },
     {
       "cs": "Žeton",
@@ -45948,6 +46689,8 @@
       "zh-chs": "代币",
       "zh-cht": "代幣",
       "xloc": [
+        "MainForm.resx%label3.Text",
+        "MainForm.resx%tabPage2.Text",
         "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->tokenpanel->1->7->1->0->1",
@@ -46121,7 +46864,10 @@
       "hi": "स्थानांतरण प्रगति",
       "ko": "전송 진행",
       "nl": "Voortgang overdracht",
-      "zh-chs": "转学进度"
+      "zh-chs": "转学进度",
+      "xloc": [
+        "FileTransferStatusForm.resx%mainGroupBox.Text"
+      ]
     },
     {
       "cs": "Zkusit znovu.",
@@ -46230,7 +46976,10 @@
       "hi": "टनलिंग डेटा",
       "ko": "터널링 데이터",
       "nl": "Gegevens tunnelen",
-      "zh-chs": "隧道数据"
+      "zh-chs": "隧道数据",
+      "xloc": [
+        "MappingStats.resx%groupBox2.Text"
+      ]
     },
     {
       "cs": "turečtina",
@@ -46303,7 +47052,10 @@
       "hi": "दो तरीकों से प्रमाणीकरण",
       "ko": "2 단계 인증",
       "nl": "Twee-factor authenticatie",
-      "zh-chs": "两因素身份验证"
+      "zh-chs": "两因素身份验证",
+      "xloc": [
+        "Properties%Resources.resx%TwoFactorAuthentication"
+      ]
     },
     {
       "cs": "Typ",
@@ -46323,6 +47075,7 @@
       "zh-chs": "类型",
       "zh-cht": "類型",
       "xloc": [
+        "SessionsForm.resx%columnHeader2.Text",
         "default-mobile.handlebars->11->122",
         "default-mobile.handlebars->11->569",
         "default.handlebars->35->1078",
@@ -46385,7 +47138,11 @@
       "hi": "यूडीपी",
       "ko": "UDP",
       "nl": "UDP",
-      "zh-chs": "UDP"
+      "zh-chs": "UDP",
+      "xloc": [
+        "AddPortMapForm.resx%udpRadioButton.Text",
+        "AddRelayMapForm.resx%udpRadioButton.Text"
+      ]
     },
     {
       "cs": "Směrování UDP",
@@ -46417,7 +47174,10 @@
       "hi": "यूडीपी रिले",
       "ko": "UDP 릴레이",
       "nl": "UDP relais",
-      "zh-chs": "UDP中继"
+      "zh-chs": "UDP中继",
+      "xloc": [
+        "Properties%Resources.resx%UDPrelay"
+      ]
     },
     {
       "cs": "UTF8 terminál",
@@ -46625,12 +47385,15 @@
       "hi": "स्थानीय पोर्ट से जुड़ने में असमर्थ",
       "ko": "로컬 포트에 바인딩 할 수 없습니다.",
       "nl": "Kan niet binden aan lokale poort",
-      "zh-chs": "无法绑定到本地端口"
+      "zh-chs": "无法绑定到本地端口",
+      "xloc": [
+        "Properties%Resources.resx%UnableToBindToLocalPort"
+      ]
     },
     {
       "en": "Unable to capture display",
-      "nl": "Kan weergave niet vastleggen",
       "ko": "디스플레이를 캡처 할 수 없습니다.",
+      "nl": "Kan weergave niet vastleggen",
       "xloc": [
         "default.handlebars->35->1021"
       ]
@@ -46643,7 +47406,10 @@
       "hi": "कनेक्ट करने में असमर्थ",
       "ko": "연결할 수 없습니다",
       "nl": "Niet in staat te verbinden",
-      "zh-chs": "无法连接"
+      "zh-chs": "无法连接",
+      "xloc": [
+        "Properties%Resources.resx%UnableToConnect"
+      ]
     },
     {
       "cs": "Nedaří se připojit k web socketu",
@@ -46877,6 +47643,7 @@
       "zh-chs": "未知",
       "zh-cht": "未知",
       "xloc": [
+        "Properties%Resources.resx%Unknown",
         "default-mobile.handlebars->11->240",
         "default-mobile.handlebars->11->37",
         "default-mobile.handlebars->11->41",
@@ -47251,6 +48018,7 @@
       "zh-chs": "更新资料",
       "zh-cht": "更新資料",
       "xloc": [
+        "UpdateForm.resx%$this.Text",
         "agent-translations.json",
         "default-mobile.handlebars->11->463",
         "default-mobile.handlebars->11->465",
@@ -47266,7 +48034,10 @@
       "hi": "अपडेट हो रहा है...",
       "ko": "업데이트 중 ...",
       "nl": "Bijwerken...",
-      "zh-chs": "正在更新..."
+      "zh-chs": "正在更新...",
+      "xloc": [
+        "Properties%Resources.resx%Updating"
+      ]
     },
     {
       "cs": "Nahrát",
@@ -47659,7 +48430,10 @@
       "hi": "वैकल्पिक पोर्ट का उपयोग करें...",
       "ko": "대체 포트 사용 ...",
       "nl": "Alternatieve poort gebruiken...",
-      "zh-chs": "使用备用端口..."
+      "zh-chs": "使用备用端口...",
+      "xloc": [
+        "DeviceUserControl.resx%toolStripMenuItem1.Text"
+      ]
     },
     {
       "cs": "Použijte Mapu vzdálené klávesnice",
@@ -47679,6 +48453,7 @@
       "zh-chs": "使用远程键盘映射",
       "zh-cht": "使用遠程鍵盤映射",
       "xloc": [
+        "KVMSettingsForm.resx%remoteKeyboardMapCheckBox.Text",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->3",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->3"
       ]
@@ -47782,6 +48557,8 @@
       "zh-chs": "用户",
       "zh-cht": "用戶",
       "xloc": [
+        "EventsForm.resx%columnHeader2.Text",
+        "SessionsForm.resx%columnHeader1.Text",
         "default.handlebars->35->1667",
         "default.handlebars->35->2022",
         "default.handlebars->35->2051",
@@ -47898,6 +48675,7 @@
       "zh-chs": "用户同意",
       "zh-cht": "用戶同意",
       "xloc": [
+        "ConsentForm.resx%$this.Text",
         "default.handlebars->35->1638",
         "default.handlebars->35->215",
         "default.handlebars->35->2181",
@@ -48474,6 +49252,8 @@
       "zh-chs": "用户名",
       "zh-cht": "用戶名",
       "xloc": [
+        "MainForm.resx%label27.Text",
+        "SshUsernameForm.resx%label2.Text",
         "default-mobile.handlebars->11->343",
         "default-mobile.handlebars->11->402",
         "default-mobile.handlebars->11->413",
@@ -48732,7 +49512,11 @@
       "hi": "मूल्य",
       "ko": "값",
       "nl": "Waarde",
-      "zh-chs": "价值"
+      "zh-chs": "价值",
+      "xloc": [
+        "MeInfoForm.resx%columnHeader2.Text",
+        "MeInfoForm.resx%columnHeader5.Text"
+      ]
     },
     {
       "cs": "Venda",
@@ -48989,7 +49773,10 @@
       "hi": "संस्करणों",
       "ko": "버전",
       "nl": "Versies",
-      "zh-chs": "版本"
+      "zh-chs": "版本",
+      "xloc": [
+        "MeInfoForm.resx%versionsTabPage.Text"
+      ]
     },
     {
       "cs": "Velmi pomalu",
@@ -49009,6 +49796,7 @@
       "zh-chs": "非常慢",
       "zh-cht": "非常慢",
       "xloc": [
+        "Properties%Resources.resx%VerySlow",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->7",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7"
@@ -49100,7 +49888,10 @@
       "hi": "प्रमाणपत्र विवरण देखें...",
       "ko": "인증서 세부 정보보기 ...",
       "nl": "Certificaatdetails bekijken...",
-      "zh-chs": "查看证书详细信息..."
+      "zh-chs": "查看证书详细信息...",
+      "xloc": [
+        "MainForm.resx%certDetailsButton.Text"
+      ]
     },
     {
       "cs": "Zobrazit Changelog",
@@ -49245,7 +50036,10 @@
       "hi": "चेतावनी - अमान्य सर्वर प्रमाणपत्र",
       "ko": "경고-잘못된 서버 인증서",
       "nl": "WAARSCHUWING - Ongeldig servercertificaat",
-      "zh-chs": "警告 - 服务器证书无效"
+      "zh-chs": "警告 - 服务器证书无效",
+      "xloc": [
+        "MainForm.resx%label4.Text"
+      ]
     },
     {
       "cs": "VAROVÁNÍ: ",
@@ -49398,6 +50192,7 @@
       "zh-chs": "正在等待用户授予访问权限...",
       "zh-cht": "正在等待用戶授予訪問權限...",
       "xloc": [
+        "Properties%Resources.resx%WaitingForUserToGrantAccess",
         "default-mobile.handlebars->11->361",
         "default.handlebars->35->1016",
         "sharing.handlebars->11->28",
@@ -50144,7 +50939,10 @@
       "hi": "विनएससीपी क्लाइंट",
       "ko": "WinSCP 클라이언트",
       "nl": "WinSCP client",
-      "zh-chs": "WinSCP客户端 "
+      "zh-chs": "WinSCP客户端 ",
+      "xloc": [
+        "Properties%Resources.resx%WinscpAppName"
+      ]
     },
     {
       "cs": "Windows",
@@ -52063,7 +52861,10 @@
     },
     {
       "en": "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr, av, update, firewall",
-      "nl": "id, naam, rname, host, icoon, ip, osdesc, status, groepsnaam, conn, pwr, av, update, firewall",
+      "nl": "id, naam, rname, host, icoon, ip, osdesc, status, groepsnaam, conn, pwr, av, update, firewall"
+    },
+    {
+      "en": "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr, av, update, firewall, avdetails",
       "xloc": [
         "default.handlebars->35->586"
       ]
@@ -52184,7 +52985,11 @@
       "hi": "लेबल1",
       "ko": "label1",
       "nl": "label1",
-      "zh-chs": "标签 1"
+      "zh-chs": "标签 1",
+      "xloc": [
+        "FileViewer.resx%consoleMessage.Text",
+        "KVMViewer.resx%consoleMessage.Text"
+      ]
     },
     {
       "cs": "licencováno pod",
@@ -52588,7 +53393,11 @@
       "hi": "स्थिति पट्टी1",
       "ko": "statusStrip1",
       "nl": "statusStrip1",
-      "zh-chs": "状态条1"
+      "zh-chs": "状态条1",
+      "xloc": [
+        "FileViewer.resx%statusStrip.Text",
+        "KVMViewer.resx%mainStatusStrip.Text"
+      ]
     },
     {
       "cs": "š:",
@@ -52859,7 +53668,10 @@
       "fi": "v",
       "fr": "v",
       "nl": "v",
-      "pt": "v"
+      "pt": "v",
+      "xloc": [
+        "KVMViewer.resx%toolStripStatusLabel1.Text"
+      ]
     },
     {
       "de": "v0.8.0",
@@ -52874,7 +53686,10 @@
       "ru": "v0.8.0",
       "tr": "v0.8.0",
       "zh-chs": "v0.8.0",
-      "zh-cht": "v0.8.0"
+      "zh-cht": "v0.8.0",
+      "xloc": [
+        "MainForm.resx%versionLabel.Text"
+      ]
     },
     {
       "cs": "{0}",
@@ -52926,7 +53741,10 @@
       "hi": "{0} - {1}",
       "ko": "{0}-{1}",
       "nl": "{0} - {1}",
-      "zh-chs": "{0} - {1}"
+      "zh-chs": "{0} - {1}",
+      "xloc": [
+        "Properties%Resources.resx%TitleMerge"
+      ]
     },
     {
       "de": "{0} Assistent",
@@ -52936,7 +53754,10 @@
       "hi": "{0} सहायक",
       "ko": "{0} 어시스턴트",
       "nl": "{0} Assistant",
-      "zh-chs": "{0} 助理"
+      "zh-chs": "{0} 助理",
+      "xloc": [
+        "Properties%Resources.resx%XAssistant"
+      ]
     },
     {
       "de": "{0} Byte",
@@ -52946,7 +53767,10 @@
       "hi": "{0} बाइट",
       "ko": "{0} 바이트",
       "nl": "{0} Byte",
-      "zh-chs": "{0} 字节"
+      "zh-chs": "{0} 字节",
+      "xloc": [
+        "Properties%Resources.resx%OneByte"
+      ]
     },
     {
       "de": "{0} Byte",
@@ -52956,7 +53780,10 @@
       "hi": "{0} बाइट्स",
       "ko": "{0} 바이트",
       "nl": "{0} Bytes",
-      "zh-chs": "{0} 字节"
+      "zh-chs": "{0} 字节",
+      "xloc": [
+        "Properties%Resources.resx%XBytes"
+      ]
     },
     {
       "cs": "{0} Gb",
@@ -53440,7 +54267,10 @@
       "hi": "{0} दूरस्थ सत्र",
       "ko": "{0} 원격 세션",
       "nl": "{0} externe sessies",
-      "zh-chs": "{0} 个远程会话"
+      "zh-chs": "{0} 个远程会话",
+      "xloc": [
+        "Properties%Resources.resx%XRemoteSessions"
+      ]
     },
     {
       "de": "{0} Remote-Sitzungen sind aktiv.",
@@ -53450,7 +54280,10 @@
       "hi": "{0} दूरस्थ सत्र सक्रिय हैं।",
       "ko": "{0} 원격 세션이 활성화되었습니다.",
       "nl": "{0} sessies op afstand zijn actief..",
-      "zh-chs": "{0} 个远程会话处于活动状态。"
+      "zh-chs": "{0} 个远程会话处于活动状态。",
+      "xloc": [
+        "Properties%Resources.resx%XRemoteSessionsAreActive"
+      ]
     },
     {
       "cs": "{0} sekund {1}",
@@ -53876,7 +54709,10 @@
       "ja": "≡",
       "nl": "≡",
       "pt": "≡",
-      "ru": "≡"
+      "ru": "≡",
+      "xloc": [
+        "MainForm.resx%menuLabel.Text"
+      ]
     },
     {
       "cs": "◀",
