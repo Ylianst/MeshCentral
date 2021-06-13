@@ -2343,6 +2343,10 @@
                                     QH('p11DeskSessionSelector', x);
                                     QV('p11DeskSessionSelector', true);
                                 }
+                            } else if (message.type == 'psinfo') {
+                                if (xxdialogTag == ('ps|' + message.nodeid + '|' + message.pid)) {
+                                    console.log('aa', message);
+                                }
                             }
                         }
                     } else {
@@ -8484,12 +8488,17 @@
                 for (var i in p) {
                     if (p[i].p != 0) {
                         var c = p[i].c;
-                        if (c.length > 30) { c = '<span title="' + EscapeHtml(c) + '">' + EscapeHtml(c.substring(0,30)) + '...</span>' } else { c = EscapeHtml(c); }
-                        x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + EscapeHtml(p[i].p) + '</div><a href=# style=float:right;padding-right:5px;cursor:pointer title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")\'><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? EscapeHtml(p[i].u) : '') + '</div><div>' + c + '</div></div>';
+                        if (c.length > 30) { c = '<span onclick=showProcessDetails(' + p[i].p + ') title="' + EscapeHtml(c) + '">' + EscapeHtml(c.substring(0,30)) + '...</span>' } else { c = EscapeHtml(c); }
+                        x += '<div onclick=showProcessDetails(' + p[i].p + ') class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + EscapeHtml(p[i].p) + '</div><a href=# style=float:right;padding-right:5px;cursor:pointer title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")\'><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? EscapeHtml(p[i].u) : '') + '</div><div>' + c + '</div></div>';
                     }
                 }
                 QH('DeskToolsProcesses', x);
             }
+        }
+        function showProcessDetails(pid) {
+            if (xxdialogMode) return;
+            setDialogMode(2, format("Process Details, #{0}", pid), 1, null, "Requesting details...", 'ps|' + currentNode._id + '|' + pid);
+            meshserver.send({ action: 'msg', type: 'psinfo', nodeid: currentNode._id, pid: pid });
         }
         function showDeskToolsServices(message) {
             deskTools.smsg = message;
