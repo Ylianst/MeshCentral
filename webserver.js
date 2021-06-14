@@ -408,7 +408,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Authenticate the user
     obj.authenticate = function (name, pass, domain, fn) {
         if ((typeof (name) != 'string') || (typeof (pass) != 'string') || (typeof (domain) != 'object')) { fn(new Error('invalid fields')); return; }
-        if (domain.auth == 'ldap') {
+        if (name.startsWith('~t:')) {
+            // Login token, try to fetch the token from the database
+            obj.db.Get('logintoken-' + name, function (err, docs) {
+                if (err != null) { fn(err); return; }
+                if ((docs == null) || (docs.length != 1)) { fn(new Error('login token not found')); return; }
+                const loginToken = docs[0];
+                if ((loginToken.expire != 0) && (loginToken.expire < Date.now())) { fn(new Error('login token expired')); return; }
+
+                // Default strong password hashing (pbkdf2 SHA384)
+                require('./pass').hash(pass, loginToken.salt, function (err, hash, tag) {
+                    if (err) return fn(err);
+                    if (hash == loginToken.hash) {
+                        // Login username and password are valid.
+                        var user = obj.users[loginToken.userid];
+                        if (!user) { fn(new Error('cannot find user')); return; }
+                        if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
+
+                        // Succesful login token authentication
+                        var loginOptions = { tokenName: loginToken.name, tokenUser: loginToken.tokenUser };
+                        if (loginToken.expire != 0) { loginOptions.expire = loginToken.expire; }
+                        return fn(null, user._id, null, loginOptions);
+                    }
+                    fn(new Error('invalid password'));
+                }, 0);
+            });
+        } else if (domain.auth == 'ldap') {
             if (domain.ldapoptions.url == 'test') {
                 // Fake LDAP login
                 var xxuser = domain.ldapoptions[name.toLowerCase()];
@@ -633,31 +658,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
                 });
             }
-        } else if (name.startsWith('~t:')) {
-            // Login token, try to fetch the token from the database
-            obj.db.Get('logintoken-' + name, function (err, docs) {
-                if (err != null) { fn(err); return; }
-                if ((docs == null) || (docs.length != 1)) { fn(new Error('login token not found')); return; }
-                const loginToken = docs[0];
-                if ((loginToken.expire != 0) && (loginToken.expire < Date.now())) { fn(new Error('login token expired')); return; }
-
-                // Default strong password hashing (pbkdf2 SHA384)
-                require('./pass').hash(pass, loginToken.salt, function (err, hash, tag) {
-                    if (err) return fn(err);
-                    if (hash == loginToken.hash) {
-                        // Login username and password are valid.
-                        var user = obj.users[loginToken.userid];
-                        if (!user) { fn(new Error('cannot find user')); return; }
-                        if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
-
-                        // Succesful login token authentication
-                        var loginOptions = { tokenName: loginToken.name, tokenUser: loginToken.tokenUser };
-                        if (loginToken.expire != 0) { loginOptions.expire = loginToken.expire; }
-                        return fn(null, user._id, null, loginOptions);
-                    }
-                    fn(new Error('invalid password'));
-                }, 0);
-            });
         } else {
             // Regular login
             var user = obj.users['user/' + domain.id + '/' + name.toLowerCase()];
