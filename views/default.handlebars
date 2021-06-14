@@ -2345,7 +2345,36 @@
                                 }
                             } else if (message.type == 'psinfo') {
                                 if (xxdialogTag == ('ps|' + message.nodeid + '|' + message.pid)) {
-                                    console.log('aa', message);
+                                    var x = '<div style=max-height:200px;overflow-y:auto>';
+                                    //x += addHtmlValue4("Process ID", message.pid);
+                                    if ((typeof message.value == 'object') && (Object.keys(message.value).length > 0)) {
+                                        if (message.value.processName) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Process Name" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + message.value.processName + '</b></div></div>'; }
+                                        if (message.value.machineName) { x += addHtmlValue5("Machine Name", message.value.machineName); }
+                                        if (message.value.cmd) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Command Line" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + message.value.cmd + '</b></div></div>'; }
+                                        if (message.value.mainWindowTitle) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Window Title" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + message.value.mainWindowTitle + '</b></div></div>'; }
+                                        if (message.value.processUser) { x += addHtmlValue5("User", message.value.processUser); }
+                                        if (message.value.processDomain) { x += addHtmlValue5("Domain", message.value.processDomain); }
+                                        if (message.value.startTime) { x += addHtmlValue5("Start Time", message.value.startTime); }
+                                        x += '<hr />';
+                                        if (message.value.PriorityBoostEnabled) { x += addHtmlValue5("Priority Boost", message.value.PriorityBoostEnabled?"Enabled":"Disabled"); }
+                                        if (message.value.sessionId) { x += addHtmlValue5("Session Id", message.value.sessionId); }
+                                        if (message.value.handleCount) { x += addHtmlValue5("Handle Count", message.value.handleCount); }
+                                        if (message.value.privilegedProcessorTime) { x += addHtmlValue5("Privileged Processor Time", format("{0} seconds", message.value.privilegedProcessorTime)); }
+                                        if (message.value.totalProcessorTime) { x += addHtmlValue5("Total Processor Time", format("{0} seconds", message.value.totalProcessorTime)); }
+                                        if (message.value.userProcessorTime) { x += addHtmlValue5("User Processor Time", format("{0} seconds", message.value.userProcessorTime)); }
+                                        if (message.value.nonpagedSystemMemorySize) { x += addHtmlValue5("Non Paged Memory", getNiceSize2(message.value.nonpagedSystemMemorySize)); }
+                                        if (message.value.pagedMemorySize) { x += addHtmlValue5("Paged Memory", getNiceSize2(message.value.pagedMemorySize)); }
+                                        if (message.value.privateMemorySize) { x += addHtmlValue5("Private Memory", getNiceSize2(message.value.privateMemorySize)); }
+                                        if (message.value.virtualMemorySize) { x += addHtmlValue5("Virtual Memory", getNiceSize2(message.value.virtualMemorySize)); }
+                                        if (message.value.workingSet) { x += addHtmlValue5("Working Set", getNiceSize2(message.value.workingSet)); }
+                                        if (message.value.peakWorkingSet) { x += addHtmlValue5("Peak Working Set", getNiceSize2(message.value.peakWorkingSet)); }
+                                        if (message.value.peakPagedMemorySize) { x += addHtmlValue5("Peak Paged Memory", getNiceSize2(message.value.peakPagedMemorySize)); }
+                                        if (message.value.peakVirtualMemorySize) { x += addHtmlValue5("Peak Virtual Memory", getNiceSize2(message.value.peakVirtualMemorySize)); }
+                                    } else {
+                                        x += "No information provided";
+                                    }
+                                    x += '</div>';
+                                    QH('id_dialogOptions', x);
                                 }
                             }
                         }
@@ -15587,6 +15616,7 @@
         function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
         function addHtmlValue3(t, v) { return '<div><b>' + t + '</b></div><div style=margin-left:16px>' + v + '</div>'; }
         function addHtmlValue4(t, v) { return '<table style=width:100%><td style=width:120px>' + t + '<td style=text-align:right><b>' + v + '</b></table>'; }
+        function addHtmlValue5(t, v) { return '<div style=padding:4px><div style=display:inline-block;float:right><b>' + v + '</b></div><div style=display:inline-block>' + t + '</div></div>'; }
         function focusTextBox(x) { setTimeout(function(){ Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
         function validateEmail(v) { var emailReg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; return emailReg.test(v); } // New version
         function isPrivateIP(a) { return (a.startsWith('10.') || a.startsWith('172.16.') || a.startsWith('192.168.')); }

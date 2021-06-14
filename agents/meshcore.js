@@ -924,25 +924,30 @@ function handleServerCommand(data) {
                         // Requestion details information about a process
                         if (data.pid) {
                             var info = {}; // TODO: Replace with real data. Feel free not to give all values if not available.
+                            /*
+                            info.processUser = "User"; // String
+                            info.processDomain = "Domain"; // String
+                            info.cmd = "abc"; // String
                             info.processName = "dummydata";
-                            info.privateMemorySize = 123;
-                            info.virtualMemorySize = 123;
-                            info.workingSet = 123;
+                            info.privateMemorySize = 123; // Bytes
+                            info.virtualMemorySize = 123; // Bytes
+                            info.workingSet = 123; // Bytes
                             info.totalProcessorTime = 123; // Seconds
                             info.userProcessorTime = 123; // Seconds
                             info.startTime = "2012-12-30T23:59:59.000Z"; // Time in UTC ISO format
-                            info.sessionId = 123;
+                            info.sessionId = 123; // Number
                             info.privilegedProcessorTime = 123; // Seconds
-                            info.PriorityBoostEnabled = true;
-                            info.peakWorkingSet = 123;
-                            info.peakVirtualMemorySize = 123;
-                            info.peakPagedMemorySize = 123;
-                            info.pagedSystemMemorySize = 123;
-                            info.pagedMemorySize = 123;
-                            info.nonpagedSystemMemorySize = 123;
-                            info.mainWindowTitle = "dummydata";
+                            info.PriorityBoostEnabled = true; // Boolean
+                            info.peakWorkingSet = 123; // Bytes
+                            info.peakVirtualMemorySize = 123; // Bytes
+                            info.peakPagedMemorySize = 123; // Bytes
+                            info.pagedSystemMemorySize = 123; // Bytes
+                            info.pagedMemorySize = 123; // Bytes
+                            info.nonpagedSystemMemorySize = 123; // Bytes
+                            info.mainWindowTitle = "dummydata"; // String
                             info.machineName = "dummydata"; // Only set this if machine name is not "."
-                            info.handleCount = 123;
+                            info.handleCount = 123; // Number
+                            */
                             mesh.SendCommand({ action: 'msg', type: 'psinfo', pid: data.pid, sessionid: data.sessionid, value: info });
                         }
                         break;
