@@ -3745,7 +3745,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Get fields
             if ((fields == null) || (fields.nodeIds == null) || (fields.nodeIds.length != 1)) { res.sendStatus(404); return; }
-            var cmd = { nodeids: fields.nodeIds[0].split(','), files: [], user: user, domain: domain };
+            var cmd = { nodeids: fields.nodeIds[0].split(','), files: [], user: user, domain: domain, overwrite: false, createFolder: false };
             if ((fields.winpath != null) && (fields.winpath.length == 1)) { cmd.windowsPath = fields.winpath[0]; }
             if ((fields.linuxpath != null) && (fields.linuxpath.length == 1)) { cmd.linuxPath = fields.linuxpath[0]; }
             if ((fields.overwriteFiles != null) && (fields.overwriteFiles.length == 1) && (fields.overwriteFiles[0] == 'on')) { cmd.overwrite = true; }

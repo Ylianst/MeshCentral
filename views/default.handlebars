@@ -5099,7 +5099,7 @@
                 x += '<input type=file name=files id=d2uploadinput style=width:100% multiple=multiple onchange="d2batchUploadValidate()" /><br /><br />';
                 if (wintype) { x += addHtmlValue("Windows Path", '<input style=width:250px type=text onchange="d2batchUploadValidate()" onkeyup="d2batchUploadValidate()" name=winpath id=d2winuploadpath placeholder="C:\\temp" value="" />'); }
                 if (linuxtype) { x += addHtmlValue("Linux Path", '<input style=width:250px type=text onchange="d2batchUploadValidate()" onkeyup="d2batchUploadValidate()" name=linuxpath id=d2linuxuploadpath placeholder="/tmp" value="" />'); }
-                x += '<br /><label><input type=checkbox name=createFolder />' + "Create folder if it does not exists?" + '</label></form>';
+                x += '<br /><label><input type=checkbox name=createFolder />' + "Create folder if it does not exists?" + '</label><br />';
                 x += '<label><input type=checkbox name=overwriteFiles />' + "Overwrite if file exists?" + '</label></form>';
                 setDialogMode(2, "Batch File Upload", 3, d2batchUploadValidateOk, x);
                 d2batchUploadValidate();
