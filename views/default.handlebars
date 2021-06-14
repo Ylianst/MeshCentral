@@ -7684,8 +7684,8 @@
             QV('DeskTimer', deskState == 3);
 
             // Enable browser clipboard read if supported
-            QV('DeskClipboardOutButton', inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.readText != null));
-            QV('DeskClipboardInButton', inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.writeText != null));
+            QV('DeskClipboardOutButton', online && inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.readText != null));
+            QV('DeskClipboardInButton', online && inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.writeText != null));
 
             if (deskState != 3) { QV('DeskInputLockedButton', false); QV('DeskInputUnLockedButton', false); }
 
