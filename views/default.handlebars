@@ -1254,6 +1254,7 @@
                             <div id="d7otherset2" style="display:block">
                                 <label style="display:block"><input type="checkbox" id="d7deskSwapMouse" />Swap Mouse Buttons</label>
                                 <label style="display:block"><input type="checkbox" id="d7deskRemoteKeyMap" />Use Remote Keyboard Map</label>
+                                <label style="display:block" id="d7deskAutoClipboardLabel"><input type="checkbox" id="d7deskAutoClipboard" />Automatic Clipboard</label>
                             </div>
                         </div>
                     </div>
@@ -1376,6 +1377,7 @@
         var miscState = {};
         var checkedNodeids = {};
         var deskKeyboardShortcuts = [];
+        var deskLastClipboardSent = null;
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -7673,7 +7675,7 @@
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QE('DeskClip', deskState == 3);
-            QV('DeskClip', (inputAllowed) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2))); // Clipboard not supported on macOS
+            QV('DeskClip', (inputAllowed) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && (desktopsettings.autoclipboard != true)); // Clipboard not supported on macOS
             QE('DeskESC', deskState == 3);
             QV('DeskESC', browserfullscreen && inputAllowed);
             QE('DeskType', deskState == 3);
@@ -7684,8 +7686,9 @@
             QV('DeskTimer', deskState == 3);
 
             // Enable browser clipboard read if supported
-            QV('DeskClipboardOutButton', online && inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.readText != null));
-            QV('DeskClipboardInButton', online && inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.writeText != null));
+            QV('DeskClipboardOutButton', online && inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.readText != null) && (desktopsettings.autoclipboard != true));
+            QV('d7deskAutoClipboardLabel', navigator.clipboard.readText != null);
+            QV('DeskClipboardInButton', online && inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.writeText != null) && (desktopsettings.autoclipboard != true));
 
             if (deskState != 3) { QV('DeskInputLockedButton', false); QV('DeskInputUnLockedButton', false); }
 
@@ -7968,6 +7971,7 @@
                 case 3:
                     if (desktop && (desktop.serverIsRecording == true)) { QV('deskRecordIcon', true); }
                     desktop.startTime = new Date();
+                    deskLastClipboardSent = null;
                     if (updateSessionTimer == null) { updateSessionTimer = setInterval(updateSessionTime, 1000); }
                     break;
                 default:
@@ -7987,6 +7991,16 @@
                 if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms, ', desktop.latency.current); }
                 seconds = Math.floor((new Date() - desktop.startTime) / 1000);
                 QH('DeskTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+                if ((desktopsettings.autoclipboard === true) && (navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
+                    try {
+                        navigator.clipboard.readText().then(function(text) {
+                            if ((text != null) && (deskLastClipboardSent != text)) {
+                                meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text });
+                                deskLastClipboardSent = text;
+                            }
+                        }).catch(function(err) { });
+                    } catch (ex) { console.log(ex); }
+                }
             } else {
                 QH('DeskTimer', '');
             }
@@ -8020,9 +8034,11 @@
             desktopsettings.framerate = d7framelimiter.value;
             desktopsettings.swapmouse = d7deskSwapMouse.checked;
             desktopsettings.remotekeymap = d7deskRemoteKeyMap.checked;
+            desktopsettings.autoclipboard = d7deskAutoClipboard.checked;
             desktopsettings.localkeymap = d7localKeyMap.checked;
             localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
+            updateDesktopButtons();
             if (desktop) {
                 if (desktop.contype == 1) {
                     desktop.m.SwapMouse = desktopsettings.swapmouse;
@@ -8051,6 +8067,7 @@
             if (desktopsettings.framerate) { d7framelimiter.value = desktopsettings.framerate; } else { d7framelimiter.value = 100; }
             if (desktopsettings.swapmouse != null) { d7deskSwapMouse.checked = desktopsettings.swapmouse; }
             if (desktopsettings.remotekeymap != null) { d7deskRemoteKeyMap.checked = desktopsettings.remotekeymap; }
+            if (desktopsettings.autoclipboard != null) { d7deskAutoClipboard.checked = desktopsettings.autoclipboard; }
             if (desktopsettings.localkeymap) { d7localKeyMap.checked = desktopsettings.localkeymap; }
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
         }
