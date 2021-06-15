@@ -6262,7 +6262,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
 
                     // Check if user as the "notools" site right. If so, deny this connection as tools are not allowed to connect.
-                    if ((user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & SITERIGHT_NOMESHCMD)) {
+                    if ((user != null) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & SITERIGHT_NOMESHCMD)) {
                         // No tools allowed, close the websocket connection
                         parent.debug('web', 'ERR: Websocket no tools allowed');
                         try { ws.send(JSON.stringify({ action: 'close', cause: 'notools', msg: 'notools' })); ws.close(); } catch (e) { }
