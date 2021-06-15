@@ -102,7 +102,7 @@
         "agentPong": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the agent at x seconds interval." },
         "amtmanager": { "type": "boolean", "default": true, "description": "When enabled, MeshCentral will automatically monitor and manage Intel AMT devices." },
         "orphanAgentUser": { "type": "string", "default": null, "description": "If an agent attempts to connect to a unknown device group, automatically create a new device group and grant access to the specified user. Example: admin" },
-        "agentIdleTimeout": { "type": "integer", "minimum": 1 },
+        "agentIdleTimeout": { "type": "integer", "minimum": 1, "default": 150 ,"description": "How much time in seconds with no traffic from an agent before dropping the agent connection." },
         "compression": { "type": "boolean", "default": true, "description": "Enables GZIP compression for web requests." },
         "wscompression": { "type": "boolean", "default": false, "description": "Enables server-side, websocket per-message deflate compression." },
         "agentwscompression": { "type": "boolean", "default": true, "description": "Enables agent-side, websocket per-message deflate compression. wscompression must also be true for this to work." },
