@@ -619,9 +619,11 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
     function setExpireTimer() {
         if (obj.expireTimer != null) { clearTimeout(obj.expireTimer); delete obj.expireTimer; }
         if (cookie && (typeof cookie.expire == 'number')) {
-            const timeToExpire = (cookie.expire - currentTime);
-            if (timeToExpire >= 0x7FFFFFFF) {
-                obj.expireTimer = setTimeout(setExpireTimer, 0x7FFFFFFF);
+            const timeToExpire = (cookie.expire - Date.now());
+            if (timeToExpire < 1) {
+                closeBothSides();
+            } else if (timeToExpire >= 0x7FFFFFFF) {
+                obj.expireTimer = setTimeout(setExpireTimer, 0x7FFFFFFF); // Since expire timer can't be larger than 0x7FFFFFFF, reset timer after that time.
             } else {
                 obj.expireTimer = setTimeout(closeBothSides, timeToExpire);
             }
