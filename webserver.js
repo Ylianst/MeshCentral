@@ -402,7 +402,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Keep a record of the last agent issues.
     obj.getAgentIssues = function () { return obj.agentIssues; }
-    obj.setAgentIssue = function (agent, issue) { obj.agentIssues.push([new Date().toLocaleTimeString(), agent.remoteaddrport, issue]); while (obj.setAgentIssue.length > 50) { obj.agentIssues.shift(); } }
+    obj.setAgentIssue = function (agent, issue) { obj.agentIssues.push([new Date().toLocaleString(), agent.remoteaddrport, issue]); while (obj.setAgentIssue.length > 50) { obj.agentIssues.shift(); } }
     obj.agentIssues = [];
 
     // Authenticate the user
