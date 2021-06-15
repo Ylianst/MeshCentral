@@ -7675,7 +7675,7 @@
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QE('DeskClip', deskState == 3);
-            QV('DeskClip', (inputAllowed) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && (desktopsettings.autoclipboard != true)); // Clipboard not supported on macOS
+            QV('DeskClip', (inputAllowed) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
             QE('DeskESC', deskState == 3);
             QV('DeskESC', browserfullscreen && inputAllowed);
             QE('DeskType', deskState == 3);
@@ -7686,9 +7686,9 @@
             QV('DeskTimer', deskState == 3);
 
             // Enable browser clipboard read if supported
-            QV('DeskClipboardOutButton', online && inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.readText != null) && (desktopsettings.autoclipboard != true));
+            QV('DeskClipboardOutButton', online && inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.readText != null) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
             QV('d7deskAutoClipboardLabel', navigator.clipboard.readText != null);
-            QV('DeskClipboardInButton', online && inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.writeText != null) && (desktopsettings.autoclipboard != true));
+            QV('DeskClipboardInButton', online && inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.writeText != null) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
 
             if (deskState != 3) { QV('DeskInputLockedButton', false); QV('DeskInputUnLockedButton', false); }
 
