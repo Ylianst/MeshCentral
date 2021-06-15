@@ -3785,8 +3785,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             for (var i in cmd.nodeids) {
                 obj.GetNodeWithRights(cmd.domain, cmd.user, cmd.nodeids[i], function (node, rights, visible) {
                     if ((node == null) || ((rights & 8) == 0) || (visible == false)) return; // We don't have remote control rights to this device
-                    var agentPath = ((node.agent.id > 0) && (node.agent.id < 5)) ? cmd.windowsPath : cmd.linuxPath;
+                    var agentPath = (((node.agent.id > 0) && (node.agent.id < 5)) || (node.agent.id == 34)) ? cmd.windowsPath : cmd.linuxPath;
                     if (agentPath == null) return;
+
+                    // Compute user consent
+                    var consent = 0;
+                    var mesh = obj.meshes[node.meshid];
+                    if (typeof domain.userconsentflags == 'number') { consent |= domain.userconsentflags; } // Add server required consent flags
+                    if ((mesh != null) && (typeof mesh.consent == 'number')) { consent |= mesh.consent; } // Add device group user consent
+                    if (typeof node.consent == 'number') { consent |= node.consent; } // Add node user consent
+                    if (typeof user.consent == 'number') { consent |= user.consent; } // Add user consent
+
+                    // Check if we need to add consent flags because of a user group link
+                    if ((mesh != null) && (user.links != null) && (user.links[mesh._id] == null) && (user.links[node._id] == null)) {
+                        // This user does not have a direct link to the device group or device. Find all user groups the would cause the link.
+                        for (var i in user.links) {
+                            var ugrp = parent.userGroups[i];
+                            if ((ugrp != null) && (ugrp.consent != null) && (ugrp.links != null) && ((ugrp.links[mesh._id] != null) || (ugrp.links[node._id] != null))) {
+                                consent |= ugrp.consent; // Add user group consent flags
+                            }
+                        }
+                    }
 
                     // Event that this operation is being performed.
                     var targets = obj.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', cmd.user._id]);
@@ -3797,7 +3816,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // Send the agent commands to perform the batch upload operation
                     for (var f in cmd.files) {
                         if (cmd.files[f].name != null) {
-                            const acmd = { action: 'wget', overwrite: cmd.overwrite, createFolder: cmd.createFolder, urlpath: '/agentdownload.ashx?c=' + obj.parent.encodeCookie({ a: 'tmpdl', d: cmd.domain.id, nid: node._id, f: cmd.files[f].target }, obj.parent.loginCookieEncryptionKey), path: obj.path.join(agentPath, cmd.files[f].name), folder: agentPath, servertlshash: tlsCertHash };
+                            const acmd = { action: 'wget', userid: user._id, username: user.name, realname: user.realname, remoteaddr: req.clientIp, consent: consent, rights: rights, overwrite: cmd.overwrite, createFolder: cmd.createFolder, urlpath: '/agentdownload.ashx?c=' + obj.parent.encodeCookie({ a: 'tmpdl', d: cmd.domain.id, nid: node._id, f: cmd.files[f].target }, obj.parent.loginCookieEncryptionKey), path: obj.path.join(agentPath, cmd.files[f].name), folder: agentPath, servertlshash: tlsCertHash };
                             var agent = obj.wsagents[node._id];
                             if (agent != null) { try { agent.send(JSON.stringify(acmd)); } catch (ex) { } }
                             // TODO: Add support for peer servers.
