@@ -1400,7 +1400,6 @@ function serverFetchFile() {
     if ((Object.keys(agentFileHttpRequests).length > 4) || (agentFileHttpPendingRequests.length == 0)) return; // No more than 4 active HTTPS requests to the server.
     var data = agentFileHttpPendingRequests.shift();
     if ((data.overwrite !== true) && fs.existsSync(data.path)) return; // Don't overwrite an existing file.
-    //try { fs.unlinkSync(data.path); } catch (ex) { } // Remove the old file.
     if (data.createFolder) { try { fs.mkdirSync(data.folder); } catch (ex) { } } // If requested, create the local folder.
     data.url = 'http' + getServerTargetUrlEx('*/').substring(2);
     var agentFileHttpOptions = http.parseUri(data.url);
@@ -1428,7 +1427,7 @@ function serverFetchFile() {
             } catch (ex) { delete agentFileHttpRequests[this.xurlpath]; delete response.xparent; serverFetchFile(); return; }
         }
     );
-    agentFileHttpRequest.on('error', function (ex) { delete agentFileHttpRequests[this.xurlpath]; serverFetchFile(); });
+    agentFileHttpRequest.on('error', function (ex) { sendConsoleText(ex); delete agentFileHttpRequests[this.xurlpath]; serverFetchFile(); });
     agentFileHttpRequest.end();
     agentFileHttpRequest.xurlpath = data.urlpath;
     agentFileHttpRequest.xpath = data.path;
