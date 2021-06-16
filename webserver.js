@@ -5208,17 +5208,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Check if we have right to this node
                 if (obj.GetNodeRights(user, node.meshid, node._id) == 0) { res.sendStatus(401); return; }
 
+                // Get local time offset
+                var localTimeOffset = 0;
+                if (req.query.tf != null) { localTimeOffset = parseInt(req.query.tf) }
+                if (isNaN(localTimeOffset)) { localTimeOffset = 0; }
+
                 // Get the list of power events and send them
                 setContentDispositionHeader(res, 'application/octet-stream', 'powerevents.csv', null, 'powerevents.csv');
                 obj.db.getPowerTimeline(node._id, function (err, docs) {
-                    var xevents = ['Time, State, Previous State'], prevState = 0;
+                    var xevents = ['UTC Time, Local Time, State, Previous State'], prevState = 0;
                     for (var i in docs) {
                         if (docs[i].power != prevState) {
                             prevState = docs[i].power;
+                            var localTime = new Date(docs[i].time.getTime() + (localTimeOffset * 60000)).toISOString();
+                            localTime = localTime.substring(0, localTime.length - 1);
                             if (docs[i].oldPower != null) {
-                                xevents.push(docs[i].time.toString() + ',' + docs[i].power + ',' + docs[i].oldPower);
+                                xevents.push(docs[i].time.toISOString() + ',' + localTime + ',' + docs[i].power + ',' + docs[i].oldPower);
                             } else {
-                                xevents.push(docs[i].time.toString() + ',' + docs[i].power);
+                                xevents.push(docs[i].time.toISOString() + ',' + localTime + ',' + docs[i].power);
                             }
                         }
                     }
