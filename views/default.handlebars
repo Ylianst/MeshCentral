@@ -7242,8 +7242,7 @@
                 ++count;
                 date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
             }
-
-            QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>' + "Day" + '</th><th scope=col style=text-align:center><a onclick=downloadFile("devicepowerevents.ashx?id=' + currentNode._id + (urlargs.key?('&key=' + urlargs.key):'') + '",null,true)><img title="' + "Download power events" + '" src="images/link4.png" /></a>' + "7 Day Power State" + '</th></tr></thead><tbody>' + x + '</tbody></table>');
+            QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>' + "Day" + '</th><th scope=col style=text-align:center><a onclick=downloadFile("devicepowerevents.ashx?id=' + currentNode._id + '&tf=' + new Date().getTimezoneOffset() + (urlargs.key?('&key=' + urlargs.key):'') + '",null,true)><img title="' + "Download power events" + '" src="images/link4.png" /></a>' + "7 Day Power State" + '</th></tr></thead><tbody>' + x + '</tbody></table>');
         }
 
         // Return a color for the given power state
