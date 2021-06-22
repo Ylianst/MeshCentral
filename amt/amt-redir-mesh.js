@@ -327,7 +327,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                     var status = obj.amtaccumulator.charCodeAt(1);
                     var authType = obj.amtaccumulator.charCodeAt(4);
                     var authData = [];
-                    for (i = 0; i < authDataLen; i++) { authData.push(obj.amtaccumulator.charCodeAt(9 + i)); }
+                    for (var i = 0; i < authDataLen; i++) { authData.push(obj.amtaccumulator.charCodeAt(9 + i)); }
                     var authDataBuf = obj.amtaccumulator.substring(9, 9 + authDataLen);
                     cmdsize = 9 + authDataLen;
                     if (authType == 0) {
