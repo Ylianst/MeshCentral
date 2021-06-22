@@ -1958,7 +1958,7 @@ function CreateMeshCentralServer(config, args) {
         for (var i in ids) { var id = ids[i]; if (!obj.eventsDispatch[id]) { obj.eventsDispatch[id] = [target]; } else { obj.eventsDispatch[id].push(target); } }
     };
     obj.RemoveEventDispatch = function (ids, target) {
-        obj.debug('dispatch', 'RemoveEventDispatch', id);
+        obj.debug('dispatch', 'RemoveEventDispatch', ids);
         for (var i in ids) { var id = ids[i]; if (obj.eventsDispatch[id]) { var j = obj.eventsDispatch[id].indexOf(target); if (j >= 0) { if (obj.eventsDispatch[id].length == 1) { delete obj.eventsDispatch[id]; } else { obj.eventsDispatch[id].splice(j, 1); } } } }
     };
     obj.RemoveEventDispatchId = function (id) {
