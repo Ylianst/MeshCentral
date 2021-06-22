@@ -1716,7 +1716,6 @@ function CreateMeshCentralServer(config, args) {
                         time: new Date(),
                         expire: expire,
                         mem: process.memoryUsage(),
-                        //cpu: process.cpuUsage(),
                         conn: {
                             ca: Object.keys(obj.webserver.wsagents).length,
                             cu: Object.keys(obj.webserver.wssessions).length,
@@ -1725,6 +1724,7 @@ function CreateMeshCentralServer(config, args) {
                         },
                         traffic: trafficStats.delta
                     };
+                    try { data.cpu = require('os').loadavg(); } catch (ex) { }
                     if (obj.mpsserver != null) {
                         data.conn.am = 0;
                         for (var i in obj.mpsserver.ciraConnections) { data.conn.am += obj.mpsserver.ciraConnections[i].length; }
