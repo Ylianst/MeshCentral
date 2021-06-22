@@ -41,7 +41,8 @@ module.exports.processMessage = function(message) {
         }
         case 'indexMcRec': {
             //console.log('indexMcRec', message.data);
-            require(require('path').join(__dirname, 'mcrec.js')).indexFile(message.data);
+            // Hold 5 seconds before starting to index
+            setTimeout(function () { require(require('path').join(__dirname, 'mcrec.js')).indexFile(message.data); }, 5000);
             break;
         }
         default: {
