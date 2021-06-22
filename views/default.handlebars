@@ -1037,6 +1037,7 @@
                         <select id=p40type onchange=updateServerTimelineStats()>
                             <option value=0>Connections</option>
                             <option value=1>Memory</option>
+                            <option value=5>CPU</option>
                             <option value=3>Inbound Traffic</option>
                             <option value=4>Outbound Traffic</option>
                         </select>&nbsp;
@@ -1934,6 +1935,7 @@
                 if ('{{currentNode}}'.toLowerCase() == '') { meshserver.send({ action: 'files' }); }
                 if ('{{viewmode}}'.toLowerCase() == '') { go(1); }
                 authCookieRenewTimer = setInterval(function () { meshserver.send({ action: 'authcookie' }); }, 1800000); // Request a cookie refresh every 30 minutes.
+                if (xxcurrentView == 40) { refreshServerTimelineStats(); }
             }
         }
 
@@ -14696,7 +14698,7 @@
             }
         };
 
-        function refreshServerTimelineStats(stats) { meshserver.send({ action: 'servertimelinestats', hours: 24 * 30 }); }
+        function refreshServerTimelineStats(stats) { if ((meshserver != null) && (meshserver.State == 2)) { meshserver.send({ action: 'servertimelinestats', hours: 24 * 30 }); } }
         function pastDate(hours) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); return t; }
         function setServerTimelineStats(stats) { serverTimelineStats = stats; updateServerTimelineStats(); }
         function addServerTimelineStats(stats) {
@@ -14712,19 +14714,21 @@
 
             serverTimelineStats.push(stats);
             var chartType = Q('p40type').value;
-            if (chartType == 0) {
+            if (chartType == 0) { // Connections
                 serverTimelineConfig.data.datasets[0].data.push({ x: stats.time, y: stats.conn.ca });
                 serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.conn.cu });
                 serverTimelineConfig.data.datasets[2].data.push({ x: stats.time, y: stats.conn.us });
                 serverTimelineConfig.data.datasets[3].data.push({ x: stats.time, y: stats.conn.rs });
                 if (stats.conn.am != null) { serverTimelineConfig.data.datasets[4].data.push({ x: stats.time, y: stats.conn.am }); }
-            } else if (chartType == 1) {
+            } else if (chartType == 1) { // Memory
                 serverTimelineConfig.data.datasets[0].data.push({ x: stats.time, y: stats.mem.external / (1024 * 1024) });
                 serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.mem.heapUsed / (1024 * 1024) });
                 serverTimelineConfig.data.datasets[2].data.push({ x: stats.time, y: stats.mem.heapTotal / (1024 * 1024) });
                 serverTimelineConfig.data.datasets[3].data.push({ x: stats.time, y: stats.mem.rss / (1024 * 1024) });
-            } else if ((chartType == 3) || (chartType == 4)) {
+            } else if ((chartType == 3) || (chartType == 4)) { // Traffic
                 updateServerTimelineStats();
+            } else if (chartType == 5) { // CPU
+                if ((typeof stats.cpu == 'object') && (typeof stats.cpu[0] == 'number')) { serverTimelineConfig.data.datasets[0].data.push({ x: stats.time, y: stats.cpu[0] }); }
             }
             /* else if (chartType == 2) {
                 serverTimelineConfig.data.datasets[0].data.push({ x: stats.time, y: stats.db.meshes });
@@ -14889,6 +14893,28 @@
                         if (seriesWithData & 0x0200) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayOut && serverTimelineStats[i].traffic.relayOut[11]) ? (serverTimelineStats[i].traffic.relayOut[11] / 0x100000) : 0 }); }
                         if (seriesWithData & 0x0400) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.relayOut && serverTimelineStats[i].traffic.relayOut[12]) ? (serverTimelineStats[i].traffic.relayOut[12] / 0x100000) : 0 }); }
                         if (seriesWithData & 0x0800) { data.datasets[z++].data.push({ x: serverTimelineStats[i].time, y: (serverTimelineStats[i].traffic.desktopMultiplex && serverTimelineStats[i].traffic.desktopMultiplex.out) ? (serverTimelineStats[i].traffic.desktopMultiplex.out / 0x100000) : 0 }); }
+                    }
+                }
+            } else if (chartType == 5) { // CPU
+                serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = "Usage";
+                data = {
+                    labels: [pastDate(0), timeAfter],
+                    datasets: [
+                        { label: "CPU", data: [], backgroundColor: 'rgba(158, 151, 16, .1)', borderColor: 'rgb(158, 151, 16)', fill: true }
+                    ]
+                };
+                for (var i = 0; i < serverTimelineStats.length; i++) {
+                    if ((typeof serverTimelineStats[i].cpu == 'object') && (typeof serverTimelineStats[i].cpu[0] == 'number')) {
+                        if ((serverTimelineStats[i].s != null) && (servers.indexOf(serverTimelineStats[i].s) == -1)) {
+                            servers.push(serverTimelineStats[i].s);
+                            if (serverAutoSelect) { selectedServer = serverTimelineStats[i].s; serverAutoSelect = false; }
+                        }
+                        if (serverTimelineStats[i].s == null) { serverEmptyExists = true; }
+                        if (serverTimelineStats[i].s != selectedServer) { continue; }
+                        if (serverTimelineStats[i].first == true) {
+                            data.datasets[0].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                        }
+                        data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].cpu[0] });
                     }
                 }
             }
