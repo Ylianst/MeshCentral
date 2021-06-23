@@ -91,7 +91,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
             // Decode the certificate common and alt names
             obj.certNames = [cert.subject.getField('CN').value];
             var altNames = cert.getExtension('subjectAltName');
-            if (altNames) { for (i = 0; i < altNames.altNames.length; i++) { var acn = altNames.altNames[i].value.toLowerCase(); if (obj.certNames.indexOf(acn) == -1) { obj.certNames.push(acn); } } }
+            if (altNames) { for (var i = 0; i < altNames.altNames.length; i++) { var acn = altNames.altNames[i].value.toLowerCase(); if (obj.certNames.indexOf(acn) == -1) { obj.certNames.push(acn); } } }
 
             // Decode the certificate expire time
             obj.certExpire = cert.validity.notAfter;
