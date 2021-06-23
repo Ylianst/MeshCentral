@@ -1621,6 +1621,28 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                     break;
                 }
+                case 'getServerImage': {
+                    if (command.agent === 'assistant') {
+                        // Return server title and image for MeshCentral Assistant
+                        if ((domain.assistantcustomization != null) && (typeof domain.assistantcustomization == 'object')) {
+                            var ok = false;
+                            if (typeof domain.assistantcustomization.title == 'string') { ok = true; command.title = domain.assistantcustomization.title; }
+                            if (typeof domain.assistantcustomization.image == 'string') { try { command.image = 'data:image/jpeg;base64,' + Buffer.from(parent.fs.readFileSync(parent.parent.getConfigFilePath(domain.assistantcustomization.image)), 'binary').toString('base64'); ok = true; } catch (ex) { console.log(ex); } }
+                            if (ok) { obj.send(JSON.stringify(command)); }
+                        }
+                    }
+                    if (command.agent === 'android') {
+                        // Return server title and image for MeshCentral Assistant
+                        if ((domain.androidcustomization != null) && (typeof domain.androidcustomization == 'object')) {
+                            var ok = false;
+                            if (typeof domain.androidcustomization.title == 'string') { ok = true; command.title = domain.androidcustomization.title; }
+                            if (typeof domain.androidcustomization.subtitle == 'string') { ok = true; command.subtitle = domain.androidcustomization.subtitle; }
+                            if (typeof domain.androidcustomization.image == 'string') { try { command.image = 'data:image/jpeg;base64,' + Buffer.from(parent.fs.readFileSync(parent.parent.getConfigFilePath(domain.androidcustomization.image)), 'binary').toString('base64'); ok = true; } catch (ex) { console.log(ex); } }
+                            if (ok) { obj.send(JSON.stringify(command)); }
+                        }
+                    }
+                    break;
+                }
                 default: {
                     parent.agentStats.unknownAgentActionCount++;
                     parent.parent.debug('agent', 'Unknown agent action (' + obj.remoteaddrport + '): ' + JSON.stringify(command) + '.');
