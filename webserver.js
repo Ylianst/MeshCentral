@@ -6287,6 +6287,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // A user/pass is provided in URL arguments
                 obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
 
+                    var user = obj.users[userid];
+
                     // Check if user as the "notools" site right. If so, deny this connection as tools are not allowed to connect.
                     if ((user != null) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & SITERIGHT_NOMESHCMD)) {
                         // No tools allowed, close the websocket connection
@@ -6299,7 +6301,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var twoFactorCookieDays = 30;
                     if (typeof domain.twofactorcookiedurationdays == 'number') { twoFactorCookieDays = domain.twofactorcookiedurationdays; }
 
-                    var user = obj.users[userid];
                     if ((err == null) && (user)) {
                         // Check if a 2nd factor is needed
                         if (checkUserOneTimePasswordRequired(domain, user, req, loginOptions) == true) {
