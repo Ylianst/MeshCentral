@@ -456,6 +456,16 @@
               "fileName": { "type": "string", "default": "meshagent", "description": "The MeshCentral Assistant filename." }
             }
           },
+          "androidCustomization": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Use this section to customize the MeshCentral Agent for Android.",
+            "properties": {
+              "title": { "type": "string", "default": "MeshCentral Agent", "description": "Displayed on top of the MeshCentral Agent for Android." },
+              "subtitle": { "type": "string", "default": null, "description": "Subtitle displayed until the title on the toolbar." },
+              "image": { "type": "string", "default": null, "description": "The filename of a image file in .png format located in meshcentral-data to display in MeshCentral Agent for Android, image should be square and from 64x64 to 128x128." },
+            }
+          },
           "userAllowedIP": { "type": "string" },
           "userBlockedIP": { "type": "string" },
           "agentAllowedIP": { "type": "string" },

@@ -14751,6 +14751,8 @@
         function seriesColor2(n) { return 'rgba('+seriesColors[n][0]+','+seriesColors[n][1]+','+seriesColors[n][2]+')'; }
 
         function updateServerTimelineStats() {
+            if (serverTimelineStats == null) return;
+
             var data, chartType = Q('p40type').value, timeAfter = pastDate(Q('p40time').value), servers = [], selectedServer = null, serverEmptyExists = false, serverAutoSelect = true;
             if (Q('p40server').value != null) { selectedServer = decodeURIComponent(Q('p40server').value); if (selectedServer == "") { selectedServer = null; } serverAutoSelect = false; }
             serverTimelineConfig.options.scales.xAxes[0].time = { min: timeAfter };
