@@ -871,7 +871,7 @@ function handleServerCommand(data) {
                                 woptions.checkServerIdentity.servertlshash = data.servertlshash;
 
                                 //sendConsoleText(JSON.stringify(woptions));
-                                //sendConsoleText('TUNNEL: ' + JSON.stringify(data));
+                                sendConsoleText('TUNNEL: ' + JSON.stringify(data));
                                 var tunnel = http.request(woptions);
                                 tunnel.upgrade = onTunnelUpgrade;
                                 tunnel.on('error', function (e) { sendConsoleText("ERROR: Unable to connect relay tunnel to: " + this.url + ", " + JSON.stringify(e)); });
@@ -882,6 +882,7 @@ function handleServerCommand(data) {
                                 tunnel.privacybartext = data.privacybartext ? data.privacybartext : "Sharing desktop with: {0}";
                                 tunnel.username = data.username + (data.guestname ? (' - ' + data.guestname) : '');
                                 tunnel.realname = (data.realname ? data.realname : data.username) + (data.guestname ? (' - ' + data.guestname) : '');
+                                tunnel.guestname = data.guestname;
                                 tunnel.userid = data.userid;
                                 tunnel.remoteaddr = data.remoteaddr;
                                 tunnel.state = 0;
@@ -1574,7 +1575,8 @@ function onTunnelUpgrade(response, s, head) {
 
         // Add the TCP session to the count and update the server
         if (s.httprequest.userid != null) {
-            if (tunnelUserCount.tcp[s.httprequest.userid] == null) { tunnelUserCount.tcp[s.httprequest.userid] = 1; } else { tunnelUserCount.tcp[s.httprequest.userid]++; }
+            var userid = getUserIdAndGuestNameFromHttpRequest(s.httprequest);
+            if (tunnelUserCount.tcp[userid] == null) { tunnelUserCount.tcp[userid] = 1; } else { tunnelUserCount.tcp[userid]++; }
             try { mesh.SendCommand({ action: 'sessions', type: 'tcp', value: tunnelUserCount.tcp }); } catch (e) { }
             broadcastSessionsToRegisteredApps();
         }
@@ -1591,7 +1593,8 @@ function onTunnelUpgrade(response, s, head) {
 
         // Add the UDP session to the count and update the server
         if (s.httprequest.userid != null) {
-            if (tunnelUserCount.udp[s.httprequest.userid] == null) { tunnelUserCount.udp[s.httprequest.userid] = 1; } else { tunnelUserCount.udp[s.httprequest.userid]++; }
+            var userid = getUserIdAndGuestNameFromHttpRequest(s.httprequest);
+            if (tunnelUserCount.udp[userid] == null) { tunnelUserCount.udp[userid] = 1; } else { tunnelUserCount.udp[userid]++; }
             try { mesh.SendCommand({ action: 'sessions', type: 'udp', value: tunnelUserCount.tcp }); } catch (e) { }
             broadcastSessionsToRegisteredApps();
         }
@@ -1599,6 +1602,12 @@ function onTunnelUpgrade(response, s, head) {
         // This is a normal connect for KVM/Terminal/Files
         s.data = onTunnelData;
     }
+}
+
+// If the HTTP Request has a guest name, we need to form a userid that includes the guest name in hex.
+// This is so we can tell the server that a session is for a given userid/guest sharing pair.
+function getUserIdAndGuestNameFromHttpRequest(request) {
+    if (request.guestname == null) return request.userid; else return request.userid + '/guest:' + Buffer.from(request.guestname).toString('base64');
 }
 
 // Called when UDP relay data is received // TODO****
@@ -1639,11 +1648,13 @@ function onTunnelClosed() {
     // If this is a routing session, clean up and send the new session counts.
     if (this.httprequest.userid != null) {
         if (this.httprequest.tcpport != null) {
-            if (tunnelUserCount.tcp[this.httprequest.userid] != null) { tunnelUserCount.tcp[this.httprequest.userid]--; if (tunnelUserCount.tcp[this.httprequest.userid] <= 0) { delete tunnelUserCount.tcp[this.httprequest.userid]; } }
+            var userid = getUserIdAndGuestNameFromHttpRequest(s.httprequest);
+            if (tunnelUserCount.tcp[userid] != null) { tunnelUserCount.tcp[userid]--; if (tunnelUserCount.tcp[userid] <= 0) { delete tunnelUserCount.tcp[userid]; } }
             try { mesh.SendCommand({ action: 'sessions', type: 'tcp', value: tunnelUserCount.tcp }); } catch (e) { }
             broadcastSessionsToRegisteredApps();
         } else if (this.httprequest.udpport != null) {
-            if (tunnelUserCount.udp[this.httprequest.userid] != null) { tunnelUserCount.udp[this.httprequest.userid]--; if (tunnelUserCount.udp[this.httprequest.userid] <= 0) { delete tunnelUserCount.udp[this.httprequest.userid]; } }
+            var userid = getUserIdAndGuestNameFromHttpRequest(s.httprequest);
+            if (tunnelUserCount.udp[userid] != null) { tunnelUserCount.udp[userid]--; if (tunnelUserCount.udp[userid] <= 0) { delete tunnelUserCount.udp[userid]; } }
             try { mesh.SendCommand({ action: 'sessions', type: 'udp', value: tunnelUserCount.udp }); } catch (e) { }
             broadcastSessionsToRegisteredApps();
         }
@@ -1786,7 +1797,8 @@ function onTunnelData(data) {
 
                     // Remove the terminal session to the count to update the server
                     if (this.httprequest.userid != null) {
-                        if (tunnelUserCount.terminal[this.httprequest.userid] != null) { tunnelUserCount.terminal[this.httprequest.userid]--; if (tunnelUserCount.terminal[this.httprequest.userid] <= 0) { delete tunnelUserCount.terminal[this.httprequest.userid]; } }
+                        var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest);
+                        if (tunnelUserCount.terminal[userid] != null) { tunnelUserCount.terminal[userid]--; if (tunnelUserCount.terminal[userid] <= 0) { delete tunnelUserCount.terminal[userid]; } }
                         try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (e) { }
                         broadcastSessionsToRegisteredApps();
                     }
@@ -1977,7 +1989,8 @@ function onTunnelData(data) {
 
                                 // Add the terminal session to the count to update the server
                                 if (this.ws.httprequest.userid != null) {
-                                    if (tunnelUserCount.terminal[this.ws.httprequest.userid] == null) { tunnelUserCount.terminal[this.ws.httprequest.userid] = 1; } else { tunnelUserCount.terminal[this.ws.httprequest.userid]++; }
+                                    var userid = getUserIdAndGuestNameFromHttpRequest(this.ws.httprequest);
+                                    if (tunnelUserCount.terminal[userid] == null) { tunnelUserCount.terminal[userid] = 1; } else { tunnelUserCount.terminal[userid]++; }
                                     try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (e) { }
                                     broadcastSessionsToRegisteredApps();
                                 }
@@ -2038,8 +2051,15 @@ function onTunnelData(data) {
                 // Send a metadata update to all desktop sessions
                 var users = {};
                 if (this.httprequest.desktop.kvm.tunnels != null) {
-                    for (var i in this.httprequest.desktop.kvm.tunnels) { try { var userid = this.httprequest.desktop.kvm.tunnels[i].httprequest.userid; if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; } } catch (e) { } }
-                    for (var i in this.httprequest.desktop.kvm.tunnels) { try { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); } catch (e) { } }
+                    for (var i in this.httprequest.desktop.kvm.tunnels) {
+                        try {
+                            var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest.desktop.kvm.tunnels[i].httprequest);
+                            if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; }
+                        } catch (ex) { sendConsoleText(ex); }
+                    }
+                    for (var i in this.httprequest.desktop.kvm.tunnels) {
+                        try { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); } catch (e) { }
+                    }
                     tunnelUserCount.desktop = users;
                     try { mesh.SendCommand({ action: 'sessions', type: 'kvm', value: users }); } catch (e) { }
                     broadcastSessionsToRegisteredApps();
@@ -2055,8 +2075,15 @@ function onTunnelData(data) {
                     // Send a metadata update to all desktop sessions
                     var users = {};
                     if (this.httprequest.desktop.kvm.tunnels != null) {
-                        for (var i in this.httprequest.desktop.kvm.tunnels) { try { var userid = this.httprequest.desktop.kvm.tunnels[i].httprequest.userid; if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; } } catch (e) { } }
-                        for (var i in this.httprequest.desktop.kvm.tunnels) { try { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); } catch (e) { } }
+                        for (var i in this.httprequest.desktop.kvm.tunnels) {
+                            try {
+                                var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest.desktop.kvm.tunnels[i].httprequest);
+                                if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; }
+                            } catch (ex) { sendConsoleText(ex); }
+                        }
+                        for (var i in this.httprequest.desktop.kvm.tunnels) {
+                            try { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); } catch (e) { }
+                        }
                         tunnelUserCount.desktop = users;
                         try { mesh.SendCommand({ action: 'sessions', type: 'kvm', value: users }); } catch (e) { }
                         broadcastSessionsToRegisteredApps();
@@ -2261,7 +2288,8 @@ function onTunnelData(data) {
 
                 // Add the files session to the count to update the server
                 if (this.httprequest.userid != null) {
-                    if (tunnelUserCount.files[this.httprequest.userid] == null) { tunnelUserCount.files[this.httprequest.userid] = 1; } else { tunnelUserCount.files[this.httprequest.userid]++; }
+                    var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest);
+                    if (tunnelUserCount.files[userid] == null) { tunnelUserCount.files[userid] = 1; } else { tunnelUserCount.files[userid]++; }
                     try { mesh.SendCommand({ action: 'sessions', type: 'files', value: tunnelUserCount.files }); } catch (e) { }
                     broadcastSessionsToRegisteredApps();
                 }
@@ -2269,7 +2297,8 @@ function onTunnelData(data) {
                 this.end = function () {
                     // Remove the files session from the count to update the server
                     if (this.httprequest.userid != null) {
-                        if (tunnelUserCount.files[this.httprequest.userid] != null) { tunnelUserCount.files[this.httprequest.userid]--; if (tunnelUserCount.files[this.httprequest.userid] <= 0) { delete tunnelUserCount.files[this.httprequest.userid]; } }
+                        var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest);
+                        if (tunnelUserCount.files[userid] != null) { tunnelUserCount.files[userid]--; if (tunnelUserCount.files[userid] <= 0) { delete tunnelUserCount.files[userid]; } }
                         try { mesh.SendCommand({ action: 'sessions', type: 'files', value: tunnelUserCount.files }); } catch (e) { }
                         broadcastSessionsToRegisteredApps();
                     }

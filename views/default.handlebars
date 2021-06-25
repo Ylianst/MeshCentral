@@ -7884,9 +7884,7 @@
                 if (conn.metadata.users)  {
                     for (var i in conn.metadata.users) {
                         var val = (conn.metadata.users[i] == 1)?"1 connection":format("{0} connections", conn.metadata.users[i]);
-                        var username = i.split('/')[2];
-                        if ((users != null) && (users[i] != null)) { username = users[i].name; }
-                        x += addHtmlValue4(format("User \"{0}\"", username), val);
+                        x += addHtmlValue4(getUserName(i), val);
                     }
                 }
                 setDialogMode(2, "Session Information", 1, null, x, 'sessionMetadata' + cid);
@@ -15692,7 +15690,11 @@
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
         function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
         function encodeURIComponentEx(txt) { return encodeURIComponent(txt).replace(/'/g,'%27'); };
-        function getUserName(userid) {  if (users && users[userid] != null) return users[userid].name; return userid.split('/')[2]; }
+        function getUserName(userid) {
+            var useridsplit = userid.split('/'), userid2 = userid[0] + '/' + userid[1] + '/' + userid[2], guestname = '';
+            if ((useridsplit.length == 4) && (useridsplit[3].startsWith('guest:'))) { guestname = ' - ' + atob(useridsplit[3].substring(6)); }
+            if (users && users[userid2] != null) return (users[userid2].name + guestname); return (useridsplit[2] + guestname);
+        }
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
 
