@@ -4319,22 +4319,22 @@
             for (var i in node.sessions) {
                 if ((i == 'kvm') && (node.sessions.multidesk == null)) {
                     x += '<u>' + "Remote Desktop" + '</u>';
-                    for (var j in node.sessions.kvm) { x += addHtmlValue4(getUserName(j), (node.sessions.kvm[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.kvm[j]))); }
+                    for (var j in node.sessions.kvm) { x += addHtmlValue2(getUserName(j), (node.sessions.kvm[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.kvm[j]))); }
                 } else if (i == 'multidesk') {
                     x += '<u>' + "Remote Desktop" + '</u>';
-                    for (var j in node.sessions.multidesk) { x += addHtmlValue4(getUserName(j), ((node.sessions.multidesk[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.multidesk[j])))); }
+                    for (var j in node.sessions.multidesk) { x += addHtmlValue2(getUserName(j), ((node.sessions.multidesk[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.multidesk[j])))); }
                 } else if (i == 'terminal') {
                     x += '<u>' + "Terminal" + '</u>';
-                    for (var j in node.sessions.terminal) { x += addHtmlValue4(getUserName(j), ((node.sessions.terminal[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.terminal[j])))); }
+                    for (var j in node.sessions.terminal) { x += addHtmlValue2(getUserName(j), ((node.sessions.terminal[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.terminal[j])))); }
                 } else if (i == 'files') {
                     x += '<u>' + "Files" + '</u>';
-                    for (var j in node.sessions.files) { x += addHtmlValue4(getUserName(j), ((node.sessions.files[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.files[j])))); }
+                    for (var j in node.sessions.files) { x += addHtmlValue2(getUserName(j), ((node.sessions.files[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.files[j])))); }
                 } else if (i == 'tcp') {
                     x += '<u>' + "TCP Routing" + '</u>';
-                    for (var j in node.sessions.tcp) { x += addHtmlValue4(getUserName(j), ((node.sessions.tcp[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.tcp[j])))); }
+                    for (var j in node.sessions.tcp) { x += addHtmlValue2(getUserName(j), ((node.sessions.tcp[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.tcp[j])))); }
                 } else if (i == 'udp') {
                     x += '<u>' + "UDP Routing" + '</u>';
-                    for (var j in node.sessions.udp) { x += addHtmlValue4(getUserName(j), ((node.sessions.udp[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.udp[j])))); }
+                    for (var j in node.sessions.udp) { x += addHtmlValue2(getUserName(j), ((node.sessions.udp[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.udp[j])))); }
                 }
             }
             if (x != '') { setDialogMode(2, "Sessions" + ' - ' + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id); } else { setDialogMode(0); }
@@ -7884,7 +7884,7 @@
                 if (conn.metadata.users)  {
                     for (var i in conn.metadata.users) {
                         var val = (conn.metadata.users[i] == 1)?"1 connection":format("{0} connections", conn.metadata.users[i]);
-                        x += addHtmlValue4(getUserName(i), val);
+                        x += addHtmlValue2(getUserName(i), val);
                     }
                 }
                 setDialogMode(2, "Session Information", 1, null, x, 'sessionMetadata' + cid);
@@ -15692,7 +15692,7 @@
         function encodeURIComponentEx(txt) { return encodeURIComponent(txt).replace(/'/g,'%27'); };
         function getUserName(userid) {
             var useridsplit = userid.split('/'), userid2 = userid[0] + '/' + userid[1] + '/' + userid[2], guestname = '';
-            if ((useridsplit.length == 4) && (useridsplit[3].startsWith('guest:'))) { guestname = ' - ' + atob(useridsplit[3].substring(6)); }
+            if ((useridsplit.length == 4) && (useridsplit[3].startsWith('guest:'))) { guestname = ' - ' + decode_utf8(atob(useridsplit[3].substring(6))); }
             if (users && users[userid2] != null) return (users[userid2].name + guestname); return (useridsplit[2] + guestname);
         }
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
