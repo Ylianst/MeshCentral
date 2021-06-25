@@ -89,6 +89,7 @@
         "ignoreAgentHashCheck": { "type": [ "boolean", "string" ], "default": false, "description": "When true, the agent no longer checked the TLS certificate of the server. This should be used for debugging only. You can also set this to a comma seperated list of IP addresses to ignore, for example: \"192.168.2.100,192.168.1.0/24\"." },
         "exactPorts": { "type": "boolean", "default": false },
         "allowLoginToken": { "type": "boolean", "default": false },
+        "StrictTransportSecurity": { "type": ["boolean", "string"], "default": true, "description": "Controls the Strict-Transport-Security header, default is 1 year. Set to false to remove, or string to set a custom value." },
         "allowFraming": { "type": "boolean", "default": false, "description": "When enabled, the MeshCentral web site can be embedded within another website's iframe." },
         "cookieIpCheck": { "type": "boolean" },
         "cookieEncoding": { "type": "string", "enum": [ "hex", "base64" ], "default": "base64", "description": "Encoding format of cookies in the HTTP headers, this is typically Base64 but some reverse proxies will require HEX." },
