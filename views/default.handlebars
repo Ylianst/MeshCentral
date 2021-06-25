@@ -5198,7 +5198,7 @@
                     }
                     csv += '\r\n';
                 }
-                saveAs(new Blob([csv], { type: 'application/octet-stream' }), "devicelist.csv");
+                saveAs(stringToUtf8Blob(csv), "devicelist.csv");
             }
             return false;
         }
@@ -12598,7 +12598,7 @@
                 if (eventList[i].nodeid) { var node = getNodeFromId(eventList[i].nodeid); if (node && node.name) { nodename = node.name; } }
                 csv += '"' + eventList[i].time + '","' + printDateTime(new Date(eventList[i].time)) + '","' + eventList[i].etype + '","' + ((eventList[i].action != null) ? eventList[i].action : '') + '","' + ((eventList[i].username != null) ? eventList[i].username : '') + '","' + EscapeHtml(nodename) + '","' + ((eventList[i].msg != null) ? eventList[i].msg : '').split(',').join(' -') + '"\r\n';
             }
-            saveAs(new Blob([csv], { type: 'application/octet-stream' }), "eventslist.csv");
+            saveAs(stringToUtf8Blob(csv), "eventslist.csv");
             return false;
         }
 
@@ -12971,7 +12971,7 @@
                 }
                 csv += '"' + users[i]._id + '","' + users[i].name + '","' + (users[i].email ? users[i].email : '') + '","' + (users[i].creation ? new Date(users[i].creation * 1000) : '') + '","' + (users[i].login ? new Date(users[i].login * 1000) : '') + '","' + (users[i].groups ? users[i].groups.join(',') : '') + '","' + (multiFactor ? factors.join(',') : '') + '"\r\n';
             }
-            saveAs(new Blob([csv], { type: 'application/octet-stream' }), "userlist.csv");
+            saveAs(stringToUtf8Blob(csv), "userlist.csv");
             return false;
         }
 
@@ -14957,7 +14957,7 @@
                     csv += new Date(serverTimelineStats[i].time) + ', ' + serverTimelineStats[i].conn.ca + ', ' + serverTimelineStats[i].conn.cu + ', ' + serverTimelineStats[i].conn.us + ', ' + serverTimelineStats[i].conn.rs + ', ' + (serverTimelineStats[i].conn.am ? serverTimelineStats[i].conn.am : '') + ', ' + serverTimelineStats[i].mem.external + ', ' + serverTimelineStats[i].mem.heapUsed + ', ' + serverTimelineStats[i].mem.heapTotal + ', ' + serverTimelineStats[i].mem.rss + '\r\n';
                 }
             }
-            saveAs(new Blob([csv], { type: 'application/octet-stream' }), "ServerStats.csv");
+            saveAs(stringToUtf8Blob(csv), "ServerStats.csv");
         }
 
         //
@@ -15028,7 +15028,7 @@
         function p41downloadServerTrace() {
             var csv = "time, source, message" + '\r\n';
             for (var i in serverTrace) { csv += '"' + new Date(serverTrace[i].time).toLocaleTimeString() + '","' + serverTrace[i].source + '","' + serverTrace[i].args.join(', ') + '"\r\n'; }
-            saveAs(new Blob([csv], { type: 'application/octet-stream' }), "servertrace.csv");
+            saveAs(stringToUtf8Blob(csv), "servertrace.csv");
             return false;
         }
 
@@ -15629,6 +15629,17 @@
                 } catch (ex) {}
                 meshserver.send({ action: 'userWebState', state: JSON.stringify(s) });
             }
+        }
+
+        // Convert a string into a UTF8 blob with the UTF8 header in front of it.
+        function stringToUtf8Blob(str) {
+            const bytes = new TextEncoder().encode(str);
+            var bytes2 = new Uint8Array(3 + bytes.length);
+            bytes2[0] = 0xEF; // This is the UTF-8 header for CSV files, add it to the start of the file.
+            bytes2[1] = 0xBB;
+            bytes2[2] = 0xBF;
+            for (var i = 0; i < bytes.length; i++) { bytes2[i + 3] = bytes[i]; }
+            return new Blob([bytes2], { type: 'application/octet-stream' }) // application/json;charset=utf-8
         }
 
         function getNodeAmtVersion(node) { if ((node == null) || (node.intelamt == null) || (typeof node.intelamt.ver != 'string')) return 0; var verSplit = node.intelamt.ver.split('.'); if (verSplit.length < 2) return 0; return parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100); }
