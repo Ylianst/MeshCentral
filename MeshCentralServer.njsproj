@@ -193,7 +193,7 @@
     <Compile Include="public\scripts\amt-wsman-0.2.0.js" />
     <Compile Include="public\scripts\amt-wsman-ws-0.2.0.js" />
     <Compile Include="public\scripts\common-0.0.1.js" />
-    <cls Include="public\scripts\meshcentral.js" />
+    <Compile Include="public\scripts\meshcentral.js" />
     <Compile Include="redirserver.js" />
     <Compile Include="translate\translate.js" />
     <Compile Include="ua-parser.js" />
