@@ -1,0 +1,2 @@
+[[0]] verifieringskod är: [[1]]
+[[0]] åtkomsttoken är: [[1]]

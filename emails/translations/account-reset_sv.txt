@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Återställ konto
+Hej [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]] [[[URLARGS1]]) begär återställning av kontolösenord. Ta bort till följande länk för att slutföra processen:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Om du inte initierade denna begäran, ignorerar du det här meddelandet.

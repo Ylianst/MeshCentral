@@ -478,5 +478,35 @@
     ],
     "statusDescription": "Stato attuale dell'agente",
     "description": "Fare clic sui pulsanti sottostanti per installare o disinstallare l'agente mesh. Una volta installato, questo software viene eseguito in background consentendo a questo computer di essere gestito e controllato da un amministratore remoto."
+  },
+  "sv": {
+    "agent": "Ombud",
+    "agentVersion": "Ny agentversion",
+    "group": "Enhetsgrupp",
+    "url": "Serverns URL",
+    "meshName": "Masknamn",
+    "meshId": "Mesh Identifier",
+    "serverId": "Serveridentifierare",
+    "setup": "Uppstart",
+    "update": "Uppdatering",
+    "install": "Installera",
+    "uninstall": "Avinstallera",
+    "connect": "Ansluta",
+    "disconnect": "Koppla ifrån",
+    "cancel": "Avbryt",
+    "pressok": "Tryck på OK för att koppla bort",
+    "elevation": "Förhöjda behörigheter krävs för att installera / avinstallera agenten.",
+    "sudo": "Försök igen med sudo.",
+    "ctrlc": "Tryck på Ctrl-C för att avsluta.",
+    "commands": "Du kan köra textversionen från kommandoraden med följande kommando (er)",
+    "graphicalerror": "Den grafiska versionen av detta installationsprogram kan inte köras på detta system",
+    "zenity": "Försök att installera / uppdatera Zenity och kör igen",
+    "status": [
+      "INTE INSTALLERAD",
+      "LÖPNING",
+      "SPRINGER INTE"
+    ],
+    "statusDescription": "Aktuell agentstatus",
+    "description": "Klicka på knapparna nedan för att installera eller avinstallera nätagenten. När den installeras körs denna programvara i bakgrunden så att den här datorn kan hanteras och styras av en fjärradministratör."
   }
 }
