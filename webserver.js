@@ -5459,7 +5459,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'" + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' mcrouter:; media-src 'self'; form-action 'self'"
                 };
                 if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
-                if (parent.config.settings.stricttransportsecurity !== false) { if (typeof parent.config.settings.stricttransportsecurity == 'string') { headers['Strict-Transport-Security'] = parent.config.settings.stricttransportsecurity; } else { headers['Strict-Transport-Security'] = 'max-age=63072000'; } }
+                if ((parent.config.settings.stricttransportsecurity !== false) && (obj.isTrustedCert(domain))) { if (typeof parent.config.settings.stricttransportsecurity == 'string') { headers['Strict-Transport-Security'] = parent.config.settings.stricttransportsecurity; } else { headers['Strict-Transport-Security'] = 'max-age=63072000'; } }
                 res.set(headers);
             }
 
