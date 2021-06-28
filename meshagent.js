@@ -1610,6 +1610,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // Add the user's real name if present
                     var u = parent.users[command.userid];
                     if (u == null) return;
+                    if (u.name) { command.name = u.name; }
                     if (u.realname) { command.realname = u.realname; }
 
                     // An agent can only request images of accounts with rights to the device.
