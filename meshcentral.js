@@ -182,6 +182,9 @@ function CreateMeshCentralServer(config, args) {
             return;
         }
 
+        // Check for invalid cert name
+        if ((obj.args.cert != null) && ((typeof obj.args.cert != "string") || (obj.args.cert.indexOf('@') >= 0) || (obj.args.cert.indexOf('/') >= 0) || (obj.args.cert.indexOf(':') >= 0))) { console.log("Invalid certificate name"); process.exit(); return; }
+
         // Perform a password hash
         if (obj.args.hashpassword) { require('./pass').hash(obj.args.hashpassword, function (err, salt, hash, tag) { console.log(salt + ',' + hash); process.exit(); }); return; }
 
