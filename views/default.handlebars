@@ -15691,9 +15691,10 @@
         function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
         function encodeURIComponentEx(txt) { return encodeURIComponent(txt).replace(/'/g,'%27'); };
         function getUserName(userid) {
-            var useridsplit = userid.split('/'), userid2 = userid[0] + '/' + userid[1] + '/' + userid[2], guestname = '';
+            var useridsplit = userid.split('/'), userid2 = useridsplit[0] + '/' + useridsplit[1] + '/' + useridsplit[2], guestname = '';
             if ((useridsplit.length == 4) && (useridsplit[3].startsWith('guest:'))) { guestname = ' - ' + decode_utf8(atob(useridsplit[3].substring(6))); }
-            if (users && users[userid2] != null) return (users[userid2].name + guestname); return (useridsplit[2] + guestname);
+            if (users && users[userid2] != null) { if (users[userid2].realname != null) return (users[userid2].realname + guestname); else return (users[userid2].name + guestname); }
+            return (useridsplit[2] + guestname);
         }
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
