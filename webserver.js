@@ -5208,10 +5208,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Check if we have right to this node
                 if (obj.GetNodeRights(user, node.meshid, node._id) == 0) { res.sendStatus(401); return; }
 
-                // Get local time offset
+                // See how we will convert UTC time to local time
                 var localTimeOffset = 0;
-                if (req.query.tf != null) { localTimeOffset = parseInt(req.query.tf) }
-                if (isNaN(localTimeOffset)) { localTimeOffset = 0; }
+                var timeConversionSystem = 0;
+                if ((req.query.l != null) && (req.query.tz != null)) {
+                    timeConversionSystem = 1;
+                } else if (req.query.tf != null) {
+                    // Get local time offset (bad way)
+                    timeConversionSystem = 2;
+                    localTimeOffset = parseInt(req.query.tf);
+                    if (isNaN(localTimeOffset)) { localTimeOffset = 0; }
+                }
 
                 // Get the list of power events and send them
                 setContentDispositionHeader(res, 'application/octet-stream', 'powerevents.csv', null, 'powerevents.csv');
@@ -5220,12 +5227,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     for (var i in docs) {
                         if (docs[i].power != prevState) {
                             prevState = docs[i].power;
-                            var localTime = new Date(docs[i].time.getTime() + (localTimeOffset * 60000)).toISOString();
-                            localTime = localTime.substring(0, localTime.length - 1);
+                            var localTime = '';
+                            if (timeConversionSystem == 1) { // Good way
+                                localTime = new Date(docs[i].time.getTime()).toLocaleString(req.query.l, { timeZone: req.query.tz })
+                            } else if (timeConversionSystem == 2) { // Bad way
+                                localTime = new Date(docs[i].time.getTime() + (localTimeOffset * 60000)).toISOString();
+                                localTime = localTime.substring(0, localTime.length - 1);
+                            }
                             if (docs[i].oldPower != null) {
-                                xevents.push(docs[i].time.toISOString() + ',' + localTime + ',' + docs[i].power + ',' + docs[i].oldPower);
+                                xevents.push('\"' + docs[i].time.toISOString() + '\",\"' + localTime + '\",' + docs[i].power + ',' + docs[i].oldPower);
                             } else {
-                                xevents.push(docs[i].time.toISOString() + ',' + localTime + ',' + docs[i].power);
+                                xevents.push('\"' + docs[i].time.toISOString() + '\",\"' + localTime + '\",' + docs[i].power);
                             }
                         }
                     }

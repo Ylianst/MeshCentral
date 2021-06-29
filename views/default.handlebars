@@ -1394,6 +1394,7 @@
         mql.addEventListener('change', function() { console.log('Dark Change'); });
         */
 
+
         function startup() {
             if ((features & 32) == 0) {
                 // Guard against other site's top frames (web bugs).
@@ -7244,7 +7245,10 @@
                 ++count;
                 date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
             }
-            QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>' + "Day" + '</th><th scope=col style=text-align:center><a onclick=downloadFile("devicepowerevents.ashx?id=' + currentNode._id + '&tf=' + new Date().getTimezoneOffset() + (urlargs.key?('&key=' + urlargs.key):'') + '",null,true)><img title="' + "Download power events" + '" src="images/link4.png" /></a>' + "7 Day Power State" + '</th></tr></thead><tbody>' + x + '</tbody></table>');
+            // Add the language and timezone of the browser to the server so the server can localize the time correctly.
+            var tz = '';
+            try { tz = '&tz=' + encodeURIComponentEx(Intl.DateTimeFormat().resolvedOptions().timeZone); } catch (ex) {}
+            QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>' + "Day" + '</th><th scope=col style=text-align:center><a onclick=downloadFile("devicepowerevents.ashx?id=' + currentNode._id + '&tf=' + new Date().getTimezoneOffset() + '&l=' + encodeURIComponentEx(getLang()) + tz + (urlargs.key?('&key=' + urlargs.key):'') + '",null,true)><img title="' + "Download power events" + '" src="images/link4.png" /></a>' + "7 Day Power State" + '</th></tr></thead><tbody>' + x + '</tbody></table>');
         }
 
         // Return a color for the given power state
@@ -15640,6 +15644,7 @@
             return new Blob([bytes2], { type: 'application/octet-stream' }) // application/json;charset=utf-8
         }
 
+        function getLang() { if (navigator.languages != undefined) { return navigator.languages[0]; } return navigator.language; }
         function getNodeAmtVersion(node) { if ((node == null) || (node.intelamt == null) || (typeof node.intelamt.ver != 'string')) return 0; var verSplit = node.intelamt.ver.split('.'); if (verSplit.length < 2) return 0; return parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100); }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function addLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=\'' + f + '\' onkeypress="if (event.key==\'Enter\') {' + f + '} ">' + x + ' <img class=hoverButton src=images/link5.png></span>'; }
