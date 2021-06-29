@@ -13,6 +13,16 @@
 /*jshint esversion: 6 */
 "use strict";
 
+
+/*
+Protocol numbers
+10 = RDP
+11 = SSH-TERM
+12 = VNC
+13 - SSH-FILES
+*/
+
+
 // Construct a MSTSC Relay object, called upon connection
 // This is a bit of a hack as we are going to run the RDP connection thru a loopback connection.
 // If the "node-rdpjs-2" module supported passing a socket, we would do something different.
@@ -679,7 +689,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
             if (args.tlsoffload) { protocol = 'ws'; }
             var domainadd = '';
             if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((obj.mtype == 3) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=11&auth=' + authCookie // Protocol 11 is Web-SSH
+            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((obj.mtype == 3) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=13&auth=' + authCookie // Protocol 13 is Web-SSH-Files
             parent.parent.debug('relay', 'SSH: Connection websocket to ' + url);
             obj.wsClient = new WebSocket(url, options);
             obj.wsClient.on('open', function () { parent.parent.debug('relay', 'SSH: Relay websocket open'); });

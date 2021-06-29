@@ -1013,7 +1013,7 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
     if (typeof protocolInUse != 'number') { protocolInUse = 0; }
 
     // If there is no authentication, drop this connection
-    if (obj.user == null) { try { ws.close(); parent.parent.debug('relay', 'Relay: Connection with no authentication'); } catch (e) { console.log(e); } return; }
+    if (obj.user == null) { try { ws.close(); parent.parent.debug('relay', 'LocalRelay: Connection with no authentication'); } catch (e) { console.log(e); } return; }
 
     // Use cookie values when present
     if (cookie != null) {
@@ -1022,11 +1022,11 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
     }
 
     // Check for nodeid and tcpport
-    if ((req.query == null) || (req.query.nodeid == null) || (req.query.tcpport == null)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Connection with invalid arguments'); } catch (e) { console.log(e); } return; }
+    if ((req.query == null) || (req.query.nodeid == null) || (req.query.tcpport == null)) { try { ws.close(); parent.parent.debug('relay', 'LocalRelay: Connection with invalid arguments'); } catch (e) { console.log(e); } return; }
     const tcpport = parseInt(req.query.tcpport);
-    if ((typeof tcpport != 'number') || (tcpport < 1) || (tcpport > 65535)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Connection with invalid arguments'); } catch (e) { console.log(e); } return; }
+    if ((typeof tcpport != 'number') || (tcpport < 1) || (tcpport > 65535)) { try { ws.close(); parent.parent.debug('relay', 'LocalRelay: Connection with invalid arguments'); } catch (e) { console.log(e); } return; }
     var nodeidsplit = req.query.nodeid.split('/');
-    if ((nodeidsplit.length != 3) || (nodeidsplit[0] != 'node') || (nodeidsplit[1] != domain.id) || (nodeidsplit[2].length < 10)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Connection with invalid arguments'); } catch (e) { console.log(e); } return; }
+    if ((nodeidsplit.length != 3) || (nodeidsplit[0] != 'node') || (nodeidsplit[1] != domain.id) || (nodeidsplit[2].length < 10)) { try { ws.close(); parent.parent.debug('relay', 'LocalRelay: Connection with invalid arguments'); } catch (e) { console.log(e); } return; }
     obj.nodeid = req.query.nodeid;
     obj.tcpport = tcpport;
 
@@ -1096,15 +1096,20 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
         if (obj.client != null) { inTraffc += obj.client.bytesRead; outTraffc += obj.client.bytesWritten; }
 
         // Close the web socket
-        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); parent.parent.debug('relay', 'Relay: Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { obj.ws._socket._parent.end(); parent.parent.debug('relay', 'Relay: Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); parent.parent.debug('relay', 'LocalRelay: Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { obj.ws._socket._parent.end(); parent.parent.debug('relay', 'LocalRelay: Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
 
         // Update the relay session count
         if (obj.relaySessionCounted) { parent.relaySessionCount--; delete obj.relaySessionCounted; }
 
         // Log the disconnection, traffic will be credited to the authenticated user
         if (obj.time) {
-            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.user._id, username: obj.user.name, msgid: 9, msgArgs: [obj.id, obj.req.clientIp, obj.host, Math.floor((Date.now() - obj.time) / 1000)], msg: 'Ended relay session \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.host + ', ' + Math.floor((Date.now() - obj.time) / 1000) + ' second(s)', nodeid: obj.req.query.nodeid, protocol: req.query.p, in: inTraffc, out: outTraffc };
+            var protocolStr = req.query.p;
+            if (req.query.p == 10) { protocolStr = 'RDP'; }
+            else if (req.query.p == 11) { protocolStr = 'SSH-TERM'; }
+            else if (req.query.p == 12) { protocolStr = 'VNC'; }
+            else if (req.query.p == 13) { protocolStr = 'SSH-FILES'; }
+            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.user._id, username: obj.user.name, msgid: 121, msgArgs: [obj.id, protocolStr, obj.host, Math.floor((Date.now() - obj.time) / 1000)], msg: 'Ended local relay session \"' + obj.id + '\", protocol ' + protocolStr + ' to ' + obj.host + ', ' + Math.floor((Date.now() - obj.time) / 1000) + ' second(s)', nodeid: obj.req.query.nodeid, protocol: req.query.p, in: inTraffc, out: outTraffc };
             parent.parent.DispatchEvent(['*', user._id], obj, event);
         }
 
@@ -1152,8 +1157,13 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
             obj.client.bytesWrittenEx = 0;
             obj.client.connect(obj.tcpport, node.host, function () {
                 // Log the start of the connection
+                var protocolStr = req.query.p;
+                if (req.query.p == 10) { protocolStr = 'RDP'; }
+                else if (req.query.p == 11) { protocolStr = 'SSH-TERM'; }
+                else if (req.query.p == 12) { protocolStr = 'VNC'; }
+                else if (req.query.p == 13) { protocolStr = 'SSH-FILES'; }
                 obj.time = Date.now();
-                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.user._id, username: obj.user.name, msgid: 13, msgArgs: [obj.id, obj.req.clientIp, obj.host], msg: 'Started relay session \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.host, nodeid: req.query.nodeid, protocol: req.query.p };
+                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.user._id, username: obj.user.name, msgid: 120, msgArgs: [obj.id, protocolStr, obj.host], msg: 'Started local relay session \"' + obj.id + '\", protocol ' + protocolStr + ' to ' + obj.host, nodeid: req.query.nodeid, protocol: req.query.p };
                 parent.parent.DispatchEvent(['*', obj.user._id, obj.meshid, obj.nodeid], obj, event);
 
                 // Count the session
