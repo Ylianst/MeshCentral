@@ -921,22 +921,6 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
     // If there is no authentication, drop this connection
     if ((obj.id != null) && (obj.user == null) && (obj.ruserid == null)) { try { ws.close(); parent.parent.debug('relay', 'DesktopRelay: Connection with no authentication (' + obj.req.clientIp + ')'); } catch (e) { console.log(e); } return; }
 
-    // Check if this user has input access on the device
-    if ((obj.user != null) && (obj.viewOnly == false)) {
-        obj.viewOnly = true; // Set a view only for now until we figure out otherwise
-        parent.db.Get(obj.nodeid, function (err, docs) {
-            if (obj.req == null) return; // This connection was closed.
-            if (docs.length == 0) { console.log('ERR: Node not found'); try { obj.close(); } catch (e) { } return; } // Disconnect websocket
-            const node = docs[0];
-
-            // Check if this user has permission to manage this computer
-            const rights = parent.GetNodeRights(obj.user, node.meshid, node._id);
-            if ((rights & 0x00000008) == 0) { try { obj.close(); } catch (e) { } return; } // Check MESHRIGHT_ADMIN or MESHRIGHT_REMOTECONTROL
-            if ((rights != 0xFFFFFFFF) && ((rights & 0x00010000) != 0)) { try { obj.close(); } catch (e) { } return; } // Check MESHRIGHT_NODESKTOP
-            if ((rights == 0xFFFFFFFF) || ((rights & 0x00000100) == 0)) { obj.viewOnly = false; } // Check MESHRIGHT_REMOTEVIEWONLY
-        });
-    }
-
     // Relay session count (we may remove this in the future)
     obj.relaySessionCounted = true;
     parent.relaySessionCount++;
@@ -1242,8 +1226,26 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
         }
     }
 
-    // If this is not an authenticated session, or the session does not have routing instructions, just go ahead an connect to existing session.
-    performRelay(0);
+
+    // Check if this user has input access on the device
+    if ((obj.user != null) && (obj.viewOnly == false)) {
+        obj.viewOnly = true; // Set a view only for now until we figure out otherwise
+        parent.db.Get(obj.nodeid, function (err, docs) {
+            if (obj.req == null) return; // This connection was closed.
+            if (docs.length == 0) { console.log('ERR: Node not found'); try { obj.close(); } catch (e) { } return; } // Disconnect websocket
+            const node = docs[0];
+
+            // Check if this user has permission to manage this computer
+            const rights = parent.GetNodeRights(obj.user, node.meshid, node._id);
+            if ((rights & 0x00000008) == 0) { try { obj.close(); } catch (e) { } return; } // Check MESHRIGHT_ADMIN or MESHRIGHT_REMOTECONTROL
+            if ((rights != 0xFFFFFFFF) && ((rights & 0x00010000) != 0)) { try { obj.close(); } catch (e) { } return; } // Check MESHRIGHT_NODESKTOP
+            if ((rights == 0xFFFFFFFF) || ((rights & 0x00000100) == 0)) { obj.viewOnly = false; } // Check MESHRIGHT_REMOTEVIEWONLY
+            performRelay(0);
+        });
+    } else {
+        // If this is not an authenticated session, or the session does not have routing instructions, just go ahead an connect to existing session.
+        performRelay(0);
+    }
     return obj;
 };
 
