@@ -1870,7 +1870,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // This is a query with a websocket relay cookie, check that the cookie is valid and use it.
             var rcookie = parent.decodeCookie(req.query.ws, parent.loginCookieEncryptionKey, 60); // Cookie with 1 hour timeout
             if ((rcookie != null) && (rcookie.domainid == domain.id) && (rcookie.nodeid != null) && (rcookie.tcpport != null)) {
-                render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: req.query.ws, name: encodeURIComponent(req.query.name).replace(/'/g, '%27') }, req, domain)); return;
+
+                // Fetch the node from the database
+                obj.db.Get(rcookie.nodeid, function (err, nodes) {
+                    if ((err != null) || (nodes.length != 1)) { res.sendStatus(404); return; }
+                    const node = nodes[0];
+
+                    // Check if we have RDP credentials for this device
+                    var serverCredentials = ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string'));
+
+                    // Render the page
+                    render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: req.query.ws, name: encodeURIComponent(req.query.name).replace(/'/g, '%27'), serverCredentials: serverCredentials }, req, domain));
+                });
+                return;
             }
         }
 
@@ -1912,6 +1924,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((err != null) || (nodes.length != 1)) { res.sendStatus(404); return; }
             const node = nodes[0];
 
+            // Check if we have RDP credentials for this device
+            var serverCredentials = ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string'));
+
             // Check access rights, must have remote control rights
             if ((obj.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { res.sendStatus(401); return; }
 
@@ -1930,7 +1945,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Generate a cookie and respond
             var cookie = parent.encodeCookie({ userid: user._id, domainid: user.domain, nodeid: node._id, tcpport: port }, parent.loginCookieEncryptionKey);
-            render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: cookie, name: encodeURIComponent(node.name).replace(/'/g, '%27') }, req, domain));
+            render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: cookie, name: encodeURIComponent(node.name).replace(/'/g, '%27'), serverCredentials: serverCredentials }, req, domain));
         });
     }
     
@@ -7030,6 +7045,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             r = Object.assign({}, r); // Shallow clone
             if (r.pmt != null) { r.pmt = 1; }
             if (r.ssh != null) { r.ssh = 1; }
+            if (r.rdp != null) { r.rdp = 1; }
             if ((r.intelamt != null) && ((r.intelamt.pass != null) || (r.intelamt.mpspass != null))) {
                 r.intelamt = Object.assign({}, r.intelamt); // Shallow clone
                 if (r.intelamt.pass != null) { r.intelamt.pass = 1; }; // Remove the Intel AMT administrator password from the node

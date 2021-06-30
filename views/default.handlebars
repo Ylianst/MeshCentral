@@ -3000,6 +3000,7 @@
                                 node.gpsloc = message.event.node.gpsloc;
                                 node.tags = message.event.node.tags;
                                 node.ssh = message.event.node.ssh;
+                                node.rdp = message.event.node.rdp;
                                 node.userloc = message.event.node.userloc;
                                 node.rdpport = message.event.node.rdpport;
                                 node.rfbport = message.event.node.rfbport;
@@ -6506,13 +6507,17 @@
                     x += addDeviceAttribute("Tags", groupingTags);
                 }
 
-                // SSH Credentials
-                if (node.ssh != null) {
+                // SSH & RDP Credentials
+                if ((node.ssh != null) || (node.rdp != null)) {
+                    var y = [];
                     if ((meshrights & 4) != 0) {
-                        x += addDeviceAttribute("Credentials", '<span onclick=showClearSshDialog(3) style=cursor:pointer>' + "SSH" + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>');
+                        if (node.ssh != null) { y.push('<span onclick=showClearSshDialog(3) style=cursor:pointer>' + "SSH" + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>'); }
+                        if (node.rdp != null) { y.push('<span onclick=showClearRdpDialog(3) style=cursor:pointer>' + "RDP" + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>'); }
                     } else {
-                        x += addDeviceAttribute("Credentials", "SSH");
+                        if (node.ssh != null) { y.push("SSH"); }
+                        if (node.rdp != null) { y.push("RDP"); }
                     }
+                    x += addDeviceAttribute("Credentials", y.join(', '));
                 }
 
                 x += '</table><br />';
@@ -7558,6 +7563,8 @@
 
         function showClearSshDialog() { setDialogMode(2, "Edit Device", 3, showClearSshDialogEx, "Clear SSH credentials?"); }
         function showClearSshDialogEx(button, mode) { meshserver.send({ action: 'changedevice', nodeid: currentNode._id, ssh: 0 }); }
+        function showClearRdpDialog() { setDialogMode(2, "Edit Device", 3, showClearRdpDialogEx, "Clear RDP credentials?"); }
+        function showClearRdpDialogEx(button, mode) { meshserver.send({ action: 'changedevice', nodeid: currentNode._id, rdp: 0 }); }
 
         var showEditNodeValueDialog_modes = ["Device Name", "Hostname", "Description", "Tags"];
         var showEditNodeValueDialog_modes2 = ['name', 'host', 'desc', 'tags'];
