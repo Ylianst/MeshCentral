@@ -339,6 +339,12 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         for (var i in obj.viewers) { obj.sendToViewer(obj.viewers[i], data); }
     }
 
+    // Send this command to all viewers
+    obj.sendToAllInputViewers = function (data) {
+        if (obj.viewers == null) return;
+        for (var i in obj.viewers) { if (obj.viewers[i].viewOnly != true) { obj.sendToViewer(obj.viewers[i], data); } }
+    }
+
     // Send data to the viewer or queue it up for sending
     obj.sendToViewer = function (viewer, data) {
         if ((viewer == null) || (obj.viewers == null)) return;
@@ -665,10 +671,10 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             case 11: // GetDisplays
                 // Store and send this to all viewers right away
                 obj.lastDisplayInfoData = data;
-                obj.sendToAllViewers(data);
+                obj.sendToAllInputViewers(data);
                 break;
             case 12: // SetDisplay
-                obj.sendToAllViewers(data);
+                obj.sendToAllInputViewers(data);
                 break;
             case 14: // KVM_INIT_TOUCH
                 break;
@@ -688,16 +694,16 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 // Display information
                 if ((data.length < 14) || (((data.length - 4) % 10) != 0)) break; // Command must be 14 bytes and have header + 10 byte for each display.
                 obj.lastDisplayLocationData = data;
-                obj.sendToAllViewers(data);
+                obj.sendToAllInputViewers(data);
                 break;
             case 87: // MNG_KVM_INPUT_LOCK
                 // Send this to all viewers right away
                 // This will update all views on the current state of the input lock
-                obj.sendToAllViewers(data);
+                obj.sendToAllInputViewers(data);
                 break;
             case 88: // MNG_KVM_MOUSE_CURSOR
                 // Send this to all viewers right away
-                obj.sendToAllViewers(data);
+                obj.sendToAllInputViewers(data);
                 break;
             default:
                 console.log('Un-handled agent command: ' + command);
@@ -914,6 +920,22 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
 
     // If there is no authentication, drop this connection
     if ((obj.id != null) && (obj.user == null) && (obj.ruserid == null)) { try { ws.close(); parent.parent.debug('relay', 'DesktopRelay: Connection with no authentication (' + obj.req.clientIp + ')'); } catch (e) { console.log(e); } return; }
+
+    // Check if this user has input access on the device
+    if ((obj.user != null) && (obj.viewOnly == false)) {
+        obj.viewOnly = true; // Set a view only for now until we figure out otherwise
+        parent.db.Get(obj.nodeid, function (err, docs) {
+            if (obj.req == null) return; // This connection was closed.
+            if (docs.length == 0) { console.log('ERR: Node not found'); try { obj.close(); } catch (e) { } return; } // Disconnect websocket
+            const node = docs[0];
+
+            // Check if this user has permission to manage this computer
+            const rights = parent.GetNodeRights(obj.user, node.meshid, node._id);
+            if ((rights & 0x00000008) == 0) { try { obj.close(); } catch (e) { } return; } // Check MESHRIGHT_ADMIN or MESHRIGHT_REMOTECONTROL
+            if ((rights != 0xFFFFFFFF) && ((rights & 0x00010000) != 0)) { try { obj.close(); } catch (e) { } return; } // Check MESHRIGHT_NODESKTOP
+            if ((rights == 0xFFFFFFFF) || ((rights & 0x00000100) == 0)) { obj.viewOnly = false; } // Check MESHRIGHT_REMOTEVIEWONLY
+        });
+    }
 
     // Relay session count (we may remove this in the future)
     obj.relaySessionCounted = true;

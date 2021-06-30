@@ -2156,7 +2156,7 @@ function onTunnelData(data) {
                     this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text. Pipe the Browser --> KVM input.
                 } else {
                     // We need to only pipe non-mouse & non-keyboard inputs.
-                    //sendConsoleText('Warning: No Remote Desktop Input Rights.');
+                    // sendConsoleText('Warning: No Remote Desktop Input Rights.');
                     // TODO!!!
                 }
 
