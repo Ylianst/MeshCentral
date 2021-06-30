@@ -44,6 +44,10 @@
             margin: 0 auto;
         }
 
+        .formDropdown {
+            font-size: 17px;
+        }
+
         .formLabel { }
 
         .formControl {
@@ -76,6 +80,7 @@
         var urlargs = parseUriArgs();
         if (urlargs.key && (isAlphaNumeric(urlargs.key) == false)) { delete urlargs.key; }
         var cookie = '{{{cookie}}}';
+        var serverCredentials = (decodeURIComponent('{{{serverCredentials}}}') == 'true');
         var name = decodeURIComponent('{{{name}}}');
         if (name != '') { document.title = name + ' - ' + document.title; }
 
@@ -90,6 +95,15 @@
                 QE('inputPassword', false);
                 QE('connectButton', false);
             }
+
+            if (serverCredentials == true) {
+                QV('dropdowndomain', true);
+                Q('d3coreMode').value = 1;
+            } else {
+                QV('dropdowndomain', false);
+                Q('d3coreMode').value = 2;
+            }
+            dropDownChange();
         }
 
         function connect(domain, username, password) {
@@ -97,11 +111,13 @@
             var domain = Q('inputDomain').value;
             var username = Q('inputUsername').value;
             var password = Q('inputPassword').value;
+            var savepass = Q('inputSaveCredentials').checked;
+            var options = { savepass: savepass, useServerCreds: (Q('d3coreMode').value == 1) };
             QV('myCanvas', true);
             QV('main', false);
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            client.connect(cookie, domain, username, password, function (err) { QV('myCanvas', false); QV('main', true); });
+            client.connect(cookie, domain, username, password, options, function (err) { QV('myCanvas', false); QV('main', true); });
             return false;
         }
 
@@ -137,6 +153,16 @@
             }
             return r;
         }
+
+        function dropDownChange() {
+            var newCreds = (Q('d3coreMode').value == 2);
+            QV('rowdomain', newCreds);
+            QV('rowusername', newCreds);
+            QV('rowpassword', newCreds);
+            QV('rowremember', newCreds);
+            if (newCreds) Q('inputUsername').focus();
+        }
+
     </script>
 </head>
 <body onload='load()' style="position:absolute;top:0px;right:0;left:0;bottom:0px">
@@ -147,17 +173,26 @@
                 <tr>
                     <td colspan="2"><hr style="color:gray;border:1px solid;" /></td>
                 </tr>
-                <tr>
+                <tr id="dropdowndomain" style="display:none">
+                    <td colspan="2">
+                        <select id=d3coreMode style=width:100%;margin-bottom:5px class="formDropdown" onchange="dropDownChange()"><option value=1>Use server credentals</option><option value=2>Use new credentals</option></select>
+                    </td>
+                </tr>
+                <tr id="rowdomain" style="display:none">
                     <td><label for="inputDomain" class="formLabel">Domain</label></td>
                     <td style="text-align:right"><input type="text" id="inputDomain" class="formControl" placeholder="Domain"></td>
                 </tr>
-                <tr>
+                <tr id="rowusername" style="display:none">
                     <td><label for="inputUsername" class="formLabel">Username</label></td>
                     <td style="text-align:right"><input type="text" id="inputUsername" class="formControl" placeholder="Username"></td>
                 </tr>
-                <tr>
+                <tr id="rowpassword" style="display:none">
                     <td><label for="inputPassword" class="formLabel">Password</label></td>
                     <td style="text-align:right"><input type="password" id="inputPassword" class="formControl" placeholder="Password"></td>
+                </tr>
+                <tr id="rowremember" style="display:none">
+                    <td></td>
+                    <td><label><input type="checkbox" id="inputSaveCredentials" style="margin-left:8px;margin-right:5px">Remember credentials</label></td>
                 </tr>
                 <tr>
                     <td colspan="2"><button class="connectButton" onclick="return connect()">Connect</button></td>

@@ -74,17 +74,13 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 obj.relaySocket.on('end', function () { obj.close(); });
                 obj.relaySocket.on('error', function (err) { obj.close(); });
 
-                // Decode the authentication cookie
-                var cookie = parent.parent.decodeCookie(obj.infos.ip, parent.parent.loginCookieEncryptionKey);
-                if (cookie == null) return;
-
                 // Setup the correct URL with domain and use TLS only if needed.
                 var options = { rejectUnauthorized: false };
                 if (domain.dns != null) { options.servername = domain.dns; }
                 var protocol = (args.tlsoffload) ? 'ws' : 'wss';
                 var domainadd = '';
                 if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-                var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((cookie.lc == 1) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=10&auth=' + obj.infos.ip;  // Protocol 10 is Web-RDP
+                var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((obj.cookie.lc == 1) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=10&auth=' + obj.infos.ip;  // Protocol 10 is Web-RDP
                 parent.parent.debug('relay', 'RDP: Connection websocket to ' + url);
                 obj.wsClient = new WebSocket(url, options);
                 obj.wsClient.on('open', function () { parent.parent.debug('relay', 'RDP: Relay websocket open'); });
@@ -119,6 +115,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 locale: obj.infos.locale
             }).on('connect', function () {
                 send(['rdp-connect']);
+                if ((typeof obj.infos.options == 'object') && (obj.infos.options.savepass == true)) { saveRdpCredentials(); } // Save the credentials if needed
             }).on('bitmap', function (bitmap) {
                 try { ws.send(bitmap.data); } catch (ex) { } // Send the bitmap data as binary
                 delete bitmap.data;
@@ -134,13 +131,70 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
         }
     }
 
+    // Save SSH credentials into device
+    function saveRdpCredentials() {
+        parent.parent.db.Get(obj.nodeid, function (err, nodes) {
+            if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
+            const node = nodes[0];
+            const changed = (node.rdp == null);
+
+            // Check if credentials are the same
+            if ((typeof node.rdp == 'object') && (node.rdp.d == obj.infos.domain) && (node.rdp.u == obj.infos.username) && (node.rdp.p == obj.infos.password)) return;
+
+            // Save the credentials
+            node.rdp = { d: obj.infos.domain, u: obj.infos.username, p: obj.infos.password };
+            parent.parent.db.Set(node);
+
+            // Event node change if needed
+            if (changed) {
+                // Event the node change
+                var event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: obj.userid, node: parent.CloneSafeNode(node), msg: "Changed RDP credentials" };
+                if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
+            }
+        });
+    }
+
     // When data is received from the web socket
     // RDP default port is 3389
     ws.on('message', function (msg) {
         try {
             msg = JSON.parse(msg);
             switch (msg[0]) {
-                case 'infos': { obj.infos = msg[1]; startTcpServer(); break; }
+                case 'infos': {
+                    obj.infos = msg[1];
+
+                    // Decode the authentication cookie
+                    obj.cookie = parent.parent.decodeCookie(obj.infos.ip, parent.parent.loginCookieEncryptionKey);
+                    if ((obj.cookie == null) || (typeof obj.cookie.nodeid != 'string') || (typeof obj.cookie.userid != 'string')) return;
+                    obj.nodeid = obj.cookie.nodeid;
+                    obj.userid = obj.cookie.userid;
+
+                    // Check is you need to load server stored credentials
+                    if ((typeof obj.infos.options == 'object') && (obj.infos.options.useServerCreds == true)) {
+                        parent.parent.db.Get(obj.nodeid, function (err, nodes) {
+                            if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
+                            const node = nodes[0];
+
+                            // Check if RDP credentials exist
+                            if ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) {
+                                obj.infos.domain = node.rdp.d;
+                                obj.infos.username = node.rdp.u;
+                                obj.infos.password = node.rdp.p;
+                                startTcpServer();
+                            } else {
+                                // No server credentials.
+                                obj.infos.domain = '';
+                                obj.infos.username = '';
+                                obj.infos.password = '';
+                                startTcpServer();
+                            }
+                        });
+                    } else {
+                        startTcpServer();
+                    }
+                    break;
+                }
                 case 'mouse': { if (rdpClient) { rdpClient.sendPointerEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
                 case 'wheel': { if (rdpClient) { rdpClient.sendWheelEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
                 case 'scancode': { if (rdpClient) { rdpClient.sendKeyEventScancode(msg[1], msg[2]); } break; }
@@ -416,6 +470,9 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
             const changed = (node.ssh == null);
+
+            // Check if credentials are the same
+            if ((typeof node.ssh == 'object') && (node.ssh.u == obj.username) && (node.ssh.p == obj.password)) return;
 
             // Save the credentials
             node.ssh = { u: obj.username, p: obj.password };
