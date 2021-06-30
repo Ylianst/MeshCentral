@@ -1887,7 +1887,15 @@ module.exports.CreateAmtManager = function (parent) {
                 } else {
                     // We are not in CCM, go to CCM now
                     if ((amtPolicy == 4) || ((amtPolicy == 3) && (ccmPolicy == 2))) { activateIntelAmtCcm(dev, mesh.amt.password); } // If we are in full automatic or ACM with CCM allowed, setup CCM.
-                    else { dev.consoleMsg("No opportunity for ACM activation."); removeAmtDevice(dev, 38); return false; } // We are not in CCM and policy restricts use of CCM, so exit now.
+                    else {
+                        // Unable to find an activation match.
+                        var trustedFqdn = null;
+                        if (dev.mpsConnection.tag.meiState.OsDnsSuffix != null) { trustedFqdn = dev.mpsConnection.tag.meiState.OsDnsSuffix; }
+                        if (dev.mpsConnection.tag.meiState.DnsSuffix != null) { trustedFqdn = dev.mpsConnection.tag.meiState.DnsSuffix; }
+                        dev.consoleMsg("No opportunity for ACM activation, trusted FQDN: " + ((trustedFqdn == null)?"(Not Set)":trustedFqdn));
+                        removeAmtDevice(dev, 38);
+                        return false; // We are not in CCM and policy restricts use of CCM, so exit now.
+                    } 
                 }
             } else {
                 // Found a certificate to activate to ACM.
