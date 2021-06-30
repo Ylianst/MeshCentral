@@ -214,7 +214,8 @@
       "ko": " MeshCentral 라우터",
       "nl": " MeshCentral Router",
       "sv": " MeshCentral Router",
-      "zh-chs": " MeshCentral 路由器"
+      "zh-chs": " MeshCentral 路由器",
+      "it": "MeshCentral Router"
     },
     {
       "cs": " Je možné zadat i nápovědu pro heslo, ale nedoporučuje se to.",
@@ -396,7 +397,8 @@
       "ko": "&닫기",
       "nl": "&Sluiten",
       "sv": "&Stänga",
-      "zh-chs": "＆关闭"
+      "zh-chs": "＆关闭",
+      "it": "&Chiudi"
     },
     {
       "de": "&Löschen",
@@ -407,7 +409,8 @@
       "ko": "&지우다",
       "nl": "&Verwijderen",
       "sv": "&Radera",
-      "zh-chs": "＆删除"
+      "zh-chs": "＆删除",
+      "it": "&Elimina"
     },
     {
       "de": "&Die Info...",
@@ -418,7 +421,8 @@
       "ko": "정보 ...",
       "nl": "&Info...",
       "sv": "&Info...",
-      "zh-chs": "＆信息..."
+      "zh-chs": "＆信息...",
+      "it": "&Info..."
     },
     {
       "de": "&Öffnen",
@@ -429,7 +433,8 @@
       "ko": "&열다",
       "nl": "&Open",
       "sv": "&Öppna",
-      "zh-chs": "＆打开"
+      "zh-chs": "＆打开",
+      "it": "&Apri"
     },
     {
       "de": "&Zuordnungen öffnen...",
@@ -440,7 +445,8 @@
       "ko": "매핑 열기 ...",
       "nl": "&toewijzingen openen...",
       "sv": "& Öppna kartläggningar ...",
-      "zh-chs": "打开映射 (&O)..."
+      "zh-chs": "打开映射 (&O)...",
+      "it": "&Apri mappature..."
     },
     {
       "de": "&Öffnen...",
@@ -451,7 +457,8 @@
       "ko": "&열다...",
       "nl": "&Open...",
       "sv": "&Öppna...",
-      "zh-chs": "＆打开..."
+      "zh-chs": "＆打开...",
+      "it": "&Apri..."
     },
     {
       "de": "&Umbenennen",
@@ -462,7 +469,8 @@
       "ko": "이름 바꾸기",
       "nl": "&Hernoemen",
       "sv": "&Döp om",
-      "zh-chs": "＆改名"
+      "zh-chs": "＆改名",
+      "it": "&Rinominare"
     },
     {
       "de": "&Zuordnungen speichern...",
@@ -473,7 +481,8 @@
       "ko": "매핑 저장 ...",
       "nl": "&Toewijzingen opslaan...",
       "sv": "& Spara kartor ...",
-      "zh-chs": "保存映射(&S)..."
+      "zh-chs": "保存映射(&S)...",
+      "it": "&Salva mappature..."
     },
     {
       "de": "&Agent starten",
@@ -484,7 +493,8 @@
       "ko": "에이전트 시작",
       "nl": "&Start Agent",
       "sv": "& Starta agent",
-      "zh-chs": "启动代理 (&S)"
+      "zh-chs": "启动代理 (&S)",
+      "it": "&Avvia agente"
     },
     {
       "de": "&Software aktualisieren",
@@ -495,7 +505,8 @@
       "ko": "소프트웨어 업데이트",
       "nl": "&Software bijwerken",
       "sv": "&Uppdatera mjukvara",
-      "zh-chs": "更新软件 (&S)"
+      "zh-chs": "更新软件 (&S)",
+      "it": "&Aggiorna software"
     },
     {
       "cs": "'",
@@ -543,7 +554,8 @@
       "ko": "(개별 기기)",
       "nl": "(Individuele apparaten)",
       "sv": "(Enskilda enheter)",
-      "zh-chs": "（个别设备）"
+      "zh-chs": "（个别设备）",
+      "it": "(Dispositivi individuali)"
     },
     {
       "de": "(Keiner)",
@@ -554,7 +566,8 @@
       "ko": "(없음)",
       "nl": "(Geen)",
       "sv": "(Ingen)",
-      "zh-chs": "（没有任何）"
+      "zh-chs": "（没有任何）",
+      "it": "(Nessuna)"
     },
     {
       "cs": "(volitelné)",
@@ -709,7 +722,8 @@
       "ko": ", 1 촌.",
       "nl": ", 1 verbinding.",
       "sv": ", 1 anslutning.",
-      "zh-chs": ", 1 个连接。"
+      "zh-chs": ", 1 个连接。",
+      "it": ", 1 connessione."
     },
     {
       "cs": ", Pouze Intel&reg; AMT",
@@ -745,6 +759,7 @@
       "ru": ", Локальные устройства",
       "sv": ", Lokala enheter",
       "zh-chs": ", 本地设备",
+      "it": ", Dispositivi locali",
       "xloc": [
         "default.handlebars->35->283"
       ]
@@ -819,7 +834,8 @@
       "ko": ", 녹화 된 세션",
       "nl": ", opgenomen sessie",
       "sv": ", Inspelad session",
-      "zh-chs": ", 录制会话"
+      "zh-chs": ", 录制会话",
+      "it": ", Sessione registrata"
     },
     {
       "cs": ", Soft-KVM",
@@ -871,6 +887,7 @@
       "ru": ", Только просмотр",
       "sv": ", Titta enbart",
       "zh-chs": "， 只读",
+      "it": ", Visualizzare solamente",
       "xloc": [
         "default.handlebars->35->845"
       ]
@@ -1025,7 +1042,8 @@
       "ko": ", {0} 명 연결.",
       "nl": ", {0} verbindingen.",
       "sv": ", {0} anslutningar.",
-      "zh-chs": ", {0} 个连接。"
+      "zh-chs": ", {0} 个连接。",
+      "it": ", {0} connessioni."
     },
     {
       "de": ", {0} Nutzer",
@@ -1036,7 +1054,8 @@
       "ko": ", {0} 명의 사용자",
       "nl": ", {0} gebruikers",
       "sv": ", {0} användare",
-      "zh-chs": ", {0} 个用户"
+      "zh-chs": ", {0} 个用户",
+      "it": ", {0} utenti"
     },
     {
       "cs": ", {0} sledování",
@@ -1088,7 +1107,8 @@
       "hi": "---",
       "ko": "---",
       "sv": "---",
-      "zh-chs": "---"
+      "zh-chs": "---",
+      "it": "---"
     },
     {
       "cs": ".",
@@ -1171,7 +1191,8 @@
       "ko": "0 바이트",
       "nl": "0 Bytes",
       "sv": "0 byte",
-      "zh-chs": "0 字节"
+      "zh-chs": "0 字节",
+      "it": "0 Bytes"
     },
     {
       "de": "0%",
@@ -1182,7 +1203,8 @@
       "ko": "0 %",
       "nl": "0%",
       "sv": "0%",
-      "zh-chs": "0%"
+      "zh-chs": "0%",
+      "it": "0%"
     },
     {
       "cs": "00:00:00",
@@ -1470,7 +1492,8 @@
       "ko": "원격 세션 1 개",
       "nl": "1 externe sessie",
       "sv": "1 fjärrsession",
-      "zh-chs": "1 个远程会话"
+      "zh-chs": "1 个远程会话",
+      "it": "1 sessione remota"
     },
     {
       "de": "1 Remote-Sitzung ist aktiv.",
@@ -1481,7 +1504,8 @@
       "ko": "1 개의 원격 세션이 활성화되었습니다.",
       "nl": "1 externe sessie is actief.",
       "sv": "En fjärrsession är aktiv.",
-      "zh-chs": "1 个远程会话处于活动状态。"
+      "zh-chs": "1 个远程会话处于活动状态。",
+      "it": "1 sessione remota è attiva."
     },
     {
       "de": "1 Sekunde",
@@ -1494,6 +1518,7 @@
       "ru": "1 секунда",
       "sv": "1 sekund",
       "zh-chs": "1秒",
+      "it": "1 secondo",
       "xloc": [
         "default-mobile.handlebars->11->319",
         "default.handlebars->35->941"
@@ -1705,6 +1730,7 @@
       "ru": "10 секунд",
       "sv": "10 sekunder",
       "zh-chs": "10 秒",
+      "it": "10 secondi",
       "xloc": [
         "default-mobile.handlebars->11->321",
         "default.handlebars->35->943"
@@ -1835,7 +1861,8 @@
       "ko": "127.0.0.1",
       "nl": "127.0.0.1",
       "sv": "127.0.0.1",
-      "zh-chs": "127.0.0.1"
+      "zh-chs": "127.0.0.1",
+      "it": "127.0.0.1"
     },
     {
       "cs": "15 minut",
@@ -2507,6 +2534,7 @@
       "ru": "5 секунд",
       "sv": "5 sekunder",
       "zh-chs": "5秒",
+      "it": "5 secondi",
       "xloc": [
         "default-mobile.handlebars->11->320",
         "default.handlebars->35->942"
@@ -3065,7 +3093,8 @@
       "ko": "이 소프트웨어의 새 버전을 사용할 수 있습니다. 지금 업데이트 하시겠습니까?",
       "nl": "Er is een nieuwe versie van deze software beschikbaar. Nu bijwerken?",
       "sv": "En ny version av denna programvara är tillgänglig. Uppdatera nu?",
-      "zh-chs": "此软件的新版本可用。现在更新？"
+      "zh-chs": "此软件的新版本可用。现在更新？",
+      "it": "È disponibile una nuova versione di questo software. Aggiorna ora?"
     },
     {
       "cs": "ACM",
@@ -3163,6 +3192,7 @@
       "ru": "AMT-OS",
       "sv": "AMT-OS",
       "zh-chs": "操作系统",
+      "it": "AMT-OS",
       "xloc": [
         "default.handlebars->35->2498"
       ]
@@ -3207,6 +3237,7 @@
       "tr": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
       "zh-chs": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
       "zh-cht": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
+      "it": "ARMADA/CORTEX-A53/MUSL (OpenWRT)",
       "xloc": [
         "default-mobile.handlebars->11->47",
         "default.handlebars->35->54"
@@ -3292,6 +3323,7 @@
       "ru": "Антивирус",
       "sv": "AV",
       "zh-chs": "影音",
+      "it": "AV",
       "xloc": [
         "default-mobile.handlebars->11->462",
         "default-mobile.handlebars->11->464",
@@ -3333,6 +3365,7 @@
       "ru": "Доступ отклонен.",
       "sv": "Åtkomst avvisad.",
       "zh-chs": "访问被拒绝。",
+      "it": "Accesso rifiutato.",
       "xloc": [
         "login2.handlebars->7->31"
       ]
@@ -3718,6 +3751,7 @@
       "ru": "Вход в аккаунт с {0}, {1}, {2}",
       "sv": "Kontoinloggning från {0}, {1}, {2}",
       "zh-chs": "来自 {0}、{1}、{2} 的帐户登录",
+      "it": "Accesso all'account da {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->35->2030"
       ]
@@ -4080,6 +4114,7 @@
       "ru": "Активные токены входа",
       "sv": "Aktiva inloggningspengar",
       "zh-chs": "活动登录令牌",
+      "it": "Token di accesso attivi",
       "xloc": [
         "default.handlebars->35->1610"
       ]
@@ -4114,6 +4149,7 @@
       "ru": "Добавить",
       "sv": "Lägg till",
       "zh-chs": "添加",
+      "it": "Aggiungi",
       "xloc": [
         "default-mobile.handlebars->11->396",
         "default.handlebars->35->1090"
@@ -4128,7 +4164,8 @@
       "ko": "지도 추가 ...",
       "nl": "&Toewijzing toevoegen...",
       "sv": "Lägg till & mappa ...",
-      "zh-chs": "添加地图 (&M)..."
+      "zh-chs": "添加地图 (&M)...",
+      "it": "Aggiungi &mappa..."
     },
     {
       "de": "&Relay-Karte hinzufügen...",
@@ -4139,7 +4176,8 @@
       "ko": "릴레이 맵 추가 ...",
       "nl": "&Relay toewijzing toevoegen...",
       "sv": "Lägg till & vidarebefordra karta ...",
-      "zh-chs": "添加中继地图 (&R)..."
+      "zh-chs": "添加中继地图 (&R)...",
+      "it": "Aggiungi &mappa di inoltro..."
     },
     {
       "cs": "Přidat agenta",
@@ -4393,7 +4431,8 @@
       "ko": "지도 추가 ...",
       "nl": "Kaart toevoegen...",
       "sv": "Lägg till karta ...",
-      "zh-chs": "添加地图..."
+      "zh-chs": "添加地图...",
+      "it": "Aggiungi mappa..."
     },
     {
       "cs": "Přidat členství",
@@ -4448,7 +4487,8 @@
       "ko": "릴레이 맵 추가 ...",
       "nl": "Toevoegen relay kaart...",
       "sv": "Lägg till reläkarta ...",
-      "zh-chs": "添加中继地图..."
+      "zh-chs": "添加中继地图...",
+      "it": "Aggiungi mappa di rilancio..."
     },
     {
       "cs": "Přidat bezpečnostní klíč",
@@ -4710,6 +4750,7 @@
       "ru": "Добавить локальное устройство в группу \\\"{0}\\\".",
       "sv": "Lägg till en lokal enhet i enhetsgruppen \\\"{0}\\\".",
       "zh-chs": "将本地设备添加到设备组 \\\"{0}\\\"。",
+      "it": "Aggiungi un dispositivo locale al gruppo di dispositivi \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->35->374"
       ]
@@ -4833,6 +4874,7 @@
       "ru": "Добавить устройство, находящееся в локальной сети.",
       "sv": "Lägg till enhet som finns i det lokala nätverket.",
       "zh-chs": "添加位于本地网络上的设备。",
+      "it": "Aggiungi dispositivo situato sulla rete locale.",
       "xloc": [
         "default.handlebars->35->372"
       ]
@@ -4848,6 +4890,7 @@
       "ru": "Добавить локальное устройство",
       "sv": "Lägg till lokal enhet",
       "zh-chs": "添加本地设备",
+      "it": "Aggiungi dispositivo locale",
       "xloc": [
         "default.handlebars->35->382"
       ]
@@ -4974,6 +5017,7 @@
       "ru": "Добавлен токен входа",
       "sv": "Lagt inloggningstoken",
       "zh-chs": "添加登录令牌",
+      "it": "Aggiunto token di accesso",
       "xloc": [
         "default.handlebars->35->2038"
       ]
@@ -4988,6 +5032,7 @@
       "nl": "Verificatie apparaat voor pushmeldingen toegevoegd",
       "sv": "Lagt till push-autentiseringsenhet",
       "zh-chs": "新增推送通知认证装置",
+      "it": "Aggiunto dispositivo di autenticazione delle notifiche push",
       "xloc": [
         "default.handlebars->35->2036"
       ]
@@ -5416,6 +5461,7 @@
       "ru": "IP-адрес агента",
       "sv": "Agentens IP-adress",
       "zh-chs": "代理IP地址",
+      "it": "Indirizzo IP dell'agente",
       "xloc": [
         "default.handlebars->35->279"
       ]
@@ -5546,7 +5592,8 @@
       "ko": "에이전트 스냅 샷",
       "nl": "Agent momentopname",
       "sv": "Agent ögonblicksbild",
-      "zh-chs": "代理快照"
+      "zh-chs": "代理快照",
+      "it": "Istantanea agente"
     },
     {
       "cs": "Štítek agenta",
@@ -5671,7 +5718,8 @@
       "ko": "에이전트가 계속 대기 중입니다.",
       "nl": "Agent is in behandeling",
       "sv": "Agent fortsätter i väntan",
-      "zh-chs": "代理正在继续等待"
+      "zh-chs": "代理正在继续等待",
+      "it": "L'agente è ancora in attesa"
     },
     {
       "de": "Agent ist getrennt",
@@ -5682,7 +5730,8 @@
       "ko": "에이전트 연결이 끊어졌습니다.",
       "nl": "Verbinding met agent is verbroken",
       "sv": "Agent är frånkopplad",
-      "zh-chs": "代理已断开连接"
+      "zh-chs": "代理已断开连接",
+      "it": "L'agente è disconnesso"
     },
     {
       "de": "Agent fehlt",
@@ -5693,7 +5742,8 @@
       "ko": "에이전트가 없습니다",
       "nl": "Agent ontbreekt",
       "sv": "Agent saknas",
-      "zh-chs": "代理不见了"
+      "zh-chs": "代理不见了",
+      "it": "Manca l'agente"
     },
     {
       "cs": "Agent je offline",
@@ -5750,7 +5800,8 @@
       "ko": "에이전트가 일시 중지 대기 중입니다.",
       "nl": "Agent is gepauzeerd",
       "sv": "Agent är paus i väntan",
-      "zh-chs": "代理暂停待定"
+      "zh-chs": "代理暂停待定",
+      "it": "L'agente è in attesa di pausa"
     },
     {
       "de": "Agent ist pausiert",
@@ -5761,7 +5812,8 @@
       "ko": "에이전트가 일시 중지되었습니다.",
       "nl": "Agent is gepauzeerd",
       "sv": "Agent är pausad",
-      "zh-chs": "代理已暂停"
+      "zh-chs": "代理已暂停",
+      "it": "L'agente è in pausa"
     },
     {
       "de": "Agent läuft",
@@ -5772,7 +5824,8 @@
       "ko": "에이전트가 실행 중입니다.",
       "nl": "Agent is actief",
       "sv": "Agent kör",
-      "zh-chs": "代理正在运行"
+      "zh-chs": "代理正在运行",
+      "it": "L'agente è in esecuzione"
     },
     {
       "cs": "Agent běží na vzdáleném zařízení se sníženými oprávněními.",
@@ -5806,7 +5859,8 @@
       "ko": "에이전트가 시작 대기 중입니다.",
       "nl": "Agent wacht op start",
       "sv": "Agent väntar",
-      "zh-chs": "代理正在启动待处理"
+      "zh-chs": "代理正在启动待处理",
+      "it": "L'agente è in attesa di avvio"
     },
     {
       "de": "Agent wurde gestoppt",
@@ -5817,7 +5871,8 @@
       "ko": "에이전트가 중지되었습니다.",
       "nl": "Agent is gestopt",
       "sv": "Agent stoppas",
-      "zh-chs": "代理已停止"
+      "zh-chs": "代理已停止",
+      "it": "L'agente non è in esecuzione"
     },
     {
       "de": "Agent ist gestoppt ausstehend",
@@ -5828,7 +5883,8 @@
       "ko": "에이전트가 중지되었습니다.",
       "nl": "Agent is in behandeling gestopt",
       "sv": "Agent stoppas i väntan",
-      "zh-chs": "代理停止等待"
+      "zh-chs": "代理停止等待",
+      "it": "L'agente è in attesa di essere arrestato"
     },
     {
       "de": "Agent nicht installiert",
@@ -5839,7 +5895,8 @@
       "ko": "에이전트가 설치되지 않았습니다.",
       "nl": "Agent is niet geïnstalleerd",
       "sv": "Agent inte installerad",
-      "zh-chs": "未安装代理"
+      "zh-chs": "未安装代理",
+      "it": "Agente non installato"
     },
     {
       "cs": "Agenti",
@@ -6009,7 +6066,8 @@
       "ko": "허용하다",
       "nl": "Toestaan",
       "sv": "Tillåta",
-      "zh-chs": "允许"
+      "zh-chs": "允许",
+      "it": "Permettere"
     },
     {
       "cs": "Umožnit uživatelům spravovat tuto skupinu a zařízení v této skupině.",
@@ -6067,6 +6125,7 @@
       "ru": "Разрешено",
       "sv": "Tillåten",
       "zh-chs": "允许",
+      "it": "Permesso",
       "xloc": [
         "default.handlebars->35->235"
       ]
@@ -6088,6 +6147,7 @@
       "tr": "Alpine Linux x86 64 Bit (MUSL)",
       "zh-chs": "Alpine Linux x86 64 Bit (MUSL)",
       "zh-cht": "Alpine Linux x86 64 Bit (MUSL)",
+      "it": "Alpine Linux x86 64 Bit (MUSL)",
       "xloc": [
         "default-mobile.handlebars->11->39",
         "default.handlebars->35->46"
@@ -6104,6 +6164,7 @@
       "ru": "Alt",
       "sv": "Alt",
       "zh-chs": "替代",
+      "it": "Alt",
       "xloc": [
         "default-mobile.handlebars->11->389",
         "default-mobile.handlebars->11->393",
@@ -6213,7 +6274,8 @@
       "ko": "대체 포트",
       "nl": "Alternatieve poort",
       "sv": "Alternativ hamn",
-      "zh-chs": "替代端口"
+      "zh-chs": "替代端口",
+      "it": "Porta alternativa"
     },
     {
       "cs": "Vždy upozorňovat",
@@ -6274,7 +6336,8 @@
       "ko": "항상 연결",
       "nl": "Altijd verbonden",
       "sv": "Alltid ansluten",
-      "zh-chs": "始终连接"
+      "zh-chs": "始终连接",
+      "it": "Sempre connesso"
     },
     {
       "cs": "Účet byl pro vás vytvořen na serveru",
@@ -6337,6 +6400,7 @@
       "tr": "Android",
       "zh-chs": "Android",
       "zh-cht": "Android",
+      "it": "Android",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tandrotab",
         "agentinvite.handlebars->container->column_l->5->androtab->1",
@@ -6375,6 +6439,7 @@
       "ru": "Скачать Android APK",
       "sv": "Android APK-nedladdning",
       "zh-chs": "Android APK 下载",
+      "it": "Download dell'APK Android",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->5->1"
       ]
@@ -6412,6 +6477,7 @@
       "ru": "Установка Android",
       "sv": "Android-installation",
       "zh-chs": "安卓安装",
+      "it": "Installazione Android",
       "xloc": [
         "default-mobile.handlebars->11->589"
       ]
@@ -6450,6 +6516,7 @@
       "ru": "Антивирус не активен",
       "sv": "Anti-virus inte aktivt",
       "zh-chs": "杀毒软件未激活",
+      "it": "Antivirus non attivo",
       "xloc": [
         "default.handlebars->35->1860",
         "default.handlebars->35->1874"
@@ -6598,7 +6665,8 @@
       "ko": "신청",
       "nl": "Toepassing",
       "sv": "Ansökan",
-      "zh-chs": "应用"
+      "zh-chs": "应用",
+      "it": "Applicazione"
     },
     {
       "de": "Anwendungsstart",
@@ -6609,7 +6677,8 @@
       "ko": "응용 프로그램 시작",
       "nl": "Toepassing starten",
       "sv": "Applikationsstart",
-      "zh-chs": "应用启动"
+      "zh-chs": "应用启动",
+      "it": "Lancio dell'applicazione"
     },
     {
       "de": "Bewerbungslink",
@@ -6620,7 +6689,8 @@
       "ko": "응용 프로그램 링크",
       "nl": "Applicatielink",
       "sv": "Applikationslänk",
-      "zh-chs": "申请链接"
+      "zh-chs": "申请链接",
+      "it": "Collegamento all'applicazione"
     },
     {
       "de": "Anwendungsname",
@@ -6631,13 +6701,15 @@
       "ko": "응용 프로그램 이름",
       "nl": "Naam van de toepassing",
       "sv": "applikationsnamn",
-      "zh-chs": "应用名称"
+      "zh-chs": "应用名称",
+      "it": "Nome dell'applicazione"
     },
     {
       "en": "Application, Always connected",
       "ko": "애플리케이션, 항상 연결됨",
       "nl": "Applicatie, Altijd verbonden",
       "sv": "Applikation, alltid ansluten",
+      "it": "Applicazione, sempre connesso",
       "xloc": [
         "default.handlebars->35->468"
       ]
@@ -6647,6 +6719,7 @@
       "ko": "응용 프로그램, 사용자 요청시 연결",
       "nl": "Applicatie, verbinding maken op gebruikersverzoek",
       "sv": "Ansökan, anslut på användarens begäran",
+      "it": "Applicazione, connessione su richiesta dell'utente",
       "xloc": [
         "default.handlebars->35->467"
       ]
@@ -7302,6 +7375,7 @@
       "ru": "Ассистент",
       "sv": "Assistent",
       "zh-chs": "Assistant",
+      "it": "Assistente",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tandrotab",
         "agentinvite.handlebars->container->column_l->5->assistab->1"
@@ -7318,6 +7392,7 @@
       "ru": "Ассистент (Windows)",
       "sv": "Assistent (Windows)",
       "zh-chs": "助手 (Windows)",
+      "it": "Assistente (Windows)",
       "xloc": [
         "default-mobile.handlebars->11->40",
         "default.handlebars->35->47"
@@ -7332,7 +7407,8 @@
       "ko": "어시스턴트 업데이트",
       "nl": "Assistant Update",
       "sv": "Assistentuppdatering",
-      "zh-chs": "助理更新"
+      "zh-chs": "助理更新",
+      "it": "Aggiornamento Assistente "
     },
     {
       "de": "Assistent für Windows (.exe)",
@@ -7345,6 +7421,7 @@
       "ru": "Ассистент для Windows (.exe)",
       "sv": "Assistent för Windows (.exe)",
       "zh-chs": "Windows 助手 (.exe)",
+      "it": "Assistente per Windows (.exe)",
       "xloc": [
         "default.handlebars->35->493",
         "default.handlebars->35->497"
@@ -7361,6 +7438,7 @@
       "ru": "Ассистент - это инструмент на панели задач Windows, который можно использовать, когда требуется помощь..Это не агент, который работает в фоновом режиме управляемого компьютера, это инструмент, который подключается к серверу только по запросу..",
       "sv": "Assistant är ett verktygsfältverktyg i Windows som kan användas när hjälp behövs. Detta är inte en agent som körs i bakgrunden på den hanterade datorn, utan det är ett verktyg som bara ansluts till servern när det begärs.",
       "zh-chs": "助手是 Windows 系统托盘工具，可在需要帮助时使用。这不是在托管计算机后台运行的代理，而是仅在请求时才连接到服务器的工具。",
+      "it": "Assistant è uno strumento della barra delle applicazioni di Windows che può essere utilizzato quando è necessario aiuto. Questo non è un agente che viene eseguito in background sul computer gestito, ma è uno strumento che si connette al server solo quando richiesto.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->assistab->3->3"
       ]
@@ -7418,7 +7496,8 @@
       "ko": "인증 중",
       "nl": "Authenticatie",
       "sv": "Autentiserande",
-      "zh-chs": "认证"
+      "zh-chs": "认证",
+      "it": "Autenticando"
     },
     {
       "de": "Authentifizierung",
@@ -7431,6 +7510,7 @@
       "ru": "Аутентификация",
       "sv": "Autentisering",
       "zh-chs": "验证",
+      "it": "Autenticazione",
       "xloc": [
         "default-mobile.handlebars->11->408",
         "default-mobile.handlebars->11->419",
@@ -7473,6 +7553,7 @@
       "ru": "Устройство аутентификации",
       "sv": "Autentiseringsenhet",
       "zh-chs": "认证设备",
+      "it": "Dispositivo di autenticazione",
       "xloc": [
         "default.handlebars->35->1322",
         "default.handlebars->35->1324",
@@ -7489,6 +7570,7 @@
       "nl": "Authenticatiefout",
       "sv": "Verifieringsfel",
       "zh-chs": "授权错误",
+      "it": "Errore di autenticazione",
       "xloc": [
         "default-mobile.handlebars->11->409",
         "default-mobile.handlebars->11->420",
@@ -7745,6 +7827,7 @@
       "ru": "BAD",
       "sv": "DÅLIG",
       "zh-chs": "坏的",
+      "it": "CATTIVO",
       "xloc": [
         "default-mobile.handlebars->11->465",
         "default-mobile.handlebars->11->469",
@@ -7868,6 +7951,7 @@
       "ru": "Backspace",
       "sv": "BackSpace",
       "zh-chs": "退格",
+      "it": "Tornare  indietro",
       "xloc": [
         "default-mobile.handlebars->11->372",
         "default.handlebars->35->1066"
@@ -8201,7 +8285,8 @@
       "ko": "모든 네트워크 인터페이스에 로컬 포트 ​​바인딩",
       "nl": "Bind lokale poort aan alle netwerkinterfaces",
       "sv": "Binda lokal port till alla nätverksgränssnitt",
-      "zh-chs": "将本地端口绑定到所有网络接口"
+      "zh-chs": "将本地端口绑定到所有网络接口",
+      "it": "Associa la porta locale a tutte le interfacce di rete"
     },
     {
       "de": "Bootloader",
@@ -8214,6 +8299,7 @@
       "ru": "Загрузчик",
       "sv": "Bootloader",
       "zh-chs": "引导加载程序",
+      "it": "Boot loader",
       "xloc": [
         "default-mobile.handlebars->11->491",
         "default.handlebars->35->1220"
@@ -8341,6 +8427,7 @@
       "ru": "Использовать предпочтения браузера",
       "sv": "Webbläsarens standard",
       "zh-chs": "浏览器默认",
+      "it": "Impostazioni predefinite del browser",
       "xloc": [
         "default-mobile.handlebars->11->83",
         "default.handlebars->35->58"
@@ -8512,7 +8599,7 @@
       "fi": "CIRA-asetukset",
       "fr": "Configuration CIRA",
       "hi": "CIRA सेटअप",
-      "it": "CIRA setup",
+      "it": "Configurazione CIRA",
       "ja": "CIRAのセットアップ",
       "ko": "CIRA 설정",
       "nl": "CIRA setup",
@@ -8796,7 +8883,8 @@
       "ko": "자동 닫기 취소",
       "nl": "Automatisch sluiten annuleren",
       "sv": "Avbryt automatisk stängning",
-      "zh-chs": "取消自动关闭"
+      "zh-chs": "取消自动关闭",
+      "it": "Annulla chiusura automatica"
     },
     {
       "de": "Hilfeanfrage abbrechen",
@@ -8807,7 +8895,8 @@
       "ko": "도움말 요청 취소",
       "nl": "Annuleer hulpverzoek",
       "sv": "Avbryt hjälpförfrågan",
-      "zh-chs": "取消帮助请求"
+      "zh-chs": "取消帮助请求",
+      "it": "Annulla la richiesta di aiuto"
     },
     {
       "cs": "Kapacita",
@@ -8912,7 +9001,8 @@
       "ko": "증명서",
       "nl": "Certificaat",
       "sv": "Certifikat",
-      "zh-chs": "证书"
+      "zh-chs": "证书",
+      "it": "Certificato"
     },
     {
       "de": "Zertifikat läuft in {0} Tag(en) ab",
@@ -8925,6 +9015,7 @@
       "ru": "Срок действия сертификата истекает через {0} дн.",
       "sv": "Certifikatet upphör att gälla om {0} dag (ar)",
       "zh-chs": "证书将在 {0} 天后到期",
+      "it": "Il certificato scade tra {0} giorno(i)",
       "xloc": [
         "default-mobile.handlebars->11->59",
         "default.handlebars->35->81",
@@ -9125,6 +9216,7 @@
       "ru": "Сменить изображение",
       "sv": "Ändra bild",
       "zh-chs": "更改图像",
+      "it": "Cambia immagine",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountImageFrame->3->0"
       ]
@@ -9161,7 +9253,8 @@
       "ko": "원격 데스크톱 설정 변경",
       "nl": "Instellingen voor extern bureaublad wijzigen",
       "sv": "Ändra fjärrskrivbordsinställningar",
-      "zh-chs": "更改远程桌面设置"
+      "zh-chs": "更改远程桌面设置",
+      "it": "Modifica le impostazioni del desktop remoto"
     },
     {
       "cs": "Změnit modul Java Script kódu agenta",
@@ -9371,7 +9464,8 @@
       "ko": "언어를 변경하면이 도구가 닫힙니다. 확실합니까?",
       "nl": "Als u de taal wijzigt, wordt deze tool gesloten.Weet je het zeker?",
       "sv": "Om du byter språk kommer detta verktyg att stängas. Är du säker?",
-      "zh-chs": "更改语言将关闭此工具。你确定吗？"
+      "zh-chs": "更改语言将关闭此工具。你确定吗？",
+      "it": "La modifica della lingua chiuderà questo strumento. Sei sicuro?"
     },
     {
       "cs": "Změna jazyka vyžaduje znovunačtení stránky.",
@@ -9826,7 +9920,7 @@
       "fi": "Siivoa CIRA",
       "fr": "Nettoyage CIRA",
       "hi": "क्लीनअप CIRA",
-      "it": "Cleanup CIRA",
+      "it": "Pulizia CIRA",
       "ja": "CIRAのクリーンアップ",
       "ko": "CIRA 정리",
       "nl": "Opruimen CIRA",
@@ -9845,7 +9939,7 @@
       "fi": "Tyhjennä",
       "fr": "Nettoyer",
       "hi": "स्पष्ट",
-      "it": "cancella",
+      "it": "Pulire",
       "ja": "クリア",
       "ko": "지우기",
       "nl": "Wissen",
@@ -9895,6 +9989,7 @@
       "ru": "Очистить учетные данные SSH?",
       "sv": "Rensa SSH-referenser?",
       "zh-chs": "清除 SSH 凭据？",
+      "it": "Cancellare le credenziali SSH?",
       "xloc": [
         "default-mobile.handlebars->11->355",
         "default.handlebars->35->1037"
@@ -9933,6 +10028,7 @@
       "ru": "Очистить ядро агента",
       "sv": "Tydlig agentkärna",
       "zh-chs": "清除代理核心",
+      "it": "Pulire il core dell'agente",
       "xloc": [
         "default.handlebars->35->564",
         "default.handlebars->35->603"
@@ -9949,6 +10045,7 @@
       "ru": "Очистить ядро агента на выбранных устройствах?",
       "sv": "Rensa agentkärnan på utvalda enheter?",
       "zh-chs": "清除选定设备上的代理核心？",
+      "it": "Pulire il core dell'agente sui dispositivi selezionati?",
       "xloc": [
         "default.handlebars->35->602"
       ]
@@ -10007,7 +10104,7 @@
       "fi": "Tyhjennä ydin",
       "fr": "Nettoyer le coeur",
       "hi": "कोर साफ़ करें",
-      "it": "Cancella il nucleo",
+      "it": "Cancella il core",
       "ja": "コアをクリアする",
       "ko": "코어 지우기",
       "nl": "Maak de kern leeg",
@@ -10249,7 +10346,8 @@
       "ko": "확인을 클릭하여 \"mcrouter : //\"프로토콜의 핸들러로 시스템에 MeshCentral 라우터를 등록하십시오. 이렇게하면 필요할 때 MeshCentral 웹 사이트에서이 응용 프로그램을 시작할 수 있습니다.",
       "nl": "Klik op ok om MeshCentral Router op uw systeem te registreren als de handler voor het \"mcrouter://\" protocol. Hierdoor kan de MeshCentral-website deze applicatie starten wanneer dat nodig is.",
       "sv": "Klicka på ok för att registrera MeshCentral Router på ditt system som hanterare för \"mcrouter: //\" -protokollet. Detta gör att MeshCentral-webbplatsen kan starta den här applikationen vid behov.",
-      "zh-chs": "单击确定在您的系统上注册 MeshCentral Router 作为“mcrouter://”协议的处理程序。这将允许 MeshCentral 网站在需要时启动此应用程序。"
+      "zh-chs": "单击确定在您的系统上注册 MeshCentral Router 作为“mcrouter://”协议的处理程序。这将允许 MeshCentral 网站在需要时启动此应用程序。",
+      "it": "Fare clic su OK per registrare MeshCentral Router sul sistema come gestore per il protocollo \"mcrouter://\". Ciò consentirà al sito Web MeshCentral di avviare questa applicazione quando necessario."
     },
     {
       "cs": "Klikněte na OK a bude vám zaslán ověřovací e-mail na:",
@@ -10684,6 +10782,7 @@
       "ru": "Время компиляции",
       "sv": "Kompilera tid",
       "zh-chs": "编译时间",
+      "it": "Tempo di compilazione",
       "xloc": [
         "default-mobile.handlebars->11->487",
         "default.handlebars->35->1216"
@@ -10698,7 +10797,8 @@
       "ko": "압축 된 네트워크 트래픽",
       "nl": "Gecomprimeerd netwerkverkeer",
       "sv": "Komprimerad nätverkstrafik",
-      "zh-chs": "压缩网络流量"
+      "zh-chs": "压缩网络流量",
+      "it": "Traffico di rete compresso"
     },
     {
       "cs": "Komprese souborů ...",
@@ -10732,7 +10832,8 @@
       "ko": "ComputerName",
       "nl": "Computernaam",
       "sv": "Datornamn",
-      "zh-chs": "计算机名"
+      "zh-chs": "计算机名",
+      "it": "Nome del computer"
     },
     {
       "cs": "Potvrdit",
@@ -10774,7 +10875,8 @@
       "ko": "삭제 확인",
       "nl": "Verwijderen bevestigen",
       "sv": "Bekräfta radering",
-      "zh-chs": "确认删除"
+      "zh-chs": "确认删除",
+      "it": "Conferma cancellazione"
     },
     {
       "cs": "Potvrdit kopírování jednoho záznamu do tohoto umístění?",
@@ -11293,6 +11395,7 @@
       "nl": "Verwijderen van push-authenticatieapparaat bevestigen?",
       "sv": "Bekräfta borttagning av push-autentiseringsenhet?",
       "zh-chs": "确认移除推送认证设备？",
+      "it": "Confermare la rimozione del dispositivo di autenticazione push?",
       "xloc": [
         "default.handlebars->35->1323"
       ]
@@ -11352,6 +11455,7 @@
       "ru": "Подтвердить удаление этого токена входа?",
       "sv": "Bekräfta borttagningen av denna inloggningsbricka?",
       "zh-chs": "确认删除此登录令牌？",
+      "it": "Confermare la rimozione di questo token di accesso?",
       "xloc": [
         "default.handlebars->35->1616"
       ]
@@ -11490,7 +11594,8 @@
       "ko": "사용자 요청시 연결",
       "nl": "Verbinden op gebruikersverzoek",
       "sv": "Anslut på användarens begäran",
-      "zh-chs": "根据用户请求连接"
+      "zh-chs": "根据用户请求连接",
+      "it": "Connettiti su richiesta dell'utente"
     },
     {
       "cs": "Připojit se na server",
@@ -11702,7 +11807,8 @@
       "ko": "서버에 연결됨",
       "nl": "Verbonden met server",
       "sv": "Ansluten till servern",
-      "zh-chs": "连接到服务器"
+      "zh-chs": "连接到服务器",
+      "it": "Connesso al server"
     },
     {
       "cs": "Připojeno.",
@@ -11735,7 +11841,8 @@
       "ko": "연결",
       "nl": "Verbinden",
       "sv": "Ansluter",
-      "zh-chs": "连接"
+      "zh-chs": "连接",
+      "it": "Collegamento"
     },
     {
       "cs": "Připojování…",
@@ -11779,7 +11886,8 @@
       "ko": "연결",
       "nl": "Verbinding",
       "sv": "Förbindelse",
-      "zh-chs": "联系"
+      "zh-chs": "联系",
+      "it": "Connessione"
     },
     {
       "cs": "Počitadlo připojení",
@@ -11814,6 +11922,7 @@
       "ru": "Ошибка соединения",
       "sv": "Anslutningsfel",
       "zh-chs": "连接错误",
+      "it": "Errore di connessione",
       "xloc": [
         "default-mobile.handlebars->11->421",
         "default.handlebars->35->1129",
@@ -11829,7 +11938,7 @@
       "fi": "Yhteysrele",
       "fr": "Relais de connexion",
       "hi": "कनेक्शन रिले",
-      "it": "Relè di connessione",
+      "it": "Rilancio di connessione",
       "ja": "接続リレー",
       "ko": "연결 전달(Relay)",
       "nl": "Verbindings Relay",
@@ -12069,6 +12178,7 @@
       "ru": "Скопировать URL в буфер обмена",
       "sv": "Kopiera URL till Urklipp",
       "zh-chs": "将 URL 复制到剪贴板",
+      "it": "Copia l'URL negli appunti",
       "xloc": [
         "default.handlebars->35->494",
         "default.handlebars->35->498"
@@ -12505,7 +12615,8 @@
       "ko": "카운트",
       "nl": "Aantal",
       "sv": "Räkna",
-      "zh-chs": "数数"
+      "zh-chs": "数数",
+      "it": "Contare"
     },
     {
       "cs": "Vytvořit účet",
@@ -12563,7 +12674,8 @@
       "ko": "폴더 생성",
       "nl": "Map aanmaken",
       "sv": "Skapa mapp",
-      "zh-chs": "创建文件夹"
+      "zh-chs": "创建文件夹",
+      "it": "Creare una cartella"
     },
     {
       "de": "Login-Token erstellen",
@@ -12576,6 +12688,7 @@
       "ru": "Создать токен входа",
       "sv": "Skapa inloggningstoken",
       "zh-chs": "创建登录令牌",
+      "it": "Crea Token di Accesso",
       "xloc": [
         "default.handlebars->35->1563",
         "default.handlebars->35->275"
@@ -12680,6 +12793,7 @@
       "ru": "Создайте временные имя пользователя и пароль, которые можно использовать в качестве альтернативы для входа в вашу учетную запись. Это полезно для того, чтобы инструменты или другие службы могли получить доступ к вашей учетной записи.",
       "sv": "Skapa ett tillfälligt användarnamn och lösenord som kan användas som alternativ inloggning till ditt konto. Detta är användbart för att låta verktyg eller andra tjänster komma åt ditt konto.",
       "zh-chs": "创建一个临时用户名和密码，可用作您帐户的替代登录名。这对于允许工具或其他服务访问您的帐户非常有用。",
+      "it": "Crea un nome utente e una password temporanei che possono essere utilizzati come accesso alternativo al tuo account. Questo è utile per consentire a strumenti o altri servizi di accedere al tuo account.",
       "xloc": [
         "default.handlebars->35->1544"
       ]
@@ -12739,6 +12853,7 @@
       "ru": "Создать токен входа",
       "sv": "Skapa inloggningstoken",
       "zh-chs": "创建登录令牌",
+      "it": "Crea token di accesso",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->accountCreateLoginTokenSpan->0"
       ]
@@ -13114,6 +13229,7 @@
       "ru": "Ctrl + ",
       "sv": "Ctrl +",
       "zh-chs": "Ctrl +",
+      "it": "Ctrl + ",
       "xloc": [
         "default-mobile.handlebars->11->412"
       ]
@@ -13255,6 +13371,7 @@
       "ru": "Настроить",
       "sv": "Anpassa",
       "zh-chs": "定制",
+      "it": "Personalizzare",
       "xloc": [
         "default-mobile.handlebars->11->371"
       ]
@@ -13270,6 +13387,7 @@
       "ru": "Настроить...",
       "sv": "Anpassa ...",
       "zh-chs": "定制...",
+      "it": "Personalizzare...",
       "xloc": [
         "default.handlebars->deskKeyShortcutContextMenu->1"
       ]
@@ -13377,6 +13495,7 @@
       "ru": "Темный режим",
       "sv": "Mörkt läge",
       "zh-chs": "黑暗模式",
+      "it": "Modalità scura",
       "xloc": [
         "default-mobile.handlebars->11->85",
         "default.handlebars->35->60"
@@ -13572,6 +13691,7 @@
       "ru": "Del",
       "sv": "Del",
       "zh-chs": "德尔",
+      "it": "Canc",
       "xloc": [
         "default-mobile.handlebars->11->378",
         "default.handlebars->35->1072"
@@ -14130,7 +14250,8 @@
       "ko": "거부",
       "nl": "Weigeren",
       "sv": "Förneka",
-      "zh-chs": "否定"
+      "zh-chs": "否定",
+      "it": "Negare"
     },
     {
       "cs": "Sestupně podle data",
@@ -14315,6 +14436,7 @@
       "ru": "Рабочий стол + Файлы",
       "sv": "Desktop + Files",
       "zh-chs": "桌面 + 文件",
+      "it": "Desktop + File",
       "xloc": [
         "default.handlebars->35->842",
         "default.handlebars->35->908"
@@ -14331,6 +14453,7 @@
       "ru": "Рабочий стол + Терминал",
       "sv": "Desktop + Terminal",
       "zh-chs": "桌面 + 终端",
+      "it": "Desktop + Terminale",
       "xloc": [
         "default.handlebars->35->839"
       ]
@@ -14346,6 +14469,7 @@
       "ru": "Рабочий стол + Терминал + Файлы",
       "sv": "Desktop + Terminal + Files",
       "zh-chs": "桌面 + 终端 + 文件",
+      "it": "Desktop + Terminale + File",
       "xloc": [
         "default.handlebars->35->843",
         "default.handlebars->35->910"
@@ -14383,6 +14507,7 @@
       "nl": "Desktop Multiplex",
       "sv": "Desktop Multiplex",
       "zh-chs": "桌面复用",
+      "it": "Desktop Multiplex",
       "xloc": [
         "default.handlebars->35->2507"
       ]
@@ -14473,6 +14598,7 @@
       "ru": "Сеанс рабочего стола",
       "sv": "Skrivbordssession",
       "zh-chs": "桌面会话",
+      "it": "Sessione desktop",
       "xloc": [
         "default.handlebars->35->2394"
       ]
@@ -14509,7 +14635,8 @@
       "ko": "데스크탑 설정",
       "nl": "Bureaubladinstellingen",
       "sv": "Skrivbordsinställningar",
-      "zh-chs": "桌面设置"
+      "zh-chs": "桌面设置",
+      "it": "Impostazioni del desktop"
     },
     {
       "cs": "Sdílení plochy",
@@ -14570,6 +14697,7 @@
       "ru": "Рабочий стол, только просмотр",
       "sv": "Skrivbord, endast visa",
       "zh-chs": "桌面，仅查看",
+      "it": "Desktop, solo visualizzazione",
       "xloc": [
         "default.handlebars->35->911"
       ]
@@ -14631,6 +14759,7 @@
       "ru": "Экраны фиксированной ширины",
       "sv": "Desktops fast bredd",
       "zh-chs": "桌面固定宽度",
+      "it": "Larghezza fissa desktop",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView->viewselect->5"
       ]
@@ -14743,6 +14872,7 @@
       "nl": "Apparaatverificatie",
       "sv": "Enhetsautentisering",
       "zh-chs": "设备认证",
+      "it": "Autenticazione del dispositivo",
       "xloc": [
         "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->2farow2->1->3",
         "login2.handlebars->centralTable->1->0->logincell->tokenpanel->1->7->1->2farow->1->3"
@@ -14980,6 +15110,7 @@
       "ru": "Ссылка для сопряжения устройства",
       "sv": "Parningslänk för enhet",
       "zh-chs": "设备配对链接",
+      "it": "Collegamento di accoppiamento del dispositivo",
       "xloc": [
         "default-mobile.handlebars->11->588"
       ]
@@ -14993,7 +15124,8 @@
       "ko": "기기 설정",
       "nl": "Apparaat instellingen",
       "sv": "Enhetsinställningar",
-      "zh-chs": "设备设置"
+      "zh-chs": "设备设置",
+      "it": "Impostazioni del dispositivo"
     },
     {
       "cs": "Sdílení zařízení",
@@ -15045,7 +15177,8 @@
       "ko": "장치 상태",
       "nl": "Apparaatstatus",
       "sv": "Enhets status",
-      "zh-chs": "设备状态"
+      "zh-chs": "设备状态",
+      "it": "Stato del dispositivo"
     },
     {
       "cs": "Device Toast",
@@ -15080,6 +15213,7 @@
       "ru": "Тип устройства",
       "sv": "Enhetstyp",
       "zh-chs": "设备类型",
+      "it": "Tipo di dispositivo",
       "xloc": [
         "default-mobile.handlebars->11->259",
         "default-mobile.handlebars->11->261",
@@ -15099,6 +15233,7 @@
       "nl": "Kolomweergave apparaat",
       "sv": "Enhetsvy-kolumner",
       "zh-chs": "设备视图列",
+      "it": "Colonne vista dispositivo",
       "xloc": [
         "default.handlebars->35->281"
       ]
@@ -15702,6 +15837,7 @@
       "ru": "Устройство Intel(R) AMT ACM запросило активацию TLS, полное доменное имя: {0}",
       "sv": "Enhet begärde Intel (R) AMT ACM TLS-aktivering, FQDN: {0}",
       "zh-chs": "设备请求 Intel(R) AMT ACM TLS 激活，FQDN：{0}",
+      "it": "Il dispositivo ha richiesto l'attivazione di Intel(R) AMT ACM TLS, FQDN: {0}",
       "xloc": [
         "default.handlebars->35->2034"
       ]
@@ -15780,7 +15916,8 @@
       "ko": "직접 연결",
       "nl": "Directe verbinding",
       "sv": "Direktkoppling",
-      "zh-chs": "直接联系"
+      "zh-chs": "直接联系",
+      "it": "Collegamento diretto"
     },
     {
       "cs": "Zakázáno",
@@ -16024,7 +16161,8 @@
       "ko": "연결 통계 표시",
       "nl": "Verbindingsstatistieken weergeven",
       "sv": "Visa anslutningsstatistik",
-      "zh-chs": "显示连接统计"
+      "zh-chs": "显示连接统计",
+      "it": "Visualizza le statistiche di connessione"
     },
     {
       "cs": "Zobrazit název skupiny zařízení",
@@ -16103,6 +16241,7 @@
       "ru": "Экран {0}",
       "sv": "Visa {0}",
       "zh-chs": "显示{0}",
+      "it": "Display {0}",
       "xloc": [
         "default.handlebars->35->1118"
       ]
@@ -16211,7 +16350,8 @@
       "ko": "{0} 일을 요구하지 마세요.",
       "nl": "Niet vragen voor {0} dagen.",
       "sv": "Be inte om {0} dagar.",
-      "zh-chs": "不要要求 {0} 天。"
+      "zh-chs": "不要要求 {0} 天。",
+      "it": "Non chiedere per  {0} giorni."
     },
     {
       "cs": "Neměňte, ponechte CCM, pokud je nastaveno",
@@ -16347,7 +16487,8 @@
       "ko": "더블 클릭 동작",
       "nl": "Dubbelklik actie",
       "sv": "Dubbelklicka på åtgärd",
-      "zh-chs": "双击操作"
+      "zh-chs": "双击操作",
+      "it": "Azione doppio clic"
     },
     {
       "de": "runter",
@@ -16360,6 +16501,7 @@
       "ru": "Down",
       "sv": "Ner",
       "zh-chs": "下",
+      "it": "Giù",
       "xloc": [
         "default-mobile.handlebars->11->386",
         "default.handlebars->35->1080"
@@ -16399,6 +16541,7 @@
       "ru": "Скачать Ассистент для Windows",
       "sv": "Ladda ner assistent för Windows",
       "zh-chs": "下载 Windows 助手",
+      "it": "Scarica l'assistente per windows",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->assistab->3->5->assisturl"
       ]
@@ -16727,6 +16870,7 @@
       "ru": "Загрузите программное обеспечение агента с помощью магазина Google Play или APK-файла, установите его и используйте QR-код справа или ссылку для сопряжения ниже, чтобы настроить свое устройство на этом сервере..",
       "sv": "Ladda ner agentprogramvaran med Google Play-butiken eller APK-filen, installera den och använd QR-koden till höger eller parningslänken nedan för att ställa in din enhet på den här servern.",
       "zh-chs": "使用 Google Play 商店或 APK 文件下载代理软件，安装并使用右侧的二维码或下方的配对链接在此服务器上设置您的设备。",
+      "it": "Scarica il software dell'agente utilizzando il Google Play Store o il file APK, installalo e utilizza il codice QR a destra o il link di accoppiamento in basso per configurare il tuo dispositivo su questo server.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->1"
       ]
@@ -16919,6 +17063,7 @@
       "ru": "Скачивание: \\\"{0}\\\", Размер: {1}",
       "sv": "Hämta: \\\"{0}\\\", Storlek: {1}",
       "zh-chs": "下载：\\\"{0}\\\"，大小：{1}",
+      "it": "Scarica: \\\"{0}\\\", Dimensioni: {1}",
       "xloc": [
         "default.handlebars->35->2029"
       ]
@@ -17126,7 +17271,8 @@
       "ko": "출구",
       "nl": "Sluiten",
       "sv": "Utgång",
-      "zh-chs": "出口"
+      "zh-chs": "出口",
+      "it": "E&xit"
     },
     {
       "cs": "E-mail „{0}“ se již používá pro jiný účet. Změňte e-mailovou adresu a zkuste to znovu.",
@@ -18179,7 +18325,8 @@
       "ko": "이메일을 보냈습니다.",
       "nl": "E-mail verzonden",
       "sv": "Email skickat",
-      "zh-chs": "邮件已发送"
+      "zh-chs": "邮件已发送",
+      "it": "Email inviata"
     },
     {
       "cs": "Email odeslán.",
@@ -18216,7 +18363,8 @@
       "ko": "이메일 확인 필요",
       "nl": "E-mailverificatie vereist",
       "sv": "Verifiering av e-post krävs",
-      "zh-chs": "需要电子邮件验证"
+      "zh-chs": "需要电子邮件验证",
+      "it": "Verifica e-mail richiesta"
     },
     {
       "cs": "Je vyžadováno ověření e-mailem, zkontrolujte svou poštovní schránku a klikněte na odkaz pro potvrzení.",
@@ -18294,6 +18442,7 @@
       "ru": "Email/SMS/Push трафик",
       "sv": "E-post / SMS / Push-trafik",
       "zh-chs": "电子邮件/短信/推送流量",
+      "it": "Email/SMS/Push Traffico",
       "xloc": [
         "default.handlebars->35->2535"
       ]
@@ -18493,6 +18642,7 @@
       "ru": "Конец",
       "sv": "Slutet",
       "zh-chs": "结尾",
+      "it": "Fine",
       "xloc": [
         "default-mobile.handlebars->11->380",
         "default.handlebars->35->1074"
@@ -18581,6 +18731,7 @@
       "ru": "Завершился сеанс обмена сообщениями \\\"{0}\\\" с {1} до {2}, {3} сек.",
       "sv": "Avslutade messenger-session \\\"{0}\\\" från {1} till {2}, {3} sekund (er)",
       "zh-chs": "从 {1} 到 {2}，{3} 秒结束了 Messenger 会话 \\\"{0}\\\"",
+      "it": "Terminata la sessione di messaggistica \\\"{0}\\\" da {1} a {2}, {3} secondo(i)",
       "xloc": [
         "default.handlebars->35->2035"
       ]
@@ -18924,7 +19075,8 @@
       "ko": "향상된 키보드 캡처",
       "nl": "Verbeterde toetsenbordopname",
       "sv": "Förbättrad tangentbordsfångst",
-      "zh-chs": "增强的键盘捕获"
+      "zh-chs": "增强的键盘捕获",
+      "it": "Acquisizione avanzata della tastiera"
     },
     {
       "cs": "Zadání",
@@ -19006,7 +19158,8 @@
       "ko": "도움 요청 세부 정보 입력",
       "nl": "Voer de details van het hulpverzoek in",
       "sv": "Ange information om hjälpförfrågan",
-      "zh-chs": "输入帮助请求详细信息"
+      "zh-chs": "输入帮助请求详细信息",
+      "it": "Inserisci i dettagli della richiesta di aiuto"
     },
     {
       "cs": "Zadejte text a kliknutím na OK ho zadáte na dálku pomocí klávesnice (rozložení en-US). Než budete pokračovat, nezapomeňte umístnit vzdálený kurzor na správnou pozici.",
@@ -19061,7 +19214,8 @@
       "ko": "원격 컴퓨터의 RDP 포트를 입력합니다. 기본 RDP 포트는 3389입니다.",
       "nl": "Voer de RDP poort van de externe computer in, de standaard RDP poort is 3389.",
       "sv": "Ange RDP-porten på fjärrdatorn, standard-RDP-porten är 3389.",
-      "zh-chs": "输入远程计算机的RDP端口，默认RDP端口为3389。"
+      "zh-chs": "输入远程计算机的RDP端口，默认RDP端口为3389。",
+      "it": "Immettere la porta RDP del computer remoto, la porta RDP predefinita è 3389."
     },
     {
       "cs": "Zadejte token pro vytvoření účtu",
@@ -19096,7 +19250,8 @@
       "ko": "두 번째 요소 인증 토큰을 입력하십시오.",
       "nl": "Voer de tweede factor authenticatie token in.",
       "sv": "Ange den andra faktor-autentiseringstoken.",
-      "zh-chs": "输入第二个因素身份验证令牌。"
+      "zh-chs": "输入第二个因素身份验证令牌。",
+      "it": "Immettere il token di autenticazione del secondo fattore."
     },
     {
       "cs": "Zadejte token pro 2-faktorové přihlášení:",
@@ -19151,7 +19306,8 @@
       "ko": "에러 메시지",
       "nl": "Foutmelding",
       "sv": "Felmeddelande",
-      "zh-chs": "错误信息"
+      "zh-chs": "错误信息",
+      "it": "Messaggio di errore"
     },
     {
       "cs": "Chyba, klíč nelze přidat.",
@@ -19274,6 +19430,7 @@
       "ru": "Escape",
       "sv": "Fly",
       "zh-chs": "逃脱",
+      "it": "Escape",
       "xloc": [
         "default-mobile.handlebars->11->375",
         "default.handlebars->35->1069"
@@ -19332,7 +19489,8 @@
       "ko": "행사",
       "nl": "Gebeurtenis",
       "sv": "Händelse",
-      "zh-chs": "事件"
+      "zh-chs": "事件",
+      "it": "Evento"
     },
     {
       "cs": "Podrobnosti události",
@@ -19484,6 +19642,7 @@
       "ru": "Срок действия",
       "sv": "Upphöra",
       "zh-chs": "到期",
+      "it": "Scade",
       "xloc": [
         "default.handlebars->35->270"
       ]
@@ -19763,6 +19922,7 @@
       "ru": "Не удалось отправить запрос.",
       "sv": "Det gick inte att skicka begäran.",
       "zh-chs": "发送请求失败。",
+      "it": "Impossibile inviare la richiesta.",
       "xloc": [
         "login2.handlebars->7->29"
       ]
@@ -19798,7 +19958,8 @@
       "ko": "원격 데스크톱 세션을 시작하지 못했습니다.",
       "nl": "Kan extern bureaubladsessie niet starten",
       "sv": "Det gick inte att starta fjärrskrivbordssessionen",
-      "zh-chs": "无法启动远程桌面会话"
+      "zh-chs": "无法启动远程桌面会话",
+      "it": "Impossibile avviare la sessione desktop remoto"
     },
     {
       "cs": "Po odmítnutí místního uživatele se nepodařilo spustit vzdálené soubory",
@@ -19831,7 +19992,8 @@
       "ko": "원격 터미널 세션을 시작하지 못했습니다.",
       "nl": "Kan externe terminalsessie niet starten",
       "sv": "Det gick inte att starta fjärrterminsessionen",
-      "zh-chs": "无法启动远程终端会话"
+      "zh-chs": "无法启动远程终端会话",
+      "it": "Impossibile avviare la sessione del terminale remoto"
     },
     {
       "cs": "Zahájení relace vzdáleného terminálu se nezdařilo, {0} ({1})",
@@ -20071,6 +20233,7 @@
       "ru": "Передача файлов",
       "sv": "Filöverföring",
       "zh-chs": "文件传输",
+      "it": "Trasferimento di file",
       "xloc": [
         "default.handlebars->35->2395"
       ]
@@ -20329,6 +20492,7 @@
       "ru": "Брандмауэр",
       "sv": "Brandvägg",
       "zh-chs": "防火墙",
+      "it": "Firewall",
       "xloc": [
         "default-mobile.handlebars->11->470",
         "default-mobile.handlebars->11->472",
@@ -20347,6 +20511,7 @@
       "ru": "Брандмауэр не активен",
       "sv": "Brandväggen inte aktiv",
       "zh-chs": "防火墙未激活",
+      "it": "Firewall non attivo",
       "xloc": [
         "default.handlebars->35->1862",
         "default.handlebars->35->1876"
@@ -20390,6 +20555,7 @@
       "ru": "Вспышка",
       "sv": "Blixt",
       "zh-chs": "闪光",
+      "it": "Lampeggia",
       "xloc": [
         "default-mobile.handlebars->11->316",
         "default.handlebars->35->938"
@@ -20540,6 +20706,7 @@
       "ru": "Для обновления агента",
       "sv": "För agentuppdatering",
       "zh-chs": "代理更新",
+      "it": "Per l'aggiornamento dell'agente",
       "xloc": [
         "default.handlebars->35->601"
       ]
@@ -20555,6 +20722,7 @@
       "ru": "Принудительно обновить агент",
       "sv": "Tvinga agentuppdatering",
       "zh-chs": "强制代理更新",
+      "it": "Forza l'aggiornamento dell'agente",
       "xloc": [
         "default.handlebars->35->563"
       ]
@@ -20570,6 +20738,7 @@
       "ru": "Принудительно обновить агенты на выбранных устройствах?",
       "sv": "Tvinga uppdatering av agent på utvalda enheter?",
       "zh-chs": "在选定的设备上强制更新代理？",
+      "it": "Forzare l'aggiornamento dell'agente sui dispositivi selezionati?",
       "xloc": [
         "default.handlebars->35->600"
       ]
@@ -20697,7 +20866,8 @@
       "ko": "모든 키보드 키 전달",
       "nl": "Alle toetsenbordtoetsen doorsturen",
       "sv": "Vidarebefordra alla tangentbordstangenter",
-      "zh-chs": "转发所有键盘键"
+      "zh-chs": "转发所有键盘键",
+      "it": "Inoltra tutti i tasti della tastiera"
     },
     {
       "cs": "Snímková frekvence",
@@ -21793,6 +21963,7 @@
       "ru": "Google Play Store",
       "sv": "Google Play Butik",
       "zh-chs": "谷歌商店",
+      "it": "Google Play Store",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->3->1"
       ]
@@ -22080,6 +22251,7 @@
       "ru": "Поделиться с гостем",
       "sv": "Gästdelning",
       "zh-chs": "嘉宾分享",
+      "it": "Condivisione degli ospiti",
       "xloc": [
         "default.handlebars->35->856",
         "default.handlebars->35->878"
@@ -22096,6 +22268,7 @@
       "ru": "Делиться с гостями",
       "sv": "Gästdelning",
       "zh-chs": "嘉宾分享",
+      "it": "Condivisione degli ospiti",
       "xloc": [
         "default.handlebars->35->1775"
       ]
@@ -22133,6 +22306,7 @@
       "ru": "HTTP",
       "sv": "HTTP",
       "zh-chs": "HTTP",
+      "it": "HTTP",
       "xloc": [
         "default.handlebars->35->2499"
       ]
@@ -22146,7 +22320,8 @@
       "ko": "HTTPS",
       "nl": "HTTPS",
       "sv": "HTTPS",
-      "zh-chs": "HTTPS"
+      "zh-chs": "HTTPS",
+      "it": "HTTPS"
     },
     {
       "cs": "HW připojení",
@@ -22367,7 +22542,8 @@
       "ko": "도움 요청",
       "nl": "Hulp gevraagd",
       "sv": "Hjälp begärd",
-      "zh-chs": "请求帮助"
+      "zh-chs": "请求帮助",
+      "it": "Aiuto richiesto"
     },
     {
       "cs": "Požadována pomoc, uživatel: {0}, podrobnosti: {1}",
@@ -22721,6 +22897,7 @@
       "ru": "Home",
       "sv": "Hem",
       "zh-chs": "家",
+      "it": "Home",
       "xloc": [
         "default-mobile.handlebars->11->379",
         "default.handlebars->35->1073"
@@ -23258,7 +23435,8 @@
       "ko": "무시",
       "nl": "Negeren",
       "sv": "Strunta i",
-      "zh-chs": "忽略"
+      "zh-chs": "忽略",
+      "it": "Ignorare"
     },
     {
       "cs": "Neplatné vyvolání",
@@ -23312,6 +23490,7 @@
       "nl": "Om authenticatie met pushmeldingen te gebruiken, moet een mobiel apparaat met volledige rechten in uw account zijn ingesteld.",
       "sv": "För att kunna använda push-autentiseringsautentisering måste en mobil enhet vara inställd i ditt konto med fullständiga rättigheter.",
       "zh-chs": "为了使用推送通知身份验证，必须在您的帐户中设置具有完全权限的移动设备。",
+      "it": "Per utilizzare l'autenticazione delle notifiche push, è necessario che nel tuo account sia configurato un dispositivo mobile con tutti i diritti.",
       "xloc": [
         "default.handlebars->35->1325"
       ]
@@ -23327,6 +23506,7 @@
       "ru": "Входящий трафик",
       "sv": "Inkommande trafik",
       "zh-chs": "入站流量",
+      "it": "Traffico in entrata",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1->p40type->7"
       ]
@@ -23342,6 +23522,7 @@
       "ru": "Включить детали об устройстве",
       "sv": "Inkludera enhetsinformation",
       "zh-chs": "包括设备详细信息",
+      "it": "Includi i dettagli del dispositivo",
       "xloc": [
         "default.handlebars->35->611"
       ]
@@ -23355,7 +23536,8 @@
       "ko": "들어오는 바이트",
       "nl": "Inkomende Bytes",
       "sv": "Inkommande byte",
-      "zh-chs": "传入字节"
+      "zh-chs": "传入字节",
+      "it": "Byte in entrata"
     },
     {
       "de": "Eingehende Kompression",
@@ -23366,7 +23548,8 @@
       "ko": "들어오는 압축",
       "nl": "Inkomende compressie",
       "sv": "Inkommande kompression",
-      "zh-chs": "传入压缩"
+      "zh-chs": "传入压缩",
+      "it": "Compressione in entrata"
     },
     {
       "cs": "Indexováno každých {0} sekund",
@@ -23516,6 +23699,7 @@
       "ru": "Insert",
       "sv": "Föra in",
       "zh-chs": "插",
+      "it": "Inserire",
       "xloc": [
         "default-mobile.handlebars->11->377",
         "default.handlebars->35->1071"
@@ -23636,6 +23820,7 @@
       "ru": "Установить на это устройство",
       "sv": "Installera på den här enheten",
       "zh-chs": "在此设备上安装",
+      "it": "Installa su questo dispositivo",
       "xloc": [
         "default-mobile.handlebars->11->574"
       ]
@@ -23651,6 +23836,7 @@
       "ru": "Установите MeshCentral Agent на свое устройство Android..После установки щелкните ссылку сопряжения, чтобы подключить ваше устройство к этому серверу..",
       "sv": "Installera MeshCentral Agent på din Android-enhet. När du är installerad klickar du på parningslänken för att ansluta din enhet till den här servern.",
       "zh-chs": "在您的 Android 设备上安装 MeshCentral Agent。安装后，单击配对链接将您的设备连接到此服务器。",
+      "it": "nstalla l'agente MeshCentral sul tuo dispositivo Android. Una volta installato, fai clic sul collegamento di associazione per connettere il tuo dispositivo a questo server.",
       "xloc": [
         "default-mobile.handlebars->11->586"
       ]
@@ -23664,7 +23850,8 @@
       "ko": "설치...",
       "nl": "Installeren...",
       "sv": "Installera...",
-      "zh-chs": "安装..."
+      "zh-chs": "安装...",
+      "it": "Installare..."
     },
     {
       "de": "Installation",
@@ -23675,7 +23862,8 @@
       "ko": "설치",
       "nl": "Installatie",
       "sv": "Installation",
-      "zh-chs": "安装"
+      "zh-chs": "安装",
+      "it": "Installazione"
     },
     {
       "cs": "Typ instalace",
@@ -23761,6 +23949,7 @@
       "nl": "Intel AMT beheerder",
       "sv": "Intel AMT-chef",
       "zh-chs": "英特尔 AMT 经理",
+      "it": "Gestore Intel AMT",
       "xloc": [
         "default.handlebars->35->2542"
       ]
@@ -23990,6 +24179,7 @@
       "nl": "Intel&reg; AMT herstel met één klik",
       "sv": "Intel&reg; AMT One Click Recovery",
       "zh-chs": "英特尔&reg; AMT 一键恢复",
+      "it": "Intel&reg; AMT Recupero con un clic",
       "xloc": [
         "default.handlebars->35->953",
         "default.handlebars->35->966"
@@ -24027,6 +24217,7 @@
       "nl": "Intel&reg; AMT in werking",
       "sv": "Intel&reg; AMT-strömdrift",
       "zh-chs": "英特尔&reg; AMT 电源操作",
+      "it": "Intel&reg; AMT Power Operation",
       "xloc": [
         "default-mobile.handlebars->11->332",
         "default-mobile.handlebars->11->334",
@@ -24046,6 +24237,7 @@
       "nl": "Intel&reg; AMT Afsluiten",
       "sv": "Intel&reg; AMT Stäng av",
       "zh-chs": "英特尔&reg; AMT 关机",
+      "it": "Intel&reg; Spegnimento AMT",
       "xloc": [
         "default-mobile.handlebars->11->328",
         "default.handlebars->35->952"
@@ -24061,6 +24253,7 @@
       "nl": "Intel&reg; AMT Opstarten",
       "sv": "Intel&reg; AMT Ström på",
       "zh-chs": "英特尔&reg; AMT 开机",
+      "it": "Intel&reg; Accensione AMT",
       "xloc": [
         "default-mobile.handlebars->11->327",
         "default.handlebars->35->951"
@@ -24100,6 +24293,7 @@
       "nl": "Intel&reg; AMT Reset",
       "sv": "Intel&reg; AMT-återställning",
       "zh-chs": "英特尔&reg; AMT 重置",
+      "it": "Intel&reg; Ripristino AMT",
       "xloc": [
         "default-mobile.handlebars->11->326",
         "default.handlebars->35->950"
@@ -24699,7 +24893,8 @@
       "ko": "인텔 ® ME 상태 ...",
       "nl": "Intel® ME status...",
       "sv": "Intel® ME State ...",
-      "zh-chs": "英特尔® ME 状态..."
+      "zh-chs": "英特尔® ME 状态...",
+      "it": "Stato Intel® ME..."
     },
     {
       "de": "Intel® Management-Engine",
@@ -24710,7 +24905,8 @@
       "ko": "인텔 ® 관리 엔진",
       "nl": "Intel® Management Engine",
       "sv": "Intel® Management Engine",
-      "zh-chs": "英特尔® 管理引擎"
+      "zh-chs": "英特尔® 管理引擎",
+      "it": "Motore di gestione Intel®"
     },
     {
       "de": "Status der Intel® Management Engine für diesen Computer.",
@@ -24721,7 +24917,8 @@
       "ko": "이 컴퓨터의 인텔 ® 관리 엔진 상태입니다.",
       "nl": "Intel® Management Engine status voor deze computer.",
       "sv": "Intel® Management Engine-tillstånd för den här datorn.",
-      "zh-chs": "此计算机的英特尔® 管理引擎状态。"
+      "zh-chs": "此计算机的英特尔® 管理引擎状态。",
+      "it": "Stato Intel® Management Engine per questo computer."
     },
     {
       "cs": "Intel®AMT",
@@ -24848,6 +25045,7 @@
       "ru": "Неверный 2FA",
       "sv": "Ogiltig 2FA",
       "zh-chs": "无效的 2FA",
+      "it": "2FA non valido",
       "xloc": [
         "default-mobile.handlebars->11->76",
         "default.handlebars->35->263"
@@ -25003,6 +25201,7 @@
       "tr": "Geçersiz RSA imzası",
       "zh-chs": "無效的RSA密碼",
       "zh-cht": "無效的RSA密碼",
+      "it": "Firma RSA non valida",
       "xloc": [
         "default.handlebars->35->2468"
       ]
@@ -25074,7 +25273,8 @@
       "ko": "다운로드가 잘못되었습니다.",
       "nl": "Ongeldige download.",
       "sv": "Ogiltig nedladdning.",
-      "zh-chs": "下载无效。"
+      "zh-chs": "下载无效。",
+      "it": "Download non valido."
     },
     {
       "de": "Ungültige Email",
@@ -25233,6 +25433,7 @@
       "ru": "Некорректная попытка входа пользователя из {0}, {1}, {2}",
       "sv": "Ogiltigt användarinloggningsförsök från {0}, {1}, {2}",
       "zh-chs": "来自 {0}、{1}、{2} 的无效用户登录尝试",
+      "it": "Tentativo di accesso utente non valido da {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->35->2033"
       ]
@@ -25263,7 +25464,8 @@
       "ko": "잘못된 사용자 이름 또는 비밀번호",
       "nl": "Ongeldige gebruikersnaam of wachtwoord",
       "sv": "Ogiltigt användarnamn eller lösenord",
-      "zh-chs": "无效的用户名或密码"
+      "zh-chs": "无效的用户名或密码",
+      "it": "Username o password non validi"
     },
     {
       "cs": "Zrušení platnosti e-mailu",
@@ -25588,7 +25790,8 @@
       "ko": "안건",
       "nl": "Artikel",
       "sv": "Artikel",
-      "zh-chs": "物品"
+      "zh-chs": "物品",
+      "it": "Elemento"
     },
     {
       "cs": "JSON",
@@ -25843,6 +26046,7 @@
       "ru": "Настройка сочетаний клавиш",
       "sv": "Tangentbordsgenvägar Anpassning",
       "zh-chs": "键盘快捷键自定义",
+      "it": "Personalizzazione delle scorciatoie da tastiera",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10dialog->1->1",
         "default.handlebars->35->1091"
@@ -26100,7 +26304,8 @@
       "ko": "언어",
       "nl": "Talen",
       "sv": "språk",
-      "zh-chs": "语言"
+      "zh-chs": "语言",
+      "it": "Linguaggi"
     },
     {
       "cs": "Velký",
@@ -26599,7 +26804,8 @@
       "ko": "나중",
       "nl": "Later",
       "sv": "Senare",
-      "zh-chs": "之后"
+      "zh-chs": "之后",
+      "it": "Dopo"
     },
     {
       "cs": "Nejnovější",
@@ -26763,6 +26969,7 @@
       "ru": "Запустить веб-сеанс SSH на это устройство",
       "sv": "Starta webbaserad SSH-session till den här enheten",
       "zh-chs": "启动与此设备的基于 Web 的 SSH 会话",
+      "it": "Avvia la sessione SSH basata sul Web su questo dispositivo",
       "xloc": [
         "default.handlebars->35->811"
       ]
@@ -26778,6 +26985,7 @@
       "ru": "Запустить веб-сеанс VNC на этом устройстве",
       "sv": "Starta webbaserad VNC-session till den här enheten",
       "zh-chs": "启动与此设备的基于 Web 的 VNC 会话",
+      "it": "Avvia la sessione VNC basata sul Web su questo dispositivo",
       "xloc": [
         "default.handlebars->35->807"
       ]
@@ -26815,6 +27023,7 @@
       "ru": "Left",
       "sv": "Vänster",
       "zh-chs": "剩下",
+      "it": "Sinistra",
       "xloc": [
         "default-mobile.handlebars->11->383",
         "default.handlebars->35->1077"
@@ -26902,6 +27111,7 @@
       "ru": "Легкий режим",
       "sv": "Ljusläge",
       "zh-chs": "灯光模式",
+      "it": "Modalità luce",
       "xloc": [
         "default-mobile.handlebars->11->84",
         "default.handlebars->35->59"
@@ -27080,6 +27290,7 @@
       "ru": "Ссылки",
       "sv": "Länkar",
       "zh-chs": "链接",
+      "it": "Link",
       "xloc": [
         "default.handlebars->35->297"
       ]
@@ -27120,6 +27331,7 @@
       "ru": "Linux (SSH/SCP/VNC)",
       "sv": "Linux (SSH / SCP / VNC)",
       "zh-chs": "Linux (SSH/SCP/VNC)",
+      "it": "Linux (SSH/SCP/VNC)",
       "xloc": [
         "default.handlebars->35->380"
       ]
@@ -27276,6 +27488,7 @@
       "tr": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
       "zh-chs": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
       "zh-cht": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
+      "it": "Linux ARM 64 bit (glibc/2.24 NOKVM)",
       "xloc": [
         "default-mobile.handlebars->11->38",
         "default.handlebars->35->45"
@@ -27579,7 +27792,8 @@
       "ko": "이 컴퓨터에서 활성화 된 원격 세션 목록입니다.",
       "nl": "Lijst met externe sessies die actief zijn op deze computer.",
       "sv": "Lista över fjärrsessioner som är aktiva på den här datorn.",
-      "zh-chs": "此计算机上活动的远程会话列表。"
+      "zh-chs": "此计算机上活动的远程会话列表。",
+      "it": "Elenco delle sessioni remote attive su questo computer."
     },
     {
       "cs": "lotyština",
@@ -27687,7 +27901,8 @@
       "ko": "지역-{0}",
       "nl": "Lokaal - {0}",
       "sv": "Lokalt - {0}",
-      "zh-chs": "本地 - {0}"
+      "zh-chs": "本地 - {0}",
+      "it": "Locale - {0}"
     },
     {
       "cs": "Lokální klávesová mapa",
@@ -27721,7 +27936,8 @@
       "ko": "로컬 포트",
       "nl": "Lokale poort",
       "sv": "Lokal hamn",
-      "zh-chs": "本地端口"
+      "zh-chs": "本地端口",
+      "it": "Porta locale"
     },
     {
       "de": "Lokale Geräte, kein Agent",
@@ -27734,6 +27950,7 @@
       "ru": "Локальные устройства, без агентов",
       "sv": "Lokala enheter, ingen agent",
       "zh-chs": "本地设备，无代理",
+      "it": "Dispositivi locali, nessun agente",
       "xloc": [
         "default.handlebars->35->1595",
         "default.handlebars->35->1645"
@@ -27927,6 +28144,7 @@
       "ru": "Заблокировать рабочий стол",
       "sv": "Lås skrivbordet",
       "zh-chs": "锁定桌面",
+      "it": "Blocca desktop",
       "xloc": [
         "default.handlebars->35->901"
       ]
@@ -27964,6 +28182,7 @@
       "ru": "Заблокировать мышь и клавиатуру удаленного пользователя?",
       "sv": "Låsa fjärranvändarens mus och tangentbord?",
       "zh-chs": "锁定远程用户的鼠标和键盘？",
+      "it": "Bloccare il mouse e la tastiera dell'utente remoto?",
       "xloc": [
         "default.handlebars->35->898"
       ]
@@ -27979,6 +28198,7 @@
       "ru": "Заблокировать удаленный компьютер",
       "sv": "Lås fjärrdatorn",
       "zh-chs": "锁定远程计算机",
+      "it": "Blocca il computer remoto",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -27994,6 +28214,7 @@
       "ru": "Заблокировать рабочий стол пользователя?",
       "sv": "Låsa användarens skrivbord?",
       "zh-chs": "锁定用户桌面？",
+      "it": "Bloccare il desktop dell'utente?",
       "xloc": [
         "default.handlebars->35->902"
       ]
@@ -28149,7 +28370,8 @@
       "ko": "로그 아웃",
       "nl": "Uitloggen",
       "sv": "Logga ut",
-      "zh-chs": "登出"
+      "zh-chs": "登出",
+      "it": "Disconnettersi"
     },
     {
       "cs": "Log-X",
@@ -28184,6 +28406,7 @@
       "ru": "Авторизованные пользователи",
       "sv": "Inloggade användare",
       "zh-chs": "已登录用户",
+      "it": "Utenti che hanno effettuato l'accesso",
       "xloc": [
         "default.handlebars->35->278"
       ]
@@ -28509,6 +28732,7 @@
       "ru": "MIPSEL24KC (OpenWRT)",
       "sv": "MIPSEL24KC (OpenWRT)",
       "zh-chs": "MIPSEL24KC (OpenWRT)",
+      "it": "MIPSEL24KC (OpenWRT)",
       "xloc": [
         "default-mobile.handlebars->11->46",
         "default.handlebars->35->53"
@@ -28883,6 +29107,7 @@
       "ru": "Управление изображением учетной записи",
       "sv": "Hantera kontobild",
       "zh-chs": "管理帐户图片",
+      "it": "Gestisci l'immagine dell'account",
       "xloc": [
         "default-mobile.handlebars->11->82",
         "default.handlebars->35->1308"
@@ -29176,6 +29401,7 @@
       "nl": "Beheer push-authenticatie",
       "sv": "Hantera push-autentisering",
       "zh-chs": "管理推送身份验证",
+      "it": "Gestisci l'autenticazione push",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->managePushAuthDev->1->0"
       ]
@@ -29361,7 +29587,8 @@
       "ko": "매핑 설정",
       "nl": "Kaartinstellingen",
       "sv": "Kartläggningsinställningar",
-      "zh-chs": "映射设置"
+      "zh-chs": "映射设置",
+      "it": "Impostazioni di mappatura"
     },
     {
       "de": "Zuordnungen",
@@ -29372,7 +29599,8 @@
       "ko": "매핑",
       "nl": "Toewijzingen",
       "sv": "Kartläggningar",
-      "zh-chs": "映射"
+      "zh-chs": "映射",
+      "it": "Mappature"
     },
     {
       "cs": "maráthština",
@@ -29763,7 +29991,8 @@
       "ko": "MeshCentral",
       "nl": "MeshCentral",
       "sv": "MeshCentral",
-      "zh-chs": "网格中心"
+      "zh-chs": "网格中心",
+      "it": "MeshCentral"
     },
     {
       "de": "MeshCentral Agent für Android",
@@ -29776,6 +30005,7 @@
       "ru": "Агент MeshCentral для Android",
       "sv": "MeshCentral Agent för Android",
       "zh-chs": "适用于 Android 的 MeshCentral 代理",
+      "it": "Agente MeshCentral per Android",
       "xloc": [
         "default-mobile.handlebars->11->587"
       ]
@@ -29791,6 +30021,7 @@
       "ru": "MeshCentral Ассистент",
       "sv": "MeshCentral Assistant",
       "zh-chs": "MeshCentral 助手",
+      "it": "Assistente MeshCentral",
       "xloc": [
         "default.handlebars->35->457"
       ]
@@ -29806,6 +30037,7 @@
       "ru": "MeshCentral Ассистент для Windows",
       "sv": "MeshCentral Assistant för Windows",
       "zh-chs": "适用于 Windows 的 MeshCentral 助手",
+      "it": "Assistente MeshCentral per Windows",
       "xloc": [
         "default.handlebars->35->492",
         "default.handlebars->35->496"
@@ -29820,13 +30052,15 @@
       "ko": "MeshCentral Assistant는 사용자가 도움을 요청하는 데 사용할 수있는 Windows 시스템 트레이 도구입니다. 아래 링크를 사용하여 \\\"{0}\\\"기기 그룹에 연결할 버전을 다운로드하세요.",
       "nl": "MeshCentral Assistant is een hulpprogramma in het Windows systeemvak dat gebruikers kunnen gebruiken om hulp te vragen. Gebruik de onderstaande link om een versie te downloaden die verbinding maakt met apparaatgroep \\\"{0}\\\".",
       "sv": "MeshCentral Assistant är ett verktygsfältverktyg i Windows som användare kan använda för att be om hjälp. Använd länken nedan för att ladda ner en version som ansluter till enhetsgruppen \\\"{0}\\\".",
-      "zh-chs": "MeshCentral Assistant 是一个 Windows 系统托盘工具，用户可以使用它来寻求帮助。使用下面的链接下载将连接到设备组 \\\"{0}\\\" 的版本。"
+      "zh-chs": "MeshCentral Assistant 是一个 Windows 系统托盘工具，用户可以使用它来寻求帮助。使用下面的链接下载将连接到设备组 \\\"{0}\\\" 的版本。",
+      "it": "MeshCentral Assistant è uno strumento della barra delle applicazioni di Windows che gli utenti possono utilizzare per chiedere aiuto. Utilizzare il collegamento sottostante per scaricare una versione che si connetterà al gruppo di dispositivi \\\"{0}\\\"."
     },
     {
       "en": "MeshCentral Assistant is a Windows tool that users can use to ask for help. Use the link below to download a version that will connect to device group \\\"{0}\\\".",
       "ko": "MeshCentral Assistant는 사용자가 도움을 요청하는 데 사용할 수있는 Windows 도구입니다. 아래 링크를 사용하여 \\\"{0}\\\"기기 그룹에 연결할 버전을 다운로드하세요.",
       "nl": "MeshCentral Assistant is een Windows-tool die gebruikers kunnen gebruiken om hulp te vragen. Gebruik de onderstaande link om een versie te downloaden die verbinding maakt met de apparaatgroep \\\"{0}\\\".",
       "sv": "MeshCentral Assistant är ett Windows-verktyg som användare kan använda för att be om hjälp. Använd länken nedan för att ladda ner en version som ansluter till enhetsgruppen \\\"{0}\\\".",
+      "it": "MeshCentral Assistant è uno strumento Windows che gli utenti possono utilizzare per chiedere aiuto. Utilizzare il collegamento sottostante per scaricare una versione che si connetterà al gruppo di dispositivi \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->35->491"
       ]
@@ -29836,6 +30070,7 @@
       "ko": "MeshCentral Assistant는 사용자가 도움을 요청하는 데 사용할 수있는 Windows 도구입니다. 아래 링크를 사용하여 백그라운드 에이전트를 모니터링 할 버전을 다운로드하십시오.",
       "nl": "MeshCentral Assistant is een Windows-tool die gebruikers kunnen gebruiken om hulp te vragen. Gebruik de onderstaande link om een versie te downloaden die de achtergrondagent in de gaten houdt.",
       "sv": "MeshCentral Assistant är ett Windows-verktyg som användare kan använda för att be om hjälp. Använd länken nedan för att ladda ner en version som övervakar bakgrundsagenten.",
+      "it": "MeshCentral Assistant è uno strumento Windows che gli utenti possono utilizzare per chiedere aiuto. Utilizzare il collegamento sottostante per scaricare una versione che monitorerà l'agente in background.",
       "xloc": [
         "default.handlebars->35->495"
       ]
@@ -29915,7 +30150,8 @@
       "ko": "MeshCentral 라우터 설치",
       "nl": "MeshCentral Router Installatie",
       "sv": "MeshCentral Router Installation",
-      "zh-chs": "MeshCentral 路由器安装"
+      "zh-chs": "MeshCentral 路由器安装",
+      "it": "Installazione del router MeshCentral"
     },
     {
       "de": "MeshCentral Router-Links",
@@ -29928,6 +30164,7 @@
       "ru": "Ссылки MeshCentral Router ",
       "sv": "MeshCentral Router Links",
       "zh-chs": "MeshCentral 路由器链接",
+      "it": "Collegamenti al router MeshCentral",
       "xloc": [
         "default.handlebars->35->277"
       ]
@@ -29941,7 +30178,8 @@
       "ko": "MeshCentral 라우터 업데이트",
       "nl": "MeshCentral Router Update",
       "sv": "MeshCentral routeruppdatering",
-      "zh-chs": "MeshCentral 路由器更新"
+      "zh-chs": "MeshCentral 路由器更新",
+      "it": "Aggiornamento del router MeshCentral"
     },
     {
       "de": "MeshCentral Router ermöglicht die Zuordnung von TCP- und UDP-Ports auf diesem Computer zu jedem Computer in Ihrem MeshCentral-Serverkonto. Melden Sie sich zunächst bei Ihrem Konto an.",
@@ -29952,7 +30190,8 @@
       "ko": "MeshCentral 라우터를 사용하면이 컴퓨터의 TCP 및 UDP 포트를 MeshCentral 서버 계정의 모든 컴퓨터에 매핑 할 수 있습니다. 계정에 로그인하여 시작하십시오.",
       "nl": "Met MeshCentral Router kunnen TCP en UDP poorten op deze computer worden toegewezen aan elke computer in uw MeshCentral-serveraccount. Begin door in te loggen op uw account.",
       "sv": "MeshCentral Router tillåter mappning av TCP- och UDP-portar på den här datorn till vilken dator som helst i ditt MeshCentral-serverkonto. Börja med att logga in på ditt konto.",
-      "zh-chs": "MeshCentral 路由器允许将此计算机上的 TCP 和 UDP 端口映射到您的 MeshCentral 服务器帐户中的任何计算机。首先登录您的帐户。"
+      "zh-chs": "MeshCentral 路由器允许将此计算机上的 TCP 和 UDP 端口映射到您的 MeshCentral 服务器帐户中的任何计算机。首先登录您的帐户。",
+      "it": "MeshCentral Router consente la mappatura delle porte TCP e UDP su questo computer su qualsiasi computer nell'account del server MeshCentral. Inizia accedendo al tuo account."
     },
     {
       "cs": "MeshCentral Router je Windows nástroj pro mapování TCP portů. Prostřednictvím tohoto serveru můžete například vzdáleně přistupovat na RDP vzdálenou plochu jiného počítače.",
@@ -30490,6 +30729,7 @@
       "nl": "Messenger",
       "sv": "budbärare",
       "zh-chs": "信使",
+      "it": "Messaggero",
       "xloc": [
         "default.handlebars->35->2398"
       ]
@@ -30573,6 +30813,7 @@
       "ru": "Мобильное устройство",
       "sv": "Mobilenhet",
       "zh-chs": "移动设备",
+      "it": "Dispositivo mobile",
       "xloc": [
         "default-mobile.handlebars->11->494",
         "default.handlebars->35->1223"
@@ -30589,6 +30830,7 @@
       "ru": "Мобильное устройство",
       "sv": "Mobilenhet",
       "zh-chs": "移动设备",
+      "it": "Dispositivo mobile",
       "xloc": [
         "default.handlebars->35->456"
       ]
@@ -30828,6 +31070,7 @@
       "ru": "Множественные проблемы",
       "sv": "Flera frågor",
       "zh-chs": "多个问题",
+      "it": "Problemi multipli",
       "xloc": [
         "default.handlebars->35->1863",
         "default.handlebars->35->1877"
@@ -30842,7 +31085,8 @@
       "ko": "여러 사용자",
       "nl": "Meerdere gebruikers",
       "sv": "Flera användare",
-      "zh-chs": "多个用户"
+      "zh-chs": "多个用户",
+      "it": "Utenti multipli"
     },
     {
       "cs": "Multiplexor",
@@ -31787,7 +32031,8 @@
       "ko": "다음",
       "nl": "Volgende",
       "sv": "Nästa",
-      "zh-chs": "下一个"
+      "zh-chs": "下一个",
+      "it": "Prossimo"
     },
     {
       "de": "Nacht Modus",
@@ -31800,6 +32045,7 @@
       "ru": "Ночной режим",
       "sv": "Nattläge",
       "zh-chs": "夜间模式",
+      "it": "Modalità notturna",
       "xloc": [
         "default-mobile.handlebars->11->86",
         "default.handlebars->35->61"
@@ -31950,7 +32196,8 @@
       "ko": "장치 없음",
       "nl": "Geen apparaten",
       "sv": "Inga enheter",
-      "zh-chs": "没有设备"
+      "zh-chs": "没有设备",
+      "it": "Nessun Dispositivo"
     },
     {
       "cs": "Nenalezeny žádné události",
@@ -32083,6 +32330,7 @@
       "ru": "В этой группе нет устройств Intel&reg; AMT",
       "sv": "Inga Intel&reg; AMT-enheter i den här enhetsgruppen",
       "zh-chs": "此设备组中没有英特尔&reg; AMT 设备",
+      "it": "Nessun Intel&reg; Dispositivi AMT in questo gruppo di dispositivi",
       "xloc": [
         "default.handlebars->35->290"
       ]
@@ -32226,7 +32474,8 @@
       "ko": "포트 매핑 없음\r\n\r\n시작하려면 \"추가\"를 클릭하십시오.",
       "nl": "Geen poorttoewijzingen\r\n\r\nKlik op \"Toevoegen\" om te beginnen.",
       "sv": "Inga portkartor\r\n\r\nKlicka på \"Lägg till\" för att komma igång.",
-      "zh-chs": "无端口映射\r\n\r\n单击“添加”开始。"
+      "zh-chs": "无端口映射\r\n\r\n单击“添加”开始。",
+      "it": "Nessuna mappatura delle porte.\r\n\r\nFai clic su \"Aggiungi\" per iniziare."
     },
     {
       "cs": "Žádná práva",
@@ -32265,7 +32514,8 @@
       "ko": "검색 결과 없음",
       "nl": "geen resultaten gevonden",
       "sv": "inga sökresultat",
-      "zh-chs": "没有搜索结果"
+      "zh-chs": "没有搜索结果",
+      "it": "nessun risultato trovato"
     },
     {
       "cs": "Žádné TLS zabezpečení",
@@ -32393,7 +32643,8 @@
       "ko": "활성 원격 세션이 없습니다.",
       "nl": "Geen actieve externe sessies.",
       "sv": "Inga aktiva fjärrsessioner.",
-      "zh-chs": "没有活动的远程会话。"
+      "zh-chs": "没有活动的远程会话。",
+      "it": "Nessuna sessione remota attiva."
     },
     {
       "de": "Kein Automatisches Update",
@@ -32406,6 +32657,7 @@
       "ru": "Без автоматического обновления",
       "sv": "Ingen automatisk uppdatering",
       "zh-chs": "没有自动更新",
+      "it": "Nessun aggiornamento automatico",
       "xloc": [
         "default.handlebars->35->1861",
         "default.handlebars->35->1875"
@@ -32578,6 +32830,7 @@
       "ru": "В этой группе нет устройств",
       "sv": "Inga enheter i den här enhetsgruppen",
       "zh-chs": "此设备组中没有设备",
+      "it": "Nessun dispositivo in questo gruppo di dispositivi",
       "xloc": [
         "default.handlebars->35->292"
       ]
@@ -32758,6 +33011,7 @@
       "ru": "Сочетания клавиш не определены",
       "sv": "Inga kortkommandon definierade",
       "zh-chs": "未定义键盘快捷键",
+      "it": "Nessuna scorciatoia da tastiera definita",
       "xloc": [
         "default-mobile.handlebars->11->397",
         "default.handlebars->35->1092"
@@ -32774,6 +33028,7 @@
       "ru": "В этой группе нет локальных устройств",
       "sv": "Inga lokala enheter i den här enhetsgruppen",
       "zh-chs": "此设备组中没有本地设备",
+      "it": "Nessun dispositivo locale in questo gruppo di dispositivi",
       "xloc": [
         "default.handlebars->35->294"
       ]
@@ -32914,7 +33169,8 @@
       "ko": "원격 세션 없음",
       "nl": "Geen externe sessies",
       "sv": "Inga fjärrsessioner",
-      "zh-chs": "没有远程会话"
+      "zh-chs": "没有远程会话",
+      "it": "Nessuna sessione remota"
     },
     {
       "cs": "Žádná práva k serveru",
@@ -33352,6 +33608,7 @@
       "ru": "Не разрешено, только просмотр",
       "sv": "Inte tillåtet, endast visa",
       "zh-chs": "不允许，只能查看",
+      "it": "Non consentito, solo visualizzazione",
       "xloc": [
         "default.handlebars->35->234"
       ]
@@ -33507,7 +33764,8 @@
       "nl": "Melding verzonden, {0}.",
       "ru": "Уведомление отправлено, {0}.",
       "sv": "Meddelande skickat, {0}.",
-      "zh-chs": "通知已发送，{0}。"
+      "zh-chs": "通知已发送，{0}。",
+      "it": "Notifica inviata, {0}"
     },
     {
       "cs": "Je třeba, aby nastavení upozorňování byla zapnutá také v nastavení účtu.",
@@ -33677,6 +33935,7 @@
       "ru": "Null",
       "sv": "Null",
       "zh-chs": "空值",
+      "it": "Nullo",
       "xloc": [
         "default.handlebars->35->2522"
       ]
@@ -33690,7 +33949,8 @@
       "ko": "O 펜 사이트 (& P) ...",
       "nl": "O&pen website...",
       "sv": "O & pen-webbplats ...",
-      "zh-chs": "打开网站 (&P)..."
+      "zh-chs": "打开网站 (&P)...",
+      "it": "O&apri Sito..."
     },
     {
       "cs": "OK",
@@ -33746,6 +34006,7 @@
       "ru": "ОС",
       "sv": "OS",
       "zh-chs": "操作系统",
+      "it": "OS",
       "xloc": [
         "default.handlebars->35->296"
       ]
@@ -34123,7 +34384,8 @@
       "ko": "오픈 소스, Apache 2.0 라이선스",
       "nl": "Open Source, Apache 2.0 Licentie",
       "sv": "Open Source, Apache 2.0-licens",
-      "zh-chs": "开源，Apache 2.0 许可"
+      "zh-chs": "开源，Apache 2.0 许可",
+      "it": "Open Source, licenza Apache 2.0"
     },
     {
       "de": "Website öffnen",
@@ -34134,7 +34396,8 @@
       "ko": "웹 사이트 열기",
       "nl": "Website openen",
       "sv": "Öppna webbplatsen",
-      "zh-chs": "打开网站"
+      "zh-chs": "打开网站",
+      "it": "Apri sito web"
     },
     {
       "cs": "Otevřete terminál XTerm",
@@ -34212,7 +34475,8 @@
       "ko": "열다...",
       "nl": "Open...",
       "sv": "Öppna...",
-      "zh-chs": "打开..."
+      "zh-chs": "打开...",
+      "it": "Aperto..."
     },
     {
       "de": "OpenSSH",
@@ -34223,7 +34487,8 @@
       "ko": "OpenSSH",
       "nl": "OpenSSH",
       "sv": "OpenSSH",
-      "zh-chs": "开放式SSH"
+      "zh-chs": "开放式SSH",
+      "it": "OpenSSH"
     },
     {
       "cs": "Zahájení: {0}",
@@ -34443,6 +34708,7 @@
       "ru": "Исходящий трафик",
       "sv": "Utgående trafik",
       "zh-chs": "出站流量",
+      "it": "Traffico in uscita",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1->p40type->9"
       ]
@@ -34456,7 +34722,8 @@
       "ko": "나가는 바이트",
       "nl": "Uitgaande Bytes",
       "sv": "Utgående byte",
-      "zh-chs": "传出字节"
+      "zh-chs": "传出字节",
+      "it": "Byte in uscita"
     },
     {
       "de": "Ausgehende Komprimierung",
@@ -34467,7 +34734,8 @@
       "ko": "나가는 압축",
       "nl": "Uitgaande compressie",
       "sv": "Utgående kompression",
-      "zh-chs": "输出压缩"
+      "zh-chs": "输出压缩",
+      "it": "Compressione in uscita"
     },
     {
       "cs": "Přepsat, pokud soubor existuje?",
@@ -34546,6 +34814,7 @@
       "nl": "PUSH",
       "sv": "SKJUTA PÅ",
       "zh-chs": "推",
+      "it": "SPINGERE",
       "xloc": [
         "default-mobile.handlebars->11->553",
         "default.handlebars->35->1293"
@@ -34562,6 +34831,7 @@
       "ru": "Page Down",
       "sv": "Sida ned",
       "zh-chs": "向下翻页",
+      "it": "Pagina giù",
       "xloc": [
         "default-mobile.handlebars->11->382",
         "default.handlebars->35->1076"
@@ -34578,6 +34848,7 @@
       "ru": "Page Up",
       "sv": "Sida upp",
       "zh-chs": "向上翻页",
+      "it": "Pagina su",
       "xloc": [
         "default-mobile.handlebars->11->381",
         "default.handlebars->35->1075"
@@ -35140,7 +35411,8 @@
       "ko": "통로",
       "nl": "Pad",
       "sv": "Väg",
-      "zh-chs": "小路"
+      "zh-chs": "小路",
+      "it": "Percorso"
     },
     {
       "cs": "Pozastavit",
@@ -35355,6 +35627,7 @@
       "nl": "Uitvoeren Intel&reg; AMT uitschakelen?",
       "sv": "Vill du stänga av Intel&reg; AMT?",
       "zh-chs": "执行英特尔&reg; AMT 关机？",
+      "it": "Esegui Intel&reg; Spegnimento AMT?",
       "xloc": [
         "default-mobile.handlebars->11->335",
         "default.handlebars->35->970"
@@ -35370,6 +35643,7 @@
       "nl": "Uitvoeren Intel&reg; AMT inschakelen?",
       "sv": "Gör Intel&reg; AMT påslagen?",
       "zh-chs": "执行英特尔&reg; AMT 电源？",
+      "it": "Esegui Intel&reg; AMT acceso?",
       "xloc": [
         "default-mobile.handlebars->11->333",
         "default.handlebars->35->968"
@@ -35385,6 +35659,7 @@
       "nl": "Uitvoeren Intel&reg; AMT reset?",
       "sv": "Utföra Intel&reg; AMT-återställning?",
       "zh-chs": "执行英特尔&reg; AMT 重置？",
+      "it": "Esegui Intel&reg; AMT resettato?",
       "xloc": [
         "default-mobile.handlebars->11->337",
         "default.handlebars->35->972"
@@ -35556,6 +35831,7 @@
       "ru": "Личные заметки",
       "sv": "Personliga anteckningar",
       "zh-chs": "个人笔记",
+      "it": "Note Personali",
       "xloc": [
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu->1->1->0->3"
       ]
@@ -35571,6 +35847,7 @@
       "ru": "Личные заметки",
       "sv": "Personliga anteckningar",
       "zh-chs": "个人笔记",
+      "it": "Note personali",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->13->0"
       ]
@@ -36036,7 +36313,8 @@
       "ko": "포트 매핑",
       "nl": "Poorttoewijzing",
       "sv": "Portmappning",
-      "zh-chs": "端口映射"
+      "zh-chs": "端口映射",
+      "it": "Mappatura delle porte"
     },
     {
       "de": "Hilfe zur Portzuordnung",
@@ -36047,7 +36325,8 @@
       "ko": "포트 매핑 도움말",
       "nl": "Hulp bij poorttoewijzing",
       "sv": "Portmappning Hjälp",
-      "zh-chs": "端口映射帮助"
+      "zh-chs": "端口映射帮助",
+      "it": "Aiuto per la mappatura delle porte"
     },
     {
       "de": "Port {0} zu Port {1}",
@@ -36058,7 +36337,8 @@
       "ko": "포트 {0}에서 포트 {1}로",
       "nl": "Poort {0} naar poort {1}",
       "sv": "Porta {0} till port {1}",
-      "zh-chs": "端口 {0} 到端口 {1}"
+      "zh-chs": "端口 {0} 到端口 {1}",
+      "it": "Porta {0} a porta {1}"
     },
     {
       "de": "Port {0} nach {1}:{2}",
@@ -36069,7 +36349,8 @@
       "ko": "{0}에서 {1}로 포트 : {2}",
       "nl": "Poort {0} naar {1}:{2}",
       "sv": "Port {0} till {1}: {2}",
-      "zh-chs": "端口 {0} 到 {1}：{2}"
+      "zh-chs": "端口 {0} 到 {1}：{2}",
+      "it": "Porta {0} a {1}:{2}"
     },
     {
       "cs": "portugalština",
@@ -36448,6 +36729,7 @@
       "ru": "Предыдущие входы",
       "sv": "Tidigare inloggningar",
       "zh-chs": "以前的登录",
+      "it": "Login precedenti",
       "xloc": [
         "default-mobile.handlebars->11->79",
         "default-mobile.handlebars->11->80",
@@ -36468,6 +36750,7 @@
       "ru": "Print Screen",
       "sv": "Skärmdump",
       "zh-chs": "打印屏幕",
+      "it": "Stampa schermo",
       "xloc": [
         "default-mobile.handlebars->11->376",
         "default.handlebars->35->1070"
@@ -36533,7 +36816,8 @@
       "ko": "PrivacyBarForm",
       "nl": "PrivacyBarForm",
       "sv": "PrivacyBarForm",
-      "zh-chs": "隐私栏表格"
+      "zh-chs": "隐私栏表格",
+      "it": "PrivacyBarForm"
     },
     {
       "en": "Private Memory",
@@ -36771,7 +37055,8 @@
       "ko": "PuTTY SSH 클라이언트",
       "nl": "PuTTY SSH client",
       "sv": "PuTTY SSH-klient",
-      "zh-chs": "PuTTY SSH 客户端"
+      "zh-chs": "PuTTY SSH 客户端",
+      "it": "PuTTY SSH client"
     },
     {
       "cs": "Veřejný odkaz",
@@ -36805,7 +37090,8 @@
       "ko": "원격 장치에서 클립 보드 가져 오기",
       "nl": "Trek het klembord van het externe apparaat",
       "sv": "Dra urklipp från fjärrenheten",
-      "zh-chs": "从远程设备拉剪贴板"
+      "zh-chs": "从远程设备拉剪贴板",
+      "it": "Estrai gli appunti dal dispositivo remoto"
     },
     {
       "cs": "paňdžábština",
@@ -36883,6 +37169,7 @@
       "nl": "Push",
       "sv": "Skjuta på",
       "zh-chs": "推",
+      "it": "Spingere",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10console->consoleTable->1->4->1->1->1->0->p15outputselecttd->p15outputselect->p15outputselect3",
         "default.handlebars->container->column_l->p15->consoleTable->1->6->1->1->1->0->p15outputselecttd->p15outputselect->p15outputselect3"
@@ -36897,7 +37184,8 @@
       "ko": "로컬 클립 보드를 원격 장치로 푸시",
       "nl": "Verplaats lokaal klembord naar extern apparaat",
       "sv": "Tryck lokalt urklipp till fjärrenheten",
-      "zh-chs": "将本地剪贴板推送到远程设备"
+      "zh-chs": "将本地剪贴板推送到远程设备",
+      "it": "Spingi gli appunti locali sul dispositivo remoto"
     },
     {
       "de": "Push Benachrichtigung fehlgeschlagen",
@@ -36909,6 +37197,7 @@
       "nl": "Push melding mislukt.",
       "sv": "Push-avisering misslyckades.",
       "zh-chs": "推送通知失败。",
+      "it": "Notifica push non riuscita.",
       "xloc": [
         "messenger.handlebars->remoteImage->3->7"
       ]
@@ -36987,7 +37276,8 @@
       "ko": "새롭게 하다",
       "nl": "Vernieuwen",
       "sv": "R & efresh",
-      "zh-chs": "刷新"
+      "zh-chs": "刷新",
+      "it": "R&efresh"
     },
     {
       "cs": "RAW16, velmi pomalé",
@@ -37095,7 +37385,8 @@
       "ko": "RDP 포트",
       "nl": "RDP poort",
       "sv": "RDP-port",
-      "zh-chs": "RDP 端口"
+      "zh-chs": "RDP 端口",
+      "it": "Porta RDP"
     },
     {
       "cs": "Port vzdáleného připojení RDP:",
@@ -37282,7 +37573,7 @@
       "fi": "Hinta",
       "fr": "Taux",
       "hi": "मूल्यांकन करें",
-      "it": "Vota",
+      "it": "Frequenza",
       "ja": "レート",
       "ko": "등급",
       "nl": "Beoordeel",
@@ -37505,7 +37796,8 @@
       "ko": "재귀 삭제",
       "nl": "Recursief verwijderen",
       "sv": "Rekursivt Radera",
-      "zh-chs": "递归删除"
+      "zh-chs": "递归删除",
+      "it": "Cancellazione ricorsiva"
     },
     {
       "cs": "Rekurzivní mazání",
@@ -37687,7 +37979,8 @@
       "ko": "릴레이 장치",
       "nl": "Doorstuur apparaat",
       "sv": "Reläenhet",
-      "zh-chs": "中继装置"
+      "zh-chs": "中继装置",
+      "it": "Dispositivo ripetitore"
     },
     {
       "cs": "Chyby předávání (relay)",
@@ -37720,7 +38013,8 @@
       "ko": "릴레이 매핑",
       "nl": "Doorstuurtoewijzing",
       "sv": "Relämappning",
-      "zh-chs": "中继映射"
+      "zh-chs": "中继映射",
+      "it": "Mappatura ritrasmissione"
     },
     {
       "cs": "Předávané relace",
@@ -37775,6 +38069,7 @@
       "ru": "Запомнить учетные данные",
       "sv": "Kom ihåg referenser",
       "zh-chs": "记住凭据",
+      "it": "Ricorda le credenziali",
       "xloc": [
         "default-mobile.handlebars->11->407",
         "default-mobile.handlebars->11->418",
@@ -37792,7 +38087,8 @@
       "ko": "이 인증서 기억",
       "nl": "Onthoud dit certificaat",
       "sv": "Kom ihåg detta certifikat",
-      "zh-chs": "记住这个证书"
+      "zh-chs": "记住这个证书",
+      "it": "Ricorda questo certificato"
     },
     {
       "cs": "Zapamatovat toto zařízení na 30 dní.",
@@ -37870,7 +38166,8 @@
       "ko": "원격-{0}",
       "nl": "Afstandsbediening - {0}",
       "sv": "Fjärrkontroll - {0}",
-      "zh-chs": "远程 - {0}"
+      "zh-chs": "远程 - {0}",
+      "it": "Remoto - {0}"
     },
     {
       "cs": "Instalace agenta pro vzdálený přístup",
@@ -38022,6 +38319,7 @@
       "ru": "Ссылка на Удаленный рабочий стол + Файлы",
       "sv": "Fjärrskrivbord + filer länk",
       "zh-chs": "远程桌面 + 文件链接",
+      "it": "Desktop remoto + collegamento file",
       "xloc": [
         "default.handlebars->35->248"
       ]
@@ -38037,6 +38335,7 @@
       "ru": "Ссылка на Удаленный рабочий стол + Терминал + Файлы",
       "sv": "Fjärrskrivbord + Terminal + Files-länk",
       "zh-chs": "远程桌面 + 终端 + 文件链接",
+      "it": "Desktop remoto + Terminale + Collegamento file",
       "xloc": [
         "default.handlebars->35->249"
       ]
@@ -38052,6 +38351,7 @@
       "ru": "Ссылка на Удаленный рабочий стол + Терминал",
       "sv": "Fjärrskrivbord + Terminallänk",
       "zh-chs": "远程桌面+终端链接",
+      "it": "Desktop remoto + collegamento terminale",
       "xloc": [
         "default.handlebars->35->245"
       ]
@@ -38156,7 +38456,8 @@
       "ko": "원격 데스크톱 데이터",
       "nl": "Extern bureaublad gegevens",
       "sv": "Fjärrskrivbordsdata",
-      "zh-chs": "远程桌面数据"
+      "zh-chs": "远程桌面数据",
+      "it": "Dati desktop remoto"
     },
     {
       "cs": "Odkaz na vzdálenou plochu",
@@ -38214,7 +38515,8 @@
       "ko": "원격 데스크톱 통계",
       "nl": "Extern bureaublad statistieken",
       "sv": "Statistik för fjärrskrivbord",
-      "zh-chs": "远程桌面统计"
+      "zh-chs": "远程桌面统计",
+      "it": "Statistiche desktop remoto"
     },
     {
       "de": "Remotedesktop...",
@@ -38225,7 +38527,8 @@
       "ko": "원격 데스크탑...",
       "nl": "Extern bureaublad...",
       "sv": "Fjärrskrivbord...",
-      "zh-chs": "远程桌面..."
+      "zh-chs": "远程桌面...",
+      "it": "Desktop remoto..."
     },
     {
       "de": "Remote-Gerät",
@@ -38236,7 +38539,8 @@
       "ko": "원격 장치",
       "nl": "Extern apparaat",
       "sv": "Fjärrenhet",
-      "zh-chs": "遥控装置"
+      "zh-chs": "遥控装置",
+      "it": "Dispositivo remoto"
     },
     {
       "de": "Remote-Dateien",
@@ -38247,7 +38551,8 @@
       "ko": "원격 파일",
       "nl": "Externe bestanden",
       "sv": "Fjärrfiler",
-      "zh-chs": "远程文件"
+      "zh-chs": "远程文件",
+      "it": "File remoti"
     },
     {
       "de": "Link zu Remote-Dateien",
@@ -38260,6 +38565,7 @@
       "ru": "Ссылка на Файлы",
       "sv": "Fjärranslutning av filer",
       "zh-chs": "远程文件链接",
+      "it": "Collegamento file remoti",
       "xloc": [
         "default.handlebars->35->246"
       ]
@@ -38273,7 +38579,8 @@
       "ko": "원격 파일 ...",
       "nl": "Externe bestanden...",
       "sv": "Fjärrfiler ...",
-      "zh-chs": "远程文件..."
+      "zh-chs": "远程文件...",
+      "it": "File remoti..."
     },
     {
       "de": "Remote-IP",
@@ -38284,7 +38591,8 @@
       "ko": "원격 IP",
       "nl": "Extern IP",
       "sv": "Fjärr-IP",
-      "zh-chs": "远程IP"
+      "zh-chs": "远程IP",
+      "it": "IP remoto"
     },
     {
       "de": "Remote-Eingangssperre",
@@ -38297,6 +38605,7 @@
       "ru": "Блокировка удаленного ввода",
       "sv": "Fjärringångslås",
       "zh-chs": "远程输入锁定",
+      "it": "Blocco ingresso remoto",
       "xloc": [
         "default.handlebars->35->897"
       ]
@@ -38355,7 +38664,8 @@
       "ko": "원격 포트",
       "nl": "Externe poort",
       "sv": "Fjärrport",
-      "zh-chs": "远程端口"
+      "zh-chs": "远程端口",
+      "it": "Porta remota"
     },
     {
       "de": "Remote-Sitzungen",
@@ -38366,7 +38676,8 @@
       "ko": "원격 세션",
       "nl": "Externe Sessies",
       "sv": "Fjärrsessioner",
-      "zh-chs": "远程会话"
+      "zh-chs": "远程会话",
+      "it": "Sessioni remote"
     },
     {
       "de": "Remote-Sitzungen...",
@@ -38377,7 +38688,8 @@
       "ko": "원격 세션 ...",
       "nl": "Externe Sessies...",
       "sv": "Fjärrsessioner ...",
-      "zh-chs": "远程会话..."
+      "zh-chs": "远程会话...",
+      "it": "Sessioni remote..."
     },
     {
       "de": "Remote-Sitzungen: {0}",
@@ -38388,7 +38700,8 @@
       "ko": "원격 세션 : {0}",
       "nl": "Externe Sessies: {0}",
       "sv": "Fjärrsessioner: {0}",
-      "zh-chs": "远程会话：{0}"
+      "zh-chs": "远程会话：{0}",
+      "it": "Sessioni remote: {0}"
     },
     {
       "de": "Remote-Terminal + Datei-Link",
@@ -38401,6 +38714,7 @@
       "ru": "Ссылка на Терминал + Файлы",
       "sv": "Fjärrterminal + filer länk",
       "zh-chs": "远程终端 + 文件链接",
+      "it": "Terminale remoto + collegamento file",
       "xloc": [
         "default.handlebars->35->247"
       ]
@@ -38526,7 +38840,8 @@
       "ko": "원격 데스크톱 품질, 크기 조정 및 프레임 속도 설정. 네트워크 연결 품질에 따라 조정할 수 있습니다.",
       "nl": "Instellingen voor kwaliteit, schaal en framesnelheid van het externe bureaublad. Deze kunnen worden aangepast afhankelijk van de kwaliteit van de netwerkverbinding.",
       "sv": "Fjärrskrivbords kvalitet, skalning och bildfrekvensinställningar. Dessa kan justeras beroende på nätverksanslutningens kvalitet.",
-      "zh-chs": "远程桌面质量、缩放和帧速率设置。这些可以根据网络连接的质量进行调整。"
+      "zh-chs": "远程桌面质量、缩放和帧速率设置。这些可以根据网络连接的质量进行调整。",
+      "it": "Impostazioni di qualità, ridimensionamento e frame rate del desktop remoto. Questi possono essere regolati in base alla qualità della connessione di rete."
     },
     {
       "de": "Remote-Eingang ist gesperrt",
@@ -38539,6 +38854,7 @@
       "ru": "Удаленный вход заблокирован",
       "sv": "Fjärringången är låst",
       "zh-chs": "远程输入被锁定",
+      "it": "L'ingresso remoto è bloccato",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -38554,6 +38870,7 @@
       "ru": "Удаленный вход разблокирован",
       "sv": "Fjärringången är upplåst",
       "zh-chs": "远程输入解锁",
+      "it": "L'ingresso remoto è sbloccato",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -38589,7 +38906,8 @@
       "ko": "항목 1 개를 삭제 하시겠습니까?",
       "nl": "1 artikel verwijderen?",
       "sv": "Ta bort ett objekt?",
-      "zh-chs": "删除 1 项？"
+      "zh-chs": "删除 1 项？",
+      "it": "Rimuovere 1 elemento?"
     },
     {
       "cs": "Odebrat konfiguraci",
@@ -38730,6 +39048,7 @@
       "ru": "Удалить токен входа",
       "sv": "Ta bort inloggningstoken",
       "zh-chs": "删除登录令牌",
+      "it": "Rimuovi token di accesso",
       "xloc": [
         "default.handlebars->35->1619"
       ]
@@ -38942,6 +39261,7 @@
       "ru": "Удалить токен входа",
       "sv": "Ta bort inloggningstoken",
       "zh-chs": "删除登录令牌",
+      "it": "Rimuovi token di accesso",
       "xloc": [
         "default.handlebars->35->1614"
       ]
@@ -39159,7 +39479,8 @@
       "ko": "{0} 개 항목을 삭제 하시겠습니까?",
       "nl": "{0} items verwijderen?",
       "sv": "Ta bort {0} objekt?",
-      "zh-chs": "删除 {0} 项？"
+      "zh-chs": "删除 {0} 项？",
+      "it": "Rimuovere {0} elementi?"
     },
     {
       "cs": "Odebrána ověřovací aplikace",
@@ -39238,6 +39559,7 @@
       "ru": "Удален токен входа",
       "sv": "Borttagen inloggningstoken",
       "zh-chs": "删除了登录令牌",
+      "it": "Token di accesso rimosso",
       "xloc": [
         "default.handlebars->35->2039"
       ]
@@ -39274,6 +39596,7 @@
       "nl": "Verificatieapparaat voor pushmeldingen verwijderd",
       "sv": "Borttagen autentiseringsenhet för push-meddelanden",
       "zh-chs": "删除了推送通知身份验证设备",
+      "it": "Dispositivo di autenticazione delle notifiche push rimosso",
       "xloc": [
         "default.handlebars->35->2037"
       ]
@@ -39433,7 +39756,8 @@
       "ko": "파일명 변경",
       "nl": "Bestand hernoemen",
       "sv": "Döp om fil",
-      "zh-chs": "重新命名文件"
+      "zh-chs": "重新命名文件",
+      "it": "Rinomina il file"
     },
     {
       "cs": "Přejmenovat: „{0}“ na „{1}“",
@@ -39512,6 +39836,7 @@
       "ru": "Запрос принят.",
       "sv": "Begäran accepterad.",
       "zh-chs": "请求已接受。",
+      "it": "Richiesta accettata.",
       "xloc": [
         "login2.handlebars->7->30"
       ]
@@ -39525,7 +39850,8 @@
       "ko": "도움 요청",
       "nl": "Hulp vragen",
       "sv": "Begär hjälp",
-      "zh-chs": "请求帮助"
+      "zh-chs": "请求帮助",
+      "it": "Richiedi aiuto"
     },
     {
       "de": "Hilfe anfordern...",
@@ -39536,7 +39862,8 @@
       "ko": "도움 요청 ...",
       "nl": "Hulp vragen...",
       "sv": "Begär hjälp ...",
-      "zh-chs": "请求帮助..."
+      "zh-chs": "请求帮助...",
+      "it": "Richiedi Aiuto..."
     },
     {
       "de": "Anfrage gesendet, {0}.",
@@ -39549,6 +39876,7 @@
       "ru": "Запрос отправлен, {0}.",
       "sv": "Begäran skickad, {0}.",
       "zh-chs": "请求已发送，{0}。",
+      "it": "Richiesta inviata, {0}.",
       "xloc": [
         "login2.handlebars->7->28"
       ]
@@ -40033,6 +40361,7 @@
       "ru": "Right",
       "sv": "Rätt",
       "zh-chs": "正确的",
+      "it": "Destro",
       "xloc": [
         "default-mobile.handlebars->11->385",
         "default.handlebars->35->1079"
@@ -40246,7 +40575,8 @@
       "ko": "라우팅 통계",
       "nl": "Routeringsstatistieken",
       "sv": "Routing Stats",
-      "zh-chs": "路由统计"
+      "zh-chs": "路由统计",
+      "it": "Statistiche di instradamento"
     },
     {
       "de": "Routing-Status",
@@ -40257,7 +40587,8 @@
       "ko": "라우팅 상태",
       "nl": "Routeringsstatus",
       "sv": "Ruttstatus",
-      "zh-chs": "路由状态"
+      "zh-chs": "路由状态",
+      "it": "Stato del percorso"
     },
     {
       "cs": "Spustit příkazy",
@@ -40534,7 +40865,8 @@
       "ko": "설정 (& E) ...",
       "nl": "Instellingen...",
       "sv": "Inställningar...",
-      "zh-chs": "设置(&E)..."
+      "zh-chs": "设置(&E)...",
+      "it": "S&ettings..."
     },
     {
       "de": "Stop-Agent",
@@ -40545,7 +40877,8 @@
       "ko": "Stop 에이전트",
       "nl": "S&top Agent",
       "sv": "S & toppagent",
-      "zh-chs": "停止代理 (&T)"
+      "zh-chs": "停止代理 (&T)",
+      "it": "S&top Agent"
     },
     {
       "cs": "SCP",
@@ -40679,7 +41012,8 @@
       "ko": "SMS 전송",
       "nl": "SMS verzonden",
       "sv": "SMS skickat",
-      "zh-chs": "短信发送"
+      "zh-chs": "短信发送",
+      "it": "SMS inviato"
     },
     {
       "cs": "SMS odeslána.",
@@ -40759,6 +41093,7 @@
       "ru": "SSH соединение",
       "sv": "SSH-anslutning",
       "zh-chs": "SSH 连接",
+      "it": "Connessione SSH",
       "xloc": [
         "default-mobile.handlebars->11->403",
         "default.handlebars->35->643"
@@ -40775,6 +41110,7 @@
       "ru": "Порт SSH {0}",
       "sv": "SSH-port {0}",
       "zh-chs": "SSH 端口 {0}",
+      "it": "Porta SSH {0}",
       "xloc": [
         "default-mobile.handlebars->11->401",
         "default-mobile.handlebars->11->429",
@@ -40791,7 +41127,8 @@
       "ko": "SSH 사용자 이름",
       "nl": "SSH gebruikersnaam",
       "sv": "SSH-användarnamn",
-      "zh-chs": "SSH 用户名"
+      "zh-chs": "SSH 用户名",
+      "it": "Nome utente SSH"
     },
     {
       "de": "SSH-Remote-Verbindungsport:",
@@ -40804,6 +41141,7 @@
       "ru": "Порт удаленного подключения SSH:",
       "sv": "Port för SSH-fjärranslutning:",
       "zh-chs": "SSH远程连接端口：",
+      "it": "Porta di connessione remota SSH:",
       "xloc": [
         "default-mobile.handlebars->11->402",
         "default.handlebars->35->642"
@@ -41467,7 +41805,8 @@
       "ko": "에이전트 선택",
       "nl": "Agent selecteren",
       "sv": "Välj Agent",
-      "zh-chs": "代理选择"
+      "zh-chs": "代理选择",
+      "it": "Seleziona agente"
     },
     {
       "cs": "Vybrat vše",
@@ -41543,6 +41882,7 @@
       "nl": "Selecteer een apparaat om te registreren voor verificatie via pushmeldingen. Eenmaal geselecteerd, zal het apparaat om bevestiging vragen.",
       "sv": "Välj en enhet för att registrera dig för autentisering av push-meddelanden. När du väl har valt kommer enheten att be om bekräftelse.",
       "zh-chs": "选择要注册推送通知身份验证的设备。选择后，设备将提示确认。",
+      "it": "Seleziona un dispositivo da registrare per l'autenticazione tramite notifica push.Una volta selezionato, il dispositivo chiederà conferma.",
       "xloc": [
         "default.handlebars->35->1326"
       ]
@@ -41784,7 +42124,8 @@
       "ko": "Ctrl-Alt-Del을 원격 장치로 보내기",
       "nl": "Stuur Ctrl-Alt-Del naar extern apparaat",
       "sv": "Skicka Ctrl-Alt-Del till fjärrenhet",
-      "zh-chs": "发送 Ctrl-Alt-Del 到远程设备"
+      "zh-chs": "发送 Ctrl-Alt-Del 到远程设备",
+      "it": "Invia Ctrl-Alt-Canc al dispositivo remoto"
     },
     {
       "cs": "Poslat e-mailem",
@@ -42175,6 +42516,7 @@
       "ru": "Отправка уведомления...",
       "sv": "Skickar avisering ...",
       "zh-chs": "正在发送通知...",
+      "it": "Invio notifica...",
       "xloc": [
         "login2.handlebars->7->6"
       ]
@@ -42189,6 +42531,7 @@
       "nl": "Verzonden als pushmelding.",
       "sv": "Skickas som push-meddelande.",
       "zh-chs": "作为推送通知发送。",
+      "it": "Inviato come notifica push.",
       "xloc": [
         "messenger.handlebars->remoteImage->3->6"
       ]
@@ -42247,7 +42590,8 @@
       "ko": "섬기는 사람",
       "nl": "Server",
       "sv": "Server",
-      "zh-chs": "服务器"
+      "zh-chs": "服务器",
+      "it": "Server"
     },
     {
       "cs": "Záloha serveru",
@@ -42304,6 +42648,7 @@
       "ru": "Подключение к серверу",
       "sv": "Serveranslutning",
       "zh-chs": "服务器连接",
+      "it": "Connettività del server",
       "xloc": [
         "default.handlebars->35->280"
       ]
@@ -42407,6 +42752,7 @@
       "ru": "Ссылка для подключения к серверу",
       "sv": "Koppling för serverpar",
       "zh-chs": "服务器配对链接",
+      "it": "Collegamento di associazione del server",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->7->1"
       ]
@@ -42577,6 +42923,7 @@
       "ru": "Событие трассировки сервера",
       "sv": "Serverspårningshändelse",
       "zh-chs": "服务器跟踪事件",
+      "it": "Evento di tracciamento del server",
       "xloc": [
         "default.handlebars->35->2525"
       ]
@@ -42768,7 +43115,8 @@
       "ko": "서버 정보",
       "nl": "Server informatie",
       "sv": "Serverinformation",
-      "zh-chs": "服务器信息"
+      "zh-chs": "服务器信息",
+      "it": "Informazioni sul server"
     },
     {
       "cs": "Server tuto relaci nahrává",
@@ -42829,7 +43177,8 @@
       "ko": "서버 이름",
       "nl": "Servernaam",
       "sv": "Server namn",
-      "zh-chs": "服务器名称"
+      "zh-chs": "服务器名称",
+      "it": "Nome del server"
     },
     {
       "cs": "ServerStats.csv",
@@ -42961,6 +43310,7 @@
       "ru": "Сессия истекла",
       "sv": "Sessionen löpte",
       "zh-chs": "会话已过期",
+      "it": "Sessione scaduta",
       "xloc": [
         "default-mobile.handlebars->11->410",
         "default-mobile.handlebars->11->422",
@@ -42979,6 +43329,7 @@
       "ru": "Сессия истекла.",
       "sv": "Sessionen löpte.",
       "zh-chs": "会话已过期。",
+      "it": "Sessione scaduta.",
       "xloc": [
         "ssh.handlebars->3->11"
       ]
@@ -43019,6 +43370,7 @@
       "ru": "Тайм-аут сеанса",
       "sv": "Sessionen har gått ut",
       "zh-chs": "会话超时",
+      "it": "Timeout della sessione",
       "xloc": [
         "default-mobile.handlebars->11->411",
         "default-mobile.handlebars->11->423",
@@ -43081,7 +43433,8 @@
       "ko": "RDP 포트 설정 ...",
       "nl": "RDP poort instellen...",
       "sv": "Ställ in RDP-port ...",
-      "zh-chs": "设置 RDP 端口..."
+      "zh-chs": "设置 RDP 端口...",
+      "it": "Imposta porta RDP..."
     },
     {
       "de": "Setze den Dunkel Modus",
@@ -43094,6 +43447,7 @@
       "ru": "Установить темный режим",
       "sv": "Ställ in mörkt läge",
       "zh-chs": "设置深色模式",
+      "it": "Imposta la modalità scura",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->11->0"
       ]
@@ -43469,6 +43823,7 @@
       "ru": "Shift",
       "sv": "Flytta",
       "zh-chs": "转移",
+      "it": "Shift",
       "xloc": [
         "default-mobile.handlebars->11->388",
         "default-mobile.handlebars->11->392",
@@ -43593,7 +43948,8 @@
       "ko": "이벤트 표시 (& E) ...",
       "nl": "&Gebeurtenissen tonen...",
       "sv": "Visa & evenemang ...",
-      "zh-chs": "显示(&Events)..."
+      "zh-chs": "显示(&Events)...",
+      "it": "Mostra eventi..."
     },
     {
       "de": "&Gruppennamen anzeigen",
@@ -43604,7 +43960,8 @@
       "ko": "그룹 이름 표시",
       "nl": "Toon &groepsnamen",
       "sv": "Visa & gruppnamn",
-      "zh-chs": "显示组名称(&G)"
+      "zh-chs": "显示组名称(&G)",
+      "it": "Mostra i nomi dei gruppi"
     },
     {
       "de": "&Offline-Geräte anzeigen",
@@ -43615,7 +43972,8 @@
       "ko": "오프라인 장치 표시 (& O)",
       "nl": "Toon &Offline apparaten",
       "sv": "Visa & Offline-enheter",
-      "zh-chs": "显示离线设备 (&A)"
+      "zh-chs": "显示离线设备 (&A)",
+      "it": "Mostra dispositivi offline"
     },
     {
       "cs": "Zobrazit nástroj pro zaměření",
@@ -43719,7 +44077,8 @@
       "ko": "세션 표시 ...",
       "nl": "Sessies weergeven...",
       "sv": "Visa sessioner ...",
-      "zh-chs": "显示会话..."
+      "zh-chs": "显示会话...",
+      "it": "Mostra sessioni..."
     },
     {
       "cs": "Zobrazit panel nástrojů připojení",
@@ -43932,7 +44291,8 @@
       "ko": "시스템 트레이에 표시",
       "nl": "Weergeven in systeemvak",
       "sv": "Visa i systemfältet",
-      "zh-chs": "在系统托盘上显示"
+      "zh-chs": "在系统托盘上显示",
+      "it": "Mostra sulla barra delle applicazioni"
     },
     {
       "cs": "Zobrazit záznam chyb na serveru",
@@ -44247,7 +44607,8 @@
       "ko": "대지",
       "nl": "Lokatie",
       "sv": "Webbplats",
-      "zh-chs": "地点"
+      "zh-chs": "地点",
+      "it": "Sito"
     },
     {
       "cs": "Velikost",
@@ -44373,7 +44734,7 @@
       "fi": "Nukkua",
       "fr": "Mettre en veille",
       "hi": "नींद",
-      "it": "Dormire",
+      "it": "Standby",
       "ja": "睡眠",
       "ko": "절전",
       "nl": "Slaapstand",
@@ -44402,7 +44763,7 @@
       "fi": "Lepotilat",
       "fr": "Mettre en veille les appareils sélectionnés",
       "hi": "नींद के उपकरण",
-      "it": "Dispositivo addormentato",
+      "it": "Addormenta  Dispositivi",
       "ja": "スリープデバイス",
       "ko": "절전 장치",
       "nl": "Slaap apparaten",
@@ -44424,7 +44785,7 @@
       "fi": "Nukkumassa",
       "fr": "Dormir",
       "hi": "सोया हुआ",
-      "it": "Dormire",
+      "it": "Standby",
       "ja": "睡眠",
       "ko": "절전 중",
       "nl": "Slapen",
@@ -44562,7 +44923,7 @@
       "fi": "Pehmeä irrotusaine",
       "fr": "Déconnecter l'agent",
       "hi": "नरम डिस्कनेक्ट एजेंट",
-      "it": "Disconnessione gente soft",
+      "it": "Disconnessione agente soft",
       "ja": "ソフト切断エージェント",
       "ko": "소프트 연결해제 에이전트",
       "nl": "Softwarematig verbreken agent",
@@ -44697,7 +45058,8 @@
       "ko": "이름으로 분류하다",
       "nl": "Sorteer op &Naam",
       "sv": "Sortera efter namn",
-      "zh-chs": "按名称分类"
+      "zh-chs": "按名称分类",
+      "it": "Ordina per nome"
     },
     {
       "de": "Nach Gruppe sortieren",
@@ -44708,7 +45070,8 @@
       "ko": "그룹 별 정렬 (& R)",
       "nl": "Sorteer op G&roep",
       "sv": "Sortera efter G & roup",
-      "zh-chs": "按组(&O) 排序"
+      "zh-chs": "按组(&O) 排序",
+      "it": "Ordina per gruppo"
     },
     {
       "cs": "Seřadit podle data",
@@ -45725,7 +46088,8 @@
       "ko": "시작하는 중 ...",
       "nl": "Starten...",
       "sv": "Startande...",
-      "zh-chs": "开始..."
+      "zh-chs": "开始...",
+      "it": "In Avvio"
     },
     {
       "cs": "Stav",
@@ -45781,7 +46145,8 @@
       "ko": "통계 ...",
       "nl": "Statistieken...",
       "sv": "Statistik ...",
-      "zh-chs": "统计..."
+      "zh-chs": "统计...",
+      "it": "Statistiche..."
     },
     {
       "cs": "Stav",
@@ -45853,6 +46218,7 @@
     },
     {
       "en": "Stop process #{0} \\\"{1}\\\"?",
+      "it": "Arrestare il processo #{0} \\\"{1}\\\"?",
       "xloc": [
         "default.handlebars->35->1120"
       ]
@@ -45885,7 +46251,8 @@
       "ko": "중지됨",
       "nl": "Gestopt",
       "sv": "Stannade",
-      "zh-chs": "停止"
+      "zh-chs": "停止",
+      "it": "Fermato"
     },
     {
       "de": "Gestoppt.",
@@ -45896,7 +46263,8 @@
       "ko": "중지되었습니다.",
       "nl": "Gestopt.",
       "sv": "Stannade.",
-      "zh-chs": "停了。"
+      "zh-chs": "停了。",
+      "it": "Stopped."
     },
     {
       "cs": "Úložný prostor",
@@ -46306,6 +46674,7 @@
       "ko": "시스템 트레이, 항상 연결됨",
       "nl": "Systeemvak, altijd verbonden",
       "sv": "Systemfack, alltid ansluten",
+      "it": "Vassoio di sistema, sempre connesso",
       "xloc": [
         "default.handlebars->35->470"
       ]
@@ -46315,6 +46684,7 @@
       "ko": "시스템 트레이, 사용자 요청시 연결",
       "nl": "Systeemvak, verbinding maken op verzoek van de gebruiker",
       "sv": "Systemfack, anslut på användarens begäran",
+      "it": "System Tray, Connetti su richiesta dell'utente",
       "xloc": [
         "default.handlebars->35->469"
       ]
@@ -46324,6 +46694,7 @@
       "ko": "시스템 트레이, 모니터 만",
       "nl": "Systeemvak, alleen monitoren",
       "sv": "Systemfack, endast bildskärm",
+      "it": "Barra delle applicazioni, solo monitor",
       "xloc": [
         "default.handlebars->35->471"
       ]
@@ -46378,7 +46749,8 @@
       "ko": "TCP",
       "nl": "TCP",
       "sv": "TCP",
-      "zh-chs": "TCP"
+      "zh-chs": "TCP",
+      "it": "TCP"
     },
     {
       "cs": "Směrování TCP",
@@ -46412,7 +46784,8 @@
       "ko": "TCP 릴레이",
       "nl": "TCP relay",
       "sv": "TCP-relä",
-      "zh-chs": "TCP中继"
+      "zh-chs": "TCP中继",
+      "it": "Rilancio TCP"
     },
     {
       "cs": "SOFTWARE JE POSKYTOVÁN „TAK JAK JE“, BEZ ZÁRUKY, VYJÁDŘENÉ NEBO IMPLIKOVANÉ, VČETNĚ NEJEDNÁVANÝCH ZÁRUK OBCHODOVATELNOSTI, VHODNOSTI PRO URČITÝ ÚČEL A NEZÁVISLOST. V ŽÁDNÉM PŘÍPADĚ NEPOSKYTUJÍ AUTOŘI NEBO DRŽITELÉ AUTORSKÝCH PRÁV ŽÁDNÉ ZÁRUKY, ZA POŠKOZENÍ NEBO OSTATNÍ ODPOVĚDNOST, PŘI ČINNOSTI SMLOUVY, TORTU NEBO JINÉ, VYPLÝVAJÍCÍ ZE SOFTWARU NEBO POUŽITÍ NEBO OSTATNÍCH OBCHODŮ SOFTWARE.",
@@ -46666,6 +47039,7 @@
       "ru": "Обратите внимание на это имя пользователя и пароль, пароль не может быть показан снова.",
       "sv": "Notera detta användarnamn och lösenord, lösenordet kan inte visas igen.",
       "zh-chs": "记下这个用户名和密码，密码不能再次显示。",
+      "it": "Prendi nota di questo nome utente e password, la password non può essere mostrata di nuovo.",
       "xloc": [
         "default.handlebars->35->268"
       ]
@@ -46780,6 +47154,7 @@
       "ru": "Терминал + Файлы",
       "sv": "Terminal + filer",
       "zh-chs": "终端 + 文件",
+      "it": "Terminale + File",
       "xloc": [
         "default.handlebars->35->841",
         "default.handlebars->35->909"
@@ -46867,6 +47242,7 @@
       "nl": "Terminal sessie",
       "sv": "Terminal session",
       "zh-chs": "终端会话",
+      "it": "Sessione terminale",
       "xloc": [
         "default.handlebars->35->2393"
       ]
@@ -47214,7 +47590,8 @@
       "ko": "이 MeshCentral 서버는이 도구의 다른 버전을 사용합니다. 확인을 클릭하여 다운로드하고 업데이트하십시오.",
       "nl": "Deze MeshCentral Server gebruikt een andere versie van deze tool. Klik op OK om te downloaden en bij te werken.",
       "sv": "Denna MeshCentral Server använder en annan version av detta verktyg. Klicka på ok för att ladda ner och uppdatera.",
-      "zh-chs": "此 MeshCentral Server 使用此工具的不同版本。单击“确定”进行下载和更新。"
+      "zh-chs": "此 MeshCentral Server 使用此工具的不同版本。单击“确定”进行下载和更新。",
+      "it": "Questo server MeshCentral utilizza una versione diversa di questo strumento.Fare clic su OK per scaricare e aggiornare."
     },
     {
       "cs": "Tento účet nemá práva k vytvoření nové skupiny zařízení.",
@@ -47244,6 +47621,7 @@
       "ko": "이 에이전트에는 오래된 인증서 유효성 검사 메커니즘이 있으므로 업데이트를 고려하십시오.",
       "nl": "Deze agent heeft een verouderd certificaat validatiemechanisme, overweeg om te updaten.",
       "sv": "Den här agenten har en föråldrad mekanism för validering av certifikat. Överväg att uppdatera.",
+      "it": "Questo agente ha un meccanismo di convalida del certificato obsoleto, considerare l'aggiornamento.",
       "xloc": [
         "default.handlebars->35->2041"
       ]
@@ -47253,6 +47631,7 @@
       "ko": "이 에이전트는 안전하지 않은 터널을 사용하고 있습니다. 업데이트를 고려하십시오.",
       "nl": "Deze agent gebruikt onveilige tunnels, overweeg om te updaten.",
       "sv": "Den här agenten använder osäkra tunnlar, överväga att uppdatera.",
+      "it": "Questo agente utilizza tunnel non sicuri, considera l'aggiornamento.",
       "xloc": [
         "default.handlebars->35->2042"
       ]
@@ -47325,6 +47704,7 @@
       "ko": "이것은 이전 에이전트 버전입니다. 업데이트를 고려하십시오.",
       "nl": "Dit is een oude agent versie, overweeg om te updaten.",
       "sv": "Detta är en gammal agentversion, överväga att uppdatera.",
+      "it": "Questa è una vecchia versione dell'agente, considera l'aggiornamento.",
       "xloc": [
         "default.handlebars->35->2040"
       ]
@@ -47424,7 +47804,8 @@
       "ko": "이 서버는 신뢰할 수없는 인증서를 제공했습니다. 이는 올바른 서버가 아니거나 서버에 유효한 인증서가 없음을 나타낼 수 있습니다. 권장되지는 않지만 무시 버튼을 눌러이 서버에 계속 연결할 수 있습니다.",
       "nl": "Deze server heeft een niet-vertrouwd certificaat gepresenteerd. Dit kan erop wijzen dat dit niet de juiste server is of dat de server geen geldig certificaat heeft. Het wordt niet aanbevolen, maar u kunt op de negeren drukken om de verbinding met deze server voort te zetten.",
       "sv": "Denna server presenterade ett otillförlitligt certifikat. Detta kan indikera att detta inte är rätt server eller att servern inte har ett giltigt certifikat. Det rekommenderas inte, men du kan trycka på ignorera-knappen för att fortsätta anslutningen till den här servern.",
-      "zh-chs": "此服务器提供了不受信任的证书。这可能表明这不是正确的服务器或服务器没有有效的证书。不推荐，但您可以按忽略按钮继续连接到此服务器。"
+      "zh-chs": "此服务器提供了不受信任的证书。这可能表明这不是正确的服务器或服务器没有有效的证书。不推荐，但您可以按忽略按钮继续连接到此服务器。",
+      "it": "Questo server ha presentato un certificato non attendibile.Questo potrebbe indicare che questo non è il server corretto o che il server non ha un certificato valido.Non è raccomandato, ma puoi premere il pulsante Ignora per continuare la connessione a questo server."
     },
     {
       "cs": "Tento software se skládá z dobrovolných příspěvků mnoha jednotlivců (AUTHORS.txt, http://jqueryui.com/about ). Přesnou historii příspěvků naleznete v historii revizí a protokolech dostupných na adrese http://jquery-ui.googlecode.com/svn/",
@@ -47755,6 +48136,7 @@
       "tr": "Bir bilgisayar eklemek için \\\"{0}\\\" aşağıdaki komutu çalıştırın. Kök kimlik bilgilerine ihtiyaç duyulacaktır.",
       "zh-chs": "要将计算机添加到\\\"{0}\\\"，请运行以下命令。命令需要root凭证。",
       "zh-cht": "要將電腦新增到\\\"{0}\\\"，請運行以下命令。命令需要root憑據。",
+      "it": "Per aggiungere un computer a \\\"{0}\\\" esegui il comando seguente. Saranno necessarie le credenziali di root.",
       "xloc": [
         "default.handlebars->35->483"
       ]
@@ -47770,6 +48152,7 @@
       "ru": "Чтобы добавить мобильное устройство в группу \\\"{0}\\\", загрузите приложение MeshAgent и отсканируйте этот QR-код.",
       "sv": "För att lägga till en mobil enhet i gruppen \\\"{0}\\\", ladda ner MeshAgent-applikationen och skanna den här QR-koden.",
       "zh-chs": "要将移动设备添加到组“{0}”，请下载 MeshAgent 应用程序并扫描此二维码。",
+      "it": "Per aggiungere un dispositivo mobile al gruppo \\\"{0}\\\", scarica l'applicazione MeshAgent e scansiona questo codice QR.",
       "xloc": [
         "default.handlebars->35->490"
       ]
@@ -48267,7 +48650,8 @@
       "ko": "원격 데스크톱 연결 전환",
       "nl": "Verbinding met extern bureaublad wisselen",
       "sv": "Växla fjärrskrivbordsanslutning",
-      "zh-chs": "切换远程桌面连接"
+      "zh-chs": "切换远程桌面连接",
+      "it": "Attiva/disattiva connessione desktop remoto"
     },
     {
       "cs": "Přepnout typ emulace terminálu",
@@ -48346,7 +48730,8 @@
       "ko": "확대 / 축소 모드 전환",
       "nl": "Schakel inzoemen naar passend modus in",
       "sv": "Växla zoom-to-fit-läge",
-      "zh-chs": "切换缩放至适合模式"
+      "zh-chs": "切换缩放至适合模式",
+      "it": "Attiva/disattiva la modalità zoom per adattare"
     },
     {
       "cs": "Žeton",
@@ -48384,6 +48769,7 @@
       "ru": "Имя токена",
       "sv": "Token Namn",
       "zh-chs": "代币名称",
+      "it": "Nome token",
       "xloc": [
         "default.handlebars->35->1561"
       ]
@@ -48399,6 +48785,7 @@
       "ru": "Токен: {0}",
       "sv": "Token: {0}",
       "zh-chs": "令牌：{0}",
+      "it": "Token: {0}",
       "xloc": [
         "default.handlebars->35->262"
       ]
@@ -48556,7 +48943,8 @@
       "ko": "전송 진행",
       "nl": "Voortgang overdracht",
       "sv": "Överför framsteg",
-      "zh-chs": "转学进度"
+      "zh-chs": "转学进度",
+      "it": "Avanzamento del trasferimento"
     },
     {
       "cs": "Zkusit znovu.",
@@ -48613,6 +49001,7 @@
       "ru": "Проверка учетных данных",
       "sv": "Försöker referenser",
       "zh-chs": "尝试凭据",
+      "it": "Provare le credenziali",
       "xloc": [
         "default-mobile.handlebars->11->281",
         "default.handlebars->35->716"
@@ -48671,7 +49060,8 @@
       "ko": "터널링 데이터",
       "nl": "Gegevens tunnelen",
       "sv": "Tunneldata",
-      "zh-chs": "隧道数据"
+      "zh-chs": "隧道数据",
+      "it": "Dati di tunneling"
     },
     {
       "cs": "turečtina",
@@ -48748,7 +49138,8 @@
       "ko": "2 단계 인증",
       "nl": "Twee-factor authenticatie",
       "sv": "Tvåfaktorsautentisering",
-      "zh-chs": "两因素身份验证"
+      "zh-chs": "两因素身份验证",
+      "it": "Autenticazione a due fattori"
     },
     {
       "cs": "Typ",
@@ -48834,7 +49225,8 @@
       "ko": "UDP",
       "nl": "UDP",
       "sv": "UDP",
-      "zh-chs": "UDP"
+      "zh-chs": "UDP",
+      "it": "UDP"
     },
     {
       "cs": "Směrování UDP",
@@ -48868,7 +49260,8 @@
       "ko": "UDP 릴레이",
       "nl": "UDP relais",
       "sv": "UDP-relä",
-      "zh-chs": "UDP中继"
+      "zh-chs": "UDP中继",
+      "it": "Rilancio UDP"
     },
     {
       "cs": "UTF8 terminál",
@@ -49074,6 +49467,7 @@
       "ru": "Невозможно аутентифицировать.",
       "sv": "Det gick inte att autentisera.",
       "zh-chs": "无法进行身份验证。",
+      "it": "Impossibile autenticarsi.",
       "xloc": [
         "ssh.handlebars->3->9"
       ]
@@ -49087,13 +49481,15 @@
       "ko": "로컬 포트에 바인딩 할 수 없습니다.",
       "nl": "Kan niet binden aan lokale poort",
       "sv": "Det gick inte att binda till lokal port",
-      "zh-chs": "无法绑定到本地端口"
+      "zh-chs": "无法绑定到本地端口",
+      "it": "Impossibile eseguire il binding alla porta locale"
     },
     {
       "en": "Unable to capture display",
       "ko": "디스플레이를 캡처 할 수 없습니다.",
       "nl": "Kan weergave niet vastleggen",
       "sv": "Det gick inte att fånga skärmen",
+      "it": "Impossibile acquisire il display",
       "xloc": [
         "default.handlebars->35->1051"
       ]
@@ -49107,7 +49503,8 @@
       "ko": "연결할 수 없습니다",
       "nl": "Niet in staat te verbinden",
       "sv": "Kan inte ansluta",
-      "zh-chs": "无法连接"
+      "zh-chs": "无法连接",
+      "it": "Impossibile connetersi"
     },
     {
       "cs": "Nedaří se připojit k web socketu",
@@ -49211,6 +49608,7 @@
       "nl": "Kan geen apparaatmelding verzenden.",
       "sv": "Det går inte att skicka enhetsavisering.",
       "zh-chs": "无法发送设备通知。",
+      "it": "Impossibile inviare la notifica del dispositivo.",
       "xloc": [
         "login2.handlebars->7->23"
       ]
@@ -49646,6 +50044,7 @@
       "ru": "Разблокировать мышь и клавиатуру удаленного пользователя?",
       "sv": "Lås upp fjärranvändarens mus och tangentbord?",
       "zh-chs": "解锁远程用户的鼠标和键盘？",
+      "it": "Sbloccare il mouse e la tastiera dell'utente remoto?",
       "xloc": [
         "default.handlebars->35->899"
       ]
@@ -49731,7 +50130,7 @@
       "fi": "Päivittää",
       "fr": "Mettre à jour",
       "hi": "अपडेट करें",
-      "it": "Aggiornare",
+      "it": "Aggiornamenti",
       "ja": "更新",
       "ko": "개조하다",
       "nl": "Bijwerken",
@@ -49758,7 +50157,8 @@
       "ko": "업데이트 중 ...",
       "nl": "Bijwerken...",
       "sv": "Uppdaterar ...",
-      "zh-chs": "正在更新..."
+      "zh-chs": "正在更新...",
+      "it": "In aggiornamento..."
     },
     {
       "cs": "Nahrát",
@@ -49903,6 +50303,7 @@
       "ru": "Загрузить серверное ядро по умолчанию на выбранные устройства?",
       "sv": "Ladda upp standardserverkärna på utvalda enheter?",
       "zh-chs": "在所选设备上上传默认服务器核心？",
+      "it": "Carica il core del server predefinito sui dispositivi selezionati?",
       "xloc": [
         "default.handlebars->35->604"
       ]
@@ -50006,6 +50407,7 @@
       "nl": "Upload een kleine core",
       "sv": "Ladda upp liten kärna",
       "zh-chs": "上传小核",
+      "it": "Carica un piccolo nucleo",
       "xloc": [
         "default-mobile.handlebars->11->561",
         "default.handlebars->35->1301"
@@ -50113,6 +50515,7 @@
       "ru": "Загрузка: \\\"{0}\\\", Размер: {1}",
       "sv": "Ladda upp: \\\"{0}\\\", Storlek: {1}",
       "zh-chs": "上传：\\\"{0}\\\"，大小：{1}",
+      "it": "Carica: \\\"{0}\\\", Dimensioni: {1}",
       "xloc": [
         "default.handlebars->35->2028"
       ]
@@ -50177,7 +50580,8 @@
       "ko": "대체 포트 사용 ...",
       "nl": "Alternatieve poort gebruiken...",
       "sv": "Använd alternativ port ...",
-      "zh-chs": "使用备用端口..."
+      "zh-chs": "使用备用端口...",
+      "it": "Usa porta alternativa..."
     },
     {
       "cs": "Použijte Mapu vzdálené klávesnice",
@@ -50238,6 +50642,7 @@
       "nl": "Gebruik voor bare-metal LAN activering.",
       "sv": "Används för att aktivera bare-metall LAN-aktivering.",
       "zh-chs": "用于裸机 LAN 激活。",
+      "it": "Utilizzare per l'attivazione LAN bare metal.",
       "xloc": [
         "default.handlebars->35->402"
       ]
@@ -50598,6 +51003,7 @@
       "nl": "Gebruikers invoer",
       "sv": "Användarinmatning",
       "zh-chs": "用户输入",
+      "it": "Input utente",
       "xloc": [
         "default.handlebars->35->233"
       ]
@@ -50974,6 +51380,7 @@
       "ru": "Попытка входа пользователя в заблокированный аккаунт из {0}, {1}, {2}",
       "sv": "Användarinloggningsförsök på låst konto från {0}, {1}, {2}",
       "zh-chs": "来自 {0}、{1}、{2} 的锁定帐户的用户登录尝试",
+      "it": "Tentativo di accesso utente su account bloccato da {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->35->2032"
       ]
@@ -50988,6 +51395,7 @@
       "nl": "Gebruikersaanmeldingspoging met onjuiste 2e factor van {0}, {1}, {2}",
       "sv": "Användarinloggningsförsök med fel andra faktor från {0}, {1}, {2}",
       "zh-chs": "来自 {0}、{1}、{2} 的第二个因素不正确的用户登录尝试",
+      "it": "Tentativo di accesso utente con 2° fattore errato da {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->35->2031"
       ]
@@ -51195,6 +51603,7 @@
       "ru": "VNC соединение",
       "sv": "VNC-anslutning",
       "zh-chs": "VNC 连接",
+      "it": "Connessione VNC",
       "xloc": [
         "default.handlebars->35->645"
       ]
@@ -51210,6 +51619,7 @@
       "ru": "Порт удаленного подключения VNC:",
       "sv": "VNC fjärranslutningsport:",
       "zh-chs": "VNC远程连接端口：",
+      "it": "Porta di connessione remota VNC:",
       "xloc": [
         "default.handlebars->35->644"
       ]
@@ -51247,6 +51657,7 @@
       "nl": "Geldige login",
       "sv": "Giltig inloggning",
       "zh-chs": "有效登录",
+      "it": "Accesso valido",
       "xloc": [
         "default-mobile.handlebars->11->75",
         "default.handlebars->35->261"
@@ -51321,7 +51732,8 @@
       "ko": "값",
       "nl": "Waarde",
       "sv": "Värde",
-      "zh-chs": "价值"
+      "zh-chs": "价值",
+      "it": "Valore"
     },
     {
       "cs": "Venda",
@@ -51590,7 +52002,8 @@
       "ko": "버전",
       "nl": "Versies",
       "sv": "Versioner",
-      "zh-chs": "版本"
+      "zh-chs": "版本",
+      "it": "Versioni"
     },
     {
       "cs": "Velmi pomalu",
@@ -51627,6 +52040,7 @@
       "ru": "Вибрировать",
       "sv": "Vibrera",
       "zh-chs": "颤动",
+      "it": "Vibrare",
       "xloc": [
         "default-mobile.handlebars->11->317",
         "default.handlebars->35->939"
@@ -51707,7 +52121,8 @@
       "ko": "인증서 세부 정보보기 ...",
       "nl": "Certificaatdetails bekijken...",
       "sv": "Visa certifikatinformation ...",
-      "zh-chs": "查看证书详细信息..."
+      "zh-chs": "查看证书详细信息...",
+      "it": "Visualizza dettagli certificato..."
     },
     {
       "cs": "Zobrazit Changelog",
@@ -51809,6 +52224,7 @@
       "ru": "Посмотреть предыдущие входы в систему ",
       "sv": "Visa tidigare inloggningar",
       "zh-chs": "查看以前的登录",
+      "it": "Visualizza accessi precedenti",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountSecurity->3->9->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->14->0"
@@ -51825,6 +52241,7 @@
       "ru": "Посмотреть предыдущие входы в систему для этого пользователя",
       "sv": "Visa tidigare inloggningar för den här användaren",
       "zh-chs": "查看此用户以前的登录",
+      "it": "Visualizza gli accessi precedenti per questo utente",
       "xloc": [
         "default.handlebars->35->2322"
       ]
@@ -51867,7 +52284,8 @@
       "ko": "경고-잘못된 서버 인증서",
       "nl": "WAARSCHUWING - Ongeldig servercertificaat",
       "sv": "VARNING - Ogiltigt servercertifikat",
-      "zh-chs": "警告 - 服务器证书无效"
+      "zh-chs": "警告 - 服务器证书无效",
+      "it": "AVVISO - Certificato del server non valido"
     },
     {
       "cs": "VAROVÁNÍ: ",
@@ -52090,7 +52508,7 @@
       "fi": "Herätä",
       "fr": "Réveil",
       "hi": "उठो",
-      "it": "Svegliati ",
+      "it": "Risveglio",
       "ja": "目を覚ます",
       "ko": "깨우기(Wake-up)",
       "nl": "Wakker worden",
@@ -52113,7 +52531,7 @@
       "fi": "Herätä laitteet",
       "fr": "Réveil des appareils sélectionnés",
       "hi": "वेक-अप डिवाइस",
-      "it": "Dispositivi di sveglia ",
+      "it": "Sveglia dispositivi",
       "ja": "ウェイクアップデバイス",
       "ko": "장치 깨우기(Wake-up)",
       "nl": "Apparaat wekken",
@@ -52232,6 +52650,7 @@
       "ru": "Заголовки HTTP веб-сервера",
       "sv": "Webbserver HTTP-rubriker",
       "zh-chs": "Web 服务器 HTTP 标头",
+      "it": "Intestazioni HTTP del server Web",
       "xloc": [
         "default.handlebars->35->2540"
       ]
@@ -52313,6 +52732,7 @@
       "ru": "Web-SSH",
       "sv": "Web-SSH",
       "zh-chs": "网络SSH",
+      "it": "Web-SSH",
       "xloc": [
         "default.handlebars->35->812"
       ]
@@ -52328,6 +52748,7 @@
       "ru": "Web-VNC",
       "sv": "Web-VNC",
       "zh-chs": "网络VNC",
+      "it": "Web-VNC",
       "xloc": [
         "default.handlebars->35->808"
       ]
@@ -52343,6 +52764,7 @@
       "ru": "WebRDP",
       "sv": "WebRDP",
       "zh-chs": "网络RDP",
+      "it": "WebRDP",
       "xloc": [
         "default.handlebars->35->2504"
       ]
@@ -52358,6 +52780,7 @@
       "ru": "WebSSH",
       "sv": "WebSSH",
       "zh-chs": "网络SSH",
+      "it": "WebSSH",
       "xloc": [
         "default.handlebars->35->2505"
       ]
@@ -52373,6 +52796,7 @@
       "ru": "WebVNC",
       "sv": "WebVNC",
       "zh-chs": "网络VNC",
+      "it": "WebVNC",
       "xloc": [
         "default.handlebars->35->2506"
       ]
@@ -52811,7 +53235,8 @@
       "ko": "WinSCP 클라이언트",
       "nl": "WinSCP client",
       "sv": "WinSCP-klient",
-      "zh-chs": "WinSCP客户端 "
+      "zh-chs": "WinSCP客户端 ",
+      "it": "Client WinSCP"
     },
     {
       "en": "Window Title",
@@ -52922,6 +53347,7 @@
       "ru": "Windows (RDP)",
       "sv": "Windows (RDP)",
       "zh-chs": "视窗 (RDP)",
+      "it": "Windows (RDP)",
       "xloc": [
         "default.handlebars->35->379"
       ]
@@ -53209,6 +53635,7 @@
       "ru": "Безопасность Windows",
       "sv": "Windows-säkerhet",
       "zh-chs": "视窗安全",
+      "it": "Sicurezza di Windows",
       "xloc": [
         "default-mobile.handlebars->11->474",
         "default.handlebars->35->740"
@@ -54133,6 +54560,7 @@
       "ru": "amt:",
       "sv": "amt:",
       "zh-chs": "数量：",
+      "it": "amt:",
       "xloc": [
         "default-mobile.handlebars->11->177",
         "default-mobile.handlebars->11->178",
@@ -54401,6 +54829,7 @@
       "ru": "desc:",
       "sv": "beskrivning:",
       "zh-chs": "描述：",
+      "it": "desc:",
       "xloc": [
         "default.handlebars->35->638",
         "default.handlebars->35->639"
@@ -54417,6 +54846,7 @@
       "ru": "список устройств",
       "sv": "enhetslista",
       "zh-chs": "设备列表",
+      "it": "Elenco dispositivi",
       "xloc": [
         "default.handlebars->35->267"
       ]
@@ -54965,7 +55395,8 @@
       "ko": "label1",
       "nl": "label1",
       "sv": "etikett1",
-      "zh-chs": "标签 1"
+      "zh-chs": "标签 1",
+      "it": "etichetta1"
     },
     {
       "cs": "licencováno pod",
@@ -55028,6 +55459,7 @@
       "tr": "macOS",
       "zh-chs": "macOS",
       "zh-cht": "macOS",
+      "it": "macOS",
       "xloc": [
         "default-mobile.handlebars->11->264",
         "default.handlebars->35->697"
@@ -55063,6 +55495,7 @@
       "ru": "macOS (SSH/SCP/VNC)",
       "sv": "macOS (SSH / SCP / VNC)",
       "zh-chs": "macOS (SSH/SCP/VNC)",
+      "it": "macOS (SSH/SCP/VNC)",
       "xloc": [
         "default.handlebars->35->381"
       ]
@@ -55330,6 +55763,7 @@
       "ru": "os:",
       "sv": "os:",
       "zh-chs": "操作系统：",
+      "it": "os:",
       "xloc": [
         "default-mobile.handlebars->11->175",
         "default-mobile.handlebars->11->176",
@@ -55390,7 +55824,8 @@
       "ko": "statusStrip1",
       "nl": "statusStrip1",
       "sv": "statusStrip1",
-      "zh-chs": "状态条1"
+      "zh-chs": "状态条1",
+      "it": "statoStrip1"
     },
     {
       "cs": "š:",
@@ -55673,7 +56108,8 @@
       "fi": "v",
       "fr": "v",
       "nl": "v",
-      "pt": "v"
+      "pt": "v",
+      "it": "v"
     },
     {
       "de": "v0.8.0",
@@ -55689,7 +56125,8 @@
       "sv": "v0.8.0",
       "tr": "v0.8.0",
       "zh-chs": "v0.8.0",
-      "zh-cht": "v0.8.0"
+      "zh-cht": "v0.8.0",
+      "it": "v0.8.0"
     },
     {
       "cs": "{0}",
@@ -55708,6 +56145,7 @@
       "tr": "{0}",
       "zh-chs": "{0}",
       "zh-cht": "{0}",
+      "it": "{0}",
       "xloc": [
         "default-mobile.handlebars->11->503",
         "default-mobile.handlebars->11->507"
@@ -55744,7 +56182,8 @@
       "ko": "{0}-{1}",
       "nl": "{0} - {1}",
       "sv": "{0} - {1}",
-      "zh-chs": "{0} - {1}"
+      "zh-chs": "{0} - {1}",
+      "it": "{0} - {1}"
     },
     {
       "de": "{0} Assistent",
@@ -55755,7 +56194,8 @@
       "ko": "{0} 어시스턴트",
       "nl": "{0} Assistant",
       "sv": "{0} Assistent",
-      "zh-chs": "{0} 助理"
+      "zh-chs": "{0} 助理",
+      "it": "{0} Assistente"
     },
     {
       "de": "{0} Byte",
@@ -55766,7 +56206,8 @@
       "ko": "{0} 바이트",
       "nl": "{0} Byte",
       "sv": "{0} Byte",
-      "zh-chs": "{0} 字节"
+      "zh-chs": "{0} 字节",
+      "it": "{0} Byte"
     },
     {
       "de": "{0} Byte",
@@ -55777,7 +56218,8 @@
       "ko": "{0} 바이트",
       "nl": "{0} Bytes",
       "sv": "{0} Byte",
-      "zh-chs": "{0} 字节"
+      "zh-chs": "{0} 字节",
+      "it": "{0} Bytes"
     },
     {
       "cs": "{0} Gb",
@@ -56004,6 +56446,7 @@
       "ru": "{0} с {1} по {2}.",
       "sv": "{0} från {1} till {2}.",
       "zh-chs": "{0} 从 {1} 到 {2}。",
+      "it": "{0} da {1} a {2}.",
       "xloc": [
         "default.handlebars->35->973"
       ]
@@ -56284,7 +56727,8 @@
       "ko": "{0} 원격 세션",
       "nl": "{0} externe sessies",
       "sv": "{0} fjärrsessioner",
-      "zh-chs": "{0} 个远程会话"
+      "zh-chs": "{0} 个远程会话",
+      "it": "{0} sessioni remote"
     },
     {
       "de": "{0} Remote-Sitzungen sind aktiv.",
@@ -56295,7 +56739,8 @@
       "ko": "{0} 원격 세션이 활성화되었습니다.",
       "nl": "{0} sessies op afstand zijn actief..",
       "sv": "{0} fjärrsessioner är aktiva.",
-      "zh-chs": "{0} 个远程会话处于活动状态。"
+      "zh-chs": "{0} 个远程会话处于活动状态。",
+      "it": "{0} sessioni remote sono attive."
     },
     {
       "cs": "{0} sekund {1}",
@@ -56523,6 +56968,7 @@
       "ru": "{0}, маска: {1}, шлюз: {2}",
       "sv": "{0}, Mask: {1}, Gateway: {2}",
       "zh-chs": "{0}，掩码：{1}，网关：{2}",
+      "it": "{0}, Maschera: {1}, Gateway: {2}",
       "xloc": [
         "default-mobile.handlebars->11->501",
         "default-mobile.handlebars->11->505"
@@ -56747,7 +57193,8 @@
       "ja": "≡",
       "nl": "≡",
       "pt": "≡",
-      "ru": "≡"
+      "ru": "≡",
+      "it": "≡"
     },
     {
       "cs": "◀",
