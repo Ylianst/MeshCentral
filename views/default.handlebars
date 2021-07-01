@@ -11117,7 +11117,8 @@
             // Display list of devices in this device group
             count = 0;
             nodes.sort(deviceSort);
-            var y = '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Devices" + '</th><th scope=col style=text-align:left></th></tr>';
+            var dllist = (currentMesh.mtype == 1)?'<a onclick=meshDownloadDeviceList()><img title="' + "Download device list" + '" src="images/link4.png" /></a>':'';
+            var y = '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Devices" + '</th><th scope=col style=text-align:right>' + dllist + '</th></tr>';
             for (var i in nodes) {
                 var node = nodes[i], gray = ((node.conn > 0)?'':' gray');
                 if (currentMesh._id != node.meshid) continue;
@@ -11146,6 +11147,22 @@
                 for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
             }
+        }
+        
+        // Save the list of devices in a device group in the MeshCommander format
+        function meshDownloadDeviceList() {
+            if (xxdialogMode) return;
+            var r = { webappversion: "0.9.0", computers: [ ] };
+            for (var i in nodes) {
+                var node = nodes[i];
+                if ((currentMesh._id != node.meshid) || (node.intelamt == null)) continue;
+                var c = { name: node.name, host: node.host, user: node.intelamt.user, pass: '', tls: (node.intelamt.tls == 1)?1:0, ver: node.intelamt.ver, pstate: node.intelamt.state }
+                if (node.intelamt.state == 2) { c.pmode = 1; } // TODO
+                if (node.intelamt.realm) { c.digestrealm = node.intelamt.realm; }
+                if (node.intelamt.hash) { c.tlscerthash = node.intelamt.hash; }
+                r.computers.push(c);
+            }
+            saveAs(stringToUtf8BlobNoHeader(JSON.stringify(r, null, 2)), currentMesh.name + ".json");
         }
 
         function p20editMeshAmt() {
@@ -15643,6 +15660,11 @@
             bytes2[2] = 0xBF;
             for (var i = 0; i < bytes.length; i++) { bytes2[i + 3] = bytes[i]; }
             return new Blob([bytes2], { type: 'application/octet-stream' }) // application/json;charset=utf-8
+        }
+
+        // Convert a string into a UTF8 blob
+        function stringToUtf8BlobNoHeader(str) {
+            return new Blob([new TextEncoder().encode(str)], { type: 'application/octet-stream' }) // application/json;charset=utf-8
         }
 
         function getLang() { if (navigator.languages != undefined) { return navigator.languages[0]; } return navigator.language; }
