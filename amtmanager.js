@@ -127,7 +127,7 @@ module.exports.CreateAmtManager = function (parent) {
         if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
 
         // Clean up this device
-        if (dev.amtstack != null) { dev.amtstack.CancelAllQueries(999); delete dev.amtstack.dev; delete dev.amtstack; }
+        if (dev.amtstack != null) { dev.amtstack.CancelAllQueries(999); if (dev.amtstack != null) { delete dev.amtstack.dev; delete dev.amtstack; } }
         if (dev.polltimer != null) { clearInterval(dev.polltimer); delete dev.polltimer; }
 
         // Remove the device from the list
