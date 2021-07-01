@@ -913,7 +913,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            var fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,trafficstats,trafficdelta,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,dbcounters,sms,amtacm,certhashes,watchdog,amtmanager,amtpasswords,certexpire';
+                            var fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,trafficstats,trafficdelta,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,dbcounters,sms,amtacm,certhashes,watchdog,amtmanager,amtpasswords,certexpire,email';
                             if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
                             availcommands = availcommands.split(',').sort();
                             while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
