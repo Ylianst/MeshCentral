@@ -1102,12 +1102,20 @@
     {
       "de": "---",
       "en": "---",
+      "nl": "---",
+      "cs": "---",
       "es": "---",
       "fr": "---",
       "hi": "---",
+      "fi": "---",
       "ko": "---",
+      "pt": "---",
+      "ja": "---",
+      "it": "---",
+      "ru": "---",
       "sv": "---",
       "zh-chs": "---",
+      "zh-cht": "---",
       "it": "---"
     },
     {
@@ -1122,7 +1130,11 @@
       "ko": ".",
       "nl": ".",
       "pt": ".",
+      "hi": ".",
+      "sv": ".",
       "ru": ".",
+      "zh-chs": ".",
+      "zh-cht": ".",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p0->1->p0message",
         "default.handlebars->container->column_l->p0->p0message",
@@ -1177,6 +1189,11 @@
       "nl": "0",
       "pt": "0",
       "ru": "0",
+      "sv": "0",
+      "hi": "0",
+      "tr": "0",
+      "zh-chs": "0",
+      "zh-cht": "0",
       "xloc": [
         "default-mobile.handlebars->container->masthead->notificationCount->notificationCount2",
         "default.handlebars->container->masthead->7->notificationCount"
@@ -1198,8 +1215,13 @@
       "de": "0%",
       "en": "0%",
       "es": "0%",
+      "cs": "0%",
       "fr": "0%",
       "hi": "0%",
+      "fi": "0%",
+      "pt": "0%",
+      "ru": "0%",
+      "tr": "0%",
       "ko": "0 %",
       "nl": "0%",
       "sv": "0%",
@@ -5559,6 +5581,7 @@
     },
     {
       "en": "Agent Select",
+      "nl": "Agent selecteren",
       "sv": "Agent Select"
     },
     {
@@ -7745,6 +7768,7 @@
     },
     {
       "en": "Automatic Clipboard",
+      "nl": "Automatisch klembord",
       "sv": "Automatisk Urklipp",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->d7deskAutoClipboardLabel"
@@ -9973,6 +9997,7 @@
     },
     {
       "en": "Clear RDP credentials?",
+      "nl": "RDP inloggegevens wissen?",
       "xloc": [
         "default-mobile.handlebars->11->357",
         "default.handlebars->35->1039"
@@ -10695,6 +10720,7 @@
     },
     {
       "en": "Command Line",
+      "nl": "Opdrachtregel",
       "sv": "Kommandorad",
       "xloc": [
         "default.handlebars->35->88"
@@ -16023,6 +16049,7 @@
     },
     {
       "en": "Disconnect from server and close?",
+      "nl": "Verbinding met de server verbreken en afsluiten?",
       "sv": "Koppla bort från servern och stänga?"
     },
     {
@@ -18716,6 +18743,7 @@
     },
     {
       "en": "Ended local relay session \\\"{0}\\\", protocol {1} to {2}, {3} second(s)",
+      "nl": "Beëindigde lokale relay sessie \\\"{0}\\\", protocol {1} naar {2}, {3} seconde(n)",
       "xloc": [
         "default.handlebars->35->2044"
       ]
@@ -22372,6 +22400,7 @@
     },
     {
       "en": "Handle Count",
+      "nl": "Telling verwerken",
       "sv": "Handtagräkning",
       "xloc": [
         "default.handlebars->35->97"
@@ -29003,6 +29032,7 @@
     },
     {
       "en": "Machine Name",
+      "nl": "Machine naam",
       "sv": "Maskinsnamn",
       "xloc": [
         "default.handlebars->35->87"
@@ -32995,6 +33025,7 @@
     },
     {
       "en": "No information provided",
+      "nl": "Geen informatie verstrekt",
       "sv": "Ingen information ges",
       "xloc": [
         "default.handlebars->35->112"
@@ -33196,6 +33227,7 @@
     },
     {
       "en": "No tools allowed",
+      "nl": "Geen gereedschap toegestaan",
       "sv": "Inga verktyg tillåtna"
     },
     {
@@ -33328,6 +33360,7 @@
     },
     {
       "en": "Non Paged Memory",
+      "n": "Niet gewisseld geheugen",
       "sv": "Ej sidminne",
       "xloc": [
         "default.handlebars->35->104"
@@ -34856,6 +34889,7 @@
     },
     {
       "en": "Paged Memory",
+      "nl": "Gewisseld geheugen",
       "sv": "Sidminne",
       "xloc": [
         "default.handlebars->35->105"
@@ -35438,6 +35472,7 @@
     },
     {
       "en": "Peak Paged Memory",
+      "nl": "Piek gewisseld geheugen",
       "sv": "Peak Paged Memory",
       "xloc": [
         "default.handlebars->35->110"
@@ -35445,6 +35480,7 @@
     },
     {
       "en": "Peak Virtual Memory",
+      "nl": "Piek virtueel geheugen",
       "sv": "Topp virtuellt minne",
       "xloc": [
         "default.handlebars->35->111"
@@ -35452,6 +35488,7 @@
     },
     {
       "en": "Peak Working Set",
+      "nl": "Piek werkset",
       "sv": "Peak Working Set",
       "xloc": [
         "default.handlebars->35->109"
@@ -36758,6 +36795,7 @@
     },
     {
       "en": "Priority Boost",
+      "nl": "Prioriteitsboost",
       "sv": "Priority Boost",
       "xloc": [
         "default.handlebars->35->93"
@@ -36821,6 +36859,7 @@
     },
     {
       "en": "Private Memory",
+      "nl": "Prive geheugen",
       "sv": "Privat minne",
       "xloc": [
         "default.handlebars->35->106"
@@ -36828,6 +36867,7 @@
     },
     {
       "en": "Privileged Processor Time",
+      "nl": "Bevoorrechte processortijd",
       "sv": "Privilegierad processortid",
       "xloc": [
         "default.handlebars->35->98"
@@ -36857,6 +36897,7 @@
     },
     {
       "en": "Process Details, #{0}",
+      "nl": "Procesdetails, #{0}",
       "sv": "Processinformation, # {0}",
       "xloc": [
         "default.handlebars->35->1098"
@@ -36864,6 +36905,7 @@
     },
     {
       "en": "Process Name",
+      "nl": "Proces naam",
       "sv": "Process namn",
       "xloc": [
         "default.handlebars->35->86"
@@ -39883,6 +39925,7 @@
     },
     {
       "en": "Requesting details...",
+      "nl": "Details opvragen...",
       "sv": "Begär detaljer ...",
       "xloc": [
         "default.handlebars->35->1099"
@@ -43271,6 +43314,7 @@
     },
     {
       "en": "Session Id",
+      "nl": "Sessie ID"
       "sv": "Sessions-id",
       "xloc": [
         "default.handlebars->35->96"
@@ -45877,6 +45921,7 @@
     },
     {
       "en": "Started local relay session \\\"{0}\\\", protocol {1} to {2}",
+      "nl": "Lokale doorstuursessie gestart \\\"{0}\\\", protocol {1} naar {2}",
       "xloc": [
         "default.handlebars->35->2043"
       ]
@@ -46218,6 +46263,7 @@
     },
     {
       "en": "Stop process #{0} \\\"{1}\\\"?",
+      "nl": "Stop proces #{0} \\\"{1}\\\"?",
       "it": "Arrestare il processo #{0} \\\"{1}\\\"?",
       "xloc": [
         "default.handlebars->35->1120"
@@ -48863,6 +48909,7 @@
     },
     {
       "en": "Total Processor Time",
+      "nl": "Totale processor tijd",
       "sv": "Total processortid",
       "xloc": [
         "default.handlebars->35->100"
@@ -50566,6 +50613,7 @@
     },
     {
       "en": "Usage",
+      "nl": "Gebruik",
       "sv": "Användande",
       "xloc": [
         "default.handlebars->35->2520"
@@ -50649,12 +50697,14 @@
     },
     {
       "en": "Use new credentials",
+      "nl": "Nieuwe inloggegevens gebruiken",
       "xloc": [
         "mstsc.handlebars->main->1->3->1->dropdowndomain->1->d3coreMode->1"
       ]
     },
     {
       "en": "Use server credentials",
+      "nl": "Serverreferenties gebruiken",
       "xloc": [
         "mstsc.handlebars->main->1->3->1->dropdowndomain->1->d3coreMode->0"
       ]
@@ -51117,6 +51167,7 @@
     },
     {
       "en": "User Processor Time",
+      "nl": "Processortijd gebruiker",
       "sv": "Användarprocessortid",
       "xloc": [
         "default.handlebars->35->102"
@@ -52248,6 +52299,7 @@
     },
     {
       "en": "Virtual Memory",
+      "nl": "Virtueel geheugen",
       "sv": "Virtuellt minne",
       "xloc": [
         "default.handlebars->35->107"
@@ -53240,6 +53292,7 @@
     },
     {
       "en": "Window Title",
+      "nl": "Venstertitel",
       "sv": "Fönstrets titel",
       "xloc": [
         "default.handlebars->35->89"
@@ -53688,6 +53741,7 @@
     },
     {
       "en": "Working Set",
+      "nl": "Werkset",
       "sv": "Arbetsuppsättning",
       "xloc": [
         "default.handlebars->35->108"
@@ -55268,6 +55322,7 @@
     },
     {
       "en": "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr, av, update, firewall, avdetails",
+      "en": "id, naam, rname, host, icoon, ip, osdesc, status, groepsnaam, conn, pwr, av, update, firewall, avdetails",
       "sv": "id, namn, rname, värd, ikon, ip, osdesc, tillstånd, gruppnamn, conn, pwr, av, uppdatering, brandvägg, avdetails",
       "xloc": [
         "default.handlebars->35->613"
@@ -56763,6 +56818,7 @@
     },
     {
       "en": "{0} seconds",
+      "nl": "{0} seconden",
       "sv": "{0} sekunder",
       "xloc": [
         "default.handlebars->35->101",
