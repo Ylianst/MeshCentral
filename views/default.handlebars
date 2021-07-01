@@ -9951,7 +9951,7 @@
                         if (m.gatewaymac) {
                             x += addDetailItem("MAC Layer", format("MAC: {0}, Gateway: {1}", EscapeHtml(m.mac), EscapeHtml(m.gatewaymac)));
                         } else {
-                            x += addDetailItem("MAC Layer", format("MAC: {0}", EscapeHtml(m.mac)));
+                            if (m.mac) { x += addDetailItem("MAC Layer", format("MAC: {0}", EscapeHtml(m.mac))); }
                         }
                     }
                     for (var j in m.ipv4layer) {
@@ -9959,7 +9959,7 @@
                         if (ipv4layer.v4gateway && ipv4layer.v4mask) {
                             x += addDetailItem("IPv4 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(ipv4layer.v4addr), EscapeHtml(ipv4layer.v4mask), EscapeHtml(ipv4layer.v4gateway)));
                         } else {
-                            x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(ipv4layer.v4addr)));
+                            if (ipv4layer.v4addr) { x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(ipv4layer.v4addr))); }
                         }
                     }
                     x += '</div>';
@@ -9996,14 +9996,14 @@
                             if (iplayer.gateway && iplayer.netmask) {
                                 x += addDetailItem("IPv4 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
                             } else {
-                                x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(iplayer.address)));
+                                if (iplayer.address) { x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(iplayer.address))); }
                             }
                         }
                         if (iplayer.family == 'IPv6') {
                             if (iplayer.gateway && iplayer.netmask) {
                                 x += addDetailItem("IPv6 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
                             } else {
-                                x += addDetailItem("IPv6 Layer", format("IP: {0}", EscapeHtml(iplayer.address)));
+                                if (iplayer.address) { x += addDetailItem("IPv6 Layer", format("IP: {0}", EscapeHtml(iplayer.address))); }
                             }
                         }
                     }

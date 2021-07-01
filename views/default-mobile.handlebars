@@ -5402,14 +5402,14 @@
                             if (iplayer.gateway && iplayer.netmask) {
                                 x += addDetailItem("IPv4 Layer", format("{0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
                             } else {
-                                x += addDetailItem("IPv4 Layer", format("{0}", EscapeHtml(iplayer.address)));
+                                if (iplayer.address) { x += addDetailItem("IPv4 Layer", format("{0}", EscapeHtml(iplayer.address))); }
                             }
                         }
                         if (iplayer.family == 'IPv6') {
                             if (iplayer.gateway && iplayer.netmask) {
                                 x += addDetailItem("IPv6 Layer", format("{0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
                             } else {
-                                x += addDetailItem("IPv6 Layer", format("{0}", EscapeHtml(iplayer.address)));
+                                if (iplayer.address) { x += addDetailItem("IPv6 Layer", format("{0}", EscapeHtml(iplayer.address))); }
                             }
                         }
                     }
