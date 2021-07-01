@@ -2003,7 +2003,7 @@ module.exports.CreateAmtManager = function (parent) {
         // Find a matching certificate
         for (var i in activationCerts) {
             var cert = activationCerts[i];
-            if ((cert.cn == '*') || (cert.cn == trustedFqdn)) {
+            if ((cert.cn == '*') || checkAcmActivationCertName(cert.cn, trustedFqdn)) {
                 for (var j in deviceHashes) {
                     var hashInfo = deviceHashes[j];
                     if ((hashInfo != null) && (hashInfo.isActive == 1)) {
@@ -2014,6 +2014,14 @@ module.exports.CreateAmtManager = function (parent) {
             }
         }
         return null; // Did not find a match
+    }
+
+    // Return true if the trusted FQDN matched the certificate common name
+    function checkAcmActivationCertName(commonName, trustedFqdn) {
+        commonName = commonName.toLowerCase();
+        trustedFqdn = trustedFqdn.toLowerCase();
+        if (commonName.startsWith('*.') && (commonName.length > 2)) { commonName = commonName.substring(2); }
+        return ((commonName == trustedFqdn) || (trustedFqdn.endsWith('.' + commonName)));
     }
 
     // Attempt Intel AMT TLS ACM activation
