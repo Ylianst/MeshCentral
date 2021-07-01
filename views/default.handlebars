@@ -606,13 +606,10 @@
                             <div id="idx_deskFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
                             <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none" />
                             <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                            <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                            <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
+                            <span id=connectbutton1hspan><input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                            <span id=disconnectbutton1span><input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
                             <span id="deskstatus" style="line-height:22px">Disconnected</span><span id="deskmetadata"></span>
                         </div>
-                    </div>
-                    <div id=deskarea2 style="">
-                        <div class="areaProgress"><div id="progressbar" style=""></div></div>
                     </div>
                     <div id=deskarea3x>
                         <div id=DeskFocus oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
@@ -692,7 +689,7 @@
                 <div id=termTable style="position:relative">
                     <table style="width:100%" cellpadding=0 cellspacing=0>
                         <tr>
-                            <td class="areaHead" style="line-height:24px">
+                            <td class="areaHead" style="line-height:22px">
                                 <div class="toright2">
                                     <div id="termRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
                                     <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
@@ -707,11 +704,6 @@
                                     <span id="disconnectbutton2span"><input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
                                     <span id="termstatus" style="line-height:22px">Disconnected</span><span id="termtitle"></span>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="areaProgress"><div id="termprogressbar" style=""></div></div>
                             </td>
                         </tr>
                         <tr>
@@ -758,7 +750,7 @@
                 </div>
                 <table id="p13toolbar" cellpadding="0" cellspacing="0">
                     <tr>
-                        <td class="areaHead" style="line-height:24px">
+                        <td class="areaHead" style="line-height:22px">
                             <div class="toright2">
                                 <input id="filesActionsBtn" type=button title="Perform power actions on the device" value=Actions onclick=deviceActionFunction() />
                                 <div id="filesRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
