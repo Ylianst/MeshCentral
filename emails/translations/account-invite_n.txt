@@ -1,0 +1,5 @@
+[[[SERVERNAME]]] - Account Invitation
+An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username "[[[ACCOUNTNAME]]]" and password "[[[PASSWORD]]]".
+~
+Best regards,
+~[[[USERNAME]]]
