@@ -3737,6 +3737,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Create the new node
                             nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                             var device = { type: 'node', _id: nodeid, meshid: command.meshid, mtype: 1, icon: 1, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: command.amttls } };
+
+                            // Add optional feilds
+                            if (common.validateInt(command.state, 0, 3)) { device.intelamt.state = command.state; }
+                            if (common.validateString(command.ver, 1, 16)) { device.intelamt.ver = command.ver; }
+                            if (common.validateString(command.hash, 1, 256)) { device.intelamt.hash = command.hash; }
+                            if (common.validateString(command.realm, 1, 256)) { device.intelamt.realm = command.realm; }
+
+                            // Save the device to the database
                             db.Set(device);
 
                             // Event the new node

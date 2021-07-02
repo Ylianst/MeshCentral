@@ -11121,7 +11121,7 @@
             // Display list of devices in this device group
             count = 0;
             nodes.sort(deviceSort);
-            var dllist = (currentMesh.mtype == 1)?'<a onclick=meshDownloadDeviceList()><img title="' + "Download device list" + '" src="images/link4.png" /></a>':'';
+            var dllist = (currentMesh.mtype == 1)?'<a onclick=meshDownloadDeviceList()><img title="' + "Download device list" + '" src="images/link4.png" /></a> <a onclick=meshImportDeviceList()><img title="' + "Import device list" + '" src="images/link6.png" /></a>':'';
             var y = '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Devices" + '</th><th scope=col style=text-align:right>' + dllist + '</th></tr>';
             for (var i in nodes) {
                 var node = nodes[i], gray = ((node.conn > 0)?'':' gray');
@@ -11129,8 +11129,8 @@
                 y += '<tr style=' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td style=width:30%><div onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\' style=float:left class="j' + node.icon + gray + '"></div>&nbsp;<a onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\'>' + EscapeHtml(node.name) + '</a></div></div></td><td style=width:70%><div style=float:right>' + PowerStateStr(node.pwr) + '&nbsp;</div><div>' + (node.osdesc ? EscapeHtml(node.osdesc) : '') + '</div></td></tr>';
                 ++count;
             }
+            if (count == 0) { y += '<tr><td><i>' + "None " + '</i></td></tr>'; }
             y += '</tbody></table>';
-            if (count == 0) { y = ''; }
 
             // If we are full administrator on this mesh, allow deletion of the mesh
             if (meshrights == 0xFFFFFFFF) {
@@ -11167,6 +11167,43 @@
                 r.computers.push(c);
             }
             saveAs(stringToUtf8BlobNoHeader(JSON.stringify(r, null, 2)), currentMesh.name + ".json");
+        }
+
+        // Import a list of devices into the Intel AMT only device group
+        function meshImportDeviceList() {
+            if (xxdialogMode) return;
+            var x = "Import a list of local Intel&reg; AMT devices in MeshCommander JSON format." + '<br /><br /><input style=width:370px type=file id=d4importFile accept=".json" onchange=meshImportDeviceListValidate() />';
+            setDialogMode(2, "Import Intel&reg; AMT Devices", 3, meshImportDeviceListEx, x);
+            QE('idx_dlgOkButton', false);
+        }
+
+        function meshImportDeviceListValidate() {
+            QE('idx_dlgOkButton', Q('d4importFile').value != null);
+        }
+
+        function meshImportDeviceListEx() {
+            var fr = new FileReader();
+            fr.onload = function (r) {
+                var j = null;
+                try { j = JSON.parse(r.target.result); } catch (ex) { setDialogMode(2, "Import Intel&reg; AMT Devices", 1, null, format("Invalid JSON file: {0}.", ex)); return; }
+                if ((typeof j == 'object') && (typeof j.webappversion == 'string') && (typeof j.computers == 'object') && (Array.isArray(j.computers))) {
+                    var ok = 0;
+                    for (var k in j.computers) {
+                        var computer = j.computers[k];
+                        if ((typeof computer.name == 'string') && (typeof computer.host == 'string') && (typeof computer.user == 'string') && (typeof computer.pass == 'string')) {
+                            var cmd = { action: 'addamtdevice', meshid: currentMesh._id, devicename: computer.name, hostname: computer.host, amtusername: computer.user, amtpassword: computer.pass, amttls: (computer.tls == 1)?1:0 };
+                            if (typeof computer.ver == 'string') { cmd.ver = computer.ver; }
+                            if (typeof computer.pstate == 'number') { cmd.state = computer.pstate; }
+                            if (typeof computer.digestrealm == 'string') { cmd.realm = computer.digestrealm; }
+                            if (typeof computer.tlscerthash == 'string') { cmd.hash = computer.tlscerthash; }
+                            meshserver.send(cmd);
+                            ok++;
+                        }
+                    }
+                    if (ok == 0) { setDialogMode(2, "User Account Import", 1, null, "Unable to import any device."); }
+                } else { setDialogMode(2, "Import Intel&reg; AMT Devices", 1, null, "Invalid JSON file format."); }
+            };
+            fr.readAsText(Q('d4importFile').files[0]);
         }
 
         function p20editMeshAmt() {
