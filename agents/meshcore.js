@@ -871,7 +871,7 @@ function handleServerCommand(data) {
                                 woptions.checkServerIdentity.servertlshash = data.servertlshash;
 
                                 //sendConsoleText(JSON.stringify(woptions));
-                                sendConsoleText('TUNNEL: ' + JSON.stringify(data));
+                                //sendConsoleText('TUNNEL: ' + JSON.stringify(data));
                                 var tunnel = http.request(woptions);
                                 tunnel.upgrade = onTunnelUpgrade;
                                 tunnel.on('error', function (e) { sendConsoleText("ERROR: Unable to connect relay tunnel to: " + this.url + ", " + JSON.stringify(e)); });
@@ -1648,12 +1648,12 @@ function onTunnelClosed() {
     // If this is a routing session, clean up and send the new session counts.
     if (this.httprequest.userid != null) {
         if (this.httprequest.tcpport != null) {
-            var userid = getUserIdAndGuestNameFromHttpRequest(s.httprequest);
+            var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest);
             if (tunnelUserCount.tcp[userid] != null) { tunnelUserCount.tcp[userid]--; if (tunnelUserCount.tcp[userid] <= 0) { delete tunnelUserCount.tcp[userid]; } }
             try { mesh.SendCommand({ action: 'sessions', type: 'tcp', value: tunnelUserCount.tcp }); } catch (e) { }
             broadcastSessionsToRegisteredApps();
         } else if (this.httprequest.udpport != null) {
-            var userid = getUserIdAndGuestNameFromHttpRequest(s.httprequest);
+            var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest);
             if (tunnelUserCount.udp[userid] != null) { tunnelUserCount.udp[userid]--; if (tunnelUserCount.udp[userid] <= 0) { delete tunnelUserCount.udp[userid]; } }
             try { mesh.SendCommand({ action: 'sessions', type: 'udp', value: tunnelUserCount.udp }); } catch (e) { }
             broadcastSessionsToRegisteredApps();
