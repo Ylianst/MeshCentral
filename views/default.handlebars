@@ -1446,9 +1446,10 @@
 
             // Setup logout control
             var logoutControl = '';
-            if (logoutControls)
-                if (logoutControls.name != null) { logoutControl = format("Welcome {0}.", logoutControls.name); }
-            if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href="' + logoutControls.logoutUrl + '" style="color:white">' + "Logout" + '</a>'); }
+            if (logoutControls) {
+                if (logoutControls.name != null) { logoutControl = ('<span onclick=go(2) style="color:white;cursor:pointer">' + format("Welcome {0}.", logoutControls.name) + '</span>'); }
+                if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href="' + logoutControls.logoutUrl + '" style="color:white">' + "Logout" + '</a>'); }
+            }
             if (args.hide & 1) { QH('logoutControlSpan2', logoutControl); } else { QH('logoutControlSpan', logoutControl); }
 
             // Setup the context menu
