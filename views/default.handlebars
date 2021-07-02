@@ -11121,7 +11121,12 @@
             // Display list of devices in this device group
             count = 0;
             nodes.sort(deviceSort);
-            var dllist = (currentMesh.mtype == 1)?'<a onclick=meshDownloadDeviceList()><img title="' + "Download device list" + '" src="images/link4.png" /></a> <a onclick=meshImportDeviceList()><img title="' + "Import device list" + '" src="images/link6.png" /></a>':'';
+            var dllist = '';
+            if (currentMesh.mtype == 1) {
+                dllist += '<a onclick=meshDownloadDeviceList()><img title="' + "Download device list" + '" src="images/link4.png" /></a>';
+                if ((features & 1) == 0) { dllist += ' <a onclick=meshImportDeviceList()><img title="' + "Import device list" + '" src="images/link6.png" /></a>'; } // Show import only in LAN or Hybrid mode
+            }
+            
             var y = '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Devices" + '</th><th scope=col style=text-align:right>' + dllist + '</th></tr>';
             for (var i in nodes) {
                 var node = nodes[i], gray = ((node.conn > 0)?'':' gray');
