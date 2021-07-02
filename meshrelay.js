@@ -1188,7 +1188,10 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
     ws.flushSink = function () { try { ws._socket.resume(); } catch (ex) { console.log(ex); } };
 
     // When data is received from the mesh relay web socket
-    ws.on('message', function (data) { if (typeof data != 'string') { try { ws._socket.pause(); obj.client.write(data, ws.flushSink); } catch (ex) { } } }); // Perform relay
+    ws.on('message', function (data) {
+        if (typeof data != 'string') { try { ws._socket.pause(); obj.client.write(data, ws.flushSink); } catch (ex) { } }
+        else { console.log("RelayString: " + data); }
+    }); // Perform relay
 
     // If error, close both sides of the relay.
     ws.on('error', function (err) { parent.relaySessionErrorCount++; obj.close(); });
