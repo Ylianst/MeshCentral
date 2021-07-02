@@ -318,7 +318,14 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
     obj.sendSessionMetadata = function () {
         var allUsers = {};
         if (obj.viewers != null) {
-            for (var i in obj.viewers) { var v = obj.viewers[i]; if ((v.user != null) && (v.user._id != null)) { if (allUsers[v.user._id] == null) { allUsers[v.user._id] = 1; } else { allUsers[v.user._id]++; } } }
+            for (var i in obj.viewers) {
+                var v = obj.viewers[i];
+                if ((v.user != null) && (v.user._id != null)) {
+                    var id = v.user._id;
+                    if (v.guestName) { id += '/guest:' + Buffer.from(v.guestName).toString('base64'); } // If this is a guest connect, add the Base64 guest name.
+                    if (allUsers[id] == null) { allUsers[id] = 1; } else { allUsers[id]++; }
+                }
+            }
             obj.sendToAllViewers(JSON.stringify({ type: 'metadata', 'ctrlChannel': '102938', users: allUsers, startTime: obj.startTime }));
         }
 
@@ -907,6 +914,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
     // If the identifier is removed, drop the connection
     if ((cookie != null) && (typeof cookie.pid == 'string')) {
         obj.pid = cookie.pid;
+        obj.guestName = cookie.gn;
         parent.parent.AddEventDispatch([obj.nodeid], obj);
         obj.HandleEvent = function (source, event, ids, id) { if ((event.action == 'removedDeviceShare') && (obj.pid == event.publicid)) { obj.close(); } }
     }
