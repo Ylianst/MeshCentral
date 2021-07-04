@@ -28,6 +28,14 @@ module.exports.CertificateOperations = function (parent) {
 
     const TopLevelDomainExtendedSupport = { 'net': 2, 'com': 2, 'arpa': 3, 'org': 2, 'gov': 2, 'edu': 2, 'de': 2, 'fr': 3, 'cn': 3, 'nl': 3, 'br': 3, 'mx': 3, 'uk': 3, 'pl': 3, 'tw': 3, 'ca': 3, 'fi': 3, 'be': 3, 'ru': 3, 'se': 3, 'ch': 2, 'dk': 2, 'ar': 3, 'es': 3, 'no': 3, 'at': 3, 'in': 3, 'tr': 3, 'cz': 2, 'ro': 3, 'hu': 3, 'nz': 3, 'pt': 3, 'il': 3, 'gr': 3, 'co': 3, 'ie': 3, 'za': 3, 'th': 3, 'sg': 3, 'hk': 3, 'cl': 2, 'lt': 3, 'id': 3, 'hr': 3, 'ee': 3, 'bg': 3, 'ua': 2 };
 
+    // Return true if the trusted FQDN matched the certificate common name
+    function checkAcmActivationCertName(commonName, trustedFqdn) {
+        commonName = commonName.toLowerCase();
+        trustedFqdn = trustedFqdn.toLowerCase();
+        if (commonName.startsWith('*.') && (commonName.length > 2)) { commonName = commonName.substring(2); }
+        return ((commonName == trustedFqdn) || (trustedFqdn.endsWith('.' + commonName)));
+    }
+
     // Sign a Intel AMT TLS ACM activation request
     obj.getAcmCertChain = function (domain, fqdn, hash) {
         if ((domain == null) || (domain.amtacmactivation == null) || (domain.amtacmactivation.certs == null) || (fqdn == null) || (hash == null)) return { action: 'acmactivate', error: 1, errorText: 'Invalid arguments' };
@@ -38,8 +46,8 @@ module.exports.CertificateOperations = function (parent) {
         var signkey = null, certChain = null, hashAlgo = null, certIndex = null;
         for (var i in domain.amtacmactivation.certs) {
             const certEntry = domain.amtacmactivation.certs[i];
-            if ((certEntry.sha256 == hash) && ((certEntry.cn == '*') || (certEntry.cn == fqdn))) { hashAlgo = 'sha256'; signkey = certEntry.key; certChain = certEntry.certs; certIndex = i; break; }
-            if ((certEntry.sha1 == hash) && ((certEntry.cn == '*') || (certEntry.cn == fqdn))) { hashAlgo = 'sha1'; signkey = certEntry.key; certChain = certEntry.certs; certIndex = i; break; }
+            if ((certEntry.sha256 == hash) && ((certEntry.cn == '*') || checkAcmActivationCertName(certEntry.cn, fqdn))) { hashAlgo = 'sha256'; signkey = certEntry.key; certChain = certEntry.certs; certIndex = i; break; }
+            if ((certEntry.sha1 == hash) && ((certEntry.cn == '*') || checkAcmActivationCertName(certEntry.cn, fqdn))) { hashAlgo = 'sha1'; signkey = certEntry.key; certChain = certEntry.certs; certIndex = i; break; }
         }
         if (signkey == null) return { action: 'acmactivate', error: 2, errorText: "No signing certificate found." }; // Did not find a match.
 
