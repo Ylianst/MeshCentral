@@ -17,13 +17,16 @@
     <script type="text/javascript" src="scripts/zlib-inflate{{min}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-adler32{{min}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-crc32{{min}}.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/webm-writer.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
 </head>
 <body style="overflow:hidden;background-color:black">
     <div id=p11 class="noselect" style="overflow:hidden">
         <div id=deskarea0>
             <div id=deskarea1 class="areaHead">
                 <div class="toright2">
-                    <div class='deskareaicon' title="Toggle View Mode" onclick="toggleAspectRatio(1)">&#8690;</div>
+                    <div class='deskareaicon' title="Toggle View Mode" onclick="toggleAspectRatio(1)">&#8690;</div>&nbsp;
+                    <input id="ConvertAsWebM" style="display:none" type=button value="Convert to WebM" onclick="saveAsWebMfile()">&nbsp;
                 </div>
                 <div>
                     <input id="OpenFileButton" type=button value="Open File..." onclick="openfile()">
@@ -105,8 +108,26 @@
         var waitTimerArgs = null;
         var deskAspectRatio = 0;
         var currentDeltaTimeTotalSec = 0;
+        var videoWriter = null;
+        var videoWriterLastFrame = null;
+        var videoWriterCurrentFrame = null;
+        var browser = null;
 
         function start() {
+            // Detect what browser is in use
+            browser = (function (agent) {
+                switch (true) {
+                    case agent.indexOf("edge") > -1: return "MS Edge (EdgeHtml)";
+                    case agent.indexOf("edg") > -1: return "MS Edge Chromium";
+                    case agent.indexOf("opr") > -1 && !!window.opr: return "opera";
+                    case agent.indexOf("chrome") > -1 && !!window.chrome: return "chrome";
+                    case agent.indexOf("trident") > -1: return "Internet Explorer";
+                    case agent.indexOf("firefox") > -1: return "firefox";
+                    case agent.indexOf("safari") > -1: return "safari";
+                    default: return "other";
+                }
+            })(window.navigator.userAgent.toLowerCase());
+
             window.onresize = deskAdjust;
             document.ondrop = ondrop;
             document.ondragover = ondragover;
@@ -237,6 +258,7 @@
             }
             QV('DeskParent', true);
             QV('TermParent', false);
+            QV('ConvertAsWebM', false);
             if (recFileMetadata.protocol == 1) {
                 // MeshCentral remote terminal
                 recFileProtocol = 1;
@@ -256,8 +278,10 @@
                 recFileStartTime = recFileLastTime = time;
                 agentDesktop = CreateAgentRemoteDesktop('Desk');
                 agentDesktop.onScreenSizeChange = deskAdjust;
+                agentDesktop.onPreDrawImage = preCanvasDraw;
                 agentDesktop.State = 3;
                 deskAdjust();
+                QV('ConvertAsWebM', browser == 'chrome'); // Only show the "Convert to WebM button when in Chrome
             }
             else if (recFileMetadata.protocol == 101) {
                 // Intel AMT Redirection
@@ -269,6 +293,7 @@
                 recFileStartTime = recFileLastTime = time;
                 amtDesktop = CreateAmtRemoteDesktop('Desk');
                 amtDesktop.onScreenSizeChange = deskAdjust;
+                amtDesktop.onPreDrawImage = preCanvasDraw;
                 if (recFileMetadata.bpp) { amtDesktop.bpp = recFileMetadata.bpp; }
                 amtDesktop.State = 3;
                 amtDesktop.Start();
@@ -284,11 +309,13 @@
                 recFileStartTime = recFileLastTime = time;
                 amtDesktop = CreateAmtRemoteDesktop('Desk');
                 amtDesktop.onScreenSizeChange = deskAdjust;
+                amtDesktop.onPreDrawImage = preCanvasDraw;
                 amtDesktop.State = 3;
                 amtDesktop.Start();
                 if (recFileMetadata.bpp) { amtDesktop.bpp = recFileMetadata.bpp; }
                 amtDesktop.state = 3;
                 deskAdjust();
+                QV('ConvertAsWebM', browser == 'chrome'); // Only show the "Convert to WebM button when in Chrome
             }
             QV('metadatadiv', true);
             QH('metadatadiv', x);
@@ -299,7 +326,7 @@
         function processBlock(type, flags, time, data) {
             if (type < 0) { pause(); return; }
             var waitTime = Math.round((time - recFileLastTime) * parseFloat(Q('PlaySpeed').value));
-            if (waitTime < 5) {
+            if ((waitTime < 5) || (videoWriter != null)) {
                 processBlockEx(type, flags, time, data);
             } else {
                 waitTimerArgs = [type, flags, time, data]
@@ -310,6 +337,20 @@
         function processBlockEx(type, flags, time, data, forced) {
             if ((playing == false) && (forced !== true)) return;
             var flagBinary = (flags & 1) != 0, flagUser = (flags & 2) != 0;
+
+            // End of the stream, close the WebM converter
+            if ((type == 3) && (videoWriter != null)) {
+                preCanvasDraw();
+                videoWriter.complete().then(function (webMBlob) {
+                    saveAs(webMBlob, recFile.name.replace('.mcrec', '.webm'));
+                    videoWriter = null;
+                    QE('PlaySpeed', true);
+                    QE('SeekBackwardButton', true);
+                    QE('SeekForwardButton', true);
+                    QE('ConvertAsWebM', true);
+                    QE('OpenFileButton', true);
+                });
+            }
 
             if (type == 2) {
                 // Update the clock
@@ -323,6 +364,10 @@
                     var secs = Math.floor(deltaTimeTotalSec % 60);
                     QH('timespan', pad2(hrs) + ':' + pad2(mins) + ':' + pad2(secs))
                 }
+
+                // Set the initial time on the WebM movie writer if needed
+                if (videoWriterLastFrame == null) { videoWriterLastFrame = time; }
+                videoWriterCurrentFrame = time;
             }
 
             if ((type == 2) && flagBinary && !flagUser) {
@@ -461,6 +506,29 @@
             if (e.key == '5') { Q('PlaySpeed').value = 0.25; haltEvent(e); }
             if (e.key == '6') { Q('PlaySpeed').value = 0.1; haltEvent(e); }
             if (e.key == '0') { pause(); restart(); haltEvent(e); }
+        }
+
+        // Convert the remote desktop or KVM file into a WebM movie file.
+        function saveAsWebMfile() {
+            videoWriterLastFrame = null;
+            videoWriter = new WebMWriter({ quality: 0.60, frameDuration: 10, transparent: false });
+            restart();
+            play();
+            QE('PlayButton', false);
+            QE('PauseButton', false);
+            QE('RestartButton', false);
+            QE('PlaySpeed', false);
+            QE('SeekBackwardButton', false);
+            QE('SeekForwardButton', false);
+            QE('ConvertAsWebM', false);
+            QE('OpenFileButton', false);
+        }
+
+        function preCanvasDraw() {
+            if (videoWriter) {
+                var delta = videoWriterCurrentFrame - videoWriterLastFrame;
+                if (delta >= 100) { videoWriter.addFrame(Q('Desk'), delta); videoWriterLastFrame = videoWriterCurrentFrame; }
+            }
         }
 
         function openfile() {

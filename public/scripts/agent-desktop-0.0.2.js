@@ -138,6 +138,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         for (var i = 0; i < obj.PendingOperations.length; i++) { // && KillDraw < tilesDrawn
             var Msg = obj.PendingOperations[i];
             if (Msg[0] == (obj.TilesDrawn + 1)) {
+                if (obj.onPreDrawImage != null) obj.onPreDrawImage(); // Notify that we are about to draw on the canvas.
                 if (Msg[1] == 1) { obj.ProcessCopyRectMsg(Msg[2]); }
                 else if (Msg[1] == 2) { obj.Canvas.drawImage(Msg[2], obj.rotX(Msg[3], Msg[4]), obj.rotY(Msg[3], Msg[4])); delete Msg[2]; }
                 obj.PendingOperations.splice(i, 1);
