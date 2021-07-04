@@ -33,6 +33,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     obj.sparecache = {};
     obj.ZRLEfirst = 1;
     obj.onScreenSizeChange = null;
+    //obj.onPreDrawImage = null;
     obj.frameRateDelay = 0;
     // ###BEGIN###{DesktopRotation}
     obj.noMouseRotate = false;
@@ -179,6 +180,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
                         if (obj.acc.byteLength < 4) return;
                         obj.state = 100 + accview.getUint16(2); // Read the number of tiles that are going to be sent, add 100 and use that as our protocol state.
                         cmdsize = 4;
+                        if (obj.onPreDrawImage != null) obj.onPreDrawImage(); // Notify that we are about to draw on the canvas.
                         break;
                     case 2: // This is the bell, do nothing.
                         cmdsize = 1;
