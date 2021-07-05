@@ -480,7 +480,7 @@
     "description": "Fare clic sui pulsanti sottostanti per installare o disinstallare l'agente mesh. Una volta installato, questo software viene eseguito in background consentendo a questo computer di essere gestito e controllato da un amministratore remoto."
   },
   "sv": {
-    "agent": "Ombud",
+    "agent": "Agent",
     "agentVersion": "Ny agentversion",
     "group": "Enhetsgrupp",
     "url": "Serverns URL",
@@ -491,7 +491,7 @@
     "update": "Uppdatering",
     "install": "Installera",
     "uninstall": "Avinstallera",
-    "connect": "Ansluta",
+    "connect": "Anslut",
     "disconnect": "Koppla ifrån",
     "cancel": "Avbryt",
     "pressok": "Tryck på OK för att koppla bort",
