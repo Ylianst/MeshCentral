@@ -111,6 +111,7 @@
         var videoWriter = null;
         var videoWriterLastFrame = null;
         var videoWriterCurrentFrame = null;
+        var videoFrameDuration = 100;
         var browser = null;
 
         function start() {
@@ -135,6 +136,9 @@
             document.onkeypress = onkeypress;
             Q('PlaySpeed').value = 1;
             cleanup();
+
+            // Make the dialog box movable
+            dialogBoxDrag();
         }
 
         function readNextBlock(func) {
@@ -453,6 +457,7 @@
         }
 
         function ondrop(e) {
+            if (xxdialogMode) return;
             haltEvent(e);
             QV('bigfail', false);
             QV('bigok', false);
@@ -484,6 +489,7 @@
 
         var dragtimer = null;
         function ondragover(e) {
+            if (xxdialogMode) return;
             haltEvent(e);
             if (dragtimer != null) { clearTimeout(dragtimer); dragtimer = null; }
             var ac = true;
@@ -492,6 +498,7 @@
         }
 
         function ondragleave(e) {
+            if (xxdialogMode) return;
             haltEvent(e);
             dragtimer = setTimeout(function () { QV('bigfail', false); QV('bigok', false); dragtimer = null; }, 10);
         }
@@ -508,10 +515,20 @@
             if (e.key == '0') { pause(); restart(); haltEvent(e); }
         }
 
-        // Convert the remote desktop or KVM file into a WebM movie file.
         function saveAsWebMfile() {
+            var x = '';
+            x += addHtmlValue4("Frame rate", '<select id=webmframerate style=width:200px><option value=100 selected>' + "10 frames/sec" + '</option><option value=50>' + "20 frames/sec" + '</option></select>');
+            x += addHtmlValue4("Quality", '<select id=webmquality style=width:200px><option value=90>' + "90%" + '</option><option value=80>' + "80%" + '</option><option value=60 selected>' + "60%" + '</option><option value=40>' + "40%" + '</option><option value=20>' + "20%" + '</option><option value=10>' + "10%" + '</option></select>');
+            setDialogMode(2, "Convert to WebM", 3, saveAsWebMfileEx, x);
+        }
+
+        // Convert the remote desktop or KVM file into a WebM movie file.
+        function saveAsWebMfileEx() {
+            videoFrameDuration = parseInt(Q('webmframerate').value);
+            var quality = parseInt(Q('webmquality').value) / 100;
+            //console.log(videoFrameDuration, quality);
             videoWriterLastFrame = null;
-            videoWriter = new WebMWriter({ quality: 0.60, frameDuration: 10, transparent: false });
+            videoWriter = new WebMWriter({ quality: quality, frameDuration: 100, transparent: false });
             restart();
             play();
             QE('PlayButton', false);
@@ -527,11 +544,12 @@
         function preCanvasDraw() {
             if (videoWriter) {
                 var delta = videoWriterCurrentFrame - videoWriterLastFrame;
-                if (delta >= 100) { videoWriter.addFrame(Q('Desk'), delta); videoWriterLastFrame = videoWriterCurrentFrame; }
+                if (delta >= videoFrameDuration) { videoWriter.addFrame(Q('Desk'), delta); videoWriterLastFrame = videoWriterCurrentFrame; }
             }
         }
 
         function openfile() {
+            if (xxdialogMode) return;
             var x = '<input type=file name=files id=p2fileinput style=width:100% accept=".mcrec" onchange="openfileChanged()" />';
             setDialogMode(2, "Open File...", 3, openfileEx, x);
             QE('idx_dlgOkButton', false);
@@ -565,10 +583,12 @@
         }
 
         function togglePause() {
+            if (xxdialogMode) return;
             if (recFile != null) { if (playing == true) { pause(); } else { if (recFilePtr != recFile.size) { play(); } } } return false;
         }
 
         function play() {
+            if (xxdialogMode) return;
             Q('PlayButton').blur();
             if ((playing == true) || (recFileProtocol == 0)) return;
             playing = true;
@@ -586,6 +606,7 @@
         }
 
         function pause() {
+            if (xxdialogMode) return;
             Q('PauseButton').blur();
             if (playing == false) return;
             playing = false;
@@ -601,6 +622,7 @@
         }
 
         function restart() {
+            if (xxdialogMode) return;
             Q('RestartButton').blur();
             if (playing == true) return;
             recFilePtr = 0;
@@ -680,6 +702,7 @@
         }
 
         function seekBackward() {
+            if (xxdialogMode) return;
             var ndxNumber = Math.round(currentDeltaTimeTotalSec / recFileMetadata.indexInterval);
             if (ndxNumber < 2) {
                 pause(); restart();
@@ -689,6 +712,7 @@
         }
 
         function seekForward() {
+            if (xxdialogMode) return;
             var ndxNumber = Math.round(currentDeltaTimeTotalSec / recFileMetadata.indexInterval);
             if (recFileMetadata.indexes[ndxNumber] != null) { seek(ndxNumber); }
         }
@@ -703,6 +727,7 @@
         var SeekIndexTime;
         var SeekPlayState;
         function seek(indexNumber) {
+            if (xxdialogMode) return;
             //console.log('seek', indexNumber);
             if ((recFileMetadata.indexes == null) || (recFileMetadata.indexes[indexNumber] == null)) return null;
             SeekPlayState = playing;
@@ -748,7 +773,7 @@
         //
 
         // null = Hidden, 1 = Generic Message
-        var xxdialogMode;
+        var xxdialogMode = 0;
         var xxdialogFunc;
         var xxdialogButtons;
         var xxdialogTag;
@@ -784,6 +809,41 @@
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+
+        function addHtmlValue(t, v) { return '<table><td style=width:120px>' + t + '<td><b>' + v + '</b></table>'; }
+        function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
+        function addHtmlValue3(t, v) { return '<div><b>' + t + '</b></div><div style=margin-left:16px>' + v + '</div>'; }
+        function addHtmlValue4(t, v) { return '<table style=width:100%><td style=width:120px>' + t + '<td style=text-align:right><b>' + v + '</b></table>'; }
+        function addHtmlValue5(t, v) { return '<div style=padding:4px><div style=display:inline-block;float:right><b>' + v + '</b></div><div style=display:inline-block>' + t + '</div></div>'; }
+
+        // Make the dialog box movable
+        function dialogBoxDrag() {
+            var elmnt = Q('dialog');
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            Q('dialogHeader').onmousedown = dragMouseDown;
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                elmnt.style.top = (elmnt.offsetTop - pos2) + 'px';
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + 'px';
+            }
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
 
         start();
     </script>
