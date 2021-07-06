@@ -1,5 +1,5 @@
 /*
-Copyright 2019-2021 Intel Corporation
+Copyright 2019-2020 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -43,30 +43,37 @@ function qfe()
 }
 function av()
 {
-    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\wbem\\wmic.exe', ['wmic', '/Namespace:\\\\root\\SecurityCenter2', 'Path', 'AntiVirusProduct', 'get', '/FORMAT:CSV']);
+    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
+    if (child == null) { return ([]); }
+
+    child.descriptorMetadata = 'process-manager';
     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-    child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); })
+    child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
+
+    child.stdin.write('[reflection.Assembly]::LoadWithPartialName("system.core")\r\n');
+    child.stdin.write('Get-WmiObject -Namespace "root/SecurityCenter2" -Class AntiVirusProduct | ');
+    child.stdin.write('ForEach-Object -Process { ');
+    child.stdin.write('$Bytes = [System.Text.Encoding]::UTF8.GetBytes($_.displayName); ');
+    child.stdin.write('$EncodedText =[Convert]::ToBase64String($Bytes); ');
+    child.stdin.write('Write-Host ("{0},{1}" -f $_.productState,$EncodedText); }\r\n');
+    child.stdin.write('exit\r\n');
     child.waitExit();
 
-    var lines = child.stdout.str.trim().split('\r\n');
-    var keys = lines[0].split(',');
-    var i, key;
-    var tokens;
-    var result = [];
+    if (child.stdout.str == '') { return ([]); }
 
-    for (i = 1; i < lines.length; ++i)
+    var lines = child.stdout.str.trim().split('\r\n');
+    var result = [];
+    for (i = 0; i < lines.length; ++i)
     {
-        var obj = {};
-        var status = {};
-        tokens = lines[i].split(',');
-        for (key = 0; key < keys.length; ++key)
+        var keys = lines[i].split(',');
+        if(keys.length == 2)
         {
-            if (tokens[key] != undefined) { obj[keys[key].trim()] = tokens[key]; }
+            var status = {};
+            status.product = Buffer.from(keys[1], 'base64').toString();
+            status.updated = (parseInt(keys[0]) & 0x10) == 0;
+            status.enabled = (parseInt(keys[0]) & 0x1000) == 0x1000;
+            result.push(status);
         }
-        status.product = obj.displayName;
-        status.updated = (parseInt(obj.productState) & 0x10) == 0;
-        status.enabled = (parseInt(obj.productState) & 0x1000) == 0x1000;
-        result.push(status);
     }
     return (result);
 }
