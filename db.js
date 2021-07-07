@@ -1647,6 +1647,20 @@ module.exports.CreateDB = function (parent, func) {
         return cmd;
     }
 
+    function buildMongoDumpCommand() {
+        const dburl = parent.args.mongodb;
+
+        var mongoDumpPath = 'mongodump';
+        if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) {
+            mongoDumpPath = parent.config.settings.autobackup.mongodumppath;
+        }
+
+        var cmd = '"' + mongoDumpPath + '"';
+        if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + dburl + '\"'; }
+
+        return cmd;
+    }
+
     // Check that the server is capable of performing a backup
     obj.checkBackupCapability = function (func) {
         if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { func(); }
@@ -1655,11 +1669,8 @@ module.exports.CreateDB = function (parent, func) {
             var backupPath = parent.backuppath;
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
             try { parent.fs.mkdirSync(backupPath); } catch (e) { }
-            const dburl = parent.args.mongodb;
-            var mongoDumpPath = 'mongodump';
-            if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = parent.config.settings.autobackup.mongodumppath; }
-            var cmd = '"' + mongoDumpPath + '"';
-            if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + dburl + '\"'; }
+
+            var cmd = buildMongoDumpCommand();
             cmd += (parent.platform == 'win32') ? ' --archive=\"nul\"' : ' --archive=\"/dev/null\"';
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
@@ -1836,11 +1847,12 @@ module.exports.CreateDB = function (parent, func) {
                 // Perform a MongoDump backup
                 const newBackupFile = 'mongodump-' + fileSuffix;
                 var newBackupPath = parent.path.join(backupPath, newBackupFile);
-                var mongoDumpPath = 'mongodump';
-                if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = parent.config.settings.autobackup.mongodumppath; }
+
+                var cmd = buildMongoDumpCommand();
+                cmd += (dburl) ? ' --archive=\"' + newBackupPath + '.archive\"' :
+                                 ' --db=\"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
+
                 const child_process = require('child_process');
-                var cmd = '\"' + mongoDumpPath + '\" --db=\"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
-                if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + dburl + '\" --archive=\"' + newBackupPath + '.archive\"'; }
                 var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                     try {
                         var mongoDumpSuccess = true;
