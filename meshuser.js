@@ -544,6 +544,690 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         });
     } catch (e) { console.log(e); }
 
+
+    var consoleCommands = {};
+    consoleCommands['help'] = helpConsoleCommand;
+    consoleCommands['certexpire'] = certexpireConsoleCommand;
+    consoleCommands['webpush'] = webpushConsoleCommand;
+    consoleCommands['amtmanager'] = amtmanagerConsoleCommand;
+    consoleCommands['certhashes'] = certhashesConsoleCommand;
+    consoleCommands['amtacm'] = amtacmConsoleCommand;
+    consoleCommands['heapdump'] = heapdumpConsoleCommand;
+    consoleCommands['heapdump2'] = heapdump2ConsoleCommand;
+    consoleCommands['sms'] = smsConsoleCommand;
+    consoleCommands['email'] = emailConsoleCommand;
+    consoleCommands['le'] = leConsoleCommand;
+    consoleCommands['lecheck'] = lecheckConsoleCommand;
+    consoleCommands['leevents'] = leeventsConsoleCommand;
+    consoleCommands['badlogins'] = badloginsConsoleCommand;
+    consoleCommands['dispatchtable'] = dispatchtableConsoleCommand;
+    consoleCommands['dupagents'] = dupagentsConsoleCommand;
+    consoleCommands['agentstats'] = agentstatsConsoleCommand;
+    consoleCommands['agentissues'] = agentissuesConsoleCommand;
+    consoleCommands['webstats'] = webstatsConsoleCommand;
+    consoleCommands['trafficstats'] = trafficstatsConsoleCommand;
+    consoleCommands['trafficdelta'] = trafficdeltaConsoleCommand;
+    consoleCommands['watchdog'] = watchdogConsoleCommand;
+    consoleCommands['acceleratorsstats'] = acceleratorsstatsConsoleCommand;
+    consoleCommands['mpsstats'] = mpsstatsConsoleCommand;
+    consoleCommands['mps'] = mpsConsoleCommand;
+    consoleCommands['dbstats'] = dbstatsConsoleCommand;
+    consoleCommands['dbcounters'] = dbcountersConsoleCommand;
+    consoleCommands['serverupdate'] = serverupdateConsoleCommand;
+    consoleCommands['print'] = printConsoleCommand;
+    consoleCommands['amtpasswords'] = amtpasswordsConsoleCommand;
+    consoleCommands['updatecheck'] = updatecheckConsoleCommand;
+    consoleCommands['maintenance'] = maintenanceConsoleCommand;
+    consoleCommands['info'] = infoConsoleCommand;
+    consoleCommands['nodeconfig'] = nodeconfigConsoleCommand;
+    consoleCommands['versions'] = versionsConsoleCommand;
+    consoleCommands['args'] = argsConsoleCommand;
+    consoleCommands['usersessions'] = usersessionsConsoleCommand;
+    consoleCommands['closeusersessions'] = closeusersessionsConsoleCommand;
+    consoleCommands['resetserver'] = resetserverConsoleCommand;
+    consoleCommands['tasklimiter'] = tasklimiterConsoleCommand;
+    consoleCommands['setmaxtasks'] = setmaxtasksConsoleCommand;
+    consoleCommands['cores'] = coresConsoleCommand;
+    consoleCommands['showpaths'] = showpathsConsoleCommand;
+    consoleCommands['migrationagents'] = migrationagentsConsoleCommand;
+    consoleCommands['swarmstats'] = swarmstatsConsoleCommand;
+    consoleCommands['relays'] = relaysConsoleCommand;
+    consoleCommands['autobackup'] = autobackupConsoleCommand;
+    consoleCommands['backupconfig'] = backupconfigConsoleCommand;
+    consoleCommands['firebase'] = firebaseConsoleCommand;
+
+
+    function helpConsoleCommand(cmdargs) {
+        var r = '', fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,trafficstats,trafficdelta,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,dbcounters,sms,amtacm,certhashes,watchdog,amtmanager,amtpasswords,certexpire,email';
+        if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
+        availcommands = availcommands.split(',').sort();
+        while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
+        if (f != '') { fin += f; }
+        if (cmdargs['_'].length == 0) {
+            r = 'Available commands: \r\n' + fin + '\r\nType help <command> for details.';
+        } else {
+            var cmd2 = cmdargs['_'][0].toLowerCase();
+            switch (cmd2) {
+                case 'info': { r = "info: Returns the most immidiatly useful information about this server, including MeshCentral and NodeJS versions. This is often information required to file a bug."; break; }
+                case 'versions': { r = "versions: Returns all internal versions for NodeJS running this server."; break; }
+                case 'resetserver': { r = "resetserver: Causes the server to reset, this is sometimes useful is the config.json file was changed."; break; }
+                case 'usersessions': { r = "usersessions: Returns a list of active sessions grouped by user."; break; }
+                case 'closeusersessions': { r = "closeusersessions: Disconnects all sessions for a specified user."; break; }
+                case 'tasklimiter': { r = "tasklimiter: Returns the internal status of the tasklimiter. This is a system used to smooth out work done by the server. It's used by, for example, agent updates so that not all agents are updated at the same time."; break; }
+                case 'serverupdate': { r = "serverupdate: Updates server to latest version. Optional version argument to install specific version. Example: serverupdate 0.8.49"; break; }
+                default: { r = 'No help information about this command.'; break; }
+            }
+        }
+        return r;
+    }
+
+    function certexpireConsoleCommand(command, cmdargs) {
+        var r = '';
+        const now = Date.now();
+        for (var i in parent.webCertificateExpire) {
+            const domainName = (i == '') ? '[Default]' : i;
+            r += domainName + ', expires in ' + Math.floor((parent.webCertificateExpire[i] - now) / 86400000) + ' day(s)\r\n';
+        }
+        return r;
+    }
+
+    function webpushConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.webpush == null) {
+            r = "Web push not supported.";
+        } else {
+            if (cmdargs['_'].length != 1) {
+                r = "Usage: WebPush \"Message\"";
+            } else {
+                const pushSubscription = { "endpoint": "https://updates.push.services.mozilla.com/wpush/v2/gAAAAABgIkO9hjXHWhMPiuk-ppNRw7r_pUZitddwCEK4ykdzeIxOIjFnYhIt_nr-qUca2mpZziwQsSEhYTUCiuYrhWnVDRweMtiUj16yJJq8V5jneaEaUYjEIe5jp3DOMNpoTm1aHgX74gCR8uTXSITcM97bNi-hRxcQ4f6Ie4WSAmoXpd89B_g", "keys": { "auth": "UB2sbLVK7ALnSHw5P1dahg", "p256dh": "BIoRbcNSxBuTjN39CCCUCHo1f4NxBJ1YDdu_k4MbPW_q3NK1_RufnydUzLPDp8ibBVItSI72-s48QJvOjQ_S8Ok" } }
+                parent.parent.webpush.sendNotification(pushSubscription, cmdargs['_'][0]).then(
+                    function (value) { try { ws.send(JSON.stringify({ action: 'OK', value: r, tag: command.tag })); } catch (ex) { } },
+                    function (error) { try { ws.send(JSON.stringify({ action: 'Error', value: r, tag: command.tag })); } catch (ex) { } }
+                );
+            }
+        }
+        return r;
+    }
+
+    function amtmanagerConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.amtManager == null) {
+            r = 'Intel AMT Manager not active.';
+        } else { 
+            r = parent.parent.amtManager.getStatusString();
+        }
+        return r;
+    }
+
+    function certhashesConsoleCommand(command, cmdargs) {
+        var r = '';
+        r += 'AgentCertHash: ' + parent.agentCertificateHashHex;
+        for (var i in parent.webCertificateHashs) { r += '\r\nwebCertificateHash (' + i + '): ' + common.rstr2hex(parent.webCertificateHashs[i]); }
+        for (var i in parent.webCertificateFullHashs) { r += '\r\nwebCertificateFullHash (' + i + '): ' + common.rstr2hex(parent.webCertificateFullHashs[i]); }
+        r += '\r\ndefaultWebCertificateHash: ' + common.rstr2hex(parent.defaultWebCertificateHash);
+        r += '\r\ndefaultWebCertificateFullHash: ' + common.rstr2hex(parent.defaultWebCertificateFullHash);
+        return r;
+    }
+
+    function amtacmConsoleCommand(command, cmdargs) {
+        var r = '';
+        if ((domain.amtacmactivation == null) || (domain.amtacmactivation.acmmatch == null) || (domain.amtacmactivation.acmmatch.length == 0)) {
+            r = 'No Intel AMT activation certificates.';
+        } else {
+            if (domain.amtacmactivation.log != null) { r += '--- Activation Log ---\r\nFile  : ' + domain.amtacmactivation.log + '\r\n'; }
+            for (var i in domain.amtacmactivation.acmmatch) {
+                var acmcert = domain.amtacmactivation.acmmatch[i];
+                r += '--- Activation Certificate ' + (parseInt(i) + 1) + ' ---\r\nName  : ' + acmcert.cn + '\r\nSHA1  : ' + acmcert.sha1 + '\r\nSHA256: ' + acmcert.sha256 + '\r\n';
+            }
+        }
+        return r;
+    }
+
+    function heapdumpConsoleCommand(command, cmdargs) {
+        var r = '';
+        // Heapdump support, see example at:
+        // https://www.arbazsiddiqui.me/a-practical-guide-to-memory-leaks-in-nodejs/
+        if (parent.parent.config.settings.heapdump === true) {
+            var dumpFileName = parent.path.join(parent.parent.datapath, `heapDump-${Date.now()}.heapsnapshot`);
+            try { ws.send(JSON.stringify({ action: 'serverconsole', value: "Generating dump file at: " + dumpFileName, tag: command.tag })); } catch (ex) { }
+            require('heapdump').writeSnapshot(dumpFileName, (err, filename) => {
+                try { ws.send(JSON.stringify({ action: 'serverconsole', value: "Done.", tag: command.tag })); } catch (ex) { }
+            });
+        } else {
+            r = "Heapdump not supported, add \"heapdump\":true to settings section of config.json.";
+        }
+        return r;
+    }
+
+    function heapdump2ConsoleCommand(command, cmdargs) {
+        var r = '';
+        var heapdump = null;
+        try { heapdump = require('heapdump'); } catch (ex) { }
+        if (heapdump == null) {
+            r = 'Heapdump module not installed, run "npm install heapdump".';
+        } else {
+            heapdump.writeSnapshot(function (err, filename) {
+                if (err != null) {
+                    try { ws.send(JSON.stringify({ action: 'serverconsole', value: 'Unable to write heapdump: ' + err })); } catch (ex) { }
+                } else {
+                    try { ws.send(JSON.stringify({ action: 'serverconsole', value: 'Wrote heapdump at ' + filename })); } catch (ex) { }
+                }
+            });
+        }
+        return r;
+    }
+
+    function smsConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.smsserver == null) {
+            r = "No SMS gateway in use.";
+        } else {
+            if (cmdargs['_'].length != 2) {
+                r = "Usage: SMS \"PhoneNumber\" \"Message\".";
+            } else {
+                parent.parent.smsserver.sendSMS(cmdargs['_'][0], cmdargs['_'][1], function (status, msg) {
+                    if (typeof msg == 'string') {
+                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? ('Success: ' + msg) : ('Failed: ' + msg), tag: command.tag })); } catch (ex) { }
+                    } else {
+                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? 'Success' : 'Failed', tag: command.tag })); } catch (ex) { }
+                    }
+                });
+            }
+        }
+        return r;
+    }
+
+    function emailConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (domain.mailserver == null) {
+            r = "No email service enabled.";
+        } else {
+            if (cmdargs['_'].length != 3) {
+                r = "Usage: email \"user@sample.com\" \"Subject\" \"Message\".";
+            } else {
+                domain.mailserver.sendMail(cmdargs['_'][0], cmdargs['_'][1], cmdargs['_'][2]);
+                r = "Done.";
+            }
+        }
+        return r;
+    }
+
+    function leConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.letsencrypt == null) {
+            r = "Let's Encrypt not in use.";
+        } else {
+            r = JSON.stringify(parent.parent.letsencrypt.getStats(), null, 4);
+        }
+        return r;
+    }
+
+    function lecheckConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.letsencrypt == null) {
+            r = "Let's Encrypt not in use.";
+        } else {
+            r = ["CertOK", "Request:NoCert", "Request:Expire", "Request:MissingNames"][parent.parent.letsencrypt.checkRkenewCertificate()];
+        }
+        return r;
+    }
+
+    function leeventsConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.letsencrypt == null) {
+            r = "Let's Encrypt not in use.";
+        } else {
+            r = parent.parent.letsencrypt.events.join('\r\n');
+        }
+        return r;
+    }
+
+    function badloginsConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.config.settings.maxinvalidlogin == false) {
+            r = 'Bad login filter is disabled.';
+        } else {
+            if (cmdargs['_'] == 'reset') {
+                // Reset bad login table
+                parent.badLoginTable = {};
+                parent.badLoginTableLastClean = 0;
+                r = 'Done.'
+            } else if (cmdargs['_'] == '') {
+                // Show current bad login table
+                if (typeof parent.parent.config.settings.maxinvalidlogin.coolofftime == 'number') {
+                    r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s), " + parent.parent.config.settings.maxinvalidlogin.coolofftime + " minute(s) cooloff.\r\n";
+                } else {
+                    r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s).\r\n";
+                }
+                var badLoginCount = 0;
+                parent.cleanBadLoginTable();
+                for (var i in parent.badLoginTable) {
+                    badLoginCount++;
+                    if (typeof parent.badLoginTable[i] == 'number') {
+                        r += "Cooloff for " + Math.floor((parent.badLoginTable[i] - Date.now()) / 60000) + " minute(s)\r\n";
+                    } else {
+                        if (parent.badLoginTable[i].length > 1) {
+                            r += (i + ' - ' + parent.badLoginTable[i].length + " records\r\n");
+                        } else {
+                            r += (i + ' - ' + parent.badLoginTable[i].length + " record\r\n");
+                        }
+                    }
+                }
+                if (badLoginCount == 0) { r += 'No bad logins.'; }
+            } else {
+                r = 'Usage: badlogin [reset]';
+            }
+        }
+        return r;
+    }
+
+    function dispatchtableConsoleCommand(command, cmdargs) {
+        var r = '';
+        for (var i in parent.parent.eventsDispatch) {
+            r += (i + ', ' + parent.parent.eventsDispatch[i].length + '\r\n'); 
+        }
+        return r;
+    }
+
+    function dupagentsConsoleCommand(command, cmdargs) {
+        var r = '';
+        for (var i in parent.duplicateAgentsLog) {
+            r += JSON.stringify(parent.duplicateAgentsLog[i]) + '\r\n';
+        }
+        if (r == '') { r = 'No duplicate agents in log.'; }
+        return r;
+    }
+
+    function agentstatsConsoleCommand(command, cmdargs) {
+        var r = '';
+        var stats = parent.getAgentStats();
+        for (var i in stats) {
+            if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+        }
+        return r;
+    }
+
+    function agentissuesConsoleCommand(command, cmdargs) {
+        var r = '';
+        var stats = parent.getAgentIssues();
+        if (stats.length == 0) {
+            r = "No agent issues.";
+        } else {
+            for (var i in stats) { r += stats[i].join(', ') + '\r\n'; }
+        }
+        return r;
+    }
+
+    function webstatsConsoleCommand(command, cmdargs) {
+        var r = '';
+        var stats = parent.getStats();
+        for (var i in stats) {
+            if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+        }
+        return r;
+    }
+
+    function trafficstatsConsoleCommand(command, cmdargs) {
+        var r = '';
+        var stats = parent.getTrafficStats();
+        for (var i in stats) {
+            if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+        }
+        return r;
+    }
+
+    function trafficdeltaConsoleCommand(command, cmdargs) {
+        var r = '';
+        const stats = parent.getTrafficDelta(obj.trafficStats);
+        obj.trafficStats = stats.current;
+        for (var i in stats.delta) {
+            if (typeof stats.delta[i] == 'object') { r += (i + ': ' + JSON.stringify(stats.delta[i]) + '\r\n'); } else { r += (i + ': ' + stats.delta[i] + '\r\n'); }
+        }
+        return r;
+    }
+
+    function watchdogConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.watchdog == null) {
+            r = 'Server watchdog not active.';
+        } else {
+            r = 'Server watchdog active.\r\n';
+            if (parent.parent.watchdogmaxtime != null) { r += 'Largest timeout was ' + parent.parent.watchdogmax + 'ms on ' + parent.parent.watchdogmaxtime + '\r\n'; }
+            for (var i in parent.parent.watchdogtable) { r += parent.parent.watchdogtable[i] + '\r\n'; }
+        }
+        return r;
+    }
+
+    function acceleratorsstatsConsoleCommand(command, cmdargs) {
+        var r = '';
+        var stats = parent.parent.certificateOperations.getAcceleratorStats();
+        for (var i in stats) {
+            if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+        }
+        return r;
+    }
+
+    function mpsstatsConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.mpsserver == null) {
+            r = 'MPS not enabled.';
+        } else {
+            var stats = parent.parent.mpsserver.getStats();
+            for (var i in stats) {
+                if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+            }
+        }
+        return r;
+    }
+
+    function mpsConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.mpsserver == null) {
+            r = 'MPS not enabled.';
+        } else {
+            const connectionTypes = ['CIRA', 'Relay', 'LMS'];
+            for (var nodeid in parent.parent.mpsserver.ciraConnections) {
+                r += nodeid;
+                var connections = parent.parent.mpsserver.ciraConnections[nodeid];
+                for (var i in connections) { r += ', ' + connectionTypes[connections[i].tag.connType]; }
+                r += '\r\n';
+            }
+            if (r == '') { r = 'MPS has not connections.'; }
+        }
+        return r;
+    }
+
+    function dbstatsConsoleCommand(command, cmdargs) {
+        parent.parent.db.getStats(function (stats) {
+            var r2 = '';
+            for (var i in stats) { r2 += (i + ': ' + stats[i] + '\r\n'); }
+            try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: command.tag })); } catch (ex) { }
+        });
+    }
+
+    function dbcountersConsoleCommand(command, cmdargs) {
+        try { ws.send(JSON.stringify({ action: 'serverconsole', value: JSON.stringify(parent.parent.db.dbCounters, null, 2), tag: command.tag })); } catch (ex) { }
+    }
+
+    function serverupdateConsoleCommand(command, cmdargs) {
+        var r = '';
+        r = 'Performing server update...';
+        var version = null;
+
+        if (cmdargs['_'].length > 0) {
+            version = cmdargs['_'][0];
+
+            // This call is SLOW. We only want to validate version if we have to
+            if (version != 'stable' && version != 'latest') {
+                parent.parent.getServerVersions((data) => {
+                    var versions = JSON.parse(data);
+
+                    if (versions.includes(version)) {
+                        if (parent.parent.performServerUpdate(version) == false) { 
+                            try { 
+                                ws.send(JSON.stringify({ action: 'serverconsole',
+                                                         value: 'Server self-update not possible.'}));
+                            } catch (ex) { }
+                        }
+                    } else {
+                        try { 
+                            ws.send(JSON.stringify({ action: 'serverconsole',
+                                                     value: 'Invalid version. Aborting update'}));
+                        } catch (ex) { }
+                    }
+                });
+            } else {
+                if (parent.parent.performServerUpdate(version) == false) { 
+                    r = 'Server self-update not possible.';
+                }
+            }  
+        } else {
+            if (parent.parent.performServerUpdate(version) == false) { 
+                r = 'Server self-update not possible.';
+            }
+        }
+        return r;
+    }
+
+    function printConsoleCommand(command, cmdargs) {
+        console.log(cmdargs['_'][0]);
+    }
+
+    function amtpasswordsConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.amtPasswords == null) {
+            r = "No Intel AMT password table."
+        } else {
+            for (var i in parent.parent.amtPasswords) { r += (i + ' - ' + parent.parent.amtPasswords[i].join(', ') + '\r\n'); }
+        }
+        return r;
+    }
+
+    function updatecheckConsoleCommand(command, cmdargs) {
+        var r = '';
+        parent.parent.getServerTags(function (tags, error) {
+            var r2 = '';
+            if (error != null) { r2 += 'Exception: ' + error + '\r\n'; }
+            else { for (var i in tags) { r2 += i + ': ' + tags[i] + '\r\n'; } }
+            try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: command.tag })); } catch (ex) { }
+        });
+        r = "Checking server update...";
+        return r;
+    }
+
+    function maintenanceConsoleCommand(command, cmdargs) {
+        var r = '';
+        var arg = null, changed = false;
+        if ((cmdargs['_'] != null) && (cmdargs['_'][0] != null)) { arg = cmdargs['_'][0].toLowerCase(); }
+        if (arg == 'enabled') { parent.parent.config.settings.maintenancemode = 1; changed = true; }
+        else if (arg == 'disabled') { delete parent.parent.config.settings.maintenancemode; changed = true; }
+        r = 'Maintenance mode: ' + ((parent.parent.config.settings.maintenancemode == null) ? 'Disabled' : 'Enabled');
+        if (changed == false) { r += '\r\nTo change type: maintenance [enabled|disabled]'; }
+        return r;
+    }
+
+    function infoConsoleCommand(command, cmdargs) {
+        var r = '';
+        var info = process.memoryUsage();
+        info.dbType = ['None', 'NeDB', 'MongoJS', 'MongoDB'][parent.db.databaseType];
+        try { if (parent.parent.multiServer != null) { info.serverId = parent.parent.multiServer.serverid; } } catch (ex) { }
+        if (parent.db.databaseType == 3) { info.dbChangeStream = parent.db.changeStream; }
+        if (parent.parent.pluginHandler != null) { info.plugins = []; for (var i in parent.parent.pluginHandler.plugins) { info.plugins.push(i); } }
+        try { info.nodeVersion = process.version; } catch (ex) { }
+        try { info.meshVersion = parent.parent.currentVer; } catch (ex) { }
+        try { info.platform = process.platform; } catch (ex) { }
+        try { info.arch = process.arch; } catch (ex) { }
+        try { info.pid = process.pid; } catch (ex) { }
+        try { info.uptime = process.uptime(); } catch (ex) { }
+        try { info.cpuUsage = process.cpuUsage(); } catch (ex) { }
+        try { info.warnings = parent.parent.getServerWarnings(); } catch (ex) { }
+        try { info.database = ["Unknown", "NeDB", "MongoJS", "MongoDB", "MariaDB", "MySQL"][parent.parent.db.databaseType]; } catch (ex) { }
+        try { info.productionMode = ((process.env.NODE_ENV != null) && (process.env.NODE_ENV == 'production')); } catch (ex) { }
+        try { info.allDevGroupManagers = parent.parent.config.settings.managealldevicegroups; } catch (ex) { }
+        r = JSON.stringify(info, null, 4);
+        return r;
+    }
+
+    function nodeconfigConsoleCommand(command, cmdargs) {
+        return JSON.stringify(process.config, null, 4);
+    }
+
+    function versionsConsoleCommand(command, cmdargs) {
+        return JSON.stringify(process.versions, null, 4);
+    }
+
+    function argsConsoleCommand(command, cmdargs) {
+        return 'args: ' + JSON.stringify(cmdargs);
+    }
+
+    function usersessionsConsoleCommand(command, cmdargs) {
+        var r = '';
+        var userSessionCount = 0;
+        var filter = null;
+        var arg = cmdargs['_'][0];
+        if (typeof arg == 'string') { if (arg.indexOf('/') >= 0) { filter = arg; } else { filter = ('user/' + domain.id + '/' + arg); } }
+        for (var i in parent.wssessions) {
+            if ((filter == null) || (filter == i)) {
+                userSessionCount++;
+                r += (i + ', ' + parent.wssessions[i].length + ' session' + ((parent.wssessions[i].length > 1) ? 's' : '') + '.\r\n');
+                for (var j in parent.wssessions[i]) {
+                    r += '    ' + parent.wssessions[i][j].clientIp + ' --> ' + parent.wssessions[i][j].sessionId + '\r\n';
+                }
+            }
+        }
+        if (userSessionCount == 0) { r = 'None.'; }
+        return r;
+    }
+
+    function closeusersessionsConsoleCommand(command, cmdargs) {
+        var r = '';
+        var userSessionCount = 0;
+        var filter = null;
+        var arg = cmdargs['_'][0];
+        if (typeof arg == 'string') { if (arg.indexOf('/') >= 0) { filter = arg; } else { filter = ('user/' + domain.id + '/' + arg); } }
+        if (filter == null) {
+            r += "Usage: closeusersessions <username>";
+        } else {
+            r += "Closing user sessions for: " + filter + '\r\n';
+            for (var i in parent.wssessions) {
+                if (filter == i) {
+                    userSessionCount++;
+                    for (var j in parent.wssessions[i]) {
+                        parent.wssessions[i][j].send(JSON.stringify({ action: 'stopped', msg: "Administrator forced disconnection" }));
+                        parent.wssessions[i][j].close();
+                    }
+                }
+            }
+            if (userSessionCount < 2) { r += 'Disconnected ' + userSessionCount + ' session.'; } else { r += 'Disconnected ' + userSessionCount + ' sessions.'; };
+        }
+        return r;
+    }
+
+    function resetserverConsoleCommand(command, cmdargs) {
+        console.log("Server restart...");
+        process.exit(0);
+    }
+
+    function tasklimiterConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.taskLimiter != null) {
+            //var obj = { maxTasks: maxTasks, maxTaskTime: (maxTaskTime * 1000), nextTaskId: 0, currentCount: 0, current: {}, pending: [[], [], []], timer: null };
+            const tl = parent.parent.taskLimiter;
+            r += 'MaxTasks: ' + tl.maxTasks + ', NextTaskId: ' + tl.nextTaskId + '\r\n';
+            r += 'MaxTaskTime: ' + (tl.maxTaskTime / 1000) + ' seconds, Timer: ' + (tl.timer != null) + '\r\n';
+            var c = [];
+            for (var i in tl.current) { c.push(i); }
+            r += 'Current (' + tl.currentCount + '): [' + c.join(', ') + ']\r\n';
+            r += 'Pending (High/Med/Low): ' + tl.pending[0].length + ', ' + tl.pending[1].length + ', ' + tl.pending[2].length + '\r\n';
+        }
+        return r;
+    }
+
+    function setmaxtasksConsoleCommand(command, cmdargs) {
+        var r = '';
+        if ((cmdargs["_"].length != 1) || (parseInt(cmdargs["_"][0]) < 1) || (parseInt(cmdargs["_"][0]) > 1000)) {
+            r = 'Usage: setmaxtasks [1 to 1000]';
+        } else {
+            parent.parent.taskLimiter.maxTasks = parseInt(cmdargs["_"][0]);
+            r = 'MaxTasks set to ' + parent.parent.taskLimiter.maxTasks + '.';
+        }
+        return r;
+    }
+
+    function coresConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.defaultMeshCores != null) {
+            for (var i in parent.parent.defaultMeshCores) {
+                r += i + ': ' + parent.parent.defaultMeshCores[i].length + ' bytes\r\n';
+            }
+        }
+        return r;
+    }
+
+    function showpathsConsoleCommand(command, cmdargs) {
+        var r = '';
+        r = 'Parent:     ' + parent.parent.parentpath + '\r\n';
+        r += 'Data:       ' + parent.parent.datapath + '\r\n';
+        r += 'Files:      ' + parent.parent.filespath + '\r\n';
+        r += 'Backup:     ' + parent.parent.backuppath + '\r\n';
+        r += 'Record:     ' + parent.parent.recordpath + '\r\n';
+        r += 'WebPublic:  ' + parent.parent.webPublicPath + '\r\n';
+        r += 'WebViews:   ' + parent.parent.webViewsPath + '\r\n';
+        if (parent.parent.webViewsOverridePath) { r += 'XWebPublic: ' + parent.parent.webViewsOverridePath + '\r\n'; }
+        if (parent.parent.webViewsOverridePath) { r += 'XWebViews:  ' + parent.parent.webPublicOverridePath + '\r\n'; }
+        return r;
+    }
+
+    function migrationagentsConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.swarmserver == null) {
+            r = 'Swarm server not running.';
+        } else {
+            for (var i in parent.parent.swarmserver.migrationAgents) {
+                var arch = parent.parent.swarmserver.migrationAgents[i];
+                for (var j in arch) { var agent = arch[j]; r += 'Arch ' + agent.arch + ', Ver ' + agent.ver + ', Size ' + ((agent.binary == null) ? 0 : agent.binary.length) + '<br />'; }
+            }
+        }
+        return r;
+    }
+
+    function swarmstatsConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.swarmserver == null) {
+            r = 'Swarm server not running.';
+        } else {
+            for (var i in parent.parent.swarmserver.stats) {
+                if (typeof parent.parent.swarmserver.stats[i] == 'object') {
+                    r += i + ': ' + JSON.stringify(parent.parent.swarmserver.stats[i]) + '\r\n';
+                } else {
+                    r += i + ': ' + parent.parent.swarmserver.stats[i] + '\r\n';
+                }
+            }
+        }
+        return r;
+    }
+
+    function relaysConsoleCommand(command, cmdargs) {
+        var r = '';
+        for (var i in parent.wsrelays) {
+            r += 'id: ' + i + ', ' + ((parent.wsrelays[i].state == 2) ? 'connected' : 'pending');
+            if (parent.wsrelays[i].peer1 != null) {
+                r += ', ' + cleanRemoteAddr(parent.wsrelays[i].peer1.req.clientIp);
+                if (parent.wsrelays[i].peer1.user) { r += ' (User:' + parent.wsrelays[i].peer1.user.name + ')' }
+            }
+            if (parent.wsrelays[i].peer2 != null) {
+                r += ' to ' + cleanRemoteAddr(parent.wsrelays[i].peer2.req.clientIp);
+                if (parent.wsrelays[i].peer2.user) { r += ' (User:' + parent.wsrelays[i].peer2.user.name + ')' }
+            }
+            r += '\r\n';
+        }
+        if (r == '') { r = 'No relays.'; }
+        return r;
+    }
+
+    function autobackupConsoleCommand(command, cmdargs) {
+        var r = '';
+        var backupResult = parent.db.performBackup(function (msg) {
+            try { ws.send(JSON.stringify({ action: 'serverconsole', value: msg, tag: command.tag })); } catch (ex) { }
+        });
+        if (backupResult == 0) { r = 'Starting auto-backup...'; } else { r = 'Backup alreay in progress.'; }
+        return r;
+    }
+
+    function backupconfigConsoleCommand(command, cmdargs) {
+        return parent.db.getBackupConfig();
+    }
+
+    function firebaseConsoleCommand(command, cmdargs) {
+        var r = '';
+        if (parent.parent.firebase == null) {
+            r = "Firebase push messaging not supported";
+        } else {
+            r = JSON.stringify(parent.parent.firebase.stats, null, 2);
+        }
+        return r;
+    }
+
     // Process incoming web socket data from the browser
     function processWebSocketData(msg) {
         var command, i = 0, mesh = null, meshid = null, nodeid = null, meshlinks = null, change = 0;
@@ -911,554 +1595,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     const cmd = cmdargs[0].toLowerCase();
                     cmdargs = parseArgs(cmdargs);
 
-                    switch (cmd) {
-                        case 'help': {
-                            var fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,trafficstats,trafficdelta,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,dbcounters,sms,amtacm,certhashes,watchdog,amtmanager,amtpasswords,certexpire,email';
-                            if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
-                            availcommands = availcommands.split(',').sort();
-                            while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
-                            if (f != '') { fin += f; }
-                            if (cmdargs['_'].length == 0) {
-                                r = 'Available commands: \r\n' + fin + '\r\nType help <command> for details.';
-                            } else {
-                                var cmd2 = cmdargs['_'][0].toLowerCase();
-                                switch (cmd2) {
-                                    case 'info': { r = "info: Returns the most immidiatly useful information about this server, including MeshCentral and NodeJS versions. This is often information required to file a bug."; break; }
-                                    case 'versions': { r = "versions: Returns all internal versions for NodeJS running this server."; break; }
-                                    case 'resetserver': { r = "resetserver: Causes the server to reset, this is sometimes useful is the config.json file was changed."; break; }
-                                    case 'usersessions': { r = "usersessions: Returns a list of active sessions grouped by user."; break; }
-                                    case 'closeusersessions': { r = "closeusersessions: Disconnects all sessions for a specified user."; break; }
-                                    case 'tasklimiter': { r = "tasklimiter: Returns the internal status of the tasklimiter. This is a system used to smooth out work done by the server. It's used by, for example, agent updates so that not all agents are updated at the same time."; break; }
-                                    case 'serverupdate': { r = "serverupdate: Updates server to latest version. Optional version argument to install specific version. Example: serverupdate 0.8.49"; break; }
-                                    default: { r = 'No help information about this command.'; break; }
-                                }
-                            }
-                            break;
-                        }
-                        case 'certexpire': {
-                            const now = Date.now();
-                            for (var i in parent.webCertificateExpire) {
-                                const domainName = (i == '') ? '[Default]' : i;
-                                r += domainName + ', expires in ' + Math.floor((parent.webCertificateExpire[i] - now) / 86400000) + ' day(s)\r\n';
-                            }
-                            break;
-                        }
-                        case 'webpush': {
-                            if (parent.parent.webpush == null) {
-                                r = "Web push not supported.";
-                            } else {
-                                if (cmdargs['_'].length != 1) {
-                                    r = "Usage: WebPush \"Message\"";
-                                } else {
-                                    const pushSubscription = { "endpoint": "https://updates.push.services.mozilla.com/wpush/v2/gAAAAABgIkO9hjXHWhMPiuk-ppNRw7r_pUZitddwCEK4ykdzeIxOIjFnYhIt_nr-qUca2mpZziwQsSEhYTUCiuYrhWnVDRweMtiUj16yJJq8V5jneaEaUYjEIe5jp3DOMNpoTm1aHgX74gCR8uTXSITcM97bNi-hRxcQ4f6Ie4WSAmoXpd89B_g", "keys": { "auth": "UB2sbLVK7ALnSHw5P1dahg", "p256dh": "BIoRbcNSxBuTjN39CCCUCHo1f4NxBJ1YDdu_k4MbPW_q3NK1_RufnydUzLPDp8ibBVItSI72-s48QJvOjQ_S8Ok" } }
-                                    parent.parent.webpush.sendNotification(pushSubscription, cmdargs['_'][0]).then(
-                                        function (value) { try { ws.send(JSON.stringify({ action: 'OK', value: r, tag: command.tag })); } catch (ex) { } },
-                                        function (error) { try { ws.send(JSON.stringify({ action: 'Error', value: r, tag: command.tag })); } catch (ex) { } }
-                                    );
-                                }
-                            }
-                            break;
-                        }
-                        case 'amtmanager': {
-                            if (parent.parent.amtManager == null) { r = 'Intel AMT Manager not active.'; } else { r = parent.parent.amtManager.getStatusString(); }
-                            break;
-                        }
-                        case 'certhashes': {
-                            r += 'AgentCertHash: ' + parent.agentCertificateHashHex;
-                            for (var i in parent.webCertificateHashs) { r += '\r\nwebCertificateHash (' + i + '): ' + common.rstr2hex(parent.webCertificateHashs[i]); }
-                            for (var i in parent.webCertificateFullHashs) { r += '\r\nwebCertificateFullHash (' + i + '): ' + common.rstr2hex(parent.webCertificateFullHashs[i]); }
-                            r += '\r\ndefaultWebCertificateHash: ' + common.rstr2hex(parent.defaultWebCertificateHash);
-                            r += '\r\ndefaultWebCertificateFullHash: ' + common.rstr2hex(parent.defaultWebCertificateFullHash);
-                            break;
-                        }
-                        case 'amtacm': {
-                            if ((domain.amtacmactivation == null) || (domain.amtacmactivation.acmmatch == null) || (domain.amtacmactivation.acmmatch.length == 0)) {
-                                r = 'No Intel AMT activation certificates.';
-                            } else {
-                                if (domain.amtacmactivation.log != null) { r += '--- Activation Log ---\r\nFile  : ' + domain.amtacmactivation.log + '\r\n'; }
-                                for (var i in domain.amtacmactivation.acmmatch) {
-                                    var acmcert = domain.amtacmactivation.acmmatch[i];
-                                    r += '--- Activation Certificate ' + (parseInt(i) + 1) + ' ---\r\nName  : ' + acmcert.cn + '\r\nSHA1  : ' + acmcert.sha1 + '\r\nSHA256: ' + acmcert.sha256 + '\r\n';
-                                }
-                            }
-                            break;
-                        }
-                        case 'heapdump': {
-                            // Heapdump support, see example at:
-                            // https://www.arbazsiddiqui.me/a-practical-guide-to-memory-leaks-in-nodejs/
-                            if (parent.parent.config.settings.heapdump === true) {
-                                var dumpFileName = parent.path.join(parent.parent.datapath, `heapDump-${Date.now()}.heapsnapshot`);
-                                try { ws.send(JSON.stringify({ action: 'serverconsole', value: "Generating dump file at: " + dumpFileName, tag: command.tag })); } catch (ex) { }
-                                require('heapdump').writeSnapshot(dumpFileName, (err, filename) => {
-                                    try { ws.send(JSON.stringify({ action: 'serverconsole', value: "Done.", tag: command.tag })); } catch (ex) { }
-                                });
-                            } else {
-                                r = "Heapdump not supported, add \"heapdump\":true to settings section of config.json.";
-                            }
-                            break;
-                        }
-                        case 'sms': {
-                            if (parent.parent.smsserver == null) {
-                                r = "No SMS gateway in use.";
-                            } else {
-                                if (cmdargs['_'].length != 2) {
-                                    r = "Usage: SMS \"PhoneNumber\" \"Message\".";
-                                } else {
-                                    parent.parent.smsserver.sendSMS(cmdargs['_'][0], cmdargs['_'][1], function (status, msg) {
-                                        if (typeof msg == 'string') {
-                                            try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? ('Success: ' + msg) : ('Failed: ' + msg), tag: command.tag })); } catch (ex) { }
-                                        } else {
-                                            try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? 'Success' : 'Failed', tag: command.tag })); } catch (ex) { }
-                                        }
-                                    });
-                                }
-                            }
-                            break;
-                        }
-                        case 'email': {
-                            if (domain.mailserver == null) {
-                                r = "No email service enabled.";
-                            } else {
-                                if (cmdargs['_'].length != 3) {
-                                    r = "Usage: email \"user@sample.com\" \"Subject\" \"Message\".";
-                                } else {
-                                    domain.mailserver.sendMail(cmdargs['_'][0], cmdargs['_'][1], cmdargs['_'][2]);
-                                    r = "Done.";
-                                }
-                            }
-                            break;
-                        }
-                        case 'le': {
-                            if (parent.parent.letsencrypt == null) {
-                                r = "Let's Encrypt not in use.";
-                            } else {
-                                r = JSON.stringify(parent.parent.letsencrypt.getStats(), null, 4);
-                            }
-                            break;
-                        }
-                        case 'lecheck': {
-                            if (parent.parent.letsencrypt == null) {
-                                r = "Let's Encrypt not in use.";
-                            } else {
-                                r = ["CertOK", "Request:NoCert", "Request:Expire", "Request:MissingNames"][parent.parent.letsencrypt.checkRenewCertificate()];
-                            }
-                            break;
-                        }
-                        case 'leevents': {
-                            if (parent.parent.letsencrypt == null) {
-                                r = "Let's Encrypt not in use.";
-                            } else {
-                                r = parent.parent.letsencrypt.events.join('\r\n');
-                            }
-                            break;
-                        }
-                        case 'badlogins': {
-                            if (parent.parent.config.settings.maxinvalidlogin == false) {
-                                r = 'Bad login filter is disabled.';
-                            } else {
-                                if (cmdargs['_'] == 'reset') {
-                                    // Reset bad login table
-                                    parent.badLoginTable = {};
-                                    parent.badLoginTableLastClean = 0;
-                                    r = 'Done.'
-                                } else if (cmdargs['_'] == '') {
-                                    // Show current bad login table
-                                    if (typeof parent.parent.config.settings.maxinvalidlogin.coolofftime == 'number') {
-                                        r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s), " + parent.parent.config.settings.maxinvalidlogin.coolofftime + " minute(s) cooloff.\r\n";
-                                    } else {
-                                        r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s).\r\n";
-                                    }
-                                    var badLoginCount = 0;
-                                    parent.cleanBadLoginTable();
-                                    for (var i in parent.badLoginTable) {
-                                        badLoginCount++;
-                                        if (typeof parent.badLoginTable[i] == 'number') {
-                                            r += "Cooloff for " + Math.floor((parent.badLoginTable[i] - Date.now()) / 60000) + " minute(s)\r\n";
-                                        } else {
-                                            if (parent.badLoginTable[i].length > 1) {
-                                                r += (i + ' - ' + parent.badLoginTable[i].length + " records\r\n");
-                                            } else {
-                                                r += (i + ' - ' + parent.badLoginTable[i].length + " record\r\n");
-                                            }
-                                        }
-                                    }
-                                    if (badLoginCount == 0) { r += 'No bad logins.'; }
-                                } else {
-                                    r = 'Usage: badlogin [reset]';
-                                }
-                            }
-                            break;
-                        }
-                        case 'dispatchtable': {
-                            r = '';
-                            for (var i in parent.parent.eventsDispatch) { r += (i + ', ' + parent.parent.eventsDispatch[i].length + '\r\n'); }
-                            break;
-                        }
-                        case 'dupagents': {
-                            for (var i in parent.duplicateAgentsLog) { r += JSON.stringify(parent.duplicateAgentsLog[i]) + '\r\n'; }
-                            if (r == '') { r = 'No duplicate agents in log.'; }
-                            break;
-                        }
-                        case 'agentstats': {
-                            var stats = parent.getAgentStats();
-                            for (var i in stats) {
-                                if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
-                            }
-                            break;
-                        }
-                        case 'agentissues': {
-                            var stats = parent.getAgentIssues();
-                            if (stats.length == 0) {
-                                r = "No agent issues.";
-                            } else {
-                                for (var i in stats) { r += stats[i].join(', ') + '\r\n'; }
-                            }
-                            break;
-                        }
-                        case 'webstats': {
-                            var stats = parent.getStats();
-                            for (var i in stats) {
-                                if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
-                            }
-                            break;
-                        }
-                        case 'trafficstats': {
-                            var stats = parent.getTrafficStats();
-                            for (var i in stats) {
-                                if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
-                            }
-                            break;
-                        }
-                        case 'trafficdelta': {
-                            const stats = parent.getTrafficDelta(obj.trafficStats);
-                            obj.trafficStats = stats.current;
-                            for (var i in stats.delta) {
-                                if (typeof stats.delta[i] == 'object') { r += (i + ': ' + JSON.stringify(stats.delta[i]) + '\r\n'); } else { r += (i + ': ' + stats.delta[i] + '\r\n'); }
-                            }
-                            break;
-                        }
-                        case 'watchdog': {
-                            if (parent.parent.watchdog == null) {
-                                r = 'Server watchdog not active.';
-                            } else {
-                                r = 'Server watchdog active.\r\n';
-                                if (parent.parent.watchdogmaxtime != null) { r += 'Largest timeout was ' + parent.parent.watchdogmax + 'ms on ' + parent.parent.watchdogmaxtime + '\r\n'; }
-                                for (var i in parent.parent.watchdogtable) { r += parent.parent.watchdogtable[i] + '\r\n'; }
-                            }
-                            break;
-                        }
-                        case 'acceleratorsstats': {
-                            var stats = parent.parent.certificateOperations.getAcceleratorStats();
-                            for (var i in stats) {
-                                if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
-                            }
-                            break;
-                        }
-                        case 'mpsstats': {
-                            if (parent.parent.mpsserver == null) {
-                                r = 'MPS not enabled.';
-                            } else {
-                                var stats = parent.parent.mpsserver.getStats();
-                                for (var i in stats) {
-                                    if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
-                                }
-                            }
-                            break;
-                        }
-                        case 'mps': { // List all MPS connections and types.
-                            if (parent.parent.mpsserver == null) {
-                                r = 'MPS not enabled.';
-                            } else {
-                                const connectionTypes = ['CIRA', 'Relay', 'LMS'];
-                                for (var nodeid in parent.parent.mpsserver.ciraConnections) {
-                                    r += nodeid;
-                                    var connections = parent.parent.mpsserver.ciraConnections[nodeid];
-                                    for (var i in connections) { r += ', ' + connectionTypes[connections[i].tag.connType]; }
-                                    r += '\r\n';
-                                }
-                                if (r == '') { r = 'MPS has not connections.'; }
-                            }
-                            break;
-                        }
-                        case 'dbstats': {
-                            parent.parent.db.getStats(function (stats) {
-                                var r2 = '';
-                                for (var i in stats) { r2 += (i + ': ' + stats[i] + '\r\n'); }
-                                try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: command.tag })); } catch (ex) { }
-                            });
-                            break;
-                        }
-                        case 'dbcounters': {
-                            try { ws.send(JSON.stringify({ action: 'serverconsole', value: JSON.stringify(parent.parent.db.dbCounters, null, 2), tag: command.tag })); } catch (ex) { }
-                            break;
-                        }
-                        case 'serverupdate': {
-                            r = 'Performing server update...';
-                            var version = null;
-
-                            if (cmdargs['_'].length > 0) {
-                                version = cmdargs['_'][0];
-
-                                // This call is SLOW. We only want to validate version if we have to
-                                if (version != 'stable' && version != 'latest') {
-                                    parent.parent.getServerVersions((data) => {
-                                        var versions = JSON.parse(data);
-
-                                        if (versions.includes(version)) {
-                                            if (parent.parent.performServerUpdate(version) == false) { 
-                                                try { 
-                                                    ws.send(JSON.stringify({ action: 'serverconsole',
-                                                                             value: 'Server self-update not possible.'}));
-                                                } catch (ex) { }
-                                            }
-                                        } else {
-                                            try { 
-                                                ws.send(JSON.stringify({ action: 'serverconsole',
-                                                                         value: 'Invalid version. Aborting update'}));
-                                            } catch (ex) { }
-                                        }
-                                    });
-                                } else {
-                                    if (parent.parent.performServerUpdate(version) == false) { 
-                                        r = 'Server self-update not possible.';
-                                    }
-                                }  
-                            } else {
-                                if (parent.parent.performServerUpdate(version) == false) { 
-                                    r = 'Server self-update not possible.';
-                                }
-                            }
-
-                            break;
-                        }
-                        case 'print': {
-                            console.log(cmdargs['_'][0]);
-                            break;
-                        }
-                        case 'amtpasswords': {
-                            if (parent.parent.amtPasswords == null) {
-                                r = "No Intel AMT password table."
-                            } else {
-                                for (var i in parent.parent.amtPasswords) { r += (i + ' - ' + parent.parent.amtPasswords[i].join(', ') + '\r\n'); }
-                            }
-                            break;
-                        }
-                        case 'updatecheck': {
-                            parent.parent.getServerTags(function (tags, error) {
-                                var r2 = '';
-                                if (error != null) { r2 += 'Exception: ' + error + '\r\n'; }
-                                else { for (var i in tags) { r2 += i + ': ' + tags[i] + '\r\n'; } }
-                                try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: command.tag })); } catch (ex) { }
-                            });
-                            r = "Checking server update...";
-                            break;
-                        }
-                        case 'maintenance': {
-                            var arg = null, changed = false;
-                            if ((cmdargs['_'] != null) && (cmdargs['_'][0] != null)) { arg = cmdargs['_'][0].toLowerCase(); }
-                            if (arg == 'enabled') { parent.parent.config.settings.maintenancemode = 1; changed = true; }
-                            else if (arg == 'disabled') { delete parent.parent.config.settings.maintenancemode; changed = true; }
-                            r = 'Maintenance mode: ' + ((parent.parent.config.settings.maintenancemode == null) ? 'Disabled' : 'Enabled');
-                            if (changed == false) { r += '\r\nTo change type: maintenance [enabled|disabled]'; }
-                            break;
-                        }
-                        case 'info': {
-                            var info = process.memoryUsage();
-                            info.dbType = ['None', 'NeDB', 'MongoJS', 'MongoDB'][parent.db.databaseType];
-                            try { if (parent.parent.multiServer != null) { info.serverId = parent.parent.multiServer.serverid; } } catch (ex) { }
-                            if (parent.db.databaseType == 3) { info.dbChangeStream = parent.db.changeStream; }
-                            if (parent.parent.pluginHandler != null) { info.plugins = []; for (var i in parent.parent.pluginHandler.plugins) { info.plugins.push(i); } }
-                            try { info.nodeVersion = process.version; } catch (ex) { }
-                            try { info.meshVersion = parent.parent.currentVer; } catch (ex) { }
-                            try { info.platform = process.platform; } catch (ex) { }
-                            try { info.arch = process.arch; } catch (ex) { }
-                            try { info.pid = process.pid; } catch (ex) { }
-                            try { info.uptime = process.uptime(); } catch (ex) { }
-                            try { info.cpuUsage = process.cpuUsage(); } catch (ex) { }
-                            try { info.warnings = parent.parent.getServerWarnings(); } catch (ex) { }
-                            try { info.database = ["Unknown", "NeDB", "MongoJS", "MongoDB", "MariaDB", "MySQL"][parent.parent.db.databaseType]; } catch (ex) { }
-                            try { info.productionMode = ((process.env.NODE_ENV != null) && (process.env.NODE_ENV == 'production')); } catch (ex) { }
-                            try { info.allDevGroupManagers = parent.parent.config.settings.managealldevicegroups; } catch (ex) { }
-                            r = JSON.stringify(info, null, 4);
-                            break;
-                        }
-                        case 'nodeconfig': {
-                            r = JSON.stringify(process.config, null, 4);
-                            break;
-                        }
-                        case 'versions': {
-                            r = JSON.stringify(process.versions, null, 4);
-                            break;
-                        }
-                        case 'args': {
-                            r = cmd + ': ' + JSON.stringify(cmdargs);
-                            break;
-                        }
-                        case 'usersessions': {
-                            var userSessionCount = 0;
-                            var filter = null;
-                            var arg = cmdargs['_'][0];
-                            if (typeof arg == 'string') { if (arg.indexOf('/') >= 0) { filter = arg; } else { filter = ('user/' + domain.id + '/' + arg); } }
-                            for (var i in parent.wssessions) {
-                                if ((filter == null) || (filter == i)) {
-                                    userSessionCount++;
-                                    r += (i + ', ' + parent.wssessions[i].length + ' session' + ((parent.wssessions[i].length > 1) ? 's' : '') + '.\r\n');
-                                    for (var j in parent.wssessions[i]) {
-                                        r += '    ' + parent.wssessions[i][j].clientIp + ' --> ' + parent.wssessions[i][j].sessionId + '\r\n';
-                                    }
-                                }
-                            }
-                            if (userSessionCount == 0) { r = 'None.'; }
-                            break;
-                        }
-                        case 'closeusersessions': {
-                            var userSessionCount = 0;
-                            var filter = null;
-                            var arg = cmdargs['_'][0];
-                            if (typeof arg == 'string') { if (arg.indexOf('/') >= 0) { filter = arg; } else { filter = ('user/' + domain.id + '/' + arg); } }
-                            if (filter == null) {
-                                r += "Usage: closeusersessions <username>";
-                            } else {
-                                r += "Closing user sessions for: " + filter + '\r\n';
-                                for (var i in parent.wssessions) {
-                                    if (filter == i) {
-                                        userSessionCount++;
-                                        for (var j in parent.wssessions[i]) {
-                                            parent.wssessions[i][j].send(JSON.stringify({ action: 'stopped', msg: "Administrator forced disconnection" }));
-                                            parent.wssessions[i][j].close();
-                                        }
-                                    }
-                                }
-                                if (userSessionCount < 2) { r += 'Disconnected ' + userSessionCount + ' session.'; } else { r += 'Disconnected ' + userSessionCount + ' sessions.'; };
-                            }
-                            break;
-                        }
-                        case 'resetserver': {
-                            console.log("Server restart...");
-                            process.exit(0);
-                            break;
-                        }
-                        case 'tasklimiter': {
-                            if (parent.parent.taskLimiter != null) {
-                                //var obj = { maxTasks: maxTasks, maxTaskTime: (maxTaskTime * 1000), nextTaskId: 0, currentCount: 0, current: {}, pending: [[], [], []], timer: null };
-                                const tl = parent.parent.taskLimiter;
-                                r += 'MaxTasks: ' + tl.maxTasks + ', NextTaskId: ' + tl.nextTaskId + '\r\n';
-                                r += 'MaxTaskTime: ' + (tl.maxTaskTime / 1000) + ' seconds, Timer: ' + (tl.timer != null) + '\r\n';
-                                var c = [];
-                                for (var i in tl.current) { c.push(i); }
-                                r += 'Current (' + tl.currentCount + '): [' + c.join(', ') + ']\r\n';
-                                r += 'Pending (High/Med/Low): ' + tl.pending[0].length + ', ' + tl.pending[1].length + ', ' + tl.pending[2].length + '\r\n';
-                            }
-                            break;
-                        }
-                        case 'setmaxtasks': {
-                            if ((cmdargs["_"].length != 1) || (parseInt(cmdargs["_"][0]) < 1) || (parseInt(cmdargs["_"][0]) > 1000)) {
-                                r = 'Usage: setmaxtasks [1 to 1000]';
-                            } else {
-                                parent.parent.taskLimiter.maxTasks = parseInt(cmdargs["_"][0]);
-                                r = 'MaxTasks set to ' + parent.parent.taskLimiter.maxTasks + '.';
-                            }
-                            break;
-                        }
-                        case 'cores': {
-                            if (parent.parent.defaultMeshCores != null) { for (var i in parent.parent.defaultMeshCores) { r += i + ': ' + parent.parent.defaultMeshCores[i].length + ' bytes\r\n'; } }
-                            break;
-                        }
-                        case 'showpaths': {
-                            r = 'Parent:     ' + parent.parent.parentpath + '\r\n';
-                            r += 'Data:       ' + parent.parent.datapath + '\r\n';
-                            r += 'Files:      ' + parent.parent.filespath + '\r\n';
-                            r += 'Backup:     ' + parent.parent.backuppath + '\r\n';
-                            r += 'Record:     ' + parent.parent.recordpath + '\r\n';
-                            r += 'WebPublic:  ' + parent.parent.webPublicPath + '\r\n';
-                            r += 'WebViews:   ' + parent.parent.webViewsPath + '\r\n';
-                            if (parent.parent.webViewsOverridePath) { r += 'XWebPublic: ' + parent.parent.webViewsOverridePath + '\r\n'; }
-                            if (parent.parent.webViewsOverridePath) { r += 'XWebViews:  ' + parent.parent.webPublicOverridePath + '\r\n'; }
-                            break;
-                        }
-                        case 'migrationagents': {
-                            if (parent.parent.swarmserver == null) {
-                                r = 'Swarm server not running.';
-                            } else {
-                                for (var i in parent.parent.swarmserver.migrationAgents) {
-                                    var arch = parent.parent.swarmserver.migrationAgents[i];
-                                    for (var j in arch) { var agent = arch[j]; r += 'Arch ' + agent.arch + ', Ver ' + agent.ver + ', Size ' + ((agent.binary == null) ? 0 : agent.binary.length) + '<br />'; }
-                                }
-                            }
-                            break;
-                        }
-                        case 'swarmstats': {
-                            if (parent.parent.swarmserver == null) {
-                                r = 'Swarm server not running.';
-                            } else {
-                                for (var i in parent.parent.swarmserver.stats) {
-                                    if (typeof parent.parent.swarmserver.stats[i] == 'object') {
-                                        r += i + ': ' + JSON.stringify(parent.parent.swarmserver.stats[i]) + '\r\n';
-                                    } else {
-                                        r += i + ': ' + parent.parent.swarmserver.stats[i] + '\r\n';
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                        case 'heapdump': {
-                            var heapdump = null;
-                            try { heapdump = require('heapdump'); } catch (ex) { }
-                            if (heapdump == null) {
-                                r = 'Heapdump module not installed, run "npm install heapdump".';
-                            } else {
-                                heapdump.writeSnapshot(function (err, filename) {
-                                    if (err != null) {
-                                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: 'Unable to write heapdump: ' + err })); } catch (ex) { }
-                                    } else {
-                                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: 'Wrote heapdump at ' + filename })); } catch (ex) { }
-                                    }
-                                });
-                            }
-                            break;
-                        }
-                        case 'relays': {
-                            for (var i in parent.wsrelays) {
-                                r += 'id: ' + i + ', ' + ((parent.wsrelays[i].state == 2) ? 'connected' : 'pending');
-                                if (parent.wsrelays[i].peer1 != null) {
-                                    r += ', ' + cleanRemoteAddr(parent.wsrelays[i].peer1.req.clientIp);
-                                    if (parent.wsrelays[i].peer1.user) { r += ' (User:' + parent.wsrelays[i].peer1.user.name + ')' }
-                                }
-                                if (parent.wsrelays[i].peer2 != null) {
-                                    r += ' to ' + cleanRemoteAddr(parent.wsrelays[i].peer2.req.clientIp);
-                                    if (parent.wsrelays[i].peer2.user) { r += ' (User:' + parent.wsrelays[i].peer2.user.name + ')' }
-                                }
-                                r += '\r\n';
-                            }
-                            if (r == '') { r = 'No relays.'; }
-                            break;
-                        }
-                        case 'autobackup': {
-                            var backupResult = parent.db.performBackup(function (msg) {
-                                try { ws.send(JSON.stringify({ action: 'serverconsole', value: msg, tag: command.tag })); } catch (ex) { }
-                            });
-                            if (backupResult == 0) { r = 'Starting auto-backup...'; } else { r = 'Backup alreay in progress.'; }
-                            break;
-                        }
-                        case 'backupconfig': {
-                            r = parent.db.getBackupConfig();
-                            break;
-                        }
-                        case 'firebase': {
-                            if (parent.parent.firebase == null) {
-                                r = "Firebase push messaging not supported";
-                            } else {
-                                r = JSON.stringify(parent.parent.firebase.stats, null, 2);
-                            }
-                            break;
-                        }
-                        default: { // This is an unknown command, return an error message
+                    try {
+                        r = consoleCommands[cmd](command, cmdargs);
+                    } catch (e) {
+                        if (consoleCommands[cmd] == null)
                             r = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.';
-                            break;
-                        }
+                        else
+                            console.log(e);
                     }
 
-                    if (r != '') { try { ws.send(JSON.stringify({ action: 'serverconsole', value: r, tag: command.tag })); } catch (ex) { } }
+                    if (r != null && r != '') { try { ws.send(JSON.stringify({ action: 'serverconsole', value: r, tag: command.tag })); } catch (ex) { } }
                     break;
                 }
             case 'msg':
