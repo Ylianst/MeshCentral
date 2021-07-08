@@ -790,6 +790,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
     // Mark this relay session as authenticated if this is the user end.
     obj.authenticated = (user != null);
     if (obj.authenticated) {
+        // To build the connection URL, if we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
+        var xdomain = (domain.dns == null) ? domain.id : '';
+        if (xdomain != '') xdomain += '/';
+
         // Kick off the routing, if we have agent routing instructions, process them here.
         // Routing instructions can only be given by a authenticated user
         if ((cookie != null) && (cookie.nodeid != null) && (cookie.tcpport != null) && (cookie.domainid != null)) {
@@ -804,7 +808,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 // Send connection request to agent
                 const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);
                 if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
-                const command = { nodeid: cookie.nodeid, action: 'msg', type: 'tunnel', userid: user._id, value: '*/meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, tcpport: cookie.tcpport, tcpaddr: cookie.tcpaddr, soptions: {} };
+                const command = { nodeid: cookie.nodeid, action: 'msg', type: 'tunnel', userid: user._id, value: '*/' + xdomain + 'meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, tcpport: cookie.tcpport, tcpaddr: cookie.tcpaddr, soptions: {} };
                 if (typeof domain.consentmessages == 'object') {
                     if (typeof domain.consentmessages.title == 'string') { command.soptions.consentTitle = domain.consentmessages.title; }
                     if (typeof domain.consentmessages.desktop == 'string') { command.soptions.consentMsgDesktop = domain.consentmessages.desktop; }
@@ -836,7 +840,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);
 
                 if (obj.req.query.tcpport != null) {
-                    const command = { nodeid: obj.req.query.nodeid, action: 'msg', type: 'tunnel', userid: user._id, value: '*/meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, tcpport: obj.req.query.tcpport, tcpaddr: ((obj.req.query.tcpaddr == null) ? '127.0.0.1' : obj.req.query.tcpaddr), soptions: {} };
+                    const command = { nodeid: obj.req.query.nodeid, action: 'msg', type: 'tunnel', userid: user._id, value: '*/' + xdomain + 'meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, tcpport: obj.req.query.tcpport, tcpaddr: ((obj.req.query.tcpaddr == null) ? '127.0.0.1' : obj.req.query.tcpaddr), soptions: {} };
                     if (typeof domain.consentmessages == 'object') {
                         if (typeof domain.consentmessages.title == 'string') { command.soptions.consentTitle = domain.consentmessages.title; }
                         if (typeof domain.consentmessages.desktop == 'string') { command.soptions.consentMsgDesktop = domain.consentmessages.desktop; }
@@ -852,7 +856,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     parent.parent.debug('relay', 'Relay: Sending agent TCP tunnel command: ' + JSON.stringify(command));
                     if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
                 } else if (obj.req.query.udpport != null) {
-                    const command = { nodeid: obj.req.query.nodeid, action: 'msg', type: 'tunnel', userid: user._id, value: '*/meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, udpport: obj.req.query.udpport, udpaddr: ((obj.req.query.udpaddr == null) ? '127.0.0.1' : obj.req.query.udpaddr), soptions: {} };
+                    const command = { nodeid: obj.req.query.nodeid, action: 'msg', type: 'tunnel', userid: user._id, value: '*/' + xdomain + 'meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, udpport: obj.req.query.udpport, udpaddr: ((obj.req.query.udpaddr == null) ? '127.0.0.1' : obj.req.query.udpaddr), soptions: {} };
                     if (typeof domain.consentmessages == 'object') {
                         if (typeof domain.consentmessages.title == 'string') { command.soptions.consentTitle = domain.consentmessages.title; }
                         if (typeof domain.consentmessages.desktop == 'string') { command.soptions.consentMsgDesktop = domain.consentmessages.desktop; }
@@ -883,7 +887,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 // Send connection request to agent
                 if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); }
                 const rcookie = parent.parent.encodeCookie({ ruserid: user._id, nodeid: node._id }, parent.parent.loginCookieEncryptionKey);
-                const command = { nodeid: node._id, action: 'msg', type: 'tunnel', userid: user._id, value: '*/meshrelay.ashx?p=' + cookie.p + '&id=' + obj.id + '&rauth=' + rcookie + '&nodeid=' + node._id, soptions: {}, rights: cookie.r, guestname: cookie.gn, consent: cookie.cf, remoteaddr: cleanRemoteAddr(obj.req.clientIp) };
+                const command = { nodeid: node._id, action: 'msg', type: 'tunnel', userid: user._id, value: '*/' + xdomain + 'meshrelay.ashx?p=' + cookie.p + '&id=' + obj.id + '&rauth=' + rcookie + '&nodeid=' + node._id, soptions: {}, rights: cookie.r, guestname: cookie.gn, consent: cookie.cf, remoteaddr: cleanRemoteAddr(obj.req.clientIp) };
 
                 // Limit what this relay connection can do
                 if (typeof cookie.p == 'number') {
