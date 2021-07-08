@@ -1512,7 +1512,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     cmdargs = parseArgs(cmdargs);
 
                     // Find the command in the lookup table and run it.
-                    var cmdData = serverUserCommand[cmd], r = '';;
+                    var cmdData = serverUserCommands[cmd], r = '';;
                     if (cmdData != null) {
                         try { r = cmdData[0](cmdargs); } catch (ex) { r = '' + ex; }
                     } else { r = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.'; }
