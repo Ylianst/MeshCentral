@@ -1510,19 +1510,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (cmdargs.length == 0) break;
                     const cmd = cmdargs[0].toLowerCase();
                     cmdargs = parseArgs(cmdargs);
-                    var cmdData = { result: '', command: command, cmdargs: cmdargs };
 
-                    try {
-                        consoleCommands[cmd](cmdData);
-                    } catch (e) {
-                        if (consoleCommands[cmd] == null)
-                            cmdData.result = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.';
-                        else
-                            console.log(e);
-                    }
+                    // Find the command in the lookup table and run it.
+                    var cmdData = serverUserCommand[cmd], r = '';;
+                    if (cmdData != null) {
+                        try { r = cmdData[0](cmdargs); } catch (ex) { r = '' + ex; }
+                    } else { r = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.'; }
 
-                    if (cmdData.result != null && cmdData.result != '') {
-                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: cmdData.result, tag: command.tag })); } catch (ex) { } }
+                    // Send back the command result
+                    if (r != '') { try { ws.send(JSON.stringify({ action: 'serverconsole', value: r, tag: command.tag })); } catch (ex) { } }
                     break;
                 }
             case 'msg':
@@ -6142,7 +6138,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         }
     }
 
-    const serverUserCommand = {
+    const serverUserCommands = {
         'acceleratorsstats': [serverUserCommandAcceleratorsStats, "Show data on work being offloaded to other CPU's"],
         'agentissues': [serverUserCommandAgentIssues, ""],
         'agentstats': [serverUserCommandAgentStats, ""],
@@ -6196,7 +6192,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverUserCommandHelp(cmdargs) {
         var r, fin = '', f = '', availcommands = [];
-        for (var i in serverUserCommand) { availcommands.push(i); }
+        for (var i in serverUserCommands) { availcommands.push(i); }
         availcommands = availcommands.sort();
         while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
         if (f != '') { fin += f; }
@@ -6204,7 +6200,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             r = 'Available commands: \r\n' + fin + '\r\nType help <command> for details.';
         } else {
             var cmd2 = cmdargs['_'][0].toLowerCase();
-            var cmddata = serverUserCommand[cmd2];
+            var cmddata = serverUserCommands[cmd2];
             if (cmddata) { if (cmddata[1] == '') { r = "No help available for this command."; } else { r = cmddata[1]; } } else { r = "This command does not exist."; }
         }
         return r;
