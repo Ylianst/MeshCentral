@@ -198,6 +198,7 @@ function run(argv) {
         console.log('  AmtScan           - Search local network for Intel AMT devices.');
         console.log('  AmtWifi           - Intel AMT Wifi interface settings.');
         console.log('  AmtWake           - Intel AMT Wake Alarms.');
+        console.log('  AmtRPE            - Intel AMT Remote Platform Erase.');
         console.log('\r\nHelp on a specific action using:\r\n');
         console.log('  meshcmd help [action]');
         exit(1); return;
@@ -387,6 +388,21 @@ function run(argv) {
             console.log('     --interval (dd-hh-mm)  Optional alarm interval in days-hours-minutes format, default is alarm once.');
             console.log('     --deletewhendone       Indicates alarm is removed once triggered, default is to no remove.');
             console.log('  --del [alarm-name]        Remove a wake alarm');
+        } else if (action == 'amtrpe') {
+            console.log('AmtRPE is used to erase some elements of a remote Intel AMT platform. Example usage:\r\n\r\n  meshcmd amtrpe --host 1.2.3.4 --user admin --pass mypassword');
+            console.log('\r\nRequired arguments:\r\n');
+            console.log('  --host [hostname]         The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --pass [password]         The Intel AMT login password.');
+            console.log('\r\nOptional arguments:\r\n');
+            console.log('  --user [username]         The Intel AMT login username, admin is default.');
+            console.log('  --tls                     Specifies that TLS must be used.');
+            console.log('  --reset / --poweron       Power action to perform on Intel AMT device.');
+            console.log('  --pyrite [PSID]           Perform pyrite revert.');
+            console.log('  --ssd [Password]          Perform secure erase all SSDs.');
+            console.log('  --tpm                     Perform TPM Clear.');
+            console.log('  --nvm                     Perform clear BIOS NVM variables.');
+            console.log('  --bios                    Perform BIOS reload of golden configuration.');
+            console.log('  --csme                    Perform CSME unconfigure.');
         } else {
             actions.shift();
             console.log('Invalid action, usage:\r\n\r\n  meshcmd help [action]\r\n\r\nValid actions are: ' + actions.join(', ') + '.');
@@ -718,6 +734,11 @@ function run(argv) {
             if (((typeof args.date != 'string') || args.data == '')) { console.log("Wake alarm date is required (--date [yyyy-mm-dd])."); exit(1); return; }
         }
         performAmtWakeConfig(args);
+    } else if (settings.action == 'amtrpe') { // Perform Intel AMT remote platform erase operations
+        if (settings.hostname == null) { settings.hostname = '127.0.0.1'; }
+        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        performAmtPlatformErase(args);
     } else if (settings.action == 'amtfeatures') { // Perform remote Intel AMT feature configuration operation
         if (settings.hostname == null) { settings.hostname = '127.0.0.1'; }
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
@@ -2533,6 +2554,138 @@ function performAmtWakeConfig1(stack, name, response, status, args) {
         process.exit(1);
     }
 }
+
+
+//
+// Intel AMT Remote Platform Erase
+//
+
+function performAmtPlatformErase(args) {
+    var transport = require('amt-wsman-duk');
+    var wsman = require('amt-wsman');
+    var amt = require('amt');
+    wsstack = new wsman(transport, settings.hostname, settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls);
+    amtstack = new amt(wsstack);
+    amtstack.BatchEnum(null, ['*CIM_BootService', '*AMT_BootCapabilities'], performAmtPlatformErase1, args);
+}
+
+function performAmtPlatformErase1(stack, name, response, status, args) {
+    debug(0, "performAmtPlatformErase1(" + status + "): " + JSON.stringify(response, null, 2));
+    if (status == 200) {
+        // See that RPE featues are supported
+        var platfromEraseSupport = response['AMT_BootCapabilities'].response['PlatformErase'];
+        if (platfromEraseSupport == null) { console.log("Remote Platfrom Erase (RPE) is not supported on this platform"); process.exit(1); return; }
+        var supportedRpeFeatures = [];
+        if (platfromEraseSupport & (1 << 1))  { supportedRpeFeatures.push("Pyrite Revert"); }
+        if (platfromEraseSupport & (1 << 2))  { supportedRpeFeatures.push("Secure Erase All SSDs"); }
+        if (platfromEraseSupport & (1 << 6))  { supportedRpeFeatures.push("TPM Clear"); }
+        if (platfromEraseSupport & (1 << 25)) { supportedRpeFeatures.push("Clear BIOS NVM Variables"); }
+        if (platfromEraseSupport & (1 << 26)) { supportedRpeFeatures.push("BIOS Reload of Golden Configuration"); }
+        if (platfromEraseSupport & (1 << 31)) { supportedRpeFeatures.push("CSME Unconfigure"); }
+        console.log("RPE Supported Features: " + supportedRpeFeatures.join(", "));
+
+        // Compute requested operations flags
+        var rpeflags = 0;
+        if (args.pyrite) { rpeflags += (1 << 1); }
+        if (args.ssd) { rpeflags += (1 << 2); }
+        if (args.tpm) { rpeflags += (1 << 6); }
+        if (args.nvm) { rpeflags += (1 << 25); }
+        if (args.bios) { rpeflags += (1 << 26); }
+        if (args.csme) { rpeflags += (1 << 31); }
+        if (rpeflags == 0) { process.exit(1); return; }
+        if ((rpeflags | platfromEraseSupport) != platfromEraseSupport) { console.log("Unable to perform unsupported RPE operation."); process.exit(1); return; }
+        settings.rpeflags = rpeflags;
+        settings.powerAction = 0;
+        if (args.reset) { settings.powerAction = 10; } else if (args.poweron) { settings.powerAction = 2; }
+        if (settings.powerAction == 0) { console.log("--reset or --poweron is required to perform RPE action."); process.exit(1); return; }
+
+        // See if OCR and RPE are enabled
+        var enabledState = response['CIM_BootService'].response['EnabledState'];
+        var enabledBootStateStr = { 0: "Unknown", 1: "Other", 2: "Enabled", 3: "Disabled", 4: "Shutting Down", 5: "Not Applicable", 6: "Enabled but Offline", 7: "In Test", 8: "Deferred", 9: "Quiesce", 10: "Starting", 32768: "RPE Disabled", 32769: "All Enabled", 32770: "RPE & OCR Disabled" };
+        var t = enabledBootStateStr[enabledState] ? enabledBootStateStr[enabledState] : ("Unknown, #" + enabledState);
+        console.log("BootService Enabled State: " + t);
+
+        if (enabledState != 32769) {
+            // Enabled OCR and RPE
+            console.log("Enabling OCR and RPE features...");
+            amtstack.CIM_BootService_RequestStateChange(32769, null, performAmtPlatformErase2);
+        } else {
+            performAmtPlatformErase3(args);
+        }
+    } else { console.log("Error, status " + status + "."); process.exit(1); }
+}
+
+function performAmtPlatformErase2(stack, name, response, status, args) {
+    debug(0, "performAmtPlatformErase2(" + status + "): " + JSON.stringify(response, null, 2));
+    if (status == 200) {
+        if (response.Body['ReturnValueStr'] != 'SUCCESS') { console.log("Error, " + response.Body['ReturnValueStr'] + "."); process.exit(1); }
+        else { performAmtPlatformErase3(args); }
+        process.exit(0);
+    } else { console.log("Error, status " + status + "."); process.exit(1); }
+}
+
+function performAmtPlatformErase3(args) {
+    var tlv = makeUefiBootParam(1, settings.rpeflags, 4), tlvlen = 1;
+    if ((settings.rpeflags & 2) && (typeof args.pyrite == 'string')) { tlv += makeUefiBootParam(10, args.pyrite); tlvlen++; }
+    if ((settings.rpeflags & 4) && (typeof args.ssd == 'string')) { tlv += makeUefiBootParam(20, args.ssd); tlvlen++; }
+    settings.platfromEraseTLV = { tlv: Buffer.from(tlv, 'binary').toString('base64'), tlvlen: tlvlen };
+    debug(0, "platfromEraseTLV: " + JSON.stringify(r, null, 2));
+    console.log("Fetching boot information...");
+    amtstack.Get('AMT_BootSettingData', performAmtPlatformErase4, 0, 1);
+}
+
+function performAmtPlatformErase4(stack, name, response, status, args) {
+    debug(0, "performAmtPlatformErase4(" + status + "): " + JSON.stringify(response, null, 2));
+    if (status == 200) {
+        var r = response['Body'];
+        r['PlatformErase'] = true;
+        r['UefiBootParametersArray'] = settings.platfromEraseTLV.tlv;
+        r['UefiBootNumberOfParams'] = settings.platfromEraseTLV.tlvlen;
+        debug(0, "BootConfig: " + JSON.stringify(r, null, 2));
+        console.log("Setting Boot Order...");
+        amtstack.CIM_BootConfigSetting_ChangeBootOrder(null, function (stack, name, response, status) {
+            if (status != 200) { console.log("PUT CIM_BootConfigSetting_ChangeBootOrder, Error #" + status + ((response.Header && response.Header.WsmanError) ? (', ' + response.Header.WsmanError) : '')); process.exit(1); return; }
+            if (response.Body['ReturnValue'] != 0) { messagebox("Error, Change Boot Order returns " + response.Body.ReturnValueStr); process.exit(1); return; }
+            amtstack.Put('AMT_BootSettingData', r, performAmtPlatformErase5, 0, 1);
+        }, 0, 1);
+    } else { console.log("Error, status " + status + "."); process.exit(1); }
+}
+
+function performAmtPlatformErase5(stack, name, response, status, args) {
+    debug(0, "performAmtPlatformErase5(" + status + "): " + JSON.stringify(response, null, 2));
+    if (status == 200) {
+        console.log("Setting Boot Configuration Role...");
+        amtstack.SetBootConfigRole(1, performAmtPlatformErase6, 0, 1);
+    } else { console.log("Error, status " + status + "."); process.exit(1); }
+}
+
+function performAmtPlatformErase6(stack, name, response, status, args) {
+    debug(0, "performAmtPlatformErase6(" + status + "): " + JSON.stringify(response, null, 2));
+    if (status == 200) {
+        if (response.Body['ReturnValueStr'] != 'SUCCESS') { console.log("Error, " + response.Body['ReturnValueStr'] + "."); process.exit(1); }
+        else {
+            console.log('Performing power state change...');
+            amtstack.RequestPowerStateChange(settings.powerAction, performAmtPlatformErase7); // 2 = Power Up, 10 = Reset
+        }
+    } else { console.log("Error, status " + status + "."); process.exit(1); }
+}
+
+function performAmtPlatformErase7(stack, name, response, status, args) {
+    debug(0, "performAmtPlatformErase7(" + status + "): " + JSON.stringify(response, null, 2));
+    if (status == 200) {
+        if (response.Body['ReturnValueStr'] != 'SUCCESS') { console.log("Error, " + response.Body['ReturnValueStr'] + "."); process.exit(1); } else { console.log('Done.'); }
+        process.exit(0);
+    } else { console.log("Error, status " + status + "."); process.exit(1); }
+}
+
+
+// Returns a UEFI boot parameter in binary
+function makeUefiBootParam(type, data, len) {
+    if (typeof data == 'number') { if (len == 1) { data = String.fromCharCode(data & 0xFF); } if (len == 2) { data = ShortToStrX(data); } if (len == 4) { data = IntToStrX(data); } }
+    return ShortToStrX(0x8086) + ShortToStrX(type) + IntToStrX(data.length) + data;
+}
+function IntToStrX(v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF); }
+function ShortToStrX(v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF); }
 
 //
 // Intel AMT feature configuration action
