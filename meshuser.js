@@ -1513,7 +1513,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var cmdData = { result: '', command: command, cmdargs: cmdargs };
 
                     try {
-                        consoleCommands[cmd](cmdData, command, cmdargs);
+                        consoleCommands[cmd](cmdData);
                     } catch (e) {
                         if (consoleCommands[cmd] == null)
                             cmdData.result = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.';
