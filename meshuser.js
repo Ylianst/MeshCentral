@@ -597,114 +597,100 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     consoleCommands['firebase'] = firebaseConsoleCommand;
 
 
-    function helpConsoleCommand(cmdargs) {
-        var r = '', fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,trafficstats,trafficdelta,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,dbcounters,sms,amtacm,certhashes,watchdog,amtmanager,amtpasswords,certexpire,email';
+    function helpConsoleCommand(cmdData) {
+        var fin = '', f = '', availcommands = 'help,maintenance,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,agentissues,webstats,trafficstats,trafficdelta,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,dbcounters,sms,amtacm,certhashes,watchdog,amtmanager,amtpasswords,certexpire,email';
         if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
         availcommands = availcommands.split(',').sort();
         while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
         if (f != '') { fin += f; }
-        if (cmdargs['_'].length == 0) {
-            r = 'Available commands: \r\n' + fin + '\r\nType help <command> for details.';
+        if (cmdData.cmdargs['_'].length == 0) {
+            cmdData.result = 'Available commands: \r\n' + fin + '\r\nType help <command> for details.';
         } else {
-            var cmd2 = cmdargs['_'][0].toLowerCase();
+            var cmd2 = cmdData.cmdargs['_'][0].toLowerCase();
             switch (cmd2) {
-                case 'info': { r = "info: Returns the most immidiatly useful information about this server, including MeshCentral and NodeJS versions. This is often information required to file a bug."; break; }
-                case 'versions': { r = "versions: Returns all internal versions for NodeJS running this server."; break; }
-                case 'resetserver': { r = "resetserver: Causes the server to reset, this is sometimes useful is the config.json file was changed."; break; }
-                case 'usersessions': { r = "usersessions: Returns a list of active sessions grouped by user."; break; }
-                case 'closeusersessions': { r = "closeusersessions: Disconnects all sessions for a specified user."; break; }
-                case 'tasklimiter': { r = "tasklimiter: Returns the internal status of the tasklimiter. This is a system used to smooth out work done by the server. It's used by, for example, agent updates so that not all agents are updated at the same time."; break; }
-                case 'serverupdate': { r = "serverupdate: Updates server to latest version. Optional version argument to install specific version. Example: serverupdate 0.8.49"; break; }
-                default: { r = 'No help information about this command.'; break; }
+                case 'info': { cmdData.result = "info: Returns the most immidiatly useful information about this server, including MeshCentral and NodeJS versions. This is often information required to file a bug."; break; }
+                case 'versions': { cmdData.result = "versions: Returns all internal versions for NodeJS running this server."; break; }
+                case 'resetserver': { cmdData.result = "resetserver: Causes the server to reset, this is sometimes useful is the config.json file was changed."; break; }
+                case 'usersessions': { cmdData.result = "usersessions: Returns a list of active sessions grouped by user."; break; }
+                case 'closeusersessions': { cmdData.result = "closeusersessions: Disconnects all sessions for a specified user."; break; }
+                case 'tasklimiter': { cmdData.result = "tasklimiter: Returns the internal status of the tasklimiter. This is a system used to smooth out work done by the server. It's used by, for example, agent updates so that not all agents are updated at the same time."; break; }
+                case 'serverupdate': { cmdData.result = "serverupdate: Updates server to latest version. Optional version argument to install specific version. Example: serverupdate 0.8.49"; break; }
+                default: { cmdData.result = 'No help information about this command.'; break; }
             }
         }
-        return r;
     }
 
-    function certexpireConsoleCommand(command, cmdargs) {
-        var r = '';
+    function certexpireConsoleCommand(cmdData) {
         const now = Date.now();
         for (var i in parent.webCertificateExpire) {
             const domainName = (i == '') ? '[Default]' : i;
-            r += domainName + ', expires in ' + Math.floor((parent.webCertificateExpire[i] - now) / 86400000) + ' day(s)\r\n';
+            cmdData.result += domainName + ', expires in ' + Math.floor((parent.webCertificateExpire[i] - now) / 86400000) + ' day(s)\r\n';
         }
-        return r;
     }
 
-    function webpushConsoleCommand(command, cmdargs) {
-        var r = '';
+    function webpushConsoleCommand(cmdData) {
         if (parent.parent.webpush == null) {
-            r = "Web push not supported.";
+            cmdData.result = "Web push not supported.";
         } else {
-            if (cmdargs['_'].length != 1) {
-                r = "Usage: WebPush \"Message\"";
+            if (cmdData.cmdargs['_'].length != 1) {
+                cmdData.result = "Usage: WebPush \"Message\"";
             } else {
                 const pushSubscription = { "endpoint": "https://updates.push.services.mozilla.com/wpush/v2/gAAAAABgIkO9hjXHWhMPiuk-ppNRw7r_pUZitddwCEK4ykdzeIxOIjFnYhIt_nr-qUca2mpZziwQsSEhYTUCiuYrhWnVDRweMtiUj16yJJq8V5jneaEaUYjEIe5jp3DOMNpoTm1aHgX74gCR8uTXSITcM97bNi-hRxcQ4f6Ie4WSAmoXpd89B_g", "keys": { "auth": "UB2sbLVK7ALnSHw5P1dahg", "p256dh": "BIoRbcNSxBuTjN39CCCUCHo1f4NxBJ1YDdu_k4MbPW_q3NK1_RufnydUzLPDp8ibBVItSI72-s48QJvOjQ_S8Ok" } }
-                parent.parent.webpush.sendNotification(pushSubscription, cmdargs['_'][0]).then(
-                    function (value) { try { ws.send(JSON.stringify({ action: 'OK', value: r, tag: command.tag })); } catch (ex) { } },
-                    function (error) { try { ws.send(JSON.stringify({ action: 'Error', value: r, tag: command.tag })); } catch (ex) { } }
+                parent.parent.webpush.sendNotification(pushSubscription, cmdData.cmdargs['_'][0]).then(
+                    function (value) { try { ws.send(JSON.stringify({ action: 'OK', value: cmdData.result, tag: cmdData.command.tag })); } catch (ex) { } },
+                    function (error) { try { ws.send(JSON.stringify({ action: 'Error', value: cmdData.result, tag: cmdData.command.tag })); } catch (ex) { } }
                 );
             }
         }
-        return r;
     }
 
-    function amtmanagerConsoleCommand(command, cmdargs) {
-        var r = '';
+    function amtmanagerConsoleCommand(cmdData) {
         if (parent.parent.amtManager == null) {
-            r = 'Intel AMT Manager not active.';
+            cmdData.result = 'Intel AMT Manager not active.';
         } else { 
-            r = parent.parent.amtManager.getStatusString();
+            cmdData.result = parent.parent.amtManager.getStatusString();
         }
-        return r;
     }
 
-    function certhashesConsoleCommand(command, cmdargs) {
-        var r = '';
-        r += 'AgentCertHash: ' + parent.agentCertificateHashHex;
-        for (var i in parent.webCertificateHashs) { r += '\r\nwebCertificateHash (' + i + '): ' + common.rstr2hex(parent.webCertificateHashs[i]); }
-        for (var i in parent.webCertificateFullHashs) { r += '\r\nwebCertificateFullHash (' + i + '): ' + common.rstr2hex(parent.webCertificateFullHashs[i]); }
-        r += '\r\ndefaultWebCertificateHash: ' + common.rstr2hex(parent.defaultWebCertificateHash);
-        r += '\r\ndefaultWebCertificateFullHash: ' + common.rstr2hex(parent.defaultWebCertificateFullHash);
-        return r;
+    function certhashesConsoleCommand(cmdData) {
+        cmdData.result += 'AgentCertHash: ' + parent.agentCertificateHashHex;
+        for (var i in parent.webCertificateHashs) { cmdData.result += '\r\nwebCertificateHash (' + i + '): ' + common.rstr2hex(parent.webCertificateHashs[i]); }
+        for (var i in parent.webCertificateFullHashs) { cmdData.result += '\r\nwebCertificateFullHash (' + i + '): ' + common.rstr2hex(parent.webCertificateFullHashs[i]); }
+        cmdData.result += '\r\ndefaultWebCertificateHash: ' + common.rstr2hex(parent.defaultWebCertificateHash);
+        cmdData.result += '\r\ndefaultWebCertificateFullHash: ' + common.rstr2hex(parent.defaultWebCertificateFullHash);
     }
 
-    function amtacmConsoleCommand(command, cmdargs) {
-        var r = '';
+    function amtacmConsoleCommand(cmdData) {
         if ((domain.amtacmactivation == null) || (domain.amtacmactivation.acmmatch == null) || (domain.amtacmactivation.acmmatch.length == 0)) {
-            r = 'No Intel AMT activation certificates.';
+            cmdData.result = 'No Intel AMT activation certificates.';
         } else {
-            if (domain.amtacmactivation.log != null) { r += '--- Activation Log ---\r\nFile  : ' + domain.amtacmactivation.log + '\r\n'; }
+            if (domain.amtacmactivation.log != null) { cmdData.result += '--- Activation Log ---\r\nFile  : ' + domain.amtacmactivation.log + '\r\n'; }
             for (var i in domain.amtacmactivation.acmmatch) {
                 var acmcert = domain.amtacmactivation.acmmatch[i];
-                r += '--- Activation Certificate ' + (parseInt(i) + 1) + ' ---\r\nName  : ' + acmcert.cn + '\r\nSHA1  : ' + acmcert.sha1 + '\r\nSHA256: ' + acmcert.sha256 + '\r\n';
+                cmdData.result += '--- Activation Certificate ' + (parseInt(i) + 1) + ' ---\r\nName  : ' + acmcert.cn + '\r\nSHA1  : ' + acmcert.sha1 + '\r\nSHA256: ' + acmcert.sha256 + '\r\n';
             }
         }
-        return r;
     }
 
-    function heapdumpConsoleCommand(command, cmdargs) {
-        var r = '';
+    function heapdumpConsoleCommand(cmdData) {
         // Heapdump support, see example at:
         // https://www.arbazsiddiqui.me/a-practical-guide-to-memory-leaks-in-nodejs/
         if (parent.parent.config.settings.heapdump === true) {
             var dumpFileName = parent.path.join(parent.parent.datapath, `heapDump-${Date.now()}.heapsnapshot`);
-            try { ws.send(JSON.stringify({ action: 'serverconsole', value: "Generating dump file at: " + dumpFileName, tag: command.tag })); } catch (ex) { }
+            try { ws.send(JSON.stringify({ action: 'serverconsole', value: "Generating dump file at: " + dumpFileName, tag: cmdData.command.tag })); } catch (ex) { }
             require('heapdump').writeSnapshot(dumpFileName, (err, filename) => {
-                try { ws.send(JSON.stringify({ action: 'serverconsole', value: "Done.", tag: command.tag })); } catch (ex) { }
+                try { ws.send(JSON.stringify({ action: 'serverconsole', value: "Done.", tag: cmdData.command.tag })); } catch (ex) { }
             });
         } else {
-            r = "Heapdump not supported, add \"heapdump\":true to settings section of config.json.";
+            cmdData.result = "Heapdump not supported, add \"heapdump\":true to settings section of config.json.";
         }
-        return r;
     }
 
-    function heapdump2ConsoleCommand(command, cmdargs) {
-        var r = '';
+    function heapdump2ConsoleCommand(cmdData) {
         var heapdump = null;
         try { heapdump = require('heapdump'); } catch (ex) { }
         if (heapdump == null) {
-            r = 'Heapdump module not installed, run "npm install heapdump".';
+            cmdData.result = 'Heapdump module not installed, run "npm install heapdump".';
         } else {
             heapdump.writeSnapshot(function (err, filename) {
                 if (err != null) {
@@ -714,248 +700,212 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             });
         }
-        return r;
     }
 
-    function smsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function smsConsoleCommand(cmdData) {
         if (parent.parent.smsserver == null) {
-            r = "No SMS gateway in use.";
+            cmdData.result = "No SMS gateway in use.";
         } else {
-            if (cmdargs['_'].length != 2) {
-                r = "Usage: SMS \"PhoneNumber\" \"Message\".";
+            if (cmdData.cmdargs['_'].length != 2) {
+                cmdData.result = "Usage: SMS \"PhoneNumber\" \"Message\".";
             } else {
-                parent.parent.smsserver.sendSMS(cmdargs['_'][0], cmdargs['_'][1], function (status, msg) {
+                parent.parent.smsserver.sendSMS(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], function (status, msg) {
                     if (typeof msg == 'string') {
-                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? ('Success: ' + msg) : ('Failed: ' + msg), tag: command.tag })); } catch (ex) { }
+                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? ('Success: ' + msg) : ('Failed: ' + msg), tag: cmdData.command.tag })); } catch (ex) { }
                     } else {
-                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? 'Success' : 'Failed', tag: command.tag })); } catch (ex) { }
+                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? 'Success' : 'Failed', tag: cmdData.command.tag })); } catch (ex) { }
                     }
                 });
             }
         }
-        return r;
     }
 
-    function emailConsoleCommand(command, cmdargs) {
-        var r = '';
+    function emailConsoleCommand(cmdData) {
         if (domain.mailserver == null) {
-            r = "No email service enabled.";
+            cmdData.result = "No email service enabled.";
         } else {
-            if (cmdargs['_'].length != 3) {
-                r = "Usage: email \"user@sample.com\" \"Subject\" \"Message\".";
+            if (cmdData.cmdargs['_'].length != 3) {
+                cmdData.result = "Usage: email \"user@sample.com\" \"Subject\" \"Message\".";
             } else {
-                domain.mailserver.sendMail(cmdargs['_'][0], cmdargs['_'][1], cmdargs['_'][2]);
-                r = "Done.";
+                domain.mailserver.sendMail(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], cmdData.cmdargs['_'][2]);
+                cmdData.result = "Done.";
             }
         }
-        return r;
     }
 
-    function leConsoleCommand(command, cmdargs) {
-        var r = '';
+    function leConsoleCommand(cmdData) {
         if (parent.parent.letsencrypt == null) {
-            r = "Let's Encrypt not in use.";
+            cmdData.result = "Let's Encrypt not in use.";
         } else {
-            r = JSON.stringify(parent.parent.letsencrypt.getStats(), null, 4);
+            cmdData.result = JSON.stringify(parent.parent.letsencrypt.getStats(), null, 4);
         }
-        return r;
     }
 
-    function lecheckConsoleCommand(command, cmdargs) {
-        var r = '';
+    function lecheckConsoleCommand(cmdData) {
         if (parent.parent.letsencrypt == null) {
-            r = "Let's Encrypt not in use.";
+            cmdData.result = "Let's Encrypt not in use.";
         } else {
-            r = ["CertOK", "Request:NoCert", "Request:Expire", "Request:MissingNames"][parent.parent.letsencrypt.checkRkenewCertificate()];
+            cmdData.result = ["CertOK", "Request:NoCert", "Request:Expire", "Request:MissingNames"][parent.parent.letsencrypt.checkRkenewCertificate()];
         }
-        return r;
     }
 
-    function leeventsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function leeventsConsoleCommand(cmdData) {
         if (parent.parent.letsencrypt == null) {
-            r = "Let's Encrypt not in use.";
+            cmdData.result = "Let's Encrypt not in use.";
         } else {
-            r = parent.parent.letsencrypt.events.join('\r\n');
+            cmdData.result = parent.parent.letsencrypt.events.join('\r\n');
         }
-        return r;
     }
 
-    function badloginsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function badloginsConsoleCommand(cmdData) {
         if (parent.parent.config.settings.maxinvalidlogin == false) {
-            r = 'Bad login filter is disabled.';
+            cmdData.result = 'Bad login filter is disabled.';
         } else {
-            if (cmdargs['_'] == 'reset') {
+            if (cmdData.cmdargs['_'] == 'reset') {
                 // Reset bad login table
                 parent.badLoginTable = {};
                 parent.badLoginTableLastClean = 0;
-                r = 'Done.'
-            } else if (cmdargs['_'] == '') {
+                cmdData.result = 'Done.'
+            } else if (cmdData.cmdargs['_'] == '') {
                 // Show current bad login table
                 if (typeof parent.parent.config.settings.maxinvalidlogin.coolofftime == 'number') {
-                    r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s), " + parent.parent.config.settings.maxinvalidlogin.coolofftime + " minute(s) cooloff.\r\n";
+                    cmdData.result = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s), " + parent.parent.config.settings.maxinvalidlogin.coolofftime + " minute(s) cooloff.\r\n";
                 } else {
-                    r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s).\r\n";
+                    cmdData.result = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s).\r\n";
                 }
                 var badLoginCount = 0;
                 parent.cleanBadLoginTable();
                 for (var i in parent.badLoginTable) {
                     badLoginCount++;
                     if (typeof parent.badLoginTable[i] == 'number') {
-                        r += "Cooloff for " + Math.floor((parent.badLoginTable[i] - Date.now()) / 60000) + " minute(s)\r\n";
+                        cmdData.result += "Cooloff for " + Math.floor((parent.badLoginTable[i] - Date.now()) / 60000) + " minute(s)\r\n";
                     } else {
                         if (parent.badLoginTable[i].length > 1) {
-                            r += (i + ' - ' + parent.badLoginTable[i].length + " records\r\n");
+                            cmdData.result += (i + ' - ' + parent.badLoginTable[i].length + " records\r\n");
                         } else {
-                            r += (i + ' - ' + parent.badLoginTable[i].length + " record\r\n");
+                            cmdData.result += (i + ' - ' + parent.badLoginTable[i].length + " record\r\n");
                         }
                     }
                 }
-                if (badLoginCount == 0) { r += 'No bad logins.'; }
+                if (badLoginCount == 0) { cmdData.result += 'No bad logins.'; }
             } else {
-                r = 'Usage: badlogin [reset]';
+                cmdData.result = 'Usage: badlogin [reset]';
             }
         }
-        return r;
     }
 
-    function dispatchtableConsoleCommand(command, cmdargs) {
-        var r = '';
+    function dispatchtableConsoleCommand(cmdData) {
         for (var i in parent.parent.eventsDispatch) {
-            r += (i + ', ' + parent.parent.eventsDispatch[i].length + '\r\n'); 
+            cmdData.result += (i + ', ' + parent.parent.eventsDispatch[i].length + '\r\n'); 
         }
-        return r;
     }
 
-    function dupagentsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function dupagentsConsoleCommand(cmdData) {
         for (var i in parent.duplicateAgentsLog) {
-            r += JSON.stringify(parent.duplicateAgentsLog[i]) + '\r\n';
+            cmdData.result += JSON.stringify(parent.duplicateAgentsLog[i]) + '\r\n';
         }
-        if (r == '') { r = 'No duplicate agents in log.'; }
-        return r;
+        if (cmdData.result == '') { cmdData.result = 'No duplicate agents in log.'; }
     }
 
-    function agentstatsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function agentstatsConsoleCommand(cmdData) {
         var stats = parent.getAgentStats();
         for (var i in stats) {
-            if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+            if (typeof stats[i] == 'object') { cmdData.result += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { cmdData.result += (i + ': ' + stats[i] + '\r\n'); }
         }
-        return r;
     }
 
-    function agentissuesConsoleCommand(command, cmdargs) {
-        var r = '';
+    function agentissuesConsoleCommand(cmdData) {
         var stats = parent.getAgentIssues();
         if (stats.length == 0) {
-            r = "No agent issues.";
+            cmdData.result = "No agent issues.";
         } else {
-            for (var i in stats) { r += stats[i].join(', ') + '\r\n'; }
+            for (var i in stats) { cmdData.result += stats[i].join(', ') + '\r\n'; }
         }
-        return r;
     }
 
-    function webstatsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function webstatsConsoleCommand(cmdData) {
         var stats = parent.getStats();
         for (var i in stats) {
-            if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+            if (typeof stats[i] == 'object') { cmdData.result += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { cmdData.result += (i + ': ' + stats[i] + '\r\n'); }
         }
-        return r;
     }
 
-    function trafficstatsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function trafficstatsConsoleCommand(cmdData) {
         var stats = parent.getTrafficStats();
         for (var i in stats) {
-            if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+            if (typeof stats[i] == 'object') { cmdData.result += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { cmdData.result += (i + ': ' + stats[i] + '\r\n'); }
         }
-        return r;
     }
 
-    function trafficdeltaConsoleCommand(command, cmdargs) {
-        var r = '';
+    function trafficdeltaConsoleCommand(cmdData) {
         const stats = parent.getTrafficDelta(obj.trafficStats);
         obj.trafficStats = stats.current;
         for (var i in stats.delta) {
-            if (typeof stats.delta[i] == 'object') { r += (i + ': ' + JSON.stringify(stats.delta[i]) + '\r\n'); } else { r += (i + ': ' + stats.delta[i] + '\r\n'); }
+            if (typeof stats.delta[i] == 'object') { cmdData.result += (i + ': ' + JSON.stringify(stats.delta[i]) + '\r\n'); } else { cmdData.result += (i + ': ' + stats.delta[i] + '\r\n'); }
         }
-        return r;
     }
 
-    function watchdogConsoleCommand(command, cmdargs) {
-        var r = '';
+    function watchdogConsoleCommand(cmdData) {
         if (parent.parent.watchdog == null) {
-            r = 'Server watchdog not active.';
+            cmdData.result = 'Server watchdog not active.';
         } else {
-            r = 'Server watchdog active.\r\n';
-            if (parent.parent.watchdogmaxtime != null) { r += 'Largest timeout was ' + parent.parent.watchdogmax + 'ms on ' + parent.parent.watchdogmaxtime + '\r\n'; }
-            for (var i in parent.parent.watchdogtable) { r += parent.parent.watchdogtable[i] + '\r\n'; }
+            cmdData.result = 'Server watchdog active.\r\n';
+            if (parent.parent.watchdogmaxtime != null) { cmdData.result += 'Largest timeout was ' + parent.parent.watchdogmax + 'ms on ' + parent.parent.watchdogmaxtime + '\r\n'; }
+            for (var i in parent.parent.watchdogtable) { cmdData.result += parent.parent.watchdogtable[i] + '\r\n'; }
         }
-        return r;
     }
 
-    function acceleratorsstatsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function acceleratorsstatsConsoleCommand(cmdData) {
         var stats = parent.parent.certificateOperations.getAcceleratorStats();
         for (var i in stats) {
-            if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+            if (typeof stats[i] == 'object') { cmdData.result += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { cmdData.result += (i + ': ' + stats[i] + '\r\n'); }
         }
-        return r;
     }
 
-    function mpsstatsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function mpsstatsConsoleCommand(cmdData) {
         if (parent.parent.mpsserver == null) {
-            r = 'MPS not enabled.';
+            cmdData.result = 'MPS not enabled.';
         } else {
             var stats = parent.parent.mpsserver.getStats();
             for (var i in stats) {
-                if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+                if (typeof stats[i] == 'object') { cmdData.result += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { cmdData.result += (i + ': ' + stats[i] + '\r\n'); }
             }
         }
-        return r;
     }
 
-    function mpsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function mpsConsoleCommand(cmdData) {
         if (parent.parent.mpsserver == null) {
-            r = 'MPS not enabled.';
+            cmdData.result = 'MPS not enabled.';
         } else {
             const connectionTypes = ['CIRA', 'Relay', 'LMS'];
             for (var nodeid in parent.parent.mpsserver.ciraConnections) {
-                r += nodeid;
+                cmdData.result += nodeid;
                 var connections = parent.parent.mpsserver.ciraConnections[nodeid];
-                for (var i in connections) { r += ', ' + connectionTypes[connections[i].tag.connType]; }
-                r += '\r\n';
+                for (var i in connections) { cmdData.result += ', ' + connectionTypes[connections[i].tag.connType]; }
+                cmdData.result += '\r\n';
             }
-            if (r == '') { r = 'MPS has not connections.'; }
+            if (cmdData.result == '') { cmdData.result = 'MPS has not connections.'; }
         }
-        return r;
     }
 
-    function dbstatsConsoleCommand(command, cmdargs) {
+    function dbstatsConsoleCommand(cmdData) {
         parent.parent.db.getStats(function (stats) {
             var r2 = '';
             for (var i in stats) { r2 += (i + ': ' + stats[i] + '\r\n'); }
-            try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: command.tag })); } catch (ex) { }
+            try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: cmdData.command.tag })); } catch (ex) { }
         });
     }
 
-    function dbcountersConsoleCommand(command, cmdargs) {
-        try { ws.send(JSON.stringify({ action: 'serverconsole', value: JSON.stringify(parent.parent.db.dbCounters, null, 2), tag: command.tag })); } catch (ex) { }
+    function dbcountersConsoleCommand(cmdData) {
+        try { ws.send(JSON.stringify({ action: 'serverconsole', value: JSON.stringify(parent.parent.db.dbCounters, null, 2), tag: cmdData.command.tag })); } catch (ex) { }
     }
 
-    function serverupdateConsoleCommand(command, cmdargs) {
-        var r = '';
-        r = 'Performing server update...';
+    function serverupdateConsoleCommand(cmdData) {
+        cmdData.result = 'Performing server update...';
         var version = null;
 
-        if (cmdargs['_'].length > 0) {
-            version = cmdargs['_'][0];
+        if (cmdData.cmdargs['_'].length > 0) {
+            version = cmdData.cmdargs['_'][0];
 
             // This call is SLOW. We only want to validate version if we have to
             if (version != 'stable' && version != 'latest') {
@@ -978,56 +928,48 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 });
             } else {
                 if (parent.parent.performServerUpdate(version) == false) { 
-                    r = 'Server self-update not possible.';
+                    cmdData.result = 'Server self-update not possible.';
                 }
             }  
         } else {
             if (parent.parent.performServerUpdate(version) == false) { 
-                r = 'Server self-update not possible.';
+                cmdData.result = 'Server self-update not possible.';
             }
         }
-        return r;
     }
 
-    function printConsoleCommand(command, cmdargs) {
-        console.log(cmdargs['_'][0]);
+    function printConsoleCommand(cmdData) {
+        console.log(cmdData.cmdargs['_'][0]);
     }
 
-    function amtpasswordsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function amtpasswordsConsoleCommand(cmdData) {
         if (parent.parent.amtPasswords == null) {
-            r = "No Intel AMT password table."
+            cmdData.result = "No Intel AMT password table."
         } else {
-            for (var i in parent.parent.amtPasswords) { r += (i + ' - ' + parent.parent.amtPasswords[i].join(', ') + '\r\n'); }
+            for (var i in parent.parent.amtPasswords) { cmdData.result += (i + ' - ' + parent.parent.amtPasswords[i].join(', ') + '\r\n'); }
         }
-        return r;
     }
 
-    function updatecheckConsoleCommand(command, cmdargs) {
-        var r = '';
+    function updatecheckConsoleCommand(cmdData) {
         parent.parent.getServerTags(function (tags, error) {
             var r2 = '';
             if (error != null) { r2 += 'Exception: ' + error + '\r\n'; }
             else { for (var i in tags) { r2 += i + ': ' + tags[i] + '\r\n'; } }
-            try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: command.tag })); } catch (ex) { }
+            try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: cmdData.command.tag })); } catch (ex) { }
         });
-        r = "Checking server update...";
-        return r;
+        cmdData.result = "Checking server update...";
     }
 
-    function maintenanceConsoleCommand(command, cmdargs) {
-        var r = '';
+    function maintenanceConsoleCommand(cmdData) {
         var arg = null, changed = false;
-        if ((cmdargs['_'] != null) && (cmdargs['_'][0] != null)) { arg = cmdargs['_'][0].toLowerCase(); }
+        if ((cmdData.cmdargs['_'] != null) && (cmdData.cmdargs['_'][0] != null)) { arg = cmdData.cmdargs['_'][0].toLowerCase(); }
         if (arg == 'enabled') { parent.parent.config.settings.maintenancemode = 1; changed = true; }
         else if (arg == 'disabled') { delete parent.parent.config.settings.maintenancemode; changed = true; }
-        r = 'Maintenance mode: ' + ((parent.parent.config.settings.maintenancemode == null) ? 'Disabled' : 'Enabled');
-        if (changed == false) { r += '\r\nTo change type: maintenance [enabled|disabled]'; }
-        return r;
+        cmdData.result = 'Maintenance mode: ' + ((parent.parent.config.settings.maintenancemode == null) ? 'Disabled' : 'Enabled');
+        if (changed == false) { cmdData.result += '\r\nTo change type: maintenance [enabled|disabled]'; }
     }
 
-    function infoConsoleCommand(command, cmdargs) {
-        var r = '';
+    function infoConsoleCommand(cmdData) {
         var info = process.memoryUsage();
         info.dbType = ['None', 'NeDB', 'MongoJS', 'MongoDB'][parent.db.databaseType];
         try { if (parent.parent.multiServer != null) { info.serverId = parent.parent.multiServer.serverid; } } catch (ex) { }
@@ -1044,51 +986,47 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try { info.database = ["Unknown", "NeDB", "MongoJS", "MongoDB", "MariaDB", "MySQL"][parent.parent.db.databaseType]; } catch (ex) { }
         try { info.productionMode = ((process.env.NODE_ENV != null) && (process.env.NODE_ENV == 'production')); } catch (ex) { }
         try { info.allDevGroupManagers = parent.parent.config.settings.managealldevicegroups; } catch (ex) { }
-        r = JSON.stringify(info, null, 4);
-        return r;
+        cmdData.result = JSON.stringify(info, null, 4);
     }
 
-    function nodeconfigConsoleCommand(command, cmdargs) {
-        return JSON.stringify(process.config, null, 4);
+    function nodeconfigConsoleCommand(cmdData) {
+        cmdData.result = JSON.stringify(process.config, null, 4);
     }
 
-    function versionsConsoleCommand(command, cmdargs) {
-        return JSON.stringify(process.versions, null, 4);
+    function versionsConsoleCommand(cmdData) {
+        cmdData.result = JSON.stringify(process.versions, null, 4);
     }
 
-    function argsConsoleCommand(command, cmdargs) {
-        return 'args: ' + JSON.stringify(cmdargs);
+    function argsConsoleCommand(cmdData) {
+        cmdData.result = 'args: ' + JSON.stringify(cmdData.cmdargs);
     }
 
-    function usersessionsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function usersessionsConsoleCommand(cmdData) {
         var userSessionCount = 0;
         var filter = null;
-        var arg = cmdargs['_'][0];
+        var arg = cmdData.cmdargs['_'][0];
         if (typeof arg == 'string') { if (arg.indexOf('/') >= 0) { filter = arg; } else { filter = ('user/' + domain.id + '/' + arg); } }
         for (var i in parent.wssessions) {
             if ((filter == null) || (filter == i)) {
                 userSessionCount++;
-                r += (i + ', ' + parent.wssessions[i].length + ' session' + ((parent.wssessions[i].length > 1) ? 's' : '') + '.\r\n');
+                cmdData.result += (i + ', ' + parent.wssessions[i].length + ' session' + ((parent.wssessions[i].length > 1) ? 's' : '') + '.\r\n');
                 for (var j in parent.wssessions[i]) {
-                    r += '    ' + parent.wssessions[i][j].clientIp + ' --> ' + parent.wssessions[i][j].sessionId + '\r\n';
+                    cmdData.result += '    ' + parent.wssessions[i][j].clientIp + ' --> ' + parent.wssessions[i][j].sessionId + '\r\n';
                 }
             }
         }
-        if (userSessionCount == 0) { r = 'None.'; }
-        return r;
+        if (userSessionCount == 0) { cmdData.result = 'None.'; }
     }
 
-    function closeusersessionsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function closeusersessionsConsoleCommand(cmdData) {
         var userSessionCount = 0;
         var filter = null;
-        var arg = cmdargs['_'][0];
+        var arg = cmdData.cmdargs['_'][0];
         if (typeof arg == 'string') { if (arg.indexOf('/') >= 0) { filter = arg; } else { filter = ('user/' + domain.id + '/' + arg); } }
         if (filter == null) {
-            r += "Usage: closeusersessions <username>";
+            cmdData.result += "Usage: closeusersessions <username>";
         } else {
-            r += "Closing user sessions for: " + filter + '\r\n';
+            cmdData.result += "Closing user sessions for: " + filter + '\r\n';
             for (var i in parent.wssessions) {
                 if (filter == i) {
                     userSessionCount++;
@@ -1098,134 +1036,115 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                 }
             }
-            if (userSessionCount < 2) { r += 'Disconnected ' + userSessionCount + ' session.'; } else { r += 'Disconnected ' + userSessionCount + ' sessions.'; };
+            if (userSessionCount < 2) { cmdData.result += 'Disconnected ' + userSessionCount + ' session.'; } else { cmdData.result += 'Disconnected ' + userSessionCount + ' sessions.'; };
         }
-        return r;
     }
 
-    function resetserverConsoleCommand(command, cmdargs) {
+    function resetserverConsoleCommand(cmdData) {
         console.log("Server restart...");
         process.exit(0);
     }
 
-    function tasklimiterConsoleCommand(command, cmdargs) {
-        var r = '';
+    function tasklimiterConsoleCommand(cmdData) {
         if (parent.parent.taskLimiter != null) {
             //var obj = { maxTasks: maxTasks, maxTaskTime: (maxTaskTime * 1000), nextTaskId: 0, currentCount: 0, current: {}, pending: [[], [], []], timer: null };
             const tl = parent.parent.taskLimiter;
-            r += 'MaxTasks: ' + tl.maxTasks + ', NextTaskId: ' + tl.nextTaskId + '\r\n';
-            r += 'MaxTaskTime: ' + (tl.maxTaskTime / 1000) + ' seconds, Timer: ' + (tl.timer != null) + '\r\n';
+            cmdData.result += 'MaxTasks: ' + tl.maxTasks + ', NextTaskId: ' + tl.nextTaskId + '\r\n';
+            cmdData.result += 'MaxTaskTime: ' + (tl.maxTaskTime / 1000) + ' seconds, Timer: ' + (tl.timer != null) + '\r\n';
             var c = [];
             for (var i in tl.current) { c.push(i); }
-            r += 'Current (' + tl.currentCount + '): [' + c.join(', ') + ']\r\n';
-            r += 'Pending (High/Med/Low): ' + tl.pending[0].length + ', ' + tl.pending[1].length + ', ' + tl.pending[2].length + '\r\n';
+            cmdData.result += 'Current (' + tl.currentCount + '): [' + c.join(', ') + ']\r\n';
+            cmdData.result += 'Pending (High/Med/Low): ' + tl.pending[0].length + ', ' + tl.pending[1].length + ', ' + tl.pending[2].length + '\r\n';
         }
-        return r;
     }
 
-    function setmaxtasksConsoleCommand(command, cmdargs) {
-        var r = '';
-        if ((cmdargs["_"].length != 1) || (parseInt(cmdargs["_"][0]) < 1) || (parseInt(cmdargs["_"][0]) > 1000)) {
-            r = 'Usage: setmaxtasks [1 to 1000]';
+    function setmaxtasksConsoleCommand(cmdData) {
+        if ((cmdData.cmdargs["_"].length != 1) || (parseInt(cmdData.cmdargs["_"][0]) < 1) || (parseInt(cmdData.cmdargs["_"][0]) > 1000)) {
+            cmdData.result = 'Usage: setmaxtasks [1 to 1000]';
         } else {
-            parent.parent.taskLimiter.maxTasks = parseInt(cmdargs["_"][0]);
-            r = 'MaxTasks set to ' + parent.parent.taskLimiter.maxTasks + '.';
+            parent.parent.taskLimiter.maxTasks = parseInt(cmdData.cmdargs["_"][0]);
+            cmdData.result = 'MaxTasks set to ' + parent.parent.taskLimiter.maxTasks + '.';
         }
-        return r;
     }
 
-    function coresConsoleCommand(command, cmdargs) {
-        var r = '';
+    function coresConsoleCommand(cmdData) {
         if (parent.parent.defaultMeshCores != null) {
             for (var i in parent.parent.defaultMeshCores) {
-                r += i + ': ' + parent.parent.defaultMeshCores[i].length + ' bytes\r\n';
+                cmdData.result += i + ': ' + parent.parent.defaultMeshCores[i].length + ' bytes\r\n';
             }
         }
-        return r;
     }
 
-    function showpathsConsoleCommand(command, cmdargs) {
-        var r = '';
-        r = 'Parent:     ' + parent.parent.parentpath + '\r\n';
-        r += 'Data:       ' + parent.parent.datapath + '\r\n';
-        r += 'Files:      ' + parent.parent.filespath + '\r\n';
-        r += 'Backup:     ' + parent.parent.backuppath + '\r\n';
-        r += 'Record:     ' + parent.parent.recordpath + '\r\n';
-        r += 'WebPublic:  ' + parent.parent.webPublicPath + '\r\n';
-        r += 'WebViews:   ' + parent.parent.webViewsPath + '\r\n';
-        if (parent.parent.webViewsOverridePath) { r += 'XWebPublic: ' + parent.parent.webViewsOverridePath + '\r\n'; }
-        if (parent.parent.webViewsOverridePath) { r += 'XWebViews:  ' + parent.parent.webPublicOverridePath + '\r\n'; }
-        return r;
+    function showpathsConsoleCommand(cmdData) {
+        cmdData.result = 'Parent:     ' + parent.parent.parentpath + '\r\n';
+        cmdData.result += 'Data:       ' + parent.parent.datapath + '\r\n';
+        cmdData.result += 'Files:      ' + parent.parent.filespath + '\r\n';
+        cmdData.result += 'Backup:     ' + parent.parent.backuppath + '\r\n';
+        cmdData.result += 'Record:     ' + parent.parent.recordpath + '\r\n';
+        cmdData.result += 'WebPublic:  ' + parent.parent.webPublicPath + '\r\n';
+        cmdData.result += 'WebViews:   ' + parent.parent.webViewsPath + '\r\n';
+        if (parent.parent.webViewsOverridePath) { cmdData.result += 'XWebPublic: ' + parent.parent.webViewsOverridePath + '\r\n'; }
+        if (parent.parent.webViewsOverridePath) { cmdData.result += 'XWebViews:  ' + parent.parent.webPublicOverridePath + '\r\n'; }
     }
 
-    function migrationagentsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function migrationagentsConsoleCommand(cmdData) {
         if (parent.parent.swarmserver == null) {
-            r = 'Swarm server not running.';
+            cmdData.result = 'Swarm server not running.';
         } else {
             for (var i in parent.parent.swarmserver.migrationAgents) {
                 var arch = parent.parent.swarmserver.migrationAgents[i];
-                for (var j in arch) { var agent = arch[j]; r += 'Arch ' + agent.arch + ', Ver ' + agent.ver + ', Size ' + ((agent.binary == null) ? 0 : agent.binary.length) + '<br />'; }
+                for (var j in arch) { var agent = arch[j]; cmdData.result += 'Arch ' + agent.arch + ', Ver ' + agent.ver + ', Size ' + ((agent.binary == null) ? 0 : agent.binary.length) + '<br />'; }
             }
         }
-        return r;
     }
 
-    function swarmstatsConsoleCommand(command, cmdargs) {
-        var r = '';
+    function swarmstatsConsoleCommand(cmdData) {
         if (parent.parent.swarmserver == null) {
-            r = 'Swarm server not running.';
+            cmdData.result = 'Swarm server not running.';
         } else {
             for (var i in parent.parent.swarmserver.stats) {
                 if (typeof parent.parent.swarmserver.stats[i] == 'object') {
-                    r += i + ': ' + JSON.stringify(parent.parent.swarmserver.stats[i]) + '\r\n';
+                    cmdData.result += i + ': ' + JSON.stringify(parent.parent.swarmserver.stats[i]) + '\r\n';
                 } else {
-                    r += i + ': ' + parent.parent.swarmserver.stats[i] + '\r\n';
+                    cmdData.result += i + ': ' + parent.parent.swarmserver.stats[i] + '\r\n';
                 }
             }
         }
-        return r;
     }
 
-    function relaysConsoleCommand(command, cmdargs) {
-        var r = '';
+    function relaysConsoleCommand(cmdData) {
         for (var i in parent.wsrelays) {
-            r += 'id: ' + i + ', ' + ((parent.wsrelays[i].state == 2) ? 'connected' : 'pending');
+            cmdData.result += 'id: ' + i + ', ' + ((parent.wsrelays[i].state == 2) ? 'connected' : 'pending');
             if (parent.wsrelays[i].peer1 != null) {
-                r += ', ' + cleanRemoteAddr(parent.wsrelays[i].peer1.req.clientIp);
-                if (parent.wsrelays[i].peer1.user) { r += ' (User:' + parent.wsrelays[i].peer1.user.name + ')' }
+                cmdData.result += ', ' + cleanRemoteAddr(parent.wsrelays[i].peer1.req.clientIp);
+                if (parent.wsrelays[i].peer1.user) { cmdData.result += ' (User:' + parent.wsrelays[i].peer1.user.name + ')' }
             }
             if (parent.wsrelays[i].peer2 != null) {
-                r += ' to ' + cleanRemoteAddr(parent.wsrelays[i].peer2.req.clientIp);
-                if (parent.wsrelays[i].peer2.user) { r += ' (User:' + parent.wsrelays[i].peer2.user.name + ')' }
+                cmdData.result += ' to ' + cleanRemoteAddr(parent.wsrelays[i].peer2.req.clientIp);
+                if (parent.wsrelays[i].peer2.user) { cmdData.result += ' (User:' + parent.wsrelays[i].peer2.user.name + ')' }
             }
-            r += '\r\n';
+            cmdData.result += '\r\n';
         }
-        if (r == '') { r = 'No relays.'; }
-        return r;
+        if (cmdData.result == '') { cmdData.result = 'No relays.'; }
     }
 
-    function autobackupConsoleCommand(command, cmdargs) {
-        var r = '';
+    function autobackupConsoleCommand(cmdData) {
         var backupResult = parent.db.performBackup(function (msg) {
-            try { ws.send(JSON.stringify({ action: 'serverconsole', value: msg, tag: command.tag })); } catch (ex) { }
+            try { ws.send(JSON.stringify({ action: 'serverconsole', value: msg, tag: cmdData.command.tag })); } catch (ex) { }
         });
-        if (backupResult == 0) { r = 'Starting auto-backup...'; } else { r = 'Backup alreay in progress.'; }
-        return r;
+        if (backupResult == 0) { cmdData.result = 'Starting auto-backup...'; } else { cmdData.result = 'Backup alreay in progress.'; }
     }
 
-    function backupconfigConsoleCommand(command, cmdargs) {
-        return parent.db.getBackupConfig();
+    function backupconfigConsoleCommand(cmdData) {
+        cmdData.result = parent.db.getBackupConfig();
     }
 
-    function firebaseConsoleCommand(command, cmdargs) {
-        var r = '';
+    function firebaseConsoleCommand(cmdData) {
         if (parent.parent.firebase == null) {
-            r = "Firebase push messaging not supported";
+            cmdData.result = "Firebase push messaging not supported";
         } else {
-            r = JSON.stringify(parent.parent.firebase.stats, null, 2);
+            cmdData.result = JSON.stringify(parent.parent.firebase.stats, null, 2);
         }
-        return r;
     }
 
     // Process incoming web socket data from the browser
@@ -1582,29 +1501,28 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
-
                     // This is a server console message, only process this if full administrator
                     if (user.siteadmin != SITERIGHT_ADMIN) break;
-
                     // Only accept if the console is allowed for this domain
                     if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.console !== true))) break;
 
-                    var r = '';
                     var cmdargs = splitArgs(command.value);
                     if (cmdargs.length == 0) break;
                     const cmd = cmdargs[0].toLowerCase();
                     cmdargs = parseArgs(cmdargs);
+                    var cmdData = { result: '', command: command, cmdargs: cmdargs };
 
                     try {
-                        r = consoleCommands[cmd](command, cmdargs);
+                        consoleCommands[cmd](cmdData, command, cmdargs);
                     } catch (e) {
                         if (consoleCommands[cmd] == null)
-                            r = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.';
+                            cmdData.result = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.';
                         else
                             console.log(e);
                     }
 
-                    if (r != null && r != '') { try { ws.send(JSON.stringify({ action: 'serverconsole', value: r, tag: command.tag })); } catch (ex) { } }
+                    if (cmdData.result != null && cmdData.result != '') {
+                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: cmdData.result, tag: command.tag })); } catch (ex) { } }
                     break;
                 }
             case 'msg':
