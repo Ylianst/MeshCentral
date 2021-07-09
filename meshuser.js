@@ -489,7 +489,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var agentHttpsPort = ((parent.args.aliasport == null) ? parent.args.port : parent.args.aliasport); // Use HTTPS alias port is specified
             if (parent.args.agentport != null) { agentHttpsPort = parent.args.agentport; } // If an agent only port is enabled, use that.
             if (parent.args.agentaliasport != null) { agentHttpsPort = parent.args.agentaliasport; } // If an agent alias port is specified, use that.
-            serverinfo.magenturl = 'mc://' + agentServerName + ((agentHttpsPort != 443)?(':' + agentHttpsPort):'') + ((xdomain != '')?('/' + xdomain):'');
+            serverinfo.magenturl = 'mc://' + agentServerName + ((agentHttpsPort != 443) ? (':' + agentHttpsPort) : '') + ((xdomain != '') ? ('/' + xdomain) : '');
+            serverinfo.domainsuffix = xdomain;
 
             if (domain.guestdevicesharing === false) { serverinfo.guestdevicesharing = false; }
             if (typeof domain.userconsentflags == 'number') { serverinfo.consent = domain.userconsentflags; }

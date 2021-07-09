@@ -3694,6 +3694,7 @@
             if (xxdialogMode) return;
             setDialogMode(2, "Device Action", 3, function () {
                 var url = '/messenger?id=meshmessenger/' + encodeURIComponentEx(currentNode._id) + '/' + encodeURIComponentEx(userinfo._id) + '&title=' + currentNode.name;
+                if (serverinfo.domainsuffix != '') { url = '/' + serverinfo.domainsuffix + url; }
                 if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
                 if (e && (e.shiftKey == true)) {
                     safeNewWindow(url, 'meshmessenger:' + currentNode._id);
