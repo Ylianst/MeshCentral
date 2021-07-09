@@ -2529,7 +2529,6 @@
                         if (message.localport) { url += '&localport=' + message.localport; }
                         if (message.ip != null) { url += ('&remoteip=' + message.ip); }
                         url += ('&appid=' + message.protocol + '&autoexit=1'); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP, 6 = MCRDesktop, 7 = MCRFiles
-                        console.log(url);
                         downloadFile(url, '');
                     } else if (message.tag == 'novnc') {
                         var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + (message.localRelay?'local':'mesh') + 'relay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
@@ -5165,9 +5164,12 @@
 
         function p2downloadDeviceInfo() {
             if (xxdialogMode) return;
+            var chkNodeIds = getCheckedDevices(), intelamtpresent = false;
+            for (var i in chkNodeIds) { if (getNodeFromId(chkNodeIds[i]).intelamt != null) { intelamtpresent = true; } }
             var x = "Download the list of devices with one of the file formats below." + '<br /><br />';
             x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoCSV()\'>' + "devicelist.csv" + '</a>');
             x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoJSON()\'>' + "devicelist.json" + '</a>');
+            if (intelamtpresent) { x += addHtmlValue("Intel&reg; AMT JSON", '<a href=# style=cursor:pointer onclick=\'return p2downloadAmtInfoJSON()\'>' + "computerlist.json" + '</a>'); }
             x += '<div style=margin-top:8px><label><input type=checkbox id=d2DevInfoDetailsCheck />' + "Include device details" + '</label></div>';
             setDialogMode(2, "Device Information Export", 1, null, x);
         }
@@ -5200,6 +5202,22 @@
                 saveAs(stringToUtf8Blob(csv), "devicelist.csv");
             }
             return false;
+        }
+
+        // Download information about selected Intel AMT devices.
+        function p2downloadAmtInfoJSON() {
+            var chkNodeIds = getCheckedDevices();
+            var r = { webappversion: '0.9.0', computers: [ ] };
+            for (var i in chkNodeIds) {
+                var node = getNodeFromId(chkNodeIds[i]);
+                if (node.intelamt == null) continue;
+                var c = { name: node.name, host: node.host, user: node.intelamt.user, pass: '', tls: (node.intelamt.tls == 1)?1:0, ver: node.intelamt.ver, pstate: node.intelamt.state }
+                if (node.intelamt.state == 2) { c.pmode = 1; } // TODO
+                if (node.intelamt.realm) { c.digestrealm = node.intelamt.realm; }
+                if (node.intelamt.hash) { c.tlscerthash = node.intelamt.hash; }
+                r.computers.push(c);
+            }
+            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "computerlist.json");
         }
 
         function p2downloadDeviceInfoJSON() {
@@ -11162,7 +11180,7 @@
         // Save the list of devices in a device group in the MeshCommander format
         function meshDownloadDeviceList() {
             if (xxdialogMode) return;
-            var r = { webappversion: "0.9.0", computers: [ ] };
+            var r = { webappversion: '0.9.0', computers: [ ] };
             for (var i in nodes) {
                 var node = nodes[i];
                 if ((currentMesh._id != node.meshid) || (node.intelamt == null)) continue;
@@ -11172,7 +11190,7 @@
                 if (node.intelamt.hash) { c.tlscerthash = node.intelamt.hash; }
                 r.computers.push(c);
             }
-            saveAs(stringToUtf8BlobNoHeader(JSON.stringify(r, null, 2)), currentMesh.name + ".json");
+            saveAs(stringToUtf8BlobNoHeader(JSON.stringify(r, null, 2)), currentMesh.name + '.json');
         }
 
         // Import a list of devices into the Intel AMT only device group
