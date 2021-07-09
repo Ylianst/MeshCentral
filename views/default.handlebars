@@ -6913,6 +6913,7 @@
         function deviceChat(e) {
             if (xxdialogMode) return;
             var url = '/messenger?id=meshmessenger/' + encodeURIComponentEx(currentNode._id) + '/' + encodeURIComponentEx(userinfo._id) + '&title=' + currentNode.name;
+            if (serverinfo.domainsuffix != '') { url = '/' + serverinfo.domainsuffix + url; }
             if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
             if ((currentNode.pmt == 1) && ((features2 & 2) != 0)) { url += '&pmt=1'; } // Push messaging is possible for this device
             if (e && (e.shiftKey == true)) {
