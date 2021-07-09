@@ -168,7 +168,7 @@
             "protocol": "http",
             "port": 80,
             "_ip": "192.168.1.100",
-            "_filter": [ "mesh//xxxx", "node//xxxx" ]
+            "_filter": [ "mesh/(domainid)/(meshid)", "node/(domainid)/(nodeid)" ]
           },
           {
             "name": "HTTPS",
