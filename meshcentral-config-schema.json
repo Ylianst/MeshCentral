@@ -362,7 +362,7 @@
               "Backup": { "type": "boolean", "default": true, "description": "Allows administrators to backup the server from the My Server tab." },
               "Restore": { "type": "boolean", "default": true, "description": "Allows administrators to restore the server from the My Server tab." },
               "Upgrade": { "type": "boolean", "default": true, "description": "Allows administrators to update the server from the My Server tab." },
-              "ShowLog": { "type": "boolean", "default": true, "description": "Allows administrators to see the server crash log the server from the My Server tab." },
+              "ErrorLog": { "type": "boolean", "default": true, "description": "Allows administrators to see the server crash log the server from the My Server tab." },
               "Console": { "type": "boolean", "default": true, "description": "Allows administrators to access the server console from the My Server tab." },
               "Trace": { "type": "boolean", "default": true, "description": "Allows administrators to access the server trace tab from from the My Server tab." }
             }
@@ -464,7 +464,7 @@
             "properties": {
               "title": { "type": "string", "default": "MeshCentral Agent", "description": "Displayed on top of the MeshCentral Agent for Android." },
               "subtitle": { "type": "string", "default": null, "description": "Subtitle displayed until the title on the toolbar." },
-              "image": { "type": "string", "default": null, "description": "The filename of a image file in .png format located in meshcentral-data to display in MeshCentral Agent for Android, image should be square and from 64x64 to 128x128." },
+              "image": { "type": "string", "default": null, "description": "The filename of a image file in .png format located in meshcentral-data to display in MeshCentral Agent for Android, image should be square and from 64x64 to 128x128." }
             }
           },
           "userAllowedIP": { "type": "string" },
