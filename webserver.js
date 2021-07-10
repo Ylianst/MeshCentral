@@ -2874,7 +2874,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             getRenderPage((domain.sitestyle == 2) ? 'login2' : 'login', req, domain),
             getRenderArgs({
                 loginmode: loginmode,
-                rootCertLink: getRootCertLink(),
+                rootCertLink: getRootCertLink(domain),
                 newAccount: newAccountsAllowed,
                 newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1),
                 serverDnsName: obj.getWebServerName(domain),
@@ -2960,9 +2960,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Get the link to the root certificate if needed
-    function getRootCertLink() {
+    function getRootCertLink(domain) {
         // Check if the HTTPS certificate is issued from MeshCentralRoot, if so, add download link to root certificate.
-        if ((obj.args.tlsoffload == null) && (obj.parent.config.letsencrypt == null) && (obj.tlsSniCredentials == null) && (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0) && (obj.certificates.CommonName.indexOf('.') != -1)) { return '<a href=/MeshServerRootCert.cer title="Download the root certificate for this server">Root Certificate</a>'; }
+        if (obj.isTrustedCert(domain) == false) {
+            // Get the domain suffix
+            var xdomain = (domain.dns == null) ? domain.id : '';
+            if (xdomain != '') xdomain += '/';
+            return '<a href=/' + xdomain + 'MeshServerRootCert.cer title="Download the root certificate for this server">Root Certificate</a>';
+        }
         return '';
     }
 
@@ -3193,10 +3198,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 setContentDispositionHeader(res, 'application/octet-stream', filename, null, 'file.bin');
                 try { res.sendFile(obj.path.resolve(__dirname, path)); } catch (e) { res.sendStatus(404); }
             } else {
-                render(req, res, getRenderPage((domain.sitestyle == 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(), messageid: 1, fileurl: req.path + '?download=1', filename: filename, filesize: stat.size }, req, domain));
+                render(req, res, getRenderPage((domain.sitestyle == 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: req.path + '?download=1', filename: filename, filesize: stat.size }, req, domain));
             }
         } else {
-            render(req, res, getRenderPage((domain.sitestyle == 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(), messageid: 2 }, req, domain));
+            render(req, res, getRenderPage((domain.sitestyle == 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 2 }, req, domain));
         }
     }
 
