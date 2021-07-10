@@ -551,7 +551,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try { command = JSON.parse(msg.toString('utf8')); } catch (e) { return; }
         if (common.validateString(command.action, 3, 32) == false) return; // Action must be a string between 3 and 32 chars
 
+        var commandHandler = serverCommands[command.action];
+        if (commandHandler != null) { 
+            try { commandHandler(command); return;
+            } catch (e) {
+                console.log('Unhandled error while processing ' + command.action + ' for user ' +  + user.name + ':\n' + e);
+            }
+        } else {
+            // console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');
+            // pass through to switch statement
+        }
+
         switch (command.action) {
+            // Avoid logging 'Unknown action...' for refactored commands
+            case 'lastconnect':
+            case 'serverconsole':
             case 'pong': { break; } // NOP
             case 'ping': { try { ws.send('{action:"pong"}'); } catch (ex) { } break; }
             case 'intersession':
@@ -805,27 +819,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     });
                     break;
                 }
-            case 'lastconnect':
-                {
-                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check the nodeid
-                    if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
-                    if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-
-                    // Get the node and the rights for this node
-                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if (visible == false) { try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
-
-                        // Query the database for the last time this node connected
-                        db.Get('lc' + command.nodeid, function (err, docs) {
-                            if ((docs != null) && (docs.length > 0)) {
-                                try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr })); } catch (ex) { }
-                            } else {
-                                try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'No data' })); } catch (ex) { }
-                            }
-                        });
-                    });
-                    break;
-                }
             case 'files':
                 {
                     // Send the full list of server files to the browser app
@@ -893,30 +886,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         if (sendUpdate == true) { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } // Fire an event causing this user to update this files
                     }
-                    break;
-                }
-            case 'serverconsole':
-                {
-                    // Do not allow this command when logged in using a login token
-                    if (req.session.loginToken != null) break;
-                    // This is a server console message, only process this if full administrator
-                    if (user.siteadmin != SITERIGHT_ADMIN) break;
-                    // Only accept if the console is allowed for this domain
-                    if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.console !== true))) break;
-
-                    var cmdargs = splitArgs(command.value);
-                    if (cmdargs.length == 0) break;
-                    const cmd = cmdargs[0].toLowerCase();
-                    cmdargs = parseArgs(cmdargs);
-                    var cmdData = { result: '', command: command, cmdargs: cmdargs };
-
-                    // Find the command in the lookup table and run it.
-                    var cmdTableEntry = serverUserCommands[cmd];
-                    if (cmdTableEntry != null) { try { cmdTableEntry[0](cmdData); } catch (ex) { cmdData.result = '' + ex; }
-                    } else { cmdData.result = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.'; }
-
-                    // Send back the command result
-                    if (cmdData.result != '') { try { ws.send(JSON.stringify({ action: 'serverconsole', value: cmdData.result, tag: command.tag })); } catch (ex) { } }
                     break;
                 }
             case 'msg':
@@ -5536,6 +5505,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         }
     }
 
+    const serverCommands = {
+        'lastconnect': serverCommandLastConnect,
+        'serverconsole': serverCommandServerConsole
+    };
+
     const serverUserCommands = {
         'acceleratorsstats': [serverUserCommandAcceleratorsStats, "Show data on work being offloaded to other CPU's"],
         'agentissues': [serverUserCommandAgentIssues, ""],
@@ -5586,6 +5560,50 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'watchdog': [serverUserCommandWatchdog, ""],
         'webpush': [serverUserCommandWebPush, ""],
         'webstats': [serverUserCommandWebStats, ""]
+    };
+
+    
+    function serverCommandLastConnect(command) {
+        if (common.validateString(command.nodeid, 1, 1024) == false) return; // Check the nodeid
+        if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+        if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+
+        // Get the node and the rights for this node
+        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+            if (visible == false) { try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
+
+            // Query the database for the last time this node connected
+            db.Get('lc' + command.nodeid, function (err, docs) {
+                if ((docs != null) && (docs.length > 0)) {
+                    try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr })); } catch (ex) { }
+                } else {
+                    try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'No data' })); } catch (ex) { }
+                }
+            });
+        });
+    }
+
+    function serverCommandServerConsole(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+        // This is a server console message, only process this if full administrator
+        if (user.siteadmin != SITERIGHT_ADMIN) return;
+        // Only accept if the console is allowed for this domain
+        if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.console !== true))) return;
+
+        var cmdargs = splitArgs(command.value);
+        if (cmdargs.length == 0) return;
+        const cmd = cmdargs[0].toLowerCase();
+        cmdargs = parseArgs(cmdargs);
+        var cmdData = { result: '', command: command, cmdargs: cmdargs };
+
+        // Find the command in the lookup table and run it.
+        var cmdTableEntry = serverUserCommands[cmd];
+        if (cmdTableEntry != null) { try { cmdTableEntry[0](cmdData); } catch (ex) { cmdData.result = '' + ex; }
+        } else { cmdData.result = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.'; }
+
+        // Send back the command result
+        if (cmdData.result != '') { try { ws.send(JSON.stringify({ action: 'serverconsole', value: cmdData.result, tag: command.tag })); } catch (ex) { } }
     }
 
 
