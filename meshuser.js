@@ -555,7 +555,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (commandHandler != null) { 
             try { commandHandler(command); return;
             } catch (e) {
-                console.log('Unhandled error while processing ' + command.action + ' for user ' +  + user.name + ':\n' + e);
+                console.log('Unhandled error while processing ' + command.action + ' for user ' + user.name + ':\n' + e);
+                parent.parent.logError(e.stack);
+                return;
             }
         } else {
             // console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');

@@ -495,13 +495,17 @@ function CreateMeshCentralServer(config, args) {
             console.log('ERR: ' + datastr);
             if (data.startsWith('le.challenges[tls-sni-01].loopback')) { return; } // Ignore this error output from GreenLock
             if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); }
-            try {
-                var errlogpath = null;
-                if (typeof obj.args.mesherrorlogpath == 'string') { errlogpath = obj.path.join(obj.args.mesherrorlogpath, 'mesherrors.txt'); } else { errlogpath = obj.getConfigFilePath('mesherrors.txt'); }
-                obj.fs.appendFileSync(errlogpath, '-------- ' + new Date().toLocaleString() + ' ---- ' + getCurrentVersion() + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n');
-            } catch (ex) { console.log('ERROR: Unable to write to mesherrors.txt.'); }
+            obj.logError(data);
         });
         childProcess.on('close', function (code) { if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
+    };
+
+    obj.logError = function (err) {
+        try {
+            var errlogpath = null;
+            if (typeof obj.args.mesherrorlogpath == 'string') { errlogpath = obj.path.join(obj.args.mesherrorlogpath, 'mesherrors.txt'); } else { errlogpath = obj.getConfigFilePath('mesherrors.txt'); }
+            obj.fs.appendFileSync(errlogpath, '-------- ' + new Date().toLocaleString() + ' ---- ' + getCurrentVersion() + ' --------\r\n\r\n' + err + '\r\n\r\n\r\n');
+        } catch (ex) { console.log('ERROR: Unable to write to mesherrors.txt.'); }
     };
 
     // Get current and latest MeshCentral server versions using NPM
