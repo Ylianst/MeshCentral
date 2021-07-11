@@ -5752,7 +5752,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (parent.parent.letsencrypt == null) {
             cmdData.result = "Let's Encrypt not in use.";
         } else {
-            cmdData.result = ["CertOK", "Request:NoCert", "Request:Expire", "Request:MissingNames"][parent.parent.letsencrypt.checkRkenewCertificate()];
+            cmdData.result = ["CertOK", "Request:NoCert", "Request:Expire", "Request:MissingNames"][parent.parent.letsencrypt.checkRenewCertificate()];
         }
     }
 
