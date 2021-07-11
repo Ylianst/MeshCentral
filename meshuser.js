@@ -553,21 +553,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         var commandHandler = serverCommands[command.action];
         if (commandHandler != null) { 
-            try { commandHandler(command); return;
-            } catch (e) {
+            try { commandHandler(command); return; }
+            catch (e) {
                 console.log('Unhandled error while processing ' + command.action + ' for user ' + user.name + ':\n' + e);
-                parent.parent.logError(e.stack);
-                return;
+                parent.parent.logError(e.stack); return; // todo: remove returns when switch is gone
             }
-        } else {
+        } else { }
             // console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');
-            // pass through to switch statement
-        }
+            // pass through to switch statement until refactoring complete
 
         switch (command.action) {
-            // Avoid logging 'Unknown action...' for refactored commands
-            case 'lastconnect':
-            case 'serverconsole':
             case 'pong': { break; } // NOP
             case 'ping': { try { ws.send('{action:"pong"}'); } catch (ex) { } break; }
             case 'intersession':
