@@ -2349,8 +2349,7 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
             )
                 continue;
 
-            var ifTitle = '';
-            if (i != null) ifTitle += i;
+            var ifTitle = '' + i;
             if (m[0].fqdn != null && m[0].fqdn != '') ifTitle += ', ' + m[0].fqdn;
 
             if (typeof m[0].mac == 'string') {
@@ -2366,24 +2365,13 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
             moutput['IPv6 Layer'] = '';
             for (var j = 0; j < m.length; j++) {
                 var iplayer = m[j];
-                if (iplayer.family == 'IPv4') {
+                if (iplayer.family == 'IPv4' || iplayer.family == 'IPv6') {
                     if (iplayer.gateway && iplayer.netmask) {
-                        moutput['IPv4 Layer'] += format("IP: {0}, Mask: {1}, Gateway: {2}  ", iplayer.address, iplayer.netmask, iplayer.gateway);
+                        moutput[iplayer.family + ' Layer'] += format("IP: {0}, Mask: {1}, Gateway: {2}  ", iplayer.address, iplayer.netmask, iplayer.gateway);
                         moutputCount++;
                     } else {
                         if (iplayer.address) {
-                            moutput['IPv4 Layer'] += format("IP: {0}  ", iplayer.address);
-                            moutputCount++;
-                        }
-                    }
-                }
-                if (iplayer.family == 'IPv6') {
-                    if (iplayer.gateway && iplayer.netmask) {
-                        moutput['IPv6 Layer'] += format("IP: {0}, Mask: {1}, Gateway: {2}  ", iplayer.address, iplayer.netmask, iplayer.gateway);
-                        moutputCount++;
-                    } else {
-                        if (iplayer.address) {
-                            moutput['IPv6 Layer'] += format("IP: {0}  ", iplayer.address);
+                            moutput[iplayer.family + ' Layer'] += format("IP: {0}  ", iplayer.address);
                             moutputCount++;
                         }
                     }
