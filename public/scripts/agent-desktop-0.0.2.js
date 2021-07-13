@@ -276,7 +276,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 if ((cmdsize < 4) || (((cmdsize - 4) % 10) != 0)) break;
                 var screenCount = ((cmdsize - 4) / 10), screenInfo = {}, ptr = 4;
                 for (var i = 0; i < screenCount; i++) { screenInfo[(view[ptr + 0] << 8) + view[ptr + 1]] = { x: ((view[ptr + 2] << 8) + view[ptr + 3]), y: ((view[ptr + 4] << 8) + view[ptr + 5]), w: ((view[ptr + 6] << 8) + view[ptr + 7]), h: ((view[ptr + 8] << 8) + view[ptr + 9]) }; ptr += 10; }
-                console.log('ScreenInfo', JSON.stringify(screenInfo, null, 2));
+                //console.log('ScreenInfo', JSON.stringify(screenInfo, null, 2));
                 break;
             case 87: // MNG_KVM_INPUT_LOCK
                 if (cmdsize != 5) break;
