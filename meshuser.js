@@ -5532,10 +5532,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     };
 
     function serverCommandGetNetworkInfo(command) {
-        // Argument validation
-        if (common.validateString(command.nodeid, 1, 1024) == false) return; // Check nodeid
-        if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
-        if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+        if (!validNodeIdAndDomain(command)) return;
 
         // Get the node and the rights for this node
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
@@ -5560,9 +5557,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverCommandLastConnect(command) {
-        if (common.validateString(command.nodeid, 1, 1024) == false) return; // Check the nodeid
-        if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
-        if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+        if (!validNodeIdAndDomain(command)) return;
 
         // Get the node and the rights for this node
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
@@ -6154,6 +6149,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
 
+    function validNodeIdAndDomain(command) {
+        if (common.validateString(command.nodeid, 1, 1024) == false) return false; // Check nodeid
+        if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+        if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return false; // Invalid domain, operation only valid for current domain
+        return true;
+    }
 
     function csvClean(s) { return '\"' + s.split('\"').join('').split(',').join('').split('\r').join('').split('\n').join('') + '\"'; }
 
