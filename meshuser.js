@@ -788,34 +788,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     });
                     break;
                 }
-            case 'getsysinfo':
-                {
-                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check the nodeid
-                    if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
-                    if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-
-                    // Get the node and the rights for this node
-                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if (visible == false) { try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
-                        // Query the database system information
-                        db.Get('si' + command.nodeid, function (err, docs) {
-                            if ((docs != null) && (docs.length > 0)) {
-                                var doc = docs[0];
-                                doc.action = 'getsysinfo';
-                                doc.nodeid = node._id;
-                                doc.tag = command.tag;
-                                delete doc.type;
-                                delete doc.domain;
-                                delete doc._id;
-                                if (command.nodeinfo === true) { doc.node = node; doc.rights = rights; }
-                                try { ws.send(JSON.stringify(doc)); } catch (ex) { }
-                            } else {
-                                try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: node._id, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { }
-                            }
-                        });
-                    });
-                    break;
-                }
             case 'files':
                 {
                     // Send the full list of server files to the browser app
@@ -5475,6 +5447,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     const serverCommands = {
         'getnetworkinfo': serverCommandGetNetworkInfo,
+        'getsysinfo': serverCommandGetSysInfo,
         'lastconnect': serverCommandLastConnect,
         'serverconsole': serverCommandServerConsole
     };
@@ -5552,6 +5525,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
 
                 try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, updateTime: netinfo.updateTime, netif: netinfo.netif, netif2: netinfo.netif2 })); } catch (ex) { }
+            });
+        });
+    }
+
+    function serverCommandGetSysInfo(command) {
+        if (!validNodeIdAndDomain(command)) return;
+
+        // Get the node and the rights for this node
+        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+            if (visible == false) { try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
+            // Query the database system information
+            db.Get('si' + command.nodeid, function (err, docs) {
+                if ((docs != null) && (docs.length > 0)) {
+                    var doc = docs[0];
+                    doc.action = 'getsysinfo';
+                    doc.nodeid = node._id;
+                    doc.tag = command.tag;
+                    delete doc.type;
+                    delete doc.domain;
+                    delete doc._id;
+                    if (command.nodeinfo === true) { doc.node = node; doc.rights = rights; }
+                    try { ws.send(JSON.stringify(doc)); } catch (ex) { }
+                } else {
+                    try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: node._id, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { }
+                }
             });
         });
     }
