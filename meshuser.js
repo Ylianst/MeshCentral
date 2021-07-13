@@ -118,27 +118,41 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     // Disconnect this user
     obj.close = function (arg) {
-        if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug('user', 'Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug('user', 'Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        obj.ws.xclosed = 1; // This is for testing. Will be displayed when running "usersessions" server console command.
+
+        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); parent.parent.debug('user', 'Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { obj.ws._socket._parent.end(); parent.parent.debug('user', 'Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+
+        obj.ws.xclosed = 2; // DEBUG
 
         // Perform timer cleanup
         if (obj.pingtimer) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
         if (obj.pongtimer) { clearInterval(obj.pongtimer); delete obj.pongtimer; }
 
+        obj.ws.xclosed = 3; // DEBUG
+
         // Clear expire timeout
         if (obj.expireTimer != null) { clearTimeout(obj.expireTimer); delete obj.expireTimer; }
 
+        obj.ws.xclosed = 4; // DEBUG
+
         // Perform cleanup
-        parent.parent.RemoveAllEventDispatch(ws);
+        parent.parent.RemoveAllEventDispatch(obj.ws);
         if (obj.serverStatsTimer != null) { clearInterval(obj.serverStatsTimer); delete obj.serverStatsTimer; }
-        if (req.session && req.session.ws && req.session.ws == ws) { delete req.session.ws; }
+        if (req.session && req.session.ws && req.session.ws == obj.ws) { delete req.session.ws; }
         if (parent.wssessions2[ws.sessionId]) { delete parent.wssessions2[ws.sessionId]; }
+
+        obj.ws.xclosed = 5; // DEBUG
+
         if ((obj.user != null) && (parent.wssessions[obj.user._id])) {
-            var i = parent.wssessions[obj.user._id].indexOf(ws);
+            obj.ws.xclosed = 6; // DEBUG
+            var i = parent.wssessions[obj.user._id].indexOf(obj.ws);
             if (i >= 0) {
+                obj.ws.xclosed = 7; // DEBUG
                 parent.wssessions[obj.user._id].splice(i, 1);
                 var user = parent.users[obj.user._id];
                 if (user) {
+                    obj.ws.xclosed = 8; // DEBUG
                     if (parent.parent.multiServer == null) {
                         var targets = ['*', 'server-users'];
                         if (obj.user.groups) { for (var i in obj.user.groups) { targets.push('server-users:' + i); } }
@@ -151,18 +165,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
         }
 
+        obj.ws.xclosed = 9; // DEBUG
+
         // If we have peer servers, inform them of the disconnected session
         if (parent.parent.multiServer != null) { parent.parent.multiServer.DispatchMessage({ action: 'sessionEnd', sessionid: ws.sessionId }); }
+
+        obj.ws.xclosed = 10; // DEBUG
 
         // Aggressive cleanup
         delete obj.user;
         delete obj.domain;
-        delete ws.userid;
-        delete ws.domainid;
-        delete ws.clientIp;
-        delete ws.sessionId;
-        delete ws.HandleEvent;
-        ws.removeAllListeners(['message', 'close', 'error']);
+        delete obj.ws.userid;
+        delete obj.ws.domainid;
+        delete obj.ws.clientIp;
+        delete obj.ws.sessionId;
+        delete obj.ws.HandleEvent;
+        obj.ws.removeAllListeners(['message', 'close', 'error']);
+
+        obj.ws.xclosed = 11; // DEBUG
     };
 
     // Convert a mesh path array into a real path on the server side
@@ -359,7 +379,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // If the user is a cross domain administrator, allow some select messages from different domains.
                 if ((event.domain == null) || (event.domain == domain.id) || ((obj.crossDomain === true) && (allowedCrossDomainMessages.indexOf(event.action) >= 0))) {
                     try {
-                        if (event == 'close') { try { delete req.session; } catch (ex) { } obj.close(); }
+                        if (event == 'close') { try { delete req.session; } catch (ex) { } obj.close(); return; }
                         else if (event == 'resubscribe') { user.subscriptions = parent.subscribe(user._id, ws); }
                         else if (event == 'updatefiles') { updateUserFiles(user, ws, domain); }
                         else {
@@ -6018,7 +6038,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 userSessionCount++;
                 cmdData.result += (i + ', ' + parent.wssessions[i].length + ' session' + ((parent.wssessions[i].length > 1) ? 's' : '') + '.\r\n');
                 for (var j in parent.wssessions[i]) {
-                    cmdData.result += '    ' + parent.wssessions[i][j].clientIp + ' --> ' + parent.wssessions[i][j].sessionId + '\r\n';
+                    cmdData.result += '    ' + parent.wssessions[i][j].clientIp + ' --> ' + parent.wssessions[i][j].sessionId + ((parent.wssessions[i][j].xclosed) ? (', CLOSED-' + parent.wssessions[i][j].xclosed):'') + '\r\n';
                 }
             }
         }
