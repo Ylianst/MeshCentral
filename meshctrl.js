@@ -2337,6 +2337,55 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
         }
     }
 
+    if (network.netif2 != null) {
+        var minfo = {};
+        for (var i in network.netif2) {
+            var m = network.netif2[i], moutput = {}, moutputCount = 0;
+
+            if (Array.isArray(m) == false ||
+                m.length < 1 ||
+                m[0] == null ||
+                ((typeof m[0].mac == 'string') && (m[0].mac.startsWith('00:00:00:00')))
+            )
+                continue;
+
+            var ifTitle = '' + i;
+            if (m[0].fqdn != null && m[0].fqdn != '') ifTitle += ', ' + m[0].fqdn;
+
+            if (typeof m[0].mac == 'string') {
+                if (m[0].gatewaymac) {
+                    moutput['MAC Layer'] = format("MAC: {0}, Gateway: {1}", m[0].mac, m[0].gatewaymac);
+                } else {
+                    moutput['MAC Layer'] = format("MAC: {0}", m[0].mac);
+                }
+                moutputCount++;
+            }
+
+            moutput['IPv4 Layer'] = '';
+            moutput['IPv6 Layer'] = '';
+            for (var j = 0; j < m.length; j++) {
+                var iplayer = m[j];
+                if (iplayer.family == 'IPv4' || iplayer.family == 'IPv6') {
+                    if (iplayer.gateway && iplayer.netmask) {
+                        moutput[iplayer.family + ' Layer'] += format("IP: {0}, Mask: {1}, Gateway: {2}  ", iplayer.address, iplayer.netmask, iplayer.gateway);
+                        moutputCount++;
+                    } else {
+                        if (iplayer.address) {
+                            moutput[iplayer.family + ' Layer'] += format("IP: {0}  ", iplayer.address);
+                            moutputCount++;
+                        }
+                    }
+                }
+            }
+            if (moutput['IPv4 Layer'] == '') delete moutput['IPv4 Layer'];
+            if (moutput['IPv6 Layer'] == '') delete moutput['IPv6 Layer'];
+            if (moutputCount > 0) {
+                minfo[ifTitle] = moutput;
+                info["Networking"] = minfo;
+            }
+        }
+    }
+
     // Intel AMT
     if (node.intelamt != null) {
         var output = {}, outputCount = 0;
