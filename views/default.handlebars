@@ -10001,10 +10001,10 @@
                     var m = network.netif2[i];
                     if ((Array.isArray(m) == false) || (m.length < 1) || (m[0] == null) || ((typeof m[0].mac == 'string') && (m[0].mac.startsWith('00:00:00:00')))) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    var ifTitle = [];
-                    if (i != null) { ifTitle.push(i); }
-                    if (m[0].fqdn != null) { ifTitle.push(m[0].fqdn); }
-                    if (ifTitle.length > 0) { x += '<div style=margin-bottom:3px><b>' + EscapeHtml(ifTitle.join(', ')) + '</b></div>'; }
+                    var ifTitle = '';
+                    if (i != null) ifTitle += i;
+                    if (m[0].fqdn != null && m[0].fqdn != '') ifTitle += ', ' + m[0].fqdn;
+                    if (ifTitle.length > 0) { x += '<div style=margin-bottom:3px><b>' + EscapeHtml(ifTitle) + '</b></div>'; }
                     if (m.desc) { x += addDetailItem("Description", EscapeHtml(m.desc).split('(R)').join('&reg;')); }
                     //if (m.dnssuffix) { x += addDetailItem("DNS Suffix", m.dnssuffix); }
                     if (typeof m[0].mac == 'string') {
