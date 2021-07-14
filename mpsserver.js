@@ -600,8 +600,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     }
                     if (obj.parent.webserver.meshes[cookie.m] == null) {
                         meshNotFoundCount++;
-                        socket.ControlMsg({ action: 'console', msg: 'Device group not found' });
-                        parent.debug('mps', 'Device group not found', username, password);
+                        socket.ControlMsg({ action: 'console', msg: 'Device group not found (1)' });
+                        parent.debug('mps', 'Device group not found (1)', username, password);
                         SendUserAuthFail(socket);
                         return -1;
                     }
@@ -645,8 +645,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     }
                     if (mesh == null) {
                         meshNotFoundCount++;
-                        socket.ControlMsg({ action: 'console', msg: 'Device group not found' });
-                        parent.debug('mps', 'Device group not found', username, password);
+                        socket.ControlMsg({ action: 'console', msg: 'Device group not found (2)' });
+                        parent.debug('mps', 'Device group not found (2)', username, password);
                         SendUserAuthFail(socket);
                         return -1;
                     }
