@@ -17,6 +17,21 @@ limitations under the License.
 var Q = require('queue');
 var g_internal = null;
 
+function retry_pthi_later()
+{
+    if (++g_internal.errorCount < 20)
+    {
+        g_internal.timeout = setTimeout(function (p)
+        {
+            p.connect(require('heci').GUIDS.AMT, { noPipeline: 1 });
+        }, 250, this);
+    }
+    else
+    {
+        this.Parent.emit('error', 'PTHI Connection could not be established'); 
+    }
+}
+
 function amt_heci()
 {
     var emitterUtils = require('events').inherits(this);
@@ -29,7 +44,7 @@ function amt_heci()
     var that = this;
     if (g_internal == null)
     {
-        g_internal = { _rq: new Q(), _amt: null };
+        g_internal = { _rq: new Q(), _amt: null, errorCount: 0 };
         g_internal._setupPTHI = function _g_setupPTHI()
         {
             console.info1('setupPTHI()');
@@ -42,7 +57,7 @@ function amt_heci()
             this._amt.on('error', function _amtOnError(e)
             {
                 console.info1('PTHIError: ' + e);
-                if (this.Parent._rq.isEmpty())
+                if (g_internal._rq.isEmpty())
                 {
                     console.info1(' Queue is empty');
                     this.Parent.emit('error', e); // No pending requests, so propagate the error up
@@ -51,22 +66,13 @@ function amt_heci()
                 {
                     console.info1(' Queue is NOT empty');
 
-                    // There is a pending request, so fail the pending request
-                    var user = this.Parent._rq.deQueue();
-                    var params = user.optional;
-                    var callback = user.func;
-                    params.unshift({ Status: -1 }); // Relay an error
-                    callback.apply(this.Parent, params);
-
-                    if (!this.Parent._rq.isEmpty())
-                    {
-                        // There are still more pending requests, so try to re-helpconnect MEI
-                        this.connect(heci.GUIDS.AMT, { noPipeline: 1 });
-                    }
+                    // Try again
+                    retry_pthi_later.call(this);
                 }
             });
             this._amt.on('connect', function _amtOnConnect()
             {
+                g_internal.errorCount = 0;
                 this.on('data', function _amtOnData(chunk)
                 {
                     //console.log("Received: " + chunk.length + " bytes");
@@ -124,13 +130,6 @@ function amt_heci()
         var header = Buffer.from('010100000000000000000000', 'hex');
         header.writeUInt32LE(arguments[0] | 0x04000000, 4);
         header.writeUInt32LE(arguments[1] == null ? 0 : arguments[1].length, 8);
-
-        //this._rq.enQueue({ cmd: arguments[0], func: arguments[2], optional: args, send: (arguments[1] == null ? header : Buffer.concat([header, arguments[1]])) });
-        //if(!this._amt)
-        //{
-        //    this._setupPTHI();
-        //    this._amt.connect(heci.GUIDS.AMT, { noPipeline: 1 });
-        //}
 
         g_internal._rq.enQueue({ cmd: arguments[0], func: arguments[2], optional: args, send: (arguments[1] == null ? header : Buffer.concat([header, arguments[1]])) });
         if (!g_internal._amt)
