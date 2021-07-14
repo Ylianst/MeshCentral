@@ -643,6 +643,7 @@
           },
           "httpHeaders": { "type": "object", "additionalProperties": { "type": "string" } },
           "agentConfig": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+          "localSessionRecording": { "type": "boolean", "default": true, "description": "When false, removes the local recording feature on remote desktop." },
           "sessionRecording": {
             "type": "object",
             "additionalProperties": false,
