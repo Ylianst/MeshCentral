@@ -1501,11 +1501,10 @@ function startLms(func, lmscommander, tag) {
     amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
     //console.log("PTHI Connected.");
 
-    console.log('Setting up LME...');
     try { amtLms = new lme_heci({ debug: settings.lmsdebug }); } catch (ex) { if (func != null) { func(0, tag); } return; }
     amtLms.promise = ret;
     amtLms.on('error', function (e) {
-        console.log('LME connection failed', e);
+        //console.log('LME connection failed', e);
         if (lmscommander === true) { //settings.noconsole !== true) {
             startMeshCommanderLms();
             //console.log("LMS started, MeshCommander on HTTP/16994.");
@@ -1530,7 +1529,7 @@ function startLms(func, lmscommander, tag) {
     //console.log('LME Connecting...');
     amtLms.on('bind', function (mapping) {
         if (mapping[16992]) { this.removeAllListeners('bind'); } else { return; }
-        //console.log('LMS Bounded');
+        console.log('Started LMS...');
         amtLms.connected = true;
         this.promise._res();
 
