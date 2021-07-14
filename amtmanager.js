@@ -1875,7 +1875,7 @@ module.exports.CreateAmtManager = function (parent) {
     function activateIntelAmt(dev) {
         // Find the Intel AMT policy
         const mesh = parent.webserver.meshes[dev.meshid];
-        if (mesh == null) { dev.consoleMsg("Unable to find device group."); removeAmtDevice(dev, 36); return false; }
+        if (mesh == null) { dev.consoleMsg("Unable to find device group (" + dev.meshid + ")."); removeAmtDevice(dev, 36); return false; }
         var amtPolicy = 0; // 0 = Do nothing, 1 = Deactivate CCM, 2 = CCM, 3 = ACM
         var ccmPolicy = 0; // Only used when in ACM policy: 0 = Do nothing, 1 = Deactivate CCM, 2 = CCM is ACM fails
         if (mesh.amt != null) { if (typeof mesh.amt.type == 'number') { amtPolicy = mesh.amt.type; } if (typeof mesh.amt.ccm == 'number') { ccmPolicy = mesh.amt.ccm; } }
