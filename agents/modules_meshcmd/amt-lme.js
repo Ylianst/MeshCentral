@@ -117,7 +117,11 @@ function lme_heci(options) {
     emitterUtils.createEvent('notify');
     emitterUtils.createEvent('bind');
     
-    this.on('newListener', function (name, func) { if (name == 'connect' && this._LME._connected == true) { func.call(this);} });
+    this.on('newListener', function (name, func)
+    {
+        if (name == 'connect' && this._LME._connected == true) { func.call(this); }
+        if (name == 'error' && this._LME._error !=null) { func.call(this, this._LME._error); }
+    });
     if ((options != null) && (options.debug == true)) { lme_port_offset = -100; } // LMS debug mode
 
     var heci = require('heci');
@@ -126,10 +130,11 @@ function lme_heci(options) {
     this._ObjectID = "lme";
     this._LME = heci.create();
     this._LME._connected = false;
+    this._LME._error = null;
     this._LME.descriptorMetadata = "amt-lme";
     this._LME._binded = {};
     this._LME.LMS = this;
-    this._LME.on('error', function (e) { this.LMS.emit('error', e); });
+    this._LME.on('error', function (e) { this._error = e; this.LMS.emit('error', e); });
     this._LME.on('connect', function ()
     {
         this._connected = true;
