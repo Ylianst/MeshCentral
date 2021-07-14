@@ -808,34 +808,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     });
                     break;
                 }
-            case 'getsysinfo':
-                {
-                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check the nodeid
-                    if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
-                    if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-
-                    // Get the node and the rights for this node
-                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if (visible == false) { try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
-                        // Query the database system information
-                        db.Get('si' + command.nodeid, function (err, docs) {
-                            if ((docs != null) && (docs.length > 0)) {
-                                var doc = docs[0];
-                                doc.action = 'getsysinfo';
-                                doc.nodeid = node._id;
-                                doc.tag = command.tag;
-                                delete doc.type;
-                                delete doc.domain;
-                                delete doc._id;
-                                if (command.nodeinfo === true) { doc.node = node; doc.rights = rights; }
-                                try { ws.send(JSON.stringify(doc)); } catch (ex) { }
-                            } else {
-                                try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: node._id, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { }
-                            }
-                        });
-                    });
-                    break;
-                }
             case 'files':
                 {
                     // Send the full list of server files to the browser app
@@ -3626,35 +3598,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'toast', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
-            case 'getnetworkinfo':
-                {
-                    // Argument validation
-                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                    if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
-                    if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-
-                    // Get the node and the rights for this node
-                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if (visible == false) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
-
-                        // Get network information about this node
-                        db.Get('if' + node._id, function (err, netinfos) {
-                            if ((netinfos == null) || (netinfos.length != 1)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, netif: null, netif2: null })); } catch (ex) { } return; }
-                            var netinfo = netinfos[0];
-
-                            // Unescape any field names that have special characters if needed
-                            if (netinfo.netif2 != null) {
-                                for (var i in netinfo.netif2) {
-                                    var esc = common.unEscapeFieldName(i);
-                                    if (esc !== i) { netinfo.netif2[esc] = netinfo.netif2[i]; delete netinfo.netif2[i]; }
-                                }
-                            }
-
-                            try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, updateTime: netinfo.updateTime, netif: netinfo.netif, netif2: netinfo.netif2 })); } catch (ex) { }
-                        });
-                    });
-                    break;
-                }
             case 'changedevice':
                 {
                     var err = null;
@@ -5523,6 +5466,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     const serverCommands = {
+        'getnetworkinfo': serverCommandGetNetworkInfo,
+        'getsysinfo': serverCommandGetSysInfo,
         'lastconnect': serverCommandLastConnect,
         'serverconsole': serverCommandServerConsole
     };
@@ -5579,11 +5524,58 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'webstats': [serverUserCommandWebStats, ""]
     };
 
-    
+    function serverCommandGetNetworkInfo(command) {
+        if (!validNodeIdAndDomain(command)) return;
+
+        // Get the node and the rights for this node
+        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+            if (visible == false) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
+
+            // Get network information about this node
+            db.Get('if' + node._id, function (err, netinfos) {
+                if ((netinfos == null) || (netinfos.length != 1)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, netif: null, netif2: null })); } catch (ex) { } return; }
+                var netinfo = netinfos[0];
+
+                // Unescape any field names that have special characters if needed
+                if (netinfo.netif2 != null) {
+                    for (var i in netinfo.netif2) {
+                        var esc = common.unEscapeFieldName(i);
+                        if (esc !== i) { netinfo.netif2[esc] = netinfo.netif2[i]; delete netinfo.netif2[i]; }
+                    }
+                }
+
+                try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, updateTime: netinfo.updateTime, netif: netinfo.netif, netif2: netinfo.netif2 })); } catch (ex) { }
+            });
+        });
+    }
+
+    function serverCommandGetSysInfo(command) {
+        if (!validNodeIdAndDomain(command)) return;
+
+        // Get the node and the rights for this node
+        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+            if (visible == false) { try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
+            // Query the database system information
+            db.Get('si' + command.nodeid, function (err, docs) {
+                if ((docs != null) && (docs.length > 0)) {
+                    var doc = docs[0];
+                    doc.action = 'getsysinfo';
+                    doc.nodeid = node._id;
+                    doc.tag = command.tag;
+                    delete doc.type;
+                    delete doc.domain;
+                    delete doc._id;
+                    if (command.nodeinfo === true) { doc.node = node; doc.rights = rights; }
+                    try { ws.send(JSON.stringify(doc)); } catch (ex) { }
+                } else {
+                    try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: node._id, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { }
+                }
+            });
+        });
+    }
+
     function serverCommandLastConnect(command) {
-        if (common.validateString(command.nodeid, 1, 1024) == false) return; // Check the nodeid
-        if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
-        if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+        if (!validNodeIdAndDomain(command)) return;
 
         // Get the node and the rights for this node
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
@@ -6175,6 +6167,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
 
+    function validNodeIdAndDomain(command) {
+        if (common.validateString(command.nodeid, 1, 1024) == false) return false; // Check nodeid
+        if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+        if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return false; // Invalid domain, operation only valid for current domain
+        return true;
+    }
 
     function csvClean(s) { return '\"' + s.split('\"').join('').split(',').join('').split('\r').join('').split('\n').join('') + '\"'; }
 
