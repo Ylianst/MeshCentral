@@ -4575,7 +4575,7 @@
                 url = 'ws://' + servername + portStr + domainUrl;
             }
             var x = format("Add, activate and configure Intel&reg; AMT to group \"{0}\" by periodically running MeshCmd as administrator on the remote device.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += '<textarea readonly=readonly style=width:100%;resize:none;height:100px;overflow:auto;font-size:12px readonly>meshcmd amtconfig --url ' + url + 'apf.ashx --id ' + meshid.split('/')[2] + ' --serverhttpshash ' + serverinfo.tlshash + '</textarea>';
+            x += '<textarea readonly=readonly style=width:100%;resize:none;height:100px;overflow:auto;font-size:12px readonly>meshcmd amtconfig --url ' + url + 'apf.ashx --id \'' + meshid.split('/')[2] + '\' --serverhttpshash ' + serverinfo.tlshash + '</textarea>';
             if (serverinfo.amtAcmFqdn != null) {
                 x += ('<div style=margin-top:8px>' + "For ACM activation, Intel&reg; AMT will need to be set to the following trusted FQDN:" + ' <b>' + serverinfo.amtAcmFqdn.join(', ') + '</b></div>');
             }
