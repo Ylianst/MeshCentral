@@ -155,6 +155,7 @@ function run(argv) {
     if ((typeof args.timeout) == 'string') { settings.timeout = parseInt(args.timeout); }
     if ((typeof args.uuidoutput) == 'string' || args.uuidoutput) { settings.uuidoutput = args.uuidoutput; }
     if ((typeof args.desc) == 'string') { settings.desc = args.desc; }
+    if ((typeof args.dnssuffix) == 'string') { settings.dnssuffix = args.dnssuffix; }
     if (args.emailtoken) { settings.emailtoken = true; }
     if (args.smstoken) { settings.smstoken = true; }
     if (args.debug === true) { settings.debuglevel = 1; }
@@ -245,6 +246,7 @@ function run(argv) {
             console.log('  --user [username]         The Intel AMT admin username, admin is default.');
             console.log('  --pass [password]         The Intel AMT admin password.');
             console.log('  --desc [description]      Description of the device, used when first added to server.');
+            console.log('  --dnssuffix [dns]         Override the trusted DNS suffix sent to the server.');
         } else if (action == 'amtdeactivate') {
             console.log('AmtDeactivate will attempt to deactivate Intel AMT on this computer when in client control mode (CCM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be activated in client control mode for this command to work. Example usage:\r\n\r\n  meshcmd amtdeactivate');
         } else if (action == 'amtacmdeactivate') {
@@ -540,7 +542,7 @@ function run(argv) {
                     amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { mestate.uuid = result.uuid; } });
                     amtMei.getRemoteAccessConnectionStatus(function (result) { if ((result != null) && (result.status == 0)) { mestate.networkStatus = result.networkStatus; mestate.remoteAccessStatus = result.remoteAccessStatus; mestate.remoteAccessTrigger = result.remoteAccessTrigger; mestate.mpsHostname = result.mpsHostname; } });
                     amtMei.getDnsSuffix(function (result) {
-                        if (result) { mestate.dns = result; }
+                        if (result) { mestate.DnsSuffix = result; }
                         if (mestate.ver && mestate.ProvisioningState && mestate.ProvisioningMode) {
                             var str = 'Intel ME v' + mestate.ver;
                             if (mestate.sku & 8) { str = 'Intel AMT v' + mestate.ver }
@@ -561,9 +563,9 @@ function run(argv) {
                             if (mestate.net0 != null) { str += '\r\nWired ' + ((mestate.net0.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net0.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net0.mac + (mestate.net0.address == '0.0.0.0' ? '' : (', ' + mestate.net0.address)); }
                             if (mestate.net1 != null) { str += '\r\nWireless ' + ((mestate.net1.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net1.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net1.mac + (mestate.net1.address == '0.0.0.0' ? '' : (', ' + mestate.net1.address)); }
                             if ((mestate.net0 != null) && (mestate.net0.enabled == 1)) {
-                                if (mestate.dns != null) {
+                                if (mestate.DnsSuffix != null) {
                                     // Intel AMT has a trusted DNS suffix set, use that one.
-                                    str += '\r\nTrusted DNS suffix: ' + mestate.dns;
+                                    str += '\r\nTrusted DNS suffix: ' + mestate.DnsSuffix;
                                 } else {
                                     // Look for the DNS suffix for the Intel AMT Ethernet interface
                                     var fqdn = null, interfaces = require('os').networkInterfaces();
@@ -1159,6 +1161,9 @@ function configureAmt2(err, state) {
         if ((typeof settings.username == 'string') && (settings.username != '')) { state.amtuser = settings.username; }
     }
 
+    // If a DNS suffix override is provided, use that
+    if (settings.dnssuffix != null) { state.DnsSuffix = settings.dnssuffix; }
+
     // If a description is provided, send it to the server
     if ((typeof settings.desc == 'string') && (settings.desc != '')) { state.desc = settings.desc; }
 
@@ -1422,7 +1427,7 @@ function saveEntireAmtStateDone() {
 //
 
 // Get Intel AMT information using MEI
-// TODO: If this call is called many time at once, it's going to cause issues.
+// TODO: If this call is called many time at once, it's going to cause issues - Should be fixed since amtMei is now a singleton.
 var getAmtInfoFetching = null;
 var getAmtInfoFetchingTimer = null;
 function getAmtInfo(func, tag) {
@@ -1449,7 +1454,7 @@ function getAmtInfo(func, tag) {
             amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
             amtMei.getControlMode(function (result) { if (result != null) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } } });
             //amtMei.getMACAddresses(function (result) { if (result != null) { amtMeiTmpState.mac = result; } });
-            amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.dns = result; } });
+            amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.DnsSuffix = result; } });
             amtMei.getHashHandles(function (handles) {
                 exitOnCount = handles.length;
                 for (var i = 0; i < handles.length; ++i) {
