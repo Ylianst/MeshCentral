@@ -458,8 +458,13 @@ module.exports.CreateAmtManager = function (parent) {
         if (dev.acctry == null) {
             dev.acctry = [];
 
+            // Add Intel AMT username and password provided by MeshCMD if available
+            if ((dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null) && (typeof dev.mpsConnection.tag.meiState.amtuser == 'string') && (typeof dev.mpsConnection.tag.meiState.amtpass == 'string') && (dev.mpsConnection.tag.meiState.amtuser != '') && (dev.mpsConnection.tag.meiState.amtpass != '')) {
+                dev.acctry.push([dev.mpsConnection.tag.meiState.amtuser, dev.mpsConnection.tag.meiState.amtpass]);
+            }
+
             // Add the know Intel AMT password for this device if available
-            if ((typeof dev.intelamt.user == 'string') && (typeof dev.intelamt.pass == 'string')) { dev.acctry.push([dev.intelamt.user, dev.intelamt.pass]); }
+            if ((typeof dev.intelamt.user == 'string') && (typeof dev.intelamt.pass == 'string') && (dev.intelamt.user != '') && (dev.intelamt.pass != '')) { dev.acctry.push([dev.intelamt.user, dev.intelamt.pass]); }
 
             // Add the policy password as an alternative
             if ((typeof dev.policy.password == 'string') && (dev.policy.password != '')) { dev.acctry.push(['admin', dev.policy.password]); }
@@ -669,7 +674,7 @@ module.exports.CreateAmtManager = function (parent) {
                     }
                 }
 
-                // If this devics is in CCM mode and we have a bad password reset policy, do it now.
+                // If this device is in CCM mode and we have a bad password reset policy, do it now.
                 if ((dev.connType == 2) && (dev.policy.badPass == 1) && (dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null) && (dev.mpsConnection.tag.meiState.Flags != null) && ((dev.mpsConnection.tag.meiState.Flags & 2) != 0)) {
                     deactivateIntelAmtCCM(dev);
                     return;
