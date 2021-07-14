@@ -1,5 +1,5 @@
 /*
-Copyright 2018-2021 Intel Corporation
+Copyright 2018-2020 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,7 +15,10 @@ limitations under the License.
 */
 
 var Q = require('queue');
-function amt_heci() {
+var g_internal = null;
+
+function amt_heci()
+{
     var emitterUtils = require('events').inherits(this);
     emitterUtils.createEvent('error');
 
@@ -23,60 +26,86 @@ function amt_heci() {
     var sendConsole = function (msg) { try { require('MeshAgent').SendCommand({ "action": "msg", "type": "console", "value": msg }); } catch (ex) { } }
 
     this._ObjectID = "pthi";
-    this._rq = new Q();
-    this._setupPTHI = function _setupPTHI() {
-        this._amt = heci.create();
-        this._amt.descriptorMetadata = "amt-pthi";
-        this._amt.BiosVersionLen = 65;
-        this._amt.UnicodeStringLen = 20;
+    var that = this;
+    if (g_internal == null)
+    {
+        g_internal = { _rq: new Q(), _amt: null };
+        g_internal._setupPTHI = function _g_setupPTHI()
+        {
+            console.info1('setupPTHI()');
+            this._amt = heci.create();
+            this._amt.descriptorMetadata = "amt-pthi";
+            this._amt.BiosVersionLen = 65;
+            this._amt.UnicodeStringLen = 20;
+            this._amt.Parent = that;
 
-        this._amt.Parent = this;
-        this._amt.on('error', function _amtOnError(e) {
-            if (this.Parent._rq.isEmpty()) {
-                this.Parent.emit('error', e); // No pending requests, so propagate the error up
-            }
-            else {
-                // There is a pending request, so fail the pending request
-                var user = this.Parent._rq.deQueue();
-                var params = user.optional;
-                var callback = user.func;
-                params.unshift({ Status: -1 }); // Relay an error
-                callback.apply(this.Parent, params);
-
-                if (!this.Parent._rq.isEmpty()) {
-                    // There are still more pending requests, so try to re-helpconnect MEI
-                    this.connect(heci.GUIDS.AMT, { noPipeline: 1 });
+            this._amt.on('error', function _amtOnError(e)
+            {
+                console.info1('PTHIError: ' + e);
+                if (this.Parent._rq.isEmpty())
+                {
+                    console.info1(' Queue is empty');
+                    this.Parent.emit('error', e); // No pending requests, so propagate the error up
                 }
-            }
-        });
-        this._amt.on('connect', function _amtOnConnect() {
-            this.on('data', function _amtOnData(chunk) {
-                //console.log("Received: " + chunk.length + " bytes");
-                var header = this.Parent.getCommand(chunk);
-                //console.log("CMD = " + header.Command + " (Status: " + header.Status + ") Response = " + header.IsResponse);
+                else
+                {
+                    console.info1(' Queue is NOT empty');
 
-                var user = this.Parent._rq.deQueue();
-                var params = user.optional;
-                var callback = user.func;
+                    // There is a pending request, so fail the pending request
+                    var user = this.Parent._rq.deQueue();
+                    var params = user.optional;
+                    var callback = user.func;
+                    params.unshift({ Status: -1 }); // Relay an error
+                    callback.apply(this.Parent, params);
 
-                params.unshift(header);
-                callback.apply(this.Parent, params);
-
-                if (this.Parent._rq.isEmpty()) {
-                    // No More Requests, we can close PTHI
-                    this.Parent._amt.disconnect();
-                    this.Parent._amt = null;
-                }
-                else {
-                    // Send the next request
-                    this.write(this.Parent._rq.peekQueue().send);
+                    if (!this.Parent._rq.isEmpty())
+                    {
+                        // There are still more pending requests, so try to re-helpconnect MEI
+                        this.connect(heci.GUIDS.AMT, { noPipeline: 1 });
+                    }
                 }
             });
+            this._amt.on('connect', function _amtOnConnect()
+            {
+                this.on('data', function _amtOnData(chunk)
+                {
+                    //console.log("Received: " + chunk.length + " bytes");
+                    var header = this.Parent.getCommand(chunk);
+                    console.info1("CMD = " + header.Command + " (Status: " + header.Status + ") Response = " + header.IsResponse);
 
-            // Start sending requests
-            this.write(this.Parent._rq.peekQueue().send);
-        });
-    };
+                    var user = g_internal._rq.deQueue();
+                    var params = user.optional;
+                    var callback = user.func;
+
+                    params.unshift(header);
+                    callback.apply(this.Parent, params);
+
+                    if (g_internal._rq.isEmpty())
+                    {
+                        console.info1('No more requests, disconnecting');
+
+                        // No More Requests, we can close PTHI
+                        g_internal._amt.disconnect();
+                        g_internal._amt = null;
+                    }
+                    else
+                    {
+                        // Send the next request
+                        console.info1('Sending Next Request');
+                        this.write(g_internal._rq.peekQueue().send);
+                    }
+                });
+
+                // Start sending requests
+                this.write(g_internal._rq.peekQueue().send);
+            });
+
+
+
+        };
+    }
+
+    
     function trim(x) { var y = x.indexOf('\0'); if (y >= 0) { return x.substring(0, y); } else { return x; } }
     this.getCommand = function getCommand(chunk) {
         var command = chunk.length == 0 ? (this._rq.peekQueue().cmd | 0x800000) : chunk.readUInt32LE(4);
@@ -84,19 +113,30 @@ function amt_heci() {
         return (ret);
     };
 
-    this.sendCommand = function sendCommand() {
+    this.sendCommand = function sendCommand()
+    {
         if (arguments.length < 3 || typeof (arguments[0]) != 'number' || typeof (arguments[1]) != 'object' || typeof (arguments[2]) != 'function') { throw ('invalid parameters'); }
         var args = [];
         for (var i = 3; i < arguments.length; ++i) { args.push(arguments[i]); }
 
+        console.info1('sendCommand(' + arguments[0] + ')', this._hashCode());
+
         var header = Buffer.from('010100000000000000000000', 'hex');
         header.writeUInt32LE(arguments[0] | 0x04000000, 4);
         header.writeUInt32LE(arguments[1] == null ? 0 : arguments[1].length, 8);
-        this._rq.enQueue({ cmd: arguments[0], func: arguments[2], optional: args, send: (arguments[1] == null ? header : Buffer.concat([header, arguments[1]])) });
 
-        if (!this._amt) {
-            this._setupPTHI();
-            this._amt.connect(heci.GUIDS.AMT, { noPipeline: 1 });
+        //this._rq.enQueue({ cmd: arguments[0], func: arguments[2], optional: args, send: (arguments[1] == null ? header : Buffer.concat([header, arguments[1]])) });
+        //if(!this._amt)
+        //{
+        //    this._setupPTHI();
+        //    this._amt.connect(heci.GUIDS.AMT, { noPipeline: 1 });
+        //}
+
+        g_internal._rq.enQueue({ cmd: arguments[0], func: arguments[2], optional: args, send: (arguments[1] == null ? header : Buffer.concat([header, arguments[1]])) });
+        if (!g_internal._amt)
+        {
+            g_internal._setupPTHI();
+            g_internal._amt.connect(heci.GUIDS.AMT, { noPipeline: 1 });
         }
     }
 
@@ -105,10 +145,11 @@ function amt_heci() {
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(26, null, function (header, fn, opt) {
             if (header.Status == 0) {
-                var i, CodeVersion = header.Data, val = { BiosVersion: CodeVersion.slice(0, this._amt.BiosVersionLen).toString(), Versions: [] }, v = CodeVersion.slice(this._amt.BiosVersionLen + 4);
-                for (i = 0; i < CodeVersion.readUInt32LE(this._amt.BiosVersionLen); ++i) {
-                    val.Versions[i] = { Description: v.slice(2, v.readUInt16LE(0) + 2).toString(), Version: v.slice(4 + this._amt.UnicodeStringLen, 4 + this._amt.UnicodeStringLen + v.readUInt16LE(2 + this._amt.UnicodeStringLen)).toString() };
-                    v = v.slice(4 + (2 * this._amt.UnicodeStringLen));
+                var i, CodeVersion = header.Data, val = { BiosVersion: CodeVersion.slice(0, g_internal._amt.BiosVersionLen).toString(), Versions: [] }, v = CodeVersion.slice(g_internal._amt.BiosVersionLen + 4);
+                for (i = 0; i < CodeVersion.readUInt32LE(g_internal._amt.BiosVersionLen) ; ++i)
+                {
+                    val.Versions[i] = { Description: v.slice(2, v.readUInt16LE(0) + 2).toString(), Version: v.slice(4 + g_internal._amt.UnicodeStringLen, 4 + g_internal._amt.UnicodeStringLen + v.readUInt16LE(2 + g_internal._amt.UnicodeStringLen)).toString() };
+                    v = v.slice(4 + (2 * g_internal._amt.UnicodeStringLen));
                 }
                 if (val.BiosVersion.indexOf('\0') > 0) { val.BiosVersion = val.BiosVersion.substring(0, val.BiosVersion.indexOf('\0')); }
                 opt.unshift(val);
@@ -291,27 +332,34 @@ function amt_heci() {
     this.getLocalSystemAccount = function getLocalSystemAccount(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
-        this.sendCommand(103, Buffer.alloc(40), function (header, fn, opt) {
-            if (header.Status == 0 && header.Data.length == 68) {
+        this.sendCommand(103, Buffer.alloc(40), function (header, fn, opt)
+        {
+            if (header.Status == 0 && header.Data.length == 68)
+            {
                 opt.unshift({ user: trim(header.Data.slice(0, 33).toString()), pass: trim(header.Data.slice(33, 67).toString()), raw: header.Data });
             }
-            else {
+            else
+            {
                 opt.unshift(null);
             }
             fn.apply(this, opt);
         }, callback, optional);
     }
-    this.getLanInterfaceSettings = function getLanInterfaceSettings(index, callback) {
+    this.getLanInterfaceSettings = function getLanInterfaceSettings(index, callback)
+    {
         var optional = [];
         for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
         var ifx = Buffer.alloc(4);
         ifx.writeUInt32LE(index);
-        this.sendCommand(0x48, ifx, function onGetLanInterfaceSettings(header, fn, opt) {
-            if (header.Status == 0) {
+        this.sendCommand(0x48, ifx, function onGetLanInterfaceSettings(header, fn, opt)
+        {
+            if(header.Status == 0)
+            {
                 var info = {};
                 info.enabled = header.Data.readUInt32LE(0);
                 info.dhcpEnabled = header.Data.readUInt32LE(8);
-                switch (header.Data[12]) {
+                switch(header.Data[12])
+                {
                     case 1:
                         info.dhcpMode = 'ACTIVE'
                         break;
@@ -323,13 +371,14 @@ function amt_heci() {
                         break;
                 }
                 info.mac = header.Data.slice(14).toString('hex:');
-
+                
                 var addr = header.Data.readUInt32LE(4);
                 info.address = ((addr >> 24) & 255) + '.' + ((addr >> 16) & 255) + '.' + ((addr >> 8) & 255) + '.' + (addr & 255);
                 opt.unshift(info);
                 fn.apply(this, opt);
             }
-            else {
+            else
+            {
                 opt.unshift(null);
                 fn.apply(this, opt);
             }
@@ -346,32 +395,32 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     }
-    this.startConfiguration = function startConfiguration(callback) {
+    this.startConfiguration = function startConfiguration() {
         var optional = [];
-        for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
-        this.sendCommand(0x29, null, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
+        for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        this.sendCommand(0x29, data, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
     }
-    this.stopConfiguration = function stopConfiguration(callback) {
+    this.stopConfiguration = function stopConfiguration() {
         var optional = [];
-        for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
-        this.sendCommand(0x5E, null, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
+        for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        this.sendCommand(0x5E, data, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
     }
-    this.openUserInitiatedConnection = function openUserInitiatedConnection(callback) {
+    this.openUserInitiatedConnection = function openUserInitiatedConnection() {
         var optional = [];
-        for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
-        this.sendCommand(0x44, null, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
+        for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        this.sendCommand(0x44, data, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
     }
-    this.closeUserInitiatedConnection = function closeUnserInitiatedConnected(callback) {
+    this.closeUserInitiatedConnection = function closeUnserInitiatedConnected() {
         var optional = [];
-        for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
-        this.sendCommand(0x45, null, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
+        for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        this.sendCommand(0x45, data, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
     }
-    this.getRemoteAccessConnectionStatus = function getRemoteAccessConnectionStatus(callback) {
+    this.getRemoteAccessConnectionStatus = function getRemoteAccessConnectionStatus() {
         var optional = [];
-        for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
-        this.sendCommand(0x46, null, function (header, fn, opt) {
+        for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        this.sendCommand(0x46, data, function (header, fn, opt) {
             if (header.Status == 0) {
-                var hostname = header.Data.slice(14, header.Data.readUInt16LE(12) + 14).toString()
+                var hostname = v.slice(14, header.Data.readUInt16LE(12) + 14).toString()
                 opt.unshift({ status: header.Status, networkStatus: header.Data.readUInt32LE(0), remoteAccessStatus: header.Data.readUInt32LE(4), remoteAccessTrigger: header.Data.readUInt32LE(8), mpsHostname: hostname, raw: header.Data });
             } else {
                 opt.unshift({ status: header.Status });
@@ -379,81 +428,27 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     }
-    this.getProtocolVersion = function getProtocolVersion(callback) {
+    this.getProtocolVersion = function getProtocolVersion(callback)
+    {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { opt.push(arguments[i]); }
 
-        if (!this._tmpSession) { this._tmpSession = heci.create(); this._tmpSession.parent = this; }
-        this._tmpSession.doIoctl(heci.IOCTL.HECI_VERSION, Buffer.alloc(5), Buffer.alloc(5), function (status, buffer, self, fn, opt) {
+        if (!this._tmpSession) { this._tmpSession = heci.create(); this._tmpSession.parent = this;}
+        this._tmpSession.doIoctl(heci.IOCTL.HECI_VERSION, Buffer.alloc(5), Buffer.alloc(5), function (status, buffer, self, fn, opt)
+        {
             if (status == 0) {
                 var result = buffer.readUInt8(0).toString() + '.' + buffer.readUInt8(1).toString() + '.' + buffer.readUInt8(2).toString() + '.' + buffer.readUInt16BE(3).toString();
                 opt.unshift(result);
                 fn.apply(self, opt);
             }
-            else {
+            else
+            {
                 opt.unshift(null);
                 fn.apply(self, opt);
             }
 
         }, this, callback, optional);
     }
-    this.startConfigurationHBased = function startConfigurationHBased(certHash, hostVpn, dnsSuffixList, func) {
-        if ((certHash == null) || ((certHash.length != 32) && (certHash.length != 48))) { func({ status: -101 }); }
-        this.stopConfiguration(function (status) {
-            if (status == 0) {
-                // We stopped the configuration, wait 20 seconds before starting up again.
-                var f = function tf() { delete tf.parent.xtimeout; tf.parent.startConfigurationHBasedEx(certHash, hostVpn, dnsSuffixList, func); }
-                f.parent = this;
-                this.xtimeout = setTimeout(f, 20000);
-            } else {
-                // We are not in the connect mode, this is good, start configuration right away.
-                this.startConfigurationHBasedEx(certHash, hostVpn, dnsSuffixList, func);
-            }
-        })
-    }
-    this.startConfigurationHBasedEx = function startConfigurationHBased(certHash, hostVpn, dnsSuffixList, func) {
-        var optional = [];
-        for (var i = 4; i < arguments.length; ++i) { optional.push(arguments[i]); }
-
-        // Format the command
-        var data = Buffer.alloc(4 + 64 + 4 + 4 + 320);
-        data.writeUInt32LE((certHash.length == 48) ? 3 : 2, 0); // Write certificate hash type: SHA256 = 2, SHA384 = 3
-        certHash.copy(data, 4); // Write the hash
-        data.writeUInt32LE(hostVpn ? 1 : 0, 68); // Write is HostVPN is enabled
-        if (dnsSuffixList != null) {
-            data.writeUInt32LE(dnsSuffixList.length, 72); // Write the number of DNS Suffix, from 0 to 4
-            var ptr = 76;
-            for (var i = 0; i < dnsSuffixList.length; i++) { ptr += data.write(dnsSuffixList[i], ptr) + 1; } // Write up to 4 DNS Suffix with null seperation.
-        }
-
-        // Send the command
-        this.sendCommand(139, data, function (header, fn, opt) {
-            if (header.Status == 0) {
-                var amtHash = null;
-                if (header.Data[0] == 2) { amtHash = header.Data.slice(1, 33); } // SHA256
-                if (header.Data[0] == 3) { amtHash = header.Data.slice(1, 49); } // SHA384
-                opt.unshift({ status: header.Status, hash: amtHash.toString('hex') });
-            } else {
-                opt.unshift({ status: header.Status });
-            }
-            fn.apply(this, opt);
-        }, func, optional);
-    }
 }
 
 module.exports = amt_heci;
-
-
-/*
-AMT_STATUS_SUCCESS = 0,
-AMT_STATUS_INTERNAL_ERROR = 1,
-AMT_STATUS_INVALID_AMT_MODE = 3,
-AMT_STATUS_INVALID_MESSAGE_LENGTH = 4,
-AMT_STATUS_MAX_LIMIT_REACHED = 23,
-AMT_STATUS_INVALID_PARAMETER = 36,
-AMT_STATUS_RNG_GENERATION_IN_PROGRESS = 47,
-AMT_STATUS_RNG_NOT_READY = 48,
-AMT_STATUS_CERTIFICATE_NOT_READY = 49,
-AMT_STATUS_INVALID_HANDLE = 2053
-AMT_STATUS_NOT_FOUND = 2068,
-*/
