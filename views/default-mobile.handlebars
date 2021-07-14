@@ -4764,6 +4764,7 @@
                     QE('p13FolderUp', false);
                     p13setActions();
                     if (files != null) { files.Stop(); files = null; }
+                    if (uploadFile != null) { p13uploadFileTransferDone(); uploadFile = null; }
                     break;
                 case 3:
                     p13targetpath = '';

@@ -9102,6 +9102,7 @@
                     p13setActions();
                     if (files != null) { files.Stop(); files = null; }
                     if (xxdialogTag == 'fileMsgDialog') { setDialogMode(0); }
+                    if (uploadFile != null) { p13uploadFileTransferDone(); uploadFile = null; }
                     break;
                 case 3:
                     p13targetpath = '';
