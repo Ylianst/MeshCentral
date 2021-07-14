@@ -2694,6 +2694,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.logintokens != false)) { features2 += 0x00000080; } // Indicates login tokens are allowed
                 if (req.session.loginToken != null) { features2 += 0x00000100; } // LoginToken mode, no account changes.
                 if (domain.ssh == true) { features2 += 0x00000200; } // SSH is enabled
+                if (domain.localsessionrecording === false) { features2 += 0x00000400; } // Disable local recording feature
 
                 // Create a authentication cookie
                 const authCookie = obj.parent.encodeCookie({ userid: dbGetFunc.user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
