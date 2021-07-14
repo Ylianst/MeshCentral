@@ -7721,8 +7721,8 @@
             if (deskState != 3) { QV('DeskInputLockedButton', false); QV('DeskInputUnLockedButton', false); }
 
             // Display this only if we have Chat & Notify permissions
-            QV('DeskSaveImageButton', (deskState == 3) && (Q('Desk')['toBlob'] != null));
-            QV('DeskRecordButton', (deskState == 3) && (Q('Desk')['toBlob'] != null) && (desktop.m.StartRecording != null));
+            QV('DeskSaveImageButton', (deskState == 3) && (Q('Desk')['toBlob'] != null) && ((features2 & 0x400) == 0));
+            QV('DeskRecordButton', (deskState == 3) && (Q('Desk')['toBlob'] != null) && (desktop.m.StartRecording != null) && ((features2 & 0x400) == 0));
             QV('DeskChatButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
             QV('DeskNotifyButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (currentNode.agent) && online);
             QV('DeskLockButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (currentNode.agent) && (deskState == 3));
