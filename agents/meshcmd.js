@@ -110,7 +110,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTCONFIG', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE', 'AMTWIFI', 'AMTWAKE', 'AMTSTARTCONFIG', 'AMTSTOPCONFIG'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTCONFIG', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTINFO', 'AMTINFOJSON', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE', 'AMTWIFI', 'AMTWAKE', 'AMTSTARTCONFIG', 'AMTSTOPCONFIG'];
 
     // Load the action file
     var actionfile = null;
@@ -223,8 +223,12 @@ function run(argv) {
             console.log('  --output [filename]    Optional filename to write the results to.');
         } else if (action == 'amtinfo') {
             console.log('AmtInfo action will get the version and activation state of Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Example usage:\r\n\r\n  meshcmd amtinfo');
+            console.log('\r\nPossible arguments:\r\n');
+            console.log('  --json                 Display all Intel AMT state in JSON format.');
         } else if ((action == 'amtversion') || (action == 'amtversions')) {
             console.log('AmtVersions will display all version information about Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Example usage:\r\n\r\n  meshcmd amtversions');
+            console.log('\r\nPossible arguments:\r\n');
+            console.log('  --json                 Display all Intel AMT state in JSON format.');
         } else if (action == 'amthashes') {
             console.log('Amthashes will display all trusted activations hashes for Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. These certificates hashes are used by Intel AMT when performing activation into ACM mode. Example usage:\r\n\r\n  meshcmd amthashes');
         } else if ((action == 'microlms') || (action == 'lms') || (action == 'amtlms')) {
@@ -485,15 +489,19 @@ function run(argv) {
         try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
         amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
         amtMei.getVersion(function (val) {
-            console.log("BIOS Version = " + val.BiosVersion.toString());
-            for (var version in val.Versions) {
-                var extras = '', skuBits = ['', 'iQST', 'ASF', 'AMT', 'ISM', 'TPM', '', '', 'HomeIT', '', 'WOX', '', '', 'AT-p', 'Corporate', 'L3 Mgt Upgrade'];
-                if (val.Versions[version].Description == 'Sku') {
-                    var n = parseInt(val.Versions[version].Version), x = [], xx = 1;
-                    for (var i = 0; i < skuBits.length; i++) { if ((n & xx) != 0) { x.push(skuBits[i]); } xx = xx << 1; }
-                    if (x.length > 0) { extras = ' (' + x.join(', ') + ')' }
+            if (args.json) {
+                console.log(JSON.stringify(val, null, 2));
+            } else {
+                console.log("BIOS Version = " + val.BiosVersion.toString());
+                for (var version in val.Versions) {
+                    var extras = '', skuBits = ['', 'iQST', 'ASF', 'AMT', 'ISM', 'TPM', '', '', 'HomeIT', '', 'WOX', '', '', 'AT-p', 'Corporate', 'L3 Mgt Upgrade'];
+                    if (val.Versions[version].Description == 'Sku') {
+                        var n = parseInt(val.Versions[version].Version), x = [], xx = 1;
+                        for (var i = 0; i < skuBits.length; i++) { if ((n & xx) != 0) { x.push(skuBits[i]); } xx = xx << 1; }
+                        if (x.length > 0) { extras = ' (' + x.join(', ') + ')' }
+                    }
+                    console.log(val.Versions[version].Description + " = " + val.Versions[version].Version + extras);
                 }
-                console.log(val.Versions[version].Description + " = " + val.Versions[version].Version + extras);
             }
             exit(1); return;
         });
@@ -534,7 +542,7 @@ function run(argv) {
                     }
                     amtMei.getProvisioningState(function (result) { if (result) { mestate.ProvisioningState = result; } });
                     amtMei.getProvisioningMode(function (result) { if (result) { mestate.ProvisioningMode = result; } });
-                    amtMei.getEHBCState(function (result) { if (result) { mestate.ehbc = result; } });
+                    amtMei.getEHBCState(function (result) { mestate.ehbc = ((result === true) || (typeof result == 'object') && (result.EHBC === true)); });
                     amtMei.getControlMode(function (result) { if (result) { mestate.controlmode = result; } });
                     amtMei.getMACAddresses(function (result) { if (result) { mestate.mac = result; } });
                     amtMei.getLanInterfaceSettings(0, function (result) { if (result) { mestate.net0 = result; } });
@@ -543,7 +551,9 @@ function run(argv) {
                     amtMei.getRemoteAccessConnectionStatus(function (result) { if ((result != null) && (result.status == 0)) { mestate.networkStatus = result.networkStatus; mestate.remoteAccessStatus = result.remoteAccessStatus; mestate.remoteAccessTrigger = result.remoteAccessTrigger; mestate.mpsHostname = result.mpsHostname; } });
                     amtMei.getDnsSuffix(function (result) {
                         if (result) { mestate.DnsSuffix = result; }
-                        if (mestate.ver && mestate.ProvisioningState && mestate.ProvisioningMode) {
+                        if (args.json) {
+                            console.log(JSON.stringify(mestate, null, 2));
+                        } else if (mestate.ver && mestate.ProvisioningState && mestate.ProvisioningMode) {
                             var str = 'Intel ME v' + mestate.ver;
                             if (mestate.sku & 8) { str = 'Intel AMT v' + mestate.ver }
                             else if (mestate.sku & 16) { str = 'Intel SM v' + mestate.ver }
@@ -558,7 +568,7 @@ function run(argv) {
                                     }
                                 }
                             }
-                            if ((mestate.ehbc) && (mestate.ehbc.EHBC == true)) { str += ', EHBC enabled'; }
+                            if (mestate.ehbc) { str += ', EHBC enabled'; }
                             str += '.';
                             if (mestate.net0 != null) { str += '\r\nWired ' + ((mestate.net0.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net0.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net0.mac + (mestate.net0.address == '0.0.0.0' ? '' : (', ' + mestate.net0.address)); }
                             if (mestate.net1 != null) { str += '\r\nWireless ' + ((mestate.net1.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net1.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net1.mac + (mestate.net1.address == '0.0.0.0' ? '' : (', ' + mestate.net1.address)); }
@@ -596,7 +606,7 @@ function run(argv) {
                 }
             });
         } catch (ex) { console.log("Unable to perform MEI operations, try running as " + ((process.platform == 'win32')?"administrator.":"root.")); exit(1); return; }
-    } else if (settings.action == 'amtinfodebug') {
+    } else if (settings.action == 'amtinfojson') {
         // Display Intel AMT version and activation state
         getMeiState(15, function (state) { console.log(JSON.stringify(state, null, 2)); exit(1); }); // Flags: 1 = Versions, 2 = OsAdmin, 4 = Hashes, 8 = Network
     } else if (settings.action == 'amtsavestate') {
@@ -639,6 +649,7 @@ function run(argv) {
         // Start Intel AMT configuration
         if ((settings.url == null) || (typeof settings.url != 'string') || (settings.url == '')) { console.log('No MeshCentral server URL specified, use --url [url].'); exit(1); return; }
         if ((settings.id == null) || (typeof settings.id != 'string') || (settings.id == '')) { console.log('No device group identifier specified, use --id [identifier].'); exit(1); return; }
+        settings.id = settings.id.replace('\'', ''); // Remove single quote.
         debug(1, "Settings: " + JSON.stringify(settings));
         configureAmt();
     } else if (settings.action == 'amtccm') {
