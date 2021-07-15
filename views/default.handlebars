@@ -3539,6 +3539,7 @@
 
             // Display the dialog box
             var x = '';
+            x += '<label><input id=d2c6 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('desc') >= 0)?' checked':'') + '>' + "Device Description" + '</label><br />';
             x += '<label><input id=d2c5 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('os') >= 0)?' checked':'') + '>' + "Operating System" + '</label><br />';
             x += '<label><input id=d2c1 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('links') >= 0)?' checked':'') + '>' + "MeshCentral Router Links" + '</label><br />';
             x += '<label><input id=d2c2 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('user') >= 0)?' checked':'') + '>' + "Logged in users" + '</label><br />';
@@ -3554,6 +3555,7 @@
             if (Q('d2c3').checked) { cols.push('ip'); }
             if (Q('d2c4').checked) { cols.push('conn'); }
             if (Q('d2c5').checked) { cols.push('os'); }
+            if (Q('d2c6').checked) { cols.push('desc'); }
             deviceViewSettings.devsCols = cols;
             putstore('_deviceViewSettings', JSON.stringify(deviceViewSettings));
             mainUpdate(4);
@@ -4206,6 +4208,8 @@
                     if ((node.conn & 16) != 0) { states.push('<span title="' + "MQTT connection to the device is active." + '">' + "MQTT" + '</span>'); }
                 }
 
+                if (node.desc && (deviceViewSettings.devsCols.indexOf('desc') >= 0)) { name = '<div style=float:right>' + EscapeHtml(node.desc) + '</div><div>' + name + '</div>'; }
+
                 var collapseName = node.meshid;
                 if (sort == 1) { collapseName = ('pwr:' + (node.pwr?node.pwr:0)); }
                 else if ((sort == 3) || (sort == 4)) { collapseName = 'tag:**xx**xx*TaG*xx**xx**'; }
@@ -4214,7 +4218,7 @@
                 r += '<div class=deviceBarCheckbox><input class="' + node.meshid + ' DeviceCheckbox" value=devid_' + node._id + ' type=checkbox onchange=p1devcheck(event) ' + (checkedNodeids[node._id]?' checked':'') + '></div>';
                 r += '<div class=deviceBarIcon onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class="j' + icon + '" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                 r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
-                r += '<div class=style10 style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + node._id + '\',null,null,event)><span style=width:300px>' + name + '</span></div></div>' + devNotify + '</td>';
+                r += '<div class=style10 style=cursor:pointer;font-size:14px;max-height:18px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap title="' + title + '" onclick=gotoDevice(\'' + node._id + '\',null,null,event)>' + name + '</div></div>' + devNotify + '</td>';
 
                 // Use defaults if needed
                 if (deviceViewSettings == null) { deviceViewSettings = {}; }

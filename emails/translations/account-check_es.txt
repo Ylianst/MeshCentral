@@ -1,6 +1,6 @@
 [[[SERVERNAME]]] - Verificación de Correo Electrónico
-Hola [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) esta realizando una comprobación del correo electrónico. Navegue al siguiente enlace para completar el proceso:
+Hola [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) esta realizando una comprobación del correo electrónico. Navega al siguiente enlace para completar el proceso:
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
 ~
-Si Ud. no inicio este requerimiento, por favor ignore este correo.
+Si tu no iniciaste este requerimiento, por favor ignora este correo.

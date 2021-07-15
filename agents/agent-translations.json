@@ -97,27 +97,27 @@
     "connect": "Conectar",
     "disconnect": "Desconectar",
     "cancel": "Cancelar",
-    "agentVersion": "Nueva versión del agente",
+    "agentVersion": "Nueva Versión del Agente",
     "url": "URL del servidor",
     "meshName": "Nombre de malla",
     "meshId": "Identificador de malla",
-    "serverId": "Identificador de servidor",
+    "serverId": "Identificador de Servidor",
     "setup": "Preparar",
     "update": "Actualizar",
     "pressok": "Presione OK para desconectar",
     "elevation": "Se requieren permisos elevados para instalar / desinstalar el agente.",
     "sudo": "Vuelve a intentarlo con sudo.",
     "ctrlc": "Presione Ctrl-C para salir.",
-    "commands": "Puede ejecutar la versión de texto desde la línea de comandos con los siguientes comandos",
+    "commands": "Puedes ejecutar la versión de texto desde la línea de comandos con los siguientes comandos",
     "graphicalerror": "La versión gráfica de este instalador no se puede ejecutar en este sistema.",
-    "zenity": "Intente instalar / actualizar Zenity y vuelva a ejecutar",
+    "zenity": "Intenta instalar / actualizar Zenity y vuelve a ejecutar",
     "status": [
       "NO INSTALADO",
-      "CORRIENDO",
-      "NO CORRAS"
+      "EJECUTANDO",
+      "NO EJECUTANDOSE"
     ],
-    "statusDescription": "Estado actual del agente",
-    "description": "Haga clic en los botones a continuación para instalar o desinstalar el agente de malla. Cuando se instala, este software se ejecuta en segundo plano, lo que permite que este equipo sea administrado y controlado por un administrador remoto."
+    "statusDescription": "Estado Actual del Agente",
+    "description": "Haz clic en los botones a continuación para instalar o desinstalar el agente de malla. Cuando se instala, este software se ejecuta en segundo plano, lo que permite que este equipo sea administrado y controlado por un administrador remoto."
   },
   "fi": {
     "agent": "Agentti",
