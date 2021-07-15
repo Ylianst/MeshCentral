@@ -1,6 +1,6 @@
 [[[SERVERNAME]]] - Restablecimiento de Cuenta
-Hola [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) está solicitando un restablecimiento de contraseña de cuenta. Navegue al siguiente enlace para completar el proceso:
+Hola [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) está solicitando un restablecimiento de contraseña de cuenta. Navega al siguiente enlace para completar el proceso:
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
 ~
-Si Ud. no inicio este requerimiento, por favor ignore este correo.
+Si tu no iniciaste este requerimiento, por favor ignora este correo.

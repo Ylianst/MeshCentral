@@ -89,7 +89,7 @@ module.exports.CertificateOperations = function (parent) {
             if ((certEntry.sha256 == request.hash) && ((certEntry.cn == '*') || checkAcmActivationCertName(certEntry.cn, request.fqdn))) { hashAlgo = 'sha256'; signkey = certEntry.key; certChain = certEntry.certs; certIndex = i; break; }
             if ((certEntry.sha1 == request.hash) && ((certEntry.cn == '*') || checkAcmActivationCertName(certEntry.cn, request.fqdn))) { hashAlgo = 'sha1'; signkey = certEntry.key; certChain = certEntry.certs; certIndex = i; break; }
         }
-        if (signkey == null) return { 'action': 'acmactivate', 'error': 2, 'errorText': "Can't sign ACM request, no signing certificate found (2)." }; // Did not find a match.
+        if (signkey == null) return { 'action': 'acmactivate', 'error': 2, 'errorText': "Can't sign ACM request, no signing certificate found." }; // Did not find a match.
 
         // If the matching certificate our wildcard root cert, we can use the root to match any FQDN
         if (domain.amtacmactivation.certs[certIndex].cn == '*') {
