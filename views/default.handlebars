@@ -7707,7 +7707,7 @@
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QE('DeskClip', deskState == 3);
-            QV('DeskClip', (inputAllowed) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
+            QV('DeskClip', (inputAllowed) && (currentNode.agent) && ((features2 & 0x1800) != 0x1800) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
             QE('DeskESC', deskState == 3);
             QV('DeskESC', browserfullscreen && inputAllowed);
             QE('DeskType', deskState == 3);
@@ -7718,9 +7718,9 @@
             QV('DeskTimer', deskState == 3);
 
             // Enable browser clipboard read if supported
-            QV('DeskClipboardOutButton', online && inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.readText != null) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
-            QV('d7deskAutoClipboardLabel', navigator.clipboard.readText != null);
-            QV('DeskClipboardInButton', online && inputAllowed && (navigator.clipboard != null) && (navigator.clipboard.writeText != null) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
+            QV('DeskClipboardOutButton', online && inputAllowed && ((features2 & 0x1000) == 0) && (navigator.clipboard != null) && (navigator.clipboard.readText != null) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
+            QV('d7deskAutoClipboardLabel', (navigator.clipboard.readText != null) && ((features2 & 0x1000) == 0));
+            QV('DeskClipboardInButton', online && inputAllowed && ((features2 & 0x0800) == 0) && (navigator.clipboard != null) && (navigator.clipboard.writeText != null) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
 
             if (deskState != 3) { QV('DeskInputLockedButton', false); QV('DeskInputUnLockedButton', false); }
 
@@ -8482,8 +8482,8 @@
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             Q('DeskClip').blur();
             var x = '';
-            x += '<input id=dlgClipGet type=button value="Get Clipboard" style=width:120px onclick=showDeskClipGet()>';
-            x += '<input id=dlgClipSet type=button value="Set Clipboard" style=width:120px onclick=showDeskClipSet()>';
+            if ((features2 & 0x0800) == 0) x += '<input id=dlgClipGet type=button value="Get Clipboard" style=width:120px onclick=showDeskClipGet()>';
+            if ((features2 & 0x1000) == 0) x += '<input id=dlgClipSet type=button value="Set Clipboard" style=width:120px onclick=showDeskClipSet()>';
             x += '<div id=dlgClipStatus style="display:inline-block;margin-left:8px" ></div>';
             x += '<textarea id=d2clipText style="width:100%;height:184px;resize:none" maxlength=65535></textarea>';
             x += '<input type=button value="Close" style=width:80px;float:right onclick=dialogclose(0)><div style=height:26px;margin-top:3px><span id=linuxClipWarn style=display:none>' + "Remote clipboard is valid for 60 seconds." + '</span>&nbsp;</div><div></div>';
