@@ -2468,7 +2468,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     function handleRootRequestEx(req, res, domain, direct) {
-        var nologout = false, user = null, features = 0, features2 = 0;
+        var nologout = false, user = null;
         res.set({ 'Cache-Control': 'no-store' });
 
         // Check if we have an incomplete domain name in the path
@@ -2640,61 +2640,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var logoutcontrols = {};
                 if (obj.args.nousers != true) { logoutcontrols.name = user.name; }
 
-                // Give the web page a list of supported server features
-                features = 0;
-                features2 = 0;
-                if (obj.args.wanonly == true) { features += 0x00000001; } // WAN-only mode
-                if (obj.args.lanonly == true) { features += 0x00000002; } // LAN-only mode
-                if (obj.args.nousers == true) { features += 0x00000004; } // Single user mode
-                if (domain.userQuota == -1) { features += 0x00000008; } // No server files mode
-                if (obj.args.mpstlsoffload) { features += 0x00000010; } // No mutual-auth CIRA
-                if ((parent.config.settings.allowframing != null) || (domain.allowframing != null)) { features += 0x00000020; } // Allow site within iframe
-                if ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true)) { features += 0x00000040; } // Email invites
-                if (obj.args.webrtc == true) { features += 0x00000080; } // Enable WebRTC (Default false for now)
-                // 0x00000100 --> This feature flag is free for future use.
-                if (obj.args.allowhighqualitydesktop !== false) { features += 0x00000200; } // Enable AllowHighQualityDesktop (Default true)
-                if ((obj.args.lanonly == true) || (obj.args.mpsport == 0)) { features += 0x00000400; } // No CIRA
-                if ((obj.parent.serverSelfWriteAllowed == true) && (dbGetFunc.user != null) && (dbGetFunc.user.siteadmin == 0xFFFFFFFF)) { features += 0x00000800; } // Server can self-write (Allows self-update)
-                if ((parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true) && (dbGetFunc.user._id.split('/')[2][0] != '~')) { features += 0x00001000; } // 2FA login supported
-                if (domain.agentnoproxy === true) { features += 0x00002000; } // Indicates that agents should be installed without using a HTTP proxy
-                if ((parent.config.settings.no2factorauth !== true) && domain.yubikey && domain.yubikey.id && domain.yubikey.secret && (dbGetFunc.user._id.split('/')[2][0] != '~')) { features += 0x00004000; } // Indicates Yubikey support
-                if (domain.geolocation == true) { features += 0x00008000; } // Enable geo-location features
-                if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { features += 0x00010000; } // Enable password hints
-                if (parent.config.settings.no2factorauth !== true) { features += 0x00020000; } // Enable WebAuthn/FIDO2 support
-                if ((obj.args.nousers != true) && (domain.passwordrequirements != null) && (domain.passwordrequirements.force2factor === true) && (dbGetFunc.user._id.split('/')[2][0] != '~')) {
-                    // Check if we can skip 2nd factor auth because of the source IP address
-                    var skip2factor = false;
-                    if ((dbGetFunc.req != null) && (dbGetFunc.req.clientIp != null) && (domain.passwordrequirements != null) && (domain.passwordrequirements.skip2factor != null)) {
-                        for (var i in domain.passwordrequirements.skip2factor) {
-                            if (require('ipcheck').match(dbGetFunc.req.clientIp, domain.passwordrequirements.skip2factor[i]) === true) { skip2factor = true; }
-                        }
-                    }
-                    if (skip2factor == false) { features += 0x00040000; } // Force 2-factor auth
-                }
-                if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { features += 0x00080000; } // LDAP or SSPI in use, warn that users must login first before adding a user to a group.
-                if (domain.amtacmactivation) { features += 0x00100000; } // Intel AMT ACM activation/upgrade is possible
-                if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
-                if (parent.mqttbroker != null) { features += 0x00400000; } // This server supports MQTT channels
-                if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null)) { features += 0x00800000; } // using email for 2FA is allowed
-                if (domain.agentinvitecodes == true) { features += 0x01000000; } // Support for agent invite codes
-                if (parent.smsserver != null) { features += 0x02000000; } // SMS messaging is supported
-                if ((parent.smsserver != null) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false))) { features += 0x04000000; } // SMS 2FA is allowed
-                if (domain.sessionrecording != null) { features += 0x08000000; } // Server recordings enabled
-                if (domain.urlswitching === false) { features += 0x10000000; } // Disables the URL switching feature
-                if (domain.novnc === false) { features += 0x20000000; } // Disables noVNC
-                if (domain.mstsc !== true) { features += 0x40000000; } // Disables MSTSC.js
-                if (obj.isTrustedCert(domain) == false) { features += 0x80000000; } // Indicate we are not using a trusted certificate
-                if (obj.parent.amtManager != null) { features2 += 0x00000001; } // Indicates that the Intel AMT manager is active
-                if (obj.parent.firebase != null) { features2 += 0x00000002; } // Indicates the server supports Firebase push messaging
-                if ((obj.parent.firebase != null) && (obj.parent.firebase.pushOnly != true)) { features2 += 0x00000004; } // Indicates the server supports Firebase two-way push messaging
-                if (obj.parent.webpush != null) { features2 += 0x00000008; } // Indicates web push is enabled
-                if (((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true))) { features2 += 0x00000010; } // No agent update
-                if (parent.amtProvisioningServer != null) { features2 += 0x00000020; } // Intel AMT LAN provisioning server
-                if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.push2factor != false)) && (obj.parent.firebase != null)) { features2 += 0x00000040; } // Indicates device push notification 2FA is enabled
-                if ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.logintokens != false)) { features2 += 0x00000080; } // Indicates login tokens are allowed
-                if (req.session.loginToken != null) { features2 += 0x00000100; } // LoginToken mode, no account changes.
-                if (domain.ssh == true) { features2 += 0x00000200; } // SSH is enabled
-                if (domain.localsessionrecording === false) { features2 += 0x00000400; } // Disable local recording feature
+                // Give the web page a list of supported server features for this domain and user
+                const allFeatures = obj.getDomainUserFeatures(domain, dbGetFunc.user, dbGetFunc.req);
 
                 // Create a authentication cookie
                 const authCookie = obj.parent.encodeCookie({ userid: dbGetFunc.user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
@@ -2759,8 +2706,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     serverRedirPort: args.redirport,
                     serverPublicPort: httpsPort,
                     serverfeatures: serverFeatures,
-                    features: features,
-                    features2: features2,
+                    features: allFeatures.features,
+                    features2: allFeatures.features2,
                     sessiontime: (args.sessiontime) ? args.sessiontime : 60,
                     mpspass: args.mpspass,
                     passRequirements: passRequirements,
@@ -2811,6 +2758,67 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
             handleRootRequestLogin(req, res, domain, '', passRequirements);
         }
+    }
+
+    // Return a list of server supported features for a given domain and user
+    obj.getDomainUserFeatures = function(domain, user, req) {
+        var features = 0;
+        var features2 = 0;
+        if (obj.args.wanonly == true) { features += 0x00000001; } // WAN-only mode
+        if (obj.args.lanonly == true) { features += 0x00000002; } // LAN-only mode
+        if (obj.args.nousers == true) { features += 0x00000004; } // Single user mode
+        if (domain.userQuota == -1) { features += 0x00000008; } // No server files mode
+        if (obj.args.mpstlsoffload) { features += 0x00000010; } // No mutual-auth CIRA
+        if ((parent.config.settings.allowframing != null) || (domain.allowframing != null)) { features += 0x00000020; } // Allow site within iframe
+        if ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true)) { features += 0x00000040; } // Email invites
+        if (obj.args.webrtc == true) { features += 0x00000080; } // Enable WebRTC (Default false for now)
+        // 0x00000100 --> This feature flag is free for future use.
+        if (obj.args.allowhighqualitydesktop !== false) { features += 0x00000200; } // Enable AllowHighQualityDesktop (Default true)
+        if ((obj.args.lanonly == true) || (obj.args.mpsport == 0)) { features += 0x00000400; } // No CIRA
+        if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 0x00000800; } // Server can self-write (Allows self-update)
+        if ((parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true) && (user._id.split('/')[2][0] != '~')) { features += 0x00001000; } // 2FA login supported
+        if (domain.agentnoproxy === true) { features += 0x00002000; } // Indicates that agents should be installed without using a HTTP proxy
+        if ((parent.config.settings.no2factorauth !== true) && domain.yubikey && domain.yubikey.id && domain.yubikey.secret && (user._id.split('/')[2][0] != '~')) { features += 0x00004000; } // Indicates Yubikey support
+        if (domain.geolocation == true) { features += 0x00008000; } // Enable geo-location features
+        if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { features += 0x00010000; } // Enable password hints
+        if (parent.config.settings.no2factorauth !== true) { features += 0x00020000; } // Enable WebAuthn/FIDO2 support
+        if ((obj.args.nousers != true) && (domain.passwordrequirements != null) && (domain.passwordrequirements.force2factor === true) && (user._id.split('/')[2][0] != '~')) {
+            // Check if we can skip 2nd factor auth because of the source IP address
+            var skip2factor = false;
+            if ((req != null) && (req.clientIp != null) && (domain.passwordrequirements != null) && (domain.passwordrequirements.skip2factor != null)) {
+                for (var i in domain.passwordrequirements.skip2factor) {
+                    if (require('ipcheck').match(req.clientIp, domain.passwordrequirements.skip2factor[i]) === true) { skip2factor = true; }
+                }
+            }
+            if (skip2factor == false) { features += 0x00040000; } // Force 2-factor auth
+        }
+        if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { features += 0x00080000; } // LDAP or SSPI in use, warn that users must login first before adding a user to a group.
+        if (domain.amtacmactivation) { features += 0x00100000; } // Intel AMT ACM activation/upgrade is possible
+        if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
+        if (parent.mqttbroker != null) { features += 0x00400000; } // This server supports MQTT channels
+        if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null)) { features += 0x00800000; } // using email for 2FA is allowed
+        if (domain.agentinvitecodes == true) { features += 0x01000000; } // Support for agent invite codes
+        if (parent.smsserver != null) { features += 0x02000000; } // SMS messaging is supported
+        if ((parent.smsserver != null) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false))) { features += 0x04000000; } // SMS 2FA is allowed
+        if (domain.sessionrecording != null) { features += 0x08000000; } // Server recordings enabled
+        if (domain.urlswitching === false) { features += 0x10000000; } // Disables the URL switching feature
+        if (domain.novnc === false) { features += 0x20000000; } // Disables noVNC
+        if (domain.mstsc !== true) { features += 0x40000000; } // Disables MSTSC.js
+        if (obj.isTrustedCert(domain) == false) { features += 0x80000000; } // Indicate we are not using a trusted certificate
+        if (obj.parent.amtManager != null) { features2 += 0x00000001; } // Indicates that the Intel AMT manager is active
+        if (obj.parent.firebase != null) { features2 += 0x00000002; } // Indicates the server supports Firebase push messaging
+        if ((obj.parent.firebase != null) && (obj.parent.firebase.pushOnly != true)) { features2 += 0x00000004; } // Indicates the server supports Firebase two-way push messaging
+        if (obj.parent.webpush != null) { features2 += 0x00000008; } // Indicates web push is enabled
+        if (((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true))) { features2 += 0x00000010; } // No agent update
+        if (parent.amtProvisioningServer != null) { features2 += 0x00000020; } // Intel AMT LAN provisioning server
+        if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.push2factor != false)) && (obj.parent.firebase != null)) { features2 += 0x00000040; } // Indicates device push notification 2FA is enabled
+        if ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.logintokens != false)) { features2 += 0x00000080; } // Indicates login tokens are allowed
+        if (req.session.loginToken != null) { features2 += 0x00000100; } // LoginToken mode, no account changes.
+        if (domain.ssh == true) { features2 += 0x00000200; } // SSH is enabled
+        if (domain.localsessionrecording === false) { features2 += 0x00000400; } // Disable local recording feature
+        if (domain.clipboardget == false) { features2 += 0x00000800; } // Disable clipboard get
+        if (domain.clipboardset == false) { features2 += 0x00001000; } // Disable clipboard set
+        return { features: features, features2: features2 };
     }
 
     function handleRootRequestLogin(req, res, domain, hardwareKeyChallenge, passRequirements) {
