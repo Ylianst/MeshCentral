@@ -1177,6 +1177,20 @@
     },
     {
       "en": ".json"
+      "cs": ".json",
+      "de": ".json",
+      "es": ".json",
+      "fi": ".json",
+      "fr": ".json",
+      "it": ".json",
+      "ja": ".json",
+      "ko": ".json",
+      "nl": ".json",
+      "pt": ".json",
+      "ru": ".json",
+      "sv": ".json",
+      "hi": ".json",
+      "tr": ".json",
     },
     {
       "cs": "0",
@@ -1232,6 +1246,22 @@
     },
     {
       "en": "0.9.0"
+      "cs": "0.9.0",
+      "de": "0.9.0",
+      "es": "0.9.0",
+      "fi": "0.9.0",
+      "fr": "0.9.0",
+      "hi": "0.9.0",
+      "it": "0.9.0",
+      "ja": "0.9.0",
+      "ko": "0.9.0",
+      "nl": "0.9.0",
+      "pt": "0.9.0",
+      "ru": "0.9.0",
+      "sv": "0.9.0",
+      "tr": "0.9.0",
+      "zh-chs": "0.9.0",
+      "zh-cht": "0.9.0",
     },
     {
       "cs": "00:00:00",
@@ -1725,6 +1755,7 @@
     },
     {
       "en": "10 frames/sec",
+      "nl": "10 frames/sec",
       "xloc": [
         "player.handlebars->3->45"
       ]
@@ -1771,6 +1802,22 @@
     },
     {
       "en": "10%",
+      "cs": "10%",
+      "de": "10%",
+      "es": "10%",
+      "fi": "10%",
+      "fr": "10%",
+      "hi": "10%",
+      "it": "10%",
+      "ja": "10％",
+      "ko": "10%",
+      "nl": "10%",
+      "pt": "10%",
+      "ru": "10%",
+      "sv": "10%",
+      "tr": "10%",
+      "zh-chs": "10％",
+      "zh-cht": "10％",
       "xloc": [
         "player.handlebars->3->53"
       ]
@@ -2089,12 +2136,29 @@
     },
     {
       "en": "20 frames/sec",
+      "nl": "20 frames/sec",
       "xloc": [
         "player.handlebars->3->46"
       ]
     },
     {
       "en": "20%",
+      "cs": "20%",
+      "de": "20%",
+      "es": "20%",
+      "fi": "20%",
+      "fr": "20%",
+      "hi": "20%",
+      "it": "20%",
+      "ja": "20％",
+      "ko": "20%",
+      "nl": "20%",
+      "pt": "20%",
+      "ru": "20%",
+      "sv": "20%",
+      "tr": "20%",
+      "zh-chs": "20％",
+      "zh-cht": "20％",
       "xloc": [
         "player.handlebars->3->52"
       ]
@@ -2485,6 +2549,22 @@
     },
     {
       "en": "40%",
+      "cs": "40%",
+      "de": "40%",
+      "es": "40%",
+      "fi": "40%",
+      "fr": "40%",
+      "hi": "40%",
+      "it": "40%",
+      "ja": "40％",
+      "ko": "40%",
+      "nl": "40%",
+      "pt": "40%",
+      "ru": "40%",
+      "sv": "40%",
+      "tr": "40%",
+      "zh-chs": "40％",
+      "zh-cht": "40％",
       "xloc": [
         "player.handlebars->3->51"
       ]
@@ -2738,6 +2818,22 @@
     },
     {
       "en": "60%",
+      "cs": "60%",
+      "de": "60%",
+      "es": "60%",
+      "fi": "60%",
+      "fr": "60%",
+      "hi": "60%",
+      "it": "60%",
+      "ja": "60％",
+      "ko": "60%",
+      "nl": "60%",
+      "pt": "60%",
+      "ru": "60%",
+      "sv": "60%",
+      "tr": "60%",
+      "zh-chs": "60％",
+      "zh-cht": "60％",
       "xloc": [
         "player.handlebars->3->50"
       ]
@@ -2948,6 +3044,22 @@
     },
     {
       "en": "80%",
+      "cs": "80%",
+      "de": "80%",
+      "es": "80%",
+      "fi": "80%",
+      "fr": "80%",
+      "hi": "80%",
+      "it": "80%",
+      "ja": "80％",
+      "ko": "80%",
+      "nl": "80%",
+      "pt": "80%",
+      "ru": "80%",
+      "sv": "80%",
+      "tr": "80%",
+      "zh-chs": "80％",
+      "zh-cht": "80％",
       "xloc": [
         "player.handlebars->3->49"
       ]
@@ -3001,6 +3113,22 @@
     },
     {
       "en": "90%",
+      "cs": "90%",
+      "de": "90%",
+      "es": "90%",
+      "fi": "90%",
+      "fr": "90%",
+      "hi": "90%",
+      "it": "90%",
+      "ja": "90％",
+      "ko": "90%",
+      "nl": "90%",
+      "pt": "90%",
+      "ru": "90%",
+      "sv": "90%",
+      "tr": "90%",
+      "zh-chs": "90％",
+      "zh-cht": "90％",
       "xloc": [
         "player.handlebars->3->48"
       ]
@@ -12182,6 +12310,7 @@
     },
     {
       "en": "Convert to WebM",
+      "nl": "Converteer naar WebM",
       "xloc": [
         "player.handlebars->3->54",
         "player.handlebars->p11->deskarea0->deskarea1->1"
@@ -16867,6 +16996,7 @@
     },
     {
       "en": "Download device list",
+      "nl": "Apparatenlijst downloaden",
       "fr": "Télécharger la liste des appareils",
       "xloc": [
         "default.handlebars->35->1702"
@@ -23587,6 +23717,7 @@
     },
     {
       "en": "Import Intel&reg; AMT Devices",
+      "en": "Importeer Intel&reg; AMT apparaten",
       "fr": "Importer la liste des appareils Intel&reg; AMT",
       "xloc": [
         "default.handlebars->35->1709",
@@ -23596,6 +23727,7 @@
     },
     {
       "en": "Import a list of local Intel&reg; AMT devices in MeshCommander JSON format.",
+      "nl": "Importeer een lijst van de lokale Intel&reg; AMT apparaten in MeshCommander JSON format.",
       "fr": "Importer une liste locale d'appareils Intel&reg; AMT au format MeshCommander (JSON).",
       "xloc": [
         "default.handlebars->35->1708"
@@ -23603,6 +23735,7 @@
     },
     {
       "en": "Import device list",
+      "nl": "Apparaatlijst Importeren",
       "fr": "Importer la liste des appareils",
       "xloc": [
         "default.handlebars->35->1703"
@@ -24277,6 +24410,7 @@
     },
     {
       "en": "Intel&reg; AMT JSON",
+      "nl": "Intel&reg; AMT JSON",
       "xloc": [
         "default.handlebars->35->611"
       ]
@@ -25148,6 +25282,7 @@
     },
     {
       "en": "Internet Explorer",
+      "nl": "Internet Explorer",
       "xloc": [
         "player.handlebars->3->10"
       ]
@@ -29069,12 +29204,14 @@
     },
     {
       "en": "MS Edge (EdgeHtml)",
+      "nl": "MS Edge (EdgeHtml)",
       "xloc": [
         "player.handlebars->3->2"
       ]
     },
     {
       "en": "MS Edge Chromium",
+      "nl": "MS Edge Chromium",
       "xloc": [
         "player.handlebars->3->4"
       ]
@@ -33490,7 +33627,7 @@
     },
     {
       "en": "Non Paged Memory",
-      "n": "Niet gewisseld geheugen",
+      "nl": "Niet gewisseld geheugen",
       "sv": "Ej sidminne",
       "xloc": [
         "default.handlebars->35->104"
@@ -33558,6 +33695,7 @@
     },
     {
       "en": "None ",
+      "nn": "Geen ",
       "fr": "Aucun",
       "xloc": [
         "default.handlebars->35->1705"
@@ -49751,6 +49889,7 @@
     },
     {
       "en": "Unable to import any device.",
+      "nl": "Kan geen enkel apparaat importeren.",
       "fr": "Impossible d'importer des appareils.",
       "xloc": [
         "default.handlebars->35->1713"
@@ -54900,6 +55039,21 @@
     },
     {
       "en": "chrome",
+      "cs": "Chrome",
+      "de": "Chrome",
+      "es": "Chrome",
+      "fi": "Chrome",
+      "fr": "Chrome",
+      "it": "Chrome",
+      "ja": "Chrome",
+      "ko": "Chrome",
+      "nl": "Chrome",
+      "pt": "Chrome",
+      "ru": "Chrome",
+      "sv": "Chrome",
+      "tr": "Chrome",
+      "zh-chs": "Chrome",
+      "zh-cht": "Chrome",
       "xloc": [
         "player.handlebars->3->7",
         "player.handlebars->3->8"
@@ -54974,6 +55128,7 @@
     },
     {
       "en": "computerlist.json",
+      "nl": "computerlist.json",
       "xloc": [
         "default.handlebars->35->612",
         "default.handlebars->35->617"
@@ -55128,12 +55283,14 @@
     },
     {
       "en": "edg",
+      "nl": "edg",
       "xloc": [
         "player.handlebars->3->3"
       ]
     },
     {
       "en": "edge",
+      "nl": "edge",
       "xloc": [
         "player.handlebars->3->1"
       ]
@@ -55227,6 +55384,7 @@
     },
     {
       "en": "firefox",
+      "nl": "firefox",
       "xloc": [
         "player.handlebars->3->11",
         "player.handlebars->3->12"
@@ -55469,7 +55627,8 @@
       ]
     },
     {
-      "en": "id, naam, rname, host, icoon, ip, osdesc, status, groepsnaam, conn, pwr, av, update, firewall, avdetails",
+      "en": "id, name, rname, host, icon, ip, osdesc, status, groupname, conn, pwr, av, update, firewall, avdetails",
+      "nl": "id, naam, rname, host, icoon, ip, osdesc, status, groepsnaam, conn, pwr, av, update, firewall, avdetails",
       "sv": "id, namn, rname, värd, ikon, ip, osdesc, tillstånd, gruppnamn, conn, pwr, av, uppdatering, brandvägg, avdetails"
     },
     {
@@ -55520,6 +55679,7 @@
     },
     {
       "en": "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr, av, update, firewall, avdetails",
+      "nl": "id, naam, rnaam, host, ikoon, ip, osdesc, status, groepsnaam, conn, pwr, av, update, firewall, avdetails",
       "sv": "id, namn, rname, värd, ikon, ip, osdesc, tillstånd, gruppnamn, conn, pwr, av, uppdatering, brandvägg, avdetails",
       "xloc": [
         "default.handlebars->35->615"
@@ -56003,12 +56163,14 @@
     },
     {
       "en": "opera",
+      "nl": "opera",
       "xloc": [
         "player.handlebars->3->6"
       ]
     },
     {
       "en": "opr",
+      "nl": "opr",
       "xloc": [
         "player.handlebars->3->5"
       ]
@@ -56037,12 +56199,14 @@
     },
     {
       "en": "other",
+      "nl": "Overig",
       "xloc": [
         "player.handlebars->3->15"
       ]
     },
     {
       "en": "safari",
+      "nl": "safari",
       "xloc": [
         "player.handlebars->3->13",
         "player.handlebars->3->14"
@@ -56242,6 +56406,7 @@
     },
     {
       "en": "trident",
+      "nl": "trident",
       "xloc": [
         "player.handlebars->3->9"
       ]
