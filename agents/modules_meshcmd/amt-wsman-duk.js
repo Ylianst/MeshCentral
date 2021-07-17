@@ -80,11 +80,12 @@ function CreateWsmanComm(/*host, port, user, pass, tls, extra*/) {
             }
             obj.digest.http = require('http');
         }
-        var request = { protocol: (obj.tls == 1 ? 'https:' : 'http:'), method: 'POST', host: obj.host, path: '/wsman', port: obj.port, rejectUnauthorized: false, checkServerIdentity: function (cert) { console.log('checkServerIdentity', JSON.stringify(cert)); } };
+        var request = { protocol: (obj.tls == 1 ? 'https:' : 'http:'), method: 'POST', host: obj.host, path: '/wsman', port: obj.port, rejectUnauthorized: false, checkServerIdentity: function (cert) { /*console.log('checkServerIdentity', JSON.stringify(cert));*/ } };
         var req = obj.digest.request(request);
         //console.log('Request ' + (obj.RequestCount++));
         req.on('error', function (e) { obj.gotNextMessagesError({ status: 600 }, 'error', null, [postdata, callback, tag]); });
         req.on('response', function (response) {
+            //console.log(JSON.stringify(response, null, 2));
             if (globalDebugFlags & 1) { console.log('Response: ' + response.statusCode); }
             if (response.statusCode != 200) {
                 if (globalDebugFlags & 1) { console.log('ERR:' + JSON.stringify(response)); }
