@@ -202,13 +202,13 @@ function run(argv) {
         console.log('  AmtRPE            - Intel AMT Remote Platform Erase.');
         console.log('\r\nHelp on a specific action using:\r\n');
         console.log('  meshcmd help [action]');
-        exit(1); return;
+        exit(0); return;
     }
     if (settings.action == 'help') {
         if (argv.length <= 2) {
             actions.shift();
             console.log('Help usage:\r\n\r\n  MeshCmd help [action]\r\n\r\nValid actions are: ' + actions.join(', ') + '.');
-            exit(1); return;
+            exit(0); return;
         }
         var action = argv[2].toLowerCase();
         if (action == 'route') {
@@ -231,6 +231,8 @@ function run(argv) {
             console.log('  --json                 Display all Intel AMT state in JSON format.');
         } else if (action == 'amthashes') {
             console.log('Amthashes will display all trusted activations hashes for Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. These certificates hashes are used by Intel AMT when performing activation into ACM mode. Example usage:\r\n\r\n  meshcmd amthashes');
+            console.log('\r\nPossible arguments:\r\n');
+            console.log('  --json                 Display all Intel AMT hashes in JSON format.');
         } else if ((action == 'microlms') || (action == 'lms') || (action == 'amtlms')) {
             console.log('Starts MicroLMS on this computer, allowing local access to Intel AMT on TCP ports 16992 and 16993 when applicable. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. These certificates hashes are used by Intel AMT when performing activation into ACM mode. Example usage:\r\n\r\n  meshcmd microlms');
             console.log('\r\nPossible arguments:\r\n');
@@ -413,7 +415,7 @@ function run(argv) {
             actions.shift();
             console.log('Invalid action, usage:\r\n\r\n  meshcmd help [action]\r\n\r\nValid actions are: ' + actions.join(', ') + '.');
         }
-        exit(1); return;
+        exit(0); return;
     }
     settings.action = settings.action.toLowerCase();
     debug(1, "Settings: " + JSON.stringify(settings));
@@ -438,7 +440,7 @@ function run(argv) {
             else if (state == 49) { console.log("Certificate not ready."); }
             else if (state == 0) { console.log("Success."); }
             else { console.log("Unknown status: " + state); }
-            exit(1);
+            exit(state);
         });
     } else if (settings.action == 'amtstopconfig') {
         // Stop Intel AMT configuration
@@ -450,16 +452,16 @@ function run(argv) {
             else if (state == 1) { console.log("Intel AMT internal error."); }
             else if (state == 0) { console.log("Success."); }
             else { console.log("Unknown status: " + state); }
-            exit(1);
+            exit(state);
         });
     } else if (settings.action == 'smbios') {
         // Display SM BIOS tables in raw form
         SMBiosTables = require('smbios');
         SMBiosTables.get(function (data) {
             var r = SMBiosTables.parse(data);
-            var out = objToString(r, 0, '\r\n');
+            var out = JSON.stringify(r, null, 2);
             if (settings.output == null) { console.log(out); } else { var file = fs.openSync(settings.output, 'w'); fs.writeSync(file, Buffer.from(out, 'utf8')); fs.closeSync(file); }
-            exit(1);
+            exit(0);
         });
     } else if (settings.action == 'rawsmbios') {
         // Display SM BIOS tables in raw form
@@ -468,7 +470,7 @@ function run(argv) {
             var out = '';
             for (var i in data) { var header = false; for (var j in data[i]) { if (data[i][j].length > 0) { if (header == false) { out += ('Table type #' + i + ((SMBiosTables.smTableTypes[i] == null) ? '' : (', ' + SMBiosTables.smTableTypes[i]))) + '\r\n'; header = true; } out += ('  ' + data[i][j].toString('hex')) + '\r\n'; } } }
             if (settings.output == null) { console.log(out); } else { var file = fs.openSync(settings.output, 'w'); fs.writeSync(file, Buffer.from(out, 'utf8')); fs.closeSync(file); }
-            exit(1);
+            exit(0);
         });
     } else if (settings.action == 'route') {
         // MeshCentral Router, port map local TCP port to a remote computer
@@ -503,11 +505,12 @@ function run(argv) {
                     console.log(val.Versions[version].Description + " = " + val.Versions[version].Version + extras);
                 }
             }
-            exit(1); return;
+            exit(0);
+            return;
         });
     } else if (settings.action == 'amthashes') {
         // Display Intel AMT list of trusted hashes
-        var amtMeiModule, amtMei;
+        var amtMeiModule, amtMei, amtHashes = [];
         try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
         amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
         amtMei.getHashHandles(function (handles) {
@@ -517,8 +520,9 @@ function run(argv) {
                     var certState = [];
                     if (result.isDefault) { certState.push('Default'); }
                     if (result.isActive) { certState.push('Active'); } else { certState.push('Disabled'); }
-                    console.log(result.name + ', (' + certState.join(', ') + ')\r\n  ' + result.hashAlgorithmStr + ': ' + result.certificateHash);
-                    if (--exitOnCount == 0) { exit(1); }
+                    amtHashes.push(result);
+                    if (!args.json) { console.log(result.name + ', (' + certState.join(', ') + ')\r\n  ' + result.hashAlgorithmStr + ': ' + result.certificateHash); }
+                    if (--exitOnCount == 0) { if (args.json) { console.log(JSON.stringify(amtHashes, null, 2)); } exit(0); }
                 });
             }
         });
@@ -595,10 +599,11 @@ function run(argv) {
                                 }
                             }
                             console.log(str + '.');
+                            exit(0);
                         } else {
                             console.log('Intel(R) AMT not supported.');
+                            exit(1);
                         }
-                        exit(1);
                     });
                 } else {
                     console.log("Unable to perform MEI operations, try running as " + ((process.platform == 'win32')?"administrator.":"root."));
@@ -608,7 +613,7 @@ function run(argv) {
         } catch (ex) { console.log("Unable to perform MEI operations, try running as " + ((process.platform == 'win32')?"administrator.":"root.")); exit(1); return; }
     } else if (settings.action == 'amtinfojson') {
         // Display Intel AMT version and activation state
-        getMeiState(15, function (state) { console.log(JSON.stringify(state, null, 2)); exit(1); }); // Flags: 1 = Versions, 2 = OsAdmin, 4 = Hashes, 8 = Network
+        getMeiState(15, function (state) { console.log(JSON.stringify(state, null, 2)); exit(0); }); // Flags: 1 = Versions, 2 = OsAdmin, 4 = Hashes, 8 = Network
     } else if (settings.action == 'amtsavestate') {
         // Save the entire state of Intel AMT info a JSON file
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
@@ -697,7 +702,7 @@ function run(argv) {
                 r = 'No Intel AMT found.';
             }
             console.log(r);
-            exit(1);
+            exit(0);
         });
     } else if (settings.action == 'amtauditlog') { // Read the Intel AMT audit log
         if (settings.hostname != null) {
@@ -933,7 +938,7 @@ function readAmtEventLogEx2(stack, messages) {
                     var file = fs.openSync(settings.output, 'w');
                     fs.writeSync(file, Buffer.from(out));
                     fs.closeSync(file);
-                    exit(1);
+                    exit(0);
                 }
                 else if (settings.uuidoutput) {
                     var destpath = null; //Dest path where messagelog file will be saved
@@ -948,9 +953,11 @@ function readAmtEventLogEx2(stack, messages) {
                             var file = fs.openSync(eventlogsfile, 'w');
                             fs.writeSync(file, Buffer.from(out));
                             fs.closeSync(file);
+                            exit(0);
                         } else {
                             console.log('Intel AMT is not available or not activated, status = ' + status + '.');
-                        } exit(1);
+                            exit(1);
+                        }
                     });
                 }
                 else {
@@ -1012,7 +1019,7 @@ function readAmtAuditLogEx2(stack, response, status) {
                     var file = fs.openSync(settings.output, 'w');
                     fs.writeSync(file, Buffer.from(out));
                     fs.closeSync(file);
-                    exit(1);
+                    exit(0);
                 }
                 else if (settings.uuidoutput) {
                     var destpath = null; //Dest path where auditlog file will be saved
@@ -1027,9 +1034,11 @@ function readAmtAuditLogEx2(stack, response, status) {
                             var file = fs.openSync(auditlogsfile, 'w');
                             fs.writeSync(file, Buffer.from(out));
                             fs.closeSync(file);
+                            exit(0);
                         } else {
                             console.log('Intel AMT is not available or not activated, status = ' + status + '.');
-                        } exit(1);
+                            exit(1);
+                        }
                     });
                 }
                 else {
