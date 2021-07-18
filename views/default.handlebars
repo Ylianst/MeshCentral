@@ -3567,7 +3567,7 @@
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var meshrights = GetNodeRights(currentNode);
-                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
+                    var inputAllowed = ((features2 & 0x2000) == 0) && ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
                     if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
@@ -3626,7 +3626,7 @@
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var meshrights = GetNodeRights(currentNode);
-                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
+                    var inputAllowed = ((features2 & 0x2000) == 0) && ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
                     if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
@@ -3660,7 +3660,7 @@
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var meshrights = GetNodeRights(currentNode);
-                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
+                    var inputAllowed = ((features2 & 0x2000) == 0) && ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
                     if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
@@ -7640,6 +7640,7 @@
                     if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.onMetadataChange = function(metadata) { updateMetadata(desktop, 'deskmetadata'); }
+                    if ((features2 & 0x2000) != 0) desktop.m.stopInput = true;
                     if (desktop && desktop.m.mouseCursorActive) { desktop.m.mouseCursorActive(true); }
                     QV('DeskInputLockedButton', desktop.m.RemoteInputLock === 1);
                     QV('DeskInputUnLockedButton', desktop.m.RemoteInputLock === 0);
@@ -7700,7 +7701,7 @@
             QV('d7meshkvm', (webRtcDesktop) || ((currentNode.agent != null) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1))));
 
             // Enable buttons
-            var inputAllowed = ((currentNode.agent == null) || (currentNode.agent.id != 14)) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
+            var inputAllowed = ((features2 & 0x2000) == 0) && ((currentNode.agent == null) || (currentNode.agent.id != 14)) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
             var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
             QE('connectbutton1', online);
             var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
@@ -7859,6 +7860,7 @@
                     if (tsid != null) { desktop.options.tsid = tsid; }
                     if (consent != null) { desktop.options.consent = consent; }
                     desktop.onStateChanged = onDesktopStateChange;
+                    if ((features2 & 0x2000) != 0) desktop.m.stopInput = true;
                     desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
                     desktop.onConsoleMessageChange = function () {
                         if (desktop.consoleMessage) {
