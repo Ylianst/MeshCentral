@@ -905,6 +905,9 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
     obj.req = req; // Used in multi-server.js
     obj.viewOnly = ((cookie != null) && (cookie.vo == 1)); // set view only mode
 
+    // If the domain has remote desktop viewonly set, force everyone to be in viewonly mode.
+    if ((typeof domain.desktop == 'object') && (domain.desktop.viewonly == true)) { obj.viewOnly = true; }
+
     // Setup traffic accounting
     if (parent.trafficStats.desktopMultiplex == null) { parent.trafficStats.desktopMultiplex = { connections: 1, sessions: 0, in: 0, out: 0 }; } else { parent.trafficStats.desktopMultiplex.connections++; }
     ws._socket.bytesReadEx = 0;

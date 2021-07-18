@@ -2782,7 +2782,7 @@
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var meshrights = GetMeshRights(currentNode.meshid);
-                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
+                    var inputAllowed = ((features2 & 0x2000) == 0) && ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
                     if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
@@ -2816,7 +2816,7 @@
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var meshrights = GetMeshRights(currentNode.meshid);
-                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
+                    var inputAllowed = ((features2 & 0x2000) == 0) && ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
                     if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
@@ -2851,7 +2851,7 @@
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var meshrights = GetMeshRights(currentNode.meshid);
-                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
+                    var inputAllowed = ((features2 & 0x2000) == 0) && ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
                     if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
@@ -3991,6 +3991,7 @@
                     if (tsid != null) { desktop.options.tsid = tsid; }
                     if (consent != null) { desktop.options.consent = consent; }
                     desktop.onStateChanged = onDesktopStateChange;
+                    if ((features2 & 0x2000) != 0) desktop.m.stopInput = true;
                     desktop.onConsoleMessageChange = function () {
                         if (desktop.consoleMessage) {
                             Q('p11DeskConsoleMsg').innerHTML += formatAgentConsoleMessage(desktop.consoleMessage, desktop.consoleMessageId, desktop.consoleMessageArgs);
@@ -4351,7 +4352,7 @@
             QV('termarea4', !fullscreen);
 
             var rights = GetNodeRights(currentNode);
-            var inputAllowed = (currentNode.agent.id != 14) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
+            var inputAllowed = ((features2 & 0x2000) == 0) && (currentNode.agent.id != 14) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
 
             // Show full screen buttons if needed
             QV('deskkeybutton1', fullscreen);
