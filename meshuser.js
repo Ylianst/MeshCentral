@@ -247,6 +247,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (typeof node.consent == 'number') { command.consent |= node.consent; } // Add node user consent
                         if (typeof user.consent == 'number') { command.consent |= user.consent; } // Add user consent
 
+                        // If desktop is viewonly, add this here.
+                        if ((typeof domain.desktop == 'object') && (domain.desktop.viewonly == true)) { command.desktopviewonly = true; }
+
                         // Check if we need to add consent flags because of a user group link
                         if ((user.links != null) && (user.links[mesh._id] == null) && (user.links[node._id] == null)) {
                             // This user does not have a direct link to the device group or device. Find all user groups the would cause the link.

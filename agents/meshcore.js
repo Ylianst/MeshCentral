@@ -36,7 +36,7 @@ var MESHRIGHT_AGENTCONSOLE = 16;
 var MESHRIGHT_SERVERFILES = 32;
 var MESHRIGHT_WAKEDEVICE = 64;
 var MESHRIGHT_SETNOTES = 128;
-var MESHRIGHT_REMOTEVIEW = 256;
+var MESHRIGHT_REMOTEVIEW = 256; // Remote View Only
 var MESHRIGHT_NOTERMINAL = 512;
 var MESHRIGHT_NOFILES = 1024;
 var MESHRIGHT_NOAMT = 2048;
@@ -884,6 +884,7 @@ function handleServerCommand(data) {
                                 tunnel.realname = (data.realname ? data.realname : data.username) + (data.guestname ? (' - ' + data.guestname) : '');
                                 tunnel.guestname = data.guestname;
                                 tunnel.userid = data.userid;
+                                tunnel.desktopviewonly = data.desktopviewonly;
                                 tunnel.remoteaddr = data.remoteaddr;
                                 tunnel.state = 0;
                                 tunnel.url = xurl;
@@ -2151,7 +2152,7 @@ function onTunnelData(data) {
                     this.httprequest.desktop.kvm.users = [this.httprequest.username];
                 }
 
-                if ((this.httprequest.rights == 0xFFFFFFFF) || (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0))) {
+                if ((this.httprequest.desktopviewonly != true) && ((this.httprequest.rights == 0xFFFFFFFF) || (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0)))) {
                     // If we have remote control rights, pipe the KVM input
                     this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text. Pipe the Browser --> KVM input.
                 } else {

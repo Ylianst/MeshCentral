@@ -510,6 +510,17 @@
               }
             }
           },
+          "desktop": {
+            "type": "object",
+            "description": "Values that affect the remote desktop feature",
+            "properties": {
+              "viewonly": {
+                "type": "boolean",
+                "description": "When set to true, the remote desktop feature is view only.",
+                "default": "false"
+              }
+            }
+          },
           "amtManager": {
             "type": "object",
             "additionalProperties": false,
