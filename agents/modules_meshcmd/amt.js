@@ -488,7 +488,7 @@ function AmtStackCreateService(wsmanStack) {
     function _GetMessageLog1(stack, name, responses, status, tag) {
         if (status != 200 || responses.Body["ReturnValue"] != '0') { tag[0](obj, null, tag[2], status); return; }
         var i, j, x, e, AmtMessages = tag[2], t = new Date(), TimeStamp, ra = responses.Body["RecordArray"];
-        if (typeof ra === 'string') { responses.Body["RecordArray"] = [responses.Body["RecordArray"]]; }
+        if (typeof ra === 'string') { ra = [ra]; }
 
         for (i in ra) {
             e = Buffer.from(ra[i], 'base64');
