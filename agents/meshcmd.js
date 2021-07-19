@@ -2600,12 +2600,14 @@ function performAmtPlatformErase1(stack, name, response, status, args) {
         var platfromEraseSupport = response['AMT_BootCapabilities'].response['PlatformErase'];
         if (platfromEraseSupport == null) { console.log("Remote Platfrom Erase (RPE) is not supported on this platform"); process.exit(1); return; }
         var supportedRpeFeatures = [];
-        if (platfromEraseSupport & (1 << 1))  { supportedRpeFeatures.push("Pyrite Revert"); }
-        if (platfromEraseSupport & (1 << 2))  { supportedRpeFeatures.push("Secure Erase All SSDs"); }
-        if (platfromEraseSupport & (1 << 6))  { supportedRpeFeatures.push("TPM Clear"); }
-        if (platfromEraseSupport & (1 << 25)) { supportedRpeFeatures.push("Clear BIOS NVM Variables"); }
-        if (platfromEraseSupport & (1 << 26)) { supportedRpeFeatures.push("BIOS Reload of Golden Configuration"); }
-        if (platfromEraseSupport & (1 << 31)) { supportedRpeFeatures.push("CSME Unconfigure"); }
+        if (platfromEraseSupport == 0) { supportedRpeFeatures.push("None"); } else {
+            if (platfromEraseSupport & (1 << 1)) { supportedRpeFeatures.push("Pyrite Revert (--pyrite)"); }
+            if (platfromEraseSupport & (1 << 2)) { supportedRpeFeatures.push("Secure Erase All SSDs (--ssd)"); }
+            if (platfromEraseSupport & (1 << 6)) { supportedRpeFeatures.push("TPM Clear (--tpm)"); }
+            if (platfromEraseSupport & (1 << 25)) { supportedRpeFeatures.push("Clear BIOS NVM Variables (--nvm)"); }
+            if (platfromEraseSupport & (1 << 26)) { supportedRpeFeatures.push("BIOS Reload of Golden Configuration (--bios)"); }
+            if (platfromEraseSupport & (1 << 31)) { supportedRpeFeatures.push("CSME Unconfigure (--csme)"); }
+        }
         console.log("RPE Supported Features: " + supportedRpeFeatures.join(", "));
 
         // Compute requested operations flags
