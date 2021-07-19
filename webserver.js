@@ -5721,6 +5721,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (obj.parent.config.firebase.relayserver) { parent.debug('email', 'Firebase-relay-handler'); obj.app.ws(url + 'firebaserelay.aspx', handleFirebaseRelayRequest); }
             }
 
+            /*
+            // Testing code only, display a POST and return 200 OK
+            obj.app.post(url + 'post.aspx', function (req, res) {
+                var body = [];
+                req.on('data', function(chunk) {
+                    body.push(chunk);
+                }).on('end', () => {
+                    body = Buffer.concat(body).toString();
+                    console.log(body);
+                    res.sendStatus(200);
+                });
+            });
+            */
+
             // Setup auth strategies using passport if needed
             if (typeof domain.authstrategies == 'object') {
                 const passport = domain.passport = require('passport');

@@ -225,6 +225,10 @@ function run(argv) {
             console.log('AmtInfo action will get the version and activation state of Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Example usage:\r\n\r\n  meshcmd amtinfo');
             console.log('\r\nPossible arguments:\r\n');
             console.log('  --json                 Display all Intel AMT state in JSON format.');
+        } else if (action == 'amtinfojson') {
+            console.log('AmtInfoJson action get Intel AMT information about the computer and display it or send it to a server using HTTP. Example usage:\r\n\r\n  meshcmd amtinfojson --post https://example.com/capture');
+            console.log('\r\nPossible arguments:\r\n');
+            console.log('  --post [url]           Perform an HTTP POST of the data to the given URL.');
         } else if ((action == 'amtversion') || (action == 'amtversions')) {
             console.log('AmtVersions will display all version information about Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Example usage:\r\n\r\n  meshcmd amtversions');
             console.log('\r\nPossible arguments:\r\n');
@@ -613,7 +617,23 @@ function run(argv) {
         } catch (ex) { console.log("Unable to perform MEI operations, try running as " + ((process.platform == 'win32')?"administrator.":"root.")); exit(1); return; }
     } else if (settings.action == 'amtinfojson') {
         // Display Intel AMT version and activation state
-        getMeiState(15, function (state) { console.log(JSON.stringify(state, null, 2)); exit(0); }); // Flags: 1 = Versions, 2 = OsAdmin, 4 = Hashes, 8 = Network
+        getMeiState(15, function (state) { // Flags: 1 = Versions, 2 = OsAdmin, 4 = Hashes, 8 = Network
+            if (typeof args.post == 'string') {
+                console.log("Attempting to send to " + args.post);
+                var http = require('http');
+                var options = http.parseUri(args.post);
+                options.method = 'POST';
+                options.rejectUnauthorized = false;
+                options.checkServerIdentity = function (cert) { }
+                //console.log("options: " + JSON.stringify(options, null, 2));
+                var req = http.request(options);
+                req.on('error', function (e) { console.log("Error: " + e); exit(1); });
+                req.on('response', function (response) { console.log("Status code: " + response.statusCode); exit(1); });
+                req.end(JSON.stringify(state));
+            } else {
+                console.log(JSON.stringify(state, null, 2)); exit(0);
+            }
+        }); 
     } else if (settings.action == 'amtsavestate') {
         // Save the entire state of Intel AMT info a JSON file
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
