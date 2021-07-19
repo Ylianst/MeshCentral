@@ -107,6 +107,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
     parent.relaySessionCount++;
 
     // Setup slow relay is requested. This will show down sending any data to this peer.
+    req.query.slowrelay = 50;
     if ((req.query.slowrelay != null)) {
         var sr = null;
         try { sr = parseInt(req.query.slowrelay); } catch (ex) { }
