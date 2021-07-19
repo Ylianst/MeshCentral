@@ -113,14 +113,13 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
         if (parent.config.domains[i].dns != null) { continue; }
         var url = parent.config.domains[i].url;
         obj.app.get(url, performRedirection); // Root redirection
-        obj.app.get(url + 'player.htm', performRedirection); // Player redirection
 
         // Setup any .well-known folders
         var p = obj.parent.path.join(obj.parent.datapath, '.well-known' + ((parent.config.domains[i].id == '') ? '' : ('-' + parent.config.domains[i].id)));
         if (obj.parent.fs.existsSync(p)) { obj.app.use(url + '.well-known', obj.express.static(p)); }
 
         // Setup all of the redirections to HTTPS
-        const redirections = ['terms', 'logout', 'MeshServerRootCert.cer', 'mescript.ashx', 'checkmail', 'agentinvite', 'messenger', 'meshosxagent', 'devicepowerevents.ashx', 'downloadfile.ashx', 'userfiles/*', 'webrelay.ashx', 'health.ashx', 'logo.png', 'welcome.jpg'];
+        const redirections = ['player.htm', 'terms', 'logout', 'MeshServerRootCert.cer', 'mescript.ashx', 'checkmail', 'agentinvite', 'messenger', 'meshosxagent', 'devicepowerevents.ashx', 'downloadfile.ashx', 'userfiles/*', 'webrelay.ashx', 'health.ashx', 'logo.png', 'welcome.jpg'];
         for (i in redirections) { obj.app.get(url + redirections[i], performRedirection); }
     }
 
