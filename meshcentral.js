@@ -3019,7 +3019,9 @@ function getConfig(createSampleConfig) {
 
     // Read configuration file if present and change arguments.
     var config = {}, configFilePath = path.join(datapath, 'config.json');
-    if (args.configfile) { configFilePath = path.join(datapath, args.configfile); }
+    if (args.configfile) {
+        configFilePath = path.isAbsolute(args.configfile) ? args.configfile : path.join(datapath, args.configfile);
+    }
     if (fs.existsSync(configFilePath)) {
         // Load and validate the configuration file
         try { config = require(configFilePath); } catch (e) { console.log('ERROR: Unable to parse ' + configFilePath + '.'); return null; }
