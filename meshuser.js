@@ -635,28 +635,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     });
                     break;
                 }
-            case 'serverstats':
-                {
-                    // Only accept if the "My Server" tab is allowed for this domain
-                    if (domain.myserver === false) break;
-
-                    if ((user.siteadmin & 21) == 0) return; // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
-                    if (common.validateInt(command.interval, 1000, 1000000) == false) {
-                        // Clear the timer
-                        if (obj.serverStatsTimer != null) { clearInterval(obj.serverStatsTimer); delete obj.serverStatsTimer; }
-                    } else {
-                        // Set the timer
-                        obj.SendServerStats();
-                        obj.serverStatsTimer = setInterval(obj.SendServerStats, command.interval);
-                    }
-                    break;
-                }
-            case 'meshes':
-                {
-                    // Request a list of all meshes this user as rights to
-                    try { ws.send(JSON.stringify({ action: 'meshes', meshes: parent.GetAllMeshWithRights(user).map(parent.CloneSafeMesh), tag: command.tag })); } catch (ex) { }
-                    break;
-                }
             case 'nodes':
                 {
                     var links = [], extraids = null, err = null;
@@ -810,12 +788,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                         });
                     });
-                    break;
-                }
-            case 'files':
-                {
-                    // Send the full list of server files to the browser app
-                    updateUserFiles(user, ws, domain);
                     break;
                 }
             case 'fileoperation':
@@ -1060,22 +1032,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 });
                 break;
             }
-            case 'users':
-                {
-                    // Request a list of all users
-                    if ((user.siteadmin & 2) == 0) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'users', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } } break; }
-                    var docs = [];
-                    for (i in parent.users) {
-                        if (((obj.crossDomain === true) || (parent.users[i].domain == domain.id)) && (parent.users[i].name != '~')) {
-                            // If we are part of a user group, we can only see other members of our own group
-                            if ((obj.crossDomain === true) || (user.groups == null) || (user.groups.length == 0) || ((parent.users[i].groups != null) && (findOne(parent.users[i].groups, user.groups)))) {
-                                docs.push(parent.CloneSafeUser(parent.users[i]));
-                            }
-                        }
-                    }
-                    try { ws.send(JSON.stringify({ action: 'users', users: docs, tag: command.tag })); } catch (ex) { }
-                    break;
-                }
             case 'changelang':
                 {
                     // Do not allow this command when logged in using a login token
@@ -2400,18 +2356,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     });
                     break;
                 }
-            case 'serverversion':
-                {
-                    // Do not allow this command when logged in using a login token
-                    if (req.session.loginToken != null) break;
-
-                    // Check the server version
-                    if ((user.siteadmin & 16) == 0) break;
-                    if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.upgrade !== true))) break;
-                    //parent.parent.getLatestServerVersion(function (currentVersion, latestVersion) { try { ws.send(JSON.stringify({ action: 'serverversion', current: currentVersion, latest: latestVersion })); } catch (ex) { } });
-                    parent.parent.getServerTags(function (tags, err) { try { ws.send(JSON.stringify({ action: 'serverversion', tags: tags })); } catch (ex) { } });
-                    break;
-                }
             case 'serverupdate':
                 {
                     // Do not allow this command when logged in using a login token
@@ -2422,14 +2366,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.upgrade !== true))) break;
                     if ((command.version != null) && (typeof command.version != 'string')) break;
                     parent.parent.performServerUpdate(command.version);
-                    break;
-                }
-            case 'servererrors':
-                {
-                    // Load the server error log
-                    if ((user.siteadmin & 16) == 0) break;
-                    if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.errorlog !== true))) break;
-                    fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { try { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } catch (ex) { } });
                     break;
                 }
             case 'serverclearerrorlog':
@@ -5474,10 +5410,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     const serverCommands = {
+        'files': serverCommandFiles,
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
         'lastconnect': serverCommandLastConnect,
-        'serverconsole': serverCommandServerConsole
+        'meshes': serverCommandMeshes,
+        'serverconsole': serverCommandServerConsole,
+        'servererrors': serverCommandServerErrors,
+        'serverstats': serverCommandServerStats,
+        'serverversion': serverCommandServerVersion,
+        'users': serverCommandUsers
     };
 
     const serverUserCommands = {
@@ -5531,6 +5473,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'webpush': [serverUserCommandWebPush, ""],
         'webstats': [serverUserCommandWebStats, ""]
     };
+
+    function serverCommandFiles(command) {
+        // Send the full list of server files to the browser app
+        updateUserFiles(user, ws, domain);
+    }
 
     function serverCommandGetNetworkInfo(command) {
         if (!validNodeIdAndDomain(command)) return;
@@ -5600,6 +5547,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         });
     }
 
+    function serverCommandMeshes(command) {
+        // Request a list of all meshes this user as rights to
+        try { ws.send(JSON.stringify({ action: 'meshes', meshes: parent.GetAllMeshWithRights(user).map(parent.CloneSafeMesh), tag: command.tag })); } catch (ex) { }
+    }
+
     function serverCommandServerConsole(command) {
         // Do not allow this command when logged in using a login token
         if (req.session.loginToken != null) return;
@@ -5621,6 +5573,53 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Send back the command result
         if (cmdData.result != '') { try { ws.send(JSON.stringify({ action: 'serverconsole', value: cmdData.result, tag: command.tag })); } catch (ex) { } }
+    }
+
+    function serverCommandServerErrors(command) {
+            // Load the server error log
+            if ((user.siteadmin & 16) == 0) return;
+            if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.errorlog !== true))) return;
+            fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { try { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } catch (ex) { } });
+    }
+
+    function serverCommandServerStats(command) {
+        // Only accept if the "My Server" tab is allowed for this domain
+        if (domain.myserver === false) return;
+
+        if ((user.siteadmin & 21) == 0) return; // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
+        if (common.validateInt(command.interval, 1000, 1000000) == false) {
+            // Clear the timer
+            if (obj.serverStatsTimer != null) { clearInterval(obj.serverStatsTimer); delete obj.serverStatsTimer; }
+        } else {
+            // Set the timer
+            obj.SendServerStats();
+            obj.serverStatsTimer = setInterval(obj.SendServerStats, command.interval);
+        }
+    }
+
+    function serverCommandServerVersion(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        // Check the server version
+        if ((user.siteadmin & 16) == 0) return;
+        if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.upgrade !== true))) return;
+        parent.parent.getServerTags(function (tags, err) { try { ws.send(JSON.stringify({ action: 'serverversion', tags: tags })); } catch (ex) { } });
+    }
+
+    function serverCommandUsers(command) {
+        // Request a list of all users
+        if ((user.siteadmin & 2) == 0) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'users', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } } return; }
+        var docs = [];
+        for (i in parent.users) {
+            if (((obj.crossDomain === true) || (parent.users[i].domain == domain.id)) && (parent.users[i].name != '~')) {
+                // If we are part of a user group, we can only see other members of our own group
+                if ((obj.crossDomain === true) || (user.groups == null) || (user.groups.length == 0) || ((parent.users[i].groups != null) && (findOne(parent.users[i].groups, user.groups)))) {
+                    docs.push(parent.CloneSafeUser(parent.users[i]));
+                }
+            }
+        }
+        try { ws.send(JSON.stringify({ action: 'users', users: docs, tag: command.tag })); } catch (ex) { }
     }
 
 
