@@ -2885,6 +2885,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'help': { // Displays available commands
                 var fin = '', f = '', availcommands = 'agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
+                try { require('dhcp'); availcommands += ',dhcp'; } catch (e) { }
                 if (process.platform == 'win32') { availcommands += ',cs,safemode,wpfhwacceleration,uac'; }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
@@ -2900,6 +2901,48 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 response = "Available commands: \r\n" + fin + ".";
                 break;
             }
+            case 'dhcp':
+                {
+                    try
+                    {
+                        require('dhcp');
+                    }
+                    catch(e)
+                    {
+                        response = 'Unknown command "dhcp", type "help" for list of avaialble commands.';
+                        break;
+                    }
+                    if(args['_'].length==0)
+                    {
+                        var j = require('os').networkInterfaces();
+                        var ifcs = [];
+                        for(var i in j)
+                        {
+                            for (var z in j[i])
+                            {
+                                if (j[i][z].status == 'up' && j[i][z].type != 'loopback' && j[i][z].address != null)
+                                {
+                                    ifcs.push('"' + i + '"');
+                                    break;
+                                }
+                            }
+                        }
+                        response = 'Proper usage: dhcp [' + ifcs.join(' | ') + ']';
+                    }
+                    else
+                    {
+                        require('dhcp').client.info(args['_'][0]).
+                            then(function (d)
+                            {
+                                sendConsoleText(JSON.stringify(d, null, 1), sessionid);
+                            },
+                            function (e)
+                            {
+                                sendConsoleText(e, sessionid);
+                            });
+                    }
+                    break;
+                }
             case 'cs':
                 if (process.platform != 'win32') {
                     response = 'Unknown command "cs", type "help" for list of avaialble commands.';
