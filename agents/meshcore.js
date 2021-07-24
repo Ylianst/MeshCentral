@@ -46,11 +46,9 @@ var MESHRIGHT_CHATNOTIFY = 16384;
 var MESHRIGHT_UNINSTALL = 32768;
 var MESHRIGHT_NODESKTOP = 65536;
 
-if (require('MeshAgent').ARCHID == null)
-{
+if (require('MeshAgent').ARCHID == null) {
     var id = null;
-    switch (process.platform)
-    {
+    switch (process.platform) {
         case 'win32':
             id = require('_GenericMarshal').PointerSize == 4 ? 3 : 4;
             break;
@@ -58,12 +56,10 @@ if (require('MeshAgent').ARCHID == null)
             id = require('_GenericMarshal').PointerSize == 4 ? 31 : 30;
             break;
         case 'darwin':
-            try
-            {
+            try {
                 id = require('os').arch() == 'x64' ? 16 : 29;
             }
-            catch (xx)
-            {
+            catch (xx) {
                 id = 16;
             }
             break;
@@ -280,11 +276,9 @@ obj.DAIPC.on('connection', function (c) {
 });
 
 // Send current sessions to registered apps
-function broadcastSessionsToRegisteredApps(x)
-{
+function broadcastSessionsToRegisteredApps(x) {
     var p = {}, i;
-    for (i = 0; sendAgentMessage.messages != null && i < sendAgentMessage.messages.length; ++i)
-    {
+    for (i = 0; sendAgentMessage.messages != null && i < sendAgentMessage.messages.length; ++i) {
         p[i] = sendAgentMessage.messages[i];
     }
     tunnelUserCount.msg = p;
@@ -849,8 +843,7 @@ function handleServerCommand(data) {
 
                                 // Perform manual server TLS certificate checking based on the certificate hash given by the server.
                                 woptions.rejectUnauthorized = 0;
-                                woptions.checkServerIdentity = function checkServerIdentity(certs)
-                                {
+                                woptions.checkServerIdentity = function checkServerIdentity(certs) {
                                     /*
                                     try { sendConsoleText("certs[0].digest: " + certs[0].digest); } catch (ex) { sendConsoleText(ex); }
                                     try { sendConsoleText("certs[0].fingerprint: " + certs[0].fingerprint); } catch (ex) { sendConsoleText(ex); }
@@ -1057,17 +1050,13 @@ function handleServerCommand(data) {
                     }
                     case 'setclip': {
                         // Set the load clipboard to a user value
-                        if (typeof data.data == 'string')
-                        {
+                        if (typeof data.data == 'string') {
                             MeshServerLogEx(22, [data.data.length], "Setting clipboard content, " + data.data.length + " byte(s)", data);
-                            if (require('MeshAgent').isService)
-                            {
-                                if (process.platform != 'win32')
-                                {
+                            if (require('MeshAgent').isService) {
+                                if (process.platform != 'win32') {
                                     require('clipboard').dispatchWrite(data.data);
                                 }
-                                else
-                                {
+                                else {
                                     var clipargs = data.data;
                                     var uid = require('user-sessions').consoleUid();
                                     var user = require('user-sessions').getUsername(uid);
@@ -1077,20 +1066,17 @@ function handleServerCommand(data) {
                                     this._dispatcher = require('win-dispatcher').dispatch({ user: user, modules: [{ name: 'clip-dispatch', script: "module.exports = { dispatch: function dispatch(val) { require('clipboard')(val); process.exit(); } };" }], launch: { module: 'clip-dispatch', method: 'dispatch', args: [clipargs] } });
                                     this._dispatcher.parent = this;
                                     //require('events').setFinalizerMetadata.call(this._dispatcher, 'clip-dispatch');
-                                    this._dispatcher.on('connection', function (c)
-                                    {
+                                    this._dispatcher.on('connection', function (c) {
                                         this._c = c;
                                         this._c.root = this.parent;
-                                        this._c.on('end', function ()
-                                        {
+                                        this._c.on('end', function () {
                                             this.root._dispatcher = null;
                                             this.root = null;
                                         });
                                     });
                                 }
                             }
-                            else
-                            {
+                            else {
                                 require("clipboard")(data.data);
                             } // Set the clipboard
                             mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
@@ -1324,7 +1310,7 @@ function handleServerCommand(data) {
                 if (data.tag == 'info') { sendConsoleText(JSON.stringify(data, null, 2)); }
                 if (data.tag == 'install') {
                     data.func = function (options, success) {
-                        sendConsoleText('Download of MeshCentral Assistant ' + (success?'succeed':'failed'));
+                        sendConsoleText('Download of MeshCentral Assistant ' + (success ? 'succeed' : 'failed'));
                         if (success) {
                             // TODO: Install & Run
                         }
@@ -2885,7 +2871,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'help': { // Displays available commands
                 var fin = '', f = '', availcommands = 'agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
-                try { require('dhcp'); availcommands += ',dhcp'; } catch (e) { }
+                try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (e) { }
                 if (process.platform == 'win32') { availcommands += ',cs,safemode,wpfhwacceleration,uac'; }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
@@ -2901,27 +2887,15 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 response = "Available commands: \r\n" + fin + ".";
                 break;
             }
-            case 'dhcp':
+            case 'dhcp': // This command is only supported on Linux, this is because Linux does not give us the DNS suffix for each network adapter independently so we have to ask the DHCP server.
                 {
-                    try
-                    {
-                        require('dhcp');
-                    }
-                    catch(e)
-                    {
-                        response = 'Unknown command "dhcp", type "help" for list of avaialble commands.';
-                        break;
-                    }
-                    if(args['_'].length==0)
-                    {
+                    try { require('linux-dhcp'); } catch (e) { response = 'Unknown command "dhcp", type "help" for list of avaialble commands.'; break; }
+                    if (args['_'].length == 0) {
                         var j = require('os').networkInterfaces();
                         var ifcs = [];
-                        for(var i in j)
-                        {
-                            for (var z in j[i])
-                            {
-                                if (j[i][z].status == 'up' && j[i][z].type != 'loopback' && j[i][z].address != null)
-                                {
+                        for (var i in j) {
+                            for (var z in j[i]) {
+                                if (j[i][z].status == 'up' && j[i][z].type != 'loopback' && j[i][z].address != null) {
                                     ifcs.push('"' + i + '"');
                                     break;
                                 }
@@ -2929,15 +2903,12 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         }
                         response = 'Proper usage: dhcp [' + ifcs.join(' | ') + ']';
                     }
-                    else
-                    {
-                        require('dhcp').client.info(args['_'][0]).
-                            then(function (d)
-                            {
+                    else {
+                        require('linux-dhcp').client.info(args['_'][0]).
+                            then(function (d) {
                                 sendConsoleText(JSON.stringify(d, null, 1), sessionid);
                             },
-                            function (e)
-                            {
+                            function (e) {
                                 sendConsoleText(e, sessionid);
                             });
                     }
@@ -3064,24 +3035,19 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'agentmsg': {
-                if (args['_'].length == 0)
-                {
+                if (args['_'].length == 0) {
                     response = "Proper usage:\r\n  agentmsg add \"[message]\" [iconIndex]\r\n  agentmsg remove [index]\r\n  agentmsg list"; // Display usage
-                } else
-                {
-                    if ((args['_'][0] == 'add') && (args['_'].length > 1))
-                    {
+                } else {
+                    if ((args['_'][0] == 'add') && (args['_'].length > 1)) {
                         var msgID, iconIndex = 0;
                         if (args['_'].length >= 3) { try { iconIndex = parseInt(args['_'][2]); } catch (e) { } }
                         if (typeof iconIndex != 'number') { iconIndex = 0; }
                         msgID = sendAgentMessage(args['_'][1], iconIndex);
                         response = 'Agent message: ' + msgID + ' added.';
-                    } else if ((args['_'][0] == 'remove') && (args['_'].length > 1))
-                    {
+                    } else if ((args['_'][0] == 'remove') && (args['_'].length > 1)) {
                         var r = removeAgentMessage(args['_'][1]);
                         response = 'Message ' + (r ? 'removed' : 'NOT FOUND');
-                    } else if (args['_'][0] == 'list')
-                    {
+                    } else if (args['_'][0] == 'list') {
                         response = JSON.stringify(sendAgentMessage(), null, 2);
                     }
                     broadcastSessionsToRegisteredApps();
@@ -3518,8 +3484,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         if (process.platform != 'win32') {
                             require('clipboard').dispatchWrite(args['_'][0]);
                         }
-                        else
-                        {
+                        else {
                             var clipargs = args['_'][0];
                             var uid = require('user-sessions').consoleUid();
                             var user = require('user-sessions').getUsername(uid);
@@ -3529,12 +3494,10 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                             this._dispatcher = require('win-dispatcher').dispatch({ user: user, modules: [{ name: 'clip-dispatch', script: "module.exports = { dispatch: function dispatch(val) { require('clipboard')(val); process.exit(); } };" }], launch: { module: 'clip-dispatch', method: 'dispatch', args: [clipargs] } });
                             this._dispatcher.parent = this;
                             //require('events').setFinalizerMetadata.call(this._dispatcher, 'clip-dispatch');
-                            this._dispatcher.on('connection', function (c)
-                            {
+                            this._dispatcher.on('connection', function (c) {
                                 this._c = c;
                                 this._c.root = this.parent;
-                                this._c.on('end', function ()
-                                {
+                                this._c.on('end', function () {
                                     this.root._dispatcher = null;
                                     this.root = null;
                                 });
@@ -3542,8 +3505,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         }
                         response = 'Setting clipboard to: "' + args['_'][0] + '"';
                     }
-                    else
-                    {
+                    else {
                         require("clipboard")(args['_'][0]); response = 'Setting clipboard to: "' + args['_'][0] + '"';
                     }
                 }
@@ -4108,20 +4070,16 @@ function sendConsoleText(text, sessionid) {
     if (sessionid != 'pipe') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: text, sessionid: sessionid }); }
 }
 
-function removeAgentMessage(msgid)
-{
+function removeAgentMessage(msgid) {
     var ret = false;
-    if (msgid == null)
-    {
+    if (msgid == null) {
         // Delete all messages
         sendAgentMessage.messages = [];
         ret = true;
     }
-    else
-    {
+    else {
         var i = sendAgentMessage.messages.findIndex(function (v) { return (v.id == msgid); });
-        if (i >= 0)
-        {
+        if (i >= 0) {
             sendAgentMessage.messages.splice(i, 1);
             ret = true;
         }
@@ -4131,33 +4089,26 @@ function removeAgentMessage(msgid)
 }
 
 // Send a mesh agent message to server, placing a bubble/badge on the agent device
-function sendAgentMessage(msg, icon, serverid, first)
-{
-    if (sendAgentMessage.messages == null)
-    {
+function sendAgentMessage(msg, icon, serverid, first) {
+    if (sendAgentMessage.messages == null) {
         sendAgentMessage.messages = [];
     }
 
-    if (arguments.length > 0)
-    {
-        if (first == null || (serverid && first && sendAgentMessage.messages.findIndex(function (v) { return (v.msgid == serverid); }) < 0))
-        {
+    if (arguments.length > 0) {
+        if (first == null || (serverid && first && sendAgentMessage.messages.findIndex(function (v) { return (v.msgid == serverid); }) < 0)) {
             sendAgentMessage.messages.push({ msg: msg, icon: icon, msgid: serverid });
             sendAgentMessage.messages.peek().id = sendAgentMessage.messages.peek()._hashCode();
         }
     }
 
     var p = {}, i;
-    for (i = 0; i < sendAgentMessage.messages.length; ++i)
-    {
+    for (i = 0; i < sendAgentMessage.messages.length; ++i) {
         p[i] = sendAgentMessage.messages[i];
     }
-    try
-    {
+    try {
         require('MeshAgent').SendCommand({ action: 'sessions', type: 'msg', value: p });
     }
-    catch(ex)
-    {
+    catch (ex) {
     }
     return (arguments.length > 0 ? sendAgentMessage.messages.peek().id : sendAgentMessage.messages);
 }
@@ -4557,24 +4508,19 @@ function agentUpdate_Start(updateurl, updateoptions) {
 //process.exit = function (code) { console.log("Exit with code: " + code.toString()); }
 
 // Called when the server connection state changes
-function handleServerConnection(state)
-{
+function handleServerConnection(state) {
     meshServerConnectionState = state;
-    if (meshServerConnectionState == 0)
-    {
+    if (meshServerConnectionState == 0) {
         // Server disconnected
         if (selfInfoUpdateTimer != null) { clearInterval(selfInfoUpdateTimer); selfInfoUpdateTimer = null; }
         lastSelfInfo = null;
-    } else
-    {
+    } else {
         // Server connected, send mesh core information
-        if (require('MeshAgent').ServerInfo == null || require('MeshAgent').ServerInfo.ControlChannelCertificate == null)
-        {
+        if (require('MeshAgent').ServerInfo == null || require('MeshAgent').ServerInfo.ControlChannelCertificate == null) {
             // Outdated Agent, will have insecure tunnels
             sendAgentMessage("This agent has an outdated certificate validation mechanism, consider updating.", 3, 118);
         }
-        else if (global._MSH == null)
-        {
+        else if (global._MSH == null) {
             sendAgentMessage("This is an old agent version, consider updating.", 3, 117);
         }
 
@@ -4587,15 +4533,13 @@ function handleServerConnection(state)
         // Update the server on with basic info, logged in users and more advanced stuff, like Intel ME and Network Settings
         meInfoStr = null;
         sendPeriodicServerUpdate(null, true);
-        if (selfInfoUpdateTimer == null)
-        {
+        if (selfInfoUpdateTimer == null) {
             selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 1200000); // 20 minutes
             selfInfoUpdateTimer.metadata = 'meshcore (InfoUpdate Timer)';
         }
 
         // Send any state messages
-        if (Object.keys(tunnelUserCount.msg).length > 0)
-        {
+        if (Object.keys(tunnelUserCount.msg).length > 0) {
             sendAgentMessage();
             broadcastSessionsToRegisteredApps();
         }
