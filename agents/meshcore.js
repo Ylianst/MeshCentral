@@ -1236,22 +1236,24 @@ function handleServerCommand(data) {
                     if ((apftunnel != null) || (amt == null)) return;
                     if ((state == null) || (state.ProvisioningState == null)) return;
                     if ((state.UUID == null) || (state.UUID.length != 36)) return; // Bad UUID
-                    var apfarg = {
-                        mpsurl: mesh.ServerUrl.replace('/agent.ashx', '/apf.ashx'),
-                        mpsuser: data.user, // Agent user name
-                        mpspass: data.pass, // Encrypted login cookie
-                        mpskeepalive: 60000,
-                        clientname: state.OsHostname,
-                        clientaddress: '127.0.0.1',
-                        clientuuid: state.UUID,
-                        conntype: 2, // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
-                        meiState: state // MEI state will be passed to MPS server
-                    };
-                    addAmtEvent('LMS tunnel start.');
-                    apftunnel = require('amt-apfclient')({ debug: false }, apfarg);
-                    apftunnel.onJsonControl = handleApfJsonControl;
-                    apftunnel.onChannelClosed = function () { addAmtEvent('LMS tunnel closed.'); apftunnel = null; }
-                    try { apftunnel.connect(); } catch (ex) { }
+                    getAmtOsDnsSuffix(state, function () {
+                        var apfarg = {
+                            mpsurl: mesh.ServerUrl.replace('/agent.ashx', '/apf.ashx'),
+                            mpsuser: data.user, // Agent user name
+                            mpspass: data.pass, // Encrypted login cookie
+                            mpskeepalive: 60000,
+                            clientname: state.OsHostname,
+                            clientaddress: '127.0.0.1',
+                            clientuuid: state.UUID,
+                            conntype: 2, // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
+                            meiState: state // MEI state will be passed to MPS server
+                        };
+                        addAmtEvent('LMS tunnel start.');
+                        apftunnel = require('amt-apfclient')({ debug: false }, apfarg);
+                        apftunnel.onJsonControl = handleApfJsonControl;
+                        apftunnel.onChannelClosed = function () { addAmtEvent('LMS tunnel closed.'); apftunnel = null; }
+                        try { apftunnel.connect(); } catch (ex) { }
+                    });
                 });
                 break;
             }
@@ -1335,6 +1337,19 @@ function handleServerCommand(data) {
                 break;
         }
     }
+}
+
+// On non-Windows platforms, we need to query the DHCP server for the DNS suffix
+function getAmtOsDnsSuffix(mestate, func) {
+    if ((process.platform == 'win32') || (mestate.net0 == null) || (mestate.net0.mac == null)) { func(mestate); return; }
+    try { require('linux-dhcp') } catch (ex) { func(mestate); return; }
+    require('linux-dhcp').client.info(mestate.net0.mac).then(function (d) {
+        if ((typeof d.options == 'object') && (typeof d.options.domainname == 'string')) { mestate.OsDnsSuffix = d.options.domainname; }
+        func(mestate);
+    }, function (e) {
+        console.log('DHCP error', e);
+        func(mestate);
+    });
 }
 
 // Download a file from the server and check the hash.
@@ -3956,35 +3971,37 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (amt == null) { response = "Intel AMT not detected."; break; }
                 if (apftunnel != null) { response = "Intel AMT server tunnel already active"; break; }
                 amt.getMeiState(15, function (state) {
-                    var rx = '';
-                    if ((state == null) || (state.ProvisioningState == null)) { rx = "Intel AMT not ready for configuration."; } else {
-                        var apfarg = {
-                            mpsurl: mesh.ServerUrl.replace('agent.ashx', 'apf.ashx'),
-                            mpsuser: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
-                            mpspass: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
-                            mpskeepalive: 60000,
-                            clientname: state.OsHostname,
-                            clientaddress: '127.0.0.1',
-                            clientuuid: state.UUID,
-                            conntype: 2, // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
-                            meiState: state // MEI state will be passed to MPS server
-                        };
-                        if ((state.UUID == null) || (state.UUID.length != 36)) {
-                            rx = "Unable to get Intel AMT UUID";
-                        } else {
-                            addAmtEvent('User LMS tunnel start.');
-                            apftunnel = require('amt-apfclient')({ debug: false }, apfarg);
-                            apftunnel.onJsonControl = handleApfJsonControl;
-                            apftunnel.onChannelClosed = function () { addAmtEvent('User LMS tunnel closed.'); apftunnel = null; }
-                            try {
-                                apftunnel.connect();
-                                rx = "Started Intel AMT configuration";
-                            } catch (ex) {
-                                rx = JSON.stringify(ex);
+                    if ((state == null) || (state.ProvisioningState == null)) { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "Intel AMT not ready for configuration." }); } else {
+                        getAmtOsDnsSuffix(state, function () {
+                            var rx = '';
+                            var apfarg = {
+                                mpsurl: mesh.ServerUrl.replace('agent.ashx', 'apf.ashx'),
+                                mpsuser: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
+                                mpspass: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
+                                mpskeepalive: 60000,
+                                clientname: state.OsHostname,
+                                clientaddress: '127.0.0.1',
+                                clientuuid: state.UUID,
+                                conntype: 2, // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
+                                meiState: state // MEI state will be passed to MPS server
+                            };
+                            if ((state.UUID == null) || (state.UUID.length != 36)) {
+                                rx = "Unable to get Intel AMT UUID";
+                            } else {
+                                addAmtEvent('User LMS tunnel start.');
+                                apftunnel = require('amt-apfclient')({ debug: false }, apfarg);
+                                apftunnel.onJsonControl = handleApfJsonControl;
+                                apftunnel.onChannelClosed = function () { addAmtEvent('User LMS tunnel closed.'); apftunnel = null; }
+                                try {
+                                    apftunnel.connect();
+                                    rx = "Started Intel AMT configuration";
+                                } catch (ex) {
+                                    rx = JSON.stringify(ex);
+                                }
                             }
-                        }
+                            if (rx != '') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: rx }); }
+                        });
                     }
-                    if (rx != '') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: rx }); }
                 });
                 break;
             }
