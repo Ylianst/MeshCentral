@@ -4197,7 +4197,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((twoStepLoginSupported == false) || (command.name == null)) break;
 
                     // Send the registration request
-                    var registrationOptions = parent.webauthn.generateRegistrationChallenge("Anonymous Service", { id: Buffer(user._id, 'binary').toString('base64'), name: user._id, displayName: user._id.split('/')[2] });
+                    var registrationOptions = parent.webauthn.generateRegistrationChallenge("Anonymous Service", { id: Buffer.from(user._id, 'binary').toString('base64'), name: user._id, displayName: user._id.split('/')[2] });
                     obj.webAuthnReqistrationRequest = { action: 'webauthn-startregister', keyname: command.name, request: registrationOptions };
                     ws.send(JSON.stringify(obj.webAuthnReqistrationRequest));
                     break;
