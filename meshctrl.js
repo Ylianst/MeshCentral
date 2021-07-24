@@ -380,6 +380,7 @@ if (args['_'].length == 0) {
                         console.log("  --json                 - Show result as JSON.");
                         console.log("  --csv                  - Show result as comma seperated values.");
                         console.log("  --filterid [id,id...]  - Show only results for devices with included id.");
+                        console.log("  --details              - Show all device details.");
                         break;
                     }
                     case 'listusersofdevicegroup': {
@@ -1110,7 +1111,10 @@ function serverConnect() {
             case 'listdevicegroups': { ws.send(JSON.stringify({ action: 'meshes', responseid: 'meshctrl' })); break; }
             case 'listusersofdevicegroup': { ws.send(JSON.stringify({ action: 'meshes', responseid: 'meshctrl' })); break; }
             case 'listdevices': {
-                if (args.group) {
+                if (args.details) {
+                    // Get list of devices with lots of details
+                    ws.send(JSON.stringify({ action: 'getDeviceDetails', type: (args.csv)?'csv':'json' }));
+                } else if (args.group) {
                     ws.send(JSON.stringify({ action: 'nodes', meshname: args.group, responseid: 'meshctrl' }));
                 } else if (args.id) {
                     ws.send(JSON.stringify({ action: 'nodes', meshid: args.id, responseid: 'meshctrl' }));
@@ -2037,6 +2041,10 @@ function serverConnect() {
                 }
                 process.exit();
                 break;
+            }
+            case 'getDeviceDetails': {
+                console.log(data.data);
+                process.exit();
             }
             default: { break; }
         }

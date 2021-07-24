@@ -5272,7 +5272,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'getDeviceDetails': {
-                if (common.validateStrArray(command.nodeids, 1) == false) break; // Check nodeids
+                if ((common.validateStrArray(command.nodeids, 1) == false) && (command.nodeids != null)) break; // Check nodeids
                 if (common.validateString(command.type, 3, 4) == false) break; // Check type
                 getDeviceDetailedInfo(command.nodeids, command.type, function (results, type) {
                     var output = null;
@@ -6185,6 +6185,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     // Return detailed information about an array of nodeid's
     function getDeviceDetailedInfo(nodeids, type, func) {
+        if (nodeids == null) { getAllDeviceDetailedInfo(type, func); return; }
         var results = [], resultPendingCount = 0;
         for (var i in nodeids) {
             // Fetch the node from the database
@@ -6222,6 +6223,70 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         }
     }
 
+    // Return detailed information about all nodes this user has access to
+    function getAllDeviceDetailedInfo(type, func) {
+        // Get all device groups this user has access to
+        var links = parent.GetAllMeshIdWithRights(user);
+
+        // Add any nodes with direct rights or any nodes with user group direct rights
+        var extraids = null;
+        if (obj.user.links != null) {
+            for (var i in obj.user.links) {
+                if (i.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(i); }
+                else if (i.startsWith('ugrp/')) {
+                    const g = parent.userGroups[i];
+                    if ((g != null) && (g.links != null)) {
+                        for (var j in g.links) { if (j.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(j); } }
+                    }
+                }
+            }
+        }
+
+        // Request a list of all nodes
+        db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, function (err, docs) {
+            if (docs == null) { docs = []; }
+            parent.common.unEscapeAllLinksFieldName(docs);
+
+            var results = [], resultPendingCount = 0;
+            for (i in docs) {
+                // Check device links, if a link points to an unknown user, remove it.
+                parent.cleanDevice(docs[i]);
+
+                // Fetch the node from the database
+                resultPendingCount++;
+                const getNodeFunc = function (node, rights, visible) {
+                    if ((node != null) && (visible == true)) {
+                        const getNodeSysInfoFunc = function (err, docs) {
+                            const getNodeNetInfoFunc = function (err, docs) {
+                                var netinfo = null;
+                                if ((err == null) && (docs != null) && (docs.length == 1)) { netinfo = docs[0]; }
+                                resultPendingCount--;
+                                getNodeNetInfoFunc.results.push({ node: parent.CloneSafeNode(getNodeNetInfoFunc.node), sys: getNodeNetInfoFunc.sysinfo, net: netinfo });
+                                if (resultPendingCount == 0) { func(getNodeFunc.results, type); }
+                            }
+                            getNodeNetInfoFunc.results = getNodeSysInfoFunc.results;
+                            getNodeNetInfoFunc.nodeid = getNodeSysInfoFunc.nodeid;
+                            getNodeNetInfoFunc.node = getNodeSysInfoFunc.node;
+                            if ((err == null) && (docs != null) && (docs.length == 1)) { getNodeNetInfoFunc.sysinfo = docs[0]; }
+
+                            // Query the database for network information
+                            db.Get('if' + getNodeSysInfoFunc.nodeid, getNodeNetInfoFunc);
+                        }
+                        getNodeSysInfoFunc.results = getNodeFunc.results;
+                        getNodeSysInfoFunc.nodeid = getNodeFunc.nodeid;
+                        getNodeSysInfoFunc.node = node;
+
+                        // Query the database for system information
+                        db.Get('si' + getNodeFunc.nodeid, getNodeSysInfoFunc);
+                    } else { resultPendingCount--; }
+                    if (resultPendingCount == 0) { func(getNodeFunc.results.join('\r\n'), type); }
+                }
+                getNodeFunc.results = results;
+                getNodeFunc.nodeid = docs[i]._id;
+                parent.GetNodeWithRights(domain, user, docs[i]._id, getNodeFunc);
+            }
+        });
+    }
 
     // Display a notification message for this session only.
     function displayNotificationMessage(msg, title, tag, titleid, msgid, args) {
