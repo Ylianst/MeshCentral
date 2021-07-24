@@ -326,6 +326,7 @@
         var otpsms = ('{{{otpsms}}}' === 'true');
         var twoFactorCookieDays = parseInt('{{{twoFactorCookieDays}}}');
         var authStrategies = '{{{authStrategies}}}'.split(',');
+        var tokenTimeout = parseInt('{{{tokenTimeout}}}');
 
         // Display the right server message
         var messageid = parseInt('{{{messageid}}}');
@@ -402,6 +403,7 @@
             QV('hrAccountDiv', (emailCheck == 'true') || (newAccountPass == 1));
 
             if (loginMode == '4') {
+                if (tokenTimeout > 0) { setTimeout(function () { Q('hwtokenInput').value = '**timeout**'; QE('tokenOkButton', true); Q('tokenOkButton').click(); }, tokenTimeout); }
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 QV('securityKeyButton', (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn'));
                 QV('emailKeyButton', otpemail && (messageid != 2) && (messageid != 4));
@@ -409,6 +411,7 @@
             }
 
             if (loginMode == '5') {
+                if (tokenTimeout > 0) { setTimeout(function () { Q('hwtokenInput').value = '**timeout**'; QE('tokenOkButton', true); Q('tokenOkButton').click(); }, tokenTimeout); }
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
                     if (typeof hardwareKeyChallenge.challenge == 'string') { hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer; }

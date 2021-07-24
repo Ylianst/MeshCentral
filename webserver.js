@@ -1018,6 +1018,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // Check if this user has 2-step login active
                 if ((req.session.loginmode != 6) && checkUserOneTimePasswordRequired(domain, user, req, loginOptions)) {
+                    if ((req.body.hwtoken == '**timeout**')) {
+                        delete req.session; // Clear the session
+                        res.redirect(domain.url + getQueryPortion(req));
+                        return;
+                    }
+
                     if ((req.body.hwtoken == '**email**') && email2fa) {
                         user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
                         obj.db.SetUser(user);
@@ -2879,6 +2885,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var customui = '';
         if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
+        // Get two-factor screen timeout
+        var twoFactorTimeout = 300000; // Default is 5 minutes, 0 for no timeout.
+        if ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.twofactortimeout == 'number')) {
+            twoFactorTimeout = domain.passwordrequirements.twofactortimeout * 1000;
+        }
+
         // Render the login page
         render(req, res,
             getRenderPage((domain.sitestyle == 2) ? 'login2' : 'login', req, domain),
@@ -2907,7 +2919,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 otppush: otppush,
                 twoFactorCookieDays: twoFactorCookieDays,
                 authStrategies: authStrategies.join(','),
-                loginpicture: (typeof domain.loginpicture == 'string')
+                loginpicture: (typeof domain.loginpicture == 'string'),
+                tokenTimeout: twoFactorTimeout // Two-factor authentication screen timeout in milliseconds
             }, req, domain, (domain.sitestyle == 2) ? 'login2' : 'login'));
     }
 
