@@ -2291,6 +2291,14 @@
                     }
                     break;
                 }
+                case 'lastseen': {
+                    var lcnodes = Object.keys(message.lastconnects);
+                    for (var i in lcnodes) {
+                        var lcnodeid = lcnodes[i];
+                        var node = getNodeFromId(lcnodeid);
+                        if (node != null) { node.lastconnect = message.lastconnects[lcnodeid] }
+                    }
+                }
                 case 'msg': {
                     // Check if this is a message from a node
                     if (message.nodeid != null) {
