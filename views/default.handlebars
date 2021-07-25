@@ -4244,7 +4244,7 @@
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
                 if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { r += '<td style=text-align:center>' + (node.ip != null ? node.ip : ''); } // IP address
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
-                if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + ((node.conn & 23 > 0) ? '' : printDateTime(new Date(node.lastconnect))); }
+                if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + ((node.conn & 23 > 0 || node.lastconnect != null) ? '' : printDateTime(new Date(node.lastconnect))); }
 
                 div.innerHTML = r;
             } else if ((view == 3) || (view == 5)) {
