@@ -5554,12 +5554,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 for (var j in docs) {
                     var nodeid = docs[j]._id.substring(2);
                     if (LCs[nodeid] != null) {
-                        delete docs[j]._id;
-                        LCs[nodeid] = docs[j];
+                        LCs[nodeid] = docs[j].time;
                     }
                 }
 
-                console.log(LCs);
+                try { ws.send(JSON.stringify({ action: 'lastseen', lastconnects: LCs })); } catch (ex) { }
             });
         });
     }
