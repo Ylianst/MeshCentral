@@ -2,6 +2,22 @@
   "strings": [
     {
       "en": "",
+      "cs": "",
+      "de": "",
+      "es": "",
+      "fi": "",
+      "fr": "",
+      "hi": "",
+      "it": "",
+      "ja": "",
+      "ko": "",
+      "nl": "",
+      "pt": "",
+      "ru": "",
+      "sv": "",
+      "tr": "",
+      "zh-chs": "",
+      "zh-cht": "",
       "xloc": [
         "default.handlebars->container->column_l->p3->3->1->0->5->p3limitdropdown",
         "default.handlebars->container->column_l->p31->3->1->0->5->p31limitdropdown"
@@ -15115,6 +15131,7 @@
     },
     {
       "en": "Device Description",
+      "nl": "Apparaat beschrijving",
       "xloc": [
         "default.handlebars->35->276"
       ]
@@ -23740,6 +23757,8 @@
     },
     {
       "en": "Import Intel&reg; AMT Devices",
+      "nl": "Importeer Intel&reg; AMT apparaten",
+      "fr": "Importer la liste des appareils Intel&reg; AMT"
       "xloc": [
         "default.handlebars->35->1710",
         "default.handlebars->35->1711",
@@ -23763,10 +23782,6 @@
       "xloc": [
         "default.handlebars->35->1704"
       ]
-    },
-    {
-      "en": "Importeer Intel&reg; AMT apparaten",
-      "fr": "Importer la liste des appareils Intel&reg; AMT"
     },
     {
       "de": "Um die Push-Benachrichtigungs-Authentifizierung verwenden zu können, muss in Ihrem Konto ein mobiles Gerät mit vollen Rechten eingerichtet sein.",
@@ -33351,6 +33366,7 @@
     },
     {
       "en": "No limit",
+      "nl": "Geen limiet",
       "xloc": [
         "default.handlebars->container->column_l->p3->3->1->0->5->p3limitdropdown->11",
         "default.handlebars->container->column_l->p31->3->1->0->5->p31limitdropdown->11"
@@ -33739,7 +33755,7 @@
     },
     {
       "en": "None ",
-      "nn": "Geen ",
+      "nl": "Geen ",
       "fr": "Aucun",
       "es": "Ninguno",
       "xloc": [
