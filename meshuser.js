@@ -5404,6 +5404,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
         'lastconnect': serverCommandLastConnect,
+        'lastseen': serverCommandLastSeen,
         'meshes': serverCommandMeshes,
         'serverconsole': serverCommandServerConsole,
         'servererrors': serverCommandServerErrors,
@@ -5533,6 +5534,32 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 } else {
                     try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'No data' })); } catch (ex) { }
                 }
+            });
+        });
+    }
+
+    function serverCommandLastSeen(command) {
+        var links = parent.GetAllMeshIdWithRights(user);
+        var extraids = getUserExtraIds();
+        db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, (err, docs) => {
+            if (docs == null) { docs = []; }
+
+            // use associative array to join lastconnects on to users's nodes (left join) 
+            var LCs = {}
+            for (var i in docs) {
+                LCs[docs[i]._id] = '';
+            }
+
+            db.GetAllType('lastconnect', (err, docs) => {
+                for (var j in docs) {
+                    var nodeid = docs[j]._id.substring(2);
+                    if (LCs[nodeid] != null) {
+                        delete docs[j]._id;
+                        LCs[nodeid] = docs[j];
+                    }
+                }
+
+                console.log(LCs);
             });
         });
     }
