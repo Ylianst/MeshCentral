@@ -6602,7 +6602,7 @@
                     x += '&nbsp;<a href=# onclick=p10showDeleteNodeDialog("' + node._id + '") title="' + "Remove this device" + '">' + "Delete Device" + '</a>';
                 }
                 x += '</div><div class="p10html3left">';
-                if ((node.agent) && (node.mtype != 3)) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title="' + "Show device network interface information" + '">' + "Interfaces" + '</a>&nbsp;';
+                if ((node.agent) && (node.mtype != 3) && ((meshrights & 1048576) != 0)) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title="' + "Show device network interface information" + '">' + "Interfaces" + '</a>&nbsp;';
                 if ((features & 0x00008000) && (xxmap != null)) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title="' + "Show device locations information" + '">' + "Location" + '</a>&nbsp;';
                 if ((node.agent == null) || ((node.agent.id != 14) && (node.agent.id != 34))) {
                     if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) { // Check if we should view tools
@@ -6710,7 +6710,7 @@
                     );
                 QV('MainDevTerminal', (((node.agent == null) && (node.intelamt != null)) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
                 QV('MainDevFiles', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 4) != 0) && (meshrights & 8) && fileAccess);
-                QV('MainDevInfo', (node.mtype != 3));
+                QV('MainDevInfo', (node.mtype != 3) & (meshrights & 1048576));
                 QV('MainDevAmt', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8) && amtAccess);
                 QV('MainDevConsole', (consoleRights && ((node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 8) != 0))) && (meshrights & 8));
                 QV('MainDevPlugins', false);
@@ -11546,6 +11546,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent / Delete Device" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20details>' + "Device Details" + '</label><br>';
             x += '</div>';
 
             if (userid == null) {
@@ -11622,6 +11623,7 @@
                 if (urights & 131072) { Q('p20commands').checked = true; }
                 if (urights & 262144) { Q('p20resetoff').checked = true; }
                 if ((urights & 524288) && (serverinfo.guestdevicesharing !== false)) { Q('p20guestshare').checked = true; }
+                if (urights & 1048576) { Q('p20details').checked = true; }
             }
 
             p20validateAddMeshUserDialog(userid);
@@ -11669,6 +11671,7 @@
                 Q('p20commands').checked = ((devrights & 131072) != 0);
                 Q('p20resetoff').checked = ((devrights & 262144) != 0);
                 if (serverinfo.guestdevicesharing !== false) { Q('p20guestshare').checked = ((devrights & 524288) != 0); }
+                Q('p20details').checked = ((devrights & 1048576) != 0);
                 ok = (nodeid != '');
             }
 
@@ -11749,6 +11752,7 @@
             QE('p20uninstall', nc);
             QE('p20commands', nc);
             QE('p20resetoff', nc);
+            QE('p20details', nc);
         }
 
         function p20showAddMeshUserDialogEx(b, t) {
@@ -11777,6 +11781,7 @@
                 if (Q('p20commands').checked == true) meshadmin += 131072;
                 if (Q('p20resetoff').checked == true) meshadmin += 262144;
                 if ((serverinfo.guestdevicesharing !== false) && (Q('p20guestshare').checked == true) && (Q('p20remoteview').checked || (!Q('p20remoteview').checked && !Q('p20remotelimitedinput').checked))) meshadmin += 524288;
+                if (Q('p20details').checked == true) meshadmin += 1048576;
             }
 
             // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
@@ -11860,6 +11865,8 @@
                     if ((meshrights & 32768) != 0) r.push("Uninstall");
                     if ((meshrights & 131072) != 0) r.push("Commands");
                     if ((meshrights & 262144) != 0) r.push("Reset/Off");
+                    if ((meshrights & 524288) != 0) r.push("Sharing");
+                    if ((meshrights & 1048576) != 0) r.push("Details");
                 }
                 if (r.length == 0) { r.push("No Rights"); }
                 var uname = xuserid.split('/')[2];

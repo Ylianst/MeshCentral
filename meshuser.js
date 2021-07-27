@@ -51,6 +51,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_REMOTECOMMAND       = 0x00020000; // 131072
     const MESHRIGHT_RESETOFF            = 0x00040000; // 262144
     const MESHRIGHT_GUESTSHARING        = 0x00080000; // 524288
+    const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // ‭1048576‬
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
@@ -5265,6 +5266,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if ((common.validateStrArray(command.nodeids, 1) == false) && (command.nodeids != null)) break; // Check nodeids
                 if (common.validateString(command.type, 3, 4) == false) break; // Check type
                 getDeviceDetailedInfo(command.nodeids, command.type, function (results, type) {
+                    // Remove any device system and network information is we do not have details rights to this device
+                    for (var i = 0; i < results.length; i++) { if ((parent.GetNodeRights(user, results[i].node.meshid, results[i].node._id) & MESHRIGHT_DEVICEDETAILS) == 0) { delete results[i].sys; delete results[i].net; } }
+
                     var output = null;
                     if (type == 'csv') {
                         try {
@@ -5488,7 +5492,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Get the node and the rights for this node
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-            if (visible == false) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
+            if ((visible == false) || ((rights & MESHRIGHT_DEVICEDETAILS) == 0)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
 
             // Get network information about this node
             db.Get('if' + node._id, function (err, netinfos) {
@@ -5513,7 +5517,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Get the node and the rights for this node
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-            if (visible == false) { try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
+            if ((visible == false) || ((rights & MESHRIGHT_DEVICEDETAILS) == 0)) { try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
             // Query the database system information
             db.Get('si' + command.nodeid, function (err, docs) {
                 if ((docs != null) && (docs.length > 0)) {
