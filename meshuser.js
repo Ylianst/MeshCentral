@@ -5386,7 +5386,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 output += '\r\n';
                             }
                         } catch (ex) { console.log(ex); }
-                    } else { output = JSON.stringify(results, null, 2); }
+                    } else {
+                        // Create the JSON file
+
+                        // Add the device group name to each device
+                        for (var i = 0; i < results.length; i++) {
+                            const nodeinfo = results[i];
+                            if (nodeinfo.node) {
+                                const mesh = parent.meshes[nodeinfo.node.meshid];
+                                if (mesh) { results[i].node.groupname = mesh.name; }
+                            }
+                        }
+
+                        output = JSON.stringify(results, null, 2);
+                    }
                     try { ws.send(JSON.stringify({ action: 'getDeviceDetails', data: output, type: type })); } catch (ex) { }
                 });
                 break;
