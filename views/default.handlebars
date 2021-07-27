@@ -1929,6 +1929,7 @@
                 meshserver.send({ action: 'usergroups' });
                 meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes', id: '{{currentNode}}' });
+                meshserver.send({ action: 'lastseen' });
                 meshserver.send({ action: 'loginTokens' });
                 if (pluginHandler != null) { meshserver.send({ action: 'plugins' }); }
                 if ('{{currentNode}}'.toLowerCase() == '') { meshserver.send({ action: 'files' }); }
@@ -2290,6 +2291,14 @@
                         }
                     }
                     break;
+                }
+                case 'lastseen': {
+                    var lcnodes = Object.keys(message.lastconnects);
+                    for (var i in lcnodes) {
+                        var lcnodeid = lcnodes[i];
+                        var node = getNodeFromId(lcnodeid);
+                        if (node != null) { node.lastconnect = message.lastconnects[lcnodeid] }
+                    }
                 }
                 case 'msg': {
                     // Check if this is a message from a node
@@ -3547,6 +3556,7 @@
             x += '<label><input id=d2c2 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('user') >= 0)?' checked':'') + '>' + "Logged in users" + '</label><br />';
             x += '<label><input id=d2c3 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0)?' checked':'') + '>' + "Agent IP address" + '</label><br />';
             x += '<label><input id=d2c4 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('conn') >= 0)?' checked':'') + '>' + "Server Connectivity" + '</label><br />';
+            x += '<label><input id=d2c7 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('lastseen') >= 0)?' checked':'') + '>' + "Last Seen" + '</label><br />';
             setDialogMode(2, "Device View Columns", 3, onDeviceViewSettingsEx, x);
         }
 
@@ -3558,6 +3568,7 @@
             if (Q('d2c4').checked) { cols.push('conn'); }
             if (Q('d2c5').checked) { cols.push('os'); }
             if (Q('d2c6').checked) { cols.push('desc'); }
+            if (Q('d2c7').checked) { cols.push('lastseen'); }
             deviceViewSettings.devsCols = cols;
             putstore('_deviceViewSettings', JSON.stringify(deviceViewSettings));
             mainUpdate(4);
@@ -3973,6 +3984,7 @@
                         if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
                         if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:120px>' + "Address"; }
                         if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { colums += '<th style=color:gray;width:100px>' + "Connectivity"; }
+                        if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { colums += '<th style=color:gray;width:120px>' + "Last Seen"; }
 
                         // This height of 1 div at the end to fix a problem in Linux firefox browsers
                         r = '<table style=width:100%;margin-top:4px cellpadding=0 cellspacing=0><th style=color:gray>' + colums + r + '</tr></table><div style=height:1px></div>';
@@ -4232,6 +4244,7 @@
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
                 if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { r += '<td style=text-align:center>' + (node.ip != null ? node.ip : ''); } // IP address
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
+                if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + ((node.conn & 23 > 0 || node.lastconnect == null) ? '' : printDateTime(new Date(node.lastconnect))); }
 
                 div.innerHTML = r;
             } else if ((view == 3) || (view == 5)) {
