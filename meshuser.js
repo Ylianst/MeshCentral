@@ -657,17 +657,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 links = parent.GetAllMeshIdWithRights(user);
 
                                 // Add any nodes with direct rights or any nodes with user group direct rights
-                                if (obj.user.links != null) {
-                                    for (var i in obj.user.links) {
-                                        if (i.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(i); }
-                                        else if (i.startsWith('ugrp/')) {
-                                            const g = parent.userGroups[i];
-                                            if ((g != null) && (g.links != null)) {
-                                                for (var j in g.links) { if (j.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(j); } }
-                                            }
-                                        }
-                                    }
-                                }
+                                extraids = getUserExtraIds();
                             } else {
                                 // Request list of all nodes for one specific meshid
                                 meshid = command.meshid;
@@ -5414,6 +5404,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
         'lastconnect': serverCommandLastConnect,
+        'lastseen': serverCommandLastSeen,
         'meshes': serverCommandMeshes,
         'serverconsole': serverCommandServerConsole,
         'servererrors': serverCommandServerErrors,
@@ -5543,6 +5534,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 } else {
                     try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'No data' })); } catch (ex) { }
                 }
+            });
+        });
+    }
+
+    function serverCommandLastSeen(command) {
+        var links = parent.GetAllMeshIdWithRights(user);
+        var extraids = getUserExtraIds();
+        db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, (err, docs) => {
+            if (docs == null) { docs = []; }
+
+            // use associative array to join lastconnects on to users's nodes (left join) 
+            var LCs = {}
+            for (var i in docs) {
+                LCs[docs[i]._id] = '';
+            }
+
+            db.GetAllType('lastconnect', (err, docs) => {
+                for (var j in docs) {
+                    var nodeid = docs[j]._id.substring(2);
+                    if (LCs[nodeid] != null) {
+                        LCs[nodeid] = docs[j].time;
+                    }
+                }
+
+                try { ws.send(JSON.stringify({ action: 'lastseen', lastconnects: LCs })); } catch (ex) { }
             });
         });
     }
@@ -6181,6 +6197,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         return true;
     }
 
+    function getUserExtraIds() {
+        var extraids = null;
+        if (obj.user.links != null) {
+            for (var i in obj.user.links) {
+                if (i.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(i); }
+                else if (i.startsWith('ugrp/')) {
+                    const g = parent.userGroups[i];
+                    if ((g != null) && (g.links != null)) {
+                        for (var j in g.links) { if (j.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(j); } }
+                    }
+                }
+            }
+        }
+        return extraids;
+    }
+
     function csvClean(s) { return '\"' + s.split('\"').join('').split(',').join('').split('\r').join('').split('\n').join('') + '\"'; }
 
     // Return detailed information about an array of nodeid's
@@ -6229,18 +6261,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         var links = parent.GetAllMeshIdWithRights(user);
 
         // Add any nodes with direct rights or any nodes with user group direct rights
-        var extraids = null;
-        if (obj.user.links != null) {
-            for (var i in obj.user.links) {
-                if (i.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(i); }
-                else if (i.startsWith('ugrp/')) {
-                    const g = parent.userGroups[i];
-                    if ((g != null) && (g.links != null)) {
-                        for (var j in g.links) { if (j.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(j); } }
-                    }
-                }
-            }
-        }
+        var extraids = getUserExtraIds();
 
         // Request a list of all nodes
         db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, function (err, docs) {
