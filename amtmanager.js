@@ -1909,9 +1909,16 @@ module.exports.CreateAmtManager = function (parent) {
                     deactivateIntelAmtCCM(dev);
                 } else {
                     // We are not activated now, go to ACM directly.
-                    // If this is Intel AMT 14 or better, we are going to attempt a host-based end-to-end TLS activation.
+                    // Check if we are allowed to perform TLS ACM activation
+                    var TlsAcmActivation = true;
+                    var domain = parent.config.domains[dev.domainid];
+                    if (domain && domain.amtmanager && (domain.amtmanager.tlsacmactivation == false)) { TlsAcmActivation = false; }
+
+                    // Check Intel AMT version
                     if (typeof dev.intelamt.ver == 'string') { var verSplit = dev.intelamt.ver.split('.'); if (verSplit.length >= 3) { dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); } }
-                    if (dev.aquired.majorver >= 14) {
+
+                    // If this is Intel AMT 14 or better and allowed, we are going to attempt a host-based end-to-end TLS activation.
+                    if (TlsAcmActivation && (dev.aquired.majorver >= 14)) {
                         // Perform host-based TLS ACM activation
                         activateIntelAmtTlsAcm(dev, mesh.amt.password, acminfo);
                     } else {
