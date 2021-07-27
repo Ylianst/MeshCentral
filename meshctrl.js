@@ -1872,7 +1872,7 @@ function serverConnect() {
                     if ((data.result != null) && (data.result != 'ok')) {
                         console.log(data.result);
                     } else {
-                        // Filder devices based on device id.
+                        // Filter devices based on device id.
                         if (args.filterid) {
                             var filteridSplit = args.filterid.split(','), filters = [];
                             for (var i in filteridSplit) {
@@ -1914,7 +1914,16 @@ function serverConnect() {
                         } else if (args.json) {
                             // Return all devices in JSON format
                             var nodes = [];
-                            for (var i in data.nodes) { var devicesInMesh = data.nodes[i]; for (var j in devicesInMesh) { nodes.push(devicesInMesh[j]); } }
+                            
+                            for (var i in data.nodes) {
+                                const devicesInMesh = data.nodes[i];
+                                for (var j in devicesInMesh) {
+                                    devicesInMesh[j].meshid = i; // Add device group id
+                                    if (settings.xmeshes && settings.xmeshes[i] && settings.xmeshes[i].name) { devicesInMesh[j].groupname = settings.xmeshes[i].name; } // Add device group name
+                                    nodes.push(devicesInMesh[j]);
+                                }
+                            }
+
                             console.log(JSON.stringify(nodes, ' ', 2));
                         } else {
                             // Display the list of nodes in text format
