@@ -1064,7 +1064,7 @@ module.exports.CreateDB = function (parent, func) {
             // Database actions on the power collection
             obj.getAllPower = function (func) { sqlDbQuery('SELECT doc FROM power', null, func); };
             obj.storePowerEvent = function (event, multiServer, func) { obj.dbCounters.powerSet++; if (multiServer != null) { event.server = multiServer.serverid; } sqlDbQuery('INSERT INTO power VALUE (?, ?, ?, ?)', [null, event.time, event.nodeid ? event.nodeid : null, JSON.stringify(event)], func); };
-            obj.getPowerTimeline = function (nodeid, func) { sqlDbQuery('SELECT doc FROM power WHERE ((nodeid = ?) OR (nodeid = "*")) ORDER BY time DESC', [nodeid], func); };
+            obj.getPowerTimeline = function (nodeid, func) { sqlDbQuery('SELECT doc FROM power WHERE ((nodeid = ?) OR (nodeid = "*")) ORDER BY time ASC', [nodeid], func); };
             obj.removeAllPowerEvents = function () { sqlDbQuery('DELETE FROM power', null, function (err, docs) { }); };
             obj.removeAllPowerEventsForNode = function (nodeid) { sqlDbQuery('DELETE FROM power WHERE nodeid = ?', [nodeid], function (err, docs) { }); };
 
