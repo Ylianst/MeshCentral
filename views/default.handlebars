@@ -3867,16 +3867,16 @@
                             for (var j in node.tags) {
                                 var tag = node.tags[j];
                                 if (sort == 4) { if (mesh2) { tag = mesh2.name + ' - ' + node.tags[j]; } else { tag = '**INDV*~*DEVS** - ' + node.tags[j]; } }
-                                var collapsed = CollapsedGroups['tag:' + tag];
+                                var collapsed = CollapsedGroups['tag:' + encodeURIComponentEx(tag)];
                                 var r2 = r.replace('**xx**xx*TaG*xx**xx**', encodeURIComponentEx(tag) + (collapsed?' style=display:none':''));
                                 if (groups[tag] == null) { groups[tag] = r2; groupCount[tag] = 1; } else { groups[tag] += r2; groupCount[tag] += 1; }
                                 if ((view == 3) || (view == 5)) break;
                             }
                         } else {
-                            // If sorted by "Groups-Tags" and a device has not tags, put in a group only section.
+                            // If sorted by "Groups-Tags" and a device has no tags, put in a group only section.
                             if ((sort == 4) && ((node.tags == null) || (node.tags.length == 0))) {
                                 var tag = mesh2.name;
-                                var collapsed = CollapsedGroups['tag:' + tag];
+                                var collapsed = CollapsedGroups['tag:' + encodeURIComponentEx(tag)];
                                 var r2 = r.replace('**xx**xx*TaG*xx**xx**', encodeURIComponentEx(tag) + (collapsed?' style=display:none':''));
                                 if (groups[tag] == null) { groups[tag] = r2; groupCount[tag] = 1; } else { groups[tag] += r2; groupCount[tag] += 1; }
                             }
@@ -4404,6 +4404,7 @@
             putstore('_collapse', JSON.stringify(CollapsedGroups));
             updateCollapseAllButton();
             onDevicesScrollEx();
+            onDevicesScrollEx(); // TODO: Not sure why, but second call is needed for proper update
         }
 
         function toggleKvmDevice(node) {
