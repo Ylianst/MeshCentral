@@ -1780,7 +1780,7 @@
             QS('p52recordings')['max-height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
 
             // We are looking at a single device, remove all the back buttons
-            if ('{{currentNode}}'.toLowerCase() != '') {
+            if ((args.hide & 32) || ('{{currentNode}}'.toLowerCase() != '')) {
                 QV('p10BackButton', false);
                 QV('p11BackButton', false);
                 QV('p12BackButton', false);

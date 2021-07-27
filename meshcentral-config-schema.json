@@ -291,7 +291,7 @@
           "welcomePictureFullScreen": { "type": "boolean", "default": false, "description": "When enabled, the welcomePicture will show as a fullscreen background on the login screen." },
           "meshMessengerTitle": { "type": "string", "default": "MeshMessenger", "description": "Text that will be displayed on the top of the messenger window when no username or device name is displayed." },
           "meshMessengerPicture": { "type": "string", "default": null, "description": "Name of a .png image file that is placed in meshcentral-data that is displayed on the top of the messenger web page. When null, the default image is displayed." },
-          "hide": { "type": "integer", "default": 0 },
+          "hide": { "type": "integer", "default": 0, "description": "Sum of: 1 = Hide header, 2 = Hide tab, 4 = Hide footer, 8 = Hide title, 16 = Hide left bar, 32 = Hide back buttons" },
           "footer": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is logged in." },
           "loginfooter": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is not logged in." },
           "guestDeviceSharing": { "type": "boolean", "default": true, "description": "When set to false, the desktop/terminal sharing link feature is not available." },
