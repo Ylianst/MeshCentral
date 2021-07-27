@@ -3548,7 +3548,7 @@
             ) { menus.push({ n: "Terminal", f: 'setupDeviceMenu(5)' }); }
 
             if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype != 1) && (currentNode.agent.caps & 4))) { menus.push({ n: "Files", f: 'setupDeviceMenu(2)' }); }
-            if ((currentDevicePanel != 3) && (currentNode != null) && (currentNode.mtype != 3)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
+            if ((currentDevicePanel != 3) && (currentNode != null) && (currentNode.mtype != 3) && ((meshrights & 1048576) != 0)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
             if ((currentDevicePanel != 4) && (currentNode != null) && (meshrights & 0x00000010) && (currentNode.mtype == 2)) { menus.push({ n: "Console", f: 'setupDeviceMenu(4)' }); }
             updateFooterMenu(menus);
             updateCurrentUrl();
