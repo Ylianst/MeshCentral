@@ -1373,6 +1373,7 @@
         var checkedNodeids = {};
         var deskKeyboardShortcuts = [];
         var deskLastClipboardSent = null;
+        var requestedLastConnects = false;
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -1929,7 +1930,6 @@
                 meshserver.send({ action: 'usergroups' });
                 meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes', id: '{{currentNode}}' });
-                meshserver.send({ action: 'lastseen' });
                 meshserver.send({ action: 'loginTokens' });
                 if (pluginHandler != null) { meshserver.send({ action: 'plugins' }); }
                 if ('{{currentNode}}'.toLowerCase() == '') { meshserver.send({ action: 'files' }); }
@@ -2292,13 +2292,14 @@
                     }
                     break;
                 }
-                case 'lastseen': {
+                case 'lastconnects': {
                     var lcnodes = Object.keys(message.lastconnects);
                     for (var i in lcnodes) {
                         var lcnodeid = lcnodes[i];
                         var node = getNodeFromId(lcnodeid);
                         if (node != null) { node.lastconnect = message.lastconnects[lcnodeid] }
                     }
+                    mainUpdate(4);
                 }
                 case 'msg': {
                     // Check if this is a message from a node
@@ -3984,7 +3985,10 @@
                         if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
                         if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:120px>' + "Address"; }
                         if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { colums += '<th style=color:gray;width:100px>' + "Connectivity"; }
-                        if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { colums += '<th style=color:gray;width:120px>' + "Last Seen"; }
+                        if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) {
+                            colums += '<th style=color:gray;width:120px>' + "Last Seen";
+                            if (requestedLastConnects == false) { requestedLastConnects = true; meshserver.send({ action: 'lastconnects' }); }
+                        }
 
                         // This height of 1 div at the end to fix a problem in Linux firefox browsers
                         r = '<table style=width:100%;margin-top:4px cellpadding=0 cellspacing=0><th style=color:gray>' + colums + r + '</tr></table><div style=height:1px></div>';

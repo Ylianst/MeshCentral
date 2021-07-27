@@ -5404,7 +5404,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
         'lastconnect': serverCommandLastConnect,
-        'lastseen': serverCommandLastSeen,
+        'lastconnects': serverCommandLastConnects,
         'meshes': serverCommandMeshes,
         'serverconsole': serverCommandServerConsole,
         'servererrors': serverCommandServerErrors,
@@ -5538,27 +5538,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         });
     }
 
-    function serverCommandLastSeen(command) {
-        var links = parent.GetAllMeshIdWithRights(user);
-        var extraids = getUserExtraIds();
-        db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, (err, docs) => {
-            if (docs == null) { docs = []; }
+    function serverCommandLastConnects(command) {
+        const links = parent.GetAllMeshIdWithRights(user);
+        const extraids = getUserExtraIds();
+        db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, function (err, docs) {
+            if (docs == null) return;
 
-            // use associative array to join lastconnects on to users's nodes (left join) 
-            var LCs = {}
-            for (var i in docs) {
-                LCs[docs[i]._id] = '';
-            }
+            // Create a list of node ids for this user and query them for last device connection time
+            const ids = []
+            for (var i in docs) { ids.push('lc' + docs[i]._id); }
 
-            db.GetAllType('lastconnect', (err, docs) => {
-                for (var j in docs) {
-                    var nodeid = docs[j]._id.substring(2);
-                    if (LCs[nodeid] != null) {
-                        LCs[nodeid] = docs[j].time;
-                    }
-                }
-
-                try { ws.send(JSON.stringify({ action: 'lastseen', lastconnects: LCs })); } catch (ex) { }
+            // Pull list of last connections only for device owned by this user
+            db.GetAllIdsOfType(ids, domain.id, 'lastconnect', function (err, docs) {
+                if (docs == null) return;
+                const response = {};
+                for (var j in docs) { response[docs[j]._id.substring(2)] = docs[j].time; }
+                try { ws.send(JSON.stringify({ action: 'lastconnects', lastconnects: response, tag: command.tag })); } catch (ex) { }
             });
         });
     }
