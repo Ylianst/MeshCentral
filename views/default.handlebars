@@ -1788,6 +1788,7 @@
                 QV('p14BackButton', false);
                 QV('p15BackButton', false);
                 QV('p16BackButton', false);
+                QV('p17BackButton', false);
             }
             p1updateInfo();
         }
@@ -15379,7 +15380,7 @@
             // Panel 115 is weird, it's panel 15 for device console but used as a server console.
             if (x == 115) { QV('p15', true); }
             QV('p15uploadCore', x != 115);
-            QV('p15BackButton', x != 115);
+            QV('p15BackButton', (x != 115) && ((args.hide & 32) == 0) && ('{{currentNode}}'.toLowerCase() == '')); // For device console, only show the back button if not hidden and not in single device view mode.
             if ((x == 15) || (x == 115)) { setupConsole(); }
 
             if (x == 1) mainUpdate(4);
