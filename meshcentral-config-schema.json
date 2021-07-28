@@ -385,7 +385,8 @@
               "oldPasswordBan": { "type": "integer", "description": "Number of old passwords the server should remember and not allow the user to switch back to." },
               "banCommonPasswords": { "type": "boolean", "default": false, "description": "Uses WildLeek to block use of the 10000 most commonly used passwords." },
               "loginTokens": { "type": "boolean", "default": true, "description": "Allows users to create alternative username/passwords for their account." },
-              "twoFactorTimeout": { "type": "integer", "default": 300, "description": "Maximum about of time the to wait for a 2FA token on the login page in seconds." }
+              "twoFactorTimeout": { "type": "integer", "default": 300, "description": "Maximum about of time the to wait for a 2FA token on the login page in seconds." },
+              "autofido2fa": { "type": "boolean", "default": false, "description": "If true and user account has FIDO key setup, 2FA login screen will automatically request FIDO 2FA." }
             }
           },
           "twoFactorCookieDurationDays": { "type": "integer", "default": 30, "description": "Number of days that a user is allowed to remember this device for when completing 2FA. Set this to 0 to remove this option." },

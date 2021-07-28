@@ -324,6 +324,7 @@
         var currentpanel = 0;
         var otpemail = ('{{{otpemail}}}' === 'true');
         var otpsms = ('{{{otpsms}}}' === 'true');
+        var autofido = (decodeURIComponent('{{{autofido}}}') === 'true');
         var twoFactorCookieDays = parseInt('{{{twoFactorCookieDays}}}');
         var authStrategies = '{{{authStrategies}}}'.split(',');
         var tokenTimeout = parseInt('{{{tokenTimeout}}}');
@@ -405,15 +406,20 @@
             if (loginMode == '4') {
                 if (tokenTimeout > 0) { setTimeout(function () { Q('hwtokenInput').value = '**timeout**'; QE('tokenOkButton', true); Q('tokenOkButton').click(); }, tokenTimeout); }
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
-                QV('securityKeyButton', (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn'));
+                var twofakey = (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn');
+                QV('securityKeyButton', twofakey);
                 QV('emailKeyButton', otpemail && (messageid != 2) && (messageid != 4));
                 QV('smsKeyButton', otpsms && (messageid != 2) && (messageid != 4));
+
+                // If hardware key is an option, trigger it now
+                if (autofido && twofakey) { setTimeout(function () { useSecurityKey(1); }, 300); }
             }
 
             if (loginMode == '5') {
                 if (tokenTimeout > 0) { setTimeout(function () { Q('hwtokenInput').value = '**timeout**'; QE('tokenOkButton', true); Q('tokenOkButton').click(); }, tokenTimeout); }
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
-                if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
+                var twofakey = (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn');
+                if (twofakey) {
                     if (typeof hardwareKeyChallenge.challenge == 'string') { hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer; }
 
                     publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }

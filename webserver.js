@@ -2863,6 +2863,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
         var otppush = (parent.firebase != null) && (req.session != null) && (req.session.tpush === 1);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.push2factor == false)) { otppush = false; }
+        const autofido = ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.autofido2fa == true)); // See if FIDO should be automatically prompted if user account has it.
 
         // See if we support two-factor trusted cookies
         var twoFactorCookieDays = 30;
@@ -2917,6 +2918,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 otpemail: otpemail,
                 otpsms: otpsms,
                 otppush: otppush,
+                autofido: autofido,
                 twoFactorCookieDays: twoFactorCookieDays,
                 authStrategies: authStrategies.join(','),
                 loginpicture: (typeof domain.loginpicture == 'string'),
