@@ -600,8 +600,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     }
                     if (obj.parent.webserver.meshes[cookie.m] == null) {
                         meshNotFoundCount++;
-                        socket.ControlMsg({ action: 'console', msg: 'Device group not found (1)' });
-                        parent.debug('mps', 'Device group not found (1)', username, password);
+                        socket.ControlMsg({ action: 'console', msg: 'Device group not found (1): ' + cookie.m });
+                        parent.debug('mps', 'Device group not found (1): ' + cookie.m, username, password);
                         SendUserAuthFail(socket);
                         return -1;
                     }
@@ -635,7 +635,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     }
                     // Find the device group for this CIRA connection. Since Intel AMT does not allow @ or $ in the username, we escape these.
                     // For possible for CIRA-LMS connections to still send @ or $, so we need to escape both sides.
-                    var meshIdStart = ('/' + username).replace(/\@/g, 'X').replace(/\$/g, 'X'), mesh = null;
+                    const meshIdStart = ('/' + username).replace(/\@/g, 'X').replace(/\$/g, 'X'), mesh = null;
                     if (obj.parent.webserver.meshes) {
                         for (var i in obj.parent.webserver.meshes) {
                             if (obj.parent.webserver.meshes[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) {
@@ -645,8 +645,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     }
                     if (mesh == null) {
                         meshNotFoundCount++;
-                        socket.ControlMsg({ action: 'console', msg: 'Device group not found (2)' });
-                        parent.debug('mps', 'Device group not found (2)', username, password);
+                        socket.ControlMsg({ action: 'console', msg: 'Device group not found (2): ' + meshIdStart + ', u: ' + username + ', p: ' + password });
+                        parent.debug('mps', 'Device group not found (2)', meshIdStart, username, password);
                         SendUserAuthFail(socket);
                         return -1;
                     }

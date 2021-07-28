@@ -1898,6 +1898,7 @@ module.exports.CreateAmtManager = function (parent) {
                         if (dev.mpsConnection.tag.meiState.OsDnsSuffix != null) { trustedFqdn = dev.mpsConnection.tag.meiState.OsDnsSuffix; }
                         if (dev.mpsConnection.tag.meiState.DnsSuffix != null) { trustedFqdn = dev.mpsConnection.tag.meiState.DnsSuffix; }
                         dev.consoleMsg("No opportunity for ACM activation, trusted FQDN: " + ((trustedFqdn == null) ? "(Not Set)" : trustedFqdn));
+                        dev.consoleMsg("No opportunity for ACM activation, trusted FQDN: " + ((trustedFqdn == null) ? "(Not Set)" : (trustedFqdn + ", HEX: " + Buffer.from(trustedFqdn).toString('hex'))));
                         removeAmtDevice(dev, 38);
                         return false; // We are not in CCM and policy restricts use of CCM, so exit now.
                     } 
@@ -1910,9 +1911,9 @@ module.exports.CreateAmtManager = function (parent) {
                 } else {
                     // We are not activated now, go to ACM directly.
                     // Check if we are allowed to perform TLS ACM activation
-                    var TlsAcmActivation = true;
+                    var TlsAcmActivation = false;
                     var domain = parent.config.domains[dev.domainid];
-                    if (domain && domain.amtmanager && (domain.amtmanager.tlsacmactivation == false)) { TlsAcmActivation = false; }
+                    if (domain && domain.amtmanager && (domain.amtmanager.tlsacmactivation == true)) { TlsAcmActivation = true; }
 
                     // Check Intel AMT version
                     if (typeof dev.intelamt.ver == 'string') { var verSplit = dev.intelamt.ver.split('.'); if (verSplit.length >= 3) { dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); } }
