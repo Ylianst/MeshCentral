@@ -683,7 +683,7 @@
                     <div id=xdevicesBar style="position:absolute;overflow-y:auto;height:34px;left:0;right:0;bottom:0px;background-color:#aaa;color:black">
                         <div style="margin:4px">
                             <span style="width:20px;display:inline-block;text-align:center;cursor:pointer;font-size:16px" onclick=clearSearchInput()><b>X</b></span>
-                            <input id=SearchInput autocomplete=off type=search placeholder=Filter onchange=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) style="padding:2px;margin:0;height:20px;background-color:#FFF" />&nbsp;
+                            <input id=SearchInput autocomplete=off type=search placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) style="padding:2px;margin:0;height:20px;background-color:#FFF" />&nbsp;
                             <label class=noselect><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() />OS Name</label>
                             <label class=noselect><input type=checkbox id=OnlineCheckBox onclick=onOnlineCheckBox(event) />Online</label>
                         </div>
@@ -2672,7 +2672,7 @@
         }
 
         function onDeviceSearchChanged(e) {
-            onSearchInputChanged();
+            setTimeout(function () { onSearchInputChanged(); }, 10);
         }
 
         function clearSearchInput() {
