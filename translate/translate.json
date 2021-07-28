@@ -36383,7 +36383,7 @@
     {
       "cs": "Přidejte 2-faktorové záložní kódy. Pokud dojde ke ztrátě stávajícího faktoru, není možné tento účet obnovit.",
       "de": "Bitte fügen Sie Zweifaktor-Sicherungscodes hinzu. Falls der aktuelle Faktor verloren geht, kann dieses Konto nicht wiederhergestellt werden.",
-      "en": "Please add two-factor backup codes. If the current factor is lost, there is not way to recover this account.",
+      "en": "Please add two-factor backup codes. If the current factor is lost, there is no way to recover this account.",
       "es": "Agregar códigos de respaldo de dos factores. Si se pierde el factor actual, no hay forma de recuperar esta cuenta.",
       "fi": "Lisää kahden tekijän varmuuskoodit. Jos nykyinen tekijä menetetään, tätä tiliä ei voida palauttaa.",
       "fr": "Veuillez ajouter un autre facteur. Si le facteur actuel est perdu, il n'y a pas moyen de récupérer ce compte.",
