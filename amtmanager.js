@@ -1897,7 +1897,7 @@ module.exports.CreateAmtManager = function (parent) {
                         var trustedFqdn = null;
                         if (dev.mpsConnection.tag.meiState.OsDnsSuffix != null) { trustedFqdn = dev.mpsConnection.tag.meiState.OsDnsSuffix; }
                         if (dev.mpsConnection.tag.meiState.DnsSuffix != null) { trustedFqdn = dev.mpsConnection.tag.meiState.DnsSuffix; }
-                        dev.consoleMsg("No opportunity for ACM activation, trusted FQDN: " + ((trustedFqdn == null) ? "(Not Set)" : trustedFqdn));
+                        //dev.consoleMsg("No opportunity for ACM activation, trusted FQDN: " + ((trustedFqdn == null) ? "(Not Set)" : trustedFqdn));
                         dev.consoleMsg("No opportunity for ACM activation, trusted FQDN: " + ((trustedFqdn == null) ? "(Not Set)" : (trustedFqdn + ", HEX: " + Buffer.from(trustedFqdn).toString('hex'))));
                         removeAmtDevice(dev, 38);
                         return false; // We are not in CCM and policy restricts use of CCM, so exit now.
