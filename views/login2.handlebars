@@ -356,6 +356,7 @@
         var otpemail = (decodeURIComponent('{{{otpemail}}}') === 'true');
         var otpsms = (decodeURIComponent('{{{otpsms}}}') === 'true');
         var otppush = (decodeURIComponent('{{{otppush}}}') === 'true');
+        var autofido = (decodeURIComponent('{{{autofido}}}') === 'true');
         var twoFactorCookieDays = parseInt('{{{twoFactorCookieDays}}}');
         var authStrategies = '{{{authStrategies}}}'.split(',');
         var tokenTimeout = parseInt('{{{tokenTimeout}}}');
@@ -475,6 +476,9 @@
                 QV('smsKeyButton', smskey);
                 QV('pushKeyButton', pushkey);
                 QV('2farow', twofakey || emailkey || smskey || pushkey);
+
+                // If hardware key is an option, trigger it now
+                if (autofido && twofakey) { setTimeout(function () { useSecurityKey(1); }, 300); }
             }
 
             if (loginMode == '5') {
@@ -489,6 +493,9 @@
                 QV('smsKeyButton2', smskey);
                 QV('pushKeyButton', pushkey);
                 QV('2farow2', twofakey || emailkey || smskey || pushkey);
+
+                // If hardware key is an option, trigger it now
+                if (autofido && twofakey) { setTimeout(function () { useSecurityKey(2); }, 300); }
             }
 
             if (loginMode == '8') {
