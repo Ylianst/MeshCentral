@@ -3794,7 +3794,7 @@
                             if (((view == 1) || (view == 3) || (view == 5)) && (current != null)) { r += '</div>'; } // Close collapse div
                             deviceHeaderSet();
                             var extra = '';
-                            if (view == 2) { r += '<tr><td colspan=99>'; }
+                            if (view == 2) { r += '<tr><td colspan=' + (deviceViewSettings.devsCols.length + 1) + '>'; }
                             if (meshes[node.meshid] && (meshes[node.meshid].mtype == 1)) { extra = '<span class=devHeaderx>' + ", Intel&reg; AMT only" + '</span>'; }
                             if (meshes[node.meshid] && (meshes[node.meshid].mtype == 3)) { extra = '<span class=devHeaderx>' + ", Local Devices" + '</span>'; }
                             if ((view == 1) && (current != null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
@@ -3826,7 +3826,7 @@
                             deviceHeaderSet();
                             if ((view == 1) && (current !== null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
 
-                            if (view == 2) { r += '<tr><td colspan=5>'; }
+                            if (view == 2) { r += '<tr><td colspan=' + (deviceViewSettings.devsCols.length + 1) + '>'; }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx style=float:right></span>';
                             if ((view == 1) || (view == 2) || (view == 3) || (view == 5)) {
                                 var collapsed = CollapsedGroups['pwr:' + pwr];
@@ -3903,7 +3903,7 @@
                     for (var j in groupNames) {
                         var i = groupNames[j];
                         if (view == 2) {
-                            r += '<tr><td colspan=4><div class=DevSt style=width:100%;padding-top:4px>';
+                            r += '<tr><td colspan=' + (deviceViewSettings.devsCols.length + 1) + '><div class=DevSt style=width:100%;padding-top:4px>';
                             var collapsed = CollapsedGroups['tag:' + encodeURIComponentEx(i)];
                             r += '<img class=collapseImage cmenu=expandAllContextMenu id="DevxColImg' + tagDeviceHeaderId + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + tagDeviceHeaderId + '","tag:' + encodeURIComponentEx(i) + '",2)></img>'; // Collapse action
                             r += '<span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span><span>' + EscapeHtml(i).split('|').join(' &rarr; ').split('**INDV*~*DEVS**').join('<i>' + "Individual Devices" + '</i>') + '</span></div>' + groups[i];
