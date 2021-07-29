@@ -3152,7 +3152,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
         if (domain.meshmessengerpicture) {
             // Use the configured messenger logo picture
-            try { res.sendFile(obj.path.join(obj.parent.datapath, domain.meshmessengerpicture)); return; } catch (ex) { }
+            try { res.sendFile(obj.common.joinPath(obj.parent.datapath, domain.meshmessengerpicture)); return; } catch (ex) { }
         }
 
         var imagefile = 'images/messenger.png';
@@ -3288,7 +3288,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 return;
             } else {
                 // Use the logo on file
-                try { res.sendFile(obj.path.join(obj.parent.datapath, domain.titlepicture)); return; } catch (ex) { }
+                try { res.sendFile(obj.common.joinPath(obj.parent.datapath, domain.titlepicture)); return; } catch (ex) { }
             }
         }
 
@@ -3318,7 +3318,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 return;
             } else {
                 // Use the logo on file
-                try { res.sendFile(obj.path.join(obj.parent.datapath, domain.loginpicture)); return; } catch (ex) { res.sendStatus(404); }
+                try { res.sendFile(obj.common.joinPath(obj.parent.datapath, domain.loginpicture)); return; } catch (ex) { res.sendStatus(404); }
             }
         } else {
             res.sendStatus(404);
@@ -3404,7 +3404,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
 
             // Use the configured logo picture
-            try { res.sendFile(obj.path.join(obj.parent.datapath, domain.welcomepicture)); return; } catch (ex) { }
+            try { res.sendFile(obj.common.joinPath(obj.parent.datapath, domain.welcomepicture)); return; } catch (ex) { }
         }
 
         var imagefile = 'images/mainwelcome.jpg';
@@ -5916,7 +5916,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if ((typeof domain.authstrategies.saml.cert != 'string') || (typeof domain.authstrategies.saml.idpurl != 'string')) {
                         console.log('ERROR: Missing SAML configuration.');
                     } else {
-                        var cert = obj.fs.readFileSync(obj.path.join(obj.parent.datapath, domain.authstrategies.saml.cert));
+                        const certPath = common.joinPath(obj.parent.datapath, domain.authstrategies.saml.cert);
+                        var cert = obj.fs.readFileSync(certPath);
                         if (cert == null) {
                             console.log('ERROR: Unable to read SAML IdP certificate: ' + domain.authstrategies.saml.cert);
                         } else {
@@ -5956,7 +5957,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if ((typeof domain.authstrategies.intel.cert != 'string') || (typeof domain.authstrategies.intel.idpurl != 'string')) {
                         console.log('ERROR: Missing Intel SAML configuration.');
                     } else {
-                        var cert = obj.fs.readFileSync(obj.path.join(obj.parent.datapath, domain.authstrategies.intel.cert));
+                        var cert = obj.fs.readFileSync(obj.common.joinPath(obj.parent.datapath, domain.authstrategies.intel.cert));
                         if (cert == null) {
                             console.log('ERROR: Unable to read Intel SAML IdP certificate: ' + domain.authstrategies.intel.cert);
                         } else {
@@ -5998,7 +5999,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if ((typeof domain.authstrategies.jumpcloud.cert != 'string') || (typeof domain.authstrategies.jumpcloud.idpurl != 'string')) {
                         console.log('ERROR: Missing JumpCloud SAML configuration.');
                     } else {
-                        var cert = obj.fs.readFileSync(obj.path.join(obj.parent.datapath, domain.authstrategies.jumpcloud.cert));
+                        var cert = obj.fs.readFileSync(common.joinPath(obj.parent.datapath, domain.authstrategies.jumpcloud.cert));
                         if (cert == null) {
                             console.log('ERROR: Unable to read JumpCloud IdP certificate: ' + domain.authstrategies.jumpcloud.cert);
                         } else {
