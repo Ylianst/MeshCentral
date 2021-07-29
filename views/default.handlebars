@@ -13900,12 +13900,14 @@
             }
 
             var multiFactor = 0;
-            if ((user.otpsecret > 0) || (user.otphkeys > 0)) {
+            if ((user.otpsecret > 0) || (user.otphkeys > 0) || (user.otpekey > 0)) {
                 multiFactor = 1;
                 var factors = [];
                 if (user.otpsecret > 0) { factors.push("Authentication App"); }
                 if (user.otphkeys > 0) { factors.push("Security Key"); }
+                if (user.otpekey > 0) { factors.push("Email"); }
                 if (user.otpkeys > 0) { factors.push("Backup Codes"); }
+                if (user.otpdev > 0) { factors.push("Device Push"); }
                 if ((user.phone != null) && (features & 0x04000000)) { factors.push("SMS"); }
                 x += addDeviceAttribute("Security", '<img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" /> ' + factors.join(', '));
             }
