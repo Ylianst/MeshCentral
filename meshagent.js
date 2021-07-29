@@ -1310,6 +1310,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if ((typeof command.msg == 'string') && (command.msg.length < 4096)) {
                             var event = { etype: 'node', action: 'agentlog', nodeid: obj.dbNodeKey, domain: domain.id, msg: command.msg };
                             if (typeof command.msgid == 'number') { event.msgid = command.msgid; }
+                            if (typeof command.guestname == 'string') { event.guestname = command.guestname; }
                             if (Array.isArray(command.msgArgs)) { event.msgArgs = command.msgArgs; }
                             if (typeof command.remoteaddr == 'string') { event.remoteaddr = command.remoteaddr; }
                             var targets = parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]);

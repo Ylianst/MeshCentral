@@ -475,6 +475,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         else if (obj.req.query.p == 2) { msg = 'Started desktop session'; msgid = 15; }
                         else if (obj.req.query.p == 5) { msg = 'Started file management session'; msgid = 16; }
                         var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: sessionUser._id, username: sessionUser.name, msgid: msgid, msgArgs: [obj.id, obj.peer.req.clientIp, req.clientIp], msg: msg + ' \"' + obj.id + '\" from ' + obj.peer.req.clientIp + ' to ' + req.clientIp, protocol: req.query.p, nodeid: req.query.nodeid };
+                        if (obj.guestname) { event.guestname = obj.guestname; } else if (relayinfo.peer1.guestname) { event.guestname = relayinfo.peer1.guestname; } // If this is a sharing session, set the guest name here.
                         parent.parent.DispatchEvent(['*', sessionUser._id], obj, event);
                     }
                 } else {
@@ -653,9 +654,11 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         else if (obj.req.query.p == 200) { msg = 'Ended messenger session', msgid = 112; }
                         if (user) {
                             var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [obj.id, obj.req.clientIp, obj.peer.req.clientIp, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.peer.req.clientIp + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
+                            if (obj.guestname) { event.guestname = obj.guestname; } else if (peer.guestname) { event.guestname = peer.guestname; } // If this is a sharing session, set the guest name here.
                             parent.parent.DispatchEvent(['*', user._id], obj, event);
                         } else if (peer.user) {
                             var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: peer.user._id, username: peer.user.name, msgid: msgid, msgArgs: [obj.id, obj.req.clientIp, obj.peer.req.clientIp, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.peer.req.clientIp + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
+                            if (obj.guestname) { event.guestname = obj.guestname; } else if (peer.guestname) { event.guestname = peer.guestname; } // If this is a sharing session, set the guest name here.
                             parent.parent.DispatchEvent(['*', peer.user._id], obj, event);
                         }
                     }
@@ -888,6 +891,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); }
                 const rcookie = parent.parent.encodeCookie({ ruserid: user._id, nodeid: node._id }, parent.parent.loginCookieEncryptionKey);
                 const command = { nodeid: node._id, action: 'msg', type: 'tunnel', userid: user._id, value: '*/' + xdomain + 'meshrelay.ashx?p=' + cookie.p + '&id=' + obj.id + '&rauth=' + rcookie + '&nodeid=' + node._id, soptions: {}, rights: cookie.r, guestname: cookie.gn, consent: cookie.cf, remoteaddr: cleanRemoteAddr(obj.req.clientIp) };
+                obj.guestname = cookie.gn;
 
                 // Limit what this relay connection can do
                 if (typeof cookie.p == 'number') {
@@ -1114,6 +1118,7 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
             else if (req.query.p == 12) { protocolStr = 'VNC'; }
             else if (req.query.p == 13) { protocolStr = 'SSH-FILES'; }
             var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.user._id, username: obj.user.name, msgid: 121, msgArgs: [obj.id, protocolStr, obj.host, Math.floor((Date.now() - obj.time) / 1000)], msg: 'Ended local relay session \"' + obj.id + '\", protocol ' + protocolStr + ' to ' + obj.host + ', ' + Math.floor((Date.now() - obj.time) / 1000) + ' second(s)', nodeid: obj.req.query.nodeid, protocol: req.query.p, in: inTraffc, out: outTraffc };
+            if (obj.guestname) { event.guestname = obj.guestname; } // If this is a sharing session, set the guest name here.
             parent.parent.DispatchEvent(['*', user._id], obj, event);
         }
 
@@ -1168,6 +1173,7 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
                 else if (req.query.p == 13) { protocolStr = 'SSH-FILES'; }
                 obj.time = Date.now();
                 var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.user._id, username: obj.user.name, msgid: 120, msgArgs: [obj.id, protocolStr, obj.host], msg: 'Started local relay session \"' + obj.id + '\", protocol ' + protocolStr + ' to ' + obj.host, nodeid: req.query.nodeid, protocol: req.query.p };
+                if (obj.guestname) { event.guestname = obj.guestname; } // If this is a sharing session, set the guest name here.
                 parent.parent.DispatchEvent(['*', obj.user._id, obj.meshid, obj.nodeid], obj, event);
 
                 // Count the session
