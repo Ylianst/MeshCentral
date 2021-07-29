@@ -3794,7 +3794,7 @@
                             if (((view == 1) || (view == 3) || (view == 5)) && (current != null)) { r += '</div>'; } // Close collapse div
                             deviceHeaderSet();
                             var extra = '';
-                            if (view == 2) { r += '<tr><td colspan=5>'; }
+                            if (view == 2) { r += '<tr><td colspan=99>'; }
                             if (meshes[node.meshid] && (meshes[node.meshid].mtype == 1)) { extra = '<span class=devHeaderx>' + ", Intel&reg; AMT only" + '</span>'; }
                             if (meshes[node.meshid] && (meshes[node.meshid].mtype == 3)) { extra = '<span class=devHeaderx>' + ", Local Devices" + '</span>'; }
                             if ((view == 1) && (current != null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
