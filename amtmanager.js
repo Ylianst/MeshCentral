@@ -1609,16 +1609,29 @@ module.exports.CreateAmtManager = function (parent) {
         // If this device does not have KVM, ignore the response. This can happen for Intel Standard Manageability (Intel(R) SM).
         if ((responses['CIM_KVMRedirectionSAP'] == null) || (responses['CIM_KVMRedirectionSAP'].status == 400)) { responses['CIM_KVMRedirectionSAP'] = null; }
 
-        // Clear user consent requirements
-        if ((responses['IPS_OptInService'] != null) && (responses['IPS_OptInService'].response['OptInRequired'] != 0)) {
-            responses['IPS_OptInService'].response['OptInRequired'] = 0; // 0 = Not Required, 1 = Required for KVM only, 0xFFFFFFFF = Always Required
+        // Set user consent requirement to match device group user consent
+        const mesh = parent.webserver.meshes[dev.meshid];
+        if (mesh == null) { removeAmtDevice(dev, 35); return; }
+        const userConsentRequirement = ((typeof mesh.consent == 'number') && ((mesh.consent & 8) != 0)) ? 1 : 0; // Enable user consent for KVM if device group desktop "Prompt for user consent" is enabled.
+
+        // Check user consent requirements
+        if ((responses['IPS_OptInService'] != null) && (responses['IPS_OptInService'].response['OptInRequired'] != userConsentRequirement)) {
+            responses['IPS_OptInService'].response['OptInRequired'] = userConsentRequirement; // 0 = Not Required, 1 = Required for KVM only, 0xFFFFFFFF = Always Required
             dev.amtstack.Put('IPS_OptInService', responses['IPS_OptInService'].response, function (stack, name, responses, status) {
                 const dev = stack.dev;
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-                if (status == 200) { dev.consoleMsg("Cleared user consent requirements."); }
+                if (status == 200) {
+                    if (userConsentRequirement == 0) {
+                        dev.consoleMsg("Cleared user consent requirements.");
+                    } else if (userConsentRequirement == 1) {
+                        dev.consoleMsg("Enabled KVM user consent requirement.");
+                    } else if (userConsentRequirement == 0xFFFFFFFF) {
+                        dev.consoleMsg("Enabled all user consent requirement.");
+                    }
+                }
             }, 0, 1);
         }
-
+        
         // Enable SOL & IDER
         if ((responses['AMT_RedirectionService'].response['EnabledState'] != 32771) || (responses['AMT_RedirectionService'].response['ListenerEnabled'] == false)) {
             dev.redirObj = responses['AMT_RedirectionService'].response;
