@@ -14,6 +14,8 @@
 /*jshint esversion: 6 */
 "use strict";
 
+const common = require('./common.js');
+
 // If app metrics is available
 if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ url: '/', title: 'MeshCentral', port: 88, host: '127.0.0.1' }); } catch (e) { } }
 
@@ -40,7 +42,7 @@ function CreateMeshCentralServer(config, args) {
     obj.exeHandler = require('./exeHandler.js');
     obj.platform = require('os').platform();
     obj.args = args;
-    obj.common = require('./common.js');
+    obj.common = common;
     obj.configurationFiles = null;
     obj.certificates = null;
     obj.connectivityByNode = {};      // This object keeps a list of all connected CIRA and agents, by nodeid->value (value: 1 = Agent, 2 = CIRA, 4 = AmtDirect)
@@ -666,13 +668,7 @@ function CreateMeshCentralServer(config, args) {
                                 obj.args = args = config2.settings;
 
                                 // Lower case all keys in the config file
-                                try {
-                                    require('./common.js').objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate']);
-                                } catch (ex) {
-                                    console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
-                                    process.exit();
-                                    return;
-                                }
+                                obj.common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate']);
 
                                 // Grad some of the values from the original config.json file if present.
                                 if ((config.settings.vault != null) && (config2.settings != null)) { config2.settings.vault = config.settings.vault; }
@@ -1148,13 +1144,7 @@ function CreateMeshCentralServer(config, args) {
                             for (i in args) { config2.settings[i] = args[i]; }
 
                             // Lower case all keys in the config file
-                            try {
-                                require('./common.js').objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate']);
-                            } catch (ex) {
-                                console.log("CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.");
-                                process.exit();
-                                return;
-                            }
+                            common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate']);
 
                             // Grad some of the values from the original config.json file if present.
                             config2['mysql'] = config['mysql'];
@@ -3051,7 +3041,7 @@ function getConfig(createSampleConfig) {
     // Read configuration file if present and change arguments.
     var config = {}, configFilePath = path.join(datapath, 'config.json');
     if (args.configfile) {
-        configFilePath = path.isAbsolute(args.configfile) ? args.configfile : path.join(datapath, args.configfile);
+        configFilePath = common.joinPath(datapath, args.configfile);
     }
     if (fs.existsSync(configFilePath)) {
         // Load and validate the configuration file

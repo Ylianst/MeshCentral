@@ -16,6 +16,7 @@
 
 const fs = require('fs');
 const crypto = require('crypto');
+const path = require('path');
 
 // Binary encoding and decoding functions
 module.exports.ReadShort = function (v, p) { return (v.charCodeAt(p) << 8) + v.charCodeAt(p + 1); };
@@ -31,6 +32,7 @@ module.exports.SplitArray = function (v) { return v.split(','); };
 module.exports.Clone = function (v) { return JSON.parse(JSON.stringify(v)); };
 module.exports.IsFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return module.exports.validateString(fname, 1, 4096) && x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); }; })();
 module.exports.makeFilename = function (v) { return v.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join(''); }
+module.exports.joinPath = function (base, path_) { return path.isAbsolute(path_) ? path_ : path.join(base, path_); }
 
 // Move an element from one position in an array to a new position
 module.exports.ArrayElementMove = function(arr, from, to) { arr.splice(to, 0, arr.splice(from, 1)[0]); };
