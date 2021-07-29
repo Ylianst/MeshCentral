@@ -9782,10 +9782,12 @@
                         msg = EscapeHtml(msg).split('(R)').join('&reg;');
                     }
                     if (event.username) {
+                        var guestname = '';
+                        if (event.guestname) { guestname = ' / <span title="' + "This is a guest sharing session" + '">' + EscapeHtml(event.guestname) + '</span>'; }
                         if ((userinfo.siteadmin & 2) && (event.userid)) {
-                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a> &rarr; ' + msg;
+                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a>' + guestname + ' &rarr; ' + msg;
                         } else {
-                            msg = EscapeHtml(event.username) + ' &rarr; ' + msg;
+                            msg = EscapeHtml(event.username) + guestname + ' &rarr; ' + msg;
                         }
                     }
                     if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
@@ -12514,13 +12516,13 @@
             30: "Starting remote desktop after local user accepted",
             31: "Remote Desktop Connection Bar Activated/Updated",
             32: "Remote Desktop Connection Bar Failed or Not Supported",
-            33: "Remote Desktop Connection forcefully closed by local user",
+            33: "Remote Desktop Connection forcefully closed by local user", // No longer used, 29 must be used instead.
             34: "Failed to start remote desktop after local user rejected",
             35: "Started remote desktop with toast notification",
             36: "Started remote desktop without notification",
-            37: "Remote Desktop Connection Bar Activated/Updated",
-            38: "Remote Desktop Connection Bar Failed or not Supported",
-            39: "Remote Desktop Connection forcefully closed by local user",
+            37: "Remote Desktop Connection Bar Activated/Updated", // No longer used, 31 must be used instead.
+            38: "Remote Desktop Connection Bar Failed or not Supported", // No longer used, 33 must be used instead.
+            39: "Remote Desktop Connection forcefully closed by local user", // No longer used, 29 must be used instead.
             40: "Starting remote files after local user accepted",
             41: "Failed to start remote files after local user rejected",
             42: "Started remote files with toast notification",
@@ -12652,10 +12654,12 @@
                         }
                     }
                     if (event.username) {
+                        var guestname = '';
+                        if (event.guestname) { guestname = ' / <span title="' + "This is a guest sharing session" + '">' + EscapeHtml(event.guestname) + '</span>'; }
                         if ((userinfo.siteadmin & 2) && (event.userid)) {
-                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a> &rarr; ' + msg;
+                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a>' + guestname + ' &rarr; ' + msg;
                         } else {
-                            msg = EscapeHtml(event.username) + ' &rarr; ' + msg;
+                            msg = EscapeHtml(event.username) + guestname + ' &rarr; ' + msg;
                         }
                     }
                     if (event.remoteaddr) { msg += ' (' + event.remoteaddr + ')'; }
@@ -14276,11 +14280,15 @@
                         }
                     }
                     if (event.username && (event.username != currentUser.name)) {
+                        var guestname = '';
+                        if (event.guestname) { guestname = ' / <span title="' + "This is a guest sharing session" + '">' + EscapeHtml(event.guestname) + '</span>'; }
                         if ((userinfo.siteadmin & 2) && (event.userid)) {
-                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a> &rarr; ' + msg;
+                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a>' + guestname + ' &rarr; ' + msg;
                         } else {
-                            msg = EscapeHtml(event.username) + ' &rarr; ' + msg;
+                            msg = EscapeHtml(event.guestname) + ' &rarr; ' + msg;
                         }
+                    } else if (event.guestname) {
+                        msg = '<span title="' + "This is a guest sharing session" + '">' + EscapeHtml(event.guestname) + '</span> &rarr; ' + msg;
                     }
                     if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
                     x += '<tr onclick=showEventDetails(' + event.h + ',3)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';

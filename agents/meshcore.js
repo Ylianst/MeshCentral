@@ -482,6 +482,7 @@ function MeshServerLog(msg, state) {
         if (state.username) { msg.username = state.username; }
         if (state.sessionid) { msg.sessionid = state.sessionid; }
         if (state.remoteaddr) { msg.remoteaddr = state.remoteaddr; }
+        if (state.guestname) { msg.guestname = state.guestname; }
     }
     mesh.SendCommand(msg);
 }
@@ -494,6 +495,7 @@ function MeshServerLogEx(id, args, msg, state) {
         if (state.username) { msg.username = state.username; }
         if (state.sessionid) { msg.sessionid = state.sessionid; }
         if (state.remoteaddr) { msg.remoteaddr = state.remoteaddr; }
+        if (state.guestname) { msg.guestname = state.guestname; }
     }
     mesh.SendCommand(msg);
 }
@@ -2210,7 +2212,7 @@ function onTunnelData(data) {
                                 if (this.ws.httprequest.desktop.kvm.connectionBar) {
                                     this.ws.httprequest.desktop.kvm.connectionBar.httprequest = this.ws.httprequest;
                                     this.ws.httprequest.desktop.kvm.connectionBar.on('close', function () {
-                                        MeshServerLogEx(33, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                                        MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
                                         for (var i in this.httprequest.desktop.kvm._pipedStreams) {
                                             this.httprequest.desktop.kvm._pipedStreams[i].end();
                                         }
@@ -2249,15 +2251,15 @@ function onTunnelData(data) {
                         }
                         try {
                             this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid);
-                            MeshServerLogEx(37, null, "Remote Desktop Connection Bar Activated/Updated (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                            MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.httprequest.remoteaddr + ")", this.httprequest);
                         }
                         catch (e) {
-                            MeshServerLogEx(38, null, "Remote Desktop Connection Bar Failed or not Supported (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                            MeshServerLogEx(32, null, "Remote Desktop Connection Bar Failed or not Supported (" + this.httprequest.remoteaddr + ")", this.httprequest);
                         }
                         if (this.httprequest.desktop.kvm.connectionBar) {
                             this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
                             this.httprequest.desktop.kvm.connectionBar.on('close', function () {
-                                MeshServerLogEx(39, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                                MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
                                 for (var i in this.httprequest.desktop.kvm._pipedStreams) {
                                     this.httprequest.desktop.kvm._pipedStreams[i].end();
                                 }
