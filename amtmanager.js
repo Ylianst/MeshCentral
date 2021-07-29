@@ -1897,7 +1897,7 @@ module.exports.CreateAmtManager = function (parent) {
         if (amtPolicy == 2) { activateIntelAmtCcm(dev, mesh.amt.password); } // Activate to CCM policy
         if ((amtPolicy == 3) || (amtPolicy == 4)) { // Activate to ACM policy
             var acminfo = checkAcmActivation(dev);
-            if (acminfo == null) {
+            if ((acminfo == null) || (acminfo.err != null)) {
                 // No opportunity to activate to ACM, check if we are in CCM
                 if ((dev.mpsConnection.tag.meiState.Flags & 2) != 0) {
                     if ((amtPolicy == 3) && (ccmPolicy == 1)) { deactivateIntelAmtCCM(dev); } // If we are in ACM policy and CCM is not allowed, deactivate it now.
@@ -1907,11 +1907,7 @@ module.exports.CreateAmtManager = function (parent) {
                     if ((amtPolicy == 4) || ((amtPolicy == 3) && (ccmPolicy == 2))) { activateIntelAmtCcm(dev, mesh.amt.password); } // If we are in full automatic or ACM with CCM allowed, setup CCM.
                     else {
                         // Unable to find an activation match.
-                        var trustedFqdn = null;
-                        if (dev.mpsConnection.tag.meiState.OsDnsSuffix != null) { trustedFqdn = dev.mpsConnection.tag.meiState.OsDnsSuffix; }
-                        if (dev.mpsConnection.tag.meiState.DnsSuffix != null) { trustedFqdn = dev.mpsConnection.tag.meiState.DnsSuffix; }
-                        //dev.consoleMsg("No opportunity for ACM activation, trusted FQDN: " + ((trustedFqdn == null) ? "(Not Set)" : trustedFqdn));
-                        dev.consoleMsg("No opportunity for ACM activation, trusted FQDN: " + ((trustedFqdn == null) ? "(Not Set)" : (trustedFqdn + ", HEX: " + Buffer.from(trustedFqdn).toString('hex'))));
+                        if (acminfo == null) { dev.consoleMsg("No opportunity for ACM activation."); } else { dev.consoleMsg("No opportunity for ACM activation: " + acminfo.err); }
                         removeAmtDevice(dev, 38);
                         return false; // We are not in CCM and policy restricts use of CCM, so exit now.
                     } 
@@ -2014,17 +2010,16 @@ module.exports.CreateAmtManager = function (parent) {
     // Check if this device has any way to be activated in ACM using our server certificates.
     function checkAcmActivation(dev) {
         var domain = parent.config.domains[dev.domainid];
-        if ((domain == null) || (domain.amtacmactivation == null) || (domain.amtacmactivation.certs == null) || (domain.amtacmactivation.certs.length == 0)) return null;
+        if ((domain == null) || (domain.amtacmactivation == null) || (domain.amtacmactivation.certs == null) || (domain.amtacmactivation.certs.length == 0)) return { err: "Server does not have any ACM activation certificates." };
         const activationCerts = domain.amtacmactivation.certs;
-        if ((dev.mpsConnection.tag.meiState == null) || (dev.mpsConnection.tag.meiState.Hashes == null) || (dev.mpsConnection.tag.meiState.Hashes.length == 0)) return null;
+        if ((dev.mpsConnection.tag.meiState == null) || (dev.mpsConnection.tag.meiState.Hashes == null) || (dev.mpsConnection.tag.meiState.Hashes.length == 0)) return { err: "Intel AMT did not report any trusted hashes." };
         const deviceHashes = dev.mpsConnection.tag.meiState.Hashes;
-        if (deviceHashes == null) return null;
 
         // Get the trusted FQDN of the device
         var trustedFqdn = null;
         if (dev.mpsConnection.tag.meiState.OsDnsSuffix != null) { trustedFqdn = dev.mpsConnection.tag.meiState.OsDnsSuffix; }
         if (dev.mpsConnection.tag.meiState.DnsSuffix != null) { trustedFqdn = dev.mpsConnection.tag.meiState.DnsSuffix; }
-        if (trustedFqdn == null) return null;
+        if (trustedFqdn == null) return { err: "No trusted DNS suffix reported" };
 
         // Find a matching certificate
         for (var i in activationCerts) {
@@ -2039,7 +2034,7 @@ module.exports.CreateAmtManager = function (parent) {
                 }
             }
         }
-        return null; // Did not find a match
+        return { err: "No matching ACM activation certificate for \"" + trustedFqdn + "\"." }; // Did not find a match
     }
 
     // Return true if the trusted FQDN matched the certificate common name

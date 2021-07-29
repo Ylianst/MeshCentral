@@ -3978,8 +3978,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                             var rx = '';
                             var apfarg = {
                                 mpsurl: mesh.ServerUrl.replace('agent.ashx', 'apf.ashx'),
-                                mpsuser: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
-                                mpspass: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
+                                mpsuser: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16).replace(/\+/g, '@').replace(/\//g, '$'),
+                                mpspass: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16).replace(/\+/g, '@').replace(/\//g, '$'),
                                 mpskeepalive: 60000,
                                 clientname: state.OsHostname,
                                 clientaddress: '127.0.0.1',
@@ -4018,8 +4018,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         if (connType >= 0) { // Connect
                             var apfarg = {
                                 mpsurl: mesh.ServerUrl.replace('agent.ashx', 'apf.ashx'),
-                                mpsuser: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
-                                mpspass: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
+                                mpsuser: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16).replace(/\+/g, '@').replace(/\//g, '$'),
+                                mpspass: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16).replace(/\+/g, '@').replace(/\//g, '$'),
                                 mpskeepalive: 60000,
                                 clientname: require('os').hostname(),
                                 clientaddress: '127.0.0.1',
