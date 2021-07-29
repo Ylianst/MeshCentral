@@ -635,7 +635,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     }
                     // Find the device group for this CIRA connection. Since Intel AMT does not allow @ or $ in the username, we escape these.
                     // For possible for CIRA-LMS connections to still send @ or $, so we need to escape both sides.
-                    const meshIdStart = ('/' + username).replace(/\@/g, 'X').replace(/\$/g, 'X'), mesh = null;
+                    var mesh = null;
+                    const meshIdStart = ('/' + username).replace(/\@/g, 'X').replace(/\$/g, 'X');
                     if (obj.parent.webserver.meshes) {
                         for (var i in obj.parent.webserver.meshes) {
                             if (obj.parent.webserver.meshes[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) {
