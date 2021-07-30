@@ -172,9 +172,10 @@ if (process.platform == 'darwin' && !process.versions) {
 // Add an Intel AMT event to the log
 function addAmtEvent(msg) {
     if (obj.amtevents == null) { obj.amtevents = []; }
-    var d = new Date();
-    obj.amtevents.push(zeroPad(d.getHours(), 2) + ':' + zeroPad(d.getMinutes(), 2) + ':' + zeroPad(d.getSeconds(), 2) + ', ' + msg);
+    var d = new Date(), e = zeroPad(d.getHours(), 2) + ':' + zeroPad(d.getMinutes(), 2) + ':' + zeroPad(d.getSeconds(), 2) + ', ' + msg;
+    obj.amtevents.push(e);
     if (obj.amtevents.length > 100) { obj.amtevents.splice(0, obj.amtevents.length - 100); }
+    if (obj.showamtevent) { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: e }); }
 }
 function zeroPad(num, size) { var s = '000000000' + num; return s.substr(s.length - size); }
 
@@ -3966,14 +3967,17 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     break;
                 }
             case 'amtevents': {
-                if (obj.amtevents == null) { response = 'No events.'; } else { response = obj.amtevents.join('\r\n'); }
+                if ((args['_'].length == 1) && (args['_'][0] == 'on')) { obj.showamtevent = true; response = 'Intel AMT configuration events live view enabled.'; }
+                else if ((args['_'].length == 1) && (args['_'][0] == 'off')) { delete obj.showamtevent; response = 'Intel AMT configuration events live view disabled.'; }
+                else if (obj.amtevents == null) { response = 'No events.'; } else { response = obj.amtevents.join('\r\n'); }
                 break;
             }
             case 'amtconfig': {
-                if (amt == null) { response = "Intel AMT not detected."; break; }
-                if (apftunnel != null) { response = "Intel AMT server tunnel already active"; break; }
+                if (amt == null) { response = 'Intel AMT not detected.'; break; }
+                if (apftunnel != null) { response = 'Intel AMT server tunnel already active'; break; }
+                if (!obj.showamtevent) { obj.showamtevent = true; require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: 'Enabled live view of Intel AMT configuration events, \"amtevents off\" to disable.' }); }
                 amt.getMeiState(15, function (state) {
-                    if ((state == null) || (state.ProvisioningState == null)) { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "Intel AMT not ready for configuration." }); } else {
+                    if ((state == null) || (state.ProvisioningState == null)) { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: 'Intel AMT not ready for configuration.' }); } else {
                         getAmtOsDnsSuffix(state, function () {
                             var rx = '';
                             var apfarg = {
@@ -3994,12 +3998,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                                 apftunnel = require('amt-apfclient')({ debug: false }, apfarg);
                                 apftunnel.onJsonControl = handleApfJsonControl;
                                 apftunnel.onChannelClosed = function () { addAmtEvent('User LMS tunnel closed.'); apftunnel = null; }
-                                try {
-                                    apftunnel.connect();
-                                    rx = "Started Intel AMT configuration";
-                                } catch (ex) {
-                                    rx = JSON.stringify(ex);
-                                }
+                                try { apftunnel.connect(); } catch (ex) { rx = JSON.stringify(ex); }
                             }
                             if (rx != '') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: rx }); }
                         });
@@ -4132,8 +4131,9 @@ function sendAgentMessage(msg, icon, serverid, first) {
     return (arguments.length > 0 ? sendAgentMessage.messages.peek().id : sendAgentMessage.messages);
 }
 function getOpenDescriptors() {
+    var r = [];
     switch (process.platform) {
-        case "freebsd":
+        case "freebsd": {
             var child = require('child_process').execFile('/bin/sh', ['sh']);
             child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
             child.stderr.on('data', function (c) { });
@@ -4157,14 +4157,10 @@ function getOpenDescriptors() {
             child.stdin.write('\nexit\n');
             child.waitExit();
 
-            try {
-                return (JSON.parse(child.stdout.str.trim()));
-            }
-            catch (e) {
-                return ([]);
-            }
+            try { r = JSON.parse(child.stdout.str.trim()); } catch (ex) { }
             break;
-        case "linux":
+        }
+        case "linux": {
             var child = require('child_process').execFile('/bin/sh', ['sh']);
             child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
             child.stderr.on('data', function (c) { });
@@ -4183,16 +4179,11 @@ function getOpenDescriptors() {
             child.stdin.write('\nexit\n');
             child.waitExit();
 
-            try {
-                return (JSON.parse(child.stdout.str.trim()));
-            }
-            catch (e) {
-                return ([]);
-            }
+            try { r = JSON.parse(child.stdout.str.trim()); } catch (ex) { }
             break;
-        default:
-            return ([]);
+        }
     }
+    return r;
 }
 function closeDescriptors(libc, descriptors) {
     var fd = null;
