@@ -471,6 +471,8 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         if ((typeof data != 'object') || (data.length < 4)) return; // Ignore all control traffic for now (WebRTC)
         var command = data.readUInt16BE(0);
         var cmdsize = data.readUInt16BE(2);
+        if (data.length != cmdsize) return; // Invalid command length
+
         //console.log('ViewerData', data.length, command, cmdsize);
         switch (command) {
             case 1: // Key Events, forward to agent
