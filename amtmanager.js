@@ -2022,9 +2022,12 @@ module.exports.CreateAmtManager = function (parent) {
         if (trustedFqdn == null) return { err: "No trusted DNS suffix reported" };
 
         // Find a matching certificate
+        var gotSuffixMatch = false;
         for (var i in activationCerts) {
             var cert = activationCerts[i];
-            if ((cert.cn == '*') || checkAcmActivationCertName(cert.cn, trustedFqdn)) {
+            var certDnsMatch = checkAcmActivationCertName(cert.cn, trustedFqdn);
+            if (certDnsMatch == true) { gotSuffixMatch = true; } 
+            if ((cert.cn == '*') || certDnsMatch) {
                 for (var j in deviceHashes) {
                     var hashInfo = deviceHashes[j];
                     if ((hashInfo != null) && (hashInfo.isActive == 1)) {
@@ -2034,6 +2037,7 @@ module.exports.CreateAmtManager = function (parent) {
                 }
             }
         }
+        if (gotSuffixMatch) { return { err: "Certificate root hash matching failed for \"" + trustedFqdn + "\"." }; } // Found a DNS suffix match, but root hash failed to match.
         return { err: "No matching ACM activation certificate for \"" + trustedFqdn + "\"." }; // Did not find a match
     }
 
