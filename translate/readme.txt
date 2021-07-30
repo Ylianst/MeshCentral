@@ -3,7 +3,7 @@ You can help translate MeshCentral into other languages pretty easily. In this f
 
 Download the following Windows tool to open the "translate.json" file and edit strings.
 
-  http://info.meshcentral.com/downloads/MeshCentral2/ResourceTranslator.zip
+  https://info.meshcentral.com/downloads/MeshCentral2/ResourceTranslator.zip
 
 Once done, save the file back and run this:
 
