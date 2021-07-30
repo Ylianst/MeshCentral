@@ -318,6 +318,7 @@
                                     <option>Device</option>
                                     <option>Tags</option>
                                     <option>Group-Tags</option>
+                                    <option>Last Seen</option>
                                 </select>
                                 &nbsp;
                             </div>
@@ -3775,6 +3776,17 @@
                 if (sort == 0) { nodes.sort(meshSort); }
                 else if (sort == 1) { nodes.sort(powerSort); }
                 else if (sort == 2) { if (showRealNames == true) { nodes.sort(deviceHostSort); } else { nodes.sort(deviceSort); } }
+                else if (sort == 5) {
+                    // if the last seen column is not turned on, turn it on first (we require this to sort the data)
+                    if (!(deviceViewSettings && deviceViewSettings.devsCols && deviceViewSettings.devsCols.indexOf('lastseen') >= 0)) {
+                        // force initialize the view settings
+                        if (deviceViewSettings == null) { deviceViewSettings = {}; }
+                        if (!Array.isArray(deviceViewSettings.devsCols)) { deviceViewSettings.devsCols = ['user','ip','conn', 'lastseen']; }
+                        else { deviceViewSettings.devsCols.push('lastseen'); }
+                    }
+                    nodes.sort(lastConnectSort);
+                }
+
 
                 // Compute the width of the device view.
                 var totalDeviceViewWidth = Q('column_l').clientWidth - 60;
@@ -3845,7 +3857,7 @@
                             c = 0;
                             if ((view == 1) || (view == 3) || (view == 5)) { r += '<div id=DevxCol' + deviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; } // Open collapse div
                         }
-                    } else if (sort == 2) {
+                    } else if (sort == 2 || sort == 5) {
                         // Device header
                         if (current == null) { current = '1'; }
                     }
@@ -5283,6 +5295,7 @@
         function powerSort(a, b) { var ap = a.pwr?a.pwr:0; var bp = b.pwr?b.pwr:0; if (ap > bp) return -1; if (ap < bp) return 1; if (ap == bp) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } return 0; }
         function deviceSort(a, b) { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; }
         function deviceHostSort(a, b) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; }
+        function lastConnectSort(a, b) { return a.lastconnect - b.lastconnect; }
         function onSearchFocus(x) { searchFocus = x; }
         function clearDeviceSearch() { Q('KvmSearchInput').value = Q('SearchInput').value = ''; Q('DevFilterSelect').value = 0; onOnlineCheckBox(); mainUpdate(1); }
         function onMapSearchFocus(x) { mapSearchFocus = x; }
