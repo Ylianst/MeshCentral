@@ -3777,6 +3777,7 @@
                 else if (sort == 1) { nodes.sort(powerSort); }
                 else if (sort == 2) { if (showRealNames == true) { nodes.sort(deviceHostSort); } else { nodes.sort(deviceSort); } }
                 else if (sort == 5) {
+                    if (requestedLastConnects == false) { requestedLastConnects = true; meshserver.send({ action: 'lastconnects' }); }
                     // if the last seen column is not turned on, turn it on first (we require this to sort the data)
                     if (!(deviceViewSettings && deviceViewSettings.devsCols && deviceViewSettings.devsCols.indexOf('lastseen') >= 0)) {
                         // force initialize the view settings
