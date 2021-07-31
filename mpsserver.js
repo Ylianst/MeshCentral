@@ -1325,6 +1325,16 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         for (var i in obj.httpResponses) { if ((obj.httpResponses[i].maxtime != null) && (obj.httpResponses[i].maxtime < now)) { delete obj.httpResponses[i]; } }
     }
 
+    // Drop all CIRA connections
+    obj.dropAllConnections = function () {
+        var dropCount = 0;
+        for (var nodeid in obj.ciraConnections) {
+            const connections = obj.ciraConnections[nodeid];
+            for (var i in connections) { if (connections[i].end) { connections[i].end(); dropCount++; } } // This will drop all TCP CIRA connections
+        }
+        return dropCount;
+    }
+
     function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + "-" + g.substring(10, 12) + g.substring(8, 10) + "-" + g.substring(14, 16) + g.substring(12, 14) + "-" + g.substring(16, 20) + "-" + g.substring(20); }
 
     // Clean a IPv6 address that encodes a IPv4 address
