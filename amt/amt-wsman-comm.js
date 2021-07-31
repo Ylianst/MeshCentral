@@ -410,7 +410,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                     // We got a chunk with all of the data, handle the chunck now.
                     var data = obj.socketAccumulator.substring(clen + 2, clen + 2 + csize);
                     obj.socketAccumulator = obj.socketAccumulator.substring(clen + 2 + csize + 2);
-                    obj.socketData += data;
+                    try { obj.socketData += data; } catch (ex) { console.log(ex, typeof data, data.length); }
                 }
                 if (csize == 0) {
                     //obj.Debug("xxOnSocketData DONE: (" + obj.socketData.length + "): " + obj.socketData);

@@ -5227,7 +5227,9 @@
         function p2downloadDeviceInfoCSV() {
             var chkNodeIds = getCheckedDevices();
             if (Q('d2DevInfoDetailsCheck').checked) {
-                meshserver.send({ action: 'getDeviceDetails', nodeids: chkNodeIds, type: 'csv' }); // With details
+                var tz = null;
+                try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (ex) {}
+                meshserver.send({ action: 'getDeviceDetails', nodeids: chkNodeIds, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), type: 'csv' }); // With details
             } else {
                 // Without details
                 var csv = "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr, av, update, firewall, avdetails" + '\r\n', r = [];
@@ -5268,7 +5270,9 @@
         function p2downloadDeviceInfoJSON() {
             var chkNodeIds = getCheckedDevices();
             if (Q('d2DevInfoDetailsCheck').checked) {
-                meshserver.send({ action: 'getDeviceDetails', nodeids: chkNodeIds, type: 'json' }); // With details
+                var tz = null;
+                try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (ex) {}
+                meshserver.send({ action: 'getDeviceDetails', nodeids: chkNodeIds, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), type: 'json' }); // With details
             } else {
                 // Without details
                 var r = [];
