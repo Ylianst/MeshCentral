@@ -5448,6 +5448,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'dbcounters': [serverUserCommandDbCounters, ""],
         'dbstats': [serverUserCommandDbStats, ""],
         'dispatchtable': [serverUserCommandDispatchTable, ""],
+        'dropallcira': [serverUserCommandDropAllCira, ""],
         'dupagents': [serverUserCommandDupAgents, ""],
         'email': [serverUserCommandEmail, ""],
         'firebase': [serverUserCommandFirebase, ""],
@@ -5852,6 +5853,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         for (var i in parent.parent.eventsDispatch) {
             cmdData.result += (i + ', ' + parent.parent.eventsDispatch[i].length + '\r\n'); 
         }
+    }
+
+    function serverUserCommandDropAllCira(cmdData) {
+        if (parent.parent.mpsserver == null) { cmdData.result = 'MPS not setup.'; return; }
+        const dropCount = parent.parent.mpsserver.dropAllConnections();
+        cmdData.result = 'Dropped ' + dropCount + ' connection(s).';
     }
 
     function serverUserCommandDupAgents(cmdData) {
