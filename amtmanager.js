@@ -2014,7 +2014,7 @@ module.exports.CreateAmtManager = function (parent) {
         const activationCerts = domain.amtacmactivation.certs;
         if ((dev.mpsConnection.tag.meiState == null) || (dev.mpsConnection.tag.meiState.Hashes == null) || (dev.mpsConnection.tag.meiState.Hashes.length == 0)) return { err: "Intel AMT did not report any trusted hashes." };
         const deviceHashes = dev.mpsConnection.tag.meiState.Hashes;
-
+        
         // Get the trusted FQDN of the device
         var trustedFqdn = null;
         if (dev.mpsConnection.tag.meiState.OsDnsSuffix != null) { trustedFqdn = dev.mpsConnection.tag.meiState.OsDnsSuffix; }
@@ -2023,6 +2023,7 @@ module.exports.CreateAmtManager = function (parent) {
 
         // Find a matching certificate
         var gotSuffixMatch = false;
+        var devValidHash = false;
         for (var i in activationCerts) {
             var cert = activationCerts[i];
             var certDnsMatch = checkAcmActivationCertName(cert.cn, trustedFqdn);
@@ -2031,12 +2032,14 @@ module.exports.CreateAmtManager = function (parent) {
                 for (var j in deviceHashes) {
                     var hashInfo = deviceHashes[j];
                     if ((hashInfo != null) && (hashInfo.isActive == 1)) {
+                        devValidHash = true;
                         if ((hashInfo.hashAlgorithmStr == 'SHA256') && (hashInfo.certificateHash.toLowerCase() == cert.sha256)) { return { cert: cert, fqdn: trustedFqdn, hash: cert.sha256 }; } // Found a match
                         else if ((hashInfo.hashAlgorithmStr == 'SHA1') && (hashInfo.certificateHash.toLowerCase() == cert.sha1)) { return { cert: cert, fqdn: trustedFqdn, hash: cert.sha1 }; } // Found a match
                     }
                 }
             }
         }
+        if (!devValidHash) { return { err: "Intel AMT has no trusted root hashes for \"" + trustedFqdn + "\"." }; } // Found no trusted root hashes
         if (gotSuffixMatch) { return { err: "Certificate root hash matching failed for \"" + trustedFqdn + "\"." }; } // Found a DNS suffix match, but root hash failed to match.
         return { err: "No matching ACM activation certificate for \"" + trustedFqdn + "\"." }; // Did not find a match
     }
@@ -2060,7 +2063,6 @@ module.exports.CreateAmtManager = function (parent) {
             // Get our ACM activation certificate chain
             var acmTlsInfo = parent.certificateOperations.getAcmCertChain(parent.config.domains[dev.domainid], dev.temp.acminfo.fqdn, dev.temp.acminfo.hash);
             if (acmTlsInfo.error == 1) { dev.consoleMsg(acmTlsInfo.errorText); removeAmtDevice(dev, 44); return; }
-            acmTlsInfo.certs = acmTlsInfo.certs.reverse(); // Reverse the order of the certificates.
             dev.acmTlsInfo = acmTlsInfo;
 
             // Send the MEI command to enable TLS connections
@@ -2097,7 +2099,7 @@ module.exports.CreateAmtManager = function (parent) {
 
         // Check if we succesfully connected
         if (status != 200) {
-            dev.consoleMsg("Failed to perform ACM TLS connection.");
+            dev.consoleMsg("Failed to perform ACM TLS connection, status " + status + ".");
             //activateIntelAmtAcm(dev); // It's possible to fallback to legacy WSMAN ACM activation here if we needed to..
             removeAmtDevice(dev);
             return;
