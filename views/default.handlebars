@@ -299,7 +299,7 @@
                             <input type=button id=refreshmap title="Reset map view" value=Reset onclick=refreshMap(false,true) />
                         </td>
                         <td class="auto-style1" style=height:100%>
-                            <img style="display:none;cursor:pointer" id=devListToolbarSettings src="images/icon-gear.png" loading=lazy width=16 height=16 onclick="onDeviceViewSettings()" />
+                            <img style="display:none;cursor:pointer;margin-top:3px" id=devListToolbarSettings src="images/icon-gear.png" loading=lazy width=16 height=16 onclick="onDeviceViewSettings()" />
                             <div style="display:none" id=devListToolbarView>
                                 View
                                 <select id=viewselect onchange=onDeviceViewChange()>
@@ -441,6 +441,7 @@
                                 <input type=button onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
                                 <a href=# onclick=p4downloadUserInfo()><img style="cursor:pointer" title="Download user information" src="images/link4.png" /></a>
                                 <a href=# onclick=p4batchAccountCreate()><img id=p4UserBatchCreate style="cursor:pointer;display:none" title="Batch create many user accounts" src="images/link6.png" /></a>
+                                <img style="cursor:pointer;margin-top:3px;margin-left:6px" id=usersListToolbarSettings src="images/icon-gear.png" loading=lazy width=16 height=16 onclick="onUsersViewSettings()" />
                             </div>
                             <div>
                                 <input type=button id=UsersSelectAllButton onclick="p3usersSelectallButtonFunction()" value="Select All" />
@@ -1367,6 +1368,8 @@
         try { CollapsedGroups = JSON.parse(getstore('_collapse', '{}')); } catch(ex) {}
         var deviceViewSettings = {};
         try { deviceViewSettings = JSON.parse(getstore('_deviceViewSettings', '{}')); } catch(ex) {}
+        var userViewSettings = {};
+        try { userViewSettings = JSON.parse(getstore('_usersViewSettings', '{}')); } catch(ex) {}
         var xterm = null;
         var xtermfit = null;
         var xtermResizeTimer = null;
@@ -12816,8 +12819,11 @@
             QV('UserNewAccountButton', ((features & 4) == 0) && (serverinfo.domainauth == false));
             if ((users == null) || ((features & 4) != 0)) { QH('p3users', ''); return; }
 
+            // Get the number of users we can display
+            var displayUsersLimit = ((userViewSettings != null) && (userViewSettings.noViewLimit)) ? 100000 : 100;
+
             // Sort the list of user id's
-            var sortedUsers = [], maxUsers = 100, hiddenUsers = 0;
+            var sortedUsers = [], maxUsers = displayUsersLimit, hiddenUsers = 0;
             for (var i in users) { sortedUsers.push(users[i]); }
             sortedUsers.sort(nameSort);
 
@@ -12875,7 +12881,7 @@
             x += '</table>';
             if (hiddenUsers == 1) { x += '<br />' + "1 more user not shown, use search box to look for users..." + '<br />'; }
             else if (hiddenUsers > 1) { x += '<br />' + format("{0} more users not shown, use search box to look for users...", hiddenUsers) + '<br />'; }
-            if (maxUsers == 100) { x += '<br />' + "No users found." + '<br />'; }
+            if (maxUsers == displayUsersLimit) { x += '<br />' + "No users found." + '<br />'; }
             QH('p3users', x);
 
             // Re-check userid's
@@ -13115,6 +13121,24 @@
 
         function showUserAlertDialogEx(button, userid) {
             meshserver.send({ action: 'notifyuser', userid: decodeURIComponent(userid), msg: Q('d2notifyText').value, maxtime: parseInt(Q('broadcastMessageMaxTime').value) });
+        }
+
+        function onUsersViewSettings() {
+            if (xxdialogMode) return;
+
+            // Use defaults if needed
+            if (userViewSettings == null) { userViewSettings = {}; }
+
+            // Display the dialog box
+            var x = '';
+            x += '<label><input id=d2c1 type=checkbox' + (userViewSettings.noViewLimit?'':' checked') + '>' + "Only display first 100 users" + '</label><br />';
+            setDialogMode(2, "Users View", 3, onUsersViewSettingsEx, x);
+        }
+
+        function onUsersViewSettingsEx() {
+            userViewSettings.noViewLimit = !Q('d2c1').checked;
+            putstore('_usersViewSettings', JSON.stringify(userViewSettings));
+            mainUpdate(16384); // Update users
         }
 
         function p4batchAccountCreate() {
