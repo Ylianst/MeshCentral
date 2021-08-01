@@ -11469,6 +11469,15 @@
             }
             x += '<div><label><input type=checkbox id=d20expireDevice onchange=p20editmeshfeaturesValidate() ' + ((expire > 0) ? 'checked' : '') + '>' + "Automatically remove inactive devices" + '</label><br></div>';
             x += '<div style=margin-left:20px id=d20expireDeviceDev>' + "Inactivate days until removal" + ' <label><input type=number inputmode=numeric onchange=p20editmeshfeaturesValidate() onkeyup=p20editmeshfeaturesValidate() onpaste=p20editmeshfeaturesValidate() onkeydown=p20editmeshfeaturesValidate() maxlength=4 min=1 max=2000 style=width:80px value=\"' + ((expire == 0)?30:expire) + '\" id=d20expireDeviceDays></label><br></div>';
+
+            if (serverinfo.autoremoveinactivedevices) {
+                if (serverinfo.autoremoveinactivedevices == 1) {
+                    x += format('<span style=font-size:x-small;margin-left:6px>' + "By default, inactive devices will be removed after 1 day." + '</span>', serverinfo.autoremoveinactivedevices);
+                } else {
+                    x += format('<span style=font-size:x-small;margin-left:6px>' + "By default, inactive devices will be removed after {0} days." + '</span>', serverinfo.autoremoveinactivedevices);
+                }
+            }
+
             setDialogMode(2, "Edit Device Group Features", 3, p20editmeshfeaturesEx, x);
             p20editmeshfeaturesValidate();
         }
