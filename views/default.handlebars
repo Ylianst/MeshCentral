@@ -2912,7 +2912,7 @@
                                 if (message.event.links) { meshes[message.event.meshid].links = message.event.links; }
                                 if (message.event.amt) { meshes[message.event.meshid].amt = message.event.amt; }
                                 if (message.event.invite != null) { meshes[message.event.meshid].invite = message.event.invite; } else { delete meshes[message.event.meshid].invite; }
-                                if (message.event.expireDevs != null) { meshes[message.event.meshid].expireDevs = message.event.expireDevs; } else { delete meshes[message.event.meshid].expireDevs; }
+                                if (message.event.expireDevs != null) { if (message.event.expireDevs > 0) { meshes[message.event.meshid].expireDevs = message.event.expireDevs; } else { delete meshes[message.event.meshid].expireDevs; } }
 
                                 // Check if we lost rights to this mesh in this change.
                                 if (IsMeshViewable(message.event.meshid) == false) {
