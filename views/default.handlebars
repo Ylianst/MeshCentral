@@ -2912,6 +2912,7 @@
                                 if (message.event.links) { meshes[message.event.meshid].links = message.event.links; }
                                 if (message.event.amt) { meshes[message.event.meshid].amt = message.event.amt; }
                                 if (message.event.invite != null) { meshes[message.event.meshid].invite = message.event.invite; } else { delete meshes[message.event.meshid].invite; }
+                                if (message.event.expireDevs != null) { meshes[message.event.meshid].expireDevs = message.event.expireDevs; } else { delete meshes[message.event.meshid].expireDevs; }
 
                                 // Check if we lost rights to this mesh in this change.
                                 if (IsMeshViewable(message.event.meshid) == false) {
@@ -4269,7 +4270,7 @@
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
                 if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { r += '<td style=text-align:center>' + (node.ip != null ? node.ip : ''); } // IP address
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
-                if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { r += '<td style=text-align:center;font-size:x-small>'; if (node.conn & 1) { r += "Connected"; } else if (node.lastconnect != null) { r += printDateTime(new Date(node.lastconnect)); } }
+                if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { r += '<td style=text-align:center;font-size:x-small>'; if (node.conn > 0) { r += "Connected"; } else if (node.lastconnect != null) { r += printDateTime(new Date(node.lastconnect)); } }
 
                 div.innerHTML = r;
             } else if ((view == 3) || (view == 5)) {
@@ -5300,7 +5301,7 @@
         function powerSort(a, b) { var ap = a.pwr?a.pwr:0; var bp = b.pwr?b.pwr:0; if (ap > bp) return -1; if (ap < bp) return 1; if (ap == bp) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } return 0; }
         function deviceSort(a, b) { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; }
         function deviceHostSort(a, b) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; }
-        function lastConnectSort(a, b) { var aa = a.lastconnect, bb = b.lastconnect; if (aa == null) { aa = 99999999999999; } if (bb == null) { bb = 99999999999999; } if (a.conn & 1) { aa = 99999999999998; } if (b.conn & 1) { bb = 99999999999998; } if (aa == bb) { return nameSort(a, b); } return (aa - bb); }
+        function lastConnectSort(a, b) { var aa = a.lastconnect, bb = b.lastconnect; if (aa == null) { aa = 99999999999999; } if (bb == null) { bb = 99999999999999; } if (a.conn > 0) { aa = 99999999999998; } if (b.conn > 0) { bb = 99999999999998; } if (aa == bb) { return nameSort(a, b); } return (aa - bb); }
         function onSearchFocus(x) { searchFocus = x; }
         function clearDeviceSearch() { Q('KvmSearchInput').value = Q('SearchInput').value = ''; Q('DevFilterSelect').value = 0; onOnlineCheckBox(); mainUpdate(1); }
         function onMapSearchFocus(x) { mapSearchFocus = x; }
@@ -11489,7 +11490,7 @@
                 if (Q('d20flag2').checked) { flags += 2; }
             }
             if (serverinfo.devGroupSessionRecording == 1) { if (Q('d20flag4').checked) { flags += 4; } }
-            cmd.expireDevs = 0;
+            var expireDevs = 0;
             if (((flags & 1) == 0) && Q('d20expireDevice').checked) { expireDevs = parseInt(Q('d20expireDeviceDays').value); }
             meshserver.send({ action: 'editmesh', meshid: currentMesh._id, flags: flags, expireDevs: expireDevs });
         }

@@ -64,7 +64,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Remove this agent from the webserver list
         if (parent.wsagents[obj.dbNodeKey] == obj) {
             delete parent.wsagents[obj.dbNodeKey];
-            parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1);
+            parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1, null, { remoteaddrport: obj.remoteaddrport });
         }
 
         // Remove this agent from the list of agents with bad web certificates
@@ -95,9 +95,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((state.connectivity & 1) != 0) { parent.wsagents[obj.dbNodeKey].close(); } // Disconnect mesh agent
                 if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.closeAllForNode(obj.dbNodeKey); } // Disconnect CIRA connection
             }
-        } else {
-            // Update the last connect time
-            if (obj.authenticated == 2) { db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: Date.now(), addr: obj.remoteaddrport, cause: 1 }); }
         }
 
         // Set this agent as no longer authenticated
@@ -787,7 +784,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // Mark when this device connected
                 obj.connectTime = Date.now();
-                db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport, cause: 1 });
 
                 // Device already exists, look if changes have occured
                 var changes = [], change = 0, log = 0;
@@ -849,7 +845,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Mark when this device connected
         obj.connectTime = Date.now();
-        db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport, cause: 1 });
 
         // This node does not exist, create it.
         var agentName = obj.agentName ? obj.agentName : obj.agentInfo.computerName;
@@ -893,7 +888,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             dupAgent.close(3);
         } else {
             // Indicate the agent is connected
-            parent.parent.SetConnectivityState(obj.dbMeshKey, obj.dbNodeKey, obj.connectTime, 1, 1);
+            parent.parent.SetConnectivityState(obj.dbMeshKey, obj.dbNodeKey, obj.connectTime, 1, 1, null, { remoteaddrport: obj.remoteaddrport });
         }
 
         // We are done, ready to communicate with this agent
