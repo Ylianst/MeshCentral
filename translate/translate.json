@@ -1082,7 +1082,7 @@
     },
     {
       "cs": ", {0} sledování",
-      "de": ", {0} zuschauen",
+      "de": ", {0} sehen zu",
       "en": ", {0} watching",
       "es": ", {0} viendo",
       "fi": ", {0} katselee",
@@ -3539,7 +3539,7 @@
       ]
     },
     {
-      "de": "EIN V",
+      "de": "Antivirus",
       "en": "AV",
       "es": "AV",
       "fr": "Antivirus",
@@ -6286,7 +6286,7 @@
       ]
     },
     {
-      "de": "ermöglichen",
+      "de": "Erlauben",
       "en": "Allow",
       "es": "Permitir",
       "fr": "Permettre",
@@ -13933,7 +13933,7 @@
       ]
     },
     {
-      "de": "Löschen",
+      "de": "Entf",
       "en": "Del",
       "es": "Del",
       "fr": "Suppr",
@@ -16294,6 +16294,7 @@
       ]
     },
     {
+      "de": "Serververbindung trennen und beenden?",
       "en": "Disconnect from server and close?",
       "nl": "Verbinding met de server verbreken en afsluiten?",
       "sv": "Koppla bort från servern och stänga?",
@@ -16341,7 +16342,7 @@
     },
     {
       "cs": "Zavrhnout",
-      "de": "Entlassen",
+      "de": "Verwerfen",
       "en": "Dismiss",
       "es": "Descartar",
       "fi": "Hylkää",
@@ -16766,7 +16767,7 @@
       "it": "Azione doppio clic"
     },
     {
-      "de": "runter",
+      "de": "Runter",
       "en": "Down",
       "es": "Abajo",
       "fr": "Bas",
@@ -19960,7 +19961,7 @@
     },
     {
       "cs": "Vyprší o {0}",
-      "de": "Läuft bei {0} ab",
+      "de": "Verfällt {0}",
       "en": "Expires at {0}",
       "es": "Expira el {0}",
       "fi": "Vanhenee {0}",
@@ -22529,7 +22530,7 @@
       ]
     },
     {
-      "de": "Mit einem Gast Teilen",
+      "de": "Mit Gast teilen",
       "en": "Guest Share",
       "es": "Invitado Compartir",
       "fr": "Partage d'invité",
@@ -22546,7 +22547,7 @@
       ]
     },
     {
-      "de": "Mit einem Gast Teilen",
+      "de": "Mit Gast teilen",
       "en": "Guest Sharing",
       "es": "Compartir como invitado",
       "fr": "Partage d'invité",
@@ -27357,7 +27358,7 @@
       ]
     },
     {
-      "de": "links",
+      "de": "Links",
       "en": "Left",
       "es": "Izquierda",
       "fr": "Gauche",
@@ -29460,7 +29461,7 @@
       ]
     },
     {
-      "de": "Verwaltetes Konto Bild",
+      "de": "Konto-Bild verwalten",
       "en": "Manage Account Image",
       "es": "Administrar Imagen de Cuenta",
       "fr": "Gérer la photo du compte",
@@ -40767,7 +40768,7 @@
       ]
     },
     {
-      "de": "Recht",
+      "de": "Rechts",
       "en": "Right",
       "es": "Derecha",
       "fr": "Droit",
@@ -44238,7 +44239,7 @@
       ]
     },
     {
-      "de": "Verschiebung",
+      "de": "Umschalten",
       "en": "Shift",
       "es": "Cambiar",
       "fr": "Shift",
@@ -46970,7 +46971,7 @@
     },
     {
       "cs": "Zaměňte tlačítka myši",
-      "de": "Tauschen Sie die Maustasten aus",
+      "de": "Maustasten vertauschen",
       "en": "Swap Mouse Buttons",
       "es": "Cambiar Botones del Mouse",
       "fi": "Vaihda hiiren painikkeet",
@@ -49595,7 +49596,7 @@
     },
     {
       "cs": "Typ",
-      "de": "Typ",
+      "de": "Tippen",
       "en": "Type",
       "es": "Tipo",
       "fi": "Tyyppi",
@@ -50861,7 +50862,7 @@
       ]
     },
     {
-      "de": "Laden Sie den winzigen Kern hoch",
+      "de": "Kleinstkern hochladen",
       "en": "Upload tiny core",
       "es": "Sube un pequeño núcleo",
       "fr": "Charger un micro noyau",
@@ -51050,7 +51051,7 @@
     },
     {
       "cs": "Použijte Mapu vzdálené klávesnice",
-      "de": "Verwenden Sie die Remote Keyboard Map",
+      "de": "Entfernte Tastaturbelegung verwenden",
       "en": "Use Remote Keyboard Map",
       "es": "Usar Mapa de Teclado Remoto",
       "fi": "Käytä kaukonäppäimistökarttaa",
