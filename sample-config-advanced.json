@@ -138,6 +138,7 @@
       "_meshQuota": 248576,
       "minify": true,
       "_guestDeviceSharing" : false,
+      "_AutoRemoveInactiveDevices": 37,
       "_loginKey": [ "abc", "123" ],
       "_newAccounts": true,
       "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
