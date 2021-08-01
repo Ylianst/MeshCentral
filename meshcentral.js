@@ -2100,7 +2100,7 @@ function CreateMeshCentralServer(config, args) {
     // powerState: Value, 0 = Unknown, 1 = S0 power on, 2 = S1 Sleep, 3 = S2 Sleep, 4 = S3 Sleep, 5 = S4 Hibernate, 6 = S5 Soft-Off, 7 = Present
     //var connectTypeStrings = ['', 'MeshAgent', 'Intel AMT CIRA', '', 'Intel AMT local', '', '', '', 'Intel AMT Relay', '', '', '', '', '', '', '', 'MQTT'];
     //var powerStateStrings = ['Unknown', 'Powered', 'Sleep', 'Sleep', 'Deep Sleep', 'Hibernating', 'Soft-Off', 'Present'];
-    obj.SetConnectivityState = function (meshid, nodeid, connectTime, connectType, powerState, serverid) {
+    obj.SetConnectivityState = function (meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo) {
         //console.log('SetConnectivity for ' + nodeid.substring(0, 16) + ', Type: ' + connectTypeStrings[connectType] + ', Power: ' + powerStateStrings[powerState] + (serverid == null ? ('') : (', ServerId: ' + serverid)));
         if ((serverid == null) && (obj.multiServer != null)) { obj.multiServer.DispatchMessage({ action: 'SetConnectivityState', meshid: meshid, nodeid: nodeid, connectTime: connectTime, connectType: connectType, powerState: powerState }); }
 
@@ -2137,6 +2137,11 @@ function CreateMeshCentralServer(config, args) {
             // Event the node connection change
             if (eventConnectChange == 1) {
                 obj.DispatchEvent(obj.webserver.CreateNodeDispatchTargets(meshid, nodeid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, domain: nodeid.split('/')[1], conn: state.connectivity, pwr: state.powerState, ct: connectTime, nolog: 1, nopeers: 1 });
+
+                // Save indication of node connection change
+                const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], time: Date.now(), cause: 1, connectType: connectType, serverid: obj.serverId };
+                if (extraInfo && extraInfo.remoteaddrport) { lc.addr = extraInfo.remoteaddrport; }
+                obj.db.Set(lc);
             }
         } else {
             // Multi server mode
@@ -2144,14 +2149,16 @@ function CreateMeshCentralServer(config, args) {
             // Change the node connection state
             if (serverid == null) { serverid = obj.serverId; }
             if (obj.peerConnectivityByNode[serverid] == null) return; // Guard against unknown serverid's
+            var eventConnectChange = 0;
             var state = obj.peerConnectivityByNode[serverid][nodeid];
             if (state) {
                 // Change the connection in the node and mesh state lists
-                if ((state.connectivity & connectType) == 0) { state.connectivity |= connectType; }
+                if ((state.connectivity & connectType) == 0) { state.connectivity |= connectType; eventConnectChange = 1; }
                 state.meshid = meshid;
             } else {
                 // Add the connection to the node and mesh state list
                 obj.peerConnectivityByNode[serverid][nodeid] = state = { connectivity: connectType, meshid: meshid };
+                eventConnectChange = 1;
             }
 
             // Set node power state
@@ -2160,6 +2167,7 @@ function CreateMeshCentralServer(config, args) {
             if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
             if ((state.powerState == null) || (state.powerState != powerState)) {
                 state.powerState = powerState;
+                eventConnectChange = 1;
 
                 // Set new power state in database
                 var record = { time: new Date(connectTime), nodeid: nodeid, power: powerState, server: obj.multiServer.serverid };
@@ -2167,9 +2175,18 @@ function CreateMeshCentralServer(config, args) {
                 obj.db.storePowerEvent(record, obj.multiServer);
             }
 
-            // Update the combined node state
-            var x = {}; x[nodeid] = 1;
-            obj.UpdateConnectivityState(x);
+            if (eventConnectChange == 1) {
+                // Update the combined node state
+                var x = {}; x[nodeid] = 1;
+                obj.UpdateConnectivityState(x);
+
+                // Save indication of node connection change
+                if (serverid == obj.serverId) {
+                    const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], time: Date.now(), cause: 1, connectType: connectType, serverid: obj.serverId };
+                    if (extraInfo && extraInfo.remoteaddrport) { lc.addr = extraInfo.remoteaddrport; }
+                    obj.db.Set(lc);
+                }
+            }
         }
     };
 
@@ -2177,7 +2194,7 @@ function CreateMeshCentralServer(config, args) {
     // meshId: mesh identifier of format mesh/domain/meshidhex
     // nodeId: node identifier of format node/domain/nodeidhex
     // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 3 = Intel AMT local.
-    obj.ClearConnectivityState = function (meshid, nodeid, connectType, serverid) {
+    obj.ClearConnectivityState = function (meshid, nodeid, connectType, serverid, extraInfo) {
         //console.log('ClearConnectivity for ' + nodeid.substring(0, 16) + ', Type: ' + connectTypeStrings[connectType] + (serverid == null?(''):(', ServerId: ' + serverid)));
         if ((serverid == null) && (obj.multiServer != null)) { obj.multiServer.DispatchMessage({ action: 'ClearConnectivityState', meshid: meshid, nodeid: nodeid, connectType: connectType }); }
 
@@ -2191,6 +2208,11 @@ function CreateMeshCentralServer(config, args) {
 
             if ((state.connectivity & connectType) != 0) {
                 state.connectivity -= connectType;
+
+                // Save indication of node connection change
+                const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], time: Date.now(), cause: 0, connectType: connectType, serverid: obj.serverId };
+                if (extraInfo && extraInfo.remoteaddrport) { lc.addr = extraInfo.remoteaddrport; }
+                obj.db.Set(lc);
 
                 // If the node is completely disconnected, clean it up completely
                 if (state.connectivity == 0) { delete obj.connectivityByNode[nodeid]; }
@@ -2210,7 +2232,9 @@ function CreateMeshCentralServer(config, args) {
             }
 
             // Event the node connection change
-            if (eventConnectChange == 1) { obj.DispatchEvent(obj.webserver.CreateNodeDispatchTargets(meshid, nodeid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, domain: nodeid.split('/')[1], conn: state.connectivity, pwr: state.powerState, nolog: 1, nopeers: 1 }); }
+            if (eventConnectChange == 1) {
+                obj.DispatchEvent(obj.webserver.CreateNodeDispatchTargets(meshid, nodeid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, domain: nodeid.split('/')[1], conn: state.connectivity, pwr: state.powerState, nolog: 1, nopeers: 1 });
+            }
         } else {
             // Multi server mode
 
@@ -2223,6 +2247,13 @@ function CreateMeshCentralServer(config, args) {
             // If existing state exist, remove this connection
             if ((state.connectivity & connectType) != 0) {
                 state.connectivity -= connectType; // Remove one connectivity mode
+
+                // Save indication of node connection change
+                if (serverid == obj.serverId) {
+                    const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], time: Date.now(), cause: 0, connectType: connectType, serverid: obj.serverId };
+                    if (extraInfo && extraInfo.remoteaddrport) { lc.addr = extraInfo.remoteaddrport; }
+                    obj.db.Set(lc);
+                }
 
                 // If the node is completely disconnected, clean it up completely
                 if (state.connectivity == 0) { delete obj.peerConnectivityByNode[serverid][nodeid]; state.powerState = 0; }
