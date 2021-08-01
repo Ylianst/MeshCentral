@@ -5086,9 +5086,22 @@
                 uncheckAllDevices();
             } else if (op == 101) {
                 // Group delete, ask for confirmation
-                var x = "Confirm delete selected device(s)?" + '<br /><br />';
+                var chkNodeIds = getCheckedDevices(), x = '';
+                if (chkNodeIds.length == 0) return;
+                else if (chkNodeIds.length == 1){ x += "Confirm removal of selected device?" + '<br /><br />'; }
+                else {
+                    x += format("Confirm removal of {0} selected devices?" + '<br />', chkNodeIds.length);
+                    var nconn = 0, ndisc = 0;
+                    for (var i in chkNodeIds) { var n = getNodeFromId(chkNodeIds[i]); if ((n.conn != null) && (n.conn > 0)) { nconn++; } else { ndisc++; } }
+                    var y = '';
+                    if (nconn == 1) { y += format("1 selected device is online." + '<br />', nconn); }
+                    else if (nconn > 1) { y += format("{0} selected devices are online." + '<br />', nconn); }
+                    if (ndisc == 1) { y += format("1 selected device is offline." + '<br />', ndisc); }
+                    else if (ndisc > 1) { y += format("{0} selected devices are offline." + '<br />', ndisc); }
+                    if (y != '') { x += '<div style=padding:8px>' + y + '</div>'; } else { x += '<br />'; }
+                }
                 x += '<label><input id=d2check type=checkbox onchange=d2groupActionFunctionDelCheck() />' + "Confirm" + '</label>';
-                setDialogMode(2, "Delete Nodes", 3, d2groupActionFunctionDelExec, x);
+                setDialogMode(2, "Delete Devices", 3, d2groupActionFunctionDelExec, x);
                 QE('idx_dlgOkButton', false);
             } else if (op == 102) {
                 // Move computers to a different group
