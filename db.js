@@ -112,6 +112,111 @@ module.exports.CreateDB = function (parent, func) {
         }
     }
 
+    // Remove inactive devices
+    obj.removeInactiveDevices = function () {
+        // Get a list of domains and what their inactive device removal setting is
+        var removeInactiveDevicesPerDomain = {}, minRemoveInactiveDevicesPerDomain = {}, minRemoveInactiveDevice = 9999;
+        for (var i in parent.config.domains) {
+            if (typeof parent.config.domains[i].autoremoveinactivedevices == 'number') {
+                var v = parent.config.domains[i].autoremoveinactivedevices;
+                if ((v > 1) && (v <= 2000)) {
+                    if (v < minRemoveInactiveDevice) { minRemoveInactiveDevice = v; }
+                    removeInactiveDevicesPerDomain[i] = v;
+                    minRemoveInactiveDevicesPerDomain[i] = v;
+                }
+            }
+        }
+
+        // Check if any device groups have a inactive device removal setting
+        for (var i in parent.webserver.meshes) {
+            if (typeof parent.webserver.meshes[i].expireDevs == 'number') {
+                var v = parent.webserver.meshes[i].expireDevs;
+                if ((v > 1) && (v <= 2000)) {
+                    if (v < minRemoveInactiveDevice) { minRemoveInactiveDevice = v; }
+                    if ((minRemoveInactiveDevicesPerDomain[parent.webserver.meshes[i].domain] == null) || (minRemoveInactiveDevicesPerDomain[parent.webserver.meshes[i].domain] > v)) {
+                        minRemoveInactiveDevicesPerDomain[parent.webserver.meshes[i].domain] = v;
+                    }
+                } else {
+                    delete parent.webserver.meshes[i].expireDevs;
+                }
+            }
+        }
+
+        // If there are no such settings for any domain, we can exit now.
+        if (minRemoveInactiveDevice == 9999) return;
+        const now = Date.now();
+
+        // For each domain with a inactive device removal setting, get a list of last device connections
+        for (var domainid in minRemoveInactiveDevicesPerDomain) {
+            obj.GetAllTypeNoTypeField('lastconnect', domainid, function (err, docs) {
+                if ((err != null) || (docs == null)) return;
+                for (var j in docs) {
+                    const days = (now - docs[j].time) / 86400000; // Calculate the number of inactive days
+                    var remove = false;
+                    if (removeInactiveDevicesPerDomain[docs[j].domain] && (removeInactiveDevicesPerDomain[docs[j].domain] < days)) { remove = true; }
+                    else { const mesh = parent.webserver.meshes[docs[j].meshid]; if (mesh && (typeof mesh.expireDevs == 'number') && (mesh.expireDevs < days)) { remove = true; } }
+                    if (remove) {
+                        // Check if this device is connected right now
+                        const nodeid = docs[j]._id.substring(2);
+                        const conn = parent.GetConnectivityState(nodeid);
+                        if (conn == null) {
+                            // Remove the device
+                            obj.Get(nodeid, function (err, docs) {
+                                if ((err != null) || (docs == null) || (docs.length != 1)) return;
+                                const node = docs[0];
+
+                                // Delete this node including network interface information, events and timeline
+                                obj.Remove(node._id);                                 // Remove node with that id
+                                obj.Remove('if' + node._id);                          // Remove interface information
+                                obj.Remove('nt' + node._id);                          // Remove notes
+                                obj.Remove('lc' + node._id);                          // Remove last connect time
+                                obj.Remove('si' + node._id);                          // Remove system information
+                                obj.Remove('al' + node._id);                          // Remove error log last time
+                                if (obj.RemoveSMBIOS) { obj.RemoveSMBIOS(node._id); } // Remove SMBios data
+                                obj.RemoveAllNodeEvents(node._id);                    // Remove all events for this node
+                                obj.removeAllPowerEventsForNode(node._id);            // Remove all power events for this node
+                                if (typeof node.pmt == 'string') { obj.Remove('pmt_' + node.pmt); } // Remove Push Messaging Token
+                                obj.Get('ra' + node._id, function (err, nodes) {
+                                    if ((nodes != null) && (nodes.length == 1)) { obj.Remove('da' + nodes[0].daid); } // Remove diagnostic agent to real agent link
+                                    obj.Remove('ra' + node._id); // Remove real agent to diagnostic agent link
+                                });
+
+                                // Remove any user node links
+                                if (node.links != null) {
+                                    for (var i in node.links) {
+                                        if (i.startsWith('user/')) {
+                                            var cuser = parent.webserver.users[i];
+                                            if ((cuser != null) && (cuser.links != null) && (cuser.links[node._id] != null)) {
+                                                // Remove the user link & save the user
+                                                delete cuser.links[node._id];
+                                                if (Object.keys(cuser.links).length == 0) { delete cuser.links; }
+                                                obj.SetUser(cuser);
+
+                                                // Notify user change
+                                                var targets = ['*', 'server-users', cuser._id];
+                                                var event = { etype: 'user', userid: cuser._id, username: cuser.name, action: 'accountchange', msgid: 86, msgArgs: [cuser.name], msg: 'Removed user device rights for ' + cuser.name, domain: node.domain, account: parent.webserver.CloneSafeUser(cuser) };
+                                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                                parent.DispatchEvent(targets, obj, event);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Event node deletion
+                                var meshname = '(unknown)';
+                                if ((parent.webserver.meshes[node.meshid] != null) && (parent.webserver.meshes[node.meshid].name != null)) { meshname = parent.webserver.meshes[node.meshid].name; }
+                                var event = { etype: 'node', action: 'removenode', nodeid: node._id, msgid: 87, msgArgs: [node.name, meshname], msg: 'Removed device ' + node.name + ' from device group ' + meshname, domain: node.domain };
+                                // TODO: We can't use the changeStream for node delete because we will not know the meshid the device was in.
+                                //if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to remove the node. Another event will come.
+                                parent.DispatchEvent(parent.webserver.CreateNodeDispatchTargets(node.meshid, node._id), obj, event);
+                            });
+                        }
+                    }
+                }
+            });
+        }
+    }
+
     obj.cleanup = function (func) {
         // TODO: Remove all mesh links to invalid users
         // TODO: Remove all meshes that dont have any links

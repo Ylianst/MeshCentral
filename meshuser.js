@@ -5508,6 +5508,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'nodeconfig': [serverUserCommandNodeConfig, ""],
         'print': [serverUserCommandPrint, ""],
         'relays': [serverUserCommandRelays, ""],
+        'removeinactivedevices': [serverUserCommandRemoveInactiveDevices, ""],
         'resetserver': [serverUserCommandResetServer, "Causes the server to reset, this is sometimes useful is the config.json file was changed."],
         'serverupdate': [serverUserCommandServerUpdate, "Updates server to latest version. Optional version argument to install specific version. Example: serverupdate 0.8.49"],
         'setmaxtasks': [serverUserCommandSetMaxTasks, ""],
@@ -6229,6 +6230,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             cmdData.result += '\r\n';
         }
         if (cmdData.result == '') { cmdData.result = 'No relays.'; }
+    }
+
+    function serverUserCommandRemoveInactiveDevices(cmdData) {
+        parent.db.removeInactiveDevices();
+        cmdData.result = 'Ok';
     }
 
     function serverUserCommandAutoBackup(cmdData) {
