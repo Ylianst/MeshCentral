@@ -2139,7 +2139,7 @@ function CreateMeshCentralServer(config, args) {
                 obj.DispatchEvent(obj.webserver.CreateNodeDispatchTargets(meshid, nodeid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, domain: nodeid.split('/')[1], conn: state.connectivity, pwr: state.powerState, ct: connectTime, nolog: 1, nopeers: 1 });
 
                 // Save indication of node connection change
-                const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], time: Date.now(), cause: 1, connectType: connectType, serverid: obj.serverId };
+                const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], meshid: meshid, time: Date.now(), cause: 1, connectType: connectType, serverid: obj.serverId };
                 if (extraInfo && extraInfo.remoteaddrport) { lc.addr = extraInfo.remoteaddrport; }
                 obj.db.Set(lc);
             }
@@ -2182,7 +2182,7 @@ function CreateMeshCentralServer(config, args) {
 
                 // Save indication of node connection change
                 if (serverid == obj.serverId) {
-                    const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], time: Date.now(), cause: 1, connectType: connectType, serverid: obj.serverId };
+                    const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], meshid: meshid, time: Date.now(), cause: 1, connectType: connectType, serverid: obj.serverId };
                     if (extraInfo && extraInfo.remoteaddrport) { lc.addr = extraInfo.remoteaddrport; }
                     obj.db.Set(lc);
                 }
@@ -2210,7 +2210,7 @@ function CreateMeshCentralServer(config, args) {
                 state.connectivity -= connectType;
 
                 // Save indication of node connection change
-                const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], time: Date.now(), cause: 0, connectType: connectType, serverid: obj.serverId };
+                const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], meshid: meshid, time: Date.now(), cause: 0, connectType: connectType, serverid: obj.serverId };
                 if (extraInfo && extraInfo.remoteaddrport) { lc.addr = extraInfo.remoteaddrport; }
                 obj.db.Set(lc);
 
@@ -2250,7 +2250,7 @@ function CreateMeshCentralServer(config, args) {
 
                 // Save indication of node connection change
                 if (serverid == obj.serverId) {
-                    const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], time: Date.now(), cause: 0, connectType: connectType, serverid: obj.serverId };
+                    const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], meshid: meshid, time: Date.now(), cause: 0, connectType: connectType, serverid: obj.serverId };
                     if (extraInfo && extraInfo.remoteaddrport) { lc.addr = extraInfo.remoteaddrport; }
                     obj.db.Set(lc);
                 }
