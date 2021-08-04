@@ -719,8 +719,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                     // Event the new node
                                     addedDeviceCount++;
-                                    var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
-                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
+                                    var change = 'CIRA added device ' + socket.tag.name + ' to group ' + initialMesh.name;
+                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: initialMesh.domain });
                                 });
                             }
                         } else {
