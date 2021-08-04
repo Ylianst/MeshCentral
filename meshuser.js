@@ -3211,6 +3211,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 }
                             }
 
+                            // Update lastconnect meshid for this node
+                            db.Get('lc' + node._id, function (err, xnodes) {
+                                if ((xnodes != null) && (xnodes.length == 1) && (xnodes[0].meshid != command.meshid)) { xnodes[0].meshid = command.meshid; db.Set(xnodes[0]); }
+                            });
+
                             // Event the node change
                             var newMesh = parent.meshes[command.meshid];
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'nodemeshchange', nodeid: node._id, node: node, oldMeshId: oldMeshId, newMeshId: command.meshid, msgid: 85, msgArgs: [node.name, newMesh.name], msg: 'Moved device ' + node.name + ' to group ' + newMesh.name, domain: domain.id };
@@ -5284,7 +5289,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Merge any last connection information
                             const lc = lastConnects['lc' + results[i].node._id];
-                            if (lc != null) { delete lc._id; delete lc.type; delete lc.domain; results[i].lastConnect = lc; }
+                            if (lc != null) { delete lc._id; delete lc.type;; delete lc.meshid; delete lc.domain; results[i].lastConnect = lc; }
                         }
 
                         var output = null;
