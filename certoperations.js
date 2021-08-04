@@ -158,7 +158,7 @@ module.exports.CertificateOperations = function (parent) {
         if ((domain.amtacmactivation == null) || (domain.amtacmactivation.log == null) || (typeof domain.amtacmactivation.log != 'string')) {
             if (domain.id == '') { logpath = parent.path.join(obj.parent.datapath, 'amtactivation.log'); } else { logpath = parent.path.join(obj.parent.datapath, 'amtactivation-' + domain.id + '.log'); }
         } else {
-            if ((domain.amtacmactivation.log.length >= 2) && ((domain.amtacmactivation.log[0] == '/') || (domain.amtacmactivation.log[1] == ':'))) { logpath = domain.amtacmactivation.log; } else { logpath = parent.path.join(obj.parent.datapath, domain.amtacmactivation.log); }
+            logpath = parent.common.joinPath(obj.parent.datapath, domain.amtacmactivation.log);
         }
         try { obj.fs.appendFileSync(logpath, JSON.stringify(x) + '\r\n'); } catch (ex) { console.log(ex); return false; }
         return true;
@@ -175,13 +175,13 @@ module.exports.CertificateOperations = function (parent) {
 
                 if ((typeof acmconfig.certpfx == 'string') && (typeof acmconfig.certpfxpass == 'string')) {
                     // P12 format, certpfx and certpfxpass
-                    try { r = obj.loadPfxCertificate(obj.parent.path.join(obj.parent.datapath, acmconfig.certpfx), acmconfig.certpfxpass); } catch (ex) { console.log(ex); }
+                    try { r = obj.loadPfxCertificate(obj.parent.common.joinPath(obj.parent.datapath, acmconfig.certpfx), acmconfig.certpfxpass); } catch (ex) { console.log(ex); }
                     if ((r == null) || (r.certs == null) || (r.keys == null) || (r.certs.length < 2) || (r.keys.length != 1)) continue;
                 } else if ((typeof acmconfig.certfiles == 'object') && (typeof acmconfig.keyfile == 'string')) {
                     // PEM format, certfiles and keyfile
                     r = { certs: [], keys: [] };
-                    for (var k in acmconfig.certfiles) { r.certs.push(obj.pki.certificateFromPem(obj.fs.readFileSync(obj.parent.path.join(obj.parent.datapath, acmconfig.certfiles[k])))); }
-                    r.keys.push(obj.pki.privateKeyFromPem(obj.fs.readFileSync(obj.parent.path.join(obj.parent.datapath, acmconfig.keyfile))));
+                    for (var k in acmconfig.certfiles) { r.certs.push(obj.pki.certificateFromPem(obj.fs.readFileSync(obj.common.joinPath(obj.parent.datapath, acmconfig.certfiles[k])))); }
+                    r.keys.push(obj.pki.privateKeyFromPem(obj.fs.readFileSync(obj.parent.joinPath(obj.parent.datapath, acmconfig.keyfile))));
                     if ((r.certs.length < 2) || (r.keys.length != 1)) continue;
                 }
 
