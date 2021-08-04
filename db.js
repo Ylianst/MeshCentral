@@ -110,6 +110,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.powerfile.remove({ time: { '$lt': new Date(Date.now() - (expirePowerEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
             obj.serverstatsfile.remove({ time: { '$lt': new Date(Date.now() - (expireServerStatsSeconds * 1000)) } }, { multi: true }); // Force delete older events
         }
+        obj.removeInactiveDevices();
     }
 
     // Remove inactive devices
