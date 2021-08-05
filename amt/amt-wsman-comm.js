@@ -246,7 +246,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                             if (obj.xtlsoptions.cert) { options.cert = obj.xtlsoptions.cert; }
                             if (obj.xtlsoptions.key) { options.key = obj.xtlsoptions.key; }
                         }
-
+                        
                         obj.socket = obj.tls.connect(obj.port, obj.host, options, obj.xxOnSocketConnected);
                         obj.socket.setEncoding('binary');
                         obj.socket.setTimeout(60000); // Set socket idle timeout
