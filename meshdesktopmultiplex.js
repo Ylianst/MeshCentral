@@ -989,6 +989,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
     };
 
     obj.sendAgentMessage = function (command, userid, domainid) {
+        console.log('sendAgentMessage');
         var rights, mesh;
         if (command.nodeid == null) return false;
         var user = parent.users[userid];
@@ -1006,6 +1007,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
                 if ((rights != null) && (mesh != null) || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                     if (ws.sessionId) { command.sessionid = ws.sessionId; }   // Set the session id, required for responses.
                     command.rights = rights;            // Add user rights flags to the message
+                    if ((command.rights != 0xFFFFFFFF) && ((command.rights & 0x100) != 0)) { command.rights -= 0x100; } // Since the multiplexor will enforce view-only, remove MESHRIGHT_REMOTEVIEWONLY
                     if (typeof command.consent == 'number') { command.consent = command.consent | mesh.consent; } else { command.consent = mesh.consent; } // Add user consent
                     if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
                     command.username = user.name;       // Add user name
@@ -1025,6 +1027,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
                     if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                         if (ws.sessionId) { command.fromSessionid = ws.sessionId; }   // Set the session id, required for responses.
                         command.rights = rights;                // Add user rights flags to the message
+                        if ((command.rights != 0xFFFFFFFF) && ((command.rights & 0x00000100) != 0)) { command.rights -= 0x00000100; } // Since the multiplexor will enforce view-only, remove MESHRIGHT_REMOTEVIEWONLY
                         if (typeof command.consent == 'number') { command.consent = command.consent | mesh.consent; } else { command.consent = mesh.consent; } // Add user consent
                         if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
                         command.username = user.name;           // Add user name
