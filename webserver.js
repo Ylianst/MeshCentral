@@ -5916,7 +5916,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if ((typeof domain.authstrategies.saml.cert != 'string') || (typeof domain.authstrategies.saml.idpurl != 'string')) {
                         console.log('ERROR: Missing SAML configuration.');
                     } else {
-                        const certPath = common.joinPath(obj.parent.datapath, domain.authstrategies.saml.cert);
+                        const certPath = obj.common.joinPath(obj.parent.datapath, domain.authstrategies.saml.cert);
                         var cert = obj.fs.readFileSync(certPath);
                         if (cert == null) {
                             console.log('ERROR: Unable to read SAML IdP certificate: ' + domain.authstrategies.saml.cert);
@@ -5999,7 +5999,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if ((typeof domain.authstrategies.jumpcloud.cert != 'string') || (typeof domain.authstrategies.jumpcloud.idpurl != 'string')) {
                         console.log('ERROR: Missing JumpCloud SAML configuration.');
                     } else {
-                        var cert = obj.fs.readFileSync(common.joinPath(obj.parent.datapath, domain.authstrategies.jumpcloud.cert));
+                        var cert = obj.fs.readFileSync(obj.common.joinPath(obj.parent.datapath, domain.authstrategies.jumpcloud.cert));
                         if (cert == null) {
                             console.log('ERROR: Unable to read JumpCloud IdP certificate: ' + domain.authstrategies.jumpcloud.cert);
                         } else {

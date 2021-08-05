@@ -175,7 +175,7 @@ module.exports.CertificateOperations = function (parent) {
 
                 if ((typeof acmconfig.certpfx == 'string') && (typeof acmconfig.certpfxpass == 'string')) {
                     // P12 format, certpfx and certpfxpass
-                    try { r = obj.loadPfxCertificate(obj.parent.common.joinPath(obj.parent.datapath, acmconfig.certpfx), acmconfig.certpfxpass); } catch (ex) { console.log(ex); }
+                    try { r = obj.loadPfxCertificate(parent.common.joinPath(obj.parent.datapath, acmconfig.certpfx), acmconfig.certpfxpass); } catch (ex) { console.log(ex); }
                     if ((r == null) || (r.certs == null) || (r.keys == null) || (r.certs.length < 2) || (r.keys.length != 1)) continue;
                 } else if ((typeof acmconfig.certfiles == 'object') && (typeof acmconfig.keyfile == 'string')) {
                     // PEM format, certfiles and keyfile
