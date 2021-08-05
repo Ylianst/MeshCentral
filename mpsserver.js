@@ -377,7 +377,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         });
 
         socket.addListener('data', function (data) {
-            if (args.mpsdebug) { var buf = Buffer.from(data, 'binary'); console.log("MPS --> (" + buf.length + "):" + buf.toString('hex')); } // Print out received bytes
+            if (args.mpsdebug) { var buf = Buffer.from(data, 'binary'); console.log("MPS <-- (" + buf.length + "):" + buf.toString('hex')); } // Print out received bytes
 
             // Traffic accounting
             parent.webserver.trafficStats.CIRAIn +=  (this.bytesRead - this.bytesReadEx);
@@ -987,11 +987,13 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     parent.debug('mpscmddata', '--> CHANNEL_DATA', RecipientChannel, LengthOfData);
                     var cirachannel = socket.tag.channels[RecipientChannel];
                     if (cirachannel == null) { console.log("MPS Error in CHANNEL_DATA: Unable to find channelid " + RecipientChannel); return 9 + LengthOfData; }
-                    cirachannel.amtpendingcredits += LengthOfData;
-                    if (cirachannel.onData) { cirachannel.onData(cirachannel, Buffer.from(data.substring(9, 9 + LengthOfData), 'binary')); }
-                    if (cirachannel.amtpendingcredits > (cirachannel.ciraWindow / 2)) {
-                        SendChannelWindowAdjust(cirachannel.socket, cirachannel.amtchannelid, cirachannel.amtpendingcredits); // Adjust the buffer window
-                        cirachannel.amtpendingcredits = 0;
+                    if (cirachannel.state > 0) {
+                        cirachannel.amtpendingcredits += LengthOfData;
+                        if (cirachannel.onData) { cirachannel.onData(cirachannel, Buffer.from(data.substring(9, 9 + LengthOfData), 'binary')); }
+                        if (cirachannel.amtpendingcredits > (cirachannel.ciraWindow / 2)) {
+                            SendChannelWindowAdjust(cirachannel.socket, cirachannel.amtchannelid, cirachannel.amtpendingcredits); // Adjust the buffer window
+                            cirachannel.amtpendingcredits = 0;
+                        }
                     }
                     return 9 + LengthOfData;
                 }
@@ -1152,7 +1154,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             if (args.mpsdebug) {
                 // Print out sent bytes
                 var buf = Buffer.from(data, 'binary');
-                console.log('MPS <-- (' + buf.length + '):' + buf.toString('hex'));
+                console.log('MPS --> (' + buf.length + '):' + buf.toString('hex'));
                 if (socket.websocket == 1) { socket.send(buf); } else { socket.write(buf); }
             } else {
                 if (socket.websocket == 1) { socket.send(Buffer.from(data, 'binary')); } else { socket.write(Buffer.from(data, 'binary')); }
@@ -1163,7 +1165,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     // Send a buffer
     function WriteBuffer(socket, data) {
         try {
-            if (args.mpsdebug) { console.log('MPS <-- (' + buf.length + '):' + data.toString('hex')); } // Print out sent bytes
+            if (args.mpsdebug) { console.log('MPS --> (' + buf.length + '):' + data.toString('hex')); } // Print out sent bytes
             if (socket.websocket == 1) { socket.send(data); } else { socket.write(data); }
         } catch (ex) { }
     }
