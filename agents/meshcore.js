@@ -1901,7 +1901,7 @@ function onTunnelData(data) {
                                         var that = this.that;
                                         if (u.Active.length > 0) {
                                             var username = '"' + u.Active[0].Domain + '\\' + u.Active[0].Username + '"';
-                                            sendConsoleText('Terminal: ' + username);
+                                            //sendConsoleText('Terminal: ' + username);
                                             if (require('win-virtual-terminal').supported) {
                                                 // ConPTY PseudoTerminal
                                                 that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
