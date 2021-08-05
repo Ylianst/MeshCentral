@@ -225,7 +225,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     // Route a command to a target node
-    function routeCommandToNode(command, requiredRights, requiredNonRights, func) {
+    function routeCommandToNode(command, requiredRights, requiredNonRights, func, options) {
         if (common.validateString(command.nodeid, 8, 128) == false) { if (func) { func(false); } return false; }
         var splitnodeid = command.nodeid.split('/');
         // Check that we are in the same domain and the user has rights over this node.
@@ -242,6 +242,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         command.sessionid = ws.sessionId;   // Set the session id, required for responses
                         command.rights = rights;            // Add user rights flags to the message
+                        if ((options != null) && (options.removeViewOnlyLimitation === true) && (command.rights != 0xFFFFFFFF) && ((command.rights & 0x100) != 0)) { command.rights -= 0x100; } // Since the multiplexor will enforce view-only, remove MESHRIGHT_REMOTEVIEWONLY
                         command.consent = 0;
                         if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
                         if (typeof mesh.consent == 'number') { command.consent |= mesh.consent; } // Add device group user consent
@@ -284,6 +285,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_REMOTECONTROL) || (rights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission
                             command.fromSessionid = ws.sessionId;   // Set the session id, required for responses
                             command.rights = rights;                // Add user rights flags to the message
+                            if ((options != null) && (options.removeViewOnlyLimitation === true) && (command.rights != 0xFFFFFFFF) && ((command.rights & 0x100) != 0)) { command.rights -= 0x100; } // Since the multiplexor will enforce view-only, remove MESHRIGHT_REMOTEVIEWONLY
                             command.consent = 0;
                             if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
                             if (typeof mesh.consent == 'number') { command.consent |= mesh.consent; } // Add device group user consent
@@ -854,7 +856,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Rights check
-                    var requiredRights = null, requiredNonRights = null;
+                    var requiredRights = null, requiredNonRights = null, routingOptions = null;
 
                     // Complete the nodeid if needed
                     if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
@@ -875,6 +877,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Check rights
                         if (url.query.p == '1') { requiredNonRights = MESHRIGHT_NOTERMINAL; }
                         else if ((url.query.p == '4') || (url.query.p == '5')) { requiredNonRights = MESHRIGHT_NOFILES; }
+
+                        // If we are using the desktop multiplexor, remove the VIEWONLY limitation. The multiplexor will take care of enforcing that limitation when needed.
+                        if (((parent.parent.config.settings.desktopmultiplex === true) || (domain.desktopmultiplex === true)) && (url.query.p == '2')) { routingOptions = { removeViewOnlyLimitation: true }; }
 
                         // Add server TLS cert hash
                         var tlsCertHash = null;
@@ -910,7 +915,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.responseid != null) { func = function (r) { try { ws.send(JSON.stringify({ action: 'msg', result: r ? 'OK' : 'Unable to route', tag: command.tag, responseid: command.responseid })); } catch (ex) { } } }
 
                     // Route this command to a target node
-                    routeCommandToNode(command, requiredRights, requiredNonRights, func);
+                    routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
                     break;
                 }
             case 'events':
