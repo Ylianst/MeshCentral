@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'editdevice', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog'];
+const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'editdevice', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog', 'agentdownload'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -58,6 +58,7 @@ if (args['_'].length == 0) {
     console.log("  DeviceToast                 - Display a toast notification on a remote device.");
     console.log("  DevicePower                 - Perform wake/sleep/reset/off operations on remote devices.");
     console.log("  DeviceSharing               - View, add and remove sharing links for a given device.");
+    console.log("  AgentDownload               - Download an agent of a specific type for a device group.");
     console.log("\r\nSupported login arguments:");
     console.log("  --url [wss://server]        - Server url, wss://localhost:443 is default.");
     console.log("                              - Use wss://localhost:443?key=xxx if login key is required.");
@@ -225,6 +226,15 @@ if (args['_'].length == 0) {
         }
         case 'devicesharing': {
             if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
+            else { ok = true; }
+            break;
+        }
+        case 'agentdownload': {
+            if (args.type == null) { console.log(winRemoveSingleQuotes("Missing device type, use --type [agenttype]")); }
+            var at = parseInt(args.type);
+            if ((at == null) || isNaN(at) || (at < 1) || (at > 11000)) { console.log(winRemoveSingleQuotes("Invalid agent type, must be a number.")); }
+            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[meshid]'")); }
+            if ((typeof args.id != 'string') || (args.id.length != 64)) { console.log(winRemoveSingleQuotes("Invalid meshid.")); }
             else { ok = true; }
             break;
         }
@@ -828,6 +838,18 @@ if (args['_'].length == 0) {
                         console.log("  --duration [minutes]           - Duration of the share, default is 60 minutes.");
                         break;
                     }
+                    case 'agentdownload': {
+                        console.log("Download an agent of a specific type for a given device group, Example usages:\r\n");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl AgentDownload --id 'groupid' --type 3"));
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --type [ArchitectureNumber]   - Agent architecture number.");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [groupid]                - The device group identifier.");
+                        } else {
+                            console.log("  --id '[groupid]'              - The device group identifier.");
+                        }
+                        break;
+                    }
                     case 'upload': {
                         console.log("Upload a local file to a remote device, Example usages:\r\n");
                         console.log(winRemoveSingleQuotes("  MeshCtrl Upload --id 'deviceid' --file sample.txt --target c:\\"));
@@ -1087,6 +1109,7 @@ function serverConnect() {
         } catch (ex) { console.log(ex.message); process.exit(); return; }
     }
 
+    settings.xxurl = url;
     if (ckey != null) {
         var domainid = '', username = 'admin';
         if (args.logindomain != null) { domainid = args.logindomain; }
@@ -1469,6 +1492,48 @@ function serverConnect() {
                     console.log('No power operation specified.');
                     process.exit(1);
                 }
+                break;
+            }
+            case 'agentdownload': {
+                // Download an agent
+                var u = settings.xxurl.replace('wss://', 'https://').replace('/control.ashx', '/meshagents');
+                if (u.indexOf('?') > 0) { u += '&'; } else { u += '?'; }
+                u += 'id=' + args.type + '&meshid=' + args.id;
+                const options = { rejectUnauthorized: false, checkServerIdentity: onVerifyServer }
+                const fs = require('fs');
+                const https = require('https');
+                var downloadSize = 0;
+                const req = https.request(u, options, function (res) {
+                    if (res.statusCode != 200) {
+                        console.log('Download error, statusCode: ' + res.statusCode);
+                        process.exit(1);
+                    } else {
+                        // Agent the agent filename
+                        var agentFileName = 'meshagent';
+                        if ((res.headers) && (res.headers['content-disposition'] != null)) {
+                            var i = res.headers['content-disposition'].indexOf('filename=\"');
+                            if (i >= 0) {
+                                agentFileName = res.headers['content-disposition'].substring(i + 10);
+                                i = agentFileName.indexOf('\"');
+                                if (i >= 0) { agentFileName = agentFileName.substring(0, i); }
+                            }
+                        }
+                        // Check if this file already exists
+                        if (fs.existsSync(agentFileName)) { console.log('File \"' + agentFileName + '\" already exists.'); process.exit(1); }
+                        var fd = fs.openSync(agentFileName, 'w'); // Open the file for writing
+                        res.on('data', function (d) {
+                            downloadSize += d.length;
+                            fs.writeSync(fd, d); // Save to file
+                        });
+                        res.on('end', function (d) {
+                            fs.closeSync(fd); // Close file
+                            console.log('Downloaded ' + downloadSize + ' byte(s) to \"' + agentFileName + '\"');
+                            process.exit(1);
+                        });
+                    }
+                })
+                req.on('error', function (error) { console.error(error); process.exit(1); })
+                req.end()
                 break;
             }
             case 'devicesharing': {
