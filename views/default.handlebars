@@ -5566,9 +5566,12 @@
                 }
                 // Update the list of checked nodes
                 if (action == 1) {
-                    for (var i in nodes) { if (nodes[i].meshid == meshid) { checkedNodeids[nodes[i]._id] = 1; } }
+                    for (var i in nodes) { if ((nodes[i].meshid == meshid) && (nodes[i].v == true)) { checkedNodeids[nodes[i]._id] = 1; } }
                 } else if (action == 2) {
-                    for (var i in checkedNodeids) { if (getNodeFromId(i).meshid == meshid) { delete checkedNodeids[i]; } }
+                    for (var i in checkedNodeids) {
+                        var n = getNodeFromId(i);
+                        if ((n != null) && (n.meshid == meshid) && (n.v == true)) { delete checkedNodeids[i]; }
+                    }
                 }
             }
             //if (action == 3) { window.location = "multidesktop.aspx?mesh=" + meshid + "&auto=1"; }
