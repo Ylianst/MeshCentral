@@ -7521,6 +7521,13 @@
       ]
     },
     {
+      "en": "Armada370 - ARM32/HF (libc/2.26)",
+      "xloc": [
+        "default-mobile.handlebars->11->41",
+        "default.handlebars->35->48"
+      ]
+    },
+    {
       "cs": "arménština",
       "de": "Armenisch",
       "en": "Armenian",
@@ -50276,7 +50283,6 @@
       "xloc": [
         "default-mobile.handlebars->11->240",
         "default-mobile.handlebars->11->37",
-        "default-mobile.handlebars->11->41",
         "default-mobile.handlebars->11->42",
         "default-mobile.handlebars->11->43",
         "default-mobile.handlebars->11->44",
@@ -50298,7 +50304,6 @@
         "default.handlebars->35->2431",
         "default.handlebars->35->2438",
         "default.handlebars->35->44",
-        "default.handlebars->35->48",
         "default.handlebars->35->49",
         "default.handlebars->35->50",
         "default.handlebars->35->51",
