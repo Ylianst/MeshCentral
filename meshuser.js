@@ -591,8 +591,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // pass through to switch statement until refactoring complete
 
         switch (command.action) {
-            case 'pong': { break; } // NOP
-            case 'ping': { try { ws.send('{action:"pong"}'); } catch (ex) { } break; }
             case 'intersession':
                 {
                     // Sends data between sessions of the same user
@@ -745,42 +743,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             r[meshid].push(docs[i]);
                         }
                         try { ws.send(JSON.stringify({ action: 'nodes', responseid: command.responseid, nodes: r, tag: command.tag })); } catch (ex) { }
-                    });
-                    break;
-                }
-            case 'powertimeline':
-                {
-                    // Get the node and the rights for this node
-                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if (visible == false) return;
-                        // Query the database for the power timeline for a given node
-                        // The result is a compacted array: [ startPowerState, startTimeUTC, powerState ] + many[ deltaTime, powerState ]
-                        db.getPowerTimeline(node._id, function (err, docs) {
-                            if ((err == null) && (docs != null) && (docs.length > 0)) {
-                                var timeline = [], time = null, previousPower;
-                                for (i in docs) {
-                                    var doc = docs[i], j = parseInt(i);
-                                    doc.time = Date.parse(doc.time);
-                                    if (time == null) { // First element
-                                        // Skip all starting power 0 events.
-                                        if ((doc.power == 0) && ((doc.oldPower == null) || (doc.oldPower == 0))) continue;
-                                        time = doc.time;
-                                        if (doc.oldPower) { timeline.push(doc.oldPower, time / 1000, doc.power); } else { timeline.push(0, time / 1000, doc.power); }
-                                    } else if (previousPower != doc.power) { // Delta element
-                                        // If this event is of a short duration (2 minutes or less), skip it.
-                                        if ((docs.length > (j + 1)) && ((Date.parse(docs[j + 1].time) - doc.time) < 120000)) continue;
-                                        timeline.push((doc.time - time) / 1000, doc.power);
-                                        time = doc.time;
-                                    }
-                                    previousPower = doc.power;
-                                }
-                                try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: node._id, timeline: timeline, tag: command.tag })); } catch (ex) { }
-                            } else {
-                                // No records found, send current state if we have it
-                                var state = parent.parent.GetConnectivityState(command.nodeid);
-                                if (state != null) { try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: node._id, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag })); } catch (ex) { } }
-                            }
-                        });
                     });
                     break;
                 }
@@ -2351,25 +2313,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Open a web page on the remote device
                         routeCommandToNode({ 'action': 'openUrl', 'nodeid': command.nodeid, 'userid': user._id, 'username': user.name, 'url': url });
                     });
-                    break;
-                }
-            case 'serverupdate':
-                {
-                    // Do not allow this command when logged in using a login token
-                    if (req.session.loginToken != null) break;
-
-                    // Perform server update
-                    if ((user.siteadmin & 16) == 0) break;
-                    if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.upgrade !== true))) break;
-                    if ((command.version != null) && (typeof command.version != 'string')) break;
-                    parent.parent.performServerUpdate(command.version);
-                    break;
-                }
-            case 'serverclearerrorlog':
-                {
-                    // Clear the server error log
-                    if ((user.siteadmin & 16) == 0) break;
-                    fs.unlink(parent.parent.getConfigFilePath('mesherrors.txt'), function (err) { });
                     break;
                 }
             case 'createmesh':
@@ -5106,10 +5049,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 for (var i in command.nodeids) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: command.nodeids[i], value: 'agentupdate' }, MESHRIGHT_ADMIN, 0); }
                 break;
             }
-            case 'print': {
-                console.log(command.value);
-                break;
-            }
             case 'previousLogins': {
                 // TODO: Make a better database call to get filtered data.
                 if (command.userid == null) {
@@ -5470,9 +5409,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'lastconnect': serverCommandLastConnect,
         'lastconnects': serverCommandLastConnects,
         'meshes': serverCommandMeshes,
+        'ping': serverCommandPing,
+        'pong': serverCommandPong,
+        'powertimeline': serverCommandPowerTimeline,
+        'print': serverCommandPrint,
+        'serverclearerrorlog': serverCommandServerClearErrorLog,
         'serverconsole': serverCommandServerConsole,
         'servererrors': serverCommandServerErrors,
         'serverstats': serverCommandServerStats,
+        'serverupdate': serverCommandServerUpdate,
         'serverversion': serverCommandServerVersion,
         'users': serverCommandUsers
     };
@@ -5629,6 +5574,52 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try { ws.send(JSON.stringify({ action: 'meshes', meshes: parent.GetAllMeshWithRights(user).map(parent.CloneSafeMesh), tag: command.tag })); } catch (ex) { }
     }
 
+    function serverCommandPing(command) { try { ws.send('{action:"pong"}'); } catch (ex) { } }
+    function serverCommandPong(command) { } // NOP
+
+    function serverCommandPowerTimeline(command) {
+        // Get the node and the rights for this node
+        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+            if (visible == false) return;
+            // Query the database for the power timeline for a given node
+            // The result is a compacted array: [ startPowerState, startTimeUTC, powerState ] + many[ deltaTime, powerState ]
+            db.getPowerTimeline(node._id, function (err, docs) {
+                if ((err == null) && (docs != null) && (docs.length > 0)) {
+                    var timeline = [], time = null, previousPower;
+                    for (i in docs) {
+                        var doc = docs[i], j = parseInt(i);
+                        doc.time = Date.parse(doc.time);
+                        if (time == null) { // First element
+                            // Skip all starting power 0 events.
+                            if ((doc.power == 0) && ((doc.oldPower == null) || (doc.oldPower == 0))) continue;
+                            time = doc.time;
+                            if (doc.oldPower) { timeline.push(doc.oldPower, time / 1000, doc.power); } else { timeline.push(0, time / 1000, doc.power); }
+                        } else if (previousPower != doc.power) { // Delta element
+                            // If this event is of a short duration (2 minutes or less), skip it.
+                            if ((docs.length > (j + 1)) && ((Date.parse(docs[j + 1].time) - doc.time) < 120000)) continue;
+                            timeline.push((doc.time - time) / 1000, doc.power);
+                            time = doc.time;
+                        }
+                        previousPower = doc.power;
+                    }
+                    try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: node._id, timeline: timeline, tag: command.tag })); } catch (ex) { }
+                } else {
+                    // No records found, send current state if we have it
+                    var state = parent.parent.GetConnectivityState(command.nodeid);
+                    if (state != null) { try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: node._id, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag })); } catch (ex) { } }
+                }
+            });
+        });
+    }
+
+    function serverCommandPrint(command) { console.log(command.value); }
+
+    function serverCommandServerClearErrorLog(command) {
+        // Clear the server error log
+        if ((user.siteadmin & 16) == 0) return;
+        fs.unlink(parent.parent.getConfigFilePath('mesherrors.txt'), function (err) { });
+    }
+
     function serverCommandServerConsole(command) {
         // Do not allow this command when logged in using a login token
         if (req.session.loginToken != null) return;
@@ -5672,6 +5663,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             obj.SendServerStats();
             obj.serverStatsTimer = setInterval(obj.SendServerStats, command.interval);
         }
+    }
+
+    function serverCommandServerUpdate(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        // Perform server update
+        if ((user.siteadmin & 16) == 0) return;
+        if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.upgrade !== true))) return;
+        if ((command.version != null) && (typeof command.version != 'string')) return;
+        parent.parent.performServerUpdate(command.version);
     }
 
     function serverCommandServerVersion(command) {
