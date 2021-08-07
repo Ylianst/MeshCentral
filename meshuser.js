@@ -5643,10 +5643,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverCommandServerErrors(command) {
-            // Load the server error log
-            if (!userHasSiteUpdate()) return;
-            if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.errorlog !== true))) return;
+        // Load the server error log
+        if (userHasSiteUpdate() && domainHasMyServerErrorLog()) {
             fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { try { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } catch (ex) { } });
+        }
     }
 
     function serverCommandServerStats(command) {
@@ -6287,6 +6287,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function userHasSiteUpdate() { return ((user.siteadmin & SITERIGHT_SERVERUPDATE) > 0); }
+    function domainHasMyServerErrorLog() { return !((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.errorlog !== true))) }
 
     function csvClean(s) { return '\"' + s.split('\"').join('').split(',').join('').split('\r').join('').split('\n').join('') + '\"'; }
 
