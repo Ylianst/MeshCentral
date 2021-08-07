@@ -5615,9 +5615,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function serverCommandPrint(command) { console.log(command.value); }
 
     function serverCommandServerClearErrorLog(command) {
-        // Clear the server error log
-        if ((user.siteadmin & 16) == 0) return;
-        fs.unlink(parent.parent.getConfigFilePath('mesherrors.txt'), function (err) { });
+        // Clear the server error log if user has site update permissions
+        if (userHasSiteUpdate()) { fs.unlink(parent.parent.getConfigFilePath('mesherrors.txt'), function (err) { }); }
     }
 
     function serverCommandServerConsole(command) {
@@ -5645,7 +5644,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverCommandServerErrors(command) {
             // Load the server error log
-            if ((user.siteadmin & 16) == 0) return;
+            if (!userHasSiteUpdate()) return;
             if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.errorlog !== true))) return;
             fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { try { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } catch (ex) { } });
     }
@@ -5670,7 +5669,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (req.session.loginToken != null) return;
 
         // Perform server update
-        if ((user.siteadmin & 16) == 0) return;
+        if (!userHasSiteUpdate()) return;
         if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.upgrade !== true))) return;
         if ((command.version != null) && (typeof command.version != 'string')) return;
         parent.parent.performServerUpdate(command.version);
@@ -5681,7 +5680,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (req.session.loginToken != null) return;
 
         // Check the server version
-        if ((user.siteadmin & 16) == 0) return;
+        if (!userHasSiteUpdate()) return;
         if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.upgrade !== true))) return;
         parent.parent.getServerTags(function (tags, err) { try { ws.send(JSON.stringify({ action: 'serverversion', tags: tags })); } catch (ex) { } });
     }
@@ -6286,6 +6285,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         }
         return extraids;
     }
+
+    function userHasSiteUpdate() { return ((user.siteadmin & SITERIGHT_SERVERUPDATE) > 0); }
 
     function csvClean(s) { return '\"' + s.split('\"').join('').split(',').join('').split('\r').join('').split('\n').join('') + '\"'; }
 
