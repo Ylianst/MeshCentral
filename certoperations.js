@@ -181,7 +181,7 @@ module.exports.CertificateOperations = function (parent) {
                     // PEM format, certfiles and keyfile
                     r = { certs: [], keys: [] };
                     for (var k in acmconfig.certfiles) { r.certs.push(obj.pki.certificateFromPem(obj.fs.readFileSync(parent.common.joinPath(obj.parent.datapath, acmconfig.certfiles[k])))); }
-                    r.keys.push(obj.pki.privateKeyFromPem(obj.fs.readFileSync(obj.parent.joinPath(obj.parent.datapath, acmconfig.keyfile))));
+                    r.keys.push(obj.pki.privateKeyFromPem(obj.fs.readFileSync(parent.common.joinPath(obj.parent.datapath, acmconfig.keyfile))));
                     if ((r.certs.length < 2) || (r.keys.length != 1)) continue;
                 }
 
