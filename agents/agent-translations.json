@@ -508,5 +508,35 @@
     ],
     "statusDescription": "Aktuell agentstatus",
     "description": "Klicka på knapparna nedan för att installera eller avinstallera nätagenten. När den installeras körs denna programvara i bakgrunden så att den här datorn kan hanteras och styras av en fjärradministratör."
+  },
+  "pt-br": {
+    "agent": "Agente",
+    "agentVersion": "Nova versão do agente",
+    "group": "Grupo de Dispositivos",
+    "url": "URL do servidor",
+    "meshName": "Nome da malha",
+    "meshId": "Identificador de malha",
+    "serverId": "Identificador de Servidor",
+    "setup": "Configurar",
+    "update": "Atualizar",
+    "install": "Instalar",
+    "uninstall": "Desinstalar",
+    "connect": "Conectar",
+    "disconnect": "desconectar",
+    "cancel": "Cancelar",
+    "pressok": "Pressione OK para desconectar",
+    "elevation": "Permissões elevadas são necessárias para instalar / desinstalar o agente.",
+    "sudo": "Por favor, tente novamente com sudo.",
+    "ctrlc": "Pressione Ctrl-C para sair.",
+    "commands": "Você pode executar a versão em texto a partir da linha de comando com o (s) seguinte (s) comando (s)",
+    "graphicalerror": "A versão gráfica deste instalador não pode ser executada neste sistema",
+    "zenity": "Tente instalar / atualizar o Zenity e execute novamente",
+    "status": [
+      "NÃO INSTALADO",
+      "CORRIDA",
+      "NÃO CORRENDO"
+    ],
+    "statusDescription": "Status atual do agente",
+    "description": "Clique nos botões abaixo para instalar ou desinstalar o agente mesh. Quando instalado, este software é executado em segundo plano, permitindo que o computador seja gerenciado e controlado por um administrador remoto."
   }
 }
