@@ -28,6 +28,20 @@ catch(x)
 
 }
 
+if (process.platform != 'win32')
+{
+    var ch = require('child_process');
+    ch._execFile = ch.execFile;
+    ch.execFile = function execFile(path, args, options)
+    {
+        if (options && options.type && options.type == ch.SpawnTypes.TERM && options.env)
+        {
+            options.env['TERM'] = 'xterm-256color';
+        }
+        return (this._execFile(path, args, options));
+    };
+}
+
 function _getPotentialServiceNames()
 {
     var registry = require('win-registry');
