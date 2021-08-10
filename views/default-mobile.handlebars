@@ -3857,6 +3857,16 @@
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
             var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue style=width:170px maxlength=64 placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
+            if (mode == 3) {
+                // Get a list of all possible device tags
+                var allTags = [], y = '';
+                for (var i in nodes) { if (nodes[i].tags) { for (var j in nodes[i].tags) { if (allTags.indexOf(nodes[i].tags[j]) == -1) { allTags.push(nodes[i].tags[j]); } } } }
+                if (allTags.length > 0) {
+                    allTags.sort();
+                    for (var i in allTags) { y += '<span style=padding:4px;background-color:#BBB;border-radius:3px;margin:3px;cursor:pointer onclick=showEditNodeValueDialogAddTag("' + encodeURIComponentEx(allTags[i]) + '")>' + EscapeHtml(allTags[i]) + '</span>'; }
+                    x += '<div style=height:8px></div>' + y;
+                }
+            }
             setDialogMode(2, "Edit Device", 3, showEditNodeValueDialogEx, x, mode);
             var v = currentNode[showEditNodeValueDialog_modes2[mode]];
             if (v == null) v = '';
@@ -3864,6 +3874,14 @@
             Q('dp10devicevalue').value = v;
             p10editdevicevalueValidate();
             Q('dp10devicevalue').focus();
+        }
+
+        function showEditNodeValueDialogAddTag(t) {
+            var tt = Q('dp10devicevalue').value.split(','), t2 = [];
+            for (var i in tt) { t2.push(tt[i].trim()); }
+            if (t2.indexOf(t) >= 0) return;
+            Q('dp10devicevalue').value += ((Q('dp10devicevalue').value.length == 0) ? '' : ', ') + decodeURIComponent(t);
+            p10editdevicevalueValidate();
         }
 
         function showEditNodeValueDialogEx(button, mode) {
