@@ -1915,6 +1915,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (((agentExeInfo.id == 16) || (agentExeInfo.id == 29)) && (parent.parent.meshAgentBinaries[10005].hash == agentHash)) return 0;
 
         // No match, update the agent.
+        if (args.agentupdatesystem === 2) return 2; // If set, force a meshcore update.
         // NOTE: Windows agents with no commit dates may have bad native update system, so use meshcore system instead.
         // NOTE: Windows agents with commit date prior to 1612740413000 did not kill all "meshagent.exe" processes and update could fail as a result executable being locked, meshcore system will do this.
         if (((obj.AgentCommitDate == null) || (obj.AgentCommitDate < 1612740413000)) && ((agentExeInfo.id == 3) || (agentExeInfo.id == 4))) return 2; // For older Windows agents, use the meshcore update technique.
