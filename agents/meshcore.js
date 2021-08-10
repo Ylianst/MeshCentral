@@ -94,6 +94,21 @@ if (process.platform == 'win32' && require('user-sessions').isRoot()) {
     } catch (e) { }
 }
 
+if (process.platform != 'win32')
+{
+    var ch = require('child_process');
+    ch._execFile = ch.execFile;
+    ch.execFile = function execFile(path, args, options)
+    {
+        if(options && options.type && options.type == ch.SpawnTypes.TERM && options.env)
+        {
+            options.env['TERM'] = 'xterm-256color';
+        }
+        return (this._execFile(path, args, options));
+    };
+}
+
+
 if (process.platform == 'darwin' && !process.versions) {
     // This is an older MacOS Agent, so we'll need to check the service definition so that Auto-Update will function correctly
     var child = require('child_process').execFile('/bin/sh', ['sh']);
