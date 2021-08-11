@@ -1251,6 +1251,10 @@
         var p12TermConsoleMsgTimer = null;
         var p13FilesConsoleMsgTimer = null;
 
+        // Check if WebP is supported
+        var webpSupport = false;
+        check_webp_feature('lossy', function (f, x) { webpSupport = x; });
+
         function startup() {
             if ((features & 32) == 0) {
                 // Guard against other site's top frames (web bugs).
@@ -4020,6 +4024,7 @@
                             p11clearConsoleMsg();
                         }
                     }
+                    desktop.m.ImageType = webpSupport ? 4 : 1; // Send 4 if WebP is supported, otherwise send 1 for JPEG.
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
                     desktop.m.FrameRateTimer = desktopsettings.framerate;
@@ -4106,7 +4111,7 @@
             applyDesktopSettings();
             if (desktop) {
                 if (desktop.contype == 1) {
-                    if (desktop.State != 0) { desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
+                    if (desktop.State != 0) { desktop.m.SendCompressionLevel(webpSupport?4:1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
                 }
                 if (desktop.contype == 2) {
                     if (desktop.State != 0) { desktop.Stop(); setTimeout(function () { connectDesktop(null, 2); }, 50); }

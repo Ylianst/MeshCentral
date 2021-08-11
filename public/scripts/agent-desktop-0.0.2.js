@@ -41,6 +41,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.sessionid = 0;
     obj.username;
     obj.oldie = false;
+    obj.ImageType = 1; // 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP
     obj.CompressionLevel = 50;
     obj.ScalingLevel = 1024;
     obj.FrameRateTimer = 100;
@@ -174,11 +175,11 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         obj.send(String.fromCharCode(0x00, 0x08, 0x00, 0x05, 0x01));
     }
 
-    obj.SendCompressionLevel = function (type, level, scaling, frametimer) {
+    obj.SendCompressionLevel = function (type, level, scaling, frametimer) { // Type: 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP
+        obj.ImageType = type;
         if (level) { obj.CompressionLevel = level; }
         if (scaling) { obj.ScalingLevel = scaling; }
         if (frametimer) { obj.FrameRateTimer = frametimer; }
-        //console.log('SendCompressionLevel', obj.CompressionLevel, obj.ScalingLevel, obj.FrameRateTimer);
         obj.send(String.fromCharCode(0x00, 0x05, 0x00, 0x0A, type, obj.CompressionLevel) + obj.shortToStr(obj.ScalingLevel) + obj.shortToStr(obj.FrameRateTimer));
     }
 
@@ -196,7 +197,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         obj.ScreenHeight = obj.height = height;
         obj.KillDraw = obj.tilesReceived;
         while (obj.PendingOperations.length > 0) { obj.PendingOperations.shift(); }
-        obj.SendCompressionLevel(1);
+        obj.SendCompressionLevel(obj.ImageType);
         obj.SendUnPause();
         obj.SendRemoteInputLock(2); // Query input lock state
         // No need to event the display size change now, it will be evented on first draw.
@@ -739,7 +740,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (obj.xxKeyInputGrab == true) return;
         document.onkeyup = obj.xxKeyUp;
         document.onkeydown = obj.xxKeyDown;
-        document.onkeypress = obj.xxKeyPress;
+        document.onkeypress = obj.xxKeyPress;c
         obj.xxKeyInputGrab = true;
     }
 

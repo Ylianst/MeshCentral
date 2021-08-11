@@ -1393,6 +1393,9 @@
         mql.addEventListener('change', function() { console.log('Dark Change'); });
         */
 
+        // Check if WebP is supported
+        var webpSupport = false;
+        check_webp_feature('lossy', function (f, x) { webpSupport = x; });
 
         function startup() {
             if ((features & 32) == 0) {
@@ -4083,7 +4086,7 @@
                                 c.removeAttribute('onmousemove');
                                 Q('xkvmid_' + shortid).appendChild(c);
                                 QH('skvmid_' + shortid, ["Disconnected", "Connecting...", "Setup...", '', ''][((desktop.m.State == null)?desktop.m.state:desktop.m.State)]);
-                                if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(1, multidesktopsettings.quality, multidesktopsettings.scaling, multidesktopsettings.framerate); }
+                                if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(webpSupport?4:1, multidesktopsettings.quality, multidesktopsettings.scaling, multidesktopsettings.framerate); }
                                 desktop.shortid = shortid;
                                 desktop.onStateChanged = onMultiDesktopStateChange;
                                 desktop.m.onRemoteInputLockChanged = null;
@@ -4506,7 +4509,7 @@
             multidesktopsettings.framerate = d7framelimiter.value;
             localStorage.setItem('multidesktopsettings', JSON.stringify(multidesktopsettings));
             // Make changes to all current connections
-            for (var i in multiDesktop) { multiDesktop[i].m.SendCompressionLevel(1, multidesktopsettings.quality, multidesktopsettings.scaling, multidesktopsettings.framerate); }
+            for (var i in multiDesktop) { multiDesktop[i].m.SendCompressionLevel(webpSupport?4:1, multidesktopsettings.quality, multidesktopsettings.scaling, multidesktopsettings.framerate); }
         }
 
         function connectMultiDesktop(node, contype) {
@@ -4537,6 +4540,7 @@
                     desk.attemptWebRTC = attemptWebRTC;
                     desk.onStateChanged = onMultiDesktopStateChange;
                     //desk.onConsoleMessageChange = function () { console.log('CONSOLEMSG:', desk.consoleMessage); }
+                    desk.m.ImageType = webpSupport?4:1; // Send 4 if WebP is supported, otherwise send 1 for JPEG.
                     desk.m.CompressionLevel = multidesktopsettings.quality;
                     desk.m.ScalingLevel = multidesktopsettings.scaling;
                     if (multidesktopsettings.framerate) { desk.m.FrameRateTimer = multidesktopsettings.framerate; }
@@ -7745,7 +7749,7 @@
                     c.removeAttribute('onclick');
                     Q('DeskParent').appendChild(c);
                     desktop = xdesk;
-                    if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
+                    if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(webpSupport?4:1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.onMetadataChange = function(metadata) { updateMetadata(desktop, 'deskmetadata'); }
                     if ((features2 & 0x2000) != 0) desktop.m.stopInput = true;
@@ -7913,6 +7917,7 @@
                                     webRtcDesktop.softdesktop = CreateKvmDataChannel(webRtcDesktop.webchannel, CreateAgentRemoteDesktop('Desk', Q('id_mainarea')), desktop.m);
                                     webRtcDesktop.softdesktop.m.setRotation(desktop.m.rotation);
                                     webRtcDesktop.softdesktop.m.onScreenSizeChange = deskAdjust;
+                                    webRtcDesktop.softdesktop.m.ImageType = webpSupport?4:1; // Send 4 if WebP is supported, otherwise send 1 for JPEG.
                                     if (desktopsettings.quality) { webRtcDesktop.softdesktop.m.CompressionLevel = desktopsettings.quality; } // Number from 1 to 100. 50 or less is best.
                                     if (desktopsettings.scaling) { webRtcDesktop.softdesktop.m.ScalingLevel = desktopsettings.scaling; }
                                     webRtcDesktop.softdesktop.Start();
@@ -7981,6 +7986,7 @@
                         }
                     }
                     desktop.onMetadataChange = function(metadata) { updateMetadata(desktop, 'deskmetadata'); }
+                    desktop.m.ImageType = webpSupport?4:1; // Send 4 if WebP is supported, otherwise send 1 for JPEG.
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
                     if (desktopsettings.framerate) { desktop.m.FrameRateTimer = desktopsettings.framerate; }
@@ -8184,7 +8190,7 @@
                     desktop.m.SwapMouse = desktopsettings.swapmouse;
                     desktop.m.remoteKeyMap = desktopsettings.remotekeymap;
                     if (desktop.State != 0) {
-                        desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate);
+                        desktop.m.SendCompressionLevel(webpSupport?4:1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate);
                     }
                 }
                 if (desktop.contype == 2) {
