@@ -221,7 +221,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         switch (cmd) {
             case 3: // Tile
                 if (obj.FirstDraw) obj.onResize();
-                //console.log('TILE', X, Y);
+                //console.log('TILE', X, Y, cmdsize);
                 obj.ProcessPictureMsg(view.slice(4), X, Y);
                 break;
             case 7: // Screen size

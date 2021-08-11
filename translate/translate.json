@@ -248,10 +248,7 @@
       "nl": " MeshCentral Router",
       "pt-br": " Roteador MeshCentral",
       "sv": " MeshCentral Router",
-      "zh-chs": " MeshCentral 路由器",
-      "xloc": [
-        "MainForm.resx%$this.Text"
-      ]
+      "zh-chs": " MeshCentral 路由器"
     },
     {
       "cs": " Je možné zadat i nápovědu pro heslo, ale nedoporučuje se to.",
@@ -443,10 +440,7 @@
       "nl": "&Sluiten",
       "pt-br": "&Perto",
       "sv": "&Stäng",
-      "zh-chs": "＆关闭",
-      "xloc": [
-        "MainForm.resx%closeToolStripMenuItem.Text"
-      ]
+      "zh-chs": "＆关闭"
     },
     {
       "de": "&Löschen",
@@ -459,11 +453,7 @@
       "nl": "&Verwijderen",
       "pt-br": "&Excluir",
       "sv": "&Radera",
-      "zh-chs": "＆删除",
-      "xloc": [
-        "FileViewer.resx%deleteToolStripMenuItem.Text",
-        "FileViewer.resx%deleteToolStripMenuItem1.Text"
-      ]
+      "zh-chs": "＆删除"
     },
     {
       "de": "&Info...",
@@ -476,10 +466,7 @@
       "nl": "&Info...",
       "pt-br": "& Info ...",
       "sv": "&Info...",
-      "zh-chs": "＆信息...",
-      "xloc": [
-        "ServerUserControl.resx%infoToolStripMenuItem.Text"
-      ]
+      "zh-chs": "＆信息..."
     },
     {
       "de": "&Öffnen",
@@ -505,10 +492,7 @@
       "nl": "&toewijzingen openen...",
       "pt-br": "& Abrir mapeamentos ...",
       "sv": "& Öppna kartläggningar ...",
-      "zh-chs": "打开映射 (&O)...",
-      "xloc": [
-        "MainForm.resx%openMappingsToolStripMenuItem.Text"
-      ]
+      "zh-chs": "打开映射 (&O)..."
     },
     {
       "de": "&Öffnen...",
@@ -521,10 +505,7 @@
       "nl": "&Open...",
       "pt-br": "&Aberto...",
       "sv": "&Öppna...",
-      "zh-chs": "＆打开...",
-      "xloc": [
-        "MainForm.resx%openToolStripMenuItem.Text"
-      ]
+      "zh-chs": "＆打开..."
     },
     {
       "de": "&Umbenennen",
@@ -537,11 +518,7 @@
       "nl": "&Hernoemen",
       "pt-br": "& Renomear",
       "sv": "&Döp om",
-      "zh-chs": "＆改名",
-      "xloc": [
-        "FileViewer.resx%renameToolStripMenuItem.Text",
-        "FileViewer.resx%renameToolStripMenuItem1.Text"
-      ]
+      "zh-chs": "＆改名"
     },
     {
       "de": "&Zuordnungen speichern...",
@@ -554,10 +531,7 @@
       "nl": "&Toewijzingen opslaan...",
       "pt-br": "& Salvar mapeamentos ...",
       "sv": "& Spara kartor ...",
-      "zh-chs": "保存映射(&S)...",
-      "xloc": [
-        "MainForm.resx%saveMappingsToolStripMenuItem.Text"
-      ]
+      "zh-chs": "保存映射(&S)..."
     },
     {
       "de": "&Agent starten",
@@ -570,10 +544,7 @@
       "nl": "&Start Agent",
       "pt-br": "& Iniciar Agente",
       "sv": "& Starta agent",
-      "zh-chs": "启动代理 (&S)",
-      "xloc": [
-        "MainForm.resx%startAgentToolStripMenuItem.Text"
-      ]
+      "zh-chs": "启动代理 (&S)"
     },
     {
       "de": "&Software aktualisieren",
@@ -586,11 +557,7 @@
       "nl": "&Software bijwerken",
       "pt-br": "&Atualizar o software",
       "sv": "&Uppdatera mjukvara",
-      "zh-chs": "更新软件 (&S)",
-      "xloc": [
-        "MainForm.resx%updateSoftwareToolStripMenuItem.Text",
-        "MainForm.resx%updateSoftwareToolStripMenuItem1.Text"
-      ]
+      "zh-chs": "更新软件 (&S)"
     },
     {
       "cs": "'",
@@ -640,10 +607,7 @@
       "nl": "(Individuele apparaten)",
       "pt-br": "(Dispositivos Individuais)",
       "sv": "(Enskilda enheter)",
-      "zh-chs": "（个别设备）",
-      "xloc": [
-        "Properties%Resources.resx%IndividualDevices"
-      ]
+      "zh-chs": "（个别设备）"
     },
     {
       "de": "(Keiner)",
@@ -656,10 +620,7 @@
       "nl": "(Geen)",
       "pt-br": "(Nenhum)",
       "sv": "(Ingen)",
-      "zh-chs": "（没有任何）",
-      "xloc": [
-        "Properties%Resources.resx%PNoneP"
-      ]
+      "zh-chs": "（没有任何）"
     },
     {
       "cs": "(volitelné)",
@@ -821,10 +782,7 @@
       "nl": ", 1 verbinding.",
       "pt-br": ", 1 conexão.",
       "sv": ", 1 anslutning.",
-      "zh-chs": ", 1 个连接。",
-      "xloc": [
-        "Properties%Resources.resx%OneConnection"
-      ]
+      "zh-chs": ", 1 个连接。"
     },
     {
       "cs": ", Pouze Intel&reg; AMT",
@@ -942,10 +900,7 @@
       "nl": ", opgenomen sessie",
       "pt-br": ", Sessão Gravada",
       "sv": ", Inspelad session",
-      "zh-chs": ", 录制会话",
-      "xloc": [
-        "Properties%Resources.resx%RecordedSession"
-      ]
+      "zh-chs": ", 录制会话"
     },
     {
       "cs": ", Soft-KVM",
@@ -1163,10 +1118,7 @@
       "nl": ", {0} verbindingen.",
       "pt-br": ", {0} conexões.",
       "sv": ", {0} anslutningar.",
-      "zh-chs": ", {0} 个连接。",
-      "xloc": [
-        "Properties%Resources.resx%ManyConnections"
-      ]
+      "zh-chs": ", {0} 个连接。"
     },
     {
       "de": ", {0} Nutzer",
@@ -1179,10 +1131,7 @@
       "nl": ", {0} gebruikers",
       "pt-br": ", {0} usuários",
       "sv": ", {0} användare",
-      "zh-chs": ", {0} 个用户",
-      "xloc": [
-        "Properties%Resources.resx%AddXUsers"
-      ]
+      "zh-chs": ", {0} 个用户"
     },
     {
       "cs": ", {0} sledování",
@@ -1244,14 +1193,7 @@
       "ru": "---",
       "sv": "---",
       "zh-chs": "---",
-      "zh-cht": "---",
-      "xloc": [
-        "FileDeletePromptForm.resx%mainLabel.Text",
-        "FileTransferStatusForm.resx%mainLabel1.Text",
-        "FileTransferStatusForm.resx%mainLabel2.Text",
-        "FileViewer.resx%mainToolStripStatusLabel.Text",
-        "KVMViewer.resx%mainToolStripStatusLabel.Text"
-      ]
+      "zh-cht": "---"
     },
     {
       "cs": ".",
@@ -1364,17 +1306,7 @@
       "nl": "0 Bytes",
       "pt-br": "0 Bytes",
       "sv": "0 byte",
-      "zh-chs": "0 字节",
-      "xloc": [
-        "KVMStats.resx%kvmCompInBytesLabel.Text",
-        "KVMStats.resx%kvmCompOutBytesLabel.Text",
-        "KVMStats.resx%kvmInBytesLabel.Text",
-        "KVMStats.resx%kvmOutBytesLabel.Text",
-        "MappingStats.resx%kvmCompInBytesLabel.Text",
-        "MappingStats.resx%kvmCompOutBytesLabel.Text",
-        "MappingStats.resx%kvmInBytesLabel.Text",
-        "MappingStats.resx%kvmOutBytesLabel.Text"
-      ]
+      "zh-chs": "0 字节"
     },
     {
       "cs": "0%",
@@ -1392,13 +1324,7 @@
       "ru": "0%",
       "sv": "0%",
       "tr": "0%",
-      "zh-chs": "0%",
-      "xloc": [
-        "KVMStats.resx%inRatioLabel.Text",
-        "KVMStats.resx%outRatioLabel.Text",
-        "MappingStats.resx%inRatioLabel.Text",
-        "MappingStats.resx%outRatioLabel.Text"
-      ]
+      "zh-chs": "0%"
     },
     {
       "cs": "0.9.0",
@@ -1720,10 +1646,7 @@
       "nl": "1 externe sessie",
       "pt-br": "1 sessão remota",
       "sv": "1 fjärrsession",
-      "zh-chs": "1 个远程会话",
-      "xloc": [
-        "Properties%Resources.resx%OneRemoteSession"
-      ]
+      "zh-chs": "1 个远程会话"
     },
     {
       "de": "1 Remote-Sitzung ist aktiv.",
@@ -1736,10 +1659,7 @@
       "nl": "1 externe sessie is actief.",
       "pt-br": "1 sessão remota está ativa.",
       "sv": "En fjärrsession är aktiv.",
-      "zh-chs": "1 个远程会话处于活动状态。",
-      "xloc": [
-        "Properties%Resources.resx%OneRemoteSessionIsActive"
-      ]
+      "zh-chs": "1 个远程会话处于活动状态。"
     },
     {
       "de": "1 Sekunde",
@@ -2162,10 +2082,7 @@
       "nl": "127.0.0.1",
       "pt-br": "127.0.0.1",
       "sv": "127.0.0.1",
-      "zh-chs": "127.0.0.1",
-      "xloc": [
-        "AddRelayMapForm.resx%remoteIpTextBox.Text"
-      ]
+      "zh-chs": "127.0.0.1"
     },
     {
       "cs": "15 minut",
@@ -3575,10 +3492,7 @@
       "nl": "Er is een nieuwe versie van deze software beschikbaar. Nu bijwerken?",
       "pt-br": "Uma nova versão deste software está disponível. Atualizar agora?",
       "sv": "En ny version av denna programvara är tillgänglig. Uppdatera nu?",
-      "zh-chs": "此软件的新版本可用。现在更新？",
-      "xloc": [
-        "UpdateForm.resx%label1.Text"
-      ]
+      "zh-chs": "此软件的新版本可用。现在更新？"
     },
     {
       "cs": "ACM",
@@ -3665,7 +3579,6 @@
       "zh-chs": "AMT",
       "zh-cht": "AMT",
       "xloc": [
-        "Properties%Resources.resx%AMT",
         "default.handlebars->35->330",
         "default.handlebars->35->551"
       ]
@@ -4579,7 +4492,6 @@
       "zh-chs": "已激活",
       "zh-cht": "已啟動",
       "xloc": [
-        "Properties%Resources.resx%Activated",
         "default-mobile.handlebars->11->269",
         "default-mobile.handlebars->11->271",
         "default-mobile.handlebars->11->513",
@@ -4700,10 +4612,7 @@
       "nl": "&Toewijzing toevoegen...",
       "pt-br": "Adicionar & mapear ...",
       "sv": "Lägg till & mappa ...",
-      "zh-chs": "添加地图 (&M)...",
-      "xloc": [
-        "MainForm.resx%addMapToolStripMenuItem.Text"
-      ]
+      "zh-chs": "添加地图 (&M)..."
     },
     {
       "de": "&Relay-Karte hinzufügen...",
@@ -4716,10 +4625,7 @@
       "nl": "&Relay toewijzing toevoegen...",
       "pt-br": "Adicionar & retransmitir mapa ...",
       "sv": "Lägg till & vidarebefordra karta ...",
-      "zh-chs": "添加中继地图 (&R)...",
-      "xloc": [
-        "MainForm.resx%addRelayMapToolStripMenuItem.Text"
-      ]
+      "zh-chs": "添加中继地图 (&R)..."
     },
     {
       "cs": "Přidat agenta",
@@ -4986,10 +4892,7 @@
       "nl": "Kaart toevoegen...",
       "pt-br": "Adicionar mapa ...",
       "sv": "Lägg till karta ...",
-      "zh-chs": "添加地图...",
-      "xloc": [
-        "MainForm.resx%addButton.Text"
-      ]
+      "zh-chs": "添加地图..."
     },
     {
       "cs": "Přidat členství",
@@ -5048,10 +4951,7 @@
       "nl": "Toevoegen relay kaart...",
       "pt-br": "Adicionar mapa de retransmissão ...",
       "sv": "Lägg till reläkarta ...",
-      "zh-chs": "添加中继地图...",
-      "xloc": [
-        "MainForm.resx%addRelayButton.Text"
-      ]
+      "zh-chs": "添加中继地图..."
     },
     {
       "cs": "Přidat bezpečnostní klíč",
@@ -5950,7 +5850,6 @@
       "zh-chs": "代理",
       "zh-cht": "代理",
       "xloc": [
-        "Properties%Resources.resx%Agent",
         "agent-translations.json",
         "default-mobile.handlebars->11->235",
         "default-mobile.handlebars->11->288",
@@ -6031,7 +5930,6 @@
       "zh-chs": "代理控制台",
       "zh-cht": "代理控制台",
       "xloc": [
-        "consoleForm.resx%$this.Text",
         "default-mobile.handlebars->11->615",
         "default.handlebars->35->1846"
       ]
@@ -6176,10 +6074,7 @@
       "es": "Selección del Agente",
       "nl": "Agent selecteren",
       "pt-br": "Agent Select",
-      "sv": "Agent Select",
-      "xloc": [
-        "MainForm.resx%agentSelectToolStripMenuItem.Text"
-      ]
+      "sv": "Agent Select"
     },
     {
       "cs": "Relace agenta",
@@ -6215,10 +6110,7 @@
       "nl": "Agent momentopname",
       "pt-br": "Instantâneo do Agente",
       "sv": "Agent ögonblicksbild",
-      "zh-chs": "代理快照",
-      "xloc": [
-        "SnapShotForm.resx%$this.Text"
-      ]
+      "zh-chs": "代理快照"
     },
     {
       "cs": "Štítek agenta",
@@ -6366,10 +6258,7 @@
       "nl": "Agent is in behandeling",
       "pt-br": "Agente continua pendente",
       "sv": "Agent fortsätter i väntan",
-      "zh-chs": "代理正在继续等待",
-      "xloc": [
-        "Properties%Resources.resx%AgentIsContinuePending"
-      ]
+      "zh-chs": "代理正在继续等待"
     },
     {
       "de": "Agent ist getrennt",
@@ -6382,10 +6271,7 @@
       "nl": "Verbinding met agent is verbroken",
       "pt-br": "Agente está desconectado",
       "sv": "Agent är frånkopplad",
-      "zh-chs": "代理已断开连接",
-      "xloc": [
-        "Properties%Resources.resx%AgentIsDisconnected"
-      ]
+      "zh-chs": "代理已断开连接"
     },
     {
       "de": "Agent fehlt",
@@ -6459,10 +6345,7 @@
       "nl": "Agent is gepauzeerd",
       "pt-br": "Agente está em pausa pendente",
       "sv": "Agent är paus i väntan",
-      "zh-chs": "代理暂停待定",
-      "xloc": [
-        "Properties%Resources.resx%AgentIsPausePending"
-      ]
+      "zh-chs": "代理暂停待定"
     },
     {
       "de": "Agent ist pausiert",
@@ -6475,10 +6358,7 @@
       "nl": "Agent is gepauzeerd",
       "pt-br": "Agente está em pausa",
       "sv": "Agent är pausad",
-      "zh-chs": "代理已暂停",
-      "xloc": [
-        "Properties%Resources.resx%AgentIsPaused"
-      ]
+      "zh-chs": "代理已暂停"
     },
     {
       "de": "Agent läuft",
@@ -6491,10 +6371,7 @@
       "nl": "Agent is actief",
       "pt-br": "Agente está em execução",
       "sv": "Agent kör",
-      "zh-chs": "代理正在运行",
-      "xloc": [
-        "Properties%Resources.resx%AgentIsRunning"
-      ]
+      "zh-chs": "代理正在运行"
     },
     {
       "cs": "Agent běží na vzdáleném zařízení se sníženými oprávněními.",
@@ -6531,10 +6408,7 @@
       "nl": "Agent wacht op start",
       "pt-br": "Agente está pendente de início",
       "sv": "Agent väntar",
-      "zh-chs": "代理正在启动待处理",
-      "xloc": [
-        "Properties%Resources.resx%AgentIsStartPending"
-      ]
+      "zh-chs": "代理正在启动待处理"
     },
     {
       "de": "Agent wurde gestoppt",
@@ -6547,10 +6421,7 @@
       "nl": "Agent is gestopt",
       "pt-br": "Agente está parado",
       "sv": "Agent stoppas",
-      "zh-chs": "代理已停止",
-      "xloc": [
-        "Properties%Resources.resx%AgentIsStopped"
-      ]
+      "zh-chs": "代理已停止"
     },
     {
       "de": "Agent ist gestoppt ausstehend",
@@ -6563,10 +6434,7 @@
       "nl": "Agent is in behandeling gestopt",
       "pt-br": "Agente está parado pendente",
       "sv": "Agent stoppas i väntan",
-      "zh-chs": "代理停止等待",
-      "xloc": [
-        "Properties%Resources.resx%AgentIsStoppedPending"
-      ]
+      "zh-chs": "代理停止等待"
     },
     {
       "de": "Agent nicht installiert",
@@ -6579,10 +6447,7 @@
       "nl": "Agent is niet geïnstalleerd",
       "pt-br": "Agente não instalado",
       "sv": "Agent inte installerad",
-      "zh-chs": "未安装代理",
-      "xloc": [
-        "Properties%Resources.resx%AgentNotInstalled"
-      ]
+      "zh-chs": "未安装代理"
     },
     {
       "cs": "Agenti",
@@ -6699,7 +6564,6 @@
       "zh-chs": "所有显示",
       "zh-cht": "所有顯示",
       "xloc": [
-        "Properties%Resources.resx%AllDisplays",
         "default.handlebars->35->1135"
       ]
     },
@@ -6762,10 +6626,7 @@
       "nl": "Toestaan",
       "pt-br": "Permitir",
       "sv": "Tillåta",
-      "zh-chs": "允许",
-      "xloc": [
-        "ConsentForm.resx%okButton.Text"
-      ]
+      "zh-chs": "允许"
     },
     {
       "cs": "Umožnit uživatelům spravovat tuto skupinu a zařízení v této skupině.",
@@ -6833,10 +6694,7 @@
     },
     {
       "en": "Almost done",
-      "nl": "Bijna klaar",
-      "xloc": [
-        "Properties%Resources.resx%Almostdone"
-      ]
+      "nl": "Bijna klaar"
     },
     {
       "cs": "Alpine Linux x86 64 Bit (MUSL)",
@@ -6990,11 +6848,7 @@
       "nl": "Alternatieve poort",
       "pt-br": "Porto Alternativo",
       "sv": "Alternativ hamn",
-      "zh-chs": "替代端口",
-      "xloc": [
-        "altPortForm.resx%$this.Text",
-        "altPortForm.resx%label2.Text"
-      ]
+      "zh-chs": "替代端口"
     },
     {
       "cs": "Vždy upozorňovat",
@@ -7404,11 +7258,7 @@
       "nl": "Toepassing",
       "pt-br": "Aplicativo",
       "sv": "Ansökan",
-      "zh-chs": "应用",
-      "xloc": [
-        "AddPortMapForm.resx%label4.Text",
-        "AddRelayMapForm.resx%label4.Text"
-      ]
+      "zh-chs": "应用"
     },
     {
       "de": "Anwendungsstart",
@@ -7421,10 +7271,7 @@
       "nl": "Toepassing starten",
       "pt-br": "Lançamento do aplicativo",
       "sv": "Applikationsstart",
-      "zh-chs": "应用启动",
-      "xloc": [
-        "AppLaunchForm.resx%groupBox1.Text"
-      ]
+      "zh-chs": "应用启动"
     },
     {
       "de": "Bewerbungslink",
@@ -7437,10 +7284,7 @@
       "nl": "Applicatielink",
       "pt-br": "Link do aplicativo",
       "sv": "Applikationslänk",
-      "zh-chs": "申请链接",
-      "xloc": [
-        "AppLaunchForm.resx%appLinkLabel.Text"
-      ]
+      "zh-chs": "申请链接"
     },
     {
       "de": "Anwendungsname",
@@ -7453,10 +7297,7 @@
       "nl": "Naam van de toepassing",
       "pt-br": "Nome da Aplicação",
       "sv": "applikationsnamn",
-      "zh-chs": "应用名称",
-      "xloc": [
-        "AppLaunchForm.resx%appNameLabel.Text"
-      ]
+      "zh-chs": "应用名称"
     },
     {
       "de": "Anwendung, immer verbunden",
@@ -8115,8 +7956,6 @@
       "zh-chs": "询问同意",
       "zh-cht": "詢問同意",
       "xloc": [
-        "KVMViewer.resx%askConsentToolStripMenuItem.Text",
-        "MainForm.resx%askConsentToolStripMenuItem.Text",
         "default.handlebars->deskConnectContextMenu->3"
       ]
     },
@@ -8140,8 +7979,6 @@
       "zh-chs": "询问同意+工具栏",
       "zh-cht": "詢問同意+工具欄",
       "xloc": [
-        "KVMViewer.resx%askConsentBarToolStripMenuItem.Text",
-        "MainForm.resx%askConsentBarToolStripMenuItem.Text",
         "default.handlebars->deskConnectContextMenu->1"
       ]
     },
@@ -8309,10 +8146,7 @@
       "nl": "Authenticatie",
       "pt-br": "Autenticando",
       "sv": "Autentiserande",
-      "zh-chs": "认证",
-      "xloc": [
-        "Properties%Resources.resx%Authenticating"
-      ]
+      "zh-chs": "认证"
     },
     {
       "de": "Authentifizierung",
@@ -8606,10 +8440,7 @@
     },
     {
       "en": "Automatically Send Clipboard",
-      "nl": "Automatisch klembord verzenden",
-      "xloc": [
-        "KVMSettingsForm.resx%autoSendClipboardCheckBox.Text"
-      ]
+      "nl": "Automatisch klembord verzenden"
     },
     {
       "de": "Inaktive Geräte automatisch entfernen",
@@ -8732,8 +8563,6 @@
       "zh-chs": "返回",
       "zh-cht": "返回",
       "xloc": [
-        "MainForm.resx%backButton2.Text",
-        "MainForm.resx%backButton3.Text",
         "default.handlebars->container->column_l->p10->p10title->p10BackButton",
         "default.handlebars->container->column_l->p11->p11title->p11deviceNameHeader->p11BackButton",
         "default.handlebars->container->column_l->p12->p12title->p12BackButton",
@@ -9158,10 +8987,7 @@
       "nl": "Bind lokale poort aan alle netwerkinterfaces",
       "pt-br": "Vincule a porta local a todas as interfaces de rede",
       "sv": "Binda lokal port till alla nätverksgränssnitt",
-      "zh-chs": "将本地端口绑定到所有网络接口",
-      "xloc": [
-        "SettingsForm.resx%allInterfacesCheckBox.Text"
-      ]
+      "zh-chs": "将本地端口绑定到所有网络接口"
     },
     {
       "de": "Bootloader",
@@ -9444,7 +9270,6 @@
       "zh-chs": "CIRA",
       "zh-cht": "CIRA",
       "xloc": [
-        "Properties%Resources.resx%CIRA",
         "default-mobile.handlebars->11->236",
         "default.handlebars->35->2542",
         "default.handlebars->35->328",
@@ -9777,21 +9602,7 @@
       "zh-chs": "取消",
       "zh-cht": "取消",
       "xloc": [
-        "AddPortMapForm.resx%cancelButton.Text",
-        "AddRelayMapForm.resx%cancelButton.Text",
-        "AppLaunchForm.resx%cancelButton.Text",
-        "DeviceSettingsForm.resx%cancelButton.Text",
-        "FileDeletePromptForm.resx%cancelButton.Text",
-        "FileTransferStatusForm.resx%cancelButton.Text",
-        "FilenamePromptForm.resx%cancelButton.Text",
-        "InstallForm.resx%cancelButton.Text",
-        "KVMSettingsForm.resx%cancelButton.Text",
-        "RequestHelpForm.resx%cancelButton.Text",
-        "SettingsForm.resx%cancelButton.Text",
-        "SshUsernameForm.resx%cancelButton.Text",
-        "UpdateForm.resx%cancelButton.Text",
         "agent-translations.json",
-        "altPortForm.resx%cancelButton.Text",
         "default-mobile.handlebars->11->106",
         "default-mobile.handlebars->dialog->idx_dlgButtonBar",
         "default.handlebars->35->1649",
@@ -9801,7 +9612,6 @@
         "login.handlebars->dialog->idx_dlgButtonBar",
         "login2.handlebars->dialog->idx_dlgButtonBar",
         "player.handlebars->p11->dialog->idx_dlgButtonBar",
-        "rdpPortForm.resx%cancelButton.Text",
         "sharing.handlebars->dialog->idx_dlgButtonBar",
         "ssh.handlebars->p11->dialog->idx_dlgButtonBar",
         "xterm.handlebars->p11->dialog->idx_dlgButtonBar"
@@ -9818,11 +9628,7 @@
       "nl": "Automatisch sluiten annuleren",
       "pt-br": "Cancelar fechamento automático",
       "sv": "Avbryt automatisk stängning",
-      "zh-chs": "取消自动关闭",
-      "xloc": [
-        "MainForm.resx%cancelAutoCloseButton1.Text",
-        "MainForm.resx%cancelAutoCloseButton2.Text"
-      ]
+      "zh-chs": "取消自动关闭"
     },
     {
       "de": "Hilfeanfrage abbrechen",
@@ -9835,11 +9641,7 @@
       "nl": "Annuleer hulpverzoek",
       "pt-br": "Cancelar pedido de ajuda",
       "sv": "Avbryt hjälpförfrågan",
-      "zh-chs": "取消帮助请求",
-      "xloc": [
-        "MainForm.resx%cancelHelpRequestToolStripMenuItem.Text",
-        "Properties%Resources.resx%CancelHelpRequest"
-      ]
+      "zh-chs": "取消帮助请求"
     },
     {
       "cs": "Kapacita",
@@ -9950,10 +9752,7 @@
       "nl": "Certificaat",
       "pt-br": "Certificado",
       "sv": "Certifikat",
-      "zh-chs": "证书",
-      "xloc": [
-        "MainForm.resx%tabPage3.Text"
-      ]
+      "zh-chs": "证书"
     },
     {
       "de": "Zertifikat läuft in {0} Tag(en) ab",
@@ -10217,10 +10016,7 @@
       "nl": "Instellingen voor extern bureaublad wijzigen",
       "pt-br": "Alterar as configurações da área de trabalho remota",
       "sv": "Ändra fjärrskrivbordsinställningar",
-      "zh-chs": "更改远程桌面设置",
-      "xloc": [
-        "Properties%Resources.resx%ChangeRemoteDesktopSettings"
-      ]
+      "zh-chs": "更改远程桌面设置"
     },
     {
       "cs": "Změnit modul Java Script kódu agenta",
@@ -10441,10 +10237,7 @@
       "nl": "Als u de taal wijzigt, wordt deze tool gesloten.Weet je het zeker?",
       "pt-br": "Alterar o idioma fechará esta ferramenta. Tem certeza?",
       "sv": "Om du byter språk kommer detta verktyg att stängas. Är du säker?",
-      "zh-chs": "更改语言将关闭此工具。你确定吗？",
-      "xloc": [
-        "Properties%Resources.resx%LanguagesChanging"
-      ]
+      "zh-chs": "更改语言将关闭此工具。你确定吗？"
     },
     {
       "cs": "Změna jazyka vyžaduje znovunačtení stránky.",
@@ -10951,7 +10744,6 @@
       "zh-chs": "清除",
       "zh-cht": "清除",
       "xloc": [
-        "consoleForm.resx%clearButton.Text",
         "default-mobile.handlebars->11->156",
         "default-mobile.handlebars->11->445",
         "default-mobile.handlebars->11->447",
@@ -11372,10 +11164,7 @@
       "nl": "Klik op ok om MeshCentral Router op uw systeem te registreren als de handler voor het \"mcrouter://\" protocol. Hierdoor kan de MeshCentral-website deze applicatie starten wanneer dat nodig is.",
       "pt-br": "Clique em ok para registrar o MeshCentral Router em seu sistema como o manipulador do protocolo \"mcrouter: //\". Isso permitirá que o site MeshCentral inicie esse aplicativo quando necessário.",
       "sv": "Klicka på ok för att registrera MeshCentral Router på ditt system som hanterare för \"mcrouter: //\" -protokollet. Detta gör att MeshCentral-webbplatsen kan starta den här applikationen vid behov.",
-      "zh-chs": "单击确定在您的系统上注册 MeshCentral Router 作为“mcrouter://”协议的处理程序。这将允许 MeshCentral 网站在需要时启动此应用程序。",
-      "xloc": [
-        "InstallForm.resx%label1.Text"
-      ]
+      "zh-chs": "单击确定在您的系统上注册 MeshCentral Router 作为“mcrouter://”协议的处理程序。这将允许 MeshCentral 网站在需要时启动此应用程序。"
     },
     {
       "cs": "Klikněte na OK a bude vám zaslán ověřovací e-mail na:",
@@ -11585,13 +11374,6 @@
       "zh-chs": "关",
       "zh-cht": "關",
       "xloc": [
-        "EventsForm.resx%closeButton.Text",
-        "MainForm.resx%nextButton5.Text",
-        "MeInfoForm.resx%closeButton.Text",
-        "NotifyForm.resx%closeButton.Text",
-        "Properties%Resources.resx%Close",
-        "SessionsForm.resx%closeButton.Text",
-        "SnapShotForm.resx%closeButton.Text",
         "default-mobile.handlebars->11->69",
         "default.handlebars->35->1128",
         "default.handlebars->35->1178",
@@ -11857,11 +11639,7 @@
       "nl": "Gecomprimeerd netwerkverkeer",
       "pt-br": "Tráfego de rede comprimido",
       "sv": "Komprimerad nätverkstrafik",
-      "zh-chs": "压缩网络流量",
-      "xloc": [
-        "KVMStats.resx%groupBox1.Text",
-        "MappingStats.resx%groupBox1.Text"
-      ]
+      "zh-chs": "压缩网络流量"
     },
     {
       "cs": "Komprese souborů ...",
@@ -11898,11 +11676,7 @@
       "nl": "Computernaam",
       "pt-br": "Nome do computador",
       "sv": "Datornamn",
-      "zh-chs": "计算机名",
-      "xloc": [
-        "DeviceUserControl.resx%deviceNameLabel.Text",
-        "MapUserControl.resx%deviceNameLabel.Text"
-      ]
+      "zh-chs": "计算机名"
     },
     {
       "cs": "Potvrdit",
@@ -11947,10 +11721,7 @@
       "nl": "Verwijderen bevestigen",
       "pt-br": "Confirmar exclusão",
       "sv": "Bekräfta radering",
-      "zh-chs": "确认删除",
-      "xloc": [
-        "FileDeletePromptForm.resx%mainGroupBox.Text"
-      ]
+      "zh-chs": "确认删除"
     },
     {
       "cs": "Potvrdit kopírování jednoho záznamu do tohoto umístění?",
@@ -12660,9 +12431,6 @@
       "zh-chs": "连接",
       "zh-cht": "連接",
       "xloc": [
-        "FileViewer.resx%connectButton.Text",
-        "KVMViewer.resx%connectButton.Text",
-        "Properties%Resources.resx%Connect",
         "agent-translations.json",
         "default-mobile.handlebars->11->413",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3",
@@ -12852,7 +12620,6 @@
       "zh-chs": "已连接",
       "zh-cht": "已連接",
       "xloc": [
-        "Properties%Resources.resx%Connected",
         "default-mobile.handlebars->11->4",
         "default.handlebars->35->11",
         "default.handlebars->35->335",
@@ -12942,10 +12709,7 @@
       "nl": "Verbonden met server",
       "pt-br": "Conectado ao servidor",
       "sv": "Ansluten till servern",
-      "zh-chs": "连接到服务器",
-      "xloc": [
-        "Properties%Resources.resx%ConnectedToServer"
-      ]
+      "zh-chs": "连接到服务器"
     },
     {
       "cs": "Připojeno.",
@@ -13003,7 +12767,6 @@
       "zh-chs": "正在连线...",
       "zh-cht": "正在連線...",
       "xloc": [
-        "Properties%Resources.resx%Connecting",
         "default-mobile.handlebars->11->2",
         "default-mobile.handlebars->11->458",
         "default-mobile.handlebars->11->48",
@@ -13029,11 +12792,7 @@
       "nl": "Verbinding",
       "pt-br": "Conexão",
       "sv": "Förbindelse",
-      "zh-chs": "联系",
-      "xloc": [
-        "SshUsernameForm.resx%groupBox1.Text",
-        "altPortForm.resx%groupBox1.Text"
-      ]
+      "zh-chs": "联系"
     },
     {
       "cs": "Počitadlo připojení",
@@ -13804,10 +13563,7 @@
       "nl": "Aantal",
       "pt-br": "Contar",
       "sv": "Räkna",
-      "zh-chs": "数数",
-      "xloc": [
-        "SessionsForm.resx%columnHeader3.Text"
-      ]
+      "zh-chs": "数数"
     },
     {
       "cs": "Vytvořit účet",
@@ -13869,10 +13625,7 @@
       "nl": "Map aanmaken",
       "pt-br": "Criar pasta",
       "sv": "Skapa mapp",
-      "zh-chs": "创建文件夹",
-      "xloc": [
-        "Properties%Resources.resx%CreateFolder"
-      ]
+      "zh-chs": "创建文件夹"
     },
     {
       "de": "Login-Token erstellen",
@@ -14499,10 +14252,7 @@
       "sv": "Ctrl-Alt-Del",
       "tr": "Ctrl-Alt-Del",
       "zh-chs": "Ctrl-Alt-Del",
-      "zh-cht": "Ctrl-Alt-Del",
-      "xloc": [
-        "KVMViewer.resx%cadButton.Text"
-      ]
+      "zh-cht": "Ctrl-Alt-Del"
     },
     {
       "cs": "Ctrl-W",
@@ -15511,7 +15261,6 @@
       "zh-chs": "被拒绝",
       "zh-cht": "被拒絕",
       "xloc": [
-        "Properties%Resources.resx%Denied",
         "default-mobile.handlebars->11->365",
         "default.handlebars->35->1065",
         "sharing.handlebars->11->29",
@@ -15529,10 +15278,7 @@
       "nl": "Weigeren",
       "pt-br": "Negar",
       "sv": "Förneka",
-      "zh-chs": "否定",
-      "xloc": [
-        "ConsentForm.resx%cancelButton.Text"
-      ]
+      "zh-chs": "否定"
     },
     {
       "cs": "Sestupně podle data",
@@ -15698,7 +15444,6 @@
       "zh-chs": "桌面",
       "zh-cht": "桌面",
       "xloc": [
-        "Properties%Resources.resx%Desktop",
         "default-mobile.handlebars->11->310",
         "default.handlebars->35->1134",
         "default.handlebars->35->1773",
@@ -15935,10 +15680,7 @@
       "nl": "Bureaubladinstellingen",
       "pt-br": "Configurações da área de trabalho",
       "sv": "Skrivbordsinställningar",
-      "zh-chs": "桌面设置",
-      "xloc": [
-        "DeviceSettingsForm.resx%groupBox2.Text"
-      ]
+      "zh-chs": "桌面设置"
     },
     {
       "cs": "Sdílení plochy",
@@ -16251,8 +15993,6 @@
       "zh-chs": "设备组",
       "zh-cht": "裝置群",
       "xloc": [
-        "AddPortMapForm.resx%label5.Text",
-        "AddRelayMapForm.resx%label6.Text",
         "agent-translations.json",
         "default-mobile.handlebars->11->645",
         "default.handlebars->35->1795",
@@ -16476,10 +16216,7 @@
       "nl": "Apparaat instellingen",
       "pt-br": "Configurações do dispositivo",
       "sv": "Enhetsinställningar",
-      "zh-chs": "设备设置",
-      "xloc": [
-        "DeviceSettingsForm.resx%$this.Text"
-      ]
+      "zh-chs": "设备设置"
     },
     {
       "cs": "Sdílení zařízení",
@@ -16535,10 +16272,7 @@
       "nl": "Apparaatstatus",
       "pt-br": "Status do dispositivo",
       "sv": "Enhets status",
-      "zh-chs": "设备状态",
-      "xloc": [
-        "DeviceUserControl.resx%deviceStatusLabel.Text"
-      ]
+      "zh-chs": "设备状态"
     },
     {
       "cs": "Device Toast",
@@ -17295,7 +17029,6 @@
       "zh-chs": "设备",
       "zh-cht": "裝置",
       "xloc": [
-        "MainForm.resx%devicesTabPage.Text",
         "default.handlebars->35->1721",
         "default.handlebars->35->2218",
         "default.handlebars->35->2258"
@@ -17312,10 +17045,7 @@
       "nl": "Directe verbinding",
       "pt-br": "Conexão direta",
       "sv": "Direktkoppling",
-      "zh-chs": "直接联系",
-      "xloc": [
-        "Properties%Resources.resx%DirectConnect"
-      ]
+      "zh-chs": "直接联系"
     },
     {
       "cs": "Zakázáno",
@@ -17337,7 +17067,6 @@
       "zh-chs": "已禁用",
       "zh-cht": "已禁用",
       "xloc": [
-        "Properties%Resources.resx%Disabled",
         "default-mobile.handlebars->11->475",
         "default.handlebars->35->758",
         "default.handlebars->35->95"
@@ -17386,7 +17115,6 @@
       "zh-chs": "断线",
       "zh-cht": "斷線",
       "xloc": [
-        "Properties%Resources.resx%Disconnect",
         "agent-translations.json",
         "default-mobile.handlebars->11->414",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3",
@@ -17432,10 +17160,7 @@
       "fr": "Se déconnecter du serveur et fermer ?",
       "nl": "Verbinding met de server verbreken en afsluiten?",
       "pt-br": "Desconectar do servidor e fechar?",
-      "sv": "Koppla bort från servern och stänga?",
-      "xloc": [
-        "Properties%Resources.resx%DisconnectFromServerAndClose"
-      ]
+      "sv": "Koppla bort från servern och stänga?"
     },
     {
       "cs": "Odpojeno",
@@ -17457,7 +17182,6 @@
       "zh-chs": "已断线",
       "zh-cht": "已斷線",
       "xloc": [
-        "Properties%Resources.resx%Disconnected",
         "default-mobile.handlebars->11->1",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3->deskstatus",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->0->1->3->p13Status",
@@ -17581,10 +17305,7 @@
       "nl": "Verbindingsstatistieken weergeven",
       "pt-br": "Exibir estatísticas de conexão",
       "sv": "Visa anslutningsstatistik",
-      "zh-chs": "显示连接统计",
-      "xloc": [
-        "Properties%Resources.resx%DisplayConnectionStatistics"
-      ]
+      "zh-chs": "显示连接统计"
     },
     {
       "cs": "Zobrazit název skupiny zařízení",
@@ -17669,7 +17390,6 @@
       "sv": "Visa {0}",
       "zh-chs": "显示{0}",
       "xloc": [
-        "Properties%Resources.resx%DisplayX",
         "default.handlebars->35->1136"
       ]
     },
@@ -17783,11 +17503,7 @@
       "nl": "Niet vragen voor {0} dagen.",
       "pt-br": "Não pergunte por {0} dias.",
       "sv": "Be inte om {0} dagar.",
-      "zh-chs": "不要要求 {0} 天。",
-      "xloc": [
-        "MainForm.resx%tokenRememberCheckBox.Text",
-        "Properties%Resources.resx%DontAskXDays"
-      ]
+      "zh-chs": "不要要求 {0} 天。"
     },
     {
       "cs": "Neměňte, ponechte CCM, pokud je nastaveno",
@@ -17931,10 +17647,7 @@
       "nl": "Dubbelklik actie",
       "pt-br": "Ação de duplo clique",
       "sv": "Dubbelklicka på åtgärd",
-      "zh-chs": "双击操作",
-      "xloc": [
-        "DeviceSettingsForm.resx%label1.Text"
-      ]
+      "zh-chs": "双击操作"
     },
     {
       "de": "Runter",
@@ -18764,10 +18477,7 @@
       "nl": "Sluiten",
       "pt-br": "Saída",
       "sv": "Utgång",
-      "zh-chs": "出口",
-      "xloc": [
-        "MainForm.resx%exitToolStripMenuItem.Text"
-      ]
+      "zh-chs": "出口"
     },
     {
       "cs": "E-mail „{0}“ se již používá pro jiný účet. Změňte e-mailovou adresu a zkuste to znovu.",
@@ -19603,7 +19313,6 @@
       "zh-chs": "电邮",
       "zh-cht": "電郵",
       "xloc": [
-        "MainForm.resx%emailTokenButton.Text",
         "default-mobile.handlebars->11->102",
         "default.handlebars->35->2184",
         "default.handlebars->35->2311",
@@ -19869,11 +19578,7 @@
       "nl": "E-mail verzonden",
       "pt-br": "Email enviado",
       "sv": "Email skickat",
-      "zh-chs": "邮件已发送",
-      "xloc": [
-        "MainForm.resx%tokenEmailSentLabel.Text",
-        "Properties%Resources.resx%EmailSent"
-      ]
+      "zh-chs": "邮件已发送"
     },
     {
       "cs": "Email odeslán.",
@@ -19913,10 +19618,7 @@
       "nl": "E-mailverificatie vereist",
       "pt-br": "Verificação de e-mail necessária",
       "sv": "Verifiering av e-post krävs",
-      "zh-chs": "需要电子邮件验证",
-      "xloc": [
-        "Properties%Resources.resx%EmailVerificationRequired"
-      ]
+      "zh-chs": "需要电子邮件验证"
     },
     {
       "cs": "Je vyžadováno ověření e-mailem, zkontrolujte svou poštovní schránku a klikněte na odkaz pro potvrzení.",
@@ -20145,7 +19847,6 @@
       "zh-chs": "已启用",
       "zh-cht": "已啟用",
       "xloc": [
-        "Properties%Resources.resx%Enabled",
         "default.handlebars->35->2462",
         "default.handlebars->35->94"
       ]
@@ -20666,10 +20367,7 @@
       "nl": "Verbeterde toetsenbordopname",
       "pt-br": "Captura de teclado aprimorada",
       "sv": "Förbättrad tangentbordsfångst",
-      "zh-chs": "增强的键盘捕获",
-      "xloc": [
-        "DeviceSettingsForm.resx%exp_KeyboardHookCheckBox.Text"
-      ]
+      "zh-chs": "增强的键盘捕获"
     },
     {
       "cs": "Zadání",
@@ -20756,10 +20454,7 @@
       "nl": "Voer de details van het hulpverzoek in",
       "pt-br": "Insira os detalhes do pedido de ajuda",
       "sv": "Ange information om hjälpförfrågan",
-      "zh-chs": "输入帮助请求详细信息",
-      "xloc": [
-        "RequestHelpForm.resx%stateLabel.Text"
-      ]
+      "zh-chs": "输入帮助请求详细信息"
     },
     {
       "cs": "Zadejte text a kliknutím na OK ho zadáte na dálku pomocí klávesnice (rozložení en-US). Než budete pokračovat, nezapomeňte umístnit vzdálený kurzor na správnou pozici.",
@@ -20818,10 +20513,7 @@
       "nl": "Voer de RDP poort van de externe computer in, de standaard RDP poort is 3389.",
       "pt-br": "Insira a porta RDP do computador remoto, a porta RDP padrão é 3389.",
       "sv": "Ange RDP-porten på fjärrdatorn, standard-RDP-porten är 3389.",
-      "zh-chs": "输入远程计算机的RDP端口，默认RDP端口为3389。",
-      "xloc": [
-        "rdpPortForm.resx%label1.Text"
-      ]
+      "zh-chs": "输入远程计算机的RDP端口，默认RDP端口为3389。"
     },
     {
       "cs": "Zadejte token pro vytvoření účtu",
@@ -20859,10 +20551,7 @@
       "nl": "Voer de tweede factor authenticatie token in.",
       "pt-br": "Insira o token de autenticação de segundo fator.",
       "sv": "Ange den andra faktor-autentiseringstoken.",
-      "zh-chs": "输入第二个因素身份验证令牌。",
-      "xloc": [
-        "MainForm.resx%label2.Text"
-      ]
+      "zh-chs": "输入第二个因素身份验证令牌。"
     },
     {
       "cs": "Zadejte token pro 2-faktorové přihlášení:",
@@ -20921,24 +20610,15 @@
       "nl": "Foutmelding",
       "pt-br": "Mensagem de erro",
       "sv": "Felmeddelande",
-      "zh-chs": "错误信息",
-      "xloc": [
-        "MainForm.resx%stateLabel.Text"
-      ]
+      "zh-chs": "错误信息"
     },
     {
       "en": "Error downloading file: {0}",
-      "nl": "Fout bij downloaden van bestand: {0}",
-      "xloc": [
-        "Properties%Resources.resx%ErrorDownloadingFileX"
-      ]
+      "nl": "Fout bij downloaden van bestand: {0}"
     },
     {
       "en": "Error uploading file: {0}",
-      "nl": "Fout bij uploaden van bestand: {0}",
-      "xloc": [
-        "Properties%Resources.resx%ErrorUploadingFileX"
-      ]
+      "nl": "Fout bij uploaden van bestand: {0}"
     },
     {
       "cs": "Chyba, klíč nelze přidat.",
@@ -21099,10 +20779,7 @@
     },
     {
       "en": "Estimating...",
-      "nl": "geschat...",
-      "xloc": [
-        "Properties%Resources.resx%EstimatingDotDotDot"
-      ]
+      "nl": "geschat..."
     },
     {
       "cs": "estonština",
@@ -21138,10 +20815,7 @@
       "nl": "Gebeurtenis",
       "pt-br": "Evento",
       "sv": "Händelse",
-      "zh-chs": "事件",
-      "xloc": [
-        "EventsForm.resx%columnHeader3.Text"
-      ]
+      "zh-chs": "事件"
     },
     {
       "cs": "Podrobnosti události",
@@ -21209,7 +20883,6 @@
       "zh-chs": "事件",
       "zh-cht": "事件",
       "xloc": [
-        "EventsForm.resx%$this.Text",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevEvents",
         "default.handlebars->container->topbar->1->1->UserSubMenuSpan->UserSubMenu->1->0->UserEvents",
         "default.handlebars->contextMenu->cxevents"
@@ -21641,10 +21314,7 @@
       "nl": "Kan extern bureaubladsessie niet starten",
       "pt-br": "Falha ao iniciar sessão de área de trabalho remota",
       "sv": "Det gick inte att starta fjärrskrivbordssessionen",
-      "zh-chs": "无法启动远程桌面会话",
-      "xloc": [
-        "Properties%Resources.resx%FailedToStartRemoteDesktopSession"
-      ]
+      "zh-chs": "无法启动远程桌面会话"
     },
     {
       "cs": "Po odmítnutí místního uživatele se nepodařilo spustit vzdálené soubory",
@@ -21680,10 +21350,7 @@
       "nl": "Kan externe terminalsessie niet starten",
       "pt-br": "Falha ao iniciar sessão de terminal remoto",
       "sv": "Det gick inte att starta fjärrterminsessionen",
-      "zh-chs": "无法启动远程终端会话",
-      "xloc": [
-        "Properties%Resources.resx%FailedToStartRemoteTerminalSession"
-      ]
+      "zh-chs": "无法启动远程终端会话"
     },
     {
       "cs": "Zahájení relace vzdáleného terminálu se nezdařilo, {0} ({1})",
@@ -21754,7 +21421,6 @@
       "zh-chs": "快速",
       "zh-cht": "快速",
       "xloc": [
-        "Properties%Resources.resx%Fast",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1"
@@ -21894,8 +21560,6 @@
       "zh-chs": "档案操作",
       "zh-cht": "檔案操作",
       "xloc": [
-        "FileDeletePromptForm.resx%$this.Text",
-        "FilenamePromptForm.resx%$this.Text",
         "default.handlebars->35->1172",
         "default.handlebars->35->1174",
         "sharing.handlebars->11->46",
@@ -21939,7 +21603,6 @@
       "sv": "Filöverföring",
       "zh-chs": "文件传输",
       "xloc": [
-        "FileTransferStatusForm.resx%$this.Text",
         "default.handlebars->35->2440"
       ]
     },
@@ -21986,7 +21649,6 @@
       "zh-chs": "档案",
       "zh-cht": "檔案",
       "xloc": [
-        "Properties%Resources.resx%Files",
         "default-mobile.handlebars->11->203",
         "default-mobile.handlebars->11->312",
         "default.handlebars->35->1780",
@@ -22602,10 +22264,7 @@
       "nl": "Alle toetsenbordtoetsen doorsturen",
       "pt-br": "Encaminhar todas as teclas do teclado",
       "sv": "Vidarebefordra alla tangentbordstangenter",
-      "zh-chs": "转发所有键盘键",
-      "xloc": [
-        "DeviceSettingsForm.resx%exp_KeyboardHookPriorityCheckBox.Text"
-      ]
+      "zh-chs": "转发所有键盘键"
     },
     {
       "cs": "Snímková frekvence",
@@ -22627,7 +22286,6 @@
       "zh-chs": "贞速率",
       "zh-cht": "框速率",
       "xloc": [
-        "KVMSettingsForm.resx%label2.Text",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->1",
         "player.handlebars->3->44",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->1"
@@ -24113,8 +23771,6 @@
       "sv": "HTTP",
       "zh-chs": "HTTP",
       "xloc": [
-        "DeviceUserControl.resx%httpButton.Text",
-        "MainForm.resx%httpToolStripMenuItem.Text",
         "default.handlebars->35->2544"
       ]
     },
@@ -24129,11 +23785,7 @@
       "nl": "HTTPS",
       "pt-br": "HTTPS",
       "sv": "HTTPS",
-      "zh-chs": "HTTPS",
-      "xloc": [
-        "DeviceUserControl.resx%httpsButton.Text",
-        "MainForm.resx%httpsToolStripMenuItem.Text"
-      ]
+      "zh-chs": "HTTPS"
     },
     {
       "cs": "HW připojení",
@@ -24368,10 +24020,7 @@
       "nl": "Hulp gevraagd",
       "pt-br": "Ajuda Solicitada",
       "sv": "Hjälp begärd",
-      "zh-chs": "请求帮助",
-      "xloc": [
-        "Properties%Resources.resx%HelpRequested"
-      ]
+      "zh-chs": "请求帮助"
     },
     {
       "cs": "Požadována pomoc, uživatel: {0}, podrobnosti: {1}",
@@ -25303,10 +24952,7 @@
       "nl": "Negeren",
       "pt-br": "Ignorar",
       "sv": "Strunta i",
-      "zh-chs": "忽略",
-      "xloc": [
-        "MainForm.resx%nextButton3.Text"
-      ]
+      "zh-chs": "忽略"
     },
     {
       "cs": "Neplatné vyvolání",
@@ -25401,7 +25047,7 @@
     },
     {
       "en": "Inactivate days until removal",
-      "nl": "inactieve dagen tot verwijdering",",
+      "nl": "inactieve dagen tot verwijdering",
       "pt-br": "Inativar dias até a remoção",
       "xloc": [
         "default.handlebars->35->1787"
@@ -25452,13 +25098,7 @@
       "nl": "Inkomende Bytes",
       "pt-br": "Bytes de entrada",
       "sv": "Inkommande byte",
-      "zh-chs": "传入字节",
-      "xloc": [
-        "KVMStats.resx%label12.Text",
-        "KVMStats.resx%label4.Text",
-        "MappingStats.resx%label12.Text",
-        "MappingStats.resx%label4.Text"
-      ]
+      "zh-chs": "传入字节"
     },
     {
       "de": "Eingehende Kompression",
@@ -25471,11 +25111,7 @@
       "nl": "Inkomende compressie",
       "pt-br": "Compressão de entrada",
       "sv": "Inkommande kompression",
-      "zh-chs": "传入压缩",
-      "xloc": [
-        "KVMStats.resx%label11.Text",
-        "MappingStats.resx%label11.Text"
-      ]
+      "zh-chs": "传入压缩"
     },
     {
       "cs": "Indexováno každých {0} sekund",
@@ -25792,10 +25428,7 @@
       "nl": "Installeren...",
       "pt-br": "Instalar...",
       "sv": "Installera...",
-      "zh-chs": "安装...",
-      "xloc": [
-        "MainForm.resx%installButton.Text"
-      ]
+      "zh-chs": "安装..."
     },
     {
       "de": "Installation",
@@ -25808,10 +25441,7 @@
       "nl": "Installatie",
       "pt-br": "Instalação",
       "sv": "Installation",
-      "zh-chs": "安装",
-      "xloc": [
-        "InstallForm.resx%$this.Text"
-      ]
+      "zh-chs": "安装"
     },
     {
       "cs": "Typ instalace",
@@ -26898,11 +26528,7 @@
       "nl": "Intel® ME status...",
       "pt-br": "Intel® ME State ...",
       "sv": "Intel® ME State ...",
-      "zh-chs": "英特尔® ME 状态...",
-      "xloc": [
-        "MainForm.resx%intelAMTStateToolStripMenuItem.Text",
-        "MainForm.resx%intelMEStateToolStripMenuItem.Text"
-      ]
+      "zh-chs": "英特尔® ME 状态..."
     },
     {
       "de": "Intel® Management-Engine",
@@ -26915,10 +26541,7 @@
       "nl": "Intel® Management Engine",
       "pt-br": "Intel® Management Engine",
       "sv": "Intel® Management Engine",
-      "zh-chs": "英特尔® 管理引擎",
-      "xloc": [
-        "MeInfoForm.resx%$this.Text"
-      ]
+      "zh-chs": "英特尔® 管理引擎"
     },
     {
       "de": "Status der Intel® Management Engine für diesen Computer.",
@@ -26931,10 +26554,7 @@
       "nl": "Intel® Management Engine status voor deze computer.",
       "pt-br": "Estado do Intel® Management Engine para este computador.",
       "sv": "Intel® Management Engine-tillstånd för den här datorn.",
-      "zh-chs": "此计算机的英特尔® 管理引擎状态。",
-      "xloc": [
-        "MeInfoForm.resx%label1.Text"
-      ]
+      "zh-chs": "此计算机的英特尔® 管理引擎状态。"
     },
     {
       "cs": "Intel®AMT",
@@ -27318,10 +26938,7 @@
       "nl": "Ongeldige download.",
       "pt-br": "Download inválido.",
       "sv": "Ogiltig nedladdning.",
-      "zh-chs": "下载无效。",
-      "xloc": [
-        "Properties%Resources.resx%InvalidDownload"
-      ]
+      "zh-chs": "下载无效。"
     },
     {
       "de": "Ungültige Email",
@@ -27522,10 +27139,7 @@
       "nl": "Ongeldige gebruikersnaam of wachtwoord",
       "pt-br": "nome de usuário ou senha inválidos",
       "sv": "Ogiltigt användarnamn eller lösenord",
-      "zh-chs": "无效的用户名或密码",
-      "xloc": [
-        "Properties%Resources.resx%InvalidUsernameOrPassword"
-      ]
+      "zh-chs": "无效的用户名或密码"
     },
     {
       "cs": "Zrušení platnosti e-mailu",
@@ -27866,11 +27480,7 @@
       "nl": "Artikel",
       "pt-br": "Item",
       "sv": "Artikel",
-      "zh-chs": "物品",
-      "xloc": [
-        "MeInfoForm.resx%columnHeader1.Text",
-        "MeInfoForm.resx%columnHeader4.Text"
-      ]
+      "zh-chs": "物品"
     },
     {
       "cs": "JSON",
@@ -28408,10 +28018,7 @@
       "nl": "Talen",
       "pt-br": "línguas",
       "sv": "språk",
-      "zh-chs": "语言",
-      "xloc": [
-        "Properties%Resources.resx%LanguagesTitle"
-      ]
+      "zh-chs": "语言"
     },
     {
       "cs": "Velký",
@@ -29977,10 +29584,7 @@
       "nl": "Lijst met externe sessies die actief zijn op deze computer.",
       "pt-br": "Lista de sessões remotas ativas neste computador.",
       "sv": "Lista över fjärrsessioner som är aktiva på den här datorn.",
-      "zh-chs": "此计算机上活动的远程会话列表。",
-      "xloc": [
-        "SessionsForm.resx%label1.Text"
-      ]
+      "zh-chs": "此计算机上活动的远程会话列表。"
     },
     {
       "cs": "lotyština",
@@ -30048,7 +29652,6 @@
       "zh-chs": "载入中...",
       "zh-cht": "載入中...",
       "xloc": [
-        "Properties%Resources.resx%Loading",
         "default-mobile.handlebars->11->81",
         "default-mobile.handlebars->11->96",
         "default.handlebars->35->1020",
@@ -30080,8 +29683,6 @@
       "zh-chs": "本地",
       "zh-cht": "本地",
       "xloc": [
-        "FileViewer.resx%localLabel.Text",
-        "Properties%Resources.resx%Local",
         "messenger.handlebars->localVideo->1",
         "messenger.handlebars->remoteImage->3->4"
       ]
@@ -30097,10 +29698,7 @@
       "nl": "Lokaal - {0}",
       "pt-br": "Local - {0}",
       "sv": "Lokalt - {0}",
-      "zh-chs": "本地 - {0}",
-      "xloc": [
-        "Properties%Resources.resx%LocalPlus"
-      ]
+      "zh-chs": "本地 - {0}"
     },
     {
       "cs": "Lokální klávesová mapa",
@@ -30137,11 +29735,7 @@
       "nl": "Lokale poort",
       "pt-br": "Porto Local",
       "sv": "Lokal hamn",
-      "zh-chs": "本地端口",
-      "xloc": [
-        "AddPortMapForm.resx%label1.Text",
-        "AddRelayMapForm.resx%label1.Text"
-      ]
+      "zh-chs": "本地端口"
     },
     {
       "de": "Lokale Geräte, kein Agent",
@@ -30596,10 +30190,7 @@
       "nl": "Uitloggen",
       "pt-br": "Sair",
       "sv": "Logga ut",
-      "zh-chs": "登出",
-      "xloc": [
-        "MainForm.resx%backButton5.Text"
-      ]
+      "zh-chs": "登出"
     },
     {
       "cs": "Log-X",
@@ -30661,8 +30252,6 @@
       "zh-chs": "登录",
       "zh-cht": "登入",
       "xloc": [
-        "MainForm.resx%nextButton1.Text",
-        "MainForm.resx%tabPage1.Text",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resettokenpanel->1->5->1->2->1->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resettokenpanel->1->5->1->2->1->1",
@@ -31024,7 +30613,6 @@
       "zh-chs": "MQTT",
       "zh-cht": "MQTT",
       "xloc": [
-        "Properties%Resources.resx%MQTT",
         "default-mobile.handlebars->11->239",
         "default-mobile.handlebars->11->292",
         "default-mobile.handlebars->11->552",
@@ -31896,10 +31484,7 @@
       "nl": "Kaartinstellingen",
       "pt-br": "Configurações de mapeamento",
       "sv": "Kartläggningsinställningar",
-      "zh-chs": "映射设置",
-      "xloc": [
-        "SettingsForm.resx%$this.Text"
-      ]
+      "zh-chs": "映射设置"
     },
     {
       "de": "Zuordnungen",
@@ -31912,11 +31497,7 @@
       "nl": "Toewijzingen",
       "pt-br": "Mapeamentos",
       "sv": "Kartläggningar",
-      "zh-chs": "映射",
-      "xloc": [
-        "MainForm.resx%portMapTabPage.Text",
-        "MainForm.resx%tabPage5.Text"
-      ]
+      "zh-chs": "映射"
     },
     {
       "cs": "maráthština",
@@ -32009,7 +31590,6 @@
       "zh-chs": "中",
       "zh-cht": "中",
       "xloc": [
-        "Properties%Resources.resx%Medium",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->3",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize->sizeselect->3",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->3",
@@ -32326,10 +31906,7 @@
       "nl": "MeshCentral",
       "pt-br": "MeshCentral",
       "sv": "MeshCentral",
-      "zh-chs": "网格中心",
-      "xloc": [
-        "Properties%Resources.resx%MeshCentralTitle"
-      ]
+      "zh-chs": "网格中心"
     },
     {
       "de": "MeshCentral Agent für Android",
@@ -32362,8 +31939,6 @@
       "sv": "MeshCentral Assistant",
       "zh-chs": "MeshCentral 助手",
       "xloc": [
-        "MainForm.resx%mainNotifyIcon.Text",
-        "Properties%Resources.resx%MeshCentralAssistant",
         "default.handlebars->35->465"
       ]
     },
@@ -32490,9 +32065,6 @@
       "zh-chs": "MeshCentral路由器",
       "zh-cht": "MeshCentral Router",
       "xloc": [
-        "AppLaunchForm.resx%$this.Text",
-        "MainForm.resx%notifyIcon.Text",
-        "Properties%Resources.resx%MeshCentralRouter",
         "default.handlebars->35->1026"
       ]
     },
@@ -32507,10 +32079,7 @@
       "nl": "MeshCentral Router Installatie",
       "pt-br": "Instalação do roteador MeshCentral",
       "sv": "MeshCentral Router Installation",
-      "zh-chs": "MeshCentral 路由器安装",
-      "xloc": [
-        "InstallForm.resx%groupBox1.Text"
-      ]
+      "zh-chs": "MeshCentral 路由器安装"
     },
     {
       "de": "MeshCentral Router-Links",
@@ -32540,10 +32109,7 @@
       "nl": "MeshCentral Router Update",
       "pt-br": "Atualização do roteador MeshCentral",
       "sv": "MeshCentral routeruppdatering",
-      "zh-chs": "MeshCentral 路由器更新",
-      "xloc": [
-        "UpdateForm.resx%groupBox1.Text"
-      ]
+      "zh-chs": "MeshCentral 路由器更新"
     },
     {
       "de": "MeshCentral Router ermöglicht die Zuordnung von TCP- und UDP-Ports auf diesem Computer zu jedem Computer in Ihrem MeshCentral-Serverkonto. Melden Sie sich zunächst bei Ihrem Konto an.",
@@ -32556,10 +32122,7 @@
       "nl": "Met MeshCentral Router kunnen TCP en UDP poorten op deze computer worden toegewezen aan elke computer in uw MeshCentral-serveraccount. Begin door in te loggen op uw account.",
       "pt-br": "O roteador MeshCentral permite o mapeamento das portas TCP e UDP neste computador para qualquer computador em sua conta do servidor MeshCentral. Comece fazendo login em sua conta.",
       "sv": "MeshCentral Router tillåter mappning av TCP- och UDP-portar på den här datorn till vilken dator som helst i ditt MeshCentral-serverkonto. Börja med att logga in på ditt konto.",
-      "zh-chs": "MeshCentral 路由器允许将此计算机上的 TCP 和 UDP 端口映射到您的 MeshCentral 服务器帐户中的任何计算机。首先登录您的帐户。",
-      "xloc": [
-        "MainForm.resx%label1.Text"
-      ]
+      "zh-chs": "MeshCentral 路由器允许将此计算机上的 TCP 和 UDP 端口映射到您的 MeshCentral 服务器帐户中的任何计算机。首先登录您的帐户。"
     },
     {
       "cs": "MeshCentral Router je Windows nástroj pro mapování TCP portů. Prostřednictvím tohoto serveru můžete například vzdáleně přistupovat na RDP vzdálenou plochu jiného počítače.",
@@ -33496,10 +33059,7 @@
       "nl": "Meerdere gebruikers",
       "pt-br": "Múltiplos usuários",
       "sv": "Flera användare",
-      "zh-chs": "多个用户",
-      "xloc": [
-        "Properties%Resources.resx%MultipleUsers"
-      ]
+      "zh-chs": "多个用户"
     },
     {
       "cs": "Multiplexor",
@@ -33975,13 +33535,6 @@
       "zh-chs": "名称",
       "zh-cht": "名稱",
       "xloc": [
-        "AddPortMapForm.resx%label8.Text",
-        "AddRelayMapForm.resx%label8.Text",
-        "AppLaunchForm.resx%label1.Text",
-        "FileViewer.resx%columnHeader1.Text",
-        "FileViewer.resx%columnHeader3.Text",
-        "FilenamePromptForm.resx%label1.Text",
-        "MainForm.resx%nameColumnHeader.Text",
         "default-mobile.handlebars->11->121",
         "default-mobile.handlebars->11->251",
         "default-mobile.handlebars->11->459",
@@ -34493,10 +34046,7 @@
       "nl": "Volgende",
       "pt-br": "Próximo",
       "sv": "Nästa",
-      "zh-chs": "下一个",
-      "xloc": [
-        "MainForm.resx%nextButton2.Text"
-      ]
+      "zh-chs": "下一个"
     },
     {
       "de": "Nacht Modus",
@@ -34669,10 +34219,7 @@
       "nl": "Geen apparaten",
       "pt-br": "Sem dispositivos",
       "sv": "Inga enheter",
-      "zh-chs": "没有设备",
-      "xloc": [
-        "MainForm.resx%noDevicesLabel.Text"
-      ]
+      "zh-chs": "没有设备"
     },
     {
       "cs": "Nenalezeny žádné události",
@@ -34963,10 +34510,7 @@
       "nl": "Geen poorttoewijzingen\r\n\r\nKlik op \"Toevoegen\" om te beginnen.",
       "pt-br": "Sem mapeamentos de portas\r\n\r\nClique em \"Adicionar\" para começar.",
       "sv": "Inga portkartor\r\n\r\nKlicka på \"Lägg till\" för att komma igång.",
-      "zh-chs": "无端口映射\r\n\r\n单击“添加”开始。",
-      "xloc": [
-        "MainForm.resx%noMapLabel.Text"
-      ]
+      "zh-chs": "无端口映射\r\n\r\n单击“添加”开始。"
     },
     {
       "cs": "Žádná práva",
@@ -35008,10 +34552,7 @@
       "nl": "geen resultaten gevonden",
       "pt-br": "Sem resultados de pesquisa",
       "sv": "inga sökresultat",
-      "zh-chs": "没有搜索结果",
-      "xloc": [
-        "MainForm.resx%noSearchResultsLabel.Text"
-      ]
+      "zh-chs": "没有搜索结果"
     },
     {
       "cs": "Žádné TLS zabezpečení",
@@ -35146,10 +34687,7 @@
       "nl": "Geen actieve externe sessies.",
       "pt-br": "Nenhuma sessão remota ativa.",
       "sv": "Inga aktiva fjärrsessioner.",
-      "zh-chs": "没有活动的远程会话。",
-      "xloc": [
-        "Properties%Resources.resx%NoActiveRemoteSessions"
-      ]
+      "zh-chs": "没有活动的远程会话。"
     },
     {
       "de": "Kein Automatisches Update",
@@ -35713,11 +35251,7 @@
       "nl": "Geen externe sessies",
       "pt-br": "Sem sessões remotas",
       "sv": "Inga fjärrsessioner",
-      "zh-chs": "没有远程会话",
-      "xloc": [
-        "MainForm.resx%remoteSessionsLabel.Text",
-        "Properties%Resources.resx%NoRemoteSessions"
-      ]
+      "zh-chs": "没有远程会话"
     },
     {
       "cs": "Žádná práva k serveru",
@@ -35748,10 +35282,7 @@
       "fr": "Aucun utilitaire autorisé",
       "nl": "Geen gereedschap toegestaan",
       "pt-br": "Nenhuma ferramenta permitida",
-      "sv": "Inga verktyg tillåtna",
-      "xloc": [
-        "Properties%Resources.resx%NoToolsAllowed"
-      ]
+      "sv": "Inga verktyg tillåtna"
     },
     {
       "cs": "Žádné členství ve skupinách",
@@ -36103,7 +35634,6 @@
       "zh-chs": "未激活（输入）",
       "zh-cht": "未啟動（輸入）",
       "xloc": [
-        "Properties%Resources.resx%NotActivatedIn",
         "default-mobile.handlebars->11->268",
         "default-mobile.handlebars->11->512",
         "default.handlebars->35->718"
@@ -36129,7 +35659,6 @@
       "zh-chs": "未激活（预）",
       "zh-cht": "未啟動（預）",
       "xloc": [
-        "Properties%Resources.resx%NotActivatedPre",
         "default-mobile.handlebars->11->267",
         "default-mobile.handlebars->11->511",
         "default.handlebars->35->717"
@@ -36450,7 +35979,6 @@
       "zh-chs": "通知",
       "zh-cht": "通知",
       "xloc": [
-        "NotifyForm.resx%$this.Text",
         "default.handlebars->35->2357",
         "default.handlebars->35->238"
       ]
@@ -36554,10 +36082,7 @@
       "nl": "O&pen website...",
       "pt-br": "O & pen Site ...",
       "sv": "O & pen-webbplats ...",
-      "zh-chs": "打开网站 (&P)...",
-      "xloc": [
-        "MainForm.resx%openSiteToolStripMenuItem.Text"
-      ]
+      "zh-chs": "打开网站 (&P)..."
     },
     {
       "cs": "OK",
@@ -36579,21 +36104,6 @@
       "zh-chs": "OK",
       "zh-cht": "OK",
       "xloc": [
-        "AddPortMapForm.resx%okButton.Text",
-        "AddRelayMapForm.resx%okButton.Text",
-        "AppLaunchForm.resx%okButton.Text",
-        "DeviceSettingsForm.resx%okButton.Text",
-        "FileDeletePromptForm.resx%okButton.Text",
-        "FilenamePromptForm.resx%okButton.Text",
-        "InstallForm.resx%okButton.Text",
-        "KVMSettingsForm.resx%okButton.Text",
-        "KVMStats.resx%okButton.Text",
-        "MappingStats.resx%okButton.Text",
-        "RequestHelpForm.resx%okButton.Text",
-        "SettingsForm.resx%okButton.Text",
-        "SshUsernameForm.resx%okButton.Text",
-        "UpdateForm.resx%okButton.Text",
-        "altPortForm.resx%okButton.Text",
         "default-mobile.handlebars->11->107",
         "default-mobile.handlebars->11->463",
         "default-mobile.handlebars->11->467",
@@ -36613,7 +36123,6 @@
         "login.handlebars->dialog->idx_dlgButtonBar",
         "login2.handlebars->dialog->idx_dlgButtonBar",
         "player.handlebars->p11->dialog->idx_dlgButtonBar",
-        "rdpPortForm.resx%okButton.Text",
         "sharing.handlebars->dialog->idx_dlgButtonBar",
         "ssh.handlebars->p11->dialog->idx_dlgButtonBar",
         "xterm.handlebars->p11->dialog->idx_dlgButtonBar"
@@ -36728,7 +36237,6 @@
       "zh-chs": "离线",
       "zh-cht": "離線",
       "xloc": [
-        "Properties%Resources.resx%Offline",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->5"
       ]
     },
@@ -37036,10 +36544,7 @@
       "nl": "Open Source, Apache 2.0 Licentie",
       "pt-br": "Código aberto, licença Apache 2.0",
       "sv": "Open Source, Apache 2.0-licens",
-      "zh-chs": "开源，Apache 2.0 许可",
-      "xloc": [
-        "MainForm.resx%licenseLinkLabel.Text"
-      ]
+      "zh-chs": "开源，Apache 2.0 许可"
     },
     {
       "de": "Website öffnen",
@@ -37052,10 +36557,7 @@
       "nl": "Website openen",
       "pt-br": "Abra o site",
       "sv": "Öppna webbplatsen",
-      "zh-chs": "打开网站",
-      "xloc": [
-        "MainForm.resx%openWebSiteButton.Text"
-      ]
+      "zh-chs": "打开网站"
     },
     {
       "cs": "Otevřete terminál XTerm",
@@ -37138,10 +36640,7 @@
       "nl": "Open...",
       "pt-br": "Aberto...",
       "sv": "Öppna...",
-      "zh-chs": "打开...",
-      "xloc": [
-        "MapUserControl.resx%appButton.Text"
-      ]
+      "zh-chs": "打开..."
     },
     {
       "de": "OpenSSH",
@@ -37154,10 +36653,7 @@
       "nl": "OpenSSH",
       "pt-br": "OpenSSH",
       "sv": "OpenSSH",
-      "zh-chs": "开放式SSH",
-      "xloc": [
-        "Properties%Resources.resx%OpenSSHAppName"
-      ]
+      "zh-chs": "开放式SSH"
     },
     {
       "cs": "Zahájení: {0}",
@@ -37403,13 +36899,7 @@
       "nl": "Uitgaande Bytes",
       "pt-br": "Bytes de saída",
       "sv": "Utgående byte",
-      "zh-chs": "传出字节",
-      "xloc": [
-        "KVMStats.resx%label2.Text",
-        "KVMStats.resx%label3.Text",
-        "MappingStats.resx%label2.Text",
-        "MappingStats.resx%label3.Text"
-      ]
+      "zh-chs": "传出字节"
     },
     {
       "de": "Ausgehende Komprimierung",
@@ -37422,18 +36912,11 @@
       "nl": "Uitgaande compressie",
       "pt-br": "Compressão de saída",
       "sv": "Utgående kompression",
-      "zh-chs": "输出压缩",
-      "xloc": [
-        "KVMStats.resx%label10.Text",
-        "MappingStats.resx%label10.Text"
-      ]
+      "zh-chs": "输出压缩"
     },
     {
       "en": "Overwrite 1 file?",
-      "nl": "1 bestand overschrijven?",
-      "xloc": [
-        "Properties%Resources.resx%OverwriteOneFile"
-      ]
+      "nl": "1 bestand overschrijven?"
     },
     {
       "cs": "Přepsat, pokud soubor existuje?",
@@ -37460,10 +36943,7 @@
     },
     {
       "en": "Overwrite {0} files?",
-      "nl": "{0} bestanden overschrijven?",
-      "xloc": [
-        "Properties%Resources.resx%OverwriteXfiles"
-      ]
+      "nl": "{0} bestanden overschrijven?"
     },
     {
       "cs": "OwnProcess",
@@ -37753,7 +37233,6 @@
       "zh-chs": "密码",
       "zh-cht": "密碼",
       "xloc": [
-        "MainForm.resx%label28.Text",
         "default-mobile.handlebars->11->345",
         "default-mobile.handlebars->11->406",
         "default-mobile.handlebars->11->417",
@@ -38150,10 +37629,7 @@
       "nl": "Pad",
       "pt-br": "Caminho",
       "sv": "Väg",
-      "zh-chs": "小路",
-      "xloc": [
-        "AppLaunchForm.resx%label3.Text"
-      ]
+      "zh-chs": "小路"
     },
     {
       "cs": "Pozastavit",
@@ -39106,10 +38582,7 @@
       "nl": "Poorttoewijzing",
       "pt-br": "Mapeamento de portas",
       "sv": "Portmappning",
-      "zh-chs": "端口映射",
-      "xloc": [
-        "AddPortMapForm.resx%$this.Text"
-      ]
+      "zh-chs": "端口映射"
     },
     {
       "de": "Hilfe zur Portzuordnung",
@@ -39122,10 +38595,7 @@
       "nl": "Hulp bij poorttoewijzing",
       "pt-br": "Ajuda para mapeamento de portas",
       "sv": "Portmappning Hjälp",
-      "zh-chs": "端口映射帮助",
-      "xloc": [
-        "MappingHelpForm.resx%$this.Text"
-      ]
+      "zh-chs": "端口映射帮助"
     },
     {
       "de": "Port {0} zu Port {1}",
@@ -39138,10 +38608,7 @@
       "nl": "Poort {0} naar poort {1}",
       "pt-br": "Porta {0} para porta {1}",
       "sv": "Porta {0} till port {1}",
-      "zh-chs": "端口 {0} 到端口 {1}",
-      "xloc": [
-        "Properties%Resources.resx%PortXtoPortY"
-      ]
+      "zh-chs": "端口 {0} 到端口 {1}"
     },
     {
       "de": "Port {0} nach {1}:{2}",
@@ -39154,10 +38621,7 @@
       "nl": "Poort {0} naar {1}:{2}",
       "pt-br": "Porta {0} para {1}: {2}",
       "sv": "Port {0} till {1}: {2}",
-      "zh-chs": "端口 {0} 到 {1}：{2}",
-      "xloc": [
-        "Properties%Resources.resx%PortXtoIPPortY"
-      ]
+      "zh-chs": "端口 {0} 到 {1}：{2}"
     },
     {
       "cs": "portugalština",
@@ -39611,9 +39075,6 @@
       "zh-chs": "隐私栏",
       "zh-cht": "隱私欄",
       "xloc": [
-        "KVMViewer.resx%privacyBarToolStripMenuItem.Text",
-        "MainForm.resx%privacyBarToolStripMenuItem.Text",
-        "PrivacyBarForm.resx%mainLabel.Text",
         "default.handlebars->deskConnectContextMenu->5"
       ]
     },
@@ -39651,10 +39112,7 @@
       "nl": "PrivacyBarForm",
       "pt-br": "PrivacyBarForm",
       "sv": "PrivacyBarForm",
-      "zh-chs": "隐私栏表格",
-      "xloc": [
-        "PrivacyBarForm.resx%$this.Text"
-      ]
+      "zh-chs": "隐私栏表格"
     },
     {
       "en": "Private Memory",
@@ -39858,8 +39316,6 @@
       "zh-chs": "协议",
       "zh-cht": "協議",
       "xloc": [
-        "AddPortMapForm.resx%label6.Text",
-        "AddRelayMapForm.resx%label7.Text",
         "default.handlebars->35->2450",
         "player.handlebars->3->31"
       ]
@@ -39919,10 +39375,7 @@
       "nl": "PuTTY SSH client",
       "pt-br": "Cliente PuTTY SSH",
       "sv": "PuTTY SSH-klient",
-      "zh-chs": "PuTTY SSH 客户端",
-      "xloc": [
-        "Properties%Resources.resx%PuttyAppName"
-      ]
+      "zh-chs": "PuTTY SSH 客户端"
     },
     {
       "cs": "Veřejný odkaz",
@@ -39959,10 +39412,7 @@
       "nl": "Trek het klembord van het externe apparaat",
       "pt-br": "Puxe a área de transferência do dispositivo remoto",
       "sv": "Dra urklipp från fjärrenheten",
-      "zh-chs": "从远程设备拉剪贴板",
-      "xloc": [
-        "Properties%Resources.resx%PullClipboardFromRemoteDevice"
-      ]
+      "zh-chs": "从远程设备拉剪贴板"
     },
     {
       "cs": "paňdžábština",
@@ -40061,10 +39511,7 @@
       "nl": "Verplaats lokaal klembord naar extern apparaat",
       "pt-br": "Envie a área de transferência local para o dispositivo remoto",
       "sv": "Tryck lokalt urklipp till fjärrenheten",
-      "zh-chs": "将本地剪贴板推送到远程设备",
-      "xloc": [
-        "Properties%Resources.resx%PushLocaClipboardToRemoteDevice"
-      ]
+      "zh-chs": "将本地剪贴板推送到远程设备"
     },
     {
       "de": "Push Benachrichtigung fehlgeschlagen",
@@ -40122,7 +39569,6 @@
       "zh-chs": "质量",
       "zh-cht": "品質",
       "xloc": [
-        "KVMSettingsForm.resx%label3.Text",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->0->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->3->1",
         "player.handlebars->3->47",
@@ -40163,11 +39609,7 @@
       "nl": "Vernieuwen",
       "pt-br": "R & efresh",
       "sv": "R & efresh",
-      "zh-chs": "刷新",
-      "xloc": [
-        "FileViewer.resx%refreshToolStripMenuItem.Text",
-        "FileViewer.resx%refreshToolStripMenuItem1.Text"
-      ]
+      "zh-chs": "刷新"
     },
     {
       "cs": "RAW16, velmi pomalé",
@@ -40239,8 +39681,6 @@
       "zh-chs": "RDP",
       "zh-cht": "RDP",
       "xloc": [
-        "DeviceUserControl.resx%rdpButton.Text",
-        "MainForm.resx%rdpToolStripMenuItem.Text",
         "default-mobile.handlebars->11->298",
         "default-mobile.handlebars->11->300",
         "default.handlebars->35->337",
@@ -40283,11 +39723,7 @@
       "nl": "RDP poort",
       "pt-br": "Porta RDP",
       "sv": "RDP-port",
-      "zh-chs": "RDP 端口",
-      "xloc": [
-        "rdpPortForm.resx%$this.Text",
-        "rdpPortForm.resx%label2.Text"
-      ]
+      "zh-chs": "RDP 端口"
     },
     {
       "cs": "Port vzdáleného připojení RDP:",
@@ -40585,7 +40021,6 @@
       "zh-chs": "收到无效的网络数据",
       "zh-cht": "收到無效的網絡數據",
       "xloc": [
-        "Properties%Resources.resx%ReceivedInvalidNetworkData",
         "default-mobile.handlebars->11->368",
         "default.handlebars->35->1068",
         "sharing.handlebars->11->10",
@@ -40718,10 +40153,7 @@
       "nl": "Recursief verwijderen",
       "pt-br": "Exclusão recursiva",
       "sv": "Rekursivt Radera",
-      "zh-chs": "递归删除",
-      "xloc": [
-        "FileDeletePromptForm.resx%recursiveCheckBox.Text"
-      ]
+      "zh-chs": "递归删除"
     },
     {
       "cs": "Rekurzivní mazání",
@@ -40872,7 +40304,6 @@
       "zh-chs": "中继",
       "zh-cht": "中繼",
       "xloc": [
-        "Properties%Resources.resx%Relay",
         "default-mobile.handlebars->11->238",
         "default.handlebars->35->2545",
         "default.handlebars->35->332",
@@ -40913,10 +40344,7 @@
       "nl": "Doorstuur apparaat",
       "pt-br": "Dispositivo de Relé",
       "sv": "Reläenhet",
-      "zh-chs": "中继装置",
-      "xloc": [
-        "AddRelayMapForm.resx%label2.Text"
-      ]
+      "zh-chs": "中继装置"
     },
     {
       "cs": "Chyby předávání (relay)",
@@ -40952,10 +40380,7 @@
       "nl": "Doorstuurtoewijzing",
       "pt-br": "Mapeamento de retransmissão",
       "sv": "Relämappning",
-      "zh-chs": "中继映射",
-      "xloc": [
-        "AddRelayMapForm.resx%$this.Text"
-      ]
+      "zh-chs": "中继映射"
     },
     {
       "cs": "Předávané relace",
@@ -41033,10 +40458,7 @@
       "nl": "Onthoud dit certificaat",
       "pt-br": "Lembre-se deste certificado",
       "sv": "Kom ihåg detta certifikat",
-      "zh-chs": "记住这个证书",
-      "xloc": [
-        "MainForm.resx%rememberCertCheckBox.Text"
-      ]
+      "zh-chs": "记住这个证书"
     },
     {
       "cs": "Zapamatovat toto zařízení na 30 dní.",
@@ -41104,8 +40526,6 @@
       "zh-chs": "远程",
       "zh-cht": "遠程",
       "xloc": [
-        "FileViewer.resx%remoteLabel.Text",
-        "Properties%Resources.resx%Remote",
         "messenger.handlebars->remoteImage->3->3",
         "messenger.handlebars->remoteVideo->1"
       ]
@@ -41121,10 +40541,7 @@
       "nl": "Afstandsbediening - {0}",
       "pt-br": "Remoto - {0}",
       "sv": "Fjärrkontroll - {0}",
-      "zh-chs": "远程 - {0}",
-      "xloc": [
-        "Properties%Resources.resx%RemotePlus"
-      ]
+      "zh-chs": "远程 - {0}"
     },
     {
       "cs": "Instalace agenta pro vzdálený přístup",
@@ -41265,7 +40682,6 @@
       "zh-chs": "远程桌面",
       "zh-cht": "遠程桌面",
       "xloc": [
-        "KVMViewer.resx%$this.Text",
         "default-mobile.handlebars->11->194",
         "default-mobile.handlebars->11->197",
         "default.handlebars->35->343",
@@ -41429,10 +40845,7 @@
       "nl": "Extern bureaublad gegevens",
       "pt-br": "Dados da área de trabalho remota",
       "sv": "Fjärrskrivbordsdata",
-      "zh-chs": "远程桌面数据",
-      "xloc": [
-        "KVMStats.resx%groupBox2.Text"
-      ]
+      "zh-chs": "远程桌面数据"
     },
     {
       "cs": "Odkaz na vzdálenou plochu",
@@ -41477,7 +40890,6 @@
       "zh-chs": "远程桌面设置",
       "zh-cht": "遠程桌面設置",
       "xloc": [
-        "KVMSettingsForm.resx%$this.Text",
         "default-mobile.handlebars->11->370",
         "default.handlebars->35->1079",
         "default.handlebars->35->369",
@@ -41495,10 +40907,7 @@
       "nl": "Extern bureaublad statistieken",
       "pt-br": "Estatísticas da área de trabalho remota",
       "sv": "Statistik för fjärrskrivbord",
-      "zh-chs": "远程桌面统计",
-      "xloc": [
-        "KVMStats.resx%$this.Text"
-      ]
+      "zh-chs": "远程桌面统计"
     },
     {
       "de": "Remotedesktop...",
@@ -41511,10 +40920,7 @@
       "nl": "Extern bureaublad...",
       "pt-br": "Área de trabalho remota...",
       "sv": "Fjärrskrivbord...",
-      "zh-chs": "远程桌面...",
-      "xloc": [
-        "MainForm.resx%remoteDesktopToolStripMenuItem.Text"
-      ]
+      "zh-chs": "远程桌面..."
     },
     {
       "de": "Remote-Gerät",
@@ -41527,10 +40933,7 @@
       "nl": "Extern apparaat",
       "pt-br": "Dispositivo Remoto",
       "sv": "Fjärrenhet",
-      "zh-chs": "遥控装置",
-      "xloc": [
-        "AddPortMapForm.resx%label2.Text"
-      ]
+      "zh-chs": "遥控装置"
     },
     {
       "de": "Remote-Dateien",
@@ -41543,10 +40946,7 @@
       "nl": "Externe bestanden",
       "pt-br": "Arquivos Remotos",
       "sv": "Fjärrfiler",
-      "zh-chs": "远程文件",
-      "xloc": [
-        "FileViewer.resx%$this.Text"
-      ]
+      "zh-chs": "远程文件"
     },
     {
       "de": "Link zu Remote-Dateien",
@@ -41576,10 +40976,7 @@
       "nl": "Externe bestanden...",
       "pt-br": "Arquivos remotos ...",
       "sv": "Fjärrfiler ...",
-      "zh-chs": "远程文件...",
-      "xloc": [
-        "MainForm.resx%remoteFilesToolStripMenuItem.Text"
-      ]
+      "zh-chs": "远程文件..."
     },
     {
       "de": "Remote-IP",
@@ -41592,10 +40989,7 @@
       "nl": "Extern IP",
       "pt-br": "IP Remoto",
       "sv": "Fjärr-IP",
-      "zh-chs": "远程IP",
-      "xloc": [
-        "AddRelayMapForm.resx%label5.Text"
-      ]
+      "zh-chs": "远程IP"
     },
     {
       "de": "Remote-Eingangssperre",
@@ -41672,11 +41066,7 @@
       "nl": "Externe poort",
       "pt-br": "Porta Remota",
       "sv": "Fjärrport",
-      "zh-chs": "远程端口",
-      "xloc": [
-        "AddPortMapForm.resx%label3.Text",
-        "AddRelayMapForm.resx%label3.Text"
-      ]
+      "zh-chs": "远程端口"
     },
     {
       "de": "Remote-Sitzungen",
@@ -41689,10 +41079,7 @@
       "nl": "Externe Sessies",
       "pt-br": "Sessões Remotas",
       "sv": "Fjärrsessioner",
-      "zh-chs": "远程会话",
-      "xloc": [
-        "SessionsForm.resx%$this.Text"
-      ]
+      "zh-chs": "远程会话"
     },
     {
       "de": "Remote-Sitzungen...",
@@ -41718,10 +41105,7 @@
       "nl": "Externe Sessies: {0}",
       "pt-br": "Sessões remotas: {0}",
       "sv": "Fjärrsessioner: {0}",
-      "zh-chs": "远程会话：{0}",
-      "xloc": [
-        "Properties%Resources.resx%RemoteSessionsX"
-      ]
+      "zh-chs": "远程会话：{0}"
     },
     {
       "de": "Remote-Terminal + Datei-Link",
@@ -41868,10 +41252,7 @@
       "nl": "Instellingen voor kwaliteit, schaal en framesnelheid van het externe bureaublad. Deze kunnen worden aangepast afhankelijk van de kwaliteit van de netwerkverbinding.",
       "pt-br": "Configurações de qualidade, escala e taxa de quadros da área de trabalho remota. Eles podem ser ajustados dependendo da qualidade da conexão de rede.",
       "sv": "Fjärrskrivbords kvalitet, skalning och bildfrekvensinställningar. Dessa kan justeras beroende på nätverksanslutningens kvalitet.",
-      "zh-chs": "远程桌面质量、缩放和帧速率设置。这些可以根据网络连接的质量进行调整。",
-      "xloc": [
-        "KVMSettingsForm.resx%label4.Text"
-      ]
+      "zh-chs": "远程桌面质量、缩放和帧速率设置。这些可以根据网络连接的质量进行调整。"
     },
     {
       "de": "Remote-Eingang ist gesperrt",
@@ -41927,7 +41308,6 @@
       "zh-chs": "删除",
       "zh-cht": "删除",
       "xloc": [
-        "MapUserControl.resx%closeButton.Text",
         "default.handlebars->35->188"
       ]
     },
@@ -41942,10 +41322,7 @@
       "nl": "1 artikel verwijderen?",
       "pt-br": "Remover 1 item?",
       "sv": "Ta bort ett objekt?",
-      "zh-chs": "删除 1 项？",
-      "xloc": [
-        "Properties%Resources.resx%Remove1Item"
-      ]
+      "zh-chs": "删除 1 项？"
     },
     {
       "cs": "Odebrat konfiguraci",
@@ -42553,10 +41930,7 @@
       "nl": "{0} items verwijderen?",
       "pt-br": "Remover {0} itens?",
       "sv": "Ta bort {0} objekt?",
-      "zh-chs": "删除 {0} 项？",
-      "xloc": [
-        "Properties%Resources.resx%RemoveXItems"
-      ]
+      "zh-chs": "删除 {0} 项？"
     },
     {
       "cs": "Odebrána ověřovací aplikace",
@@ -42821,7 +42195,6 @@
       "zh-chs": "改名",
       "zh-cht": "改名",
       "xloc": [
-        "Properties%Resources.resx%Rename",
         "default-mobile.handlebars->11->149",
         "default-mobile.handlebars->11->435",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->1",
@@ -42847,10 +42220,7 @@
       "nl": "Bestand hernoemen",
       "pt-br": "Renomear arquivo",
       "sv": "Döp om fil",
-      "zh-chs": "重新命名文件",
-      "xloc": [
-        "FilenamePromptForm.resx%mainGroupBox.Text"
-      ]
+      "zh-chs": "重新命名文件"
     },
     {
       "cs": "Přejmenovat: „{0}“ na „{1}“",
@@ -42949,12 +42319,7 @@
       "nl": "Hulp vragen",
       "pt-br": "Solicite ajuda",
       "sv": "Begär hjälp",
-      "zh-chs": "请求帮助",
-      "xloc": [
-        "MainForm.resx%requestHelpButton.Text",
-        "Properties%Resources.resx%RequestHelp",
-        "RequestHelpForm.resx%$this.Text"
-      ]
+      "zh-chs": "请求帮助"
     },
     {
       "de": "Hilfe anfordern...",
@@ -42967,10 +42332,7 @@
       "nl": "Hulp vragen...",
       "pt-br": "Solicite ajuda ...",
       "sv": "Begär hjälp ...",
-      "zh-chs": "请求帮助...",
-      "xloc": [
-        "MainForm.resx%requestHelpToolStripMenuItem.Text"
-      ]
+      "zh-chs": "请求帮助..."
     },
     {
       "de": "Anfrage gesendet, {0}.",
@@ -43719,10 +43081,7 @@
       "nl": "Routeringsstatistieken",
       "pt-br": "Estatísticas de roteamento",
       "sv": "Routing Stats",
-      "zh-chs": "路由统计",
-      "xloc": [
-        "MappingStats.resx%$this.Text"
-      ]
+      "zh-chs": "路由统计"
     },
     {
       "de": "Routing-Status",
@@ -43735,10 +43094,7 @@
       "nl": "Routeringsstatus",
       "pt-br": "Status de roteamento",
       "sv": "Ruttstatus",
-      "zh-chs": "路由状态",
-      "xloc": [
-        "MapUserControl.resx%routingStatusLabel.Text"
-      ]
+      "zh-chs": "路由状态"
     },
     {
       "cs": "Spustit příkazy",
@@ -44029,11 +43385,7 @@
       "nl": "Instellingen...",
       "pt-br": "Configurações...",
       "sv": "Inställningar...",
-      "zh-chs": "设置(&E)...",
-      "xloc": [
-        "MainForm.resx%settingsToolStripMenuItem.Text",
-        "MainForm.resx%settingsToolStripMenuItem1.Text"
-      ]
+      "zh-chs": "设置(&E)..."
     },
     {
       "de": "Stop-Agent",
@@ -44046,10 +43398,7 @@
       "nl": "S&top Agent",
       "pt-br": "S & top agente",
       "sv": "S & toppagent",
-      "zh-chs": "停止代理 (&T)",
-      "xloc": [
-        "MainForm.resx%stopAgentToolStripMenuItem.Text"
-      ]
+      "zh-chs": "停止代理 (&T)"
     },
     {
       "cs": "SCP",
@@ -44070,8 +43419,6 @@
       "tr": "SCP",
       "zh-chs": "SCP",
       "xloc": [
-        "DeviceUserControl.resx%scpButton.Text",
-        "MainForm.resx%scpToolStripMenuItem.Text",
         "default.handlebars->35->339",
         "default.handlebars->35->822"
       ]
@@ -44096,7 +43443,6 @@
       "zh-chs": "短信",
       "zh-cht": "短信",
       "xloc": [
-        "MainForm.resx%smsTokenButton.Text",
         "default.handlebars->35->2348",
         "default.handlebars->35->2353",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
@@ -44194,10 +43540,7 @@
       "nl": "SMS verzonden",
       "pt-br": "SMS enviado",
       "sv": "SMS skickat",
-      "zh-chs": "短信发送",
-      "xloc": [
-        "Properties%Resources.resx%SmsSent"
-      ]
+      "zh-chs": "短信发送"
     },
     {
       "cs": "SMS odeslána.",
@@ -44261,8 +43604,6 @@
       "tr": "SSH",
       "zh-chs": "SSH",
       "xloc": [
-        "DeviceUserControl.resx%sshButton.Text",
-        "MainForm.resx%sshToolStripMenuItem.Text",
         "default-mobile.handlebars->11->297",
         "default-mobile.handlebars->11->299",
         "default.handlebars->35->338",
@@ -44320,10 +43661,7 @@
       "nl": "SSH gebruikersnaam",
       "pt-br": "Nome de usuário SSH",
       "sv": "SSH-användarnamn",
-      "zh-chs": "SSH 用户名",
-      "xloc": [
-        "SshUsernameForm.resx%$this.Text"
-      ]
+      "zh-chs": "SSH 用户名"
     },
     {
       "de": "SSH-Remote-Verbindungsport:",
@@ -44613,7 +43951,6 @@
       "zh-chs": "缩放比例",
       "zh-cht": "縮放比例",
       "xloc": [
-        "KVMSettingsForm.resx%label1.Text",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->1",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->5->1"
@@ -44824,7 +44161,6 @@
       "zh-chs": "搜寻",
       "zh-cht": "搜尋",
       "xloc": [
-        "Properties%Resources.resx%SearchPlaceHolder",
         "default.handlebars->35->1179",
         "default.handlebars->35->683",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devMapToolbar",
@@ -45349,7 +44685,6 @@
       "zh-chs": "发送",
       "zh-cht": "發送",
       "xloc": [
-        "consoleForm.resx%sendButton.Text",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
         "default.handlebars->container->column_l->p12->termTable->1->1->4->1->1->specialKeyDropDown",
         "messenger.handlebars->xbottom->1->1->0->3",
@@ -45368,10 +44703,7 @@
       "nl": "Stuur Ctrl-Alt-Del naar extern apparaat",
       "pt-br": "Envie Ctrl-Alt-Del para o dispositivo remoto",
       "sv": "Skicka Ctrl-Alt-Del till fjärrenhet",
-      "zh-chs": "发送 Ctrl-Alt-Del 到远程设备",
-      "xloc": [
-        "Properties%Resources.resx%SendCtrlAltDelToRemoteDevice"
-      ]
+      "zh-chs": "发送 Ctrl-Alt-Del 到远程设备"
     },
     {
       "cs": "Poslat e-mailem",
@@ -45717,7 +45049,6 @@
       "zh-chs": "将保安编码发送到注册的电邮地址？",
       "zh-cht": "將保安編碼發送到註冊的電郵地址？",
       "xloc": [
-        "Properties%Resources.resx%SendTokenEmail",
         "login.handlebars->5->25",
         "login2.handlebars->7->34"
       ]
@@ -45742,7 +45073,6 @@
       "zh-chs": "将保安编码发送到注册电话号码？",
       "zh-cht": "將保安編碼發送到註冊電話號碼？",
       "xloc": [
-        "Properties%Resources.resx%SendTokenSMS",
         "login.handlebars->5->27",
         "login2.handlebars->7->36"
       ]
@@ -45861,10 +45191,7 @@
       "nl": "Server",
       "pt-br": "Servidor",
       "sv": "Server",
-      "zh-chs": "服务器",
-      "xloc": [
-        "MainForm.resx%label26.Text"
-      ]
+      "zh-chs": "服务器"
     },
     {
       "cs": "Záloha serveru",
@@ -46414,10 +45741,7 @@
       "nl": "Server informatie",
       "pt-br": "Informação do servidor",
       "sv": "Serverinformation",
-      "zh-chs": "服务器信息",
-      "xloc": [
-        "ServerUserControl.resx%serverInfoLabel.Text"
-      ]
+      "zh-chs": "服务器信息"
     },
     {
       "cs": "Server tuto relaci nahrává",
@@ -46482,10 +45806,7 @@
       "nl": "Servernaam",
       "pt-br": "Nome do servidor",
       "sv": "Server namn",
-      "zh-chs": "服务器名称",
-      "xloc": [
-        "ServerUserControl.resx%serverNameLabel.Text"
-      ]
+      "zh-chs": "服务器名称"
     },
     {
       "cs": "ServerStats.csv",
@@ -46757,10 +46078,7 @@
       "nl": "RDP poort instellen...",
       "pt-br": "Definir porta RDP ...",
       "sv": "Ställ in RDP-port ...",
-      "zh-chs": "设置 RDP 端口...",
-      "xloc": [
-        "DeviceUserControl.resx%setRDPPortToolStripMenuItem.Text"
-      ]
+      "zh-chs": "设置 RDP 端口..."
     },
     {
       "de": "Setze den Dunkel Modus",
@@ -46845,13 +46163,8 @@
       "zh-chs": "设定",
       "zh-cht": "設定",
       "xloc": [
-        "DeviceSettingsForm.resx%groupBox1.Text",
-        "KVMSettingsForm.resx%groupBox1.Text",
-        "KVMViewer.resx%settingsButton.Text",
-        "SettingsForm.resx%groupBox1.Text",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3",
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar",
-        "rdpPortForm.resx%groupBox1.Text"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar"
       ]
     },
     {
@@ -47009,7 +46322,6 @@
       "zh-chs": "设定...",
       "zh-cht": "設定...",
       "xloc": [
-        "Properties%Resources.resx%Setup",
         "default-mobile.handlebars->11->3",
         "default.handlebars->35->10",
         "default.handlebars->35->317",
@@ -47313,11 +46625,7 @@
       "nl": "&Gebeurtenissen tonen...",
       "pt-br": "Mostrar & eventos ...",
       "sv": "Visa &Händelser ...",
-      "zh-chs": "显示(&Events)...",
-      "xloc": [
-        "MainForm.resx%showEventsToolStripMenuItem.Text",
-        "MainForm.resx%showEventsToolStripMenuItem1.Text"
-      ]
+      "zh-chs": "显示(&Events)..."
     },
     {
       "de": "&Gruppennamen anzeigen",
@@ -47330,10 +46638,7 @@
       "nl": "Toon &groepsnamen",
       "pt-br": "Mostrar nomes de grupos",
       "sv": "Visa & gruppnamn",
-      "zh-chs": "显示组名称(&G)",
-      "xloc": [
-        "MainForm.resx%showGroupNamesToolStripMenuItem.Text"
-      ]
+      "zh-chs": "显示组名称(&G)"
     },
     {
       "de": "&Offline-Geräte anzeigen",
@@ -47346,10 +46651,7 @@
       "nl": "Toon &Offline apparaten",
       "pt-br": "Mostrar dispositivos off-line",
       "sv": "Visa & Offline-enheter",
-      "zh-chs": "显示离线设备 (&A)",
-      "xloc": [
-        "MainForm.resx%showOfflineDevicesToolStripMenuItem.Text"
-      ]
+      "zh-chs": "显示离线设备 (&A)"
     },
     {
       "cs": "Zobrazit nástroj pro zaměření",
@@ -47459,11 +46761,7 @@
       "nl": "Sessies weergeven...",
       "pt-br": "Mostrar sessões ...",
       "sv": "Visa sessioner ...",
-      "zh-chs": "显示会话...",
-      "xloc": [
-        "MainForm.resx%showSessionsToolStripMenuItem.Text",
-        "MainForm.resx%showSessionsToolStripMenuItem1.Text"
-      ]
+      "zh-chs": "显示会话..."
     },
     {
       "cs": "Zobrazit panel nástrojů připojení",
@@ -47687,11 +46985,7 @@
       "nl": "Weergeven in systeemvak",
       "pt-br": "Mostrar na bandeja do sistema",
       "sv": "Visa i systemfältet",
-      "zh-chs": "在系统托盘上显示",
-      "xloc": [
-        "DeviceSettingsForm.resx%systemTrayCheckBox.Text",
-        "SettingsForm.resx%systemTrayCheckBox.Text"
-      ]
+      "zh-chs": "在系统托盘上显示"
     },
     {
       "cs": "Zobrazit záznam chyb na serveru",
@@ -48021,10 +47315,7 @@
       "nl": "Lokatie",
       "pt-br": "Local",
       "sv": "Webbplats",
-      "zh-chs": "地点",
-      "xloc": [
-        "AppLaunchForm.resx%label2.Text"
-      ]
+      "zh-chs": "地点"
     },
     {
       "cs": "Velikost",
@@ -48046,8 +47337,6 @@
       "zh-chs": "尺寸",
       "zh-cht": "尺寸",
       "xloc": [
-        "FileViewer.resx%columnHeader2.Text",
-        "FileViewer.resx%columnHeader4.Text",
         "default.handlebars->35->2435",
         "default.handlebars->35->2456",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize"
@@ -48294,7 +47583,6 @@
       "zh-chs": "慢",
       "zh-cht": "慢",
       "xloc": [
-        "Properties%Resources.resx%Slow",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->5",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5"
@@ -48498,10 +47786,7 @@
       "nl": "Sorteer op &Naam",
       "pt-br": "Classificar por & nome",
       "sv": "Sortera efter &Namn",
-      "zh-chs": "按名称分类",
-      "xloc": [
-        "MainForm.resx%sortByNameToolStripMenuItem.Text"
-      ]
+      "zh-chs": "按名称分类"
     },
     {
       "de": "Nach Gruppe sortieren",
@@ -48514,10 +47799,7 @@
       "nl": "Sorteer op G&roep",
       "pt-br": "Classificar por G & Rupo",
       "sv": "Sortera efter G & roup",
-      "zh-chs": "按组(&O) 排序",
-      "xloc": [
-        "MainForm.resx%sortByGroupToolStripMenuItem.Text"
-      ]
+      "zh-chs": "按组(&O) 排序"
     },
     {
       "cs": "Seřadit podle data",
@@ -49585,10 +48867,7 @@
       "nl": "Starten...",
       "pt-br": "Iniciando...",
       "sv": "Startande...",
-      "zh-chs": "开始...",
-      "xloc": [
-        "Properties%Resources.resx%Starting"
-      ]
+      "zh-chs": "开始..."
     },
     {
       "cs": "Stav",
@@ -49610,9 +48889,6 @@
       "zh-chs": "状况",
       "zh-cht": "狀態",
       "xloc": [
-        "MainForm.resx%stateColumnHeader.Text",
-        "MeInfoForm.resx%stateTabPage.Text",
-        "Properties%Resources.resx%State",
         "default.handlebars->35->1120",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsServiceTab->deskToolsServiceHeader->1"
       ]
@@ -49637,8 +48913,6 @@
       "zh-chs": "统计",
       "zh-cht": "統計",
       "xloc": [
-        "FileViewer.resx%statsButton.Text",
-        "KVMViewer.resx%statsButton.Text",
         "default.handlebars->container->topbar->1->1->ServerSubMenuSpan->ServerSubMenu->1->0->ServerStats"
       ]
     },
@@ -49653,10 +48927,7 @@
       "nl": "Statistieken...",
       "pt-br": "Estatísticas...",
       "sv": "Statistik ...",
-      "zh-chs": "统计...",
-      "xloc": [
-        "MapUserControl.resx%statsToolStripMenuItem.Text"
-      ]
+      "zh-chs": "统计..."
     },
     {
       "cs": "Stav",
@@ -49772,10 +49043,7 @@
       "nl": "Gestopt",
       "pt-br": "Parou",
       "sv": "Stannade",
-      "zh-chs": "停止",
-      "xloc": [
-        "Properties%Resources.resx%Stopped2"
-      ]
+      "zh-chs": "停止"
     },
     {
       "de": "Gestoppt.",
@@ -49788,10 +49056,7 @@
       "nl": "Gestopt.",
       "pt-br": "Parou.",
       "sv": "Stannade.",
-      "zh-chs": "停了。",
-      "xloc": [
-        "Properties%Resources.resx%Stopped"
-      ]
+      "zh-chs": "停了。"
     },
     {
       "cs": "Úložný prostor",
@@ -50095,7 +49360,6 @@
       "zh-chs": "交换鼠标按钮",
       "zh-cht": "交換鼠標按鈕",
       "xloc": [
-        "KVMSettingsForm.resx%swapMouseButtonsCheckBox.Text",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->1",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->1"
       ]
@@ -50305,11 +49569,7 @@
       "nl": "TCP",
       "pt-br": "TCP",
       "sv": "TCP",
-      "zh-chs": "TCP",
-      "xloc": [
-        "AddPortMapForm.resx%tcpRadioButton.Text",
-        "AddRelayMapForm.resx%tcpRadioButton.Text"
-      ]
+      "zh-chs": "TCP"
     },
     {
       "cs": "Směrování TCP",
@@ -50346,10 +49606,7 @@
       "nl": "TCP relay",
       "pt-br": "Retransmissão TCP",
       "sv": "TCP-relä",
-      "zh-chs": "TCP中继",
-      "xloc": [
-        "Properties%Resources.resx%TCPrelay"
-      ]
+      "zh-chs": "TCP中继"
     },
     {
       "cs": "SOFTWARE JE POSKYTOVÁN „TAK JAK JE“, BEZ ZÁRUKY, VYJÁDŘENÉ NEBO IMPLIKOVANÉ, VČETNĚ NEJEDNÁVANÝCH ZÁRUK OBCHODOVATELNOSTI, VHODNOSTI PRO URČITÝ ÚČEL A NEZÁVISLOST. V ŽÁDNÉM PŘÍPADĚ NEPOSKYTUJÍ AUTOŘI NEBO DRŽITELÉ AUTORSKÝCH PRÁV ŽÁDNÉ ZÁRUKY, ZA POŠKOZENÍ NEBO OSTATNÍ ODPOVĚDNOST, PŘI ČINNOSTI SMLOUVY, TORTU NEBO JINÉ, VYPLÝVAJÍCÍ ZE SOFTWARU NEBO POUŽITÍ NEBO OSTATNÍCH OBCHODŮ SOFTWARE.",
@@ -50708,7 +49965,6 @@
       "zh-chs": "终端",
       "zh-cht": "終端機",
       "xloc": [
-        "Properties%Resources.resx%Terminal",
         "default-mobile.handlebars->11->200",
         "default-mobile.handlebars->11->311",
         "default.handlebars->35->1777",
@@ -51192,10 +50448,7 @@
       "nl": "Deze MeshCentral Server gebruikt een andere versie van deze tool. Klik op OK om te downloaden en bij te werken.",
       "pt-br": "Este servidor MeshCentral usa uma versão diferente desta ferramenta. Clique em ok para baixar e atualizar.",
       "sv": "Denna MeshCentral Server använder en annan version av detta verktyg. Klicka på ok för att ladda ner och uppdatera.",
-      "zh-chs": "此 MeshCentral Server 使用此工具的不同版本。单击“确定”进行下载和更新。",
-      "xloc": [
-        "UpdateForm.resx%mainLabel.Text"
-      ]
+      "zh-chs": "此 MeshCentral Server 使用此工具的不同版本。单击“确定”进行下载和更新。"
     },
     {
       "cs": "Tento účet nemá práva k vytvoření nové skupiny zařízení.",
@@ -51438,10 +50691,7 @@
       "nl": "Deze server heeft een niet-vertrouwd certificaat gepresenteerd. Dit kan erop wijzen dat dit niet de juiste server is of dat de server geen geldig certificaat heeft. Het wordt niet aanbevolen, maar u kunt op de negeren drukken om de verbinding met deze server voort te zetten.",
       "pt-br": "Este servidor apresentou um certificado não confiável. Isso pode indicar que este não é o servidor correto ou que o servidor não possui um certificado válido. Não é recomendado, mas você pode pressionar o botão de ignorar para continuar a conexão com este servidor.",
       "sv": "Denna server presenterade ett otillförlitligt certifikat. Detta kan indikera att detta inte är rätt server eller att servern inte har ett giltigt certifikat. Det rekommenderas inte, men du kan trycka på ignorera-knappen för att fortsätta anslutningen till den här servern.",
-      "zh-chs": "此服务器提供了不受信任的证书。这可能表明这不是正确的服务器或服务器没有有效的证书。不推荐，但您可以按忽略按钮继续连接到此服务器。",
-      "xloc": [
-        "MainForm.resx%label5.Text"
-      ]
+      "zh-chs": "此服务器提供了不受信任的证书。这可能表明这不是正确的服务器或服务器没有有效的证书。不推荐，但您可以按忽略按钮继续连接到此服务器。"
     },
     {
       "cs": "Tento software se skládá z dobrovolných příspěvků mnoha jednotlivců (AUTHORS.txt, http://jqueryui.com/about ). Přesnou historii příspěvků naleznete v historii revizí a protokolech dostupných na adrese http://jquery-ui.googlecode.com/svn/",
@@ -51647,7 +50897,6 @@
       "zh-chs": "时间",
       "zh-cht": "時間",
       "xloc": [
-        "EventsForm.resx%columnHeader1.Text",
         "default-mobile.handlebars->11->318",
         "default.handlebars->35->957",
         "player.handlebars->3->16"
@@ -51742,7 +50991,6 @@
       "zh-chs": "超时",
       "zh-cht": "超時",
       "xloc": [
-        "Properties%Resources.resx%Timeout",
         "default-mobile.handlebars->11->367",
         "default.handlebars->35->1067",
         "sharing.handlebars->11->31",
@@ -52328,10 +51576,7 @@
       "nl": "Verbinding met extern bureaublad wisselen",
       "pt-br": "Alternar conexão de área de trabalho remota",
       "sv": "Växla fjärrskrivbordsanslutning",
-      "zh-chs": "切换远程桌面连接",
-      "xloc": [
-        "Properties%Resources.resx%ToggleRemoteDesktopConnection"
-      ]
+      "zh-chs": "切换远程桌面连接"
     },
     {
       "cs": "Přepnout typ emulace terminálu",
@@ -52415,10 +51660,7 @@
       "nl": "Schakel inzoemen naar passend modus in",
       "pt-br": "Alternar modo de zoom para ajustar",
       "sv": "Växla zoom-to-fit-läge",
-      "zh-chs": "切换缩放至适合模式",
-      "xloc": [
-        "Properties%Resources.resx%ToggleZoomToFitMode"
-      ]
+      "zh-chs": "切换缩放至适合模式"
     },
     {
       "cs": "Žeton",
@@ -52440,8 +51682,6 @@
       "zh-chs": "代币",
       "zh-cht": "代幣",
       "xloc": [
-        "MainForm.resx%label3.Text",
-        "MainForm.resx%tabPage2.Text",
         "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->tokenpanel->1->7->1->0->1",
@@ -52637,10 +51877,7 @@
     },
     {
       "en": "Transfer Errors",
-      "nl": "Overdrachtsfouten",
-      "xloc": [
-        "FileTransferStatusForm.resx%errorsGroupBox.Text"
-      ]
+      "nl": "Overdrachtsfouten"
     },
     {
       "de": "Übertragungsfortschritt",
@@ -52653,10 +51890,7 @@
       "nl": "Voortgang overdracht",
       "pt-br": "Progresso da Transferência",
       "sv": "Överför framsteg",
-      "zh-chs": "转学进度",
-      "xloc": [
-        "FileTransferStatusForm.resx%mainGroupBox.Text"
-      ]
+      "zh-chs": "转学进度"
     },
     {
       "cs": "Zkusit znovu.",
@@ -52779,10 +52013,7 @@
       "nl": "Gegevens tunnelen",
       "pt-br": "Dados de tunelamento",
       "sv": "Tunneldata",
-      "zh-chs": "隧道数据",
-      "xloc": [
-        "MappingStats.resx%groupBox2.Text"
-      ]
+      "zh-chs": "隧道数据"
     },
     {
       "cs": "turečtina",
@@ -52864,10 +52095,7 @@
       "nl": "Twee-factor authenticatie",
       "pt-br": "Autenticação de dois fatores",
       "sv": "Tvåfaktorsautentisering",
-      "zh-chs": "两因素身份验证",
-      "xloc": [
-        "Properties%Resources.resx%TwoFactorAuthentication"
-      ]
+      "zh-chs": "两因素身份验证"
     },
     {
       "cs": "Typ",
@@ -52889,7 +52117,6 @@
       "zh-chs": "类型",
       "zh-cht": "類型",
       "xloc": [
-        "SessionsForm.resx%columnHeader2.Text",
         "default-mobile.handlebars->11->122",
         "default-mobile.handlebars->11->572",
         "default.handlebars->35->1127",
@@ -52959,11 +52186,7 @@
       "nl": "UDP",
       "pt-br": "UDP",
       "sv": "UDP",
-      "zh-chs": "UDP",
-      "xloc": [
-        "AddPortMapForm.resx%udpRadioButton.Text",
-        "AddRelayMapForm.resx%udpRadioButton.Text"
-      ]
+      "zh-chs": "UDP"
     },
     {
       "cs": "Směrování UDP",
@@ -53000,10 +52223,7 @@
       "nl": "UDP relais",
       "pt-br": "Retransmissão UDP",
       "sv": "UDP-relä",
-      "zh-chs": "UDP中继",
-      "xloc": [
-        "Properties%Resources.resx%UDPrelay"
-      ]
+      "zh-chs": "UDP中继"
     },
     {
       "cs": "UTF8 terminál",
@@ -53235,10 +52455,7 @@
       "nl": "Kan niet binden aan lokale poort",
       "pt-br": "Incapaz de ligar à porta local",
       "sv": "Det gick inte att binda till lokal port",
-      "zh-chs": "无法绑定到本地端口",
-      "xloc": [
-        "Properties%Resources.resx%UnableToBindToLocalPort"
-      ]
+      "zh-chs": "无法绑定到本地端口"
     },
     {
       "en": "Unable to capture display",
@@ -53264,10 +52481,7 @@
       "nl": "Niet in staat te verbinden",
       "pt-br": "Incapaz de conectar ",
       "sv": "Kan inte ansluta",
-      "zh-chs": "无法连接",
-      "xloc": [
-        "Properties%Resources.resx%UnableToConnect"
-      ]
+      "zh-chs": "无法连接"
     },
     {
       "cs": "Nedaří se připojit k web socketu",
@@ -53330,10 +52544,7 @@
     },
     {
       "en": "Unable to open file: {0}",
-      "nl": "Kan bestand: {0} niet openen",
-      "xloc": [
-        "Properties%Resources.resx%UnableToOpenFileX"
-      ]
+      "nl": "Kan bestand: {0} niet openen"
     },
     {
       "cs": "Nedaří se ověřit se",
@@ -53425,10 +52636,7 @@
     },
     {
       "en": "Unable to write file: {0}",
-      "nl": "Kan bestand: {0} niet schrijven",
-      "xloc": [
-        "Properties%Resources.resx%UnableToWriteFileX"
-      ]
+      "nl": "Kan bestand: {0} niet schrijven"
     },
     {
       "cs": "Odinstalace",
@@ -53548,7 +52756,6 @@
       "zh-chs": "未知",
       "zh-cht": "未知",
       "xloc": [
-        "Properties%Resources.resx%Unknown",
         "default-mobile.handlebars->11->240",
         "default-mobile.handlebars->11->37",
         "default-mobile.handlebars->11->42",
@@ -53954,7 +53161,6 @@
       "zh-chs": "更新资料",
       "zh-cht": "更新資料",
       "xloc": [
-        "UpdateForm.resx%$this.Text",
         "agent-translations.json",
         "default-mobile.handlebars->11->466",
         "default-mobile.handlebars->11->468",
@@ -53973,10 +53179,7 @@
       "nl": "Bijwerken...",
       "pt-br": "Atualizando ...",
       "sv": "Uppdaterar ...",
-      "zh-chs": "正在更新...",
-      "xloc": [
-        "Properties%Resources.resx%Updating"
-      ]
+      "zh-chs": "正在更新..."
     },
     {
       "cs": "Nahrát",
@@ -54421,10 +53624,7 @@
       "nl": "Alternatieve poort gebruiken...",
       "pt-br": "Usar porta alternativa ...",
       "sv": "Använd alternativ port ...",
-      "zh-chs": "使用备用端口...",
-      "xloc": [
-        "DeviceUserControl.resx%toolStripMenuItem1.Text"
-      ]
+      "zh-chs": "使用备用端口..."
     },
     {
       "cs": "Použijte Mapu vzdálené klávesnice",
@@ -54446,7 +53646,6 @@
       "zh-chs": "使用远程键盘映射",
       "zh-cht": "使用遠程鍵盤映射",
       "xloc": [
-        "KVMSettingsForm.resx%remoteKeyboardMapCheckBox.Text",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->3",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->3"
       ]
@@ -54582,8 +53781,6 @@
       "zh-chs": "用户",
       "zh-cht": "用戶",
       "xloc": [
-        "EventsForm.resx%columnHeader2.Text",
-        "SessionsForm.resx%columnHeader1.Text",
         "default.handlebars->35->1718",
         "default.handlebars->35->2094",
         "default.handlebars->35->2123",
@@ -54712,7 +53909,6 @@
       "zh-chs": "用户同意",
       "zh-cht": "用戶同意",
       "xloc": [
-        "ConsentForm.resx%$this.Text",
         "default.handlebars->35->1689",
         "default.handlebars->35->2255",
         "default.handlebars->35->2342",
@@ -55357,8 +54553,6 @@
       "zh-chs": "用户名",
       "zh-cht": "用戶名",
       "xloc": [
-        "MainForm.resx%label27.Text",
-        "SshUsernameForm.resx%label2.Text",
         "default-mobile.handlebars->11->344",
         "default-mobile.handlebars->11->405",
         "default-mobile.handlebars->11->416",
@@ -55655,11 +54849,7 @@
       "nl": "Waarde",
       "pt-br": "Valor",
       "sv": "Värde",
-      "zh-chs": "价值",
-      "xloc": [
-        "MeInfoForm.resx%columnHeader2.Text",
-        "MeInfoForm.resx%columnHeader5.Text"
-      ]
+      "zh-chs": "价值"
     },
     {
       "cs": "Venda",
@@ -55941,10 +55131,7 @@
       "nl": "Versies",
       "pt-br": "Versões",
       "sv": "Versioner",
-      "zh-chs": "版本",
-      "xloc": [
-        "MeInfoForm.resx%versionsTabPage.Text"
-      ]
+      "zh-chs": "版本"
     },
     {
       "cs": "Velmi pomalu",
@@ -55966,7 +55153,6 @@
       "zh-chs": "非常慢",
       "zh-cht": "非常慢",
       "xloc": [
-        "Properties%Resources.resx%VerySlow",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->7",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7"
@@ -56070,10 +55256,7 @@
       "nl": "Certificaatdetails bekijken...",
       "pt-br": "Exibir detalhes do certificado ...",
       "sv": "Visa certifikatinformation ...",
-      "zh-chs": "查看证书详细信息...",
-      "xloc": [
-        "MainForm.resx%certDetailsButton.Text"
-      ]
+      "zh-chs": "查看证书详细信息..."
     },
     {
       "cs": "Zobrazit Changelog",
@@ -56248,10 +55431,7 @@
       "nl": "WAARSCHUWING - Ongeldig servercertificaat",
       "pt-br": "AVISO - Certificado de servidor inválido",
       "sv": "VARNING - Ogiltigt servercertifikat",
-      "zh-chs": "警告 - 服务器证书无效",
-      "xloc": [
-        "MainForm.resx%label4.Text"
-      ]
+      "zh-chs": "警告 - 服务器证书无效"
     },
     {
       "cs": "VAROVÁNÍ: ",
@@ -56420,7 +55600,6 @@
       "zh-chs": "正在等待用户授予访问权限...",
       "zh-cht": "正在等待用戶授予訪問權限...",
       "xloc": [
-        "Properties%Resources.resx%WaitingForUserToGrantAccess",
         "default-mobile.handlebars->11->364",
         "default.handlebars->35->1064",
         "sharing.handlebars->11->28",
@@ -57248,10 +56427,7 @@
       "nl": "WinSCP client",
       "pt-br": "Cliente WinSCP",
       "sv": "WinSCP-klient",
-      "zh-chs": "WinSCP客户端 ",
-      "xloc": [
-        "Properties%Resources.resx%WinscpAppName"
-      ]
+      "zh-chs": "WinSCP客户端 "
     },
     {
       "en": "Window Title",
@@ -59584,11 +58760,7 @@
       "nl": "label1",
       "pt-br": "etiqueta1",
       "sv": "etikett1",
-      "zh-chs": "标签 1",
-      "xloc": [
-        "FileViewer.resx%consoleMessage.Text",
-        "KVMViewer.resx%consoleMessage.Text"
-      ]
+      "zh-chs": "标签 1"
     },
     {
       "cs": "licencováno pod",
@@ -60075,11 +59247,7 @@
       "nl": "statusStrip1",
       "pt-br": "statusStrip1",
       "sv": "statusStrip1",
-      "zh-chs": "状态条1",
-      "xloc": [
-        "FileViewer.resx%statusStrip.Text",
-        "KVMViewer.resx%mainStatusStrip.Text"
-      ]
+      "zh-chs": "状态条1"
     },
     {
       "cs": "š:",
@@ -60384,10 +59552,7 @@
       "fr": "v",
       "it": "v",
       "nl": "v",
-      "pt": "v",
-      "xloc": [
-        "KVMViewer.resx%toolStripStatusLabel1.Text"
-      ]
+      "pt": "v"
     },
     {
       "de": "v0.8.0",
@@ -60405,10 +59570,7 @@
       "sv": "v0.8.0",
       "tr": "v0.8.0",
       "zh-chs": "v0.8.0",
-      "zh-cht": "v0.8.0",
-      "xloc": [
-        "MainForm.resx%versionLabel.Text"
-      ]
+      "zh-cht": "v0.8.0"
     },
     {
       "cs": "{0}",
@@ -60468,10 +59630,7 @@
       "nl": "{0} - {1}",
       "pt-br": "{0} - {1}",
       "sv": "{0} - {1}",
-      "zh-chs": "{0} - {1}",
-      "xloc": [
-        "Properties%Resources.resx%TitleMerge"
-      ]
+      "zh-chs": "{0} - {1}"
     },
     {
       "de": "{0} Assistent",
@@ -60484,10 +59643,7 @@
       "nl": "{0} Assistant",
       "pt-br": "{0} assistente",
       "sv": "{0} Assistent",
-      "zh-chs": "{0} 助理",
-      "xloc": [
-        "Properties%Resources.resx%XAssistant"
-      ]
+      "zh-chs": "{0} 助理"
     },
     {
       "de": "{0} Byte",
@@ -60500,10 +59656,7 @@
       "nl": "{0} Byte",
       "pt-br": "{0} Byte",
       "sv": "{0} Byte",
-      "zh-chs": "{0} 字节",
-      "xloc": [
-        "Properties%Resources.resx%OneByte"
-      ]
+      "zh-chs": "{0} 字节"
     },
     {
       "de": "{0} Byte",
@@ -60516,10 +59669,7 @@
       "nl": "{0} Bytes",
       "pt-br": "{0} bytes",
       "sv": "{0} Byte",
-      "zh-chs": "{0} 字节",
-      "xloc": [
-        "Properties%Resources.resx%XBytes"
-      ]
+      "zh-chs": "{0} 字节"
     },
     {
       "cs": "{0} Gb",
@@ -60547,10 +59697,7 @@
     },
     {
       "en": "{0} Gbytes/sec",
-      "nl": "{0} Gbytes/sec",
-      "xloc": [
-        "Properties%Resources.resx%XGbytesPersec"
-      ]
+      "nl": "{0} Gbytes/sec"
     },
     {
       "cs": "{0} Kb",
@@ -60579,10 +59726,7 @@
     },
     {
       "en": "{0} Kbytes/sec",
-      "nl": "{0} Kbytes/sec",
-      "xloc": [
-        "Properties%Resources.resx%XKbytesPersec"
-      ]
+      "nl": "{0} Kbytes/sec"
     },
     {
       "cs": "{0} Mb",
@@ -60638,10 +59782,7 @@
     },
     {
       "en": "{0} Mbytes/sec",
-      "nl": "{0} Mbytes/sec",
-      "xloc": [
-        "Properties%Resources.resx%XMbytesPersec"
-      ]
+      "nl": "{0} Mbytes/sec"
     },
     {
       "cs": "{0} aktivních spojení",
@@ -60743,10 +59884,7 @@
     },
     {
       "en": "{0} bytes/sec",
-      "nl": "{0} bytes/sec",
-      "xloc": [
-        "Properties%Resources.resx%XbytesPersec"
-      ]
+      "nl": "{0} bytes/sec"
     },
     {
       "cs": "Počet připojení: {0}",
@@ -60859,13 +59997,6 @@
       ]
     },
     {
-      "en": "{0} hours left",
-      "en": "{0} uur resterend",
-      "xloc": [
-        "Properties%Resources.resx%xhoursleft"
-      ]
-    },
-    {
       "cs": "{0} hodina{1}",
       "de": "{0} Stunde{1}",
       "en": "{0} hour{1}",
@@ -60958,10 +60089,7 @@
     },
     {
       "en": "{0} minutes left",
-      "nl": "{0} minuten resterend",
-      "xloc": [
-        "Properties%Resources.resx%xminutesleft"
-      ]
+      "nl": "{0} minuten resterend"
     },
     {
       "cs": "{0} minut do odpojení",
@@ -61093,10 +60221,7 @@
       "nl": "{0} externe sessies",
       "pt-br": "{0} sessões remotas",
       "sv": "{0} fjärrsessioner",
-      "zh-chs": "{0} 个远程会话",
-      "xloc": [
-        "Properties%Resources.resx%XRemoteSessions"
-      ]
+      "zh-chs": "{0} 个远程会话"
     },
     {
       "de": "{0} Remote-Sitzungen sind aktiv.",
@@ -61109,10 +60234,7 @@
       "nl": "{0} sessies op afstand zijn actief..",
       "pt-br": "{0} sessões remotas estão ativas.",
       "sv": "{0} fjärrsessioner är aktiva.",
-      "zh-chs": "{0} 个远程会话处于活动状态。",
-      "xloc": [
-        "Properties%Resources.resx%XRemoteSessionsAreActive"
-      ]
+      "zh-chs": "{0} 个远程会话处于活动状态。"
     },
     {
       "cs": "{0} sekund {1}",
@@ -61148,10 +60270,7 @@
     },
     {
       "en": "{0} seconds left",
-      "nl": "{0} seconden resterend",
-      "xloc": [
-        "Properties%Resources.resx%xsecondsleft"
-      ]
+      "nl": "{0} seconden resterend"
     },
     {
       "cs": "{0} sekund do odpojení",
@@ -61363,6 +60482,9 @@
       "xloc": [
         "default.handlebars->35->363"
       ]
+    },
+    {
+      "en": "{0} uur resterend"
     },
     {
       "de": "{0}, Maske: {1}, Gateway: {2}",
@@ -61609,10 +60731,7 @@
       "ja": "≡",
       "nl": "≡",
       "pt": "≡",
-      "ru": "≡",
-      "xloc": [
-        "MainForm.resx%menuLabel.Text"
-      ]
+      "ru": "≡"
     },
     {
       "cs": "◀",
