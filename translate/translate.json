@@ -1785,6 +1785,7 @@
     {
       "de": "1 ausgewähltes Gerät ist offline.",
       "en": "1 selected device is offline.",
+      "nl": "1 geselecteerd apparaat is offline.",
       "pt-br": "1 dispositivo selecionado está offline.",
       "xloc": [
         "default.handlebars->35->582"
@@ -1793,6 +1794,7 @@
     {
       "de": "1 ausgewähltes Gerät ist online.",
       "en": "1 selected device is online.",
+      "nl": "1 geselecteerd apparaat is online.",
       "pt-br": "1 dispositivo selecionado está online.",
       "xloc": [
         "default.handlebars->35->580"
@@ -6244,6 +6246,7 @@
     },
     {
       "en": "Agent Type",
+      "nl": "Agent Type",
       "xloc": [
         "default.handlebars->35->276",
         "default.handlebars->35->300"
@@ -6275,6 +6278,7 @@
     },
     {
       "en": "Agent Version",
+      "nl": "Agent versie",
       "xloc": [
         "default.handlebars->35->277",
         "default.handlebars->35->301"
@@ -6829,6 +6833,7 @@
     },
     {
       "en": "Almost done",
+      "nl": "Bijna klaar",
       "xloc": [
         "Properties%Resources.resx%Almostdone"
       ]
@@ -8060,6 +8065,7 @@
     },
     {
       "en": "Armada370 - ARM32/HF (libc/2.26)",
+      "nl": "Armada370 - ARM32/HF (libc/2.26)",
       "pt-br": "Armada370 - ARM32 / HF (libc / 2.26)",
       "xloc": [
         "default-mobile.handlebars->11->41",
@@ -8600,6 +8606,7 @@
     },
     {
       "en": "Automatically Send Clipboard",
+      "nl": "Automatisch klembord verzenden",
       "xloc": [
         "KVMSettingsForm.resx%autoSendClipboardCheckBox.Text"
       ]
@@ -8607,6 +8614,7 @@
     {
       "de": "Inaktive Geräte automatisch entfernen",
       "en": "Automatically remove inactive devices",
+      "nl": "Inactieve apparaten automatisch verwijderen",
       "pt-br": "Remover automaticamente dispositivos inativos",
       "xloc": [
         "default.handlebars->35->1786"
@@ -9355,6 +9363,7 @@
     },
     {
       "en": "By default, inactive devices will be removed after 1 day.",
+      "nl": "Inactieve apparaten worden standaard na 1 dag verwijderd.",
       "pt-br": "Por padrão, os dispositivos inativos serão removidos após 1 dia.",
       "xloc": [
         "default.handlebars->35->1788"
@@ -9362,6 +9371,7 @@
     },
     {
       "en": "By default, inactive devices will be removed after {0} days.",
+      "nl": "Inactieve apparaten worden standaard na {0} dagen verwijderd.",
       "pt-br": "Por padrão, os dispositivos inativos serão removidos após {0} dias.",
       "xloc": [
         "default.handlebars->35->1789"
@@ -12600,6 +12610,7 @@
     },
     {
       "en": "Confirm removal of {0} selected devices?",
+      "nl": "Verwijdering van {0} geselecteerde apparaten bevestigen?",
       "pt-br": "Confirma a remoção de {0} dispositivos selecionados?",
       "xloc": [
         "default.handlebars->35->579"
@@ -15047,6 +15058,7 @@
     },
     {
       "en": "Delete Devices",
+      "nl": "Apparaten verwijderen",
       "pt-br": "Apagar Dispositivos",
       "xloc": [
         "default.handlebars->35->585"
@@ -16190,6 +16202,7 @@
     },
     {
       "en": "Device Details",
+      "nl": "Apparaatgegevens",
       "pt-br": "Detalhes do dispositivo",
       "xloc": [
         "default.handlebars->35->1824"
@@ -16446,6 +16459,7 @@
     },
     {
       "en": "Device Push",
+      "nl": "Apparaat Push",
       "pt-br": "Dispositivo push",
       "xloc": [
         "default.handlebars->35->2347"
@@ -20914,12 +20928,14 @@
     },
     {
       "en": "Error downloading file: {0}",
+      "nl": "Fout bij downloaden van bestand: {0}",
       "xloc": [
         "Properties%Resources.resx%ErrorDownloadingFileX"
       ]
     },
     {
       "en": "Error uploading file: {0}",
+      "nl": "Fout bij uploaden van bestand: {0}",
       "xloc": [
         "Properties%Resources.resx%ErrorUploadingFileX"
       ]
@@ -21083,6 +21099,7 @@
     },
     {
       "en": "Estimating...",
+      "nl": "geschat...",
       "xloc": [
         "Properties%Resources.resx%EstimatingDotDotDot"
       ]
@@ -21224,6 +21241,7 @@
     },
     {
       "en": "Existing Tags",
+      "nl": "Bestaande Tags",
       "xloc": [
         "default.handlebars->35->1062",
         "default.handlebars->35->601"
@@ -25383,6 +25401,7 @@
     },
     {
       "en": "Inactivate days until removal",
+      "nl": "inactieve dagen tot verwijdering",",
       "pt-br": "Inativar dias até a remoção",
       "xloc": [
         "default.handlebars->35->1787"
@@ -28708,6 +28727,7 @@
     },
     {
       "en": "Last Seen",
+      "nl": "Laatst gezien",
       "pt-br": "Visto pela última vez",
       "xloc": [
         "default.handlebars->35->284",
@@ -36879,6 +36899,7 @@
     },
     {
       "en": "Only display first 100 users",
+      "nl": "Alleen de eerste 100 gebruikers weergeven",
       "pt-br": "Exibir apenas os primeiros 100 usuários",
       "xloc": [
         "default.handlebars->35->2156"
@@ -37409,6 +37430,7 @@
     },
     {
       "en": "Overwrite 1 file?",
+      "nl": "1 bestand overschrijven?",
       "xloc": [
         "Properties%Resources.resx%OverwriteOneFile"
       ]
@@ -37438,6 +37460,7 @@
     },
     {
       "en": "Overwrite {0} files?",
+      "nl": "{0} bestanden overschrijven?",
       "xloc": [
         "Properties%Resources.resx%OverwriteXfiles"
       ]
@@ -42283,6 +42306,7 @@
     },
     {
       "en": "Remove inactive",
+      "nl": "Inactief verwijderen",
       "pt-br": "Remover inativo",
       "xloc": [
         "default.handlebars->35->1675"
@@ -47091,6 +47115,7 @@
     },
     {
       "en": "Sharing",
+      "nl": "Delen",
       "pt-br": "Compartilhamento",
       "xloc": [
         "default.handlebars->35->1861"
@@ -51267,6 +51292,7 @@
     },
     {
       "en": "This is a guest sharing session",
+      "nl": "Dit is een gedeelde gastsessie",
       "pt-br": "Esta é uma sessão de compartilhamento de convidados",
       "xloc": [
         "default.handlebars->35->1221",
@@ -52611,6 +52637,7 @@
     },
     {
       "en": "Transfer Errors",
+      "nl": "Overdrachtsfouten",
       "xloc": [
         "FileTransferStatusForm.resx%errorsGroupBox.Text"
       ]
@@ -53303,6 +53330,7 @@
     },
     {
       "en": "Unable to open file: {0}",
+      "nl": "Kan bestand: {0} niet openen",
       "xloc": [
         "Properties%Resources.resx%UnableToOpenFileX"
       ]
@@ -53397,6 +53425,7 @@
     },
     {
       "en": "Unable to write file: {0}",
+      "nl": "Kan bestand: {0} niet schrijven",
       "xloc": [
         "Properties%Resources.resx%UnableToWriteFileX"
       ]
@@ -55453,6 +55482,7 @@
     },
     {
       "en": "Users View",
+      "nl": "Kijkende gebruikers",
       "pt-br": "Visualização de usuários",
       "xloc": [
         "default.handlebars->35->2157"
@@ -60517,6 +60547,7 @@
     },
     {
       "en": "{0} Gbytes/sec",
+      "nl": "{0} Gbytes/sec",
       "xloc": [
         "Properties%Resources.resx%XGbytesPersec"
       ]
@@ -60548,6 +60579,7 @@
     },
     {
       "en": "{0} Kbytes/sec",
+      "nl": "{0} Kbytes/sec",
       "xloc": [
         "Properties%Resources.resx%XKbytesPersec"
       ]
@@ -60606,6 +60638,7 @@
     },
     {
       "en": "{0} Mbytes/sec",
+      "nl": "{0} Mbytes/sec",
       "xloc": [
         "Properties%Resources.resx%XMbytesPersec"
       ]
@@ -60710,6 +60743,7 @@
     },
     {
       "en": "{0} bytes/sec",
+      "nl": "{0} bytes/sec",
       "xloc": [
         "Properties%Resources.resx%XbytesPersec"
       ]
@@ -60826,6 +60860,7 @@
     },
     {
       "en": "{0} hours left",
+      "en": "{0} uur resterend",
       "xloc": [
         "Properties%Resources.resx%xhoursleft"
       ]
@@ -60923,6 +60958,7 @@
     },
     {
       "en": "{0} minutes left",
+      "nl": "{0} minuten resterend",
       "xloc": [
         "Properties%Resources.resx%xminutesleft"
       ]
@@ -61112,6 +61148,7 @@
     },
     {
       "en": "{0} seconds left",
+      "nl": "{0} seconden resterend",
       "xloc": [
         "Properties%Resources.resx%xsecondsleft"
       ]
@@ -61184,6 +61221,7 @@
     },
     {
       "en": "{0} selected devices are offline.",
+      "nl": "{0} geselecteerde apparaten zijn offline.",
       "pt-br": "{0} dispositivos selecionados estão offline.",
       "xloc": [
         "default.handlebars->35->583"
@@ -61191,6 +61229,7 @@
     },
     {
       "en": "{0} selected devices are online.",
+      "nl": "{0} geselecteerde apparaten zijn online.",
       "pt-br": "{0} dispositivos selecionados estão online.",
       "xloc": [
         "default.handlebars->35->581"
