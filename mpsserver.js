@@ -356,7 +356,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
         // Setup the CIRA keep alive timer
         socket.setTimeout(MAX_IDLE);
-        socket.on('timeout', () => { ciraTimeoutCount++; parent.debug('mps', "CIRA timeout, disconnecting."); try { socket.end(); } catch (e) { } });
+        socket.on('timeout', () => { ciraTimeoutCount++; parent.debug('mps', "CIRA timeout, disconnecting."); obj.close(socket); });
 
         socket.addListener('close', function () {
             // Traffic accounting
@@ -390,7 +390,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             // Detect if this is an HTTPS request, if it is, return a simple answer and disconnect. This is useful for debugging access to the MPS port.
             if (socket.tag.first == true) {
                 if (socket.tag.accumulator.length < 5) return;
-                //if (!socket.tag.clientCert.subject) { console.log("MPS Connection, no client cert: " + socket.remoteAddress); socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 MPS server.\r\nNo client certificate given.'); socket.end(); return; }
+                //if (!socket.tag.clientCert.subject) { console.log("MPS Connection, no client cert: " + socket.remoteAddress); socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 MPS server.\r\nNo client certificate given.'); obj.close(socket); return; }
                 if ((socket.tag.accumulator.substring(0, 4) == 'GET ') || (socket.tag.accumulator.substring(0, 5) == 'HEAD ')) {
                     if (args.mpsdebug) { console.log("MPS Connection, HTTP request detected: " + socket.remoteAddress); }
                     socket.removeAllListeners('data');
@@ -441,7 +441,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                     // Check the incoming domain
                     var domain = obj.parent.config.domains[domainid];
-                    if (domain == null) { console.log('CIRA connection for invalid domain. meshid: ' + meshid); socket.end(); return; }
+                    if (domain == null) { console.log('CIRA connection for invalid domain. meshid: ' + meshid); obj.close(socket); return; }
 
                     socket.tag.domain = domain;
                     socket.tag.domainid = domainid;
@@ -458,7 +458,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                             if (mesh == null) {
                                 unknownTlsMeshIdCount++;
                                 console.log('ERROR: Intel AMT CIRA connected with unknown groupid: ' + socket.tag.meshid);
-                                socket.end();
+                                obj.close(socket);
                                 return;
                             } else if (mesh.mtype == 1) {
                                 // Check if we already have too many devices for this domain
@@ -468,7 +468,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                             // Too many devices in this domain.
                                             maxDomainDevicesReached++;
                                             console.log('Too many devices on this domain to accept the CIRA connection. meshid: ' + socket.tag.meshid);
-                                            socket.end();
+                                            obj.close(socket);
                                         } else {
                                             // Attempts reverse DNS loopup on the device IP address
                                             require('dns').reverse(socket.remoteAddr, function (err, hostnames) {
@@ -513,7 +513,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                 // New CIRA connection for unknown node, disconnect.
                                 unknownTlsNodeCount++;
                                 console.log('CIRA connection for unknown node with incorrect group type. meshid: ' + socket.tag.meshid);
-                                socket.end();
+                                obj.close(socket);
                                 return;
                             }
                         } else {
@@ -536,7 +536,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 // Parse all of the APF data we can
                 var l = 0;
                 do { l = ProcessCommand(socket); if (l > 0) { socket.tag.accumulator = socket.tag.accumulator.substring(l); } } while (l > 0);
-                if (l < 0) { socket.end(); }
+                if (l < 0) { obj.close(socket); }
             } catch (e) {
                 console.log(e);
             }
@@ -675,7 +675,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                         // Too many devices in this domain.
                                         maxDomainDevicesReached++;
                                         console.log('Too many devices on this domain to accept the CIRA connection. meshid: ' + socket.tag.meshid);
-                                        socket.end();
+                                        obj.close(socket);
                                     } else {
                                         // Attempts reverse DNS loopup on the device IP address
                                         require('dns').reverse(socket.remoteAddr, function (err, hostnames) {
@@ -741,7 +741,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                             // New CIRA connection for unknown node, disconnect.
                             unknownNodeCount++;
                             console.log('CIRA connection for unknown node. groupid: ' + initialMesh._id + ', uuid: ' + socket.tag.SystemId);
-                            socket.end();
+                            obj.close(socket);
                             return;
                         }
 
@@ -758,7 +758,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                             // New CIRA connection for unknown node, disconnect.
                             unknownNodeCount++;
                             console.log('CIRA connection for unknown node. candidate(s): ' + nodes.length + ', groupid: ' + initialMesh._id + ', uuid: ' + socket.tag.SystemId);
-                            socket.end();
+                            obj.close(socket);
                             return;
                         }
 
@@ -776,7 +776,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     // New CIRA connection for unknown node, disconnect.
                     unknownMeshIdCount++;
                     console.log('CIRA connection to a unknown group type. groupid: ' + socket.tag.meshid);
-                    socket.end();
+                    obj.close(socket);
                     return;
                 }
                 return 18 + usernameLen + serviceNameLen + methodNameLen + passwordLen;
@@ -1047,7 +1047,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
     // Disconnect CIRA tunnel
     obj.close = function (socket) {
-        try { socket.end(); } catch (e) { }
+        try { socket.end(); } catch (e) { try { socket.close(); } catch (e) { } }
         removeCiraConnection(socket);
     };
 
