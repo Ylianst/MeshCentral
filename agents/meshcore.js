@@ -1949,7 +1949,10 @@ function onTunnelData(data) {
                                 var login = process.platform == 'linux' ? '/bin/login' : '/usr/bin/login';
 
                                 var env = { HISTCONTROL: 'ignoreboth' };
-                                if (this.httprequest.xoptions) {
+                                if (process.env['LANG']) { env['LANG'] = process.env['LANG']; }
+                                if (process.env['PATH']) { env['PATH'] = process.env['PATH']; }
+                                if (this.httprequest.xoptions)
+                                {
                                     if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
                                     if (this.httprequest.xoptions.cols) { env.COLUMNS = ('' + this.httprequest.xoptions.cols); }
                                 }
