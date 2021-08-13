@@ -8946,9 +8946,7 @@
             return obj;
         }
 
-        function tunnelUpdate(data) {
-            if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); }
-        }
+        function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
 
         function sshTunnelUpdate(data) {
             if (typeof data == 'string') {
@@ -8962,7 +8960,7 @@
                             x += '<div id=d2passauth>';
                             x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
                             x += '</div><div id=d2keyauth style=display:none>';
-                            x += addHtmlValue("Key File", '<input type=file id=dp2key style=width:230px maxlength=64 autocomplete=off onchange=sshAuthUpdate(event) />');
+                            x += addHtmlValue("Key File", '<input type=file id=dp2key style=width:230px maxlength=64 autocomplete=off onchange=sshAuthUpdate(event) />' + '<div style=font-size:x-small>' + "Key file must be in OpenSSH format." + '</div>');
                             x += addHtmlValue("Key Password", '<input type=password id=dp2keypass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
                             x += '</div>';
                             x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>');
