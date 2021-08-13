@@ -717,7 +717,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (docs[i].pmt != null) { docs[i].pmt = 1; }
 
                             // Remove SSH credentials if present
-                            if (docs[i].ssh != null) { docs[i].ssh = 1; }
+                            if (docs[i].ssh != null) { docs[i].ssh = (docs[i].ssh.k) ? 2 : 1; }
 
                             // Remove RDP credentials if present
                             if (docs[i].rdp != null) { docs[i].rdp = 1; }
