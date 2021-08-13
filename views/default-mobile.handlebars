@@ -3439,10 +3439,10 @@
                 if ((node.ssh != null) || (node.rdp != null)) {
                     var y = [];
                     if ((meshrights & 4) != 0) {
-                        if (node.ssh != null) { y.push('<span onclick=showClearSshDialog(3) style=cursor:pointer>' + "SSH" + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>'); }
+                        if (node.ssh != null) { y.push('<span onclick=showClearSshDialog(3) style=cursor:pointer>' + ((node.ssh == 2) ? "SSH-Key" : "SSH") + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>'); }
                         if (node.rdp != null) { y.push('<span onclick=showClearRdpDialog(3) style=cursor:pointer>' + "RDP" + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>'); }
                     } else {
-                        if (node.ssh != null) { y.push("SSH"); }
+                        if (node.ssh != null) { y.push(((node.ssh == 2) ? "SSH-Key" : "SSH")); }
                         if (node.rdp != null) { y.push("RDP"); }
                     }
                     x += addDeviceAttribute("Credentials", y.join(', '));

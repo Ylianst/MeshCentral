@@ -7072,10 +7072,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.CloneSafeNode = function (node) {
         if (typeof node != 'object') { return node; }
         var r = node;
-        if ((r.pmt != null) || ((r.intelamt != null) && ((r.intelamt.pass != null) || (r.intelamt.mpspass != null)))) {
+        if ((r.pmt != null) || (r.ssh != null) || (r.rdp != null) || ((r.intelamt != null) && ((r.intelamt.pass != null) || (r.intelamt.mpspass != null)))) {
             r = Object.assign({}, r); // Shallow clone
             if (r.pmt != null) { r.pmt = 1; }
-            if (r.ssh != null) { r.ssh = 1; }
+            if (r.ssh != null) { r.ssh = (r.ssh.k != null) ? 2 : 1; }
             if (r.rdp != null) { r.rdp = 1; }
             if ((r.intelamt != null) && ((r.intelamt.pass != null) || (r.intelamt.mpspass != null))) {
                 r.intelamt = Object.assign({}, r.intelamt); // Shallow clone

@@ -338,7 +338,18 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                     var connectionOptions = { sock: obj.ser }
                     if (typeof obj.username == 'string') { connectionOptions.username = obj.username; delete obj.username; }
                     if (typeof obj.password == 'string') { connectionOptions.password = obj.password; delete obj.password; }
-                    obj.sshClient.connect(connectionOptions);
+                    if (typeof obj.privateKey == 'string') { connectionOptions.privateKey = obj.privateKey; delete obj.privateKey; }
+                    if (typeof obj.privateKeyPass == 'string') { connectionOptions.passphrase = obj.privateKeyPass; delete obj.privateKeyPass; }
+                    try {
+                        obj.sshClient.connect(connectionOptions);
+                    } catch (ex) {
+                        // Exception, this is generally because we did not provide proper credentials. Ask again.
+                        obj.relayActive = false;
+                        delete obj.sshClient;
+                        delete obj.ser.forwardwrite;
+                        obj.close();
+                        return;
+                    }
 
                     // We are all set, start receiving data
                     ws._socket.resume();
@@ -372,6 +383,8 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                         obj.termSize = msg;
                         obj.username = msg.username;
                         obj.password = msg.password;
+                        obj.privateKey = msg.key;
+                        obj.privateKeyPass = msg.keypass;
                         startRelayConnection();
                         break;
                     }
@@ -472,10 +485,14 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
             const changed = (node.ssh == null);
 
             // Check if credentials are the same
-            if ((typeof node.ssh == 'object') && (node.ssh.u == obj.username) && (node.ssh.p == obj.password)) return;
+            //if ((typeof node.ssh == 'object') && (node.ssh.u == obj.username) && (node.ssh.p == obj.password)) return; // TODO
 
             // Save the credentials
-            node.ssh = { u: obj.username, p: obj.password };
+            if (obj.password != null) {
+                node.ssh = { u: obj.username, p: obj.password };
+            } else if (obj.privateKey != null) {
+                node.ssh = { u: obj.username, k: obj.privateKey, kp: obj.privateKeyPass };
+            }
             parent.parent.db.Set(node);
 
             // Event node change if needed
@@ -538,7 +555,17 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                     var connectionOptions = { sock: obj.ser }
                     if (typeof obj.username == 'string') { connectionOptions.username = obj.username; }
                     if (typeof obj.password == 'string') { connectionOptions.password = obj.password; }
-                    obj.sshClient.connect(connectionOptions);
+                    if (typeof obj.privateKey == 'string') { connectionOptions.privateKey = obj.privateKey; }
+                    if (typeof obj.privateKeyPass == 'string') { connectionOptions.passphrase = obj.privateKeyPass; }
+                    try {
+                        obj.sshClient.connect(connectionOptions);
+                    } catch (ex) {
+                        // Exception, this is generally because we did not provide proper credentials. Ask again.
+                        obj.relayActive = false;
+                        delete obj.sshClient;
+                        delete obj.ser.forwardwrite;
+                        try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
+                    }
 
                     // We are all set, start receiving data
                     ws._socket.resume();
@@ -569,13 +596,15 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                 switch (msg.action) {
                     case 'sshauth': {
                         // Verify inputs
-                        if ((typeof msg.username != 'string') || (typeof msg.password != 'string')) break;
+                        if ((typeof msg.username != 'string') || ((typeof msg.password != 'string') && (typeof msg.key != 'string'))) break;
                         if ((typeof msg.rows != 'number') || (typeof msg.cols != 'number') || (typeof msg.height != 'number') || (typeof msg.width != 'number')) break;
 
                         obj.keep = msg.keep; // If true, keep store credentials on the server if the SSH tunnel connected succesfully.
                         obj.termSize = msg;
                         obj.username = msg.username;
                         obj.password = msg.password;
+                        obj.privateKey = msg.key;
+                        obj.privateKeyPass = msg.keypass;
 
                         // Create a mesh relay authentication cookie
                         var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
@@ -588,7 +617,7 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                         if ((typeof msg.rows != 'number') || (typeof msg.cols != 'number') || (typeof msg.height != 'number') || (typeof msg.width != 'number')) break;
                         obj.termSize = msg;
 
-                        if ((obj.username == null) || (obj.password == null)) return;
+                        if ((obj.username == null) || ((obj.password == null) && (obj.privateKey == null))) return;
 
                         // Create a mesh relay authentication cookie
                         var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
@@ -639,13 +668,18 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
 
-            if ((node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || (typeof node.ssh.p != 'string')) {
+            if ((node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || ((typeof node.ssh.p != 'string') && (typeof node.ssh.k != 'string'))) {
                 // Send a request for SSH authentication
                 try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
             } else {
                 // Use our existing credentials
                 obj.username = node.ssh.u;
-                obj.password = node.ssh.p;
+                if (typeof node.ssh.p == 'string') {
+                    obj.password = node.ssh.p;
+                } else if (typeof node.ssh.k == 'string') {
+                    obj.privateKey = node.ssh.k;
+                    obj.privateKeyPass = node.ssh.kp;
+                }
                 try { ws.send(JSON.stringify({ action: 'sshautoauth' })) } catch (ex) { }
             }
         });
@@ -722,8 +756,15 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
             const node = nodes[0];
             const changed = (node.ssh == null);
 
+            // Check if credentials are the same
+            //if ((typeof node.ssh == 'object') && (node.ssh.u == obj.username) && (node.ssh.p == obj.password)) return; // TODO
+
             // Save the credentials
-            node.ssh = { u: obj.username, p: obj.password };
+            if (obj.password != null) {
+                node.ssh = { u: obj.username, p: obj.password };
+            } else if (obj.privateKey != null) {
+                node.ssh = { u: obj.username, k: obj.privateKey, kp: obj.privateKeyPass };
+            }
             parent.parent.db.Set(node);
 
             // Event node change if needed
@@ -781,7 +822,17 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                     var connectionOptions = { sock: obj.ser }
                     if (typeof obj.username == 'string') { connectionOptions.username = obj.username; }
                     if (typeof obj.password == 'string') { connectionOptions.password = obj.password; }
-                    obj.sshClient.connect(connectionOptions);
+                    if (typeof obj.privateKey == 'string') { connectionOptions.privateKey = obj.privateKey; }
+                    if (typeof obj.privateKeyPass == 'string') { connectionOptions.passphrase = obj.privateKeyPass; }
+                    try {
+                        obj.sshClient.connect(connectionOptions);
+                    } catch (ex) {
+                        // Exception, this is generally because we did not provide proper credentials. Ask again.
+                        obj.relayActive = false;
+                        delete obj.sshClient;
+                        delete obj.ser.forwardwrite;
+                        try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
+                    }
 
                     // We are all set, start receiving data
                     ws._socket.resume();
@@ -995,11 +1046,13 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         if (obj.sshClient != null) return;
 
                         // Verify inputs
-                        if ((typeof msg.username != 'string') || (typeof msg.password != 'string')) break;
+                        if ((typeof msg.username != 'string') || ((typeof msg.password != 'string') && (typeof msg.key != 'string'))) break;
 
                         obj.keep = (msg.keep === true); // If true, keep store credentials on the server if the SSH tunnel connected succesfully.
                         obj.username = msg.username;
                         obj.password = msg.password;
+                        obj.privateKey = msg.key;
+                        obj.privateKeyPass = msg.keypass;
 
                         // Create a mesh relay authentication cookie
                         var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
@@ -1068,13 +1121,18 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
 
-            if ((node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || (typeof node.ssh.p != 'string')) {
+            if ((node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || ((typeof node.ssh.p != 'string') && (typeof node.ssh.k != 'string'))) {
                 // Send a request for SSH authentication
                 try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
             } else {
                 // Use our existing credentials
                 obj.username = node.ssh.u;
-                obj.password = node.ssh.p;
+                if (typeof node.ssh.p == 'string') {
+                    obj.password = node.ssh.p;
+                } else if (typeof node.ssh.k == 'string') {
+                    obj.privateKey = node.ssh.k;
+                    obj.privateKeyPass = node.ssh.kp;
+                }
 
                 // Create a mesh relay authentication cookie
                 var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
