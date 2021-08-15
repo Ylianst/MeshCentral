@@ -858,7 +858,9 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                     }
 
                                     var xurl = getServerTargetUrlEx(data.value);
-                                    if (xurl != null) {
+                                    if (xurl != null)
+                                    {
+                                        xurl = xurl.split('$').join('%24').split('@').join('%40'); // Escape the $ and @ characters
                                         var woptions = http.parseUri(xurl);
                                         woptions.rejectUnauthorized = 0;
                                         woptions.perMessageDeflate = false;
