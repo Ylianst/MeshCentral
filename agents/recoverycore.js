@@ -27,6 +27,27 @@ catch(x)
 {
 
 }
+try
+{
+    Object.defineProperty(Array.prototype, 'findIndex', {
+        value: function (func)
+        {
+            var i = 0;
+            for (i = 0; i < this.length; ++i)
+            {
+                if (func(this[i], i, this))
+                {
+                    return (i);
+                }
+            }
+            return (-1);
+        }
+    });
+}
+catch (x)
+{
+
+}
 
 if (process.platform != 'win32')
 {
