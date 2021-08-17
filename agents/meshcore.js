@@ -4484,10 +4484,10 @@ function agentUpdate_Start(updateurl, updateoptions) {
                     if (updateoptions != null && updateoptions.hash != null) {
                         if (updateoptions.hash.toLowerCase() == h.toString('hex').toLowerCase()) {
                             if (sessionid != null) { sendConsoleText('Download complete. HASH verified.', sessionid); }
-                        }
-                        else {
+                        } else {
                             agentUpdate_Start._retryCount++;
                             sendConsoleText('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + '), URL: ' + updateurl, sessionid);
+                            sendConsoleText(updateoptions.hash + " != " + h.toString('hex'));
                             sendAgentMessage('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + '), URL: ' + updateurl, 3);
                             agentUpdate_Start._selfupdate = null;
 
