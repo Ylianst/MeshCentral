@@ -6,6 +6,8 @@ var nextTunnelIndex = 1;
 var tunnels = {};
 var fs = require('fs');
 
+var needStreamFix = (new Date(process.versions.meshAgent) < new Date('2020-01-21 13:27:45.000-08:00'));
+
 try
 {
     Object.defineProperty(Array.prototype, 'find', {
@@ -626,33 +628,42 @@ function agentUpdate_Start(updateurl, updateoptions) {
                 sendAgentMessage('Self Update failed, because there was a problem trying to download the update from ' + updateurl, 3);
                 agentUpdate_Start._selfupdate = null;
             });
-            agentUpdate_Start._selfupdate.on('response', function (img) {
+            agentUpdate_Start._selfupdate.on('response', function (img)
+            {
+                var self = this;
                 this._file = require('fs').createWriteStream(agentfilename + (process.platform=='win32'?'.update.exe':'.update'), { flags: 'wb' });
                 this._filehash = require('SHA384Stream').create();
-                this._filehash.on('hash', function (h) {
-                    if (updateoptions != null && updateoptions.hash != null) {
-                        if (updateoptions.hash.toLowerCase() == h.toString('hex').toLowerCase()) {
+                this._filehash.on('hash', function (h)
+                {
+                    if (updateoptions != null && updateoptions.hash != null)
+                    {
+                        if (updateoptions.hash.toLowerCase() == h.toString('hex').toLowerCase())
+                        {
                             if (sessionid != null) { sendConsoleText('Download complete. HASH verified.', sessionid); }
                         }
-                        else {
+                        else
+                        {
                             agentUpdate_Start._retryCount++;
                             sendConsoleText('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + '), URL: ' + updateurl, sessionid);
                             sendAgentMessage('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + '), URL: ' + updateurl, 3);
                             agentUpdate_Start._selfupdate = null;
 
-                            if (agentUpdate_Start._retryCount < 4) {
+                            if (agentUpdate_Start._retryCount < 4)
+                            {
                                 // Retry the download again
                                 sendConsoleText('Self Update will try again in 60 seconds...', sessionid);
                                 agentUpdate_Start._timeout = setTimeout(agentUpdate_Start, 60000, updateurl, updateoptions);
                             }
-                            else {
+                            else
+                            {
                                 sendConsoleText('Self Update giving up, too many failures...', sessionid);
                                 sendAgentMessage('Self Update giving up, too many failures...', 3);
                             }
                             return;
                         }
                     }
-                    else {
+                    else
+                    {
                         sendConsoleText('Download complete. HASH=' + h.toString('hex'), sessionid);
                     }
 
@@ -660,11 +671,13 @@ function agentUpdate_Start(updateurl, updateoptions) {
                     try { require('MeshAgent').SendCommand({ action: 'agentupdatedownloaded' }); } catch (e) { }
 
                     if (sessionid != null) { sendConsoleText('Updating and restarting agent...', sessionid); }
-                    if (process.platform == 'win32') {
+                    if (process.platform == 'win32')
+                    {
                         // Use _wexecve() equivalent to perform the update
                         windows_execve(name, agentfilename, sessionid);
                     }
-                    else {
+                    else
+                    {
                         var m = require('fs').statSync(process.execPath).mode;
                         require('fs').chmodSync(process.cwd() + agentfilename + '.update', m);
 
@@ -678,7 +691,8 @@ function agentUpdate_Start(updateurl, updateoptions) {
                         // erase update
                         require('fs').unlinkSync(process.cwd() + agentfilename + '.update');
 
-                        switch (process.platform) {
+                        switch (process.platform)
+                        {
                             case 'freebsd':
                                 bsd_execv(name, agentfilename, sessionid);
                                 break;
@@ -686,12 +700,14 @@ function agentUpdate_Start(updateurl, updateoptions) {
                                 linux_execv(name, agentfilename, sessionid);
                                 break;
                             default:
-                                try {
+                                try
+                                {
                                     // restart service
                                     var s = require('service-manager').manager.getService(name);
                                     s.restart();
                                 }
-                                catch (zz) {
+                                catch (zz)
+                                {
                                     sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
                                     sendAgentMessage('Self Update encountered an error trying to restart service', 3);
                                 }
@@ -699,8 +715,40 @@ function agentUpdate_Start(updateurl, updateoptions) {
                         }
                     }
                 });
-                img.pipe(this._file);
-                img.pipe(this._filehash);
+
+                if (!needStreamFix)
+                {
+                    img.pipe(this._file);
+                    img.pipe(this._filehash);
+                }
+                else
+                {
+                    img.once('data', function (buffer)
+                    {
+                        if(this.immediate)
+                        {
+                            clearImmediate(this.immediate);
+                            this.immediate = null;
+
+                            // No need to apply fix
+                            self._file.write(buffer);
+                            self._filehash.write(buffer);
+
+                            this.pipe(self._file);
+                            this.pipe(self._filehash);
+                        }
+                        else
+                        {
+                            // Need to apply fix
+                            this.pipe(self._file);
+                            this.pipe(self._filehash);
+                        }
+                    });
+                    this.immediate = setImmediate(function (self)
+                    {
+                        self.immediate = null;
+                    },this);
+                }
             });
         }
     }
