@@ -4669,6 +4669,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Get the agent filename
                 var meshagentFilename = argentInfo.rname;
                 if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { meshagentFilename = domain.agentcustomization.filename; }
+                if (req.query.zip == 1) { if (argentInfo.zdata != null) { setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename + '.zip', null, 'meshagent.zip'); res.send(argentInfo.zdata); } else { try { res.sendStatus(404); } catch (ex) { } } return; } // Send compressed agent
                 setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename, null, 'meshagent');
                 if (argentInfo.data == null) { res.sendFile(argentInfo.path); } else { res.send(argentInfo.data); }
                 return;
@@ -5037,6 +5038,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((user.siteadmin == 0xFFFFFFFF) || ((Array.isArray(obj.parent.config.settings.agentcoredumpusers)) && (obj.parent.config.settings.agentcoredumpusers.indexOf(user._id) >= 0))) {
                     if ((agentid == 3) || (agentid == 4)) { response += ', <a download href="' + originalUrl + '?id=' + agentinfo.id + '&pdb=1' + (req.query.key ? ('&key=' + req.query.key) : '') + '">PDB</a>'; }
                 }
+                if (agentinfo.zdata != null) { response += ', <a download href="' + originalUrl + '?id=' + agentinfo.id + '&zip=1' + (req.query.key ? ('&key=' + req.query.key) : '') + '">ZIP</a>'; }
                 response += '</td>';
                 response += '<td>' + agentinfo.size + '</td><td>' + agentinfo.hashhex + '</td>';
                 response += '<td><a download href="' + originalUrl + '?meshcmd=' + agentinfo.id + (req.query.key ? ('&key=' + req.query.key) : '') + '">' + agentinfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
