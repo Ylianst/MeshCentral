@@ -10233,7 +10233,7 @@
             }
 
             if (hardware.windows) {
-                if (hardware.windows.memory) {
+                if (hardware.windows.memory && (hardware.windows.memory.length > 0)) {
                     var x = '';
                     // Sort Memory
                     hardware.windows.memory.sort(function(a, b) { if (a.BankLabel > b.BankLabel) return 1; if (a.BankLabel < b.BankLabel) return -1; return 0; });
