@@ -5367,7 +5367,11 @@
                 if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
                 if (hardware.windows && hardware.windows.osinfo) {
                     var m = hardware.windows.osinfo;
-                    if (m.OSArchitecture) { x += addDetailItem("Architecture", EscapeHtml(m.OSArchitecture), s); }
+                    if (m.OSArchitecture) {
+                        if (m.OSArchitecture.startsWith('32')) { x += addDetailItem("Architecture", "32-bit", s); }
+                        else if (m.OSArchitecture.startsWith('64')) { x += addDetailItem("Architecture", "64-bit", s); }
+                        else { x += addDetailItem("Architecture", EscapeHtml(m.OSArchitecture), s); }
+                    }
                 }
 
                 // Windows Security Central
