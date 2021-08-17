@@ -27,7 +27,6 @@ function CreateMeshCentralServer(config, args) {
     obj.mpsserver = null;
     obj.mqttbroker = null;
     obj.swarmserver = null;
-    obj.mailserver = null;
     obj.smsserver = null;
     obj.amtEventHandler = null;
     obj.pluginHandler = null;
