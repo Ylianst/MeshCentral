@@ -280,7 +280,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     obj.onWebSocketConnection = function (socket, req) {
         connectionCount++;
         // connType: 0 = CIRA, 1 = Relay, 2 = LMS
-        socket.tag = { first: true, connType: 0, clientCert: null, accumulator: '', activetunnels: 0, boundPorts: [], websocket: true, socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+        socket.tag = { first: true, connType: 0, clientCert: null, accumulator: '', activetunnels: 0, boundPorts: [], websocket: true, socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0, meiState: {} };
         socket.SetupChannel = function SetupChannel(targetport) { return SetupChannel.parent.SetupChannel(SetupChannel.conn, targetport); }
         socket.SetupChannel.parent = obj;
         socket.SetupChannel.conn = socket;
@@ -337,9 +337,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         connectionCount++;
         // connType: 0 = CIRA, 1 = Relay, 2 = LMS
         if (obj.args.mpstlsoffload) {
-            socket.tag = { first: true, connType: 0, clientCert: null, accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+            socket.tag = { first: true, connType: 0, clientCert: null, accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0, meiState: {} };
         } else {
-            socket.tag = { first: true, connType: 0, clientCert: socket.getPeerCertificate(true), accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+            socket.tag = { first: true, connType: 0, clientCert: socket.getPeerCertificate(true), accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0, meiState: {} };
         }
         socket.SetupChannel = function SetupChannel(targetport) { return SetupChannel.parent.SetupChannel(SetupChannel.conn, targetport); }
         socket.SetupChannel.parent = obj;
