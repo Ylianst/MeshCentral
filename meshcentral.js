@@ -2671,7 +2671,15 @@ function CreateMeshCentralServer(config, args) {
                             archive.on('data', onZipData);
                             archive.on('end', onZipEnd);
                             archive.on('error', onZipError);
-                            archive.append(this.meshAgentBinary.data, { name: 'meshagent' });
+
+                            // Starting with NodeJS v16, passing in a buffer at archive.append() will result a compressed file with zero byte length. To fix this, we pass in the buffer as a stream.
+                            // archive.append(this.meshAgentBinary.data, { name: 'meshagent' }); // This is the version that does not work on NodeJS v16.
+                            const ReadableStream = require('stream').Readable;
+                            const zipInputStream = new ReadableStream();
+                            zipInputStream.push(this.meshAgentBinary.data);
+                            zipInputStream.push(null);
+                            archive.append(zipInputStream, { name: 'meshagent' });
+
                             archive.finalize();
                         })
                         obj.exeHandler.streamExeWithMeshPolicy(
