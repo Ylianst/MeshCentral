@@ -4060,7 +4060,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                                 mpskeepalive: 60000,
                                 clientname: require('os').hostname(),
                                 clientaddress: '127.0.0.1',
-                                clientuuid: meshCoreObj.intelamt.uuid,
+                                clientuuid: meshCoreObj.intelamt.UUID,
                                 conntype: connType // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
                             };
                             if ((apfarg.clientuuid == null) || (apfarg.clientuuid.length != 36)) {
