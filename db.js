@@ -1970,7 +1970,7 @@ module.exports.CreateDB = function (parent, func) {
                         var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
                         var archive = null;
                         if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
-                            try { archiver.registerFormat('zip-encrypted', require("archiver-zip-encrypted")); } catch (ex) { }
+                            try { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); } catch (ex) { }
                             archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
                         } else {
                             archive = archiver('zip', { zlib: { level: 9 } });
@@ -2009,7 +2009,7 @@ module.exports.CreateDB = function (parent, func) {
                         var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
                         var archive = null;
                         if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
-                            try { archiver.registerFormat('zip-encrypted', require("archiver-zip-encrypted")); } catch (ex) { }
+                            try { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); } catch (ex) { }
                             archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
                         } else {
                             archive = archiver('zip', { zlib: { level: 9 } });
@@ -2036,7 +2036,7 @@ module.exports.CreateDB = function (parent, func) {
                 var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
                 var archive = null;
                 if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
-                    try { archiver.registerFormat('zip-encrypted', require("archiver-zip-encrypted")); } catch (ex) { }
+                    try { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); } catch (ex) { }
                     archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
                 } else {
                     archive = archiver('zip', { zlib: { level: 9 } });

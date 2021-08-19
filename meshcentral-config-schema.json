@@ -507,10 +507,18 @@
             "type": "object",
             "description": "Values that affect the terminal feature",
             "properties": {
-              "linuxshell": {
+              "linuxShell": {
                 "type": "string",
                 "enum": [ "any", "root", "user", "login" ],
-                "default": "any"
+                "default": "any",
+                "description": "Indicate what terminal options are available when the user clicks the right mouse button on the terminal connect button."
+              },
+              "launchCommand": {
+                "type": "object",
+                "description": "Indicate what string the agent must write to the shell after starting a terminal session",
+                "linux": { "type": "string", "default": " alias ls=\\'ls --color=auto\\';clear\\n", "description": "String to write after opening a Linux terminal." },
+                "darwin": { "type": "string", "default": null, "description": "String to write after opening a macOS terminal." },
+                "freebsd": { "type": "string", "default": null, "description": "String to write after opening a FreeBSD terminal." },
               }
             }
           },
