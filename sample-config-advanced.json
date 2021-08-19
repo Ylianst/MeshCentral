@@ -262,6 +262,14 @@
         "_maxAgentSessions": 100,
         "maxSingleUserSessions": 10
       },
+      "_terminal": {
+        "_linuxshell": "login",
+        "launchCommand": {
+          "linux": "clear\necho \"Hello Linux\"\n",
+          "darwin": "clear\necho \"Hello MacOS\"\n",
+          "freebsd": "clear\necho \"Hello FreeBSD\"\n"
+        }
+      },
       "_amtScanOptions": [
         "LabNetwork 192.168.15.0/23",
         "SalesNetwork 192.168.8.0/24"

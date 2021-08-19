@@ -1076,6 +1076,19 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
             });
         }
+
+        // Indicate server information to the agent.
+        var serverInfo = { action: 'serverInfo' };
+        if ((typeof domain.terminal == 'object') && (typeof domain.terminal.launchcommand == 'object')) {
+            // Send terminal starting command
+            serverInfo.termlaunchcommand = {};
+            if (typeof domain.terminal.launchcommand.linux == 'string') { serverInfo.termlaunchcommand.linux = domain.terminal.launchcommand.linux; }
+            if (typeof domain.terminal.launchcommand.darwin == 'string') { serverInfo.termlaunchcommand.darwin = domain.terminal.launchcommand.darwin; }
+            if (typeof domain.terminal.launchcommand.freebsd == 'string') { serverInfo.termlaunchcommand.freebsd = domain.terminal.launchcommand.freebsd; }
+        }
+        obj.send(JSON.stringify(serverInfo));
+
+        // Plug in handler
         if (parent.parent.pluginHandler != null) {
             parent.parent.pluginHandler.callHook('hook_agentCoreIsStable', obj, parent);
         }

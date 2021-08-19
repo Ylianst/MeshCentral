@@ -87,7 +87,7 @@ if (require('MeshAgent').ARCHID == null) {
     }
     if (id != null) { Object.defineProperty(require('MeshAgent'), 'ARCHID', { value: id }); }
 }
-var obj = {};
+var obj = { serverInfo: {} };
 var agentFileHttpRequests = {}; // Currently active agent HTTPS GET requests from the server.
 var agentFileHttpPendingRequests = []; // Pending HTTPS GET requests from the server.
 var debugConsole = (global._MSH && (_MSH().debugConsole == 1));
@@ -1375,6 +1375,10 @@ function handleServerCommand(data) {
                 agentFileHttpPendingRequests.push(data);
                 serverFetchFile();
                 break;
+            case 'serverInfo': // Server information
+                obj.serverInfo = data;
+                delete obj.serverInfo.action;
+                break;
             case 'errorlog': // Return agent error log
                 try { mesh.SendCommand(JSON.stringify({ action: 'errorlog', log: require('util-agentlog').read(data.startTime) })); } catch (ex) { }
                 break;
@@ -1922,14 +1926,7 @@ function onTunnelData(data) {
                                         // The above line is commented out, because there is a bug with ClosePseudoConsole() API, so this is the workaround
                                         this.httprequest._dispatcher = require('win-dispatcher').dispatch({ modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
                                         this.httprequest._dispatcher.httprequest = this.httprequest;
-                                        this.httprequest._dispatcher.on('connection', function (c) {
-                                            if (this.httprequest.connectionPromise.completed) {
-                                                c.end();
-                                            }
-                                            else {
-                                                this.httprequest.connectionPromise._res(c);
-                                            }
-                                        });
+                                        this.httprequest._dispatcher.on('connection', function (c) { if (this.httprequest.connectionPromise.completed) { c.end(); } else { this.httprequest.connectionPromise._res(c); } });
                                     }
                                     else {
                                         // Legacy Terminal
@@ -1954,14 +1951,7 @@ function onTunnelData(data) {
                                                 that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
                                             }
                                             that.httprequest._dispatcher.ws = that;
-                                            that.httprequest._dispatcher.on('connection', function (c) {
-                                                if (this.ws.httprequest.connectionPromise.completed) {
-                                                    c.end();
-                                                }
-                                                else {
-                                                    this.ws.httprequest.connectionPromise._res(c);
-                                                }
-                                            });
+                                            that.httprequest._dispatcher.on('connection', function (c) { if (this.ws.httprequest.connectionPromise.completed) { c.end(); } else { this.ws.httprequest.connectionPromise._res(c); } });
                                         }
                                     });
                                 }
@@ -1992,13 +1982,15 @@ function onTunnelData(data) {
                                 else if (bash) {
                                     var p = childProcess.execFile(bash, ['bash'], options); // Start bash
                                     // Spaces at the beginning of lines are needed to hide commands from the command history
-                                    if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
+                                    if ((obj.serverInfo.termlaunchcommand != null) && (typeof obj.serverInfo.termlaunchcommand[process.platform] == 'string')) { p.stdin.write(obj.serverInfo.termlaunchcommand[process.platform]); }
+                                    else if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
                                     this.httprequest.connectionPromise._res(p);
                                 }
                                 else if (sh) {
                                     var p = childProcess.execFile(sh, ['sh'], options); // Start sh
                                     // Spaces at the beginning of lines are needed to hide commands from the command history
-                                    if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
+                                    if ((obj.serverInfo.termlaunchcommand != null) && (typeof obj.serverInfo.termlaunchcommand[process.platform] == 'string')) { p.stdin.write(obj.serverInfo.termlaunchcommand[process.platform]); }
+                                    else if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
                                     this.httprequest.connectionPromise._res(p);
                                 }
                                 else {
