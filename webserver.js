@@ -4522,7 +4522,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                     }
                                                 }
 
-                                                parent.amtEventHandler.handleAmtEvent(eventData, nodeid, amthost);
+                                                if (parent.amtEventHandler) { parent.amtEventHandler.handleAmtEvent(eventData, nodeid, amthost); }
                                                 //res.send('OK');
 
                                                 return;
