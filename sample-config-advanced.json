@@ -10,6 +10,7 @@
     "_LANonly": true,
     "_sessionKey": "MyReallySecretPassword1",
     "_sessionSameSite": "strict",
+    "_certificatePrivateKeyPassword": [ "password1", "password2" ],
     "_dbEncryptKey": "MyReallySecretPassword2",
     "_dbRecordsEncryptKey": "MyReallySecretPassword",
     "_dbRecordsDecryptKey": "MyReallySecretPassword",

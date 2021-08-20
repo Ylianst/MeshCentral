@@ -743,6 +743,29 @@ module.exports.CertificateOperations = function (parent) {
         return true;
     }
 
+    // Decrypt private key if needed
+    obj.decryptPrivateKey = function (key) {
+        if (typeof key != 'string') return key;
+        var i = key.indexOf('-----BEGIN ENCRYPTED PRIVATE KEY-----');
+        var j = key.indexOf('-----END ENCRYPTED PRIVATE KEY-----');
+        if ((i >= 0) && (j > i)) {
+            var passwords = parent.config.settings.certificateprivatekeypassword;
+            if (parent.config.settings.certificateprivatekeypassword == null) { passwords = []; }
+            else if (typeof parent.config.settings.certificateprivatekeypassword == 'string') { passwords = [parent.config.settings.certificateprivatekeypassword ]; }
+            var privateKey = null;
+            for (var k in passwords) { if (privateKey == null) { try { privateKey = obj.pki.decryptRsaPrivateKey(key, passwords[k]); } catch (ex) { } } }
+            if (privateKey == null) {
+                console.log("Private certificate key is encrypted, but no correct password was found.");
+                console.log("Add the password to the \"certificatePrivateKeyPassword\" value in the Settings section of the config.json.");
+                console.log("Example: \"certificatePrivateKeyPassword\": [ \"MyPassword\" ]");
+                process.exit();
+                return null;
+            }
+            return obj.pki.privateKeyToPem(privateKey);
+        }
+        return key;
+    }
+
     // Returns the web server TLS certificate and private key, if not present, create demonstration ones.
     obj.GetMeshServerCertificate = function (args, config, func) {
         var i = 0;
@@ -764,7 +787,7 @@ module.exports.CertificateOperations = function (parent) {
         // If the root certificate already exist, load it
         if (obj.fileExists('root-cert-public.crt') && obj.fileExists('root-cert-private.key')) {
             var rootCertificate = obj.fileLoad('root-cert-public.crt', 'utf8');
-            var rootPrivateKey = obj.fileLoad('root-cert-private.key', 'utf8');
+            var rootPrivateKey = obj.decryptPrivateKey(obj.fileLoad('root-cert-private.key', 'utf8'));
             r.root = { cert: rootCertificate, key: rootPrivateKey };
             rcount++;
 
@@ -786,7 +809,7 @@ module.exports.CertificateOperations = function (parent) {
 
         // If web certificate exist, load it as default. This is useful for agent-only port. Load both certificate and private key
         if (obj.fileExists('webserver-cert-public.crt') && obj.fileExists('webserver-cert-private.key')) {
-            r.webdefault = { cert: obj.fileLoad('webserver-cert-public.crt', 'utf8'), key: obj.fileLoad('webserver-cert-private.key', 'utf8') };
+            r.webdefault = { cert: obj.fileLoad('webserver-cert-public.crt', 'utf8'), key: obj.decryptPrivateKey(obj.fileLoad('webserver-cert-private.key', 'utf8')) };
             if (obj.checkCertificate(r.webdefault.cert, r.webdefault.key) == false) { delete r.webdefault; }
         }
 
@@ -798,27 +821,27 @@ module.exports.CertificateOperations = function (parent) {
             }
         } else {
             // If the web certificate already exist, load it. Load both certificate and private key
-            if (obj.fileExists('webserver-cert-public.crt') && obj.fileExists('webserver-cert-private.key')) {
-                r.web = { cert: obj.fileLoad('webserver-cert-public.crt', 'utf8'), key: obj.fileLoad('webserver-cert-private.key', 'utf8') };
+            if (obj.fileExists('webserver-cert-public.crt') && obj.decryptPrivateKey(obj.fileExists('webserver-cert-private.key'))) {
+                r.web = { cert: obj.fileLoad('webserver-cert-public.crt', 'utf8'), key: obj.decryptPrivateKey(obj.fileLoad('webserver-cert-private.key', 'utf8')) };
                 if (obj.checkCertificate(r.web.cert, r.web.key) == false) { delete r.web; } else { rcount++; }
             }
         }
 
         // If the mps certificate already exist, load it
         if (obj.fileExists('mpsserver-cert-public.crt') && obj.fileExists('mpsserver-cert-private.key')) {
-            r.mps = { cert: obj.fileLoad('mpsserver-cert-public.crt', 'utf8'), key: obj.fileLoad('mpsserver-cert-private.key', 'utf8') };
+            r.mps = { cert: obj.fileLoad('mpsserver-cert-public.crt', 'utf8'), key: obj.decryptPrivateKey(obj.fileLoad('mpsserver-cert-private.key', 'utf8')) };
             if (obj.checkCertificate(r.mps.cert, r.mps.key) == false) { delete r.mps; } else { rcount++; }
         }
 
         // If the agent certificate already exist, load it
         if (obj.fileExists("agentserver-cert-public.crt") && obj.fileExists("agentserver-cert-private.key")) {
-            r.agent = { cert: obj.fileLoad("agentserver-cert-public.crt", 'utf8'), key: obj.fileLoad("agentserver-cert-private.key", 'utf8') };
+            r.agent = { cert: obj.fileLoad("agentserver-cert-public.crt", 'utf8'), key: obj.decryptPrivateKey(obj.fileLoad("agentserver-cert-private.key", 'utf8')) };
             if (obj.checkCertificate(r.agent.cert, r.agent.key) == false) { delete r.agent; } else { rcount++; }
         }
 
         // If the swarm server certificate exist, load it (This is an optional certificate)
         if (obj.fileExists('swarmserver-cert-public.crt') && obj.fileExists('swarmserver-cert-private.key')) {
-            r.swarmserver = { cert: obj.fileLoad('swarmserver-cert-public.crt', 'utf8'), key: obj.fileLoad('swarmserver-cert-private.key', 'utf8') };
+            r.swarmserver = { cert: obj.fileLoad('swarmserver-cert-public.crt', 'utf8'), key: obj.decryptPrivateKey(obj.fileLoad('swarmserver-cert-private.key', 'utf8')) };
             if (obj.checkCertificate(r.swarmserver.cert, r.swarmserver.key) == false) { delete r.swarmserver; }
         }
 
@@ -894,7 +917,7 @@ module.exports.CertificateOperations = function (parent) {
                 dnsname = config.domains[i].dns;
                 // Check if this domain matches a parent wildcard cert, if so, use the parent cert.
                 if (obj.compareCertificateNames(r.CommonNames, dnsname) == true) {
-                    r.dns[i] = { cert: obj.fileLoad('webserver-cert-public.crt', 'utf8'), key: obj.fileLoad('webserver-cert-private.key', 'utf8') };
+                    r.dns[i] = { cert: obj.fileLoad('webserver-cert-public.crt', 'utf8'), key: obj.decryptPrivateKey(obj.fileLoad('webserver-cert-private.key', 'utf8')) };
                 } else {
                     if (args.tlsoffload) {
                         // If the web certificate already exist, load it. Load just the certificate since we are in TLS offload situation
@@ -907,7 +930,7 @@ module.exports.CertificateOperations = function (parent) {
                     } else {
                         // If the web certificate already exist, load it. Load both certificate and private key
                         if (obj.fileExists('webserver-' + i + '-cert-public.crt') && obj.fileExists('webserver-' + i + '-cert-private.key')) {
-                            r.dns[i] = { cert: obj.fileLoad('webserver-' + i + '-cert-public.crt', 'utf8'), key: obj.fileLoad('webserver-' + i + '-cert-private.key', 'utf8') };
+                            r.dns[i] = { cert: obj.fileLoad('webserver-' + i + '-cert-public.crt', 'utf8'), key: obj.decryptPrivateKey(obj.fileLoad('webserver-' + i + '-cert-private.key', 'utf8')) };
                             config.domains[i].certs = r.dns[i];
                             // If CA certificates are present, load them
                             caindex = 1;
@@ -1062,7 +1085,7 @@ module.exports.CertificateOperations = function (parent) {
                 dnsname = config.domains[i].dns;
                 // Check if this domain matches a parent wildcard cert, if so, use the parent cert.
                 if (obj.compareCertificateNames(r.CommonNames, dnsname) == true) {
-                    r.dns[i] = { cert: obj.fileLoad('webserver-cert-public.crt', 'utf8'), key: obj.fileLoad('webserver-cert-private.key', 'utf8') };
+                    r.dns[i] = { cert: obj.fileLoad('webserver-cert-public.crt', 'utf8'), key: obj.decryptPrivateKey(obj.fileLoad('webserver-cert-private.key', 'utf8')) };
                 } else {
                     if (!args.tlsoffload) {
                         // If the web certificate does not exist, create it
