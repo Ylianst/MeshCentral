@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8">
@@ -866,7 +866,7 @@
                     <img id="deskkeybutton2a" src="images/mobile-desk-keyboard-open.png" class="deskButton" style="top:210px;display:none" onclick="toggleKeyboard()" />
                     <img id="deskkeybutton2b" src="images/mobile-desk-keyboard-close.png" class="deskButton" style="top:210px;display:none" onclick="toggleKeyboard()" />
                     <div style="position:absolute;top:0;left:0;z-index:200;opacity:0;width:1px;height:1px">
-                        <input id="softKeyboard" autocomplete="off" type="password" style="z-index:200;opacity:0;width:1px;height:1px" onfocus="keyboardFocusChange()" onblur="keyboardFocusChange()" onkeypress="return ondeskkeypress(event,1)" onkeydown="return ondeskkeydown(event,1)" onkeyup="return ondeskkeyup(event,1)" />
+                        <input id="softKeyboard" autocapitalize="off" autocomplete="off" type="text" spellcheck="false" style="z-index:200;opacity:0;width:1px;height:1px" onfocus="keyboardFocusChange()" onblur="keyboardFocusChange()" />
                     </div>
                     <div id="deskButtonMenu" style="display:none;position:absolute;top:10px;left:10px;right:55px;bottom:10px;z-index:1000"></div>
                     <div id=p10desktop style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%;display:none">
@@ -912,7 +912,7 @@
                     <div id="termButtonMenu" style="display:none;position:absolute;top:10px;left:10px;right:55px;bottom:10px;z-index:1000"></div>
                     <div id=p10terminal style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%;display:none;background-color:#333">
                         <div id=termTable style="position:absolute;top:0;bottom:0;left:0;right:0">
-                            <div id="termarea1" style="position:absolute;top:0;height:32px;left:0;right:0">
+                            <div id="termarea1">
                                 <div class="areaHead" style="line-height:24px">
                                     <div class="toright2">
                                         <input type=button id=termFullScreen value="Full Screen" onclick=deskToggleFull(event) onkeypress="return false" onkeydown="return false" disabled="disabled" style="height:28px;margin-right:3px;">
@@ -925,12 +925,12 @@
                                     </div>
                                 </div>
                             </div>
-                            <div id="termarea3" style="position:absolute;top:32px;left:0;bottom:32px" cellpadding=0 cellspacing=0>
-                                <div id="termarea3x">
-                                    <div id="termarea3xdiv" style="overflow:hidden"></div>
+                            <div id="termarea3" style="width:100%;height: calc(100% - 60px);" cellpadding=0 cellspacing=0>
+                                <div id="termarea3x" style="width:100%;height:100%">
+                                    <div style="width:100%;height:100%" id="termarea3xdiv"></div>
                                 </div>
                             </div>
-                            <div id="termarea4" style="position:absolute;bottom:0;height:32px;left:0;right:0">
+                            <div id="termarea4" style="position:relative;height:32px;">
                                 <div class="areaFoot">
                                     <div class="toright2"></div>
                                     <div style="height:28px">
@@ -1243,8 +1243,8 @@
         var deskKeyboardShortcuts = [];
         var nightMode = setNightMode();
         var xterm = null;
-        //var xtermfit = null;
-        //var xtermResizeTimer = null;
+        var xtermfit = null;
+        var xtermResizeTimer = null;
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -2871,14 +2871,16 @@
             }
             if (terminal && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 5) && (gotKeyPressEvent == false) && (t !== 1)) {
                 if (e.altKey == true) { return true; }
+                var inputStr = Q('softKeyboard').value;
+                Q('softKeyboard').value = '';
                 if (terminal.urlname == 'sshterminalrelay.ashx') {
                     // SSH
-                    terminal.socket.send('~' + Q('softKeyboard').value);
+                    terminal.socket.send('~' + inputStr);
                 } else {
                     // Agent
-                    terminal.sendText(Q('softKeyboard').value);
+                    if (inputStr)
+                        terminal.sendText(inputStr);
                 }
-                Q('softKeyboard').value = '';
                 return false;
             }
         }
@@ -4429,6 +4431,7 @@
                     QS('termarea3').bottom = null;
                     QS('termarea3').right = null;
                     QS('termarea3')['padding-right'] = '55px';
+                    QS('termarea3')['height'] = '100%';
                 }
                 QS('body')['background-color'] = '#000';
                 QS('p10')['background-color'] = '#000';
@@ -4457,6 +4460,7 @@
                     QS('termarea3').bottom = '32px';
                     //QS('termarea3').right = '0px';
                     QS('termarea3')['padding-right'] = null;
+                    QS('termarea3')['height'] = 'calc(100% - 60px)';
                 }
                 QS('body')['background-color'] = nightMode ? '#000' : '#FFF';
                 QS('p10')['background-color'] = null;
@@ -4694,6 +4698,18 @@
             }
         }
 
+        // Send the new terminal size to the agent
+        function xTermSendResize() {
+            xtermResizeTimer = null;
+            if ((xterm != null) && (terminal != null) && (terminal.sendCtrlMsg != null)) {
+                if (terminal.urlname == 'sshterminalrelay.ashx') {
+                    terminal.socket.send(JSON.stringify({ action: 'resize', cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight }));
+                } else {
+                    terminal.sendCtrlMsg(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: xterm.cols, rows: xterm.rows }));
+                }
+            }
+        }
+
         function connectTerminal(e, contype, options) {
             p12clearConsoleMsg();
             if (!terminal) {
@@ -4736,14 +4752,21 @@
                 // Setup the terminal with auto-fit
                 if (xterm != null) { xterm.dispose(); }
                 xterm = new Terminal();
+                xtermfit = new FitAddon.FitAddon();
+                if (xtermfit) { xterm.loadAddon(xtermfit); }
                 xterm.setOption('scrollback', 0);
                 //xterm.setOption('fontSize', 15);
                 xterm.open(Q('termarea3xdiv'));
                 xterm.onData(function (data) { if (terminal.urlname == 'sshterminalrelay.ashx') { terminal.socket.send('~' + data); } else { terminal.sendText(data); } })
-                xterm.resize(80,34);
+                if (xtermfit) { xtermfit.fit(); }
+                xterm.onResize(function (size) {
+                    // Despam resize
+                    if (xtermResizeTimer) clearTimeout(xtermResizeTimer);
+                    xtermResizeTimer = setTimeout(xTermSendResize, 200);
+                });
 
                 // Remove terminal textarea and scrollbar.
-                document.getElementsByClassName('xterm-helper-textarea')[0].style.display = 'none';
+                document.getElementsByClassName('xterm-helper-textarea')[0].onfocus = () => { xterm.blur(); if (!fullscreen) toggleKeyboard(); };
                 document.getElementsByClassName('xterm-viewport')[0].style.overflow = 'hidden';
 
                 // Setup a terminal tunnel to the agent
@@ -6451,7 +6474,7 @@
         function getNodeAmtVersion(node) { if ((node == null) || (node.intelamt == null) || (typeof node.intelamt.ver != 'string')) return 0; var verSplit = node.intelamt.ver.split('.'); if (verSplit.length < 2) return 0; return parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100); }
         function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); } } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
-        function center() { onDevicesScroll(); QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); deskAdjust(); if (currentNode != null) { drawDeviceTimeline(); } }
+        function center() { if (xtermfit) xtermfit.fit(); onDevicesScroll(); QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); deskAdjust(); if (currentNode != null) { drawDeviceTimeline(); } }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
