@@ -70,12 +70,6 @@ module.exports.CreateAmtEventsHandler = function (parent) {
         return r;
     }
 
-    // Private method
-    function _turnToXml(text) {
-        var DOMParser = require('xmldom').DOMParser;
-        return new DOMParser().parseFromString(text, 'text/xml');
-    }
-
     // Parse and handle an event coming from Intel AMT
     obj.handleAmtEvent = function (data, nodeid, amthost) {
         var x = ParseWsman(data);
@@ -89,6 +83,86 @@ module.exports.CreateAmtEventsHandler = function (parent) {
 
     // DEBUG: This is an example event, to test parsing and dispatching
     //obj.handleAmtEvent('<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_AlertIndication" xmlns:h="http://schemas.dmtf.org/wbem/wscim/1/common" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:ReplyTo><b:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:Address></b:ReplyTo><c:AckRequested></c:AckRequested><b:Action a:mustUnderstand="true">http://schemas.dmtf.org/wbem/wsman/1/wsman/Event</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-000000128538</b:MessageID><c:ResourceURI>http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_AlertIndication</c:ResourceURI></a:Header><a:Body><g:CIM_AlertIndication><g:AlertType>8</g:AlertType><g:AlertingElementFormat>2</g:AlertingElementFormat><g:AlertingManagedElement>Interop:CIM_ComputerSystem.CreationClassName=&quot;CIM_ComputerSystem&quot;,Name=&quot;Intel(r) AMT&quot;</g:AlertingManagedElement><g:IndicationFilterName>Intel(r) AMT:AllEvents</g:IndicationFilterName><g:IndicationIdentifier>Intel(r):2950234687</g:IndicationIdentifier><g:IndicationTime><h:Datetime>2017-01-31T15:40:09.000Z</h:Datetime></g:IndicationTime><g:Message></g:Message><g:MessageArguments>0</g:MessageArguments><g:MessageArguments>Interop:CIM_ComputerSystem.CreationClassName=CIM_ComputerSystem,Name=Intel(r) AMT</g:MessageArguments><g:MessageID>iAMT0005</g:MessageID><g:OtherAlertingElementFormat></g:OtherAlertingElementFormat><g:OtherSeverity></g:OtherSeverity><g:OwningEntity>Intel(r) AMT</g:OwningEntity><g:PerceivedSeverity>2</g:PerceivedSeverity><g:ProbableCause>0</g:ProbableCause><g:SystemName>Intel(r) AMT</g:SystemName></g:CIM_AlertIndication></a:Body></a:Envelope>', 'aabbccdd', '1.2.3.4');
+
+    // This is a drop-in replacement to _turnToXml() that works without xml parser dependency.
+    try { Object.defineProperty(Array.prototype, "peek", { value: function () { return (this.length > 0 ? this[this.length - 1] : null); } }); } catch (ex) { }
+    function _treeBuilder() {
+        this.tree = [];
+        this.push = function (element) { this.tree.push(element); };
+        this.pop = function () { var element = this.tree.pop(); if (this.tree.length > 0) { var x = this.tree.peek(); x.childNodes.push(element); x.childElementCount = x.childNodes.length; } return (element); };
+        this.peek = function () { return (this.tree.peek()); }
+        this.addNamespace = function (prefix, namespace) { this.tree.peek().nsTable[prefix] = namespace; if (this.tree.peek().attributes.length > 0) { for (var i = 0; i < this.tree.peek().attributes; ++i) { var a = this.tree.peek().attributes[i]; if (prefix == '*' && a.name == a.localName) { a.namespace = namespace; } else if (prefix != '*' && a.name != a.localName) { var pfx = a.name.split(':')[0]; if (pfx == prefix) { a.namespace = namespace; } } } } }
+        this.getNamespace = function (prefix) { for (var i = this.tree.length - 1; i >= 0; --i) { if (this.tree[i].nsTable[prefix] != null) { return (this.tree[i].nsTable[prefix]); } } return null; }
+    }
+    function _turnToXml(text) { if (text == null) return null; return ({ childNodes: [_turnToXmlRec(text)], getElementsByTagName: _getElementsByTagName, getChildElementsByTagName: _getChildElementsByTagName, getElementsByTagNameNS: _getElementsByTagNameNS }); }
+    function _getElementsByTagNameNS(ns, name) { var ret = []; _xmlTraverseAllRec(this.childNodes, function (node) { if (node.localName == name && (node.namespace == ns || ns == '*')) { ret.push(node); } }); return ret; }
+    function _getElementsByTagName(name) { var ret = []; _xmlTraverseAllRec(this.childNodes, function (node) { if (node.localName == name) { ret.push(node); } }); return ret; }
+    function _getChildElementsByTagName(name) { var ret = []; if (this.childNodes != null) { for (var node in this.childNodes) { if (this.childNodes[node].localName == name) { ret.push(this.childNodes[node]); } } } return (ret); }
+    function _getChildElementsByTagNameNS(ns, name) { var ret = []; if (this.childNodes != null) { for (var node in this.childNodes) { if (this.childNodes[node].localName == name && (ns == '*' || this.childNodes[node].namespace == ns)) { ret.push(this.childNodes[node]); } } } return (ret); }
+    function _xmlTraverseAllRec(nodes, func) { for (var i in nodes) { func(nodes[i]); if (nodes[i].childNodes) { _xmlTraverseAllRec(nodes[i].childNodes, func); } } }
+    function _turnToXmlRec(text) {
+        var elementStack = new _treeBuilder(), lastElement = null, x1 = text.split('<'), ret = [], element = null, currentElementName = null;
+        for (var i in x1) {
+            var x2 = x1[i].split('>'), x3 = x2[0].split(' '), elementName = x3[0];
+            if ((elementName.length > 0) && (elementName[0] != '?')) {
+                if (elementName[0] != '/') {
+                    var attributes = [], localName, localname2 = elementName.split(' ')[0].split(':'), localName = (localname2.length > 1) ? localname2[1] : localname2[0];
+                    Object.defineProperty(attributes, "get",
+                        {
+                            value: function () {
+                                if (arguments.length == 1) {
+                                    for (var a in this) { if (this[a].name == arguments[0]) { return (this[a]); } }
+                                }
+                                else if (arguments.length == 2) {
+                                    for (var a in this) { if (this[a].name == arguments[1] && (arguments[0] == '*' || this[a].namespace == arguments[0])) { return (this[a]); } }
+                                }
+                                else {
+                                    throw ('attributes.get(): Invalid number of parameters');
+                                }
+                            }
+                        });
+                    elementStack.push({ name: elementName, localName: localName, getChildElementsByTagName: _getChildElementsByTagName, getElementsByTagNameNS: _getElementsByTagNameNS, getChildElementsByTagNameNS: _getChildElementsByTagNameNS, attributes: attributes, childNodes: [], nsTable: {} });
+                    // Parse Attributes
+                    if (x3.length > 0) {
+                        var skip = false;
+                        for (var j in x3) {
+                            if (x3[j] == '/') {
+                                // This is an empty Element
+                                elementStack.peek().namespace = elementStack.peek().name == elementStack.peek().localName ? elementStack.getNamespace('*') : elementStack.getNamespace(elementStack.peek().name.substring(0, elementStack.peek().name.indexOf(':')));
+                                elementStack.peek().textContent = '';
+                                lastElement = elementStack.pop();
+                                skip = true;
+                                break;
+                            }
+                            var k = x3[j].indexOf('=');
+                            if (k > 0) {
+                                var attrName = x3[j].substring(0, k);
+                                var attrValue = x3[j].substring(k + 2, x3[j].length - 1);
+                                var attrNS = elementStack.getNamespace('*');
+
+                                if (attrName == 'xmlns') {
+                                    elementStack.addNamespace('*', attrValue);
+                                    attrNS = attrValue;
+                                } else if (attrName.startsWith('xmlns:')) {
+                                    elementStack.addNamespace(attrName.substring(6), attrValue);
+                                } else {
+                                    var ax = attrName.split(':');
+                                    if (ax.length == 2) { attrName = ax[1]; attrNS = elementStack.getNamespace(ax[0]); }
+                                }
+                                var x = { name: attrName, value: attrValue }
+                                if (attrNS != null) x.namespace = attrNS;
+                                elementStack.peek().attributes.push(x);
+                            }
+                        }
+                        if (skip) { continue; }
+                    }
+                    elementStack.peek().namespace = elementStack.peek().name == elementStack.peek().localName ? elementStack.getNamespace('*') : elementStack.getNamespace(elementStack.peek().name.substring(0, elementStack.peek().name.indexOf(':')));
+                    if (x2[1]) { elementStack.peek().textContent = x2[1]; }
+                } else { lastElement = elementStack.pop(); }
+            }
+        }
+        return lastElement;
+    }
 
     return obj;
 };
