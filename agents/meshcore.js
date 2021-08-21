@@ -639,6 +639,9 @@ function getIpLocationDataEx(func) {
     catch (e) { return false; }
 }
 
+// Setup script task. Allows running scripts at scheduled intervals
+var scriptTask = require('scripttask');
+
 // Remove all Gateway MAC addresses for interface list. This is useful because the gateway MAC is not always populated reliably.
 function clearGatewayMac(str) {
     if (typeof str != 'string') return null;
@@ -2925,7 +2928,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help': { // Displays available commands
-                var fin = '', f = '', availcommands = 'agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
+                var fin = '', f = '', availcommands = 'agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (e) { }
                 if (process.platform == 'win32') { availcommands += ',cs,safemode,wpfhwacceleration,uac'; }
@@ -4092,6 +4095,14 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     }
                 } else {
                     response = "APF tunnel requires Intel AMT";
+                }
+                break;
+            }
+            case 'task': {
+                if (!scriptTask) { response = "Tasks are not supported on this agent"; }
+                else {
+                    if (args['_'][0]) { args.cmd = args['_'][0].toLowerCase(); }
+                    response = scriptTask.processCommand(args, rights, sessionid);
                 }
                 break;
             }

@@ -56,9 +56,12 @@
     <Compile Include="agents\modules_meshcore\amt-lme.js" />
     <Compile Include="agents\modules_meshcore\amt-manage.js" />
     <Compile Include="agents\modules_meshcore\amt-mei.js" />
+    <Compile Include="agents\modules_meshcore\linux-dhcp.js" />
     <Compile Include="agents\modules_meshcore\monitor-border.js" />
+    <Compile Include="agents\modules_meshcore\scripttask.js" />
     <Compile Include="agents\modules_meshcore\smbios.js" />
     <Compile Include="agents\modules_meshcore\sysinfo.js" />
+    <Compile Include="agents\modules_meshcore\util-agentlog.js" />
     <Compile Include="agents\modules_meshcore\wifi-scanner-windows.js" />
     <Compile Include="agents\modules_meshcore\wifi-scanner.js" />
     <Compile Include="agents\modules_meshcore\win-console.js" />
