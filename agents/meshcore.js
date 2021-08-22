@@ -640,7 +640,8 @@ function getIpLocationDataEx(func) {
 }
 
 // Setup script task. Allows running scripts at scheduled intervals
-var scriptTask = require('scripttask');
+var scriptTask = null;
+try { scriptTask = require('scripttask'); } catch (ex) { }
 
 // Remove all Gateway MAC addresses for interface list. This is useful because the gateway MAC is not always populated reliably.
 function clearGatewayMac(str) {
