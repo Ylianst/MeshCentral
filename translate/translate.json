@@ -42,6 +42,7 @@
       "tr": " + CIRA",
       "zh-chs": " + CIRA",
       "zh-cht": " + CIRA",
+      "pl": " + CIRA",
       "xloc": [
         "default.handlebars->35->1716",
         "default.handlebars->35->1718"
@@ -66,6 +67,7 @@
       "tr": " - 1 gün içinde sıfırlayın.",
       "zh-chs": " - 1天后重设。",
       "zh-cht": " - 1天后重設。",
+      "pl": " - Reset za 1 dzień.",
       "xloc": [
         "default-mobile.handlebars->11->57",
         "default.handlebars->35->72"
@@ -90,6 +92,7 @@
       "tr": " - 1 saat içinde sıfırlayın.",
       "zh-chs": " - 1小时后重设。",
       "zh-cht": " - 1小時後重設。",
+      "pl": " - Reset za 1 godzinę.",
       "xloc": [
         "default-mobile.handlebars->11->55",
         "default.handlebars->35->70"
@@ -114,6 +117,7 @@
       "tr": " - 1 dakika içinde sıfırlayın.",
       "zh-chs": " - 1分钟后重设。",
       "zh-cht": " - 1分鐘後重設。",
+      "pl": " - Reset za 1 minutę.",
       "xloc": [
         "default-mobile.handlebars->11->53",
         "default.handlebars->35->68"
@@ -138,6 +142,7 @@
       "tr": "- {0} gün içinde sıfırlayın.",
       "zh-chs": " - 在{0}天内重置。",
       "zh-cht": " - 在{0}天內重置。",
+      "pl": " - Reset za {0} dni.",
       "xloc": [
         "default-mobile.handlebars->11->58",
         "default.handlebars->35->73"
@@ -162,6 +167,7 @@
       "tr": " - {0} saat içinde sıfırlayın.",
       "zh-chs": " - 在{0}小时内重置。",
       "zh-cht": " - 在{0}小時內重置。",
+      "pl": " - Reset za {0} godzin.",
       "xloc": [
         "default-mobile.handlebars->11->56",
         "default.handlebars->35->71"
@@ -186,6 +192,7 @@
       "tr": " - {0} dakika içinde sıfırlayın.",
       "zh-chs": " - 在{0}分钟内重置。",
       "zh-cht": " - 在{0}分鐘內重置。",
+      "pl": " - Reset za {0} minut.",
       "xloc": [
         "default-mobile.handlebars->11->54",
         "default.handlebars->35->69"
@@ -210,6 +217,7 @@
       "tr": " - Sonraki girişte sıfırlayın.",
       "zh-chs": " -下次登录时重置。",
       "zh-cht": " -下次登入時重置。",
+      "pl": " - Reset przy następnym logowaniu.",
       "xloc": [
         "default-mobile.handlebars->11->51",
         "default-mobile.handlebars->11->52",
@@ -235,7 +243,8 @@
       "sv": " Lägg till användare",
       "tr": " Kullanıcı Ekle",
       "zh-chs": " 添加用户",
-      "zh-cht": " 新增用戶"
+      "zh-cht": " 新增用戶",
+      "pl": "Dodaj Użytkownika"
     },
     {
       "de": " MeshCentral-Router",
@@ -248,7 +257,8 @@
       "nl": " MeshCentral Router",
       "pt-br": " MeshCentral Router",
       "sv": " MeshCentral Router",
-      "zh-chs": " MeshCentral 路由器"
+      "zh-chs": " MeshCentral 路由器",
+      "pl": " MeshCentral Router"
     },
     {
       "cs": " Je možné zadat i nápovědu pro heslo, ale nedoporučuje se to.",
@@ -269,6 +279,7 @@
       "tr": " Parola ipucu kullanılabilir ancak tavsiye edilmez.",
       "zh-chs": " 可以使用密码提示，但不建议使用。",
       "zh-cht": " 可以使用密碼提示，但不建議使用。",
+      "pl": " Podpowiedź do hasła może być użyta, ale nie jest zalecana.",
       "xloc": [
         "default.handlebars->35->1616"
       ]
@@ -292,6 +303,7 @@
       "tr": " Kullanıcıların bir aygıt grubuna eklenmeden önce bu sunucuda bir kez oturum açması gerekir.",
       "zh-chs": " 用户需要先登录到该服务器一次，然后才能将其添加到设备组。",
       "zh-cht": " 用戶需要先登入到該伺服器一次，然後才能將其新增到裝置群。",
+      "pl": " Użytkownicy muszą jednokrotnie zalogować się na tym serwerze, zanim będą mogli zostać dodani do grupy urządzeń.",
       "xloc": [
         "default.handlebars->35->1810",
         "default.handlebars->35->2309"
@@ -315,7 +327,8 @@
       "sv": " och autentisera till servern med detta användarnamn och valfritt lösenord.",
       "tr": " ve bu kullanıcı adını ve herhangi bir şifreyi kullanarak sunucuya kimlik doğrulaması yapın.",
       "zh-chs": " 并使用该用户名和任何密码对服务器进行身份验证。",
-      "zh-cht": " 並使用此用戶名和任何密碼對伺服器進行身份驗證。"
+      "zh-cht": " 並使用此用戶名和任何密碼對伺服器進行身份驗證。",
+      "pl": " i uwierzytelnić się na serwerze używając tej nazwy użytkownika i dowolnego hasła."
     },
     {
       "cs": " a ověřovat se na serveru pomocí tohoto uživatelského jména a hesla.",
@@ -335,7 +348,8 @@
       "sv": " och autentisera till servern med detta användarnamn och lösenord.",
       "tr": " ve bu kullanıcı adı ve parolayı kullanarak sunucuya kimlik doğrulaması yapın.",
       "zh-chs": " 并使用该用户名和密码向服务器验证身份。",
-      "zh-cht": " 並使用此用戶名和密碼向伺服器驗證身份。"
+      "zh-cht": " 並使用此用戶名和密碼向伺服器驗證身份。",
+      "pl": " i uwierzytelnić się na serwerze przy użyciu tej nazwy użytkownika i hasła."
     },
     {
       "cs": " uzel",
@@ -356,6 +370,7 @@
       "tr": " düğüm",
       "zh-chs": " 节点",
       "zh-cht": " 節點",
+      "pl": " instanacja",
       "xloc": [
         "default-mobile.handlebars->11->241"
       ]
@@ -379,6 +394,7 @@
       "tr": " düğümler",
       "zh-chs": " 节点",
       "zh-cht": " 節點",
+      "pl": " instanacje",
       "xloc": [
         "default-mobile.handlebars->11->242"
       ]
@@ -402,6 +418,7 @@
       "tr": " TLS ile.",
       "zh-chs": " TLS。",
       "zh-cht": " TLS。",
+      "pl": " z TLS.",
       "xloc": [
         "default.handlebars->35->218"
       ]
@@ -425,6 +442,7 @@
       "tr": " TLS olmadan.",
       "zh-chs": " 没有TLS。",
       "zh-cht": " 沒有TLS。",
+      "pl": " bez TLS.",
       "xloc": [
         "default.handlebars->35->219"
       ]
@@ -440,7 +458,8 @@
       "nl": "&Sluiten",
       "pt-br": "&Perto",
       "sv": "&Stäng",
-      "zh-chs": "＆关闭"
+      "zh-chs": "＆关闭",
+      "pl": "&Zamknij"
     },
     {
       "de": "&Löschen",
@@ -453,7 +472,8 @@
       "nl": "&Verwijderen",
       "pt-br": "&Excluir",
       "sv": "&Radera",
-      "zh-chs": "＆删除"
+      "zh-chs": "＆删除",
+      "pl": "&Usuń"
     },
     {
       "de": "&Info...",
@@ -466,7 +486,8 @@
       "nl": "&Info...",
       "pt-br": "& Info ...",
       "sv": "&Info...",
-      "zh-chs": "＆信息..."
+      "zh-chs": "＆信息...",
+      "pl": "&Info..."
     },
     {
       "de": "&Öffnen",
@@ -479,7 +500,8 @@
       "nl": "&Open",
       "pt-br": "&Aberto",
       "sv": "&Öppna",
-      "zh-chs": "＆打开"
+      "zh-chs": "＆打开",
+      "pl": "&Otwórz"
     },
     {
       "de": "&Zuordnungen öffnen...",
@@ -492,7 +514,8 @@
       "nl": "&toewijzingen openen...",
       "pt-br": "& Abrir mapeamentos ...",
       "sv": "& Öppna kartläggningar ...",
-      "zh-chs": "打开映射 (&O)..."
+      "zh-chs": "打开映射 (&O)...",
+      "pl": "&Otwórz Mapowania..."
     },
     {
       "de": "&Öffnen...",
@@ -505,7 +528,8 @@
       "nl": "&Open...",
       "pt-br": "&Aberto...",
       "sv": "&Öppna...",
-      "zh-chs": "＆打开..."
+      "zh-chs": "＆打开...",
+      "pl": "&Otwórz..."
     },
     {
       "de": "&Umbenennen",
@@ -518,7 +542,8 @@
       "nl": "&Hernoemen",
       "pt-br": "& Renomear",
       "sv": "&Döp om",
-      "zh-chs": "＆改名"
+      "zh-chs": "＆改名",
+      "pl": "&Zmień nazwę"
     },
     {
       "de": "&Zuordnungen speichern...",
@@ -531,7 +556,8 @@
       "nl": "&Toewijzingen opslaan...",
       "pt-br": "& Salvar mapeamentos ...",
       "sv": "& Spara kartor ...",
-      "zh-chs": "保存映射(&S)..."
+      "zh-chs": "保存映射(&S)...",
+      "pl": "&Zapisz Mapowania..."
     },
     {
       "de": "&Agent starten",
@@ -544,7 +570,8 @@
       "nl": "&Start Agent",
       "pt-br": "& Iniciar Agente",
       "sv": "& Starta agent",
-      "zh-chs": "启动代理 (&S)"
+      "zh-chs": "启动代理 (&S)",
+      "pl": "&Uruchom Agenta"
     },
     {
       "de": "&Software aktualisieren",
@@ -557,7 +584,8 @@
       "nl": "&Software bijwerken",
       "pt-br": "&Atualizar o software",
       "sv": "&Uppdatera mjukvara",
-      "zh-chs": "更新软件 (&S)"
+      "zh-chs": "更新软件 (&S)",
+      "pl": "&Aktualizuj Oprogramowanie"
     },
     {
       "cs": "'",
@@ -574,6 +602,7 @@
       "pt": "'",
       "ru": "'",
       "zh-chs": "'",
+      "pl": "'",
       "xloc": [
         "agentinvite.handlebars->3->4",
         "agentinvite.handlebars->3->5"
@@ -592,6 +621,7 @@
       "nl": "(",
       "pt": "(",
       "ru": "(",
+      "pl": "(",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3createMeshLink1"
       ]
@@ -607,7 +637,8 @@
       "nl": "(Individuele apparaten)",
       "pt-br": "(Dispositivos Individuais)",
       "sv": "(Enskilda enheter)",
-      "zh-chs": "（个别设备）"
+      "zh-chs": "（个别设备）",
+      "pl": "(Poszczególne urządzenia)"
     },
     {
       "de": "(Keiner)",
@@ -620,7 +651,8 @@
       "nl": "(Geen)",
       "pt-br": "(Nenhum)",
       "sv": "(Ingen)",
-      "zh-chs": "（没有任何）"
+      "zh-chs": "（没有任何）",
+      "pl": "(Żaden)"
     },
     {
       "cs": "(volitelné)",
@@ -641,6 +673,7 @@
       "tr": "(isteğe bağlı)",
       "zh-chs": "（可选的）",
       "zh-cht": "（可選的）",
+      "pl": "(opcjonalnie)",
       "xloc": [
         "default.handlebars->35->445"
       ]
@@ -658,6 +691,7 @@
       "nl": ")",
       "pt": ")",
       "ru": ")",
+      "pl": ")",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3createMeshLink1"
       ]
@@ -681,6 +715,7 @@
       "tr": "* 8 karakter, 1 büyük, 1 alt, 1 sayısal, 1 alfa olmayan sayısal.",
       "zh-chs": "* 8个字符，1个大写，1个小写，1个数字，1个非字母数字。",
       "zh-cht": "* 8個字符，1個大寫，1個小寫，1個數字，1個非字母數字。",
+      "pl": "* 8 znaków, 1 górny, 1 dolny, 1 numeryczny, 1 nie-alfa numeryczny.",
       "xloc": [
         "default.handlebars->35->1775",
         "default.handlebars->35->411"
@@ -705,6 +740,7 @@
       "tr": "* BSD için önce \\\"pkg install wget sudo bash\\\" komutunu çalıştırın.",
       "zh-chs": "*对于BSD，首先运行“ pkg install wget sudo bash ”。",
       "zh-cht": "*對於BSD，首先運行“ pkg install wget sudo bash ”。",
+      "pl": "* Dla BSD, uruchom najpierw \\\"pkg install wget sudo bash\\\".",
       "xloc": [
         "default.handlebars->35->492"
       ]
@@ -727,7 +763,8 @@
       "sv": "* Lämna tomt för att tilldela ett slumpmässigt lösenord till varje enhet.",
       "tr": "* Her cihaza rastgele bir şifre atamak için boş bırakın.",
       "zh-chs": "*保留空白可为每个设备分配一个随机密码。",
-      "zh-cht": "*保留空白可為每個裝置分配一個隨機密碼。"
+      "zh-cht": "*保留空白可為每個裝置分配一個隨機密碼。",
+      "pl": "* Pozostawić puste, aby przypisać losowe hasło do każdego urządzenia."
     },
     {
       "cs": ",",
@@ -742,6 +779,7 @@
       "nl": ",",
       "pt": ",",
       "ru": ",",
+      "pl": ",",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p0->1->p0message",
         "default.handlebars->container->column_l->p0->p0message"
@@ -766,6 +804,7 @@
       "tr": ",",
       "zh-chs": "，",
       "zh-cht": "，",
+      "pl": ", ",
       "xloc": [
         "default-mobile.handlebars->11->651",
         "default.handlebars->35->1884"
@@ -782,7 +821,8 @@
       "nl": ", 1 verbinding.",
       "pt-br": ", 1 conexão.",
       "sv": ", 1 anslutning.",
-      "zh-chs": ", 1 个连接。"
+      "zh-chs": ", 1 个连接。",
+      "pl": ", 1 połączenie."
     },
     {
       "cs": ", Pouze Intel&reg; AMT",
@@ -803,6 +843,7 @@
       "tr": ", Yalnızca Intel&reg; AMT",
       "zh-chs": "，仅限于Intel&reg;AMT",
       "zh-cht": "，只適用於Intel&reg;AMT",
+      "pl": ", tylko Intel® AMT",
       "xloc": [
         "default-mobile.handlebars->11->179",
         "default.handlebars->35->286"
@@ -821,6 +862,7 @@
       "ru": ", Локальные устройства",
       "sv": ", Lokala enheter",
       "zh-chs": ", 本地设备",
+      "pl": ", Urządzenia Lokalne",
       "xloc": [
         "default.handlebars->35->287"
       ]
@@ -844,6 +886,7 @@
       "tr": ", MQTT çevrimiçi",
       "zh-chs": "，MQTT在线",
       "zh-cht": "，MQTT在線",
+      "pl": ", MQTT jest online",
       "xloc": [
         "default-mobile.handlebars->11->568",
         "default.handlebars->35->1326"
@@ -862,6 +905,7 @@
       "ru": ", Нет согласия",
       "sv": ", Inget samtycke",
       "zh-chs": ", 不同意",
+      "pl": ", Brak Zgody",
       "xloc": [
         "default.handlebars->35->865"
       ]
@@ -885,6 +929,7 @@
       "tr": ", Onay istemi",
       "zh-chs": "，提示同意",
       "zh-cht": "，提示同意",
+      "pl": ", Zapytaj o zgodę",
       "xloc": [
         "default.handlebars->35->866"
       ]
@@ -900,7 +945,8 @@
       "nl": ", opgenomen sessie",
       "pt-br": ", Sessão Gravada",
       "sv": ", Inspelad session",
-      "zh-chs": ", 录制会话"
+      "zh-chs": ", 录制会话",
+      "pl": ", Nagrana Sesja"
     },
     {
       "cs": ", Soft-KVM",
@@ -921,6 +967,7 @@
       "tr": ", Yumuşak-KVM",
       "zh-chs": "，软体KVM",
       "zh-cht": "，軟體KVM",
+      "pl": ", Soft-KVM",
       "xloc": [
         "default.handlebars->35->1073",
         "sharing.handlebars->11->12"
@@ -939,6 +986,7 @@
       "ru": ", Панель инструментов",
       "sv": ", Verktygsfält",
       "zh-chs": ", 工具栏",
+      "pl": ", Pasek narzędzi",
       "xloc": [
         "default.handlebars->35->867"
       ]
@@ -956,6 +1004,7 @@
       "ru": ", Только просмотр",
       "sv": ", Titta enbart",
       "zh-chs": "， 只读",
+      "pl": ", Tylko podgląd",
       "xloc": [
         "default.handlebars->35->864"
       ]
@@ -979,6 +1028,7 @@
       "tr": ", WebRTC",
       "zh-chs": "，WebRTC",
       "zh-cht": "，WebRTC",
+      "pl": ", WebRTC",
       "xloc": [
         "default-mobile.handlebars->11->371",
         "default-mobile.handlebars->11->406",
@@ -1011,6 +1061,7 @@
       "tr": ", etkinleştirmek için burayı tıklayın.",
       "zh-chs": "，请点击此处启用它。",
       "zh-cht": "，請點擊此處啟用它。",
+      "pl": ". kliknij tutaj, aby włączyć.",
       "xloc": [
         "default.handlebars->container->column_l->p11->p11warning->3->p11warninga",
         "default.handlebars->container->column_l->p12->p12warning->3->p12warninga",
@@ -1035,7 +1086,8 @@
       "sv": ", för att den här länken ska fungera måste du ladda ner MeshCentral Router och köra den och klicka på installationsknappen.",
       "tr": ", bu bağlantının çalışması için MeshCentral Router'ı indirip çalıştırmanız ve kur düğmesine tıklamanız gerekir.",
       "zh-chs": "，要使此连结起作用，您必须下载及运行MeshCentral Router，然后单击安装按钮。",
-      "zh-cht": "，要使此連結起作用，你必須下載及運行MeshCentral Router，然後單擊安裝按鈕。"
+      "zh-cht": "，要使此連結起作用，你必須下載及運行MeshCentral Router，然後單擊安裝按鈕。",
+      "pl": ", aby ten link działał musisz ściągnąć MeshCentral Router uruchomić go i kliknąć przycisk instaluj."
     },
     {
       "cs": ", klikněte na něj pravým tlačítkem nebo stiskněte klávesu Ctrl a klikněte na něj levým tlačítkem. Pak vyberte „Otevřít“ a postupujte podle pokynů.",
@@ -1056,6 +1108,7 @@
       "tr": "üzerine sağ tıklayın veya \"kontrol\" e basın ve dosyaya tıklayın. Ardından \"Aç\" ı seçin ve talimatları izleyin.",
       "zh-chs": "，右键单击它或按“控制”，然后单击档案。然后选择“打开”并遵循指示操作。",
       "zh-cht": "，右鍵單擊它或按“控制”，然後單擊檔案。然後選擇“打開”並按照說明操作。",
+      "pl": ", kliknij na nim prawym przyciskiem myszy lub naciśnij \"control\" i kliknij na plik. Następnie wybierz \"Otwórz\" i postępuj zgodnie z instrukcjami.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->macostab->3"
       ]
@@ -1079,6 +1132,7 @@
       "tr": ", çalıştırın ve \"Kur\" veya \"Bağlan\" a basın.",
       "zh-chs": "，运行它，然后按“安装”或“连接”。",
       "zh-cht": "，運行它，然後按“安裝”或“連接”。",
+      "pl": ", Uruchom i naciśnij \"Install\" lub \"Connect\".",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->wintab32->3",
         "agentinvite.handlebars->container->column_l->5->wintab64->3"
@@ -1103,6 +1157,7 @@
       "tr": ", şimdi şununla erişebilirsiniz:",
       "zh-chs": "，您现在可以通过以下方式访问它：",
       "zh-cht": "，你現在可以通過以下方式訪問它：",
+      "pl": ", możesz uzyskać dostęp przez:",
       "xloc": [
         "account-invite.html->2->3"
       ]
@@ -1118,7 +1173,8 @@
       "nl": ", {0} verbindingen.",
       "pt-br": ", {0} conexões.",
       "sv": ", {0} anslutningar.",
-      "zh-chs": ", {0} 个连接。"
+      "zh-chs": ", {0} 个连接。",
+      "pl": ", {0} połączeń."
     },
     {
       "de": ", {0} Nutzer",
@@ -1131,7 +1187,8 @@
       "nl": ", {0} gebruikers",
       "pt-br": ", {0} usuários",
       "sv": ", {0} användare",
-      "zh-chs": ", {0} 个用户"
+      "zh-chs": ", {0} 个用户",
+      "pl": ", {0} użytkowników"
     },
     {
       "cs": ", {0} sledování",
@@ -1152,6 +1209,7 @@
       "tr": ", {0} izliyor",
       "zh-chs": "，{0}观看",
       "zh-cht": "，{0}觀看",
+      "pl": ", {0} oglądających",
       "xloc": [
         "default.handlebars->35->1074",
         "sharing.handlebars->11->13"
@@ -1170,6 +1228,7 @@
       "nl": "-",
       "pt": "-",
       "ru": "-",
+      "pl": "-",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2createMeshLink1",
         "ssh.handlebars->p11->deskarea0->deskarea1->3",
@@ -1193,7 +1252,8 @@
       "ru": "---",
       "sv": "---",
       "zh-chs": "---",
-      "zh-cht": "---"
+      "zh-cht": "---",
+      "pl": "---"
     },
     {
       "cs": ".",
@@ -1212,6 +1272,7 @@
       "sv": ".",
       "zh-chs": ".",
       "zh-cht": ".",
+      "pl": ".",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p0->1->p0message",
         "default.handlebars->container->column_l->p0->p0message",
@@ -1245,6 +1306,7 @@
       "tr": "...",
       "zh-chs": "...",
       "zh-cht": "...",
+      "pl": "...",
       "xloc": [
         "default-mobile.handlebars->11->132",
         "default-mobile.handlebars->11->439",
@@ -1290,6 +1352,7 @@
       "tr": "0",
       "zh-chs": "0",
       "zh-cht": "0",
+      "pl": "0",
       "xloc": [
         "default-mobile.handlebars->container->masthead->notificationCount->notificationCount2",
         "default.handlebars->container->masthead->7->notificationCount"
@@ -1306,7 +1369,8 @@
       "nl": "0 Bytes",
       "pt-br": "0 Bytes",
       "sv": "0 byte",
-      "zh-chs": "0 字节"
+      "zh-chs": "0 字节",
+      "pl": "0 Bajtów"
     },
     {
       "cs": "0%",
@@ -1324,7 +1388,8 @@
       "ru": "0%",
       "sv": "0%",
       "tr": "0%",
-      "zh-chs": "0%"
+      "zh-chs": "0%",
+      "pl": "0%"
     },
     {
       "cs": "0.9.0",
@@ -1365,6 +1430,7 @@
       "tr": "00:00:00",
       "zh-chs": "00:00:00",
       "zh-cht": "00:00:00",
+      "pl": "00:00:00",
       "xloc": [
         "player.handlebars->p11->deskarea0->deskarea4->1->timespan"
       ]
@@ -1388,6 +1454,7 @@
       "tr": "1 aktif oturum",
       "zh-chs": "1个活跃时段",
       "zh-cht": "1個活躍時段",
+      "pl": "1 aktywna sesja",
       "xloc": [
         "default.handlebars->35->2384"
       ]
@@ -1411,6 +1478,7 @@
       "tr": "1 bayt",
       "zh-chs": "1个字节",
       "zh-cht": "1個位元組",
+      "pl": "1 bajt",
       "xloc": [
         "default-mobile.handlebars->11->142",
         "default-mobile.handlebars->11->694",
@@ -1439,6 +1507,7 @@
       "tr": "1 bağlantı",
       "zh-chs": "1条连接",
       "zh-cht": "1位聯絡文",
+      "pl": "1 połączenie",
       "xloc": [
         "default.handlebars->35->1076",
         "sharing.handlebars->11->15"
@@ -1463,6 +1532,7 @@
       "tr": "1 gün",
       "zh-chs": "1天",
       "zh-cht": "1天",
+      "pl": "1 dzień",
       "xloc": [
         "default.handlebars->35->226",
         "default.handlebars->35->436",
@@ -1488,6 +1558,7 @@
       "tr": "1 grup",
       "zh-chs": "1组",
       "zh-cht": "1群",
+      "pl": "1 grupa",
       "xloc": [
         "default.handlebars->35->2343"
       ]
@@ -1511,6 +1582,7 @@
       "tr": "1 saat",
       "zh-chs": "1小时",
       "zh-cht": "1小時",
+      "pl": "1 godzina",
       "xloc": [
         "default.handlebars->35->224",
         "default.handlebars->35->434",
@@ -1536,6 +1608,7 @@
       "tr": "1 dakika",
       "zh-chs": "1分钟",
       "zh-cht": "1分鐘",
+      "pl": "1 minuta",
       "xloc": [
         "default.handlebars->35->1582",
         "default.handlebars->35->932"
@@ -1560,6 +1633,7 @@
       "tr": "Bağlantı kesilmesine 1 dakika kaldı",
       "zh-chs": "1分钟之后断开连接",
       "zh-cht": "1分鐘之後離線",
+      "pl": "1 minuta do rozłączenia",
       "xloc": [
         "default.handlebars->35->76"
       ]
@@ -1583,6 +1657,7 @@
       "tr": "1 ay",
       "zh-chs": "1个月",
       "zh-cht": "1個月",
+      "pl": "1 miesiąc",
       "xloc": [
         "default.handlebars->35->228",
         "default.handlebars->35->438",
@@ -1608,6 +1683,7 @@
       "tr": "1 kullanıcı daha gösterilmiyor, kullanıcıları aramak için arama kutusunu kullanın ...",
       "zh-chs": "有1个用户没有显示，请使用搜索框查找用户...",
       "zh-cht": "有1個用戶沒有顯示，請使用搜尋框搜尋用戶...",
+      "pl": "1 użytkownik więcej nie jest wyświetlanych, użyj pola wyszukiwania aby wyszukać użytkowników...",
       "xloc": [
         "default.handlebars->35->2131"
       ]
@@ -1631,6 +1707,7 @@
       "tr": "1 düğüm",
       "zh-chs": "1个节点",
       "zh-cht": "1個節點",
+      "pl": "1 instanacja",
       "xloc": [
         "default.handlebars->35->523"
       ]
@@ -1646,7 +1723,8 @@
       "nl": "1 externe sessie",
       "pt-br": "1 sessão remota",
       "sv": "1 fjärrsession",
-      "zh-chs": "1 个远程会话"
+      "zh-chs": "1 个远程会话",
+      "pl": "1 sesja zdalna"
     },
     {
       "de": "1 Remote-Sitzung ist aktiv.",
@@ -1659,7 +1737,8 @@
       "nl": "1 externe sessie is actief.",
       "pt-br": "1 sessão remota está ativa.",
       "sv": "En fjärrsession är aktiv.",
-      "zh-chs": "1 个远程会话处于活动状态。"
+      "zh-chs": "1 个远程会话处于活动状态。",
+      "pl": "1 sesja zdalna jest aktywna."
     },
     {
       "de": "1 Sekunde",
@@ -1674,6 +1753,7 @@
       "ru": "1 секунда",
       "sv": "1 sekund",
       "zh-chs": "1秒",
+      "pl": "1 sekunda",
       "xloc": [
         "default-mobile.handlebars->11->321",
         "default.handlebars->35->960"
@@ -1698,6 +1778,7 @@
       "tr": "Bağlantı kesilene kadar 1 saniye",
       "zh-chs": "1秒之后断开连接",
       "zh-cht": "1秒之後離線",
+      "pl": "1 sekunda do rozłączenia",
       "xloc": [
         "default.handlebars->35->74"
       ]
@@ -1741,6 +1822,7 @@
       "tr": "1 seans",
       "zh-chs": "1节",
       "zh-cht": "1節",
+      "pl": "1 sesja",
       "xloc": [
         "default-mobile.handlebars->11->195",
         "default-mobile.handlebars->11->198",
@@ -1776,6 +1858,7 @@
       "tr": "1 hafta",
       "zh-chs": "1周",
       "zh-cht": "1週",
+      "pl": "1 tydzień",
       "xloc": [
         "default.handlebars->35->227",
         "default.handlebars->35->437",
@@ -1801,6 +1884,7 @@
       "tr": "1. AJAX Kontrol Araç Kiti - Yeni BSD Lisansı",
       "zh-chs": "1. AJAX控制工具包-新的BSD许可证",
       "zh-cht": "1. AJAX控制工具套件-新的BSD授權條款",
+      "pl": "1. AJAX Control Toolkit - Nowa Licencja BSD",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->9->1->0",
         "terms.handlebars->container->column_l->9->1->0"
@@ -1825,6 +1909,7 @@
       "tr": "1. Kaynak kodun yeniden dağıtımları yukarıdaki telif hakkı bildirimini, bu koşullar listesini ve aşağıdaki sorumluluk reddini içermelidir.",
       "zh-chs": "1. 重新分发源代码必须保留以上版权声明，此条件列表和以下免责声明。",
       "zh-cht": "1. 重新分發源代碼必須保留上述版權聲明，此條件列表和以下免責聲明。",
+      "pl": "1. Redystrybucja kodu źródłowego musi zachować powyższą informację o prawach autorskich, niniejszą listę warunków oraz następujące zrzeczenie się odpowiedzialności.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->15->1",
         "terms-mobile.handlebars->container->page_content->column_l->31->1",
@@ -1851,6 +1936,7 @@
       "tr": "1/2 Hız",
       "zh-chs": "1/2速度",
       "zh-cht": "1/2速",
+      "pl": "1/2 Prędkości",
       "xloc": [
         "player.handlebars->p11->deskarea0->deskarea4->3->PlaySpeed->3"
       ]
@@ -1874,6 +1960,7 @@
       "tr": "1/4 Hız",
       "zh-chs": "1/4速度",
       "zh-cht": "1/4速度",
+      "pl": "1/4 Prędkości",
       "xloc": [
         "player.handlebars->p11->deskarea0->deskarea4->3->PlaySpeed->1"
       ]
@@ -1906,6 +1993,7 @@
       "tr": "10 dakika",
       "zh-chs": "10分钟",
       "zh-cht": "10分鐘",
+      "pl": "10 minut",
       "xloc": [
         "default.handlebars->35->1584",
         "default.handlebars->35->934"
@@ -1924,6 +2012,7 @@
       "ru": "10 секунд",
       "sv": "10 sekunder",
       "zh-chs": "10 秒",
+      "pl": "10 sekund",
       "xloc": [
         "default-mobile.handlebars->11->323",
         "default.handlebars->35->962"
@@ -1971,6 +2060,7 @@
       "tr": "100%",
       "zh-chs": "100％",
       "zh-cht": "100％",
+      "pl": "100%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->1",
@@ -1996,6 +2086,7 @@
       "tr": "100x30",
       "zh-chs": "100x30",
       "zh-cht": "100x30",
+      "pl": "100x30",
       "xloc": [
         "default.handlebars->container->column_l->p12->termTable->1->1->4->1->1->terminalSizeDropDown->termSizeList->1",
         "sharing.handlebars->p12->9->1->terminalSizeDropDown->termSizeList->1"
@@ -2020,6 +2111,7 @@
       "tr": "10x Hız",
       "zh-chs": "10倍速度",
       "zh-cht": "10倍速度",
+      "pl": "Prędkość 10x",
       "xloc": [
         "player.handlebars->p11->deskarea0->deskarea4->3->PlaySpeed->11"
       ]
@@ -2043,6 +2135,7 @@
       "tr": "12 saat",
       "zh-chs": "12小时",
       "zh-cht": "12小時",
+      "pl": "12 godzin",
       "xloc": [
         "default.handlebars->35->1592",
         "default.handlebars->35->942"
@@ -2067,6 +2160,7 @@
       "tr": "% 12.5",
       "zh-chs": "12.5%",
       "zh-cht": "12.5％",
+      "pl": "12.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->15",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->15",
@@ -2084,7 +2178,8 @@
       "nl": "127.0.0.1",
       "pt-br": "127.0.0.1",
       "sv": "127.0.0.1",
-      "zh-chs": "127.0.0.1"
+      "zh-chs": "127.0.0.1",
+      "pl": "127.0.0.1"
     },
     {
       "cs": "15 minut",
@@ -2105,6 +2200,7 @@
       "tr": "15 dakika",
       "zh-chs": "15分钟",
       "zh-cht": "15分鐘",
+      "pl": "15 minut",
       "xloc": [
         "default.handlebars->35->1585",
         "default.handlebars->35->935"
@@ -2129,6 +2225,7 @@
       "tr": "16 saat",
       "zh-chs": "16小时",
       "zh-cht": "16小時",
+      "pl": "16 godzin",
       "xloc": [
         "default.handlebars->35->1593",
         "default.handlebars->35->943"
@@ -2153,6 +2250,7 @@
       "tr": "2 gün",
       "zh-chs": "2天",
       "zh-cht": "2天",
+      "pl": "2 dni",
       "xloc": [
         "default.handlebars->35->1595",
         "default.handlebars->35->945"
@@ -2177,6 +2275,7 @@
       "tr": "2 saat",
       "zh-chs": "2小时",
       "zh-cht": "2小時",
+      "pl": "2 godziny",
       "xloc": [
         "default.handlebars->35->1589",
         "default.handlebars->35->939"
@@ -2201,6 +2300,7 @@
       "tr": "2 adımlı oturum açma etkinleştirilemedi.",
       "zh-chs": "两步登录激活失败。",
       "zh-cht": "兩步登入啟用失敗。",
+      "pl": "2-stopniowe aktywacja logowania nieudana.",
       "xloc": [
         "default.handlebars->35->173"
       ]
@@ -2224,6 +2324,7 @@
       "tr": "2 adımlı oturum açma etkinleştirme kaldırılamadı.",
       "zh-chs": "两步登录激活删除失败。",
       "zh-cht": "兩步登入啟用刪除失敗。",
+      "pl": "usuwanie 2-stopniowej aktywacji logowania nieudana.",
       "xloc": [
         "default.handlebars->35->178"
       ]
@@ -2247,6 +2348,7 @@
       "tr": "2. OpenSSL - OpenSSL ve SSLeay Lisansı",
       "zh-chs": "2. OpenSSL – OpenSSL和SSLeay许可证",
       "zh-cht": "2. OpenSSL – OpenSSL和SSLeay許可證",
+      "pl": "2. OpenSSL – Licencja OpenSSL i SSLeay",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->23->1->0",
         "terms.handlebars->container->column_l->23->1->0"
@@ -2271,6 +2373,7 @@
       "tr": "2. İkili biçimdeki yeniden dağıtımlar, dağıtımla birlikte sağlanan belgelerde ve / veya diğer materyallerde yukarıdaki telif hakkı bildirimini, bu koşullar listesini ve aşağıdaki sorumluluk reddini içermelidir.",
       "zh-chs": "2. 以二进制形式重新分发必须在分发随附的文档和/或其他材料中复制上述版权声明，此条款列表以及以下免责声明。",
       "zh-cht": "2. 以二進制形式重新分發必須在分發隨附的文檔和/或其他材料中復制上述版權聲明，此條件列表以及以下免責聲明。",
+      "pl": "2. Redystrybucja w formie binarnej musi zawierać powyższą informację o prawach autorskich, niniejszą listę warunków oraz następujące zrzeczenie się odpowiedzialności w dokumentacji i/lub innych materiałach dostarczonych wraz z dystrybucją.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->17->1",
         "terms-mobile.handlebars->container->page_content->column_l->33->1",
@@ -2329,6 +2432,7 @@
       "tr": "24 saat",
       "zh-chs": "24小时",
       "zh-cht": "24小時",
+      "pl": "24 godziny",
       "xloc": [
         "default.handlebars->35->1594",
         "default.handlebars->35->944"
@@ -2353,6 +2457,7 @@
       "tr": "% 25",
       "zh-chs": "25%",
       "zh-cht": "25％",
+      "pl": "25%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->13",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->13",
@@ -2378,6 +2483,7 @@
       "tr": "256 renk",
       "zh-chs": "256色",
       "zh-cht": "256色",
+      "pl": "256 kolorów",
       "xloc": [
         "player.handlebars->3->33"
       ]
@@ -2401,6 +2507,7 @@
       "tr": "2FA yedek kodları temizlendi",
       "zh-chs": "2FA备份代码已清除",
       "zh-cht": "2FA備份代碼已清除",
+      "pl": "Kody zapasowe 2FA wyczyszczone",
       "xloc": [
         "default.handlebars->35->2071"
       ]
@@ -2424,6 +2531,7 @@
       "tr": "2. faktör kimlik doğrulaması etkinleştirildi",
       "zh-chs": "启用第二因素身份验证",
       "zh-cht": "啟用第二因素身份驗證",
+      "pl": "Włączono 2 etap autoryzacji",
       "xloc": [
         "default.handlebars->35->2148",
         "default.handlebars->35->2367"
@@ -2448,6 +2556,7 @@
       "tr": "2x Hız",
       "zh-chs": "2倍速度",
       "zh-cht": "2倍速度",
+      "pl": "Prędkość 2x",
       "xloc": [
         "player.handlebars->p11->deskarea0->deskarea4->3->PlaySpeed->7"
       ]
@@ -2465,6 +2574,7 @@
       "nl": "3",
       "pt": "3",
       "ru": "3",
+      "pl": "3",
       "xloc": [
         "default-mobile.handlebars->11->466"
       ]
@@ -2488,6 +2598,7 @@
       "tr": "3. Bu yazılımın özelliklerinden veya kullanımından bahseden tüm reklam materyalleri aşağıdaki beyanı göstermelidir: \"Bu ürün, OpenSSL Toolkit'te kullanılmak üzere OpenSSL Project tarafından geliştirilen yazılımı içerir. (Http://www.openssl.org/)\"",
       "zh-chs": "3. 所有提及该功能或使用该软件的广告材料都必须显示以下确认：“此产品包括由OpenSSL Project开发并在OpenSSL Toolkit中使用的软件。（http://www.openssl.org/）”",
       "zh-cht": "3. 提及功能或使用此軟體的所有廣告材料必須顯示以下確認：“此產品包括由OpenSSL Project開發的，可在OpenSSL Toolkit中使用的軟體。（http://www.openssl.org/）”",
+      "pl": "3. Wszystkie materiały reklamowe wspominające o funkcjach lub wykorzystaniu tego oprogramowania muszą zawierać następujące potwierdzenie: \"Ten produkt zawiera oprogramowanie opracowane przez OpenSSL Project do użytku w OpenSSL Toolkit. (http://www.openssl.org/)\"",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->35->1",
         "terms.handlebars->container->column_l->35->1"
@@ -2512,6 +2623,7 @@
       "tr": "3. CodePlex Foundation'ın adı veya katkıda bulunanların adları, önceden özel yazılı izin alınmadan bu yazılımdan türetilen ürünleri desteklemek veya tanıtmak için kullanılamaz.",
       "zh-chs": "3. 未经事先特别书面许可，不得使用CodePlex Foundation的名称或其贡献者的名称来认可或促销从该软件衍生的产品。",
       "zh-cht": "3. 未經事先特別書面許可，不得使用CodePlex Foundation的名稱或其貢獻者的名稱來認可或促銷從該軟體衍生的產品。",
+      "pl": "3. Ani nazwa CodePlex Foundation, ani nazwiska jej współpracowników nie mogą być wykorzystywane do wspierania lub promowania produktów pochodzących z tego oprogramowania bez uprzedniej pisemnej zgody.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->19->1",
         "terms.handlebars->container->column_l->19->1"
@@ -2536,6 +2648,7 @@
       "tr": "3. jQuery Foundation - MIT Lisansı",
       "zh-chs": "3. jQuery Foundation-MIT许可证",
       "zh-cht": "3. jQuery Foundation-MIT授權條款",
+      "pl": "3. Fundacja jQuery - Licencja MIT",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->45->1->0",
         "terms.handlebars->container->column_l->45->1->0"
@@ -2560,6 +2673,7 @@
       "tr": "30 dakika",
       "zh-chs": "30分钟",
       "zh-cht": "30分鐘",
+      "pl": "30 minut",
       "xloc": [
         "default.handlebars->35->1586",
         "default.handlebars->35->936"
@@ -2591,6 +2705,7 @@
       "tr": "MeshAgent'ın 32 bit sürümü",
       "zh-chs": "MeshAgent的32位版本",
       "zh-cht": "MeshAgent的32位版本",
+      "pl": "32bitowa wersja MeshAgent",
       "xloc": [
         "default.handlebars->35->482",
         "default.handlebars->35->509"
@@ -2615,6 +2730,7 @@
       "tr": "% 37,5",
       "zh-chs": "37.5%",
       "zh-cht": "37.5％",
+      "pl": "37.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->11",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->11",
@@ -2640,6 +2756,7 @@
       "tr": "4 gün",
       "zh-chs": "4天",
       "zh-cht": "4天",
+      "pl": "4 dni",
       "xloc": [
         "default.handlebars->35->1596",
         "default.handlebars->35->946"
@@ -2664,6 +2781,7 @@
       "tr": "4 saat",
       "zh-chs": "4个小时",
       "zh-cht": "4個小時",
+      "pl": "4 godziny",
       "xloc": [
         "default.handlebars->35->1590",
         "default.handlebars->35->940"
@@ -2688,6 +2806,7 @@
       "tr": "4. \"OpenSSL Toolkit\" ve \"OpenSSL Project\" adları, önceden yazılı izin alınmadan bu yazılımdan türetilen ürünleri desteklemek veya tanıtmak için kullanılmamalıdır. Yazılı izin için lütfen openssl-core@openssl.org ile iletişime geçin.",
       "zh-chs": "4. 未经事先书面许可，不得使用名称“ OpenSSL Toolkit”和“ OpenSSL Project”来认可或促销从该软件衍生的产品。要获得书面许可，请联系openssl-core@openssl.org。",
       "zh-cht": "4. 未經事先書面許可，不得使用名稱“ OpenSSL Toolkit”和“ OpenSSL Project”來認可或促銷從該軟體派生的產品。要獲得書面許可，請聯繫openssl-core@openssl.org。",
+      "pl": "4. Nazwy \"OpenSSL Toolkit\" i \"OpenSSL Project\" nie mogą być używane do wspierania lub promowania produktów pochodzących z tego oprogramowania bez uprzedniej pisemnej zgody. Aby uzyskać pisemne zezwolenie, należy skontaktować się z openssl-core@openssl.org.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->37->1",
         "terms.handlebars->container->column_l->37->1"
@@ -2712,6 +2831,7 @@
       "tr": "4. jQuery Kullanıcı Arayüzü - MIT Lisansı",
       "zh-chs": "4. jQuery用户界面-MIT许可证",
       "zh-cht": "4. jQuery用戶界面-MIT許可證",
+      "pl": "4. Interfejs Użytkownika jQuery - Licencja MIT",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->51->1->0",
         "terms.handlebars->container->column_l->51->1->0"
@@ -2759,6 +2879,7 @@
       "tr": "404",
       "zh-chs": "404",
       "zh-cht": "404",
+      "pl": "404",
       "xloc": [
         "error404-mobile.handlebars->container->page_content->column_l->1->0",
         "error404.handlebars->container->column_l->1->0"
@@ -2783,6 +2904,7 @@
       "tr": "45 dakika",
       "zh-chs": "45分钟",
       "zh-cht": "45分鐘",
+      "pl": "45 minut",
       "xloc": [
         "default.handlebars->35->1587",
         "default.handlebars->35->937"
@@ -2807,6 +2929,7 @@
       "tr": "4x Hız",
       "zh-chs": "4倍速度",
       "zh-cht": "4倍速度",
+      "pl": "Prędkość 4x",
       "xloc": [
         "player.handlebars->p11->deskarea0->deskarea4->3->PlaySpeed->9"
       ]
@@ -2830,6 +2953,7 @@
       "tr": "5 dakika",
       "zh-chs": "5分钟",
       "zh-cht": "5分鐘",
+      "pl": "5 minut",
       "xloc": [
         "default.handlebars->35->1583",
         "default.handlebars->35->933"
@@ -2848,6 +2972,7 @@
       "ru": "5 секунд",
       "sv": "5 sekunder",
       "zh-chs": "5秒",
+      "pl": "5 sekund",
       "xloc": [
         "default-mobile.handlebars->11->322",
         "default.handlebars->35->961"
@@ -2872,6 +2997,7 @@
       "tr": "5. Bu yazılımdan türetilen ürünler \"OpenSSL\" olarak adlandırılamaz ve OpenSSL Project'in önceden yazılı izni olmadan adlarında \"OpenSSL\" görünemez.",
       "zh-chs": "5. 未经OpenSSL Project事先书面许可，从该软件派生的产品不得称为“ OpenSSL ”，也不得在其名称中出现“ OpenSSL ”。",
       "zh-cht": "5. 未經OpenSSL Project事先書面許可，從此軟體派生的產品不得稱為“ OpenSSL ”，也不得在其名稱中出現“ OpenSSL ”。",
+      "pl": "5. Produkty wywodzące się z tego oprogramowania nie mogą być nazywane \"OpenSSL\", ani też \"OpenSSL\" nie może pojawiać się w ich nazwach bez uprzedniej pisemnej zgody OpenSSL Project.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->39->1",
         "terms.handlebars->container->column_l->39->1"
@@ -2896,6 +3022,7 @@
       "tr": "5. noVNC - Mozilla Public License 2.0",
       "zh-chs": "5. noVNC-Mozilla公共许可证2.0",
       "zh-cht": "5. noVNC-Mozilla公眾授權條款2.0",
+      "pl": "5. noVNC - Publiczna Licencja Mozilli 2.0",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->59->1->0",
         "terms.handlebars->container->column_l->59->1->0"
@@ -2920,6 +3047,7 @@
       "tr": "% 50",
       "zh-chs": "50%",
       "zh-cht": "50％",
+      "pl": "50%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->9",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->9",
@@ -2945,6 +3073,7 @@
       "tr": "6. Rcarousel - MIT LIcense",
       "zh-chs": "6. Rcarousel-麻省理工学院许可证",
       "zh-cht": "6. Rcarousel-麻省理工學院執照",
+      "pl": "6. Rcarousel - Licencja MIT",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->65->1->0",
         "terms.handlebars->container->column_l->65->1->0"
@@ -2969,6 +3098,7 @@
       "tr": "6. Her ne şekilde olursa olsun yeniden dağıtımlar aşağıdaki beyanı muhafaza etmelidir: \"Bu ürün, OpenSSL Toolkit (http://www.openssl.org/) içinde kullanılmak üzere OpenSSL Project tarafından geliştirilen yazılımı içerir\".",
       "zh-chs": "6. 任何形式的重新分发都必须保留以下声明：“此产品包括由OpenSSL Project开发的，可在OpenSSL Toolkit（http://www.openssl.org/）中使用的软件”。",
       "zh-cht": "6. 任何形式的重新分發都必須保留以下聲明：“此產品包括由OpenSSL Project開發的，可在OpenSSL Toolkit（http://www.openssl.org/）中使用的軟體”。",
+      "pl": "6. Redystrybucje w jakiejkolwiek formie muszą zachować następujące potwierdzenie: \"Ten produkt zawiera oprogramowanie opracowane przez OpenSSL Project do użytku w OpenSSL Toolkit (http://www.openssl.org/)\".",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->41->1",
         "terms.handlebars->container->column_l->41->1"
@@ -2993,6 +3123,7 @@
       "tr": "60 dakika",
       "zh-chs": "60分钟",
       "zh-cht": "60分鐘",
+      "pl": "60 minut",
       "xloc": [
         "default.handlebars->35->1588",
         "default.handlebars->35->938"
@@ -3040,6 +3171,7 @@
       "tr": "% 62,5",
       "zh-chs": "62.5%",
       "zh-cht": "62.5％",
+      "pl": "62.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->7",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->7",
@@ -3072,6 +3204,7 @@
       "tr": "MacOS Mesh Agent'ın 64 bit sürümü",
       "zh-chs": "64位版本的macOS Mesh Agent",
       "zh-cht": "64位版本的macOS Mesh Agent",
+      "pl": "64bitowa wersja MeshAgent dla macOS",
       "xloc": [
         "default.handlebars->35->496"
       ]
@@ -3095,6 +3228,7 @@
       "tr": "MeshAgent'ın 64 bit sürümü",
       "zh-chs": "MeshAgent的64位版本",
       "zh-cht": "MeshAgent的64位版本",
+      "pl": "64bitowa wersja MeshAgent",
       "xloc": [
         "default.handlebars->35->486",
         "default.handlebars->35->512"
@@ -3119,6 +3253,7 @@
       "tr": "65536 renk",
       "zh-chs": "65536色",
       "zh-cht": "65536色",
+      "pl": "65536 kolorów",
       "xloc": [
         "player.handlebars->3->35"
       ]
@@ -3141,7 +3276,8 @@
       "sv": "7-dagars inloggningsstat",
       "tr": "7 Günlük Giriş Durumu",
       "zh-chs": "7天登录状态",
-      "zh-cht": "7天登入狀態"
+      "zh-cht": "7天登入狀態",
+      "pl": "7 Dniowy Stan Logowania"
     },
     {
       "cs": "Stav napájení za uplynulých 7 dnů",
@@ -3162,6 +3298,7 @@
       "tr": "7 Günlük Güç Durumu",
       "zh-chs": "7天电源状态",
       "zh-cht": "7天電源狀態",
+      "pl": "7 Dniowy Stan Zasilania",
       "xloc": [
         "default.handlebars->35->995"
       ]
@@ -3185,6 +3322,7 @@
       "tr": "7. Webtoolkit Javascript Base 64 - Creative Commons Attribution 2.0 İngiltere Lisansı",
       "zh-chs": "7. Webtoolkit Javascript Base 64 –知识共享署名2.0英国许可证",
       "zh-cht": "7. Webtoolkit Javascript Base 64 –知識共享署名2.0英國許可證",
+      "pl": "7. Webtoolkit Javascript Base 64 – Licencja Creative Commons Attribution 2.0 UK",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->73->1->0",
         "terms.handlebars->container->column_l->73->1->0"
@@ -3209,6 +3347,7 @@
       "tr": "% 75",
       "zh-chs": "75%",
       "zh-cht": "75％",
+      "pl": "75%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->5",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->5",
@@ -3234,6 +3373,7 @@
       "tr": "8 saat",
       "zh-chs": "8小時",
       "zh-cht": "8小時",
+      "pl": "8 godzin",
       "xloc": [
         "default.handlebars->35->1591",
         "default.handlebars->35->435",
@@ -3283,6 +3423,7 @@
       "tr": "80x25",
       "zh-chs": "80x25",
       "zh-cht": "80x25",
+      "pl": "80x25",
       "xloc": [
         "default.handlebars->container->column_l->p12->termTable->1->1->4->1->1->terminalSizeDropDown->termSizeList->0",
         "sharing.handlebars->p12->9->1->terminalSizeDropDown->termSizeList->0"
@@ -3307,6 +3448,7 @@
       "tr": "% 87.5",
       "zh-chs": "87.5%",
       "zh-cht": "87.5％",
+      "pl": "87.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->3",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->3",
@@ -3355,6 +3497,7 @@
       "tr": "<<",
       "zh-chs": "<<",
       "zh-cht": "<<",
+      "pl": "<<",
       "xloc": [
         "player.handlebars->p11->deskarea0->deskarea4->3"
       ]
@@ -3378,6 +3521,7 @@
       "tr": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\"> Donanım anahtarları </a>, ikincil oturum açma kimlik doğrulaması olarak kullanılır.",
       "zh-chs": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">硬件密钥</a>用作辅助登录身份验证。",
       "zh-cht": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">硬件密鑰</a>用作輔助登入身份驗證。",
+      "pl": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">Klucze sprzętowe</a> używane jako druga metoda autoryzacji.",
       "xloc": [
         "default.handlebars->35->187"
       ]
@@ -3401,6 +3545,7 @@
       "tr": "<b style = color: green> 2 adımlı giriş aktivasyonu kaldırıldı </b>. Bu özelliği istediğiniz zaman yeniden etkinleştirebilirsiniz.",
       "zh-chs": "<b style=color:green>删除了两步登录激活</ b>。您可以随时重新激活此功能。",
       "zh-cht": "<b style = color：green>刪除了兩步登入啟用</ b>。你可以隨時重新啟用此功能。",
+      "pl": "<b style=color:green>2-stopniowa aktywacja logowania usunięta</b>. Funkcję tę można ponownie aktywować w dowolnym momencie.",
       "xloc": [
         "default-mobile.handlebars->11->65"
       ]
@@ -3493,6 +3638,7 @@
       "tr": ">>",
       "zh-chs": ">>",
       "zh-cht": ">>",
+      "pl": ">>",
       "xloc": [
         "player.handlebars->p11->deskarea0->deskarea4->3"
       ]
@@ -3508,7 +3654,8 @@
       "nl": "Er is een nieuwe versie van deze software beschikbaar. Nu bijwerken?",
       "pt-br": "Uma nova versão deste software está disponível. Deseja atualizar agora?",
       "sv": "En ny version av denna programvara är tillgänglig. Uppdatera nu?",
-      "zh-chs": "此软件的新版本可用。现在更新？"
+      "zh-chs": "此软件的新版本可用。现在更新？",
+      "pl": "Dostępna jest nowa wersja tego oprogramowania. Zaktualizować teraz?"
     },
     {
       "cs": "ACM",
@@ -3529,6 +3676,7 @@
       "tr": "ACM",
       "zh-chs": "ACM",
       "zh-cht": "ACM",
+      "pl": "ACM",
       "xloc": [
         "default-mobile.handlebars->11->274",
         "default.handlebars->35->1732",
@@ -3775,6 +3923,7 @@
       "tr": "Erişim reddedildi",
       "zh-chs": "拒绝访问",
       "zh-cht": "拒絕存取",
+      "pl": "Dostęp Zabroniony",
       "xloc": [
         "default-mobile.handlebars->11->569",
         "default.handlebars->35->1327"
@@ -3793,6 +3942,7 @@
       "ru": "Доступ отклонен.",
       "sv": "Åtkomst nekad.",
       "zh-chs": "访问被拒绝。",
+      "pl": "Dostęp Odrzucony.",
       "xloc": [
         "login2.handlebars->7->31"
       ]
@@ -3816,6 +3966,7 @@
       "tr": "Erişim reddedildi.",
       "zh-chs": "拒绝访问。",
       "zh-cht": "拒絕存取。",
+      "pl": "Dostęp zabroniony.",
       "xloc": [
         "login-mobile.handlebars->5->16",
         "login.handlebars->5->16",
@@ -3841,6 +3992,7 @@
       "tr": "Sunucu dosyalarına erişim",
       "zh-chs": "访问服务器档案",
       "zh-cht": "存取伺服器檔案",
+      "pl": "Dostęp do plików serwera",
       "xloc": [
         "default.handlebars->35->2315"
       ]
@@ -3864,6 +4016,7 @@
       "tr": "Hesap İşlemleri",
       "zh-chs": "帐户动作",
       "zh-cht": "帳戶動作",
+      "pl": "Akcje Konta",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->1->0"
       ]
@@ -3987,6 +4140,7 @@
       "tr": "Hesap doğrulama",
       "zh-chs": "帐户验证",
       "zh-cht": "帳戶驗證",
+      "pl": "Weryfikacja Konta",
       "xloc": [
         "message.handlebars->3->1",
         "message2.handlebars->5->1"
@@ -4011,6 +4165,7 @@
       "tr": "Hesap eylemleri",
       "zh-chs": "帐户动作",
       "zh-cht": "帳戶動作",
+      "pl": "Akcje konta",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->1->0"
       ]
@@ -4336,6 +4491,7 @@
       "tr": "Aksiyon",
       "zh-chs": "指令",
       "zh-cht": "指令",
+      "pl": "Akcja",
       "xloc": [
         "default-mobile.handlebars->11->575",
         "default.handlebars->35->1333",
@@ -4361,6 +4517,7 @@
       "tr": "Eylem Dosyası",
       "zh-chs": "动作档案",
       "zh-cht": "動作檔案",
+      "pl": "Plik Akcji",
       "xloc": [
         "default.handlebars->35->1041",
         "default.handlebars->35->1043"
@@ -4385,6 +4542,7 @@
       "tr": "Hareketler",
       "zh-chs": "动作",
       "zh-cht": "動作",
+      "pl": "Akcje",
       "xloc": [
         "default-mobile.handlebars->11->304",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3",
@@ -4415,6 +4573,7 @@
       "tr": "Intel&reg; AMT'yi Yönetici Kontrol Modunda (ACM) FAT formatlı bir USB anahtarı kullanarak etkinleştirin. Setup.bin dosyasını üzerine yerleştirin ve bu anahtarla bir veya daha fazla bilgisayarı başlatın.",
       "zh-chs": "使用FAT格式的USB密钥在管理控制模式（ACM）中激活英特尔&reg;AMT。将setup.bin放在其上，然后使用此键引导一台或多台计算机。",
       "zh-cht": "使用FAT格式的USB密鑰在管理控制模式（ACM）中激活英特爾&reg;AMT。將setup.bin放在其上，然後使用此鍵引導一台或多台計算機。",
+      "pl": "Aktywuj Intel® AMT w trybie kontroli administracyjnej (ACM) za pomocą klucza USB w formacie FAT. Umieść na nim plik setup.bin i uruchom jeden lub więcej komputerów za pomocą tego klucza.",
       "xloc": [
         "default.handlebars->35->405"
       ]
@@ -4438,6 +4597,7 @@
       "tr": "Kamera ve mikrofonu etkinleştirin",
       "zh-chs": "激活相机和麦克风",
       "zh-cht": "啟動相機和麥克風",
+      "pl": "Aktywacja kamery i mikrofonu",
       "xloc": [
         "messenger.handlebars->xtop->3"
       ]
@@ -4461,6 +4621,7 @@
       "tr": "Mikrofonu etkinleştir",
       "zh-chs": "激活麦克风",
       "zh-cht": "啟動麥克風",
+      "pl": "Aktywuj mikrofon",
       "xloc": [
         "messenger.handlebars->xtop->3"
       ]
@@ -4484,6 +4645,7 @@
       "tr": "ACM başarısız olursa CCM'yi etkinleştirin",
       "zh-chs": "如果ACM失败，则激活到CCM",
       "zh-cht": "如果ACM失敗，則激活到CCM",
+      "pl": "Aktywuj do CCM, jeżeli ACM zawiedzie",
       "xloc": [
         "default.handlebars->35->1766"
       ]
@@ -4507,6 +4669,7 @@
       "tr": "Aktif",
       "zh-chs": "已激活",
       "zh-cht": "已啟動",
+      "pl": "Aktywowano",
       "xloc": [
         "default-mobile.handlebars->11->269",
         "default-mobile.handlebars->11->271",
@@ -4535,6 +4698,7 @@
       "tr": "Aktivasyon",
       "zh-chs": "激活",
       "zh-cht": "啟動",
+      "pl": "Aktywacja",
       "xloc": [
         "default.handlebars->35->257"
       ]
@@ -4558,6 +4722,7 @@
       "tr": "Aktif Cihaz Paylaşımı",
       "zh-chs": "主动设备共享",
       "zh-cht": "主動設備共享",
+      "pl": "Aktywne Udostępnianie Urządzeń",
       "xloc": [
         "default.handlebars->35->853"
       ]
@@ -4575,6 +4740,7 @@
       "ru": "Активные токены входа",
       "sv": "Aktiva inloggnings Token",
       "zh-chs": "活动登录令牌",
+      "pl": "Aktywne Tokeny Logowania",
       "xloc": [
         "default.handlebars->35->1646"
       ]
@@ -4597,7 +4763,8 @@
       "sv": "Aktiv användare {0}",
       "tr": "Etkin Kullanıcı {0}",
       "zh-chs": "活跃用户{0}",
-      "zh-cht": "活躍用戶{0}"
+      "zh-cht": "活躍用戶{0}",
+      "pl": "Aktywny Użytkownik{0}"
     },
     {
       "de": "hinzufügen",
@@ -4612,6 +4779,7 @@
       "ru": "Добавить",
       "sv": "Lägg till",
       "zh-chs": "添加",
+      "pl": "Dodaj",
       "xloc": [
         "default-mobile.handlebars->11->398",
         "default.handlebars->35->1110"
@@ -4628,7 +4796,8 @@
       "nl": "&Toewijzing toevoegen...",
       "pt-br": "Adicionar & mapear ...",
       "sv": "Lägg till & mappa ...",
-      "zh-chs": "添加地图 (&M)..."
+      "zh-chs": "添加地图 (&M)...",
+      "pl": "Dodaj &Mapę..."
     },
     {
       "de": "&Relay-Karte hinzufügen...",
@@ -4641,7 +4810,8 @@
       "nl": "&Relay toewijzing toevoegen...",
       "pt-br": "Adicionar & retransmitir mapa ...",
       "sv": "Lägg till & vidarebefordra karta ...",
-      "zh-chs": "添加中继地图 (&R)..."
+      "zh-chs": "添加中继地图 (&R)...",
+      "pl": "Dodaj Mapę $Przekazywania..."
     },
     {
       "cs": "Přidat agenta",
@@ -4662,6 +4832,7 @@
       "tr": "Temsilci Ekle",
       "zh-chs": "添加代理",
       "zh-cht": "新增代理",
+      "pl": "Dodaj Agenta",
       "xloc": [
         "default.handlebars->35->1728",
         "default.handlebars->35->377"
@@ -4685,7 +4856,8 @@
       "sv": "Lägg till CIRA",
       "tr": "CIRA ekle",
       "zh-chs": "添加CIRA",
-      "zh-cht": "新增CIRA"
+      "zh-cht": "新增CIRA",
+      "pl": "Dodaj CIRA"
     },
     {
       "cs": "Přidat zařízení",
@@ -4706,6 +4878,7 @@
       "tr": "Cihaz ekle",
       "zh-chs": "添加设备",
       "zh-cht": "新增裝置",
+      "pl": "Dodaj Urządzenie",
       "xloc": [
         "default.handlebars->35->2289",
         "default.handlebars->35->2421",
@@ -4731,6 +4904,7 @@
       "tr": "Cihaz Etkinliği Ekle",
       "zh-chs": "添加设备日志",
       "zh-cht": "新增裝置日誌",
+      "pl": "Dodaj Zdarzenie Urządzenia",
       "xloc": [
         "default.handlebars->35->909"
       ]
@@ -4754,6 +4928,7 @@
       "tr": "Cihaz Grubu Ekle",
       "zh-chs": "添加设备组",
       "zh-cht": "新增裝置群",
+      "pl": "Dodaj Grupę Urządzeń",
       "xloc": [
         "default.handlebars->35->1846",
         "default.handlebars->35->2283",
@@ -4780,6 +4955,7 @@
       "tr": "Cihaz Grubu İzinlerini Ekleyin",
       "zh-chs": "添加设备组权限",
       "zh-cht": "新增裝置群權限",
+      "pl": "Dodaj Uprawnienia Grupy Urządzeń",
       "xloc": [
         "default.handlebars->35->1843"
       ]
@@ -4803,6 +4979,7 @@
       "tr": "Cihaz İzinleri Ekle",
       "zh-chs": "添加设备权限",
       "zh-cht": "新增裝置權限",
+      "pl": "Dodaj Uprawnienia do Urządzeń",
       "xloc": [
         "default.handlebars->35->1848",
         "default.handlebars->35->1850"
@@ -4826,7 +5003,8 @@
       "sv": "Lägg till Intel&reg; AMT CIRA-enhet",
       "tr": "Intel&reg; AMT CIRA cihazı ekle",
       "zh-chs": "添加英特尔&reg;AMT CIRA设备",
-      "zh-cht": "新增Intel&reg; AMT CIRA裝置"
+      "zh-cht": "新增Intel&reg; AMT CIRA裝置",
+      "pl": "Dodaj Urządzenie Intel® AMT CIRA"
     },
     {
       "cs": "Přidat Intel&reg; AMT zařízení",
@@ -4847,6 +5025,7 @@
       "tr": "Intel&reg; AMT cihazı ekle",
       "zh-chs": "添加英特尔&reg;AMT设备",
       "zh-cht": "新增Intel&reg; AMT裝置",
+      "pl": "Dodaj Urządzenie Intel® AMT",
       "xloc": [
         "default.handlebars->35->401"
       ]
@@ -4870,6 +5049,7 @@
       "tr": "Anahtar Ekle",
       "zh-chs": "新增密钥",
       "zh-cht": "新增密鑰",
+      "pl": "Dodaj Klucz",
       "xloc": [
         "default.handlebars->35->191"
       ]
@@ -4893,6 +5073,7 @@
       "tr": "Yerel Ekle",
       "zh-chs": "添加本地",
       "zh-cht": "新增本地",
+      "pl": "Dodaj Lokalnie",
       "xloc": [
         "default.handlebars->35->371"
       ]
@@ -4908,7 +5089,8 @@
       "nl": "Kaart toevoegen...",
       "pt-br": "Adicionar mapa ...",
       "sv": "Lägg till karta ...",
-      "zh-chs": "添加地图..."
+      "zh-chs": "添加地图...",
+      "pl": "Dodaj Mapę..."
     },
     {
       "cs": "Přidat členství",
@@ -4929,6 +5111,7 @@
       "tr": "Üyelik Ekle",
       "zh-chs": "添加成员身份",
       "zh-cht": "新增成員身份",
+      "pl": "Dodaj Członkostwo",
       "xloc": [
         "default.handlebars->35->2441"
       ]
@@ -4952,6 +5135,7 @@
       "tr": "Mesh Aracısı Ekle",
       "zh-chs": "添加 Mesh Agent",
       "zh-cht": "新增 Mesh Agent",
+      "pl": "Dodaj Agenta Mesh",
       "xloc": [
         "default.handlebars->35->522"
       ]
@@ -4967,7 +5151,8 @@
       "nl": "Toevoegen relay kaart...",
       "pt-br": "Adicionar mapa de retransmissão ...",
       "sv": "Lägg till reläkarta ...",
-      "zh-chs": "添加中继地图..."
+      "zh-chs": "添加中继地图...",
+      "pl": "Dodaj Mapę Przekazywania..."
     },
     {
       "cs": "Přidat bezpečnostní klíč",
@@ -4988,6 +5173,7 @@
       "tr": "Güvenlik Anahtarı Ekleyin",
       "zh-chs": "添加安全密钥",
       "zh-cht": "新增安全密鑰",
+      "pl": "Dodaj Klucz Bezpieczeństwa",
       "xloc": [
         "default.handlebars->35->1372",
         "default.handlebars->35->1373",
@@ -5016,6 +5202,7 @@
       "tr": "Kullanıcı Ekle",
       "zh-chs": "添加用户",
       "zh-cht": "新增用戶",
+      "pl": "Dodaj Użytkownika",
       "xloc": [
         "default-mobile.handlebars->11->591",
         "default.handlebars->35->845"
@@ -5040,6 +5227,7 @@
       "tr": "Kullanıcı Cihaz İzinlerini Ekleyin",
       "zh-chs": "添加用户设备权限",
       "zh-cht": "新增用戶裝置權限",
+      "pl": "Dodaj Uprawnienia Użytkownika do Urządzeń",
       "xloc": [
         "default.handlebars->35->1853"
       ]
@@ -5063,6 +5251,7 @@
       "tr": "Kullanıcı Grubu Ekle",
       "zh-chs": "添加用户组",
       "zh-cht": "新增用戶群",
+      "pl": "Dodaj Grupę Użytkowników",
       "xloc": [
         "default.handlebars->35->1724",
         "default.handlebars->35->1845",
@@ -5089,6 +5278,7 @@
       "tr": "Kullanıcı Grubu Cihaz İzinlerini Ekleyin",
       "zh-chs": "添加用户组设备权限",
       "zh-cht": "新增用戶群裝置權限",
+      "pl": "Dodaj Uprawnienia do Urządzeń dla Grupy Użytkowników",
       "xloc": [
         "default.handlebars->35->1855"
       ]
@@ -5112,6 +5302,7 @@
       "tr": "Cihaz Grubuna Kullanıcı Ekle",
       "zh-chs": "将用户添加到设备组",
       "zh-cht": "將用戶新增到裝置群",
+      "pl": "Dodaj Użytkownika do Grupy Urządzeń",
       "xloc": [
         "default-mobile.handlebars->11->627"
       ]
@@ -5134,7 +5325,8 @@
       "sv": "Lägg till användare i Mesh",
       "tr": "Mesh'e Kullanıcı Ekle",
       "zh-chs": "将用户添加到 Mesh",
-      "zh-cht": "將用戶新增到 Mesh"
+      "zh-cht": "將用戶新增到 Mesh",
+      "pl": "Dodaj Użytkownika do sieci Mesh"
     },
     {
       "cs": "Přidat uživatele",
@@ -5155,6 +5347,7 @@
       "tr": "Kullanıcı Ekle",
       "zh-chs": "添加用户",
       "zh-cht": "新增用戶",
+      "pl": "Dodaj Użytkowników",
       "xloc": [
         "default.handlebars->35->1723",
         "default.handlebars->35->2278"
@@ -5179,6 +5372,7 @@
       "tr": "Cihaz Grubuna Kullanıcı Ekle",
       "zh-chs": "将用户添加到设备组",
       "zh-cht": "將用戶新增到裝置群",
+      "pl": "Dodaj Użytkowników do Grupy Urządzeń",
       "xloc": [
         "default.handlebars->35->1842"
       ]
@@ -5202,6 +5396,7 @@
       "tr": "Kullanıcı Grubuna Kullanıcı Ekle",
       "zh-chs": "将用户添加到用户组",
       "zh-cht": "將用戶新增到用戶群",
+      "pl": "Dodaj Użytkowników do Grupy Użytkowników",
       "xloc": [
         "default.handlebars->35->2311"
       ]
@@ -5225,6 +5420,7 @@
       "tr": "YubiKey&reg; OTP ekleyin",
       "zh-chs": "添加YubiKey&reg;OTP",
       "zh-cht": "新增YubiKey&reg;OTP",
+      "pl": "Dodaj YubiKey® OTP",
       "xloc": [
         "default.handlebars->35->192"
       ]
@@ -5242,6 +5438,7 @@
       "ru": "Добавить локальное устройство в группу \\\"{0}\\\".",
       "sv": "Lägg till en lokal enhet i enhetsgruppen \\\"{0}\\\".",
       "zh-chs": "将本地设备添加到设备组 \\\"{0}\\\"。",
+      "pl": "Dodaj urządzenie lokalne do grupy urządzeń \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->35->382"
       ]
@@ -5265,6 +5462,7 @@
       "tr": "Yerel ağı tarayarak yeni bir Intel&reg; AMT bilgisayarı ekleyin.",
       "zh-chs": "通过扫描本地网络添加新的英特尔&reg;AMT计算机。",
       "zh-cht": "通過掃描本地網絡新增新的Intel&reg; AMT電腦。",
+      "pl": "Dodaj nowy komputer Intel® AMT, skanując sieć lokalną.",
       "xloc": [
         "default.handlebars->35->372"
       ]
@@ -5287,7 +5485,8 @@
       "sv": "Lägg till en ny Intel&reg; AMT-dator som finns på internet.",
       "tr": "İnternette bulunan yeni bir Intel&reg; AMT bilgisayarı ekleyin.",
       "zh-chs": "添加位于互联网上的新英特尔&reg;AMT计算机。",
-      "zh-cht": "新增位於互聯網上的新Intel&reg; AMT電腦。"
+      "zh-cht": "新增位於互聯網上的新Intel&reg; AMT電腦。",
+      "pl": "Dodaj nowy komputer Intel® AMT, który znajduje się w Internecie."
     },
     {
       "cs": "Přidat nový Intel&reg; AMT počítač, který je umístěn v lokální síti.",
@@ -5308,6 +5507,7 @@
       "tr": "Yerel ağda bulunan yeni bir Intel&reg; AMT bilgisayarı ekleyin.",
       "zh-chs": "添加位于本地网络上的新英特尔&reg;AMT计算机。",
       "zh-cht": "新增位於本地網絡上的新Intel&reg; AMT電腦。",
+      "pl": "Dodaj nowy komputer Intel® AMT znajdujący się w sieci lokalnej.",
       "xloc": [
         "default.handlebars->35->370"
       ]
@@ -5331,6 +5531,7 @@
       "tr": "\\\"{0}\\\" cihaz grubuna yeni bir Intel&reg; AMT cihazı ekleyin.",
       "zh-chs": "将新的英特尔&reg;AMT设备添加到设备组“{0}”。",
       "zh-cht": "將新的Intel&reg; AMT裝置新增到裝置群“{0}”。",
+      "pl": "Dodaj nowe urządzenie Intel® AMT do grupy urządzeń \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->35->391"
       ]
@@ -5354,6 +5555,7 @@
       "tr": "Mesh aracısını kurarak bu aygıt grubuna yeni bir bilgisayar ekleyin.",
       "zh-chs": "通过安装Mesh Agent将新计算机添加到该设备组。",
       "zh-cht": "通過安裝Mesh Agent將新電腦新增到該裝置群。",
+      "pl": "Dodaj nowy komputer do tej grupy urządzeń, instalując agenta sieciowego.",
       "xloc": [
         "default.handlebars->35->1727",
         "default.handlebars->35->376"
@@ -5372,6 +5574,7 @@
       "ru": "Добавить устройство, находящееся в локальной сети.",
       "sv": "Lägg till enhet som finns i det lokala nätverket.",
       "zh-chs": "添加位于本地网络上的设备。",
+      "pl": "Dodaj urządzenie znajdujące się w sieci lokalnej.",
       "xloc": [
         "default.handlebars->35->380"
       ]
@@ -5389,6 +5592,7 @@
       "ru": "Добавить локальное устройство",
       "sv": "Lägg till lokal enhet",
       "zh-chs": "添加本地设备",
+      "pl": "Dodaj urządzenie lokalne",
       "xloc": [
         "default.handlebars->35->390"
       ]
@@ -5412,6 +5616,7 @@
       "tr": "Etiket ekle",
       "zh-chs": "添加标签",
       "zh-cht": "新增標籤",
+      "pl": "Dodaj tagi",
       "xloc": [
         "default.handlebars->35->596"
       ]
@@ -5435,6 +5640,7 @@
       "tr": "Uzak cihazda MeshCmd'yi yönetici olarak periyodik olarak çalıştırarak Intel&reg; AMT'yi \\\"{0}\\\" grubuna ekleyin, etkinleştirin ve yapılandırın.",
       "zh-chs": "通过定期在远程设备上以管理员身份运行MeshCmd，添加，激活和配置Intel&reg;AMT以将“{0}”分组。",
       "zh-cht": "通過定期在遠程設備上以管理員身份運行MeshCmd，添加，激活和配置Intel&reg;AMT以將“{0}”分組。",
+      "pl": "Dodaj, aktywuj i skonfiguruj urządzenie Intel® AMT do grupy \\\"{0}\\\", okresowo uruchamiając program MeshCmd jako administrator na zdalnym urządzeniu.",
       "xloc": [
         "default.handlebars->35->402"
       ]
@@ -5458,6 +5664,7 @@
       "tr": "Kimlik doğrulama uygulaması eklendi",
       "zh-chs": "添加了身份验证应用程序",
       "zh-cht": "添加了身份驗證應用程序",
+      "pl": "Dodano aplikację uwierzytelniającą",
       "xloc": [
         "default.handlebars->35->2068"
       ]
@@ -5481,6 +5688,7 @@
       "tr": "{1} ile {2} arasında {0} cihaz paylaşımı eklendi",
       "zh-chs": "已将设备共享{0}从{1}添加到{2}",
       "zh-cht": "已將設備共享{0}從{1}添加到{2}",
+      "pl": "Dodano udostępnienie urządzenia {0} z {1} do {2}",
       "xloc": [
         "default.handlebars->35->2079"
       ]
@@ -5504,6 +5712,7 @@
       "tr": "{1} cihaz grubuna {0} cihazı eklendi",
       "zh-chs": "已将设备{0}添加到设备组{1}",
       "zh-cht": "已將設備{0}添加到設備組{1}",
+      "pl": "Dodano urządzenie {0} do grupy urządzeń {1}",
       "xloc": [
         "default.handlebars->35->2035",
         "default.handlebars->35->2062"
@@ -5522,6 +5731,7 @@
       "ru": "Добавлен токен входа",
       "sv": "Lagt inloggningstoken",
       "zh-chs": "添加登录令牌",
+      "pl": "Dodano token logowania",
       "xloc": [
         "default.handlebars->35->2093"
       ]
@@ -5538,6 +5748,7 @@
       "pt-br": "Dispositivo de autenticação de notificação push adicionado",
       "sv": "Lagt till push-autentiseringsenhet",
       "zh-chs": "新增推送通知认证装置",
+      "pl": "Dodano urządzenie do uwierzytelniania powiadomień push",
       "xloc": [
         "default.handlebars->35->2091"
       ]
@@ -5561,6 +5772,7 @@
       "tr": "Güvenlik anahtarı eklendi",
       "zh-chs": "添加了安全密钥",
       "zh-cht": "添加了安全密鑰",
+      "pl": "Dodano klucz bezpieczeństwa",
       "xloc": [
         "default.handlebars->35->2073"
       ]
@@ -5584,6 +5796,7 @@
       "tr": "{1} cihaz grubuna {0} kullanıcı grubu eklendi",
       "zh-chs": "已将用户组{0}添加到设备组{1}",
       "zh-cht": "已將用戶組{0}添加到設備組{1}",
+      "pl": "Dodano grupę użytkowników {0} do grupy urządzeń {1}",
       "xloc": [
         "default.handlebars->35->2046"
       ]
@@ -5607,6 +5820,7 @@
       "tr": "{1} kullanıcı grubuna {0} kullanıcısı eklendi",
       "zh-chs": "已将用户{0}添加到用户组{1}",
       "zh-cht": "已將用戶{0}添加到用戶組{1}",
+      "pl": "Dodano użytkownika {0} do grupy użytkowników {1}",
       "xloc": [
         "default.handlebars->35->2049",
         "default.handlebars->35->2058"
@@ -5631,6 +5845,7 @@
       "tr": "Adres",
       "zh-chs": "地址",
       "zh-cht": "地址",
+      "pl": "Adres",
       "xloc": [
         "default.handlebars->35->305"
       ]
@@ -5654,6 +5869,7 @@
       "tr": "Adresler",
       "zh-chs": "地址",
       "zh-cht": "地址",
+      "pl": "Adresy",
       "xloc": [
         "player.handlebars->3->22"
       ]
@@ -5772,6 +5988,7 @@
       "tr": "Yönetici Kabuğu",
       "zh-chs": "管理控制台",
       "zh-cht": "管理控制台",
+      "pl": "Powłoka Admina",
       "xloc": [
         "default.handlebars->termShellContextMenu->1->0",
         "xterm.handlebars->termShellContextMenu->cxtermnorm->0"
@@ -5842,6 +6059,7 @@
       "tr": "Afrikaans",
       "zh-chs": "南非文",
       "zh-cht": "南非文",
+      "pl": "Afrykański",
       "xloc": [
         "default.handlebars->35->1375"
       ]
@@ -5921,6 +6139,7 @@
       "tr": "Aracı Eylemi",
       "zh-chs": "代理指令",
       "zh-cht": "代理指令",
+      "pl": "Akcja Agenta",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10console->consoleTable->1->0->1->1",
         "default.handlebars->container->column_l->p15->consoleTable->1->0->1->1"
@@ -5945,6 +6164,7 @@
       "tr": "Aracı Konsolu",
       "zh-chs": "代理控制台",
       "zh-cht": "代理控制台",
+      "pl": "Konsola Agenta",
       "xloc": [
         "default-mobile.handlebars->11->633",
         "default.handlebars->35->1863"
@@ -5986,6 +6206,7 @@
       "ru": "IP-адрес агента",
       "sv": "Agentens IP-adress",
       "zh-chs": "代理IP地址",
+      "pl": "Adres IP agenta",
       "xloc": [
         "default.handlebars->35->282"
       ]
@@ -6009,6 +6230,7 @@
       "tr": "Aracı Kurulumu",
       "zh-chs": "代理安装",
       "zh-cht": "代理安裝",
+      "pl": "Instalacja Agenta",
       "xloc": [
         "agentinvite.handlebars->3->3"
       ]
@@ -6032,6 +6254,7 @@
       "tr": "Temsilci Mesajları",
       "zh-chs": "代理消息",
       "zh-cht": "代理訊息",
+      "pl": "Wiadomości Agenta",
       "xloc": [
         "default-mobile.handlebars->11->213",
         "default.handlebars->35->362"
@@ -6148,6 +6371,7 @@
       "tr": "Ajan Etiketi",
       "zh-chs": "代理标签",
       "zh-cht": "代理標籤",
+      "pl": "Tag Agenta",
       "xloc": [
         "default-mobile.handlebars->11->287",
         "default.handlebars->35->742"
@@ -6181,6 +6405,7 @@
       "tr": "Ajan Türleri",
       "zh-chs": "代理类型",
       "zh-cht": "代理類型",
+      "pl": "Typy Agenta",
       "xloc": [
         "default.handlebars->35->1922",
         "default.handlebars->container->column_l->p21->p21main->1->1->meshOsChartDiv->1"
@@ -6237,6 +6462,7 @@
       "tr": "Aracı bağlandı",
       "zh-chs": "代理已连接",
       "zh-cht": "代理已連接",
+      "pl": "Agent połączony",
       "xloc": [
         "default.handlebars->35->208",
         "default.handlebars->35->836",
@@ -6262,6 +6488,7 @@
       "tr": "Aracı bağlantısı kesildi",
       "zh-chs": "代理已断开连接",
       "zh-cht": "代理已斷開連接",
+      "pl": "Agent rozłączony",
       "xloc": [
         "default.handlebars->35->212"
       ]
@@ -6303,7 +6530,8 @@
       "nl": "Agent ontbreekt",
       "pt-br": "Agente não encontrado",
       "sv": "Agent saknas",
-      "zh-chs": "代理不见了"
+      "zh-chs": "代理不见了",
+      "pl": "Brakuje agenta"
     },
     {
       "cs": "Agent je offline",
@@ -6324,6 +6552,7 @@
       "tr": "Temsilci çevrimdışı",
       "zh-chs": "代理离线",
       "zh-cht": "代理離線",
+      "pl": "Agent jest offline",
       "xloc": [
         "default-mobile.handlebars->11->567",
         "default.handlebars->35->1325"
@@ -6348,6 +6577,7 @@
       "tr": "Temsilci çevrimiçi",
       "zh-chs": "代理在线",
       "zh-cht": "代理在線",
+      "pl": "Agent jest online",
       "xloc": [
         "default-mobile.handlebars->11->566",
         "default.handlebars->35->1324"
@@ -6377,7 +6607,8 @@
       "nl": "Agent is gepauzeerd",
       "pt-br": "Agente está em pausa",
       "sv": "Agent är pausad",
-      "zh-chs": "代理已暂停"
+      "zh-chs": "代理已暂停",
+      "pl": "Agent jest wstrzymany"
     },
     {
       "de": "Agent läuft",
@@ -6390,7 +6621,8 @@
       "nl": "Agent is actief",
       "pt-br": "Agente está em execução",
       "sv": "Agent kör",
-      "zh-chs": "代理正在运行"
+      "zh-chs": "代理正在运行",
+      "pl": "Agent działa"
     },
     {
       "cs": "Agent běží na vzdáleném zařízení se sníženými oprávněními.",
@@ -6440,7 +6672,8 @@
       "nl": "Agent is gestopt",
       "pt-br": "Agente está parado",
       "sv": "Agent stoppas",
-      "zh-chs": "代理已停止"
+      "zh-chs": "代理已停止",
+      "pl": "Agent jest zatrzymany"
     },
     {
       "de": "Agent ist gestoppt ausstehend",
@@ -6533,6 +6766,7 @@
       "tr": "Herşey",
       "zh-chs": "所有",
       "zh-cht": "所有",
+      "pl": "Wszystko",
       "xloc": [
         "default-mobile.handlebars->11->141",
         "default-mobile.handlebars->11->440",
@@ -6645,7 +6879,8 @@
       "nl": "Toestaan",
       "pt-br": "Permitir",
       "sv": "Tillåta",
-      "zh-chs": "允许"
+      "zh-chs": "允许",
+      "pl": "Zezwól"
     },
     {
       "cs": "Umožnit uživatelům spravovat tuto skupinu a zařízení v této skupině.",
@@ -7146,6 +7381,7 @@
       "tr": "Antivirüs",
       "zh-chs": "杀毒软件",
       "zh-cht": "防毒軟體",
+      "pl": "Antywirus",
       "xloc": [
         "default-mobile.handlebars->11->496",
         "default.handlebars->35->761"
@@ -8378,6 +8614,7 @@
       "tr": "Otomatik Kaldır",
       "zh-chs": "自动删除",
       "zh-cht": "自動刪除",
+      "pl": "Auto-Kasowanie",
       "xloc": [
         "default.handlebars->35->1689"
       ]
@@ -8401,6 +8638,7 @@
       "tr": "Otomatik bağlantı",
       "zh-chs": "自动连接",
       "zh-cht": "自動連接",
+      "pl": "AutoPołączenie",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->0->1->3",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3",
@@ -8463,6 +8701,7 @@
       "tr": "Otomatik bağlantı",
       "zh-chs": "自动连接",
       "zh-cht": "自動連接",
+      "pl": "Automatyczne łączenie",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar->9"
       ]
@@ -9279,6 +9518,7 @@
       "tr": "CCM modu",
       "zh-chs": "CCM模式",
       "zh-cht": "CCM模式",
+      "pl": "Tryb CCM",
       "xloc": [
         "default.handlebars->35->1763"
       ]
@@ -9423,6 +9663,7 @@
       "tr": "CPU Yükü",
       "zh-chs": "CPU负载",
       "zh-cht": "CPU負載",
+      "pl": "Obciążenie CPU",
       "xloc": [
         "default.handlebars->35->2548"
       ]
@@ -9446,6 +9687,7 @@
       "tr": "Son 15 dakikadaki CPU yükü",
       "zh-chs": "最近15分钟的CPU负载",
       "zh-cht": "最近15分鐘的CPU負載",
+      "pl": "Obciążenie CPU w ciągu ostatnich 15 minut",
       "xloc": [
         "default.handlebars->35->2551"
       ]
@@ -9469,6 +9711,7 @@
       "tr": "Son 5 dakikadaki CPU yükü",
       "zh-chs": "最近5分钟的CPU负载",
       "zh-cht": "最近5分鐘的CPU負載",
+      "pl": "Obciążenie CPU w ciągu ostatnich 5 minut",
       "xloc": [
         "default.handlebars->35->2550"
       ]
@@ -9492,6 +9735,7 @@
       "tr": "Son dakikada CPU yükü",
       "zh-chs": "最近一分钟的CPU负载",
       "zh-cht": "最近一分鐘的CPU負載",
+      "pl": "Obciążenie CPU w ciągu ostatniej minuty",
       "xloc": [
         "default.handlebars->35->2549"
       ]
@@ -9611,6 +9855,7 @@
       "tr": "Çağrı Hatası",
       "zh-chs": "呼叫错误",
       "zh-cht": "呼叫錯誤",
+      "pl": "Błąd Wywołania",
       "xloc": [
         "default.handlebars->35->2623"
       ]
@@ -9634,6 +9879,7 @@
       "tr": "İptal etmek",
       "zh-chs": "取消",
       "zh-cht": "取消",
+      "pl": "Anuluj",
       "xloc": [
         "agent-translations.json",
         "default-mobile.handlebars->11->106",
@@ -9661,7 +9907,8 @@
       "nl": "Automatisch sluiten annuleren",
       "pt-br": "Cancelar fechamento automático",
       "sv": "Avbryt automatisk stängning",
-      "zh-chs": "取消自动关闭"
+      "zh-chs": "取消自动关闭",
+      "pl": "Anuluj Auto-Zamknięcie"
     },
     {
       "de": "Hilfeanfrage abbrechen",
@@ -9674,7 +9921,8 @@
       "nl": "Annuleer hulpverzoek",
       "pt-br": "Cancelar pedido de ajuda",
       "sv": "Avbryt hjälpförfrågan",
-      "zh-chs": "取消帮助请求"
+      "zh-chs": "取消帮助请求",
+      "pl": "Anuluj Prośbę Pomocy"
     },
     {
       "cs": "Kapacita",
@@ -9695,6 +9943,7 @@
       "tr": "Kapasite",
       "zh-chs": "容量",
       "zh-cht": "容量",
+      "pl": "Objętość",
       "xloc": [
         "default-mobile.handlebars->11->556",
         "default-mobile.handlebars->11->561",
@@ -9723,6 +9972,7 @@
       "tr": "Kapasite / Hız",
       "zh-chs": "容量/速度",
       "zh-cht": "容量/速度",
+      "pl": "Objętość / Szybkość",
       "xloc": [
         "default-mobile.handlebars->11->554",
         "default.handlebars->35->1311"
@@ -9747,6 +9997,7 @@
       "tr": "Katalanca",
       "zh-chs": "加泰罗尼亚文",
       "zh-cht": "加泰羅尼亞文",
+      "pl": "Kataloński",
       "xloc": [
         "default.handlebars->35->1406"
       ]
@@ -9770,6 +10021,7 @@
       "tr": "Haritayı burada ortalayın",
       "zh-chs": "在这里为中心显示地图",
       "zh-cht": "在這裡為中心顯示地圖",
+      "pl": "Wyśrodkuj mapę tutaj",
       "xloc": [
         "default.handlebars->35->679"
       ]
@@ -9785,7 +10037,8 @@
       "nl": "Certificaat",
       "pt-br": "Certificado",
       "sv": "Certifikat",
-      "zh-chs": "证书"
+      "zh-chs": "证书",
+      "pl": "Certyfikat"
     },
     {
       "de": "Zertifikat läuft in {0} Tag(en) ab",
@@ -9800,6 +10053,7 @@
       "ru": "Срок действия сертификата истекает через {0} дн.",
       "sv": "Certifikatet upphör att gälla om {0} dag (ar)",
       "zh-chs": "证书将在 {0} 天后到期",
+      "pl": "Certyfikat wygasa w {0} dni",
       "xloc": [
         "default-mobile.handlebars->11->59",
         "default.handlebars->35->81",
@@ -9825,6 +10079,7 @@
       "tr": "Çamorro dili",
       "zh-chs": "查莫罗",
       "zh-cht": "查莫羅",
+      "pl": "Czamorrski",
       "xloc": [
         "default.handlebars->35->1407"
       ]
@@ -9848,6 +10103,7 @@
       "tr": "E-posta adresini değiştir",
       "zh-chs": "更改电邮地址",
       "zh-cht": "更改電郵地址",
+      "pl": "Zmień Adres Email",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->checkemailpanel->1->checkCheckOperations->1->2->1->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->checkemailpanel->1->checkCheckOperations->1->2->1->1",
@@ -9873,6 +10129,7 @@
       "tr": "{0} için E-postayı Değiştirin",
       "zh-chs": "更改{0}的电邮",
       "zh-cht": "更改{0}的電郵",
+      "pl": "Zmień Email dla {0}",
       "xloc": [
         "default.handlebars->35->2396"
       ]
@@ -9896,6 +10153,7 @@
       "tr": "Grubu Değiştir",
       "zh-chs": "更改组",
       "zh-cht": "更改群",
+      "pl": "Zmień Grupę",
       "xloc": [
         "default.handlebars->35->1014",
         "default.handlebars->35->1015",
@@ -9921,6 +10179,7 @@
       "tr": "Şifre değiştir",
       "zh-chs": "更改密码",
       "zh-cht": "更改密碼",
+      "pl": "Zmień Hasło",
       "xloc": [
         "default-mobile.handlebars->11->114",
         "default.handlebars->35->1622",
@@ -9992,6 +10251,7 @@
       "tr": "e-posta adresini değiştir",
       "zh-chs": "更改电邮地址",
       "zh-cht": "更改電郵地址",
+      "pl": "Zmień adres email",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->5->changeEmailId->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->p2AccountPassActions->accountChangeEmailAddressSpan->0"
@@ -10010,6 +10270,7 @@
       "ru": "Сменить изображение",
       "sv": "Ändra bild",
       "zh-chs": "更改图像",
+      "pl": "Zmień obraz",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountImageFrame->3->0"
       ]
@@ -10033,6 +10294,7 @@
       "tr": "Şifre değiştir",
       "zh-chs": "更改密码",
       "zh-cht": "更改密碼",
+      "pl": "Zmień hasło",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->7->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->p2AccountPassActions->3"
@@ -10478,6 +10740,7 @@
       "tr": "Sunucu sürümünü kontrol edin",
       "zh-chs": "检查服务器版本",
       "zh-cht": "檢查伺服器版本",
+      "pl": "Sprawdź wersję serwera",
       "xloc": [
         "default.handlebars->container->column_l->p6->p6info->p2ServerActions->3->p2ServerActionsVersion->1"
       ]
@@ -10524,6 +10787,7 @@
       "tr": "Kontrol etme...",
       "zh-chs": "检查...",
       "zh-cht": "檢查...",
+      "pl": "Sprawdzam...",
       "xloc": [
         "default.handlebars->35->1374",
         "default.handlebars->35->2617"
@@ -10776,6 +11040,7 @@
       "tr": "Açık",
       "zh-chs": "清除",
       "zh-cht": "清除",
+      "pl": "Wyczyść",
       "xloc": [
         "default-mobile.handlebars->11->156",
         "default-mobile.handlebars->11->459",
@@ -10905,6 +11170,7 @@
       "tr": "Hepsini temizle",
       "zh-chs": "全部清除",
       "zh-cht": "全部清除",
+      "pl": "Wyczyść wszystko",
       "xloc": [
         "default-mobile.handlebars->11->658",
         "default.handlebars->35->2486"
@@ -11382,6 +11648,7 @@
       "tr": "Pano",
       "zh-chs": "剪贴板",
       "zh-cht": "剪貼板",
+      "pl": "Schowek",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
         "sharing.handlebars->p11->deskarea0->deskarea4->3"
@@ -11406,6 +11673,7 @@
       "tr": "Kapat",
       "zh-chs": "关",
       "zh-cht": "關",
+      "pl": "Zamknij",
       "xloc": [
         "default-mobile.handlebars->11->69",
         "default.handlebars->35->1130",
@@ -12465,6 +12733,7 @@
       "tr": "Bağlan",
       "zh-chs": "连接",
       "zh-cht": "連接",
+      "pl": "Połącz",
       "xloc": [
         "agent-translations.json",
         "default-mobile.handlebars->11->421",
@@ -12504,6 +12773,7 @@
       "tr": "Tümünü Bağla",
       "zh-chs": "全部连接",
       "zh-cht": "全部連接",
+      "pl": "Połącz Wszystko",
       "xloc": [
         "default.handlebars->35->364",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar"
@@ -12520,7 +12790,8 @@
       "nl": "Verbinden op gebruikersverzoek",
       "pt-br": "Conecte-se a pedido do usuário",
       "sv": "Anslut på användarens begäran",
-      "zh-chs": "根据用户请求连接"
+      "zh-chs": "根据用户请求连接",
+      "pl": "Połącz na żądanie użytkownika"
     },
     {
       "cs": "Připojit se na server",
@@ -12541,6 +12812,7 @@
       "tr": "Sunucuya bağlan",
       "zh-chs": "连接到服务器",
       "zh-cht": "連接到伺服器",
+      "pl": "Połącz z serwerem",
       "xloc": [
         "default.handlebars->35->1774"
       ]
@@ -12564,6 +12836,7 @@
       "tr": "Gerçek zamanlı, açık kaynaklı uzaktan izleme ve yönetim web sitesi olan MeshCentral'ı kullanarak ev veya ofis cihazlarınıza dünyanın her yerinden bağlanın. Bilgisayarlarınıza bir yönetim aracısı indirmeniz ve kurmanız gerekecektir. Bilgisayarlar kurulduktan sonra bu web sitesinin \"Cihazlarım\" bölümünde görünecek ve onları izleyebilecek ve kontrol edebileceksiniz.",
       "zh-chs": "使用MeshCentral（实时，开源的远程监视和管理网站），可以从世界任何地方连接到您的家庭或办公室设备。您将需要在计算机上下载并安装管理代理。安装后，计算机将显示在此网站的“我的设备”部分中，您将能够对其进行监视和控制。",
       "zh-cht": "使用MeshCentral（實時，開源的遠程監視和管理網站），可以從世界任何地方連接到你的家庭或辦公室裝置。你將需要在電腦上下載並安裝管理代理。安裝後，電腦將顯示在此網站的“我的裝置”部分中，你將能夠對其進行監視和控制。",
+      "pl": "Połącz się ze swoimi urządzeniami domowymi lub biurowymi z dowolnego miejsca na świecie za pomocą MeshCentral, otwartej strony internetowej do zdalnego monitorowania i zarządzania w czasie rzeczywistym. Będziesz musiał pobrać i zainstalować agenta zarządzającego na swoich komputerach. Po jego zainstalowaniu komputery pojawią się w sekcji \"Moje urządzenia\" na tej stronie, a ty będziesz mógł je monitorować i przejmować nad nimi kontrolę.",
       "xloc": [
         "login.handlebars->container->column_l->welcomeText"
       ]
@@ -12654,6 +12927,7 @@
       "tr": "Bağlandı",
       "zh-chs": "已连接",
       "zh-cht": "已連接",
+      "pl": "Połączono",
       "xloc": [
         "default-mobile.handlebars->11->4",
         "default.handlebars->35->11",
@@ -12682,6 +12956,7 @@
       "tr": "Bağlı Intel&reg; AMT",
       "zh-chs": "已连接的英特尔&reg;AMT",
       "zh-cht": "已連接的Intel&reg; AMT",
+      "pl": "Połączono Intel® AMT",
       "xloc": [
         "default.handlebars->35->2539"
       ]
@@ -12705,6 +12980,7 @@
       "tr": "Bağlı Kullanıcılar",
       "zh-chs": "已连接的用户",
       "zh-cht": "已连接的用户",
+      "pl": "Połączeni użytkownicy",
       "xloc": [
         "default.handlebars->35->2544"
       ]
@@ -12728,6 +13004,7 @@
       "tr": "Şimdi bağlandı",
       "zh-chs": "现在已连接",
       "zh-cht": "現在已連接",
+      "pl": "Połączono teraz",
       "xloc": [
         "default-mobile.handlebars->11->500",
         "default.handlebars->35->1247"
@@ -12744,7 +13021,8 @@
       "nl": "Verbonden met server",
       "pt-br": "Conectado ao servidor",
       "sv": "Ansluten till servern",
-      "zh-chs": "连接到服务器"
+      "zh-chs": "连接到服务器",
+      "pl": "Połączono z serwerem"
     },
     {
       "cs": "Připojeno.",
@@ -12765,6 +13043,7 @@
       "tr": "Bağlandı.",
       "zh-chs": "已连接。",
       "zh-cht": "已連接。",
+      "pl": "Połączono.",
       "xloc": [
         "messenger.handlebars->remoteImage->3->15"
       ]
@@ -12780,7 +13059,8 @@
       "nl": "Verbinden",
       "pt-br": "Conectando",
       "sv": "Ansluter",
-      "zh-chs": "连接"
+      "zh-chs": "连接",
+      "pl": "Łączenie"
     },
     {
       "cs": "Připojování…",
@@ -12801,6 +13081,7 @@
       "tr": "Bağlanıyor...",
       "zh-chs": "正在连线...",
       "zh-cht": "正在連線...",
+      "pl": "Łączenie...",
       "xloc": [
         "default-mobile.handlebars->11->2",
         "default-mobile.handlebars->11->472",
@@ -12827,7 +13108,8 @@
       "nl": "Verbinding",
       "pt-br": "Conexão",
       "sv": "Förbindelse",
-      "zh-chs": "联系"
+      "zh-chs": "联系",
+      "pl": "Połączenie"
     },
     {
       "cs": "Počitadlo připojení",
@@ -12865,6 +13147,7 @@
       "ru": "Ошибка соединения",
       "sv": "Anslutningsfel",
       "zh-chs": "连接错误",
+      "pl": "Błąd Połączenia",
       "xloc": [
         "default-mobile.handlebars->11->435",
         "default.handlebars->35->1155",
@@ -12914,6 +13197,7 @@
       "tr": "Bağlantı kapandı.",
       "zh-chs": "连接已关闭。",
       "zh-cht": "連接已關閉。",
+      "pl": "Połączenie zamknięte.",
       "xloc": [
         "messenger.handlebars->remoteImage->3->5"
       ]
@@ -12937,6 +13221,7 @@
       "tr": "Bağlantılar",
       "zh-chs": "连接",
       "zh-cht": "連接",
+      "pl": "Połączenia",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1->p40type->1"
       ]
@@ -12987,6 +13272,7 @@
       "tr": "Konsol",
       "zh-chs": "控制台",
       "zh-cht": "控制台",
+      "pl": "Konsola",
       "xloc": [
         "default-mobile.handlebars->11->316",
         "default.handlebars->35->877",
@@ -13015,6 +13301,7 @@
       "tr": "Konsol -",
       "zh-chs": "控制台 -",
       "zh-cht": "控制台 -",
+      "pl": "Konsola - ",
       "xloc": [
         "default.handlebars->35->696"
       ]
@@ -13038,6 +13325,7 @@
       "tr": "Kontrol",
       "zh-chs": "控制",
       "zh-cht": "控制",
+      "pl": "Kontrola",
       "xloc": [
         "default.handlebars->35->876",
         "default.handlebars->35->898",
@@ -13097,6 +13385,7 @@
       "tr": "Kopyala",
       "zh-chs": "复制",
       "zh-cht": "複製",
+      "pl": "Kopiuj",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->3",
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->3",
@@ -13143,6 +13432,7 @@
       "ru": "Скопировать URL в буфер обмена",
       "sv": "Kopiera URL till Urklipp",
       "zh-chs": "将 URL 复制到剪贴板",
+      "pl": "Kopiuj URL do schowka",
       "xloc": [
         "default.handlebars->35->502",
         "default.handlebars->35->506"
@@ -13213,6 +13503,7 @@
       "tr": "Adresi panoya kopyala",
       "zh-chs": "将地址复制到剪贴板",
       "zh-cht": "將地址複製到剪貼板",
+      "pl": "Kopiuj adres do schowka",
       "xloc": [
         "default.handlebars->35->115",
         "default.handlebars->35->117",
@@ -13271,6 +13562,7 @@
       "tr": "Bağlantıyı panoya kopyala",
       "zh-chs": "复制连结到剪贴板",
       "zh-cht": "複製連結到剪貼板",
+      "pl": "Kopiuj link do schowka",
       "xloc": [
         "default.handlebars->35->1938",
         "default.handlebars->35->1957",
@@ -13345,6 +13637,7 @@
       "tr": "Panoya kopyala",
       "zh-chs": "复制到剪贴板",
       "zh-cht": "複製到剪貼板",
+      "pl": "Kopiuj do schowka",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->linuxtab",
         "agentinvite.handlebars->container->column_l->5->linuxtab",
@@ -13394,6 +13687,7 @@
       "tr": "\\\"{0}\\\" klasörünü \\\"{1}\\\" klasörüne kopyalayın",
       "zh-chs": "复制：“{0}”到“{1}”",
       "zh-cht": "複製：“{0}”到“{1}”",
+      "pl": "Kopiuj: \\\"{0}\\\" do \\\"{1}\\\"",
       "xloc": [
         "default.handlebars->35->2029"
       ]
@@ -13417,6 +13711,7 @@
       "tr": "Telif Hakkı (C) 2011 Joel Martin Bu Kaynak Kodu Formu, Mozilla Public License, v. 2.0 hükümlerine tabidir. MPL'nin bir kopyası bu dosyayla birlikte dağıtılmadıysa, http://mozilla.org/MPL/2.0/ adresinden bir tane edinebilirsiniz.",
       "zh-chs": "版权所有（C）2011 Joel Martin此源代码表受Mozilla公共许可证v。2.0条款的约束。如果未随该档案分发MPL的副本，则可以在http://mozilla.org/MPL/2.0/上获得一份。",
       "zh-cht": "版權所有（C）2011 Joel Martin此源代碼表受Mozilla Public License v。2.0條款的約束。如果未隨該檔案分發MPL的副本，則可以在http://mozilla.org/MPL/2.0/上獲得一份。",
+      "pl": "Copyright (C) 2011 Joel Martin, Ten formularz kodu źródłowego podlega warunkom Publicznej Licencji Mozilli, v. 2.0. Jeśli kopia MPL nie została rozprowadzona z tym plikiem, możesz ją uzyskać pod adresem http://mozilla.org/MPL/2.0/.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->63->1",
         "terms.handlebars->container->column_l->63->1"
@@ -13561,6 +13856,7 @@
       "tr": "Çekirdek Sunucu",
       "zh-chs": "核心服务器",
       "zh-cht": "核心伺服器",
+      "pl": "Jądro Serwera",
       "xloc": [
         "default.handlebars->35->2588"
       ]
@@ -13584,6 +13880,7 @@
       "tr": "Korsikalı",
       "zh-chs": "科西嘉文",
       "zh-cht": "科西嘉文",
+      "pl": "Korsykański",
       "xloc": [
         "default.handlebars->35->1415"
       ]
@@ -13599,7 +13896,8 @@
       "nl": "Aantal",
       "pt-br": "Contar",
       "sv": "Räkna",
-      "zh-chs": "数数"
+      "zh-chs": "数数",
+      "pl": "Liczba"
     },
     {
       "cs": "Vytvořit účet",
@@ -13620,6 +13918,7 @@
       "tr": "Hesap oluştur",
       "zh-chs": "创建帐号",
       "zh-cht": "創建帳號",
+      "pl": "Utwórz Konto",
       "xloc": [
         "default.handlebars->35->2211",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->12->1->1",
@@ -13723,6 +14022,7 @@
       "tr": "Bu cihazı bir misafirle paylaşmak için bir bağlantı oluşturun",
       "zh-chs": "创建连结以与访客共享此设备",
       "zh-cht": "創建鏈結以與訪客共享此裝置",
+      "pl": "Utwórz łącze, aby udostępnić to urządzenie gościowi",
       "xloc": [
         "default.handlebars->35->806"
       ]
@@ -14149,6 +14449,7 @@
       "tr": "Hırvat",
       "zh-chs": "克罗地亚文",
       "zh-cht": "克羅地亞文",
+      "pl": "Chorwacki",
       "xloc": [
         "default.handlebars->35->1417"
       ]
@@ -14333,6 +14634,7 @@
       "tr": "Mevcut Temsilci Durumu",
       "zh-chs": "当前代理状态",
       "zh-cht": "當前代理狀態",
+      "pl": "Obecny Status Agenta",
       "xloc": [
         "agent-translations.json"
       ]
@@ -14373,6 +14675,7 @@
       "ru": "Текущий пароль неверен.",
       "sv": "Nuvarande lösenord är inte korrekt.",
       "zh-chs": "当前密码不正确。",
+      "pl": "Obecne hasło jest nieprawidłowe.",
       "xloc": [
         "default-mobile.handlebars->11->685",
         "default.handlebars->35->2513"
@@ -14391,6 +14694,7 @@
       "ru": "Настроить",
       "sv": "Anpassa",
       "zh-chs": "定制",
+      "pl": "Dostosuj",
       "xloc": [
         "default-mobile.handlebars->11->373"
       ]
@@ -14408,6 +14712,7 @@
       "ru": "Настроить...",
       "sv": "Anpassa ...",
       "zh-chs": "定制...",
+      "pl": "Dostosuj...",
       "xloc": [
         "default.handlebars->deskKeyShortcutContextMenu->1"
       ]
@@ -14431,6 +14736,7 @@
       "tr": "Kesmek",
       "zh-chs": "切",
       "zh-cht": "切",
+      "pl": "Wytnij",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->3",
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->3",
@@ -14458,6 +14764,7 @@
       "tr": "Çek",
       "zh-chs": "捷克文",
       "zh-cht": "捷克文",
+      "pl": "Czeski",
       "xloc": [
         "default.handlebars->35->1418"
       ]
@@ -14504,6 +14811,7 @@
       "tr": "Danimarkalı",
       "zh-chs": "丹麦文",
       "zh-cht": "丹麥文",
+      "pl": "Duński",
       "xloc": [
         "default.handlebars->35->1419"
       ]
@@ -14521,6 +14829,7 @@
       "ru": "Темный режим",
       "sv": "Mörkt läge",
       "zh-chs": "黑暗模式",
+      "pl": "Tryb ciemny",
       "xloc": [
         "default-mobile.handlebars->11->85",
         "default.handlebars->35->60"
@@ -14569,6 +14878,7 @@
       "tr": "Tarihler ve Saat",
       "zh-chs": "日期和时间",
       "zh-cht": "日期和時間",
+      "pl": "Data & Czas",
       "xloc": [
         "default.handlebars->35->1577"
       ]
@@ -14592,6 +14902,7 @@
       "tr": "Gün",
       "zh-chs": "天",
       "zh-cht": "天",
+      "pl": "Dzień",
       "xloc": [
         "default-mobile.handlebars->11->344",
         "default.handlebars->35->993"
@@ -14616,6 +14927,7 @@
       "tr": "Devre dışı bırakmak",
       "zh-chs": "停用",
       "zh-cht": "停用",
+      "pl": "Deaktywacja",
       "xloc": [
         "default.handlebars->35->1753"
       ]
@@ -14682,6 +14994,7 @@
       "tr": "Derin uyku",
       "zh-chs": "沉睡",
       "zh-cht": "沉睡",
+      "pl": "Głębokie Uśpienie",
       "xloc": [
         "default-mobile.handlebars->11->224",
         "default.handlebars->35->532"
@@ -14706,6 +15019,7 @@
       "tr": "Varsayılan",
       "zh-chs": "默认",
       "zh-cht": "默認",
+      "pl": "Domyślne",
       "xloc": [
         "default.handlebars->35->2198",
         "default.handlebars->35->2246",
@@ -14750,6 +15064,7 @@
       "tr": "Sil",
       "zh-chs": "删除",
       "zh-cht": "刪除",
+      "pl": "Usuń",
       "xloc": [
         "default-mobile.handlebars->11->146",
         "default-mobile.handlebars->11->446",
@@ -14790,6 +15105,7 @@
       "tr": "Hesabı sil",
       "zh-chs": "删除帐户",
       "zh-cht": "刪除帳戶",
+      "pl": "Usuń Konto",
       "xloc": [
         "default-mobile.handlebars->11->108",
         "default.handlebars->35->1614"
@@ -14814,6 +15130,7 @@
       "tr": "Hesapları Sil",
       "zh-chs": "删除帐户",
       "zh-cht": "刪除帳戶",
+      "pl": "Usuń Konta",
       "xloc": [
         "default.handlebars->35->2163"
       ]
@@ -14837,6 +15154,7 @@
       "tr": "Cihazı Sil",
       "zh-chs": "删除设备",
       "zh-cht": "刪除裝置",
+      "pl": "Usuń Urządzenie",
       "xloc": [
         "default-mobile.handlebars->11->305",
         "default.handlebars->35->810"
@@ -14870,6 +15188,7 @@
       "tr": "Grubu Sil",
       "zh-chs": "删除群组",
       "zh-cht": "刪除群組",
+      "pl": "Usuń Grupę",
       "xloc": [
         "default-mobile.handlebars->11->597",
         "default-mobile.handlebars->11->600",
@@ -14897,6 +15216,7 @@
       "tr": "Düğümü Sil",
       "zh-chs": "删除节点",
       "zh-cht": "刪除節點",
+      "pl": "Usuń Węzeł",
       "xloc": [
         "default-mobile.handlebars->11->352",
         "default.handlebars->35->1019"
@@ -14920,7 +15240,8 @@
       "sv": "Ta bort noder",
       "tr": "Düğümleri Sil",
       "zh-chs": "删除节点",
-      "zh-cht": "刪除節點"
+      "zh-cht": "刪除節點",
+      "pl": "Usuń Węzły"
     },
     {
       "cs": "Smazat uživatele",
@@ -14941,6 +15262,7 @@
       "tr": "Kullanıcıyı sil",
       "zh-chs": "删除用户",
       "zh-cht": "刪除用戶",
+      "pl": "Usuń Użytkownika",
       "xloc": [
         "default.handlebars->35->2379"
       ]
@@ -14964,6 +15286,7 @@
       "tr": "Kullanıcı Grubunu Sil",
       "zh-chs": "删除用户群组",
       "zh-cht": "刪除用戶群組",
+      "pl": "Usuń Grupę Użytkowników",
       "xloc": [
         "default.handlebars->35->2295",
         "default.handlebars->35->2305"
@@ -14988,6 +15311,7 @@
       "tr": "Kullanıcı Gruplarını Sil",
       "zh-chs": "删除用户群组",
       "zh-cht": "刪除用戶群組",
+      "pl": "Usuń Grupy Użytkowników",
       "xloc": [
         "default.handlebars->35->2244"
       ]
@@ -15011,6 +15335,7 @@
       "tr": "Kullanıcıyı Sil {0}",
       "zh-chs": "删除用户{0}",
       "zh-cht": "刪除用戶{0}",
+      "pl": "Usuń Użytkownika {0}",
       "xloc": [
         "default.handlebars->35->2406"
       ]
@@ -15034,6 +15359,7 @@
       "tr": "Hesabı sil",
       "zh-chs": "删除帐户",
       "zh-cht": "刪除帳戶",
+      "pl": "Usuń konto",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->9->0",
         "default.handlebars->35->2159",
@@ -15059,6 +15385,7 @@
       "tr": "Cihazları sil",
       "zh-chs": "删除设备",
       "zh-cht": "刪除裝置",
+      "pl": "Usuń urządzenia",
       "xloc": [
         "default.handlebars->35->570"
       ]
@@ -15082,6 +15409,7 @@
       "tr": "Grubu sil",
       "zh-chs": "删除群组",
       "zh-cht": "刪除群組",
+      "pl": "Usuń grupę",
       "xloc": [
         "default.handlebars->35->2240"
       ]
@@ -15105,6 +15433,7 @@
       "tr": "Öğeyi silmek?",
       "zh-chs": "删除项目？",
       "zh-cht": "刪除項目？",
+      "pl": "Usunąć pozycję?",
       "xloc": [
         "default.handlebars->35->667"
       ]
@@ -15128,6 +15457,7 @@
       "tr": "Özyinelemeli sil: \\\"{0}\\\", {1} öğe kaldırıldı",
       "zh-chs": "递归删除：“{0}”，{1}个元素已删除",
       "zh-cht": "遞歸刪除：“{0}”，{1}個元素已刪除",
+      "pl": "Usuń rekursywnie: \\\"{0}\\\", {1} element(y) usunięty(e)",
       "xloc": [
         "default.handlebars->35->2024"
       ]
@@ -15151,6 +15481,7 @@
       "tr": "Seçili öğe silinsin mi?",
       "zh-chs": "删除所选项目？",
       "zh-cht": "刪除所選項目？",
+      "pl": "Usunąć wybraną pozycję?",
       "xloc": [
         "default-mobile.handlebars->11->148",
         "default-mobile.handlebars->11->448",
@@ -15178,6 +15509,7 @@
       "tr": "{0} kullanıcı grubu silinsin mi?",
       "zh-chs": "删除用户群组{0}？",
       "zh-cht": "刪除用戶群組{0}？",
+      "pl": "Usunąć grupę użytkowników {0}?",
       "xloc": [
         "default.handlebars->35->2303"
       ]
@@ -15201,6 +15533,7 @@
       "tr": "{0} seçili öğe silinsin mi?",
       "zh-chs": "删除{0}个所选项目？",
       "zh-cht": "刪除{0}個所選項目？",
+      "pl": "Usunąć {0} wybrane pozycje?",
       "xloc": [
         "default-mobile.handlebars->11->147",
         "default-mobile.handlebars->11->447",
@@ -15228,6 +15561,7 @@
       "tr": "{0} silinsin mi?",
       "zh-chs": "删除{0}？",
       "zh-cht": "刪除{0}？",
+      "pl": "Usunąć {0}?",
       "xloc": [
         "default-mobile.handlebars->11->353"
       ]
@@ -15251,6 +15585,7 @@
       "tr": "Sil: \\\"{0}\\\"",
       "zh-chs": "删除：“{0}”",
       "zh-cht": "刪除：“{0}”",
+      "pl": "Usunąć: \\\"{0}\\\"",
       "xloc": [
         "default.handlebars->35->2023"
       ]
@@ -15274,6 +15609,7 @@
       "tr": "Sil: \\\"{0}\\\", {1} öğe kaldırıldı",
       "zh-chs": "删除：“{0}”，{1}个元素已删除",
       "zh-cht": "刪除：“{0}”，已刪除{1}個元素",
+      "pl": "Usuń: \\\"{0}\\\", {1} element(y) usunięto",
       "xloc": [
         "default.handlebars->35->2025"
       ]
@@ -15297,6 +15633,7 @@
       "tr": "Reddedildi",
       "zh-chs": "被拒绝",
       "zh-cht": "被拒絕",
+      "pl": "Zabronione",
       "xloc": [
         "default-mobile.handlebars->11->367",
         "default.handlebars->35->1067",
@@ -15315,7 +15652,8 @@
       "nl": "Weigeren",
       "pt-br": "Negar",
       "sv": "Förneka",
-      "zh-chs": "否定"
+      "zh-chs": "否定",
+      "pl": "Odrzucono"
     },
     {
       "cs": "Sestupně podle data",
@@ -15417,6 +15755,7 @@
       "tr": "Açıklama",
       "zh-chs": "描述",
       "zh-cht": "描述",
+      "pl": "Opis",
       "xloc": [
         "default-mobile.handlebars->11->125",
         "default-mobile.handlebars->11->257",
@@ -15480,6 +15819,7 @@
       "tr": "Masaüstü Bilgisayar",
       "zh-chs": "桌面",
       "zh-cht": "桌面",
+      "pl": "Pulpit",
       "xloc": [
         "default-mobile.handlebars->11->312",
         "default.handlebars->35->1136",
@@ -15508,6 +15848,7 @@
       "ru": "Рабочий стол + Файлы",
       "sv": "Desktop + Files",
       "zh-chs": "桌面 + 文件",
+      "pl": "Pulpit + Pliki",
       "xloc": [
         "default.handlebars->35->861",
         "default.handlebars->35->927"
@@ -15526,6 +15867,7 @@
       "ru": "Рабочий стол + Терминал",
       "sv": "Desktop + Terminal",
       "zh-chs": "桌面 + 终端",
+      "pl": "Pulpit + Terminal",
       "xloc": [
         "default.handlebars->35->858"
       ]
@@ -15543,6 +15885,7 @@
       "ru": "Рабочий стол + Терминал + Файлы",
       "sv": "Desktop + Terminal + Files",
       "zh-chs": "桌面 + 终端 + 文件",
+      "pl": "Pulpit + Terminal + Pliki",
       "xloc": [
         "default.handlebars->35->862",
         "default.handlebars->35->929"
@@ -15567,6 +15910,7 @@
       "tr": "Masaüstü -",
       "zh-chs": "桌面 -",
       "zh-cht": "桌面 -",
+      "pl": "Pulpit -",
       "xloc": [
         "default.handlebars->container->column_l->p11->p11title->p11deviceNameHeader->5"
       ]
@@ -15606,6 +15950,7 @@
       "tr": "Masaüstü Bildirimi",
       "zh-chs": "桌面通知",
       "zh-cht": "桌面通知",
+      "pl": "Powiadomienie Pulpitu",
       "xloc": [
         "default.handlebars->35->1698",
         "default.handlebars->35->2264",
@@ -15678,6 +16023,7 @@
       "ru": "Сеанс рабочего стола",
       "sv": "Skrivbordssession",
       "zh-chs": "桌面会话",
+      "pl": "Sesja Pulpitu",
       "xloc": [
         "default.handlebars->35->2456"
       ]
@@ -15701,6 +16047,7 @@
       "tr": "Masaüstü Oturum Gecikmesi",
       "zh-chs": "桌面会话延迟",
       "zh-cht": "桌面會話延遲",
+      "pl": "Opóźnienie Sesji Pulpitu",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1",
         "sharing.handlebars->p11->deskarea0->deskarea4->1"
@@ -15717,7 +16064,8 @@
       "nl": "Bureaubladinstellingen",
       "pt-br": "Configurações da área de trabalho",
       "sv": "Skrivbordsinställningar",
-      "zh-chs": "桌面设置"
+      "zh-chs": "桌面设置",
+      "pl": "Ustawienia Pulpitu"
     },
     {
       "cs": "Sdílení plochy",
@@ -15738,6 +16086,7 @@
       "tr": "Masaüstü Paylaşımı",
       "zh-chs": "桌面共享",
       "zh-cht": "桌面共享",
+      "pl": "Współdzielenie Pulpitu",
       "xloc": [
         "message.handlebars->3->2",
         "message2.handlebars->5->2"
@@ -15762,6 +16111,7 @@
       "tr": "Masaüstü Araç Çubuğu",
       "zh-chs": "桌面工具栏",
       "zh-cht": "桌面工具欄",
+      "pl": "Pasek narzędzi Pulpitu",
       "xloc": [
         "default.handlebars->35->1696",
         "default.handlebars->35->2262",
@@ -15782,6 +16132,7 @@
       "ru": "Рабочий стол, только просмотр",
       "sv": "Skrivbord, endast visa",
       "zh-chs": "桌面，仅查看",
+      "pl": "Pulpit, tylko Podgląd",
       "xloc": [
         "default.handlebars->35->930"
       ]
@@ -15805,6 +16156,7 @@
       "tr": "Masaüstü Oturumu",
       "zh-chs": "桌面时段",
       "zh-cht": "桌面時段",
+      "pl": "SesjaPulpitu",
       "xloc": [
         "default.handlebars->35->1135"
       ]
@@ -15828,6 +16180,7 @@
       "tr": "Masaüstü Bilgisayarlar",
       "zh-chs": "台式机",
       "zh-cht": "台式電腦",
+      "pl": "Pulpity",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView->viewselect->9",
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons",
@@ -15870,6 +16223,7 @@
       "tr": "ayrıntılar",
       "zh-chs": "细节",
       "zh-cht": "細節",
+      "pl": "Szczegóły",
       "xloc": [
         "default-mobile.handlebars->11->315",
         "default.handlebars->35->1879",
@@ -15896,6 +16250,7 @@
       "tr": "Detaylar -",
       "zh-chs": "细节 -",
       "zh-cht": "細節 -",
+      "pl": "Szczegóły -",
       "xloc": [
         "default.handlebars->container->column_l->p17->p17title->5"
       ]
@@ -15919,6 +16274,7 @@
       "tr": "cihaz",
       "zh-chs": "设备",
       "zh-cht": "裝置",
+      "pl": "Urządzenie",
       "xloc": [
         "default-mobile.handlebars->11->508",
         "default.handlebars->35->1255",
@@ -16064,6 +16420,7 @@
       "tr": "Cihaz Grubu Kullanıcısı",
       "zh-chs": "设备组用户",
       "zh-cht": "裝置群用戶",
+      "pl": "Użytkownik Grupy Urządzenia",
       "xloc": [
         "default-mobile.handlebars->11->652",
         "default.handlebars->35->1885"
@@ -16088,6 +16445,7 @@
       "tr": "Cihaz Grupları",
       "zh-chs": "设备组",
       "zh-cht": "裝置群",
+      "pl": "Grupy Urządzenia",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->3",
         "default.handlebars->35->2126",
@@ -16140,6 +16498,7 @@
       "tr": "Cihaz Konumu",
       "zh-chs": "设备位置",
       "zh-cht": "裝置位置",
+      "pl": "Lokalizacja Urządzenia",
       "xloc": [
         "default.handlebars->35->1020"
       ]
@@ -16186,6 +16545,7 @@
       "tr": "Cihaz adı",
       "zh-chs": "设备名称",
       "zh-cht": "裝置名稱",
+      "pl": "Nazwa Urządzenia",
       "xloc": [
         "default-mobile.handlebars->11->360",
         "default.handlebars->35->1059",
@@ -16256,7 +16616,8 @@
       "nl": "Apparaat instellingen",
       "pt-br": "Configurações do dispositivo",
       "sv": "Enhetsinställningar",
-      "zh-chs": "设备设置"
+      "zh-chs": "设备设置",
+      "pl": "Ustawienia Urządzenia"
     },
     {
       "cs": "Sdílení zařízení",
@@ -16276,7 +16637,8 @@
       "sv": "Enhetsdelning",
       "tr": "Cihaz Paylaşımı",
       "zh-chs": "设备共享",
-      "zh-cht": "設備共享"
+      "zh-cht": "設備共享",
+      "pl": "Udostępnianie Urządzenia"
     },
     {
       "cs": "Odkaz na sdílení zařízení",
@@ -16297,6 +16659,7 @@
       "tr": "Cihaz Paylaşım Bağlantısı",
       "zh-chs": "设备共享链接",
       "zh-cht": "設備共享鏈接",
+      "pl": "Link Udostępniania Urządzenia",
       "xloc": [
         "default.handlebars->35->854"
       ]
@@ -16312,7 +16675,8 @@
       "nl": "Apparaatstatus",
       "pt-br": "Status do dispositivo",
       "sv": "Enhets status",
-      "zh-chs": "设备状态"
+      "zh-chs": "设备状态",
+      "pl": "Status Urządzenia"
     },
     {
       "cs": "Device Toast",
@@ -16350,6 +16714,7 @@
       "ru": "Тип устройства",
       "sv": "Enhetstyp",
       "zh-chs": "设备类型",
+      "pl": "Typ Urządzenia",
       "xloc": [
         "default-mobile.handlebars->11->259",
         "default-mobile.handlebars->11->261",
@@ -17068,6 +17433,7 @@
       "tr": "Cihazlar",
       "zh-chs": "设备",
       "zh-cht": "裝置",
+      "pl": "Urządzenia",
       "xloc": [
         "default.handlebars->35->1738",
         "default.handlebars->35->2235",
@@ -17085,7 +17451,8 @@
       "nl": "Directe verbinding",
       "pt-br": "Conexão direta",
       "sv": "Direktkoppling",
-      "zh-chs": "直接联系"
+      "zh-chs": "直接联系",
+      "pl": "Połączenie Bezpośrednie"
     },
     {
       "cs": "Zakázáno",
@@ -17106,6 +17473,7 @@
       "tr": "Devre dışı",
       "zh-chs": "已禁用",
       "zh-cht": "已禁用",
+      "pl": "Wyłączone",
       "xloc": [
         "default-mobile.handlebars->11->493",
         "default.handlebars->35->758",
@@ -17131,6 +17499,7 @@
       "tr": "E-posta iki faktörlü kimlik doğrulama devre dışı bırakıldı",
       "zh-chs": "禁用的电子邮件两因素身份验证",
       "zh-cht": "禁用的電子郵件兩因素身份驗證",
+      "pl": "Wyłączone uwierzytelnianie dwuskładnikowe poczty elektronicznej",
       "xloc": [
         "default.handlebars->35->2067"
       ]
@@ -17154,6 +17523,7 @@
       "tr": "Bağlantıyı kes",
       "zh-chs": "断线",
       "zh-cht": "斷線",
+      "pl": "Rozłącz",
       "xloc": [
         "agent-translations.json",
         "default-mobile.handlebars->11->422",
@@ -17189,6 +17559,7 @@
       "tr": "Tümünün Bağlantısını Kes",
       "zh-chs": "全部断线",
       "zh-cht": "全部斷線",
+      "pl": "Rozłącz Wszystko",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar"
       ]
@@ -17221,6 +17592,7 @@
       "tr": "Bağlantı kesildi",
       "zh-chs": "已断线",
       "zh-cht": "已斷線",
+      "pl": "Rozłączony",
       "xloc": [
         "default-mobile.handlebars->11->1",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3->deskstatus",
@@ -17261,6 +17633,7 @@
       "tr": "Reddet",
       "zh-chs": "解雇",
       "zh-cht": "解僱",
+      "pl": "Odrzuć",
       "xloc": [
         "default.handlebars->35->340"
       ]
@@ -17284,6 +17657,7 @@
       "tr": "Uzak cihazda bir mesaj kutusu görüntüleyin.",
       "zh-chs": "在远程设备上显示一个消息框。",
       "zh-cht": "在遠程裝置上顯示一個訊息框。",
+      "pl": "Wyświetlić okno komunikatu na urządzeniu zdalnym.",
       "xloc": [
         "default.handlebars->35->915"
       ]
@@ -17307,6 +17681,7 @@
       "tr": "Uzak bilgisayarda bir bildirim görüntüle",
       "zh-chs": "在远程计算机上显示通知",
       "zh-cht": "在遠程電腦上顯示通知",
+      "pl": "Wyświetlenie powiadomienia na komputerze zdalnym",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -17330,6 +17705,7 @@
       "tr": "Uzak cihazda bir metin mesajı görüntüleyin",
       "zh-chs": "在远程设备上显示短信",
       "zh-cht": "在遠程裝置上顯示短信",
+      "pl": "Wyświetlanie wiadomości tekstowej na urządzeniu zdalnym",
       "xloc": [
         "default.handlebars->35->802"
       ]
@@ -17345,7 +17721,8 @@
       "nl": "Verbindingsstatistieken weergeven",
       "pt-br": "Exibir estatísticas de conexão",
       "sv": "Visa anslutningsstatistik",
-      "zh-chs": "显示连接统计"
+      "zh-chs": "显示连接统计",
+      "pl": "Wyświetl statystyki połączeń"
     },
     {
       "cs": "Zobrazit název skupiny zařízení",
@@ -17366,6 +17743,7 @@
       "tr": "Aygıt grubu adını görüntüle",
       "zh-chs": "显示设备组名称",
       "zh-cht": "顯示裝置群名稱",
+      "pl": "Wyświetl nazwę grupy urządzeń",
       "xloc": [
         "default.handlebars->35->1601"
       ]
@@ -17389,6 +17767,7 @@
       "tr": "Ekran adı",
       "zh-chs": "显示名称",
       "zh-cht": "顯示名稱",
+      "pl": "Wyświetl nazwę",
       "xloc": [
         "default.handlebars->35->1121"
       ]
@@ -17412,6 +17791,7 @@
       "tr": "Herkese açık bağlantıyı görüntüle",
       "zh-chs": "显示公共连结",
       "zh-cht": "顯示公共鏈結",
+      "pl": "Wyświetl publiczny link",
       "xloc": [
         "default.handlebars->35->1937"
       ]
@@ -17429,6 +17809,7 @@
       "ru": "Экран {0}",
       "sv": "Visa {0}",
       "zh-chs": "显示{0}",
+      "pl": "Wyśietl {0}",
       "xloc": [
         "default.handlebars->35->1138"
       ]
@@ -17498,6 +17879,7 @@
       "tr": "Hiçbir şey yapma",
       "zh-chs": "什么都不做",
       "zh-cht": "什麼都不做",
+      "pl": "Nic nie rób",
       "xloc": [
         "default.handlebars->35->1768",
         "default.handlebars->35->1772"
@@ -17522,6 +17904,7 @@
       "tr": "Alan adı",
       "zh-chs": "域",
       "zh-cht": "域",
+      "pl": "Domena",
       "xloc": [
         "default.handlebars->35->2199",
         "default.handlebars->35->2247",
@@ -17543,7 +17926,8 @@
       "nl": "Niet vragen voor {0} dagen.",
       "pt-br": "Não pergunte por {0} dias.",
       "sv": "Be inte om {0} dagar.",
-      "zh-chs": "不要要求 {0} 天。"
+      "zh-chs": "不要要求 {0} 天。",
+      "pl": "Nie pytaj przez {0} dni."
     },
     {
       "cs": "Neměňte, ponechte CCM, pokud je nastaveno",
@@ -17607,6 +17991,7 @@
       "tr": "Sunucuya bağlanmayın",
       "zh-chs": "不要连接到服务器",
       "zh-cht": "不要連接到伺服器",
+      "pl": "Nie łącz z serwerem",
       "xloc": [
         "default.handlebars->35->1773"
       ]
@@ -17702,6 +18087,7 @@
       "ru": "Down",
       "sv": "Ner",
       "zh-chs": "下",
+      "pl": "W dół",
       "xloc": [
         "default-mobile.handlebars->11->388",
         "default.handlebars->35->1100"
@@ -17726,6 +18112,7 @@
       "tr": "İndir",
       "zh-chs": "下载",
       "zh-cht": "下載",
+      "pl": "Pobierz",
       "xloc": [
         "download.handlebars->container->page_content->column_l->1",
         "messenger.handlebars->remoteImage->3->12"
@@ -17792,6 +18179,7 @@
       "tr": "Dosyayı indir",
       "zh-chs": "下载档案",
       "zh-cht": "下載檔案",
+      "pl": "Pobierz Plik",
       "xloc": [
         "default-mobile.handlebars->11->467",
         "default.handlebars->35->1222",
@@ -18080,6 +18468,7 @@
       "tr": "Sunucu yedeğini indirin",
       "zh-chs": "下载服务器备份",
       "zh-cht": "下載伺服器備份",
+      "pl": "Pobierz backup serwera",
       "xloc": [
         "default.handlebars->container->column_l->p6->p6info->p2ServerActions->3->p2ServerActionsBackup->1"
       ]
@@ -18120,6 +18509,7 @@
       "tr": "Yükleyiciyi buradan indirin",
       "zh-chs": "在此处下载安装程式",
       "zh-cht": "在此處下載安裝程序",
+      "pl": "Pobierz instalator tutaj",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->macostab->3->macosurl"
       ]
@@ -22940,6 +23330,7 @@
       "tr": "Genel",
       "zh-chs": "一般",
       "zh-cht": "一般",
+      "pl": "Ogólne",
       "xloc": [
         "default-mobile.handlebars->11->311",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDev",
@@ -22967,6 +23358,7 @@
       "tr": "Genel -",
       "zh-chs": "一般 -",
       "zh-cht": "一般 -",
+      "pl": "Ogólne -",
       "xloc": [
         "default.handlebars->container->column_l->p10->p10title->3",
         "default.handlebars->container->column_l->p20->p20main->p20title->5",
@@ -22992,6 +23384,7 @@
       "tr": "Genel bilgi",
       "zh-chs": "一般信息",
       "zh-cht": "一般訊息",
+      "pl": "Informacje ogólne",
       "xloc": [
         "default.handlebars->35->671"
       ]
@@ -23222,6 +23615,7 @@
       "tr": "Buradan başla!",
       "zh-chs": "从这里开始！",
       "zh-cht": "從這裡開始！",
+      "pl": "Zacznij tutaj!",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3noMeshFound->p3createMeshLink2->1->0",
         "default.handlebars->container->column_l->p2->p2info->p2noMeshFound->p2createMeshLink2->1->0"
@@ -23269,6 +23663,7 @@
       "tr": "Giriş sayfasına git",
       "zh-chs": "进入登录页面",
       "zh-cht": "進入登入頁面",
+      "pl": "Idź do strony logowania",
       "xloc": [
         "message.handlebars->3->20",
         "message2.handlebars->5->20"
@@ -23293,6 +23688,7 @@
       "tr": "Ana siteye git",
       "zh-chs": "前往主要网站",
       "zh-cht": "前往主要網站",
+      "pl": "Idź na stronę główną",
       "xloc": [
         "error404-mobile.handlebars->container->page_content->column_l->5->0->0",
         "error404.handlebars->container->column_l->5->0->0"
@@ -23317,6 +23713,7 @@
       "tr": "İyi",
       "zh-chs": "好",
       "zh-cht": "好",
+      "pl": "Prawidłowo",
       "xloc": [
         "default.handlebars->35->1640"
       ]
@@ -23340,6 +23737,7 @@
       "tr": "İyi Şifre",
       "zh-chs": "好的密码",
       "zh-cht": "好的密碼",
+      "pl": "Hasło Prawidłowe",
       "xloc": [
         "login-mobile.handlebars->5->29",
         "login-mobile.handlebars->5->33",
@@ -23479,6 +23877,7 @@
       "tr": "Yunan",
       "zh-chs": "希腊文",
       "zh-cht": "希臘文",
+      "pl": "Grecki",
       "xloc": [
         "default.handlebars->35->1460"
       ]
@@ -23502,6 +23901,7 @@
       "tr": "Grup",
       "zh-chs": "组",
       "zh-cht": "群",
+      "pl": "Grupa",
       "xloc": [
         "default-mobile.handlebars->11->250",
         "default.handlebars->35->699",
@@ -23527,6 +23927,7 @@
       "tr": "Grup Eylemi",
       "zh-chs": "集体指令",
       "zh-cht": "集體指令",
+      "pl": "Akcja Grupy",
       "xloc": [
         "default.handlebars->35->2160",
         "default.handlebars->35->2241",
@@ -23578,6 +23979,7 @@
       "tr": "Grup Tanımlayıcı",
       "zh-chs": "组标识符",
       "zh-cht": "群標識符",
+      "pl": "Identyfikator Grupy",
       "xloc": [
         "default.handlebars->35->2258"
       ]
@@ -23601,6 +24003,7 @@
       "tr": "Grup üyeleri",
       "zh-chs": "群组成员",
       "zh-cht": "群組成員",
+      "pl": "Członkowie Grupy",
       "xloc": [
         "default.handlebars->35->2279"
       ]
@@ -23670,6 +24073,7 @@
       "tr": "Grup Etiketleri",
       "zh-chs": "组标签",
       "zh-cht": "組標籤",
+      "pl": "Tagi-Grupy",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->9"
       ]
@@ -23693,6 +24097,7 @@
       "tr": "Grup1, Grup2, Grup3",
       "zh-chs": "组1，组2，组3",
       "zh-cht": "群1，群2，群3",
+      "pl": "Grupa1, Grupa2, Grupa3",
       "xloc": [
         "default-mobile.handlebars->11->364"
       ]
@@ -23716,6 +24121,7 @@
       "tr": "Gruplar",
       "zh-chs": "群组",
       "zh-cht": "群組",
+      "pl": "Grupy",
       "xloc": [
         "default.handlebars->container->topbar->1->1->UsersSubMenuSpan->UsersSubMenu->1->0->UsersGroups"
       ]
@@ -24461,6 +24867,7 @@
       "tr": "Ana bilgisayar adı",
       "zh-chs": "主机名",
       "zh-cht": "主機名",
+      "pl": "Nazwa hosta",
       "xloc": [
         "default-mobile.handlebars->11->252",
         "default-mobile.handlebars->11->253",
@@ -24493,6 +24900,7 @@
       "tr": "Hostname Sync",
       "zh-chs": "主机名同步",
       "zh-cht": "主機名同步",
+      "pl": "Synch. Bazwy hosta",
       "xloc": [
         "default.handlebars->35->1690"
       ]
@@ -24880,6 +25288,7 @@
       "tr": "Tanımlayıcı",
       "zh-chs": "识别码",
       "zh-cht": "識別符",
+      "pl": "Identyfikator",
       "xloc": [
         "default-mobile.handlebars->11->510",
         "default-mobile.handlebars->11->550",
@@ -24929,6 +25338,7 @@
       "tr": "Geçerliyse, gönderilen postayı sıfırlayın.",
       "zh-chs": "如果有效，请重置邮件已发送。",
       "zh-cht": "如果有效，請重置電郵已發送。",
+      "pl": "Jeśli jest prawidłowy, zostanie wysłany mail resetujący.",
       "xloc": [
         "login-mobile.handlebars->5->1",
         "login.handlebars->5->1",
@@ -24998,7 +25408,8 @@
       "nl": "Negeren",
       "pt-br": "Ignorar",
       "sv": "Strunta i",
-      "zh-chs": "忽略"
+      "zh-chs": "忽略",
+      "pl": "Ignoruj"
     },
     {
       "cs": "Neplatné vyvolání",
@@ -25113,6 +25524,7 @@
       "ru": "Входящий трафик",
       "sv": "Inkommande trafik",
       "zh-chs": "入站流量",
+      "pl": "Ruch Przychodzący",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1->p40type->7"
       ]
@@ -25130,6 +25542,7 @@
       "ru": "Включить детали об устройстве",
       "sv": "Inkludera enhetsinformation",
       "zh-chs": "包括设备详细信息",
+      "pl": "Dołącz szczegóły urządzenia",
       "xloc": [
         "default.handlebars->35->627"
       ]
@@ -25145,7 +25558,8 @@
       "nl": "Inkomende Bytes",
       "pt-br": "Bytes de entrada",
       "sv": "Inkommande byte",
-      "zh-chs": "传入字节"
+      "zh-chs": "传入字节",
+      "pl": "Bajty Przychodzące"
     },
     {
       "de": "Eingehende Kompression",
@@ -25251,6 +25665,7 @@
       "tr": "Bilgi",
       "zh-chs": "信息",
       "zh-cht": "訊息",
+      "pl": "Informacja",
       "xloc": [
         "default.handlebars->contextMenu->cxinfo->0"
       ]
@@ -25274,6 +25689,7 @@
       "tr": "Bu aracıda çalışan mevcut çekirdek hakkında bilgi",
       "zh-chs": "有关在此代理上运行的当前核心的信息",
       "zh-cht": "有關在此代理上運行的當前核心的訊息",
+      "pl": "Informacje o aktualnym rdzeniu działającym na tym agencie",
       "xloc": [
         "default.handlebars->container->column_l->p15->consoleTable->1->0->1->1"
       ]
@@ -25297,6 +25713,7 @@
       "tr": "Giriş",
       "zh-chs": "输入",
       "zh-cht": "輸入",
+      "pl": "Wejście",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3->11->DeskControlSpan",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->11->DeskControlSpan",
@@ -25316,6 +25733,7 @@
       "ru": "Insert",
       "sv": "Föra in",
       "zh-chs": "插",
+      "pl": "Wstaw",
       "xloc": [
         "default-mobile.handlebars->11->379",
         "default.handlebars->35->1091"
@@ -25340,6 +25758,7 @@
       "tr": "Yüklemek",
       "zh-chs": "安装",
       "zh-cht": "安裝",
+      "pl": "Zainstaluj",
       "xloc": [
         "agent-translations.json"
       ]
@@ -25408,7 +25827,8 @@
       "sv": "Installera CIRA",
       "tr": "CIRA'yı yükleyin",
       "zh-chs": "安装CIRA",
-      "zh-cht": "安裝CIRA"
+      "zh-cht": "安裝CIRA",
+      "pl": "Instaluj CIRA"
     },
     {
       "cs": "Lokální instalace",
@@ -25428,7 +25848,8 @@
       "sv": "Installera lokalt",
       "tr": "Yerel yükle",
       "zh-chs": "安装本地",
-      "zh-cht": "安裝本地"
+      "zh-cht": "安裝本地",
+      "pl": "Instaluj lokalnie"
     },
     {
       "de": "Auf diesem Gerät installieren",
@@ -25443,6 +25864,7 @@
       "ru": "Установить на это устройство",
       "sv": "Installera på den här enheten",
       "zh-chs": "在此设备上安装",
+      "pl": "Zainstaluj na tym urządzeniu",
       "xloc": [
         "default-mobile.handlebars->11->592"
       ]
@@ -25475,7 +25897,8 @@
       "nl": "Installeren...",
       "pt-br": "Instalar...",
       "sv": "Installera...",
-      "zh-chs": "安装..."
+      "zh-chs": "安装...",
+      "pl": "Instaluj..."
     },
     {
       "de": "Installation",
@@ -25488,7 +25911,8 @@
       "nl": "Installatie",
       "pt-br": "Instalação",
       "sv": "Installation",
-      "zh-chs": "安装"
+      "zh-chs": "安装",
+      "pl": "Instalacja"
     },
     {
       "cs": "Typ instalace",
@@ -25509,6 +25933,7 @@
       "tr": "Kurulum Türü",
       "zh-chs": "安装类型",
       "zh-cht": "安裝方式",
+      "pl": "Typ Instalacji",
       "xloc": [
         "default.handlebars->35->1893",
         "default.handlebars->35->1900",
@@ -26646,6 +27071,7 @@
       "tr": "Etkileşimli",
       "zh-chs": "互动",
       "zh-cht": "互動",
+      "pl": "Interaktywny",
       "xloc": [
         "default.handlebars->35->1125"
       ]
@@ -26669,6 +27095,7 @@
       "tr": "Yalnızca etkileşimli",
       "zh-chs": "仅限互动",
       "zh-cht": "僅限互動",
+      "pl": "Tylko interaktywny",
       "xloc": [
         "default.handlebars->35->1896",
         "default.handlebars->35->1903",
@@ -26696,6 +27123,7 @@
       "tr": "Arayüzler",
       "zh-chs": "介面",
       "zh-cht": "介面",
+      "pl": "Interfejsy",
       "xloc": [
         "default.handlebars->35->812"
       ]
@@ -29730,6 +30158,7 @@
       "tr": "Yükleniyor...",
       "zh-chs": "载入中...",
       "zh-cht": "載入中...",
+      "pl": "Ładowanie...",
       "xloc": [
         "default-mobile.handlebars->11->81",
         "default-mobile.handlebars->11->96",
@@ -29761,6 +30190,7 @@
       "tr": "Yerel",
       "zh-chs": "本地",
       "zh-cht": "本地",
+      "pl": "Lokalny",
       "xloc": [
         "messenger.handlebars->localVideo->1",
         "messenger.handlebars->remoteImage->3->4"
@@ -29777,7 +30207,8 @@
       "nl": "Lokaal - {0}",
       "pt-br": "Local - {0}",
       "sv": "Lokalt - {0}",
-      "zh-chs": "本地 - {0}"
+      "zh-chs": "本地 - {0}",
+      "pl": "Lokalny - {0}"
     },
     {
       "cs": "Lokální klávesová mapa",
@@ -29798,6 +30229,7 @@
       "tr": "Yerel Klavye Haritası",
       "zh-chs": "本地键盘图",
       "zh-cht": "本地鍵盤圖",
+      "pl": "Mapa Klawiatury Lokalnej",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->5",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->5"
@@ -29814,7 +30246,8 @@
       "nl": "Lokale poort",
       "pt-br": "Porta Local",
       "sv": "Lokal hamn",
-      "zh-chs": "本地端口"
+      "zh-chs": "本地端口",
+      "pl": "Port Lokalny"
     },
     {
       "de": "Lokale Geräte, kein Agent",
@@ -29829,6 +30262,7 @@
       "ru": "Локальные устройства, без агентов",
       "sv": "Lokala enheter, ingen agent",
       "zh-chs": "本地设备，无代理",
+      "pl": "Urządzenia lokalne, bez agenta",
       "xloc": [
         "default.handlebars->35->1631",
         "default.handlebars->35->1681"
@@ -29853,6 +30287,7 @@
       "tr": "Yerel dosya yükleme",
       "zh-chs": "本地档案上传",
       "zh-cht": "本地檔案上傳",
+      "pl": "Lokalne przesyłanie plików",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog3->d3upload->d3uploadMode->1"
       ]
@@ -29922,6 +30357,7 @@
       "tr": "Yerelleştirme Ayarları",
       "zh-chs": "本地化设置",
       "zh-cht": "本地化設置",
+      "pl": "Ustawienia Lokalizacji",
       "xloc": [
         "default.handlebars->35->1579",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->7"
@@ -29946,6 +30382,7 @@
       "tr": "yer",
       "zh-chs": "位置",
       "zh-cht": "位置",
+      "pl": "Lokalizacja",
       "xloc": [
         "default.handlebars->35->814"
       ]
@@ -29992,6 +30429,7 @@
       "tr": "Kilitli hesap",
       "zh-chs": "锁定账户",
       "zh-cht": "鎖定賬戶",
+      "pl": "Zablokuj Konto",
       "xloc": [
         "default.handlebars->35->2226"
       ]
@@ -30015,6 +30453,7 @@
       "tr": "Hesap Ayarlarını Kilitle",
       "zh-chs": "锁定帐户设置",
       "zh-cht": "鎖定帳戶設置",
+      "pl": "Zablokuj Ustawienia Konta",
       "xloc": [
         "default.handlebars->35->2229"
       ]
@@ -30032,6 +30471,7 @@
       "ru": "Заблокировать рабочий стол",
       "sv": "Lås skrivbordet",
       "zh-chs": "锁定桌面",
+      "pl": "Zablokuj Pulpit",
       "xloc": [
         "default.handlebars->35->920"
       ]
@@ -30055,6 +30495,7 @@
       "tr": "Kilitli hesap",
       "zh-chs": "锁定账户",
       "zh-cht": "鎖定賬戶",
+      "pl": "Zablokuj konto",
       "xloc": [
         "default.handlebars->35->2157"
       ]
@@ -30129,6 +30570,7 @@
       "tr": "Kilitli",
       "zh-chs": "已锁定",
       "zh-cht": "已鎖定",
+      "pl": "Zablokowane",
       "xloc": [
         "default.handlebars->35->2138"
       ]
@@ -30152,6 +30594,7 @@
       "tr": "Kilitli hesap",
       "zh-chs": "被锁定账户",
       "zh-cht": "被鎖定賬戶",
+      "pl": "Konto zablokowane",
       "xloc": [
         "default-mobile.handlebars->11->77",
         "default.handlebars->35->2313",
@@ -30177,6 +30620,7 @@
       "tr": "Uzak kullanıcıyı masaüstünden kilitleme",
       "zh-chs": "将远程用户锁定在桌面之外",
       "zh-cht": "將遠程用戶鎖定在桌面之外",
+      "pl": "Zablokowanie użytkownika zdalnego z pulpitu",
       "xloc": [
         "default.handlebars->35->2031"
       ]
@@ -30200,6 +30644,7 @@
       "tr": "Olay Günlüğü",
       "zh-chs": "记录事件",
       "zh-cht": "記錄事件",
+      "pl": "Dziennik Zdarzeń",
       "xloc": [
         "default.handlebars->35->799"
       ]
@@ -30223,6 +30668,7 @@
       "tr": "Oturum aç",
       "zh-chs": "登录",
       "zh-cht": "登入",
+      "pl": "Zalogowanie",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->5->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->7->1->4->3",
@@ -30252,6 +30698,7 @@
       "tr": "Mevcut bir hesabı kullanarak giriş yapın",
       "zh-chs": "使用现有帐户登录",
       "zh-cht": "使用現有帳戶登入",
+      "pl": "Zalogowanie używając istniejącego konta",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->3",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->3",
@@ -30269,7 +30716,8 @@
       "nl": "Uitloggen",
       "pt-br": "Sair",
       "sv": "Logga ut",
-      "zh-chs": "登出"
+      "zh-chs": "登出",
+      "pl": "Wylogowanie"
     },
     {
       "cs": "Log-X",
@@ -30307,6 +30755,7 @@
       "ru": "Авторизованные пользователи",
       "sv": "Inloggade användare",
       "zh-chs": "已登录用户",
+      "pl": "Zalogowani użytkownicy",
       "xloc": [
         "default.handlebars->35->281"
       ]
@@ -30330,6 +30779,7 @@
       "tr": "Oturum aç",
       "zh-chs": "登录",
       "zh-cht": "登入",
+      "pl": "Logowanie",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resettokenpanel->1->5->1->2->1->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->1",
@@ -30356,6 +30806,7 @@
       "tr": "Oturum Açma Kabuğu",
       "zh-chs": "登录控制台",
       "zh-cht": "登入控制台",
+      "pl": "Logowanie Powłoki",
       "xloc": [
         "default.handlebars->termShellContextMenuLinux->5",
         "xterm.handlebars->termShellContextMenuLinux->cxtermps"
@@ -30380,6 +30831,7 @@
       "tr": "Şifrenizi güncellemek için oturum açın ve \\\"Hesabım\\\" sekmesine gidin.",
       "zh-chs": "登录并转到“我的帐户”选项卡以更新密码。",
       "zh-cht": "登入並進入“我的帳戶”標籤以更新密碼。",
+      "pl": "Zaloguj się i przejdź do zakładki \\\"Moje konto\"\\, aby zaktualizować swoje hasło.",
       "xloc": [
         "message.handlebars->3->13",
         "message2.handlebars->5->13"
@@ -30404,6 +30856,7 @@
       "tr": "Giriş başarısız oldu, kullanıcı adı ve şifreyi kontrol edin.",
       "zh-chs": "登录失败，请检查用户名和密码。",
       "zh-cht": "登入失敗，請檢查用戶名和密碼。",
+      "pl": "Logowanie nie powiodło się, sprawdź nazwę użytkownika i hasło.",
       "xloc": [
         "login-mobile.handlebars->5->17",
         "login.handlebars->5->17",
@@ -30429,6 +30882,7 @@
       "tr": "Giriş jetonu:",
       "zh-chs": "登入保安编码：",
       "zh-cht": "登入保安編碼：",
+      "pl": "Token logowania:",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resettokenpanel->1->5->1->0->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->0->1",
@@ -30455,6 +30909,7 @@
       "tr": "Çıkış Yap",
       "zh-chs": "登出",
       "zh-cht": "登出",
+      "pl": "Wyloguj",
       "xloc": [
         "default-mobile.handlebars->topMenu->logoutMenuOption->0->0",
         "default.handlebars->35->56",
@@ -30480,6 +30935,7 @@
       "tr": "Lüksemburgca",
       "zh-chs": "卢森堡文",
       "zh-cht": "盧森堡文",
+      "pl": "Luksemburski",
       "xloc": [
         "default.handlebars->35->1485"
       ]
@@ -30503,6 +30959,7 @@
       "tr": "MAC Katmanı",
       "zh-chs": "MAC层",
       "zh-cht": "MAC層",
+      "pl": "Warstwa MAC",
       "xloc": [
         "default-mobile.handlebars->11->514",
         "default-mobile.handlebars->11->516",
@@ -30531,6 +30988,7 @@
       "tr": "Mac Adresi",
       "zh-chs": "MAC地址",
       "zh-cht": "MAC地址",
+      "pl": "Adres MAC",
       "xloc": [
         "default.handlebars->35->125",
         "default.handlebars->35->136"
@@ -30580,6 +31038,7 @@
       "tr": "MAC: {0}, Ağ Geçidi: {1}",
       "zh-chs": "MAC：{0}，网关：{1}",
       "zh-cht": "MAC：{0}，網關：{1}",
+      "pl": "MAC: {0}, Brama: {1}",
       "xloc": [
         "default-mobile.handlebars->11->515",
         "default.handlebars->35->1262",
@@ -30670,7 +31129,8 @@
       "sv": "MPS-server",
       "tr": "MPS Sunucusu",
       "zh-chs": "MPS服务器",
-      "zh-cht": "MPS伺服器"
+      "zh-cht": "MPS伺服器",
+      "pl": "Serwer MPS"
     },
     {
       "cs": "MQTT",
@@ -30977,6 +31437,7 @@
       "tr": "Ana Sunucu Mesajları",
       "zh-chs": "主服务器信息",
       "zh-cht": "主伺服器訊息",
+      "pl": "Główne Komunikaty Serwera",
       "xloc": [
         "default.handlebars->35->2591"
       ]
@@ -31000,6 +31461,7 @@
       "tr": "Malayca",
       "zh-chs": "马来文",
       "zh-cht": "馬來文",
+      "pl": "Malajski",
       "xloc": [
         "default.handlebars->35->1487"
       ]
@@ -31023,6 +31485,7 @@
       "tr": "Malayalam dili",
       "zh-chs": "玛拉雅拉姆文",
       "zh-cht": "馬拉雅拉姆文",
+      "pl": "Malajalamski",
       "xloc": [
         "default.handlebars->35->1488"
       ]
@@ -31046,6 +31509,7 @@
       "tr": "Malta dili",
       "zh-chs": "马耳他文",
       "zh-cht": "馬耳他文",
+      "pl": "Maltański",
       "xloc": [
         "default.handlebars->35->1489"
       ]
@@ -31163,6 +31627,7 @@
       "tr": "Cihazları Yönetin",
       "zh-chs": "管理设备",
       "zh-cht": "管理裝置",
+      "pl": "Zarządzaj Urządzeniami",
       "xloc": [
         "default.handlebars->35->890"
       ]
@@ -31720,6 +32185,7 @@
       "tr": "Hafıza",
       "zh-chs": "记忆体",
       "zh-cht": "記憶體",
+      "pl": "Pamięć",
       "xloc": [
         "default-mobile.handlebars->11->559",
         "default.handlebars->35->1316",
@@ -32657,6 +33123,7 @@
       "tr": "İleti",
       "zh-chs": "消息",
       "zh-cht": "訊息",
+      "pl": "Wiadomość",
       "xloc": [
         "default.handlebars->35->1003",
         "default.handlebars->35->444",
@@ -32682,6 +33149,7 @@
       "tr": "Mesaj Kutusu",
       "zh-chs": "留言框",
       "zh-cht": "留言框",
+      "pl": "Okno Wiadomości",
       "xloc": [
         "default.handlebars->35->605"
       ]
@@ -32705,6 +33173,7 @@
       "tr": "Mesaj Gönderici",
       "zh-chs": "消息调度器",
       "zh-cht": "電郵調度器",
+      "pl": "Dysponent Wiadomości",
       "xloc": [
         "default.handlebars->35->2590"
       ]
@@ -32728,6 +33197,7 @@
       "tr": "İleti:",
       "zh-chs": "消息：",
       "zh-cht": "訊息：",
+      "pl": "Wiadomość:",
       "xloc": [
         "mesh-invite.html->2->7->1"
       ]
@@ -32751,6 +33221,7 @@
       "tr": "Mesaj: [[[MSG]]]",
       "zh-chs": "消息：[[[MSG]]]",
       "zh-cht": "訊息：[[[MSG]]]",
+      "pl": "Wiadomość: [[[MSG]]]",
       "xloc": [
         "mesh-invite.txt"
       ]
@@ -32767,6 +33238,7 @@
       "pt-br": "Messenger",
       "sv": "budbärare",
       "zh-chs": "信使",
+      "pl": "Komunikator",
       "xloc": [
         "default.handlebars->35->2460"
       ]
@@ -32836,6 +33308,7 @@
       "tr": "Minimum {0} uzunluk",
       "zh-chs": "最小长度为{0}",
       "zh-cht": "最小長度為{0}",
+      "pl": "Minimalna długość to {0}",
       "xloc": [
         "login-mobile.handlebars->5->36",
         "login.handlebars->5->37",
@@ -32855,6 +33328,7 @@
       "ru": "Мобильное устройство",
       "sv": "Mobilenhet",
       "zh-chs": "移动设备",
+      "pl": "Urządzenie Mobilne",
       "xloc": [
         "default-mobile.handlebars->11->512",
         "default.handlebars->35->1259"
@@ -32873,6 +33347,7 @@
       "ru": "Мобильное устройство",
       "sv": "Mobilenhet",
       "zh-chs": "移动设备",
+      "pl": "Urządzenie mobilne",
       "xloc": [
         "default.handlebars->35->464"
       ]
@@ -32922,6 +33397,7 @@
       "tr": "Düğüm konumunu değiştir",
       "zh-chs": "修改节点位置",
       "zh-cht": "修改節點位置",
+      "pl": "Modyfikacja lokalizacji node-a",
       "xloc": [
         "default.handlebars->35->668"
       ]
@@ -32945,6 +33421,7 @@
       "tr": "Moldovalı",
       "zh-chs": "摩尔达维亚文",
       "zh-cht": "摩爾達維亞文",
+      "pl": "Mołdawski",
       "xloc": [
         "default.handlebars->35->1492"
       ]
@@ -32968,6 +33445,7 @@
       "tr": "Daha",
       "zh-chs": "更多",
       "zh-cht": "更多",
+      "pl": "Więcej",
       "xloc": [
         "default.handlebars->35->2624"
       ]
@@ -32991,6 +33469,7 @@
       "tr": "Anakart",
       "zh-chs": "母板",
       "zh-cht": "母板",
+      "pl": "Płyta główna",
       "xloc": [
         "default-mobile.handlebars->11->553",
         "default.handlebars->35->1310"
@@ -33015,6 +33494,7 @@
       "tr": "Bu cihazı farklı bir cihaz grubuna taşıyın",
       "zh-chs": "将此设备移到其他设备组",
       "zh-cht": "將此裝置移至其他裝置群",
+      "pl": "Przenieś to urządzenie do innej grupy urządzeń",
       "xloc": [
         "default.handlebars->35->807"
       ]
@@ -33208,6 +33688,7 @@
       "tr": "Hesabım",
       "zh-chs": "我的帐户",
       "zh-cht": "我的帳戶",
+      "pl": "Moje konto",
       "xloc": [
         "default-mobile.handlebars->topMenu->3",
         "default.handlebars->container->column_l->p2->p2title->0",
@@ -33234,6 +33715,7 @@
       "tr": "Benim cihazlarım",
       "zh-chs": "我的设备",
       "zh-cht": "我的裝置",
+      "pl": "Moje Urządzenia",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->2->0",
         "default.handlebars->container->page_leftbar",
@@ -33259,6 +33741,7 @@
       "tr": "Etkinliklerim",
       "zh-chs": "我的事件",
       "zh-cht": "我的事件",
+      "pl": "Moje Zdarzenia",
       "xloc": [
         "default.handlebars->container->column_l->p3->p3title->0",
         "default.handlebars->container->page_leftbar",
@@ -33284,6 +33767,7 @@
       "tr": "Benim dosyalarım",
       "zh-chs": "我的档案",
       "zh-cht": "我的檔案",
+      "pl": "Moje Pliki",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p5->1->1->0->5->1->1",
         "default-mobile.handlebars->topMenu->1",
@@ -33311,6 +33795,7 @@
       "tr": "Sunucum",
       "zh-chs": "我的服务器",
       "zh-cht": "我的伺服器",
+      "pl": "Mój Serwer",
       "xloc": [
         "default.handlebars->container->column_l->p6->p6info->p6title->3",
         "default.handlebars->container->page_leftbar",
@@ -33336,6 +33821,7 @@
       "tr": "Sunucu Konsolum",
       "zh-chs": "我的服务器控制台",
       "zh-cht": "我的伺服器控制台",
+      "pl": "Konsola Mojego Serwera",
       "xloc": [
         "default.handlebars->35->1323"
       ]
@@ -33359,6 +33845,7 @@
       "tr": "Sunucu Eklentilerim",
       "zh-chs": "我的服务器插件",
       "zh-cht": "我的伺服器外掛",
+      "pl": "Wtyczki Mojego Serwera",
       "xloc": [
         "default.handlebars->container->column_l->p42->1"
       ]
@@ -33382,6 +33869,7 @@
       "tr": "Sunucu Eklentilerim -",
       "zh-chs": "我的服务器插件-",
       "zh-cht": "我的伺服器外掛-",
+      "pl": "Wtyczki Mojego Serwera -",
       "xloc": [
         "default.handlebars->container->column_l->p43->3"
       ]
@@ -33405,6 +33893,7 @@
       "tr": "Sunucu İstatistiklerim",
       "zh-chs": "我的服务器统计",
       "zh-cht": "我的伺服器統計",
+      "pl": "Statystyki Mojego Serwera",
       "xloc": [
         "default.handlebars->container->column_l->p40->p40title->0"
       ]
@@ -33428,6 +33917,7 @@
       "tr": "Sunucu İzlemem",
       "zh-chs": "我的服务器跟踪",
       "zh-cht": "我的伺服器追蹤",
+      "pl": "Śledzenie Mojego Serwera",
       "xloc": [
         "default.handlebars->container->column_l->p41->p41title->0"
       ]
@@ -33451,6 +33941,7 @@
       "tr": "Kullanıcı Gruplarım",
       "zh-chs": "我的用户组",
       "zh-cht": "我的用戶群",
+      "pl": "Grupy Mojego Użytkownika",
       "xloc": [
         "default.handlebars->container->column_l->p50->p50title->0"
       ]
@@ -33474,6 +33965,7 @@
       "tr": "Kullanıcı Kayıtlarım",
       "zh-chs": "我的用户记录",
       "zh-cht": "我的用戶記錄",
+      "pl": "Nagrania Mojego Użytkownika",
       "xloc": [
         "default.handlebars->container->column_l->p52->p52title->1"
       ]
@@ -33497,6 +33989,7 @@
       "tr": "Kullanıcılarım",
       "zh-chs": "我的用户",
       "zh-cht": "我的用戶",
+      "pl": "Moi Użytkownicy",
       "xloc": [
         "default.handlebars->container->column_l->p4->p4title->0",
         "default.handlebars->container->page_leftbar",
@@ -33615,6 +34108,7 @@
       "tr": "İsim",
       "zh-chs": "名称",
       "zh-cht": "名稱",
+      "pl": "Nazwa",
       "xloc": [
         "default-mobile.handlebars->11->121",
         "default-mobile.handlebars->11->251",
@@ -33664,6 +34158,7 @@
       "tr": "İsim: (İsteğe bağlı)",
       "zh-chs": "名称（可选）",
       "zh-cht": "名稱（可選）",
+      "pl": "Nazwa (opcjonalnie)",
       "xloc": [
         "default.handlebars->35->424"
       ]
@@ -33687,6 +34182,7 @@
       "tr": "Ad1, Ad2, Ad3",
       "zh-chs": "名称1，名称2，名称3",
       "zh-cht": "名稱1，名稱2，名稱3",
+      "pl": "Nazwa1, Nazwa2, Nazwa3",
       "xloc": [
         "default.handlebars->35->2214"
       ]
@@ -33779,6 +34275,7 @@
       "tr": "Ağ arayüzleri",
       "zh-chs": "网络接口",
       "zh-cht": "網絡介面",
+      "pl": "Interfejsy Sieciowe",
       "xloc": [
         "default.handlebars->35->1021"
       ]
@@ -33801,7 +34298,8 @@
       "sv": "Nätverksrouter",
       "tr": "Ağ Yönlendiricisi",
       "zh-chs": "网络路由器",
-      "zh-cht": "網絡路由器"
+      "zh-cht": "網絡路由器",
+      "pl": "Router Sieciowy"
     },
     {
       "cs": "Sítě",
@@ -33822,6 +34320,7 @@
       "tr": "Ağ oluşturma",
       "zh-chs": "网络",
       "zh-cht": "網路",
+      "pl": "Sieć",
       "xloc": [
         "default-mobile.handlebars->11->526",
         "default.handlebars->35->1269",
@@ -33847,6 +34346,7 @@
       "tr": "Yeni",
       "zh-chs": "新",
       "zh-cht": "新",
+      "pl": "Nowy",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3createMeshLink1->1",
         "default.handlebars->35->1647",
@@ -33889,6 +34389,7 @@
       "ru": "Новый аккаунт",
       "sv": "Nytt konto",
       "zh-chs": "新账户",
+      "pl": "Nowe Konto",
       "xloc": [
         "default-mobile.handlebars->11->659",
         "default.handlebars->35->2487"
@@ -33913,6 +34414,7 @@
       "tr": "Yeni hesap...",
       "zh-chs": "新账户...",
       "zh-cht": "新賬戶...",
+      "pl": "Nowe Konto...",
       "xloc": [
         "default.handlebars->container->column_l->p4->3->1->0->3->3"
       ]
@@ -33936,6 +34438,7 @@
       "tr": "Yeni Temsilci Sürümü",
       "zh-chs": "新代理版本",
       "zh-cht": "新代理版本",
+      "pl": "Nowa Wersja Agenta",
       "xloc": [
         "agent-translations.json"
       ]
@@ -33959,6 +34462,7 @@
       "tr": "Yeni Cihaz Grubu",
       "zh-chs": "新设备组",
       "zh-cht": "新裝置群",
+      "pl": "Nowa Grupa Urządzeń",
       "xloc": [
         "default-mobile.handlebars->11->115",
         "default.handlebars->35->1013",
@@ -33985,6 +34489,7 @@
       "tr": "Yeni dosya",
       "zh-chs": "新建档案夹",
       "zh-cht": "新建檔案夾",
+      "pl": "Nowy Folder",
       "xloc": [
         "default-mobile.handlebars->11->144",
         "default-mobile.handlebars->11->444",
@@ -34015,6 +34520,7 @@
       "tr": "Yeni Grup...",
       "zh-chs": "新组...",
       "zh-cht": "新群...",
+      "pl": "Nowa Grupa...",
       "xloc": [
         "default.handlebars->container->column_l->p50->3->1->0->3->3"
       ]
@@ -34038,6 +34544,7 @@
       "tr": "Yeni Şifre*",
       "zh-chs": "新密码*",
       "zh-cht": "新密碼*",
+      "pl": "Nowe Hasło*",
       "xloc": [
         "default.handlebars->35->408",
         "default.handlebars->35->409"
@@ -34062,6 +34569,7 @@
       "tr": "Yeni Jetonlar",
       "zh-chs": "新保安编码",
       "zh-cht": "新保安編碼",
+      "pl": "Nowe Tokeny",
       "xloc": [
         "default-mobile.handlebars->11->70"
       ]
@@ -34085,6 +34593,7 @@
       "tr": "Yeni Şifre*",
       "zh-chs": "新密码*",
       "zh-cht": "新密碼*",
+      "pl": "Nowe hasło*",
       "xloc": [
         "default.handlebars->35->1761",
         "default.handlebars->35->1762"
@@ -34109,6 +34618,7 @@
       "tr": "Yeni Şifre:",
       "zh-chs": "新密码：",
       "zh-cht": "新密碼：",
+      "pl": "Nowe hasło:",
       "xloc": [
         "default-mobile.handlebars->11->110",
         "default-mobile.handlebars->11->111",
@@ -34127,7 +34637,8 @@
       "nl": "Volgende",
       "pt-br": "Próximo",
       "sv": "Nästa",
-      "zh-chs": "下一个"
+      "zh-chs": "下一个",
+      "pl": "Dalej"
     },
     {
       "de": "Nacht Modus",
@@ -34142,6 +34653,7 @@
       "ru": "Ночной режим",
       "sv": "Nattläge",
       "zh-chs": "夜间模式",
+      "pl": "Tryb Nocny",
       "xloc": [
         "default-mobile.handlebars->11->86",
         "default.handlebars->35->61"
@@ -34166,6 +34678,7 @@
       "tr": "AMT yok",
       "zh-chs": "没有AMT",
       "zh-cht": "沒有AMT",
+      "pl": "Brak AMT",
       "xloc": [
         "default.handlebars->35->872",
         "default.handlebars->35->894"
@@ -34260,6 +34773,7 @@
       "tr": "Masaüstü Yok",
       "zh-chs": "没有桌面",
       "zh-cht": "沒有桌面",
+      "pl": "Brak Pulpitu",
       "xloc": [
         "default.handlebars->35->1868",
         "default.handlebars->35->874",
@@ -35449,6 +35963,7 @@
       "tr": "Özel cihaz izinlerine sahip kullanıcı yok",
       "zh-chs": "没有拥有特殊设备权限的用户",
       "zh-cht": "沒有擁有特殊裝置權限的用戶",
+      "pl": "Brak użytkowników ze specjalnymi uprawnieniami do urządzenia",
       "xloc": [
         "default.handlebars->35->852"
       ]
@@ -35530,6 +36045,7 @@
       "tr": "Yok",
       "zh-chs": "没有",
       "zh-cht": "沒有",
+      "pl": "Brak",
       "xloc": [
         "default-mobile.handlebars->11->140",
         "default-mobile.handlebars->11->189",
@@ -35766,6 +36282,7 @@
       "tr": "Bağlı değil",
       "zh-chs": "未连接",
       "zh-cht": "未連接",
+      "pl": "Nie Połączono",
       "xloc": [
         "default.handlebars->35->1910",
         "default.handlebars->35->1923"
@@ -35831,6 +36348,7 @@
       "tr": "Sunucuda değil",
       "zh-chs": "不在服务器上",
       "zh-cht": "不在伺服器上",
+      "pl": "Brak na serwerze",
       "xloc": [
         "default.handlebars->35->2470"
       ]
@@ -35901,6 +36419,7 @@
       "tr": "Notlar",
       "zh-chs": "笔记",
       "zh-cht": "筆記",
+      "pl": "Notatki",
       "xloc": [
         "default-mobile.handlebars->11->341",
         "default.handlebars->35->1721",
@@ -35930,6 +36449,7 @@
       "tr": "Farkına varmak:",
       "zh-chs": "注意：",
       "zh-cht": "注意：",
+      "pl": "Wskazówka:",
       "xloc": [
         "default.handlebars->container->column_l->p42->pluginRestartNotice->3->1->0"
       ]
@@ -36038,6 +36558,7 @@
       "tr": "Bildirimler",
       "zh-chs": "通知",
       "zh-cht": "通知",
+      "pl": "Powiadomienia",
       "xloc": [
         "default.handlebars->35->1711"
       ]
@@ -36061,6 +36582,7 @@
       "tr": "Bildir",
       "zh-chs": "通知",
       "zh-cht": "通知",
+      "pl": "Powiadom",
       "xloc": [
         "default.handlebars->35->2374",
         "default.handlebars->35->238"
@@ -36085,6 +36607,7 @@
       "tr": "Yalnızca Bildir",
       "zh-chs": "仅通知",
       "zh-cht": "只通知",
+      "pl": "Tylko Powiadom",
       "xloc": [
         "default.handlebars->35->954"
       ]
@@ -36108,6 +36631,7 @@
       "tr": "Kullanıcıya bildir",
       "zh-chs": "通知使用者",
       "zh-cht": "通知使用者",
+      "pl": "Powiadom użytkownika",
       "xloc": [
         "default.handlebars->35->1791",
         "default.handlebars->35->1795",
@@ -36133,6 +36657,7 @@
       "tr": "{0} bildir",
       "zh-chs": "通知{0}",
       "zh-cht": "通知{0}",
+      "pl": "Powiadom {0}",
       "xloc": [
         "default.handlebars->35->2172"
       ]
@@ -36565,6 +37090,7 @@
       "tr": "Açık dosya...",
       "zh-chs": "打开档案...",
       "zh-cht": "打開檔案...",
+      "pl": "Otwórz Plik...",
       "xloc": [
         "player.handlebars->3->55",
         "player.handlebars->p11->deskarea0->deskarea1->3"
@@ -36612,6 +37138,7 @@
       "tr": "Oynatıcıyı Aç ...",
       "zh-chs": "打开播放器...",
       "zh-cht": "打開播放器...",
+      "pl": "Otwórz Odtwarzacz...",
       "xloc": [
         "default.handlebars->container->column_l->p52->3->1->0->3->1",
         "default.handlebars->deskPlayerContextMenu->1"
@@ -36641,7 +37168,8 @@
       "nl": "Website openen",
       "pt-br": "Abra o site",
       "sv": "Öppna webbplatsen",
-      "zh-chs": "打开网站"
+      "zh-chs": "打开网站",
+      "pl": "Otwórz Stronę"
     },
     {
       "cs": "Otevřete terminál XTerm",
@@ -36724,7 +37252,8 @@
       "nl": "Open...",
       "pt-br": "Abrir...",
       "sv": "Öppna...",
-      "zh-chs": "打开..."
+      "zh-chs": "打开...",
+      "pl": "Otwórz..."
     },
     {
       "de": "OpenSSH",
@@ -36758,6 +37287,7 @@
       "tr": "Açılış: {0}",
       "zh-chs": "开头：{0}",
       "zh-cht": "開場：{0}",
+      "pl": "Otwarte: {0}",
       "xloc": [
         "default.handlebars->35->1998"
       ]
@@ -36781,6 +37311,7 @@
       "tr": "İşletim sistemi",
       "zh-chs": "操作系统",
       "zh-cht": "操作系統",
+      "pl": "System Operacyjny",
       "xloc": [
         "default-mobile.handlebars->11->497",
         "default.handlebars->35->1039",
@@ -37296,6 +37827,7 @@
       "tr": "Geçiş İpucu:",
       "zh-chs": "通过提示：",
       "zh-cht": "通過提示：",
+      "pl": "Podpowiedź:",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->createPanelHint->1"
       ]
@@ -37319,6 +37851,7 @@
       "tr": "Parola",
       "zh-chs": "密码",
       "zh-cht": "密碼",
+      "pl": "Hasło",
       "xloc": [
         "default-mobile.handlebars->11->347",
         "default-mobile.handlebars->11->411",
@@ -37557,7 +38090,8 @@
       "sv": "Lösenordet matchar inte",
       "tr": "Şifre eşleşmiyor",
       "zh-chs": "密码不符",
-      "zh-cht": "密碼不符"
+      "zh-cht": "密碼不符",
+      "pl": "Hasło nie pasuje"
     },
     {
       "cs": "Heslo odmítnuto, zkuste jiné.",
@@ -37664,6 +38198,7 @@
       "tr": "Yapıştırmak",
       "zh-chs": "粘贴",
       "zh-cht": "糊",
+      "pl": "Wklej",
       "xloc": [
         "default-mobile.handlebars->11->152",
         "default-mobile.handlebars->11->457",
@@ -37700,6 +38235,7 @@
       "tr": "Metni terminale yapıştırın",
       "zh-chs": "将文本粘贴到终端中",
       "zh-cht": "將文本黏貼到終端中",
+      "pl": "Wklej tekst do terminala",
       "xloc": [
         "default.handlebars->container->column_l->p12->termTable->1->1->4->1->3",
         "sharing.handlebars->p12->9->3"
@@ -37716,7 +38252,8 @@
       "nl": "Pad",
       "pt-br": "Caminho",
       "sv": "Väg",
-      "zh-chs": "小路"
+      "zh-chs": "小路",
+      "pl": "Ścieżka"
     },
     {
       "cs": "Pozastavit",
@@ -37737,6 +38274,7 @@
       "tr": "Duraklat",
       "zh-chs": "暂停",
       "zh-cht": "暫停",
+      "pl": "Wstrzymaj",
       "xloc": [
         "player.handlebars->p11->deskarea0->deskarea4->3"
       ]
@@ -46425,6 +46963,7 @@
       "tr": "Kurmak...",
       "zh-chs": "设定...",
       "zh-cht": "設定...",
+      "pl": "Instalacja...",
       "xloc": [
         "default-mobile.handlebars->11->3",
         "default.handlebars->35->10",
@@ -46455,6 +46994,7 @@
       "tr": "Paylaş",
       "zh-chs": "共享",
       "zh-cht": "共享",
+      "pl": "Udostępnij",
       "xloc": [
         "default.handlebars->35->805"
       ]
@@ -46478,6 +47018,7 @@
       "tr": "Cihazı Paylaş",
       "zh-chs": "共享设备",
       "zh-cht": "共享裝置",
+      "pl": "Udostępnij Urządzenie",
       "xloc": [
         "default.handlebars->35->251",
         "default.handlebars->35->955"
@@ -46502,6 +47043,7 @@
       "tr": "Dosya paylaşın",
       "zh-chs": "共享档案",
       "zh-cht": "共享檔案",
+      "pl": "Udostępnij plik",
       "xloc": [
         "messenger.handlebars->xtop->3"
       ]
@@ -49643,6 +50185,7 @@
       "tr": "Sistem tipi",
       "zh-chs": "系统类型",
       "zh-cht": "系統類型",
+      "pl": "Typ Systemu",
       "xloc": [
         "default.handlebars->35->469"
       ]
@@ -49736,6 +50279,7 @@
       "tr": "YAZILIM, TİCARİ ELVERİŞLİLİK, BELİRLİ BİR AMACA UYGUNLUK VE İHLAL ETMEME GARANTİLERİ DAHİL ANCAK BUNLARLA SINIRLI OLMAMAK ÜZERE, AÇIK VEYA ZIMNİ HERHANGİ BİR GARANTİ OLMAKSIZIN \"OLDUĞU GİBİ\" SAĞLANIR. YAZARLAR VEYA TELİF HAKKI SAHİPLERİ HİÇBİR DURUMDA YAZILIM VEYA KULLANIM YA DA YAZILIMIN KULLANIMI VEYA DİĞER İLİŞKİLERDEN KAYNAKLANAN, SÖZLEŞME, İŞKENCE VEYA BAŞKA BİR DURUMDA HERHANGİ BİR TALEP, ZARAR VEYA DİĞER YÜKÜMLÜLÜKLERDEN SORUMLU OLMAYACAKTIR. YAZILIM.",
       "zh-chs": "本软件按“原样”提供，不提供任何形式的明示或暗示保证，包括但不限于对适销性，特定目的的适用性和非侵权性的保证。无论是由于软件，其使用或其他方式产生的，与之有关或与之有关的合同，侵权或其他形式的任何索赔，损害或其他责任，作者或版权所有者概不负责。",
       "zh-cht": "本軟體按“原樣”提供，不提供任何形式的明示或暗示擔保，包括但不限於對適銷性，特定目的的適用性和非侵權性的保證。無論是由於軟體，其使用或其他方式產生的，與之有關或與之有關的合同，侵權或其他形式的任何索賠，損害或其他責任，作者或版權所有者概不負責。",
+      "pl": "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->49->1",
         "terms-mobile.handlebars->container->page_content->column_l->57->1",
@@ -49934,6 +50478,7 @@
       "tr": "Etiketli",
       "zh-chs": "已标记",
       "zh-cht": "已標記",
+      "pl": "Tagowane",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->15"
       ]
@@ -49957,6 +50502,7 @@
       "tr": "Etiketler",
       "zh-chs": "标签",
       "zh-cht": "標籤",
+      "pl": "Tagi",
       "xloc": [
         "default-mobile.handlebars->11->295",
         "default-mobile.handlebars->11->296",
@@ -50101,6 +50647,7 @@
       "ru": "Терминал + Файлы",
       "sv": "Terminal + filer",
       "zh-chs": "终端 + 文件",
+      "pl": "Terminal + Pliki",
       "xloc": [
         "default.handlebars->35->860",
         "default.handlebars->35->928"
@@ -50293,6 +50840,7 @@
       "tr": "Kullanım Şartları",
       "zh-chs": "使用条款",
       "zh-cht": "使用條款",
+      "pl": "Warunki użytkowania",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->1",
         "terms.handlebars->container->column_l->1"
@@ -50317,6 +50865,7 @@
       "tr": "Tay dili",
       "zh-chs": "泰国",
       "zh-cht": "泰國",
+      "pl": "Tajski",
       "xloc": [
         "default.handlebars->35->1554"
       ]
@@ -50477,6 +51026,7 @@
       "tr": "Şu anda bildirim yok",
       "zh-chs": "目前没有任何通知",
       "zh-cht": "目前沒有任何通知",
+      "pl": "Obecnie nie ma żadnych powiadomień",
       "xloc": [
         "default-mobile.handlebars->11->655",
         "default.handlebars->35->2483"
@@ -50696,6 +51246,7 @@
       "nl": "Dit is een oude agent versie, overweeg om te updaten.",
       "pt-br": "Esta é uma versão antiga do agente, considere atualizá-la.",
       "sv": "Detta är en gammal agentversion, överväga att uppdatera.",
+      "pl": "To jest stara wersja agenta, rozważ aktualizację.",
       "xloc": [
         "default.handlebars->35->2095"
       ]
@@ -50762,6 +51313,7 @@
       "tr": "Bu sayfa mevcut değil",
       "zh-chs": "本页面不存在",
       "zh-cht": "本頁面不存在",
+      "pl": "Ta strona nie istnieje",
       "xloc": [
         "error404-mobile.handlebars->container->page_content->column_l->3",
         "error404.handlebars->container->column_l->3"
@@ -50846,6 +51398,7 @@
       "tr": "Bu yazılım aşağıdaki kodu kullanır",
       "zh-chs": "此软件代码是从以下得到",
       "zh-cht": "此軟體程式碼是從以下得到",
+      "pl": "To oprogramowanie wykorzystuje kod z",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->75->1",
         "terms.handlebars->container->column_l->75->1"
@@ -51006,6 +51559,7 @@
       "tr": "Zaman",
       "zh-chs": "时间",
       "zh-cht": "時間",
+      "pl": "Czas",
       "xloc": [
         "default-mobile.handlebars->11->320",
         "default.handlebars->35->959",
@@ -51100,6 +51654,7 @@
       "tr": "Zaman aşımı",
       "zh-chs": "超时",
       "zh-cht": "超時",
+      "pl": "Czas minął",
       "xloc": [
         "default-mobile.handlebars->11->369",
         "default.handlebars->35->1069",
@@ -51126,6 +51681,7 @@
       "tr": "Başlık",
       "zh-chs": "标题",
       "zh-cht": "標題",
+      "pl": "Tytuł",
       "xloc": [
         "default.handlebars->35->606"
       ]
@@ -52771,6 +53327,7 @@
       "tr": "Kaldır",
       "zh-chs": "卸载",
       "zh-cht": "卸載",
+      "pl": "Odinstaluj",
       "xloc": [
         "agent-translations.json",
         "default-mobile.handlebars->11->644",
@@ -52869,6 +53426,7 @@
       "tr": "Bilinmeyen",
       "zh-chs": "未知",
       "zh-cht": "未知",
+      "pl": "Nieznany",
       "xloc": [
         "default-mobile.handlebars->11->240",
         "default-mobile.handlebars->11->37",
@@ -53132,6 +53690,7 @@
       "tr": "Sınırsız",
       "zh-chs": "无限制",
       "zh-cht": "無限",
+      "pl": "Bez limitu",
       "xloc": [
         "default.handlebars->35->1581",
         "default.handlebars->35->229",
@@ -53274,6 +53833,7 @@
       "tr": "Güncelleme",
       "zh-chs": "更新资料",
       "zh-cht": "更新資料",
+      "pl": "Aktualizacja",
       "xloc": [
         "agent-translations.json",
         "default-mobile.handlebars->11->484",
@@ -53314,6 +53874,7 @@
       "tr": "Yükle",
       "zh-chs": "上载",
       "zh-cht": "上載",
+      "pl": "Prześlij",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->3",
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->3",
@@ -53342,6 +53903,7 @@
       "tr": "Dosya yükleme",
       "zh-chs": "上载档案",
       "zh-cht": "上載檔案",
+      "pl": "Prześlij Plik",
       "xloc": [
         "default-mobile.handlebars->11->150",
         "default-mobile.handlebars->11->450",
@@ -53401,6 +53963,7 @@
       "tr": "Çekirdek dosya yükleyin",
       "zh-chs": "上载核心档案",
       "zh-cht": "上載核心檔案",
+      "pl": "Prześlij plik jądra",
       "xloc": [
         "default-mobile.handlebars->11->580",
         "default.handlebars->35->1338"
@@ -53425,6 +53988,7 @@
       "tr": "Varsayılan sunucu çekirdeğini yükleyin",
       "zh-chs": "上载默认服务器核心",
       "zh-cht": "上載默認伺服器核心",
+      "pl": "Prześlij domyślne jądro serwera",
       "xloc": [
         "default-mobile.handlebars->11->576",
         "default.handlebars->35->1334",
@@ -53468,6 +54032,7 @@
       "tr": "Dosyaları yükle",
       "zh-chs": "上传文件",
       "zh-cht": "上傳文件",
+      "pl": "Prześlij pliki",
       "xloc": [
         "default.handlebars->35->569"
       ]
@@ -53650,6 +54215,7 @@
       "tr": "Yükle: \\\"{0}\\\"",
       "zh-chs": "上传：“{0}”",
       "zh-cht": "上傳：“{0}”",
+      "pl": "Prześlij: \\\"{0}\\\"",
       "xloc": [
         "default.handlebars->35->2028"
       ]
@@ -53667,6 +54233,7 @@
       "ru": "Загрузка: \\\"{0}\\\", Размер: {1}",
       "sv": "Ladda upp: \\\"{0}\\\", Storlek: {1}",
       "zh-chs": "上传：\\\"{0}\\\"，大小：{1}",
+      "pl": "Prześlij: \\\"{0}\\\", Rozmiar: {1}",
       "xloc": [
         "default.handlebars->35->2083"
       ]
@@ -53784,6 +54351,7 @@
       "tr": "Güvenlik Anahtarını Kullan",
       "zh-chs": "使用安全密钥",
       "zh-cht": "使用安全密鑰",
+      "pl": "Użyj Klucza Bezpieczeństwa",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resettokenpanel->1->5->1->2->1->3",
@@ -53871,6 +54439,7 @@
       "tr": "Kullanılmış",
       "zh-chs": "用过的",
       "zh-cht": "用過的",
+      "pl": "Wykorzystano",
       "xloc": [
         "default.handlebars->35->2522",
         "default.handlebars->35->2524"
@@ -53895,6 +54464,7 @@
       "tr": "Kullanıcı",
       "zh-chs": "用户",
       "zh-cht": "用戶",
+      "pl": "Użytkownik",
       "xloc": [
         "default.handlebars->35->1735",
         "default.handlebars->35->2111",
@@ -53925,6 +54495,7 @@
       "tr": "Kullanıcı + Dosyalar",
       "zh-chs": "用户+档案",
       "zh-cht": "用戶+檔案",
+      "pl": "Użytkownik + Pliki",
       "xloc": [
         "default.handlebars->35->2141"
       ]
@@ -53948,6 +54519,7 @@
       "tr": "Kullanıcı Hesabını İçe Aktarma",
       "zh-chs": "用户帐户导入",
       "zh-cht": "用戶帳戶導入",
+      "pl": "Importuj Konto Użytkownika",
       "xloc": [
         "default.handlebars->35->1746",
         "default.handlebars->35->2176",
@@ -53975,6 +54547,7 @@
       "tr": "Kullanıcı hesapları",
       "zh-chs": "用户帐户",
       "zh-cht": "用戶帳戶",
+      "pl": "Konta Użytkowników",
       "xloc": [
         "default.handlebars->35->2541"
       ]
@@ -53998,6 +54571,7 @@
       "tr": "Kullanıcı Yetkileri",
       "zh-chs": "用户授权",
       "zh-cht": "用戶授權",
+      "pl": "Użytkownicy Autoryzowani",
       "xloc": [
         "default-mobile.handlebars->11->593",
         "default.handlebars->35->1733",
@@ -54023,6 +54597,7 @@
       "tr": "Kullanıcı Onayı",
       "zh-chs": "用户同意",
       "zh-cht": "用戶同意",
+      "pl": "Zgoda Użytkownika",
       "xloc": [
         "default.handlebars->35->1706",
         "default.handlebars->35->2272",
@@ -54432,6 +55007,7 @@
       "tr": "\\\"{0}\\\" adlı kullanıcı",
       "zh-chs": "用户“{0}”",
       "zh-cht": "用戶“{0}”",
+      "pl": "Użytkownik \\\"{0}\\\"",
       "xloc": [
         "sharing.handlebars->11->17"
       ]
@@ -54449,6 +55025,7 @@
       "ru": "Пользователь уже существует",
       "sv": "Användare finns redan",
       "zh-chs": "用户已存在",
+      "pl": "Użytkownik już istnieje",
       "xloc": [
         "default-mobile.handlebars->11->671",
         "default.handlebars->35->2499"
@@ -54668,6 +55245,7 @@
       "tr": "Kullanıcı adı",
       "zh-chs": "用户名",
       "zh-cht": "用戶名",
+      "pl": "Nazwa użytkownika",
       "xloc": [
         "default-mobile.handlebars->11->346",
         "default-mobile.handlebars->11->410",
@@ -54717,6 +55295,7 @@
       "tr": "Kullanıcı adı zaten var.",
       "zh-chs": "此用户名已存在。",
       "zh-cht": "此用戶名已存在。",
+      "pl": "Nazwa użytkownika już istnieje.",
       "xloc": [
         "login-mobile.handlebars->5->9",
         "login.handlebars->5->9",
@@ -54752,6 +55331,7 @@
       "tr": "Kullanıcı adı:",
       "zh-chs": "用户名：",
       "zh-cht": "用戶名：",
+      "pl": "Nazwa użytkownika:",
       "xloc": [
         "account-invite.html->2->5",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->nuUserRow->1",
@@ -54780,6 +55360,7 @@
       "tr": "Kullanıcılar",
       "zh-chs": "用户",
       "zh-cht": "用戶",
+      "pl": "Użytkownicy",
       "xloc": [
         "default.handlebars->35->2233",
         "default.handlebars->35->2273",
@@ -54806,6 +55387,7 @@
       "tr": "Kullanıcı Oturumları",
       "zh-chs": "用户会话",
       "zh-cht": "用戶節",
+      "pl": "Sesje użytkowników",
       "xloc": [
         "default.handlebars->35->2545"
       ]
@@ -54832,6 +55414,7 @@
       "ru": "Пользователи {0} не найдены.",
       "sv": "Användare {0} hittades inte.",
       "zh-chs": "未找到用户 {0}。",
+      "pl": "Użytkowników {0} nie znaleziono.",
       "xloc": [
         "default-mobile.handlebars->11->680",
         "default.handlebars->35->2508"
@@ -54850,6 +55433,7 @@
       "ru": "VNC соединение",
       "sv": "VNC-anslutning",
       "zh-chs": "VNC 连接",
+      "pl": "Połączenie VNC",
       "xloc": [
         "default.handlebars->35->662"
       ]
@@ -55175,6 +55759,7 @@
       "tr": "E-mail'i doğrula",
       "zh-chs": "验证电邮",
       "zh-cht": "驗證電郵",
+      "pl": "Weryfikuj Email",
       "xloc": [
         "default.handlebars->container->footer->3->verifyEmailId2"
       ]
@@ -55198,6 +55783,7 @@
       "tr": "E-mail'i doğrula",
       "zh-chs": "验证电邮",
       "zh-cht": "驗證電郵",
+      "pl": "Weryfikuj email",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->3->verifyEmailId->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->verifyEmailId->0"
@@ -55222,6 +55808,7 @@
       "tr": "Sürüm",
       "zh-chs": "版本",
       "zh-cht": "版",
+      "pl": "Wersja",
       "xloc": [
         "default-mobile.handlebars->11->474",
         "default-mobile.handlebars->11->527",
@@ -55268,7 +55855,8 @@
       "nl": "Versies",
       "pt-br": "Versões",
       "sv": "Versioner",
-      "zh-chs": "版本"
+      "zh-chs": "版本",
+      "pl": "Wersje"
     },
     {
       "cs": "Velmi pomalu",
@@ -55289,6 +55877,7 @@
       "tr": "Çok yavaş",
       "zh-chs": "非常慢",
       "zh-cht": "非常慢",
+      "pl": "Bardzo wolno",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->7",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7",
@@ -55308,6 +55897,7 @@
       "ru": "Вибрировать",
       "sv": "Vibrera",
       "zh-chs": "颤动",
+      "pl": "Wibracja",
       "xloc": [
         "default-mobile.handlebars->11->319",
         "default.handlebars->35->958"
@@ -55355,6 +55945,7 @@
       "tr": "Görünüm",
       "zh-chs": "检视",
       "zh-cht": "檢視",
+      "pl": "Zobacz",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView"
       ]
@@ -55414,6 +56005,7 @@
       "tr": "Değişim günlüğünü incele",
       "zh-chs": "查看变更日志",
       "zh-cht": "查看變更日誌",
+      "pl": "Zobacz Changelog",
       "xloc": [
         "default.handlebars->35->2618",
         "default.handlebars->35->2620"
@@ -56312,6 +56904,7 @@
       "tr": "Sonraki girişte değiştirilecek.",
       "zh-chs": "下次登录时将更改。",
       "zh-cht": "下次登入時將更改。",
+      "pl": "Zostanie zmienione przy następnym logowaniu.",
       "xloc": [
         "default.handlebars->35->2339"
       ]
@@ -56708,6 +57301,7 @@
       "tr": "Windows (Yüklemeyi Kaldır)",
       "zh-chs": "Windows（卸载）",
       "zh-cht": "Windows（卸載）",
+      "pl": "Windows (Odinstaluj)",
       "xloc": [
         "default.handlebars->35->466"
       ]
@@ -56754,6 +57348,7 @@
       "tr": "Windows 32bit konsolu",
       "zh-chs": "Windows 32位控制台",
       "zh-cht": "Windows 32位控制台",
+      "pl": "Windows 32bit konsola",
       "xloc": [
         "default-mobile.handlebars->11->7",
         "default.handlebars->35->14"
@@ -56778,6 +57373,7 @@
       "tr": "Windows 32bit hizmeti",
       "zh-chs": "Windows 32位服务",
       "zh-cht": "Windows 32位服務",
+      "pl": "Windows 32bit usługa",
       "xloc": [
         "default-mobile.handlebars->11->9",
         "default.handlebars->35->16"
@@ -56825,6 +57421,7 @@
       "tr": "Windows 64bit konsolu",
       "zh-chs": "Windows 64位控制台",
       "zh-cht": "Windows 64位控制台",
+      "pl": "Windows 64bit konsola",
       "xloc": [
         "default-mobile.handlebars->11->8",
         "default.handlebars->35->15"
@@ -56849,6 +57446,7 @@
       "tr": "Windows 64bit hizmeti",
       "zh-chs": "Windows 64位服务",
       "zh-cht": "Windows 64位服務",
+      "pl": "Windows 64bit usługa",
       "xloc": [
         "default-mobile.handlebars->11->10",
         "default.handlebars->35->17"
@@ -56873,6 +57471,7 @@
       "tr": "Windows Komut İstemi",
       "zh-chs": "Windows命令提示",
       "zh-cht": "Windows命令提示",
+      "pl": "Linia Komend Windows",
       "xloc": [
         "default.handlebars->35->587",
         "default.handlebars->35->978"
@@ -56897,6 +57496,7 @@
       "tr": "Windows MinCore konsolu",
       "zh-chs": "Windows MinCore控制台",
       "zh-cht": "Windows MinCore控制台",
+      "pl": "konsola Windows MinCore",
       "xloc": [
         "default-mobile.handlebars->11->27",
         "default.handlebars->35->34"
@@ -56921,6 +57521,7 @@
       "tr": "Windows MinCore hizmeti",
       "zh-chs": "Windows MinCore服务",
       "zh-cht": "Windows MinCore服務",
+      "pl": "usługa Windows MinCore",
       "xloc": [
         "default-mobile.handlebars->11->28",
         "default.handlebars->35->35"
@@ -56945,6 +57546,7 @@
       "tr": "Windows Yolu",
       "zh-chs": "Windows路径",
       "zh-cht": "Windows路徑",
+      "pl": "Ścieżka Windows",
       "xloc": [
         "default.handlebars->35->609"
       ]
@@ -56968,6 +57570,7 @@
       "tr": "Windows PowerShell",
       "zh-chs": "Windows PowerShell",
       "zh-cht": "Windows PowerShell",
+      "pl": "Windows PowerShell",
       "xloc": [
         "default.handlebars->35->588",
         "default.handlebars->35->979"
@@ -56986,6 +57589,7 @@
       "ru": "Безопасность Windows",
       "sv": "Windows-säkerhet",
       "zh-chs": "视窗安全",
+      "pl": "Bezpieczeństwo Windows",
       "xloc": [
         "default-mobile.handlebars->11->492",
         "default.handlebars->35->757"
@@ -57010,6 +57614,7 @@
       "tr": "Yalnızca Windows",
       "zh-chs": "仅Windows",
       "zh-cht": "僅Windows",
+      "pl": "tylko Windows",
       "xloc": [
         "default.handlebars->35->430"
       ]
@@ -57033,6 +57638,7 @@
       "tr": "Windows x64 (.exe)",
       "zh-chs": "Windows x64（.exe）",
       "zh-cht": "Windows x64（.exe）",
+      "pl": "Windows x64 (.exe)",
       "xloc": [
         "default.handlebars->35->487",
         "default.handlebars->35->513"
@@ -57139,6 +57745,7 @@
       "tr": "Bu cihaz için bir etkinlik yazın",
       "zh-chs": "为此设备写一个事件",
       "zh-cht": "為此裝置寫一個事件",
+      "pl": "Zapisz zdarzenie dla tego urządzenia",
       "xloc": [
         "default.handlebars->35->800"
       ]
@@ -57276,6 +57883,7 @@
       "tr": "Bu özelliği istediğiniz zaman yeniden etkinleştirebilirsiniz.",
       "zh-chs": "您可以随时重新激活此功能。",
       "zh-cht": "你可以隨時重新啟動此功能。",
+      "pl": "Funkcję tę można ponownie aktywować w dowolnym momencie.",
       "xloc": [
         "default.handlebars->35->177"
       ]
@@ -57299,6 +57907,7 @@
       "tr": "Metin sürümünü aşağıdaki komutlarla komut satırından çalıştırabilirsiniz.",
       "zh-chs": "您可以使用以下命令从命令行运行文本版本",
       "zh-cht": "您可以使用以下命令從命令行運行文本版本",
+      "pl": "Możesz uruchomić wersję tekstową z linii poleceń za pomocą następujących komend",
       "xloc": [
         "agent-translations.json"
       ]
@@ -57577,6 +58186,7 @@
       "tr": "[[0]] erişim jetonu: [[1]]",
       "zh-chs": "[[0]]访问保安编码是：[[1]]",
       "zh-cht": "[[0]]訪問保安編碼是：[[1]]",
+      "pl": "[[0]] token dostępu to: [[1]]",
       "xloc": [
         "sms-messages.txt"
       ]
@@ -57600,6 +58210,7 @@
       "tr": "[[0]] doğrulama kodu: [[1]]",
       "zh-chs": "[[0]]验证码是：[[1]]",
       "zh-cht": "[[0]]驗證碼是：[[1]]",
+      "pl": "[[0]] kod weryfikacyjny to: [[1]]",
       "xloc": [
         "sms-messages.txt"
       ]
@@ -57648,6 +58259,7 @@
       "tr": "[[[SERVERNAME]]] - Hesap Davetiyesi",
       "zh-chs": "[[[SERVERNAME]]]-帐户邀请",
       "zh-cht": "[[[SERVERNAME]]]-帳戶邀請",
+      "pl": "[[[SERVERNAME]]] - Zaproszenie do założenia Konta",
       "xloc": [
         "account-invite.html->0",
         "account-invite.html->2->1->1->0->1->1",
@@ -57910,6 +58522,7 @@
       "tr": "bir tane ekle",
       "zh-chs": "加一",
       "zh-cht": "加一",
+      "pl": "dodaj jeden",
       "xloc": [
         "default.handlebars->35->295",
         "default.handlebars->35->297",
@@ -58054,6 +58667,7 @@
       "tr": "bayt",
       "zh-chs": "字节",
       "zh-cht": "字節",
+      "pl": "bajtów",
       "xloc": [
         "messenger.handlebars->remoteImage->3->11",
         "messenger.handlebars->remoteImage->3->13"
@@ -58124,6 +58738,7 @@
       "tr": "buraya Tıkla",
       "zh-chs": "点击这里",
       "zh-cht": "點擊這裡",
+      "pl": "kliknij tutaj",
       "xloc": [
         "mesh-invite.html->2->15->1->1"
       ]
@@ -58170,6 +58785,7 @@
       "tr": "yeniden bağlanmak için tıklayın",
       "zh-chs": "点击重新连接",
       "zh-cht": "點擊重新連接",
+      "pl": "kliknij by połączyć",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p0->1->p0message->2->0",
         "default.handlebars->container->column_l->p0->p0message->2->0"
@@ -58229,6 +58845,7 @@
       "tr": "kopya",
       "zh-chs": "复制",
       "zh-cht": "複製",
+      "pl": "kopiuj",
       "xloc": [
         "default-mobile.handlebars->11->154",
         "default.handlebars->35->1973"
@@ -58270,6 +58887,7 @@
       "ru": "desc:",
       "sv": "beskrivning:",
       "zh-chs": "描述：",
+      "pl": "opis:",
       "xloc": [
         "default.handlebars->35->655",
         "default.handlebars->35->656"
@@ -58530,6 +59148,7 @@
       "tr": "grup:",
       "zh-chs": "组：",
       "zh-cht": "群：",
+      "pl": "grupa:",
       "xloc": [
         "default-mobile.handlebars->11->163",
         "default-mobile.handlebars->11->164",
@@ -59190,6 +59809,7 @@
       "tr": "hareket",
       "zh-chs": "移动",
       "zh-cht": "移動",
+      "pl": "przenieś",
       "xloc": [
         "default-mobile.handlebars->11->155",
         "default.handlebars->35->1974"
@@ -59273,7 +59893,8 @@
       "sv": "öppna",
       "tr": "açık",
       "zh-chs": "打开",
-      "zh-cht": "打開"
+      "zh-cht": "打開",
+      "pl": "otwórz"
     },
     {
       "en": "opera",
@@ -59592,7 +60213,8 @@
       "sv": "odefinierad",
       "tr": "Tanımsız",
       "zh-chs": "未定义",
-      "zh-cht": "未定義"
+      "zh-cht": "未定義",
+      "pl": "nieokreślony"
     },
     {
       "cs": "uživatel:",
@@ -59613,6 +60235,7 @@
       "tr": "kullanıcı:",
       "zh-chs": "用户：",
       "zh-cht": "用戶：",
+      "pl": "użytkownik:",
       "xloc": [
         "default-mobile.handlebars->11->157",
         "default-mobile.handlebars->11->158",
