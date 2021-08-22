@@ -538,5 +538,16 @@
     ],
     "statusDescription": "Status atual do agente",
     "description": "Clique nos botões abaixo para instalar ou desinstalar o agente mesh. Quando instalado, este software é executado em segundo plano, permitindo que o computador seja gerenciado e controlado por um administrador remoto."
+  },
+  "pl": {
+    "agentVersion": "Nowa Wersja Agenta",
+    "update": "Aktualizacja",
+    "install": "Zainstaluj",
+    "uninstall": "Odinstaluj",
+    "connect": "Połącz",
+    "disconnect": "Rozłącz",
+    "cancel": "Anuluj",
+    "commands": "Możesz uruchomić wersję tekstową z linii poleceń za pomocą następujących komend",
+    "statusDescription": "Obecny Status Agenta"
   }
 }
