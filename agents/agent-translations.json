@@ -548,6 +548,18 @@
     "disconnect": "Rozłącz",
     "cancel": "Anuluj",
     "commands": "Możesz uruchomić wersję tekstową z linii poleceń za pomocą następujących komend",
-    "statusDescription": "Obecny Status Agenta"
+    "statusDescription": "Obecny Status Agenta",
+    "group": "Grupa Urządzeń",
+    "url": "URL Serwera",
+    "serverId": "Identyfikator Serwera",
+    "elevation": "Do zainstalowania/odinstalowania agenta wymagane są podwyższone uprawnienia.",
+    "graphicalerror": "Graficzna wersja tego instalatora nie może być uruchomiona w tym systemie.",
+    "zenity": "Spróbuj zainstalować/zaktualizować Zenity i uruchom ponownie",
+    "status": [
+      "NOT INSTALLED",
+      "DZIAŁA",
+      "NIE DZIAŁA"
+    ],
+    "description": "Kliknij poniższe przyciski, aby zainstalować lub odinstalować agenta. Po zainstalowaniu, to oprogramowanie działa w tle, umożliwiając zarządzanie i kontrolowanie tego komputera przez zdalnego administratora."
   }
 }
