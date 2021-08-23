@@ -1987,7 +1987,7 @@ function onTunnelData(data) {
                                     var p = childProcess.execFile(bash, ['bash'], options); // Start bash
                                     // Spaces at the beginning of lines are needed to hide commands from the command history
                                     if ((obj.serverInfo.termlaunchcommand != null) && (typeof obj.serverInfo.termlaunchcommand[process.platform] == 'string')) {
-                                        if (obj.serverInfo.termlaunchcommand[process.platform] != "") { p.stdin.write(obj.serverInfo.termlaunchcommand[process.platform]); }
+                                        if (obj.serverInfo.termlaunchcommand[process.platform] != '') { p.stdin.write(obj.serverInfo.termlaunchcommand[process.platform]); }
                                     } else if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
                                     this.httprequest.connectionPromise._res(p);
                                 }
@@ -1995,7 +1995,7 @@ function onTunnelData(data) {
                                     var p = childProcess.execFile(sh, ['sh'], options); // Start sh
                                     // Spaces at the beginning of lines are needed to hide commands from the command history
                                     if ((obj.serverInfo.termlaunchcommand != null) && (typeof obj.serverInfo.termlaunchcommand[process.platform] == 'string')) {
-                                        if (obj.serverInfo.termlaunchcommand[process.platform] != "") { p.stdin.write(obj.serverInfo.termlaunchcommand[process.platform]); }
+                                        if (obj.serverInfo.termlaunchcommand[process.platform] != '') { p.stdin.write(obj.serverInfo.termlaunchcommand[process.platform]); }
                                     } else if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
                                     this.httprequest.connectionPromise._res(p);
                                 }
