@@ -1901,7 +1901,7 @@ module.exports.CreateDB = function (parent, func) {
             // Perform pending operations
             obj.dbCounters.eventsSetBulk++;
             var ops = [];
-            for (var i in obj.eventsFilePendingSets) { ops.push({ document: obj.eventsFilePendingSets[i] }); }
+            for (var i in obj.eventsFilePendingSets) { ops.push({ insertOne: { document: obj.eventsFilePendingSets[i] } }); }
             obj.eventsFilePendingCbs = obj.eventsFilePendingCb;
             obj.eventsFilePendingCb = null;
             obj.eventsFilePendingSets = null;
@@ -1920,7 +1920,7 @@ module.exports.CreateDB = function (parent, func) {
             // Perform pending operations
             obj.dbCounters.powerSetBulk++;
             var ops = [];
-            for (var i in obj.powerFilePendingSets) { ops.push({ document: obj.powerFilePendingSets[i] }); }
+            for (var i in obj.powerFilePendingSets) { ops.push({ insertOne: { document: obj.powerFilePendingSets[i] } }); }
             obj.powerFilePendingCbs = obj.powerFilePendingCb;
             obj.powerFilePendingCb = null;
             obj.powerFilePendingSets = null;
