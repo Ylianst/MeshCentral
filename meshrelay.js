@@ -349,31 +349,41 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         xtextSession = 2; // 1 = Raw recording of all strings, 2 = Record chat session messages only.
                     }
                     if ((obj.req.query.p != null) && (obj.req.query.nodeid != null) && (sessionUser != null) && (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(parseInt(obj.req.query.p)) >= 0))))) { recordSession = true; }
-
+                    
                     if (recordSession) {
                         // Get the computer name
                         parent.db.Get(obj.req.query.nodeid, function (err, nodes) {
-                            var xusername = '', xdevicename = '', xdevicename2 = null, node = null;
+                            var xusername = '', xdevicename = '', xdevicename2 = null, node = null, record = true;
                             if ((nodes != null) && (nodes.length == 1)) { node = nodes[0]; xdevicename2 = node.name; xdevicename = '-' + parent.common.makeFilename(node.name); }
 
-                            // Check again if we need to do recording
-                            if ((node == null) || (domain.sessionrecording.onlyselecteddevicegroups === true)) {
-                                var mesh = null;
-                                if (node != null) { mesh = parent.meshes[node.meshid]; }
-                                if ((node == null) || (mesh == null) || (mesh.flags == null) || ((mesh.flags & 4) == 0)) {
-                                    // Do not record the session, just send session start
-                                    try { ws.send('c'); } catch (ex) { } // Send connect to both peers
-                                    try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
+                            // Check again if we need to do messenger recording
+                            if ((domain.sessionrecording.onlyselectedusers === true) || (domain.sessionrecording.onlyselecteddevicegroups === true)) {
+                                record = false;
 
-                                    // Send any stored push messages
-                                    obj.pushStoredMessages();
-                                    relayinfo.peer1.pushStoredMessages();
-
-                                    // Send other peer's image
-                                    obj.sendPeerImage();
-                                    relayinfo.peer1.sendPeerImage();
-                                    return;
+                                // Check if this device group needs to be recorded
+                                if ((node == null) || (domain.sessionrecording.onlyselecteddevicegroups === true)) {
+                                    var mesh = null;
+                                    if (node != null) { mesh = parent.meshes[node.meshid]; }
+                                    if ((node != null) && (mesh != null) && (mesh.flags != null) && ((mesh.flags & 4) != 0)) { record = true; }
                                 }
+
+                                // Check if this user needs to be recorded
+                                if ((sessionUser != null) && (sessionUser.flags != null) && ((sessionUser.flags & 2) != 0)) { record = true; }
+                            }
+
+                            // Do not record the session, just send session start
+                            if (record == false) {
+                                try { ws.send('c'); } catch (ex) { } // Send connect to both peers
+                                try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
+
+                                // Send any stored push messages
+                                obj.pushStoredMessages();
+                                relayinfo.peer1.pushStoredMessages();
+
+                                // Send other peer's image
+                                obj.sendPeerImage();
+                                relayinfo.peer1.sendPeerImage();
+                                return;
                             }
 
                             // Get the username and make it acceptable as a filename

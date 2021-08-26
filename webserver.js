@@ -3943,9 +3943,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf((req.query.p == 2) ? 101 : 100) >= 0)))) { // TODO 100
                 // Check again if we need to do recording
                 var record = true;
-                if (domain.sessionrecording.onlyselecteddevicegroups === true) {
-                    var mesh = obj.meshes[node.meshid];
-                    if ((mesh.flags == null) || ((mesh.flags & 4) == 0)) { record = false; } // Do not record the session
+
+                // Check user or device group recording
+                if ((domain.sessionrecording.onlyselectedusers === true) || (domain.sessionrecording.onlyselecteddevicegroups === true)) {
+                    record = false;
+
+                    // Check device group recording
+                    if (domain.sessionrecording.onlyselecteddevicegroups === true) {
+                        var mesh = obj.meshes[node.meshid];
+                        if ((mesh.flags != null) && ((mesh.flags & 4) != 0)) { record = true; } // Record the session
+                    }
+
+                    // Check user recording
+                    if (domain.sessionrecording.onlyselectedusers === true) {
+                        if ((user.flags != null) && ((user.flags & 2) != 0)) { record = true; } // Record the session
+                    }
                 }
 
                 if (record == true) {

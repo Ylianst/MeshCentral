@@ -675,6 +675,7 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
+              "onlySelectedUsers": { "type": "boolean", "default": false, "description": "When enabled, only device users with the session recording feature turned on will be recorded. When false, all users are recorded." },
               "onlySelectedDeviceGroups": { "type": "boolean", "default": false, "description": "When enabled, only device groups with the session recording feature turned on will be recorded. When false, all devices are recorded." },
               "filepath": { "type": "string" },
               "index": { "type": "boolean", "default": false },

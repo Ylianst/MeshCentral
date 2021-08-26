@@ -311,6 +311,7 @@
       },
       "_agentConfig": [ "webSocketMaskOverride=1", "coreDumpEnabled=1" ],
       "_sessionRecording": {
+        "_onlySelectedUsers": true,
         "_onlySelectedDeviceGroups": true,
         "_filepath": "C:\\temp",
         "_index": true,
