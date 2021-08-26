@@ -1481,8 +1481,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // TODO: This this extra stats from the tunnel, you can merge this into the tunnel event in the database.
                     //console.log(command);
 
+                    // Validate input
+                    if ((command.sent == null) || (typeof command.sent != 'string')) return;
+                    if ((command.sentActual == null) || (typeof command.sentActual != 'string')) return;
+                    if ((command.sentActual == null) || (typeof command.sentActual != 'number')) return;
+
                     // Event the session closed compression data.
-                    var event = { etype: 'node', action: 'sessioncompression', nodeid: obj.dbNodeKey, domain: domain.id, sent: command.sent, sentActual: command.sentActual, msgid: 54, msgArgs: [command.sentRatio, command.sent, command.sentActual], msg: 'Agent closed session with ' + command.sentRatio + '% agent to server compression. Sent: ' + command.sent + ', Compressed: ' + command.sentActual + '.' };
+                    var event = { etype: 'node', action: 'sessioncompression', nodeid: obj.dbNodeKey, domain: domain.id, sent: parseInt(command.sent), sentActual: parseInt(command.sentActual), msgid: 54, msgArgs: [command.sentRatio, parseInt(command.sent), parseInt(command.sentActual)], msg: 'Agent closed session with ' + command.sentRatio + '% agent to server compression. Sent: ' + command.sent + ', Compressed: ' + command.sentActual + '.' };
                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
                     break;
                 }
