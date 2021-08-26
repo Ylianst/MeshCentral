@@ -5161,8 +5161,8 @@
                 for (var i in nodes) { if (nodes[i].tags) { for (var j in nodes[i].tags) { if (allTags.indexOf(nodes[i].tags[j]) == -1) { allTags.push(nodes[i].tags[j]); } } } }
                 if (allTags.length > 0) {
                     allTags.sort();
-                    for (var i in allTags) { y += '<span style=padding:4px;background-color:#BBB;border-radius:3px;margin:3px;cursor:pointer onclick=showEditNodeValueDialogAddTag("' + encodeURIComponentEx(allTags[i]) + '")>' + EscapeHtml(allTags[i]) + '</span>'; }
-                    x += '<div style=height:4px></div>' + addHtmlValue("Existing Tags", y);
+                    for (var i in allTags) { y += '<span style=padding:4px;background-color:#BBB;border-radius:3px;cursor:pointer onclick=showEditNodeValueDialogAddTag("' + encodeURIComponentEx(allTags[i]) + '")>' + EscapeHtml(allTags[i]) + '</span> '; }
+                    x += '<div style=margin-top:8px;width:370px;line-height:26px;max-height:160px;overflow-y:auto>' + y + '</div>';
                 }
                 setDialogMode(2, "Edit Device Tags", 3, d2groupActionFunctionTagsExec, x);
             } else if (op == 108) {
@@ -6611,13 +6611,13 @@
                     x += addDeviceAttribute("Connectivity", cstate.join(', '));
                 }
 
-                // Node grouping tags
+                // Node tags
                 var groupingTags = '<i>' + "None" + '</i>';
-                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span class="tagSpan">' + EscapeHtml(node.tags[i]) + '</span>'; } }
+                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;border-radius:5px">' + EscapeHtml(node.tags[i]) + '</span> '; } }
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>');
+                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=line-height:26px;cursor:pointer;color:black>' + groupingTags + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>');
                 } else {
-                    x += addDeviceAttribute("Tags", groupingTags);
+                    x += addDeviceAttribute("Tags", '<span style=line-height:26px;color:black>' + groupingTags + '</span>');
                 }
 
                 // SSH & RDP Credentials
@@ -7693,8 +7693,8 @@
                 for (var i in nodes) { if (nodes[i].tags) { for (var j in nodes[i].tags) { if (allTags.indexOf(nodes[i].tags[j]) == -1) { allTags.push(nodes[i].tags[j]); } } } }
                 if (allTags.length > 0) {
                     allTags.sort();
-                    for (var i in allTags) { y += '<span style=padding:4px;background-color:#BBB;border-radius:3px;margin:3px;cursor:pointer onclick=showEditNodeValueDialogAddTag("' + encodeURIComponentEx(allTags[i]) + '")>' + EscapeHtml(allTags[i]) + '</span>'; }
-                    x += '<div style=height:4px></div>' + addHtmlValue("Existing Tags", y);
+                    for (var i in allTags) { y += '<span style=padding:4px;background-color:#BBB;border-radius:3px;cursor:pointer onclick=showEditNodeValueDialogAddTag("' + encodeURIComponentEx(allTags[i]) + '")>' + EscapeHtml(allTags[i]) + '</span> '; }
+                    x += '<div style=margin-top:8px;width:370px;line-height:26px;max-height:160px;overflow-y:auto>' + y + '</div>';
                 }
             }
             setDialogMode(2, "Edit Device", 3, showEditNodeValueDialogEx, x, mode);
@@ -7711,6 +7711,7 @@
             for (var i in tt) { t2.push(tt[i].trim()); }
             if (t2.indexOf(t) >= 0) return;
             Q('dp10devicevalue').value += ((Q('dp10devicevalue').value.length == 0)?'':', ') + decodeURIComponent(t);
+            setTimeout(function(){ Q('dp10devicevalue').selectionStart = Q('dp10devicevalue').selectionEnd = 90000; }, 0);
             p10editdevicevalueValidate();
         }
 

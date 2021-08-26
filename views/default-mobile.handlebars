@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8">
@@ -3430,11 +3430,11 @@
 
                 // Node tags
                 var groupingTags = '<i>' + "None" + '</i>';
-                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;margin-right:4px;border-radius:5px">' + EscapeHtml(node.tags[i]) + '</span>'; } }
+                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;border-radius:5px">' + EscapeHtml(node.tags[i]) + '</span> '; } }
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer;color:black>' + groupingTags + '</span>');
+                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=line-height:26px;cursor:pointer;color:black>' + groupingTags + '</span>');
                 } else {
-                    x += addDeviceAttribute("Tags", '<span style=color:black>' + groupingTags + '</span>');
+                    x += addDeviceAttribute("Tags", '<span style=line-height:26px;color:black>' + groupingTags + '</span>');
                 }
 
                 // SSH & RDP Credentials
@@ -3869,8 +3869,8 @@
                 for (var i in nodes) { if (nodes[i].tags) { for (var j in nodes[i].tags) { if (allTags.indexOf(nodes[i].tags[j]) == -1) { allTags.push(nodes[i].tags[j]); } } } }
                 if (allTags.length > 0) {
                     allTags.sort();
-                    for (var i in allTags) { y += '<span style=padding:4px;background-color:#BBB;border-radius:3px;margin:3px;cursor:pointer onclick=showEditNodeValueDialogAddTag("' + encodeURIComponentEx(allTags[i]) + '")>' + EscapeHtml(allTags[i]) + '</span>'; }
-                    x += '<div style=height:8px></div>' + y;
+                    for (var i in allTags) { y += '<span style=padding:4px;background-color:#BBB;border-radius:3px;cursor:pointer onclick=showEditNodeValueDialogAddTag("' + encodeURIComponentEx(allTags[i]) + '")>' + EscapeHtml(allTags[i]) + '</span> '; }
+                    x += '<div style=margin-top:8px;width:280px;line-height:26px;max-height:160px;overflow-y:auto>' + y + '</div>';
                 }
             }
             setDialogMode(2, "Edit Device", 3, showEditNodeValueDialogEx, x, mode);
@@ -3887,6 +3887,7 @@
             for (var i in tt) { t2.push(tt[i].trim()); }
             if (t2.indexOf(t) >= 0) return;
             Q('dp10devicevalue').value += ((Q('dp10devicevalue').value.length == 0) ? '' : ', ') + decodeURIComponent(t);
+            setTimeout(function () { Q('dp10devicevalue').selectionStart = Q('dp10devicevalue').selectionEnd = 90000; }, 0);
             p10editdevicevalueValidate();
         }
 
