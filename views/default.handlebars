@@ -9944,7 +9944,7 @@
             if (mode == 3) { eventList = currentUserEvents; }
             for (var i in eventList) { if (eventList[i].h == h) { xevent = eventList[i]; break; } }
             if (xevent) {
-                var x = '<div style=overflow-y:auto>';
+                var x = '<div style=overflow-y:auto;max-height:300px>';
                 for (var i in xevent) {
                     if ((i == 'h') || (i == '_id') || (i == 'ids') || (i == 'domain') || (xevent[i] == null) || (typeof xevent[i] == 'object')) continue;
                     x += addHtmlValue3(EscapeHtml(i), EscapeHtml(xevent[i]));

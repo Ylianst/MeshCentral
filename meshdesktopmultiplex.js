@@ -129,22 +129,27 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 if ((typeof sr == 'number') && (sr > 0) && (sr < 1000)) { peer.slowRelay = sr; }
             }
 
-            // Indicated we are connected
-            obj.sendToViewer(peer, obj.recordingFile ? 'cr' : 'c');
+            // Check session recording
+            var startRecord = false;
+            if ((domain.sessionrecording.onlyselectedusers === true) && (peer.user != null) && (peer.user.flags != null) && ((peer.user.flags & 2) != 0)) { startRecord = true; }
+            startRecording(domain, startRecord, function () {
+                // Indicated we are connected
+                obj.sendToViewer(peer, obj.recordingFile ? 'cr' : 'c');
 
-            // If the agent sent display information or console message, send it to the viewer
-            if (obj.lastDisplayInfoData != null) { obj.sendToViewer(peer, obj.lastDisplayInfoData); }
-            if (obj.lastDisplayLocationData != null) { obj.sendToViewer(peer, obj.lastDisplayLocationData); }
-            if (obj.lastConsoleMessage != null) { obj.sendToViewer(peer, obj.lastConsoleMessage); }
+                // If the agent sent display information or console message, send it to the viewer
+                if (obj.lastDisplayInfoData != null) { obj.sendToViewer(peer, obj.lastDisplayInfoData); }
+                if (obj.lastDisplayLocationData != null) { obj.sendToViewer(peer, obj.lastDisplayLocationData); }
+                if (obj.lastConsoleMessage != null) { obj.sendToViewer(peer, obj.lastConsoleMessage); }
 
-            // Log joining the multiplex session
-            if (obj.startTime != null) {
-                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 4, msg: "Joined desktop multiplex session", protocol: 2 };
-                parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id, obj.meshid], obj, event);
-            }
+                // Log joining the multiplex session
+                if (obj.startTime != null) {
+                    var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 4, msg: "Joined desktop multiplex session", protocol: 2 };
+                    parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id, obj.meshid], obj, event);
+                }
 
-            // Send an updated list of all peers to all viewers
-            obj.sendSessionMetadata();
+                // Send an updated list of all peers to all viewers
+                obj.sendSessionMetadata();
+            });
         } else {
             //console.log('addPeer-agent', obj.nodeid);
             if (obj.agent != null) { parent.parent.debug('relay', 'DesktopRelay: Error, duplicate agent connection'); return false; }
@@ -253,7 +258,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
                 // Add a event entry about this recording
                 var basefile = parent.parent.path.basename(filename);
-                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: obj.nodeid, msgid: 7, mshArgs: [obj.sessionLength], msg: "Finished recording session" + (obj.sessionLength ? (', ' + obj.sessionLength + ' second(s)') : ''), filename: basefile, size: obj.recordingFileSize, protocol: 2, icon: obj.icon, name: obj.name, meshid: obj.meshid, userids: obj.userIds, multiplex: true };
+                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: obj.nodeid, msgid: 7, msgArgs: [obj.sessionLength], msg: "Finished recording session" + (obj.sessionLength ? (', ' + obj.sessionLength + ' second(s)') : ''), filename: basefile, size: obj.recordingFileSize, protocol: 2, icon: obj.icon, name: obj.name, meshid: obj.meshid, userids: obj.userIds, multiplex: true };
                 var mesh = parent.meshes[obj.meshid];
                 if (mesh != null) { event.meshname = mesh.name; }
                 if (obj.sessionStart) { event.startTime = obj.sessionStart; event.lengthTime = obj.sessionLength; }
@@ -726,57 +731,59 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         }
     }
 
+    function startRecording(domain, start, func) {
+        if ((obj.pendingRecording == 1) || (obj.recordingFile != null)) { func(true); return; } // Check if already recording
+        if (start == false) { func(false); return; } // Just skip this
+        obj.pendingRecording = 1;
+        var now = new Date(Date.now());
+        var recFilename = 'desktopSession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth(), 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + '-' + obj.nodeid.split('/')[2] + '.mcrec'
+        var recFullFilename = null;
+        if (domain.sessionrecording.filepath) {
+            try { parent.parent.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
+            recFullFilename = parent.parent.path.join(domain.sessionrecording.filepath, recFilename);
+        } else {
+            try { parent.parent.fs.mkdirSync(parent.parent.recordpath); } catch (e) { }
+            recFullFilename = parent.parent.path.join(parent.parent.recordpath, recFilename);
+        }
+        parent.parent.fs.open(recFullFilename, 'w', function (err, fd) {
+            delete obj.pendingRecording;
+            if (err != null) {
+                parent.parent.debug('relay', 'Relay: Unable to record to file: ' + recFullFilename);
+                func(false);
+                return;
+            }
+            // Write the recording file header
+            parent.parent.debug('relay', 'Relay: Started recoding to file: ' + recFullFilename);
+            var metadata = { magic: 'MeshCentralRelaySession', ver: 1, nodeid: obj.nodeid, meshid: obj.meshid, time: new Date().toLocaleString(), protocol: 2, devicename: obj.name, devicegroup: obj.meshname };
+            var firstBlock = JSON.stringify(metadata);
+            recordingEntry(fd, 1, 0, firstBlock, function () {
+                obj.recordingFile = { fd: fd, filename: recFullFilename };
+                obj.recordingFileWriting = false;
+                func(true);
+            });
+        });
+    }
+
     function recordingSetup(domain, func) {
+        var record = false;
+
         // Setup session recording
         if ((domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(2) >= 0))))) {
+            record = true;
 
             // Check again to make sure we need to start recording
             if ((domain.sessionrecording.onlyselecteddevicegroups === true) || (domain.sessionrecording.onlyselectedusers === true)) {
-                var record = false;
-
-                // Check user recording
-                if (domain.sessionrecording.onlyselectedusers === true) {
-                    // TODO: Check recording ???
-                }
+                record = false;    
 
                 // Check device group recording
                 if (domain.sessionrecording.onlyselecteddevicegroups === true) {
                     var mesh = parent.meshes[obj.meshid];
                     if ((mesh.flags != null) && ((mesh.flags & 4) != 0)) { record = true; }
                 }
-
-                if (record == false) { func(false); return; } // Do not record the session
             }
-
-            var now = new Date(Date.now());
-            var recFilename = 'desktopSession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth(), 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + '-' + obj.nodeid.split('/')[2] + '.mcrec'
-            var recFullFilename = null;
-            if (domain.sessionrecording.filepath) {
-                try { parent.parent.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
-                recFullFilename = parent.parent.path.join(domain.sessionrecording.filepath, recFilename);
-            } else {
-                try { parent.parent.fs.mkdirSync(parent.parent.recordpath); } catch (e) { }
-                recFullFilename = parent.parent.path.join(parent.parent.recordpath, recFilename);
-            }
-            parent.parent.fs.open(recFullFilename, 'w', function (err, fd) {
-                if (err != null) {
-                    parent.parent.debug('relay', 'Relay: Unable to record to file: ' + recFullFilename);
-                    func(false);
-                    return;
-                }
-                // Write the recording file header
-                parent.parent.debug('relay', 'Relay: Started recoding to file: ' + recFullFilename);
-                var metadata = { magic: 'MeshCentralRelaySession', ver: 1, nodeid: obj.nodeid, meshid: obj.meshid, time: new Date().toLocaleString(), protocol: 2, devicename: obj.name, devicegroup: obj.meshname };
-                var firstBlock = JSON.stringify(metadata);
-                recordingEntry(fd, 1, 0, firstBlock, function () {
-                    obj.recordingFile = { fd: fd, filename: recFullFilename };
-                    obj.recordingFileWriting = false;
-                    func(true);
-                });
-            });
-        } else {
-            func(false);
         }
+
+        startRecording(domain, record, func);
     }
 
     // Record data to the recording file
