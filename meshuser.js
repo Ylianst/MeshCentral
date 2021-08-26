@@ -492,7 +492,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             serverinfo.languages = parent.renderLanguages;
             serverinfo.tlshash = Buffer.from(parent.webCertificateFullHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
             serverinfo.agentCertHash = parent.agentCertificateHashBase64;
-            if ((domain.sessionrecording) && (domain.sessionrecording.onlyselecteddevicegroups === true)) { serverinfo.devGroupSessionRecording = 1; } // Allow enabling of session recording
+            if ((domain.sessionrecording) && (domain.sessionrecording.onlyselectedusers === true)) { serverinfo.usersSessionRecording = 1; } // Allow enabling of session recording for user groups
+            if ((domain.sessionrecording) && (domain.sessionrecording.onlyselecteddevicegroups === true)) { serverinfo.devGroupSessionRecording = 1; } // Allow enabling of session recording for device groups
             if ((parent.parent.config.domains[domain.id].amtacmactivation != null) && (parent.parent.config.domains[domain.id].amtacmactivation.acmmatch != null)) {
                 var matchingDomains = [];
                 for (var i in parent.parent.config.domains[domain.id].amtacmactivation.acmmatch) {
@@ -1581,6 +1582,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.resetNextLogin === true) { chguser.passchange = -1; }
                         if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
                         if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
+                        if ((command.flags != null) && (typeof command.flags == 'number')) { if (command.flags == 0) { delete chguser.flags; } else { chguser.flags = command.flags; } change = 1; } // Flags: 1 = Account Image, 2 = Session Recording
 
                         // Site admins can change any server rights, user managers can only change AccountLock, NoMeshCmd and NoNewGroups
                         if (common.validateInt(command.siteadmin) && (chguser._id !== user._id) && (chguser.siteadmin != command.siteadmin)) { // We can't change our own siteadmin permissions.

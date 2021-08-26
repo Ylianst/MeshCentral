@@ -14051,6 +14051,17 @@
                 x += addDeviceAttribute("Phone Number", (user.phone?user.phone:('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30editPhone() />');
             }
 
+            // Display features
+            if (serverinfo.usersSessionRecording == 1) {
+                var userFeatures = [];
+                if (user.flags) {
+                    if ((serverinfo.usersSessionRecording == 1) && (user.flags & 2)) { userFeatures.push("Record Sessions"); }
+                }
+                userFeatures = userFeatures.join(', ');
+                if (userFeatures == '') { userFeatures = '<i>' + "None" + '</i>'; }
+                x += addDeviceAttribute("Features", addLink(userFeatures, 'p20edituserfeatures()'));
+            }
+
             x += addDeviceAttribute("Server Rights", premsg + msg.join(', ') + ' <img style=cursor:pointer class=hoverButton onclick=\'return showUserAdminDialog(event,"' + encodeURIComponentEx(user._id) + '")\' src="images/link5.png" />');
             if (user.quota) x += addDeviceAttribute("Server Quota", EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute("Creation", printDateTime(new Date(user.creation * 1000)));
@@ -14163,6 +14174,24 @@
             setDialogMode(2, "Phone Notifications", 3, p30editPhoneEx, x, 'verifyPhone');
             Q('d2phoneinput').focus();
             p30editPhoneValidate();
+        }
+
+        function p20edituserfeatures() {
+            if (xxdialogMode) return;
+            var flags = (currentUser.flags)?currentUser.flags:0, x = ''; // Flags: 1 = Account Image, 2 = Session Recording
+            if (serverinfo.usersSessionRecording == 1) {
+                x += '<div><label><input type=checkbox id=d20flag2 onchange=p20edituserfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
+            }
+            setDialogMode(2, "Edit User Features", 3, p20edituserfeaturesEx, x);
+        }
+
+        function p20edituserfeaturesValidate() { }
+
+        // Send to the server the new user's real name
+        function p20edituserfeaturesEx() {
+            var f = currentUser.flags & 1; // Flags: 1 = Account Image, 2 = Session Recording
+            if (Q('d20flag2').checked) { f += 2; }
+            meshserver.send({ action: 'edituser', id: currentUser._id, flags: f });
         }
 
         function p30editPhoneValidate(x) {

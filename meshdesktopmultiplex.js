@@ -731,9 +731,21 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         if ((domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(2) >= 0))))) {
 
             // Check again to make sure we need to start recording
-            if (domain.sessionrecording.onlyselecteddevicegroups === true) {
-                var mesh = parent.meshes[obj.meshid];
-                if ((mesh.flags == null) || ((mesh.flags & 4) == 0)) { func(false); return; } // Do not record the session
+            if ((domain.sessionrecording.onlyselecteddevicegroups === true) || (domain.sessionrecording.onlyselectedusers === true)) {
+                var record = false;
+
+                // Check user recording
+                if (domain.sessionrecording.onlyselectedusers === true) {
+                    // TODO: Check recording ???
+                }
+
+                // Check device group recording
+                if (domain.sessionrecording.onlyselecteddevicegroups === true) {
+                    var mesh = parent.meshes[obj.meshid];
+                    if ((mesh.flags != null) && ((mesh.flags & 4) != 0)) { record = true; }
+                }
+
+                if (record == false) { func(false); return; } // Do not record the session
             }
 
             var now = new Date(Date.now());
