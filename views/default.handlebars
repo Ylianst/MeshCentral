@@ -14052,15 +14052,18 @@
             }
 
             // Display features
-            if (serverinfo.usersSessionRecording == 1) {
-                var userFeatures = [];
-                if (user.flags) {
-                    if ((serverinfo.usersSessionRecording == 1) && (user.flags & 2)) { userFeatures.push("Record Sessions"); }
-                }
-                userFeatures = userFeatures.join(', ');
-                if (userFeatures == '') { userFeatures = '<i>' + "None" + '</i>'; }
-                x += addDeviceAttribute("Features", addLink(userFeatures, 'p20edituserfeatures()'));
+            var userFeatures = [];
+            if ((serverinfo.usersSessionRecording == 1) && (user.flags) && (user.flags & 2)) { userFeatures.push("Record Sessions"); }
+            if (user.removeRights) {
+                if ((user.removeRights & 0x00010000) != 0) { userFeatures.push("No Desktop"); }
+                else if ((user.removeRights & 0x00000100) != 0) { userFeatures.push("Desktop View Only"); }
+                if ((user.removeRights & 0x00000200) != 0) { userFeatures.push("No Terminal"); }
+                if ((user.removeRights & 0x00000400) != 0) { userFeatures.push("No Files"); }
+                if ((user.removeRights & 0x00000010) != 0) { userFeatures.push("No Console"); }
             }
+            userFeatures = userFeatures.join(', ');
+            if (userFeatures == '') { userFeatures = '<i>' + "None" + '</i>'; }
+            x += addDeviceAttribute("Features", addLink(userFeatures, 'p20edituserfeatures()'));
 
             x += addDeviceAttribute("Server Rights", premsg + msg.join(', ') + ' <img style=cursor:pointer class=hoverButton onclick=\'return showUserAdminDialog(event,"' + encodeURIComponentEx(user._id) + '")\' src="images/link5.png" />');
             if (user.quota) x += addDeviceAttribute("Server Quota", EscapeHtml(parseInt(user.quota) / 1024) + ' k');
@@ -14179,19 +14182,38 @@
         function p20edituserfeatures() {
             if (xxdialogMode) return;
             var flags = (currentUser.flags)?currentUser.flags:0, x = ''; // Flags: 1 = Account Image, 2 = Session Recording
+            var removeRights = (currentUser.removeRights)?currentUser.removeRights:0, x = ''; // Remove Device Group Rights
             if (serverinfo.usersSessionRecording == 1) {
-                x += '<div><label><input type=checkbox id=d20flag2 onchange=p20edituserfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
+                x += '<div><label><input type=checkbox id=d20flag1 onchange=p20edituserfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
             }
+            x += '<div><label><input type=checkbox id=d20flag2 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00010000) ? 'checked' : '') + '>' + "No Desktop Access" + '</label><br></div>';
+            x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag3 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000100) ? 'checked' : '') + '>' + "Remote View Only" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag4 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000200) ? 'checked' : '') + '>' + "No Terminal Access" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag5 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000400) ? 'checked' : '') + '>' + "No File Access" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag6 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000010) ? 'checked' : '') + '>' + "No Agent Console" + '</label><br></div>';
             setDialogMode(2, "Edit User Features", 3, p20edituserfeaturesEx, x);
+            p20edituserfeaturesValidate();
         }
 
-        function p20edituserfeaturesValidate() { }
+        function p20edituserfeaturesValidate() {
+            QE('d20flag3', !Q('d20flag2').checked);
+        }
 
         // Send to the server the new user's real name
         function p20edituserfeaturesEx() {
-            var f = currentUser.flags & 1; // Flags: 1 = Account Image, 2 = Session Recording
-            if (Q('d20flag2').checked) { f += 2; }
-            meshserver.send({ action: 'edituser', id: currentUser._id, flags: f });
+            // Setup user flags
+            var flags = (currentUser.flags)?currentUser.flags:0; // Flags: 1 = Account Image, 2 = Session Recording
+            var f = flags & 1;
+            if ((serverinfo.usersSessionRecording == 1) && Q('d20flag1').checked) { f += 2; }
+
+            // Setup user permission removal
+            var r = 0;
+            if (Q('d20flag2').checked) { r += 0x00010000; }
+            else if (Q('d20flag3').checked) { r += 0x00000100; }
+            if (Q('d20flag4').checked) { r += 0x00000200; }
+            if (Q('d20flag5').checked) { r += 0x00000400; }
+            if (Q('d20flag6').checked) { r += 0x00000010; }
+            meshserver.send({ action: 'edituser', id: currentUser._id, flags: f, removeRights: r });
         }
 
         function p30editPhoneValidate(x) {
