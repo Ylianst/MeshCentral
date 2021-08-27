@@ -3549,7 +3549,7 @@
 
             if ((currentDevicePanel != 5) &&
                 (currentNode != null) &&
-                ((meshrights & 8) || (meshrights & 256)) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 65536) == 0)) &&
+                ((meshrights & 8) || (meshrights & 256)) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0)) &&
                 (((currentNode.agent == null) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 2)))
             ) { menus.push({ n: "Terminal", f: 'setupDeviceMenu(5)' }); }
 
@@ -6359,6 +6359,28 @@
         // These must match server
         //
 
+        // Remove user rights
+        function removeUserRights(rights, userid) {
+            if ((userid != userinfo._id) || (userinfo.removeRights == null)) return rights;
+            var add = 0, substract = 0;
+            if ((userinfo.removeRights & 0x00010000) != 0) { add += 0x00010000; } // No Desktop
+            if ((userinfo.removeRights & 0x00000100) != 0) { add += 0x00000100; } // Desktop View Only
+            if ((userinfo.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
+            if ((userinfo.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
+            if ((userinfo.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
+            if (rights != 0xFFFFFFFF) {
+                // If not administrator, add and subsctract restrictions
+                rights |= add;
+                rights &= (0xFFFFFFFF - substract);
+            } else {
+                // If administrator for a device group, start with permissions and add and subsctract restrictions
+                rights = 1 + 2 + 4 + 8 + 32 + 64 + 128 + 16384 + 32768 + 131072 + 262144 + 524288 + 1048576;
+                rights |= add;
+                rights &= (0xFFFFFFFF - substract);
+            }
+            return rights;
+        }
+
         // Get the right of a user on a given device group
         function GetMeshRights(mesh, userid) {
             if (mesh == null) { return 0; }
@@ -6367,12 +6389,12 @@
             if ((mesh == null) || (mesh.links == null)) { return 0; }
 
             // Check if super user
-            if (userinfo.manageAllDeviceGroups && (userid == userinfo._id)) return 0xFFFFFFFF;
+            if (serverinfo.manageAllDeviceGroups && (userid == userinfo._id)) return removeUserRights(0xFFFFFFFF, userid);
 
             // Check device group link permission
             var rights = 0, r = mesh.links[userid];
             if (r != null) {
-                if (r.rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a device group link, stop here.
+                if (r.rights == 0xFFFFFFFF) { return removeUserRights(0xFFFFFFFF, userid); } // User has full rights thru a device group link, stop here.
                 rights = r.rights;
             }
 
@@ -6384,14 +6406,14 @@
                     if (i.startsWith('ugrp/')) {
                         r = mesh.links[i];
                         if (r != null) {
-                            if (r.rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a user group, stop here.
+                            if (r.rights == 0xFFFFFFFF) { return removeUserRights(0xFFFFFFFF, userid); } // User has full rights thru a user group, stop here.
                             rights |= r.rights; // TODO: Deal with reverse permissions
                         }
                     }
                 }
             }
 
-            return rights;
+            return removeUserRights(rights, userid);
         }
 
         // Returns true if the user can view the given device group
@@ -6403,7 +6425,7 @@
             if (mesh.links[userid] != null) { return true; } // User has visilibity thru a direct link
 
             // Check if user user
-            if (userinfo.manageAllDeviceGroups && (userid == userinfo._id)) return true;
+            if (serverinfo.manageAllDeviceGroups && (userid == userinfo._id)) return true;
 
             // Check permissions thru user groups
             var user = null;
@@ -6423,8 +6445,7 @@
             if (userid == null) { userid = userinfo._id; }
             if (typeof node == 'string') { node = getNodeFromId(node); if (node == null) { return 0; } }
             var r = GetMeshRights(node.meshid, userid);
-            if (r == 0xFFFFFFFF) return r;
-            var user = null;
+            if (r == 0xFFFFFFFF) return removeUserRights(r, userid);
 
             // Check direct device rights using device data
             if ((node.links != null) && (node.links[userid] != null)) { r |= node.links[userid].rights; } // TODO: Deal with reverse permissions
@@ -6438,6 +6459,7 @@
 
             // Check direct device rights using user data
             /*
+            var user = null;
             if (userid == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[userid]; } }
             if ((user != null) && (user.links != null)) {
                 var r2 = user.links[node._id];
@@ -6447,7 +6469,7 @@
                 }
             }
             */
-            return r;
+            return removeUserRights(r, userid);
         }
 
         // Return true if the device is visible to the user
@@ -6467,6 +6489,7 @@
 
             return false;
         }
+
 
         //
         // Generic Methods

@@ -874,6 +874,7 @@ function handleServerCommand(data) {
             case 'msg': {
                 switch (data.type) {
                     case 'console': { // Process a console command
+                        if ((typeof data.rights != 'number') || ((data.rights & 16) == 0)) break; // Check console rights
                         if (data.value && data.sessionid) {
                             MeshServerLogEx(17, [data.value], "Processing console command: " + data.value, data);
                             var args = splitArgs(data.value);

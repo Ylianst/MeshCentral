@@ -911,6 +911,7 @@ require('MeshAgent').AddCommandHandler(function (data) {
                 {
                     switch (data.type) {
                         case 'console': { // Process a console command
+                            if ((typeof data.rights != 'number') || ((data.rights & 16) == 0)) break; // Check console rights
                             if (data.value && data.sessionid) {
                                 var args = splitArgs(data.value);
                                 processConsoleCommand(args[0].toLowerCase(), parseArgs(args), data.rights, data.sessionid);
