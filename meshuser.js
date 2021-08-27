@@ -1584,7 +1584,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.resetNextLogin === true) { chguser.passchange = -1; }
                         if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
                         if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
-                        if ((command.flags != null) && (typeof command.flags == 'number')) { if (command.flags == 0) { delete chguser.flags; } else { chguser.flags = command.flags; } change = 1; } // Flags: 1 = Account Image, 2 = Session Recording
+                        if ((command.flags != null) && (typeof command.flags == 'number')) {
+                            // Flags: 1 = Account Image, 2 = Session Recording
+                            if ((command.flags == 0) && (chguser.flags != null)) { delete chguser.flags; change = 1; } else { if (command.flags !== chguser.flags) { chguser.flags = command.flags; change = 1; } }
+                        }
+                        if ((command.removeRights != null) && (typeof command.removeRights == 'number')) {
+                            if ((command.removeRights == 0) && (chguser.removeRights != null)) { delete chguser.removeRights; change = 1; } else { if (command.removeRights !== chguser.removeRights) { chguser.removeRights = command.removeRights; change = 1; } } 
+                        }
 
                         // Site admins can change any server rights, user managers can only change AccountLock, NoMeshCmd and NoNewGroups
                         if (common.validateInt(command.siteadmin) && (chguser._id !== user._id) && (chguser.siteadmin != command.siteadmin)) { // We can't change our own siteadmin permissions.
