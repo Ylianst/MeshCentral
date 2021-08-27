@@ -6799,6 +6799,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Access Control Functions
     //
 
+    // Remove user rights
+    function removeUserRights(rights, user) {
+        if (user.removeRights == null) return rights;
+        var add = 0, substract = 0;
+        if ((user.removeRights & 0x00010000) != 0) { add += 0x00010000; } // No Desktop
+        if ((user.removeRights & 0x00000100) != 0) { add += 0x00000100; } // Desktop View Only
+        if ((user.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
+        if ((user.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
+        if ((user.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
+        if (rights != 0xFFFFFFFF) {
+            // If not administrator, add and subsctract restrictions
+            rights |= add;
+            rights &= (0xFFFFFFFF - substract);
+        } else {
+            // If administrator for a device group, start with permissions and add and subsctract restrictions
+            rights = 1 + 2 + 4 + 8 + 32 + 64 + 128 + 16384 + 32768 + 131072 + 262144 + 524288 + 1048576;
+            rights |= add;
+            rights &= (0xFFFFFFFF - substract);
+        }
+        return rights;
+    }
+
     // Return the node and rights for a given nodeid
     obj.GetNodeWithRights = function (domain, user, nodeid, func) {
         // Perform user pre-validation
@@ -6818,7 +6840,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // This is a super user that can see all device groups for a given domain
             if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) && (nodes[0].domain == user.domain)) {
-                func(nodes[0], 0xFFFFFFFF, true); return;
+                func(nodes[0], removeUserRights(0xFFFFFFFF, user), true); return;
             }
 
             // If no links, stop here.
@@ -6827,7 +6849,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Check device link
             var rights = 0, visible = false, r = user.links[nodeid];
             if (r != null) {
-                if (r.rights == 0xFFFFFFFF) { func(nodes[0], 0xFFFFFFFF, true); return; } // User has full rights thru a device link, stop here.
+                if (r.rights == 0xFFFFFFFF) { func(nodes[0], removeUserRights(0xFFFFFFFF, user), true); return; } // User has full rights thru a device link, stop here.
                 rights |= r.rights;
                 visible = true;
             }
@@ -6835,7 +6857,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Check device group link
             r = user.links[nodes[0].meshid];
             if (r != null) {
-                if (r.rights == 0xFFFFFFFF) { func(nodes[0], 0xFFFFFFFF, true); return; } // User has full rights thru a device group link, stop here.
+                if (r.rights == 0xFFFFFFFF) { func(nodes[0], removeUserRights(0xFFFFFFFF, user), true); return; } // User has full rights thru a device group link, stop here.
                 rights |= r.rights;
                 visible = true;
             }
@@ -6847,19 +6869,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (g && (g.links != null)) {
                         r = g.links[nodes[0].meshid];
                         if (r != null) {
-                            if (r.rights == 0xFFFFFFFF) { func(nodes[0], 0xFFFFFFFF, true); return; } // User has full rights thru a user group link, stop here.
+                            if (r.rights == 0xFFFFFFFF) { func(nodes[0], removeUserRights(0xFFFFFFFF, user), true); return; } // User has full rights thru a user group link, stop here.
                             rights |= r.rights; // TODO: Deal with reverse rights
                             visible = true;
                         }
                         r = g.links[nodeid];
                         if (r != null) {
-                            if (r.rights == 0xFFFFFFFF) { func(nodes[0], 0xFFFFFFFF, true); return; } // User has full rights thru a user group direct link, stop here.
+                            if (r.rights == 0xFFFFFFFF) { func(nodes[0], removeUserRights(0xFFFFFFFF, user), true); return; } // User has full rights thru a user group direct link, stop here.
                             rights |= r.rights; // TODO: Deal with reverse rights
                             visible = true;
                         }
                     }
                 }
             }
+
+            // Remove any user rights
+            rights = removeUserRights(rights, user);
 
             // Return the rights we found
             func(nodes[0], rights, visible);
@@ -6954,7 +6979,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         } else return 0;
 
         // Check if this is a super user that can see all device groups for a given domain
-        if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return 0xFFFFFFFF; }
+        if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return removeUserRights(0xFFFFFFFF, user); }
 
         // Check direct user to device group permissions
         if (user.links == null) return 0;
@@ -6962,7 +6987,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         r = user.links[meshid];
         if (r != null) {
             var rights = r.rights;
-            if (rights == 0xFFFFFFFF) { return rights; } // If the user has full access thru direct link, stop here.
+            if (rights == 0xFFFFFFFF) { return removeUserRights(rights, user); } // If the user has full access thru direct link, stop here.
         }
 
         // Check if we are part of any user groups that would give this user more access.
@@ -6973,7 +6998,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     r = g.links[meshid];
                     if (r != null) {
                         if (r.rights == 0xFFFFFFFF) {
-                            return r.rights; // If the user hash full access thru a user group link, stop here.
+                            return removeUserRights(r.rights, user); // If the user hash full access thru a user group link, stop here.
                         } else {
                             rights |= r.rights; // Add to existing rights (TODO: Deal with reverse rights)
                         }
@@ -6983,7 +7008,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
 
-        return rights;
+        return removeUserRights(rights, user);
     }
 
     // Returns true if the user can view the given device group
@@ -7022,11 +7047,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (typeof user == 'string') { user = obj.users[user]; }
         if (user == null) { return 0; }
         var r = obj.GetMeshRights(user, mesh);
-        if (r == 0xFFFFFFFF) return r;
+        if (r == 0xFFFFFFFF) return removeUserRights(r, user);
 
         // Check direct device rights using device data
         if ((user.links != null) && (user.links[nodeid] != null)) { r |= user.links[nodeid].rights; } // TODO: Deal with reverse permissions
-        if (r == 0xFFFFFFFF) return r;
+        if (r == 0xFFFFFFFF) return removeUserRights(r, user);
 
         // Check direct device rights thru a user group
         for (var i in user.links) {
@@ -7036,7 +7061,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
 
-        return r;
+        return removeUserRights(r, user);
     }
 
     // Returns a list of displatch targets for a given mesh

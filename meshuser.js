@@ -4313,7 +4313,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 // Get the node and the rights for this node
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                    if ((rights & MESHRIGHT_AGENTCONSOLE) == 0) return;
+                    if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
 
                     // Ask for clipboard data from agent
                     var agent = parent.wsagents[node._id];
@@ -4326,7 +4326,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 // Get the node and the rights for this node
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                    if ((rights & MESHRIGHT_AGENTCONSOLE) == 0) return;
+                    if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
 
                     // Send clipboard data to the agent
                     var agent = parent.wsagents[node._id];
