@@ -3945,7 +3945,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var record = true;
 
                 // Check user or device group recording
-                if ((domain.sessionrecording.onlyselectedusers === true) || (domain.sessionrecording.onlyselecteddevicegroups === true)) {
+                if ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.onlyselectedusers === true) || (domain.sessionrecording.onlyselecteddevicegroups === true))) {
                     record = false;
 
                     // Check device group recording

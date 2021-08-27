@@ -357,7 +357,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                             if ((nodes != null) && (nodes.length == 1)) { node = nodes[0]; xdevicename2 = node.name; xdevicename = '-' + parent.common.makeFilename(node.name); }
 
                             // Check again if we need to do messenger recording
-                            if ((domain.sessionrecording.onlyselectedusers === true) || (domain.sessionrecording.onlyselecteddevicegroups === true)) {
+                            if ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.onlyselectedusers === true) || (domain.sessionrecording.onlyselecteddevicegroups === true))) {
                                 record = false;
 
                                 // Check if this device group needs to be recorded

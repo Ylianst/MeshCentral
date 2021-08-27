@@ -131,7 +131,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
             // Check session recording
             var startRecord = false;
-            if ((domain.sessionrecording.onlyselectedusers === true) && (peer.user != null) && (peer.user.flags != null) && ((peer.user.flags & 2) != 0)) { startRecord = true; }
+            if ((typeof domain.sessionrecording == 'object') && (domain.sessionrecording.onlyselectedusers === true) && (peer.user != null) && (peer.user.flags != null) && ((peer.user.flags & 2) != 0)) { startRecord = true; }
             startRecording(domain, startRecord, function () {
                 // Indicated we are connected
                 obj.sendToViewer(peer, obj.recordingFile ? 'cr' : 'c');
@@ -768,11 +768,11 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         var record = false;
 
         // Setup session recording
-        if ((domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(2) >= 0))))) {
+        if (((domain.sessionrecording == true) || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(2) >= 0))))) {
             record = true;
 
             // Check again to make sure we need to start recording
-            if ((domain.sessionrecording.onlyselecteddevicegroups === true) || (domain.sessionrecording.onlyselectedusers === true)) {
+            if ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.onlyselecteddevicegroups === true) || (domain.sessionrecording.onlyselectedusers === true))) {
                 record = false;    
 
                 // Check device group recording
