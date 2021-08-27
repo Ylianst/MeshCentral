@@ -492,8 +492,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             serverinfo.languages = parent.renderLanguages;
             serverinfo.tlshash = Buffer.from(parent.webCertificateFullHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
             serverinfo.agentCertHash = parent.agentCertificateHashBase64;
-            if ((domain.sessionrecording) && (domain.sessionrecording.onlyselectedusers === true)) { serverinfo.usersSessionRecording = 1; } // Allow enabling of session recording for user groups
-            if ((domain.sessionrecording) && (domain.sessionrecording.onlyselecteddevicegroups === true)) { serverinfo.devGroupSessionRecording = 1; } // Allow enabling of session recording for device groups
+            if (typeof domain.sessionrecording == 'object') {
+                if (domain.sessionrecording.onlyselectedusers === true) { serverinfo.usersSessionRecording = 1; } // Allow enabling of session recording for user groups
+                if (domain.sessionrecording.onlyselecteddevicegroups === true) { serverinfo.devGroupSessionRecording = 1; } // Allow enabling of session recording for device groups
+            }
             if ((parent.parent.config.domains[domain.id].amtacmactivation != null) && (parent.parent.config.domains[domain.id].amtacmactivation.acmmatch != null)) {
                 var matchingDomains = [];
                 for (var i in parent.parent.config.domains[domain.id].amtacmactivation.acmmatch) {
