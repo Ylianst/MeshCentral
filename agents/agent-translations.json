@@ -556,10 +556,17 @@
     "graphicalerror": "Graficzna wersja tego instalatora nie może być uruchomiona w tym systemie.",
     "zenity": "Spróbuj zainstalować/zaktualizować Zenity i uruchom ponownie",
     "status": [
-      "NOT INSTALLED",
+      "NIE ZAINSTALOWANY",
       "DZIAŁA",
       "NIE DZIAŁA"
     ],
-    "description": "Kliknij poniższe przyciski, aby zainstalować lub odinstalować agenta. Po zainstalowaniu, to oprogramowanie działa w tle, umożliwiając zarządzanie i kontrolowanie tego komputera przez zdalnego administratora."
+    "description": "Kliknij poniższe przyciski, aby zainstalować lub odinstalować agenta. Po zainstalowaniu, to oprogramowanie działa w tle, umożliwiając zarządzanie i kontrolowanie tego komputera przez zdalnego administratora.",
+    "agent": "Agent",
+    "meshName": "Nazwa siatki",
+    "meshId": "Identyfikator siatki",
+    "setup": "Ustawiać",
+    "pressok": "Naciśnij OK, aby się rozłączyć",
+    "sudo": "Spróbuj ponownie z sudo.",
+    "ctrlc": "Naciśnij Ctrl-C, aby wyjść."
   }
 }

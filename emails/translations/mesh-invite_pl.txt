@@ -1,6 +1,6 @@
 [[[SERVERNAME]]] - Zaproszenie
 ~<area-name>
-Hello [[[NAME]]],
+Witaj [[[IMIĘ]]],
 ~</area-name>
 Użytkownik [[[USERNAME]]] na serwerze [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) prosi o zainstalowanie oprogramowania w celu uruchomienia sesji zdalnego sterowania.
 ~<area-msg>
