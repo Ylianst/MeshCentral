@@ -6803,11 +6803,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function removeUserRights(rights, user) {
         if (user.removeRights == null) return rights;
         var add = 0, substract = 0;
+        if ((user.removeRights & 0x00000008) != 0) { substract += 0x00000008; } // No Remote Control
         if ((user.removeRights & 0x00010000) != 0) { add += 0x00010000; } // No Desktop
         if ((user.removeRights & 0x00000100) != 0) { add += 0x00000100; } // Desktop View Only
         if ((user.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
         if ((user.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
         if ((user.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
+        if ((user.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
+        if ((user.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command
+        if ((user.removeRights & 0x00000040) != 0) { substract += 0x00000040; } // No Wake
+        if ((user.removeRights & 0x00040000) != 0) { substract += 0x00040000; } // No Reset/Off
         if (rights != 0xFFFFFFFF) {
             // If not administrator, add and subsctract restrictions
             rights |= add;
