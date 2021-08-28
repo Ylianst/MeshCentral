@@ -6633,9 +6633,9 @@
                 var groupingTags = '<i>' + "None" + '</i>';
                 if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;border-radius:5px">' + EscapeHtml(node.tags[i]) + '</span> '; } }
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=line-height:26px;cursor:pointer;color:black>' + groupingTags + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>');
+                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=line-height:26px;cursor:pointer>' + groupingTags + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>');
                 } else {
-                    x += addDeviceAttribute("Tags", '<span style=line-height:26px;color:black>' + groupingTags + '</span>');
+                    x += addDeviceAttribute("Tags", '<span style=line-height:26px>' + groupingTags + '</span>');
                 }
 
                 // SSH & RDP Credentials
