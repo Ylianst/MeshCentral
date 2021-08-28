@@ -3231,7 +3231,7 @@ function mainStart() {
         if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
         if (config.settings.mysql != null) { modules.push('mysql'); } // Add MySQL.
         //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
-        if (config.settings.mongodb != null) { modules.push('mongodb'); modules.push('saslprep'); } // Add MongoDB, official driver.
+        if (config.settings.mongodb != null) { modules.push('mongodb@4.1.0'); modules.push('saslprep'); } // Add MongoDB, official driver.
         if (config.settings.mariadb != null) { modules.push('mariadb'); } // Add MariaDB, official driver.
         if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
         if (config.settings.plugins != null) {  modules.push('semver'); } // Required for version compat testing and update checks
