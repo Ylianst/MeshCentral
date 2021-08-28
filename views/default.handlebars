@@ -6598,7 +6598,7 @@
                 }
 
                 // Active Users
-                if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute(((node.users.length > 1)?'Active Users':'Active User'), EscapeHtml(node.users.join(', '))); }
+                if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute(((node.users.length > 1)?"Active Users":"Active User"), EscapeHtml(node.users.join(', '))); }
 
                 // Display device user consent
                 if ((node.agent != null) && (node.agent.id != 14) && (node.mtype != 3)) {
