@@ -14073,11 +14073,17 @@
             var userFeatures = [];
             if ((serverinfo.usersSessionRecording == 1) && (user.flags) && (user.flags & 2)) { userFeatures.push("Record Sessions"); }
             if (user.removeRights) {
-                if ((user.removeRights & 0x00010000) != 0) { userFeatures.push("No Desktop"); }
-                else if ((user.removeRights & 0x00000100) != 0) { userFeatures.push("Desktop View Only"); }
-                if ((user.removeRights & 0x00000200) != 0) { userFeatures.push("No Terminal"); }
-                if ((user.removeRights & 0x00000400) != 0) { userFeatures.push("No Files"); }
+                if ((user.removeRights & 0x00000008) != 0) { userFeatures.push("No Remote Control"); } else {
+                    if ((user.removeRights & 0x00010000) != 0) { userFeatures.push("No Desktop"); }
+                    else if ((user.removeRights & 0x00000100) != 0) { userFeatures.push("Desktop View Only"); }
+                    if ((user.removeRights & 0x00000200) != 0) { userFeatures.push("No Terminal"); }
+                    if ((user.removeRights & 0x00000400) != 0) { userFeatures.push("No Files"); }
+                }
                 if ((user.removeRights & 0x00000010) != 0) { userFeatures.push("No Console"); }
+                if ((user.removeRights & 0x00008000) != 0) { userFeatures.push("No Uninstall"); }
+                if ((user.removeRights & 0x00020000) != 0) { userFeatures.push("No Remote Command"); }
+                if ((user.removeRights & 0x00000040) != 0) { userFeatures.push("No Wake"); }
+                if ((user.removeRights & 0x00040000) != 0) { userFeatures.push("No Reset/Off"); }
             }
             userFeatures = userFeatures.join(', ');
             if (userFeatures == '') { userFeatures = '<i>' + "None" + '</i>'; }
@@ -14204,17 +14210,25 @@
             if (serverinfo.usersSessionRecording == 1) {
                 x += '<div><label><input type=checkbox id=d20flag1 onchange=p20edituserfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
             }
-            x += '<div><label><input type=checkbox id=d20flag2 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00010000) ? 'checked' : '') + '>' + "No Desktop Access" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag7 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000008) ? 'checked' : '') + '>' + "No Remote Control" + '</label><br></div>';
+            x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag2 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00010000) ? 'checked' : '') + '>' + "No Desktop Access" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag3 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000100) ? 'checked' : '') + '>' + "Remote View Only" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d20flag4 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000200) ? 'checked' : '') + '>' + "No Terminal Access" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d20flag5 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000400) ? 'checked' : '') + '>' + "No File Access" + '</label><br></div>';
+            x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag4 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000200) ? 'checked' : '') + '>' + "No Terminal Access" + '</label><br></div>';
+            x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag5 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000400) ? 'checked' : '') + '>' + "No File Access" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag6 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000010) ? 'checked' : '') + '>' + "No Agent Console" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag8 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00008000) ? 'checked' : '') + '>' + "No Uninstall" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag9 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00020000) ? 'checked' : '') + '>' + "No Remote Command" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag10 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000040) ? 'checked' : '') + '>' + "No Wake" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag11 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00040000) ? 'checked' : '') + '>' + "No Reset/Off" + '</label><br></div>';
             setDialogMode(2, "Edit User Features", 3, p20edituserfeaturesEx, x);
             p20edituserfeaturesValidate();
         }
 
         function p20edituserfeaturesValidate() {
-            QE('d20flag3', !Q('d20flag2').checked);
+            QE('d20flag2', !Q('d20flag7').checked);
+            QE('d20flag3', !Q('d20flag7').checked && !Q('d20flag2').checked);
+            QE('d20flag4', !Q('d20flag7').checked);
+            QE('d20flag5', !Q('d20flag7').checked);
         }
 
         // Send to the server the new user's real name
@@ -14226,11 +14240,17 @@
 
             // Setup user permission removal
             var r = 0;
-            if (Q('d20flag2').checked) { r += 0x00010000; }
-            else if (Q('d20flag3').checked) { r += 0x00000100; }
-            if (Q('d20flag4').checked) { r += 0x00000200; }
-            if (Q('d20flag5').checked) { r += 0x00000400; }
+            if (Q('d20flag7').checked) { r += 0x00000008; } else {
+                if (Q('d20flag2').checked) { r += 0x00010000; }
+                else if (Q('d20flag3').checked) { r += 0x00000100; }
+                if (Q('d20flag4').checked) { r += 0x00000200; }
+                if (Q('d20flag5').checked) { r += 0x00000400; }
+            }
             if (Q('d20flag6').checked) { r += 0x00000010; }
+            if (Q('d20flag8').checked) { r += 0x00008000; }
+            if (Q('d20flag9').checked) { r += 0x00020000; }
+            if (Q('d20flag10').checked) { r += 0x00000040; }
+            if (Q('d20flag11').checked) { r += 0x00040000; }
             meshserver.send({ action: 'edituser', id: currentUser._id, flags: f, removeRights: r });
         }
 
@@ -15841,11 +15861,16 @@
         function removeUserRights(rights, userid) {
             if ((userid != userinfo._id) || (userinfo.removeRights == null)) return rights;
             var add = 0, substract = 0;
+            if ((userinfo.removeRights & 0x00000008) != 0) { substract += 0x00000008; } // No Remote Control
             if ((userinfo.removeRights & 0x00010000) != 0) { add += 0x00010000; } // No Desktop
             if ((userinfo.removeRights & 0x00000100) != 0) { add += 0x00000100; } // Desktop View Only
             if ((userinfo.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
             if ((userinfo.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
             if ((userinfo.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
+            if ((userinfo.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
+            if ((userinfo.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command
+            if ((userinfo.removeRights & 0x00000040) != 0) { substract += 0x00000040; } // No Wake
+            if ((userinfo.removeRights & 0x00040000) != 0) { substract += 0x00040000; } // No Reset/Off
             if (rights != 0xFFFFFFFF) {
                 // If not administrator, add and subsctract restrictions
                 rights |= add;

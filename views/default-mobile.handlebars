@@ -6363,11 +6363,16 @@
         function removeUserRights(rights, userid) {
             if ((userid != userinfo._id) || (userinfo.removeRights == null)) return rights;
             var add = 0, substract = 0;
+            if ((userinfo.removeRights & 0x00000008) != 0) { substract += 0x00000008; } // No Remote Control
             if ((userinfo.removeRights & 0x00010000) != 0) { add += 0x00010000; } // No Desktop
             if ((userinfo.removeRights & 0x00000100) != 0) { add += 0x00000100; } // Desktop View Only
             if ((userinfo.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
             if ((userinfo.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
             if ((userinfo.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
+            if ((userinfo.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
+            if ((userinfo.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command
+            if ((userinfo.removeRights & 0x00000040) != 0) { substract += 0x00000040; } // No Wake
+            if ((userinfo.removeRights & 0x00040000) != 0) { substract += 0x00040000; } // No Reset/Off
             if (rights != 0xFFFFFFFF) {
                 // If not administrator, add and subsctract restrictions
                 rights |= add;
