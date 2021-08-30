@@ -2910,6 +2910,7 @@
       "nl": "32-bits",
       "pl": "32-bitowy",
       "pt": "32 bits",
+      "pt-br": "32 bits",
       "ru": "32-битный",
       "sv": "32-bitars",
       "tr": "32 bit",
@@ -3432,6 +3433,7 @@
       "nl": "64-bits",
       "pl": "64-bitowy",
       "pt": "64 bits",
+      "pt-br": "64 bits",
       "ru": "64-битный",
       "sv": "64-bitars",
       "tr": "64 bit",
@@ -5071,12 +5073,14 @@
     },
     {
       "en": "Active User",
+      "pt-br": "Usuario activo",
       "xloc": [
         "default.handlebars->35->764"
       ]
     },
     {
       "en": "Active Users",
+      "pt-br": "Usuarios activos",
       "xloc": [
         "default.handlebars->35->763"
       ]
@@ -17513,6 +17517,7 @@
       "nl": "Alleen bureaubladweergave",
       "pl": "Tylko widok pulpitu",
       "pt": "Apenas visualização da área de trabalho",
+      "pt-br": "Vista de escritorio solamente",
       "ru": "Только просмотр рабочего стола",
       "sv": "Endast skrivbordsvy",
       "tr": "Yalnızca Masaüstü Görünümü",
@@ -21279,6 +21284,7 @@
       "nl": "Gebruikersfuncties bewerken",
       "pl": "Edytuj funkcje użytkownika",
       "pt": "Editar características do usuário",
+      "pt-br": "Editar funciones de usuario",
       "ru": "Редактировать функции пользователя",
       "sv": "Redigera användarfunktioner",
       "tr": "Kullanıcı Özelliklerini Düzenle",
@@ -30755,6 +30761,7 @@
       "nl": "Sleutelbestand",
       "pl": "Plik klucza",
       "pt": "Arquivo-chave",
+      "pt-br": "Archivo de clave",
       "ru": "Ключевой файл",
       "sv": "Nyckelfil",
       "tr": "Anahtar dosya",
@@ -30805,6 +30812,7 @@
       "nl": "Sleutelwachtwoord",
       "pl": "Hasło klucza",
       "pt": "Senha da chave",
+      "pt-br": "Contraseña clave",
       "ru": "Ключевой пароль",
       "sv": "Nyckel lösenord",
       "tr": "Anahtar Parola",
@@ -30830,6 +30838,7 @@
       "nl": "Het sleutelbestand moet de OpenSSH-indeling hebben.",
       "pl": "Plik klucza musi być w formacie OpenSSH.",
       "pt": "O arquivo da chave deve estar no formato OpenSSH.",
+      "pt-br": "El archivo de clave debe estar en formato OpenSSH.",
       "ru": "Ключевой файл должен быть в формате OpenSSH.",
       "sv": "Nyckelfilen måste vara i OpenSSH -format.",
       "tr": "Anahtar dosyası OpenSSH formatında olmalıdır.",
@@ -37856,6 +37865,7 @@
       "nl": "Geen agentconsole",
       "pl": "Brak konsoli agenta",
       "pt": "Sem console de agente",
+      "pt-br": "Sin consola de agente",
       "ru": "Нет консоли агента",
       "sv": "Ingen agentkonsol",
       "tr": "Aracı Konsolu Yok",
@@ -37878,6 +37888,7 @@
       "nl": "Geen console",
       "pl": "Brak konsoli",
       "pt": "Sem console",
+      "pt-br": "Sin consola",
       "ru": "Нет консоли",
       "sv": "Ingen konsol",
       "tr": "Konsol Yok",
@@ -38304,6 +38315,7 @@
     },
     {
       "en": "No Remote Command",
+      "pt-br": "Sin comando remoto",
       "xloc": [
         "default.handlebars->35->2344",
         "default.handlebars->35->2413"
@@ -38311,6 +38323,7 @@
     },
     {
       "en": "No Remote Control",
+      "pt-br": "Sin control remoto",
       "xloc": [
         "default.handlebars->35->2337",
         "default.handlebars->35->2406"
@@ -38318,6 +38331,7 @@
     },
     {
       "en": "No Reset/Off",
+      "pt-br": "Sin reinicio / apagado",
       "xloc": [
         "default.handlebars->35->2346",
         "default.handlebars->35->2415"
@@ -38479,6 +38493,7 @@
     },
     {
       "en": "No Uninstall",
+      "pt-br": "No desinstalar",
       "xloc": [
         "default.handlebars->35->2343",
         "default.handlebars->35->2412"
@@ -38486,6 +38501,7 @@
     },
     {
       "en": "No Wake",
+      "pt-br": "Sin despertar",
       "xloc": [
         "default.handlebars->35->2345",
         "default.handlebars->35->2414"
@@ -40734,6 +40750,13 @@
       "zh-chs": "打开..."
     },
     {
+      "en": "OpenBSD x86-64",
+      "xloc": [
+        "default-mobile.handlebars->11->43",
+        "default.handlebars->35->50"
+      ]
+    },
+    {
       "cs": "OpenSSH",
       "de": "OpenSSH",
       "en": "OpenSSH",
@@ -40752,6 +40775,13 @@
       "sv": "OpenSSH",
       "tr": "OpenSSH",
       "zh-chs": "开放式SSH"
+    },
+    {
+      "en": "OpenWRT x86-64",
+      "xloc": [
+        "default-mobile.handlebars->11->42",
+        "default.handlebars->35->49"
+      ]
     },
     {
       "cs": "Zahájení: {0}",
@@ -41099,6 +41129,7 @@
       "nl": "{0} bestanden overschrijven?",
       "pl": "Zastąpić {0} plików?",
       "pt": "Substituir {0} arquivos?",
+      "pt-br": "¿Sobrescribir {0} archivos?",
       "ru": "Перезаписать {0} файлы?",
       "sv": "Skriv över {0} filer?",
       "tr": "{0} dosyanın üzerine yazılsın mı?",
@@ -48731,6 +48762,7 @@
       "nl": "SSH-sleutel",
       "pl": "Klucz SSH",
       "pt": "SSH-Key",
+      "pt-br": "Clave SSH",
       "ru": "SSH-ключ",
       "sv": "SSH-nyckel",
       "tr": "SSH-Anahtarı",
@@ -57703,6 +57735,7 @@
       "nl": "Overdrachtsfouten",
       "pl": "Błędy transferu",
       "pt": "Erros de transferência",
+      "pt-br": "Errores de transferencia",
       "ru": "Ошибки передачи",
       "sv": "Överföringsfel",
       "tr": "Aktarım Hataları",
@@ -58496,6 +58529,7 @@
       "nl": "Kan bestand: {0} niet openen",
       "pl": "Nie można otworzyć pliku: {0}",
       "pt": "Não foi possível abrir o arquivo: {0}",
+      "pt-br": "No se puede abrir el archivo: {0}",
       "ru": "Невозможно открыть файл: {0}",
       "sv": "Det gick inte att öppna filen: {0}",
       "tr": "Dosya açılamıyor: {0}",
@@ -58613,6 +58647,7 @@
       "nl": "Kan bestand: {0} niet schrijven",
       "pl": "Nie można zapisać pliku: {0}",
       "pt": "Não foi possível gravar o arquivo: {0}",
+      "pt-br": "No se puede escribir el archivo: {0}",
       "ru": "Невозможно записать файл: {0}",
       "sv": "Det gick inte att skriva filen: {0}",
       "tr": "Dosya yazılamıyor: {0}",
@@ -58743,8 +58778,6 @@
       "xloc": [
         "default-mobile.handlebars->11->240",
         "default-mobile.handlebars->11->37",
-        "default-mobile.handlebars->11->42",
-        "default-mobile.handlebars->11->43",
         "default-mobile.handlebars->11->44",
         "default-mobile.handlebars->11->45",
         "default-mobile.handlebars->11->528",
@@ -58764,8 +58797,6 @@
         "default.handlebars->35->2481",
         "default.handlebars->35->2488",
         "default.handlebars->35->44",
-        "default.handlebars->35->49",
-        "default.handlebars->35->50",
         "default.handlebars->35->51",
         "default.handlebars->35->52",
         "default.handlebars->35->556"
@@ -60763,6 +60794,7 @@
       "nl": "Gebruikersnaam wachtwoord",
       "pl": "Nazwa użytkownika Hasło",
       "pt": "Usuário senha",
+      "pt-br": "Usuario Contraseña",
       "ru": "Имя пользователя Пароль",
       "sv": "Användarnamn Lösenord",
       "tr": "Kullanıcı adı Şifre",
@@ -60814,6 +60846,7 @@
       "nl": "Gebruikersnaam en sleutel",
       "pl": "Nazwa użytkownika i klucz",
       "pt": "Nome de usuário e chave",
+      "pt-br": "Nombre de usuario y clave",
       "ru": "Имя пользователя и ключ",
       "sv": "Användarnamn och nyckel",
       "tr": "Kullanıcı adı ve Anahtar",
@@ -64373,6 +64406,7 @@
       "nl": "en",
       "pl": "oraz",
       "pt": "e",
+      "pt-br": "y",
       "ru": "а также",
       "sv": "och",
       "tr": "ve",
@@ -65922,6 +65956,7 @@
       "nl": "of",
       "pl": "lub",
       "pt": "ou",
+      "pt-br": "o",
       "ru": "или",
       "sv": "eller",
       "tr": "veya",
@@ -66591,6 +66626,7 @@
       "nl": "{0} Gbytes/sec",
       "pl": "{0} GB/s",
       "pt": "{0} Gbytes / s",
+      "pt-br": "{0} Gbytes / seg",
       "ru": "{0} Гбайт / с",
       "sv": "{0} Gbyte/sek",
       "tr": "{0} Gbayt/sn",
@@ -66636,6 +66672,7 @@
       "nl": "{0} Kbytes/sec",
       "pl": "{0} KB/s",
       "pt": "{0} Kbytes / s",
+      "pt-br": "{0} Kbytes / seg",
       "ru": "{0} Кбайт / с",
       "sv": "{0} Kbyte/sek",
       "tr": "{0} Kbayt/sn",
@@ -66709,6 +66746,7 @@
       "nl": "{0} Mbytes/sec",
       "pl": "{0} MB/s",
       "pt": "{0} Mbytes / s",
+      "pt-br": "{0} Mbytes / seg",
       "ru": "{0} Мбайт / с",
       "sv": "{0} Mbytes/sek",
       "tr": "{0} Mbayt/sn",
@@ -66830,6 +66868,7 @@
       "nl": "{0} bytes/sec",
       "pl": "{0} bajtów/s",
       "pt": "{0} bytes / s",
+      "pt-br": "{0} bytes / seg",
       "ru": "{0} байт / сек",
       "sv": "{0} byte/sek",
       "tr": "{0} bayt/sn",
@@ -67064,6 +67103,7 @@
       "nl": "{0} minuten resterend",
       "pl": "Pozostało {0} minut",
       "pt": "Faltam {0} minutos",
+      "pt-br": "Quedan {0} minutos",
       "ru": "Осталось {0} минут",
       "sv": "{0} minuter kvar",
       "tr": "{0} dakika kaldı",
@@ -67293,6 +67333,7 @@
       "nl": "{0} seconden resterend",
       "pl": "Pozostało {0} sekund",
       "pt": "Faltam {0} segundos",
+      "pt-br": "Quedan {0} segundos",
       "ru": "Осталось {0} секунд",
       "sv": "{0} sekunder kvar",
       "tr": "{0} saniye kaldı",
@@ -67561,6 +67602,7 @@
       "nl": "{0} uur resterend",
       "pl": "{0} ponownie się zacznij",
       "pt": "{0} nosso reenvio",
+      "pt-br": "{0} nuestro restaurante",
       "ru": "{0} наш resterend",
       "sv": "{0} uur resterend",
       "tr": "{0} kullanıcı",
