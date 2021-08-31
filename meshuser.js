@@ -4482,7 +4482,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var now = Date.now(), removed = false, okDocs = [];
                         for (var i = 0; i < docs.length; i++) {
                             const doc = docs[i];
-                            if (doc.expireTime < now) {
+                            if ((doc.expireTime != null) && (doc.expireTime < now)) {
                                 // This share is expired.
                                 parent.db.Remove(doc._id, function () { }); removed = true;
                             } else {
@@ -4640,23 +4640,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_REMOTEVIEWONLY) != 0)) { command.viewOnly = true; command.p = (command.p & 1); }
 
                     // Create cookie
-                    var publicid = getRandomPassword(), startTime, expireTime;
+                    var publicid = getRandomPassword(), startTime = null, expireTime = null;
                     if (command.expire != null) {
-                        // Now until expire in hours
-                        startTime = Date.now();
-                        expireTime = Date.now() + (60000 * command.expire);
+                        if (command.expire !== 0) {
+                            // Now until expire in hours
+                            startTime = Date.now();
+                            expireTime = Date.now() + (60000 * command.expire);
+                        } else {
+                            delete command.expire;
+                        }
                     } else {
                         // Time range in seconds
                         startTime = command.start * 1000;
                         expireTime = command.end * 1000;
                     }
 
-                    var cookie = { a: 5, p: command.p, uid: user._id, gn: command.guestname, nid: node._id, cf: command.consent, start: startTime, expire: expireTime, pid: publicid };
+                    var cookie = { a: 5, p: command.p, uid: user._id, gn: command.guestname, nid: node._id, cf: command.consent, pid: publicid };
+                    if ((startTime != null) && (expireTime != null)) { command.start = cookie.start = startTime; command.expire = cookie.expire = expireTime; }
                     if (command.viewOnly === true) { cookie.vo = 1; }
                     const inviteCookie = parent.parent.encodeCookie(cookie, parent.parent.invitationLinkEncryptionKey);
                     if (inviteCookie == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createDeviceShareLink', responseid: command.responseid, result: 'Unable to generate shareing cookie' })); } catch (ex) { } } return; }
-                    command.start = startTime;
-                    command.expire = expireTime;
 
                     // Create the server url
                     var serverName = parent.getWebServerName(domain);
@@ -4670,7 +4673,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     try { ws.send(JSON.stringify(command)); } catch (ex) { }
 
                     // Create a device sharing database entry
-                    var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', nodeid: node._id, p: command.p, domain: node.domain, publicid: publicid, startTime: startTime, expireTime: expireTime, userid: user._id, guestName: command.guestname, consent: command.consent, url: url };
+                    var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', nodeid: node._id, p: command.p, domain: node.domain, publicid: publicid, userid: user._id, guestName: command.guestname, consent: command.consent, url: url };
+                    if ((startTime != null) && (expireTime != null)) { shareEntry.startTime = startTime; shareEntry.expireTime = expireTime; }
                     if (command.viewOnly === true) { shareEntry.viewOnly = true; }
                     parent.db.Set(shareEntry);
 

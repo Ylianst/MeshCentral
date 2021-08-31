@@ -3480,10 +3480,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Check the inbound desktop sharing cookie
         var c = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey, 60); // 60 minute timeout
-        if ((c == null) || (c.a !== 5) || (typeof c.p !== 'number') || (c.p < 1) || (c.p > 7) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.start != 'number') || (typeof c.expire != 'number') || (typeof c.pid != 'string')) { res.sendStatus(404); return; }
+        if ((c == null) || (c.a !== 5) || (typeof c.p !== 'number') || (c.p < 1) || (c.p > 7) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.pid != 'string')) { res.sendStatus(404); return; }
 
         // Check the expired time, expire message.
-        if (c.expire <= Date.now()) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+        if ((c.expire != null) && (c.expire <= Date.now())) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
         // Check the public id
         obj.db.GetAllTypeNodeFiltered([c.nid], domain.id, 'deviceshare', null, function (err, docs) {
@@ -3501,7 +3501,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var node = nodes[0];
 
                 // Check the start time, not yet valid message.
-                if ((c.start > Date.now()) || (c.start > c.expire)) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 11, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+                if ((c.start != null) && (c.expire != null) && ((c.start > Date.now()) || (c.start > c.expire))) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 11, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
                 // Looks good, let's create the outbound session cookies.
                 // Consent flags are 1 = Notify, 8 = Prompt, 64 = Privacy Bar.

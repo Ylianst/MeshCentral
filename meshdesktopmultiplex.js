@@ -1014,7 +1014,6 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
     };
 
     obj.sendAgentMessage = function (command, userid, domainid) {
-        console.log('sendAgentMessage');
         var rights, mesh;
         if (command.nodeid == null) return false;
         var user = parent.users[userid];
