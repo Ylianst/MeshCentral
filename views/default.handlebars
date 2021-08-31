@@ -3354,8 +3354,10 @@
                     x += addHtmlValue("Device", node.name);
                     x += addHtmlValue("Guest Name", message.guestname);
                     x += addHtmlValue("User Input", message.viewOnly ? "Not allowed, view only" : "Allowed");
-                    x += addHtmlValue("Start Time", printDateTime(new Date(message.start)));
-                    x += addHtmlValue("Expire Time", printDateTime(new Date(message.expire)));
+                    if ((message.start != null) && (message.expire)) {
+                        x += addHtmlValue("Start Time", printDateTime(new Date(message.start)));
+                        x += addHtmlValue("Expire Time", printDateTime(new Date(message.expire)));
+                    }
                     var y = [];
                     if (message.consent & 0x0007) { y.push("Notify"); }
                     if (message.consent & 0x0038) { y.push("Prompt"); }
@@ -6919,7 +6921,8 @@
                         var dshare = deviceShares[i];
                         var trash = '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><img src=images/link2.png border=0 height=10 width=10></a> <a href=# onclick=\'return p30removeDeviceSharing(event,"' + encodeURIComponentEx(currentNode._id) + '","' + encodeURIComponentEx(dshare.publicid) + '","' + encodeURIComponentEx(dshare.guestName) + '")\' title="' + "Remove device sharing" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                         var type = ['', "Terminal", "Desktop", "Desktop + Terminal", "Files", "Terminal + Files", "Desktop + Files", "Desktop + Terminal + Files"][dshare.p];
-                        var details = format("{0}, {1} to {2}", type, printFlexDateTime(new Date(dshare.startTime)), printFlexDateTime(new Date(dshare.expireTime)));
+                        var details = type;
+                        if ((dshare.startTime != null) && (dshare.expireTime != null)) { details = format("{0}, {1} to {2}", type, printFlexDateTime(new Date(dshare.startTime)), printFlexDateTime(new Date(dshare.expireTime))); }
                         if (dshare.viewOnly === true) { details += ", View only"; }
                         if (dshare.consent != null) {
                             if (dshare.consent == 0) { details += ", No Consent"; } else {
@@ -7151,7 +7154,7 @@
             if ((currentNode.agent.caps & 7) == 7) { y += allFeatures; } // Agent is desktop + terminal + files capable
             
             x += addHtmlValue("Type", '<select id=d2shareType style=float:right;width:250px onchange=showShareDeviceValidate()>' + y + '</select>');
-            var options = { 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days" }
+            var options = { 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days", 0 : "Unlimited" }
             y = '';
             for (var i in options) { y += '<option value=' + i + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Validity", '<select id=d2timeRange style=float:right;width:250px onchange=showShareDeviceValidate()><option value=0>' + "Starting now" + '</option><option value=1>' + "Time range" + '</option></select>');
