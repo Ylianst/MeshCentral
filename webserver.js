@@ -5572,9 +5572,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var ipex = '0.0.0.0';
                 if (typeof req.connection.remoteAddress == 'string') { ipex = (req.connection.remoteAddress.startsWith('::ffff:')) ? req.connection.remoteAddress.substring(7) : req.connection.remoteAddress; }
                 if (
-                    (obj.args.trustedproxy === true) ||
-                    ((typeof obj.args.trustedproxy == 'object') && (obj.args.trustedproxy.indexOf(ipex) >= 0)) ||
-                    ((typeof obj.args.tlsoffload == 'object') && (obj.args.tlsoffload.indexOf(ipex) >= 0))
+                    (obj.args.trustedproxy === true) || (obj.args.tlsoffload === true) ||
+                    ((typeof obj.args.trustedproxy == 'object') && (isIPMatch(ipex, obj.args.trustedproxy))) ||
+                    ((typeof obj.args.tlsoffload == 'object') && (isIPMatch(ipex, obj.args.tlsoffload)))
                 ) {
                     if (req.headers['cf-connecting-ip']) { // Use CloudFlare IP address if present
                         req.clientIp = req.headers['cf-connecting-ip'].split(',')[0].trim();
