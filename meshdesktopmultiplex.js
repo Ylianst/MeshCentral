@@ -93,6 +93,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
     obj.recordingFileWriting = false;   // Set to true is we are in the process if writing to the recording file.
     obj.startTime = null;               // Starting time of the multiplex session.
     obj.userIds = [];                   // List of userid's that have intertracted with this session.
+    //obj.autoLock = false;               // Automatically lock the remote device once disconnected
 
     // Accounting
     parent.trafficStats.desktopMultiplex.sessions++;
@@ -471,7 +472,10 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             try { json = JSON.parse(data); } catch (ex) { }
             if (json == null) return;
             if ((json.type == 'options') && (obj.protocolOptions == null)) { obj.protocolOptions = json; }
-            if ((json.ctrlChannel == '102938') && (json.type == 'lock') && (viewer.viewOnly == false)) { obj.sendToAgent('{"ctrlChannel":"102938","type":"lock"}'); } // Account lock support
+            if (json.ctrlChannel == '102938') {
+                if ((json.type == 'lock') && (viewer.viewOnly == false)) { obj.sendToAgent('{"ctrlChannel":"102938","type":"lock"}'); } // Account lock support
+                if ((json.type == 'autolock') && (viewer.viewOnly == false) && (typeof json.value == 'boolean')) { obj.sendToAgent('{"ctrlChannel":"102938","type":"autolock","value":' + json.value + '}'); } // Lock on disconnect
+            }
             return;
         }
 
