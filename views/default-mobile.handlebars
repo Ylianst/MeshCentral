@@ -1148,6 +1148,12 @@
                                 </select>
                             </td>
                         </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox" id="d7deskAutoLock" />Lock on Disconnect</label>
+                            </td>
+                        </tr>
                     </table>
                 </div>
                 <div id="d7amtkvm">
@@ -3909,7 +3915,7 @@
 
         var desktop;
         var desktopNode;
-        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50 };
+        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, autolock: false };
         function setupDesktop() {
             // Setup the remote desktop
             if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); desktopNode = null; desktop = null; }
@@ -4015,6 +4021,7 @@
                     desktop.options = {};
                     if (tsid != null) { desktop.options.tsid = tsid; }
                     if (consent != null) { desktop.options.consent = consent; }
+                    if (desktopsettings.autolock == true) { desktop.options.autolock = true; }
                     desktop.onStateChanged = onDesktopStateChange;
                     if ((features2 & 0x2000) != 0) desktop.m.stopInput = true;
                     desktop.onConsoleMessageChange = function () {
@@ -4110,11 +4117,13 @@
             desktopsettings.quality = d7bitmapquality.value;
             desktopsettings.scaling = d7bitmapscaling.value;
             desktopsettings.framerate = d7framelimiter.value;
+            desktopsettings.autolock = d7deskAutoLock.checked;
             localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
             if (desktop) {
                 if (desktop.contype == 1) {
-                    if (desktop.State != 0) { desktop.m.SendCompressionLevel(webpSupport?4:1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
+                    if (desktop.State != 0) { desktop.m.SendCompressionLevel(webpSupport ? 4 : 1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
+                    desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"autolock","value":' + desktopsettings.autolock + '}');
                 }
                 if (desktop.contype == 2) {
                     if (desktop.State != 0) { desktop.Stop(); setTimeout(function () { connectDesktop(null, 2); }, 50); }
@@ -4131,6 +4140,7 @@
             if (ops.indexOf(parseInt(desktopsettings.quality)) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
             d7bitmapscaling.value = desktopsettings.scaling;
             if (desktopsettings.framerate) { d7framelimiter.value = desktopsettings.framerate; }
+            if (desktopsettings.autolock != null) { d7deskAutoLock.checked = desktopsettings.autolock; }
         }
 
 

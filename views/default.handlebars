@@ -1252,6 +1252,7 @@
                                 <label style="display:block"><input type="checkbox" id="d7deskSwapMouse" />Swap Mouse Buttons</label>
                                 <label style="display:block"><input type="checkbox" id="d7deskRemoteKeyMap" />Use Remote Keyboard Map</label>
                                 <label style="display:block" id="d7deskAutoClipboardLabel"><input type="checkbox" id="d7deskAutoClipboard" />Automatic Clipboard</label>
+                                <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox" id="d7deskAutoLock" />Lock on Disconnect</label>
                             </div>
                         </div>
                     </div>
@@ -1325,7 +1326,7 @@
         var stars = {}; // Devices that have been "stared" by the user.
         var nodeShortIdent = 0;
         var desktop;
-        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, localkeymap: false, swapmouse: false, remotekeymap: false };
+        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, localkeymap: false, swapmouse: false, remotekeymap: false, autoclipboard: false, autolock: false };
         var multidesktopsettings = { quality: 20, scaling: 128, framerate: 1000 };
         var terminal;
         var files;
@@ -7997,6 +7998,7 @@
                     desktop.options = {};
                     if (tsid != null) { desktop.options.tsid = tsid; }
                     if (consent != null) { desktop.options.consent = consent; }
+                    if (desktopsettings.autolock == true) { desktop.options.autolock = true; }
                     desktop.onStateChanged = onDesktopStateChange;
                     if ((features2 & 0x2000) != 0) desktop.m.stopInput = true;
                     desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
@@ -8206,6 +8208,7 @@
             desktopsettings.swapmouse = d7deskSwapMouse.checked;
             desktopsettings.remotekeymap = d7deskRemoteKeyMap.checked;
             desktopsettings.autoclipboard = d7deskAutoClipboard.checked;
+            desktopsettings.autolock = d7deskAutoLock.checked;
             desktopsettings.localkeymap = d7localKeyMap.checked;
             localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
@@ -8216,6 +8219,7 @@
                     desktop.m.remoteKeyMap = desktopsettings.remotekeymap;
                     if (desktop.State != 0) {
                         desktop.m.SendCompressionLevel(webpSupport?4:1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate);
+                        desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"autolock","value":' + desktopsettings.autolock + '}');
                     }
                 }
                 if (desktop.contype == 2) {
@@ -8239,6 +8243,7 @@
             if (desktopsettings.swapmouse != null) { d7deskSwapMouse.checked = desktopsettings.swapmouse; }
             if (desktopsettings.remotekeymap != null) { d7deskRemoteKeyMap.checked = desktopsettings.remotekeymap; }
             if (desktopsettings.autoclipboard != null) { d7deskAutoClipboard.checked = desktopsettings.autoclipboard; }
+            if (desktopsettings.autolock != null) { d7deskAutoLock.checked = desktopsettings.autolock; }
             if (desktopsettings.localkeymap) { d7localKeyMap.checked = desktopsettings.localkeymap; }
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
         }

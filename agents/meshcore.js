@@ -1702,6 +1702,22 @@ function onTunnelClosed() {
     var tunnel = tunnels[this.httprequest.index];
     if (tunnel == null) return; // Stop duplicate calls.
 
+    // Perform display locking on disconnect
+    if ((this.httprequest.protocol == 2) && (this.httprequest.autolock === true)) {
+        // Look for a TSID
+        var tsid = null;
+        if ((this.httprequest.xoptions != null) && (typeof this.httprequest.xoptions.tsid == 'number')) { tsid = this.httprequest.xoptions.tsid; }
+
+        // Lock the current user out of the desktop
+        try {
+            if (process.platform == 'win32') {
+                MeshServerLogEx(53, null, "Locking remote user out of desktop", this.httprequest);
+                var child = require('child_process');
+                child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1, uid: tsid });
+            }
+        } catch (ex) { }
+    }
+
     // If this is a routing session, clean up and send the new session counts.
     if (this.httprequest.userid != null) {
         if (this.httprequest.tcpport != null) {
@@ -2734,6 +2750,11 @@ function onTunnelControlData(data, ws) {
             } catch (e) { }
             break;
         }
+        case 'autolock': {
+            // Set the session to auto lock on disconnect
+            if (obj.value === true) { ws.httprequest.autolock = true; } else { delete ws.httprequest.autolock; }
+            break;
+        }
         case 'options': {
             // These are additional connection options passed in the control channel.
             //sendConsoleText('options: ' + JSON.stringify(obj));
@@ -2742,6 +2763,9 @@ function onTunnelControlData(data, ws) {
 
             // Set additional user consent options if present
             if ((obj != null) && (typeof obj.consent == 'number')) { ws.httprequest.consent |= obj.consent; }
+
+            // Set autolock
+            if ((obj != null) && (obj.autolock === true)) { ws.httprequest.autolock = true; }
 
             break;
         }
