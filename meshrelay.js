@@ -935,10 +935,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
 
     // If there is a recording quota, remove any old recordings if needed
     function cleanUpRecordings() {
-        if ((parent.cleanUpRecordingsActive !== true) && domain.sessionrecording && ((typeof domain.sessionrecording.maxrecordings == 'number') || (typeof domain.sessionrecording.maxrecordingsizemegabytes == 'number'))) {
+        if ((parent.cleanUpRecordingsActive !== true) && domain.sessionrecording && ((typeof domain.sessionrecording.maxrecordings == 'number') || (typeof domain.sessionrecording.maxrecordingsizemegabytes == 'number') || (typeof domain.sessionrecording.maxrecordingdays == 'number'))) {
             parent.cleanUpRecordingsActive = true;
             setTimeout(function () {
-                var recPath = null, fs = require('fs');
+                var recPath = null, fs = require('fs'), now = Date.now();
                 if (domain.sessionrecording.filepath) { recPath = domain.sessionrecording.filepath; } else { recPath = parent.parent.recordpath; }
                 fs.readdir(recPath, function (err, files) {
                     if ((err != null) || (files == null)) { delete parent.cleanUpRecordingsActive; return; }
@@ -947,9 +947,9 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         if (files[i].endsWith('.mcrec')) {
                             var j = files[i].indexOf('-');
                             if (j > 0) {
-                                var size = null;
-                                try { size = fs.statSync(parent.parent.path.join(recPath, files[i])).size } catch (ex) { }
-                                if (size != null) { recfiles.push({ n: files[i], r: files[i].substring(j + 1), s: size }); }
+                                var stats = null;
+                                try { stats = fs.statSync(parent.parent.path.join(recPath, files[i])); } catch (ex) { }
+                                if (stats != null) { recfiles.push({ n: files[i], r: files[i].substring(j + 1), s: stats.size, t: stats.mtimeMs }); }
                             }
                         }
                     }
@@ -957,8 +957,9 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     var totalFiles = 0, totalSize = 0;
                     for (var i in recfiles) {
                         var overQuota = false;
-                        if ((typeof domain.sessionrecording.maxrecordings == 'number') && (totalFiles >= domain.sessionrecording.maxrecordings)) { overQuota = true; }
-                        else if ((typeof domain.sessionrecording.maxrecordingsizemegabytes == 'number') && (totalSize >= (domain.sessionrecording.maxrecordingsizemegabytes * 1048576))) { overQuota = true; }
+                        if ((typeof domain.sessionrecording.maxrecordings == 'number') && (domain.sessionrecording.maxrecordings > 0) && (totalFiles >= domain.sessionrecording.maxrecordings)) { overQuota = true; }
+                        else if ((typeof domain.sessionrecording.maxrecordingsizemegabytes == 'number') && (domain.sessionrecording.maxrecordingsizemegabytes > 0) && (totalSize >= (domain.sessionrecording.maxrecordingsizemegabytes * 1048576))) { overQuota = true; }
+                        else if ((typeof domain.sessionrecording.maxrecordingdays == 'number') && (domain.sessionrecording.maxrecordingdays > 0) && (((now - recfiles[i].t) / 1000 / 60 / 60 / 24) >= domain.sessionrecording.maxrecordingdays)) { overQuota = true; }
                         if (overQuota) { fs.unlinkSync(parent.parent.path.join(recPath, recfiles[i].n)); }
                         totalFiles++;
                         totalSize += recfiles[i].s;
