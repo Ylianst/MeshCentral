@@ -677,10 +677,11 @@
             "properties": {
               "onlySelectedUsers": { "type": "boolean", "default": false, "description": "When enabled, only device users with the session recording feature turned on will be recorded. When false, all users are recorded." },
               "onlySelectedDeviceGroups": { "type": "boolean", "default": false, "description": "When enabled, only device groups with the session recording feature turned on will be recorded. When false, all devices are recorded." },
-              "filepath": { "type": "string" },
-              "index": { "type": "boolean", "default": false },
-              "maxRecordings": { "type": "integer" },
-              "maxRecordingSizeMegabytes": { "type": "integer" },
+              "filepath": { "type": "string", "description": "The file path where recording files are kept." },
+              "index": { "type": "boolean", "default": false, "description": "If true, automatically index remote desktop recordings so that the plays can skip to any place in the file." },
+              "maxRecordings": { "type": "integer", "default": null, "description": "Maximum number of recording files to keep." },
+              "maxRecordingDays": { "type": "integer", "default": null, "description": "Maximum number of days to keep a recording." },
+              "maxRecordingSizeMegabytes": { "type": "integer", "default": null, "description": "Maximum number of recordings in megabytes. Once exceed, remove the oldest recordings." },
               "protocols": { "type": "array", "uniqueItems": true, "items": { "type": "integer" }, "description": "This is an array: 1 = Terminal, 2 = Desktop, 5 = Files, 100 = Intel AMT WSMAN, 101 = Intel AMT Redirection, 200 = Messenger" }
             },
             "required": [ "protocols" ]
