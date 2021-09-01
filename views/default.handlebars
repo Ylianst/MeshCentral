@@ -517,7 +517,7 @@
                     <div id="p2ServerActions">
                         <p><strong>Server actions</strong></p>
                         <div style="margin-left:25px">
-                            <div id="p2ServerActionsBackup"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
+                            <div id="p2ServerActionsBackup"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a id="p6backuplink" href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
                             <div id="p2ServerActionsRestore"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showRestoreDlg()">Restore server with backup</a></div>
                             <div id="p2ServerActionsGoogleBackup" style="display:none"><div class="p2AccountActions"><span id="p2ServerActionsGoogleBackupCheck" style="display:none"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return server_setupGoogleDriveBackup()">Google Drive backup</a><br /></span></div>
                             <div id="p2ServerActionsVersion"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showVersionDlg()">Check server version</a></div>
@@ -1597,6 +1597,9 @@
 
             // Make the dialog box movable
             dialogBoxDrag();
+
+            // Fix links
+            if (urlargs.key) { Q('p6backuplink').href += '?key=' + urlargs.key; }
         }
 
         function refreshCookieSession() {
@@ -11108,7 +11111,7 @@
         function server_showRestoreDlg() {
             if (xxdialogMode) return false;
             var x = "Restore the server using a backup, <span style=color:red>this will delete the existing server data</span>. Only do this if you know what you are doing." + '<br /><br />';
-            x += '<form action="/restoreserver.ashx" enctype="multipart/form-data" method="post"><div>';
+            x += '<form action="/restoreserver.ashx' + ((urlargs.key)?('?key=' + urlargs.key):'') + '" enctype="multipart/form-data" method="post"><div>';
             x += '<input type=hidden name=auth value=' + authCookie + '>';
             x += '<input id=account_dlgFileInput type=file name=datafile style=width:100% accept=".zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed" onchange=account_validateServerRestore()><br /><br />';
             x += '<input id=account_dlgCancelButton type=button value=' + "Cancel" + ' style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
