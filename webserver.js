@@ -3478,8 +3478,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (req.query.c == null) { res.sendStatus(404); return; }
         if (domain.guestdevicesharing === false) { res.sendStatus(404); return; } // This feature is not allowed.
 
-        // Check the inbound desktop sharing cookie
-        var c = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey, 60); // 60 minute timeout
+        // Check the inbound guest sharing cookie
+        var c = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey, 9999999999); // Decode cookies with unlimited time.
         if ((c == null) || (c.a !== 5) || (typeof c.p !== 'number') || (c.p < 1) || (c.p > 7) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.pid != 'string')) { res.sendStatus(404); return; }
 
         // Check the expired time, expire message.
