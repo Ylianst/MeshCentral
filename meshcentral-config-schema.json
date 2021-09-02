@@ -114,7 +114,7 @@
         "meshErrorLogPath": { "type": "string" },
         "npmPath": { "type": "string" },
         "npmProxy": { "type": "string", "format": "uri" },
-        "allowHighQualityDesktop": { "type": "boolean", "default": true },
+        "allowHighQualityDesktop": { "type": "boolean", "default": true, "description": "When false, users will only be able to set remote desktop image quality to 60%, this can reduce server bandwidth usage."  },
         "webPush": {
           "type": "object",
           "description": "When set with a valid email address, enables the MeshCentral web push notification feature. Allows administrators to send browser notifications to users even if they are not looking at the MeshCentral web site.",
