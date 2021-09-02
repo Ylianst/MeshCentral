@@ -6255,7 +6255,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             cmdData.result = 'Usage: removeinactivedevices [showremoved|showall]';
         } else {
             parent.db.removeInactiveDevices((arg == 'showall'), function (msg) { try { ws.send(JSON.stringify({ action: 'serverconsole', value: msg, tag: cmdData.command.tag })); } catch (ex) { } });
-            cmdData.result = 'Ok';
         }
     }
 
