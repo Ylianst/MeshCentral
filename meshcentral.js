@@ -727,7 +727,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Check top level configuration for any unreconized values
-        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'sendgrid', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".'); } } }
+        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'sendgrid', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [ i ]); } } }
 
         if (typeof obj.args.userallowedip == 'string') { if (obj.args.userallowedip == '') { config.settings.userallowedip = obj.args.userallowedip = null; } else { config.settings.userallowedip = obj.args.userallowedip = obj.args.userallowedip.split(','); } }
         if (typeof obj.args.userblockedip == 'string') { if (obj.args.userblockedip == '') { config.settings.userblockedip = obj.args.userblockedip = null; } else { config.settings.userblockedip = obj.args.userblockedip = obj.args.userblockedip.split(','); } }
@@ -742,7 +742,7 @@ function CreateMeshCentralServer(config, args) {
         const verSplit = process.version.substring(1).split('.');
         var ver = parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100);
         if (((ver >= 11.11) && (ver <= 12.15)) || (ver == 13.2)) {
-            if ((obj.args.wscompression === true) || (obj.args.agentwscompression === true)) { addServerWarning('WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2'); }
+            if ((obj.args.wscompression === true) || (obj.args.agentwscompression === true)) { addServerWarning('WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2', 4); }
             obj.args.wscompression = obj.args.agentwscompression = false;
             obj.config.settings.wscompression = obj.config.settings.agentwscompression = false;
         }
@@ -1284,9 +1284,9 @@ function CreateMeshCentralServer(config, args) {
                     obj.config.domains[i].amtmanager.tlsrootcert2 = obj.certificateOperations.loadGenericCertAndKey(obj.config.domains[i].amtmanager.tlsrootcert);
                     if (obj.config.domains[i].amtmanager.tlsrootcert2 == null) { // Show an error message if needed
                         if (i == '') {
-                            addServerWarning("Unable to load Intel AMT TLS root certificate for default domain.");
+                            addServerWarning("Unable to load Intel AMT TLS root certificate for default domain.", 5);
                         } else {
-                            addServerWarning("Unable to load Intel AMT TLS root certificate for domain " + i + ".");
+                            addServerWarning("Unable to load Intel AMT TLS root certificate for domain " + i + ".", 6, [ i ]);
                         }
                     }
                 }
@@ -1298,9 +1298,9 @@ function CreateMeshCentralServer(config, args) {
 
         // Look at passed in arguments
         if ((obj.args.user != null) && (typeof obj.args.user != 'string')) { delete obj.args.user; }
-        if ((obj.args.ciralocalfqdn != null) && ((obj.args.lanonly == true) || (obj.args.wanonly == true))) { addServerWarning("CIRA local FQDN's ignored when server in LAN-only or WAN-only mode."); }
-        if ((obj.args.ciralocalfqdn != null) && (obj.args.ciralocalfqdn.split(',').length > 4)) { addServerWarning("Can't have more than 4 CIRA local FQDN's. Ignoring value."); obj.args.ciralocalfqdn = null; }
-        if (obj.args.ignoreagenthashcheck === true) { addServerWarning("Agent hash checking is being skipped, this is unsafe."); }
+        if ((obj.args.ciralocalfqdn != null) && ((obj.args.lanonly == true) || (obj.args.wanonly == true))) { addServerWarning("CIRA local FQDN's ignored when server in LAN-only or WAN-only mode.", 7); }
+        if ((obj.args.ciralocalfqdn != null) && (obj.args.ciralocalfqdn.split(',').length > 4)) { addServerWarning("Can't have more than 4 CIRA local FQDN's. Ignoring value.", 8); obj.args.ciralocalfqdn = null; }
+        if (obj.args.ignoreagenthashcheck === true) { addServerWarning("Agent hash checking is being skipped, this is unsafe.", 9); }
         if (obj.args.port == null || typeof obj.args.port != 'number') { obj.args.port = 443; }
         if (obj.args.aliasport != null && (typeof obj.args.aliasport != 'number')) obj.args.aliasport = null;
         if (obj.args.mpsport == null || typeof obj.args.mpsport != 'number') obj.args.mpsport = 4433;
@@ -1418,15 +1418,15 @@ function CreateMeshCentralServer(config, args) {
                 // Check Let's Encrypt settings
                 var leok = true;
                 if ((typeof obj.config.letsencrypt.names != 'string') && (typeof obj.config.settings.cert == 'string')) { obj.config.letsencrypt.names = obj.config.settings.cert; }
-                if (typeof obj.config.letsencrypt.email != 'string') { leok = false; addServerWarning("Missing Let's Encrypt email address."); }
-                else if (typeof obj.config.letsencrypt.names != 'string') { leok = false; addServerWarning("Invalid Let's Encrypt host names."); }
-                else if (obj.config.letsencrypt.names.indexOf('*') >= 0) { leok = false; addServerWarning("Invalid Let's Encrypt names, can't contain a *."); }
-                else if (obj.config.letsencrypt.email.split('@').length != 2) { leok = false; addServerWarning("Invalid Let's Encrypt email address."); }
-                else if (obj.config.letsencrypt.email.trim() !== obj.config.letsencrypt.email) { leok = false; addServerWarning("Invalid Let's Encrypt email address."); }
+                if (typeof obj.config.letsencrypt.email != 'string') { leok = false; addServerWarning("Missing Let's Encrypt email address.", 10); }
+                else if (typeof obj.config.letsencrypt.names != 'string') { leok = false; addServerWarning("Invalid Let's Encrypt host names.", 11); }
+                else if (obj.config.letsencrypt.names.indexOf('*') >= 0) { leok = false; addServerWarning("Invalid Let's Encrypt names, can't contain a *.", 12); }
+                else if (obj.config.letsencrypt.email.split('@').length != 2) { leok = false; addServerWarning("Invalid Let's Encrypt email address.", 10); }
+                else if (obj.config.letsencrypt.email.trim() !== obj.config.letsencrypt.email) { leok = false; addServerWarning("Invalid Let's Encrypt email address.", 10); }
                 else {
                     var le = require('./letsencrypt.js');
                     try { obj.letsencrypt = le.CreateLetsEncrypt(obj); } catch (ex) { console.log(ex); }
-                    if (obj.letsencrypt == null) { addServerWarning("Unable to setup Let's Encrypt module."); leok = false; }
+                    if (obj.letsencrypt == null) { addServerWarning("Unable to setup Let's Encrypt module.", 13); leok = false; }
                 }
                 if (leok == true) {
                     // Check that the email address domain MX resolves.
@@ -1437,12 +1437,12 @@ function CreateMeshCentralServer(config, args) {
                                 if (err == null) {
                                     obj.letsencrypt.getCertificate(certs, obj.StartEx3); // Use Let's Encrypt
                                 } else {
-                                    for (var i in err) { addServerWarning("Invalid Let's Encrypt names, unable to resolve: " + err[i]); }
+                                    for (var i in err) { addServerWarning("Invalid Let's Encrypt names, unable to resolve: " + err[i], 14, [err[i]]); }
                                     obj.StartEx3(certs); // Let's Encrypt did not load, just use the configured certificates
                                 }
                             });
                         } else {
-                            addServerWarning("Invalid Let's Encrypt email address, unable to resolve: " + obj.config.letsencrypt.email.split('@')[1]);
+                            addServerWarning("Invalid Let's Encrypt email address, unable to resolve: " + obj.config.letsencrypt.email.split('@')[1], 15, [obj.config.letsencrypt.email.split('@')[1]]);
                             obj.StartEx3(certs); // Let's Encrypt did not load, just use the configured certificates
                         }
                     });
@@ -1487,12 +1487,12 @@ function CreateMeshCentralServer(config, args) {
                             for (var i in ipranges) { if (ipranges[i] != '') { obj.args.trustedproxy.push(ipranges[i]); } }
                             obj.config.settings.trustedproxy = obj.args.trustedproxy;
                         } else {
-                            addServerWarning("Unable to load CloudFlare trusted proxy IPv6 address list.");
+                            addServerWarning("Unable to load CloudFlare trusted proxy IPv6 address list.", 16);
                         }
                         obj.StartEx4(); // Keep going
                     });
                 } else {
-                    addServerWarning("Unable to load CloudFlare trusted proxy IPv4 address list.");
+                    addServerWarning("Unable to load CloudFlare trusted proxy IPv4 address list.", 16);
                     obj.StartEx4(); // Keep going
                 }
             });
@@ -1592,12 +1592,12 @@ function CreateMeshCentralServer(config, args) {
                     // Sendgrid server
                     obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
                     obj.mailserver.verify();
-                    if (obj.args.lanonly == true) { addServerWarning("SendGrid server has limited use in LAN mode."); }
+                    if (obj.args.lanonly == true) { addServerWarning("SendGrid server has limited use in LAN mode.", 17); }
                 } else if ((obj.config.smtp != null) && (obj.config.smtp.host != null) && (obj.config.smtp.from != null)) {
                     // SMTP server
                     obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
                     obj.mailserver.verify();
-                    if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode."); }
+                    if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
                 }
 
                 // Setup the email server for each domain
@@ -1606,12 +1606,12 @@ function CreateMeshCentralServer(config, args) {
                         // Sendgrid server
                         obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
                         obj.config.domains[i].mailserver.verify();
-                        if (obj.args.lanonly == true) { addServerWarning("SendGrid server has limited use in LAN mode."); }
+                        if (obj.args.lanonly == true) { addServerWarning("SendGrid server has limited use in LAN mode.", 17); }
                     } else if ((obj.config.domains[i].smtp != null) && (obj.config.domains[i].smtp.host != null) && (obj.config.domains[i].smtp.from != null)) {
                         // SMTP server
                         obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
                         obj.config.domains[i].mailserver.verify();
-                        if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode."); }
+                        if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
                     } else {
                         // Setup the parent mail server for this domain
                         if (obj.mailserver != null) { obj.config.domains[i].mailserver = obj.mailserver; }
@@ -1621,7 +1621,7 @@ function CreateMeshCentralServer(config, args) {
                 // Setup SMS gateway
                 if (config.sms != null) {
                     obj.smsserver = require('./meshsms.js').CreateMeshSMS(obj);
-                    if ((obj.smsserver != null) && (obj.args.lanonly == true)) { addServerWarning("SMS gateway has limited use in LAN mode."); }
+                    if ((obj.smsserver != null) && (obj.args.lanonly == true)) { addServerWarning("SMS gateway has limited use in LAN mode.", 19); }
                 }
 
                 // Setup web based push notifications
@@ -1663,7 +1663,7 @@ function CreateMeshCentralServer(config, args) {
                 if ((obj.config) && (obj.config.settings) && (typeof obj.config.settings.logincookieencryptionkey == 'string')) {
                     // We have a string, hash it and use that as a key
                     try { obj.loginCookieEncryptionKey = Buffer.from(obj.config.settings.logincookieencryptionkey, 'hex'); } catch (ex) { }
-                    if ((obj.loginCookieEncryptionKey == null) || (obj.loginCookieEncryptionKey.length != 80)) { addServerWarning("Invalid \"LoginCookieEncryptionKey\" in config.json."); obj.loginCookieEncryptionKey = null; }
+                    if ((obj.loginCookieEncryptionKey == null) || (obj.loginCookieEncryptionKey.length != 80)) { addServerWarning("Invalid \"LoginCookieEncryptionKey\" in config.json.", 20); obj.loginCookieEncryptionKey = null; }
                 }
 
                 // Login cookie encryption key not set, use one from the database
@@ -2996,7 +2996,7 @@ function CreateMeshCentralServer(config, args) {
     function logWarnEvent(msg) { if (obj.servicelog != null) { obj.servicelog.warn(msg); } console.log(msg); }
     function logErrorEvent(msg) { if (obj.servicelog != null) { obj.servicelog.error(msg); } console.error(msg); }
     obj.getServerWarnings = function () { return serverWarnings; }
-    obj.addServerWarning = function(msg, print) { serverWarnings.push(msg); if (print !== false) { console.log("WARNING: " + msg); } }
+    obj.addServerWarning = function (msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
 
     // auth.log functions
     obj.authLog = function (server, msg) {
@@ -3139,7 +3139,32 @@ process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); 
 
 // Add a server warning, warnings will be shown to the administrator on the web application
 var serverWarnings = [];
-function addServerWarning(msg, print) { serverWarnings.push(msg); if (print !== false) { console.log("WARNING: " + msg); } }
+function addServerWarning(msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
+
+/*
+var ServerWarnings = {
+    1: "MeshCentral SSH support requires NodeJS 11 or higher.",
+    2: "Missing WebDAV parameters.",
+    3: "Unrecognized configuration option \"{0}\".",
+    4: "WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2",
+    5: "Unable to load Intel AMT TLS root certificate for default domain.",
+    6: "Unable to load Intel AMT TLS root certificate for domain {0}.",
+    7: "CIRA local FQDN's ignored when server in LAN-only or WAN-only mode.",
+    8: "Can't have more than 4 CIRA local FQDN's. Ignoring value.",
+    9: "Agent hash checking is being skipped, this is unsafe.",
+    10: "Missing Let's Encrypt email address.",
+    11: "Invalid Let's Encrypt host names.",
+    12: "Invalid Let's Encrypt names, can't contain a *.",
+    13: "Unable to setup Let's Encrypt module.",
+    14: "Invalid Let's Encrypt names, unable to resolve: {0}",
+    15: "Invalid Let's Encrypt email address, unable to resolve: {0}",
+    16: "Unable to load CloudFlare trusted proxy IPv6 address list.",
+    17: "SendGrid server has limited use in LAN mode.",
+    18: "SMTP server has limited use in LAN mode.",
+    19: "SMS gateway has limited use in LAN mode.",
+    20: "Invalid \"LoginCookieEncryptionKey\" in config.json."
+};
+*/
 
 // Load the really basic modules
 var npmpath = 'npm';
@@ -3225,7 +3250,7 @@ function mainStart() {
         if (require('os').platform() == 'win32') { modules.push('node-windows'); modules.push('loadavg-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (mstsc == true) { modules.push('node-rdpjs-2'); }
-        if (ssh == true) { if (nodeVersion < 11) { addServerWarning('MeshCentral SSH support requires NodeJS 11 or higher.'); } else { modules.push('ssh2'); } }
+        if (ssh == true) { if (nodeVersion < 11) { addServerWarning('MeshCentral SSH support requires NodeJS 11 or higher.', 1); } else { modules.push('ssh2'); } }
         if (passport != null) { modules.push(...passport); }
         if (sessionRecording == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
         if (config.letsencrypt != null) { modules.push('acme-client'); } // Add acme-client module
@@ -3249,7 +3274,7 @@ function mainStart() {
             if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis'); }
             // Enable WebDAV Support
             if (typeof config.settings.autobackup.webdav == 'object') {
-                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", !args.launch); } else { modules.push('webdav'); }
+                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav'); }
             }
         }
 
