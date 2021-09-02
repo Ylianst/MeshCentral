@@ -6248,9 +6248,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (cmdData.result == '') { cmdData.result = 'No relays.'; }
     }
 
+    // removeinactivedevices showall|showremoved
     function serverUserCommandRemoveInactiveDevices(cmdData) {
-        parent.db.removeInactiveDevices();
-        cmdData.result = 'Ok';
+        var arg = cmdData.cmdargs['_'][0];
+        if ((arg == null) && (arg != 'showremoved') && (arg != 'showall')) {
+            cmdData.result = 'Usage: removeinactivedevices [showremoved|showall]';
+        } else {
+            parent.db.removeInactiveDevices((arg == 'showall'), function (msg) { try { ws.send(JSON.stringify({ action: 'serverconsole', value: msg, tag: cmdData.command.tag })); } catch (ex) { } });
+            cmdData.result = 'Ok';
+        }
     }
 
     function serverUserCommandAutoBackup(cmdData) {
