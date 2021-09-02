@@ -83,6 +83,10 @@
         <div class="cmtext" onclick="cmdeskaction(2,event)">Ask Consent</div>
         <div class="cmtext" onclick="cmdeskaction(3,event)">Privacy Bar</div>
     </div>
+    <div id="deskDisconnectContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div class="cmtext" onclick="cmdeskaction(10,event)">Disconnect and Lock</div>
+        <div class="cmtext" onclick="cmdeskaction(11,event)">Disconnect</div>
+    </div>
     <div id="altPortContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmaltportaction(1,event)">Alternate Port</div>
     </div>
@@ -610,7 +614,7 @@
                             <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none" />
                             <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=connectbutton1hspan><input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                            <span id=disconnectbutton1span><input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
+                            <span id=disconnectbutton1span><input type=button id=disconnectbutton1 cmenu="deskDisconnectButton" value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
                             <span id="deskstatus" style="line-height:22px">Disconnected</span><span id="deskmetadata"></span>
                         </div>
                     </div>
@@ -2162,8 +2166,39 @@
                 }
                 case 'serverwarnings': {
                     if ((message.warnings != null) && (message.warnings.length > 0)) {
+                        var ServerWarnings = {
+                            1: "MeshCentral SSH support requires NodeJS 11 or higher.",
+                            2: "Missing WebDAV parameters.",
+                            3: "Unrecognized configuration option \"{0}\".",
+                            4: "WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2",
+                            5: "Unable to load Intel AMT TLS root certificate for default domain.",
+                            6: "Unable to load Intel AMT TLS root certificate for domain {0}.",
+                            7: "CIRA local FQDN's ignored when server in LAN-only or WAN-only mode.",
+                            8: "Can't have more than 4 CIRA local FQDN's. Ignoring value.",
+                            9: "Agent hash checking is being skipped, this is unsafe.",
+                            10: "Missing Let's Encrypt email address.",
+                            11: "Invalid Let's Encrypt host names.",
+                            12: "Invalid Let's Encrypt names, can't contain a *.",
+                            13: "Unable to setup Let's Encrypt module.",
+                            14: "Invalid Let's Encrypt names, unable to resolve: {0}",
+                            15: "Invalid Let's Encrypt email address, unable to resolve: {0}",
+                            16: "Unable to load CloudFlare trusted proxy IPv6 address list.",
+                            17: "SendGrid server has limited use in LAN mode.",
+                            18: "SMTP server has limited use in LAN mode.",
+                            19: "SMS gateway has limited use in LAN mode.",
+                            20: "Invalid \"LoginCookieEncryptionKey\" in config.json."
+                        };
                         var x = '';
-                        for (var i in message.warnings) { x += '<div style=color:red;padding-bottom:6px><b>' + "WARNING: " + message.warnings[i] + '</b></div>'; }
+                        for (var i in message.warnings) {
+                            var y = message.warnings[i];
+                            if (typeof y == 'string') {
+                                x += '<div style=color:red;padding-bottom:6px><b>' + "WARNING: " + y + '</b></div>';
+                            } else {
+                                var z = ServerWarnings[y.id];
+                                if (z == null) { z = y.msg; } else { z = format(z, y.args); }
+                                x += '<div style=color:red;padding-bottom:6px><b>' + "WARNING: " + z + '</b></div>';
+                            }
+                        }
                         QH('serverWarnings', x);
                         QV('serverWarningsDiv', true);
                     }
@@ -2593,7 +2628,7 @@
                         var secret = message.secret;
                         if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
                         else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                        QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />Secret<br /><tt id=d2optsecret secret="' + message.secret + '" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href="' + message.url + '" rel="noreferrer noopener" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
+                        QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />' + "Secret" + '<br /><tt id=d2optsecret secret="' + message.secret + '" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href="' + message.url + '" rel="noreferrer noopener" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
                         new QRCode(Q('qrcode'), { text: message.url, width: 128, height: 128, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.H });
                         QV('idx_dlgOkButton', true);
                         QE('idx_dlgOkButton', false);
@@ -4682,22 +4717,22 @@
         function addAmtScanToMesh(meshid) {
             if (xxdialogMode) return false;
             var x = "Enter a range of IP addresses to scan for Intel&reg; AMT devices." + '<br /><br />';
-            var amtscanoptions = decodeURIComponent('{{{amtscanoptions}}}').split(',');
+            var amtscanoptions = '';//decodeURIComponent('{{{amtscanoptions}}}').split(',');
             if (amtscanoptions != '') {
                 x += '<datalist id=iprangelist>';
                 for (var i in amtscanoptions) { x += '<option>' + amtscanoptions[i] + '</option>'; }
                 x += '</datalist>';
-                x += addHtmlValue("IP Range", '<input id=dp1range list=iprangelist style=width:184px placeholder="192.168.1.0/24" onkeyup=addAmtScanToMeshKeyUp(event) onselect=addAmtScanToMeshKeyUp() onclick=addAmtScanToMeshKeyUp() /><input id=dp1rangebutton type=button value="' + "Scan" + '" onclick=addAmtScanToMeshButton()></input>');
+                x += addHtmlValue("IP Range", '<table style=width:250px><tr><td style=width:99%><input id=dp1range list=iprangelist style=width:90% placeholder="192.168.1.0/24" onkeyup=addAmtScanToMeshKeyUp(event) onselect=addAmtScanToMeshKeyUp() onclick=addAmtScanToMeshKeyUp() /><td style=width:1%><input id=dp1rangebutton type=button value="' + "Scan" + '" onclick=addAmtScanToMeshButton()></input></tr></table>');
             } else {
-                x += addHtmlValue("IP Range", '<input id=dp1range list=iprangelist style=width:184px value="192.168.1.0/24" onkeyup=addAmtScanToMeshKeyUp(event) /><input id=dp1rangebutton type=button value="' + "Scan" + '" onclick=addAmtScanToMeshButton()></input>');
+                x += addHtmlValue("IP Range", '<table style=width:250px><tr><td style=width:99%><input id=dp1range style=width:100% list=iprangelist value="192.168.1.0/24" onkeyup=addAmtScanToMeshKeyUp(event) /><td style=width:1%><input id=dp1rangebutton type=button value="' + "Scan" + '" onclick=addAmtScanToMeshButton()></input></tr></table>');
             }
             x += '<div id=dp1results style="width:100%;height:200px;background-color:white;border:1px gray solid;overflow-y:scroll"></div>';
             x += '<input type=hidden id=amtScanMeshId value="' + meshid + '" />';
-            x += '<div style="padding:10px;margin-bottom:5px"><input id="idx_dlgCancelButton2" type="button" value="Cancel" style="" onclick="dialogclose(0)" /><input id="idx_dlgOkButton2" type="button" value="OK" style="" onclick="dialogclose(1)" /><div><input id="d2scanSelectButton" type="button" value="Select All" onclick="scanSelectAll()" /></div></div>';
+            x += '<div style="padding:10px;margin-bottom:5px"><input id="idx_dlgCancelButton2" type="button" value="' + "Cancel" + '" style="" onclick="dialogclose(0)" /><input id="idx_dlgOkButton2" type="button" value="OK" style="" onclick="dialogclose(1)" /><div><input id="d2scanSelectButton" type="button" value="' + "Select All" + '" onclick="scanSelectAll()" /></div></div>';
             setDialogMode(2, "Scan for Intel&reg; AMT devices", 0, addAmtScanToMeshEx, x, meshid);
             QE('idx_dlgOkButton2', false);
             QE('d2scanSelectButton', false);
-            QH('dp1results', '<div style=width:100%;text-align:center;margin-top:12px;color:gray;line-height:1.5>Sample IP range values<br />192.168.0.100<br />192.168.1.0/24<br />192.167.0.1-192.168.0.100</div>');
+            QH('dp1results', '<div style=width:100%;text-align:center;margin-top:12px;color:gray;line-height:1.5>' + "Sample IP range values" + '<br />192.168.0.100<br />192.168.1.0/24<br />192.167.0.1-192.168.0.100</div>');
             focusTextBox('dp1range');
             addAmtScanToMeshKeyUp();
             return false;
@@ -4856,7 +4891,7 @@
             // Linux agent install
             x += '<div id=agins_linux style=display:none>' + format("To add a computer to \"{0}\" run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
             x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px></textarea>';
-            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")><img src=images/link4.png height=10 width=10 style=cursor:pointer> Copy</a></div>';
+            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")><img src=images/link4.png height=10 width=10 style=cursor:pointer> ' + "Copy" + '</a></div>';
 
             // macOS agent install
             x += '<div id=agins_osx style=display:none>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
@@ -5514,6 +5549,13 @@
                     showContextMenuDiv(document.getElementById('deskConnectContextMenu'), event.pageX, event.pageY);
                     break;
                 }
+                case 'deskDisconnectButton': {
+                    // Desktop disconnect button context menu
+                    if ((currentNode == null) || (currentNode.agent == null)) return true;
+                    contextelement = elem;
+                    showContextMenuDiv(document.getElementById('deskDisconnectContextMenu'), event.pageX, event.pageY);
+                    break;
+                }
                 case 'devsContentMenu': {
                     // Device content menu
                     contextelement = elem;
@@ -5642,6 +5684,8 @@
             if (action == 1) { connectDesktop(null, 3, null, 0x0008 + 0x0040); } // Consent Prompt + Privacy bar
             if (action == 2) { connectDesktop(null, 3, null, 0x0008); } // Consent Prompt
             if (action == 3) { connectDesktop(null, 3, null, 0x0040); } // Privacy bar
+            if (action == 10) { if (desktop != null) { desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"autolock","value":true}'); connectDesktop(); } } // Disconnect and lock
+            if (action == 11) { if (desktop != null) { desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"autolock","value":false}'); connectDesktop(); } } // Disconnect without lock
         }
 
         function cmaltportaction(action) {
@@ -5761,6 +5805,7 @@
             QV('termShellContextMenu2', false);
             QV('termShellContextMenuLinux', false);
             QV('deskConnectContextMenu', false);
+            QV('deskDisconnectContextMenu', false);
             QV('altPortContextMenu', false);
             QV('rfbPortContextMenu', false);
             QV('sshPortContextMenu', false);
@@ -8628,8 +8673,8 @@
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             Q('DeskClip').blur();
             var x = '';
-            if ((features2 & 0x0800) == 0) x += '<input id=dlgClipGet type=button value="Get Clipboard" style=width:120px onclick=showDeskClipGet()>';
-            if ((features2 & 0x1000) == 0) x += '<input id=dlgClipSet type=button value="Set Clipboard" style=width:120px onclick=showDeskClipSet()>';
+            if ((features2 & 0x0800) == 0) x += '<input id=dlgClipGet type=button value="' + "Get Clipboard" + '" style=width:120px onclick=showDeskClipGet()>';
+            if ((features2 & 0x1000) == 0) x += '<input id=dlgClipSet type=button value="' + "Set Clipboard" + '" style=width:120px onclick=showDeskClipSet()>';
             x += '<div id=dlgClipStatus style="display:inline-block;margin-left:8px" ></div>';
             x += '<textarea id=d2clipText style="width:100%;height:184px;resize:none" maxlength=65535></textarea>';
             x += '<input type=button value="Close" style=width:80px;float:right onclick=dialogclose(0)><div style=height:26px;margin-top:3px><span id=linuxClipWarn style=display:none>' + "Remote clipboard is valid for 60 seconds." + '</span>&nbsp;</div><div></div>';
@@ -8744,9 +8789,11 @@
                 var x = '';
                 for (var i in s) {
                     if (s[i].p != 0) {
-                        var c = s[i].d;
+                        var c = s[i].d, ss = s[i].p;
                         if (c.length > 30) { c = '<span title="' + c + '">' + c.substring(0, 30) + '...</span>' } else { c = EscapeHtml(c); }
-                        x += '<div onclick=showServiceDetailsDialog(' + s[i].i + ') class=deskToolsBar><div style=width:70px;float:left;padding-right:5px>' + EscapeHtml(s[i].p) + '</div><div>' + c + '</div></div>';
+                        if (ss == 'Stopped') { ss = "Stopped"; } // TODO: Add all other states for translation
+                        else if (ss == 'Running') { ss = "Running"; }
+                        x += '<div onclick=showServiceDetailsDialog(' + s[i].i + ') class=deskToolsBar><div style=width:70px;float:left;padding-right:5px>' + EscapeHtml(ss) + '</div><div>' + c + '</div></div>';
                     }
                 }
                 QH('DeskToolsServices', x);
@@ -8761,7 +8808,10 @@
                 if (service.name) { x += addHtmlValue("Name", service.name); }
                 if (service.displayName) { x += addHtmlValue("Display name", service.displayName); }
                 if (service.status) {
-                    if (service.status.state) { x += addHtmlValue("State", capitalizeFirstLetter(service.status.state.toLowerCase())); }
+                    var ss = capitalizeFirstLetter(service.status.state.toLowerCase());
+                    if (ss == 'Stopped') { ss = "Stopped"; } // TODO: Add all other states for translation
+                    else if (ss == 'Running') { ss = "Running"; }
+                    if (service.status.state) { x += addHtmlValue("State", ss); }
                     if (service.status.pid) { x += addHtmlValue("PID", service.status.pid); }
                     var serviceTypes = [];
                     if (service.status.isFileSystemDriver === true) { serviceTypes.push("FileSystemDriver"); }
