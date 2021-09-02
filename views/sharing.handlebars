@@ -307,6 +307,13 @@
             QH('p13power', printFlexDateTime(new Date(parseInt(expire))));
         }
         var features = parseInt('{{{features}}}');
+        var features2 = parseInt('{{{features2}}}');
+
+        // Load desktop settings
+        var t = null;
+        try { t = localStorage.getItem('desktopsettings'); } catch (ex) { }
+        if (t != null) { try { desktopsettings = JSON.parse(t); } catch (ex) { } }
+        if (((features2 & 1) == 0) && (desktopsettings.quality > 60)) { desktopsettings.quality = 60; }
 
         // Terminal
         var terminal = null;
@@ -771,7 +778,7 @@
         }
 
         function applyDesktopSettings() {
-            var r = '', ops = [60, 50, 40, 30, 20, 10, 5, 1];
+            var r = '', ops = (features2 & 1) ? [90, 80, 70, 60, 50, 40, 30, 20, 10, 5, 1] : [60, 50, 40, 30, 20, 10, 5, 1]
             for (var i in ops) { r += '<option value=' + ops[i] + '>' + ops[i] + '%</option>'; }
             QH('d7bitmapquality', r);
             d7desktopmode.value = desktopsettings.encoding;
