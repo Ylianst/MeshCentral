@@ -114,7 +114,7 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     // Remove inactive devices
-    obj.removeInactiveDevices = function () {
+    obj.removeInactiveDevices = function (showall, cb) {
         // Get a list of domains and what their inactive device removal setting is
         var removeInactiveDevicesPerDomain = {}, minRemoveInactiveDevicesPerDomain = {}, minRemoveInactiveDevice = 9999;
         for (var i in parent.config.domains) {
@@ -144,7 +144,7 @@ module.exports.CreateDB = function (parent, func) {
         }
 
         // If there are no such settings for any domain, we can exit now.
-        if (minRemoveInactiveDevice == 9999) return;
+        if (minRemoveInactiveDevice == 9999) { if (cb) { cb("No device removal policy set, nothing to do."); } return; }
         const now = Date.now();
 
         // For each domain with a inactive device removal setting, get a list of last device connections
@@ -152,10 +152,14 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllTypeNoTypeField('lastconnect', domainid, function (err, docs) {
                 if ((err != null) || (docs == null)) return;
                 for (var j in docs) {
-                    const days = (now - docs[j].time) / 86400000; // Calculate the number of inactive days
+                    const days = Math.floor((now - docs[j].time) / 86400000); // Calculate the number of inactive days
+                    var expireDays = -1;
+                    if (removeInactiveDevicesPerDomain[docs[j].domain]) { expireDays = removeInactiveDevicesPerDomain[docs[j].domain]; }
+                    const mesh = parent.webserver.meshes[docs[j].meshid];
+                    if (mesh && (typeof mesh.expireDevs == 'number') && (expireDays > mesh.expireDevs)) { expireDays = mesh.expireDevs; }
                     var remove = false;
-                    if (removeInactiveDevicesPerDomain[docs[j].domain] && (removeInactiveDevicesPerDomain[docs[j].domain] < days)) { remove = true; }
-                    else { const mesh = parent.webserver.meshes[docs[j].meshid]; if (mesh && (typeof mesh.expireDevs == 'number') && (mesh.expireDevs < days)) { remove = true; } }
+                    if ((expireDays > 0) && (expireDays < days)) { remove = true; }
+                    if (cb) { if (showall || remove) { cb(docs[j]._id.substring(2) + ', ' + days + ' days, expire ' + expireDays + ' days' + (remove ? ', removing' : '')); } }
                     if (remove) {
                         // Check if this device is connected right now
                         const nodeid = docs[j]._id.substring(2);
@@ -163,7 +167,8 @@ module.exports.CreateDB = function (parent, func) {
                         if (conn == null) {
                             // Remove the device
                             obj.Get(nodeid, function (err, docs) {
-                                if ((err != null) || (docs == null) || (docs.length != 1)) return;
+                                if (err != null) return;
+                                if ((docs == null) || (docs.length != 1)) { obj.Remove('lc' + nodeid); return; } // Remove last connect time
                                 const node = docs[0];
 
                                 // Delete this node including network interface information, events and timeline
