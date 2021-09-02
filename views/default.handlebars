@@ -2093,7 +2093,7 @@
 
             // Check if none or at least 2 factors are enabled.
             if ((backupCodesWarningDone == false) && (authFactorCount == 1)) {
-                addNotification({ text: "Please add two-factor backup codes. If the current factor is lost, there is no way to recover this account.", title: "Two factor authentication" });
+                addNotification({ text: "Please add two-factor backup codes. If the current factor is lost, there is no way to recover this account.", title: "Two factor authentication", tag: 'backupcodes' });
                 backupCodesWarningDone = true;
             }
 
@@ -14941,7 +14941,8 @@
                 else if (n.tag == 'console') gotoDevice(n.nodeid, 15); // Files
                 else gotoDevice(n.nodeid, 10); // General
             } else {
-                if ((n.tag != null) && n.tag.startsWith('meshmessenger/')) {
+                if ((n.tag == 'backupcodes') && !xxdialogMode) { go(2); account_manageOtp(0); notificationDelete(id); } // 2FA backup codes
+                else if ((n.tag != null) && n.tag.startsWith('meshmessenger/')) {
                     safeNewWindow('/messenger?id=' + n.tag + '&title=' + encodeURIComponentEx(n.username), n.tag.split('/')[2]);
                     notificationDelete(id);
                 } else if (n.url != null) {
