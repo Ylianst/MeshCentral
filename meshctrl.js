@@ -7,6 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
+const path = require('path');
 const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'editdevice', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog', 'agentdownload'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
@@ -2257,10 +2258,11 @@ function connectTunnel(url) {
                     if (cmd.action == 'download') {
                         if (cmd.id != args.file) return;
                         if (cmd.sub == 'start') {
-                            settings.downloadFile = require('fs').openSync(args.target, 'w');
+                            if ((args.target.endsWith('\\')) || (args.target.endsWith('/'))) { args.target += path.parse(args.file).name; }
+                            try { settings.downloadFile = require('fs').openSync(args.target, 'w'); } catch (ex) { console.log("Unable to create file: " + args.target); process.exit(); return; }
                             settings.downloadSize = 0;
                             settings.tunnelws.send(JSON.stringify({ action: 'download', sub: 'startack', id: args.file }));
-                            console.log('Download started...');
+                            console.log('Download started: ' + args.target);
                         } else if (cmd.sub == 'cancel') {
                             if (settings.downloadFile != null) { require('fs').closeSync(settings.downloadFile); }
                             console.log('Download canceled.');
