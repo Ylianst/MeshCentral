@@ -125,7 +125,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Setup SSPI authentication if needed
     if ((obj.parent.platform == 'win32') && (obj.args.nousers != true) && (obj.parent.config != null) && (obj.parent.config.domains != null)) {
-        for (i in obj.parent.config.domains) { if (obj.parent.config.domains[i].auth == 'sspi') { var nodeSSPI = require('node-sspi'); obj.parent.config.domains[i].sspi = new nodeSSPI({ retrieveGroups: true, offerBasic: false }); } }
+        for (i in obj.parent.config.domains) { if (obj.parent.config.domains[i].auth == 'sspi') { var nodeSSPI = require('node-sspi'); obj.parent.config.domains[i].sspi = new nodeSSPI({ retrieveGroups: false, offerBasic: false }); } }
     }
 
     // Perform hash on web certificate and agent certificate
@@ -2454,7 +2454,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         } else if (req.query.user && req.query.pass) {
             // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is bad security... but people are requesting this option.
             obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
-                if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + req.connection.user + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
+                if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + userid + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
                 parent.debug('web', 'handleRootRequest: user/pass in URL auth ok.');
                 req.session.userid = userid;
                 delete req.session.currentNode;
@@ -4869,8 +4869,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (user == null) { try { res.sendStatus(404); } catch (ex) { } return; }
             }
             if ((req.query.meshaction == 'route') && (req.query.nodeid != null)) {
+                var nodeIdSplit = req.query.nodeid.split('/');
+                if ((nodeIdSplit[0] != 'node') || (nodeIdSplit[1] != domain.id)) { try { res.sendStatus(401); } catch (ex) { } return; }
                 obj.db.Get(req.query.nodeid, function (err, nodes) {
-                    if (nodes.length != 1) { try { res.sendStatus(401); } catch (ex) { } return; }
+                    if ((err != null) || (nodes.length != 1)) { try { res.sendStatus(401); } catch (ex) { } return; }
                     var node = nodes[0];
 
                     // Create the meshaction.txt file for meshcmd.exe

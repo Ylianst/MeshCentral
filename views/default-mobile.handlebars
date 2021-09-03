@@ -6168,7 +6168,8 @@
                 else if (n.tag == 'console') gotoDevice(n.nodeid, 15); // Files
                 else gotoDevice(n.nodeid, 10); // General
             } else {
-                if ((n.tag != null) && n.tag.startsWith('meshmessenger/')) {
+                if ((n.tag == 'backupcodes') && !xxdialogMode) { account_manageOtp(0); notificationDelete(id); } // 2FA backup codes
+                else if ((n.tag != null) && n.tag.startsWith('meshmessenger/')) {
                     safeNewWindow('/messenger?id=' + n.tag + '&title=' + encodeURIComponentEx(n.username), n.tag.split('/')[2]);
                     notificationDelete(id);
                 } else if (n.url != null) {
