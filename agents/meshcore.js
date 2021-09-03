@@ -87,6 +87,72 @@ if (require('MeshAgent').ARCHID == null) {
     }
     if (id != null) { Object.defineProperty(require('MeshAgent'), 'ARCHID', { value: id }); }
 }
+function lockDesktop(uid)
+{
+    switch (process.platform)
+    {
+        case 'linux':
+            if (uid != null)
+            {
+                var name = require('user-sessions').getUsername(uid);
+                var child = require('child_process').execFile('/bin/sh', ['sh']);
+                child.stdout.str = ''; child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+                child.stderr.str = ''; child.stderr.on('data', function (chunk) { this.str += chunk.toString(); });
+                child.stdin.write('loginctl show-user -p Sessions ' + name + " | awk '{");
+                child.stdin.write('gsub(/^Sessions=/,"",$0);');
+                child.stdin.write('cmd = sprintf("loginctl lock-session %s",$0);');
+                child.stdin.write('system(cmd);');
+                child.stdin.write("}'\nexit\n");
+                child.waitExit();
+            }
+            else
+            {
+                var child = require('child_process').execFile('/bin/sh', ['sh']);
+                child.stdout.str = ''; child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+                child.stderr.str = ''; child.stderr.on('data', function (chunk) { this.str += chunk.toString(); });
+                child.stdin.write('loginctl lock-sessions\nexit\n');
+                child.waitExit();
+            }
+            break;
+        case 'win32':
+            {
+                var options = { type: 1, uid: uid };
+                var child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], options);
+                child.waitExit();
+            }
+            break;
+        default:
+            break;
+    }
+}
+var writable = require('stream').Writable;
+function destopLockHelper_pipe(httprequest)
+{
+    if (process.platform != 'linux' && process.platform != 'freebsd') { return; }
+
+    if (httprequest.unlockerHelper == null && httprequest.desktop != null && httprequest.desktop.kvm != null)
+    {
+        httprequest.unlockerHelper = new writable(
+        {
+            'write': function (chunk, flush)
+            {
+                if (chunk.readUInt16BE(0) == 65)
+                {
+                    delete this.request.autolock;
+                }
+                flush();
+                return (true);
+            },
+            'final': function (flush)
+            {
+                flush();
+            }
+        });
+        httprequest.unlockerHelper.request = httprequest;
+        httprequest.desktop.kvm.pipe(httprequest.unlockerHelper);
+    }
+}
+
 var obj = { serverInfo: {} };
 var agentFileHttpRequests = {}; // Currently active agent HTTPS GET requests from the server.
 var agentFileHttpPendingRequests = []; // Pending HTTPS GET requests from the server.
@@ -1709,13 +1775,8 @@ function onTunnelClosed() {
         if ((this.httprequest.xoptions != null) && (typeof this.httprequest.xoptions.tsid == 'number')) { tsid = this.httprequest.xoptions.tsid; }
 
         // Lock the current user out of the desktop
-        try {
-            if (process.platform == 'win32') {
-                MeshServerLogEx(53, null, "Locking remote user out of desktop", this.httprequest);
-                var child = require('child_process');
-                child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1, uid: tsid });
-            }
-        } catch (ex) { }
+        MeshServerLogEx(53, null, "Locking remote user out of desktop", this.httprequest);
+        lockDesktop(tsid);
     }
 
     // If this is a routing session, clean up and send the new session counts.
@@ -2283,6 +2344,10 @@ function onTunnelData(data) {
                                 }
                             }
                             this.ws.httprequest.desktop.kvm.pipe(this.ws, { dataTypeSkip: 1 });
+                            if (this.ws.httprequest.autolock)
+                            {
+                                destopLockHelper_pipe(this.ws.httprequest);
+                            }
                             this.ws.resume();
                         },
                         function (e) {
@@ -2330,6 +2395,10 @@ function onTunnelData(data) {
                         }
                     }
                     this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 });
+                    if (this.httprequest.autolock)
+                    {
+                        destopLockHelper_pipe(this.httprequest);
+                    }
                 }
 
                 this.removeAllListeners('data');
@@ -2741,18 +2810,24 @@ function onTunnelControlData(data, ws) {
             if ((ws.httprequest.xoptions != null) && (typeof ws.httprequest.xoptions.tsid == 'number')) { tsid = ws.httprequest.xoptions.tsid; }
 
             // Lock the current user out of the desktop
-            try {
-                if (process.platform == 'win32') {
-                    MeshServerLogEx(53, null, "Locking remote user out of desktop", ws.httprequest);
-                    var child = require('child_process');
-                    child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1, uid: tsid });
-                }
-            } catch (e) { }
+            MeshServerLogEx(53, null, "Locking remote user out of desktop", ws.httprequest);
+            lockDesktop(tsid);
             break;
         }
         case 'autolock': {
             // Set the session to auto lock on disconnect
-            if (obj.value === true) { ws.httprequest.autolock = true; } else { delete ws.httprequest.autolock; }
+            if (obj.value === true)
+            {
+                ws.httprequest.autolock = true;
+                if (ws.httprequest.unlockerHelper == null)
+                {
+                    destopLockHelper_pipe(ws.httprequest);
+                }
+            }
+            else
+            {
+                delete ws.httprequest.autolock;
+            }
             break;
         }
         case 'options': {
@@ -2765,7 +2840,14 @@ function onTunnelControlData(data, ws) {
             if ((obj != null) && (typeof obj.consent == 'number')) { ws.httprequest.consent |= obj.consent; }
 
             // Set autolock
-            if ((obj != null) && (obj.autolock === true)) { ws.httprequest.autolock = true; }
+            if ((obj != null) && (obj.autolock === true))
+            {
+                ws.httprequest.autolock = true;
+                if (ws.httprequest.unlockerHelper == null)
+                {
+                    destopLockHelper_pipe(ws.httprequest);
+                }
+            }
 
             break;
         }
@@ -3918,8 +4000,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'lock': { // Lock the current user out of the desktop
-                if (process.platform == 'win32') { var child = require('child_process'); child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 }); response = 'Ok'; }
-                else { response = 'Not supported on the platform'; }
+                lockDesktop();
                 break;
             }
             case 'amt': { // Show Intel AMT status
