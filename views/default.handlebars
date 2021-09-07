@@ -2471,7 +2471,7 @@
                                 }
                             }
                         }
-                        x += addHtmlValue2("Last interfaces update", printDateTime(new Date(message.updateTime)));
+                        if (message.updateTime != null) { x += addHtmlValue2("Last interfaces update", printDateTime(new Date(message.updateTime))); }
 
                         if (message.netif != null) {
                             // Old style
