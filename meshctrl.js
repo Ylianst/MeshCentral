@@ -390,6 +390,23 @@ if (args['_'].length == 0) {
                         console.log("  --count                - Only return the device count.");
                         console.log("  --json                 - Show result as JSON.");
                         console.log("  --csv                  - Show result as comma seperated values.");
+                        console.log("  --filter \"[filter]\"  - Filter devices using a filter string.");
+                        console.log("     \"x\"                  - Devices with \"x\" in the name.");
+                        console.log("     \"user:x or u:x\"      - Devices with \"x\" in the name of currently logged in user.");
+                        console.log("     \"ip:x\"               - Devices \"x\" IP address.");
+                        console.log("     \"group:x or g:x\"     - Devices with \"x\" in device group name.");
+                        console.log("     \"tag:x or t:x\"       - Devices with \"x\" in device tag.");
+                        console.log("     \"atag:x or a:x\"      - Devices with \"x\" in device agent tag.");
+                        console.log("     \"os:x\"               - Devices with \"x\" in the device OS description.");
+                        console.log("     \"amt:x\"              - Devices with Intel AMT provisioning state (0, 1, 2).");
+                        console.log("     \"desc:x\"             - Devices with \"x\" in device description.");
+                        console.log("     \"wsc:ok\"             - Devices with Windows Security Center ok.");
+                        console.log("     \"wsc:noav\"           - Devices with Windows Security Center with anti-virus problem.");
+                        console.log("     \"wsc:noupdate\"       - Devices with Windows Security Center with update problem.");
+                        console.log("     \"wsc:nofirewall\"     - Devices with Windows Security Center with firewall problem.");
+                        console.log("     \"wsc:any\"            - Devices with Windows Security Center with any problem.");
+                        console.log("     \"a and b\"            - Match both conditions with precedence over OR. For example: \"lab and g:home\".");
+                        console.log("     \"a or b\"             - Math one of the conditions, for example: \"lab or g:home\".");
                         console.log("  --filterid [id,id...]  - Show only results for devices with included id.");
                         console.log("  --details              - Show all device details.");
                         break;
@@ -1960,6 +1977,14 @@ function serverConnect() {
                             }
                         }
 
+                        // Filter devices based on filter string
+                        if (args.filter != null) {
+                            for (var meshid in data.nodes) {
+                                for (var d in data.nodes[meshid]) { data.nodes[meshid][d].meshid = meshid; }
+                                data.nodes[meshid] = parseSearchOrInput(data.nodes[meshid], args.filter.toLowerCase());
+                            }
+                        }
+
                         if (args.csv) {
                             // Return a flat list
                             var nodecount = 0;
@@ -1996,12 +2021,14 @@ function serverConnect() {
                             var nodecount = 0;
                             for (var i in data.nodes) {
                                 var devicesInMesh = data.nodes[i];
-                                if (settings.xmeshes) { console.log('\r\nDevice group: \"' + settings.xmeshes[i].name.split('\"').join('') + '\"'); }
-                                console.log('id, name, icon, conn, pwr\r\n-------------------------');
-                                for (var j in devicesInMesh) {
-                                    var n = devicesInMesh[j];
-                                    nodecount++;
-                                    console.log('\"' + n._id.split('/')[2] + '\", \"' + n.name.split('\"').join('') + '\", ' + (n.icon ? n.icon : 0) + ', ' + (n.conn ? n.conn : 0) + ', ' + (n.pwr ? n.pwr : 0));
+                                if (devicesInMesh.length > 0) {
+                                    if (settings.xmeshes) { console.log('\r\nDevice group: \"' + settings.xmeshes[i].name.split('\"').join('') + '\"'); }
+                                    console.log('id, name, icon, conn, pwr\r\n-------------------------');
+                                    for (var j in devicesInMesh) {
+                                        var n = devicesInMesh[j];
+                                        nodecount++;
+                                        console.log('\"' + n._id.split('/')[2] + '\", \"' + n.name.split('\"').join('') + '\", ' + (n.icon ? n.icon : 0) + ', ' + (n.conn ? n.conn : 0) + ', ' + (n.pwr ? n.pwr : 0));
+                                    }
                                 }
                             }
                             if (nodecount == 0) { console.log('None'); }
@@ -2134,6 +2161,106 @@ function padString(str, pad) {
     var xpad = '                                                                                                         ';
     if (str.length >= pad) return str; return str + xpad.substring(0, pad - str.length)
 }
+
+function parseSearchAndInput(nodes, x) {
+    var s = x.split(' ' + "and" + ' '), r = null;
+    for (var i in s) {
+        var r2 = getDevicesThatMatchFilter(nodes, s[i]);
+        if (r == null) { r = r2; } else { var r3 = []; for (var j in r2) { if (r.indexOf(r2[j]) >= 0) { r3.push(r2[j]); } } r = r3; }
+    }
+    return r;
+}
+
+function parseSearchOrInput(nodes, x) {
+    var s = x.split(' ' + "or" + ' '), r = null;
+    for (var i in s) { var r2 = parseSearchAndInput(nodes, s[i]); if (r == null) { r = r2; } else { for (var j in r2) { if (r.indexOf(r2[j] >= 0)) { r.push(r2[j]); } } } }
+    return r;
+}
+
+function getDevicesThatMatchFilter(nodes, x) {
+    var r = [];
+    var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null, descSearch = null;
+    if (x.startsWith("user:".toLowerCase())) { userSearch = x.substring("user:".length); }
+    else if (x.startsWith("u:".toLowerCase())) { userSearch = x.substring("u:".length); }
+    else if (x.startsWith("ip:".toLowerCase())) { ipSearch = x.substring("ip:".length); }
+    else if (x.startsWith("group:".toLowerCase())) { groupSearch = x.substring("group:".length); }
+    else if (x.startsWith("g:".toLowerCase())) { groupSearch = x.substring("g:".length); }
+    else if (x.startsWith("tag:".toLowerCase())) { tagSearch = x.substring("tag:".length); }
+    else if (x.startsWith("t:".toLowerCase())) { tagSearch = x.substring("t:".length); }
+    else if (x.startsWith("atag:".toLowerCase())) { agentTagSearch = x.substring("atag:".length); }
+    else if (x.startsWith("a:".toLowerCase())) { agentTagSearch = x.substring("a:".length); }
+    else if (x.startsWith("os:".toLowerCase())) { osSearch = x.substring("os:".length); }
+    else if (x.startsWith("amt:".toLowerCase())) { amtSearch = x.substring("amt:".length); }
+    else if (x.startsWith("desc:".toLowerCase())) { descSearch = x.substring("desc:".length); }
+    else if (x == 'wsc:ok') { wscSearch = 1; }
+    else if (x == 'wsc:noav') { wscSearch = 2; }
+    else if (x == 'wsc:noupdate') { wscSearch = 3; }
+    else if (x == 'wsc:nofirewall') { wscSearch = 4; }
+    else if (x == 'wsc:any') { wscSearch = 5; }
+
+    if (x == '') {
+        // No search
+        for (var d in nodes) { r.push(nodes[d]); }
+    } else if (ipSearch != null) {
+        // IP address search
+        for (var d in nodes) { if ((nodes[d].ip != null) && (nodes[d].ip.indexOf(ipSearch) >= 0)) { r.push(nodes[d]); } }
+    } else if (groupSearch != null) {
+        // Group filter
+        if (settings.xmeshes) { for (var d in nodes) { if (settings.xmeshes[nodes[d].meshid].name.toLowerCase().indexOf(groupSearch) >= 0) { r.push(nodes[d]); } } }
+    } else if (tagSearch != null) {
+        // Tag filter
+        for (var d in nodes) {
+            if (((nodes[d].tags == null) && (tagSearch == '')) || ((nodes[d].tags != null) && (nodes[d].tags.indexOf(tagSearch) >= 0))) { r.push(nodes[d]); }
+        }
+    } else if (agentTagSearch != null) {
+        // Agent Tag filter
+        for (var d in nodes) {
+            if ((((nodes[d].agent != null) && (nodes[d].agent.tag == null)) && (agentTagSearch == '')) || ((nodes[d].agent != null) && (nodes[d].agent.tag != null) && (nodes[d].agent.tag.toLowerCase().indexOf(agentTagSearch) >= 0))) { r.push(nodes[d]); };
+        }
+    } else if (userSearch != null) {
+        // User search
+        for (var d in nodes) {
+            if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0) { r.push(nodes[d]); } } }
+        }
+    } else if (osSearch != null) {
+        // OS search
+        for (var d in nodes) { if ((nodes[d].osdesc != null) && (nodes[d].osdesc.toLowerCase().indexOf(osSearch) >= 0)) { r.push(nodes[d]); }; }
+    } else if (amtSearch != null) {
+        // Intel AMT search
+        for (var d in nodes) { if ((nodes[d].intelamt != null) && ((amtSearch == '') || (nodes[d].intelamt.state == amtSearch))) { r.push(nodes[d]); } }
+    } else if (descSearch != null) {
+        // Device description search
+        for (var d in nodes) { if ((nodes[d].desc != null) && (nodes[d].desc != '') && ((descSearch == '') || (nodes[d].desc.toLowerCase().indexOf(descSearch) >= 0))) { r.push(nodes[d]); } }
+    } else if (wscSearch != null) {
+        // Windows Security Center
+        for (var d in nodes) {
+            if (nodes[d].wsc) {
+                if ((wscSearch == 1) && (nodes[d].wsc.antiVirus == 'OK') && (nodes[d].wsc.autoUpdate == 'OK') && (nodes[d].wsc.firewall == 'OK')) { r.push(nodes[d]); }
+                else if (((wscSearch == 2) || (wscSearch == 5)) && (nodes[d].wsc.antiVirus != 'OK')) { r.push(nodes[d]); }
+                else if (((wscSearch == 3) || (wscSearch == 5)) && (nodes[d].wsc.autoUpdate != 'OK')) { r.push(nodes[d]); }
+                else if (((wscSearch == 4) || (wscSearch == 5)) && (nodes[d].wsc.firewall != 'OK')) { r.push(nodes[d]); }
+            }
+        }
+    } else if (x == '*') {
+        // Star filter
+        for (var d in nodes) { if (stars[nodes[d]._id] == 1) { r.push(nodes[d]); } }
+    } else {
+        // Device name search
+        try {
+            var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
+            for (var d in nodes) {
+                //if (showRealNames) {
+                    //if (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase())) { r.push(nodes[d]); }
+                //} else {
+                    if (rx.test(nodes[d].name.toLowerCase())) { r.push(nodes[d]); }
+                //}
+            }
+        } catch (ex) { for (var d in nodes) { r.push(nodes[d]); } }
+    }
+
+    return r;
+}
+
 
 // Connect tunnel to a remote agent
 function connectTunnel(url) {
