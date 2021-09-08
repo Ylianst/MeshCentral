@@ -5408,6 +5408,68 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 break;
             }
+            case 'report': {
+                // Report request. Validate the input
+                if (common.validateInt(command.type, 1, 1) == false) break; // Validate type
+                if (common.validateInt(command.groupBy, 1, 3) == false) break; // Validate groupBy: 1 = User, 2 = Device, 3 = Day
+                if ((typeof command.start != 'number') || (typeof command.end != 'number') || (command.start >= command.end)) break; // Validate start and end time
+
+                if (command.type == 1) { // This is the remote session report. Shows desktop, terminal, files...
+                    // If we are not user administrator on this site, only search for events with our own user id.
+                    var ids = [user._id];
+                    if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) { ids = ['*']; }
+
+                    // Get the events in the time range
+                    db.GetEventsTimeRange(ids, domain.id, [5, 10, 12], new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
+                        if (err != null) return;
+                        var data = { groups: {} };
+
+                        // Columns
+                        if (command.groupBy == 1) {
+                            data.groupFormat = 'user';
+                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: "nodeid", title: "device", format: "node" }, { id: "protocol", title: "session", format: "protocol", align: "center" }, { id: "length", title: "length", format: "seconds", align: "center" } ];
+                        } else if (command.groupBy == 2) {
+                            data.groupFormat = 'node';
+                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: "userid", title: "user", format: "user" }, { id: "protocol", title: "session", format: "protocol", align: "center" }, { id: "length", title: "length", format: "seconds", align: "center" } ];
+                        } else if (command.groupBy == 3) {
+                            data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: "nodeid", title: "device", format: "node" }, { id: "userid", title: "user", format: "user" }, { id: "protocol", title: "session", format: "protocol", align: "center" }, { id: "length", title: "length", format: "seconds", align:"center" } ];
+                        }
+
+                        // Rows
+                        for (var i in docs) {
+                            var entry = { time: docs[i].time.valueOf() };
+
+                            // UserID
+                            if (command.groupBy != 1) { entry.userid = docs[i].userid; }
+                            if (command.groupBy != 2) { entry.nodeid = docs[i].nodeid; }
+                            entry.protocol = docs[i].protocol;
+
+                            // Session length
+                            if (((docs[i].msgid == 10) || (docs[i].msgid == 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }
+
+                            if (command.groupBy == 1) { // Add entry to per user group
+                                if (data.groups[docs[i].userid] == null) { data.groups[docs[i].userid] = { entries: [] }; }
+                                data.groups[docs[i].userid].entries.push(entry);
+                            } else if (command.groupBy == 2) { // Add entry to per device group
+                                if (data.groups[docs[i].nodeid] == null) { data.groups[docs[i].nodeid] = { entries: [] }; }
+                                data.groups[docs[i].nodeid].entries.push(entry);
+                            } else if (command.groupBy == 3) { // Add entry to per day group
+                                var day;
+                                if ((typeof command.l == 'string') && (typeof command.tz == 'string')) {
+                                    day = new Date(docs[i].time).toLocaleDateString(command.l, { timeZone: command.tz });
+                                } else {
+                                    day = docs[i].time; // TODO
+                                }
+                                if (data.groups[day] == null) { data.groups[day] = { entries: [] }; }
+                                data.groups[day].entries.push(entry);
+                            }
+
+                        }
+                        try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
+                    });
+                }
+                break;
+            }
             default: {
                 // Unknown user action
                 console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');
