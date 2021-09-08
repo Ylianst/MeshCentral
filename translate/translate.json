@@ -9203,8 +9203,9 @@
         "default.handlebars->37->1189",
         "default.handlebars->37->1207",
         "default.handlebars->37->1215",
-        "ssh.handlebars->3->7",
-        "ssh.handlebars->3->8"
+        "ssh.handlebars->3->14",
+        "ssh.handlebars->3->15",
+        "ssh.handlebars->3->5"
       ]
     },
     {
@@ -30853,7 +30854,8 @@
         "default-mobile.handlebars->11->412",
         "default-mobile.handlebars->11->429",
         "default.handlebars->37->1185",
-        "default.handlebars->37->1212"
+        "default.handlebars->37->1212",
+        "ssh.handlebars->3->10"
       ]
     },
     {
@@ -30904,7 +30906,8 @@
         "default-mobile.handlebars->11->413",
         "default-mobile.handlebars->11->430",
         "default.handlebars->37->1187",
-        "default.handlebars->37->1213"
+        "default.handlebars->37->1213",
+        "ssh.handlebars->3->12"
       ]
     },
     {
@@ -30929,7 +30932,8 @@
       "xloc": [
         "default-mobile.handlebars->11->415",
         "default-mobile.handlebars->11->432",
-        "default.handlebars->37->1186"
+        "default.handlebars->37->1186",
+        "ssh.handlebars->3->11"
       ]
     },
     {
@@ -41605,7 +41609,7 @@
         "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->1->1->2->1",
         "mstsc.handlebars->main->1->3->1->rowpassword->1->0",
         "mstsc.handlebars->main->1->3->1->rowpassword->3",
-        "ssh.handlebars->3->6"
+        "ssh.handlebars->3->9"
       ]
     },
     {
@@ -45190,7 +45194,8 @@
         "default-mobile.handlebars->11->431",
         "default.handlebars->37->1188",
         "default.handlebars->37->1214",
-        "mstsc.handlebars->main->1->3->1->rowremember->3->0"
+        "mstsc.handlebars->main->1->3->1->rowremember->3->0",
+        "ssh.handlebars->3->13"
       ]
     },
     {
@@ -51321,7 +51326,8 @@
       "zh-cht": "節",
       "xloc": [
         "default.handlebars->37->2509",
-        "ssh.handlebars->3->10"
+        "ssh.handlebars->3->17",
+        "ssh.handlebars->3->19"
       ]
     },
     {
@@ -51418,7 +51424,7 @@
       "tr": "Oturum süresi doldu.",
       "zh-chs": "会话已过期。",
       "xloc": [
-        "ssh.handlebars->3->11"
+        "ssh.handlebars->3->18"
       ]
     },
     {
@@ -51472,6 +51478,12 @@
         "default-mobile.handlebars->11->437",
         "default.handlebars->37->1193",
         "default.handlebars->37->1219"
+      ]
+    },
+    {
+      "en": "Session timeout.",
+      "xloc": [
+        "ssh.handlebars->3->20"
       ]
     },
     {
@@ -58545,7 +58557,7 @@
       "tr": "Kimlik doğrulanamadı.",
       "zh-chs": "无法进行身份验证。",
       "xloc": [
-        "ssh.handlebars->3->9"
+        "ssh.handlebars->3->16"
       ]
     },
     {
@@ -60983,7 +60995,7 @@
         "mstsc.handlebars->main->1->3->1->rowusername->1->0",
         "mstsc.handlebars->main->1->3->1->rowusername->3",
         "player.handlebars->3->19",
-        "ssh.handlebars->3->5"
+        "ssh.handlebars->3->8"
       ]
     },
     {
@@ -61009,7 +61021,8 @@
         "default-mobile.handlebars->11->408",
         "default-mobile.handlebars->11->425",
         "default.handlebars->37->1181",
-        "default.handlebars->37->1208"
+        "default.handlebars->37->1208",
+        "ssh.handlebars->3->6"
       ]
     },
     {
@@ -61061,7 +61074,8 @@
         "default-mobile.handlebars->11->409",
         "default-mobile.handlebars->11->426",
         "default.handlebars->37->1182",
-        "default.handlebars->37->1209"
+        "default.handlebars->37->1209",
+        "ssh.handlebars->3->7"
       ]
     },
     {
