@@ -209,6 +209,15 @@
                             </tr>
                         </table>
                     </div>
+                    <div id=EventsSubMenuSpan style="display:none">
+                        <table id=EventsSubMenu cellpadding=0 cellspacing=0 class=style1>
+                            <tr>
+                                <td tabindex=0 id=EventsLive class="topbar_td style3x" onclick=go(3,event) onkeypress="if (event.key == 'Enter') go(3)">Events</td>
+                                <td tabindex=0 id=EventsReport class="topbar_td style3x" onclick=go(60,event) onkeypress="if (event.key == 'Enter') go(60)">Reports</td>
+                                <td class="topbar_td_end style3">&nbsp;</td>
+                            </tr>
+                        </table>
+                    </div>
                     <div id=UserSubMenuSpan style="display:none">
                         <table id=UserSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
@@ -1170,6 +1179,23 @@
                 </table>
                 <div id=p52recordings style="overflow-y:auto"></div>
             </div>
+            <div id=p60 style="display:none">
+                <div id="p60title">
+                    <h1>My Reports</h1>
+                </div>
+                <table class="pTable">
+                    <tr>
+                        <td class="h1"></td>
+                        <td class="style14">
+                            <div>
+                                <input type=button onclick=generateReportDialog() value="Generate Report..." />
+                            </div>
+                        </td>
+                        <td class="h2"></td>
+                    </tr>
+                </table>
+                <div id=p60report style="overflow-y:auto"></div>
+            </div>
             <br id="column_l_bottomgap" />
         </div>
         <div id="footer">
@@ -1793,6 +1819,8 @@
             QS('p41events')['max-height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
             QS('p52recordings')['height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
             QS('p52recordings')['max-height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
+            QS('p60report')['height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
+            QS('p60report')['max-height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
 
             // We are looking at a single device, remove all the back buttons
             if ((args.hide & 32) || ('{{currentNode}}'.toLowerCase() != '')) {
@@ -3518,6 +3546,10 @@
                 case 'loginTokens': { // Reveiced the list of login tokens
                     loginTokens = message.loginTokens;
                     mainUpdate(65536);
+                    break;
+                }
+                case 'report': {
+                    renderReport(message.data);
                     break;
                 }
                 default:
@@ -14871,6 +14903,148 @@
             }
         }
 
+
+        //
+        // MY REPORTS
+        //
+
+        function generateReportDialog() {
+            if (xxdialogMode) return;
+            var y = '', x = '', settings = JSON.parse(getstore('_ReportSettings', '{}'));
+
+            var options = { 1 : "Remote Sessions" }
+            for (var i in options) { y += '<option value=' + i + ((settings.type == i)?' selected':'') + '>' + options[i] + '</option>'; }
+            x += addHtmlValue("Type", '<select id=d2reportType style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+
+            y = '';
+            var options = { 1 : "User", 2: "Device", 3: "Day" }
+            for (var i in options) { y += '<option value=' + i + ((settings.groupBy == i)?' selected':'') + '>' + options[i] + '</option>'; }
+            x += addHtmlValue("Group by", '<select id=d2groupBy style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+
+            y = '';
+            if (settings.timeRange == null) { settings.timeRange = 1; }
+            var options = { 1 : "Last Day", 7: "Last 7 days", 30: "Last 30 days", 0: "Time range" }
+            for (var i in options) { y += '<option value=' + i + ((settings.timeRange == i)?' selected':'') + '>' + options[i] + '</option>'; }
+            x += addHtmlValue("Time", '<select id=d2timeRange style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+            
+            x += '<div id=d2timeRangeDiv style=display:none>';
+            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="Select Date & Time.." data-id="altinput">');
+            x += '</div>';
+
+            setDialogMode(2, "Generate Report", 3, generateReportDialogEx, x);
+            generateReportDialogValidate();
+
+            var lastWeek = new Date();
+            lastWeek.setDate(lastWeek.getDate() - 7);
+            var rangeTime = flatpickr('#d2timeRangeSelector', { mode: 'range', enableTime: true, maxDate: new Date(), defaultDate: [ lastWeek, new Date() ] });
+            xxdialogTag = rangeTime;
+        }
+
+        function generateReportDialogValidate() {
+            QV('d2timeRangeDiv', Q('d2timeRange').value == 0);
+        }
+
+        function generateReportDialogEx(b, tag) {
+            var start, end;
+            if (Q('d2timeRange').value == 0) {
+                end = Math.floor(tag.selectedDates[1].getTime() / 1000);
+                start = Math.floor(tag.selectedDates[0].getTime() / 1000);
+            } else {
+                end = Math.floor(new Date() / 1000);
+                start = new Date();
+                start = Math.floor(start.setDate(start.getDate() - Q('d2timeRange').value) / 1000);
+            }
+            var tz = null;
+            try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (ex) {}
+            putstore('_ReportSettings', JSON.stringify({ type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), timeRange: parseInt(Q('d2timeRange').value) }));
+            meshserver.send({ action: 'report', type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), start: start, end: end, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang() });
+        }
+
+        function renderReport(r) {
+            //console.log('renderReport', r);
+            var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", length: "Length" }
+            var x = '<table style=width:100%>';
+            x += '<tr>'
+            for (var i in r.columns) {
+                var coltitle;
+                if (colTranslation[r.columns[i].title] != null) { coltitle = colTranslation[r.columns[i].title]; } else { coltitle = EscapeHtml(r.columns[i].title); }
+                if ((i == 0) && ((r.columns[i].format == 'datetime') || (r.columns[i].format == 'time'))) {
+                    x += '<th style=width:1%>' + coltitle + '</th>';
+                } else {
+                    x += '<th>' + coltitle + '</th>';
+                }
+            }
+            x += '</tr>'
+            for (var i in r.groups) {
+                x += '<tr><td colspan=' + r.columns.length + ' style="border-bottom:1pt solid black"><b>'
+                x += renderReportFormat(i, r.groupFormat);
+                x += '</b></td></tr>'
+                for (var j in r.groups[i].entries) {
+                    var e = r.groups[i].entries[j];
+                    x += '<tr>'
+                    for (var k in r.columns) {
+                        var style = '';
+                        if (r.columns[k].align) { style = 'text-align:' + EscapeHtml(r.columns[k].align); }
+                        if (e[r.columns[k].id] != null) { x += '<td style="' + style + '">' + renderReportFormat(e[r.columns[k].id], r.columns[k].format) + '</td>'; } else { x += '<td></td>'; }
+                        if (r.columns[k].format == 'seconds') {
+                            var v = e[r.columns[k].id];
+                            if (v != null)  { if (r.columns[k].subtotal == null) { r.columns[k].subtotal = v; r.columns[k].total = v; } else { r.columns[k].subtotal += v; r.columns[k].total += v; } }
+                        }
+                    }
+                    x += '</tr>'
+                }
+            }
+
+            // Display totals
+            x += '<tr>'
+            for (var i in r.columns) {
+                if (r.columns[i].total != null) {
+                    var style = '';
+                    if (r.columns[k].align) { style = 'text-align:' + EscapeHtml(r.columns[k].align); }
+                    x += '<td style="border-top:1pt solid black;color:#777;' + style + '">' + renderReportFormat(r.columns[i].total, r.columns[i].format);  + '</td>';
+                } else {
+                    x += '<td></td>';
+                }
+            }
+            x += '</tr>'
+
+            x += '</table>';
+            QH('p60report', x);
+        }
+
+        function renderReportFormat(v, f) {
+            if (f == 'datetime') { return printDateTime(new Date(v)).split(' ').join('&nbsp'); }
+            if (f == 'time') { return printTime(new Date(v)).split(' ').join('&nbsp'); }
+            if (f == 'protocol') {
+                if (v == 1) return "Terminal";
+                if (v == 2) return "Desktop";
+                if (v == 5) return "Files";
+                EscapeHtml(v);
+            }
+            if (f == 'seconds') {
+                var seconds = v % 60;
+                var minutes = Math.floor(v / 60) & 60;
+                var hours = Math.floor(v / 3600);
+                return zeroPad(hours, 2) + ':' + zeroPad(minutes, 2) + ':' + zeroPad(seconds, 2);
+            }
+            if (f == 'node') {
+                var node = getNodeFromId(v);
+                if (node != null) { return '<div onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\' style=float:left;margin-right:4px class="j' + node.icon + '"></div>' + EscapeHtml(node.name); } else { return '<i>' + "Unknown Device" + '</i>'; }
+            }
+            if (f == 'user') {
+                var user = null;
+                if (v == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[v]; } }
+                if (user != null) {
+                    var name = user.name;
+                    if (user.realname != null) { name += ', ' + user.realname; }
+                    return '<div onclick=\'gotoUser("' + user._id + '",10);haltEvent(event);\' style=float:left;margin-right:4px;cursor:pointer class="m2"></div>' + EscapeHtml(name);
+                } else {
+                    return '<i>' + "Unknown User" + '</i>';
+                }
+            }
+            return EscapeHtml(v);
+        }
+
         //
         // NOTIFICATIONS
         //
@@ -15638,7 +15812,7 @@
             if (xxcurrentView == 17) deviceDetailsStatsClear();
 
             // Edit this line when adding a new screen
-            for (var i = 0; i < 53; i++) { QV('p' + i, i == x); }
+            for (var i = 0; i < 61; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
 
             // Get out of fullscreen if needed
@@ -15689,7 +15863,7 @@
                 // My Account
                 QC('MainMenuMyAccount').add(mainMenuActiveClass);
                 QC('LeftMenuMyAccount').add(leftMenuActiveClass);
-            } else if (x == 3) {
+            } else if ((x == 3) || (x == 60)) {
                 // My Events
                 QC('MainMenuMyEvents').add(mainMenuActiveClass);
                 QC('LeftMenuMyEvents').add(leftMenuActiveClass);
@@ -15721,7 +15895,8 @@
             QV('UserSubMenuSpan', (x >= 30) && (x < 40));
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42 || x == 43);
             QV('UsersSubMenuSpan', x == 4 || x == 50 || x == 52);
-            var panels = { 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 115: 'ServerConsole' };
+            QV('EventsSubMenuSpan', (x == 3) || (x == 60));
+            var panels = { 3: 'EventsLive', 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 60: 'EventsReport', 115: 'ServerConsole' };
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
                 QC(panels[i]).remove('style3sel');
