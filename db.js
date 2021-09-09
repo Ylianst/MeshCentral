@@ -1167,7 +1167,6 @@ module.exports.CreateDB = function (parent, func) {
                 }
             };
             obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) {
-                //obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }], msgid: { $in: msgids }, time: { $gte: start, $lte: end } }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: 1 }).toArray(func);
                 if (ids.indexOf('*') >= 0) {
                     sqlDbQuery('SELECT doc FROM events WHERE ((domain = ?) AND (time BETWEEN ? AND ?)) ORDER BY time', [domain, start, end], func);
                 } else {
