@@ -119,6 +119,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             peer.overflow = false;
             peer.sendQueue = [];
             peer.paused = false;
+            peer.startTime = Date.now();
 
             // Add the user to the userids list if needed
             if ((peer.user != null) && (obj.userIds.indexOf(peer.user._id) == -1)) { obj.userIds.push(peer.user._id); }
@@ -208,6 +209,14 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 if ((obj.viewersOverflowCount < obj.viewers.length) && (obj.recordingFileWriting == false) && obj.agent && (obj.agent.paused == true)) { obj.agent.paused = false; obj.agent.ws._socket.resume(); }
             }
 
+            // Log leaving the multiplex session
+            if (obj.startTime != null) { // Used to check if the agent has connected. If not, don't log this event since the session never really started.
+                //var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 5, msg: "Left the desktop multiplex session", protocol: 2 };
+                const sessionSeconds = Math.floor((Date.now() - peer.startTime) / 1000);
+                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 122, msgArgs: [sessionSeconds], msg: "Left the desktop multiplex session after " + sessionSeconds + " second(s).", protocol: 2 };
+                parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id, obj.meshid], obj, event);
+            }
+
             // Aggressive clean up of the viewer
             delete peer.desktopPaused;
             delete peer.imageType;
@@ -219,12 +228,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             delete peer.sending;
             delete peer.overflow;
             delete peer.sendQueue;
-
-            // Log leaving the multiplex session
-            if (obj.startTime != null) {
-                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 5, msg: "Left the desktop multiplex session", protocol: 2 };
-                parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id, obj.meshid], obj, event);
-            }
+            delete peer.startTime;
 
             // If this is the last viewer, disconnect the agent
             if ((obj.viewers != null) && (obj.viewers.length == 0) && (obj.agent != null)) { obj.agent.close(); dispose(); return true; }

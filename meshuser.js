@@ -5421,7 +5421,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Get the events in the time range
                     // MySQL or MariaDB query will ignore the MsgID filter.
-                    db.GetEventsTimeRange(ids, domain.id, [5, 10, 12], new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
+                    db.GetEventsTimeRange(ids, domain.id, [5, 10, 11, 12, 122], new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
                         if (err != null) return;
                         var data = { groups: {} };
 
@@ -5438,7 +5438,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Rows
                         for (var i in docs) {
-                            if ((docs[i].msgid != 5) && (docs[i].msgid != 10) && (docs[i].msgid != 12)) continue; // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
+                            if ((docs[i].msgid != 5) && (docs[i].msgid != 10) && (docs[i].msgid != 11) && (docs[i].msgid != 12) && (docs[i].msgid != 122)) continue; // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
 
                             var entry = { time: docs[i].time.valueOf() };
 
@@ -5448,7 +5448,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             entry.protocol = docs[i].protocol;
 
                             // Session length
-                            if (((docs[i].msgid == 10) || (docs[i].msgid == 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }
+                            if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }
+                            else if ((docs[i].msgid == 122) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { entry.length = docs[i].msgArgs[0]; }
 
                             if (command.groupBy == 1) { // Add entry to per user group
                                 if (data.groups[docs[i].userid] == null) { data.groups[docs[i].userid] = { entries: [] }; }
