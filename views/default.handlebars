@@ -1187,6 +1187,9 @@
                     <tr>
                         <td class="h1"></td>
                         <td class="style14">
+                            <div style="float:right;line-height:22px">
+                                <a id="p60downloadReportDiv" style="display:none" href=# onclick=p60downloadReport()><img src=images/link4.png height=10 width=10 title="Download Report" style=cursor:pointer></a>&nbsp;
+                            </div>
                             <div>
                                 <input type=button onclick=generateReportDialog() value="Generate Report..." />
                             </div>
@@ -14909,6 +14912,8 @@
         // MY REPORTS
         //
 
+        var reportCSV = null;
+
         function generateReportDialog() {
             if (xxdialogMode) return;
             var y = '', x = '', settings = JSON.parse(getstore('_ReportSettings', '{}'));
@@ -14962,81 +14967,98 @@
         }
 
         function renderReport(r) {
-            //console.log('renderReport', r);
             var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", length: "Length" }
-            var x = '<table style=width:100%>';
+            var x = '<table style=width:100%>', firstItem;
             var sumByCol = null; // Indicate by what colum we sum by
             var sumByValues = []; // Indicate by what values we sum by
 
-            x += '<tr>'
-            for (var i in r.columns) {
-                var coltitle;
-                if (colTranslation[r.columns[i].title] != null) { coltitle = colTranslation[r.columns[i].title]; } else { coltitle = EscapeHtml(r.columns[i].title); }
-                var style = '';
-                if (r.columns[i].align) { style += ';text-align:' + EscapeHtml(r.columns[i].align); } else { style += ';text-align:left'; }
-                if ((i == 0) && ((r.columns[i].format == 'datetime') || (r.columns[i].format == 'time'))) { style += ';width:1%'; }
-                x += '<th style=' + style + '>' + coltitle + '</th>';
-            }
-            x += '</tr>'
-            for (var i in r.groups) {
-                x += '<tr style=height:8px></tr>'
-                x += '<tr><td colspan=' + r.columns.length + ' style="border-bottom:1pt solid black"><b>'
-                x += renderReportFormat(i, r.groupFormat);
-                x += '</b></td></tr>'
-                for (var j in r.groups[i].entries) {
-                    var e = r.groups[i].entries[j];
-                    x += '<tr>'
-                    for (var k in r.columns) {
-                        var style = '';
-                        if (r.columns[k].align) { style = 'text-align:' + EscapeHtml(r.columns[k].align); }
-                        if (e[r.columns[k].id] != null) { x += '<td style="' + style + '">' + renderReportFormat(e[r.columns[k].id], r.columns[k].format) + '</td>'; } else { x += '<td></td>'; }
-                        if (r.columns[k].sumBy != null) {
-                            var v1 = e[r.columns[k].sumBy];
-                            var v2 = e[r.columns[k].id];
-                            sumByCol = r.columns[k].sumBy;
-                            if (v2 != null)  {
-                                if (sumByValues.indexOf(v1) == -1) { sumByValues.push(v1); }
-                                if (r.columns[k].subtotals == null) { r.columns[k].subtotals = {}; r.columns[k].totals = {}; } 
-                                if (r.columns[k].subtotals[v1] == null) { r.columns[k].subtotals[v1] = v2; } else { r.columns[k].subtotals[v1] += v2; }
-                                if (r.columns[k].totals[v1] == null) { r.columns[k].totals[v1] = v2; } else { r.columns[k].totals[v1] += v2; }
-                            }
-                        }
-                    }
-                    x += '</tr>'
+            if (Object.keys(r.groups).length == 0) {
+                reportCSV = null;
+                QV('p60downloadReportDiv', false);
+                x += '<tr><td style=text-align:center;padding-top:32px>' + "Report returned no entires." + '</tr></td>';
+            } else {
+                reportCSV = '"' + "Group" + '"';
+                x += '<tr>'
+                for (var i in r.columns) {
+                    var coltitle;
+                    if (colTranslation[r.columns[i].title] != null) { coltitle = colTranslation[r.columns[i].title]; } else { coltitle = EscapeHtml(r.columns[i].title); }
+                    var style = '';
+                    if (r.columns[i].align) { style += ';text-align:' + EscapeHtml(r.columns[i].align); } else { style += ';text-align:left'; }
+                    if ((i == 0) && ((r.columns[i].format == 'datetime') || (r.columns[i].format == 'time'))) { style += ';width:1%'; }
+                    x += '<th style=' + style + '>' + coltitle + '</th>';
+                    reportCSV += ',"' + csvClean(coltitle) + '"';
+                    firstItem = false;
                 }
-            }
-
-            // Display totals
-            if (sumByCol != null) {
-                var sumByColNum = -1;
-                for (var i in r.columns) { if (r.columns[i].id == sumByCol) { sumByColNum = i; } }
-                if (sumByColNum >= 0) {
-                    sumByValues.sort();
-                    var firstRow = true;
+                x += '</tr>'
+                reportCSV += '\r\n';
+                for (var i in r.groups) {
                     x += '<tr style=height:8px></tr>'
-                    for (var j in sumByValues) {
+                    x += '<tr><td colspan=' + r.columns.length + ' style="border-bottom:1pt solid black"><b>'
+                    x += renderReportFormat(i, r.groupFormat);
+                    x += '</b></td></tr>'
+                    for (var j in r.groups[i].entries) {
+                        var e = r.groups[i].entries[j];
                         x += '<tr>'
-                        for (var i in r.columns) {
-                            if (i == sumByColNum) {
-                                var style = '';
-                                if (r.columns[k].align) { style += ';text-align:' + EscapeHtml(r.columns[k].align); }
-                                if (firstRow) { style += ';border-top:1pt solid #777'; }
-                                x += '<td style="color:#777' + style + '">' + renderReportFormat(sumByValues[j], r.columns[i].format);  + '</td>';
-                            } else if (r.columns[i].totals != null) {
-                                var style = '';
-                                if (r.columns[k].align) { style += ';text-align:' + EscapeHtml(r.columns[k].align); }
-                                if (firstRow) { style += ';border-top:1pt solid #777'; }
-                                x += '<td style="color:#777' + style + '">' + renderReportFormat(r.columns[i].totals[sumByValues[j]], r.columns[i].format);  + '</td>';
+                        reportCSV += '"' + csvClean(renderReportFormatCSV(i, r.groupFormat)) + '"';
+                        for (var k in r.columns) {
+                            var style = '';
+                            if (r.columns[k].align) { style = 'text-align:' + EscapeHtml(r.columns[k].align); }
+                            if (e[r.columns[k].id] != null) {
+                                x += '<td style="' + style + '">' + renderReportFormat(e[r.columns[k].id], r.columns[k].format) + '</td>';
+                                reportCSV += ',"' + csvClean(renderReportFormatCSV(e[r.columns[k].id], r.columns[k].format)) + '"';
                             } else {
                                 x += '<td></td>';
+                                reportCSV += ',';
+                            }
+                            if (r.columns[k].sumBy != null) {
+                                var v1 = e[r.columns[k].sumBy];
+                                var v2 = e[r.columns[k].id];
+                                sumByCol = r.columns[k].sumBy;
+                                if (v2 != null)  {
+                                    if (sumByValues.indexOf(v1) == -1) { sumByValues.push(v1); }
+                                    if (r.columns[k].subtotals == null) { r.columns[k].subtotals = {}; r.columns[k].totals = {}; } 
+                                    if (r.columns[k].subtotals[v1] == null) { r.columns[k].subtotals[v1] = v2; } else { r.columns[k].subtotals[v1] += v2; }
+                                    if (r.columns[k].totals[v1] == null) { r.columns[k].totals[v1] = v2; } else { r.columns[k].totals[v1] += v2; }
+                                }
                             }
                         }
                         x += '</tr>'
-                        firstRow = false;
+                        reportCSV += '\r\n';
                     }
                 }
-            }
 
+                // Display totals
+                if (sumByCol != null) {
+                    var sumByColNum = -1;
+                    for (var i in r.columns) { if (r.columns[i].id == sumByCol) { sumByColNum = i; } }
+                    if (sumByColNum >= 0) {
+                        sumByValues.sort();
+                        var firstRow = true;
+                        x += '<tr style=height:8px></tr>'
+                        for (var j in sumByValues) {
+                            x += '<tr>'
+                            for (var i in r.columns) {
+                                if (i == sumByColNum) {
+                                    var style = '';
+                                    if (r.columns[k].align) { style += ';text-align:' + EscapeHtml(r.columns[k].align); }
+                                    if (firstRow) { style += ';border-top:1pt solid #777'; }
+                                    x += '<td style="color:#777' + style + '">' + renderReportFormat(sumByValues[j], r.columns[i].format);  + '</td>';
+                                } else if (r.columns[i].totals != null) {
+                                    var style = '';
+                                    if (r.columns[k].align) { style += ';text-align:' + EscapeHtml(r.columns[k].align); }
+                                    if (firstRow) { style += ';border-top:1pt solid #777'; }
+                                    x += '<td style="color:#777' + style + '">' + renderReportFormat(r.columns[i].totals[sumByValues[j]], r.columns[i].format);  + '</td>';
+                                } else {
+                                    x += '<td></td>';
+                                }
+                            }
+                            x += '</tr>'
+                            firstRow = false;
+                        }
+                    }
+                }
+                QV('p60downloadReportDiv', true);
+            }
             x += '</table>';
             QH('p60report', x);
         }
@@ -15048,7 +15070,7 @@
                 if (v == 1) return "Terminal";
                 if (v == 2) return "Desktop";
                 if (v == 5) return "Files";
-                EscapeHtml(v);
+                return "Unknown";
             }
             if (f == 'seconds') {
                 var seconds = v % 60;
@@ -15072,6 +15094,38 @@
                 }
             }
             return EscapeHtml(v);
+        }
+
+        function renderReportFormatCSV(v, f) {
+            if (f == 'datetime') { return printDateTime(new Date(v)); }
+            if (f == 'time') { return printTime(new Date(v)); }
+            if (f == 'protocol') {
+                if (v == 1) return "Terminal";
+                if (v == 2) return "Desktop";
+                if (v == 5) return "Files";
+                return "Unknown";
+            }
+            if (f == 'node') {
+                var node = getNodeFromId(v);
+                if (node != null) { return node.name; }
+            }
+            if (f == 'user') {
+                var user = null;
+                if (v == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[v]; } }
+                if (user != null) {
+                    var name = user.name;
+                    if (user.realname != null) { name += ' - ' + user.realname; }
+                    return name;
+                } else {
+                    return "Unknown User";
+                }
+            }
+            return '' + v;
+        }
+
+        function p60downloadReport() {
+            if (xxdialogMode || (reportCSV == null)) return;
+            saveAs(stringToUtf8Blob(reportCSV), "Report.csv");
         }
 
         //
