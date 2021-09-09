@@ -662,14 +662,19 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         else if (obj.req.query.p == 2) { msg = 'Ended desktop session', msgid = 11; }
                         else if (obj.req.query.p == 5) { msg = 'Ended file management session', msgid = 12; }
                         else if (obj.req.query.p == 200) { msg = 'Ended messenger session', msgid = 112; }
+
+                        // Get the nodeid and meshid of this device
+                        var nodeid = (obj.nodeid == null) ? peer.nodeid : obj.nodeid;
+                        var meshid = (obj.meshid == null) ? peer.meshid : obj.meshid;
+
                         if (user) {
                             var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [obj.id, obj.req.clientIp, obj.peer.req.clientIp, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.peer.req.clientIp + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
                             if (obj.guestname) { event.guestname = obj.guestname; } else if (peer.guestname) { event.guestname = peer.guestname; } // If this is a sharing session, set the guest name here.
-                            parent.parent.DispatchEvent(['*', user._id], obj, event);
+                            parent.parent.DispatchEvent(['*', user._id, nodeid, meshid], obj, event);
                         } else if (peer.user) {
                             var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: peer.user._id, username: peer.user.name, msgid: msgid, msgArgs: [obj.id, obj.req.clientIp, obj.peer.req.clientIp, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.peer.req.clientIp + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
                             if (obj.guestname) { event.guestname = obj.guestname; } else if (peer.guestname) { event.guestname = peer.guestname; } // If this is a sharing session, set the guest name here.
-                            parent.parent.DispatchEvent(['*', peer.user._id], obj, event);
+                            parent.parent.DispatchEvent(['*', peer.user._id, nodeid, meshid], obj, event);
                         }
                     }
 
@@ -677,6 +682,8 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     delete peer.id;
                     delete peer.ws;
                     delete peer.peer;
+                    delete peer.nodeid;
+                    delete peer.meshid;
                     if (peer.pingtimer != null) { clearInterval(peer.pingtimer); delete peer.pingtimer; }
                     if (peer.pongtimer != null) { clearInterval(peer.pongtimer); delete peer.pongtimer; }
                 } else {
@@ -710,7 +717,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         if (tag.logfile.startTime) { event.startTime = tag.logfile.startTime; event.lengthTime = sessionLength; }
                         if (tag.logfile.name) { event.name = tag.logfile.name; }
                         if (tag.logfile.icon) { event.icon = tag.logfile.icon; }
-                        parent.parent.DispatchEvent(['*', 'recording', obj.nodeid, obj.meshid], obj, event);
+                        parent.parent.DispatchEvent(['*', 'recording', tag.logfile.nodeid, tag.logfile.meshid], obj, event);
 
                         cleanUpRecordings();
                     }, { ws: ws, pws: peer.ws, logfile: logfile });
@@ -725,6 +732,8 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
         delete obj.id;
         delete obj.ws;
         delete obj.peer;
+        delete obj.nodeid;
+        delete obj.meshid;
         if (obj.pingtimer != null) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
         if (obj.pongtimer != null) { clearInterval(obj.pongtimer); delete obj.pongtimer; }
 
@@ -814,9 +823,13 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
             parent.db.Get(cookie.nodeid, function (err, docs) {
                 if (docs.length == 0) { console.log('ERR: Node not found'); try { obj.close(); } catch (e) { } return; } // Disconnect websocket
                 const node = docs[0];
-                
+
                 // Check if this user has permission to manage this computer
                 if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (1)'); try { obj.close(); } catch (e) { } return; }
+
+                // Set nodeid and meshid
+                obj.nodeid = node._id;
+                obj.meshid = node.meshid;
 
                 // Send connection request to agent
                 const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);
@@ -844,9 +857,13 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
             parent.db.Get(obj.req.query.nodeid, function (err, docs) {
                 if (docs.length == 0) { console.log('ERR: Node not found'); try { obj.close(); } catch (e) { } return; } // Disconnect websocket
                 const node = docs[0];
-                
+
                 // Check if this user has permission to manage this computer
                 if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
+
+                // Set nodeid and meshid
+                obj.nodeid = node._id;
+                obj.meshid = node.meshid;
 
                 // Send connection request to agent
                 if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
@@ -897,6 +914,10 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 // Check if this user has permission to manage this computer
                 if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
 
+                // Set nodeid and meshid
+                obj.nodeid = node._id;
+                obj.meshid = node.meshid;
+
                 // Send connection request to agent
                 if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); }
                 const rcookie = parent.parent.encodeCookie({ ruserid: user._id, nodeid: node._id }, parent.parent.loginCookieEncryptionKey);
@@ -930,6 +951,19 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 performRelay(0);
             });
             return obj;
+        } else {
+            // No routing needed. Just check permissions and fill in the device nodeid and meshid.
+            parent.db.Get(obj.req.query.nodeid, function (err, docs) {
+                if (docs.length == 0) { console.log('ERR: Node not found'); try { obj.close(); } catch (e) { } return; } // Disconnect websocket
+                const node = docs[0];
+
+                // Check if this user has permission to manage this computer
+                if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
+
+                // Set nodeid and meshid
+                obj.nodeid = node._id;
+                obj.meshid = node.meshid;
+            });
         }
     }
 
