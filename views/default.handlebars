@@ -7245,7 +7245,7 @@
             x += '<div id=d2modenow>';
             x += addHtmlValue("Expire Time", '<select id=d2inviteExpire style=float:right;width:250px>' + y + '</select>');
             x += '</div><div id=d2moderange style=display:none>';
-            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="Select Date & Time.." data-id="altinput">');
+            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div>';
             if (currentNode.agent.caps & 1) { x += addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=1>' + "Prompt for consent" + '</option><option value=0>' + "Notify Only" + '</option></select>'); }
             setDialogMode(2, "Share Device", 3, showShareDeviceEx, x);
@@ -14927,6 +14927,11 @@
             for (var i in options) { y += '<option value=' + i + ((settings.groupBy == i)?' selected':'') + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Group by", '<select id=d2groupBy style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
 
+            y = '<option value=0' + ((settings.devGroup == 0)?' selected':'') + '>' + "All" + '</option>';
+            var omeshs = getOrderedList(meshes, 'name');
+            for (var i in omeshs) { y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + ((settings.devGroup == omeshs[i]._id)?' selected':'') + '>' + EscapeHtml(omeshs[i].name) + '</option>'; }
+            x += addHtmlValue("Device Group", '<select onchange=generateReportDialogValidate() id=d2groupId style=float:right;width:250px>' + y + '</select>');
+
             y = '';
             if (settings.timeRange == null) { settings.timeRange = 1; }
             var options = { 1 : "Last Day", 7: "Last 7 days", 30: "Last 30 days", 0: "Time range" }
@@ -14934,7 +14939,7 @@
             x += addHtmlValue("Time", '<select id=d2timeRange style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
             
             x += '<div id=d2timeRangeDiv style=display:none>';
-            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="Select Date & Time.." data-id="altinput">');
+            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div>';
 
             setDialogMode(2, "Generate Report", 3, generateReportDialogEx, x);
@@ -14962,8 +14967,10 @@
             }
             var tz = null;
             try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (ex) {}
-            putstore('_ReportSettings', JSON.stringify({ type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), timeRange: parseInt(Q('d2timeRange').value) }));
-            meshserver.send({ action: 'report', type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), start: start, end: end, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang() });
+            var devGroup = decodeURIComponent(Q('d2groupId').value);
+            if (devGroup == 0) { devGroup = null; }
+            putstore('_ReportSettings', JSON.stringify({ type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), timeRange: parseInt(Q('d2timeRange').value), devGroup: devGroup }));
+            meshserver.send({ action: 'report', type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), start: start, end: end, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), devGroup: devGroup });
         }
 
         function renderReport(r) {

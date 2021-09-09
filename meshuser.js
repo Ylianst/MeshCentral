@@ -5413,11 +5413,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (common.validateInt(command.type, 1, 1) == false) break; // Validate type
                 if (common.validateInt(command.groupBy, 1, 3) == false) break; // Validate groupBy: 1 = User, 2 = Device, 3 = Day
                 if ((typeof command.start != 'number') || (typeof command.end != 'number') || (command.start >= command.end)) break; // Validate start and end time
+                if ((command.devGroup != null) && ((user.links == null) || (user.links[command.devGroup] == null))) break; // Asking for a device group that is not allowed
 
                 if (command.type == 1) { // This is the remote session report. Shows desktop, terminal, files...
                     // If we are not user administrator on this site, only search for events with our own user id.
                     var ids = [user._id];
-                    if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) { ids = ['*']; }
+                    if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) {
+                        if (command.devGroup != null) {
+                            ids = [ user._id, command.devGroup ];
+                        } else {
+                            if (user.links) { for (var i in user.links) { ids.push(i); } }
+                        }
+                    }
 
                     // Get the events in the time range
                     // MySQL or MariaDB query will ignore the MsgID filter.
@@ -5438,7 +5445,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Rows
                         for (var i in docs) {
-                            if ((docs[i].msgid != 5) && (docs[i].msgid != 10) && (docs[i].msgid != 11) && (docs[i].msgid != 12) && (docs[i].msgid != 122)) continue; // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
+                            // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
+                            if ((docs[i].msgid != 5) && (docs[i].msgid != 10) && (docs[i].msgid != 11) && (docs[i].msgid != 12) && (docs[i].msgid != 122)) continue;
+                            if ((command.devGroup != null) && (docs[i].ids != null) && (docs[i].ids.indexOf(command.devGroup) == -1)) continue;
 
                             var entry = { time: docs[i].time.valueOf() };
 
