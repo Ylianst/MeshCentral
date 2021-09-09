@@ -5428,12 +5428,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Columns
                         if (command.groupBy == 1) {
                             data.groupFormat = 'user';
-                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: "nodeid", title: "device", format: "node" }, { id: "protocol", title: "session", format: "protocol", align: "center" }, { id: "length", title: "length", format: "seconds", align: "center" } ];
+                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
                         } else if (command.groupBy == 2) {
                             data.groupFormat = 'node';
-                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: "userid", title: "user", format: "user" }, { id: "protocol", title: "session", format: "protocol", align: "center" }, { id: "length", title: "length", format: "seconds", align: "center" } ];
+                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'userid', title: "user", format: 'user' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
                         } else if (command.groupBy == 3) {
-                            data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: "nodeid", title: "device", format: "node" }, { id: "userid", title: "user", format: "user" }, { id: "protocol", title: "session", format: "protocol", align: "center" }, { id: "length", title: "length", format: "seconds", align:"center" } ];
+                            data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'userid', title: "user", format: 'user' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
                         }
 
                         // Rows
