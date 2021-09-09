@@ -1166,6 +1166,14 @@ module.exports.CreateDB = function (parent, func) {
                     sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = ? AND userid = ? AND target IN (?)) GROUP BY id ORDER BY time DESC LIMIT ?', [domain, userid, ids, limit], func);
                 }
             };
+            obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) {
+                //obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }], msgid: { $in: msgids }, time: { $gte: start, $lte: end } }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: 1 }).toArray(func);
+                if (ids.indexOf('*') >= 0) {
+                    sqlDbQuery('SELECT doc FROM events WHERE ((domain = ?) AND (time BETWEEN ? AND ?)) ORDER BY time', [domain, start, end], func);
+                } else {
+                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE ((domain = ?) AND (target IN (?)) AND (time BETWEEN ? AND ?)) GROUP BY id ORDER BY time', [domain, ids, start, end], func);
+                }
+            };
             //obj.GetUserLoginEvents = function (domain, username, func) { } // TODO
             obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { sqlDbQuery('SELECT doc FROM events WHERE (nodeid = ?) AND (domain = ?) ORDER BY time DESC LIMIT ?', [nodeid, domain, limit], func); };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) { sqlDbQuery('SELECT doc FROM events WHERE (nodeid = ?) AND (domain = ?) AND ((userid = ?) OR (userid IS NULL)) ORDER BY time DESC LIMIT ?', [nodeid, domain, userid, limit], func); };
@@ -1587,6 +1595,13 @@ module.exports.CreateDB = function (parent, func) {
                     obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { username: username }] }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func);
                 } else {
                     obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { username: username }] }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func);
+                }
+            };
+            obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) {
+                if (obj.databaseType == 1) {
+                    obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }], msgid: { $in: msgids }, time: { $gte: start, $lte: end } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: 1 }).exec(func);
+                } else {
+                    obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }], msgid: { $in: msgids }, time: { $gte: start, $lte: end } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: 1 }, func);
                 }
             };
             obj.GetUserLoginEvents = function (domain, userid, func) {

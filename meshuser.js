@@ -5420,6 +5420,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) { ids = ['*']; }
 
                     // Get the events in the time range
+                    // MySQL or MariaDB query will ignore the MsgID filter.
                     db.GetEventsTimeRange(ids, domain.id, [5, 10, 12], new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
                         if (err != null) return;
                         var data = { groups: {} };
@@ -5437,6 +5438,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Rows
                         for (var i in docs) {
+                            if ((docs[i].msgid != 5) && (docs[i].msgid != 10) && (docs[i].msgid != 12)) continue; // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
+
                             var entry = { time: docs[i].time.valueOf() };
 
                             // UserID
