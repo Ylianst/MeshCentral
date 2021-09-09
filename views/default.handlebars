@@ -14965,6 +14965,9 @@
             //console.log('renderReport', r);
             var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", length: "Length" }
             var x = '<table style=width:100%>';
+            var sumByCol = null; // Indicate by what colum we sum by
+            var sumByValues = []; // Indicate by what values we sum by
+
             x += '<tr>'
             for (var i in r.columns) {
                 var coltitle;
@@ -14987,9 +14990,16 @@
                         var style = '';
                         if (r.columns[k].align) { style = 'text-align:' + EscapeHtml(r.columns[k].align); }
                         if (e[r.columns[k].id] != null) { x += '<td style="' + style + '">' + renderReportFormat(e[r.columns[k].id], r.columns[k].format) + '</td>'; } else { x += '<td></td>'; }
-                        if (r.columns[k].format == 'seconds') {
-                            var v = e[r.columns[k].id];
-                            if (v != null)  { if (r.columns[k].subtotal == null) { r.columns[k].subtotal = v; r.columns[k].total = v; } else { r.columns[k].subtotal += v; r.columns[k].total += v; } }
+                        if (r.columns[k].sumBy != null) {
+                            var v1 = e[r.columns[k].sumBy];
+                            var v2 = e[r.columns[k].id];
+                            sumByCol = r.columns[k].sumBy;
+                            if (v2 != null)  {
+                                if (sumByValues.indexOf(v1) == -1) { sumByValues.push(v1); }
+                                if (r.columns[k].subtotals == null) { r.columns[k].subtotals = {}; r.columns[k].totals = {}; } 
+                                if (r.columns[k].subtotals[v1] == null) { r.columns[k].subtotals[v1] = v2; } else { r.columns[k].subtotals[v1] += v2; }
+                                if (r.columns[k].totals[v1] == null) { r.columns[k].totals[v1] = v2; } else { r.columns[k].totals[v1] += v2; }
+                            }
                         }
                     }
                     x += '</tr>'
@@ -14997,17 +15007,35 @@
             }
 
             // Display totals
-            x += '<tr>'
-            for (var i in r.columns) {
-                if (r.columns[i].total != null) {
-                    var style = '';
-                    if (r.columns[k].align) { style = 'text-align:' + EscapeHtml(r.columns[k].align); }
-                    x += '<td style="border-top:1pt solid black;color:#777;' + style + '">' + renderReportFormat(r.columns[i].total, r.columns[i].format);  + '</td>';
-                } else {
-                    x += '<td></td>';
+            if (sumByCol != null) {
+                var sumByColNum = -1;
+                for (var i in r.columns) { if (r.columns[i].id == sumByCol) { sumByColNum = i; } }
+                if (sumByColNum >= 0) {
+                    sumByValues.sort();
+                    var firstRow = true;
+                    x += '<tr style=height:8px></tr>'
+                    for (var j in sumByValues) {
+                        x += '<tr>'
+                        for (var i in r.columns) {
+                            if (i == sumByColNum) {
+                                var style = '';
+                                if (r.columns[k].align) { style += ';text-align:' + EscapeHtml(r.columns[k].align); }
+                                if (firstRow) { style += ';border-top:1pt solid #777'; }
+                                x += '<td style="color:#777' + style + '">' + renderReportFormat(sumByValues[j], r.columns[i].format);  + '</td>';
+                            } else if (r.columns[i].totals != null) {
+                                var style = '';
+                                if (r.columns[k].align) { style += ';text-align:' + EscapeHtml(r.columns[k].align); }
+                                if (firstRow) { style += ';border-top:1pt solid #777'; }
+                                x += '<td style="color:#777' + style + '">' + renderReportFormat(r.columns[i].totals[sumByValues[j]], r.columns[i].format);  + '</td>';
+                            } else {
+                                x += '<td></td>';
+                            }
+                        }
+                        x += '</tr>'
+                        firstRow = false;
+                    }
                 }
             }
-            x += '</tr>'
 
             x += '</table>';
             QH('p60report', x);
