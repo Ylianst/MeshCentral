@@ -14972,14 +14972,14 @@
             for (var i in r.columns) {
                 var coltitle;
                 if (colTranslation[r.columns[i].title] != null) { coltitle = colTranslation[r.columns[i].title]; } else { coltitle = EscapeHtml(r.columns[i].title); }
-                if ((i == 0) && ((r.columns[i].format == 'datetime') || (r.columns[i].format == 'time'))) {
-                    x += '<th style=width:1%>' + coltitle + '</th>';
-                } else {
-                    x += '<th>' + coltitle + '</th>';
-                }
+                var style = '';
+                if (r.columns[i].align) { style += ';text-align:' + EscapeHtml(r.columns[i].align); } else { style += ';text-align:left'; }
+                if ((i == 0) && ((r.columns[i].format == 'datetime') || (r.columns[i].format == 'time'))) { style += ';width:1%'; }
+                x += '<th style=' + style + '>' + coltitle + '</th>';
             }
             x += '</tr>'
             for (var i in r.groups) {
+                x += '<tr style=height:8px></tr>'
                 x += '<tr><td colspan=' + r.columns.length + ' style="border-bottom:1pt solid black"><b>'
                 x += renderReportFormat(i, r.groupFormat);
                 x += '</b></td></tr>'
