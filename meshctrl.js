@@ -968,7 +968,7 @@ function displayConfigHelp() {
 }
 
 function performConfigOperations(args) {
-    var domainValues = ['title', 'title2', 'titlepicture', 'trustedcert', 'welcomepicture', 'welcometext', 'userquota', 'meshquota', 'newaccounts', 'usernameisemail', 'newaccountemaildomains', 'newaccountspass', 'newaccountsrights', 'geolocation', 'lockagentdownload', 'userconsentflags', 'Usersessionidletimeout', 'auth', 'ldapoptions', 'ldapusername', 'ldapuserbinarykey', 'ldapuseremail', 'footer', 'certurl', 'loginKey', 'userallowedip', 'agentallowedip', 'agentnoproxy', 'agentconfig', 'orphanagentuser', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording', 'hide', 'loginkey'];
+    var domainValues = ['title', 'title2', 'titlepicture', 'trustedcert', 'welcomepicture', 'welcometext', 'userquota', 'meshquota', 'newaccounts', 'usernameisemail', 'newaccountemaildomains', 'newaccountspass', 'newaccountsrights', 'geolocation', 'lockagentdownload', 'userconsentflags', 'Usersessionidletimeout', 'auth', 'ldapoptions', 'ldapusername', 'ldapuserbinarykey', 'ldapuseremail', 'footer', 'certurl', 'loginKey', 'userallowedip', 'agentallowedip', 'agentnoproxy', 'agentconfig', 'orphanagentuser', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording', 'hide'];
     var domainObjectValues = [ 'ldapoptions', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording' ];
     var domainArrayValues = [ 'newaccountemaildomains', 'newaccountsrights', 'loginkey', 'agentconfig' ];
     var configChange = false;
@@ -1111,19 +1111,19 @@ function serverConnect() {
     }
 
     // Cookie authentication
-    var ckey = null;
+    var ckey = null, loginCookie = null;
     if (args.loginkey != null) {
         // User key passed in a argument hex
-        if (args.loginkey.length != 160) { console.log("Invalid login key."); process.exit(); return; }
+        if (args.loginkey.length != 160) { loginCookie = args.loginkey; }
         ckey = Buffer.from(args.loginkey, 'hex');
-        if (ckey != 80) { console.log("Invalid login key."); process.exit(); return; }
+        if (ckey != 80) { ckey = null; loginCookie = args.loginkey; }
     } else if (args.loginkeyfile != null) {
         // Load key from hex file
         var fs = require('fs');
         try {
             var keydata = fs.readFileSync(args.loginkeyfile, 'utf8').split(' ').join('').split('\r').join('').split('\n').join('');
             ckey = Buffer.from(keydata, 'hex');
-            if (ckey.length != 80) { console.log("Invalid login key file."); process.exit(); return; }
+            if (ckey.length != 80) { ckey = null; loginCookie = args.loginkey; }
         } catch (ex) { console.log(ex.message); process.exit(); return; }
     }
 
@@ -1135,10 +1135,11 @@ function serverConnect() {
         url += '?auth=' + encodeCookie({ userid: 'user/' + domainid + '/' + username, domainid: domainid }, ckey);
     } else {
         if (args.logindomain != null) { console.log("--logindomain can only be used along with --loginkey."); process.exit(); return; }
+        if (loginCookie != null) { url += '?auth=' + loginCookie; }
     }
 
     const ws = new WebSocket(url, options);
-    //console.log('Connecting to ' + url);
+    console.log('Connecting to ' + url);
 
     ws.on('open', function open() {
         //console.log('Connected.');
