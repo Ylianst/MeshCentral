@@ -953,17 +953,21 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
             return obj;
         } else {
             // No routing needed. Just check permissions and fill in the device nodeid and meshid.
-            parent.db.Get(obj.req.query.nodeid, function (err, docs) {
-                if (docs.length == 0) { console.log('ERR: Node not found'); try { obj.close(); } catch (e) { } return; } // Disconnect websocket
-                const node = docs[0];
+            if ((obj.req.query.nodeid != null) && (obj.req.query.nodeid.startsWith('node/'))) {
+                var nodeSplit = obj.req.query.nodeid.split('/');
+                if ((nodeSplit.length != 3) || (nodeSplit[1] != domain.id)) { console.log('ERR: Invalid NodeID'); try { obj.close(); } catch (e) { } return; }
+                parent.db.Get(obj.req.query.nodeid, function (err, docs) {
+                    if (docs.length == 0) { console.log('ERR: Node not found'); try { obj.close(); } catch (e) { } return; } // Disconnect websocket
+                    const node = docs[0];
 
-                // Check if this user has permission to manage this computer
-                if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
+                    // Check if this user has permission to manage this computer
+                    if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
 
-                // Set nodeid and meshid
-                obj.nodeid = node._id;
-                obj.meshid = node.meshid;
-            });
+                    // Set nodeid and meshid
+                    obj.nodeid = node._id;
+                    obj.meshid = node.meshid;
+                });
+            }
         }
     }
 
