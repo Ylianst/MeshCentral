@@ -2767,6 +2767,7 @@ function CreateMeshCentralServer(config, args) {
                     if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null) && (docs[0].key.length >= 160)) {
                         // Key is present, use it.
                         obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
+                        console.log('obj.loginCookieEncryptionKey', obj.loginCookieEncryptionKey);
                         func(obj.encodeCookie({ u: userid, a: 3 }, obj.loginCookieEncryptionKey));
                     } else {
                         // Key is not present, generate one.

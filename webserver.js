@@ -6473,9 +6473,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     parent.debug('web', 'ERR: Invalid cookie IP address, got \"' + cookie.ip + '\", expected \"' + cleanRemoteAddr(req.clientIp) + '\".');
                     cookie = null;
                 }
-                if ((cookie != null) && (obj.users[cookie.userid]) && (cookie.domainid == domain.id)) {
-                    // Valid cookie, we are authenticated
+                if ((cookie != null) && (cookie.userid != null) && (obj.users[cookie.userid]) && (cookie.domainid == domain.id) && (cookie.userid.split('/')[1] == domain.id)) {
+                    // Valid cookie, we are authenticated. Cookie of format { userid: 'user//name', domain: '' }
                     func(ws, req, domain, obj.users[cookie.userid], cookie);
+                } else if ((cookie != null) && (cookie.a === 3) && (typeof cookie.u == 'string') && (obj.users[cookie.u]) && (cookie.u.split('/')[1] == domain.id)) {
+                    // Valid cookie, we are authenticated. Cookie of format { u: 'user//name', a: 3 }
+                    func(ws, req, domain, obj.users[cookie.u], cookie);
                 } else {
                     // This is a bad cookie, keep going anyway, maybe we have a active session that will save us.
                     if ((cookie != null) && (cookie.domainid != domain.id)) { parent.debug('web', 'ERR: Invalid domain, got \"' + cookie.domainid + '\", expected \"' + domain.id + '\".'); }
