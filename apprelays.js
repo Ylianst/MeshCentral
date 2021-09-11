@@ -22,6 +22,18 @@ Protocol numbers
 13 - SSH-FILES
 */
 
+// Protocol Numbers
+const PROTOCOL_TERMINAL = 1;
+const PROTOCOL_DESKTOP = 2;
+const PROTOCOL_FILES = 5;
+const PROTOCOL_AMTWSMAN = 100;
+const PROTOCOL_AMTREDIR = 101;
+const PROTOCOL_MESSENGER = 200;
+const PROTOCOL_WEBRDP = 201;
+const PROTOCOL_WEBSSH = 202;
+const PROTOCOL_WEBSFTP = 203;
+const PROTOCOL_WEBVNC = 204;
+
 
 // Construct a MSTSC Relay object, called upon connection
 // This is a bit of a hack as we are going to run the RDP connection thru a loopback connection.
@@ -42,11 +54,19 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
     obj.close = function (arg) {
         if (obj.ws == null) return;
 
-        // Collect how many raw bytes where received and sent.
-        // We sum both the websocket and TCP client in this case.
-        //var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
-        //if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
-        //console.log('WinRDP - in', inTraffc, 'out', outTraffc);
+        // Event the session ending
+        if ((obj.startTime) && (obj.meshid != null)) {
+            // Collect how many raw bytes where received and sent.
+            // We sum both the websocket and TCP client in this case.
+            var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
+            if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
+            const sessionSeconds = Math.round((Date.now() - obj.startTime) / 1000);
+            var user = parent.users[obj.cookie.userid];
+            var username = (user != null) ? user.name : null;
+            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.cookie.userid, username: username, msgid: 125, msgArgs: [sessionSeconds], msg: "Left Web-RDP session after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBRDP, bytesin: inTraffc, bytesout: outTraffc };
+            parent.parent.DispatchEvent(['*', obj.nodeid, obj.cookie.userid, obj.meshid], obj, event);
+            delete obj.startTime;
+        }
 
         if (obj.wsClient) { obj.wsClient.close(); delete obj.wsClient; }
         if (obj.tcpServer) { obj.tcpServer.close(); delete obj.tcpServer; }
@@ -55,7 +75,11 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
         if (arg == 2) { try { ws._socket._parent.end(); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         obj.ws.removeAllListeners();
         obj.relayActive = false;
+
         delete obj.ws;
+        delete obj.nodeid;
+        delete obj.meshid;
+        delete obj.userid;
     };
 
     // Start the looppback server
@@ -116,6 +140,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
             }).on('connect', function () {
                 send(['rdp-connect']);
                 if ((typeof obj.infos.options == 'object') && (obj.infos.options.savepass == true)) { saveRdpCredentials(); } // Save the credentials if needed
+                obj.startTime = Date.now();
             }).on('bitmap', function (bitmap) {
                 try { ws.send(bitmap.data); } catch (ex) { } // Send the bitmap data as binary
                 delete bitmap.data;
@@ -148,7 +173,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
             // Event node change if needed
             if (changed) {
                 // Event the node change
-                var event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: obj.userid, node: parent.CloneSafeNode(node), msg: "Changed RDP credentials" };
+                var event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: obj.cookie.userid, node: parent.CloneSafeNode(node), msg: "Changed RDP credentials" };
                 if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                 parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
             }
@@ -166,16 +191,18 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
 
                     // Decode the authentication cookie
                     obj.cookie = parent.parent.decodeCookie(obj.infos.ip, parent.parent.loginCookieEncryptionKey);
-                    if ((obj.cookie == null) || (typeof obj.cookie.nodeid != 'string') || (typeof obj.cookie.userid != 'string')) return;
+                    if ((obj.cookie == null) || (typeof obj.cookie.nodeid != 'string') || (typeof obj.cookie.userid != 'string')) { obj.close(); return; }
                     obj.nodeid = obj.cookie.nodeid;
                     obj.userid = obj.cookie.userid;
 
-                    // Check is you need to load server stored credentials
-                    if ((typeof obj.infos.options == 'object') && (obj.infos.options.useServerCreds == true)) {
-                        parent.parent.db.Get(obj.nodeid, function (err, nodes) {
-                            if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
-                            const node = nodes[0];
+                    // Get node
+                    parent.parent.db.Get(obj.nodeid, function (err, nodes) {
+                        if ((err != null) || (nodes == null) || (nodes.length != 1)) { obj.close(); return; }
+                        const node = nodes[0];
+                        obj.meshid = node.meshid;
 
+                        // Check if we need to load server stored credentials
+                        if ((typeof obj.infos.options == 'object') && (obj.infos.options.useServerCreds == true)) {
                             // Check if RDP credentials exist
                             if ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) {
                                 obj.infos.domain = node.rdp.d;
@@ -189,10 +216,10 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                                 obj.infos.password = '';
                                 startTcpServer();
                             }
-                        });
-                    } else {
-                        startTcpServer();
-                    }
+                        } else {
+                            startTcpServer();
+                        }
+                    });
                     break;
                 }
                 case 'mouse': { if (rdpClient) { rdpClient.sendPointerEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
@@ -253,11 +280,19 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
     obj.close = function (arg) {
         if (obj.ws == null) return;
 
-        // Collect how many raw bytes where received and sent.
-        // We sum both the websocket and TCP client in this case.
-        //var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
-        //if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
-        //console.log('WinSSH - in', inTraffc, 'out', outTraffc);
+        // Event the session ending
+        if ((obj.startTime) && (obj.meshid != null)) {
+            // Collect how many raw bytes where received and sent.
+            // We sum both the websocket and TCP client in this case.
+            var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
+            if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
+            const sessionSeconds = Math.round((Date.now() - obj.startTime) / 1000);
+            var user = parent.users[obj.cookie.userid];
+            var username = (user != null) ? user.name : null;
+            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.cookie.userid, username: username, msgid: 123, msgArgs: [sessionSeconds], msg: "Left Web-SSH session after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBSSH, bytesin: inTraffc, bytesout: outTraffc };
+            parent.parent.DispatchEvent(['*', obj.nodeid, obj.cookie.userid, obj.meshid], obj, event);
+            delete obj.startTime;
+        }
 
         if (obj.sshShell) {
             obj.sshShell.destroy();
@@ -287,6 +322,8 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
         obj.relayActive = false;
         delete obj.termSize;
         delete obj.cookie;
+        delete obj.nodeid;
+        delete obj.meshid;
         delete obj.ws;
     };
 
@@ -347,6 +384,7 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                     obj.sshClient.on('ready', function () { // Authentication was successful.
                         // If requested, save the credentials
                         if (obj.keep === true) saveSshCredentials();
+                        obj.startTime = Date.now();
 
                         obj.sshClient.shell(function (err, stream) { // Start a remote shell
                             if (err) { obj.close(); return; }
@@ -466,7 +504,15 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
 
     // If the web socket is closed
     ws.on('close', function (req) { parent.parent.debug('relay', 'SSH: Browser websocket closed'); obj.close(); });
-    
+
+    // Get the meshid for this device
+    parent.parent.db.Get(obj.cookie.nodeid, function (err, nodes) {
+        if ((err != null) || (nodes == null) || (nodes.length != 1)) { parent.parent.debug('relay', 'SSH: Invalid device'); obj.close(); }
+        const node = nodes[0];
+        obj.nodeid = node._id; // Store the NodeID
+        obj.meshid = node.meshid; // Store the MeshID
+    });
+
     return obj;
 };
 
@@ -497,11 +543,17 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
     obj.close = function (arg) {
         if (obj.ws == null) return;
 
-        // Collect how many raw bytes where received and sent.
-        // We sum both the websocket and TCP client in this case.
-        //var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
-        //if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
-        //console.log('WinSSH - in', inTraffc, 'out', outTraffc);
+        // Event the session ending
+        if (obj.startTime) {
+            // Collect how many raw bytes where received and sent.
+            // We sum both the websocket and TCP client in this case.
+            var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
+            if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
+            const sessionSeconds = Math.round((Date.now() - obj.startTime) / 1000);
+            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 123, msgArgs: [sessionSeconds], msg: "Left Web-SSH session after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBSSH, bytesin: inTraffc, bytesout: outTraffc };
+            parent.parent.DispatchEvent(['*', obj.nodeid, user._id, obj.meshid], obj, event);
+            delete obj.startTime;
+        }
 
         if (obj.sshShell) {
             obj.sshShell.destroy();
@@ -531,6 +583,8 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
         obj.relayActive = false;
         delete obj.termSize;
         delete obj.cookie;
+        delete obj.nodeid;
+        delete obj.meshid;
         delete obj.ws;
     };
 
@@ -587,6 +641,7 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                     obj.sshClient.on('ready', function () { // Authentication was successful.
                         // If requested, save the credentials
                         if (obj.keep === true) saveSshCredentials();
+                        obj.startTime = Date.now();
 
                         obj.sshClient.shell(function (err, stream) { // Start a remote shell
                             if (err) { obj.close(); return; }
@@ -712,6 +767,7 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
         if ((rights != 0xFFFFFFFF) && (rights & 0x00000200)) { obj.close(); return; } // MESHRIGHT_NOTERMINAL is set
         obj.mtype = node.mtype; // Store the device group type
         obj.nodeid = node._id; // Store the NodeID
+        obj.meshid = node.meshid; // Store the MeshID
 
         // Check the SSH port
         obj.tcpport = 22;
@@ -776,11 +832,17 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
     obj.close = function (arg) {
         if (obj.ws == null) return;
 
-        // Collect how many raw bytes where received and sent.
-        // We sum both the websocket and TCP client in this case.
-        //var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
-        //if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
-        //console.log('WinSSH - in', inTraffc, 'out', outTraffc);
+        // Event the session ending
+        if (obj.startTime) {
+            // Collect how many raw bytes where received and sent.
+            // We sum both the websocket and TCP client in this case.
+            var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
+            if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
+            const sessionSeconds = Math.round((Date.now() - obj.startTime) / 1000);
+            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 124, msgArgs: [sessionSeconds], msg: "Left Web-SFTP session after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBSFTP, bytesin: inTraffc, bytesout: outTraffc };
+            parent.parent.DispatchEvent(['*', obj.nodeid, user._id, obj.meshid], obj, event);
+            delete obj.startTime;
+        }
 
         if (obj.sshClient) {
             obj.sshClient.destroy();
@@ -803,6 +865,8 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
         obj.relayActive = false;
         delete obj.cookie;
         delete obj.sftp;
+        delete obj.nodeid;
+        delete obj.meshid;
         delete obj.ws;
     };
 
@@ -859,6 +923,8 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                     obj.sshClient.on('ready', function () { // Authentication was successful.
                         // If requested, save the credentials
                         if (obj.keep === true) saveSshCredentials();
+                        obj.startTime = Date.now();
+
                         obj.sshClient.sftp(function(err, sftp) {
                             if (err) { obj.close(); return; }
                             obj.connected = true;
@@ -1165,6 +1231,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
         if ((rights != 0xFFFFFFFF) && (rights & 0x00000200)) { obj.close(); return; } // MESHRIGHT_NOTERMINAL is set
         obj.mtype = node.mtype; // Store the device group type
         obj.nodeid = node._id; // Store the NodeID
+        obj.meshid = node.meshid; // Store the MeshID
 
         // Check the SSH port
         obj.tcpport = 22;
