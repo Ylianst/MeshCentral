@@ -5458,8 +5458,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Add traffic colums
                         if (command.showTraffic) {
-                            data.columns.push({ id: 'bytesin', title: "Bytes In", format: 'bytes', align: 'center', sumBy: 'protocol' });
-                            data.columns.push({ id: 'bytesout', title: "Bytes Out", format: 'bytes', align: 'center', sumBy: 'protocol' });
+                            data.columns.push({ id: 'bytesin', title: "bytesin", format: 'bytes', align: 'center', sumBy: 'protocol' });
+                            data.columns.push({ id: 'bytesout', title: "bytesout", format: 'bytes', align: 'center', sumBy: 'protocol' });
                         }
 
                         // Rows
