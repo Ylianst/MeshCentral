@@ -457,8 +457,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         else if (xxuser.name) { shortname = xxuser.name; }
                         else if (xxuser.cn) { shortname = xxuser.cn; }
                     }
-                    if (username == null) { fn(new Error('no user name')); return; }
                     if (shortname == null) { fn(new Error('no user identifier')); return; }
+                    if (username == null) { username = shortname; }
                     var userid = 'user/' + domain.id + '/' + shortname;
                     var user = obj.users[userid];
                     var email = null;
@@ -499,7 +499,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     db.Set(ugroup);
 
                                     // Notify user group change
-                                    var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
+                                    var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msgid: 71, msgArgs: [user.name, ugroup.name], msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
                                     parent.DispatchEvent(['*', ugroup._id, user._id], obj, event);
                                 }
@@ -508,7 +508,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                         obj.users[user._id] = user;
                         obj.db.SetUser(user);
-                        var event = { etype: 'user', userid: userid, username: username, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id };
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msgid: 128, msgArgs: [user.name], msg: 'Account created, name is ' + user.name, domain: domain.id };
                         if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                         obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
                         return fn(null, user._id);
@@ -518,7 +518,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (user.name != username) {
                             user.name = username;
                             obj.db.SetUser(user);
-                            var event = { etype: 'user', userid: userid, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id };
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msgid: 127, msgArgs: [user.name], msg: 'Changed account display name to ' + user.name, domain: domain.id };
                             if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
                         }
@@ -578,18 +578,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         else if (xxuser.name) { shortname = xxuser.name; }
                         else if (xxuser.cn) { shortname = xxuser.cn; }
                     }
-                    if (username == null) { fn(new Error('no user name')); return; }
                     if (shortname == null) { fn(new Error('no user identifier')); return; }
+                    if (username == null) { username = shortname; }
                     var userid = 'user/' + domain.id + '/' + shortname;
                     var user = obj.users[userid];
 
                     if (user == null) {
                         // This user does not exist, create a new account.
-                        var user = { type: 'user', _id: userid, name: shortname, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
-                        if (email) {
-                            user['email'] = email;
-                            user['emailVerified'] = true;
-                        }
+                        var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        if (email) { user['email'] = email; user['emailVerified'] = true; }
                         if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
                         if (obj.common.validateStrArray(domain.newaccountrealms)) { user.groups = domain.newaccountrealms; }
                         var usercount = 0;
@@ -612,7 +609,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     db.Set(ugroup);
 
                                     // Notify user group change
-                                    var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
+                                    var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msgid: 71, msgArgs: [user.name, ugroup.name], msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
                                     parent.DispatchEvent(['*', ugroup._id, user._id], obj, event);
                                 }
@@ -621,7 +618,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                         obj.users[user._id] = user;
                         obj.db.SetUser(user);
-                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id };
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msgid: 128, msgArgs: [user.name], msg: 'Account created, name is ' + user.name, domain: domain.id };
                         if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                         obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
                         return fn(null, user._id);
@@ -631,7 +628,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (user.name != username) {
                             user.name = username;
                             obj.db.SetUser(user);
-                            var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id };
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msgid: 127, msgArgs: [user.name], msg: 'Changed account display name to ' + user.name, domain: domain.id };
                             if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
                         }
