@@ -13,7 +13,7 @@ if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { con
 
 if (args['_'].length == 0) {
     console.log("MeshCtrl performs command line actions on a MeshCentral server.");
-    console.log("Information at: https://meshcommander.com/meshcentral");
+    console.log("Information at: https://meshcentral.com");
     console.log("No action specified, use MeshCtrl like this:\r\n\r\n  meshctrl [action] [arguments]\r\n");
     console.log("Supported actions:");
     console.log("  Help [action]               - Get help on an action.");
@@ -1139,7 +1139,7 @@ function serverConnect() {
     }
 
     const ws = new WebSocket(url, options);
-    console.log('Connecting to ' + url);
+    //console.log('Connecting to ' + url);
 
     ws.on('open', function open() {
         //console.log('Connected.');
