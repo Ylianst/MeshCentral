@@ -622,8 +622,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'interuser':
                 {
-                    // Sends data between users only if allowed.
-                    if (command.data == null) return;
+                    // Sends data between users only if allowed. Only a user in the "interUserMessaging": [] list, in the settings section of the config.json can receive and send inter-user messages from and to all users.
+                    if ((parent.parent.config.settings.interusermessaging == null) || (parent.parent.config.settings.interusermessaging == false) || (command.data == null)) return;
                     if (typeof command.sessionid == 'string') { var userSessionId = command.sessionid.split('/'); if (userSessionId.length != 4) return; command.userid = userSessionId[0] + '/' + userSessionId[1] + '/' + userSessionId[2]; }
                     if (common.validateString(command.userid, 0, 2014) == false) return;
                     var userSplit = command.userid.split('/');
