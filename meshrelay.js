@@ -649,6 +649,11 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 if (relayinfo.state == 2) {
                     var peer = (relayinfo.peer1 == obj) ? relayinfo.peer2 : relayinfo.peer1;
 
+                    // Compute traffic
+                    var inTraffc, outTraffc;
+                    try { inTraffc = ws._socket.bytesRead + peer.ws._socket.bytesRead; } catch (ex) { }
+                    try { outTraffc = ws._socket.bytesWritten + peer.ws._socket.bytesWritten; } catch (ex) { }
+
                     // Disconnect the peer
                     try { if (peer.relaySessionCounted) { parent.relaySessionCount--; delete peer.relaySessionCounted; } } catch (ex) { console.log(ex); }
                     parent.parent.debug('relay', 'Relay disconnect: ' + obj.id + ' (' + obj.req.clientIp + ' --> ' + peer.req.clientIp + ')');
@@ -668,11 +673,11 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         var meshid = (obj.meshid == null) ? peer.meshid : obj.meshid;
 
                         if (user) {
-                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [obj.id, obj.req.clientIp, obj.peer.req.clientIp, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.peer.req.clientIp + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [obj.id, obj.req.clientIp, obj.peer.req.clientIp, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.peer.req.clientIp + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid, bytesin: inTraffc, bytesout: outTraffc };
                             if (obj.guestname) { event.guestname = obj.guestname; } else if (peer.guestname) { event.guestname = peer.guestname; } // If this is a sharing session, set the guest name here.
                             parent.parent.DispatchEvent(['*', user._id, nodeid, meshid], obj, event);
                         } else if (peer.user) {
-                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: peer.user._id, username: peer.user.name, msgid: msgid, msgArgs: [obj.id, obj.req.clientIp, obj.peer.req.clientIp, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.peer.req.clientIp + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: peer.user._id, username: peer.user.name, msgid: msgid, msgArgs: [obj.id, obj.req.clientIp, obj.peer.req.clientIp, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.peer.req.clientIp + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid, bytesin: inTraffc, bytesout: outTraffc };
                             if (obj.guestname) { event.guestname = obj.guestname; } else if (peer.guestname) { event.guestname = peer.guestname; } // If this is a sharing session, set the guest name here.
                             parent.parent.DispatchEvent(['*', peer.user._id, nodeid, meshid], obj, event);
                         }

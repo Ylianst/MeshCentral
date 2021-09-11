@@ -5425,7 +5425,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (common.validateInt(command.type, 1, 1) == false) break; // Validate type
                 if (common.validateInt(command.groupBy, 1, 3) == false) break; // Validate groupBy: 1 = User, 2 = Device, 3 = Day
                 if ((typeof command.start != 'number') || (typeof command.end != 'number') || (command.start >= command.end)) break; // Validate start and end time
-                if ((command.devGroup != null) && ((user.links == null) || (user.links[command.devGroup] == null))) break; // Asking for a device group that is not allowed
+                const manageAllDeviceGroups = ((user.siteadmin == 0xFFFFFFFF) && (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0));
+                if ((command.devGroup != null) && (manageAllDeviceGroups == false) && ((user.links == null) || (user.links[command.devGroup] == null))) break; // Asking for a device group that is not allowed
 
                 if (command.type == 1) { // This is the remote session report. Shows desktop, terminal, files...
                     // If we are not user administrator on this site, only search for events with our own user id.
@@ -5434,7 +5435,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.devGroup != null) {
                             ids = [ user._id, command.devGroup ];
                         } else {
-                            if (user.links) { for (var i in user.links) { ids.push(i); } }
+                            if (manageAllDeviceGroups) { ids = ['*']; } else if (user.links) { for (var i in user.links) { ids.push(i); } }
                         }
                     }
 
@@ -5476,6 +5477,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Add traffic data
                             if (command.showTraffic) { entry.bytesin = docs[i].bytesin; entry.bytesout = docs[i].bytesout; }
+
+                            // Add guest name if present
+                            if (docs[i].nodeid.guestname != null) { entry.guestname = docs[i].nodeid.guestname; }
 
                             // Session length
                             if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }
