@@ -12892,6 +12892,10 @@
             120: "Started local relay session \"{0}\", protocol {1} to {2}",
             121: "Ended local relay session \"{0}\", protocol {1} to {2}, {3} second(s)",
             122: "Left the desktop multiplex session after {0} second(s).",
+            123: "Left Web-SSH session after {0} second(s).",
+            124: "Left Web-SFTP session after {0} second(s).",
+            125: "Left Web-RDP session after {0} second(s).",
+            126: "Left Web-VNC session after {0} second(s)."
         };
 
         // Highlights the device being hovered
@@ -14942,6 +14946,10 @@
             x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div>';
 
+            x += '<div id=d2showTrafficDiv style=display:none>';
+            x += addHtmlValue("", '<div style=width:250px><label><input type=checkbox id=d2showTraffic ' + ((settings.showTraffic) ? 'checked' : '') + '>' + "Show Traffic" + '</label><div>');
+            x += '</div>';
+
             setDialogMode(2, "Generate Report", 3, generateReportDialogEx, x);
             generateReportDialogValidate();
 
@@ -14953,6 +14961,7 @@
 
         function generateReportDialogValidate() {
             QV('d2timeRangeDiv', Q('d2timeRange').value == 0);
+            QV('d2showTrafficDiv', Q('d2reportType').value == 1);
         }
 
         function generateReportDialogEx(b, tag) {
@@ -14969,8 +14978,8 @@
             try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (ex) {}
             var devGroup = decodeURIComponent(Q('d2groupId').value);
             if (devGroup == 0) { devGroup = null; }
-            putstore('_ReportSettings', JSON.stringify({ type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), timeRange: parseInt(Q('d2timeRange').value), devGroup: devGroup }));
-            meshserver.send({ action: 'report', type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), start: start, end: end, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), devGroup: devGroup });
+            putstore('_ReportSettings', JSON.stringify({ type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), timeRange: parseInt(Q('d2timeRange').value), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked }));
+            meshserver.send({ action: 'report', type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), start: start, end: end, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked });
         }
 
         function renderReport(r) {
@@ -15071,13 +15080,21 @@
         }
 
         function renderReportFormat(v, f) {
+            if (v == null) return '';
             if (f == 'datetime') { return printDateTime(new Date(v)).split(' ').join('&nbsp'); }
             if (f == 'time') { return printTime(new Date(v)).split(' ').join('&nbsp'); }
             if (f == 'protocol') {
                 if (v == 1) return "Terminal";
                 if (v == 2) return "Desktop";
                 if (v == 5) return "Files";
-                return "Unknown";
+                if (v == 100) return "AMT-WSMAN";
+                if (v == 101) return "AMT-Redir";
+                if (v == 200) return "Messenger";
+                if (v == 201) return "Web-RDP";
+                if (v == 202) return "Web-SSH";
+                if (v == 203) return "Web-SFTP";
+                if (v == 204) return "Web-VNC";
+                return "Unknown" + ' (' + v + ')';
             }
             if (f == 'seconds') {
                 var seconds = v % 60;

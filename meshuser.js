@@ -69,6 +69,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const SITERIGHT_ALLEVENTS           = 0x00000800; // 2048
     const SITERIGHT_ADMIN               = 0xFFFFFFFF;
 
+    // Protocol Numbers
+    const PROTOCOL_TERMINAL = 1;
+    const PROTOCOL_DESKTOP = 2;
+    const PROTOCOL_FILES = 5;
+    const PROTOCOL_AMTWSMAN = 100;
+    const PROTOCOL_AMTREDIR = 101;
+    const PROTOCOL_MESSENGER = 200;
+    const PROTOCOL_WEBRDP = 201;
+    const PROTOCOL_WEBSSH = 202;
+    const PROTOCOL_WEBSFTP = 203;
+    const PROTOCOL_WEBVNC = 204;
+
     // Events
     /*
     var eventsMessageId = {
@@ -5428,7 +5440,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Get the events in the time range
                     // MySQL or MariaDB query will ignore the MsgID filter.
-                    db.GetEventsTimeRange(ids, domain.id, [5, 10, 11, 12, 122], new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
+                    db.GetEventsTimeRange(ids, domain.id, [5, 10, 11, 12, 122, 123, 124, 125, 126], new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
                         if (err != null) return;
                         var data = { groups: {} };
 
@@ -5443,10 +5455,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'userid', title: "user", format: 'user' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
                         }
 
+                        // Add traffic colums
+                        if (command.showTraffic) {
+                            data.columns.push({ id: 'bytesin', title: "Bytes In", format: 'bytes', align: 'center', sumBy: 'protocol' });
+                            data.columns.push({ id: 'bytesout', title: "Bytes Out", format: 'bytes', align: 'center', sumBy: 'protocol' });
+                        }
+
                         // Rows
                         for (var i in docs) {
                             // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
-                            if ((docs[i].msgid != 5) && (docs[i].msgid != 10) && (docs[i].msgid != 11) && (docs[i].msgid != 12) && (docs[i].msgid != 122)) continue;
+                            if ((docs[i].msgid != 5) && (docs[i].msgid != 10) && (docs[i].msgid != 11) && (docs[i].msgid != 12) && ((docs[i].msgid < 122) && (docs[i].msgid > 126))) continue;
                             if ((command.devGroup != null) && (docs[i].ids != null) && (docs[i].ids.indexOf(command.devGroup) == -1)) continue;
 
                             var entry = { time: docs[i].time.valueOf() };
@@ -5456,9 +5474,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (command.groupBy != 2) { entry.nodeid = docs[i].nodeid; }
                             entry.protocol = docs[i].protocol;
 
+                            // Add traffic data
+                            if (command.showTraffic) { entry.bytesin = docs[i].bytesin; entry.bytesout = docs[i].bytesout; }
+
                             // Session length
                             if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }
-                            else if ((docs[i].msgid == 122) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { entry.length = docs[i].msgArgs[0]; }
+                            else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { entry.length = docs[i].msgArgs[0]; }
 
                             if (command.groupBy == 1) { // Add entry to per user group
                                 if (data.groups[docs[i].userid] == null) { data.groups[docs[i].userid] = { entries: [] }; }
