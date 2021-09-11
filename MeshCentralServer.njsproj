@@ -106,6 +106,7 @@
     <Compile Include="letsencrypt.js" />
     <Compile Include="mcrec.js" />
     <Compile Include="meshaccelerator.js" />
+    <Compile Include="meshbot.js" />
     <Compile Include="meshctrl.js" />
     <Compile Include="meshdesktopmultiplex.js" />
     <Compile Include="meshmail.js" />
