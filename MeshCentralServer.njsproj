@@ -643,6 +643,7 @@
     <Folder Include="typings\globals\is-plain-object\" />
     <Folder Include="typings\globals\jsbn\" />
     <Folder Include="typings\globals\klaw\" />
+    <Folder Include="typings\globals\lru-cache\" />
     <Folder Include="typings\globals\marked\" />
     <Folder Include="typings\globals\moment\" />
     <Folder Include="typings\globals\node-forge\" />
@@ -673,6 +674,7 @@
     <TypeScriptCompile Include="typings\globals\is-plain-object\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\jsbn\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\klaw\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\lru-cache\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\marked\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\moment\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\node-forge\index.d.ts" />
