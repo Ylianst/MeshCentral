@@ -131,8 +131,9 @@
         "agentAllowedIP": { "type": [ "string", "array" ] },
         "agentBlockedIP": { "type": [ "string", "array" ] },
         "authLog": { "type": "string", "default": null, "description": "File path and name of the authentication log to be created. This log can be parsed by Fail2ban." },
-        "manageAllDeviceGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-        "manageCrossDomain": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "InterUserMessaging": { "type": "array", "uniqueItems": true, "items": { "type": "string" }, "description": "Users in this list are allowed to send and receive inter-user messages. This can be used to implement bots or other software where MeshCentral is used as data transport. See \"interuser\" websocket command in the code." },
+        "manageAllDeviceGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" }, "description": "Users in this list are allowed to see and manage all device groups within their domain." },
+        "manageCrossDomain": { "type": "array", "uniqueItems": true, "items": { "type": "string" }, "description": "Users in this list are allowed to manage all users in all domains." },
         "localDiscovery": {
           "type": "object",
           "description": "When this server is in LAN mode, you may discover this server using a multicast discovery tool. When discovery happens, the name and info fields are sent back to the discovery tool.",

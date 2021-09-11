@@ -620,6 +620,33 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     break;
                 }
+            case 'interuser':
+                {
+                    // Sends data between users only if allowed.
+                    if (command.data == null) return;
+                    if (typeof command.sessionid == 'string') { var userSessionId = command.sessionid.split('/'); if (userSessionId.length != 4) return; command.userid = userSessionId[0] + '/' + userSessionId[1] + '/' + userSessionId[2]; }
+                    if (common.validateString(command.userid, 0, 2014) == false) return;
+                    var userSplit = command.userid.split('/');
+                    if (userSplit.length == 1) { command.userid = 'user/' + domain.id + '/' + command.userid; userSplit = command.userid.split('/'); }
+                    if ((userSplit.length != 3) || (userSplit[0] != 'user') || (userSplit[1] != domain.id) || (parent.users[command.userid] == null)) return; // Make sure the target userid is valid and within the domain
+                    const allowed = ((parent.parent.config.settings.interusermessaging === true) || (parent.parent.config.settings.interusermessaging.indexOf(obj.user._id) >= 0) || (parent.parent.config.settings.interusermessaging.indexOf(command.userid) >= 0));
+                    if (allowed == false) return;
+
+                    // Get sessions
+                    var sessions = parent.wssessions[command.userid];
+                    if (sessions == null) break;
+
+                    // Create the notification message and send on all sessions except our own (no echo back).
+                    var notification = JSON.stringify({ action: 'interuser', sessionid: ws.sessionId, data: command.data, scope: (command.sessionid != null)?'session':'user' });
+                    for (var i in sessions) {
+                        if ((command.sessionid != null) && (sessions[i].sessionId != command.sessionid)) continue; // Send to a specific session
+                        if (sessions[i] != obj.ws) { try { sessions[i].send(notification); } catch (ex) { } }
+                    }
+
+                    // TODO: Send the message of user sessions connected to other servers.
+
+                    break;
+                }
             case 'authcookie':
                 {
                     // Renew the authentication cookie
