@@ -4694,8 +4694,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         expireTime = command.end * 1000;
                     }
 
-                    //var cookie = { a: 5, p: command.p, uid: user._id, gn: command.guestname, nid: node._id, cf: command.consent, pid: publicid };
-                    var cookie = { a: 6, pid: publicid };
+                    //var cookie = { a: 5, p: command.p, uid: user._id, gn: command.guestname, nid: node._id, cf: command.consent, pid: publicid }; // Old style sharing cookie
+                    var cookie = { a: 6, pid: publicid }; // New style sharing cookie
                     if ((startTime != null) && (expireTime != null)) { command.start = startTime; command.expire = cookie.e = expireTime; }
                     const inviteCookie = parent.parent.encodeCookie(cookie, parent.parent.invitationLinkEncryptionKey);
                     if (inviteCookie == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createDeviceShareLink', responseid: command.responseid, result: 'Unable to generate shareing cookie' })); } catch (ex) { } } return; }
@@ -5475,19 +5475,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Columns
                         if (command.groupBy == 1) {
                             data.groupFormat = 'user';
-                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
+                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
                         } else if (command.groupBy == 2) {
                             data.groupFormat = 'node';
-                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'userid', title: "user", format: 'user' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
+                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'userid', title: "user", format: 'user' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
                         } else if (command.groupBy == 3) {
-                            data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'userid', title: "user", format: 'user' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
+                            data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'userid', title: "user", format: 'user' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
                         }
 
-                        // Add traffic colums
+                        // Add traffic columns
                         if (command.showTraffic) {
                             data.columns.push({ id: 'bytesin', title: "bytesin", format: 'bytes', align: 'center', sumBy: 'protocol' });
                             data.columns.push({ id: 'bytesout', title: "bytesout", format: 'bytes', align: 'center', sumBy: 'protocol' });
                         }
+
+                        // Remote guest column is not needed
+                        if (!command.showGuestName) { data.columns.splice(2, 1); }
 
                         // Rows
                         for (var i in docs) {
@@ -5506,7 +5509,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (command.showTraffic) { entry.bytesin = docs[i].bytesin; entry.bytesout = docs[i].bytesout; }
 
                             // Add guest name if present
-                            if (docs[i].nodeid.guestname != null) { entry.guestname = docs[i].nodeid.guestname; }
+                            if (docs[i].guestname != null) { entry.guestname = docs[i].guestname; }
 
                             // Session length
                             if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }

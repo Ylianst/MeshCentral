@@ -14951,6 +14951,7 @@
 
             x += '<div id=d2showTrafficDiv style=display:none>';
             x += addHtmlValue("", '<div style=width:250px><label><input type=checkbox id=d2showTraffic ' + ((settings.showTraffic) ? 'checked' : '') + '>' + "Show Traffic" + '</label><div>');
+            x += addHtmlValue("", '<div style=width:250px><label><input type=checkbox id=d2showGuestName ' + ((settings.showGuestName) ? 'checked' : '') + '>' + "Show Guest Name" + '</label><div>');
             x += '</div>';
 
             setDialogMode(2, "Generate Report", 3, generateReportDialogEx, x);
@@ -14981,12 +14982,12 @@
             try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (ex) {}
             var devGroup = decodeURIComponent(Q('d2groupId').value);
             if (devGroup == 0) { devGroup = null; }
-            putstore('_ReportSettings', JSON.stringify({ type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), timeRange: parseInt(Q('d2timeRange').value), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked }));
-            meshserver.send({ action: 'report', type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), start: start, end: end, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked });
+            putstore('_ReportSettings', JSON.stringify({ type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), timeRange: parseInt(Q('d2timeRange').value), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked, showGuestName: Q('d2showGuestName').checked }));
+            meshserver.send({ action: 'report', type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), start: start, end: end, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked, showGuestName: Q('d2showGuestName').checked });
         }
 
         function renderReport(r) {
-            var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", length: "Length", bytesin: "Bytes In", bytesout: "Bytes Out" }
+            var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", guest: "Guest", length: "Length", bytesin: "Bytes In", bytesout: "Bytes Out" }
             var x = '<table style=width:100%>', firstItem;
             var sumByCol = null; // Indicate by what colum we sum by
             var sumByValues = []; // Indicate by what values we sum by

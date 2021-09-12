@@ -186,11 +186,12 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         if (obj.viewers == null) return;
         if (peer == obj.agent) {
             //console.log('removePeer-agent', obj.nodeid);
+            // Agent has disconnected, disconnect everyone.
+            if (obj.viewers != null) { for (var i in obj.viewers) { obj.viewers[i].close(); } }
+
             // Clean up the agent
             obj.agent = null;
 
-            // Agent has disconnected, disconnect everyone.
-            if (obj.viewers != null) { for (var i in obj.viewers) { obj.viewers[i].close(); } }
             dispose();
             return true;
         } else {
@@ -211,9 +212,46 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
             // Log leaving the multiplex session
             if (obj.startTime != null) { // Used to check if the agent has connected. If not, don't log this event since the session never really started.
+                // In this code, we want to compute the share of in/out traffic that belongs to this viewer. It includes all of the viewers in/out traffic + all or a portion of the agents in/out traffic.
+                // The agent traffic needs to get divided out between the viewers fairly. For the time that multiple viewers are present, the agent traffic is divided between the viewers.
+
+                // Compute traffic to and from the browser
+                var inTraffc, outTraffc;
+                try { inTraffc = peer.ws._socket.bytesRead; } catch (ex) { }
+                try { outTraffc = peer.ws._socket.bytesWritten; } catch (ex) { }
+
+                // Add any previous agent traffic accounting
+                if (peer.agentInTraffic) { inTraffc += peer.agentInTraffic; }
+                if (peer.outTraffc) { inTraffc += peer.agentOutTraffic; }
+
+                // Compute traffic to and from the agent
+                if (obj.agent != null) {
+                    // Get unaccounted bytes from/to the agent
+                    var agentInTraffc, agentOutTraffc, agentInTraffc2, agentOutTraffc2;
+                    try { agentInTraffc = agentInTraffc2 = obj.agent.ws._socket.bytesRead; } catch (ex) { }
+                    try { agentOutTraffc = agentOutTraffc2 = obj.agent.ws._socket.bytesWritten; } catch (ex) { }
+                    if (obj.agent.accountedBytesRead) { agentInTraffc -= obj.agent.accountedBytesRead; }
+                    if (obj.agent.accountedBytesWritten) { agentOutTraffc -= obj.agent.accountedBytesWritten; }
+                    obj.agent.accountedBytesRead = agentInTraffc2;
+                    obj.agent.accountedBytesWritten = agentOutTraffc2;
+
+                    // Devide up the agent traffic amoung the viewers
+                    var viewerPartIn = Math.floor(agentInTraffc / (obj.viewers.length + 1));
+                    var viewerPartOut = Math.floor(agentOutTraffc / (obj.viewers.length + 1));
+
+                    // Add the portion to this viewer and all other viewer
+                    inTraffc += viewerPartIn;
+                    outTraffc += viewerPartOut;
+                    for (var i in obj.viewers) {
+                        if (obj.viewers[i].agentInTraffic) { obj.viewers[i].agentInTraffic += viewerPartIn; } else { obj.viewers[i].agentInTraffic = viewerPartIn; }
+                        if (obj.viewers[i].agentOutTraffic) { obj.viewers[i].agentOutTraffic += viewerPartOut; } else { obj.viewers[i].agentOutTraffic = viewerPartOut; }
+                    }
+                }
+
                 //var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 5, msg: "Left the desktop multiplex session", protocol: 2 };
                 const sessionSeconds = Math.floor((Date.now() - peer.startTime) / 1000);
-                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 122, msgArgs: [sessionSeconds], msg: "Left the desktop multiplex session after " + sessionSeconds + " second(s).", protocol: 2 };
+                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 122, msgArgs: [sessionSeconds], msg: "Left the desktop multiplex session after " + sessionSeconds + " second(s).", protocol: 2, bytesin: inTraffc, bytesout: outTraffc };
+                if (peer.guestName) { event.guestname = peer.guestName; }
                 parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id, obj.meshid], obj, event);
             }
 
