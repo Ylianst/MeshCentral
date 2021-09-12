@@ -4694,9 +4694,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         expireTime = command.end * 1000;
                     }
 
-                    var cookie = { a: 5, p: command.p, uid: user._id, gn: command.guestname, nid: node._id, cf: command.consent, pid: publicid };
-                    if ((startTime != null) && (expireTime != null)) { command.start = cookie.start = startTime; command.expire = cookie.expire = expireTime; }
-                    if (command.viewOnly === true) { cookie.vo = 1; }
+                    //var cookie = { a: 5, p: command.p, uid: user._id, gn: command.guestname, nid: node._id, cf: command.consent, pid: publicid };
+                    var cookie = { a: 6, pid: publicid };
+                    //if ((startTime != null) && (expireTime != null)) { command.start = cookie.start = startTime; command.expire = cookie.expire = expireTime; }
+                    //if (command.viewOnly === true) { cookie.vo = 1; }
                     const inviteCookie = parent.parent.encodeCookie(cookie, parent.parent.invitationLinkEncryptionKey);
                     if (inviteCookie == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createDeviceShareLink', responseid: command.responseid, result: 'Unable to generate shareing cookie' })); } catch (ex) { } } return; }
 

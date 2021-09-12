@@ -3477,8 +3477,35 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Check the inbound guest sharing cookie
         var c = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey, 9999999999); // Decode cookies with unlimited time.
-        if ((c == null) || (c.a !== 5) || (typeof c.p !== 'number') || (c.p < 1) || (c.p > 7) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.pid != 'string')) { res.sendStatus(404); return; }
+        if (c == null) { res.sendStatus(404); return; }
 
+        if (c.a === 5) {
+            // This is the older style sharing cookie with everything encoded within it.
+            // This cookie style gives a very large URL, so it's not used anymore.
+            if ((typeof c.p !== 'number') || (c.p < 1) || (c.p > 7) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.pid != 'string')) { res.sendStatus(404); return; }
+            handleSharingRequestEx(req, res, domain, c);
+            return;
+        }
+        if (c.a === 6) {
+            // This is the new style sharing cookie, just encodes the pointer to the sharing information in the database.
+            // Gives a much more compact URL.
+            if (typeof c.pid != 'string') { res.sendStatus(404); return; }
+            obj.db.Get('deviceshare-' + c.pid, function (err, docs) {
+                if ((err != null) || (docs == null) || (docs.length != 1)) { res.sendStatus(404); return; }
+                const doc = docs[0];
+                // Generate an old style cookie from the information in the database
+                var cookie = { a: 5, p: doc.p, uid: doc.userid, gn: doc.guestName, nid: doc.nodeid, cf: doc.consent, pid: doc.publicid };
+                if ((doc.startTime != null) && (doc.expireTime != null)) { cookie.start = doc.startTime; cookie.expire = doc.expireTime; }
+                if (doc.viewOnly === true) { cookie.vo = 1; }
+                handleSharingRequestEx(req, res, domain, cookie);
+            });
+            return;
+        }
+        res.sendStatus(404); return;
+    }
+
+    // Serve the guest sharing page
+    function handleSharingRequestEx(req, res, domain, c) {
         // Check the expired time, expire message.
         if ((c.expire != null) && (c.expire <= Date.now())) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
