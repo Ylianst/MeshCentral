@@ -4052,12 +4052,14 @@
     },
     {
       "en": "AMT-Redir",
+      "nl": "AMT-Redir",
       "xloc": [
         "default.handlebars->37->2579"
       ]
     },
     {
       "en": "AMT-WSMAN",
+      "nl": "AMT-WSMAN",
       "xloc": [
         "default.handlebars->37->2578"
       ]
@@ -5093,6 +5095,7 @@
     },
     {
       "en": "Active User",
+      "nl": "Actieve gebruiker",
       "pl": "Aktywny użytkownik",
       "pt-br": "Usuario activo",
       "xloc": [
@@ -5101,6 +5104,7 @@
     },
     {
       "en": "Active Users",
+      "nl": "Actieve gebruikers",
       "pl": "Aktywni użytkownicy",
       "pt-br": "Usuarios activos",
       "xloc": [
@@ -6979,6 +6983,7 @@
     },
     {
       "en": "Agent hash checking is being skipped, this is unsafe.",
+      "nl": "Agent has hcontrole wordt overgeslagen, dit is onveilig.",
       "pl": "Sprawdzanie skrótu agenta jest pomijane, jest to niebezpieczne.",
       "xloc": [
         "default.handlebars->37->87"
@@ -10406,12 +10411,14 @@
     },
     {
       "en": "Bytes In",
+      "nl": "Bytes in",
       "xloc": [
         "default.handlebars->37->2571"
       ]
     },
     {
       "en": "Bytes Out",
+      "nl": "Bytes uit",
       "xloc": [
         "default.handlebars->37->2572"
       ]
@@ -10542,6 +10549,7 @@
     },
     {
       "en": "CIRA local FQDN's ignored when server in LAN-only or WAN-only mode.",
+      "nl": "CIRA lokale FQDN's genegeerd wanneer server in LAN-only of WAN-only modus.",
       "pl": "Lokalna nazwa FQDN CIRA jest ignorowana, gdy serwer działa w trybie tylko LAN lub tylko WAN.",
       "xloc": [
         "default.handlebars->37->85"
@@ -10820,6 +10828,7 @@
     },
     {
       "en": "Can't have more than 4 CIRA local FQDN's. Ignoring value.",
+      "nl": "Er mogen niet meer dan 4 CIRA lokale FQDN's zijn. Waarde wordt genegeerd.",
       "pl": "Nie może mieć więcej niż 4 lokalnych FQDN CIRA. Ignorowanie wartości.",
       "xloc": [
         "default.handlebars->37->86"
@@ -19176,6 +19185,7 @@
     },
     {
       "en": "Disconnect and Lock",
+      "nl": "Verbreken en vergrendelen",
       "pl": "Odłącz i zablokuj",
       "xloc": [
         "default.handlebars->deskDisconnectContextMenu->1"
@@ -25594,12 +25604,14 @@
     },
     {
       "en": "Generate Report",
+      "nl": "Genereer rapport",
       "xloc": [
         "default.handlebars->37->2565"
       ]
     },
     {
       "en": "Generate Report...",
+      "nl": "Genereer rapport...",
       "xloc": [
         "default.handlebars->container->column_l->p60->3->1->0->3->3"
       ]
@@ -25774,6 +25786,7 @@
     },
     {
       "en": "Get Clipboard",
+      "nl": "Klembord ophalen",
       "pl": "Pobierz schowek",
       "xloc": [
         "default.handlebars->37->1145"
@@ -26230,6 +26243,24 @@
     },
     {
       "en": "Group by",
+      "cs": "Skupina vytvořená",
+      "de": "Gruppiere nach",
+      "es": "Agrupar Por",
+      "fi": "Ryhmittele",
+      "fr": "Grouper par",
+      "hi": "समूह द्वारा",
+      "it": "Raggruppa per",
+      "ja": "グループ化",
+      "ko": "그룹화 기준",
+      "nl": "Groeperen op",
+      "pl": "Grupuj Przez",
+      "pt": "Grupo por",
+      "pt-br": "Grupo por",
+      "ru": "Группа по",
+      "sv": "Grupp av",
+      "tr": "Gruplama Ölçütü",
+      "zh-chs": "通过...分组",
+      "zh-cht": "通過...分群",
       "xloc": [
         "default.handlebars->37->2554"
       ]
@@ -29888,6 +29919,7 @@
     },
     {
       "en": "Invalid Let's Encrypt email address, unable to resolve: {0}",
+      "nl": "Ongeldige Let's Encrypt email adres, onmogelijk om te verhelpen: {0}",
       "pl": "Nieprawidłowy adres e-mail Let's Encrypt, nie można go rozwiązać: {0}",
       "xloc": [
         "default.handlebars->37->93"
@@ -29895,6 +29927,7 @@
     },
     {
       "en": "Invalid Let's Encrypt host names.",
+      "nl": "Ongeldige Let's Encrypt hostnamen.",
       "pl": "Nieprawidłowe nazwy hostów Let's Encrypt.",
       "xloc": [
         "default.handlebars->37->89"
@@ -29902,6 +29935,7 @@
     },
     {
       "en": "Invalid Let's Encrypt names, can't contain a *.",
+      "nl": "Ongeldige Let's Encrypt namen, mag geen * bevatten.",
       "pl": "Nieprawidłowe nazwy Let's Encrypt, nie mogą zawierać *.",
       "xloc": [
         "default.handlebars->37->90"
@@ -29909,6 +29943,7 @@
     },
     {
       "en": "Invalid Let's Encrypt names, unable to resolve: {0}",
+      "nl": "Ongeldige Let's Encrypt-namen, onmogelijk om te verhelpen: {0}",
       "pl": "Nieprawidłowe nazwy Let's Encrypt, niemożliwe do rozwiązania: {0}",
       "xloc": [
         "default.handlebars->37->92"
@@ -29988,6 +30023,7 @@
     },
     {
       "en": "Invalid \\\"LoginCookieEncryptionKey\\\" in config.json.",
+      "nl": "Ongeldige \\\"LoginCookieEncryptionKey\\\" in config.json.",
       "pl": "Nieprawidłowy \\\"LoginCookieEncryptionKey\\\" w config.json.",
       "xloc": [
         "default.handlebars->37->98"
@@ -31576,6 +31612,7 @@
     },
     {
       "en": "Last 7 days",
+      "nl": "Laaste 7 dagen",
       "xloc": [
         "default.handlebars->37->2558"
       ]
@@ -31630,6 +31667,7 @@
     },
     {
       "en": "Last Day",
+      "nl": "Laaste dag",
       "xloc": [
         "default.handlebars->37->2557"
       ]
@@ -32169,24 +32207,28 @@
     },
     {
       "en": "Left Web-RDP session after {0} second(s).",
+      "nl": "Web-RDP sessie verlaten na {0} seconde(n).",
       "xloc": [
         "default.handlebars->37->2139"
       ]
     },
     {
       "en": "Left Web-SFTP session after {0} second(s).",
+      "nl": "Web-SFTP sessie verlaten na {0} seconde(n).",
       "xloc": [
         "default.handlebars->37->2138"
       ]
     },
     {
       "en": "Left Web-SSH session after {0} second(s).",
+      "nl": "Web-SSH sessie verlaten na {0} seconde(n).",
       "xloc": [
         "default.handlebars->37->2137"
       ]
     },
     {
       "en": "Left Web-VNC session after {0} second(s).",
+      "nl": "Web-VNC sessie verlaten na {0} seconde(n).",
       "xloc": [
         "default.handlebars->37->2140"
       ]
@@ -32246,12 +32288,14 @@
     },
     {
       "en": "Left the desktop multiplex session after {0} second(s).",
+      "nl": "Verliet de desktop multiplex sessie na {0} seconde(n).",
       "xloc": [
         "default.handlebars->37->2136"
       ]
     },
     {
       "en": "Length",
+      "nl": "Duur",
       "xloc": [
         "default.handlebars->37->2570"
       ]
@@ -33496,6 +33540,7 @@
     },
     {
       "en": "Lock on Disconnect",
+      "nl": "Vergrendelen bij verbreken",
       "pl": "Zablokuj na Odłącz",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->6->3->d7deskAutoLockLabel",
@@ -35935,6 +35980,7 @@
     },
     {
       "en": "MeshCentral SSH support requires NodeJS 11 or higher.",
+      "nl": "MeshCentral SSH ondersteuning vereist NodeJS 11 of hoger.",
       "pl": "Obsługa MeshCentral SSH wymaga NodeJS 11 lub nowszego.",
       "xloc": [
         "default.handlebars->37->79"
@@ -36590,6 +36636,7 @@
     },
     {
       "en": "Missing Let's Encrypt email address.",
+      "nl": "Ontbrekend Let's Encrypt e-mailadres.",
       "pl": "Brak adresu e-mail Let's Encrypt.",
       "xloc": [
         "default.handlebars->37->88"
@@ -36597,6 +36644,7 @@
     },
     {
       "en": "Missing WebDAV parameters.",
+      "nl": "Ontbrekende WebDAV parameters.",
       "pl": "Brak parametrów WebDAV.",
       "xloc": [
         "default.handlebars->37->80"
@@ -37095,6 +37143,7 @@
     },
     {
       "en": "My Reports",
+      "nl": "Mijn rapporten",
       "xloc": [
         "default.handlebars->container->column_l->p60->p60title->1"
       ]
@@ -38541,6 +38590,7 @@
     },
     {
       "en": "No Remote Command",
+      "nl": "Geen externe opdrachten",
       "pl": "Brak zdalnego polecenia",
       "pt-br": "Sem Comando Remoto",
       "xloc": [
@@ -38550,6 +38600,7 @@
     },
     {
       "en": "No Remote Control",
+      "nl": "geen afstandsbediening",
       "pl": "Brak pilota zdalnego sterowania",
       "pt-br": "Sem Controle Remoto",
       "xloc": [
@@ -38559,6 +38610,7 @@
     },
     {
       "en": "No Reset/Off",
+      "nl": "Geen herstart/uitschakelen",
       "pl": "Brak resetowania/wyłączania",
       "pt-br": "Sem Resetar/Desligar",
       "xloc": [
@@ -38722,6 +38774,7 @@
     },
     {
       "en": "No Uninstall",
+      "nl": "Geen de-installatie",
       "pl": "Bez odinstalowywania",
       "pt-br": "Não desinstalar",
       "xloc": [
@@ -38731,6 +38784,7 @@
     },
     {
       "en": "No Wake",
+      "nl": "Niet starten",
       "pl": "Bez budzenia",
       "pt-br": "Não acordar",
       "xloc": [
@@ -40982,6 +41036,7 @@
     },
     {
       "en": "OpenBSD x86-64",
+      "nl": "OpenBSD x86-64",
       "pl": "OpenBSD x86-64",
       "pt-br": "OpenBSD x86-64",
       "xloc": [
@@ -41011,6 +41066,7 @@
     },
     {
       "en": "OpenWRT x86-64",
+      "nl": "OpenWRT x86-64",
       "pl": "OpenWRT x86-64",
       "pt-br": "OpenWRT x86-64",
       "xloc": [
@@ -47424,19 +47480,34 @@
       ]
     },
     {
-      "en": "Report returned no entires.",
+      "en": "Report returned no entries.",
+      "nl": "Rapport heeft geen vermeldingen geretourneerd.",
       "xloc": [
         "default.handlebars->37->2573"
       ]
     },
     {
       "en": "Report.csv",
+      "cs": "Report.csv",
+      "de": "Report.csv",
+      "es": "Report.csv",
+      "fi": "Report.csv",
+      "fr": "Report.csv",
+      "it": "Report.csv",
+      "nl": "Report.csv",
+      "pl": "Report.csv",
+      "pt": "Report.csv",
+      "pt-br": "Report.csv",
+      "ru": "Report.csv",
+      "sv": "Report.csv",
+      "tr": "Report.csv",
       "xloc": [
         "default.handlebars->37->2593"
       ]
     },
     {
       "en": "Reports",
+      "nl": "Rapport",
       "xloc": [
         "default.handlebars->container->topbar->1->1->EventsSubMenuSpan->EventsSubMenu->1->0->EventsReport"
       ]
@@ -48505,6 +48576,7 @@
     },
     {
       "en": "Running",
+      "nl": "lopende",
       "pl": "Bieganie",
       "xloc": [
         "default.handlebars->37->1153",
@@ -48799,6 +48871,7 @@
     },
     {
       "en": "SMS gateway has limited use in LAN mode.",
+      "nl": "SMS gateway heeft beperkte mogelijkheden in LAN modus.",
       "pl": "Bramka SMS ma ograniczone zastosowanie w trybie LAN.",
       "xloc": [
         "default.handlebars->37->97"
@@ -48900,6 +48973,7 @@
     },
     {
       "en": "SMTP server has limited use in LAN mode.",
+      "nl": "SMTP server heeft beperkte mogelijkheden in LAN modus.",
       "pl": "Serwer SMTP ma ograniczone wykorzystanie w trybie LAN.",
       "xloc": [
         "default.handlebars->37->96"
@@ -49611,6 +49685,7 @@
     },
     {
       "en": "Secret",
+      "nl": "Geheim",
       "pl": "Sekret",
       "xloc": [
         "default.handlebars->37->190"
@@ -49834,6 +49909,7 @@
     },
     {
       "en": "Select Date & Time...",
+      "nl": "Selecteer datum & Tijd...",
       "xloc": [
         "default.handlebars->37->2563",
         "default.handlebars->37->982"
@@ -50574,6 +50650,7 @@
     },
     {
       "en": "SendGrid server has limited use in LAN mode.",
+      "nl": "SendGrid server heeft beperkte mogelijkeden LAN modus.",
       "pl": "Serwer SendGrid ma ograniczone zastosowanie w trybie LAN.",
       "xloc": [
         "default.handlebars->37->95"
@@ -51621,6 +51698,7 @@
     },
     {
       "en": "Session timeout.",
+      "nl": "Sessie timeout.",
       "xloc": [
         "ssh.handlebars->3->20"
       ]
@@ -51677,6 +51755,7 @@
     },
     {
       "en": "Set Clipboard",
+      "nl": "Klembord instellen",
       "pl": "Ustaw schowek",
       "xloc": [
         "default.handlebars->37->1146"
@@ -52467,6 +52546,7 @@
     },
     {
       "en": "Show Traffic",
+      "nl": "Toon verkeer",
       "xloc": [
         "default.handlebars->37->2564"
       ]
@@ -58851,6 +58931,7 @@
     },
     {
       "en": "Unable to load CloudFlare trusted proxy IPv6 address list.",
+      "nl": "Kan CloudFlare vertrouwde proxy IPv6 adreslijst niet laden.",
       "pl": "Nie można załadować listy adresów IPv6 zaufanego serwera proxy CloudFlare.",
       "xloc": [
         "default.handlebars->37->94"
@@ -58858,6 +58939,7 @@
     },
     {
       "en": "Unable to load Intel AMT TLS root certificate for default domain.",
+      "nl": "Kan Intel AMT TLS rootcertificaat voor standaarddomein niet laden.",
       "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny domyślnej.",
       "xloc": [
         "default.handlebars->37->83"
@@ -58865,6 +58947,7 @@
     },
     {
       "en": "Unable to load Intel AMT TLS root certificate for domain {0}.",
+      "nl": "Kan Intel AMT TLS rootcertificaat voor domein {0} niet laden.",
       "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny {0}.",
       "xloc": [
         "default.handlebars->37->84"
@@ -58990,6 +59073,7 @@
     },
     {
       "en": "Unable to setup Let's Encrypt module.",
+      "nl": "Kan de Let's Encrypt module niet instellen.",
       "pl": "Nie można skonfigurować modułu Let's Encrypt.",
       "xloc": [
         "default.handlebars->37->91"
@@ -59318,6 +59402,7 @@
     },
     {
       "en": "Unknown User",
+      "nl": "Onbekende gebruiker",
       "xloc": [
         "default.handlebars->37->2587",
         "default.handlebars->37->2592"
@@ -59473,6 +59558,7 @@
     },
     {
       "en": "Unrecognized configuration option \\\"{0}\\\".",
+      "nl": "Niet herkende configuratie instelling \\\"{0}\\\".",
       "pl": "Nierozpoznana opcja konfiguracji \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->37->81"
@@ -62692,6 +62778,7 @@
     },
     {
       "en": "Web-SFTP",
+      "nl": "Web-SFTP",
       "xloc": [
         "default.handlebars->37->2583"
       ]
@@ -62792,6 +62879,7 @@
     },
     {
       "en": "WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2",
+      "nl": "WebSocket compressie is uitgeschakeld, deze functie werkt niet meer in NodeJS v11.11 tot v12.15 en v13.2",
       "pl": "Kompresja WebSocket jest wyłączona, ta funkcja nie działa w NodeJS v11.11 do v12.15 i v13.2",
       "xloc": [
         "default.handlebars->37->82"
