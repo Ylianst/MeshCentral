@@ -3490,6 +3490,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // This is the new style sharing cookie, just encodes the pointer to the sharing information in the database.
             // Gives a much more compact URL.
             if (typeof c.pid != 'string') { res.sendStatus(404); return; }
+
+            // Check the expired time, expire message.
+            if ((c.e != null) && (c.e <= Date.now())) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+
             obj.db.Get('deviceshare-' + c.pid, function (err, docs) {
                 if ((err != null) || (docs == null) || (docs.length != 1)) { res.sendStatus(404); return; }
                 const doc = docs[0];
