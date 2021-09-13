@@ -5449,7 +5449,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'report': {
                 // Report request. Validate the input
-                if (common.validateInt(command.type, 1, 1) == false) break; // Validate type
+                if (common.validateInt(command.type, 1, 2) == false) break; // Validate type
                 if (common.validateInt(command.groupBy, 1, 3) == false) break; // Validate groupBy: 1 = User, 2 = Device, 3 = Day
                 if ((typeof command.start != 'number') || (typeof command.end != 'number') || (command.start >= command.end)) break; // Validate start and end time
                 const manageAllDeviceGroups = ((user.siteadmin == 0xFFFFFFFF) && (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0));
@@ -5471,6 +5471,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     db.GetEventsTimeRange(ids, domain.id, [5, 10, 11, 12, 122, 123, 124, 125, 126], new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
                         if (err != null) return;
                         var data = { groups: {} };
+                        var guestNamePresent = false;
 
                         // Columns
                         if (command.groupBy == 1) {
@@ -5489,9 +5490,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             data.columns.push({ id: 'bytesout', title: "bytesout", format: 'bytes', align: 'center', sumBy: 'protocol' });
                         }
 
-                        // Remote guest column is not needed
-                        if (!command.showGuestName) { data.columns.splice(2, 1); }
-
                         // Rows
                         for (var i in docs) {
                             // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
@@ -5509,7 +5507,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (command.showTraffic) { entry.bytesin = docs[i].bytesin; entry.bytesout = docs[i].bytesout; }
 
                             // Add guest name if present
-                            if (docs[i].guestname != null) { entry.guestname = docs[i].guestname; }
+                            if (docs[i].guestname != null) { entry.guestname = docs[i].guestname; guestNamePresent = true; }
 
                             // Session length
                             if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }
@@ -5533,9 +5531,61 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
 
                         }
+
+                        // Remove guest column if not needed
+                        if (guestNamePresent == false) { data.columns.splice(2, 1); }
+
                         try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
                     });
                 }
+
+                if (command.type == 2) { // This is the user bandwidth usage report.
+                    // If we are not user administrator on this site, only search for events with our own user id.
+                    var ids = [user._id];
+                    if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) {
+                        if (command.devGroup != null) {
+                            ids = [user._id, command.devGroup];
+                        } else {
+                            if (manageAllDeviceGroups) { ids = ['*']; } else if (user.links) { for (var i in user.links) { ids.push(i); } }
+                        }
+                    }
+
+                    // Get the events in the time range
+                    // MySQL or MariaDB query will ignore the MsgID filter.
+                    db.GetEventsTimeRange(ids, domain.id, [5, 10, 11, 12, 122, 123, 124, 125, 126], new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
+                        if (err != null) return;
+                        var data = { groups: { 0: { entries: [] } } };
+                        data.columns = [{ id: 'userid', title: "user", format: 'user' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: true }, { id: 'bytesin', title: "bytesin", format: 'bytes', align: 'center', sumBy: true }, { id: 'bytesout', title: "bytesout", format: 'bytes', align: 'center', sumBy: true }];
+                        var userEntries = {};
+
+                        // Sum all entry logs for each user
+                        for (var i in docs) {
+                            // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
+                            if ((docs[i].msgid != 5) && (docs[i].msgid != 10) && (docs[i].msgid != 11) && (docs[i].msgid != 12) && ((docs[i].msgid < 122) && (docs[i].msgid > 126))) continue;
+                            if ((command.devGroup != null) && (docs[i].ids != null) && (docs[i].ids.indexOf(command.devGroup) == -1)) continue;
+
+                            // Fetch or create the user entry
+                            var userEntry = userEntries[docs[i].userid];
+                            if (userEntry == null) { userEntry = { userid: docs[i].userid, length: 0, bytesin: 0, bytesout: 0}; }
+                            if (docs[i].bytesin) { userEntry.bytesin += docs[i].bytesin; }
+                            if (docs[i].bytesout) { userEntry.bytesout += docs[i].bytesout; }
+
+                            // Session length
+                            if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { userEntry.length += docs[i].msgArgs[3]; }
+                            else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { userEntry.length += docs[i].msgArgs[0]; }
+
+                            // Set the user entry
+                            userEntries[docs[i].userid] = userEntry;
+                        }
+
+                        var userEntries2 = [];
+                        for (var i in userEntries) { userEntries2.push(userEntries[i]); }
+                        data.groups[0].entries = userEntries2;
+
+                        try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
+                    });
+                }
+
                 break;
             }
             default: {

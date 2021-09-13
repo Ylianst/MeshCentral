@@ -14925,19 +14925,23 @@
             if (xxdialogMode) return;
             var y = '', x = '', settings = JSON.parse(getstore('_ReportSettings', '{}'));
 
-            var options = { 1 : "Remote Sessions" }
+            var options = { 1 : "Remote Sessions", 2 : "User Bandwidth Usage" }
             for (var i in options) { y += '<option value=' + i + ((settings.type == i)?' selected':'') + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Type", '<select id=d2reportType style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
 
+            x += '<div id=d2GroupByDiv style=display:none>';
             y = '';
             var options = { 1 : "User", 2: "Device", 3: "Day" }
             for (var i in options) { y += '<option value=' + i + ((settings.groupBy == i)?' selected':'') + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Group by", '<select id=d2groupBy style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+            x += '</div>';
 
+            x += '<div id=d2DeviceGroupDiv style=display:none>';
             y = '<option value=0' + ((settings.devGroup == 0)?' selected':'') + '>' + "All" + '</option>';
             var omeshs = getOrderedList(meshes, 'name');
             for (var i in omeshs) { y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + ((settings.devGroup == omeshs[i]._id)?' selected':'') + '>' + EscapeHtml(omeshs[i].name) + '</option>'; }
             x += addHtmlValue("Device Group", '<select onchange=generateReportDialogValidate() id=d2groupId style=float:right;width:250px>' + y + '</select>');
+            x += '</div>';
 
             y = '';
             if (settings.timeRange == null) { settings.timeRange = 1; }
@@ -14951,7 +14955,6 @@
 
             x += '<div id=d2showTrafficDiv style=display:none>';
             x += addHtmlValue("", '<div style=width:250px><label><input type=checkbox id=d2showTraffic ' + ((settings.showTraffic) ? 'checked' : '') + '>' + "Show Traffic" + '</label><div>');
-            x += addHtmlValue("", '<div style=width:250px><label><input type=checkbox id=d2showGuestName ' + ((settings.showGuestName) ? 'checked' : '') + '>' + "Show Guest Name" + '</label><div>');
             x += '</div>';
 
             setDialogMode(2, "Generate Report", 3, generateReportDialogEx, x);
@@ -14965,6 +14968,8 @@
 
         function generateReportDialogValidate() {
             QV('d2timeRangeDiv', Q('d2timeRange').value == 0);
+            QV('d2GroupByDiv', Q('d2reportType').value == 1);
+            QV('d2DeviceGroupDiv', Q('d2reportType').value == 1);
             QV('d2showTrafficDiv', Q('d2reportType').value == 1);
         }
 
@@ -14982,8 +14987,8 @@
             try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (ex) {}
             var devGroup = decodeURIComponent(Q('d2groupId').value);
             if (devGroup == 0) { devGroup = null; }
-            putstore('_ReportSettings', JSON.stringify({ type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), timeRange: parseInt(Q('d2timeRange').value), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked, showGuestName: Q('d2showGuestName').checked }));
-            meshserver.send({ action: 'report', type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), start: start, end: end, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked, showGuestName: Q('d2showGuestName').checked });
+            putstore('_ReportSettings', JSON.stringify({ type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), timeRange: parseInt(Q('d2timeRange').value), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked }));
+            meshserver.send({ action: 'report', type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), start: start, end: end, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked });
         }
 
         function renderReport(r) {
@@ -15014,12 +15019,12 @@
                 for (var i in r.groups) {
                     x += '<tr style=height:8px></tr>'
                     x += '<tr><td colspan=' + r.columns.length + ' style="border-bottom:1pt solid black"><b>'
-                    x += renderReportFormat(i, r.groupFormat);
+                    if (i != 0) { x += renderReportFormat(i, r.groupFormat); }
                     x += '</b></td></tr>'
                     for (var j in r.groups[i].entries) {
                         var e = r.groups[i].entries[j];
                         x += '<tr>'
-                        reportCSV += '"' + csvClean(renderReportFormatCSV(i, r.groupFormat)) + '"';
+                        if (i != 0) { reportCSV += '"' + csvClean(renderReportFormatCSV(i, r.groupFormat)) + '"'; } else { reportCSV += '""'; }
                         for (var k in r.columns) {
                             var style = '';
                             if (r.columns[k].align) { style = 'text-align:' + EscapeHtml(r.columns[k].align); }
@@ -15032,6 +15037,7 @@
                             }
                             if (r.columns[k].sumBy != null) {
                                 var v1 = e[r.columns[k].sumBy];
+                                if (r.columns[k].sumBy === true) { v1 = true; }
                                 var v2 = e[r.columns[k].id];
                                 sumByCol = r.columns[k].sumBy;
                                 if (v2 != null)  {
@@ -15050,7 +15056,7 @@
                 // Display totals
                 if (sumByCol != null) {
                     var sumByColNum = -1;
-                    for (var i in r.columns) { if (r.columns[i].id == sumByCol) { sumByColNum = i; } }
+                    if (sumByCol === true) { sumByColNum = 99999; } else { for (var i in r.columns) { if (r.columns[i].id == sumByCol) { sumByColNum = i; } } }
                     if (sumByColNum >= 0) {
                         sumByValues.sort();
                         var firstRow = true;
