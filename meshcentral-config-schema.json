@@ -677,6 +677,7 @@
             "additionalProperties": false,
             "properties": {
               "onlySelectedUsers": { "type": "boolean", "default": false, "description": "When enabled, only device users with the session recording feature turned on will be recorded. When false, all users are recorded." },
+              "onlySelectedUserGroups": { "type": "boolean", "default": false, "description": "When enabled, only device user groups with the session recording feature turned on will be recorded. When false, all users are recorded." },
               "onlySelectedDeviceGroups": { "type": "boolean", "default": false, "description": "When enabled, only device groups with the session recording feature turned on will be recorded. When false, all devices are recorded." },
               "filepath": { "type": "string", "description": "The file path where recording files are kept." },
               "index": { "type": "boolean", "default": false, "description": "If true, automatically index remote desktop recordings so that the plays can skip to any place in the file." },

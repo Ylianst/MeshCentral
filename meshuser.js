@@ -505,7 +505,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             serverinfo.tlshash = Buffer.from(parent.webCertificateFullHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
             serverinfo.agentCertHash = parent.agentCertificateHashBase64;
             if (typeof domain.sessionrecording == 'object') {
-                if (domain.sessionrecording.onlyselectedusers === true) { serverinfo.usersSessionRecording = 1; } // Allow enabling of session recording for user groups
+                if (domain.sessionrecording.onlyselectedusers === true) { serverinfo.usersSessionRecording = 1; } // Allow enabling of session recording for users
+                if (domain.sessionrecording.onlyselectedusergroups === true) { serverinfo.userGroupsSessionRecording = 1; } // Allow enabling of session recording for user groups
                 if (domain.sessionrecording.onlyselecteddevicegroups === true) { serverinfo.devGroupSessionRecording = 1; } // Allow enabling of session recording for device groups
             }
             if ((parent.parent.config.domains[domain.id].amtacmactivation != null) && (parent.parent.config.domains[domain.id].amtacmactivation.acmmatch != null)) {
@@ -1937,14 +1938,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((ugroupidsplit.length != 3) || (ugroupidsplit[0] != 'ugrp') || (ugroupidsplit[1] != domain.id)) break;
 
                     // Get the user group
+                    change = '';
                     var group = parent.userGroups[command.ugrpid];
                     if (group != null) {
                         if ((common.validateString(command.name, 1, 64) == true) && (command.name != group.name)) { change = 'User group name changed from "' + group.name + '" to "' + command.name + '"'; group.name = command.name; }
                         if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != group.desc)) { if (change != '') change += ' and description changed'; else change += 'User group "' + group.name + '" description changed'; group.desc = command.desc; }
                         if ((typeof command.consent == 'number') && (command.consent != group.consent)) { if (change != '') change += ' and consent changed'; else change += 'User group "' + group.name + '" consent changed'; group.consent = command.consent; }
+
+                        if ((command.flags != null) && (typeof command.flags == 'number')) {
+                            // Flags: 2 = Session Recording
+                            if ((command.flags == 0) && (group.flags != null)) { delete group.flags; } else { if (command.flags !== group.flags) { group.flags = command.flags; } }
+                            if (change == '') { change = 'User group flags changed.'; }
+                        }
+
                         if (change != '') {
                             db.Set(group);
-                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, consent: ((group.consent == null) ? 0 : group.consent), action: 'usergroupchange', links: group.links, msg: change, domain: domain.id };
+                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, consent: ((group.consent == null) ? 0 : group.consent), action: 'usergroupchange', links: group.links, flags: group.flags, msg: change, domain: domain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                             parent.parent.DispatchEvent(['*', group._id, user._id], obj, event);
                         }

@@ -2935,6 +2935,7 @@
                                 ugroup.name = message.event.name;
                                 if (message.event.desc) { ugroup.desc = message.event.desc; } else { delete ugroup.desc; }
                                 if (message.event.links) { ugroup.links = message.event.links; } else { delete ugroup.links; }
+                                if (message.event.flags) { ugroup.flags = message.event.flags; } else { delete ugroup.flags; }
                                 if (typeof message.event.consent == 'number') { ugroup.consent = message.event.consent; }
                             }
                             mainUpdate(4096 + 8192 + 16384);
@@ -12928,7 +12929,7 @@
 
                     var msg;
                     if ((event.msgid == null) || (eventsMessageId[event.msgid] == null)) {
-                        msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
+                        if (typeof event.msg == 'string') { msg = EscapeHtml(event.msg).split('(R)').join('&reg;'); } else { msg = ''; }
                     } else {
                         msg = eventsMessageId[event.msgid];
                         if (event.msgArgs != null) {
@@ -13828,6 +13829,15 @@
                 x += addDeviceAttribute("Description", desc);
             }
 
+            // Display features
+            if (serverinfo.userGroupsSessionRecording == 1) {
+                var userGroupFeatures = [];
+                if ((group.flags) && (group.flags & 2)) { userGroupFeatures.push("Record Sessions"); }
+                userGroupFeatures = userGroupFeatures.join(', ');
+                if (userGroupFeatures == '') { userGroupFeatures = '<i>' + "None" + '</i>'; }
+                x += addDeviceAttribute("Features", addLink(userGroupFeatures, 'p51edituserGroupFeatures()'));
+            }
+
             // Display user consent flags for this user group
             {
                 var consentOptionsStr = [], consent = 0;
@@ -13949,6 +13959,23 @@
                 for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
             }
+        }
+
+        function p51edituserGroupFeatures() {
+            if (xxdialogMode) return;
+            var flags = (currentUserGroup.flags)?currentUserGroup.flags:0, x = ''; // Flags: 2 = Session Recording
+            if (serverinfo.userGroupsSessionRecording == 1) {
+                x += '<div><label><input type=checkbox id=d51flag1 ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
+            }
+            setDialogMode(2, "Edit User Group Features", 3, p51edituserGroupFeaturesEx, x);
+        }
+
+        // Send to the server the new user's real name
+        function p51edituserGroupFeaturesEx() {
+            // Setup user flags
+            var f = 0;
+            if ((serverinfo.userGroupsSessionRecording == 1) && Q('d51flag1').checked) { f += 2; }
+            meshserver.send({ action: 'editusergroup', ugrpid: currentUserGroup._id, flags: f });
         }
 
         function p51removeDeviceFromUserGroup(e, nodeid) {
