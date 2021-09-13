@@ -14925,7 +14925,7 @@
             if (xxdialogMode) return;
             var y = '', x = '', settings = JSON.parse(getstore('_ReportSettings', '{}'));
 
-            var options = { 1 : "Remote Sessions", 2 : "User Bandwidth Usage" }
+            var options = { 1 : "Remote Sessions", 2 : "User Traffic Usage" }
             for (var i in options) { y += '<option value=' + i + ((settings.type == i)?' selected':'') + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Type", '<select id=d2reportType style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
 
@@ -15027,6 +15027,7 @@
                         if (i != 0) { reportCSV += '"' + csvClean(renderReportFormatCSV(i, r.groupFormat)) + '"'; } else { reportCSV += '""'; }
                         for (var k in r.columns) {
                             var style = '';
+                            if (r.columns[k].format != null) { style = 'white-space:nowrap;' }
                             if (r.columns[k].align) { style = 'text-align:' + EscapeHtml(r.columns[k].align); }
                             if (e[r.columns[k].id] != null) {
                                 x += '<td style="' + style + '">' + renderReportFormat(e[r.columns[k].id], r.columns[k].format) + '</td>';
@@ -15091,8 +15092,8 @@
 
         function renderReportFormat(v, f) {
             if (v == null) return '';
-            if (f == 'datetime') { return printDateTime(new Date(v)).split(' ').join('&nbsp'); }
-            if (f == 'time') { return printTime(new Date(v)).split(' ').join('&nbsp'); }
+            if (f == 'datetime') { return printDateTime(new Date(v)); }
+            if (f == 'time') { return printTime(new Date(v)); }
             if (f == 'protocol') {
                 if (v == 1) return "Terminal";
                 if (v == 2) return "Desktop";

@@ -5539,7 +5539,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     });
                 }
 
-                if (command.type == 2) { // This is the user bandwidth usage report.
+                if (command.type == 2) { // This is the user traffic usage report.
                     // If we are not user administrator on this site, only search for events with our own user id.
                     var ids = [user._id];
                     if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) {
