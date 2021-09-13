@@ -5541,14 +5541,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 if (command.type == 2) { // This is the user traffic usage report.
                     // If we are not user administrator on this site, only search for events with our own user id.
-                    var ids = [user._id];
-                    if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) {
-                        if (command.devGroup != null) {
-                            ids = [user._id, command.devGroup];
-                        } else {
-                            if (manageAllDeviceGroups) { ids = ['*']; } else if (user.links) { for (var i in user.links) { ids.push(i); } }
-                        }
-                    }
+                    var ids = [user._id]; // If we are nto user administrator, only count our own traffic.
+                    if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) { ids = ['*']; } // If user administrator, count traffic of all users.
 
                     // Get the events in the time range
                     // MySQL or MariaDB query will ignore the MsgID filter.
