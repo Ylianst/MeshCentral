@@ -133,7 +133,22 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
             // Check session recording
             var startRecord = false;
-            if ((typeof domain.sessionrecording == 'object') && (domain.sessionrecording.onlyselectedusers === true) && (peer.user != null) && (peer.user.flags != null) && ((peer.user.flags & 2) != 0)) { startRecord = true; }
+            if (typeof domain.sessionrecording == 'object') {
+                // Check if this user is set to record all sessions
+                if ((domain.sessionrecording.onlyselectedusers === true) && (peer.user != null) && (peer.user.flags != null) && ((peer.user.flags & 2) != 0)) { startRecord = true; }
+                else if (domain.sessionrecording.onlyselectedusergroups === true) {
+                    // Check if there is a usergroup that requires recording of the session
+                    var user = parent.users[peer.user._id];
+                    if ((user != null) && (user.links != null) && (user.links[obj.meshid] == null) && (user.links[obj.nodeid] == null)) {
+                        // This user does not have a direct link to the device group or device. Find all user groups the would cause the link.
+                        for (var i in user.links) {
+                            var ugrp = parent.userGroups[i];
+                            if ((ugrp != null) && (typeof ugrp.flags == 'number') && ((ugrp.flags & 2) != 0) && (ugrp.links != null) && ((ugrp.links[obj.meshid] != null) || (ugrp.links[obj.nodeid] != null))) { startRecord = true; }
+                        }
+                    }
+                }
+            }
+
             startRecording(domain, startRecord, function () {
                 // Indicated we are connected
                 obj.sendToViewer(peer, obj.recordingFile ? 'cr' : 'c');
@@ -810,6 +825,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         });
     }
 
+    // Here, we check if we have to record the device, regardless of what user is looking at it.
     function recordingSetup(domain, func) {
         var record = false;
 
@@ -818,8 +834,8 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             record = true;
 
             // Check again to make sure we need to start recording
-            if ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.onlyselecteddevicegroups === true) || (domain.sessionrecording.onlyselectedusers === true))) {
-                record = false;    
+            if ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.onlyselecteddevicegroups === true) || (domain.sessionrecording.onlyselectedusergroups === true) || (domain.sessionrecording.onlyselectedusers === true))) {
+                record = false;
 
                 // Check device group recording
                 if (domain.sessionrecording.onlyselecteddevicegroups === true) {
@@ -828,7 +844,6 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 }
             }
         }
-
         startRecording(domain, record, func);
     }
 
