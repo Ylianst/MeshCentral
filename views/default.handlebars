@@ -10021,7 +10021,7 @@
 
                     var msg;
                     if ((event.msgid == null) || (eventsMessageId[event.msgid] == null)) {
-                        msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
+                        if (typeof event.msg == 'string') { msg = EscapeHtml(event.msg).split('(R)').join('&reg;'); } else { msg = ''; }
                     } else {
                         msg = eventsMessageId[event.msgid];
                         for (var i in event.msgArgs) {
@@ -14676,7 +14676,7 @@
 
                     var msg;
                     if ((event.msgid == null) || (eventsMessageId[event.msgid] == null)) {
-                        msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
+                        if (typeof event.msg == 'string') { msg = EscapeHtml(event.msg).split('(R)').join('&reg;'); } else { msg = ''; }
                     } else {
                         msg = eventsMessageId[event.msgid];
                         for (var i in event.msgArgs) {

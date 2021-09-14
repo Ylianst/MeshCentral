@@ -348,27 +348,41 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         recordSession = true;
                         xtextSession = 2; // 1 = Raw recording of all strings, 2 = Record chat session messages only.
                     }
+                    // See if any other recording may occur
                     if ((obj.req.query.p != null) && (obj.req.query.nodeid != null) && (sessionUser != null) && (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(parseInt(obj.req.query.p)) >= 0))))) { recordSession = true; }
-                    
+
                     if (recordSession) {
                         // Get the computer name
                         parent.db.Get(obj.req.query.nodeid, function (err, nodes) {
                             var xusername = '', xdevicename = '', xdevicename2 = null, node = null, record = true;
                             if ((nodes != null) && (nodes.length == 1)) { node = nodes[0]; xdevicename2 = node.name; xdevicename = '-' + parent.common.makeFilename(node.name); }
 
-                            // Check again if we need to do messenger recording
-                            if ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.onlyselectedusers === true) || (domain.sessionrecording.onlyselecteddevicegroups === true))) {
+                            // Check again if we need to do session recording
+                            if ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.onlyselectedusers === true) || (domain.sessionrecording.onlyselectedusergroups === true) || (domain.sessionrecording.onlyselecteddevicegroups === true))) {
                                 record = false;
 
-                                // Check if this device group needs to be recorded
-                                if ((node == null) || (domain.sessionrecording.onlyselecteddevicegroups === true)) {
-                                    var mesh = null;
-                                    if (node != null) { mesh = parent.meshes[node.meshid]; }
-                                    if ((node != null) && (mesh != null) && (mesh.flags != null) && ((mesh.flags & 4) != 0)) { record = true; }
+                                // Check if this user needs to be recorded
+                                if ((sessionUser != null) && (domain.sessionrecording.onlyselectedusers === true)) {
+                                    if ((sessionUser.flags != null) && ((sessionUser.flags & 2) != 0)) { record = true; }
                                 }
 
-                                // Check if this user needs to be recorded
-                                if ((sessionUser != null) && (sessionUser.flags != null) && ((sessionUser.flags & 2) != 0)) { record = true; }
+                                // Check if this device group needs to be recorded
+                                if ((record == false) && (node != null) && (domain.sessionrecording.onlyselecteddevicegroups === true)) {
+                                    var mesh = parent.meshes[node.meshid];
+                                    if ((mesh != null) && (mesh.flags != null) && ((mesh.flags & 4) != 0)) { record = true; }
+                                }
+
+                                // Check if any user groups need to be recorded
+                                if ((record == false) && (domain.sessionrecording.onlyselectedusergroups === true)) {
+                                    // Check if there is a usergroup that requires recording of the session
+                                    if ((sessionUser != null) && (sessionUser.links != null) && (sessionUser.links[node.meshid] == null) && (sessionUser.links[node._id] == null)) {
+                                        // This user does not have a direct link to the device group or device. Find all user groups the would cause the link.
+                                        for (var i in sessionUser.links) {
+                                            var ugrp = parent.userGroups[i];
+                                            if ((ugrp != null) && (typeof ugrp.flags == 'number') && ((ugrp.flags & 2) != 0) && (ugrp.links != null) && ((ugrp.links[node.meshid] != null) || (ugrp.links[node._id] != null))) { record = true; }
+                                        }
+                                    }
+                                }
                             }
 
                             // Do not record the session, just send session start
