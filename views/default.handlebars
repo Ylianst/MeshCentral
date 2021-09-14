@@ -15019,7 +15019,7 @@
         }
 
         function renderReport(r) {
-            var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", guest: "Guest", length: "Length", bytesin: "Bytes In", bytesout: "Bytes Out" }
+            var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", devgroup: "Device Group", guest: "Guest", length: "Length", bytesin: "Bytes In", bytesout: "Bytes Out" }
             var x = '<table style=width:100%>', firstItem;
             var sumByCol = null; // Indicate by what colum we sum by
             var sumByValues = []; // Indicate by what values we sum by
@@ -15142,7 +15142,25 @@
             }
             if (f == 'node') {
                 var node = getNodeFromId(v);
-                if (node != null) { return '<div onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\' style=float:left;margin-right:4px class="j' + node.icon + '"></div>' + EscapeHtml(node.name); } else { return '<i>' + "Unknown Device" + '</i>'; }
+                if (node != null) { return '<div onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\' style=float:left;margin-right:4px class="j' + node.icon + '"></div>' + EscapeHtml(node.name); } else { return '<i>' + "Unknown" + '</i>'; }
+            }
+            if (f == 'mesh') {
+                var mesh = meshes[v];
+                if (mesh != null) { return '<div onclick=\'gotoMesh("' + mesh._id + '",10);haltEvent(event);\' style=float:left;margin-right:4px;cursor:pointer class="m99"></div>' + EscapeHtml(mesh.name); } else { return '<i>' + "Unknown" + '</i>'; }
+            }
+            if (f == 'nodemesh') {
+                var nodeid = null, meshid = null;
+                var s = v.split('/'), x = '<table><tr>';
+                if (s.length >= 3) { nodeid = s[0] + '/' + s[1] + '/' + s[2]; }
+                if (s.length >= 6) { meshid = s[3] + '/' + s[4] + '/' + s[5]; }
+                if (meshid != null) {
+                    var mesh = meshes[meshid];
+                    if (mesh != null) { x += '<td><div onclick=\'gotoMesh("' + mesh._id + '",10);haltEvent(event);\' style=float:left;margin-right:4px;cursor:pointer class="m99"></div>' + EscapeHtml(mesh.name) + '&nbsp;&nbsp;&nbsp;</td>'; } else { return '<i>' + "Unknown" + '</i>'; }
+                }
+                var node = getNodeFromId(nodeid);
+                if (node != null) { x += '<td><div onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\' style=float:left;margin-right:4px class="j' + node.icon + '"></div>' + EscapeHtml(node.name) + '</td>'; } else { return '<i>' + "Unknown" + '</i>'; }
+                x += '</tr></table>';
+                return x;
             }
             if (f == 'user') {
                 var user = null;
@@ -15170,6 +15188,10 @@
             if (f == 'node') {
                 var node = getNodeFromId(v);
                 if (node != null) { return node.name; }
+            }
+            if (f == 'mesh') {
+                var mesh = meshes[v];
+                if (mesh != null) { return mesh.name }
             }
             if (f == 'user') {
                 var user = null;

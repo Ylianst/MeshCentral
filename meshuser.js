@@ -5485,12 +5485,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Columns
                         if (command.groupBy == 1) {
                             data.groupFormat = 'user';
-                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
+                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'meshid', title: "devgroup", format: 'mesh' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
                         } else if (command.groupBy == 2) {
-                            data.groupFormat = 'node';
+                            data.groupFormat = 'nodemesh';
                             data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'userid', title: "user", format: 'user' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
                         } else if (command.groupBy == 3) {
-                            data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'userid', title: "user", format: 'user' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
+                            data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'meshid', title: "devgroup", format: 'mesh' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'userid', title: "user", format: 'user' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
                         }
 
                         // Add traffic columns
@@ -5512,6 +5512,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (command.groupBy != 2) { entry.nodeid = docs[i].nodeid; }
                             entry.protocol = docs[i].protocol;
 
+                            // Device Group
+                            if (docs[i].ids != null) { for (var j in docs[i].ids) { if (docs[i].ids[j].startsWith('mesh/')) { entry.meshid = docs[i].ids[j]; } } }
+
                             // Add traffic data
                             if (command.showTraffic) { entry.bytesin = docs[i].bytesin; entry.bytesout = docs[i].bytesout; }
 
@@ -5522,13 +5525,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }
                             else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { entry.length = docs[i].msgArgs[0]; }
 
-                            if (command.groupBy == 1) { // Add entry to per user group
+                            if (command.groupBy == 1) { // Add entry to per user
                                 if (data.groups[docs[i].userid] == null) { data.groups[docs[i].userid] = { entries: [] }; }
                                 data.groups[docs[i].userid].entries.push(entry);
-                            } else if (command.groupBy == 2) { // Add entry to per device group
-                                if (data.groups[docs[i].nodeid] == null) { data.groups[docs[i].nodeid] = { entries: [] }; }
-                                data.groups[docs[i].nodeid].entries.push(entry);
-                            } else if (command.groupBy == 3) { // Add entry to per day group
+                            } else if (command.groupBy == 2) { // Add entry to per mesh+device
+                                if (entry.meshid != null) {
+                                    var k = docs[i].nodeid + '/' + entry.meshid;
+                                    if (data.groups[k] == null) { data.groups[k] = { entries: [] }; }
+                                    data.groups[k].entries.push(entry);
+                                } else {
+                                    if (data.groups[docs[i].nodeid] == null) { data.groups[docs[i].nodeid] = { entries: [] }; }
+                                    data.groups[docs[i].nodeid].entries.push(entry);
+                                }
+                            } else if (command.groupBy == 3) { // Add entry to per day
                                 var day;
                                 if ((typeof command.l == 'string') && (typeof command.tz == 'string')) {
                                     day = new Date(docs[i].time).toLocaleDateString(command.l, { timeZone: command.tz });
@@ -5542,7 +5551,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
 
                         // Remove guest column if not needed
-                        if (guestNamePresent == false) { data.columns.splice(2, 1); }
+                        if (guestNamePresent == false) {
+                            if ((command.groupBy == 1) || (command.groupBy == 3)) {
+                                data.columns.splice(3, 1);
+                            } else if (command.groupBy == 2) {
+                                data.columns.splice(2, 1);
+                            }
+                        }
 
                         try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
                     });
