@@ -312,7 +312,7 @@
       "zh-cht": " 用戶需要先登入到該伺服器一次，然後才能將其新增到裝置群。",
       "xloc": [
         "default.handlebars->37->1846",
-        "default.handlebars->37->2353"
+        "default.handlebars->37->2358"
       ]
     },
     {
@@ -1441,7 +1441,7 @@
         "default-mobile.handlebars->11->439",
         "default.handlebars->37->1225",
         "default.handlebars->37->1972",
-        "default.handlebars->37->2551",
+        "default.handlebars->37->2556",
         "sharing.handlebars->11->50"
       ]
     },
@@ -1596,7 +1596,7 @@
       "zh-chs": "1个活跃时段",
       "zh-cht": "1個活躍時段",
       "xloc": [
-        "default.handlebars->37->2441"
+        "default.handlebars->37->2446"
       ]
     },
     {
@@ -1700,7 +1700,7 @@
       "zh-chs": "1组",
       "zh-cht": "1群",
       "xloc": [
-        "default.handlebars->37->2400"
+        "default.handlebars->37->2405"
       ]
     },
     {
@@ -2758,7 +2758,7 @@
       "zh-cht": "啟用第二因素身份驗證",
       "xloc": [
         "default.handlebars->37->2192",
-        "default.handlebars->37->2424"
+        "default.handlebars->37->2429"
       ]
     },
     {
@@ -4047,21 +4047,21 @@
       "tr": "AMT-OS",
       "zh-chs": "操作系统",
       "xloc": [
-        "default.handlebars->37->2676"
+        "default.handlebars->37->2681"
       ]
     },
     {
       "en": "AMT-Redir",
       "nl": "AMT-Redir",
       "xloc": [
-        "default.handlebars->37->2584"
+        "default.handlebars->37->2589"
       ]
     },
     {
       "en": "AMT-WSMAN",
       "nl": "AMT-WSMAN",
       "xloc": [
-        "default.handlebars->37->2583"
+        "default.handlebars->37->2588"
       ]
     },
     {
@@ -4310,7 +4310,7 @@
       "zh-chs": "访问服务器档案",
       "zh-cht": "存取伺服器檔案",
       "xloc": [
-        "default.handlebars->37->2359"
+        "default.handlebars->37->2364"
       ]
     },
     {
@@ -4417,7 +4417,7 @@
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountSecurity->1->0",
         "default.handlebars->37->1661",
         "default.handlebars->37->1663",
-        "default.handlebars->37->2729",
+        "default.handlebars->37->2734",
         "default.handlebars->37->715",
         "default.handlebars->37->717"
       ]
@@ -4443,7 +4443,7 @@
       "zh-chs": "帐号设定",
       "xloc": [
         "default-mobile.handlebars->11->662",
-        "default.handlebars->37->2606"
+        "default.handlebars->37->2611"
       ]
     },
     {
@@ -4595,7 +4595,7 @@
       "zh-cht": "帳戶已被鎖定",
       "xloc": [
         "default.handlebars->37->2194",
-        "default.handlebars->37->2356"
+        "default.handlebars->37->2361"
       ]
     },
     {
@@ -4620,7 +4620,7 @@
       "zh-cht": "達到帳戶限制。",
       "xloc": [
         "default-mobile.handlebars->11->674",
-        "default.handlebars->37->2618",
+        "default.handlebars->37->2623",
         "login-mobile.handlebars->5->6",
         "login.handlebars->5->6",
         "login2.handlebars->7->8"
@@ -5269,8 +5269,8 @@
       "zh-chs": "添加设备",
       "zh-cht": "新增裝置",
       "xloc": [
-        "default.handlebars->37->2333",
-        "default.handlebars->37->2490",
+        "default.handlebars->37->2336",
+        "default.handlebars->37->2495",
         "default.handlebars->37->403"
       ]
     },
@@ -5320,8 +5320,8 @@
       "zh-cht": "新增裝置群",
       "xloc": [
         "default.handlebars->37->1882",
-        "default.handlebars->37->2327",
-        "default.handlebars->37->2478",
+        "default.handlebars->37->2330",
+        "default.handlebars->37->2483",
         "default.handlebars->37->332"
       ]
     },
@@ -5508,7 +5508,7 @@
       "zh-chs": "添加成员身份",
       "zh-cht": "新增成員身份",
       "xloc": [
-        "default.handlebars->37->2510"
+        "default.handlebars->37->2515"
       ]
     },
     {
@@ -5656,7 +5656,7 @@
       "xloc": [
         "default.handlebars->37->1760",
         "default.handlebars->37->1881",
-        "default.handlebars->37->2484",
+        "default.handlebars->37->2489",
         "default.handlebars->37->875"
       ]
     },
@@ -5751,7 +5751,7 @@
       "zh-cht": "新增用戶",
       "xloc": [
         "default.handlebars->37->1759",
-        "default.handlebars->37->2322"
+        "default.handlebars->37->2325"
       ]
     },
     {
@@ -5799,7 +5799,7 @@
       "zh-chs": "将用户添加到用户组",
       "zh-cht": "將用戶新增到用戶群",
       "xloc": [
-        "default.handlebars->37->2355"
+        "default.handlebars->37->2360"
       ]
     },
     {
@@ -6397,7 +6397,7 @@
       "zh-chs": "管理领域",
       "zh-cht": "管理領域",
       "xloc": [
-        "default.handlebars->37->2404"
+        "default.handlebars->37->2409"
       ]
     },
     {
@@ -6524,7 +6524,7 @@
         "default-mobile.handlebars->container->page_content->column_l->p10->p10console->consoleTable->1->4->1->1->1->0->p15outputselecttd->p15outputselect->p15outputselect1",
         "default.handlebars->37->1947",
         "default.handlebars->37->1960",
-        "default.handlebars->37->2674",
+        "default.handlebars->37->2679",
         "default.handlebars->37->348",
         "default.handlebars->37->573",
         "default.handlebars->container->column_l->p15->consoleTable->1->6->1->1->1->0->p15outputselecttd->p15outputselect->p15outputselect1"
@@ -6626,7 +6626,7 @@
       "zh-chs": "代理错误计数器",
       "zh-cht": "代理錯誤計數器",
       "xloc": [
-        "default.handlebars->37->2643"
+        "default.handlebars->37->2648"
       ]
     },
     {
@@ -6792,7 +6792,7 @@
       "zh-chs": "代理时段",
       "zh-cht": "代理時段",
       "xloc": [
-        "default.handlebars->37->2659"
+        "default.handlebars->37->2664"
       ]
     },
     {
@@ -7291,7 +7291,7 @@
       "zh-chs": "代理",
       "zh-cht": "代理",
       "xloc": [
-        "default.handlebars->37->2687"
+        "default.handlebars->37->2692"
       ]
     },
     {
@@ -7342,7 +7342,7 @@
         "default-mobile.handlebars->11->141",
         "default-mobile.handlebars->11->440",
         "default-mobile.handlebars->11->442",
-        "default.handlebars->37->2558",
+        "default.handlebars->37->2564",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->1"
       ]
     },
@@ -7486,7 +7486,7 @@
       "zh-cht": "允許用戶管理此裝置群和該群中的裝置。",
       "xloc": [
         "default.handlebars->37->1844",
-        "default.handlebars->37->2352"
+        "default.handlebars->37->2357"
       ]
     },
     {
@@ -7750,8 +7750,8 @@
       "zh-cht": "一直通知",
       "xloc": [
         "default.handlebars->37->1739",
-        "default.handlebars->37->2313",
-        "default.handlebars->37->2413",
+        "default.handlebars->37->2316",
+        "default.handlebars->37->2418",
         "default.handlebars->37->799"
       ]
     },
@@ -7777,8 +7777,8 @@
       "zh-cht": "一直提示",
       "xloc": [
         "default.handlebars->37->1740",
-        "default.handlebars->37->2314",
-        "default.handlebars->37->2414",
+        "default.handlebars->37->2317",
+        "default.handlebars->37->2419",
         "default.handlebars->37->800"
       ]
     },
@@ -8893,7 +8893,7 @@
       "zh-chs": "您确定要{0}插件吗：{1}",
       "zh-cht": "你確定要{0}外掛嗎：{1}",
       "xloc": [
-        "default.handlebars->37->2738"
+        "default.handlebars->37->2743"
       ]
     },
     {
@@ -9253,7 +9253,7 @@
       "zh-chs": "认证软件",
       "zh-cht": "認證軟體",
       "xloc": [
-        "default.handlebars->37->2417"
+        "default.handlebars->37->2422"
       ]
     },
     {
@@ -9597,7 +9597,7 @@
       "zh-chs": "可用內存",
       "zh-cht": "可用內存",
       "xloc": [
-        "default.handlebars->37->2668"
+        "default.handlebars->37->2673"
       ]
     },
     {
@@ -9910,7 +9910,7 @@
       "zh-chs": "备用码",
       "zh-cht": "備用碼",
       "xloc": [
-        "default.handlebars->37->2420"
+        "default.handlebars->37->2425"
       ]
     },
     {
@@ -9934,7 +9934,7 @@
       "zh-chs": "错误的签名",
       "zh-cht": "錯誤的簽名",
       "xloc": [
-        "default.handlebars->37->2650"
+        "default.handlebars->37->2655"
       ]
     },
     {
@@ -9958,7 +9958,7 @@
       "zh-chs": "错误的网络证书",
       "zh-cht": "錯誤的網絡憑證",
       "xloc": [
-        "default.handlebars->37->2649"
+        "default.handlebars->37->2654"
       ]
     },
     {
@@ -10245,7 +10245,7 @@
       "zh-chs": "广播",
       "zh-cht": "廣播",
       "xloc": [
-        "default.handlebars->37->2320",
+        "default.handlebars->37->2323",
         "default.handlebars->container->column_l->p4->3->1->0->3->1"
       ]
     },
@@ -10419,14 +10419,14 @@
       "en": "Bytes In",
       "nl": "Bytes in",
       "xloc": [
-        "default.handlebars->37->2576"
+        "default.handlebars->37->2581"
       ]
     },
     {
       "en": "Bytes Out",
       "nl": "Bytes uit",
       "xloc": [
-        "default.handlebars->37->2577"
+        "default.handlebars->37->2582"
       ]
     },
     {
@@ -10500,7 +10500,7 @@
       "zh-cht": "CIRA",
       "xloc": [
         "default-mobile.handlebars->11->236",
-        "default.handlebars->37->2675",
+        "default.handlebars->37->2680",
         "default.handlebars->37->350",
         "default.handlebars->37->575"
       ]
@@ -10526,7 +10526,7 @@
       "zh-chs": "CIRA服务器",
       "zh-cht": "CIRA伺服器",
       "xloc": [
-        "default.handlebars->37->2722"
+        "default.handlebars->37->2727"
       ]
     },
     {
@@ -10550,7 +10550,7 @@
       "zh-chs": "CIRA服务器命令",
       "zh-cht": "CIRA伺服器指令",
       "xloc": [
-        "default.handlebars->37->2723"
+        "default.handlebars->37->2728"
       ]
     },
     {
@@ -10608,7 +10608,7 @@
       "xloc": [
         "default-mobile.handlebars->11->551",
         "default.handlebars->37->1344",
-        "default.handlebars->37->2699",
+        "default.handlebars->37->2704",
         "default.handlebars->container->column_l->p40->3->1->p40type->5"
       ]
     },
@@ -10633,7 +10633,7 @@
       "zh-chs": "CPU负载",
       "zh-cht": "CPU負載",
       "xloc": [
-        "default.handlebars->37->2664"
+        "default.handlebars->37->2669"
       ]
     },
     {
@@ -10657,7 +10657,7 @@
       "zh-chs": "最近15分钟的CPU负载",
       "zh-cht": "最近15分鐘的CPU負載",
       "xloc": [
-        "default.handlebars->37->2667"
+        "default.handlebars->37->2672"
       ]
     },
     {
@@ -10681,7 +10681,7 @@
       "zh-chs": "最近5分钟的CPU负载",
       "zh-cht": "最近5分鐘的CPU負載",
       "xloc": [
-        "default.handlebars->37->2666"
+        "default.handlebars->37->2671"
       ]
     },
     {
@@ -10705,7 +10705,7 @@
       "zh-chs": "最近一分钟的CPU负载",
       "zh-cht": "最近一分鐘的CPU負載",
       "xloc": [
-        "default.handlebars->37->2665"
+        "default.handlebars->37->2670"
       ]
     },
     {
@@ -10829,7 +10829,7 @@
       "zh-chs": "呼叫错误",
       "zh-cht": "呼叫錯誤",
       "xloc": [
-        "default.handlebars->37->2739"
+        "default.handlebars->37->2744"
       ]
     },
     {
@@ -10865,7 +10865,7 @@
         "default-mobile.handlebars->11->106",
         "default-mobile.handlebars->dialog->idx_dlgButtonBar",
         "default.handlebars->37->1702",
-        "default.handlebars->37->2728",
+        "default.handlebars->37->2733",
         "default.handlebars->37->440",
         "default.handlebars->container->dialog->idx_dlgButtonBar",
         "login-mobile.handlebars->dialog->idx_dlgButtonBar",
@@ -11135,7 +11135,7 @@
       "zh-chs": "更改{0}的电邮",
       "zh-cht": "更改{0}的電郵",
       "xloc": [
-        "default.handlebars->37->2465"
+        "default.handlebars->37->2470"
       ]
     },
     {
@@ -11187,7 +11187,7 @@
       "xloc": [
         "default-mobile.handlebars->11->114",
         "default.handlebars->37->1658",
-        "default.handlebars->37->2438"
+        "default.handlebars->37->2443"
       ]
     },
     {
@@ -11211,7 +11211,7 @@
       "zh-chs": "更改{0}的密码",
       "zh-cht": "更改{0}的密碼",
       "xloc": [
-        "default.handlebars->37->2474"
+        "default.handlebars->37->2479"
       ]
     },
     {
@@ -11235,7 +11235,7 @@
       "zh-chs": "更改{0}的真实名称",
       "zh-cht": "更改{0}的真實名稱",
       "xloc": [
-        "default.handlebars->37->2460"
+        "default.handlebars->37->2465"
       ]
     },
     {
@@ -11376,7 +11376,7 @@
       "zh-chs": "更改该用户的密码",
       "zh-cht": "更改該用戶的密碼",
       "xloc": [
-        "default.handlebars->37->2437"
+        "default.handlebars->37->2442"
       ]
     },
     {
@@ -11620,8 +11620,8 @@
       "zh-cht": "聊天",
       "xloc": [
         "default.handlebars->37->2178",
-        "default.handlebars->37->2433",
-        "default.handlebars->37->2434",
+        "default.handlebars->37->2438",
+        "default.handlebars->37->2439",
         "default.handlebars->37->832",
         "default.handlebars->37->911",
         "default.handlebars->37->933"
@@ -11675,7 +11675,7 @@
       "zh-chs": "聊天请求，点击这里接受。",
       "xloc": [
         "default-mobile.handlebars->11->675",
-        "default.handlebars->37->2619"
+        "default.handlebars->37->2624"
       ]
     },
     {
@@ -11844,7 +11844,7 @@
       "zh-cht": "檢查...",
       "xloc": [
         "default.handlebars->37->1410",
-        "default.handlebars->37->2733"
+        "default.handlebars->37->2738"
       ]
     },
     {
@@ -12268,7 +12268,7 @@
       "zh-cht": "全部清除",
       "xloc": [
         "default-mobile.handlebars->11->658",
-        "default.handlebars->37->2602"
+        "default.handlebars->37->2607"
       ]
     },
     {
@@ -12367,7 +12367,7 @@
       "zh-cht": "清除此通知",
       "xloc": [
         "default-mobile.handlebars->11->657",
-        "default.handlebars->37->2601"
+        "default.handlebars->37->2606"
       ]
     },
     {
@@ -12806,7 +12806,7 @@
         "default.handlebars->37->1227",
         "default.handlebars->37->204",
         "default.handlebars->37->212",
-        "default.handlebars->37->2727",
+        "default.handlebars->37->2732",
         "sharing.handlebars->11->52"
       ]
     },
@@ -13029,8 +13029,8 @@
       "zh-chs": "通用设备组",
       "zh-cht": "通用裝置群",
       "xloc": [
-        "default.handlebars->37->2328",
-        "default.handlebars->37->2479"
+        "default.handlebars->37->2331",
+        "default.handlebars->37->2484"
       ]
     },
     {
@@ -13054,8 +13054,8 @@
       "zh-chs": "通用设备",
       "zh-cht": "通用裝置",
       "xloc": [
-        "default.handlebars->37->2334",
-        "default.handlebars->37->2491"
+        "default.handlebars->37->2337",
+        "default.handlebars->37->2496"
       ]
     },
     {
@@ -13175,8 +13175,8 @@
         "default.handlebars->37->1817",
         "default.handlebars->37->2206",
         "default.handlebars->37->2287",
-        "default.handlebars->37->2348",
-        "default.handlebars->37->2477",
+        "default.handlebars->37->2353",
+        "default.handlebars->37->2482",
         "default.handlebars->37->610"
       ]
     },
@@ -13365,7 +13365,7 @@
       "zh-chs": "确认删除用户{0}？",
       "zh-cht": "確認刪除用戶{0}？",
       "xloc": [
-        "default.handlebars->37->2476"
+        "default.handlebars->37->2481"
       ]
     },
     {
@@ -13389,7 +13389,7 @@
       "zh-chs": "确认删除用户“ {0} ”的成员身份？",
       "zh-cht": "確認刪除用戶“ {0} ”的成員身份？",
       "xloc": [
-        "default.handlebars->37->2351"
+        "default.handlebars->37->2356"
       ]
     },
     {
@@ -13413,7 +13413,7 @@
       "zh-chs": "确认删除用户组“ {0} ”的成员身份？",
       "zh-cht": "確認刪除用戶群“ {0} ”的成員身份？",
       "xloc": [
-        "default.handlebars->37->2508"
+        "default.handlebars->37->2513"
       ]
     },
     {
@@ -13536,8 +13536,8 @@
       "zh-chs": "确认删除设备“ {0} ”的访问权限？",
       "zh-cht": "確認刪除裝置“ {0} ”的訪問權限？",
       "xloc": [
-        "default.handlebars->37->2341",
-        "default.handlebars->37->2499"
+        "default.handlebars->37->2346",
+        "default.handlebars->37->2504"
       ]
     },
     {
@@ -13561,8 +13561,8 @@
       "zh-chs": "确认删除设备组“ {0} ”的访问权限？",
       "zh-cht": "確認刪除裝置群“ {0} ”的訪問權限？",
       "xloc": [
-        "default.handlebars->37->2343",
-        "default.handlebars->37->2512"
+        "default.handlebars->37->2348",
+        "default.handlebars->37->2517"
       ]
     },
     {
@@ -13586,7 +13586,7 @@
       "zh-chs": "确认删除用户“ {0} ”的访问权限？",
       "zh-cht": "確認刪除用戶“ {0} ”的訪問權限？",
       "xloc": [
-        "default.handlebars->37->2501"
+        "default.handlebars->37->2506"
       ]
     },
     {
@@ -13610,7 +13610,7 @@
       "zh-chs": "确认删除用户组“ {0} ”的访问权限？",
       "zh-cht": "確認刪除用戶群“ {0} ”的訪問權限？",
       "xloc": [
-        "default.handlebars->37->2504"
+        "default.handlebars->37->2509"
       ]
     },
     {
@@ -13634,8 +13634,8 @@
       "zh-chs": "确认删除访问权限？",
       "zh-cht": "確認刪除訪問權限？",
       "xloc": [
-        "default.handlebars->37->2502",
-        "default.handlebars->37->2505"
+        "default.handlebars->37->2507",
+        "default.handlebars->37->2510"
       ]
     },
     {
@@ -13705,7 +13705,7 @@
       "zh-chs": "确认删除设备共享“{0}”？",
       "zh-cht": "確認刪除設備共享“{0}”？",
       "xloc": [
-        "default.handlebars->37->2497"
+        "default.handlebars->37->2502"
       ]
     },
     {
@@ -14213,7 +14213,7 @@
       "zh-chs": "已连接的英特尔&reg;AMT",
       "zh-cht": "已連接的Intel&reg; AMT",
       "xloc": [
-        "default.handlebars->37->2655"
+        "default.handlebars->37->2660"
       ]
     },
     {
@@ -14237,7 +14237,7 @@
       "zh-chs": "已连接的用户",
       "zh-cht": "已连接的用户",
       "xloc": [
-        "default.handlebars->37->2660"
+        "default.handlebars->37->2665"
       ]
     },
     {
@@ -14405,7 +14405,7 @@
       "zh-chs": "连接数量",
       "zh-cht": "連接數量",
       "xloc": [
-        "default.handlebars->37->2686"
+        "default.handlebars->37->2691"
       ]
     },
     {
@@ -14455,7 +14455,7 @@
       "zh-chs": "连接转发器",
       "zh-cht": "連接轉發器",
       "xloc": [
-        "default.handlebars->37->2721"
+        "default.handlebars->37->2726"
       ]
     },
     {
@@ -14658,7 +14658,7 @@
       "zh-chs": "Cookie编码器",
       "zh-cht": "Cookie編碼器",
       "xloc": [
-        "default.handlebars->37->2705"
+        "default.handlebars->37->2710"
       ]
     },
     {
@@ -15171,7 +15171,7 @@
       "zh-chs": "核心服务器",
       "zh-cht": "核心伺服器",
       "xloc": [
-        "default.handlebars->37->2704"
+        "default.handlebars->37->2709"
       ]
     },
     {
@@ -15664,7 +15664,7 @@
       "zh-chs": "创建",
       "zh-cht": "創建",
       "xloc": [
-        "default.handlebars->37->2393"
+        "default.handlebars->37->2398"
       ]
     },
     {
@@ -16058,7 +16058,7 @@
       "zh-chs": "当前密码不正确。",
       "xloc": [
         "default-mobile.handlebars->11->685",
-        "default.handlebars->37->2629"
+        "default.handlebars->37->2634"
       ]
     },
     {
@@ -16303,7 +16303,7 @@
       "xloc": [
         "default-mobile.handlebars->11->344",
         "default.handlebars->37->1024",
-        "default.handlebars->37->2556"
+        "default.handlebars->37->2562"
       ]
     },
     {
@@ -16424,7 +16424,7 @@
         "default.handlebars->37->2242",
         "default.handlebars->37->2290",
         "default.handlebars->37->2301",
-        "default.handlebars->37->2369"
+        "default.handlebars->37->2374"
       ]
     },
     {
@@ -16684,7 +16684,7 @@
       "zh-chs": "删除用户",
       "zh-cht": "刪除用戶",
       "xloc": [
-        "default.handlebars->37->2436"
+        "default.handlebars->37->2441"
       ]
     },
     {
@@ -16708,8 +16708,8 @@
       "zh-chs": "删除用户群组",
       "zh-cht": "刪除用戶群組",
       "xloc": [
-        "default.handlebars->37->2339",
-        "default.handlebars->37->2349"
+        "default.handlebars->37->2342",
+        "default.handlebars->37->2354"
       ]
     },
     {
@@ -16757,7 +16757,7 @@
       "zh-chs": "删除用户{0}",
       "zh-cht": "刪除用戶{0}",
       "xloc": [
-        "default.handlebars->37->2475"
+        "default.handlebars->37->2480"
       ]
     },
     {
@@ -16931,7 +16931,7 @@
       "zh-chs": "删除用户群组{0}？",
       "zh-cht": "刪除用戶群組{0}？",
       "xloc": [
-        "default.handlebars->37->2347"
+        "default.handlebars->37->2352"
       ]
     },
     {
@@ -17203,7 +17203,7 @@
         "default.handlebars->37->2293",
         "default.handlebars->37->2303",
         "default.handlebars->37->2304",
-        "default.handlebars->37->2345",
+        "default.handlebars->37->2350",
         "default.handlebars->37->734",
         "default.handlebars->37->735",
         "default.handlebars->container->column_l->p42->p42tbl->1->0->3"
@@ -17254,10 +17254,10 @@
         "default-mobile.handlebars->11->312",
         "default.handlebars->37->1172",
         "default.handlebars->37->1826",
-        "default.handlebars->37->2532",
-        "default.handlebars->37->2581",
-        "default.handlebars->37->2594",
-        "default.handlebars->37->2680",
+        "default.handlebars->37->2537",
+        "default.handlebars->37->2586",
+        "default.handlebars->37->2599",
+        "default.handlebars->37->2685",
         "default.handlebars->37->699",
         "default.handlebars->37->886",
         "default.handlebars->37->953",
@@ -17382,7 +17382,7 @@
       "tr": "Masaüstü Multiplex",
       "zh-chs": "桌面复用",
       "xloc": [
-        "default.handlebars->37->2685"
+        "default.handlebars->37->2690"
       ]
     },
     {
@@ -17407,8 +17407,8 @@
       "zh-cht": "桌面通知",
       "xloc": [
         "default.handlebars->37->1734",
-        "default.handlebars->37->2308",
-        "default.handlebars->37->2408",
+        "default.handlebars->37->2311",
+        "default.handlebars->37->2413",
         "default.handlebars->37->794"
       ]
     },
@@ -17434,8 +17434,8 @@
       "zh-cht": "桌面提示",
       "xloc": [
         "default.handlebars->37->1733",
-        "default.handlebars->37->2307",
-        "default.handlebars->37->2407",
+        "default.handlebars->37->2310",
+        "default.handlebars->37->2412",
         "default.handlebars->37->793"
       ]
     },
@@ -17461,8 +17461,8 @@
       "zh-cht": "桌面提示+工具欄",
       "xloc": [
         "default.handlebars->37->1731",
-        "default.handlebars->37->2305",
-        "default.handlebars->37->2405",
+        "default.handlebars->37->2308",
+        "default.handlebars->37->2410",
         "default.handlebars->37->791"
       ]
     },
@@ -17486,7 +17486,7 @@
       "tr": "Masaüstü Oturumu",
       "zh-chs": "桌面会话",
       "xloc": [
-        "default.handlebars->37->2525"
+        "default.handlebars->37->2530"
       ]
     },
     {
@@ -17581,8 +17581,8 @@
       "zh-cht": "桌面工具欄",
       "xloc": [
         "default.handlebars->37->1732",
-        "default.handlebars->37->2306",
-        "default.handlebars->37->2406",
+        "default.handlebars->37->2309",
+        "default.handlebars->37->2411",
         "default.handlebars->37->792"
       ]
     },
@@ -17606,7 +17606,7 @@
       "tr": "Yalnızca Masaüstü Görünümü",
       "zh-chs": "仅桌面视图",
       "xloc": [
-        "default.handlebars->37->2381"
+        "default.handlebars->37->2386"
       ]
     },
     {
@@ -17781,10 +17781,10 @@
         "default.handlebars->37->1291",
         "default.handlebars->37->1399",
         "default.handlebars->37->1853",
-        "default.handlebars->37->2494",
+        "default.handlebars->37->2499",
         "default.handlebars->37->253",
-        "default.handlebars->37->2555",
-        "default.handlebars->37->2571",
+        "default.handlebars->37->2561",
+        "default.handlebars->37->2576",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->5"
       ]
     },
@@ -17935,12 +17935,12 @@
         "default.handlebars->37->1851",
         "default.handlebars->37->1852",
         "default.handlebars->37->2154",
-        "default.handlebars->37->2331",
-        "default.handlebars->37->2337",
-        "default.handlebars->37->2482",
-        "default.handlebars->37->2541",
-        "default.handlebars->37->2559",
-        "default.handlebars->37->2607"
+        "default.handlebars->37->2334",
+        "default.handlebars->37->2340",
+        "default.handlebars->37->2487",
+        "default.handlebars->37->2546",
+        "default.handlebars->37->2565",
+        "default.handlebars->37->2612"
       ]
     },
     {
@@ -17992,9 +17992,9 @@
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->3",
         "default.handlebars->37->2170",
         "default.handlebars->37->2278",
-        "default.handlebars->37->2318",
-        "default.handlebars->37->2402",
-        "default.handlebars->37->2658",
+        "default.handlebars->37->2321",
+        "default.handlebars->37->2407",
+        "default.handlebars->37->2663",
         "default.handlebars->container->column_l->p2->p2info->9"
       ]
     },
@@ -18093,7 +18093,7 @@
       "xloc": [
         "default-mobile.handlebars->11->360",
         "default.handlebars->37->1090",
-        "default.handlebars->37->2540",
+        "default.handlebars->37->2545",
         "default.handlebars->37->405",
         "default.handlebars->37->414",
         "player.handlebars->3->24"
@@ -18167,7 +18167,7 @@
       "tr": "Cihaz İtme",
       "zh-chs": "设备推送",
       "xloc": [
-        "default.handlebars->37->2421"
+        "default.handlebars->37->2426"
       ]
     },
     {
@@ -19061,7 +19061,7 @@
       "xloc": [
         "default.handlebars->37->1774",
         "default.handlebars->37->2279",
-        "default.handlebars->37->2319"
+        "default.handlebars->37->2322"
       ]
     },
     {
@@ -19573,7 +19573,7 @@
         "default.handlebars->37->2243",
         "default.handlebars->37->2291",
         "default.handlebars->37->2300",
-        "default.handlebars->37->2368",
+        "default.handlebars->37->2373",
         "mstsc.handlebars->main->1->3->1->rowdomain->1->0",
         "mstsc.handlebars->main->1->3->1->rowdomain->3"
       ]
@@ -20476,7 +20476,7 @@
       "zh-chs": "代理重复",
       "zh-cht": "代理重複",
       "xloc": [
-        "default.handlebars->37->2654"
+        "default.handlebars->37->2659"
       ]
     },
     {
@@ -20569,8 +20569,8 @@
       "zh-chs": "持续时间",
       "zh-cht": "持續時間",
       "xloc": [
-        "default.handlebars->37->2520",
-        "default.handlebars->37->2546",
+        "default.handlebars->37->2525",
+        "default.handlebars->37->2551",
         "player.handlebars->3->17"
       ]
     },
@@ -21386,7 +21386,7 @@
       "tr": "Kullanıcı Özelliklerini Düzenle",
       "zh-chs": "编辑用户特征",
       "xloc": [
-        "default.handlebars->37->2458"
+        "default.handlebars->37->2463"
       ]
     },
     {
@@ -21410,7 +21410,7 @@
       "zh-chs": "编辑用户组",
       "zh-cht": "編輯用戶群",
       "xloc": [
-        "default.handlebars->37->2346"
+        "default.handlebars->37->2351"
       ]
     },
     {
@@ -21435,6 +21435,12 @@
       "zh-cht": "編輯用戶群裝置權限",
       "xloc": [
         "default.handlebars->37->1890"
+      ]
+    },
+    {
+      "en": "Edit User Group Features",
+      "xloc": [
+        "default.handlebars->37->2344"
       ]
     },
     {
@@ -21557,11 +21563,11 @@
       "xloc": [
         "default-mobile.handlebars->11->102",
         "default.handlebars->37->2245",
-        "default.handlebars->37->2372",
-        "default.handlebars->37->2374",
-        "default.handlebars->37->2419",
-        "default.handlebars->37->2429",
-        "default.handlebars->37->2461",
+        "default.handlebars->37->2377",
+        "default.handlebars->37->2379",
+        "default.handlebars->37->2424",
+        "default.handlebars->37->2434",
+        "default.handlebars->37->2466",
         "default.handlebars->37->450",
         "login-mobile.handlebars->5->42",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
@@ -21768,7 +21774,7 @@
       "zh-cht": "電子郵件已驗證",
       "xloc": [
         "default.handlebars->37->2190",
-        "default.handlebars->37->2366"
+        "default.handlebars->37->2371"
       ]
     },
     {
@@ -21816,7 +21822,7 @@
       "zh-chs": "电邮未验证",
       "zh-cht": "電郵未驗證",
       "xloc": [
-        "default.handlebars->37->2367"
+        "default.handlebars->37->2372"
       ]
     },
     {
@@ -21861,7 +21867,7 @@
       "zh-cht": "電郵已發送。",
       "xloc": [
         "default-mobile.handlebars->11->678",
-        "default.handlebars->37->2622",
+        "default.handlebars->37->2627",
         "login-mobile.handlebars->5->2",
         "login.handlebars->5->2",
         "login2.handlebars->7->3"
@@ -21978,7 +21984,7 @@
       "tr": "E-posta/SMS/Push Trafiği",
       "zh-chs": "电子邮件/短信/推送流量",
       "xloc": [
-        "default.handlebars->37->2713"
+        "default.handlebars->37->2718"
       ]
     },
     {
@@ -22130,7 +22136,7 @@
       "zh-cht": "已啟用",
       "xloc": [
         "default.handlebars->37->115",
-        "default.handlebars->37->2548"
+        "default.handlebars->37->2553"
       ]
     },
     {
@@ -22226,7 +22232,7 @@
       "zh-chs": "时间结束",
       "zh-cht": "時間結束",
       "xloc": [
-        "default.handlebars->37->2545"
+        "default.handlebars->37->2550"
       ]
     },
     {
@@ -23067,7 +23073,7 @@
       "zh-chs": "错误，邀请码 \\\"{0}\\\" 已被使用。",
       "xloc": [
         "default-mobile.handlebars->11->686",
-        "default.handlebars->37->2630"
+        "default.handlebars->37->2635"
       ]
     },
     {
@@ -23091,7 +23097,7 @@
       "zh-chs": "错误，密码未更改。",
       "xloc": [
         "default-mobile.handlebars->11->683",
-        "default.handlebars->37->2627"
+        "default.handlebars->37->2632"
       ]
     },
     {
@@ -23115,7 +23121,7 @@
       "zh-chs": "错误，无法更改为常用密码。",
       "xloc": [
         "default-mobile.handlebars->11->682",
-        "default.handlebars->37->2626"
+        "default.handlebars->37->2631"
       ]
     },
     {
@@ -23139,7 +23145,7 @@
       "zh-chs": "错误，无法更改为以前使用的密码。",
       "xloc": [
         "default-mobile.handlebars->11->681",
-        "default.handlebars->37->2625"
+        "default.handlebars->37->2630"
       ]
     },
     {
@@ -23643,7 +23649,7 @@
       "zh-chs": "外部",
       "zh-cht": "外部",
       "xloc": [
-        "default.handlebars->37->2693"
+        "default.handlebars->37->2698"
       ]
     },
     {
@@ -23763,7 +23769,7 @@
       "zh-chs": "无法更改电子邮件地址，另一个帐户已在使用：{0}。",
       "xloc": [
         "default-mobile.handlebars->11->677",
-        "default.handlebars->37->2621"
+        "default.handlebars->37->2626"
       ]
     },
     {
@@ -23976,7 +23982,8 @@
       "zh-cht": "功能",
       "xloc": [
         "default.handlebars->37->1730",
-        "default.handlebars->37->2390"
+        "default.handlebars->37->2307",
+        "default.handlebars->37->2395"
       ]
     },
     {
@@ -24146,7 +24153,7 @@
       "tr": "Dosya transferi",
       "zh-chs": "文件传输",
       "xloc": [
-        "default.handlebars->37->2526"
+        "default.handlebars->37->2531"
       ]
     },
     {
@@ -24197,10 +24204,10 @@
         "default-mobile.handlebars->11->203",
         "default-mobile.handlebars->11->314",
         "default.handlebars->37->1833",
-        "default.handlebars->37->2533",
-        "default.handlebars->37->2582",
-        "default.handlebars->37->2595",
-        "default.handlebars->37->2681",
+        "default.handlebars->37->2538",
+        "default.handlebars->37->2587",
+        "default.handlebars->37->2600",
+        "default.handlebars->37->2686",
         "default.handlebars->37->374",
         "default.handlebars->37->888",
         "default.handlebars->37->955",
@@ -24255,8 +24262,8 @@
       "zh-cht": "檔案通知",
       "xloc": [
         "default.handlebars->37->1738",
-        "default.handlebars->37->2312",
-        "default.handlebars->37->2412",
+        "default.handlebars->37->2315",
+        "default.handlebars->37->2417",
         "default.handlebars->37->798"
       ]
     },
@@ -24282,8 +24289,8 @@
       "zh-cht": "檔案提示",
       "xloc": [
         "default.handlebars->37->1737",
-        "default.handlebars->37->2311",
-        "default.handlebars->37->2411",
+        "default.handlebars->37->2314",
+        "default.handlebars->37->2416",
         "default.handlebars->37->797"
       ]
     },
@@ -24754,7 +24761,7 @@
       "zh-cht": "下次登入時強制重置密碼。",
       "xloc": [
         "default.handlebars->37->2250",
-        "default.handlebars->37->2472"
+        "default.handlebars->37->2477"
       ]
     },
     {
@@ -24923,8 +24930,8 @@
       "zh-chs": "自由",
       "zh-cht": "自由",
       "xloc": [
-        "default.handlebars->37->2639",
-        "default.handlebars->37->2641"
+        "default.handlebars->37->2644",
+        "default.handlebars->37->2646"
       ]
     },
     {
@@ -25363,7 +25370,7 @@
       "zh-chs": "完整管理员",
       "zh-cht": "完整管理員",
       "xloc": [
-        "default.handlebars->37->2360"
+        "default.handlebars->37->2365"
       ]
     },
     {
@@ -25618,7 +25625,7 @@
       "en": "Generate Report",
       "nl": "Genereer rapport",
       "xloc": [
-        "default.handlebars->37->2569"
+        "default.handlebars->37->2574"
       ]
     },
     {
@@ -26147,7 +26154,7 @@
       "zh-cht": "群",
       "xloc": [
         "default-mobile.handlebars->11->250",
-        "default.handlebars->37->2579",
+        "default.handlebars->37->2584",
         "default.handlebars->37->726",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->1"
       ]
@@ -26250,7 +26257,7 @@
       "zh-chs": "群组成员",
       "zh-cht": "群組成員",
       "xloc": [
-        "default.handlebars->37->2323"
+        "default.handlebars->37->2326"
       ]
     },
     {
@@ -26274,7 +26281,7 @@
       "zh-chs": "通过...分组",
       "zh-cht": "通過...分群",
       "xloc": [
-        "default.handlebars->37->2557"
+        "default.handlebars->37->2563"
       ]
     },
     {
@@ -26400,7 +26407,7 @@
     {
       "en": "Guest",
       "xloc": [
-        "default.handlebars->37->2574"
+        "default.handlebars->37->2579"
       ]
     },
     {
@@ -26519,7 +26526,7 @@
       "tr": "HTTP",
       "zh-chs": "HTTP",
       "xloc": [
-        "default.handlebars->37->2677"
+        "default.handlebars->37->2682"
       ]
     },
     {
@@ -26686,7 +26693,7 @@
       "zh-chs": "堆总数",
       "zh-cht": "堆總數",
       "xloc": [
-        "default.handlebars->37->2695"
+        "default.handlebars->37->2700"
       ]
     },
     {
@@ -26710,7 +26717,7 @@
       "zh-chs": "堆使用",
       "zh-cht": "堆使用",
       "xloc": [
-        "default.handlebars->37->2694"
+        "default.handlebars->37->2699"
       ]
     },
     {
@@ -28487,7 +28494,7 @@
       "zh-chs": "英特尔AMT",
       "zh-cht": "英特爾AMT",
       "xloc": [
-        "default.handlebars->37->2691"
+        "default.handlebars->37->2696"
       ]
     },
     {
@@ -28510,7 +28517,7 @@
       "tr": "Intel AMT yöneticisi",
       "zh-chs": "英特尔 AMT 经理",
       "xloc": [
-        "default.handlebars->37->2720"
+        "default.handlebars->37->2725"
       ]
     },
     {
@@ -28566,7 +28573,7 @@
         "default.handlebars->37->1756",
         "default.handlebars->37->1948",
         "default.handlebars->37->1961",
-        "default.handlebars->37->2719",
+        "default.handlebars->37->2724",
         "default.handlebars->37->701",
         "default.handlebars->37->766",
         "default.handlebars->37->808"
@@ -28914,8 +28921,8 @@
       "zh-chs": "英特尔&reg;AMT重定向",
       "zh-cht": "Intel&reg; AMT重定向",
       "xloc": [
-        "default.handlebars->37->2528",
-        "default.handlebars->37->2535",
+        "default.handlebars->37->2533",
+        "default.handlebars->37->2540",
         "player.handlebars->3->29"
       ]
     },
@@ -28988,8 +28995,8 @@
       "zh-chs": "英特尔&reg;AMT WSMAN",
       "zh-cht": "Intle&reg; AMT WSMAN",
       "xloc": [
-        "default.handlebars->37->2527",
-        "default.handlebars->37->2534",
+        "default.handlebars->37->2532",
+        "default.handlebars->37->2539",
         "player.handlebars->3->28"
       ]
     },
@@ -29857,7 +29864,7 @@
       "zh-chs": "无效的设备组类型",
       "zh-cht": "無效的裝置群類型",
       "xloc": [
-        "default.handlebars->37->2653"
+        "default.handlebars->37->2658"
       ]
     },
     {
@@ -29881,7 +29888,7 @@
       "zh-chs": "无效的JSON",
       "zh-cht": "無效的JSON",
       "xloc": [
-        "default.handlebars->37->2647"
+        "default.handlebars->37->2652"
       ]
     },
     {
@@ -29988,7 +29995,7 @@
       "zh-chs": "无效的PKCS签名",
       "zh-cht": "無效的PKCS簽名",
       "xloc": [
-        "default.handlebars->37->2645"
+        "default.handlebars->37->2650"
       ]
     },
     {
@@ -30012,7 +30019,7 @@
       "zh-chs": "無效的RSA密碼",
       "zh-cht": "無效的RSA密碼",
       "xloc": [
-        "default.handlebars->37->2646"
+        "default.handlebars->37->2651"
       ]
     },
     {
@@ -30036,7 +30043,7 @@
       "zh-chs": "无效的短信",
       "xloc": [
         "default-mobile.handlebars->11->689",
-        "default.handlebars->37->2633"
+        "default.handlebars->37->2638"
       ]
     },
     {
@@ -30094,7 +30101,7 @@
       "zh-chs": "无效域",
       "xloc": [
         "default-mobile.handlebars->11->669",
-        "default.handlebars->37->2613"
+        "default.handlebars->37->2618"
       ]
     },
     {
@@ -30138,7 +30145,7 @@
       "zh-chs": "不合规电邮",
       "xloc": [
         "default-mobile.handlebars->11->668",
-        "default.handlebars->37->2612"
+        "default.handlebars->37->2617"
       ]
     },
     {
@@ -30238,7 +30245,7 @@
       "xloc": [
         "default-mobile.handlebars->11->667",
         "default-mobile.handlebars->11->78",
-        "default.handlebars->37->2611",
+        "default.handlebars->37->2616",
         "default.handlebars->37->287"
       ]
     },
@@ -30263,7 +30270,7 @@
       "zh-chs": "网站权限无效",
       "xloc": [
         "default-mobile.handlebars->11->670",
-        "default.handlebars->37->2614"
+        "default.handlebars->37->2619"
       ]
     },
     {
@@ -30336,7 +30343,7 @@
       "zh-chs": "无效的用户名",
       "xloc": [
         "default-mobile.handlebars->11->666",
-        "default.handlebars->37->2610"
+        "default.handlebars->37->2615"
       ]
     },
     {
@@ -30553,7 +30560,7 @@
         "default.handlebars->37->1933",
         "default.handlebars->37->1935",
         "default.handlebars->37->1940",
-        "default.handlebars->37->2608"
+        "default.handlebars->37->2613"
       ]
     },
     {
@@ -31571,7 +31578,7 @@
       "zh-chs": "过去30天",
       "zh-cht": "過去30天",
       "xloc": [
-        "default.handlebars->37->2562",
+        "default.handlebars->37->2568",
         "default.handlebars->container->column_l->p40->3->1->p40time->9"
       ]
     },
@@ -31632,7 +31639,7 @@
       "en": "Last 7 days",
       "nl": "Laaste 7 dagen",
       "xloc": [
-        "default.handlebars->37->2561"
+        "default.handlebars->37->2567"
       ]
     },
     {
@@ -31687,7 +31694,7 @@
       "en": "Last Day",
       "nl": "Laaste dag",
       "xloc": [
-        "default.handlebars->37->2560"
+        "default.handlebars->37->2566"
       ]
     },
     {
@@ -31711,7 +31718,7 @@
       "zh-chs": "上次登录",
       "zh-cht": "上次登入",
       "xloc": [
-        "default.handlebars->37->2394"
+        "default.handlebars->37->2399"
       ]
     },
     {
@@ -31820,7 +31827,7 @@
       "zh-chs": "上次更改：{0}",
       "zh-cht": "上次更改：{0}",
       "xloc": [
-        "default.handlebars->37->2398"
+        "default.handlebars->37->2403"
       ]
     },
     {
@@ -32196,7 +32203,7 @@
       "zh-chs": "如没有请留空。",
       "zh-cht": "如沒有請留空。",
       "xloc": [
-        "default.handlebars->37->2444"
+        "default.handlebars->37->2449"
       ]
     },
     {
@@ -32315,7 +32322,7 @@
       "en": "Length",
       "nl": "Duur",
       "xloc": [
-        "default.handlebars->37->2575"
+        "default.handlebars->37->2580"
       ]
     },
     {
@@ -32339,7 +32346,7 @@
       "zh-chs": "减",
       "zh-cht": "減",
       "xloc": [
-        "default.handlebars->37->2741"
+        "default.handlebars->37->2746"
       ]
     },
     {
@@ -33198,8 +33205,8 @@
         "default.handlebars->37->1391",
         "default.handlebars->37->1706",
         "default.handlebars->37->1710",
-        "default.handlebars->37->2467",
-        "default.handlebars->37->2516"
+        "default.handlebars->37->2472",
+        "default.handlebars->37->2521"
       ]
     },
     {
@@ -33680,7 +33687,7 @@
       "zh-cht": "被鎖定賬戶",
       "xloc": [
         "default-mobile.handlebars->11->77",
-        "default.handlebars->37->2357",
+        "default.handlebars->37->2362",
         "default.handlebars->37->286"
       ]
     },
@@ -34597,7 +34604,7 @@
       "zh-chs": "主服务器信息",
       "zh-cht": "主伺服器訊息",
       "xloc": [
-        "default.handlebars->37->2707"
+        "default.handlebars->37->2712"
       ]
     },
     {
@@ -35294,7 +35301,7 @@
       "zh-chs": "达到连接数量上限",
       "zh-cht": "達到連接數量上限",
       "xloc": [
-        "default.handlebars->37->2651"
+        "default.handlebars->37->2656"
       ]
     },
     {
@@ -35371,8 +35378,8 @@
       "zh-chs": "Megabyte",
       "zh-cht": "Megabyte",
       "xloc": [
-        "default.handlebars->37->2692",
-        "default.handlebars->37->2697"
+        "default.handlebars->37->2697",
+        "default.handlebars->37->2702"
       ]
     },
     {
@@ -35398,7 +35405,7 @@
       "xloc": [
         "default-mobile.handlebars->11->559",
         "default.handlebars->37->1352",
-        "default.handlebars->37->2671",
+        "default.handlebars->37->2676",
         "default.handlebars->container->column_l->p40->3->1->p40type->3"
       ]
     },
@@ -35634,7 +35641,7 @@
       "zh-chs": "MeshAgent流量",
       "zh-cht": "MeshAgent流量",
       "xloc": [
-        "default.handlebars->37->2709"
+        "default.handlebars->37->2714"
       ]
     },
     {
@@ -35658,7 +35665,7 @@
       "zh-chs": "MeshAgent更新",
       "zh-cht": "MeshAgent更新",
       "xloc": [
-        "default.handlebars->37->2710"
+        "default.handlebars->37->2715"
       ]
     },
     {
@@ -36050,7 +36057,7 @@
       "zh-chs": "MeshCentral服务器同级化",
       "zh-cht": "MeshCentral伺服器同級化",
       "xloc": [
-        "default.handlebars->37->2708"
+        "default.handlebars->37->2713"
       ]
     },
     {
@@ -36503,7 +36510,7 @@
       "zh-chs": "消息调度器",
       "zh-cht": "電郵調度器",
       "xloc": [
-        "default.handlebars->37->2706"
+        "default.handlebars->37->2711"
       ]
     },
     {
@@ -36574,8 +36581,8 @@
       "tr": "haberci",
       "zh-chs": "信使",
       "xloc": [
-        "default.handlebars->37->2529",
-        "default.handlebars->37->2585"
+        "default.handlebars->37->2534",
+        "default.handlebars->37->2590"
       ]
     },
     {
@@ -36811,7 +36818,7 @@
       "zh-chs": "更多",
       "zh-cht": "更多",
       "xloc": [
-        "default.handlebars->37->2740"
+        "default.handlebars->37->2745"
       ]
     },
     {
@@ -37024,7 +37031,7 @@
       "zh-chs": "多路复用器",
       "zh-cht": "多工器",
       "xloc": [
-        "default.handlebars->37->2547"
+        "default.handlebars->37->2552"
       ]
     },
     {
@@ -37524,8 +37531,8 @@
         "default.handlebars->37->2276",
         "default.handlebars->37->2292",
         "default.handlebars->37->2299",
-        "default.handlebars->37->2344",
-        "default.handlebars->37->2363",
+        "default.handlebars->37->2349",
+        "default.handlebars->37->2368",
         "default.handlebars->37->291",
         "default.handlebars->37->724",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsProcessTab->deskToolsHeader->3",
@@ -37795,7 +37802,7 @@
       "zh-chs": "新账户",
       "xloc": [
         "default-mobile.handlebars->11->659",
-        "default.handlebars->37->2603"
+        "default.handlebars->37->2608"
       ]
     },
     {
@@ -38164,7 +38171,7 @@
       "tr": "Aracı Konsolu Yok",
       "zh-chs": "无座席控制台",
       "xloc": [
-        "default.handlebars->37->2453"
+        "default.handlebars->37->2458"
       ]
     },
     {
@@ -38187,7 +38194,7 @@
       "tr": "Konsol Yok",
       "zh-chs": "没有控制台",
       "xloc": [
-        "default.handlebars->37->2384"
+        "default.handlebars->37->2389"
       ]
     },
     {
@@ -38239,7 +38246,7 @@
       "zh-cht": "沒有桌面",
       "xloc": [
         "default.handlebars->37->1904",
-        "default.handlebars->37->2380",
+        "default.handlebars->37->2385",
         "default.handlebars->37->903",
         "default.handlebars->37->925"
       ]
@@ -38266,7 +38273,7 @@
       "zh-cht": "不能訪問桌面",
       "xloc": [
         "default.handlebars->37->1864",
-        "default.handlebars->37->2449"
+        "default.handlebars->37->2454"
       ]
     },
     {
@@ -38312,7 +38319,7 @@
       "xloc": [
         "default.handlebars->37->1271",
         "default.handlebars->37->2145",
-        "default.handlebars->37->2515"
+        "default.handlebars->37->2520"
       ]
     },
     {
@@ -38338,7 +38345,7 @@
       "xloc": [
         "default-mobile.handlebars->11->616",
         "default.handlebars->37->1866",
-        "default.handlebars->37->2452"
+        "default.handlebars->37->2457"
       ]
     },
     {
@@ -38364,7 +38371,7 @@
       "xloc": [
         "default-mobile.handlebars->11->639",
         "default.handlebars->37->1906",
-        "default.handlebars->37->2383",
+        "default.handlebars->37->2388",
         "default.handlebars->37->900",
         "default.handlebars->37->922"
       ]
@@ -38534,7 +38541,7 @@
       "zh-chs": "没有成员",
       "zh-cht": "沒有成員",
       "xloc": [
-        "default.handlebars->37->2326"
+        "default.handlebars->37->2329"
       ]
     },
     {
@@ -38612,8 +38619,8 @@
       "pl": "Brak zdalnego polecenia",
       "pt-br": "Sem Comando Remoto",
       "xloc": [
-        "default.handlebars->37->2386",
-        "default.handlebars->37->2455"
+        "default.handlebars->37->2391",
+        "default.handlebars->37->2460"
       ]
     },
     {
@@ -38622,8 +38629,8 @@
       "pl": "Brak pilota zdalnego sterowania",
       "pt-br": "Sem Controle Remoto",
       "xloc": [
-        "default.handlebars->37->2379",
-        "default.handlebars->37->2448"
+        "default.handlebars->37->2384",
+        "default.handlebars->37->2453"
       ]
     },
     {
@@ -38632,8 +38639,8 @@
       "pl": "Brak resetowania/wyłączania",
       "pt-br": "Sem Resetar/Desligar",
       "xloc": [
-        "default.handlebars->37->2388",
-        "default.handlebars->37->2457"
+        "default.handlebars->37->2393",
+        "default.handlebars->37->2462"
       ]
     },
     {
@@ -38735,7 +38742,7 @@
       "xloc": [
         "default-mobile.handlebars->11->638",
         "default.handlebars->37->1905",
-        "default.handlebars->37->2382",
+        "default.handlebars->37->2387",
         "default.handlebars->37->899",
         "default.handlebars->37->921"
       ]
@@ -38763,7 +38770,7 @@
       "xloc": [
         "default-mobile.handlebars->11->615",
         "default.handlebars->37->1865",
-        "default.handlebars->37->2451"
+        "default.handlebars->37->2456"
       ]
     },
     {
@@ -38796,8 +38803,8 @@
       "pl": "Bez odinstalowywania",
       "pt-br": "Não desinstalar",
       "xloc": [
-        "default.handlebars->37->2385",
-        "default.handlebars->37->2454"
+        "default.handlebars->37->2390",
+        "default.handlebars->37->2459"
       ]
     },
     {
@@ -38806,8 +38813,8 @@
       "pl": "Bez budzenia",
       "pt-br": "Não acordar",
       "xloc": [
-        "default.handlebars->37->2387",
-        "default.handlebars->37->2456"
+        "default.handlebars->37->2392",
+        "default.handlebars->37->2461"
       ]
     },
     {
@@ -38900,8 +38907,8 @@
       "zh-chs": "没有共同的设备组",
       "zh-cht": "沒有共同的裝置群",
       "xloc": [
-        "default.handlebars->37->2332",
-        "default.handlebars->37->2483"
+        "default.handlebars->37->2335",
+        "default.handlebars->37->2488"
       ]
     },
     {
@@ -39045,8 +39052,8 @@
       "zh-chs": "没有共同的设备",
       "zh-cht": "沒有共同的裝置",
       "xloc": [
-        "default.handlebars->37->2338",
-        "default.handlebars->37->2495"
+        "default.handlebars->37->2341",
+        "default.handlebars->37->2500"
       ]
     },
     {
@@ -39431,7 +39438,7 @@
       "zh-chs": "此用户没有电话号码",
       "xloc": [
         "default-mobile.handlebars->11->690",
-        "default.handlebars->37->2634"
+        "default.handlebars->37->2639"
       ]
     },
     {
@@ -39479,7 +39486,7 @@
       "zh-chs": "没有录音。",
       "zh-cht": "沒有錄音。",
       "xloc": [
-        "default.handlebars->37->2517"
+        "default.handlebars->37->2522"
       ]
     },
     {
@@ -39523,7 +39530,7 @@
       "zh-chs": "没有服务器权限",
       "zh-cht": "沒有伺服器權限",
       "xloc": [
-        "default.handlebars->37->2358"
+        "default.handlebars->37->2363"
       ]
     },
     {
@@ -39567,7 +39574,7 @@
       "zh-chs": "没有用户组成员身份",
       "zh-cht": "沒有用戶群成員身份",
       "xloc": [
-        "default.handlebars->37->2489"
+        "default.handlebars->37->2494"
       ]
     },
     {
@@ -39591,7 +39598,7 @@
       "zh-chs": "无用户管理权限",
       "xloc": [
         "default-mobile.handlebars->11->688",
-        "default.handlebars->37->2632"
+        "default.handlebars->37->2637"
       ]
     },
     {
@@ -39758,12 +39765,13 @@
         "default.handlebars->37->2153",
         "default.handlebars->37->2296",
         "default.handlebars->37->2298",
-        "default.handlebars->37->2315",
-        "default.handlebars->37->2377",
-        "default.handlebars->37->2389",
-        "default.handlebars->37->2399",
-        "default.handlebars->37->2403",
-        "default.handlebars->37->2415",
+        "default.handlebars->37->2306",
+        "default.handlebars->37->2318",
+        "default.handlebars->37->2382",
+        "default.handlebars->37->2394",
+        "default.handlebars->37->2404",
+        "default.handlebars->37->2408",
+        "default.handlebars->37->2420",
         "default.handlebars->37->244",
         "default.handlebars->37->263",
         "default.handlebars->37->343",
@@ -40066,7 +40074,7 @@
       "zh-chs": "不在服务器上",
       "zh-cht": "不在伺服器上",
       "xloc": [
-        "default.handlebars->37->2539"
+        "default.handlebars->37->2544"
       ]
     },
     {
@@ -40090,8 +40098,8 @@
       "zh-chs": "没有设置",
       "zh-cht": "沒有設置",
       "xloc": [
-        "default.handlebars->37->2364",
-        "default.handlebars->37->2365"
+        "default.handlebars->37->2369",
+        "default.handlebars->37->2370"
       ]
     },
     {
@@ -40115,7 +40123,7 @@
       "zh-chs": "未经审核的",
       "zh-cht": "未經審核的",
       "xloc": [
-        "default.handlebars->37->2463"
+        "default.handlebars->37->2468"
       ]
     },
     {
@@ -40141,7 +40149,7 @@
       "xloc": [
         "default-mobile.handlebars->11->341",
         "default.handlebars->37->1757",
-        "default.handlebars->37->2425",
+        "default.handlebars->37->2430",
         "default.handlebars->37->826",
         "default.handlebars->37->909",
         "default.handlebars->37->931",
@@ -40311,7 +40319,7 @@
       "zh-chs": "通知",
       "zh-cht": "通知",
       "xloc": [
-        "default.handlebars->37->2431",
+        "default.handlebars->37->2436",
         "default.handlebars->37->260"
       ]
     },
@@ -40409,7 +40417,7 @@
       "tr": "Boş",
       "zh-chs": "空值",
       "xloc": [
-        "default.handlebars->37->2700"
+        "default.handlebars->37->2705"
       ]
     },
     {
@@ -40572,7 +40580,7 @@
       "zh-cht": "發生在{0}",
       "xloc": [
         "default-mobile.handlebars->11->656",
-        "default.handlebars->37->2600"
+        "default.handlebars->37->2605"
       ]
     },
     {
@@ -41726,7 +41734,7 @@
       "zh-chs": "部分权限",
       "zh-cht": "部分權限",
       "xloc": [
-        "default.handlebars->37->2361"
+        "default.handlebars->37->2366"
       ]
     },
     {
@@ -41783,10 +41791,10 @@
         "default.handlebars->37->1794",
         "default.handlebars->37->2246",
         "default.handlebars->37->2247",
-        "default.handlebars->37->2395",
-        "default.handlebars->37->2397",
-        "default.handlebars->37->2468",
-        "default.handlebars->37->2469",
+        "default.handlebars->37->2400",
+        "default.handlebars->37->2402",
+        "default.handlebars->37->2473",
+        "default.handlebars->37->2474",
         "default.handlebars->37->295",
         "default.handlebars->37->419",
         "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->loginuserpassdiv->1->1->2->1",
@@ -41929,7 +41937,7 @@
       "zh-chs": "密码已更改。",
       "xloc": [
         "default-mobile.handlebars->11->684",
-        "default.handlebars->37->2628"
+        "default.handlebars->37->2633"
       ]
     },
     {
@@ -41978,7 +41986,7 @@
       "zh-chs": "密码提示",
       "zh-cht": "密碼提示",
       "xloc": [
-        "default.handlebars->37->2470"
+        "default.handlebars->37->2475"
       ]
     },
     {
@@ -42660,7 +42668,7 @@
       "zh-chs": "没有权限",
       "xloc": [
         "default-mobile.handlebars->11->665",
-        "default.handlebars->37->2609"
+        "default.handlebars->37->2614"
       ]
     },
     {
@@ -42786,7 +42794,7 @@
         "default.handlebars->37->1383",
         "default.handlebars->37->1386",
         "default.handlebars->37->226",
-        "default.handlebars->37->2446"
+        "default.handlebars->37->2451"
       ]
     },
     {
@@ -42810,7 +42818,7 @@
       "zh-chs": "电话号码",
       "zh-cht": "電話號碼",
       "xloc": [
-        "default.handlebars->37->2376"
+        "default.handlebars->37->2381"
       ]
     },
     {
@@ -42836,7 +42844,7 @@
       "xloc": [
         "default-mobile.handlebars->11->90",
         "default.handlebars->37->1385",
-        "default.handlebars->37->2445"
+        "default.handlebars->37->2450"
       ]
     },
     {
@@ -43051,7 +43059,7 @@
       "zh-chs": "插件指令",
       "zh-cht": "外掛指令",
       "xloc": [
-        "default.handlebars->37->2737",
+        "default.handlebars->37->2742",
         "default.handlebars->37->276"
       ]
     },
@@ -43627,7 +43635,7 @@
       "zh-chs": "存在于服务器上",
       "zh-cht": "存在於伺服器上",
       "xloc": [
-        "default.handlebars->37->2538"
+        "default.handlebars->37->2543"
       ]
     },
     {
@@ -43752,8 +43760,8 @@
         "default-mobile.handlebars->11->79",
         "default-mobile.handlebars->11->80",
         "default.handlebars->37->1378",
-        "default.handlebars->37->2440",
-        "default.handlebars->37->2466",
+        "default.handlebars->37->2445",
+        "default.handlebars->37->2471",
         "default.handlebars->37->288"
       ]
     },
@@ -44131,7 +44139,7 @@
       "zh-chs": "协议",
       "zh-cht": "協議",
       "xloc": [
-        "default.handlebars->37->2536",
+        "default.handlebars->37->2541",
         "player.handlebars->3->31"
       ]
     },
@@ -44720,7 +44728,7 @@
       "zh-chs": "RSS",
       "zh-cht": "RSS",
       "xloc": [
-        "default.handlebars->37->2696"
+        "default.handlebars->37->2701"
       ]
     },
     {
@@ -44861,9 +44869,9 @@
       "zh-chs": "真正的名字",
       "zh-cht": "真正的名字",
       "xloc": [
-        "default.handlebars->37->2373",
-        "default.handlebars->37->2375",
-        "default.handlebars->37->2459"
+        "default.handlebars->37->2378",
+        "default.handlebars->37->2380",
+        "default.handlebars->37->2464"
       ]
     },
     {
@@ -44939,7 +44947,8 @@
       "zh-cht": "記錄會議",
       "xloc": [
         "default.handlebars->37->1727",
-        "default.handlebars->37->2378"
+        "default.handlebars->37->2305",
+        "default.handlebars->37->2383"
       ]
     },
     {
@@ -44988,7 +44997,8 @@
       "zh-cht": "記錄會議",
       "xloc": [
         "default.handlebars->37->1836",
-        "default.handlebars->37->2447"
+        "default.handlebars->37->2343",
+        "default.handlebars->37->2452"
       ]
     },
     {
@@ -45012,7 +45022,7 @@
       "zh-chs": "记录细节",
       "zh-cht": "記錄細節",
       "xloc": [
-        "default.handlebars->37->2550"
+        "default.handlebars->37->2555"
       ]
     },
     {
@@ -45215,7 +45225,7 @@
       "zh-cht": "中繼",
       "xloc": [
         "default-mobile.handlebars->11->238",
-        "default.handlebars->37->2678",
+        "default.handlebars->37->2683",
         "default.handlebars->37->354",
         "default.handlebars->37->579"
       ]
@@ -45241,7 +45251,7 @@
       "zh-chs": "中继数量",
       "zh-cht": "中繼數量",
       "xloc": [
-        "default.handlebars->37->2663"
+        "default.handlebars->37->2668"
       ]
     },
     {
@@ -45285,7 +45295,7 @@
       "zh-chs": "中继错误",
       "zh-cht": "中繼錯誤",
       "xloc": [
-        "default.handlebars->37->2656"
+        "default.handlebars->37->2661"
       ]
     },
     {
@@ -45329,8 +45339,8 @@
       "zh-chs": "中继连接",
       "zh-cht": "中繼連接",
       "xloc": [
-        "default.handlebars->37->2662",
-        "default.handlebars->37->2690"
+        "default.handlebars->37->2667",
+        "default.handlebars->37->2695"
       ]
     },
     {
@@ -46140,7 +46150,7 @@
       "tr": "Uzak Oturumlar",
       "zh-chs": "远程会话",
       "xloc": [
-        "default.handlebars->37->2552"
+        "default.handlebars->37->2557"
       ]
     },
     {
@@ -46276,7 +46286,7 @@
         "default-mobile.handlebars->11->637",
         "default.handlebars->37->1861",
         "default.handlebars->37->1903",
-        "default.handlebars->37->2450"
+        "default.handlebars->37->2455"
       ]
     },
     {
@@ -46526,8 +46536,8 @@
       "zh-chs": "删除设备组权限",
       "zh-cht": "刪除裝置群權限",
       "xloc": [
-        "default.handlebars->37->2342",
-        "default.handlebars->37->2511"
+        "default.handlebars->37->2347",
+        "default.handlebars->37->2516"
       ]
     },
     {
@@ -46551,8 +46561,8 @@
       "zh-chs": "删除设备权限",
       "zh-cht": "刪除裝置權限",
       "xloc": [
-        "default.handlebars->37->2340",
-        "default.handlebars->37->2498"
+        "default.handlebars->37->2345",
+        "default.handlebars->37->2503"
       ]
     },
     {
@@ -46576,7 +46586,7 @@
       "zh-chs": "删除设备共享",
       "zh-cht": "刪除設備共享",
       "xloc": [
-        "default.handlebars->37->2496"
+        "default.handlebars->37->2501"
       ]
     },
     {
@@ -46644,7 +46654,7 @@
       "zh-chs": "删除用户组成员身份",
       "zh-cht": "刪除用戶群成員身份",
       "xloc": [
-        "default.handlebars->37->2507"
+        "default.handlebars->37->2512"
       ]
     },
     {
@@ -46669,7 +46679,7 @@
       "zh-cht": "刪除用戶群權限",
       "xloc": [
         "default.handlebars->37->1924",
-        "default.handlebars->37->2503"
+        "default.handlebars->37->2508"
       ]
     },
     {
@@ -46693,7 +46703,7 @@
       "zh-chs": "删除用户成员资格",
       "zh-cht": "刪除用戶成員資格",
       "xloc": [
-        "default.handlebars->37->2350"
+        "default.handlebars->37->2355"
       ]
     },
     {
@@ -46718,7 +46728,7 @@
       "zh-cht": "刪除用戶權限",
       "xloc": [
         "default.handlebars->37->1922",
-        "default.handlebars->37->2500"
+        "default.handlebars->37->2505"
       ]
     },
     {
@@ -46742,7 +46752,7 @@
       "zh-chs": "删除所有两因素认证。",
       "zh-cht": "刪除所有二因子鑑別。",
       "xloc": [
-        "default.handlebars->37->2473"
+        "default.handlebars->37->2478"
       ]
     },
     {
@@ -46981,7 +46991,7 @@
       "zh-chs": "删除此用户",
       "zh-cht": "刪除此用戶",
       "xloc": [
-        "default.handlebars->37->2435"
+        "default.handlebars->37->2440"
       ]
     },
     {
@@ -47005,7 +47015,7 @@
       "zh-chs": "删除用户组成员身份",
       "zh-cht": "刪除用戶群成員身份",
       "xloc": [
-        "default.handlebars->37->2487"
+        "default.handlebars->37->2492"
       ]
     },
     {
@@ -47029,7 +47039,7 @@
       "zh-chs": "删除此设备的用户组权限",
       "zh-cht": "刪除此裝置的用戶群權限",
       "xloc": [
-        "default.handlebars->37->2336"
+        "default.handlebars->37->2339"
       ]
     },
     {
@@ -47053,7 +47063,7 @@
       "zh-chs": "删除此设备组的用户组权限",
       "zh-cht": "刪除此裝置群的用戶群權限",
       "xloc": [
-        "default.handlebars->37->2330",
+        "default.handlebars->37->2333",
         "default.handlebars->37->877"
       ]
     },
@@ -47079,9 +47089,9 @@
       "zh-cht": "刪除此裝置群的用戶權限",
       "xloc": [
         "default.handlebars->37->1770",
-        "default.handlebars->37->2324",
-        "default.handlebars->37->2481",
-        "default.handlebars->37->2493",
+        "default.handlebars->37->2327",
+        "default.handlebars->37->2486",
+        "default.handlebars->37->2498",
         "default.handlebars->37->878"
       ]
     },
@@ -47506,7 +47516,7 @@
     {
       "en": "Report returned no entires.",
       "xloc": [
-        "default.handlebars->37->2578"
+        "default.handlebars->37->2583"
       ]
     },
     {
@@ -47529,7 +47539,7 @@
       "sv": "Report.csv",
       "tr": "Report.csv",
       "xloc": [
-        "default.handlebars->37->2598"
+        "default.handlebars->37->2603"
       ]
     },
     {
@@ -47695,7 +47705,7 @@
       "xloc": [
         "default-mobile.handlebars->11->113",
         "default.handlebars->37->2254",
-        "default.handlebars->37->2471"
+        "default.handlebars->37->2476"
       ]
     },
     {
@@ -48123,7 +48133,7 @@
       "zh-chs": "限制条件",
       "zh-cht": "限制條件",
       "xloc": [
-        "default.handlebars->37->2362"
+        "default.handlebars->37->2367"
       ]
     },
     {
@@ -48815,8 +48825,8 @@
       "zh-chs": "短信",
       "zh-cht": "短信",
       "xloc": [
-        "default.handlebars->37->2422",
         "default.handlebars->37->2427",
+        "default.handlebars->37->2432",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resettokenpanel->1->5->1->2->1->3",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->4->1->3",
@@ -48845,7 +48855,7 @@
       "zh-chs": "此用户的短信功能电话号码。",
       "zh-cht": "此用戶的短信功能電話號碼。",
       "xloc": [
-        "default.handlebars->37->2443"
+        "default.handlebars->37->2448"
       ]
     },
     {
@@ -48869,7 +48879,7 @@
       "zh-chs": "短信错误",
       "xloc": [
         "default-mobile.handlebars->11->692",
-        "default.handlebars->37->2636"
+        "default.handlebars->37->2641"
       ]
     },
     {
@@ -48893,7 +48903,7 @@
       "zh-chs": "短信错误：{0}",
       "xloc": [
         "default-mobile.handlebars->11->693",
-        "default.handlebars->37->2637"
+        "default.handlebars->37->2642"
       ]
     },
     {
@@ -48925,7 +48935,7 @@
       "zh-chs": "短信网关未启用",
       "xloc": [
         "default-mobile.handlebars->11->687",
-        "default.handlebars->37->2631"
+        "default.handlebars->37->2636"
       ]
     },
     {
@@ -48995,7 +49005,7 @@
       "zh-chs": "短信发送成功。",
       "xloc": [
         "default-mobile.handlebars->11->691",
-        "default.handlebars->37->2635"
+        "default.handlebars->37->2640"
       ]
     },
     {
@@ -49798,7 +49808,7 @@
         "default.handlebars->37->1029",
         "default.handlebars->37->1329",
         "default.handlebars->37->1969",
-        "default.handlebars->37->2423",
+        "default.handlebars->37->2428",
         "default.handlebars->37->420",
         "default.handlebars->container->column_l->p21->p21main->1->1->meshSecurityChartDiv->1"
       ]
@@ -49824,7 +49834,7 @@
       "zh-chs": "安全密钥",
       "zh-cht": "安全密鑰",
       "xloc": [
-        "default.handlebars->37->2418"
+        "default.handlebars->37->2423"
       ]
     },
     {
@@ -49848,7 +49858,7 @@
       "zh-chs": "安全警告",
       "xloc": [
         "default-mobile.handlebars->11->661",
-        "default.handlebars->37->2605"
+        "default.handlebars->37->2610"
       ]
     },
     {
@@ -49938,7 +49948,7 @@
       "en": "Select Date & Time...",
       "nl": "Selecteer datum & Tijd...",
       "xloc": [
-        "default.handlebars->37->2566",
+        "default.handlebars->37->2572",
         "default.handlebars->37->982"
       ]
     },
@@ -50381,7 +50391,7 @@
       "zh-chs": "发送短信给该用户",
       "zh-cht": "發送短信給該用戶",
       "xloc": [
-        "default.handlebars->37->2428"
+        "default.handlebars->37->2433"
       ]
     },
     {
@@ -50405,7 +50415,7 @@
       "zh-chs": "发送电邮给该用户",
       "zh-cht": "發送電郵給該用戶",
       "xloc": [
-        "default.handlebars->37->2430"
+        "default.handlebars->37->2435"
       ]
     },
     {
@@ -50429,7 +50439,7 @@
       "zh-chs": "向该组中的所有用户发送通知。",
       "zh-cht": "向該群中的所有用戶發送通知。",
       "xloc": [
-        "default.handlebars->37->2321"
+        "default.handlebars->37->2324"
       ]
     },
     {
@@ -50672,7 +50682,7 @@
       "zh-chs": "发送用户通知",
       "zh-cht": "發送用戶通知",
       "xloc": [
-        "default.handlebars->37->2432"
+        "default.handlebars->37->2437"
       ]
     },
     {
@@ -50843,7 +50853,7 @@
       "zh-chs": "服务器证书",
       "zh-cht": "伺服器憑證",
       "xloc": [
-        "default.handlebars->37->2711"
+        "default.handlebars->37->2716"
       ]
     },
     {
@@ -50890,7 +50900,7 @@
       "zh-chs": "服务器数据库",
       "zh-cht": "伺服器數據庫",
       "xloc": [
-        "default.handlebars->37->2712"
+        "default.handlebars->37->2717"
       ]
     },
     {
@@ -50968,7 +50978,7 @@
       "zh-chs": "服务器限制",
       "xloc": [
         "default-mobile.handlebars->11->660",
-        "default.handlebars->37->2604"
+        "default.handlebars->37->2609"
       ]
     },
     {
@@ -51040,7 +51050,7 @@
       "zh-chs": "服务器配额",
       "zh-cht": "伺服器配額",
       "xloc": [
-        "default.handlebars->37->2392"
+        "default.handlebars->37->2397"
       ]
     },
     {
@@ -51088,7 +51098,7 @@
       "zh-chs": "服务器权限",
       "zh-cht": "伺服器權限",
       "xloc": [
-        "default.handlebars->37->2391"
+        "default.handlebars->37->2396"
       ]
     },
     {
@@ -51112,7 +51122,7 @@
       "zh-chs": "服务器状态",
       "zh-cht": "伺服器狀態",
       "xloc": [
-        "default.handlebars->37->2642"
+        "default.handlebars->37->2647"
       ]
     },
     {
@@ -51160,7 +51170,7 @@
       "zh-chs": "服务器跟踪",
       "zh-cht": "伺服器追蹤",
       "xloc": [
-        "default.handlebars->37->2724"
+        "default.handlebars->37->2729"
       ]
     },
     {
@@ -51183,7 +51193,7 @@
       "tr": "Sunucu İzleme Etkinliği",
       "zh-chs": "服务器跟踪事件",
       "xloc": [
-        "default.handlebars->37->2703"
+        "default.handlebars->37->2708"
       ]
     },
     {
@@ -51495,7 +51505,7 @@
       "zh-chs": "ServerStats.csv",
       "zh-cht": "ServerStats.csv",
       "xloc": [
-        "default.handlebars->37->2702"
+        "default.handlebars->37->2707"
       ]
     },
     {
@@ -51567,8 +51577,8 @@
       "zh-chs": "会话",
       "zh-cht": "節",
       "xloc": [
-        "default.handlebars->37->2518",
-        "default.handlebars->37->2572",
+        "default.handlebars->37->2523",
+        "default.handlebars->37->2577",
         "ssh.handlebars->3->17",
         "ssh.handlebars->3->19"
       ]
@@ -52476,10 +52486,7 @@
       ]
     },
     {
-      "en": "Show Guest Name",
-      "xloc": [
-        "default.handlebars->37->2568"
-      ]
+      "en": "Show Guest Name"
     },
     {
       "cs": "Zobrazit nápovědu",
@@ -52581,7 +52588,7 @@
       "en": "Show Traffic",
       "nl": "Toon verkeer",
       "xloc": [
-        "default.handlebars->37->2567"
+        "default.handlebars->37->2573"
       ]
     },
     {
@@ -53195,8 +53202,8 @@
       "zh-chs": "尺寸",
       "zh-cht": "尺寸",
       "xloc": [
-        "default.handlebars->37->2521",
-        "default.handlebars->37->2542",
+        "default.handlebars->37->2526",
+        "default.handlebars->37->2547",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize"
       ]
     },
@@ -54445,8 +54452,8 @@
       "xloc": [
         "default.handlebars->37->1105",
         "default.handlebars->37->113",
-        "default.handlebars->37->2519",
-        "default.handlebars->37->2544",
+        "default.handlebars->37->2524",
+        "default.handlebars->37->2549",
         "default.handlebars->37->258",
         "sharing.handlebars->11->14"
       ]
@@ -54919,8 +54926,8 @@
       "zh-chs": "状况",
       "zh-cht": "狀態",
       "xloc": [
-        "default.handlebars->37->2462",
-        "default.handlebars->37->2537",
+        "default.handlebars->37->2467",
+        "default.handlebars->37->2542",
         "default.handlebars->container->column_l->p42->p42tbl->1->0->7"
       ]
     },
@@ -56058,10 +56065,10 @@
         "default-mobile.handlebars->11->200",
         "default-mobile.handlebars->11->313",
         "default.handlebars->37->1830",
-        "default.handlebars->37->2531",
-        "default.handlebars->37->2580",
-        "default.handlebars->37->2593",
-        "default.handlebars->37->2679",
+        "default.handlebars->37->2536",
+        "default.handlebars->37->2585",
+        "default.handlebars->37->2598",
+        "default.handlebars->37->2684",
         "default.handlebars->37->371",
         "default.handlebars->37->700",
         "default.handlebars->37->885",
@@ -56141,8 +56148,8 @@
       "zh-cht": "終端機通知",
       "xloc": [
         "default.handlebars->37->1736",
-        "default.handlebars->37->2310",
-        "default.handlebars->37->2410",
+        "default.handlebars->37->2313",
+        "default.handlebars->37->2415",
         "default.handlebars->37->796"
       ]
     },
@@ -56168,8 +56175,8 @@
       "zh-cht": "終端機提示",
       "xloc": [
         "default.handlebars->37->1735",
-        "default.handlebars->37->2309",
-        "default.handlebars->37->2409",
+        "default.handlebars->37->2312",
+        "default.handlebars->37->2414",
         "default.handlebars->37->795"
       ]
     },
@@ -56193,7 +56200,7 @@
       "tr": "Terminal Oturumu",
       "zh-chs": "终端会话",
       "xloc": [
-        "default.handlebars->37->2524"
+        "default.handlebars->37->2529"
       ]
     },
     {
@@ -56490,7 +56497,7 @@
       "zh-cht": "目前沒有任何通知",
       "xloc": [
         "default-mobile.handlebars->11->655",
-        "default.handlebars->37->2599"
+        "default.handlebars->37->2604"
       ]
     },
     {
@@ -56514,7 +56521,7 @@
       "zh-chs": "自上次登录以来，此帐户已有 {0} 次登录尝试失败。",
       "xloc": [
         "default-mobile.handlebars->11->676",
-        "default.handlebars->37->2620"
+        "default.handlebars->37->2625"
       ]
     },
     {
@@ -56723,8 +56730,8 @@
       "xloc": [
         "default.handlebars->37->1270",
         "default.handlebars->37->2144",
-        "default.handlebars->37->2513",
-        "default.handlebars->37->2514"
+        "default.handlebars->37->2518",
+        "default.handlebars->37->2519"
       ]
     },
     {
@@ -57102,8 +57109,8 @@
       "zh-cht": "時間",
       "xloc": [
         "default-mobile.handlebars->11->320",
-        "default.handlebars->37->2564",
         "default.handlebars->37->2570",
+        "default.handlebars->37->2575",
         "default.handlebars->37->990",
         "player.handlebars->3->16"
       ]
@@ -57129,7 +57136,7 @@
       "zh-chs": "时间范围",
       "zh-cht": "時間範圍",
       "xloc": [
-        "default.handlebars->37->2565",
+        "default.handlebars->37->2571",
         "default.handlebars->37->981"
       ]
     },
@@ -57178,7 +57185,7 @@
       "zh-chs": "时间范围",
       "zh-cht": "時間範圍",
       "xloc": [
-        "default.handlebars->37->2563",
+        "default.handlebars->37->2569",
         "default.handlebars->37->979"
       ]
     },
@@ -58466,7 +58473,7 @@
         "default.handlebars->37->1668",
         "default.handlebars->37->1721",
         "default.handlebars->37->1787",
-        "default.handlebars->37->2553",
+        "default.handlebars->37->2559",
         "default.handlebars->37->408",
         "default.handlebars->37->960",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
@@ -58774,7 +58781,7 @@
       "zh-cht": "在啟用兩因素身份驗證之前，無法訪問此功能。這是額外的安全性所必需的。轉到“我的帳戶”標籤，然後查看“帳戶安全性”部分。",
       "xloc": [
         "default.handlebars->37->1664",
-        "default.handlebars->37->2730",
+        "default.handlebars->37->2735",
         "default.handlebars->37->718"
       ]
     },
@@ -58799,7 +58806,7 @@
       "zh-chs": "无法在此模式下添加用户",
       "xloc": [
         "default-mobile.handlebars->11->672",
-        "default.handlebars->37->2616"
+        "default.handlebars->37->2621"
       ]
     },
     {
@@ -59272,11 +59279,11 @@
         "default.handlebars->37->175",
         "default.handlebars->37->177",
         "default.handlebars->37->179",
-        "default.handlebars->37->2506",
-        "default.handlebars->37->2523",
-        "default.handlebars->37->2530",
-        "default.handlebars->37->2590",
-        "default.handlebars->37->2596",
+        "default.handlebars->37->2511",
+        "default.handlebars->37->2528",
+        "default.handlebars->37->2535",
+        "default.handlebars->37->2595",
+        "default.handlebars->37->2601",
         "default.handlebars->37->44",
         "default.handlebars->37->51",
         "default.handlebars->37->52",
@@ -59329,7 +59336,7 @@
       "zh-chs": "未知动作",
       "zh-cht": "未知動作",
       "xloc": [
-        "default.handlebars->37->2648"
+        "default.handlebars->37->2653"
       ]
     },
     {
@@ -59353,9 +59360,9 @@
       "zh-chs": "未知设备",
       "zh-cht": "未知裝置",
       "xloc": [
-        "default.handlebars->37->2335",
-        "default.handlebars->37->2492",
-        "default.handlebars->37->2591"
+        "default.handlebars->37->2338",
+        "default.handlebars->37->2497",
+        "default.handlebars->37->2596"
       ]
     },
     {
@@ -59379,9 +59386,9 @@
       "zh-chs": "未知设备组",
       "zh-cht": "未知裝置群",
       "xloc": [
-        "default.handlebars->37->2329",
-        "default.handlebars->37->2480",
-        "default.handlebars->37->2652"
+        "default.handlebars->37->2332",
+        "default.handlebars->37->2485",
+        "default.handlebars->37->2657"
       ]
     },
     {
@@ -59405,7 +59412,7 @@
       "zh-chs": "未知群组",
       "zh-cht": "未知群組",
       "xloc": [
-        "default.handlebars->37->2644"
+        "default.handlebars->37->2649"
       ]
     },
     {
@@ -59437,8 +59444,8 @@
       "en": "Unknown User",
       "nl": "Onbekende gebruiker",
       "xloc": [
-        "default.handlebars->37->2592",
-        "default.handlebars->37->2597"
+        "default.handlebars->37->2597",
+        "default.handlebars->37->2602"
       ]
     },
     {
@@ -59462,7 +59469,7 @@
       "zh-chs": "未知用户组",
       "zh-cht": "未知用戶群",
       "xloc": [
-        "default.handlebars->37->2486"
+        "default.handlebars->37->2491"
       ]
     },
     {
@@ -59673,7 +59680,7 @@
       "zh-chs": "最新",
       "zh-cht": "最新",
       "xloc": [
-        "default.handlebars->37->2735"
+        "default.handlebars->37->2740"
       ]
     },
     {
@@ -60200,7 +60207,7 @@
       "tr": "kullanım",
       "zh-chs": "用法",
       "xloc": [
-        "default.handlebars->37->2698"
+        "default.handlebars->37->2703"
       ]
     },
     {
@@ -60390,8 +60397,8 @@
       "zh-chs": "用过的",
       "zh-cht": "用過的",
       "xloc": [
-        "default.handlebars->37->2638",
-        "default.handlebars->37->2640"
+        "default.handlebars->37->2643",
+        "default.handlebars->37->2645"
       ]
     },
     {
@@ -60419,10 +60426,10 @@
         "default.handlebars->37->1771",
         "default.handlebars->37->2155",
         "default.handlebars->37->2184",
-        "default.handlebars->37->2325",
-        "default.handlebars->37->2549",
+        "default.handlebars->37->2328",
         "default.handlebars->37->2554",
-        "default.handlebars->37->2573",
+        "default.handlebars->37->2560",
+        "default.handlebars->37->2578",
         "default.handlebars->37->326",
         "default.handlebars->37->880"
       ]
@@ -60500,7 +60507,7 @@
       "zh-chs": "用户帐户",
       "zh-cht": "用戶帳戶",
       "xloc": [
-        "default.handlebars->37->2657"
+        "default.handlebars->37->2662"
       ]
     },
     {
@@ -60551,8 +60558,8 @@
       "zh-cht": "用戶同意",
       "xloc": [
         "default.handlebars->37->1742",
-        "default.handlebars->37->2316",
-        "default.handlebars->37->2416",
+        "default.handlebars->37->2319",
+        "default.handlebars->37->2421",
         "default.handlebars->37->264",
         "default.handlebars->37->802",
         "default.handlebars->37->983"
@@ -60582,8 +60589,8 @@
         "default.handlebars->37->1849",
         "default.handlebars->37->1850",
         "default.handlebars->37->2289",
-        "default.handlebars->37->2488",
-        "default.handlebars->37->2509",
+        "default.handlebars->37->2493",
+        "default.handlebars->37->2514",
         "default.handlebars->37->879"
       ]
     },
@@ -60632,7 +60639,7 @@
       "zh-chs": "用户组成员",
       "zh-cht": "用戶群成員",
       "xloc": [
-        "default.handlebars->37->2485"
+        "default.handlebars->37->2490"
       ]
     },
     {
@@ -60681,8 +60688,8 @@
       "zh-cht": "用戶識別碼",
       "xloc": [
         "default.handlebars->37->1918",
-        "default.handlebars->37->2370",
-        "default.handlebars->37->2371"
+        "default.handlebars->37->2375",
+        "default.handlebars->37->2376"
       ]
     },
     {
@@ -60707,7 +60714,7 @@
       "zh-cht": "用戶標識符",
       "xloc": [
         "default.handlebars->37->1847",
-        "default.handlebars->37->2354"
+        "default.handlebars->37->2359"
       ]
     },
     {
@@ -60894,7 +60901,7 @@
       "zh-chs": "用户节",
       "zh-cht": "用戶節",
       "xloc": [
-        "default.handlebars->37->2689"
+        "default.handlebars->37->2694"
       ]
     },
     {
@@ -60923,6 +60930,12 @@
         "default.handlebars->termShellContextMenuLinux->3",
         "xterm.handlebars->termShellContextMenu->cxtermunorm",
         "xterm.handlebars->termShellContextMenuLinux->cxtermps"
+      ]
+    },
+    {
+      "en": "User Traffic Usage",
+      "xloc": [
+        "default.handlebars->37->2558"
       ]
     },
     {
@@ -61018,7 +61031,7 @@
       "zh-chs": "用户已存在",
       "xloc": [
         "default-mobile.handlebars->11->671",
-        "default.handlebars->37->2615"
+        "default.handlebars->37->2620"
       ]
     },
     {
@@ -61214,7 +61227,7 @@
       "zh-chs": "未找到用户 {0}。",
       "xloc": [
         "default-mobile.handlebars->11->679",
-        "default.handlebars->37->2623"
+        "default.handlebars->37->2628"
       ]
     },
     {
@@ -61412,8 +61425,8 @@
       "zh-cht": "用戶",
       "xloc": [
         "default.handlebars->37->2277",
-        "default.handlebars->37->2317",
-        "default.handlebars->37->2688",
+        "default.handlebars->37->2320",
+        "default.handlebars->37->2693",
         "default.handlebars->container->topbar->1->1->UsersSubMenuSpan->UsersSubMenu->1->0->UsersGeneral"
       ]
     },
@@ -61438,7 +61451,7 @@
       "zh-chs": "用户会话",
       "zh-cht": "用戶節",
       "xloc": [
-        "default.handlebars->37->2661"
+        "default.handlebars->37->2666"
       ]
     },
     {
@@ -61485,7 +61498,7 @@
       "zh-chs": "未找到用户 {0}。",
       "xloc": [
         "default-mobile.handlebars->11->680",
-        "default.handlebars->37->2624"
+        "default.handlebars->37->2629"
       ]
     },
     {
@@ -61628,7 +61641,7 @@
       "zh-chs": "验证异常",
       "xloc": [
         "default-mobile.handlebars->11->673",
-        "default.handlebars->37->2617"
+        "default.handlebars->37->2622"
       ]
     },
     {
@@ -61772,7 +61785,7 @@
       "zh-chs": "已验证",
       "zh-cht": "已驗證",
       "xloc": [
-        "default.handlebars->37->2464"
+        "default.handlebars->37->2469"
       ]
     },
     {
@@ -61952,7 +61965,7 @@
       "zh-chs": "版本不兼容，请先升级您的MeshCentral",
       "zh-cht": "版本不兼容，請先升級你的MeshCentral",
       "xloc": [
-        "default.handlebars->37->2731"
+        "default.handlebars->37->2736"
       ]
     },
     {
@@ -62138,8 +62151,8 @@
       "zh-chs": "查看变更日志",
       "zh-cht": "查看變更日誌",
       "xloc": [
-        "default.handlebars->37->2734",
-        "default.handlebars->37->2736"
+        "default.handlebars->37->2739",
+        "default.handlebars->37->2741"
       ]
     },
     {
@@ -62211,7 +62224,7 @@
       "zh-chs": "查看有关此用户的注释",
       "zh-cht": "查看有關此用戶的註釋",
       "xloc": [
-        "default.handlebars->37->2426"
+        "default.handlebars->37->2431"
       ]
     },
     {
@@ -62258,7 +62271,7 @@
       "tr": "Bu kullanıcı için önceki girişleri görüntüle",
       "zh-chs": "查看此用户以前的登录",
       "xloc": [
-        "default.handlebars->37->2439"
+        "default.handlebars->37->2444"
       ]
     },
     {
@@ -62709,8 +62722,8 @@
       "zh-chs": "网络服务器",
       "zh-cht": "網絡伺服器",
       "xloc": [
-        "default.handlebars->37->2714",
-        "default.handlebars->37->2715"
+        "default.handlebars->37->2719",
+        "default.handlebars->37->2720"
       ]
     },
     {
@@ -62733,7 +62746,7 @@
       "tr": "Web Sunucusu HTTP Başlıkları",
       "zh-chs": "Web 服务器 HTTP 标头",
       "xloc": [
-        "default.handlebars->37->2718"
+        "default.handlebars->37->2723"
       ]
     },
     {
@@ -62757,7 +62770,7 @@
       "zh-chs": "Web服务器请求",
       "zh-cht": "Web伺服器請求",
       "xloc": [
-        "default.handlebars->37->2716"
+        "default.handlebars->37->2721"
       ]
     },
     {
@@ -62781,7 +62794,7 @@
       "zh-chs": "Web套接字中继",
       "zh-cht": "Web插座中繼",
       "xloc": [
-        "default.handlebars->37->2717"
+        "default.handlebars->37->2722"
       ]
     },
     {
@@ -62805,7 +62818,7 @@
       "zh-chs": "网络RDP",
       "zh-cht": "網絡RDP",
       "xloc": [
-        "default.handlebars->37->2586",
+        "default.handlebars->37->2591",
         "default.handlebars->37->858"
       ]
     },
@@ -62813,7 +62826,7 @@
       "en": "Web-SFTP",
       "nl": "Web-SFTP",
       "xloc": [
-        "default.handlebars->37->2588"
+        "default.handlebars->37->2593"
       ]
     },
     {
@@ -62836,7 +62849,7 @@
       "tr": "Web-SSH",
       "zh-chs": "网络SSH",
       "xloc": [
-        "default.handlebars->37->2587",
+        "default.handlebars->37->2592",
         "default.handlebars->37->860"
       ]
     },
@@ -62860,7 +62873,7 @@
       "tr": "Web-VNC",
       "zh-chs": "网络VNC",
       "xloc": [
-        "default.handlebars->37->2589",
+        "default.handlebars->37->2594",
         "default.handlebars->37->856"
       ]
     },
@@ -62884,7 +62897,7 @@
       "tr": "WebRDP",
       "zh-chs": "网络RDP",
       "xloc": [
-        "default.handlebars->37->2682"
+        "default.handlebars->37->2687"
       ]
     },
     {
@@ -62907,7 +62920,7 @@
       "tr": "WebSSH",
       "zh-chs": "网络SSH",
       "xloc": [
-        "default.handlebars->37->2683"
+        "default.handlebars->37->2688"
       ]
     },
     {
@@ -62938,7 +62951,7 @@
       "tr": "WebVNC",
       "zh-chs": "网络VNC",
       "xloc": [
-        "default.handlebars->37->2684"
+        "default.handlebars->37->2689"
       ]
     },
     {
@@ -63154,7 +63167,7 @@
       "zh-chs": "下次登录时将更改。",
       "zh-cht": "下次登入時將更改。",
       "xloc": [
-        "default.handlebars->37->2396"
+        "default.handlebars->37->2401"
       ]
     },
     {
@@ -64810,7 +64823,7 @@
       "zh-chs": "\\\\'",
       "zh-cht": "\\\\'",
       "xloc": [
-        "default.handlebars->37->2732"
+        "default.handlebars->37->2737"
       ]
     },
     {
@@ -65543,8 +65556,8 @@
       "zh-chs": "免费",
       "zh-cht": "免費",
       "xloc": [
-        "default.handlebars->37->2669",
-        "default.handlebars->37->2672"
+        "default.handlebars->37->2674",
+        "default.handlebars->37->2677"
       ]
     },
     {
@@ -66607,7 +66620,7 @@
       "zh-chs": "servertrace.csv",
       "zh-cht": "servertrace.csv",
       "xloc": [
-        "default.handlebars->37->2726"
+        "default.handlebars->37->2731"
       ]
     },
     {
@@ -66705,7 +66718,7 @@
       "zh-chs": "time, conn.agent, conn.users, conn.usersessions, conn.relaysession, conn.intelamt, mem.external, mem.heapused, mem.heaptotal, mem.rss",
       "zh-cht": "time, conn.agent, conn.users, conn.usersessions, conn.relaysession, conn.intelamt, mem.external, mem.heapused, mem.heaptotal, mem.rss",
       "xloc": [
-        "default.handlebars->37->2701"
+        "default.handlebars->37->2706"
       ]
     },
     {
@@ -66729,7 +66742,7 @@
       "zh-chs": "时间，来源，信息",
       "zh-cht": "時間，來源，訊息",
       "xloc": [
-        "default.handlebars->37->2725"
+        "default.handlebars->37->2730"
       ]
     },
     {
@@ -66774,8 +66787,8 @@
       "zh-chs": "总计",
       "zh-cht": "總",
       "xloc": [
-        "default.handlebars->37->2670",
-        "default.handlebars->37->2673"
+        "default.handlebars->37->2675",
+        "default.handlebars->37->2678"
       ]
     },
     {
@@ -67180,7 +67193,7 @@
       "xloc": [
         "default.handlebars->37->1982",
         "default.handlebars->37->1987",
-        "default.handlebars->37->2522"
+        "default.handlebars->37->2527"
       ]
     },
     {
@@ -67298,7 +67311,7 @@
       "zh-chs": "{0}个活跃会话",
       "zh-cht": "{0}個活躍節",
       "xloc": [
-        "default.handlebars->37->2442"
+        "default.handlebars->37->2447"
       ]
     },
     {
@@ -67349,7 +67362,7 @@
       "xloc": [
         "default-mobile.handlebars->11->143",
         "default.handlebars->37->1997",
-        "default.handlebars->37->2543",
+        "default.handlebars->37->2548",
         "download.handlebars->3->2",
         "download2.handlebars->5->2",
         "sharing.handlebars->11->97"
@@ -67492,7 +67505,7 @@
       "zh-chs": "{0}个群组",
       "zh-cht": "{0}個群組",
       "xloc": [
-        "default.handlebars->37->2401"
+        "default.handlebars->37->2406"
       ]
     },
     {
