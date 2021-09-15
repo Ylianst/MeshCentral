@@ -202,7 +202,7 @@ module.exports.CreateDB = function (parent, func) {
                                                     // Notify user change
                                                     var targets = ['*', 'server-users', cuser._id];
                                                     var event = { etype: 'user', userid: cuser._id, username: cuser.name, action: 'accountchange', msgid: 86, msgArgs: [cuser.name], msg: 'Removed user device rights for ' + cuser.name, domain: node.domain, account: parent.webserver.CloneSafeUser(cuser) };
-                                                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                                    if (obj.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                                     parent.DispatchEvent(targets, obj, event);
                                                 }
                                             }
@@ -214,7 +214,7 @@ module.exports.CreateDB = function (parent, func) {
                                     if ((parent.webserver.meshes[node.meshid] != null) && (parent.webserver.meshes[node.meshid].name != null)) { meshname = parent.webserver.meshes[node.meshid].name; }
                                     var event = { etype: 'node', action: 'removenode', nodeid: node._id, msgid: 87, msgArgs: [node.name, meshname], msg: 'Removed device ' + node.name + ' from device group ' + meshname, domain: node.domain };
                                     // TODO: We can't use the changeStream for node delete because we will not know the meshid the device was in.
-                                    //if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to remove the node. Another event will come.
+                                    //if (obj.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to remove the node. Another event will come.
                                     parent.DispatchEvent(parent.webserver.CreateNodeDispatchTargets(node.meshid, node._id), obj, event);
                                 });
                             }
