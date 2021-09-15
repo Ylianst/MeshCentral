@@ -13990,7 +13990,7 @@
             x += '<div><label><input type=checkbox id=d51flag9 onchange=p51edituserGroupFeaturesValidate() ' + ((removeRights & 0x00020000) ? 'checked' : '') + '>' + "No Remote Command" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d51flag10 onchange=p51edituserGroupFeaturesValidate() ' + ((removeRights & 0x00000040) ? 'checked' : '') + '>' + "No Wake" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d51flag11 onchange=p51edituserGroupFeaturesValidate() ' + ((removeRights & 0x00040000) ? 'checked' : '') + '>' + "No Reset/Off" + '</label><br></div>';
-            setDialogMode(2, "Edit User Features", 3, p51edituserGroupFeaturesEx, x);
+            setDialogMode(2, "Edit User Group Features", 3, p51edituserGroupFeaturesEx, x);
             p51edituserGroupFeaturesValidate();
         }
 
@@ -14023,25 +14023,6 @@
             if (Q('d51flag11').checked) { r += 0x00040000; }
             meshserver.send({ action: 'editusergroup', ugrpid: currentUserGroup._id, flags: f, removeRights: r });
         }
-
-        /*
-        function p51edituserGroupFeatures() {
-            if (xxdialogMode) return;
-            var flags = (currentUserGroup.flags)?currentUserGroup.flags:0, x = ''; // Flags: 2 = Session Recording
-            if (serverinfo.userGroupsSessionRecording == 1) {
-                x += '<div><label><input type=checkbox id=d51flag1 ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
-            }
-            setDialogMode(2, "Edit User Group Features", 3, p51edituserGroupFeaturesEx, x);
-        }
-
-        // Send to the server the new user's real name
-        function p51edituserGroupFeaturesEx() {
-            // Setup user flags
-            var f = 0;
-            if ((serverinfo.userGroupsSessionRecording == 1) && Q('d51flag1').checked) { f += 2; }
-            meshserver.send({ action: 'editusergroup', ugrpid: currentUserGroup._id, flags: f });
-        }
-        */
 
         function p51removeDeviceFromUserGroup(e, nodeid) {
             if (xxdialogMode) return;
