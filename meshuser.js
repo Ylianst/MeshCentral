@@ -1951,14 +1951,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (change == '') { change = 'User group features changed.'; }
                         }
 
-                        if ((command.removeRights != null) && (typeof command.removeRights == 'number')) {
-                            if ((command.removeRights == 0) && (group.removeRights != null)) { delete group.removeRights; } else { if (command.removeRights !== group.removeRights) { group.removeRights = command.removeRights; } }
-                            if (change == '') { change = 'User group features changed.'; }
-                        }
-
                         if (change != '') {
                             db.Set(group);
-                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, consent: ((group.consent == null) ? 0 : group.consent), action: 'usergroupchange', links: group.links, flags: group.flags, removeRights: group.removeRights, msg: change, domain: domain.id };
+                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, consent: ((group.consent == null) ? 0 : group.consent), action: 'usergroupchange', links: group.links, flags: group.flags, msg: change, domain: domain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                             parent.parent.DispatchEvent(['*', group._id, user._id], obj, event);
                         }

@@ -2936,7 +2936,6 @@
                                 if (message.event.desc) { ugroup.desc = message.event.desc; } else { delete ugroup.desc; }
                                 if (message.event.links) { ugroup.links = message.event.links; } else { delete ugroup.links; }
                                 if (message.event.flags) { ugroup.flags = message.event.flags; } else { delete ugroup.flags; }
-                                if (message.event.removeRights) { ugroup.removeRights = message.event.removeRights; } else { delete ugroup.removeRights; }
                                 if (typeof message.event.consent == 'number') { ugroup.consent = message.event.consent; }
                             }
                             mainUpdate(4096 + 8192 + 16384);
@@ -13831,24 +13830,13 @@
             }
 
             // Display features
-            var userGroupFeatures = [];
-            if ((serverinfo.userGroupsSessionRecording == 1) && (group.flags) && (group.flags & 2)) { userGroupFeatures.push("Record Sessions"); }
-            if (group.removeRights) {
-                if ((group.removeRights & 0x00000008) != 0) { userGroupFeatures.push("No Remote Control"); } else {
-                    if ((group.removeRights & 0x00010000) != 0) { userGroupFeatures.push("No Desktop"); }
-                    else if ((group.removeRights & 0x00000100) != 0) { userGroupFeatures.push("Desktop View Only"); }
-                    if ((group.removeRights & 0x00000200) != 0) { userGroupFeatures.push("No Terminal"); }
-                    if ((group.removeRights & 0x00000400) != 0) { userGroupFeatures.push("No Files"); }
-                }
-                if ((group.removeRights & 0x00000010) != 0) { userGroupFeatures.push("No Console"); }
-                if ((group.removeRights & 0x00008000) != 0) { userGroupFeatures.push("No Uninstall"); }
-                if ((group.removeRights & 0x00020000) != 0) { userGroupFeatures.push("No Remote Command"); }
-                if ((group.removeRights & 0x00000040) != 0) { userGroupFeatures.push("No Wake"); }
-                if ((group.removeRights & 0x00040000) != 0) { userGroupFeatures.push("No Reset/Off"); }
+            if (serverinfo.userGroupsSessionRecording == 1) {
+                var userGroupFeatures = [];
+                if ((group.flags) && (group.flags & 2)) { userGroupFeatures.push("Record Sessions"); }
+                userGroupFeatures = userGroupFeatures.join(', ');
+                if (userGroupFeatures == '') { userGroupFeatures = '<i>' + "None" + '</i>'; }
+                x += addDeviceAttribute("Features", addLink(userGroupFeatures, 'p51edituserGroupFeatures()'));
             }
-            userGroupFeatures = userGroupFeatures.join(', ');
-            if (userGroupFeatures == '') { userGroupFeatures = '<i>' + "None" + '</i>'; }
-            x += addDeviceAttribute("Features", addLink(userGroupFeatures, 'p51edituserGroupFeatures()'));
 
             // Display user consent flags for this user group
             {
@@ -13975,53 +13963,19 @@
 
         function p51edituserGroupFeatures() {
             if (xxdialogMode) return;
-            var flags = (currentUserGroup.flags)?currentUserGroup.flags:0, x = ''; // Flags: 1 = Account Image, 2 = Session Recording
-            var removeRights = (currentUserGroup.removeRights)?currentUserGroup.removeRights:0, x = ''; // Remove Device Group Rights
+            var flags = (currentUserGroup.flags)?currentUserGroup.flags:0, x = ''; // Flags: 2 = Session Recording
             if (serverinfo.userGroupsSessionRecording == 1) {
-                x += '<div><label><input type=checkbox id=d51flag1 onchange=p51edituserGroupFeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
+                x += '<div><label><input type=checkbox id=d51flag1 ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
             }
-            x += '<div><label><input type=checkbox id=d51flag7 onchange=p51edituserGroupFeaturesValidate() ' + ((removeRights & 0x00000008) ? 'checked' : '') + '>' + "No Remote Control" + '</label><br></div>';
-            x += '<div style=margin-left:8px><label><input type=checkbox id=d51flag2 onchange=p51edituserGroupFeaturesValidate() ' + ((removeRights & 0x00010000) ? 'checked' : '') + '>' + "No Desktop Access" + '</label><br></div>';
-            x += '<div style=margin-left:16px><label><input type=checkbox id=d51flag3 onchange=p51edituserGroupFeaturesValidate() ' + ((removeRights & 0x00000100) ? 'checked' : '') + '>' + "Remote View Only" + '</label><br></div>';
-            x += '<div style=margin-left:8px><label><input type=checkbox id=d51flag4 onchange=p51edituserGroupFeaturesValidate() ' + ((removeRights & 0x00000200) ? 'checked' : '') + '>' + "No Terminal Access" + '</label><br></div>';
-            x += '<div style=margin-left:8px><label><input type=checkbox id=d51flag5 onchange=p51edituserGroupFeaturesValidate() ' + ((removeRights & 0x00000400) ? 'checked' : '') + '>' + "No File Access" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d51flag6 onchange=p51edituserGroupFeaturesValidate() ' + ((removeRights & 0x00000010) ? 'checked' : '') + '>' + "No Agent Console" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d51flag8 onchange=p51edituserGroupFeaturesValidate() ' + ((removeRights & 0x00008000) ? 'checked' : '') + '>' + "No Uninstall" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d51flag9 onchange=p51edituserGroupFeaturesValidate() ' + ((removeRights & 0x00020000) ? 'checked' : '') + '>' + "No Remote Command" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d51flag10 onchange=p51edituserGroupFeaturesValidate() ' + ((removeRights & 0x00000040) ? 'checked' : '') + '>' + "No Wake" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d51flag11 onchange=p51edituserGroupFeaturesValidate() ' + ((removeRights & 0x00040000) ? 'checked' : '') + '>' + "No Reset/Off" + '</label><br></div>';
             setDialogMode(2, "Edit User Group Features", 3, p51edituserGroupFeaturesEx, x);
-            p51edituserGroupFeaturesValidate();
-        }
-
-        function p51edituserGroupFeaturesValidate() {
-            QE('d51flag2', !Q('d51flag7').checked);
-            QE('d51flag3', !Q('d51flag7').checked && !Q('d51flag2').checked);
-            QE('d51flag4', !Q('d51flag7').checked);
-            QE('d51flag5', !Q('d51flag7').checked);
         }
 
         // Send to the server the new user's real name
         function p51edituserGroupFeaturesEx() {
             // Setup user flags
-            var flags = (currentUserGroup.flags)?currentUserGroup.flags:0; // Flags: 1 = Account Image, 2 = Session Recording
-            var f = flags & 1;
-            if ((serverinfo.userGroupsSessionRecording == 1) && Q('d51flag1').checked) { f += 2; }
-
-            // Setup user permission removal
-            var r = 0;
-            if (Q('d51flag7').checked) { r += 0x00000008; } else {
-                if (Q('d51flag2').checked) { r += 0x00010000; }
-                else if (Q('d51flag3').checked) { r += 0x00000100; }
-                if (Q('d51flag4').checked) { r += 0x00000200; }
-                if (Q('d51flag5').checked) { r += 0x00000400; }
-            }
-            if (Q('d51flag6').checked) { r += 0x00000010; }
-            if (Q('d51flag8').checked) { r += 0x00008000; }
-            if (Q('d51flag9').checked) { r += 0x00020000; }
-            if (Q('d51flag10').checked) { r += 0x00000040; }
-            if (Q('d51flag11').checked) { r += 0x00040000; }
-            meshserver.send({ action: 'editusergroup', ugrpid: currentUserGroup._id, flags: f, removeRights: r });
+            var flags = 0; // Flags: 2 = Session Recording
+            if ((serverinfo.userGroupsSessionRecording == 1) && Q('d51flag1').checked) { flags += 2; }
+            meshserver.send({ action: 'editusergroup', ugrpid: currentUserGroup._id, flags: flags });
         }
 
         function p51removeDeviceFromUserGroup(e, nodeid) {
