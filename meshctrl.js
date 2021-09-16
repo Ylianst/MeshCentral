@@ -2211,7 +2211,8 @@ function getDevicesThatMatchFilter(nodes, x) {
     } else if (tagSearch != null) {
         // Tag filter
         for (var d in nodes) {
-            if (((nodes[d].tags == null) && (tagSearch == '')) || ((nodes[d].tags != null) && (nodes[d].tags.indexOf(tagSearch) >= 0))) { r.push(nodes[d]); }
+            if ((nodes[d].tags == null) && (tagSearch == '')) { r.push(d); }
+            else if (nodes[d].tags != null) { for (var j in nodes[d].tags) { if (nodes[d].tags[j].toLowerCase() == tagSearch) { r.push(d); break; } } }
         }
     } else if (agentTagSearch != null) {
         // Agent Tag filter
