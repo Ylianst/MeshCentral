@@ -111,6 +111,8 @@
         "noAgentUpdate": { "type": "integer", "default": 0, "description": "Set to 1 to present the server from updating any agent." },
         "agentUpdateSystem": { "type": "integer", "default": 1, "description": "When set to 2, all agents that need to be updated will use the meshcore.js update system. With the default value of 1, the native update system is used." },
         "temporaryAgentUpdate": { "type": "boolean", "default": true, "description": "Set to false to not allow temporary agents to be updated." },
+        "amtScanner": { "type": "boolean", "default": true, "description": "Set to false to disable Intel AMT scanning on the local network, this is already disabled in WAN mode." },
+        "meshScanner": { "type": "boolean", "default": true, "description": "Set to false to disable agent multicast scanning on the local network, this is already disabled in WAN mode." },
         "meshErrorLogPath": { "type": "string" },
         "npmPath": { "type": "string" },
         "npmProxy": { "type": "string", "format": "uri" },

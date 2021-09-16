@@ -1569,8 +1569,8 @@ function CreateMeshCentralServer(config, args) {
 
                 // Setup the Intel AMT local network scanner
                 if (obj.args.wanonly != true) {
-                    obj.amtScanner = require('./amtscanner.js').CreateAmtScanner(obj).start();
-                    obj.meshScanner = require('./meshscanner.js').CreateMeshScanner(obj).start();
+                    if (obj.args.amtscanner != true) { obj.amtScanner = require('./amtscanner.js').CreateAmtScanner(obj).start(); }
+                    if (obj.args.meshscanner != true) { obj.meshScanner = require('./meshscanner.js').CreateMeshScanner(obj).start(); }
                 }
 
                 // Setup and start the MPS server
