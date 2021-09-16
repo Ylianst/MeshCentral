@@ -537,6 +537,12 @@
               }
             }
           },
+          "amtScanOptions": {
+            "description": "List of local network Intel AMT scanning options offered in the user interface. For example [\"LabNetwork 192.168.15.0/23\", \"SalesNetwork 192.168.8.0/24\"].",
+            "type": "array",
+            "default": null,
+            "items": { "type": "string" }
+          },
           "amtManager": {
             "type": "object",
             "additionalProperties": false,
