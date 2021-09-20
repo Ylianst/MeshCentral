@@ -507,9 +507,8 @@ module.exports.pluginHandler = function (parent) {
     obj.removePlugin = function (id, func) {
         parent.db.getPlugin(id, function (err, docs) {
             var plugin = docs[0];
-            var rimraf = require('rimraf');
             let pluginPath = obj.parent.path.join(obj.pluginPath, plugin.shortName);
-            rimraf.sync(pluginPath);
+            obj.fs.rmdirSync(pluginPath, { recursive: true });
             parent.db.deletePlugin(id, func);
             delete obj.plugins[plugin.shortName];
         });

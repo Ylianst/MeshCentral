@@ -1501,10 +1501,10 @@ module.exports.CreateDB = function (parent, func) {
             if (obj.pluginsActive) {
                 obj.addPlugin = function (plugin, func) { plugin.type = 'plugin'; obj.pluginsfile.insertOne(plugin, func); }; // Add a plugin
                 obj.getPlugins = function (func) { obj.pluginsfile.find({ type: 'plugin' }).project({ type: 0 }).sort({ name: 1 }).toArray(func); }; // Get all plugins
-                obj.getPlugin = function (id, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).toArray(func); }; // Get plugin
-                obj.deletePlugin = function (id, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.deleteOne({ _id: id }, func); }; // Delete plugin
-                obj.setPluginStatus = function (id, status, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.updateOne({ _id: id }, { $set: { status: status } }, func); };
-                obj.updatePlugin = function (id, args, func) { delete args._id; id = require('mongodb').ObjectID(id); obj.pluginsfile.updateOne({ _id: id }, { $set: args }, func); };
+                obj.getPlugin = function (id, func) { id = require('mongodb').ObjectId(id); obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).toArray(func); }; // Get plugin
+                obj.deletePlugin = function (id, func) { id = require('mongodb').ObjectId(id); obj.pluginsfile.deleteOne({ _id: id }, func); }; // Delete plugin
+                obj.setPluginStatus = function (id, status, func) { id = require('mongodb').ObjectId(id); obj.pluginsfile.updateOne({ _id: id }, { $set: { status: status } }, func); };
+                obj.updatePlugin = function (id, args, func) { delete args._id; id = require('mongodb').ObjectId(id); obj.pluginsfile.updateOne({ _id: id }, { $set: args }, func); };
             }
 
         } else {
