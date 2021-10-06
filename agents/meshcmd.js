@@ -166,6 +166,7 @@ function run(argv) {
     if (args.json) { settings.json = true; }
     if (args.tls) { settings.tls = true; }
     if ((argv.length > 1) && (actions.indexOf(argv[1].toUpperCase()) >= 0)) { settings.action = argv[1]; }
+    if (globalDebugFlags != 0) { console.setInfoLevel(1); }
 
     // Validate meshaction.txt
     if (settings.action == null) {
@@ -1394,13 +1395,13 @@ function getTrustedHashes(amtMei, func, tag) {
 //
 
 // Called to get the UUID of Intel AMT, start by setting up MicroLMS if we are doing the operation on the local computer
-function getAmtUuid() {
-    if (settings.hostname == null) {
-        var amtMeiModule, amtMei;
-        try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
-        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
-        amtMei.getUuid(function (result) { if ((result == null) || (result.uuid == null)) { console.log('Failed.'); } else { console.log(result.uuid); } exit(1); });
-    } else {
+function getAmtUuid()
+{
+    if (settings.hostname != null)
+    {
+        getAmtUuidEx();
+    } else
+    {
         if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) { settings.noconsole = true; startLms(getAmtUuidEx); return; } else { getAmtUuidEx(); }
     }
 }
