@@ -5659,7 +5659,7 @@
                 var panel = [0, 10, 12, 11, 13, 16, 17, 15, 19][action]; // (invalid), General, Desktop, Terminal, Files, Events, Console, Plugin
                 if (event && (event.shiftKey == true)) {
                     // Open the device in a different tab
-                    safeNewWindow(window.location.origin + '?node=' + nodeid.split('/')[2] + '&viewmode=' + panel + '&hide=16', 'meshcentral:' + nodeid);
+                    safeNewWindow(window.location.origin + '?node=' + nodeid.split('/')[2] + '&viewmode=' + panel + '&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + nodeid);
                 } else {
                     // Go to the right panel
                     gotoDevice(nodeid, panel);
@@ -5810,7 +5810,7 @@
 
         function cmdeskplayeraction(action) {
             if (xxdialogMode) return;
-            safeNewWindow(window.location.origin + '{{{domainurl}}}player.htm', 'meshcentral-deskplayer');
+            safeNewWindow(window.location.origin + '{{{domainurl}}}player.htm' + ((urlargs.key)?('?key=' + urlargs.key):''), 'meshcentral-deskplayer');
         }
 
         function cmdeskshortcutaction(action) {
@@ -6486,7 +6486,7 @@
 
             if (event && (event.shiftKey == true)) {
                 // Open the device in a different tab
-                safeNewWindow(window.location.origin + '?node=' + nodeid.split('/')[2] + '&viewmode=10&hide=16', 'meshcentral:' + nodeid);
+                safeNewWindow(window.location.origin + '?node=' + nodeid.split('/')[2] + '&viewmode=10&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + nodeid);
                 return;
             }
 
@@ -7713,6 +7713,7 @@
             var node = getNodeFromId(nodeid);
             if (node == null) return;
             if ([1, 2, 3, 4, 21, 22].indexOf(node.agent.id) >= 0) { url += '&os=win'; } else { url += '&os=linux'; }
+            if (urlargs.key) { url += '&key=' + urlargs.key; }
             safeNewWindow(url, 'xterm:' + nodeid);
             return false;
         }
@@ -13290,6 +13291,7 @@
             haltEvent(e);
             var url = '/messenger?id=meshmessenger/' + userid + '/' + encodeURIComponentEx(userinfo._id) + '&title=' + name;
             if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
+            if (urlargs.key) { url += '&key=' + urlargs.key; }
             safeNewWindow(url, 'meshmessenger:' + userid);
             meshserver.send({ action: 'meshmessenger', userid: decodeURIComponent(userid) });
             return false;
@@ -13299,6 +13301,7 @@
             if (xxdialogMode) return;
             haltEvent(e);
             var url = serverinfo.altmessenging[i].url.split('{0}').join(userid.split('/').join('-'));
+            if (urlargs.key) { url += '&key=' + urlargs.key; }
             safeNewWindow(url, 'altmessenger:' + userid);
             meshserver.send({ action: 'notifyuser', userid: decodeURIComponent(userid), msg: serverinfo.altmessenging[i].name, msgid: 11, url: url });
             return false;
@@ -15948,15 +15951,15 @@
             if (event && (event.shiftKey == true) && (x != 15) && ('{{{currentNode}}}'.toLowerCase() == '')) {
                 // Open the device in a different tab
                 if ((x >= 10) && (x <= 19)) {
-                    if (currentNode) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentNode._id); }
+                    if (currentNode) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + currentNode._id); }
                 } else if ((x >= 20) && (x <= 29)) {
-                    if (currentMesh) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotomesh=' + currentMesh._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentMesh._id); }
+                    if (currentMesh) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotomesh=' + currentMesh._id.split('/')[2] + '&viewmode=' + x + '&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + currentMesh._id); }
                 } else if ((x >= 30) && (x <= 39)) {
-                    if (currentUser) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotouser=' + ((serverinfo.crossDomain)?currentUser._id:currentUser._id.split('/')[2]) + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUser._id); }
+                    if (currentUser) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotouser=' + ((serverinfo.crossDomain)?currentUser._id:currentUser._id.split('/')[2]) + '&viewmode=' + x + '&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + currentUser._id); }
                 } else if ((x >= 50) && (x <= 59)) {
-                    if (currentUserGroup) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotougrp=' + ((serverinfo.crossDomain)?currentUserGroup._id:currentUserGroup._id.split('/')[2]) + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUserGroup._id); }
+                    if (currentUserGroup) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotougrp=' + ((serverinfo.crossDomain)?currentUserGroup._id:currentUserGroup._id.split('/')[2]) + '&viewmode=' + x + '&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + currentUserGroup._id); }
                 } else { // if (x < 10))
-                    safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?viewmode=' + x + '&hide=0', 'meshcentral:' + x);
+                    safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?viewmode=' + x + '&hide=0' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + x);
                 }
                 return;
             }
