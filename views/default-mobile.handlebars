@@ -3222,10 +3222,26 @@
             deviceHeaderTotal = 0;
         }
 
+        /*
         function meshSort(a, b) { if (a.meshnamel > b.meshnamel) return 1; if (a.meshnamel < b.meshnamel) return -1; if (a.meshid == b.meshid) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } return 0; }
         function powerSort(a, b) { var ap = a.pwr ? a.pwr : 0; var bp = b.pwr ? b.pwr : 0; if (ap == bp) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } if (ap > bp) return 1; if (ap < bp) return -1; return 0; }
         function deviceSort(a, b) { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; }
         function deviceHostSort(a, b) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; }
+        */
+
+        var sortCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
+        function meshSort(a, b) {
+            var x = sortCollator.compare(a.meshnamel, b.meshnamel);
+            if (x != 0) return x;
+            x = sortCollator.compare(a.meshid, b.meshid);
+            if (x != 0) return x;
+            if (showRealNames == true) { return sortCollator.compare(a.rnamel, b.rnamel); }
+            return sortCollator.compare(a.namel, b.namel);
+        }
+        function powerSort(a, b) { var ap = a.pwr ? a.pwr : 0; var bp = b.pwr ? b.pwr : 0; if (ap > bp) return -1; if (ap < bp) return 1; if (ap == bp) { if (showRealNames == true) { return sortCollator.compare(a.rnamel, b.rnamel); } else { return sortCollator.compare(a.namel, b.namel); } } }
+        function deviceSort(a, b) { return sortCollator.compare(a.namel, b.namel); }
+        function deviceHostSort(a, b) { return sortCollator.compare(a.rnamel, b.rnamel); }
+
 
         //
         // MY DEVICE
