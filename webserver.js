@@ -2435,6 +2435,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             return;
         }
 
+        // If set and there is no user logged in, redirect the root page. Make sure not to redirect if /login is used
+        if ((typeof domain.unknownuserrootredirect == 'string') && ((req.session == null) || (req.session.userid == null))) {
+            var q = require('url').parse(req.url, true);
+            if (!q.pathname.endsWith('/login')) { res.redirect(domain.unknownuserrootredirect + getQueryPortion(req)); return; }
+        }
+        
         if ((domain.sspi != null) && ((req.query.login == null) || (obj.parent.loginCookieEncryptionKey == null))) {
             // Login using SSPI
             domain.sspi.authenticate(req, res, function (err) {
@@ -5642,13 +5648,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((parent.config.domains[i].dns != null) || (parent.config.domains[i].share != null)) { continue; } // This is a subdomain with a DNS name, no added HTTP bindings needed.
             var domain = parent.config.domains[i];
             var url = domain.url;
-            if (domain.rootredirect == null) {
+            if (typeof domain.rootredirect == 'string') {
+                // Root page redirects the user to a different URL
+                obj.app.get(url, handleRootRedirect);
+            } else {
                 // Present the login page as the root page
                 obj.app.get(url, handleRootRequest);
                 obj.app.post(url, handleRootPostRequest);
-            } else {
-                // Root page redirects the user to a different URL
-                obj.app.get(url, handleRootRedirect);
             }
             obj.app.get(url + 'refresh.ashx', function (req, res) { res.sendStatus(200); });
             if ((domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.backup === true))) { obj.app.get(url + 'backup.zip', handleBackupRequest); }

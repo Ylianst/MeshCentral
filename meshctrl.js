@@ -837,7 +837,7 @@ if (args['_'].length == 0) {
                         var localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -5);
                         console.log("List sharing links for a specified device, Example usages:\r\n");
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid'"));
-                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --remote abcdef"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --remove abcdef"));
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --start " + localISOTime + " --duration 30"));
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --type terminal --consent prompt"));
                         console.log("\r\nRequired arguments:\r\n");

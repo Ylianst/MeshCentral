@@ -282,6 +282,7 @@
           "titlePicture": { "type": "string", "default": null, "description": "Web site .png logo file that is 450x66 in size placed in meshcentral-data that is used on the top of many pages." },
           "loginPicture": { "type": "string", "default": null, "description": "Web site .png logo file placed in meshcentral-data that used on the login page when sitestyle is 2." },
           "rootRedirect": { "type": "string", "default": null, "description": "Redirects HTTP root requests to this URL. When in use, direct users to /login to see the normal login page." },
+          "unknownUserRootRedirect": { "type": "string", "default": null, "description": "Redirects HTTP root requests to this URL only where user is not already logged in. When in use, direct users to /login to see the normal login page." },
           "userQuota": { "type": "integer" },
           "meshQuota": { "type": "integer" },
           "loginKey": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": null, "description": "Requires that users add the value ?key=xxx in the URL in order to see the web site." },
