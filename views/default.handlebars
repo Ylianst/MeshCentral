@@ -3210,9 +3210,7 @@
 
                                 // Per-group notification settings
                                 if (message.event.meshid && userinfo.links && userinfo.links[message.event.meshid] && userinfo.links[message.event.meshid].notify) {
-                                    n &= userinfo.links[message.event.meshid].notify;
-                                } else {
-                                    n = 0;
+                                    n |= userinfo.links[message.event.meshid].notify;
                                 }
 
                                 // Show the notification
