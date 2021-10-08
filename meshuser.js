@@ -67,6 +67,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const SITERIGHT_RECORDINGS          = 0x00000200; // 512
     const SITERIGHT_LOCKSETTINGS        = 0x00000400; // 1024
     const SITERIGHT_ALLEVENTS           = 0x00000800; // 2048
+    const SITERIGHT_NONEWDEVICES        = 0x00001000; // 4096
     const SITERIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Protocol Numbers

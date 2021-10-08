@@ -4061,15 +4061,15 @@
                             r += '</span></td></tr><tr>';
                             if (mesh.mtype == 1) {
                                 r += '<td><div style=padding:10px><i>' + "No Intel&reg; AMT devices in this device group";
-                                if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addDeviceToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
+                                if (((meshrights & 4) != 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { r += ', <a href=# style=cursor:pointer onclick=\'return addDeviceToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
                             } else if (mesh.mtype == 2) {
                                 r += '<td><div id=DevxCol' + deviceHeaderId2 + ((collapsed === true)?' style=display:none':'') + '>'; // Open collapse div
                                 r += '<div style=padding:10px><i>' + "No devices in this device group";
-                                if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
+                                if (((meshrights & 4) != 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { r += ', <a href=# style=cursor:pointer onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
                             } else if (mesh.mtype == 3) {
                                 r += '<td><div id=DevxCol' + deviceHeaderId2 + ((collapsed === true)?' style=display:none':'') + '>'; // Open collapse div
                                 r += '<div style=padding:10px><i>' + "No local devices in this device group";
-                                if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addLocalDeviceToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
+                                if (((meshrights & 4) != 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { r += ', <a href=# style=cursor:pointer onclick=\'return addLocalDeviceToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
                             }
                             r += '.</i></div></td>';
                             r += '</div>'; // End collapsing area
@@ -4650,7 +4650,7 @@
                     r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel&reg; AMT activation and configuration." + '" onclick=\'return showAmtSetup("' + mesh._id + '")\'>' + "Setup" + '</a>';
                 }
             }
-            if (mesh.mtype == 2) { // Agent device group
+            if ((mesh.mtype == 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { // Agent device group
                 r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new computer to this device group by installing the mesh agent." + '" onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "Add Agent" + '</a>';
                 if ((features & 2) == 0) { r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Invite someone to install the mesh agent on this device group." + '" onclick=\'return inviteAgentToMesh("' + mesh._id + '")\'>' + "Invite" + '</a>'; }
             }
@@ -11403,11 +11403,11 @@
                     x += '<a href=# style=cursor:pointer;margin-right:10px title="' + "Perform Intel&reg; AMT activation and configuration." + '" onclick=\'return showAmtSetup("' + currentMesh._id + '")\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Setup" + '</a>';
                 }
             }
-            if (currentMesh.mtype == 2) {
+            if ((currentMesh.mtype == 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) {
                 x += '<a href=# onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new computer to this device group by installing the mesh agent." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Agent" + '</a>';
                 x += '<a href=# onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Invite someone to install the mesh agent on this device group." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Invite" + '</a>';
             }
-            if (currentMesh.amt && (currentMesh.amt.type > 2)) { // ACM activation or Full Automatic
+            if (currentMesh.amt && (currentMesh.amt.type > 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { // ACM activation or Full Automatic
                 x += '<a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "ACM" + '</a>';
             }
 
@@ -13582,6 +13582,7 @@
             x = '<div><div id=d2AdminPermissions>' + x;
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_lockedaccount>' + "Lock Account" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nonewgroups>' + "No New Device Groups" + '</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nonewdevices>' + "No New Devices" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nomeshcmd>' + "No Tools (MeshCmd/Router)" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_locksettings>' + "Lock Account Settings" + '</label><br>';
             x += '</div>';
@@ -13596,6 +13597,7 @@
                 Q('ua_nonewgroups').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 64) != 0));       // No New Groups
                 Q('ua_nomeshcmd').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 128) != 0));        // No Tools (MeshCMD / Router)
                 Q('ua_locksettings').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0));    // Lock account settings
+                Q('ua_nonewdevices').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 4096) != 0));    // No New Devices
             }
             if ((userinfo.siteadmin & 2) != 0) {
                 Q('ua_manageusers').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 2) != 0));        // Manage Users
@@ -13629,6 +13631,7 @@
             QE('ua_lockedaccount', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
             QE('ua_nonewgroups', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
             QE('ua_nomeshcmd', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
+            QE('ua_nonewdevices', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
             QE('ua_locksettings', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
             Q('ua_fileaccessquota').value = (user.quota != null)?(user.quota / 1024):'';
             showUserAdminDialogValidate();
@@ -13645,6 +13648,7 @@
                 QE('ua_lockedaccount', !Q('ua_fulladmin').checked);
                 QE('ua_nonewgroups', !Q('ua_fulladmin').checked);
                 QE('ua_nomeshcmd', !Q('ua_fulladmin').checked);
+                QE('ua_nonewdevices', !Q('ua_fulladmin').checked);
                 QE('ua_manageusergroups', !Q('ua_fulladmin').checked);
                 QE('ua_managerecordings', !Q('ua_fulladmin').checked);
                 QE('ua_allevents', !Q('ua_fulladmin').checked);
@@ -13668,6 +13672,7 @@
                 if (Q('ua_managerecordings').checked == true) siteadmin += 512;
                 if (Q('ua_locksettings').checked == true) siteadmin += 1024;
                 if (Q('ua_allevents').checked == true) siteadmin += 2048;
+                if (Q('ua_nonewdevices').checked == true) siteadmin += 4096;
             }
             var x = { action: 'edituser', id: user._id, siteadmin: siteadmin };
             if (isNaN(quota) == false) { x.quota = (quota * 1024); }
