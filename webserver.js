@@ -108,7 +108,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     const MESHRIGHT_GUESTSHARING        = 0x00080000;
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
-        // Site rights
+    // Site rights
     const SITERIGHT_SERVERBACKUP        = 0x00000001;
     const SITERIGHT_MANAGEUSERS         = 0x00000002;
     const SITERIGHT_SERVERRESTORE       = 0x00000004;
@@ -121,6 +121,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     const SITERIGHT_RECORDINGS          = 0x00000200;
     const SITERIGHT_LOCKSETTINGS        = 0x00000400;
     const SITERIGHT_ALLEVENTS           = 0x00000800;
+    const SITERIGHT_NONEWDEVICES        = 0x00001000;
     const SITERIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Setup SSPI authentication if needed
