@@ -839,7 +839,7 @@ if (args['_'].length == 0) {
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid'"));
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --remove abcdef"));
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --start " + localISOTime + " --duration 30"));
-                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --type terminal --consent prompt"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --type desktop,terminal --consent prompt"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
                             console.log("  --id [deviceid]                - The device identifier.");
@@ -847,13 +847,14 @@ if (args['_'].length == 0) {
                             console.log("  --id '[deviceid]'              - The device identifier.");
                         }
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --remove [shareid]             - Remove a device sharing link.");
-                        console.log("  --add [guestname]              - Add a device sharing link.");
-                        console.log("  --type [desktop/terminal]      - Type of sharing to add, default is desktop.");
-                        console.log("  --consent [notify,prompt]      - Consent flags, default is notify.");
-                        console.log("  --start [yyyy-mm-ddThh:mm:ss]  - Start time, default is now.");
-                        console.log("  --end [yyyy-mm-ddThh:mm:ss]    - End time.");
-                        console.log("  --duration [minutes]           - Duration of the share, default is 60 minutes.");
+                        console.log("  --remove [shareid]              - Remove a device sharing link.");
+                        console.log("  --add [guestname]               - Add a device sharing link.");
+                        console.log("  --type [desktop,terminal,files] - Type of sharing to add, can be combined. default is desktop.");
+                        console.log("  --viewonly                      - Make desktop sharing view only.");
+                        console.log("  --consent [notify,prompt]       - Consent flags, default is notify.");
+                        console.log("  --start [yyyy-mm-ddThh:mm:ss]   - Start time, default is now.");
+                        console.log("  --end [yyyy-mm-ddThh:mm:ss]     - End time.");
+                        console.log("  --duration [minutes]            - Duration of the share, default is 60 minutes.");
                         break;
                     }
                     case 'agentdownload': {
@@ -1560,42 +1561,60 @@ function serverConnect() {
                     if (args.add.length == 0) { console.log("Invalid guest name."); process.exit(1); }
 
                     // Sharing type, desktop or terminal
-                    var p = 2; // Desktop
+                    var p = 0;
                     if (args.type != null) {
-                        if (args.type.toLowerCase() == 'terminal') { p = 1; }
-                        else if (args.type.toLowerCase() == 'desktop') { p = 2; }
-                        else { console.log("Unknown type."); process.exit(1); return; }
+                        var shareTypes = args.type.toLowerCase().split(',');
+                        for (var i in shareTypes) { if ((shareTypes[i] != 'terminal') && (shareTypes[i] != 'desktop') && (shareTypes[i] != 'files')) { console.log("Unknown sharing type: " + shareTypes[i]); process.exit(1); } }
+                        if (shareTypes.indexOf('terminal') >= 0) { p |= 1; }
+                        if (shareTypes.indexOf('desktop') >= 0) { p |= 2; }
+                        if (shareTypes.indexOf('files') >= 0) { p |= 4; }
                     }
+                    if (p == 0) { p = 2; } // Desktop
+
+                    // Sharing view only
+                    var viewOnly = false;
+                    if (args.viewonly) { viewOnly = true; }
 
                     // User consent
                     var consent = 0;
                     if (args.consent == null) {
-                        if (p == 1) { consent = 0x0002; } // Terminal notify
-                        if (p == 2) { consent = 0x0001; } // Desktop notify
+                        if ((p & 1) != 0) { consent = 0x0002; } // Terminal notify
+                        if ((p & 2) != 0) { consent = 0x0001; } // Desktop notify
+                        if ((p & 4) != 0) { consent = 0x0004; } // Files notify
                     } else {
-                        var flagStrs = args.consent.split(',');
-                        for (var i in flagStrs) {
-                            var flagStr = flagStrs[i].toLowerCase();
-                            if (flagStr == 'none') { consent = 0; }
-                            else if (flagStr == 'notify') {
-                                if (p == 1) { consent |= 0x0002; } // Terminal notify
-                                if (p == 2) { consent |= 0x0001; } // Desktop notify
-                            } else if (flagStr == 'prompt') {
-                                if (p == 1) { consent |= 0x0010; } // Terminal prompt
-                                if (p == 2) { consent |= 0x0008; } // Desktop prompt
-                            } else if (flagStr == 'bar') {
-                                if (p == 2) { consent |= 0x0040; } // Desktop toolbar
-                            } else { console.log("Unknown consent type."); process.exit(1); return; }
+                        if (typeof args.consent == 'string') {
+                            var flagStrs = args.consent.split(',');
+                            for (var i in flagStrs) {
+                                var flagStr = flagStrs[i].toLowerCase();
+                                if (flagStr == 'none') { consent = 0; }
+                                else if (flagStr == 'notify') {
+                                    if ((p & 1) != 0) { consent |= 0x0002; } // Terminal notify
+                                    if ((p & 2) != 0) { consent |= 0x0001; } // Desktop notify
+                                    if ((p & 4) != 0) { consent |= 0x0004; } // Files notify
+                                } else if (flagStr == 'prompt') {
+                                    if ((p & 1) != 0) { consent |= 0x0010; } // Terminal prompt
+                                    if ((p & 2) != 0) { consent |= 0x0008; } // Desktop prompt
+                                    if ((p & 4) != 0) { consent |= 0x0020; } // Files prompt
+                                } else if (flagStr == 'bar') {
+                                    if ((p & 2) != 0) { consent |= 0x0040; } // Desktop toolbar
+                                } else { console.log("Unknown consent type."); process.exit(1); return; }
+                            }
                         }
                     }
 
                     // Start and end time
-                    var start = Math.floor(Date.now() / 1000), end = start + (60 * 60);
+                    var start = null, end = null;
                     if (args.start) { start = Math.floor(Date.parse(args.start) / 1000); end = start + (60 * 60); }
-                    if (args.end) { end = Math.floor(Date.parse(args.end) / 1000); if (end <= start) { console.log("End time must be ahead of start time."); process.exit(1); return; } }
-                    if (args.duration) { end = start + parseInt(args.duration * 60); }
+                    if (args.end) { if (start == null) { start = Math.floor(Date.now() / 1000) } end = Math.floor(Date.parse(args.end) / 1000); if (end <= start) { console.log("End time must be ahead of start time."); process.exit(1); return; } }
+                    if (args.duration) { if (start == null) { start = Math.floor(Date.now() / 1000) } end = start + parseInt(args.duration * 60); }
 
-                    ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, start: start, end: end, responseid: 'meshctrl' }));
+                    if ((start == null) && (end == null)) {
+                        // Unlimited sharing
+                        ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, expire: 0, viewOnly: viewOnly, responseid: 'meshctrl' }));
+                    } else {
+                        // Time limited sharing
+                        ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, start: start, end: end, viewOnly: viewOnly, responseid: 'meshctrl' }));
+                    }
                 } else if (args.remove) {
                     ws.send(JSON.stringify({ action: 'removeDeviceShare', nodeid: args.id, publicid: args.remove, responseid: 'meshctrl' }));
                 } else {
@@ -1761,28 +1780,35 @@ function serverConnect() {
                     if ((data.deviceShares == null) || (data.deviceShares.length == 0)) {
                         console.log('No device sharing links for this device.');
                     } else {
-                        for (var i in data.deviceShares) {
-                            var share = data.deviceShares[i];
-                            var shareType = "Unknown";
-                            if (share.p == 1) { shareType = "Terminal"; }
-                            if (share.p == 2) { shareType = "Desktop"; }
-                            var consent = [];
-                            if ((share.consent & 0x0001) != 0) { consent.push("Desktop Notify"); }
-                            if ((share.consent & 0x0008) != 0) { consent.push("Desktop Prompt"); }
-                            if ((share.consent & 0x0040) != 0) { consent.push("Desktop Connection Toolbar"); }
-                            if ((share.consent & 0x0002) != 0) { consent.push("Terminal Notify"); }
-                            if ((share.consent & 0x0010) != 0) { consent.push("Terminal Prompt"); }
-                            if ((share.consent & 0x0004) != 0) { consent.push("Files Notify"); }
-                            if ((share.consent & 0x0020) != 0) { consent.push("Files Prompt"); }
-                            console.log('----------');
-                            console.log('Identifier:   ' + share.publicid);
-                            console.log('Type:         ' + shareType);
-                            console.log('UserId:       ' + share.userid);
-                            console.log('Guest Name:   ' + share.guestName);
-                            console.log('User Consent: ' + consent.join(', '));
-                            console.log('Start Time:   ' + new Date(share.startTime).toLocaleString());
-                            console.log('Expire Time:  ' + new Date(share.expireTime).toLocaleString());
-                            console.log('URL:          ' + share.url);
+                        if (args.json) {
+                            console.log(data.deviceShares);
+                        } else {
+                            for (var i in data.deviceShares) {
+                                var share = data.deviceShares[i];
+                                var shareType = [];
+                                if ((share.p & 1) != 0) { shareType.push("Terminal"); }
+                                if ((share.p & 2) != 0) { if (share.viewOnly) { shareType.push("View Only Desktop"); } else { shareType.push("Desktop"); } }
+                                if ((share.p & 4) != 0) { shareType.push("Files"); }
+                                shareType = shareType.join(' + ');
+                                if (shareType == '') { shareType = "Unknown"; }
+                                var consent = [];
+                                if ((share.consent & 0x0001) != 0) { consent.push("Desktop Notify"); }
+                                if ((share.consent & 0x0008) != 0) { consent.push("Desktop Prompt"); }
+                                if ((share.consent & 0x0040) != 0) { consent.push("Desktop Connection Toolbar"); }
+                                if ((share.consent & 0x0002) != 0) { consent.push("Terminal Notify"); }
+                                if ((share.consent & 0x0010) != 0) { consent.push("Terminal Prompt"); }
+                                if ((share.consent & 0x0004) != 0) { consent.push("Files Notify"); }
+                                if ((share.consent & 0x0020) != 0) { consent.push("Files Prompt"); }
+                                console.log('----------');
+                                console.log('Identifier:   ' + share.publicid);
+                                console.log('Type:         ' + shareType);
+                                console.log('UserId:       ' + share.userid);
+                                console.log('Guest Name:   ' + share.guestName);
+                                console.log('User Consent: ' + consent.join(', '));
+                                if (share.startTime) { console.log('Start Time:   ' + new Date(share.startTime).toLocaleString()); }
+                                if (share.expireTime) { console.log('Expire Time:  ' + new Date(share.expireTime).toLocaleString()); }
+                                console.log('URL:          ' + share.url);
+                            }
                         }
                     }
                 }
