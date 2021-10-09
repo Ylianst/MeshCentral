@@ -4718,6 +4718,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var url = 'https://' + serverName + ':' + httpsPort + '/' + xdomain + 'sharing?c=' + inviteCookie;
                     if (serverName.split('.') == 1) { url = '/' + xdomain + page + '?c=' + inviteCookie; }
                     command.url = url;
+                    command.publicid = publicid;
                     if (command.responseid != null) { command.result = 'OK'; }
                     try { ws.send(JSON.stringify(command)); } catch (ex) { }
 
