@@ -1870,7 +1870,6 @@ function serverConnect() {
             case 'addusertousergroup':
             case 'removeuserfromusergroup':
             case 'removeDeviceShare':
-            case 'createDeviceShareLink':
             case 'userbroadcast': { // BROADCAST
                 if ((settings.cmd == 'shell') || (settings.cmd == 'upload') || (settings.cmd == 'download')) return;
                 if ((settings.multiresponse != null) && (settings.multiresponse > 1)) { settings.multiresponse--; break; }
@@ -1882,6 +1881,15 @@ function serverConnect() {
                 }
                 break;
             }
+            case 'createDeviceShareLink':
+                if (data.result == 'OK') {
+                    if (data.publicid) { console.log('ID: ' + data.publicid); }
+                    console.log('URL: ' + data.url);
+                } else {
+                    console.log(data.result);
+                }
+                process.exit();
+                break;
             case 'createInviteLink':
                 if (data.responseid == 'meshctrl') {
                     if (data.url) { console.log(data.url); }
