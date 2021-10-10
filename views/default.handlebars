@@ -10931,11 +10931,11 @@
         function account_showAccountNotifySettings() {
             if (xxdialogMode) return false;
             var x = '';
-            x += '<div><label><input id=p2notifyPlayNotifySound type=checkbox />' + "Notification sound." + '</label></div>';
+            x += '<div><label><input id=p2notifyPlayNotifySound type=checkbox />' + "Notification sound" + '</label></div>';
             x += '<div><label><input id=p2notifyGroupName type=checkbox />' + "Display device group name" + '</label></div>';
-            x += '<div><label><input id=p2notifyIntelDeviceConnect type=checkbox />' + "Device connections." + '</label></div>';
-            x += '<div><label><input id=p2notifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections." + '</label></div>';
-            x += '<div><label><input id=p2notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial events." + '</label></div>';
+            x += '<div><label><input id=p2notifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
+            x += '<div><label><input id=p2notifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+            x += '<div><label><input id=p2notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
             setDialogMode(2, "Notification Settings", 3, account_showAccountNotifySettingsEx, x);
             var n = getstore('notifications', 0);
             Q('p2notifyPlayNotifySound').checked = (n & 1);
@@ -11344,6 +11344,10 @@
                     if (meshNotify & 2) { meshNotifyStr.push("Connect"); }
                     if (meshNotify & 4) { meshNotifyStr.push("Disconnect"); }
                     if (meshNotify & 8) { meshNotifyStr.push("Intel&reg; AMT"); }
+                    if ((features2 & 0x00004000) && (userinfo.emailVerified)) {
+                        if (meshNotify & 16) { meshNotifyStr.push("Email Connect"); }
+                        if (meshNotify & 32) { meshNotifyStr.push("Email Disconnect"); }
+                    }
                     if (meshNotifyStr.length == 0) { meshNotifyStr.push('<i>' + "None" + '</i>'); }
                     x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
                 }
@@ -12262,23 +12266,38 @@
         function p20editMeshNotify() {
             if (xxdialogMode) return false;
             var meshNotify = 0;
+            var emailNotify = ((features2 & 0x00004000) && (userinfo.emailVerified));
             if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
-            var x = "Notification settings must also be turned on in account settings." + '<br /><br />';
-            x += '<div><label><input id=p20notifyIntelDeviceConnect type=checkbox />' + "Device connections." + '</label></div>';
-            x += '<div><label><input id=p20notifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections." + '</label></div>';
-            x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial events." + '</label></div>';
-            setDialogMode(2, "Notification Settings", 3, p20editMeshNotifyEx, x);
+            //var x = "Notification settings must also be turned on in account settings." + '<br /><br />';
+            var x = '<div style="border-bottom: 1px solid #888;margin-bottom:3px">Web Page Notifications</div>';
+            x += '<div><label><input id=p20notifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
+            x += '<div><label><input id=p20notifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+            x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
+            if (emailNotify) {
+                x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">Email Notifications</div>';
+                x += '<div><label><input id=p20enotifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
+                x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+            }
+            setDialogMode(2, "Notification Settings", 3, p20editMeshNotifyEx, x, emailNotify);
             Q('p20notifyIntelDeviceConnect').checked = (meshNotify & 2);
             Q('p20notifyIntelDeviceDisconnect').checked = (meshNotify & 4);
             Q('p20notifyIntelAmtKvmActions').checked = (meshNotify & 8);
+            if (emailNotify) {
+                Q('p20enotifyIntelDeviceConnect').checked = (meshNotify & 16);
+                Q('p20enotifyIntelDeviceDisconnect').checked = (meshNotify & 32);
+            }
             return false;
         }
 
-        function p20editMeshNotifyEx() {
+        function p20editMeshNotifyEx(b, emailNotify) {
             var meshNotify = 0;
             meshNotify += Q('p20notifyIntelDeviceConnect').checked ? 2 : 0;
             meshNotify += Q('p20notifyIntelDeviceDisconnect').checked ? 4 : 0;
             meshNotify += Q('p20notifyIntelAmtKvmActions').checked ? 8 : 0;
+            if (emailNotify) {
+                meshNotify += Q('p20enotifyIntelDeviceConnect').checked ? 16 : 0;
+                meshNotify += Q('p20enotifyIntelDeviceDisconnect').checked ? 32 : 0;
+            }
             meshserver.send({ action: 'changemeshnotify', meshid: currentMesh._id, notify: meshNotify });
         }
 

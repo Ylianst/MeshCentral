@@ -164,10 +164,10 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             if ((ciraArray != null) && ((ciraArray.indexOf(setConnFunc.socket) >= 0))) { // Check if this connection is still present
                 if (setConnFunc.socket.tag.connType == 0) {
                     // Intel AMT CIRA connection. This connection indicates the remote device is present.
-                    obj.parent.SetConnectivityState(setConnFunc.socket.tag.meshid, setConnFunc.socket.tag.nodeid, setConnFunc.socket.tag.connectTime, 2, 7); // 7 = Present
+                    obj.parent.SetConnectivityState(setConnFunc.socket.tag.meshid, setConnFunc.socket.tag.nodeid, setConnFunc.socket.tag.connectTime, 2, 7, null, { name: socket.tag.name }); // 7 = Present
                 } else if (setConnFunc.socket.tag.connType == 1) {
                     // Intel AMT Relay connection. This connection does not give any information about the remote device's power state.
-                    obj.parent.SetConnectivityState(setConnFunc.socket.tag.meshid, setConnFunc.socket.tag.nodeid, setConnFunc.socket.tag.connectTime, 8, 0); // 0 = Unknown
+                    obj.parent.SetConnectivityState(setConnFunc.socket.tag.meshid, setConnFunc.socket.tag.nodeid, setConnFunc.socket.tag.connectTime, 8, 0, null, { name: socket.tag.name }); // 0 = Unknown
                 }
                 // Intel AMT LMS connection (connType == 2), we don't notify of these connections except telling the Intel AMT manager about them.
                 // If the AMT manager is present, start management of this device
@@ -201,9 +201,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
         // Update connectivity state
         if (socket.tag.connType == 0) {
-            obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2); // CIRA
+            obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2, null, { name: socket.tag.name }); // CIRA
         } else if (socket.tag.connType == 1) {
-            obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 8); // Relay
+            obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 8, null, { name: socket.tag.name }); // Relay
         }
     }
 
@@ -520,6 +520,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                             // Node is already present
                             var node = nodes[0];
                             socket.tag.meshid = node.meshid; // Correct the MeshID if the node has moved.
+                            socket.tag.name = node.name;
                             if ((node.intelamt != null) && (node.intelamt.state == 2)) { socket.tag.host = node.intelamt.host; }
                         }
 
@@ -727,6 +728,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                             // Node is already present
                             var node = nodes[0];
                             socket.tag.meshid = node.meshid;
+                            socket.tag.name = node.name;
                             if ((node.intelamt != null) && (node.intelamt.state == 2)) { socket.tag.host = node.intelamt.host; }
                         }
 

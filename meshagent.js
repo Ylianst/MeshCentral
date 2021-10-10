@@ -64,7 +64,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Remove this agent from the webserver list
         if (parent.wsagents[obj.dbNodeKey] == obj) {
             delete parent.wsagents[obj.dbNodeKey];
-            parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1, null, { remoteaddrport: obj.remoteaddrport });
+            parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1, null, { remoteaddrport: obj.remoteaddrport, name: obj.name });
         }
 
         // Remove this agent from the list of agents with bad web certificates
@@ -119,17 +119,18 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (obj.pongtimer) { clearInterval(obj.pongtimer); delete obj.pongtimer; }
 
         // Perform aggressive cleanup
-        if (obj.nonce) { delete obj.nonce; }
-        if (obj.nodeid) { delete obj.nodeid; }
-        if (obj.unauth) { delete obj.unauth; }
-        if (obj.remoteaddr) { delete obj.remoteaddr; }
-        if (obj.remoteaddrport) { delete obj.remoteaddrport; }
-        if (obj.meshid) { delete obj.meshid; }
-        if (obj.dbNodeKey) { delete obj.dbNodeKey; }
-        if (obj.dbMeshKey) { delete obj.dbMeshKey; }
-        if (obj.connectTime) { delete obj.connectTime; }
-        if (obj.agentInfo) { delete obj.agentInfo; }
-        if (obj.agentExeInfo) { delete obj.agentExeInfo; }
+        delete obj.name;
+        delete obj.nonce;
+        delete obj.nodeid;
+        delete obj.unauth;
+        delete obj.remoteaddr;
+        delete obj.remoteaddrport;
+        delete obj.meshid;
+        delete obj.dbNodeKey;
+        delete obj.dbMeshKey;
+        delete obj.connectTime;
+        delete obj.agentInfo;
+        delete obj.agentExeInfo;
         ws.removeAllListeners(['message', 'close', 'error']);
     };
 
@@ -752,6 +753,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 return;
             } else {
                 device = nodes[0];
+                obj.name = device.name;
 
                 // This device exists, meshid given by the device must be ignored, use the server side one.
                 if ((device.meshid != null) && (device.meshid != obj.dbMeshKey)) {
@@ -888,7 +890,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             dupAgent.close(3);
         } else {
             // Indicate the agent is connected
-            parent.parent.SetConnectivityState(obj.dbMeshKey, obj.dbNodeKey, obj.connectTime, 1, 1, null, { remoteaddrport: obj.remoteaddrport });
+            parent.parent.SetConnectivityState(obj.dbMeshKey, obj.dbNodeKey, obj.connectTime, 1, 1, null, { remoteaddrport: obj.remoteaddrport, name: device.name });
         }
 
         // We are done, ready to communicate with this agent

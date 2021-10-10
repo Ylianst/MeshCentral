@@ -2829,6 +2829,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain.clipboardget == false) { features2 += 0x00000800; } // Disable clipboard get
         if (domain.clipboardset == false) { features2 += 0x00001000; } // Disable clipboard set
         if ((typeof domain.desktop == 'object') && (domain.desktop.viewonly == true)) { features2 += 0x00002000; } // Indicates remote desktop is viewonly
+        if (domain.mailserver != null) { features2 += 0x00004000; } // Indicates email server is active
         return { features: features, features2: features2 };
     }
 
