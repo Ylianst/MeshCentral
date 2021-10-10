@@ -69,7 +69,7 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
 
             if (obj.connections[client.xdbNodeKey] == null) {
                 obj.connections[client.xdbNodeKey] = [client];
-                parent.SetConnectivityState(client.xdbMeshKey, client.xdbNodeKey, Date.now(), 16, 7); // Indicate this node has a MQTT connection, 7 = Present state
+                parent.SetConnectivityState(client.xdbMeshKey, client.xdbNodeKey, Date.now(), 16, 7, null, { name: nodes[0].name }); // Indicate this node has a MQTT connection, 7 = Present state
             } else {
                 obj.connections[client.xdbNodeKey].push(client);
             }
@@ -85,7 +85,7 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
                     if (i >= 0) {
                         if (clients.length == 1) {
                             delete obj.connections[this.parent.xdbNodeKey];
-                            parent.ClearConnectivityState(this.parent.xdbMeshKey, this.parent.xdbNodeKey, 16); // Remove the MQTT connection for this node
+                            parent.ClearConnectivityState(this.parent.xdbMeshKey, this.parent.xdbNodeKey, 16, null, { name: nodes[0].name }); // Remove the MQTT connection for this node
                         } else { clients.splice(i, 1); }
                     }
                 }

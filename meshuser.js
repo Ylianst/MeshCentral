@@ -2112,6 +2112,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
+                    //  2 = WebPage device connections
+                    //  4 = WebPage device disconnections
+                    //  8 = WebPage device desktop and serial events
+                    // 16 = Email device connections
+                    // 32 = Email device disconnections
+
                     var err = null;
                     try {
                         // Change the current user's notification flags for a meshid

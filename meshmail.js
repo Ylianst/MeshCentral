@@ -448,5 +448,175 @@ module.exports.CreateMeshMail = function (parent, domain) {
         });
     }
 
+    //
+    // Device connetion and disconnection notifications
+    //
+
+    obj.deviceNotifications = {}; // UserId --> { timer, nodes: nodeid --> connectType }
+
+    // A device connected and a user needs to be notified about it.
+    obj.notifyDeviceConnect = function (user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo) {
+        const mesh = parent.webserver.meshes[meshid];
+        if (mesh == null) return;
+
+        // Add the user and start a timer
+        if (obj.deviceNotifications[user._id] == null) {
+            obj.deviceNotifications[user._id] = { nodes: {} };
+            obj.deviceNotifications[user._id].timer = setTimeout(function () { sendDeviceNotifications(user._id); }, 20000);
+        }
+
+        // Add the device
+        if (obj.deviceNotifications[user._id].nodes[nodeid] == null) {
+            obj.deviceNotifications[user._id].nodes[nodeid] = { c: connectType }; // This device connection need to be added
+        } else {
+            const info = obj.deviceNotifications[user._id].nodes[nodeid];
+            if ((info.d != null) && ((info.d & connectType) != 0)) {
+                info.d -= connectType; // This device disconnect cancels out a device connection
+                if (((info.c == null) || (info.c == 0)) && ((info.d == null) || (info.d == 0))) {
+                    // This device no longer needs a notification
+                    delete obj.deviceNotifications[user._id].nodes[nodeid];
+                    if (Object.keys(obj.deviceNotifications[user._id].nodes).length == 0) {
+                        // This user no longer needs a notification
+                        clearTimeout(obj.deviceNotifications[user._id].timer);
+                        delete obj.deviceNotifications[user._id];
+                    }
+                    return;
+                }
+            } else {
+                if (info.c != null) {
+                    info.c |= connectType; // This device disconnect needs to be added
+                } else {
+                    info.c = connectType; // This device disconnect needs to be added
+                }
+            }
+        }
+
+        // Set the device group name
+        if ((extraInfo != null) && (extraInfo.name != null)) { obj.deviceNotifications[user._id].nodes[nodeid].nn = extraInfo.name; }
+        obj.deviceNotifications[user._id].nodes[nodeid].mn = mesh.name;
+    }
+
+    // Cancel a device disconnect notification
+    obj.cancelNotifyDeviceDisconnect = function (user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo) {
+        const mesh = parent.webserver.meshes[meshid];
+        if (mesh == null) return;
+
+        if ((obj.deviceNotifications[user._id] != null) && (obj.deviceNotifications[user._id].nodes[nodeid] != null)) {
+            const info = obj.deviceNotifications[user._id].nodes[nodeid];
+            if ((info.d != null) && ((info.d & connectType) != 0)) {
+                info.d -= connectType; // This device disconnect cancels out a device connection
+                if (((info.c == null) || (info.c == 0)) && ((info.d == null) || (info.d == 0))) {
+                    // This device no longer needs a notification
+                    delete obj.deviceNotifications[user._id].nodes[nodeid];
+                    if (Object.keys(obj.deviceNotifications[user._id].nodes).length == 0) {
+                        // This user no longer needs a notification
+                        clearTimeout(obj.deviceNotifications[user._id].timer);
+                        delete obj.deviceNotifications[user._id];
+                    }
+                }
+            }
+        }
+    }
+
+    // A device disconnected and a user needs to be notified about it.
+    obj.notifyDeviceDisconnect = function (user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo) {
+        const mesh = parent.webserver.meshes[meshid];
+        if (mesh == null) return;
+
+        // Add the user and start a timer
+        if (obj.deviceNotifications[user._id] == null) {
+            obj.deviceNotifications[user._id] = { nodes: {} };
+            obj.deviceNotifications[user._id].timer = setTimeout(function () { sendDeviceNotifications(user._id); }, 20000);
+        }
+
+        // Add the device
+        if (obj.deviceNotifications[user._id].nodes[nodeid] == null) {
+            obj.deviceNotifications[user._id].nodes[nodeid] = { d: connectType }; // This device disconnect need to be added
+        } else {
+            const info = obj.deviceNotifications[user._id].nodes[nodeid];
+            if ((info.c != null) && ((info.c & connectType) != 0)) {
+                info.c -= connectType; // This device disconnect cancels out a device connection
+                if (((info.d == null) || (info.d == 0)) && ((info.c == null) || (info.c == 0))) {
+                    // This device no longer needs a notification
+                    delete obj.deviceNotifications[user._id].nodes[nodeid];
+                    if (Object.keys(obj.deviceNotifications[user._id].nodes).length == 0) {
+                        // This user no longer needs a notification
+                        clearTimeout(obj.deviceNotifications[user._id].timer);
+                        delete obj.deviceNotifications[user._id];
+                    }
+                    return;
+                }
+            } else {
+                if (info.d != null) {
+                    info.d |= connectType; // This device disconnect needs to be added
+                } else {
+                    info.d = connectType; // This device disconnect needs to be added
+                }
+            }
+        }
+
+        // Set the device group name
+        if ((extraInfo != null) && (extraInfo.name != null)) { obj.deviceNotifications[user._id].nodes[nodeid].nn = extraInfo.name; }
+        obj.deviceNotifications[user._id].nodes[nodeid].mn = mesh.name;
+    }
+
+    // Cancel a device connect notification
+    obj.cancelNotifyDeviceConnect = function (user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo) {
+        const mesh = parent.webserver.meshes[meshid];
+        if (mesh == null) return;
+
+        if ((obj.deviceNotifications[user._id] != null) && (obj.deviceNotifications[user._id].nodes[nodeid] != null)) {
+            const info = obj.deviceNotifications[user._id].nodes[nodeid];
+            if ((info.c != null) && ((info.c & connectType) != 0)) {
+                info.c -= connectType; // This device disconnect cancels out a device connection
+                if (((info.d == null) || (info.d == 0)) && ((info.c == null) || (info.c == 0))) {
+                    // This device no longer needs a notification
+                    delete obj.deviceNotifications[user._id].nodes[nodeid];
+                    if (Object.keys(obj.deviceNotifications[user._id].nodes).length == 0) {
+                        // This user no longer needs a notification
+                        clearTimeout(obj.deviceNotifications[user._id].timer);
+                        delete obj.deviceNotifications[user._id];
+                    }
+                }
+            }
+        }
+    }
+
+    // Send a notification about device connections and disconnections to a user
+    function sendDeviceNotifications(userid) {
+        if (obj.deviceNotifications[userid] == null) return;
+        clearTimeout(obj.deviceNotifications[userid].timer);
+
+        var connections = [];
+        var disconnections = [];
+
+        for (var nodeid in obj.deviceNotifications[userid].nodes) {
+            var info = obj.deviceNotifications[userid].nodes[nodeid];
+            if ((info.c != null) && (info.c > 0) && (info.nn != null) && (info.mn != null)) {
+                var c = [];
+                if (info.c & 1) { c.push("Agent"); }
+                if (info.c & 2) { c.push("CIRA"); }
+                if (info.c & 4) { c.push("AMT"); }
+                if (info.c & 8) { c.push("AMT-Relay"); }
+                if (info.c & 16) { c.push("MQTT"); }
+                connections.push(info.mn + ', ' + info.nn + ': ' + c.join(', '));
+            }
+            if ((info.d != null) && (info.d > 0) && (info.nn != null) && (info.mn != null)) {
+                var d = [];
+                if (info.d & 1) { d.push("Agent"); }
+                if (info.d & 2) { d.push("CIRA"); }
+                if (info.d & 4) { d.push("AMT"); }
+                if (info.d & 8) { d.push("AMT-Relay"); }
+                if (info.d & 16) { d.push("MQTT"); }
+                disconnections.push(info.mn + ', ' + info.nn + ': ' + d.join(', '));
+            }
+        }
+
+        // TODO: Send the email
+        //console.log('sendDeviceNotifications', connections, disconnections);
+
+        delete obj.deviceNotifications[userid];
+    }
+
     return obj;
 };

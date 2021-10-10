@@ -263,7 +263,7 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
             // Setup TLS and commit.
             attemptTlsSync(dev, function (dev) {
                 dev.consoleMsg('Intel AMT ACM activation completed.');
-                parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), 4, 7); // Report power state as "present" (7).
+                parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), 4, 7, null, { name: dev.name }); // Report power state as "present" (7).
                 if (obj.parent.amtManager != null) { obj.parent.amtManager.startAmtManagement(dev.nodeid, 3, dev.aquired.host); } // Request that Intel AMT manager take a look at this device.
                 destroyDevice(dev); // We are done, clean up.
             });

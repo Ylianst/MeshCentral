@@ -517,11 +517,11 @@ module.exports.CreateMultiServer = function (parent, args) {
                 break;
             }
             case 'SetConnectivityState': {
-                obj.parent.SetConnectivityState(msg.meshid, msg.nodeid, msg.connectTime, msg.connectType, msg.powerState, peerServerId);
+                obj.parent.SetConnectivityState(msg.meshid, msg.nodeid, msg.connectTime, msg.connectType, msg.powerState, peerServerId, msg.extraInfo);
                 break;
             }
             case 'ClearConnectivityState': {
-                obj.parent.ClearConnectivityState(msg.meshid, msg.nodeid, msg.connectType, peerServerId);
+                obj.parent.ClearConnectivityState(msg.meshid, msg.nodeid, msg.connectType, peerServerId, msg.extraInfo);
                 break;
             }
             case 'relay': {

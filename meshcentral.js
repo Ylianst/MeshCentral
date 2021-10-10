@@ -2081,6 +2081,46 @@ function CreateMeshCentralServer(config, args) {
         }
     };
 
+    // See if we need to notifiy any user of device state change
+    obj.NotifyUserOfDeviceStateChange = function (meshid, nodeid, connectTime, connectType, powerState, serverid, stateSet, extraInfo) {
+        // Check if there is a email server for this domain
+        const meshSplit = meshid.split('/');
+        if (meshSplit.length != 3) return;
+        const domainId = meshSplit[1];
+        const mailserver = obj.config.domains[domainId].mailserver;;
+        if (mailserver == null) return;
+
+        // Get the device group for this device
+        const mesh = obj.webserver.meshes[meshid];
+        if ((mesh == null) || (mesh.links == null)) return;
+
+        // Check if any user needs email notification
+        for (var i in mesh.links) {
+            if (i.startsWith('user/')) {
+                const user = obj.webserver.users[i];
+                if ((user != null) && (user.email != null) && (user.emailVerified == true)) {
+                    const meshLinks = user.links[meshid];
+                    if ((meshLinks != null) && (meshLinks.notify != null) && ((meshLinks.notify & 48) != 0)) {
+                        if (stateSet == true) {
+                            if ((meshLinks.notify & 16) != 0) {
+                                mailserver.notifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                            } else {
+                                mailserver.cancelNotifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                            }
+                        }
+                        else if (stateSet == false) {
+                            if ((meshLinks.notify & 32) != 0) {
+                                mailserver.notifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                            } else {
+                                mailserver.cancelNotifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // Set the connectivity state of a node and setup the server so that messages can be routed correctly.
     // meshId: mesh identifier of format mesh/domain/meshidhex
     // nodeId: node identifier of format node/domain/nodeidhex
@@ -2091,7 +2131,7 @@ function CreateMeshCentralServer(config, args) {
     //var powerStateStrings = ['Unknown', 'Powered', 'Sleep', 'Sleep', 'Deep Sleep', 'Hibernating', 'Soft-Off', 'Present'];
     obj.SetConnectivityState = function (meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo) {
         //console.log('SetConnectivity for ' + nodeid.substring(0, 16) + ', Type: ' + connectTypeStrings[connectType] + ', Power: ' + powerStateStrings[powerState] + (serverid == null ? ('') : (', ServerId: ' + serverid)));
-        if ((serverid == null) && (obj.multiServer != null)) { obj.multiServer.DispatchMessage({ action: 'SetConnectivityState', meshid: meshid, nodeid: nodeid, connectTime: connectTime, connectType: connectType, powerState: powerState }); }
+        if ((serverid == null) && (obj.multiServer != null)) { obj.multiServer.DispatchMessage({ action: 'SetConnectivityState', meshid: meshid, nodeid: nodeid, connectTime: connectTime, connectType: connectType, powerState: powerState, extraInfo: extraInfo }); }
 
         if (obj.multiServer == null) {
             // Single server mode
@@ -2131,6 +2171,9 @@ function CreateMeshCentralServer(config, args) {
                 const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], meshid: meshid, time: Date.now(), cause: 1, connectType: connectType };
                 if (extraInfo && extraInfo.remoteaddrport) { lc.addr = extraInfo.remoteaddrport; }
                 obj.db.Set(lc);
+
+                // Notify any users of device connection
+                obj.NotifyUserOfDeviceStateChange(meshid, nodeid, connectTime, connectType, powerState, serverid, true, extraInfo);
             }
         } else {
             // Multi server mode
@@ -2175,6 +2218,9 @@ function CreateMeshCentralServer(config, args) {
                     if (extraInfo && extraInfo.remoteaddrport) { lc.addr = extraInfo.remoteaddrport; }
                     obj.db.Set(lc);
                 }
+
+                // Notify any users of device connection
+                obj.NotifyUserOfDeviceStateChange(meshid, nodeid, connectTime, connectType, powerState, serverid, true, extraInfo);
             }
         }
     };
@@ -2185,7 +2231,7 @@ function CreateMeshCentralServer(config, args) {
     // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 3 = Intel AMT local.
     obj.ClearConnectivityState = function (meshid, nodeid, connectType, serverid, extraInfo) {
         //console.log('ClearConnectivity for ' + nodeid.substring(0, 16) + ', Type: ' + connectTypeStrings[connectType] + (serverid == null?(''):(', ServerId: ' + serverid)));
-        if ((serverid == null) && (obj.multiServer != null)) { obj.multiServer.DispatchMessage({ action: 'ClearConnectivityState', meshid: meshid, nodeid: nodeid, connectType: connectType }); }
+        if ((serverid == null) && (obj.multiServer != null)) { obj.multiServer.DispatchMessage({ action: 'ClearConnectivityState', meshid: meshid, nodeid: nodeid, connectType: connectType, extraInfo: extraInfo }); }
 
         if (obj.multiServer == null) {
             // Single server mode
@@ -2223,6 +2269,9 @@ function CreateMeshCentralServer(config, args) {
             // Event the node connection change
             if (eventConnectChange == 1) {
                 obj.DispatchEvent(obj.webserver.CreateNodeDispatchTargets(meshid, nodeid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, domain: nodeid.split('/')[1], conn: state.connectivity, pwr: state.powerState, nolog: 1, nopeers: 1 });
+
+                // Notify any users of device disconnection
+                obj.NotifyUserOfDeviceStateChange(meshid, nodeid, Date.now(), connectType, -1, serverid, false, extraInfo);
             }
         } else {
             // Multi server mode
@@ -2246,6 +2295,9 @@ function CreateMeshCentralServer(config, args) {
 
                 // If the node is completely disconnected, clean it up completely
                 if (state.connectivity == 0) { delete obj.peerConnectivityByNode[serverid][nodeid]; state.powerState = 0; }
+
+                // Notify any users of device disconnection
+                obj.NotifyUserOfDeviceStateChange(meshid, nodeid, Date.now(), connectType, -1, serverid, false, extraInfo);
             }
 
             // Clear node power state
