@@ -4545,6 +4545,7 @@
     },
     {
       "en": "Account created, name is {0}.",
+      "nl": "Account aangemaakt, naam is {0}.",
       "xloc": [
         "default.handlebars->37->2142"
       ]
@@ -11477,6 +11478,7 @@
     },
     {
       "en": "Changed account display name to {0}.",
+      "nl": "Weergavenaam account gewijzigd in {0}.",
       "xloc": [
         "default.handlebars->37->2141"
       ]
@@ -21440,6 +21442,7 @@
     },
     {
       "en": "Edit User Group Features",
+      "nl": "Functies van gebruikersgroepen bewerken",
       "xloc": [
         "default.handlebars->37->2345"
       ]
@@ -26407,6 +26410,7 @@
     },
     {
       "en": "Guest",
+      "nl": "Gast",
       "xloc": [
         "default.handlebars->37->2581"
       ]
@@ -38571,6 +38575,7 @@
     },
     {
       "en": "No New Devices",
+      "nl": "Geen nieuwe apparaten",
       "xloc": [
         "default.handlebars->37->2272"
       ]
@@ -47124,6 +47129,7 @@
     },
     {
       "en": "Removed account display name.",
+      "nl": "Weergavenaam account verwijderd.",
       "xloc": [
         "default.handlebars->37->2143"
       ]
@@ -47522,13 +47528,10 @@
     },
     {
       "en": "Report returned no entires.",
+      "nl": "Rapport heeft geen vermeldingen geretourneerd."
       "xloc": [
         "default.handlebars->37->2585"
       ]
-    },
-    {
-      "en": "Report returned no entries.",
-      "nl": "Rapport heeft geen vermeldingen geretourneerd."
     },
     {
       "en": "Report.csv",
@@ -52494,6 +52497,7 @@
     },
     {
       "en": "Show Guest Name"
+      "nl": "Toon gasten naam"
     },
     {
       "cs": "Zobrazit nápovědu",
@@ -60944,6 +60948,7 @@
     },
     {
       "en": "User Traffic Usage",
+      "nl": "Gebruik van gebruikersverkeer",
       "xloc": [
         "default.handlebars->37->2559"
       ]
