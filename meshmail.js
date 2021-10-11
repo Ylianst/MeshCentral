@@ -27,6 +27,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
     obj.verifyemail = false;
     obj.domain = domain;
     //obj.mailTemplates = {};
+    const sortCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
     const constants = (obj.parent.crypto.constants ? obj.parent.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
@@ -611,6 +612,10 @@ module.exports.CreateMeshMail = function (parent, domain) {
                 disconnections.push(info.mn + ', ' + info.nn + ': ' + d.join(', '));
             }
         }
+
+        // Sort the notifications
+        connections.sort(sortCollator.compare);
+        disconnections.sort(sortCollator.compare);
 
         // TODO: Send the email
         //console.log('sendDeviceNotifications', connections, disconnections);
