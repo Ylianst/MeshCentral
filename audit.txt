@@ -1,0 +1,343 @@
+# npm audit report
+
+braces  <=2.3.2
+Severity: high
+Regular Expression Denial of Service in braces - https://github.com/advisories/GHSA-g95f-p29q-9xw4
+Depends on vulnerable versions of snapdragon
+fix available via `npm audit fix`
+node_modules/braces
+node_modules/readdirp/node_modules/braces
+  micromatch  0.2.0 - 3.1.10
+  Depends on vulnerable versions of braces
+  Depends on vulnerable versions of parse-glob
+  Depends on vulnerable versions of snapdragon
+  node_modules/micromatch
+  node_modules/readdirp/node_modules/micromatch
+    anymatch  1.2.0 - 1.3.2
+    Depends on vulnerable versions of micromatch
+    node_modules/anymatch
+      chokidar  1.0.0-rc1 - 2.1.8
+      Depends on vulnerable versions of anymatch
+      Depends on vulnerable versions of glob-parent
+      node_modules/chokidar
+        babel-cli  *
+        Depends on vulnerable versions of chokidar
+        node_modules/babel-cli
+          minify-js  *
+          Depends on vulnerable versions of babel-cli
+          Depends on vulnerable versions of utils-igor
+          node_modules/dir_cache/node_modules/minify-js
+          node_modules/minify-js
+          node_modules/utils-igor/node_modules/minify-js
+            dir_cache  >=1.0.2
+            Depends on vulnerable versions of minify-js
+            node_modules/dir_cache
+            utils-igor  >=2.0.0
+            Depends on vulnerable versions of minify-js
+            node_modules/dir_cache/node_modules/minify-js/node_modules/utils-igor
+            node_modules/utils-igor
+    readdirp  2.2.0 - 2.2.1
+    Depends on vulnerable versions of micromatch
+    node_modules/readdirp
+
+deep-extend  <0.5.1
+Severity: critical
+Prototype Pollution in deep-extend - https://github.com/advisories/GHSA-hr2v-3952-633q
+fix available via `npm audit fix`
+node_modules/deep-extend
+  column-layout  >=1.3.0
+  Depends on vulnerable versions of command-line-args
+  Depends on vulnerable versions of deep-extend
+  node_modules/column-layout
+    command-line-usage  2.0.0 - 3.0.8
+    Depends on vulnerable versions of column-layout
+    Depends on vulnerable versions of table-layout
+    node_modules/column-layout/node_modules/command-line-usage
+    node_modules/command-line-usage
+    node_modules/jsdoc-parse/node_modules/command-line-usage
+      cli-commands  <=0.1.0
+      Depends on vulnerable versions of command-line-usage
+      node_modules/cli-commands
+        usage-stats  0.8.0 - 0.8.6
+        Depends on vulnerable versions of cli-commands
+        node_modules/usage-stats
+          app-usage-stats  0.4.0 - 0.5.0
+          Depends on vulnerable versions of usage-stats
+          node_modules/app-usage-stats
+            jsdoc2md-stats  1.0.6 - 2.0.0
+            Depends on vulnerable versions of app-usage-stats
+            node_modules/jsdoc2md-stats
+      command-line-args  2.1.0 - 2.1.6
+      Depends on vulnerable versions of command-line-usage
+      node_modules/column-layout/node_modules/command-line-args
+      node_modules/jsdoc-parse/node_modules/command-line-args
+        jsdoc-parse  0.2.5 - 2.0.0
+        Depends on vulnerable versions of command-line-args
+        Depends on vulnerable versions of file-set
+        Depends on vulnerable versions of jsdoc-api
+        node_modules/jsdoc-parse
+          jsdoc-to-markdown  0.6.0 - 0.6.4 || 1.3.1 - 2.0.0-alpha.23
+          Depends on vulnerable versions of command-line-usage
+          Depends on vulnerable versions of dmd
+          Depends on vulnerable versions of jsdoc-parse
+          node_modules/jsdoc-to-markdown
+            grunt-jsdoc-to-markdown  0.5.0 - 0.5.1 || 1.2.0 - 1.2.1
+            Depends on vulnerable versions of jsdoc-to-markdown
+            node_modules/grunt-jsdoc-to-markdown
+      command-line-tool  0.3.0 - 0.6.4
+      Depends on vulnerable versions of command-line-usage
+      node_modules/command-line-tool
+        dmd  0.3.23 - 2.0.1
+        Depends on vulnerable versions of command-line-tool
+        Depends on vulnerable versions of ddata
+        Depends on vulnerable versions of stream-handlebars
+        node_modules/dmd
+  table-layout  <=0.4.0
+  Depends on vulnerable versions of deep-extend
+  node_modules/table-layout
+
+glob-parent  <5.1.2
+Severity: high
+Regular expression denial of service - https://github.com/advisories/GHSA-ww39-953v-wcq6
+fix available via `npm audit fix`
+node_modules/glob-parent
+  chokidar  1.0.0-rc1 - 2.1.8
+  Depends on vulnerable versions of anymatch
+  Depends on vulnerable versions of glob-parent
+  node_modules/chokidar
+    babel-cli  *
+    Depends on vulnerable versions of chokidar
+    node_modules/babel-cli
+      minify-js  *
+      Depends on vulnerable versions of babel-cli
+      Depends on vulnerable versions of utils-igor
+      node_modules/dir_cache/node_modules/minify-js
+      node_modules/minify-js
+      node_modules/utils-igor/node_modules/minify-js
+        dir_cache  >=1.0.2
+        Depends on vulnerable versions of minify-js
+        node_modules/dir_cache
+        utils-igor  >=2.0.0
+        Depends on vulnerable versions of minify-js
+        node_modules/dir_cache/node_modules/minify-js/node_modules/utils-igor
+        node_modules/utils-igor
+  glob-base  *
+  Depends on vulnerable versions of glob-parent
+  node_modules/glob-base
+    parse-glob  >=2.1.0
+    Depends on vulnerable versions of glob-base
+    node_modules/parse-glob
+      micromatch  0.2.0 - 3.1.10
+      Depends on vulnerable versions of braces
+      Depends on vulnerable versions of parse-glob
+      Depends on vulnerable versions of snapdragon
+      node_modules/micromatch
+      node_modules/readdirp/node_modules/micromatch
+        anymatch  1.2.0 - 1.3.2
+        Depends on vulnerable versions of micromatch
+        node_modules/anymatch
+        readdirp  2.2.0 - 2.2.1
+        Depends on vulnerable versions of micromatch
+        node_modules/readdirp
+
+handlebars  <=4.7.6
+Severity: critical
+Remote code execution in handlebars when compiling templates - https://github.com/advisories/GHSA-f2jv-r9rf-7988
+Prototype Pollution in handlebars - https://github.com/advisories/GHSA-w457-6q6x-cgp9
+Cross-Site Scripting in handlebars - https://github.com/advisories/GHSA-9prh-257w-9277
+Depends on vulnerable versions of optimist
+fix available via `npm audit fix`
+node_modules/ddata/node_modules/handlebars
+node_modules/stream-handlebars/node_modules/handlebars
+  ddata  >=0.1.18
+  Depends on vulnerable versions of handlebars
+  node_modules/ddata
+    dmd  0.3.23 - 2.0.1
+    Depends on vulnerable versions of command-line-tool
+    Depends on vulnerable versions of ddata
+    Depends on vulnerable versions of stream-handlebars
+    node_modules/dmd
+      jsdoc-to-markdown  0.6.0 - 0.6.4 || 1.3.1 - 2.0.0-alpha.23
+      Depends on vulnerable versions of command-line-usage
+      Depends on vulnerable versions of dmd
+      Depends on vulnerable versions of jsdoc-parse
+      node_modules/jsdoc-to-markdown
+        grunt-jsdoc-to-markdown  0.5.0 - 0.5.1 || 1.2.0 - 1.2.1
+        Depends on vulnerable versions of jsdoc-to-markdown
+        node_modules/grunt-jsdoc-to-markdown
+  stream-handlebars  <=0.1.6
+  Depends on vulnerable versions of handlebars
+  node_modules/stream-handlebars
+
+minimatch  <3.0.2
+Severity: high
+Regular Expression Denial of Service in minimatch - https://github.com/advisories/GHSA-hxm2-r34f-qmc5
+fix available via `npm audit fix`
+node_modules/jsdoc-parse/node_modules/minimatch
+  glob  3.0.0 - 5.0.14
+  Depends on vulnerable versions of minimatch
+  node_modules/jsdoc-parse/node_modules/glob
+    file-set  <=0.2.8
+    Depends on vulnerable versions of glob
+    node_modules/jsdoc-parse/node_modules/file-set
+      jsdoc-parse  0.2.5 - 2.0.0
+      Depends on vulnerable versions of command-line-args
+      Depends on vulnerable versions of file-set
+      Depends on vulnerable versions of jsdoc-api
+      node_modules/jsdoc-parse
+        jsdoc-to-markdown  0.6.0 - 0.6.4 || 1.3.1 - 2.0.0-alpha.23
+        Depends on vulnerable versions of command-line-usage
+        Depends on vulnerable versions of dmd
+        Depends on vulnerable versions of jsdoc-parse
+        node_modules/jsdoc-to-markdown
+          grunt-jsdoc-to-markdown  0.5.0 - 0.5.1 || 1.2.0 - 1.2.1
+          Depends on vulnerable versions of jsdoc-to-markdown
+          node_modules/grunt-jsdoc-to-markdown
+
+minimist  <0.2.1
+Severity: moderate
+Prototype Pollution in minimist - https://github.com/advisories/GHSA-vh95-rmgr-6w4m
+fix available via `npm audit fix`
+node_modules/optimist/node_modules/minimist
+  optimist  >=0.6.0
+  Depends on vulnerable versions of minimist
+  node_modules/optimist
+    handlebars  <=4.7.6
+    Depends on vulnerable versions of optimist
+    node_modules/ddata/node_modules/handlebars
+    node_modules/stream-handlebars/node_modules/handlebars
+      ddata  >=0.1.18
+      Depends on vulnerable versions of handlebars
+      node_modules/ddata
+        dmd  0.3.23 - 2.0.1
+        Depends on vulnerable versions of command-line-tool
+        Depends on vulnerable versions of ddata
+        Depends on vulnerable versions of stream-handlebars
+        node_modules/dmd
+          jsdoc-to-markdown  0.6.0 - 0.6.4 || 1.3.1 - 2.0.0-alpha.23
+          Depends on vulnerable versions of command-line-usage
+          Depends on vulnerable versions of dmd
+          Depends on vulnerable versions of jsdoc-parse
+          node_modules/jsdoc-to-markdown
+            grunt-jsdoc-to-markdown  0.5.0 - 0.5.1 || 1.2.0 - 1.2.1
+            Depends on vulnerable versions of jsdoc-to-markdown
+            node_modules/grunt-jsdoc-to-markdown
+      stream-handlebars  <=0.1.6
+      Depends on vulnerable versions of handlebars
+      node_modules/stream-handlebars
+    node-windows  >=0.1.5
+    Depends on vulnerable versions of optimist
+    node_modules/node-windows
+
+nedb  *
+Severity: high
+Prototype Pollution - https://github.com/advisories/GHSA-339j-hqgx-qrrx
+Depends on vulnerable versions of binary-search-tree
+Depends on vulnerable versions of underscore
+No fix available
+node_modules/nedb
+
+set-value  <4.0.1
+Severity: high
+Prototype Pollution in set-value - https://github.com/advisories/GHSA-4jqc-8m5r-9rpr
+fix available via `npm audit fix`
+node_modules/set-value
+  cache-base  >=0.7.0
+  Depends on vulnerable versions of set-value
+  Depends on vulnerable versions of union-value
+  node_modules/cache-base
+    base  >=0.7.0
+    Depends on vulnerable versions of cache-base
+    node_modules/base
+      snapdragon  0.6.0 - 0.10.1
+      Depends on vulnerable versions of base
+      node_modules/snapdragon
+        braces  <=2.3.2
+        Depends on vulnerable versions of snapdragon
+        node_modules/braces
+        node_modules/readdirp/node_modules/braces
+          micromatch  0.2.0 - 3.1.10
+          Depends on vulnerable versions of braces
+          Depends on vulnerable versions of parse-glob
+          Depends on vulnerable versions of snapdragon
+          node_modules/micromatch
+          node_modules/readdirp/node_modules/micromatch
+            anymatch  1.2.0 - 1.3.2
+            Depends on vulnerable versions of micromatch
+            node_modules/anymatch
+              chokidar  1.0.0-rc1 - 2.1.8
+              Depends on vulnerable versions of anymatch
+              Depends on vulnerable versions of glob-parent
+              node_modules/chokidar
+                babel-cli  *
+                Depends on vulnerable versions of chokidar
+                node_modules/babel-cli
+                  minify-js  *
+                  Depends on vulnerable versions of babel-cli
+                  Depends on vulnerable versions of utils-igor
+                  node_modules/dir_cache/node_modules/minify-js
+                  node_modules/minify-js
+                  node_modules/utils-igor/node_modules/minify-js
+                    dir_cache  >=1.0.2
+                    Depends on vulnerable versions of minify-js
+                    node_modules/dir_cache
+                    utils-igor  >=2.0.0
+                    Depends on vulnerable versions of minify-js
+                    node_modules/dir_cache/node_modules/minify-js/node_modules/utils-igor
+                    node_modules/utils-igor
+            readdirp  2.2.0 - 2.2.1
+            Depends on vulnerable versions of micromatch
+            node_modules/readdirp
+        expand-brackets  1.0.0 - 2.1.4
+        Depends on vulnerable versions of snapdragon
+        node_modules/readdirp/node_modules/expand-brackets
+        extglob  1.0.0 - 2.0.4
+        Depends on vulnerable versions of snapdragon
+        node_modules/readdirp/node_modules/extglob
+        nanomatch  >=0.1.1
+        Depends on vulnerable versions of snapdragon
+        node_modules/nanomatch
+  union-value  *
+  Depends on vulnerable versions of set-value
+  node_modules/union-value
+
+underscore  1.3.2 - 1.12.0
+Severity: high
+Arbitrary Code Execution in underscore - https://github.com/advisories/GHSA-cf4h-3jhx-xvhq
+No fix available
+node_modules/jsdoc-75lb/node_modules/underscore
+node_modules/underscore
+  binary-search-tree  *
+  Depends on vulnerable versions of underscore
+  node_modules/binary-search-tree
+    nedb  *
+    Depends on vulnerable versions of binary-search-tree
+    Depends on vulnerable versions of underscore
+    node_modules/nedb
+  jsdoc-75lb  *
+  Depends on vulnerable versions of underscore
+  node_modules/jsdoc-75lb
+    jsdoc-api  0.1.0 - 3.0.0
+    Depends on vulnerable versions of jsdoc-75lb
+    node_modules/jsdoc-api
+      jsdoc-parse  0.2.5 - 2.0.0
+      Depends on vulnerable versions of command-line-args
+      Depends on vulnerable versions of file-set
+      Depends on vulnerable versions of jsdoc-api
+      node_modules/jsdoc-parse
+        jsdoc-to-markdown  0.6.0 - 0.6.4 || 1.3.1 - 2.0.0-alpha.23
+        Depends on vulnerable versions of command-line-usage
+        Depends on vulnerable versions of dmd
+        Depends on vulnerable versions of jsdoc-parse
+        node_modules/jsdoc-to-markdown
+          grunt-jsdoc-to-markdown  0.5.0 - 0.5.1 || 1.2.0 - 1.2.1
+          Depends on vulnerable versions of jsdoc-to-markdown
+          node_modules/grunt-jsdoc-to-markdown
+
+48 vulnerabilities (1 low, 3 moderate, 27 high, 17 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+Some issues need review, and may require choosing
+a different dependency.
