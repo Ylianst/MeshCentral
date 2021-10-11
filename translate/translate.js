@@ -44,11 +44,13 @@ var meshCentralSourceFiles = [
     "../emails/account-login.html",
     "../emails/account-reset.html",
     "../emails/mesh-invite.html",
+    "../emails/device-notify.html",
     "../emails/account-check.txt",
     "../emails/account-invite.txt",
     "../emails/account-login.txt",
     "../emails/account-reset.txt",
     "../emails/mesh-invite.txt",
+    "../emails/device-notify.txt",
     "../emails/sms-messages.txt",
     '../agents/agent-translations.json'
 ];

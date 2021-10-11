@@ -14243,6 +14243,13 @@
       ]
     },
     {
+      "en": "Connected devices:",
+      "xloc": [
+        "device-notify.html->2->5->1",
+        "device-notify.txt"
+      ]
+    },
+    {
       "cs": "Připojeno hned",
       "de": "Jetzt verbunden",
       "en": "Connected now",
@@ -19267,6 +19274,13 @@
         "sharing.handlebars->p13->p13toolbar->1->3->p13Status",
         "ssh.handlebars->3->1",
         "xterm.handlebars->9->1"
+      ]
+    },
+    {
+      "en": "Disconnected devices:",
+      "xloc": [
+        "device-notify.html->2->7->1",
+        "device-notify.txt"
       ]
     },
     {
@@ -56355,6 +56369,13 @@
       ]
     },
     {
+      "en": "The folloing devices have changed their connection state.",
+      "xloc": [
+        "device-notify.html->2->3->1",
+        "device-notify.txt"
+      ]
+    },
+    {
       "cs": "Níže jsou uvedena požadovaná zveřejnění součástí a softwaru s otevřeným zdrojovým kódem začleněných do tohoto softwaru.",
       "de": "Im Folgenden sind die erforderlichen Angaben zu Open Source-Komponenten und -Software aufgeführt, die in dieser Software enthalten sind.",
       "en": "The following are the required disclosures of open source components and software incorporated into this software.",
@@ -57610,6 +57631,18 @@
       "zh-cht": "要卸載，請以root用戶身份剪貼以下命令。",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->linuxtab->9"
+      ]
+    },
+    {
+      "en": "To unsubscribe,",
+      "xloc": [
+        "device-notify.html->2->9->1"
+      ]
+    },
+    {
+      "en": "To unsubscribe, load this link within 1 hour of getting this message: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
+      "xloc": [
+        "device-notify.txt"
       ]
     },
     {
@@ -64581,6 +64614,18 @@
       ]
     },
     {
+      "en": "[[[CONNECTIONS]]]",
+      "xloc": [
+        "device-notify.html->2->5->3->0"
+      ]
+    },
+    {
+      "en": "[[[DISCONNECTIONS]]]",
+      "xloc": [
+        "device-notify.html->2->7->3->0"
+      ]
+    },
+    {
       "cs": "[[[SERVERNAME]]]",
       "de": "[[[SERVERNAME]]]",
       "en": "[[[SERVERNAME]]]",
@@ -64705,6 +64750,14 @@
       "zh-cht": "[[[SERVERNAME]]]-代理程序安裝",
       "xloc": [
         "mesh-invite.html->2->1->1->0->1->1"
+      ]
+    },
+    {
+      "en": "[[[SERVERNAME]]] - Device Notification",
+      "xloc": [
+        "device-notify.html->0",
+        "device-notify.html->2->1->1->0->1->1",
+        "device-notify.txt"
       ]
     },
     {
@@ -65149,6 +65202,7 @@
       "zh-chs": "点击这里",
       "zh-cht": "點擊這裡",
       "xloc": [
+        "device-notify.html->2->9->1->1",
         "mesh-invite.html->2->15->1->1"
       ]
     },
@@ -67021,6 +67075,12 @@
       "tr": "v0.8.0",
       "zh-chs": "v0.8.0",
       "zh-cht": "v0.8.0"
+    },
+    {
+      "en": "within 1 hour of getting this message.",
+      "xloc": [
+        "device-notify.html->2->9->1"
+      ]
     },
     {
       "cs": "{0}",
