@@ -36,6 +36,8 @@
     "sample-config-advanced.json"
   ],
   "dependencies": {
+    "archiver": "^4.0.2",
+    "archiver-zip-encrypted": "^1.0.10",
     "body-parser": "^1.19.0",
     "cbor": "~5.2.0",
     "compression": "^1.7.4",
@@ -43,13 +45,24 @@
     "express": "^4.17.0",
     "express-handlebars": "^3.1.0",
     "express-ws": "^4.0.0",
+    "image-size": "^1.0.0",
     "ipcheck": "^0.1.0",
+    "loadavg-windows": "^1.1.1",
     "minimist": "^1.2.0",
+    "mongodb": "^4.1.0",
     "multiparty": "^4.2.1",
     "nedb": "^1.8.0",
     "node-forge": "^0.10.0",
+    "node-rdpjs-2": "^0.3.5",
+    "node-windows": "^1.0.0-beta.6",
+    "nodemailer": "^6.6.5",
+    "otplib": "^10.2.3",
+    "saslprep": "^1.0.3",
+    "ssh2": "^1.4.0",
+    "web-push": "^3.4.5",
     "ws": "^5.2.3",
-    "yauzl": "^2.10.0"
+    "yauzl": "^2.10.0",
+    "yubikeyotp": "^0.2.0"
   },
   "repository": {
     "type": "git",

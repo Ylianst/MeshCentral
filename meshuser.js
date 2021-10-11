@@ -5663,6 +5663,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'dropallcira': [serverUserCommandDropAllCira, ""],
         'dupagents': [serverUserCommandDupAgents, ""],
         'email': [serverUserCommandEmail, ""],
+        'emailnotifications': [serverUserCommandEmailNotifications, ""],
         'firebase': [serverUserCommandFirebase, ""],
         'heapdump': [serverUserCommandHeapDump, ""],
         'heapdump2': [serverUserCommandHeapDump2, ""],
@@ -6050,6 +6051,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 domain.mailserver.sendMail(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], cmdData.cmdargs['_'][2]);
                 cmdData.result = "Done.";
             }
+        }
+    }
+
+    function serverUserCommandEmailNotifications(cmdData) {
+        if (domain.mailserver == null) {
+            cmdData.result = "No email service enabled.";
+        } else {
+            var x = '';
+            for (var userid in domain.mailserver.deviceNotifications) {
+                x += userid + '\r\n';
+                for (var nodeid in domain.mailserver.deviceNotifications[userid].nodes) {
+                    const info = domain.mailserver.deviceNotifications[userid].nodes[nodeid];
+                    x += '  ' + info.mn + ', ' + info.nn + ', c:' + (info.c ? info.c : 0) + ', d:' + (info.d ? info.d : 0) + '\r\n';
+                }
+            }
+            cmdData.result = ((x == '')?'None':x);
         }
     }
 
