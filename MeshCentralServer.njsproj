@@ -627,6 +627,7 @@
     <Folder Include="typings\" />
     <Folder Include="typings\globals\" />
     <Folder Include="typings\globals\ajv\" />
+    <Folder Include="typings\globals\async\" />
     <Folder Include="typings\globals\axios\" />
     <Folder Include="typings\globals\connect-redis\" />
     <Folder Include="typings\globals\cookie-session\" />
@@ -640,9 +641,11 @@
     <Folder Include="typings\globals\handlebars\" />
     <Folder Include="typings\globals\he\" />
     <Folder Include="typings\globals\hooker\" />
+    <Folder Include="typings\globals\http-errors\" />
     <Folder Include="typings\globals\is-plain-object\" />
     <Folder Include="typings\globals\jsbn\" />
     <Folder Include="typings\globals\klaw\" />
+    <Folder Include="typings\globals\localforage\" />
     <Folder Include="typings\globals\lru-cache\" />
     <Folder Include="typings\globals\marked\" />
     <Folder Include="typings\globals\moment\" />
@@ -650,14 +653,17 @@
     <Folder Include="typings\globals\nodemailer\" />
     <Folder Include="typings\globals\node\" />
     <Folder Include="typings\globals\object-assign\" />
+    <Folder Include="typings\globals\once\" />
     <Folder Include="typings\globals\passport\" />
     <Folder Include="typings\globals\sprintf-js\" />
     <Folder Include="typings\globals\type-check\" />
+    <Folder Include="typings\globals\underscore\" />
     <Folder Include="typings\globals\uuid\" />
     <Folder Include="views\" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="typings\globals\ajv\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\async\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\axios\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\connect-redis\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\cookie-session\index.d.ts" />
@@ -671,9 +677,11 @@
     <TypeScriptCompile Include="typings\globals\handlebars\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\he\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\hooker\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\http-errors\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\is-plain-object\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\jsbn\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\klaw\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\localforage\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\lru-cache\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\marked\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\moment\index.d.ts" />
@@ -681,9 +689,11 @@
     <TypeScriptCompile Include="typings\globals\nodemailer\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\node\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\object-assign\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\once\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\passport\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\sprintf-js\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\type-check\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\underscore\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\uuid\index.d.ts" />
     <TypeScriptCompile Include="typings\index.d.ts" />
   </ItemGroup>

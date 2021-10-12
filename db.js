@@ -923,7 +923,8 @@ module.exports.CreateDB = function (parent, func) {
     } else {
         // Use NeDB (The default)
         obj.databaseType = 1;
-        Datastore = require('nedb');
+        try { Datastore = require('@yetzt/nedb'); } catch (ex) { } // This is the NeDB with fixed security dependencies.
+        if (Datastore == null) { Datastore = require('nedb'); } // So not to break any existing installations, if the old NeDB is present, use it.
         var datastoreOptions = { filename: parent.getConfigFilePath('meshcentral.db'), autoload: true };
 
         // If a DB encryption key is provided, perform database encryption
