@@ -44,9 +44,9 @@
     "express-handlebars": "^3.1.0",
     "express-ws": "^4.0.0",
     "ipcheck": "^0.1.0",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "nedb": "^1.8.0",
+    "@yetzt/nedb": "^1.8.0",
     "node-forge": "^0.10.0",
     "ws": "^5.2.3",
     "yauzl": "^2.10.0"
