@@ -2851,7 +2851,7 @@ function CreateMeshCentralServer(config, args) {
         obj.fs.readFile(amtlogfilename, 'utf8', function (err, data) {
             var amtPasswords = {}; // UUID --> [Passwords]
             if ((err == null) && (data != null)) {
-                const lines = data.split('\r\n').join('\n').split('\n');
+                const lines = data.split('\n');
                 for (var i in lines) {
                     var line = lines[i];
                     if (line.startsWith('{')) {

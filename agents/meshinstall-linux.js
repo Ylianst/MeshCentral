@@ -40,7 +40,7 @@ Object.defineProperty(Array.prototype, 'getParameter',
         }
     });
 
-// The folloing line just below with 'msh=' needs to stay exactly like this since MeshCentral will replace it with the correct settings.
+// The following line just below with 'msh=' needs to stay exactly like this since MeshCentral will replace it with the correct settings.
 var msh = {};
 var translation = JSON.parse(msh.translation);
 
