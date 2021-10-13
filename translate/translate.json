@@ -56369,7 +56369,7 @@
       ]
     },
     {
-      "en": "The folloing devices have changed their connection state.",
+      "en": "The following devices have changed their connection state.",
       "xloc": [
         "device-notify.html->2->3->1",
         "device-notify.txt"
