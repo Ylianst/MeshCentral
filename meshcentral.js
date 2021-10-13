@@ -2851,16 +2851,19 @@ function CreateMeshCentralServer(config, args) {
         obj.fs.readFile(amtlogfilename, 'utf8', function (err, data) {
             var amtPasswords = {}; // UUID --> [Passwords]
             if ((err == null) && (data != null)) {
-                const lines = data.split('\r\n');
+                const lines = data.split('\r\n').join('\n').split('\n');
                 for (var i in lines) {
                     var line = lines[i];
                     if (line.startsWith('{')) {
-                        var j = JSON.parse(line);
-                        if ((typeof j.amtUuid == 'string') && (typeof j.password == 'string')) {
-                            if (amtPasswords[j.amtUuid] == null) {
-                                amtPasswords[j.amtUuid] = [j.password]; // Add password to array
-                            } else {
-                                amtPasswords[j.amtUuid].unshift(j.password); // Add password at the start of the array
+                        var j = null;
+                        try { j = JSON.parse(line); } catch (ex) { }
+                        if ((j != null) && (typeof j == 'object')) {
+                            if ((typeof j.amtUuid == 'string') && (typeof j.password == 'string')) {
+                                if (amtPasswords[j.amtUuid] == null) {
+                                    amtPasswords[j.amtUuid] = [j.password]; // Add password to array
+                                } else {
+                                    amtPasswords[j.amtUuid].unshift(j.password); // Add password at the start of the array
+                                }
                             }
                         }
                     }
