@@ -3215,17 +3215,17 @@
 
                                 // Show the notification
                                 if (n & 2) {
-                                    var agentPrivilages = '';
-                                    if ((node.agent != null) && (node.agent.root === false)) { agentPrivilages = ', <span title="' + "Agent is running on remote device with reduced privilages." + '">' + "Restricted" + '</span>'; }
-                                    if (((node.conn & 1) == 0) && ((message.event.conn & 1) != 0)) { addNotification({ text: "Agent connected" + agentPrivilages, title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 2) == 0) && ((message.event.conn & 2) != 0)) { addNotification({ text: "Intel&reg; AMT detected", title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 4) == 0) && ((message.event.conn & 4) != 0)) { addNotification({ text: "Intel&reg; AMT CIRA connected", title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    var agentPrivilages = "Agent connected";
+                                    if ((node.agent != null) && (node.agent.root === false)) { "Agent connected with limited privilages"; }
+                                    if (((node.conn & 1) == 0) && ((message.event.conn & 1) != 0)) { addNotification({ text: agentPrivilages, title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 2) == 0) && ((message.event.conn & 2) != 0)) { addNotification({ text: "Intel AMT detected", title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 4) == 0) && ((message.event.conn & 4) != 0)) { addNotification({ text: "Intel AMT CIRA connected", title: node.name, icon: node.icon, nodeid: node._id }); }
                                     if (((node.conn & 16) == 0) && ((message.event.conn & 16) != 0)) { addNotification({ text: "MQTT connected", title: node.name, icon: node.icon, nodeid: node._id }); }
                                 }
                                 if (n & 4) {
                                     if (((node.conn & 1) != 0) && ((message.event.conn & 1) == 0)) { addNotification({ text: "Agent disconnected", title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 2) != 0) && ((message.event.conn & 2) == 0)) { addNotification({ text: "Intel&reg; AMT not detected", title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 4) != 0) && ((message.event.conn & 4) == 0)) { addNotification({ text: "Intel&reg; AMT CIRA disconnected", title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 2) != 0) && ((message.event.conn & 2) == 0)) { addNotification({ text: "Intel AMT not detected", title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 4) != 0) && ((message.event.conn & 4) == 0)) { addNotification({ text: "Intel AMT CIRA disconnected", title: node.name, icon: node.icon, nodeid: node._id }); }
                                     if (((node.conn & 16) != 0) && ((message.event.conn & 16) == 0)) { addNotification({ text: "MQTT disconnected", title: node.name, icon: node.icon, nodeid: node._id }); }
                                 }
 
