@@ -706,12 +706,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     */
 
     // Check if the source IP address is in the IP list, return false if not.
-    function checkIpAddressEx(req, res, ipList, closeIfThis) {
+    function checkIpAddressEx(req, res, ipList, closeIfThis, redirectUrl) {
         try {
             if (req.connection) {
                 // HTTP(S) request
-                if (req.clientIp) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(req.clientIp, ipList[i])) { if (closeIfThis === true) { res.sendStatus(401); } return true; } } }
-                if (closeIfThis === false) { res.sendStatus(401); }
+                if (req.clientIp) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(req.clientIp, ipList[i])) { if (closeIfThis === true) { if (typeof redirectUrl == 'string') { res.redirect(redirectUrl); } else { res.sendStatus(401); } } return true; } } }
+                if (closeIfThis === false) { if (typeof redirectUrl == 'string') { res.redirect(redirectUrl); } else { res.sendStatus(401); } }
             } else {
                 // WebSocket request
                 if (res.clientIp) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(res.clientIp, ipList[i])) { if (closeIfThis === true) { try { req.close(); } catch (e) { } } return true; } } }
@@ -724,12 +724,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Check if the source IP address is allowed, return domain if allowed
     // If there is a fail and null is returned, the request or connection is closed already.
     function checkUserIpAddress(req, res) {
-        if ((parent.config.settings.userblockedip != null) && (checkIpAddressEx(req, res, parent.config.settings.userblockedip, true) == true)) { obj.blockedUsers++; return null; }
-        if ((parent.config.settings.userallowedip != null) && (checkIpAddressEx(req, res, parent.config.settings.userallowedip, false) == false)) { obj.blockedUsers++; return null; }
+        if ((parent.config.settings.userblockedip != null) && (checkIpAddressEx(req, res, parent.config.settings.userblockedip, true, parent.config.settings.ipblockeduserredirect) == true)) { obj.blockedUsers++; return null; }
+        if ((parent.config.settings.userallowedip != null) && (checkIpAddressEx(req, res, parent.config.settings.userallowedip, false, parent.config.settings.ipblockeduserredirect) == false)) { obj.blockedUsers++; return null; }
         const domain = (req.url ? getDomain(req) : getDomain(res));
         if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); try { res.sendStatus(404); } catch (ex) { } return; }
-        if ((domain.userblockedip != null) && (checkIpAddressEx(req, res, domain.userblockedip, true) == true)) { obj.blockedUsers++; return null; }
-        if ((domain.userallowedip != null) && (checkIpAddressEx(req, res, domain.userallowedip, false) == false)) { obj.blockedUsers++; return null; }
+        if ((domain.userblockedip != null) && (checkIpAddressEx(req, res, domain.userblockedip, true, domain.ipblockeduserredirect) == true)) { obj.blockedUsers++; return null; }
+        if ((domain.userallowedip != null) && (checkIpAddressEx(req, res, domain.userallowedip, false, domain.ipblockeduserredirect) == false)) { obj.blockedUsers++; return null; }
         return domain;
     }
 
