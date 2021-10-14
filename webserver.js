@@ -7665,6 +7665,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.setbadLogin = function (ip) { // Set an IP address that just did a bad login request
         if (parent.config.settings.maxinvalidlogin === false) return;
         if (typeof ip == 'object') { ip = ip.clientIp; }
+        if (parent.config.settings.maxinvalidlogin != null) {
+            if (typeof parent.config.settings.maxinvalidlogin.exclude == 'string') {
+                const excludeSplit = parent.config.settings.maxinvalidlogin.exclude.split(',');
+                for (var i in excludeSplit) { if (require('ipcheck').match(ip, excludeSplit[i])) return; }
+            } else if (Array.isArray(parent.config.settings.maxinvalidlogin.exclude)) {
+                for (var i in parent.config.settings.maxinvalidlogin.exclude) { if (require('ipcheck').match(ip, parent.config.settings.maxinvalidlogin.exclude[i])) return; }
+            }
+            return;
+        }
         var splitip = ip.split('.');
         if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); }
         if (++obj.badLoginTableLastClean > 100) { obj.cleanBadLoginTable(); }
