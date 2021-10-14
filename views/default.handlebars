@@ -2912,6 +2912,7 @@
                                 delete users[message.event.account._id]; // No longer part of our groups, remove this user.
                             }
 
+                            if (currentNode) { refreshDevice(currentNode._id); }
                             mainUpdate(4 | 16384);
                             break;
                         }
@@ -3211,6 +3212,12 @@
                                 // Per-group notification settings
                                 if (message.event.meshid && userinfo.links && userinfo.links[message.event.meshid] && userinfo.links[message.event.meshid].notify) {
                                     n |= userinfo.links[message.event.meshid].notify;
+                                }
+
+                                // Per-user notification settings
+                                if (userinfo.notify != null) {
+                                    if (userinfo.notify[message.event.meshid] != null) { n |= userinfo.notify[message.event.meshid]; }
+                                    if (userinfo.notify[message.event.nodeid] != null) { n |= userinfo.notify[message.event.nodeid]; }
                                 }
 
                                 // Show the notification
@@ -6722,9 +6729,24 @@
                     x += addDeviceAttribute("User Consent", addLinkConditional(meshFeatures, 'p20editmeshconsent(3)', meshrights & 1));
                 }
 
+                var devNotifyStr = [];
+                if ((userinfo.notify != null) && (userinfo.notify[node._id] != null)) {
+                    var devNotify = userinfo.notify[node._id];
+                    if (devNotify & 2) { devNotifyStr.push("Connect"); }
+                    if (devNotify & 4) { devNotifyStr.push("Disconnect"); }
+                    if ((node.intelamt != null) && (devNotify & 8)) { devNotifyStr.push("Intel&reg; AMT"); }
+                    if ((features2 & 0x00004000) && (userinfo.emailVerified)) {
+                        if (devNotify & 16) { devNotifyStr.push("Email Connect"); }
+                        if (devNotify & 32) { devNotifyStr.push("Email Disconnect"); }
+                    }
+                }
+                devNotifyStr = devNotifyStr.join(', ');
+                if (devNotifyStr == '') { devNotifyStr = '<i>' + "None" + '</i>'; }
+                x += addDeviceAttribute("Notifications", addLink(devNotifyStr, 'p20editDeviceNotify()'));
+
                 // Attribute: Connectivity (Only show this if more than just the agent is connected).
                 var connectivity = node.conn;
-                if (connectivity && connectivity > 1) {
+                if (connectivity && (connectivity > 1)) {
                     var cstate = [];
                     if ((node.conn & 1) != 0) cstate.push('<span title="' + "Mesh agent is connected and ready for use." + '">' + "Mesh Agent" + '</span>');
                     if ((node.conn & 2) != 0) cstate.push('<span title="' + "Intel&reg; AMT CIRA is connected and ready for use." + '">' + "Intel&reg; AMT CIRA" + '</span>');
@@ -7054,6 +7076,42 @@
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
             go(panel);
+        }
+
+        function p20editDeviceNotify() {
+            if (xxdialogMode) return false;
+            var devNotify = 0, fx = ((features2 & 0x00004000) && (userinfo.emailVerified))?1:0;
+            if (userinfo.notify && userinfo.notify[currentNode._id]) { devNotify = userinfo.notify[currentNode._id]; }
+            var x = '<div style="border-bottom: 1px solid #888;margin-bottom:3px">Web Page Notifications</div>';
+            x += '<div><label><input id=p20notifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
+            x += '<div><label><input id=p20notifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+            if (currentNode.intelamt != null) { fx += 2; x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>'; }
+            if (fx & 1) {
+                x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">Email Notifications</div>';
+                x += '<div><label><input id=p20enotifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
+                x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+            }
+            setDialogMode(2, "Notification Settings", 3, p20editDeviceNotifyEx, x, fx);
+            Q('p20notifyIntelDeviceConnect').checked = (devNotify & 2);
+            Q('p20notifyIntelDeviceDisconnect').checked = (devNotify & 4);
+            if (fx & 2) { Q('p20notifyIntelAmtKvmActions').checked = (devNotify & 8); }
+            if (fx & 1) {
+                Q('p20enotifyIntelDeviceConnect').checked = (devNotify & 16);
+                Q('p20enotifyIntelDeviceDisconnect').checked = (devNotify & 32);
+            }
+            return false;
+        }
+
+        function p20editDeviceNotifyEx(b, fx) {
+            var devNotify = 0;
+            devNotify += Q('p20notifyIntelDeviceConnect').checked ? 2 : 0;
+            devNotify += Q('p20notifyIntelDeviceDisconnect').checked ? 4 : 0;
+            if (fx & 2) { devNotify += Q('p20notifyIntelAmtKvmActions').checked ? 8 : 0; }
+            if (fx & 1) {
+                devNotify += Q('p20enotifyIntelDeviceConnect').checked ? 16 : 0;
+                devNotify += Q('p20enotifyIntelDeviceDisconnect').checked ? 32 : 0;
+            }
+            meshserver.send({ action: 'changeusernotify', nodeid: currentNode._id, notify: devNotify });
         }
 
         function makeUserDeviceRightsString(rights) {
@@ -12937,7 +12995,8 @@
             126: "Left Web-VNC session after {0} second(s).",
             127: "Changed account display name to {0}.",
             128: "Account created, name is {0}.",
-            129: "Removed account display name."
+            129: "Removed account display name.",
+            130: "User notifications changed"
         };
 
         // Highlights the device being hovered

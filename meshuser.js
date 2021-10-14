@@ -2152,6 +2152,49 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     break;
                 }
+            case 'changeusernotify':
+                {
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+
+                    //  2 = WebPage device connections
+                    //  4 = WebPage device disconnections
+                    //  8 = WebPage device desktop and serial events
+                    // 16 = Email device connections
+                    // 32 = Email device disconnections
+
+                    var err = null;
+                    try {
+                        // Change the current user's notification flags for a meshid
+                        if (common.validateString(command.nodeid, 1, 1024) == false) { err = 'Invalid device identifier'; } // Check the meshid
+                        else if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                        if (common.validateInt(command.notify) == false) { err = 'Invalid notification flags'; }
+                        //if (parent.IsMeshViewable(user, command.nodeid) == false) err = 'Access denied';
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                    // Handle any errors
+                    if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeusernotify', responseid: command.responseid, result: err })); } catch (ex) { } } break; }
+
+                    // Check if nothing has changed
+                    if ((user.notify == null) && (command.notify == 0)) return;
+                    if ((user.notify != null) && (user.notify[command.nodeid] == command.notify)) return;
+
+                    // Change the notification
+                    if (user.notify == null) { user.notify = {}; }
+                    if (command.notify == 0) { delete user.notify[command.nodeid]; } else { user.notify[command.nodeid] = command.notify; }
+                    if (Object.keys(user.notify).length == 0) { delete user.notify; }
+
+                    // Save the user
+                    parent.db.SetUser(user);
+
+                    // Notify change
+                    var targets = ['*', 'server-users', user._id];
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 130, msg: 'User notifications changed', domain: domain.id };
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                    parent.parent.DispatchEvent(targets, obj, event);
+
+                    break;
+                }
             case 'changepassword':
                 {
                     // Do not allow this command when logged in using a login token
