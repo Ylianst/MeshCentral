@@ -847,10 +847,14 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         if (event.addy) { obj.my += event.addy; }
 
         // ###BEGIN###{DesktopRotation}
+        if ((obj.rotation == 1) || (obj.rotation == 3)) {
+            obj.mx = ((obj.mx * obj.rwidth) / obj.width);
+            obj.my = ((obj.my * obj.rheight) / obj.height);
+        }
         if (obj.noMouseRotate != true) {
-            obj.mx2 = _crotX(obj.mx, obj.my);
+            var mx2 = _crotX(obj.mx, obj.my);
             obj.my = _crotY(obj.mx, obj.my);
-            obj.mx = obj.mx2;
+            obj.mx = mx2;
         }
         // ###END###{DesktopRotation}
 
