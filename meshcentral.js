@@ -2094,38 +2094,46 @@ function CreateMeshCentralServer(config, args) {
         const mesh = obj.webserver.meshes[meshid];
         if ((mesh == null) || (mesh.links == null)) return;
 
-        // Check if any user needs email notification
-        // TODO: Add user group support.
+        // Get the list of users that have visibility to this device
+        // This includes users that are part of user groups
+        var users = [];
         for (var i in mesh.links) {
-            if (i.startsWith('user/')) {
-                const user = obj.webserver.users[i];
-                if ((user != null) && (user.email != null) && (user.emailVerified == true)) {
-                    var notify = 0;
+            if (i.startsWith('user/') && (users.indexOf(i) < 0)) { users.push(i); }
+            if (i.startsWith('ugrp/')) {
+                var usergrp = obj.webserver.userGroups[i];
+                if (usergrp.links != null) { for (var j in usergrp.links) { if (j.startsWith('user/') && (users.indexOf(j) < 0)) { users.push(j); } } }
+            }
+        }
 
-                    // Device group notifications
-                    const meshLinks = user.links[meshid];
-                    if ((meshLinks != null) && (meshLinks.notify != null)) { notify |= meshLinks.notify; }
+        // Check if any user needs email notification
+        for (var i in users) {
+            const user = obj.webserver.users[i];
+            if ((user != null) && (user.email != null) && (user.emailVerified == true)) {
+                var notify = 0;
 
-                    // User notifications
-                    if (user.notify != null) {
-                        if (user.notify[meshid] != null) { notify |= user.notify[meshid]; }
-                        if (user.notify[nodeid] != null) { notify |= user.notify[nodeid]; }
-                    }
+                // Device group notifications
+                const meshLinks = user.links[meshid];
+                if ((meshLinks != null) && (meshLinks.notify != null)) { notify |= meshLinks.notify; }
 
-                    if ((notify & 48) != 0) {
-                        if (stateSet == true) {
-                            if ((notify & 16) != 0) {
-                                mailserver.notifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
-                            } else {
-                                mailserver.cancelNotifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
-                            }
+                // User notifications
+                if (user.notify != null) {
+                    if (user.notify[meshid] != null) { notify |= user.notify[meshid]; }
+                    if (user.notify[nodeid] != null) { notify |= user.notify[nodeid]; }
+                }
+
+                if ((notify & 48) != 0) {
+                    if (stateSet == true) {
+                        if ((notify & 16) != 0) {
+                            mailserver.notifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        } else {
+                            mailserver.cancelNotifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
                         }
-                        else if (stateSet == false) {
-                            if ((notify & 32) != 0) {
-                                mailserver.notifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
-                            } else {
-                                mailserver.cancelNotifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
-                            }
+                    }
+                    else if (stateSet == false) {
+                        if ((notify & 32) != 0) {
+                            mailserver.notifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        } else {
+                            mailserver.cancelNotifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
                         }
                     }
                 }
