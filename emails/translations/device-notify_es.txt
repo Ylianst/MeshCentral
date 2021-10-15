@@ -1,6 +1,6 @@
 [[[SERVERNAME]]] - Device Notification
 ~<area-header>
-The folloing devices have changed their connection state.
+The following devices have changed their connection state.
 ~</area-header>
 ~<area-connections>
 ~
