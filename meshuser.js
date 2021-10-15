@@ -2130,8 +2130,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Handle any errors
                     if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changemeshnotify', responseid: command.responseid, result: err })); } catch (ex) { } } break; }
 
-                    // Change the notification (TODO: Add user group support, not sure how to do this here)
-                    // TODO (UserGroups)
+                    // Change the device group notification
                     if (user.links[command.meshid]) {
                         if (command.notify == 0) {
                             delete user.links[command.meshid].notify;
@@ -2139,6 +2138,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             user.links[command.meshid].notify = command.notify;
                         }
                     }
+
+                    // Change user notification if needed, this is needed then a user has device rights thru a user group
+                    if ((command.notify == 0) && (user.notify != null) && (user.notify[command.meshid] != null)) { delete user.notify[command.meshid]; }
+                    if ((command.notify != 0) && (user.links[command.meshid] == null)) { if (user.notify == null) { user.notify = {} } user.notify[command.meshid] = command.notify; }
 
                     // Save the user
                     parent.db.SetUser(user);

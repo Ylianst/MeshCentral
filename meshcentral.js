@@ -2095,21 +2095,33 @@ function CreateMeshCentralServer(config, args) {
         if ((mesh == null) || (mesh.links == null)) return;
 
         // Check if any user needs email notification
+        // TODO: Add user group support.
         for (var i in mesh.links) {
             if (i.startsWith('user/')) {
                 const user = obj.webserver.users[i];
                 if ((user != null) && (user.email != null) && (user.emailVerified == true)) {
+                    var notify = 0;
+
+                    // Device group notifications
                     const meshLinks = user.links[meshid];
-                    if ((meshLinks != null) && (meshLinks.notify != null) && ((meshLinks.notify & 48) != 0)) {
+                    if ((meshLinks != null) && (meshLinks.notify != null)) { notify |= meshLinks.notify; }
+
+                    // User notifications
+                    if (user.notify != null) {
+                        if (user.notify[meshid] != null) { notify |= user.notify[meshid]; }
+                        if (user.notify[nodeid] != null) { notify |= user.notify[nodeid]; }
+                    }
+
+                    if ((notify & 48) != 0) {
                         if (stateSet == true) {
-                            if ((meshLinks.notify & 16) != 0) {
+                            if ((notify & 16) != 0) {
                                 mailserver.notifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
                             } else {
                                 mailserver.cancelNotifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
                             }
                         }
                         else if (stateSet == false) {
-                            if ((meshLinks.notify & 32) != 0) {
+                            if ((notify & 32) != 0) {
                                 mailserver.notifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
                             } else {
                                 mailserver.cancelNotifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);

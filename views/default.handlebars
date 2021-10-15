@@ -2903,6 +2903,7 @@
                                 // If our list of nodes may have changes, request the new list now.
                                 if (message.event.nodeListChange == userinfo._id) { meshserver.send({ action: 'nodes' }); }
                             }
+                            if (currentNode) { refreshDevice(currentNode._id); }
                             if (users == null) break;
 
                             // Check if the account is part of our user group
@@ -2912,7 +2913,6 @@
                                 delete users[message.event.account._id]; // No longer part of our groups, remove this user.
                             }
 
-                            if (currentNode) { refreshDevice(currentNode._id); }
                             mainUpdate(4 | 16384);
                             break;
                         }
@@ -7082,12 +7082,12 @@
             if (xxdialogMode) return false;
             var devNotify = 0, fx = ((features2 & 0x00004000) && (userinfo.emailVerified))?1:0;
             if (userinfo.notify && userinfo.notify[currentNode._id]) { devNotify = userinfo.notify[currentNode._id]; }
-            var x = '<div style="border-bottom: 1px solid #888;margin-bottom:3px">Web Page Notifications</div>';
+            var x = '<div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Web Page Notifications" + '</div>';
             x += '<div><label><input id=p20notifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
             x += '<div><label><input id=p20notifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
             if (currentNode.intelamt != null) { fx += 2; x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>'; }
             if (fx & 1) {
-                x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">Email Notifications</div>';
+                x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Email Notifications" + '</div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
             }
@@ -11398,7 +11398,8 @@
                 if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 1024) == 0)) {
                     // Display user notification
                     var meshNotify = 0, meshNotifyStr = [];
-                    if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
+                    if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify |= userinfo.links[currentMesh._id].notify; }
+                    if (userinfo.notify && userinfo.notify[currentMesh._id]) { meshNotify |= userinfo.notify[currentMesh._id]; }
                     if (meshNotify & 2) { meshNotifyStr.push("Connect"); }
                     if (meshNotify & 4) { meshNotifyStr.push("Disconnect"); }
                     if (meshNotify & 8) { meshNotifyStr.push("Intel&reg; AMT"); }
@@ -12325,14 +12326,15 @@
             if (xxdialogMode) return false;
             var meshNotify = 0;
             var emailNotify = ((features2 & 0x00004000) && (userinfo.emailVerified));
-            if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
+            if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify |= userinfo.links[currentMesh._id].notify; }
+            if (userinfo.notify && userinfo.notify[currentMesh._id]) { meshNotify |= userinfo.notify[currentMesh._id]; }
             //var x = "Notification settings must also be turned on in account settings." + '<br /><br />';
-            var x = '<div style="border-bottom: 1px solid #888;margin-bottom:3px">Web Page Notifications</div>';
+            var x = '<div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Web Page Notifications" + '</div>';
             x += '<div><label><input id=p20notifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
             x += '<div><label><input id=p20notifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
             x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
             if (emailNotify) {
-                x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">Email Notifications</div>';
+                x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Email Notifications" + '</div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
             }
