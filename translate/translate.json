@@ -6966,6 +6966,7 @@
     },
     {
       "en": "Agent connected with limited privilages",
+      "nl": "Agent verbonden met beperkte privileges",
       "xloc": [
         "default.handlebars->37->229"
       ]
@@ -14250,6 +14251,7 @@
     },
     {
       "en": "Connected devices:",
+      "nl": "Verbonden apparaten:",
       "xloc": [
         "device-notify.html->2->5->1",
         "device-notify.txt"
@@ -18357,7 +18359,7 @@
       "it": "Connessioni del dispositivo",
       "ja": "デバイス接続。",
       "ko": "장치가 연결되었습니다",
-      "nl": "Apparaat verbindingen",
+      "nl": "Apparaat verbonden",
       "pl": "Połączenia urządzenia",
       "pt": "Conexões de dispositivos",
       "pt-br": "Conexões de dispositivos",
@@ -18385,7 +18387,7 @@
       "it": "Disconnessioni del dispositivo",
       "ja": "デバイスの切断。",
       "ko": "장치 연결이 끊어졌습니다",
-      "nl": "Apparaat verbroken",
+      "nl": "Apparaatverbinding verbroken",
       "pl": "Odłączenia urządzenia",
       "pt": "Desconexões de dispositivos",
       "pt-br": "Desconexões de dispositivos",
@@ -19289,6 +19291,7 @@
     },
     {
       "en": "Disconnected devices:",
+      "nl": "Losgekoppelde apparaten:",
       "xloc": [
         "device-notify.html->2->7->1",
         "device-notify.txt"
@@ -21691,6 +21694,7 @@
     },
     {
       "en": "Email Connect",
+      "nl": "Email verbinden",
       "xloc": [
         "default.handlebars->37->1760",
         "default.handlebars->37->805"
@@ -21698,6 +21702,7 @@
     },
     {
       "en": "Email Disconnect",
+      "nl": "Email verbroken",
       "xloc": [
         "default.handlebars->37->1761",
         "default.handlebars->37->806"
@@ -21705,6 +21710,7 @@
     },
     {
       "en": "Email Notifications",
+      "nl": "Email meldingen",
       "xloc": [
         "default.handlebars->37->1961",
         "default.handlebars->37->907"
@@ -28552,18 +28558,21 @@
     },
     {
       "en": "Intel AMT CIRA connected",
+      "nl": "Intel AMT CIRA verbonden",
       "xloc": [
         "default.handlebars->37->231"
       ]
     },
     {
       "en": "Intel AMT CIRA disconnected",
+      "nl": "Intel AMT CIRA verbroken",
       "xloc": [
         "default.handlebars->37->235"
       ]
     },
     {
       "en": "Intel AMT detected",
+      "nl": "Intel AMT gedetecteerd",
       "xloc": [
         "default.handlebars->37->230"
       ]
@@ -28593,6 +28602,7 @@
     },
     {
       "en": "Intel AMT not detected",
+      "nl": "Intel AMT niet gedetecteerd",
       "xloc": [
         "default.handlebars->37->234"
       ]
@@ -56433,6 +56443,7 @@
     },
     {
       "en": "The following devices have changed their connection state.",
+      "nl": "De volgende apparaten hebben hun verbindingsstatus gewijzigd.",
       "xloc": [
         "device-notify.html->2->3->1",
         "device-notify.txt"
@@ -57673,12 +57684,14 @@
     },
     {
       "en": "To unsubscribe,",
+      "nl": "Uitschrijven,",
       "xloc": [
         "device-notify.html->2->9->1"
       ]
     },
     {
       "en": "To unsubscribe, load this link within 1 hour of getting this message: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
+      "nl": "Om je af te melden, open je deze link binnen 1 uur nadat je dit bericht hebt ontvangen: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "xloc": [
         "device-notify.txt"
       ]
@@ -61305,6 +61318,7 @@
     },
     {
       "en": "User notifications changed",
+      "nl": "Gebruikersmeldingen gewijzigd",
       "xloc": [
         "default.handlebars->37->2163"
       ]
@@ -62806,6 +62820,7 @@
     },
     {
       "en": "Web Page Notifications",
+      "nl": "Webpagina meldingen",
       "xloc": [
         "default.handlebars->37->1957",
         "default.handlebars->37->903"
@@ -64666,12 +64681,14 @@
     },
     {
       "en": "[[[CONNECTIONS]]]",
+      "nl": "[[[CONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->5->3->0"
       ]
     },
     {
       "en": "[[[DISCONNECTIONS]]]",
+      "nl": "[[[DISCONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->7->3->0"
       ]
@@ -64805,6 +64822,7 @@
     },
     {
       "en": "[[[SERVERNAME]]] - Device Notification",
+      "nl": "[[[SERVERNAME]]] - Apparaatmelding",
       "xloc": [
         "device-notify.html->0",
         "device-notify.html->2->1->1->0->1->1",
@@ -67129,6 +67147,7 @@
     },
     {
       "en": "within 1 hour of getting this message.",
+      "nl": "binnen 1 uur na ontvangst van dit bericht.",
       "xloc": [
         "device-notify.html->2->9->1"
       ]
