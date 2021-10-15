@@ -43,19 +43,19 @@ function ArrayElementMove(arr, from, to) { arr.splice(to, 0, arr.splice(from, 1)
 // Print object for HTML
 function ObjectToStringEx(x, c) {
     var r = "";
-    if (x != 0 && (!x || x == null)) return "(Null)";
-    if (x instanceof Array) { for (var i in x) { r += '<br />' + gap(c) + "Item #" + i + ": " + ObjectToStringEx(x[i], c + 1); } }
-    else if (x instanceof Object) { for (var i in x) { r += '<br />' + gap(c) + i + " = " + ObjectToStringEx(x[i], c + 1); } }
+    if (x != 0 && (!x || x == null)) return '(Null)';
+    if (x instanceof Array) { for (var i in x) { r += '<br />' + gap(c) + 'Item #' + i + ": " + ObjectToStringEx(x[i], c + 1); } }
+    else if (x instanceof Object) { for (var i in x) { r += '<br />' + gap(c) + i + ' = ' + ObjectToStringEx(x[i], c + 1); } }
     else { r += EscapeHtml(x); }
     return r;
 }
 
 // Print object for console
 function ObjectToStringEx2(x, c) {
-    var r = "";
-    if (x != 0 && (!x || x == null)) return "(Null)";
-    if (x instanceof Array) { for (var i in x) { r += '\r\n' + gap2(c) + "Item #" + i + ": " + ObjectToStringEx2(x[i], c + 1); } }
-    else if (x instanceof Object) { for (var i in x) { r += '\r\n' + gap2(c) + i + " = " + ObjectToStringEx2(x[i], c + 1); } }
+    var r = '';
+    if (x != 0 && (!x || x == null)) return '(Null)';
+    if (x instanceof Array) { for (var i in x) { r += '\r\n' + gap2(c) + 'Item #' + i + ': ' + ObjectToStringEx2(x[i], c + 1); } }
+    else if (x instanceof Object) { for (var i in x) { r += '\r\n' + gap2(c) + i + ' = ' + ObjectToStringEx2(x[i], c + 1); } }
     else { r += EscapeHtml(x); }
     return r;
 }
@@ -70,7 +70,7 @@ function ObjectToString2(x) { return ObjectToStringEx2(x, 0); }
 
 // Convert a hex string to a raw string
 function hex2rstr(d) {
-    if (typeof d != "string" || d.length == 0) return '';
+    if (typeof d != 'string' || d.length == 0) return '';
     var r = '', m = ('' + d).match(/../g), t;
     while (t = m.shift()) r += String.fromCharCode('0x' + t);
     return r
@@ -107,7 +107,7 @@ function random(max) { return Math.floor(Math.random() * max); }
 function trademarks(x) { return x.replace(/\(R\)/g, '&reg;').replace(/\(TM\)/g, '&trade;'); }
 
 // Pad a number with zeros on the left
-function zeroPad(num, c) { if (c == null) { c = 2; } var s = "00000000" + num; return s.substr(s.length - c); }
+function zeroPad(num, c) { if (c == null) { c = 2; } var s = '00000000' + num; return s.substr(s.length - c); }
 
 // String validation
 function isAlphaNumeric(str) { if (typeof str == 'number') { return true; } return (str.match(/^[A-Za-z0-9]+$/) != null); };
@@ -135,10 +135,10 @@ function parseUriArgs() {
 // From: https://stackoverflow.com/questions/5573096/detecting-webp-support
 function check_webp_feature(feature, callback) {
     var kTestImages = {
-        lossy: "UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA"//,
-        //lossless: "UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==",
-        //alpha: "UklGRkoAAABXRUJQVlA4WAoAAAAQAAAAAAAAAAAAQUxQSAwAAAARBxAR/Q9ERP8DAABWUDggGAAAABQBAJ0BKgEAAQAAAP4AAA3AAP7mtQAAAA==",
-        //animation: "UklGRlIAAABXRUJQVlA4WAoAAAASAAAAAAAAAAAAQU5JTQYAAAD/////AABBTk1GJgAAAAAAAAAAAAAAAAAAAGQAAABWUDhMDQAAAC8AAAAQBxAREYiI/gcA"
+        lossy: 'UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA'//,
+        //lossless: 'UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==',
+        //alpha: 'UklGRkoAAABXRUJQVlA4WAoAAAAQAAAAAAAAAAAAQUxQSAwAAAARBxAR/Q9ERP8DAABWUDggGAAAABQBAJ0BKgEAAQAAAP4AAA3AAP7mtQAAAA==',
+        //animation: 'UklGRlIAAABXRUJQVlA4WAoAAAASAAAAAAAAAAAAQU5JTQYAAAD/////AABBTk1GJgAAAAAAAAAAAAAAAAAAAGQAAABWUDhMDQAAAC8AAAAQBxAREYiI/gcA'
     };
     var img = new Image();
     img.onload = function () {
@@ -148,5 +148,5 @@ function check_webp_feature(feature, callback) {
     img.onerror = function () {
         callback(feature, false);
     };
-    img.src = "data:image/webp;base64," + kTestImages[feature];
+    img.src = 'data:image/webp;base64,' + kTestImages[feature];
 }
