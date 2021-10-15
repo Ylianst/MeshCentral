@@ -1,22 +1,22 @@
-[[[SERVERNAME]]] - Device Notification
+[[[SERVERNAME]]] - Apparaatmelding
 ~<area-header>
-The following devices have changed their connection state.
+De volgende apparaten hebben hun verbindingsstatus gewijzigd.
 ~</area-header>
 ~<area-connections>
 ~
-Connected devices:
+Verbonden apparaten:
 ~
 ~[[[CONNECTIONS]]]
 ~
 ~</area-connections>
 ~<area-disconnections>
 ~
-Disconnected devices:
+Losgekoppelde apparaten:
 ~
 ~[[[DISCONNECTIONS]]]
 ~
 ~</area-disconnections>
 ~<area-footer>
 
-To unsubscribe, load this link within 1 hour of getting this message: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+Om je af te melden, open je deze link binnen 1 uur nadat je dit bericht hebt ontvangen: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
 ~</area-footer>

@@ -1865,8 +1865,7 @@ function onTunnelData(data) {
     if (this.httprequest.state == 0) {
         // Check if this is a relay connection
         if ((data == 'c') || (data == 'cr')) { this.httprequest.state = 1; /*sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid);*/ }
-    }
-    else {
+    } else {
         // Handle tunnel data
         if (this.httprequest.protocol == 0) { // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user), 10 = FileTransfer
             // Take a look at the protocol
@@ -2648,7 +2647,7 @@ function onTunnelData(data) {
                         var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
                         this.httprequest.uploadFilePath = filepath;
                         this.httprequest.uploadFileSize = 0;
-                        try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
+                        try { this.httprequest.uploadFile = fs.openSync(filepath, cmd.append ? 'abN' : 'wbN'); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
                         this.httprequest.uploadFileid = cmd.reqid;
                         if (this.httprequest.uploadFile) { this.write(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
                         break;
@@ -2680,6 +2679,15 @@ function onTunnelData(data) {
                             delete this.httprequest.uploadFileSize;
                         }
                         break;
+                    }
+                case 'uploadhash':
+                    {
+                        // Hash a file
+                        var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
+                        var h = null;
+                        try { h = getSHA384FileHash(filepath); } catch (ex) { sendConsoleText(ex); }
+                        this.write(Buffer.from(JSON.stringify({ action: 'uploadhash', reqid: cmd.reqid, path: cmd.path, name: cmd.name, tag: cmd.tag, hash: (h ? h.toString('hex') : null) })));
+                        break
                     }
                 case 'copy':
                     {
