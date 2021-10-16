@@ -2086,6 +2086,12 @@
             p13uploadNextFile();
         }
 
+        // Perform SHA-384 hashing
+        const byteToHex = [];
+        for (var n = 0; n <= 0xff; ++n) { var hexOctet = n.toString(16).padStart(2, '0'); byteToHex.push(hexOctet); }
+        function arrayBufferToHex(arrayBuffer) { return Array.prototype.map.call(new Uint8Array(arrayBuffer), n => byteToHex[n]).join(''); }
+        function performHash(data, f) { window.crypto.subtle.digest('SHA-384', data).then(function (v) { f(arrayBufferToHex(v)); }, function () { f(null); }); }
+
         // Push the next file
         function p13uploadNextFile() {
             uploadFile.xfilePtr++;
@@ -2100,7 +2106,17 @@
                     uploadFile.xreader = new FileReader();
                     uploadFile.xreader.onload = function () {
                         uploadFile.xdata = uploadFile.xreader.result;
-                        files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
+
+                        // If the remote file already exists and is smaller then our file, see if we can resume the trasfer
+                        var f = null;
+                        for (var i in p13filetree.dir) { if (p13filetree.dir[i].n == file.name) { f = p13filetree.dir[i]; } }
+                        if ((f != null) && (f.s <= uploadFile.xreader.result.byteLength)) {
+                            performHash(uploadFile.xreader.result.slice(0, f.s), function (hash) {
+                                files.sendText(JSON.stringify({ action: 'uploadhash', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, tag: { h: hash.toUpperCase(), s: f.s, skip: f.s == uploadFile.xreader.result.byteLength } }));
+                            });
+                        } else {
+                            files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
+                        }
                     };
                     uploadFile.xreader.readAsArrayBuffer(file);
                 } else {
@@ -2134,6 +2150,22 @@
                 case 'uploadack': { p13uploadNextPart(false); break; }
                 case 'uploaddone': { if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadNextFile(); } else { p13uploadFileTransferDone(); } break; }
                 case 'uploaderror': { p13uploadFileCancel(); break; }
+                case 'uploadhash': {
+                    var file = uploadFile.xfiles[uploadFile.xfilePtr];
+                    if (file) {
+                        if (cmd.tag.h === cmd.hash) {
+                            if (cmd.tag.skip) {
+                                p13uploadNextFile();
+                            } else {
+                                uploadFile.xptr = cmd.tag.s;
+                                files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength, append: true }));
+                            }
+                        } else {
+                            files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength, append: false }));
+                        }
+                    }
+                    break;
+                }
             }
         }
 
