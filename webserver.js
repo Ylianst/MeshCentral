@@ -764,13 +764,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         res.set({ 'Cache-Control': 'no-store' });
         // Destroy the user's session to log them out will be re-created next request
+        var userid = req.session.userid;
         if (req.session.userid) {
             var user = obj.users[req.session.userid];
             if (user != null) { obj.parent.DispatchEvent(['*'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'logout', msgid: 2, msg: 'Account logout', domain: domain.id }); }
         }
         req.session = null;
-        if (req.query.key != null) { res.redirect(domain.url + '?key=' + req.query.key); } else { res.redirect(domain.url); }
         parent.debug('web', 'handleLogoutRequest: success.');
+
+        // If this user was logged in using an authentication strategy and there is a logout URL, use it.
+        if ((userid != null) && (domain.authstrategies != null)) {
+            const u = userid.split('/')[2];
+            if (u.startsWith('~twitter:') && (domain.authstrategies.twitter != null) && (typeof domain.authstrategies.twitter.logouturl == 'string')) { res.redirect(domain.authstrategies.twitter.logouturl); return; }
+            if (u.startsWith('~google:') && (domain.authstrategies.google != null) && (typeof domain.authstrategies.google.logouturl == 'string')) { res.redirect(domain.authstrategies.google.logouturl); return; }
+            if (u.startsWith('~github:') && (domain.authstrategies.github != null) && (typeof domain.authstrategies.github.logouturl == 'string')) { res.redirect(domain.authstrategies.github.logouturl); return; }
+            if (u.startsWith('~reddit:') && (domain.authstrategies.reddit != null) && (typeof domain.authstrategies.reddit.logouturl == 'string')) { res.redirect(domain.authstrategies.reddit.logouturl); return; }
+            if (u.startsWith('~azure:') && (domain.authstrategies.azure != null) && (typeof domain.authstrategies.azure.logouturl == 'string')) { res.redirect(domain.authstrategies.azure.logouturl); return; }
+            if (u.startsWith('~jumpcloud:') && (domain.authstrategies.jumpcloud != null) && (typeof domain.authstrategies.jumpcloud.logouturl == 'string')) { res.redirect(domain.authstrategies.jumpcloud.logouturl); return; }
+            if (u.startsWith('~saml:') && (domain.authstrategies.saml != null) && (typeof domain.authstrategies.saml.logouturl == 'string')) { res.redirect(domain.authstrategies.saml.logouturl); return; }
+        }
+
+        // This is the default logout redirect to the login page
+        if (req.query.key != null) { res.redirect(domain.url + '?key=' + req.query.key); } else { res.redirect(domain.url); }
     }
 
     // Return true if this user has 2-step auth active
