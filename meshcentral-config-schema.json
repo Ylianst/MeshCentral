@@ -740,7 +740,8 @@
                   "newAccounts": { "type": "boolean", "default": false },
                   "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
                   "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" }
+                  "clientsecret": { "type": "string" },
+                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
                 },
                 "required": [ "clientid", "clientsecret" ]
               },
@@ -751,7 +752,8 @@
                   "newAccounts": { "type": "boolean", "default": false },
                   "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
                   "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" }
+                  "clientsecret": { "type": "string" },
+                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
                 },
                 "required": [ "clientid", "clientsecret" ]
               },
@@ -762,7 +764,8 @@
                   "newAccounts": { "type": "boolean", "default": false },
                   "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
                   "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" }
+                  "clientsecret": { "type": "string" },
+                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
                 },
                 "required": [ "clientid", "clientsecret" ]
               },
@@ -773,7 +776,8 @@
                   "newAccounts": { "type": "boolean", "default": false },
                   "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
                   "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" }
+                  "clientsecret": { "type": "string" },
+                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
                 },
                 "required": [ "clientid", "clientsecret" ]
               },
@@ -785,7 +789,8 @@
                   "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
                   "clientid": { "type": "string" },
                   "clientsecret": { "type": "string" },
-                  "tenantid": { "type": "string" }
+                  "tenantid": { "type": "string" },
+                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
                 },
                 "required": [ "clientid", "clientsecret", "tenantid" ]
               },
@@ -797,7 +802,8 @@
                   "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
                   "entityid": { "type": "string" },
                   "idpurl": { "type": "string", "format": "uri" },
-                  "cert": { "type": "string" }
+                  "cert": { "type": "string" },
+                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
                 },
                 "required": [ "entityid", "idpurl", "cert" ]
               },
@@ -811,7 +817,8 @@
                   "newAccountsRights": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
                   "entityid": { "type": "string" },
                   "idpurl": { "type": "string", "format": "uri" },
-                  "cert": { "type": "string" }
+                  "cert": { "type": "string" },
+                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
                 },
                 "required": [ "entityid", "idpurl", "cert" ]
               }
