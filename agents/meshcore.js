@@ -1794,21 +1794,27 @@ function onTunnelClosed() {
         }
     }
 
-    // Sent tunnel statistics to the server, only send this if compression was used.
-    if ((this.bytesSent_uncompressed) && (this.bytesSent_uncompressed.toString() != this.bytesSent_actual.toString())) {
-        mesh.SendCommand({
-            action: 'tunnelCloseStats',
-            url: tunnel.url,
-            userid: tunnel.userid,
-            protocol: tunnel.protocol,
-            sessionid: tunnel.sessionid,
-            sent: this.bytesSent_uncompressed.toString(),
-            sentActual: this.bytesSent_actual.toString(),
-            sentRatio: this.bytesSent_ratio,
-            received: this.bytesReceived_uncompressed.toString(),
-            receivedActual: this.bytesReceived_actual.toString(),
-            receivedRatio: this.bytesReceived_ratio
-        });
+    try
+    {
+        // Sent tunnel statistics to the server, only send this if compression was used.
+        if ((this.bytesSent_uncompressed) && (this.bytesSent_uncompressed.toString() != this.bytesSent_actual.toString())) {
+            mesh.SendCommand({
+                action: 'tunnelCloseStats',
+                url: tunnel.url,
+                userid: tunnel.userid,
+                protocol: tunnel.protocol,
+                sessionid: tunnel.sessionid,
+                sent: this.bytesSent_uncompressed.toString(),
+                sentActual: this.bytesSent_actual.toString(),
+                sentRatio: this.bytesSent_ratio,
+                received: this.bytesReceived_uncompressed.toString(),
+                receivedActual: this.bytesReceived_actual.toString(),
+                receivedRatio: this.bytesReceived_ratio
+            });
+        }
+    }
+    catch(z)
+    {
     }
 
     //sendConsoleText("Tunnel #" + this.httprequest.index + " closed. Sent -> " + this.bytesSent_uncompressed + ' bytes (uncompressed), ' + this.bytesSent_actual + ' bytes (actual), ' + this.bytesSent_ratio + '% compression', this.httprequest.sessionid);
