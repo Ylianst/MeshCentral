@@ -4461,26 +4461,60 @@
             for (var i in node.sessions) {
                 if ((i == 'kvm') && (node.sessions.multidesk == null)) {
                     x += '<u>' + "Remote Desktop" + '</u>';
-                    for (var j in node.sessions.kvm) { x += addHtmlValue2(getUserName(j), (node.sessions.kvm[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.kvm[j]))); }
+                    for (var j in node.sessions.kvm) {
+                        var trash = '';
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("kvm", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        x += addHtmlValue2(getUserName(j), ((node.sessions.kvm[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.kvm[j]))) + trash);
+                    }
                 } else if (i == 'multidesk') {
                     x += '<u>' + "Remote Desktop" + '</u>';
-                    for (var j in node.sessions.multidesk) { x += addHtmlValue2(getUserName(j), ((node.sessions.multidesk[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.multidesk[j])))); }
+                    for (var j in node.sessions.multidesk) {
+                        var trash = '';
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("multidesk", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        x += addHtmlValue2(getUserName(j), ((node.sessions.multidesk[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.multidesk[j]))) + trash);
+                    }
                 } else if (i == 'terminal') {
                     x += '<u>' + "Terminal" + '</u>';
-                    for (var j in node.sessions.terminal) { x += addHtmlValue2(getUserName(j), ((node.sessions.terminal[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.terminal[j])))); }
+                    for (var j in node.sessions.terminal) {
+                        var trash = '';
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("terminal", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        x += addHtmlValue2(getUserName(j), ((node.sessions.terminal[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.terminal[j]))) + trash);
+                    }
                 } else if (i == 'files') {
                     x += '<u>' + "Files" + '</u>';
-                    for (var j in node.sessions.files) { x += addHtmlValue2(getUserName(j), ((node.sessions.files[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.files[j])))); }
+                    for (var j in node.sessions.files) {
+                        var trash = '';
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("files", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        x += addHtmlValue2(getUserName(j), ((node.sessions.files[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.files[j]))) + trash);
+                    }
                 } else if (i == 'tcp') {
                     x += '<u>' + "TCP Routing" + '</u>';
-                    for (var j in node.sessions.tcp) { x += addHtmlValue2(getUserName(j), ((node.sessions.tcp[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.tcp[j])))); }
+                    for (var j in node.sessions.tcp) {
+                        var trash = '';
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("tcp", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        x += addHtmlValue2(getUserName(j), ((node.sessions.tcp[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.tcp[j]))) + trash);
+                    }
                 } else if (i == 'udp') {
                     x += '<u>' + "UDP Routing" + '</u>';
-                    for (var j in node.sessions.udp) { x += addHtmlValue2(getUserName(j), ((node.sessions.udp[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.udp[j])))); }
+                    for (var j in node.sessions.udp) {
+                        var trash = '';
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("udp", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        x += addHtmlValue2(getUserName(j), ((node.sessions.udp[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.udp[j]))) + trash);
+                    }
                 }
             }
             if (x != '') { setDialogMode(2, "Sessions" + ' - ' + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id); } else { setDialogMode(0); }
             return false;
+        }
+
+        function endDeviceSession(protocol, nodeid, userid) {
+            var userIdSplit = decodeURIComponent(userid).split('/'), uid = userIdSplit[0] + '/' + userIdSplit[1] + '/' + userIdSplit[2], guestname = null;
+            if ((userIdSplit.length == 4) && (userIdSplit[3].startsWith('guest:'))) { guestname = atob(userIdSplit[3].substring(6)); }
+            if (protocol == 'multidesk') {
+                meshserver.send({ action: 'endDesktopMultiplex', nodeid: decodeURIComponent(nodeid), xuserid: uid, guestname, guestname });
+            } else {
+                meshserver.send({ action: 'msg', type: 'endtunnel', nodeid: decodeURIComponent(nodeid), xuserid: uid, guestname, guestname, protocol: protocol });
+            }
         }
 
         // Show currently active sessions on this device

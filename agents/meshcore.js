@@ -1015,6 +1015,22 @@ function handleServerCommand(data) {
                         }
                         break;
                     }
+                    case 'endtunnel': {
+                        // Terminate one or more tunnels
+                        if ((data.rights != 4294967295) && (data.xuserid != data.userid)) return; // This command requires full admin rights on the device or user self-closes it's own sessions
+                        for (var i in tunnels) {
+                            if ((tunnels[i].userid == data.xuserid) && (tunnels[i].guestname == data.guestname)) {
+                                var disconnect = false;
+                                if ((data.protocol == 'kvm') && (tunnels[i].protocol == 2)) { disconnect = true; }
+                                else if ((data.protocol == 'terminal') && (tunnels[i].protocol == 1)) { disconnect = true; }
+                                else if ((data.protocol == 'files') && (tunnels[i].protocol == 5)) { disconnect = true; }
+                                else if ((data.protocol == 'tcp') && (tunnels[i].tcpport != null)) { disconnect = true; }
+                                else if ((data.protocol == 'udp') && (tunnels[i].udpport != null)) { disconnect = true; }
+                                if (disconnect) { if (tunnels[i].s != null) { tunnels[i].s.end(); } else { tunnels[i].end(); } }
+                            }
+                        }
+                        break;
+                    }
                     case 'messagebox': {
                         // Display a message box
                         if (data.title && data.msg) {
@@ -3988,7 +4004,12 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'tunnels': { // Show the list of current tunnels
                 response = '';
-                for (var i in tunnels) { response += 'Tunnel #' + i + ', ' + tunnels[i].url + '\r\n'; }
+                for (var i in tunnels) {
+                    response += 'Tunnel #' + i + ', ' + tunnels[i].protocol; //tunnels[i].url
+                    if (tunnels[i].userid) { response += ', ' + tunnels[i].userid; }
+                    if (tunnels[i].guestname) { response += '/' + tunnels[i].guestname; }
+                    response += '\r\n'
+                }
                 if (response == '') { response = 'No websocket sessions.'; }
                 break;
             }
