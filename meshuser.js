@@ -5678,7 +5678,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Get the node and the rights for this node
                 parent.GetNodeWithRights(domain, xuser, command.nodeid, function (node, rights, visible) {
                     if ((rights != 0xFFFFFFFF) && (xuser._id != command.xuserid)) return;
-                    //console.log('TODO');
+                    const desktopRelay = parent.desktoprelays[command.nodeid];
+                    if ((desktopRelay == null) || (desktopRelay === 1)) return; // If the desktopRelay is equal to 1, the relay is being constructed.
+                    var viewersToClose = []; // Create a list of viewers to close. We don't want to close directly because it will change "desktopRelay.viewers" and we will not enumerate correctly. 
+                    for (var i = 0; i < desktopRelay.viewers.length; i++) {
+                        const viewer = desktopRelay.viewers[i];
+                        if ((viewer.user._id == command.xuserid) && (viewer.guestName == command.guestname)) { viewersToClose.push(viewer); } // Only close viewers that match the userid and guestname if present.
+                    }
+                    for (var i = 0; i < viewersToClose.length; i++) { viewersToClose[i].close(); } // Close any viewers we need closed.
                 });
 
                 break;
