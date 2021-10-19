@@ -2107,7 +2107,7 @@ function CreateMeshCentralServer(config, args) {
 
         // Check if any user needs email notification
         for (var i in users) {
-            const user = obj.webserver.users[i];
+            const user = obj.webserver.users[users[i]];
             if ((user != null) && (user.email != null) && (user.emailVerified == true)) {
                 var notify = 0;
 
