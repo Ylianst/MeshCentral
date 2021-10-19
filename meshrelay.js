@@ -940,7 +940,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 // Send connection request to agent
                 if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); }
                 const rcookie = parent.parent.encodeCookie({ ruserid: user._id, nodeid: node._id }, parent.parent.loginCookieEncryptionKey);
-                const command = { nodeid: node._id, action: 'msg', type: 'tunnel', userid: user._id, value: '*/' + xdomain + 'meshrelay.ashx?p=' + cookie.p + '&id=' + obj.id + '&rauth=' + rcookie + '&nodeid=' + node._id, soptions: {}, rights: cookie.r, guestname: cookie.gn, consent: cookie.cf, remoteaddr: cleanRemoteAddr(obj.req.clientIp) };
+                const command = { nodeid: node._id, action: 'msg', type: 'tunnel', userid: user._id, value: '*/' + xdomain + 'meshrelay.ashx?p=' + obj.req.query.p + '&id=' + obj.id + '&rauth=' + rcookie + '&nodeid=' + node._id, soptions: {}, rights: cookie.r, guestname: cookie.gn, consent: cookie.cf, remoteaddr: cleanRemoteAddr(obj.req.clientIp) };
                 obj.guestname = cookie.gn;
 
                 // Limit what this relay connection can do
@@ -951,6 +951,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     if (cookie.p & 4) { usages.push(5); usages.push(10); } // Files
                     command.soptions.usages = usages;
                 }
+                if (usages.indexOf(parseInt(obj.req.query.p)) < 0) { console.log('ERR: Invalid protocol usage'); try { obj.close(); } catch (e) { } return; }
 
                 if (typeof domain.consentmessages == 'object') {
                     if (typeof domain.consentmessages.title == 'string') { command.soptions.consentTitle = domain.consentmessages.title; }
