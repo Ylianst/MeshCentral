@@ -5660,6 +5660,29 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 break;
             }
+            case 'endDesktopMultiplex': {
+                var err = null, xuser = null;
+                try {
+                    if (command.xuserid.indexOf('/') < 0) { command.xuserid = 'user/' + domain.id + '/' + command.xuserid; }
+                    if (common.validateString(command.nodeid, 1, 1024) == false) { err = 'Invalid device identifier'; } // Check the meshid
+                    else if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                    const xusersplit = command.xuserid.split('/');
+                    xuser = parent.users[command.xuserid];
+                    if (xuser == null) { err = 'User does not exists'; }
+                    else if ((obj.crossDomain !== true) && ((xusersplit.length != 3) || (xusersplit[1] != domain.id))) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
+                } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                // Handle any errors
+                if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeusernotify', responseid: command.responseid, result: err })); } catch (ex) { } } break; }
+
+                // Get the node and the rights for this node
+                parent.GetNodeWithRights(domain, xuser, command.nodeid, function (node, rights, visible) {
+                    if ((rights != 0xFFFFFFFF) && (xuser._id != command.xuserid)) return;
+                    //console.log('TODO');
+                });
+
+                break;
+            }
             default: {
                 // Unknown user action
                 console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');
