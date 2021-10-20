@@ -1665,6 +1665,7 @@ function getDirectoryInfo(reqpath) {
         var results = null, xpath = obj.path.join(reqpath, '*');
         //if (process.platform == "win32") { xpath = xpath.split('/').join('\\'); }
         try { results = fs.readdirSync(xpath); } catch (e) { }
+        if ((results != null) && (results.length == 0) && (fs.existsSync(reqpath) == false)) { results = null; }
         if (results != null) {
             for (var i = 0; i < results.length; ++i) {
                 if ((results[i] != '.') && (results[i] != '..')) {
@@ -1680,6 +1681,8 @@ function getDirectoryInfo(reqpath) {
                     }
                 }
             }
+        } else {
+            response.dir = null;
         }
     }
     return response;
@@ -2554,7 +2557,7 @@ function onTunnelData(data) {
 
                     // Send the folder content to the browser
                     var response = getDirectoryInfo(cmd.path);
-                    if (cmd.reqid != undefined) { response.reqid = cmd.reqid; }
+                    response.reqid = cmd.reqid;
                     this.write(Buffer.from(JSON.stringify(response)));
 
                     /*
