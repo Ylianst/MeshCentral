@@ -406,7 +406,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                             var now = new Date(Date.now());
                             var xsessionid = obj.id;
                             if ((typeof xsessionid == 'string') && (xsessionid.startsWith('meshmessenger/node/') == true)) { xsessionid = 'Messenger' }
-                            var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth(), 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + xusername + xdevicename + '-' + xsessionid + (xtextSession ? '.txt' : '.mcrec');
+                            var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth() + 1, 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + xusername + xdevicename + '-' + xsessionid + (xtextSession ? '.txt' : '.mcrec');
                             var recFullFilename = null;
                             if (domain.sessionrecording.filepath) {
                                 try { parent.parent.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
