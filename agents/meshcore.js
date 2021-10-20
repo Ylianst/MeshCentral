@@ -1665,7 +1665,7 @@ function getDirectoryInfo(reqpath) {
         var results = null, xpath = obj.path.join(reqpath, '*');
         //if (process.platform == "win32") { xpath = xpath.split('/').join('\\'); }
         try { results = fs.readdirSync(xpath); } catch (e) { }
-        if ((results != null) && (results.length == 0) && (fs.existsSync(reqpath) == false)) { results = null; }
+        try { if ((results != null) && (results.length == 0) && (fs.existsSync(reqpath) == false)) { results = null; } } catch (e) { }
         if (results != null) {
             for (var i = 0; i < results.length; ++i) {
                 if ((results[i] != '.') && (results[i] != '..')) {
