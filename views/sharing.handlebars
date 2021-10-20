@@ -49,9 +49,9 @@
                     <div class='deskareaicon' title="Toggle View Mode" onclick="toggleAspectRatio(1)">&#8690;</div>
                     <div class='deskareaicon' title="Rotate Left" onclick="drotate(-1)">&olarr;</div>
                     <div class='deskareaicon' title="Rotate Right" onclick="drotate(1)">&orarr;</div>
-                    <div id="deskRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px"></div>
                     <input id="deskActionsSettings" type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
                     <div id="desktopCustomUiButtons" style="float:left"></div>
+                    <div id="deskRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px"></div>
                 </div>
                 <div>
                     <div id="idx_deskFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
@@ -111,8 +111,8 @@
         </div>
         <div class="areaHead" style="position:absolute;top:0;left:0;right:0;height:24px">
             <div class="toright2">
-                <div id="p12power" style="margin-top:3px;margin-right:4px"></div>
                 <div id="termRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
+                <div id="p12power" style="margin-top:3px;margin-right:4px;float:right"></div>
             </div>
             <div>
                 <span id="connectbutton2span"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
@@ -153,8 +153,8 @@
         <div id="p13toolbar" style="position:absolute;left:0;top:0;right:0;bottom:28px">
             <div class="areaHead">
                 <div class="toright2">
-                    <div id="p13power" style="margin-top:3px;margin-right:4px"></div>
                     <div id="filesRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
+                    <div id="p13power" style="margin-top:3px;margin-right:4px;float:right"></div>
                 </div>
                 <div>
                     <input id=p13Connect value="Connect" onclick=connectFiles(event) type="button" />
