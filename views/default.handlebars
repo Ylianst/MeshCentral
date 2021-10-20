@@ -9480,9 +9480,14 @@
                     if (uploadFile != null) { p13uploadFileTransferDone(); uploadFile = null; }
                     break;
                 case 3:
+                    p13filetreelocation = [];
                     p13targetpath = '';
                     if (files) {
-                        files.sendText({ action: 'ls', reqid: 1, path: '' });
+                        var filepaths = [];
+                        try { filepaths = JSON.parse(getstore('_devFilePaths', '[]')); } catch (ex) {}
+                        for (var i = 0; i < filepaths.length; i++) { if (filepaths[i].n == currentNode._id) { p13targetpath = filepaths[i].p; } }
+                        p13filetreelocation = p13targetpath.split('/');
+                        files.sendText({ action: 'ls', reqid: 1, path: p13targetpath });
                         if (files.serverIsRecording == true) { QV('filesRecordIcon', true); }
                     }
                     break;
@@ -9606,21 +9611,25 @@
             if (data.action == 'refresh') { p13folderup(9999); return; }
 
             if (data.path != null) {
-                data.path = data.path.replace(/\//g, '\\');
-                if ((p13filetree != null) && (data.path == p13filetree.path)) {
-                    // This is an update to the same folder
-                    var checkedNames = p13getCheckedNames();
-                    p13filetree = data;
-                    p13updateFiles(checkedNames);
+                if (data.dir == null) {
+                    if (p13targetpath != '') { p13folderup(); }
                 } else {
-                    // Make both paths use the same seperator not start with /
-                    var x1 = data.path.replace(/\//g, '\\'), x2 = p13targetpath.replace(/\//g, '\\');
-                    while ((x1.length > 0) && (x1[0] == '\\')) { x1 = x1.substring(1); }
-                    while ((x2.length > 0) && (x2[0] == '\\')) { x2 = x2.substring(1); }
-                    if ((x1 == x2) || ((data.path == '\\') && (p13targetpath == ''))) {
-                        // This is a different folder
+                    data.path = data.path.replace(/\//g, '\\');
+                    if ((p13filetree != null) && (data.path == p13filetree.path)) {
+                        // This is an update to the same folder
+                        var checkedNames = p13getCheckedNames();
                         p13filetree = data;
-                        p13updateFiles();
+                        p13updateFiles(checkedNames);
+                    } else {
+                        // Make both paths use the same seperator not start with /
+                        var x1 = data.path.replace(/\//g, '\\'), x2 = p13targetpath.replace(/\//g, '\\');
+                        while ((x1.length > 0) && (x1[0] == '\\')) { x1 = x1.substring(1); }
+                        while ((x2.length > 0) && (x2[0] == '\\')) { x2 = x2.substring(1); }
+                        if ((x1 == x2) || ((data.path == '\\') && (p13targetpath == ''))) {
+                            // This is a different folder
+                            p13filetree = data;
+                            p13updateFiles();
+                        }
                     }
                 }
             }
@@ -9717,14 +9726,26 @@
 
         function p13folderset(x) {
             p13targetpath = joinPaths(p13filetree.path, p13filetree.dir[x].n).split('\\').join('/');
-            files.sendText({ action: 'ls', reqid: 1, path: p13targetpath });
+            if (files) { p13storeCurrentPath(p13targetpath); files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); }
         }
 
         function p13folderup(x) {
             if (x == null) { p13filetreelocation.pop(); } else { while (p13filetreelocation.length > x) { p13filetreelocation.pop(); } }
             p13targetpath = p13filetreelocation.join('/');
-            if (files) { files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); }
+            if (files) { p13storeCurrentPath(p13targetpath); files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); }
             return false;
+        }
+
+        // Store the current path for a given node as browser state.
+        // This is so, when reconnecting to a device, you go back to the same path.
+        function p13storeCurrentPath(path) {
+            var filepaths = [], j = -1;
+            try { filepaths = JSON.parse(getstore('_devFilePaths', '[]')); } catch (ex) {}
+            for (var i = 0; i < filepaths.length; i++) { if (filepaths[i].n == currentNode._id) { j = i; } }
+            if (j >= 0) { filepaths.splice(j, 1); }
+            filepaths.push({ n: currentNode._id, p: path });
+            while (filepaths.length > 40) { filepaths.shift(); } // Keep only 40 devices worth of paths.
+            putstore('_devFilePaths', JSON.stringify(filepaths));
         }
 
         function p13findfile() {

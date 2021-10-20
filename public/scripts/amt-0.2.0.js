@@ -542,7 +542,10 @@ function AmtStackCreateService(wsmanStack) {
         if (eventSensorType == 6) return "Authentication failed " + (eventDataField[1] + (eventDataField[2] << 8)) + " times. The system may be under attack.";
         if (eventSensorType == 30) return "No bootable media";
         if (eventSensorType == 32) return "Operating system lockup or power interrupt";
-        if (eventSensorType == 35) return "System boot failure";
+        if (eventSensorType == 35) {
+            if (eventDataField[0] == 64) return "BIOS POST (Power On Self-Test) Watchdog Timeout."; // 64,2,252,84,89,0,0,0
+            return "System boot failure";
+        }
         if (eventSensorType == 37) return "System firmware started (at least one CPU is properly executing).";
         return "Unknown Sensor Type #" + eventSensorType;
     }
