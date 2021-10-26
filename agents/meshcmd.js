@@ -437,7 +437,7 @@ function run(argv) {
         // Start Intel AMT configuration
         var amtMeiModule, amtMei;
         try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
-        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+        amtMei.on('error', function (e) { console.log('amtstartconfig error: ' + e); exit(1); return; });
         amtMei.startConfiguration(function (state) {
             if (state == 3) { console.log("Intel AMT is not in correct mode."); }
             else if (state == 1) { console.log("Intel AMT internal error."); }
@@ -451,7 +451,7 @@ function run(argv) {
         // Stop Intel AMT configuration
         var amtMeiModule, amtMei;
         try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
-        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+        amtMei.on('error', function (e) { console.log('amtstopconfig error: ' + e); exit(1); return; });
         amtMei.stopConfiguration(function (state) {
             if (state == 3) { console.log("Intel AMT is not in in-provisionning mode."); }
             else if (state == 1) { console.log("Intel AMT internal error."); }
@@ -494,7 +494,7 @@ function run(argv) {
         // Display Intel ME versions
         var amtMeiModule, amtMei;
         try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
-        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+        amtMei.on('error', function (e) { console.log('amtversion error: ' + e); exit(1); return; });
         amtMei.getVersion(function (val) {
             if (args.json) {
                 console.log(JSON.stringify(val, null, 2));
@@ -517,7 +517,7 @@ function run(argv) {
         // Display Intel AMT list of trusted hashes
         var amtMeiModule, amtMei, amtHashes = [];
         try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
-        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+        amtMei.on('error', function (e) { console.log('amthashes error: ' + e); exit(1); return; });
         amtMei.getHashHandles(function (handles) {
             exitOnCount = handles.length;
             for (var i = 0; i < handles.length; ++i) {
@@ -541,7 +541,7 @@ function run(argv) {
         mestate = {};
         var amtMeiModule, amtMei;
         try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
-        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+        amtMei.on('error', function (e) { console.log('amtinfo error: ' + e); exit(1); return; });
         try {
             amtMei.getVersion(function (result) {
                 if (result) {
@@ -633,7 +633,7 @@ function run(argv) {
                 options.checkServerIdentity = function (cert) { }
                 //console.log("options: " + JSON.stringify(options, null, 2));
                 var req = http.request(options);
-                req.on('error', function (e) { console.log("Error: " + e); exit(1); });
+                req.on('error', function (e) { console.log("amtinfojson error: " + e); exit(1); });
                 req.on('response', function (response) { console.log("Status code: " + response.statusCode); exit(1); });
                 req.end(JSON.stringify(state));
             } else {
@@ -1290,7 +1290,7 @@ function configureJsonControl(data) {
 function deactivateCCM() {
     var amtMeiModule, amtMei;
     try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
-    amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+    amtMei.on('error', function (e) { console.log('deactivateCCM() error: ' + e); exit(1); return; });
     amtMei.unprovision(1, function (status) { if (status == 0) { console.log('Success'); } else { console.log('Error ' + status); } exit(1); });
 }
 
@@ -1488,7 +1488,7 @@ function getAmtInfo(func, tag) {
         getAmtInfoFetchingTimer = null;
         var amtMeiModule, amtMei;
         try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
-        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+        amtMei.on('error', function (e) { console.log('getAmtInfo() error: ' + e); exit(1); return; });
     }, 3000);
     amtMei.getProtocolVersion(function (result) { if (result != null) { amtMeiTmpState.MeiVersion = result; } });
     amtMei.getVersion(function (val) {
@@ -1549,7 +1549,7 @@ function startLms(func, lmscommander, tag) {
 
     console.log('Setting up MEI...');
     try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
-    amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+    amtMei.on('error', function (e) { console.log('startLms() error: ' + e); exit(1); return; });
     //console.log("PTHI Connected.");
 
     try { amtLms = new lme_heci({ debug: settings.lmsdebug }); } catch (ex) { if (func != null) { func(0, tag); } return; }
@@ -2038,7 +2038,7 @@ function startRouter() {
     options.rejectUnauthorized = false;
     settings.websocket = http.request(options);
     settings.websocket.upgrade = OnServerWebSocket;
-    settings.websocket.on('error', function (e) { console.log("ERROR: " + JSON.stringify(e)); });
+    settings.websocket.on('error', function (ex) { console.log("Unable to connect to server: " + JSON.stringify(ex)); process.exit(1); return; });
     settings.websocket.end();
 }
 
@@ -2143,7 +2143,7 @@ function OnServerWebSocket(msg, s, head) {
 
 function startRouterEx() {
     tcpserver = net.createServer(OnTcpClientConnected);
-    tcpserver.on('error', function (e) { console.log("ERROR: " + JSON.stringify(e)); exit(0); return; });
+    tcpserver.on('error', function (e) { console.log("startRouterEx() Error: " + JSON.stringify(e)); exit(0); return; });
     try {
         tcpserver.listen(settings.localport, function () {
             // We started listening.
@@ -2177,7 +2177,7 @@ function OnTcpClientConnected(c) {
         c.websocket.tcp = c;
         c.websocket.tunneling = false;
         c.websocket.upgrade = OnWebSocket;
-        c.websocket.on('error', function (e) { console.log("ERROR: " + JSON.stringify(e)); });
+        c.websocket.on('error', function (e) { console.log("OnTcpClientConnected() Error: " + JSON.stringify(e)); });
         c.websocket.end();
     } catch (e) { debug(2, e); }
 }
@@ -2218,17 +2218,19 @@ function discoverMeshServerOnce() {
     for (var adapter in interfaces) {
         if (interfaces.hasOwnProperty(adapter)) {
             for (var i = 0; i < interfaces[adapter].length; ++i) {
-                var addr = interfaces[adapter][i];
-                multicastSockets[i] = dgram.createSocket({ type: (addr.family == 'IPv4' ? 'udp4' : 'udp6') });
-                multicastSockets[i].bind({ address: addr.address, exclusive: false });
-                if (addr.family == 'IPv4') {
-                    try {
+                try {
+                    var addr = interfaces[adapter][i];
+                    if (multicastSockets[i] == null) {
+                        multicastSockets[i] = dgram.createSocket({ type: (addr.family == 'IPv4' ? 'udp4' : 'udp6') });
+                        multicastSockets[i].bind({ address: addr.address, exclusive: false });
+                    }
+                    if (addr.family == 'IPv4') {
                         multicastSockets[i].addMembership(membershipIPv4);
                         //multicastSockets[i].setMulticastLoopback(true);
                         multicastSockets[i].once('message', OnMulticastMessage);
                         multicastSockets[i].send(settings.serverid, 16989, membershipIPv4);
-                    } catch (e) { }
-                }
+                    }
+                } catch (ex) { }
             }
         }
     }
@@ -3051,7 +3053,7 @@ if (serviceName == null) {
     else if (process.execPath.includes('LMS')) { serviceName = 'LMS'; }
     else if (process.execPath.includes('MeshCommander')) { serviceName = 'MeshCommander'; }
     if (serviceName == null) { for (var i in process.argv) { if ((process.argv[i].toLowerCase() == '-install') || (process.argv[i].toLowerCase() == '-uninstall')) { console.log('In order to install/uninstall, a service type must be specified.'); process.exit(); } } }
-    if (serviceName == null) { try { run(process.argv); } catch (e) { console.log("ERROR: " + e); } }
+    if (serviceName == null) { try { run(process.argv); } catch (e) { console.log("Run() error: " + e); } }
 } else {
     var serviceHost = require('service-host');
     var meshcmdService = new serviceHost({ name: serviceName, displayName: serviceDisplayName, startType: 'AUTO_START', description: serviceDesc });
@@ -3074,6 +3076,6 @@ if (serviceName == null) {
     meshcmdService.on('serviceStop', function onStop() { console.log("Stopping service"); process.exit(); }); // The console.log() is for debugging, will be ignored unless "console.setDestination()" is set.
 
     // Called when the executable is not running as a service, run normally.
-    meshcmdService.on('normalStart', function onNormalStart() { try { run(process.argv); } catch (e) { console.log("ERROR: " + e); } });
+    meshcmdService.on('normalStart', function onNormalStart() { try { run(process.argv); } catch (e) { console.log("onNormalStart() error: " + e); } });
     meshcmdService.run();
 }
