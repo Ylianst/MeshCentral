@@ -5994,7 +5994,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             console.log('ERROR: Unable to read SAML IdP certificate: ' + domain.authstrategies.saml.cert);
                         } else {
                             var options = { entryPoint: domain.authstrategies.saml.idpurl, issuer: 'meshcentral' };
-                            if (typeof domain.authstrategies.saml.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.saml.callbackurl; } else { options.callbackURL = url + 'auth-saml-callback'; }
+                            if (typeof domain.authstrategies.saml.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.saml.callbackurl; } else { options.callbackUrl = url + 'auth-saml-callback'; }
                             if (domain.authstrategies.saml.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.saml.disablerequestedauthncontext; }
                             parent.debug('web', 'Adding SAML SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.saml.entityid == 'string') { options.issuer = domain.authstrategies.saml.entityid; }
