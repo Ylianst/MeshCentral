@@ -6389,21 +6389,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverUserCommandInfo(cmdData) {
-        var info = process.memoryUsage();
-        info.dbType = ['None', 'NeDB', 'MongoJS', 'MongoDB'][parent.db.databaseType];
-        try { if (parent.parent.multiServer != null) { info.serverId = parent.parent.multiServer.serverid; } } catch (ex) { }
-        if (parent.db.databaseType == 3) { info.dbChangeStream = parent.db.changeStream; }
-        if (parent.parent.pluginHandler != null) { info.plugins = []; for (var i in parent.parent.pluginHandler.plugins) { info.plugins.push(i); } }
+        var info = {};
+        try { info.meshVersion = 'v' + parent.parent.currentVer; } catch (ex) { }
         try { info.nodeVersion = process.version; } catch (ex) { }
-        try { info.meshVersion = parent.parent.currentVer; } catch (ex) { }
+        try { info.runMode = (["Hybrid (LAN + WAN) mode", "WAN mode", "LAN mode"][(args.lanonly ? 2 : (args.wanonly ? 1 : 0))]); } catch (ex) { }
+        try { info.productionMode = ((process.env.NODE_ENV != null) && (process.env.NODE_ENV == 'production')); } catch (ex) { }
+        try { info.database = ["Unknown", "NeDB", "MongoJS", "MongoDB", "MariaDB", "MySQL"][parent.parent.db.databaseType]; } catch (ex) { }
+        try { if (parent.db.databaseType == 3) { info.dbChangeStream = parent.db.changeStream; } } catch (ex) { }
+        try { if (parent.parent.multiServer != null) { info.serverId = parent.parent.multiServer.serverid; } } catch (ex) { }
+        try { if (parent.parent.pluginHandler != null) { info.plugins = []; for (var i in parent.parent.pluginHandler.plugins) { info.plugins.push(i); } } } catch (ex) { }
         try { info.platform = process.platform; } catch (ex) { }
         try { info.arch = process.arch; } catch (ex) { }
         try { info.pid = process.pid; } catch (ex) { }
         try { info.uptime = process.uptime(); } catch (ex) { }
         try { info.cpuUsage = process.cpuUsage(); } catch (ex) { }
+        try { info.memoryUsage = process.memoryUsage(); } catch (ex) { }
         try { info.warnings = parent.parent.getServerWarnings(); } catch (ex) { }
-        try { info.database = ["Unknown", "NeDB", "MongoJS", "MongoDB", "MariaDB", "MySQL"][parent.parent.db.databaseType]; } catch (ex) { }
-        try { info.productionMode = ((process.env.NODE_ENV != null) && (process.env.NODE_ENV == 'production')); } catch (ex) { }
         try { info.allDevGroupManagers = parent.parent.config.settings.managealldevicegroups; } catch (ex) { }
         cmdData.result = JSON.stringify(info, null, 4);
     }
