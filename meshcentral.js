@@ -467,7 +467,15 @@ function CreateMeshCentralServer(config, args) {
                 xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
                 xxprocess.on('close', function (code) {
                     if (code == 0) { console.log('Update completed...'); }
-                    setTimeout(function () { obj.launchChildServer(startArgs); }, 1000);
+                    if (obj.args.cleannpmcacheonupdate === true) {
+                        // Perform NPM cache clean
+                        console.log('Cleaning NPM cache...');
+                        var xxxprocess = child_process.exec(npmpath + ' cache clean --force', { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
+                        xxxprocess.on('close', function (code) { setTimeout(function () { obj.launchChildServer(startArgs); }, 1000); });
+                    } else {
+                        // Run the updated server
+                        setTimeout(function () { obj.launchChildServer(startArgs); }, 1000);
+                    }
                 });
             } else {
                 if (error != null) {
