@@ -97,6 +97,7 @@
         "webRTC": { "type": "boolean", "default": false, "description": "When enabled, allows use of WebRTC to allow direct network traffic between the agent and browser." },
         "nice404": { "type": "boolean", "default": true, "description": "By default, a nice looking 404 error page is displayed when needed. Set this to false to disable it." },
         "selfUpdate": { "type": "boolean", "default": false, "description": "When true, this server will attempt to self-update everyday after midnight." },
+        "cleanNpmCacheOnUpdate": { "type": "boolean", "default": false, "description": "When true, run \"npm cache clean --force\" to reclame disk space." },
         "browserPing": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the browser at x seconds interval and expects a response from the browser." },
         "browserPong": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the browser at x seconds interval." },
         "agentsInRam": { "type": "boolean", "default": false, "description": "Loads all agent binaries in RAM for faster agent updates." },
