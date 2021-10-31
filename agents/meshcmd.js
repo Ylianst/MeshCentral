@@ -1397,13 +1397,7 @@ function getTrustedHashes(amtMei, func, tag) {
 // Called to get the UUID of Intel AMT, start by setting up MicroLMS if we are doing the operation on the local computer
 function getAmtUuid()
 {
-    if (settings.hostname != null)
-    {
-        getAmtUuidEx();
-    } else
-    {
-        if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) { settings.noconsole = true; startLms(getAmtUuidEx); return; } else { getAmtUuidEx(); }
-    }
+    if ((settings.hostname == null) || (settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) { settings.noconsole = true; startLms(getAmtUuidEx); return; } else { getAmtUuidEx(); }
 }
 
 // Fetch the computer's UUID by fetching the CIM_ComputerSystemPackage WSMAN object.

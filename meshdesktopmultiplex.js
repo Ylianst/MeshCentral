@@ -787,7 +787,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 obj.sendToAllInputViewers(data);
                 break;
             default:
-                console.log('Un-handled agent command: ' + command);
+                console.log('Un-handled agent command: ' + command + ', length: ' + cmdsize);
                 break;
         }
     }
