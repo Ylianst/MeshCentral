@@ -1306,6 +1306,7 @@ function activeToCCM() {
 }
 
 function activeToCCMEx(state) {
+    if (osamtstack == null) { console.log("Unable to perform MEI operations, try running as " + ((process.platform == 'win32') ? "administrator." : "root.")); exit(1); return; }
     osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToCCMEx2);
 }
 
