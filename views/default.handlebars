@@ -9766,9 +9766,9 @@
         function p13findfileEx(b, t) {
             if (Q('d2findFilter').value.length == 0) return;
             var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
-            var slash = winagent ? '\\' : '/';
+            var slash = winAgent ? '\\' : '/';
             var path = p13filetreelocation.join(slash) + slash;
-            if (!winagent) { path = slash + path; }
+            if (!winAgent) { path = slash + path; }
             xxdialogTag = 'find:' + Math.random();
             files.sendText({ action: 'findfile', reqid: xxdialogTag, path: path, filter: Q('d2findFilter').value });
             QH('d2findResults', '');
