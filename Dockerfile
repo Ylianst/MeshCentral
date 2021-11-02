@@ -16,8 +16,9 @@ WORKDIR /opt/meshcentral
 
 RUN npm install meshcentral
 
-COPY config.json.template /opt/meshcentral/config.json.template
-COPY startup.sh startup.sh
+#Copy config template and startup script
+COPY docker/config.json.template /opt/meshcentral/config.json.template
+COPY docker/startup.sh startup.sh
 #environment variables
 
 EXPOSE 80 443
