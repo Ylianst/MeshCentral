@@ -66,7 +66,8 @@ function CreateWsmanComm(/*host, port, user, pass, tls, extra*/) {
     }
 
     // Private method
-    obj.PerformAjaxEx = function (postdata, callback, tag, url, action) {
+    obj.PerformAjaxEx = function (postdata, callback, tag, url, action)
+    {
         if (obj.FailAllError != 0) { if (obj.FailAllError != 999) { obj.gotNextMessagesError({ status: obj.FailAllError }, 'error', null, [postdata, callback, tag]); } return; }
         if (!postdata) postdata = "";
         if (globalDebugFlags & 1) { console.log("SEND: " + postdata + "\r\n\r\n"); } // DEBUG
@@ -80,9 +81,11 @@ function CreateWsmanComm(/*host, port, user, pass, tls, extra*/) {
             }
             obj.digest.http = require('http');
         }
-        var request = { protocol: (obj.tls == 1 ? 'https:' : 'http:'), method: 'POST', host: obj.host, path: '/wsman', port: obj.port, rejectUnauthorized: false, checkServerIdentity: function (cert) { /*console.log('checkServerIdentity', JSON.stringify(cert));*/ } };
+        var request = { delayWrite: true, protocol: (obj.tls == 1 ? 'https:' : 'http:'), method: 'POST', host: obj.host, path: '/wsman', port: obj.port, rejectUnauthorized: false, checkServerIdentity: function (cert) { /*console.log('checkServerIdentity', JSON.stringify(cert));*/ } };
         var req = obj.digest.request(request);
         //console.log('Request ' + (obj.RequestCount++));
+        if (globalDebugFlags & 1) { console.log('Request ' + (obj.RequestCount++)); } // DEBUG
+
         req.on('error', function (e) { obj.gotNextMessagesError({ status: 600 }, 'error', null, [postdata, callback, tag]); });
         req.on('response', function (response) {
             //console.log(JSON.stringify(response, null, 2));
