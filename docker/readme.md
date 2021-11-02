@@ -16,7 +16,7 @@ services:
         container_name: meshcentral
         image: meshcentral
         ports:
-            - 8086:443  #MeshCentral will moan and try everything not to use port 80, but you can also use it if you so desire, just change the config.json according to your needs
+            - 443:443  #MeshCentral will moan and try everything not to use port 80, but you can also use it if you so desire, just change the config.json according to your needs
         environment:
             - HOSTNAME=my.domain.com     #your hostname
             - REVERSE_PROXY=false     #set to your reverse proxy IP if you want to put meshcentral behind a reverse proxy
