@@ -668,7 +668,8 @@ function run(argv) {
         performAmtAgentPresence();
     } else if (settings.action == 'amtuuid') {
         // Start running
-        if (settings.hostname != null) {
+        if (settings.hostname != null)
+        {
             if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
             if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
         }
@@ -1398,7 +1399,17 @@ function getTrustedHashes(amtMei, func, tag) {
 // Called to get the UUID of Intel AMT, start by setting up MicroLMS if we are doing the operation on the local computer
 function getAmtUuid()
 {
-    if ((settings.hostname == null) || (settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) { settings.noconsole = true; startLms(getAmtUuidEx); return; } else { getAmtUuidEx(); }
+    if ((settings.hostname == null) || (settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost'))
+    {
+        settings.hostname = '127.0.0.1';
+        settings.noconsole = true;
+        startLms(getAmtUuidEx);
+        return;
+    }
+    else
+    {
+        getAmtUuidEx();
+    }
 }
 
 // Fetch the computer's UUID by fetching the CIM_ComputerSystemPackage WSMAN object.
@@ -1667,6 +1678,11 @@ function setupMeiOsAdmin(func, state, tag) {
             var transport = require('amt-wsman-duk');
             var wsman = require('amt-wsman');
             var amt = require('amt');
+
+            settings.username = x.user;
+            settings.password = x.pass;
+            settings.tls = false;
+
             oswsstack = new wsman(transport, '127.0.0.1', 16992, x.user, x.pass, false);
             osamtstack = new amt(oswsstack);
             if (func) { func(state, tag); }
