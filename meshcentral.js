@@ -3344,7 +3344,7 @@ function mainStart() {
         if (config.settings.postgres != null) { modules.push('pg@8.7.1'); modules.push('pgtools@0.3.2'); } // Add Postgres, Postgres driver.
         if (config.settings.mariadb != null) { modules.push('mariadb'); } // Add MariaDB, official driver.
         if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
-        if (config.settings.plugins != null) {  modules.push('semver'); } // Required for version compat testing and update checks
+        if (config.settings.plugins != null) { modules.push('semver'); } // Required for version compat testing and update checks
         if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent'); } // Required for HTTP/HTTPS proxy support
         else if (config.settings.xmongodb != null) { modules.push('mongojs'); } // Add MongoJS, old driver.
         if (nodemailer || (config.smtp != null)) { modules.push('nodemailer'); } // Add SMTP support
