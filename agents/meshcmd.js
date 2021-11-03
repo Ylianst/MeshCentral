@@ -2034,9 +2034,9 @@ function startRouter() {
                 if (xtoken != null) { xurlargs.push('token=' + xtoken); }
             } else {
                 if (xtoken != null) {
-                    options.headers = { 'x-meshauth': Buffer.from(settings.username, 'binary').toString('base64') + ',' + Buffer.from(settings.password, 'binary').toString('base64') + ',' + Buffer.from(xtoken, 'binary').toString('base64') };
+                    options.headers = { 'host': options.host, 'x-meshauth': Buffer.from(settings.username, 'binary').toString('base64') + ',' + Buffer.from(settings.password, 'binary').toString('base64') + ',' + Buffer.from(xtoken, 'binary').toString('base64') };
                 } else {
-                    options.headers = { 'x-meshauth': Buffer.from(settings.username, 'binary').toString('base64') + ',' + Buffer.from(settings.password, 'binary').toString('base64') };
+                    options.headers = { 'host': options.host, 'x-meshauth': Buffer.from(settings.username, 'binary').toString('base64') + ',' + Buffer.from(settings.password, 'binary').toString('base64') };
                 }
             }
         } else { options.headers = { 'x-meshauth': '*' }; } // Request inner authentication
