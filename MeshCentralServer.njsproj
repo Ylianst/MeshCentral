@@ -645,6 +645,7 @@
     <Folder Include="typings\globals\is-plain-object\" />
     <Folder Include="typings\globals\jsbn\" />
     <Folder Include="typings\globals\klaw\" />
+    <Folder Include="typings\globals\load-json-file\" />
     <Folder Include="typings\globals\localforage\" />
     <Folder Include="typings\globals\lru-cache\" />
     <Folder Include="typings\globals\marked\" />
@@ -655,10 +656,13 @@
     <Folder Include="typings\globals\object-assign\" />
     <Folder Include="typings\globals\once\" />
     <Folder Include="typings\globals\passport\" />
+    <Folder Include="typings\globals\pg-pool\" />
+    <Folder Include="typings\globals\split2\" />
     <Folder Include="typings\globals\sprintf-js\" />
     <Folder Include="typings\globals\type-check\" />
     <Folder Include="typings\globals\underscore\" />
     <Folder Include="typings\globals\uuid\" />
+    <Folder Include="typings\globals\window-size\" />
     <Folder Include="views\" />
   </ItemGroup>
   <ItemGroup>
@@ -681,6 +685,7 @@
     <TypeScriptCompile Include="typings\globals\is-plain-object\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\jsbn\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\klaw\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\load-json-file\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\localforage\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\lru-cache\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\marked\index.d.ts" />
@@ -691,10 +696,13 @@
     <TypeScriptCompile Include="typings\globals\object-assign\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\once\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\passport\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\pg-pool\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\split2\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\sprintf-js\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\type-check\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\underscore\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\uuid\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\window-size\index.d.ts" />
     <TypeScriptCompile Include="typings\index.d.ts" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
