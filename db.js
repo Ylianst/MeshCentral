@@ -230,7 +230,7 @@ module.exports.CreateDB = function (parent, func) {
         // TODO: Remove all meshes that dont have any links
 
         // Remove all events, power events and SMBIOS data from the main collection. They are all in seperate collections now.
-        if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
+        if ((obj.databaseType == 4) || (obj.databaseType == 5) || (obj.databaseType == 6)) {
             // MariaDB or MySQL
             obj.RemoveAllOfType('event', function () { });
             obj.RemoveAllOfType('power', function () { });
@@ -640,6 +640,43 @@ module.exports.CreateDB = function (parent, func) {
             });
             setTimeout(function () { tempDatastore.end(); }, 2000);
         }
+    } else if (parent.args.postgres) {
+        // Postgres SQL
+        var connectinArgs = parent.args.postgres;
+        var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
+        obj.databaseType = 6;
+        const pgtools = require('pgtools');
+        pgtools.createdb(connectinArgs, dbname, function (err, res) {
+            const { Pool, Client } = require('pg');
+            connectinArgs.database = dbname;
+            Datastore = new Client(connectinArgs);
+            Datastore.connect()
+            parent.debug('db', 'Checking tables...');
+            sqlDbBatchExec([
+                'CREATE TABLE IF NOT EXISTS main (id VARCHAR(256) PRIMARY KEY NOT NULL, type CHAR(32), domain CHAR(64), extra CHAR(255), extraex CHAR(255), doc JSON)',
+                'CREATE TABLE IF NOT EXISTS events(id SERIAL PRIMARY KEY, time TIMESTAMP, domain CHAR(64), action CHAR(255), nodeid CHAR(255), userid CHAR(255), doc JSON)',
+                'CREATE TABLE IF NOT EXISTS eventids(fkid INT NOT NULL, target CHAR(255), CONSTRAINT fk_eventid FOREIGN KEY (fkid) REFERENCES events (id) ON DELETE CASCADE ON UPDATE RESTRICT)',
+                'CREATE TABLE IF NOT EXISTS serverstats (time TIMESTAMP PRIMARY KEY, expire TIMESTAMP, doc JSON)',
+                'CREATE TABLE IF NOT EXISTS power (id SERIAL PRIMARY KEY, time TIMESTAMP, nodeid CHAR(255), doc JSON)',
+                'CREATE TABLE IF NOT EXISTS smbios (id CHAR(255) PRIMARY KEY, time TIMESTAMP, expire TIMESTAMP, doc JSON)',
+                'CREATE TABLE IF NOT EXISTS plugin (id SERIAL PRIMARY KEY, doc JSON)'
+            ], function (results) {
+                parent.debug('db', 'Checking indexes...');
+                sqlDbExec('CREATE INDEX ndxtypedomainextra ON main (type, domain, extra)', null, function (err, response) { });
+                sqlDbExec('CREATE INDEX ndxextra ON main (extra)', null, function (err, response) { });
+                sqlDbExec('CREATE INDEX ndxextraex ON main (extraex)', null, function (err, response) { });
+                sqlDbExec('CREATE INDEX ndxeventstime ON events(time)', null, function (err, response) { });
+                sqlDbExec('CREATE INDEX ndxeventsusername ON events(domain, userid, time)', null, function (err, response) { });
+                sqlDbExec('CREATE INDEX ndxeventsdomainnodeidtime ON events(domain, nodeid, time)', null, function (err, response) { });
+                sqlDbExec('CREATE INDEX ndxeventids ON eventids(target)', null, function (err, response) { });
+                sqlDbExec('CREATE INDEX ndxserverstattime ON serverstats (time)', null, function (err, response) { });
+                sqlDbExec('CREATE INDEX ndxserverstatexpire ON serverstats (expire)', null, function (err, response) { });
+                sqlDbExec('CREATE INDEX ndxpowernodeidtime ON power (nodeid, time)', null, function (err, response) { });
+                sqlDbExec('CREATE INDEX ndxsmbiostime ON smbios (time)', null, function (err, response) { });
+                sqlDbExec('CREATE INDEX ndxsmbiosexpire ON smbios (expire)', null, function (err, response) { });
+                setupFunctions(func);
+            });
+        });
     } else if (parent.args.mongodb) {
         // Use MongoDB
         obj.databaseType = 3;
@@ -1011,12 +1048,12 @@ module.exports.CreateDB = function (parent, func) {
                         .then(function (rows) {
                             conn.release();
                             const docs = [];
-                            for (var i in rows) { if (rows[i].doc) { docs.push(performTypedRecordDecrypt((typeof rows[i].doc == 'object')? rows[i].doc : JSON.parse(rows[i].doc))); } }
+                            for (var i in rows) { if (rows[i].doc) { docs.push(performTypedRecordDecrypt((typeof rows[i].doc == 'object') ? rows[i].doc : JSON.parse(rows[i].doc))); } }
                             if (func) try { func(null, docs); } catch (ex) { console.log('SQLERR1', ex); }
                         })
                         .catch(function (err) { conn.release(); if (func) try { func(err); } catch (ex) { console.log('SQLERR2', ex); } });
                 }).catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log('SQLERR3', ex); } } });
-        } else if (obj.databaseType == 5) { // MySQL
+        } else if ((obj.databaseType == 5) || (obj.databaseType == 6)) { // MySQL or Postgres SQL
             Datastore.query(query, args, function (error, results, fields) {
                 if (error != null) {
                     if (func) try { func(error); } catch (ex) { console.log('SQLERR4', ex); }
@@ -1041,10 +1078,10 @@ module.exports.CreateDB = function (parent, func) {
                             if (func) try { func(null, rows[0]); } catch (ex) { console.log(ex); }
                         })
                         .catch(function (err) { conn.release(); if (func) try { func(err); } catch (ex) { console.log(ex); } });
-                    }).catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
-        } else if (obj.databaseType == 5) { // MySQL
+                }).catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
+        } else if ((obj.databaseType == 5) || (obj.databaseType == 6)) { // MySQL or Postgres SQL
             Datastore.query(query, args, function (error, results, fields) {
-                if (func) try { func(error, results?results[0]:null); } catch (ex) { console.log(ex); }
+                if (func) try { func(error, results ? results[0] : null); } catch (ex) { console.log(ex); }
             });
         }
     }
@@ -1061,7 +1098,7 @@ module.exports.CreateDB = function (parent, func) {
                         .catch(function (err) { conn.release(); if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
                 })
                 .catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
-        } else if (obj.databaseType == 5) { // MySQL
+        } else if ((obj.databaseType == 5) || (obj.databaseType == 6)) { // MySQL or Postgres SQL
             var Promises = [];
             for (var i in queries) { if (typeof queries[i] == 'string') { Promises.push(Datastore.query(queries[i])); } else { Promises.push(Datastore.query(queries[i][0], queries[i][1])); } }
             Promise.all(Promises)
@@ -1071,7 +1108,7 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     function setupFunctions(func) {
-        if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
+        if ((obj.databaseType == 4) || (obj.databaseType == 5) || (obj.databaseType == 6)) {
             // Database actions on the main collection (MariaDB or MySQL)
             obj.Set = function (value, func) {
                 obj.dbCounters.fileSet++;
