@@ -2039,12 +2039,13 @@ function startRouter() {
                     options.headers = { 'host': options.host, 'x-meshauth': Buffer.from(settings.username, 'binary').toString('base64') + ',' + Buffer.from(settings.password, 'binary').toString('base64') };
                 }
             }
-        } else { options.headers = { 'x-meshauth': '*' }; } // Request inner authentication
+        } else { options.headers = { 'host': options.host, 'x-meshauth': '*' }; } // Request inner authentication
         if (settings.loginkey) { xurlargs.push('key=' + settings.loginkey); }
         if (xurlargs.length > 0) { options.path += '?' + xurlargs.join('&'); }
     } catch (e) { console.log("Unable to parse \"serverUrl\"."); process.exit(1); return; }
 
     debug(1, "Connecting to " + options.host + ".");
+    debug(1, "Connection options: " + JSON.stringify(options) + ".");
     options.checkServerIdentity = onVerifyServer;
     options.rejectUnauthorized = false;
     settings.websocket = http.request(options);
