@@ -2050,6 +2050,7 @@ function startRouter() {
     settings.websocket = http.request(options);
     settings.websocket.upgrade = OnServerWebSocket;
     settings.websocket.on('error', function (ex) { console.log("Unable to connect to server: " + JSON.stringify(ex)); process.exit(1); return; });
+    settings.websocket.on('response', function (rsp) { console.log("Unable to connect to server: " + rsp.statusMessage + " (" + rsp.statusCode + ")"); process.exit(1); return; });
     settings.websocket.end();
 }
 
