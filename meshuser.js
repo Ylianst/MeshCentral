@@ -608,6 +608,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // pass through to switch statement until refactoring complete
 
         switch (command.action) {
+            case 'urlargs':
+                {
+                    console.log(req.query);
+                    console.log(command.args);
+                    break;
+                }
             case 'intersession':
                 {
                     // Sends data between sessions of the same user
