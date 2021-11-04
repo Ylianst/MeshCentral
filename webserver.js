@@ -5713,18 +5713,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
             obj.app.ws(url + 'webider.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshIderHandler.CreateAmtIderSession(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
             obj.app.ws(url + 'control.ashx', function (ws, req) {
-                const domain = getDomain(req);
-                if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { ws.close(); return; } // Check 3FA URL key
-                PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) {
-                    if (user == null) { // User is not authenticated, perform inner server authentication
-                        if (req.headers['x-meshauth'] === '*') {
-                            PerformWSSessionInnerAuth(ws, req, domain, function (ws1, req1, domain, user) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); // User is authenticated
+                getWebsocketArgs(ws, req, function (ws, req) {
+                    const domain = getDomain(req);
+                    if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { ws.close(); return; } // Check 3FA URL key
+                    PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) {
+                        if (user == null) { // User is not authenticated, perform inner server authentication
+                            if (req.headers['x-meshauth'] === '*') {
+                                PerformWSSessionInnerAuth(ws, req, domain, function (ws1, req1, domain, user) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); // User is authenticated
+                            } else {
+                                try { ws.close(); } catch (ex) { } // user is not authenticated and inner authentication was not requested, disconnect now.
+                            }
                         } else {
-                            try { ws.close(); } catch (ex) { } // user is not authenticated and inner authentication was not requested, disconnect now.
+                            obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); // User is authenticated
                         }
-                    } else {
-                        obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); // User is authenticated
-                    }
+                    });
                 });
             });
             obj.app.ws(url + 'devicefile.ashx', function (ws, req) { obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, ws, null, req, domain); });
@@ -7725,6 +7727,31 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
         obj.badLoginTableLastClean = 0;
+    }
+
+    // Hold a websocket until additional arguments are provided within the socket.
+    // This is a generic function that can be used for any websocket to avoid passing arguments in the URL.
+    function getWebsocketArgs(ws, req, func) {
+        if (req.query.moreargs != '1') {
+            // No more arguments needed, pass the websocket thru
+            func(ws, req);
+        } else {
+            // More arguments are needed
+            delete req.query.moreargs;
+            const xfunc = function getWebsocketArgsEx(msg) {
+                var command = null;
+                try { command = JSON.parse(msg.toString('utf8')); } catch (e) { return; }
+                if ((command != null) && (command.action === 'urlargs') && (typeof command.args == 'object')) {
+                    for (var i in command.args) { getWebsocketArgsEx.req.query[i] = command.args[i]; }
+                    ws.removeEventListener('message', getWebsocketArgsEx);
+                    getWebsocketArgsEx.func(getWebsocketArgsEx.ws, getWebsocketArgsEx.req);
+                }
+            }
+            xfunc.ws = ws;
+            xfunc.req = req;
+            xfunc.func = func;
+            ws.on('message', xfunc);
+        }
     }
 
     return obj;
