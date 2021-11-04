@@ -1513,7 +1513,7 @@
             setTimeout(function() { mainUpdate(512); }, 200);
 
             // Connect to the mesh server
-            meshserver = MeshServerCreateControl(domainUrl, authCookie);
+            meshserver = MeshServerCreateControl(domainUrl);
             meshserver.onStateChanged = onStateChanged;
             meshserver.onMessage = onMessage;
             meshserver.trace = args.trace;

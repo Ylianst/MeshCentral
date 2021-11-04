@@ -1284,7 +1284,7 @@
             document.onclick = function (e) { if ((xxdialogMode == 999) && (e.target.id != 'topMenuIcon')) { QV('topMenu', false); xxdialogMode = 0; } }
 
             // Connect to the mesh server
-            meshserver = MeshServerCreateControl(domainUrl, authCookie);
+            meshserver = MeshServerCreateControl(domainUrl);
             meshserver.onStateChanged = onStateChanged;
             meshserver.onMessage = onMessage;
             meshserver.trace = args.trace;

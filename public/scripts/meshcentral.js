@@ -23,10 +23,7 @@ var MeshServerCreateControl = function (domain, authCookie) {
         if (obj.connectstate != 0) return;
         obj.connectstate = 0;
         var url = window.location.protocol.replace('http', 'ws') + '//' + window.location.host + domain + 'control.ashx' + (urlargs.key ? ('?key=' + urlargs.key) : '');
-        if (obj.authCookie && (obj.authCookie != '')) {
-            url += '?moreargs=1'
-            //url += '?auth=' + obj.authCookie;
-        }
+        if (obj.authCookie && (obj.authCookie != '')) { url += '?moreargs=1' }
         obj.socket = new WebSocket(url);
         obj.socket.onopen = function (e) { obj.connectstate = 1; if (obj.authCookie && (obj.authCookie != '')) { obj.send({ 'action': 'urlargs', 'args': { 'auth': obj.authCookie } }); } }
         obj.socket.onmessage = obj.xxOnMessage;
