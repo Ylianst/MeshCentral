@@ -2096,7 +2096,7 @@
 
         // Return the number of 2nd factor for this account
         function count2factoraAuths() {
-            if (userinfo == null) return 0;
+            if (userinfo == null) return -1;
             var authFactorCount = 0;
             if (userinfo.otpsecret == 1) { authFactorCount++; } // Authenticator time factor
             if (userinfo.otphkeys > 0) { authFactorCount += userinfo.otphkeys; } // FIDO hardware factor
@@ -2119,7 +2119,7 @@
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authPushAuthDevCheck', (userinfo.otpdev > 0) && ((features2 & 0x40) != 0));
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
-            QV('managePushAuthDev', (features2 & 0x40) && (count2factoraAuths() > 0));
+            QV('managePushAuthDev', (features2 & 0x40) && (authFactorCount > 0));
             mainUpdate(4 + 128 + 4096);
 
             // Check if none or at least 2 factors are enabled.
