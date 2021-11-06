@@ -300,7 +300,7 @@ function AmtStackCreateService(wsmanStack) {
     obj.CIM_AccountManagementService_CreateAccount = function (System, AccountTemplate, callback_func) { obj.Exec("CIM_AccountManagementService", "CreateAccount", { "System": System, "AccountTemplate": AccountTemplate }, callback_func); }
     obj.CIM_BootConfigSetting_ChangeBootOrder = function (Source, callback_func) { obj.Exec("CIM_BootConfigSetting", "ChangeBootOrder", { "Source": Source }, callback_func); }
     obj.CIM_BootService_SetBootConfigRole = function (BootConfigSetting, Role, callback_func) { obj.Exec("CIM_BootService", "SetBootConfigRole", { "BootConfigSetting": BootConfigSetting, "Role": Role }, callback_func, 0, 1); }
-    obj.CIM_BootService_RequestStateChange = function (RequestedState, TimeoutPeriod, callback_func) { obj.Exec('CIM_BootService', 'RequestStateChange', { 'RequestedState': RequestedState, 'TimeoutPeriod': TimeoutPeriod }, callback_func, 0, 1); }
+    obj.CIM_BootService_RequestStateChange = function (RequestedState, TimeoutPeriod, callback_func, tag) { obj.Exec('CIM_BootService', 'RequestStateChange', { 'RequestedState': RequestedState, 'TimeoutPeriod': TimeoutPeriod }, callback_func, tag, 1); }
     obj.CIM_Card_ConnectorPower = function (Connector, PoweredOn, callback_func) { obj.Exec("CIM_Card", "ConnectorPower", { "Connector": Connector, "PoweredOn": PoweredOn }, callback_func); }
     obj.CIM_Card_IsCompatible = function (ElementToCheck, callback_func) { obj.Exec("CIM_Card", "IsCompatible", { "ElementToCheck": ElementToCheck }, callback_func); }
     obj.CIM_Chassis_IsCompatible = function (ElementToCheck, callback_func) { obj.Exec("CIM_Chassis", "IsCompatible", { "ElementToCheck": ElementToCheck }, callback_func); }

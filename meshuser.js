@@ -71,16 +71,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const SITERIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Protocol Numbers
-    const PROTOCOL_TERMINAL = 1;
-    const PROTOCOL_DESKTOP = 2;
-    const PROTOCOL_FILES = 5;
-    const PROTOCOL_AMTWSMAN = 100;
-    const PROTOCOL_AMTREDIR = 101;
-    const PROTOCOL_MESSENGER = 200;
-    const PROTOCOL_WEBRDP = 201;
-    const PROTOCOL_WEBSSH = 202;
-    const PROTOCOL_WEBSFTP = 203;
-    const PROTOCOL_WEBVNC = 204;
+    const PROTOCOL_TERMINAL             = 1;
+    const PROTOCOL_DESKTOP              = 2;
+    const PROTOCOL_FILES                = 5;
+    const PROTOCOL_AMTWSMAN             = 100;
+    const PROTOCOL_AMTREDIR             = 101;
+    const PROTOCOL_MESSENGER            = 200;
+    const PROTOCOL_WEBRDP               = 201;
+    const PROTOCOL_WEBSSH               = 202;
+    const PROTOCOL_WEBSFTP              = 203;
+    const PROTOCOL_WEBVNC               = 204;
 
     // Events
     /*
@@ -3550,7 +3550,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     // Mesh Agent power command, get this device and send the power command
                                     const agent = parent.wsagents[node._id];
                                     if (agent != null) {
-                                        try { agent.send(JSON.stringify({ action: 'poweraction', actiontype: command.actiontype })); } catch (ex) { }
+                                        try { agent.send(JSON.stringify({ action: 'poweraction', actiontype: command.actiontype, userid: user._id, username: user.name, remoteaddr: req.clientIp })); } catch (ex) { }
                                     }
                                 }
                             }

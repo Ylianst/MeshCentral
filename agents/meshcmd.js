@@ -877,7 +877,7 @@ function performAmtAgentPresenceRegisterRetry(stack, name, response, status, wat
             tempWatchdogTimer = setTimeout(function () { amtstack.AMT_AgentPresenceWatchdog_RegisterAgent(performAmtAgentPresenceRegisterRetry, watchdog, watchdog.Seq, { 'DeviceID': watchdog.DeviceID }); }, 1000);
         } else {
             console.log('Failed to register this watchdog.');
-            process.exit(0);
+            exit(0);
         }
     }
 }
@@ -901,7 +901,7 @@ function performAmtAgentPresenceAssertRetry(stack, name, response, status, watch
             amtstack.AMT_AgentPresenceWatchdog_AssertPresence(watchdog.Seq, performAmtAgentPresenceAssertRetry, watchdog, 0, { 'DeviceID': watchdog.DeviceID });
         } else {
             console.log('Failed to assert presence on this watchdog.');
-            process.exit(0);
+            exit(0);
         }
     }
 }
@@ -916,7 +916,7 @@ function performAmtAgentPresenceEx5(stack, name, response, status, watchdog) {
             amtstack.AMT_AgentPresenceWatchdog_AssertPresence(watchdog.Seq, performAmtAgentPresenceEx4, watchdog, 0, { 'DeviceID': watchdog.DeviceID });
         } else {
             console.log('Failed to assert presence on this watchdog.');
-            process.exit(0);
+            exit(0);
         }
     }
 }
@@ -2042,7 +2042,7 @@ function startRouter() {
         } else { options.headers = { 'host': options.host, 'x-meshauth': '*' }; } // Request inner authentication
         if (settings.loginkey) { xurlargs.push('key=' + settings.loginkey); }
         if (xurlargs.length > 0) { options.path += '?' + xurlargs.join('&'); }
-    } catch (e) { console.log("Unable to parse \"serverUrl\"."); process.exit(1); return; }
+    } catch (e) { console.log("Unable to parse \"serverUrl\"."); exit(1); return; }
 
     debug(1, "Connecting to " + options.host + ".");
     debug(1, "Connection options: " + JSON.stringify(options) + ".");
@@ -2050,8 +2050,8 @@ function startRouter() {
     options.rejectUnauthorized = false;
     settings.websocket = http.request(options);
     settings.websocket.upgrade = OnServerWebSocket;
-    settings.websocket.on('error', function (ex) { console.log("Unable to connect to server: " + JSON.stringify(ex)); process.exit(1); return; });
-    settings.websocket.on('response', function (rsp) { console.log("Unable to connect to server: " + rsp.statusMessage + " (" + rsp.statusCode + ")"); process.exit(1); return; });
+    settings.websocket.on('error', function (ex) { console.log("Unable to connect to server: " + JSON.stringify(ex)); exit(1); return; });
+    settings.websocket.on('response', function (rsp) { console.log("Unable to connect to server: " + rsp.statusMessage + " (" + rsp.statusCode + ")"); exit(1); return; });
     settings.websocket.end();
 }
 
@@ -2083,7 +2083,7 @@ function OnServerWebSocket(msg, s, head) {
                         console.log("Invalid username/password.");
                     }
                 } else { console.log("Server disconnected: " + command.msg); }
-                process.exit(1);
+                exit(1);
                 return;
             }
             case 'serverinfo': {
@@ -2107,11 +2107,11 @@ function OnServerWebSocket(msg, s, head) {
                 var hasher = require('SHA384Stream').create();
                 var certDer = Buffer.from(command.cert, 'base64');
                 var cert = require('tls').loadCertificate({ der: certDer });
-                if (cert.getKeyHash().toString('hex') != settings.serverid) { console.log("Unable to authenticate the server, invalid server identifier."); process.exit(1); return; }
+                if (cert.getKeyHash().toString('hex') != settings.serverid) { console.log("Unable to authenticate the server, invalid server identifier."); exit(1); return; }
 
                 // Hash the signed data and verify the server signature
                 var signDataHash = hasher.syncHash(Buffer.concat([Buffer.from(settings.serverAuthClientNonce, 'base64'), Buffer.from(settings.meshServerTlsHash, 'hex'), Buffer.from(command.nonce, 'base64')]));
-                if (require('RSA').verify(require('RSA').TYPES.SHA384, cert, signDataHash, Buffer.from(command.signature, 'base64')) == false) { console.log("Unable to authenticate the server, invalid signature."); process.exit(1); return; }
+                if (require('RSA').verify(require('RSA').TYPES.SHA384, cert, signDataHash, Buffer.from(command.signature, 'base64')) == false) { console.log("Unable to authenticate the server, invalid signature."); exit(1); return; }
                 debug(1, "Authenticated the server.");
 
                 // Switch to using HTTPS TLS certificate for authentication
@@ -2143,8 +2143,8 @@ function OnServerWebSocket(msg, s, head) {
             }
         }
     });
-    s.on('error', function () { console.log("Server connection error."); process.exit(1); return; });
-    s.on('close', function () { console.log("Server closed the connection."); process.exit(1); return; });
+    s.on('error', function () { console.log("Server connection error."); exit(1); return; });
+    s.on('close', function () { console.log("Server closed the connection."); exit(1); return; });
 
     // Perform inner server authentication
     if (settings.serverid != null) {
@@ -2183,7 +2183,7 @@ function OnTcpClientConnected(c) {
         var options;
         try {
             options = http.parseUri(settings.serverurl + '?auth=' + settings.acookie + '&nodeid=' + settings.remotenodeid + '&tcpport=' + settings.remoteport + (settings.remotetarget == null ? '' : '&tcpaddr=' + settings.remotetarget));
-        } catch (e) { console.log("Unable to parse \"serverUrl\"."); process.exit(1); return; }
+        } catch (e) { console.log("Unable to parse \"serverUrl\"."); exit(1); return; }
         options.checkServerIdentity = onVerifyServer;
         options.rejectUnauthorized = false;
         c.websocket = http.request(options);
@@ -2270,12 +2270,12 @@ iderIdleTimer = null;
 
 // Perform IDER
 function performIder() {
-    if ((settings.floppy != null) && fs.existsSync(settings.floppy) == false) { console.log("Unable to floppy image file: " + settings.floppy); process.exit(); return; }
-    if ((settings.cdrom != null) && fs.existsSync(settings.cdrom) == false) { console.log("Unable to CDROM image file: " + settings.cdrom); process.exit(); return; }
+    if ((settings.floppy != null) && fs.existsSync(settings.floppy) == false) { console.log("Unable to floppy image file: " + settings.floppy); exit(); return; }
+    if ((settings.cdrom != null) && fs.existsSync(settings.cdrom) == false) { console.log("Unable to CDROM image file: " + settings.cdrom); exit(); return; }
     try {
         var sfloppy = null, scdrom = null;
-        if (settings.floppy) { try { if (sfloppy = fs.statSync(settings.floppy)) { sfloppy.file = fs.openSync(settings.floppy, 'rbN'); } } catch (ex) { console.log(ex); process.exit(1); return; } }
-        if (settings.cdrom) { try { scdrom = fs.statSync(settings.cdrom); if (scdrom) { scdrom.file = fs.openSync(settings.cdrom, 'rbN'); } } catch (ex) { console.log(ex); process.exit(1); return; } }
+        if (settings.floppy) { try { if (sfloppy = fs.statSync(settings.floppy)) { sfloppy.file = fs.openSync(settings.floppy, 'rbN'); } } catch (ex) { console.log(ex); exit(1); return; } }
+        if (settings.cdrom) { try { scdrom = fs.statSync(settings.cdrom); if (scdrom) { scdrom.file = fs.openSync(settings.cdrom, 'rbN'); } } catch (ex) { console.log(ex); exit(1); return; } }
 
         ider = require('amt-redir-duk')(require('amt-ider')());
         ider.onStateChanged = onIderStateChange;
@@ -2294,7 +2294,7 @@ function onIderStateChange(stack, state) { console.log(["Disconnected", "Connect
 
 function iderSectorStats(mode, dev, mediaBlocks, lba, len) {
     if (iderIdleTimer != null) { clearTimeout(iderIdleTimer); }
-    iderIdleTimer = setTimeout(function () { console.log("Idle timeout"); process.exit(1); }, 1000 * settings.timeout);
+    iderIdleTimer = setTimeout(function () { console.log("Idle timeout"); exit(1); }, 1000 * settings.timeout);
 }
 
 //
@@ -2352,8 +2352,8 @@ function performAmtNetConfig1(stack, name, response, status, args) {
             else if (args.static && (amtwiredif != -1) && (response['AMT_EthernetPortSettings'].responses[amtwiredif].DHCPEnabled == true)) {
                 // Change to STATIC
                 x['DHCPEnabled'] = false;
-                if (args.ip) { x['IPAddress'] = args.ip; } else { console.log("Missing IPv4 address, use --ip 1.2.3.4"); process.exit(1); }
-                if (args.subnet) { x['SubnetMask'] = args.subnet; } else { console.log("Missing IPv4 subnet, use --subnet 255.255.255.0"); process.exit(1); }
+                if (args.ip) { x['IPAddress'] = args.ip; } else { console.log("Missing IPv4 address, use --ip 1.2.3.4"); exit(1); }
+                if (args.subnet) { x['SubnetMask'] = args.subnet; } else { console.log("Missing IPv4 subnet, use --subnet 255.255.255.0"); exit(1); }
                 if (args.gateway) { x['DefaultGateway'] = args.gateway; }
                 if (args.dns) { x['PrimaryDNS'] = args.dns; }
                 if (args.dns2) { x['SecondaryDNS'] = args.dns2; }
@@ -2400,11 +2400,11 @@ function performAmtNetConfig1(stack, name, response, status, args) {
                     }
                 }
             }
-            process.exit(0);
+            exit(0);
         }
     } else {
         console.log("Error, status " + status + ".");
-        process.exit(1);
+        exit(1);
     }
 }
 
@@ -2450,7 +2450,7 @@ function performAmtWifiConfig1(stack, name, response, status, args) {
                     var w = wifiProfiles[t];
                     console.log('Profile Name: ' + t + '; Priority: ' + w['Priority'] + '; SSID: ' + w['SSID'] + '; Security: ' + wifiAuthMethod[w['AuthenticationMethod']] + '/' + wifiEncMethod[w['EncryptionMethod']]);
                 }
-                process.exit(0);
+                exit(0);
             } else if (args.add) {
                 if (args.auth == null) { args.auth = 6; } // if not set, default to WPA2 PSK
                 if (args.enc == null) { args.enc = 3; } // if not set, default to TKIP
@@ -2480,12 +2480,12 @@ function performAmtWifiConfig1(stack, name, response, status, args) {
                         } else {
                             console.log("Failed to add wifi profile " + args.name + ".");
                         }
-                        process.exit(0);
+                        exit(0);
                     });
             } else if (args.del) {
                 if (wifiProfiles[args.name] == null) {
                     console.log("Profile " + args.name + " could not be found.");
-                    process.exit(0);
+                    exit(0);
                 }
                 stack.Delete('CIM_WiFiEndpointSettings', { InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + args.name },
                     function (stck, nm, resp, sts) {
@@ -2494,16 +2494,16 @@ function performAmtWifiConfig1(stack, name, response, status, args) {
                         } else {
                             console.log("Failed to delete wifi profile " + args.name + ".");
                         }
-                        process.exit(0);
+                        exit(0);
                     },
                     0, 1);
             }
         } else {
-            process.exit(0);
+            exit(0);
         }
     } else {
         console.log("Error, status " + status + ".");
-        process.exit(1);
+        exit(1);
     }
 }
 
@@ -2557,7 +2557,7 @@ function performAmtWakeConfig0(state, args) {
 function performAmtWakeConfig1(stack, name, response, status, args) {
     if (status == 200) {
         var response = response['IPS_AlarmClockOccurrence'].responses;
-        if (!args) { process.exit(0); return; }
+        if (!args) { exit(0); return; }
         if (args.list) {
             if (response.length == 0) {
                 console.log('No wake alarms.');
@@ -2572,24 +2572,24 @@ function performAmtWakeConfig1(stack, name, response, status, args) {
                     console.log(details);
                 }
             }
-            process.exit(0);
+            exit(0);
         } else if (args.del) {
             // Remove a wake alarm, start by looking to see if it exists
             var alarmFound = false;
             for (var i = 0; i < response.length; i++) { if (response[i]['ElementName'] == args.del) { alarmFound = true; } }
-            if (alarmFound == false) { console.log("Wake alarm " + args.del + " could not be found."); process.exit(0); return; }
+            if (alarmFound == false) { console.log("Wake alarm " + args.del + " could not be found."); exit(0); return; }
             // Remote the alarm
             stack.Delete('IPS_AlarmClockOccurrence', { InstanceID: args.del },
                 function (stck, nm, resp, sts) {
                     if (sts == 200) { console.log("Done."); } else { console.log("Failed to delete wake alarm " + args.del + "."); }
-                    process.exit(0);
+                    exit(0);
                 },
                 0, 1);
         } else if (args.add) {
             // Add a wake alarm
             var alarmFound = false;
             for (var i = 0; i < response.length; i++) { if (response[i]['ElementName'] == args.add) { alarmFound = true; } }
-            if (alarmFound) { console.log("Wake alarm " + args.add + " already exists."); process.exit(0); return; }
+            if (alarmFound) { console.log("Wake alarm " + args.add + " already exists."); exit(0); return; }
             if (typeof args.time != 'string') { args.time = '00:00:00'; }
             if (typeof args.interval != 'string') { args.interval = ''; }
             var alarm_name = args.add;
@@ -2607,16 +2607,16 @@ function performAmtWakeConfig1(stack, name, response, status, args) {
                     if (status != 200) { console.log("Failed to add alarm. Status: " + status + ". Verify the alarm is for a future time."); }
                     else if (response.Body['ReturnValue'] != 0) { console.log("Failed to add alarm " + response.Body['ReturnValueStr'] + ". Verify the alarm is for a future time."); }
                     else { console.log("Done."); }
-                    process.exit(0);
+                    exit(0);
                 }
             );
         } else {
             console.log("Unknown action, specify --list, --del or --add.");
-            process.exit(0);
+            exit(0);
         }
     } else {
         console.log("Error, status " + status + ".");
-        process.exit(1);
+        exit(1);
     }
 }
 
@@ -2626,6 +2626,7 @@ function performAmtWakeConfig1(stack, name, response, status, args) {
 //
 
 function performAmtPlatformErase(args) {
+    if (!settings.tls) { console.log("Remote Platfrom Erase (RPE) is only supported over TLS, add --tls"); exit(1); return; }
     var transport = require('amt-wsman-duk');
     var wsman = require('amt-wsman');
     var amt = require('amt');
@@ -2639,7 +2640,7 @@ function performAmtPlatformErase1(stack, name, response, status, args) {
     if (status == 200) {
         // See that RPE featues are supported
         var platfromEraseSupport = response['AMT_BootCapabilities'].response['PlatformErase'];
-        if (platfromEraseSupport == null) { console.log("Remote Platfrom Erase (RPE) is not supported on this platform"); process.exit(1); return; }
+        if (platfromEraseSupport == null) { console.log("Remote Platfrom Erase (RPE) is not supported on this platform"); exit(1); return; }
         var supportedRpeFeatures = [];
         if (platfromEraseSupport == 0) { supportedRpeFeatures.push("None"); } else {
             if (platfromEraseSupport & (1 << 1)) { supportedRpeFeatures.push("Pyrite Revert (--pyrite)"); }
@@ -2649,7 +2650,7 @@ function performAmtPlatformErase1(stack, name, response, status, args) {
             if (platfromEraseSupport & (1 << 26)) { supportedRpeFeatures.push("BIOS Reload of Golden Configuration (--bios)"); }
             if (platfromEraseSupport & (1 << 31)) { supportedRpeFeatures.push("CSME Unconfigure (--csme)"); }
         }
-        console.log("RPE Supported Features: " + supportedRpeFeatures.join(", "));
+        console.log("RPE supported features: " + supportedRpeFeatures.join(", "));
 
         // Compute requested operations flags
         var rpeflags = 0;
@@ -2659,44 +2660,57 @@ function performAmtPlatformErase1(stack, name, response, status, args) {
         if (args.nvm) { rpeflags += (1 << 25); }
         if (args.bios) { rpeflags += (1 << 26); }
         if (args.csme) { rpeflags += (1 << 31); }
-        if (rpeflags == 0) { process.exit(1); return; }
-        if ((rpeflags | platfromEraseSupport) != platfromEraseSupport) { console.log("Unable to perform unsupported RPE operation."); process.exit(1); return; }
+        if (rpeflags == 0) { exit(1); return; }
+        if ((rpeflags | platfromEraseSupport) != platfromEraseSupport) { console.log("Unable to perform unsupported RPE operation."); exit(1); return; }
         settings.rpeflags = rpeflags;
         settings.powerAction = 0;
         if (args.reset) { settings.powerAction = 10; } else if (args.poweron) { settings.powerAction = 2; }
-        if (settings.powerAction == 0) { console.log("--reset or --poweron is required to perform RPE action."); process.exit(1); return; }
+        if (settings.powerAction == 0) { console.log("--reset or --poweron is required to perform RPE action."); exit(1); return; }
 
         // See if OCR and RPE are enabled
         var enabledState = response['CIM_BootService'].response['EnabledState'];
-        var enabledBootStateStr = { 0: "Unknown", 1: "Other", 2: "Enabled", 3: "Disabled", 4: "Shutting Down", 5: "Not Applicable", 6: "Enabled but Offline", 7: "In Test", 8: "Deferred", 9: "Quiesce", 10: "Starting", 32768: "RPE Disabled", 32769: "All Enabled", 32770: "RPE & OCR Disabled" };
+        var enabledBootStateStr = { 0: "Unknown", 1: "Other", 2: "Enabled", 3: "Disabled", 4: "Shutting Down", 5: "Not Applicable", 6: "Enabled but Offline", 7: "In Test", 8: "Deferred", 9: "Quiesce", 10: "Starting", 32768: "OCR & RPE Disabled", 32769: "OCR Enabled, RPE Disabled", 32770: "OCR Disabled, RPE Enabled", 32771: "OCR Enabled, RPE Enabled" };
         var t = enabledBootStateStr[enabledState] ? enabledBootStateStr[enabledState] : ("Unknown, #" + enabledState);
-        console.log("BootService Enabled State: " + t);
+        console.log("BootService enabled state: " + t);
 
-        if (enabledState != 32769) {
-            // Enabled OCR and RPE
-            console.log("Enabling OCR and RPE features...");
-            amtstack.CIM_BootService_RequestStateChange(32769, null, performAmtPlatformErase2);
+        var newEnabledState = enabledState;
+        if (newEnabledState < 32768) { newEnabledState = 32768; }
+        if ((newEnabledState & 2) == 0) {
+            // Enabled RPE
+            newEnabledState |= 2;
+            console.log("Enabling RPE features...");
+            amtstack.CIM_BootService_RequestStateChange(32771, null, performAmtPlatformErase2, args);
         } else {
             performAmtPlatformErase3(args);
         }
-    } else { console.log("Error, status " + status + "."); process.exit(1); }
+    } else { console.log("Error, status " + status + "."); exit(1); }
 }
 
 function performAmtPlatformErase2(stack, name, response, status, args) {
     debug(0, "performAmtPlatformErase2(" + status + "): " + JSON.stringify(response, null, 2));
     if (status == 200) {
-        if (response.Body['ReturnValueStr'] != 'SUCCESS') { console.log("Error, " + response.Body['ReturnValueStr'] + "."); process.exit(1); }
-        else { performAmtPlatformErase3(args); }
-        process.exit(0);
-    } else { console.log("Error, status " + status + "."); process.exit(1); }
+        if (response.Body['ReturnValueStr'] != 'SUCCESS') { console.log("Error, " + response.Body['ReturnValueStr'] + "."); exit(1); }
+        else { console.log("Checking enabled RPE state..."); amtstack.BatchEnum(null, ['*CIM_BootService'], performAmtPlatformErase2b, args); }
+    } else { console.log("Error, status " + status + "."); exit(1); }
+}
+
+function performAmtPlatformErase2b(stack, name, response, status, args) {
+    debug(0, "performAmtPlatformErase2b(" + status + "): " + JSON.stringify(response, null, 2));
+    if (status == 200) {
+        // See if OCR and RPE are enabled
+        var enabledState = response['CIM_BootService'].response['EnabledState'];
+        if (enabledState < 32768) { enabledState = 32768; }
+        if ((enabledState & 2) == 0) { console.log("RPE can't be enabled, check RPE is enabled in BIOS."); exit(1); } else { performAmtPlatformErase3(args); }
+    } else { console.log("Error, status " + status + "."); exit(1); }
 }
 
 function performAmtPlatformErase3(args) {
+    //debug(0, "performAmtPlatformErase3(" + status + "): " + JSON.stringify(response, null, 2));
     var tlv = makeUefiBootParam(1, settings.rpeflags, 4), tlvlen = 1;
     if ((settings.rpeflags & 2) && (typeof args.pyrite == 'string')) { tlv += makeUefiBootParam(10, args.pyrite); tlvlen++; }
     if ((settings.rpeflags & 4) && (typeof args.ssd == 'string')) { tlv += makeUefiBootParam(20, args.ssd); tlvlen++; }
     settings.platfromEraseTLV = { tlv: Buffer.from(tlv, 'binary').toString('base64'), tlvlen: tlvlen };
-    debug(0, "platfromEraseTLV: " + JSON.stringify(r, null, 2));
+    debug(0, "platfromEraseTLV: " + JSON.stringify(settings.platfromEraseTLV, null, 2));
     console.log("Fetching boot information...");
     amtstack.Get('AMT_BootSettingData', performAmtPlatformErase4, 0, 1);
 }
@@ -2709,40 +2723,40 @@ function performAmtPlatformErase4(stack, name, response, status, args) {
         r['UefiBootParametersArray'] = settings.platfromEraseTLV.tlv;
         r['UefiBootNumberOfParams'] = settings.platfromEraseTLV.tlvlen;
         debug(0, "BootConfig: " + JSON.stringify(r, null, 2));
-        console.log("Setting Boot Order...");
+        console.log("Setting boot order...");
         amtstack.CIM_BootConfigSetting_ChangeBootOrder(null, function (stack, name, response, status) {
-            if (status != 200) { console.log("PUT CIM_BootConfigSetting_ChangeBootOrder, Error #" + status + ((response.Header && response.Header.WsmanError) ? (', ' + response.Header.WsmanError) : '')); process.exit(1); return; }
-            if (response.Body['ReturnValue'] != 0) { messagebox("Error, Change Boot Order returns " + response.Body.ReturnValueStr); process.exit(1); return; }
+            if (status != 200) { console.log("PUT CIM_BootConfigSetting_ChangeBootOrder, error #" + status + ((response.Header && response.Header.WsmanError) ? (', ' + response.Header.WsmanError) : '')); exit(1); return; }
+            if (response.Body['ReturnValue'] != 0) { messagebox("Error, change boot order returns " + response.Body.ReturnValueStr); exit(1); return; }
             amtstack.Put('AMT_BootSettingData', r, performAmtPlatformErase5, 0, 1);
         }, 0, 1);
-    } else { console.log("Error, status " + status + "."); process.exit(1); }
+    } else { console.log("Error, status " + status + "."); exit(1); }
 }
 
 function performAmtPlatformErase5(stack, name, response, status, args) {
     debug(0, "performAmtPlatformErase5(" + status + "): " + JSON.stringify(response, null, 2));
     if (status == 200) {
-        console.log("Setting Boot Configuration Role...");
+        console.log("Setting boot configuration role...");
         amtstack.SetBootConfigRole(1, performAmtPlatformErase6, 0, 1);
-    } else { console.log("Error, status " + status + "."); process.exit(1); }
+    } else { console.log("Error, status " + status + "."); exit(1); }
 }
 
 function performAmtPlatformErase6(stack, name, response, status, args) {
     debug(0, "performAmtPlatformErase6(" + status + "): " + JSON.stringify(response, null, 2));
     if (status == 200) {
-        if (response.Body['ReturnValueStr'] != 'SUCCESS') { console.log("Error, " + response.Body['ReturnValueStr'] + "."); process.exit(1); }
+        if (response.Body['ReturnValueStr'] != 'SUCCESS') { console.log("Error, " + response.Body['ReturnValueStr'] + "."); exit(1); }
         else {
             console.log('Performing power state change...');
             amtstack.RequestPowerStateChange(settings.powerAction, performAmtPlatformErase7); // 2 = Power Up, 10 = Reset
         }
-    } else { console.log("Error, status " + status + "."); process.exit(1); }
+    } else { console.log("Error, status " + status + "."); exit(1); }
 }
 
 function performAmtPlatformErase7(stack, name, response, status, args) {
     debug(0, "performAmtPlatformErase7(" + status + "): " + JSON.stringify(response, null, 2));
     if (status == 200) {
-        if (response.Body['ReturnValueStr'] != 'SUCCESS') { console.log("Error, " + response.Body['ReturnValueStr'] + "."); process.exit(1); } else { console.log('Done.'); }
-        process.exit(0);
-    } else { console.log("Error, status " + status + "."); process.exit(1); }
+        if (response.Body['ReturnValueStr'] != 'SUCCESS') { console.log("Error, " + response.Body['ReturnValueStr'] + "."); exit(1); } else { console.log('Done.'); }
+        exit(0);
+    } else { console.log("Error, status " + status + "."); exit(1); }
 }
 
 
@@ -2836,11 +2850,11 @@ function performAmtFeatureConfig1(stack, name, response, status, args) {
             console.log("Serial-over-LAN      : " + (sol ? "Enabled" : "Disabled"));
             console.log("IDE Redirection      : " + (ider ? "Enabled" : 'Disabled'));
             if (response['CIM_KVMRedirectionSAP'] != null) { console.log("Remote desktop (KVM) : " + (kvm ? "Enabled" : "Disabled")); }
-            process.exit(0);
+            exit(0);
         }
     } else {
         console.log("Error, status " + status + ".");
-        process.exit(1);
+        exit(1);
     }
 }
 
@@ -2937,10 +2951,10 @@ function powerActionResponse3(stack, name, response, status) {
 function performAmtPowerActionEx(stack, name, response, status) {
     if (status == 200) {
         console.log(response.Body.ReturnValueStr.split('_').join(' '));
-        process.exit(0);
+        exit(0);
     } else {
         console.log("Error, status " + status + ".");
-        process.exit(1);
+        exit(1);
     }
 }
 
@@ -2953,10 +2967,10 @@ function performAmtPowerActionEx2(stack, name, response, status) {
         } else {
             console.log("Current power state: " + DMTFPowerStates[powerNumber]);
         }
-        process.exit(0);
+        exit(0);
     } else {
         console.log("Error, status " + status + ".");
-        process.exit(1);
+        exit(1);
     }
 }
 
@@ -3065,7 +3079,7 @@ if (serviceName == null) {
     if (process.execPath.includes('MicroLMS')) { serviceName = 'MicroLMS'; }
     else if (process.execPath.includes('LMS')) { serviceName = 'LMS'; }
     else if (process.execPath.includes('MeshCommander')) { serviceName = 'MeshCommander'; }
-    if (serviceName == null) { for (var i in process.argv) { if ((process.argv[i].toLowerCase() == '-install') || (process.argv[i].toLowerCase() == '-uninstall')) { console.log('In order to install/uninstall, a service type must be specified.'); process.exit(); } } }
+    if (serviceName == null) { for (var i in process.argv) { if ((process.argv[i].toLowerCase() == '-install') || (process.argv[i].toLowerCase() == '-uninstall')) { console.log('In order to install/uninstall, a service type must be specified.'); exit(); } } }
     if (serviceName == null) { try { run(process.argv); } catch (e) { console.log("Run() error: " + e); } }
 } else {
     var serviceHost = require('service-host');
@@ -3082,11 +3096,11 @@ if (serviceName == null) {
         if (process.execPath.includes('MicroLMS')) { run([process.execPath, 'microlms']); } // Start MicroLMS
         else if (process.execPath.includes('LMS')) { run([process.execPath, 'microlms']); } // Start MicroLMS
         else if (process.execPath.includes('MeshCommander')) { run([process.execPath, 'meshcommander']); } // Start MeshCommander
-        else { console.log("Aborting Service Start, because unknown binary: " + process.execPath); process.exit(1); }
+        else { console.log("Aborting Service Start, because unknown binary: " + process.execPath); exit(1); }
     });
 
     // Called when the background service is stopping
-    meshcmdService.on('serviceStop', function onStop() { console.log("Stopping service"); process.exit(); }); // The console.log() is for debugging, will be ignored unless "console.setDestination()" is set.
+    meshcmdService.on('serviceStop', function onStop() { console.log("Stopping service"); exit(0); }); // The console.log() is for debugging, will be ignored unless "console.setDestination()" is set.
 
     // Called when the executable is not running as a service, run normally.
     meshcmdService.on('normalStart', function onNormalStart() { try { run(process.argv); } catch (e) { console.log("onNormalStart() error: " + e); } });
