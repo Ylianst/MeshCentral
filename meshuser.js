@@ -3373,14 +3373,23 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var nodeid = command.nodeids[i];
 
                         // Argument validation
-                        if (common.validateString(nodeid, 8, 128) == false) { continue; } // Check the nodeid
+                        if (common.validateString(nodeid, 8, 128) == false) { // Check the nodeid
+                            if (command.nodeids.length == 1) { try { ws.send(JSON.stringify({ action: 'wakedevices', responseid: command.responseid, result: 'Invalid nodeid' })); } catch (ex) { } }
+                            continue;
+                        }
                         else if (nodeid.indexOf('/') == -1) { nodeid = 'node/' + domain.id + '/' + nodeid; }
-                        else if ((nodeid.split('/').length != 3) || (nodeid.split('/')[1] != domain.id)) { continue; } // Invalid domain, operation only valid for current domain
+                        else if ((nodeid.split('/').length != 3) || (nodeid.split('/')[1] != domain.id)) { // Invalid domain, operation only valid for current domain
+                            if (command.nodeids.length == 1) { try { ws.send(JSON.stringify({ action: 'wakedevices', responseid: command.responseid, result: 'Invalid domain' })); } catch (ex) { } }
+                            continue;
+                        }
 
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                             // Check we have the rights to delete this device
-                            if ((rights & MESHRIGHT_WAKEDEVICE) == 0) return;
+                            if ((node == null) || (visible == false) || (rights & MESHRIGHT_WAKEDEVICE) == 0) {
+                                if (command.nodeids.length == 1) { try { ws.send(JSON.stringify({ action: 'wakedevices', responseid: command.responseid, result: 'Invalid nodeid' })); } catch (ex) { } }
+                                return;
+                            }
 
                             // If this device is connected on MQTT, send a wake action.
                             if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.publish(node._id, 'powerAction', 'wake'); }
@@ -3394,7 +3403,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     } else if (nodeif.netif2) {
                                         for (var j in nodeif.netif2) { for (var k in nodeif.netif2[j]) { if (nodeif.netif2[j][k].mac && (nodeif.netif2[j][k].mac != '00:00:00:00:00:00') && (macs.indexOf(nodeif.netif2[j][k].mac) == -1)) { macs.push(nodeif.netif2[j][k].mac); } } }
                                     }
-                                    if (macs.length == 0) return;
+                                    if (macs.length == 0) {
+                                        if (command.nodeids.length == 1) { try { ws.send(JSON.stringify({ action: 'wakedevices', responseid: command.responseid, result: 'No known MAC addresses for this device' })); } catch (ex) { } }
+                                        return;
+                                    }
 
                                     // Have the server send a wake-on-lan packet (Will not work in WAN-only)
                                     if (parent.parent.meshScanner != null) { parent.parent.meshScanner.wakeOnLan(macs, node.host); }
@@ -3405,22 +3417,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     for (j in user.links) { if ((j.startsWith('node/')) && (typeof user.links[j].rights == 'number') && ((user.links[j].rights & MESHRIGHT_WAKEDEVICE) != 0)) { targets.push(j); } }
 
                                     // Go thru all the connected agents and send wake-on-lan on all the ones in the target mesh list
+                                    var wakeCount = 0;
                                     for (j in parent.wsagents) {
                                         var agent = parent.wsagents[j];
                                         if ((agent.authenticated == 2) && ((targets.indexOf(agent.dbMeshKey) >= 0) || (targets.indexOf(agent.dbNodeKey) >= 0))) {
                                             //console.log('Asking agent ' + agent.dbNodeKey + ' to wake ' + macs.join(','));
-                                            try { agent.send(JSON.stringify({ action: 'wakeonlan', macs: macs })); } catch (ex) { }
+                                            try { agent.send(JSON.stringify({ action: 'wakeonlan', macs: macs })); wakeCount++; } catch (ex) { }
                                         }
                                     }
+                                    if (command.nodeids.length == 1) { try { ws.send(JSON.stringify({ action: 'wakedevices', responseid: command.responseid, result: 'Used ' + wakeCount + ' device(s) to send wake packets' })); } catch (ex) { } }
+                                } else {
+                                    if (command.nodeids.length == 1) { try { ws.send(JSON.stringify({ action: 'wakedevices', responseid: command.responseid, result: 'No network information for this device' })); } catch (ex) { } }
                                 }
                             });
                         });
 
-                        // Confirm we may be doing something (TODO)
-                        if (command.responseid != null) {
+                        if (command.nodeids.length > 1) {
+                            // If we are waking multiple devices, confirm we got the command.
                             try { ws.send(JSON.stringify({ action: 'wakedevices', responseid: command.responseid, result: 'ok' })); } catch (ex) { }
-                        } else {
-                            try { ws.send(JSON.stringify({ action: 'wakedevices' })); } catch (ex) { }
                         }
                     }
                     break;
