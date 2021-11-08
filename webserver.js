@@ -3456,13 +3456,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
-    // Download a desktop recording
+    // Download a session recording
     function handleGetRecordings(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
 
         // Check the query
-        if ((domain.sessionrecording == null) || (req.query.file == null) || (obj.common.IsFilenameValid(req.query.file) !== true)) { res.sendStatus(401); return; }
+        if ((domain.sessionrecording == null) || (req.query.file == null) || (obj.common.IsFilenameValid(req.query.file) !== true) || (req.query.file.endsWith('.mcrec') == false)) { res.sendStatus(401); return; }
 
         // Get the recording path
         var recordingsPath = null;
@@ -3480,6 +3480,66 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Send the recorded file
         setContentDispositionHeader(res, 'application/octet-stream', req.query.file, null, 'recording.mcrec');
         try { res.sendFile(obj.path.join(recordingsPath, req.query.file)); } catch (ex) { res.sendStatus(404); }
+    }
+
+    // Stream a session recording
+    function handleGetRecordingsWebSocket(ws, req) {
+        var domain = checkAgentIpAddress(ws, req);
+        if (domain == null) { parent.debug('web', 'Got recordings file transfer connection with bad domain or blocked IP address ' + req.clientIp + ', dropping.'); try { ws.close(); } catch (ex) { } return; }
+
+        // Check the query
+        if ((domain.sessionrecording == null) || (req.query.file == null) || (obj.common.IsFilenameValid(req.query.file) !== true) || (req.query.file.endsWith('.mcrec') == false)) { try { ws.close(); } catch (ex) { } return; }
+
+        // Get the recording path
+        var recordingsPath = null;
+        if (domain.sessionrecording.filepath) { recordingsPath = domain.sessionrecording.filepath; } else { recordingsPath = parent.recordpath; }
+        if (recordingsPath == null) { try { ws.close(); } catch (ex) { } return; }
+
+        // Get the user and check user rights
+        var authUserid = null;
+        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
+        if (authUserid == null) { try { ws.close(); } catch (ex) { } return; }
+        const user = obj.users[authUserid];
+        if (user == null) { try { ws.close(); } catch (ex) { } return; }
+        if ((user.siteadmin & 512) == 0) { try { ws.close(); } catch (ex) { } return; } // Check if we have right to get recordings
+        const filefullpath = obj.path.join(recordingsPath, req.query.file);
+
+        obj.fs.stat(filefullpath, function(err, stats) {
+            if (err) {
+                try { ws.close(); } catch (ex) { } // File does not exist
+            } else {
+                obj.fs.open(filefullpath, function (err, fd) {
+                    if (err == null) {
+                        // When data is received from the web socket
+                        ws.on('message', function (msg) {
+                            if (typeof msg != 'string') return;
+                            var command;
+                            try { command = JSON.parse(msg); } catch (e) { return; }
+                            if ((command == null) || (typeof command.action != 'string')) return;
+                            switch (command.action) {
+                                case 'get': {
+                                    const buffer = Buffer.alloc(8 + command.size);
+                                    //buffer.writeUInt32BE((command.ptr >> 32), 0);
+                                    buffer.writeUInt32BE((command.ptr & 0xFFFFFFFF), 4);
+                                    obj.fs.read(fd, buffer, 8, command.size, command.ptr, function (err, bytesRead, buffer) { if (bytesRead > (buffer.length - 8)) { buffer = buffer.slice(0, bytesRead + 8); } ws.send(buffer); });
+                                    break;
+                                }
+                            }
+                        });
+
+                        // If error, do nothing
+                        ws.on('error', function (err) { try { ws.close(); } catch (ex) { } obj.fs.close(fd, function (err) { }); });
+
+                        // If the web socket is closed
+                        ws.on('close', function (req) { try { ws.close(); } catch (ex) { } obj.fs.close(fd, function (err) { }); });
+
+                        ws.send(JSON.stringify({ "action": "info", "name": req.query.file, "size": stats.size }));
+                    } else {
+                        try { ws.close(); } catch (ex) { }
+                    }
+                });
+            }
+        });
     }
 
     // Serve the player page
@@ -5738,6 +5798,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
             obj.app.get(url + 'welcome.png', handleWelcomeImageRequest);
             obj.app.get(url + 'recordings.ashx', handleGetRecordings);
+            obj.app.ws(url + 'recordings.ashx', handleGetRecordingsWebSocket);
             obj.app.get(url + 'player.htm', handlePlayerRequest);
             obj.app.get(url + 'player', handlePlayerRequest);
             obj.app.get(url + 'sharing', handleSharingRequest);
