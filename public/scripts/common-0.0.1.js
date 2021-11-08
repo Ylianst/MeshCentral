@@ -115,7 +115,7 @@ function isSafeString(str) { return ((typeof str == 'string') && (str.indexOf('<
 function isSafeString2(str) { return ((typeof str == 'string') && (str.indexOf('<') == -1) && (str.indexOf('>') == -1) && (str.indexOf('&') == -1) && (str.indexOf('"') == -1) && (str.indexOf('\'') == -1) && (str.indexOf('+') == -1) && (str.indexOf('(') == -1) && (str.indexOf(')') == -1) && (str.indexOf('#') == -1) && (str.indexOf('%') == -1)) };
 
 // Parse URL arguments, only keep safe values
-function parseUriArgs() {
+function parseUriArgs(decodeUrl) {
     var href = window.document.location.href;
     if (href.endsWith('#')) { href = href.substring(0, href.length - 1); }
     var name, r = {}, parsedUri = href.split(/[\?&|]/);
@@ -124,6 +124,7 @@ function parseUriArgs() {
         var arg = parsedUri[j], i = arg.indexOf('=');
         name = arg.substring(0, i);
         r[name] = arg.substring(i + 1);
+        if (decodeUrl) { r[name] = decodeURIComponent(arg.substring(i + 1)); }
         if (!isSafeString(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
     }
     return r;

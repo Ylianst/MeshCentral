@@ -29,7 +29,7 @@
                     <input id="ConvertAsWebM" style="display:none" type=button value="Convert to WebM" onclick="saveAsWebMfile()">&nbsp;
                 </div>
                 <div>
-                    <input id="OpenFileButton" type=button value="Open File..." onclick="openfile()">
+                    <input id="OpenFileButton" type=button value="Open File..." onclick="openfile()" style="display:none">
                     <span id="deskstatus"></span>
                 </div>
             </div>
@@ -113,6 +113,13 @@
         var videoWriterCurrentFrame = null;
         var videoFrameDuration = 100;
         var browser = null;
+        var domainUrl = '{{{domainurl}}}';
+        var urlargs;
+
+        // Streaming values
+        var ws = null;
+        var streamingBlockSize = 102400; // 100k block
+        var streamingBlockCache = {};
 
         function start() {
             // Detect what browser is in use
@@ -129,6 +136,7 @@
                 }
             })(window.navigator.userAgent.toLowerCase());
 
+            urlargs = parseUriArgs(true);
             window.onresize = deskAdjust;
             document.ondrop = ondrop;
             document.ondragover = ondragover;
@@ -139,19 +147,127 @@
 
             // Make the dialog box movable
             dialogBoxDrag();
+
+            // Check if we need to stream a session
+            if (urlargs.stream != null) {
+                QV('metadatadiv', true);
+                QH('metadatadiv', "Connecting to server...");
+                ws = new WebSocket(window.location.protocol.replace('http', 'ws') + '//' + window.location.host + domainUrl + 'recordings.ashx?file=' + urlargs.stream + (urlargs.key ? ('&key=' + urlargs.key) : ''));
+                ws.binaryType = 'arraybuffer';
+                ws.onopen = function (e) { console.log('Session Streaming - Connected'); }
+                ws.onmessage = function (msg) {
+                    if (typeof msg.data != 'string') {
+                        var uint8View = new Uint8Array(msg.data);
+                        var blocknum = (((uint8View[4] << 24) + (uint8View[5] << 16) + (uint8View[6] << 8) + uint8View[7]) / streamingBlockSize);
+                        //console.log('Session Streaming - Got block: ' + blocknum);
+                        streamingBlockCache[blocknum] = msg.data;
+                        var pendingFetchStreamingData2 = [], pendingFetchStreamingData3 = [];
+                        for (var i in pendingFetchStreamingData) {
+                            var j = pendingFetchStreamingData[i].missingBlocks.indexOf(blocknum);
+                            if (j >= 0) { pendingFetchStreamingData[i].missingBlocks.splice(i, 1); }
+                            if (pendingFetchStreamingData[i].missingBlocks.length == 0) {
+                                pendingFetchStreamingData3.push(pendingFetchStreamingData[i]);
+                            } else {
+                                pendingFetchStreamingData2.push(pendingFetchStreamingData[i]);
+                            }
+                        }
+                        pendingFetchStreamingData = pendingFetchStreamingData2;
+                        for (var i in pendingFetchStreamingData3) {
+                            fetchStreamingData(pendingFetchStreamingData3[i].fr, pendingFetchStreamingData3[i].start, pendingFetchStreamingData3[i].end);
+                        }
+                        return;
+                    } else {
+                        var command = null;
+                        try { command = JSON.parse(msg.data); } catch (ex) { console.log(ex); return; }
+                        if ((command == null) || (typeof command.action != 'string')) return;
+                        switch (command.action) {
+                            case 'info': {
+                                console.log('Session Streaming - Session file size: ' + command.size);
+                                if ((typeof command.name != 'string') || (typeof command.size != 'number')) break;
+                                recFile = { name: command.name, size: command.size, streaming: true };
+                                readLastBlock(function (type, flags, time, extras) {
+                                    if (type == 3) {
+                                        // File is ok
+                                        recFileEndTime = time;
+                                        recFileExtras = extras;
+                                        readNextBlock(processFirstBlock);
+                                    } else {
+                                        // This is not a good file
+                                        recFileEndTime = 0;
+                                    }
+                                });
+                                break;
+                            }
+                        }
+
+                    }
+                }
+                ws.onclose = function (e) { console.log('Session Streaming - Disconnected'); restart(); }
+            } else {
+                QV('OpenFileButton', true);
+            }
+        }
+
+        // Pending fetch requests
+        var pendingFetchStreamingData = [];
+
+        // Get a section of the recorded file
+        function fetchStreamingData(fr, start, end) {
+            // Start by looking at what blocks are required
+            var firstBlock = Math.floor(start / streamingBlockSize);
+            var lastBlock = Math.floor(end / streamingBlockSize);
+            var missingBlocks = [];
+            for (var i = firstBlock; i <= lastBlock; i++) {
+                if ((streamingBlockCache[i] == null) || (streamingBlockCache[i] === 1)) { missingBlocks.push(i); fetchStreamingBlock(i); }
+                fetchStreamingBlock(i + 1); // Pre-fetch block
+                fetchStreamingBlock(i + 2); // Pre-fetch block
+            }
+            if (missingBlocks.length == 0) {
+                // We have all the blocks we need, assemble the data now
+                var outputptr = 0;
+                var output = new ArrayBuffer(end - start);
+                var outputBytes = new Uint8Array(output);
+                for (var i = firstBlock; i <= lastBlock; i++) {
+                    var block = streamingBlockCache[i]; // Get a block with data we need
+                    var blockstart = (i * streamingBlockSize); // Compute the block starting data pointer
+                    var blockend = blockstart + (block.byteLength - 8); // Compute the block ending data pointer
+                    var r1 = Math.max(start, blockstart); // Compute where we need to start data copy
+                    var r2 = Math.min(end, blockend); // Compute where we need to end data copy
+                    var p1 = r1 - blockstart; // Compute where in the block to start data copy
+                    var p2 = r2 - r1; // Computer how many byte to copy from the block
+                    var subblock = block.slice(8 + p1, 8 + p1 + p2); // Get the sub-block of data we need
+                    outputBytes.set(new Uint8Array(subblock), outputptr); // Copy the sub-block into the main block
+                    outputptr += p2; // Move the pointer forward
+                }
+                fr.onload({ target: { result: ArrayBufferToString(output) } } ); // Event the block of data
+            } else {
+                pendingFetchStreamingData.push({ fr: fr, start: start, end: end, missingBlocks: missingBlocks });
+            }
+        }
+
+        // Request a block of data from the server
+        function fetchStreamingBlock(n) {
+            if (streamingBlockCache[n] != null) return;
+            streamingBlockCache[n] = 1; // Mark the block as being requested
+            if ((n * streamingBlockSize) >= recFile.size) return;
+            var len = streamingBlockSize;
+            if (((n + 1) * streamingBlockSize) >= recFile.size) { len = (recFile.size - (n * streamingBlockSize)); }
+            ws.send('{"action":"get","ptr":' + (n * streamingBlockSize) + ',"size":' + len + '}');
         }
 
         function readNextBlock(func) {
             if ((recFilePtr + 16) > recFile.size) { QS('progressbar').width = '100%'; func(-1); } else {
                 var fr = new FileReader();
-                fr.onload = function () {
-                    var type = ReadShort(this.result, 0);
-                    var flags = ReadShort(this.result, 2);
-                    var size = ReadInt(this.result, 4);
-                    var time = (ReadInt(this.result, 8) << 32) + ReadInt(this.result, 12);
+                fr.onload = function (r) {
+                    var result = r.target.result;
+                    var type = ReadShort(result, 0);
+                    var flags = ReadShort(result, 2);
+                    var size = ReadInt(result, 4);
+                    var time = (ReadInt(result, 8) << 32) + ReadInt(result, 12);
                     if ((recFilePtr + 16 + size) > recFile.size) { QS('progressbar').width = '100%'; func(-1); } else {
                         var fr2 = new FileReader();
-                        fr2.onload = function () {
+                        fr2.onload = function (r) {
+                            var result = r.target.result;
                             recFilePtr += (16 + size);
                             if (recFileEndTime == 0) {
                                 // File pointer progress bar
@@ -160,59 +276,89 @@
                                 // Time progress bar
                                 QS('progressbar').width = Math.floor(((recFileLastTime - recFileStartTime) / (recFileEndTime - recFileStartTime)) * 100) + '%';
                             }
-                            func(type, flags, time, this.result);
+                            func(type, flags, time, result);
                         };
-                        fr2.readAsBinaryString(recFile.slice(recFilePtr + 16, recFilePtr + 16 + size));
+                        if (ws == null) {
+                            fr2.readAsBinaryString(recFile.slice(recFilePtr + 16, recFilePtr + 16 + size));
+                        } else {
+                            fetchStreamingData(fr2, recFilePtr + 16, recFilePtr + 16 + size);
+                        }
                     }
                 };
-                fr.readAsBinaryString(recFile.slice(recFilePtr, recFilePtr + 16));
+                if (ws == null) {
+                    fr.readAsBinaryString(recFile.slice(recFilePtr, recFilePtr + 16));
+                } else {
+                    fetchStreamingData(fr, recFilePtr, recFilePtr + 16);
+                }
             }
         }
 
         function readBlockAt(ptr, func) {
             var fr = new FileReader();
-            fr.onload = function () {
-                var type = ReadShort(this.result, 0);
-                var flags = ReadShort(this.result, 2);
-                var size = ReadInt(this.result, 4);
-                var time = (ReadInt(this.result, 8) << 32) + ReadInt(this.result, 12);
+            fr.onload = function (r) {
+                var result = r.target.result;
+                var type = ReadShort(result, 0);
+                var flags = ReadShort(result, 2);
+                var size = ReadInt(result, 4);
+                var time = (ReadInt(result, 8) << 32) + ReadInt(result, 12);
                 if ((ptr + 16 + size) > recFile.size) { func(-1); } else {
                     var fr2 = new FileReader();
-                    fr2.onload = function () { func(type, flags, time, this.result); };
-                    fr2.readAsBinaryString(recFile.slice(ptr + 16, ptr + 16 + size));
+                    fr2.onload = function (r) {
+                        var result = r.target.result;
+                        func(type, flags, time, result);
+                    };
+                    if (ws == null) {
+                        fr2.readAsBinaryString(recFile.slice(ptr + 16, ptr + 16 + size));
+                    } else {
+                        fetchStreamingData(fr2, ptr + 16, ptr + 16 + size);
+                    }
                 }
             };
-            fr.readAsBinaryString(recFile.slice(ptr, ptr + 16));
+            if (ws == null) {
+                fr.readAsBinaryString(recFile.slice(ptr, ptr + 16));
+            } else {
+                fetchStreamingData(fr, ptr, ptr + 16);
+            }
         }
 
         function readLastBlock(func) {
             if (recFile.size < 32) { func(-1); } else {
                 var fr = new FileReader();
-                fr.onload = function () {
-                    var type = ReadShort(this.result, 0);
-                    var flags = ReadShort(this.result, 2);
-                    var size = ReadInt(this.result, 4);
-                    var time = (ReadInt(this.result, 8) << 32) + ReadInt(this.result, 12);
-                    var magic = this.result.substring(16, 32);
+                fr.onload = function (r) {
+                    var result = r.target.result;
+                    var type = ReadShort(result, 0);
+                    var flags = ReadShort(result, 2);
+                    var size = ReadInt(result, 4);
+                    var time = (ReadInt(result, 8) << 32) + ReadInt(result, 12);
+                    var magic = result.substring(16, 32);
                     if ((type == 3) && (size == 16) && (magic == 'MeshCentralMCNDX')) {
                         // Extra metadata present, lets read it.
                         var fr2 = new FileReader();
-                        fr2.onload = function () {
-                            var xtype = ReadShort(this.result, 0);
-                            var xflags = ReadShort(this.result, 2);
-                            var xsize = ReadInt(this.result, 4);
-                            var xtime = (ReadInt(this.result, 8) << 32) + ReadInt(this.result, 12);
-                            var extras = JSON.parse(this.result.substring(16));
+                        fr2.onload = function (r) {
+                            var result = r.target.result;
+                            var xtype = ReadShort(result, 0);
+                            var xflags = ReadShort(result, 2);
+                            var xsize = ReadInt(result, 4);
+                            var xtime = (ReadInt(result, 8) << 32) + ReadInt(result, 12);
+                            var extras = JSON.parse(result.substring(16));
                             func(type, flags, xtime, extras); // Include extra metadata
                         }
-                        fr2.readAsBinaryString(recFile.slice(time, recFile.size - 32));
+                        if (ws == null) {
+                            fr2.readAsBinaryString(recFile.slice(time, recFile.size - 32));
+                        } else {
+                            fetchStreamingData(fr2, time, recFile.size - 32);
+                        }
                     } else if ((type == 3) && (size == 16) && (magic == 'MeshCentralMCREC')) {
                         func(type, flags, time); // No extra metadata
                     } else {
                         func(-1); // Fail
                     }
                 };
-                fr.readAsBinaryString(recFile.slice(recFile.size - 32, recFile.size));
+                if (ws == null) {
+                    fr.readAsBinaryString(recFile.slice(recFile.size - 32, recFile.size));
+                } else {
+                    fetchStreamingData(fr, recFile.size - 32, recFile.size);
+                }
             }
         }
 
@@ -451,7 +597,11 @@
             QS('progressbar').width = '0px';
             QH('timespan', '00:00:00');
             QV('metadatadiv', true);
-            QH('metadatadiv', '<span style=\"font-family:Arial,Helvetica Neue,Helvetica,sans-serif;font-size:28px\">MeshCentral Session Player</span><br /><br /><span style=color:gray>' + "Drag & drop a .mcrec file or click \"Open File...\"" + '</span>');
+            if (urlargs.stream == null) {
+                QH('metadatadiv', '<span style=\"font-family:Arial,Helvetica Neue,Helvetica,sans-serif;font-size:28px\">MeshCentral Session Player</span><br /><br /><span style=color:gray>' + "Drag & drop a .mcrec file or click \"Open File...\"" + '</span>');
+            } else {
+                QH('metadatadiv', '');
+            }
             QV('DeskParent', true);
             QV('TermParent', false);
         }
@@ -843,6 +993,50 @@
                 document.onmouseup = null;
                 document.onmousemove = null;
             }
+        }
+
+        function ArrayBufferToString(buffer) {
+            return BinaryToString(String.fromCharCode.apply(null, Array.prototype.slice.apply(new Uint8Array(buffer))));
+        }
+
+        function StringToArrayBuffer(string) {
+            return StringToUint8Array(string).buffer;
+        }
+
+        function BinaryToString(binary) {
+            var error;
+            try {
+                return decodeURIComponent(escape(binary));
+            } catch (_error) {
+                error = _error;
+                if (error instanceof URIError) { return binary; } else { throw error; }
+            }
+        }
+
+        function StringToBinary(string) {
+            var chars, code, i, isUCS2, len, _i;
+            len = string.length;
+            chars = [];
+            isUCS2 = false;
+            for (i = _i = 0; 0 <= len ? _i < len : _i > len; i = 0 <= len ? ++_i : --_i) {
+                code = String.prototype.charCodeAt.call(string, i);
+                if (code > 255) { isUCS2 = true; chars = null; break; } else { chars.push(code); }
+            }
+            if (isUCS2 === true) {
+                return unescape(encodeURIComponent(string));
+            } else {
+                return String.fromCharCode.apply(null, Array.prototype.slice.apply(chars));
+            }
+        }
+
+        function StringToUint8Array(string) {
+            var binary, binLen, buffer, chars, i, _i;
+            binary = StringToBinary(string);
+            binLen = binary.length;
+            buffer = new ArrayBuffer(binLen);
+            chars = new Uint8Array(buffer);
+            for (i = _i = 0; 0 <= binLen ? _i < binLen : _i > binLen; i = 0 <= binLen ? ++_i : --_i) { chars[i] = String.prototype.charCodeAt.call(binary, i); }
+            return chars;
         }
 
         start();
