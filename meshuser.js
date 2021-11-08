@@ -548,6 +548,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             if (typeof domain.terminal == 'object') { // Settings used for remote terminal feature
                 if ((typeof domain.terminal.linuxshell == 'string') && (domain.terminal.linuxshell != 'any')) { serverinfo.linuxshell = domain.terminal.linuxshell; }
             }
+            if (Array.isArray(domain.preconfiguredremoteinput)) { serverinfo.preConfiguredRemoteInput = domain.preconfiguredremoteinput; }
 
             // Send server information
             try { ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: serverinfo })); } catch (ex) { }
