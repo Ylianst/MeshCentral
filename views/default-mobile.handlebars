@@ -2055,6 +2055,7 @@
             updateNaggleFlags |= flags;
             if (updateNaggleTimer == null) {
                 updateNaggleTimer = setTimeout(function () {
+                    if (updateNaggleFlags & 1) { onSearchInputChanged(); }
                     if (updateNaggleFlags & 4) { updateDevices(); updateDeviceDetails(); }
                     if (updateNaggleFlags & 128) { updateMeshes(); }
                     updateNaggleTimer = null;
@@ -2674,7 +2675,7 @@
         function onRealNameCheckBox() {
             showRealNames = Q('RealNameCheckBox').checked;
             putstore('showRealNames', showRealNames ? 1 : 0);
-            mainUpdate(4);
+            mainUpdate(5);
         }
 
         function onOnlineCheckBox(e) {
@@ -2763,15 +2764,13 @@
                 try {
                     var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
                     for (var d in nodes) {
-                        nodes[d].v = (rx.test(nodes[d].name.toLowerCase())) || (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase()));
-                        if ((nodes[d].v == false) && nodes[d].tags) {
-                            for (var s in nodes[d].tags) {
-                                if (rx.test(nodes[d].tags[s].toLowerCase())) {
-                                    nodes[d].v = true;
-                                    break;
-                                } else {
-                                    nodes[d].v = false;
-                                }
+                        if (features2 & 0x00008000) {
+                            nodes[d].v = (rx.test(nodes[d].name.toLowerCase())) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()));
+                        } else {
+                            if (showRealNames) {
+                                nodes[d].v = (nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase());
+                            } else {
+                                nodes[d].v = rx.test(nodes[d].name.toLowerCase());
                             }
                         }
                     }
