@@ -1253,7 +1253,7 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the Server Stats collection
             obj.SetServerStats = function (data, func) { sqlDbQuery('INSERT INTO serverstats VALUES ($1, $2, $3) ON CONFLICT (time) DO UPDATE SET expire = $2, doc = $3', [data.time, data.expire, data], func); };
-            obj.GetServerStats = function (hours, func) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); sqlDbQuery('SELECT doc FROM serverstats WHERE time < $1', [t], func); }; // TODO: Expire old entries
+            obj.GetServerStats = function (hours, func) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); sqlDbQuery('SELECT doc FROM serverstats WHERE time > $1', [t], func); }; // TODO: Expire old entries
 
             // Read a configuration file from the database
             obj.getConfigFile = function (path, func) { obj.Get('cfile/' + path, func); }
@@ -1422,7 +1422,7 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the Server Stats collection
             obj.SetServerStats = function (data, func) { sqlDbQuery('REPLACE INTO serverstats VALUE (?, ?, ?)', [data.time, data.expire, JSON.stringify(data)], func); };
-            obj.GetServerStats = function (hours, func) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); sqlDbQuery('SELECT doc FROM serverstats WHERE time < ?', [t], func); }; // TODO: Expire old entries
+            obj.GetServerStats = function (hours, func) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); sqlDbQuery('SELECT doc FROM serverstats WHERE time > ?', [t], func); }; // TODO: Expire old entries
 
             // Read a configuration file from the database
             obj.getConfigFile = function (path, func) { obj.Get('cfile/' + path, func); }
