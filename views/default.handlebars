@@ -14989,7 +14989,7 @@
             if (rec.present == 1) {
                 icon = 'm1';
                 actions = '<div style=cursor:pointer;float:right><a onclick=downloadFile("recordings.ashx?file=' + encodeURIComponentEx(rec.filename) + '")><img src=images/link4.png height=10 width=10 title="Download Recording"></a>&nbsp;</div>';
-                actions += '<div style=cursor:pointer;float:right><a href="player.htm?stream=' + encodeURIComponentEx(rec.filename) + '")><img src=images/link7.png height=10 width=10 title="Play Recording"></a>&nbsp;</div>';
+                actions += '<div style=cursor:pointer;float:right><a href="player.htm?stream=' + encodeURIComponentEx(rec.filename) + '") rel=\"noreferrer noopener\" target=\"mcplay-' + encodeURIComponentEx(rec.filename) + '\"><img src=images/link7.png height=10 width=10 title="Play Recording"></a>&nbsp;</div>';
             }
             var x = '<tr tabindex=0 onmouseover=userMouseHover2(this,1) onmouseout=userMouseHover2(this,0) onkeypress="if (event.key==\'Enter\') showRecordingDialog(event,\'' + i + '\')"><td style=cursor:pointer>';
             x += '<div class=bar style=width:100%>';

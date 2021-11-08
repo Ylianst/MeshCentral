@@ -30,7 +30,7 @@
                 </div>
                 <div>
                     <input id="OpenFileButton" type=button value="Open File..." onclick="openfile()" style="display:none">
-                    <span id="deskstatus"></span>
+                    <div id="deskstatus" style="line-height:22px;overflow:hidden;max-height:22px"></div>
                 </div>
             </div>
             <div id=deskarea3x style="max-height:calc(100vh - 58px);height:calc(100vh - 58px);" onclick="togglePause()">
@@ -202,7 +202,13 @@
 
                     }
                 }
-                ws.onclose = function (e) { console.log('Session Streaming - Disconnected'); restart(); }
+                ws.onclose = function (e) {
+                    console.log('Session Streaming - Disconnected');
+                    ws = null;
+                    urlargs.stream = null;
+                    QV('OpenFileButton', true);
+                    cleanup();
+                }
             } else {
                 QV('OpenFileButton', true);
             }
