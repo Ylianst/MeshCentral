@@ -141,6 +141,7 @@
       "minify": true,
       "_guestDeviceSharing" : false,
       "_AutoRemoveInactiveDevices": 37,
+      "_DeviceSearchBarServerAndClientName": false,
       "_loginKey": [ "abc", "123" ],
       "_newAccounts": true,
       "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
@@ -180,6 +181,20 @@
           }
         ]
       },
+      "PreconfiguredRemoteInput": [
+        {
+          "name": "CompagnyUrl",
+          "value": "https://help.mycompany.com/"
+        },
+        {
+          "name": "Any Text",
+          "value": "Any text\r"
+        },
+        {
+          "name": "Welcome",
+          "value": "Default welcome text"
+        }
+     ],
       "myServer": {
         "Backup": false,
         "Restore": false,

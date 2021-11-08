@@ -111,6 +111,8 @@
     <div id="deskKeyShortcutContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmdeskshortcutaction(1,event)">Customize...</div>
     </div>
+    <div id="deskPreConfigShortcutContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+    </div>
 
     <!--
     <div id="pluginTabContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
@@ -2257,6 +2259,12 @@
                             QV('serverWarningsDiv', true);
                             addNotification({ text: format("Certificate expires in {0} day(s)", days) });
                         }
+                    }
+                    if (serverinfo.preConfiguredRemoteInput) {
+                        var x = '';
+                        for (var i in serverinfo.preConfiguredRemoteInput) { x += '<div class="cmtext" onclick="cmdeskpreconfigtypeaction(' + i + ',event)">' + EscapeHtml(serverinfo.preConfiguredRemoteInput[i].name) + '</div>'; }
+                        QH('deskPreConfigShortcutContextMenu', x);
+                        Q('DeskType').setAttribute('cmenu', 'deskPreConfigShortcutContextMenu');
                     }
                     break;
                 }
@@ -5880,6 +5888,11 @@
             deskCustomizeKeys();
         }
 
+        function cmdeskpreconfigtypeaction(action) {
+            if (xxdialogMode) return;
+            showDeskTypeEx(serverinfo.preConfiguredRemoteInput[action].value); // Type a pre-configured input string
+        }
+
         function p13deletefileCm(b, file) {
             files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: [ file.n ], rec: false });
             p13folderup(999);
@@ -5911,6 +5924,7 @@
             QV('filesContextMenu', false);
             QV('deskPlayerContextMenu', false);
             QV('deskKeyShortcutContextMenu', false);
+            QV('deskPreConfigShortcutContextMenu', false);
             QV('expandAllContextMenu', false);
             //QV('pluginTabContextMenu', false);
             contextelement = null;
@@ -8779,8 +8793,9 @@
         var AmtDeskTypeContent = null;
         var DeskTypeTranslate = { 39: 222, 42: 106, 43: 107, 44: 188, 45: 189, 46: 190, 47: 191, 59: 186, 61: 187, 91: 219, 92: 220, 93: 221, 96: 192, 191: 111 };
         var DeskTypeShiftTranslate = { 33: 49, 34: 222, 35: 51, 36: 52, 37: 53, 38: 55, 40: 57, 41: 48, 58: 186, 60: 188, 62: 190, 63: 191, 64: 50, 94: 54, 95: 189, 106: 56, 107: 187, 123: 219, 124: 220, 125: 221, 126: 192 };
-        function showDeskTypeEx() {
-            var txt = Q('d2typeText').value, ltxt = Q('d2typeText').value.toUpperCase(), x = [], shift = false;
+        function showDeskTypeEx(text) {
+            var txt, ltxt, x = [], shift = false;
+            if (typeof text == 'string') { txt = text, ltxt = text.toUpperCase() } else { txt = Q('d2typeText').value, ltxt = Q('d2typeText').value.toUpperCase(); }
             if (desktop.contype == 2) {
                 // Intel AMT
                 for (var i in txt) { var a = txt.charCodeAt(i); x.push([a, 1], [a, 0]); }
