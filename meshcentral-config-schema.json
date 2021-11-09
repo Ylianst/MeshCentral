@@ -319,7 +319,7 @@
                   "description": "Name of the text string.",
                   "type": "string"
                 },
-                "protocol": {
+                "value": {
                   "description": "Text string that will be remotely typed when selected.",
                   "type": "string"
                 }
