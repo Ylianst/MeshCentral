@@ -51,6 +51,9 @@
     "ws": "^5.2.3",
     "yauzl": "^2.10.0"
   },
+  "engines": {
+    "node": ">=10.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Ylianst/MeshCentral.git"
