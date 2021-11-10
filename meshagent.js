@@ -1670,16 +1670,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     break;
                 }
                 case 'guestShare': {
-                    if ((domain.agentselfguestsharing !== true) || (typeof command.flags != 'number')) return; // Check if agent self-sharing is allowed, this is off by default.
-                    if (command.flags == 0) {
-                        // Stop any current self-share
+                    if ((command.flags == null) || (command.flags == 0)) {
+                        // Stop any current self-share, this is allowed even if self guest sharing is not allows so to clear any old shares.
                         removeGuestSharing(function () {
                             delete obj.guestSharing;
                             obj.send(JSON.stringify({ action: 'guestShare', flags: command.flags, url: null, viewOnly: false }));
                         });
                     } else {
                         // Add a new self-share, this will replace any share for this device
-                        if ((command.flags & 1) == 0) { command.viewOnly = false; } // Only allow "view only" if desktop is shared.
+                        if ((domain.agentselfguestsharing !== true) || (typeof command.flags != 'number')) return; // Check if agent self-sharing is allowed, this is off by default.
+                        if ((command.flags & 2) == 0) { command.viewOnly = false; } // Only allow "view only" if desktop is shared.
                         addGuestSharing(command.flags, command.viewOnly, function (share) {
                             obj.guestSharing = true;
                             obj.send(JSON.stringify({ action: 'guestShare', url: share.url, flags: share.flags, viewOnly: share.viewOnly }));

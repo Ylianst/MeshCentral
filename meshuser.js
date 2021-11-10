@@ -402,6 +402,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if (event == 'resubscribe') { user.subscriptions = parent.subscribe(user._id, ws); }
                         else if (event == 'updatefiles') { updateUserFiles(user, ws, domain); }
                         else {
+                            // If updating guest device shares, if we are updating a user that is not creator of the share, remove the URL.
+                            if (event.action == 'deviceShareUpdate') {
+                                event = common.Clone(event);
+                                for (var i in event.deviceShares) { if (event.deviceShares[i].userid != user._id) { delete event.deviceShares[i].url; } }
+                            }
+
                             // Because of the device group "Show Self Events Only", we need to do more checks here.
                             if (id.startsWith('mesh/')) {
                                 // Check if we have rights to get this message. If we have limited events on this mesh, don't send the event to the user.
@@ -430,7 +436,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 ws.send(JSON.stringify({ action: 'event', event: event }));
                             }
                         }
-                    } catch (e) { }
+                    } catch (ex) { console.log(ex); }
                 }
             };
 
@@ -4613,6 +4619,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             } else {
                                 // This share is ok, remove extra data we don't need to send.
                                 delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type;
+                                if (doc.userid != user._id) { delete doc.url; } // If this is not the user who created this link, don't give the link.
                                 okDocs.push(doc);
                             }
                         }
