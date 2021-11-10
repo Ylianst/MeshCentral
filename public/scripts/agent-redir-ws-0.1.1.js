@@ -76,7 +76,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     obj.xxOnControlCommand = function (msg) {
         var controlMsg;
         try { controlMsg = JSON.parse(msg); } catch (e) { return; }
-        if (controlMsg.ctrlChannel != '102938') { obj.m.ProcessData(msg); return; }
+        if (controlMsg.ctrlChannel != '102938') { if (obj.m.ProcessData) { obj.m.ProcessData(msg); } else { console.log(msg); } return; }
         if ((typeof args != 'undefined') && args.redirtrace) { console.log('RedirRecv', controlMsg); }
         if (controlMsg.type == 'console') {
             obj.setConsoleMessage(controlMsg.msg, controlMsg.msgid, controlMsg.msgargs, controlMsg.timeout);

@@ -1720,13 +1720,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (serverName.split('.') == 1) { url = '/' + xdomain + page + '?c=' + inviteCookie; }
 
         // Create a device sharing database entry
-        var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', nodeid: obj.dbNodeKey, p: flags, domain: domain.id, publicid: publicid, guestName: '*Agent', consent: true, url: url };
+        var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', nodeid: obj.dbNodeKey, p: flags, domain: domain.id, publicid: publicid, guestName: 'Agent', consent: 0x7F, url: url };
         if (viewOnly === true) { shareEntry.viewOnly = true; }
         parent.db.Set(shareEntry);
 
         // Send out an event that we added a device share
         var targets = parent.CreateNodeDispatchTargets(obj.dbMeshKey, obj.dbNodeKey);
-        var event = { etype: 'node', nodeid: obj.dbNodeKey, action: 'addedDeviceShare', msg: 'Added Device Share', msgid: 101, msgArgs: ['*Agent', 'DATETIME:' + null, 'DATETIME:' + null], domain: domain.id };
+        var event = { etype: 'node', nodeid: obj.dbNodeKey, action: 'addedDeviceShare', msg: 'Added device share with unlimited time', msgid: 131, msgArgs: ['Agent'], domain: domain.id };
         parent.parent.DispatchEvent(targets, obj, event);
 
         // Send device share update
@@ -1773,7 +1773,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (removedExact != null) {
                 // Send out an event that we removed a device share
                 var targets = parent.CreateNodeDispatchTargets(obj.dbMeshKey, obj.dbNodeKey, []);
-                var event = { etype: 'node', nodeid: obj.dbNodeKey, action: 'removedDeviceShare', msg: 'Removed Device Share', msgid: 102, msgArgs: ['*Agent'], domain: domain.id, publicid: publicid };
+                var event = { etype: 'node', nodeid: obj.dbNodeKey, action: 'removedDeviceShare', msg: 'Removed Device Share', msgid: 102, msgArgs: ['Agent'], domain: domain.id, publicid: publicid };
                 parent.parent.DispatchEvent(targets, obj, event);
             }
 

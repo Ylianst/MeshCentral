@@ -3584,6 +3584,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 const doc = docs[0];
                 // Generate an old style cookie from the information in the database
                 var cookie = { a: 5, p: doc.p, uid: doc.userid, gn: doc.guestName, nid: doc.nodeid, cf: doc.consent, pid: doc.publicid };
+                if ((cookie.userid == null) && (cookie.pid.startsWith('AS:node/'))) { cookie.nouser = 1; }
                 if ((doc.startTime != null) && (doc.expireTime != null)) { cookie.start = doc.startTime; cookie.expire = doc.expireTime; }
                 if (doc.viewOnly === true) { cookie.vo = 1; }
                 handleSharingRequestEx(req, res, domain, cookie);
@@ -3618,7 +3619,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // Looks good, let's create the outbound session cookies.
                 // Consent flags are 1 = Notify, 8 = Prompt, 64 = Privacy Bar.
-                const authCookie = obj.parent.encodeCookie({ userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: c.p, gn: c.gn, cf: c.cf, r: 8, expire: c.expire, pid: c.pid, vo: c.vo }, obj.parent.loginCookieEncryptionKey);
+                const authCookieData = { userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: c.p, gn: c.gn, cf: c.cf, r: 8, expire: c.expire, pid: c.pid, vo: c.vo };
+                if ((authCookieData.userid == null) && (authCookieData.pid.startsWith('AS:node/'))) { authCookieData.nouser = 1; }
+                const authCookie = obj.parent.encodeCookie(authCookieData, obj.parent.loginCookieEncryptionKey);
 
                 // Server features
                 var features2 = 0;
@@ -3632,7 +3635,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             });
         });
     }
-
 
     // Handle domain redirection
     obj.handleDomainRedirect = function (req, res) {
@@ -6595,6 +6597,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 } else if ((cookie != null) && (cookie.a === 3) && (typeof cookie.u == 'string') && (obj.users[cookie.u]) && (cookie.u.split('/')[1] == domain.id)) {
                     // Valid cookie, we are authenticated. Cookie of format { u: 'user//name', a: 3 }
                     func(ws, req, domain, obj.users[cookie.u], cookie);
+                } else if ((cookie != null) && (cookie.nouser === 1)) {
+                    // This is a valid cookie, but no user. This is used for agent self-sharing.
+                    func(ws, req, domain, null, cookie);
                 } else {
                     // This is a bad cookie, keep going anyway, maybe we have a active session that will save us.
                     if ((cookie != null) && (cookie.domainid != domain.id)) { parent.debug('web', 'ERR: Invalid domain, got \"' + cookie.domainid + '\", expected \"' + domain.id + '\".'); }
