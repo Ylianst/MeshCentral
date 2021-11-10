@@ -138,7 +138,8 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 if ((domain.sessionrecording.onlyselectedusers === true) && (peer.user != null) && (peer.user.flags != null) && ((peer.user.flags & 2) != 0)) { startRecord = true; }
                 else if (domain.sessionrecording.onlyselectedusergroups === true) {
                     // Check if there is a usergroup that requires recording of the session
-                    var user = parent.users[peer.user._id];
+                    var user = null;
+                    if (peer.user != null) { user = parent.users[peer.user._id]; }
                     if ((user != null) && (user.links != null) && (user.links[obj.meshid] == null) && (user.links[obj.nodeid] == null)) {
                         // This user does not have a direct link to the device group or device. Find all user groups the would cause the link.
                         for (var i in user.links) {
@@ -160,7 +161,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
                 // Log joining the multiplex session
                 if (obj.startTime != null) {
-                    var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 4, msg: "Joined desktop multiplex session", protocol: 2 };
+                    var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user ? peer.user._id : null, username: peer.user.name, msgid: 4, msg: "Joined desktop multiplex session", protocol: 2 };
                     parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id, obj.meshid], obj, event);
                 }
 
@@ -188,8 +189,11 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
         // Log multiplex session start
         if ((obj.agent != null) && (obj.viewers.length > 0) && (obj.startTime == null)) {
-            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.viewers[0].user._id, username: obj.viewers[0].user.name, msgid: 6, msg: "Started desktop multiplex session", protocol: 2 };
-            parent.parent.DispatchEvent(['*', obj.nodeid, obj.viewers[0].user._id, obj.meshid], obj, event);
+            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, msgid: 6, msg: "Started desktop multiplex session", protocol: 2 };
+            if (obj.viewers[0].user != null) { event.userid = obj.viewers[0].user._id; event.username = obj.viewers[0].user.name; }
+            const targets = ['*', obj.nodeid, obj.meshid];
+            if (obj.viewers[0].user != null) { targets.push(obj.viewers[0].user._id); }
+            parent.parent.DispatchEvent(targets, obj, event);
             obj.startTime = Date.now();
         }
         return true;
@@ -265,9 +269,12 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
                 //var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 5, msg: "Left the desktop multiplex session", protocol: 2 };
                 const sessionSeconds = Math.floor((Date.now() - peer.startTime) / 1000);
-                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 122, msgArgs: [sessionSeconds], msg: "Left the desktop multiplex session after " + sessionSeconds + " second(s).", protocol: 2, bytesin: inTraffc, bytesout: outTraffc };
+                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, msgid: 122, msgArgs: [sessionSeconds], msg: "Left the desktop multiplex session after " + sessionSeconds + " second(s).", protocol: 2, bytesin: inTraffc, bytesout: outTraffc };
+                if (peer.user != null) { event.userid = peer.user._id; event.username = peer.user.name; }
                 if (peer.guestName) { event.guestname = peer.guestName; }
-                parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id, obj.meshid], obj, event);
+                const targets = ['*', obj.nodeid, obj.meshid];
+                if (peer.user != null) { targets.push(peer.user._id); }
+                parent.parent.DispatchEvent(targets, obj, event);
             }
 
             // Aggressive clean up of the viewer
@@ -997,6 +1004,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
     obj.ruserid = null;
     obj.req = req; // Used in multi-server.js
     obj.viewOnly = ((cookie != null) && (cookie.vo == 1)); // set view only mode
+    if ((cookie != null) && (cookie.nouser == 1)) { obj.nouser = true; } // This is a relay without user authentication
 
     // If the domain has remote desktop viewonly set, force everyone to be in viewonly mode.
     if ((typeof domain.desktop == 'object') && (domain.desktop.viewonly == true)) { obj.viewOnly = true; }
@@ -1018,12 +1026,12 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
     // Check relay authentication
     if ((user == null) && (obj.req.query != null) && (obj.req.query.rauth != null)) {
         const rcookie = parent.parent.decodeCookie(obj.req.query.rauth, parent.parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
-        if (rcookie.ruserid != null) { obj.ruserid = rcookie.ruserid; }
+        if (rcookie.ruserid != null) { obj.ruserid = rcookie.ruserid; } else if (rcookie.nouser === 1) { obj.rnouser = true; }
         if (rcookie.nodeid != null) { obj.nodeid = rcookie.nodeid; }
     }
 
     // If there is no authentication, drop this connection
-    if ((obj.id != null) && (obj.user == null) && (obj.ruserid == null)) { try { ws.close(); parent.parent.debug('relay', 'DesktopRelay: Connection with no authentication (' + obj.req.clientIp + ')'); } catch (e) { console.log(e); } return; }
+    if ((obj.id != null) && (obj.user == null) && (obj.ruserid == null) && (obj.nouser !== true) && (obj.rnouser !== true)) { try { ws.close(); parent.parent.debug('relay', 'DesktopRelay: Connection with no authentication (' + obj.req.clientIp + ')'); } catch (e) { console.log(e); } return; }
 
     // Relay session count (we may remove this in the future)
     obj.relaySessionCounted = true;
@@ -1082,8 +1090,8 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
     obj.sendAgentMessage = function (command, userid, domainid) {
         var rights, mesh;
         if (command.nodeid == null) return false;
-        var user = parent.users[userid];
-        if (user == null) return false;
+        var user = null;
+        if (userid != null) { user = parent.users[userid]; if (user == null) return false; }
         var splitnodeid = command.nodeid.split('/');
         // Check that we are in the same domain and the user has rights over this node.
         if ((splitnodeid[0] == 'node') && (splitnodeid[1] == domainid)) {
@@ -1092,7 +1100,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
             var agent = parent.wsagents[command.nodeid];
             if (agent != null) {
                 // Check if we have permission to send a message to that node
-                rights = parent.GetNodeRights(user, agent.dbMeshKey, agent.dbNodeKey);
+                if (userid == null) { rights = MESHRIGHT_REMOTECONTROL; } else { rights = parent.GetNodeRights(user, routing.meshid, command.nodeid); }
                 mesh = parent.meshes[agent.dbMeshKey];
                 if ((rights != null) && (mesh != null) || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                     if (ws.sessionId) { command.sessionid = ws.sessionId; }   // Set the session id, required for responses.
@@ -1100,8 +1108,10 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
                     if ((command.rights != 0xFFFFFFFF) && ((command.rights & 0x100) != 0)) { command.rights -= 0x100; } // Since the multiplexor will enforce view-only, remove MESHRIGHT_REMOTEVIEWONLY
                     if (typeof command.consent == 'number') { command.consent = command.consent | mesh.consent; } else { command.consent = mesh.consent; } // Add user consent
                     if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
-                    command.username = user.name;       // Add user name
-                    command.realname = user.realname;   // Add real name
+                    if (user != null) {
+                        command.username = user.name;       // Add user name
+                        command.realname = user.realname;   // Add real name
+                    }
                     if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
                     delete command.nodeid;              // Remove the nodeid since it's implyed.
                     agent.send(JSON.stringify(command));
@@ -1112,7 +1122,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
                 var routing = parent.parent.GetRoutingServerIdNotSelf(command.nodeid, 1); // 1 = MeshAgent routing type
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
-                    rights = parent.GetNodeRights(user, routing.meshid, command.nodeid);
+                    if (userid == null) { rights = MESHRIGHT_REMOTECONTROL; } else { rights = parent.GetNodeRights(user, routing.meshid, command.nodeid); }
                     mesh = parent.meshes[routing.meshid];
                     if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                         if (ws.sessionId) { command.fromSessionid = ws.sessionId; }   // Set the session id, required for responses.
@@ -1120,8 +1130,10 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
                         if ((command.rights != 0xFFFFFFFF) && ((command.rights & 0x00000100) != 0)) { command.rights -= 0x00000100; } // Since the multiplexor will enforce view-only, remove MESHRIGHT_REMOTEVIEWONLY
                         if (typeof command.consent == 'number') { command.consent = command.consent | mesh.consent; } else { command.consent = mesh.consent; } // Add user consent
                         if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
-                        command.username = user.name;           // Add user name
-                        command.realname = user.realname;       // Add real name
+                        if (user != null) {
+                            command.username = user.name;           // Add user name
+                            command.realname = user.realname;       // Add real name
+                        }
                         if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
                         parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
                         return true;
@@ -1233,7 +1245,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
     setExpireTimer();
 
     // Mark this relay session as authenticated if this is the user end.
-    obj.authenticated = (user != null);
+    obj.authenticated = ((user != null) || (obj.nouser === true));
     if (obj.authenticated) {
         // Kick off the routing, if we have agent routing instructions, process them here.
         // Routing instructions can only be given by a authenticated user
@@ -1245,14 +1257,16 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
                 const node = docs[0];
 
                 // Check if this user has permission to manage this computer
-                if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (1)'); try { obj.close(); } catch (e) { } return; }
+                if ((obj.nouser !== true) && ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0)) { console.log('ERR: Access denied (1)'); try { obj.close(); } catch (e) { } return; }
 
                 // Send connection request to agent
-                const rcookie = parent.parent.encodeCookie({ ruserid: user._id, nodeid: node._id }, parent.parent.loginCookieEncryptionKey);
+                const rcookieData = { nodeid: node._id };
+                if (user != null) { rcookieData.ruserid = user._id; } else if (obj.nouser === true) { rcookieData.nouser = 1; }
+                const rcookie = parent.parent.encodeCookie(rcookieData, parent.parent.loginCookieEncryptionKey);
                 if (obj.id == undefined) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
                 const command = { nodeid: node._id, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, tcpport: cookie.tcpport, tcpaddr: cookie.tcpaddr };
                 parent.parent.debug('relay', 'Relay: Sending agent tunnel command: ' + JSON.stringify(command));
-                if (obj.sendAgentMessage(command, user._id, cookie.domainid) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
+                if (obj.sendAgentMessage(command, user ? user._id : null, cookie.domainid) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
                 performRelay(0);
             });
             return obj;
@@ -1264,20 +1278,22 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
                 const node = docs[0];
 
                 // Check if this user has permission to manage this computer
-                if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
+                if ((obj.nouser !== true) && ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0)) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
 
                 // Send connection request to agent
                 if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
-                const rcookie = parent.parent.encodeCookie({ ruserid: user._id, nodeid: node._id }, parent.parent.loginCookieEncryptionKey);
+                const rcookieData = { nodeid: node._id };
+                if (user != null) { rcookieData.ruserid = user._id; } else if (obj.nouser === true) { rcookieData.nouser = 1; }
+                const rcookie = parent.parent.encodeCookie(rcookieData, parent.parent.loginCookieEncryptionKey);
 
                 if (obj.req.query.tcpport != null) {
                     const command = { nodeid: node._id, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, tcpport: obj.req.query.tcpport, tcpaddr: ((obj.req.query.tcpaddr == null) ? '127.0.0.1' : obj.req.query.tcpaddr) };
                     parent.parent.debug('relay', 'Relay: Sending agent TCP tunnel command: ' + JSON.stringify(command));
-                    if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
+                    if (obj.sendAgentMessage(command, user ? user._id : null, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
                 } else if (obj.req.query.udpport != null) {
                     const command = { nodeid: node._id, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, udpport: obj.req.query.udpport, udpaddr: ((obj.req.query.udpaddr == null) ? '127.0.0.1' : obj.req.query.udpaddr) };
                     parent.parent.debug('relay', 'Relay: Sending agent UDP tunnel command: ' + JSON.stringify(command));
-                    if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
+                    if (obj.sendAgentMessage(command, user ? user._id : null, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
                 }
                 performRelay(0);
             });
@@ -1290,12 +1306,15 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
                 const node = docs[0];
 
                 // Check if this user has permission to manage this computer
-                if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
+                if ((obj.nouser !== true) && ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0)) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
 
                 // Send connection request to agent
                 if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); }
-                const rcookie = parent.parent.encodeCookie({ ruserid: user._id, nodeid: node._id }, parent.parent.loginCookieEncryptionKey);
-                const command = { nodeid: node._id, action: 'msg', type: 'tunnel', userid: user._id, value: '*/meshrelay.ashx?p=2&id=' + obj.id + '&rauth=' + rcookie + '&nodeid=' + node._id, soptions: {}, usage: 2, rights: cookie.r, guestname: cookie.gn, consent: cookie.cf, remoteaddr: cleanRemoteAddr(obj.req.clientIp) };
+                const rcookieData = { nodeid: node._id };
+                if (user != null) { rcookieData.ruserid = user._id; } else if (obj.nouser === true) { rcookieData.nouser = 1; }
+                const rcookie = parent.parent.encodeCookie(rcookieData, parent.parent.loginCookieEncryptionKey);
+                const command = { nodeid: node._id, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?p=2&id=' + obj.id + '&rauth=' + rcookie + '&nodeid=' + node._id, soptions: {}, usage: 2, rights: cookie.r, guestname: cookie.gn, consent: cookie.cf, remoteaddr: cleanRemoteAddr(obj.req.clientIp) };
+                if (user != null) { command.userid = user._id; }
                 if (typeof domain.consentmessages == 'object') {
                     if (typeof domain.consentmessages.title == 'string') { command.soptions.consentTitle = domain.consentmessages.title; }
                     if (typeof domain.consentmessages.desktop == 'string') { command.soptions.consentMsgDesktop = domain.consentmessages.desktop; }
@@ -1309,7 +1328,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
                     if (typeof domain.notificationmessages.files == 'string') { command.soptions.notifyMsgFiles = domain.notificationmessages.files; }
                 }
                 parent.parent.debug('relay', 'Relay: Sending agent tunnel command: ' + JSON.stringify(command));
-                if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
+                if (obj.sendAgentMessage(command, user ? user._id : null, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
 
                 performRelay(0);
             });
