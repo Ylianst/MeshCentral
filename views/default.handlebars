@@ -7096,19 +7096,22 @@
                     x += '<br /><table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Active Device Sharing" + '</th><th scope=col style=text-align:left></th></tr>';
                     count = 1;
                     for (var i = 0; i < deviceShares.length; i++) {
-                        var dshare = deviceShares[i];
-                        var trash = '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><img src=images/link2.png border=0 height=10 width=10></a> <a href=# onclick=\'return p30removeDeviceSharing(event,"' + encodeURIComponentEx(currentNode._id) + '","' + encodeURIComponentEx(dshare.publicid) + '","' + encodeURIComponentEx(dshare.guestName) + '")\' title="' + "Remove device sharing" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        var dshare = deviceShares[i], trash = '';
+                        if (dshare.url != null) { trash += '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><img src=images/link2.png border=0 height=10 width=10></a> '; }
+                        trash += '<a href=# onclick=\'return p30removeDeviceSharing(event,"' + encodeURIComponentEx(currentNode._id) + '","' + encodeURIComponentEx(dshare.publicid) + '","' + encodeURIComponentEx(dshare.guestName) + '")\' title="' + "Remove device sharing" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                         var type = ['', "Terminal", "Desktop", "Desktop + Terminal", "Files", "Terminal + Files", "Desktop + Files", "Desktop + Terminal + Files"][dshare.p];
                         var details = type;
                         if ((dshare.startTime != null) && (dshare.expireTime != null)) { details = format("{0}, {1} to {2}", type, printFlexDateTime(new Date(dshare.startTime)), printFlexDateTime(new Date(dshare.expireTime))); }
-                        if (dshare.viewOnly === true) { details += ", View only"; }
+                        if (((dshare.p & 2) != 0) && (dshare.viewOnly === true)) { details += ", View only desktop"; }
                         if (dshare.consent != null) {
                             if (dshare.consent == 0) { details += ", No Consent"; } else {
                                 if ((dshare.consent & 0x0038) != 0) { details += ", Prompt for consent"; }
                                 if ((dshare.consent & 0x0040) != 0) { details += ", Toolbar"; }
                             }
                         }
-                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div class=m' + 2 + '></div><div>&nbsp;' + dshare.guestName + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + details + '</div></td></tr>';
+                        var guestName = EscapeHtml(dshare.guestName);
+                        if (dshare.publicid.startsWith('AS:node/')) { guestName = '<i>' + "Agent Self-Share" + '</i>'; }
+                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div class=m' + 2 + '></div><div>&nbsp;' + guestName + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + details + '</div></td></tr>';
                     }
                     x += '</tbody></table>';
                 }
