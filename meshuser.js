@@ -403,7 +403,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if (event == 'updatefiles') { updateUserFiles(user, ws, domain); }
                         else {
                             // If updating guest device shares, if we are updating a user that is not creator of the share, remove the URL.
-                            if (event.action == 'deviceShareUpdate') {
+                            if ((event.action == 'deviceShareUpdate') && (Array.isArray(event.deviceShares))) {
                                 event = common.Clone(event);
                                 for (var i in event.deviceShares) { if (event.deviceShares[i].userid != user._id) { delete event.deviceShares[i].url; } }
                             }
