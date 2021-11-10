@@ -7752,7 +7752,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } else if (Array.isArray(parent.config.settings.maxinvalidlogin.exclude)) {
                 for (var i in parent.config.settings.maxinvalidlogin.exclude) { if (require('ipcheck').match(ip, parent.config.settings.maxinvalidlogin.exclude[i])) return; }
             }
-            return;
         }
         var splitip = ip.split('.');
         if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); }
