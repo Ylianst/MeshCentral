@@ -4809,7 +4809,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Send out an event that we added a device share
                     var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
-                    var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'addedDeviceShare', msg: 'Added Device Share', msgid: 101, msgArgs: [command.guestname, 'DATETIME:' + startTime, 'DATETIME:' + expireTime], domain: domain.id };
+                    var event;
+                    if ((startTime != null) && (expireTime != null)) {
+                        event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'addedDeviceShare', msg: 'Added device share: ' + command.guestname + '.', msgid: 101, msgArgs: [command.guestname, 'DATETIME:' + startTime, 'DATETIME:' + expireTime], domain: domain.id };
+                    } else {
+                        event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'addedDeviceShare', msg: 'Added device share ' + command.guestname + ' with unlimited time.', msgid: 131, msgArgs: [command.guestname], domain: domain.id };
+                    }
                     parent.parent.DispatchEvent(targets, obj, event);
 
                     // Send device share update
