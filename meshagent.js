@@ -61,6 +61,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (arg == 2) { try { ws._socket._parent.end(); if (obj.nodeid != null) { parent.parent.debug('agent', 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         // If arg == 3, don't communicate with this agent anymore, but don't disconnect (Duplicate agent).
 
+        // Stop any current self-share
+        if (obj.guestSharing === true) { removeGuestSharing(); }
+
         // Remove this agent from the webserver list
         if (parent.wsagents[obj.dbNodeKey] == obj) {
             delete parent.wsagents[obj.dbNodeKey];
@@ -126,8 +129,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         delete obj.remoteaddr;
         delete obj.remoteaddrport;
         delete obj.meshid;
-        delete obj.dbNodeKey;
-        delete obj.dbMeshKey;
         delete obj.connectTime;
         delete obj.agentInfo;
         delete obj.agentExeInfo;
@@ -1088,6 +1089,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (typeof domain.terminal.launchcommand.darwin == 'string') { serverInfo.termlaunchcommand.darwin = domain.terminal.launchcommand.darwin; }
             if (typeof domain.terminal.launchcommand.freebsd == 'string') { serverInfo.termlaunchcommand.freebsd = domain.terminal.launchcommand.freebsd; }
         }
+        // Enable agent self guest sharing if allowed
+        if (domain.agentselfguestsharing === true) { serverInfo.agentSelfGuestSharing = true; }
         obj.send(JSON.stringify(serverInfo));
 
         // Plug in handler
@@ -1666,6 +1669,24 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                     break;
                 }
+                case 'guestShare': {
+                    if ((domain.agentselfguestsharing !== true) || (typeof command.flags != 'number')) return; // Check if agent self-sharing is allowed, this is off by default.
+                    if (command.flags == 0) {
+                        // Stop any current self-share
+                        removeGuestSharing(function () {
+                            delete obj.guestSharing;
+                            obj.send(JSON.stringify({ action: 'guestShare', flags: command.flags, url: null, viewOnly: false }));
+                        });
+                    } else {
+                        // Add a new self-share, this will replace any share for this device
+                        if ((command.flags & 1) == 0) { command.viewOnly = false; } // Only allow "view only" if desktop is shared.
+                        addGuestSharing(command.flags, command.viewOnly, function (share) {
+                            obj.guestSharing = true;
+                            obj.send(JSON.stringify({ action: 'guestShare', url: share.url, flags: share.flags, viewOnly: share.viewOnly }));
+                        })
+                    }
+                    break;
+                }
                 case 'scriptTask': {
                     // TODO
                     break;
@@ -1681,6 +1702,90 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 parent.parent.pluginHandler.callHook('hook_processAgentData', command, obj, parent);
             }
         }
+    }
+
+    function addGuestSharing(flags, viewOnly, func) {
+        // Create cookie
+        var publicid = 'AS:' + obj.dbNodeKey;
+        var cookie = { a: 6, pid: publicid }; // New style sharing cookie
+        const inviteCookie = parent.parent.encodeCookie(cookie, parent.parent.invitationLinkEncryptionKey);
+        if (inviteCookie == null) return;
+
+        // Create the server url
+        var serverName = parent.getWebServerName(domain);
+        var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
+        var xdomain = (domain.dns == null) ? domain.id : '';
+        if (xdomain != '') xdomain += '/';
+        var url = 'https://' + serverName + ':' + httpsPort + '/' + xdomain + 'sharing?c=' + inviteCookie;
+        if (serverName.split('.') == 1) { url = '/' + xdomain + page + '?c=' + inviteCookie; }
+
+        // Create a device sharing database entry
+        var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', nodeid: obj.dbNodeKey, p: flags, domain: domain.id, publicid: publicid, guestName: '*Agent', consent: true, url: url };
+        if (viewOnly === true) { shareEntry.viewOnly = true; }
+        parent.db.Set(shareEntry);
+
+        // Send out an event that we added a device share
+        var targets = parent.CreateNodeDispatchTargets(obj.dbMeshKey, obj.dbNodeKey);
+        var event = { etype: 'node', nodeid: obj.dbNodeKey, action: 'addedDeviceShare', msg: 'Added Device Share', msgid: 101, msgArgs: ['*Agent', 'DATETIME:' + null, 'DATETIME:' + null], domain: domain.id };
+        parent.parent.DispatchEvent(targets, obj, event);
+
+        // Send device share update
+        parent.db.GetAllTypeNodeFiltered([obj.dbNodeKey], domain.id, 'deviceshare', null, function (err, docs) {
+            if (err != null) return;
+
+            // Check device sharing
+            var now = Date.now();
+            for (var i = 0; i < docs.length; i++) {
+                const doc = docs[i];
+                if (doc.expireTime < now) { parent.db.Remove(doc._id, function () { }); delete docs[i]; } else {
+                    // This share is ok, remove extra data we don't need to send.
+                    delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type;
+                }
+            }
+
+            // Send device share update
+            var targets = parent.CreateNodeDispatchTargets(obj.dbMeshKey, obj.dbNodeKey, []);
+            parent.parent.DispatchEvent(targets, obj, { etype: 'node', nodeid: obj.dbNodeKey, action: 'deviceShareUpdate', domain: domain.id, deviceShares: docs, nolog: 1 });
+
+            // Callback
+            if (func) { func({ url: url, flags: flags, viewOnly: viewOnly }); }
+        });
+    }
+
+    function removeGuestSharing(func) {
+        var publicid = 'AS:' + obj.dbNodeKey;
+        parent.db.GetAllTypeNodeFiltered([obj.dbNodeKey], domain.id, 'deviceshare', null, function (err, docs) {
+            if (err != null) return;
+
+            // Remove device sharing
+            var now = Date.now(), removedExact = null, removed = false, okDocs = [];
+            for (var i = 0; i < docs.length; i++) {
+                const doc = docs[i];
+                if (doc.publicid == publicid) { parent.db.Remove(doc._id, function () { }); removedExact = doc; removed = true; }
+                else if (doc.expireTime < now) { parent.db.Remove(doc._id, function () { }); removed = true; } else {
+                    // This share is ok, remove extra data we don't need to send.
+                    delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type;
+                    okDocs.push(doc);
+                }
+            }
+
+            // Event device share removal
+            if (removedExact != null) {
+                // Send out an event that we removed a device share
+                var targets = parent.CreateNodeDispatchTargets(obj.dbMeshKey, obj.dbNodeKey, []);
+                var event = { etype: 'node', nodeid: obj.dbNodeKey, action: 'removedDeviceShare', msg: 'Removed Device Share', msgid: 102, msgArgs: ['*Agent'], domain: domain.id, publicid: publicid };
+                parent.parent.DispatchEvent(targets, obj, event);
+            }
+
+            // If we removed any shares, send device share update
+            if (removed == true) {
+                var targets = parent.CreateNodeDispatchTargets(obj.dbMeshKey, obj.dbNodeKey, []);
+                parent.parent.DispatchEvent(targets, obj, { etype: 'node', nodeid: obj.dbNodeKey, action: 'deviceShareUpdate', domain: domain.id, deviceShares: okDocs, nolog: 1 });
+            }
+
+            // Call back when done
+            if (func) func(removed);
+        });
     }
 
     // Notify update of sessions

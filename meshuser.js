@@ -4677,7 +4677,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
 
                         // Confirm removal if requested
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeDeviceShare', responseid: command.responseid, nodeid: command.nodeid, publicid: doc.publicid, removed: removedExact })); } catch (ex) { } }
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeDeviceShare', responseid: command.responseid, nodeid: command.nodeid, publicid: command.publicid, removed: removedExact })); } catch (ex) { } }
 
                         // Event device share removal
                         if (removedExact != null) {
@@ -4685,6 +4685,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
                             var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'removedDeviceShare', msg: 'Removed Device Share', msgid: 102, msgArgs: [removedExact.guestName], domain: domain.id, publicid: command.publicid };
                             parent.parent.DispatchEvent(targets, obj, event);
+
+                            // If this is an agent self-sharing link, notify the agent
+                            if (command.publicid.startsWith('AS:node/')) { routeCommandToNode({ action: 'msg', type: 'guestShare', nodeid: command.publicid.substring(3), flags: 0, url: null, viewOnly: false }); }
                         }
 
                         // If we removed any shares, send device share update
