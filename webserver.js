@@ -3583,7 +3583,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((err != null) || (docs == null) || (docs.length != 1)) { res.sendStatus(404); return; }
                 const doc = docs[0];
                 // Generate an old style cookie from the information in the database
-                var cookie = { a: 5, p: doc.p, uid: doc.userid, gn: doc.guestName, nid: doc.nodeid, cf: doc.consent, pid: doc.publicid };
+                var cookie = { a: 5, p: doc.p, gn: doc.guestName, nid: doc.nodeid, cf: doc.consent, pid: doc.publicid, k: doc.extrakey };
+                if (doc.userid) { cookie.uid = doc.userid; }
                 if ((cookie.userid == null) && (cookie.pid.startsWith('AS:node/'))) { cookie.nouser = 1; }
                 if ((doc.startTime != null) && (doc.expireTime != null)) { cookie.start = doc.startTime; cookie.expire = doc.expireTime; }
                 if (doc.viewOnly === true) { cookie.vo = 1; }
@@ -3606,7 +3607,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Search for the device share public identifier, expire message.
             var found = false;
-            for (var i = 0; i < docs.length; i++) { if (docs[i].publicid == c.pid) { found = true; } }
+            for (var i = 0; i < docs.length; i++) { if ((docs[i].publicid == c.pid) && ((docs[i].extrakey == null) || (docs[i].extrakey === c.k))) { found = true; } }
             if (found == false) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
             // Get information about this node
@@ -3621,6 +3622,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Consent flags are 1 = Notify, 8 = Prompt, 64 = Privacy Bar.
                 const authCookieData = { userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: c.p, gn: c.gn, cf: c.cf, r: 8, expire: c.expire, pid: c.pid, vo: c.vo };
                 if ((authCookieData.userid == null) && (authCookieData.pid.startsWith('AS:node/'))) { authCookieData.nouser = 1; }
+                if (c.k != null) { authCookieData.k = c.k; }
                 const authCookie = obj.parent.encodeCookie(authCookieData, obj.parent.loginCookieEncryptionKey);
 
                 // Server features

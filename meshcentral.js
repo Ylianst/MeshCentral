@@ -1969,7 +1969,21 @@ function CreateMeshCentralServer(config, args) {
     };
     obj.RemoveEventDispatch = function (ids, target) {
         obj.debug('dispatch', 'RemoveEventDispatch', ids);
-        for (var i in ids) { var id = ids[i]; if (obj.eventsDispatch[id]) { var j = obj.eventsDispatch[id].indexOf(target); if (j >= 0) { if (obj.eventsDispatch[id].length == 1) { delete obj.eventsDispatch[id]; } else { obj.eventsDispatch[id].splice(j, 1); } } } }
+        for (var i in ids) {
+            const id = ids[i];
+            if (obj.eventsDispatch[id]) {
+                var j = obj.eventsDispatch[id].indexOf(target);
+                if (j >= 0) {
+                    if (obj.eventsDispatch[id].length == 1) {
+                        delete obj.eventsDispatch[id];
+                    } else {
+                        const newList = []; // We create a new list so not to modify the original list. Allows this function to be called during an event dispatch.
+                        for (var k in obj.eventsDispatch[i]) { if (obj.eventsDispatch[i][k] != target) { newList.push(obj.eventsDispatch[i][k]); } }
+                        obj.eventsDispatch[i] = newList;
+                    }
+                }
+            }
+        }
     };
     obj.RemoveEventDispatchId = function (id) {
         obj.debug('dispatch', 'RemoveEventDispatchId', id);
@@ -1977,7 +1991,18 @@ function CreateMeshCentralServer(config, args) {
     };
     obj.RemoveAllEventDispatch = function (target) {
         obj.debug('dispatch', 'RemoveAllEventDispatch');
-        for (var i in obj.eventsDispatch) { var j = obj.eventsDispatch[i].indexOf(target); if (j >= 0) { if (obj.eventsDispatch[i].length == 1) { delete obj.eventsDispatch[i]; } else { obj.eventsDispatch[i].splice(j, 1); } } }
+        for (var i in obj.eventsDispatch) {
+            const j = obj.eventsDispatch[i].indexOf(target);
+            if (j >= 0) {
+                if (obj.eventsDispatch[i].length == 1) {
+                    delete obj.eventsDispatch[i];
+                } else {
+                    const newList = []; // We create a new list so not to modify the original list. Allows this function to be called during an event dispatch.
+                    for (var k in obj.eventsDispatch[i]) { if (obj.eventsDispatch[i][k] != target) { newList.push(obj.eventsDispatch[i][k]); } }
+                    obj.eventsDispatch[i] = newList;
+                }
+            }
+        }
     };
     obj.DispatchEvent = function (ids, source, event, fromPeerServer) {
         // If the database is not setup, exit now.
@@ -1992,7 +2017,7 @@ function CreateMeshCentralServer(config, args) {
         if ((typeof event == 'object') && (!event.nolog)) {
             event.time = new Date();
             // The event we store is going to skip some of the fields so we don't store too much stuff in the database.
-            var storeEvent = Object.assign({}, event);
+            const storeEvent = Object.assign({}, event);
             if (storeEvent.node) { delete storeEvent.node; } // Skip the "node" field. May skip more in the future.
             if (storeEvent.links) {
                 // Escape "links" names that may have "." and/or "$"
@@ -2002,16 +2027,15 @@ function CreateMeshCentralServer(config, args) {
             storeEvent.ids = ids;
             obj.db.StoreEvent(storeEvent);
         }
-        var targets = []; // List of targets we dispatched the event to, we don't want to dispatch to the same target twice.
+        const targets = []; // List of targets we dispatched the event to, we don't want to dispatch to the same target twice.
         for (var j in ids) {
-            var id = ids[j];
-            if (obj.eventsDispatch[id]) {
-                for (var i in obj.eventsDispatch[id]) {
-                    if (targets.indexOf(obj.eventsDispatch[id][i]) == -1) { // Check if we already displatched to this target
-                        targets.push(obj.eventsDispatch[id][i]);
-                        try { obj.eventsDispatch[id][i].HandleEvent(source, event, ids, id); } catch (ex) {
-                            console.log(ex, obj.eventsDispatch[id][i]);
-                        }
+            const id = ids[j];
+            const eventsDispatch = obj.eventsDispatch[id];
+            if (eventsDispatch) {
+                for (var i in eventsDispatch) {
+                    if (targets.indexOf(eventsDispatch[i]) == -1) { // Check if we already displatched to this target
+                        targets.push(eventsDispatch[i]);
+                        try { eventsDispatch[i].HandleEvent(source, event, ids, id); } catch (ex) { console.log(ex, eventsDispatch[i]); }
                     }
                 }
             }
