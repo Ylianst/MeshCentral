@@ -101,7 +101,6 @@ function SMBiosTables()
                 }
                 catch (ee)
                 {
-                    console.log('oops');
                 }
             }
             i += (ret[SMtype].peek()._strings.length == 0) ? 2 : 1;
@@ -191,6 +190,12 @@ function SMBiosTables()
         catch(e)
         {
         }
+        try
+        {
+            if (JSON.stringify(r).length > 65535) { r = {}; }
+        }
+        catch(ee)
+        {}
         return r;
     }
     this.processorInfo = function processorInfo(data) {
