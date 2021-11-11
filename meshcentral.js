@@ -1748,7 +1748,7 @@ function CreateMeshCentralServer(config, args) {
                 else if (obj.config.settings.autobackup === false) { delete obj.config.settings.autobackup; }
 
                 // Check that autobackup path is not within the "meshcentral-data" folder.
-                if ((typeof obj.config.settings.autobackup.backuppath == 'string') && (obj.path.normalize(obj.config.settings.autobackup.backuppath).startsWith(obj.path.normalize(obj.datapath)))) {
+                if ((typeof obj.config.settings.autobackup == 'object') && (typeof obj.config.settings.autobackup.backuppath == 'string') && (obj.path.normalize(obj.config.settings.autobackup.backuppath).startsWith(obj.path.normalize(obj.datapath)))) {
                     addServerWarning("Backup path can't be set within meshcentral-data folder, backup settings ignored.", 21);
                     delete obj.config.settings.autobackup;
                 }
