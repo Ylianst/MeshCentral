@@ -47,21 +47,23 @@ const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 // 101 = Intel AMT Redirection
 // 200 = Messenger
 
-function checkDeviceSharePublicIdentifier(parent, domain, nodeid, pid, func) {
+function checkDeviceSharePublicIdentifier(parent, domain, nodeid, pid, extraKey, func) {
     // Check the public id
     parent.db.GetAllTypeNodeFiltered([nodeid], domain.id, 'deviceshare', null, function (err, docs) {
         if ((err != null) || (docs.length == 0)) { func(false); return; }
 
         // Search for the device share public identifier
         var found = false;
-        for (var i = 0; i < docs.length; i++) { if (docs[i].publicid == pid) { found = true; } }
+        for (var i = 0; i < docs.length; i++) {
+            for (var i = 0; i < docs.length; i++) { if ((docs[i].publicid == pid) && ((docs[i].extrakey == null) || (docs[i].extrakey === extraKey))) { found = true; } }
+        }
         func(found);
     });
 }
 
 module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie) {
     if ((cookie != null) && (typeof cookie.nid == 'string') && (typeof cookie.pid == 'string')) {
-        checkDeviceSharePublicIdentifier(parent, domain, cookie.nid, cookie.pid, function (result) {
+        checkDeviceSharePublicIdentifier(parent, domain, cookie.nid, cookie.pid, cookie.k, function (result) {
             // If the identifier if not found, close the connection
             if (result == false) { try { ws.close(); } catch (e) { } return; }
             // Public device sharing identifier found, continue as normal.

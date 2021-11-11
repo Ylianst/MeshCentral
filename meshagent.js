@@ -1706,8 +1706,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     function addGuestSharing(flags, viewOnly, func) {
         // Create cookie
-        var publicid = 'AS:' + obj.dbNodeKey;
-        var cookie = { a: 6, pid: publicid }; // New style sharing cookie
+        const publicid = 'AS:' + obj.dbNodeKey;
+        const extrakey = getRandomAmtPassword();
+        const cookie = { a: 6, pid: publicid, k: extrakey }; // New style sharing cookie
         const inviteCookie = parent.parent.encodeCookie(cookie, parent.parent.invitationLinkEncryptionKey);
         if (inviteCookie == null) return;
 
@@ -1720,7 +1721,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (serverName.split('.') == 1) { url = '/' + xdomain + page + '?c=' + inviteCookie; }
 
         // Create a device sharing database entry
-        var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', nodeid: obj.dbNodeKey, p: flags, domain: domain.id, publicid: publicid, guestName: 'Agent', consent: 0x7F, url: url };
+        var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', nodeid: obj.dbNodeKey, p: flags, domain: domain.id, publicid: publicid, guestName: 'Agent', consent: 0x7F, url: url, extrakey: extrakey };
         if (viewOnly === true) { shareEntry.viewOnly = true; }
         parent.db.Set(shareEntry);
 
