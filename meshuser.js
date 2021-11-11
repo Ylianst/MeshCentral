@@ -2006,7 +2006,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (group != null) {
                         if (group.links == null) { group.links = {}; }
 
-                        var unknownUsers = [], addedCount = 0, failCount = 0;
+                        var unknownUsers = [], addedCount = 0, failCount = 0, knownUsers;
                         for (var i in command.usernames) {
                             // Check if the user exists
                             var chguserid = 'user/' + addUserDomain.id + '/' + command.usernames[i].toLowerCase();
@@ -2019,6 +2019,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 db.SetUser(chguser);
                                 parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
 
+                                knownUsers.push(chguser)
                                 // Notify user change
                                 var targets = ['*', 'server-users', user._id, chguser._id];
                                 var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 67, msgArgs: [chguser.name], msg: 'User group membership changed: ' + chguser.name, domain: addUserDomain.id };
@@ -2039,7 +2040,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.Set(group);
 
                             // Notify user group change
-                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msgid: 71, msgArgs: [chguser.name, group.name], msg: 'Added user ' + chguser.name + ' to user group ' + group.name, addUserDomain: domain.id };
+                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msgid: 71, msgArgs: [knownUsers.map((u)=>u.name), group.name], msg: 'Added user(s) ' + knownUsers.map((u)=>u.name) + ' to user group ' + group.name, addUserDomain: domain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
                             parent.parent.DispatchEvent(['*', group._id, user._id, chguserid], obj, event);
                         }
