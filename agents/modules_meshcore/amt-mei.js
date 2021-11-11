@@ -456,7 +456,7 @@ function amt_heci()
         for (var i = 4; i < arguments.length; ++i) { optional.push(arguments[i]); }
 
         // Format the command
-        var data = Buffer.alloc(1 + 64 + 4 + 4 + 320);
+        var data = Buffer.alloc(1 + 64 + 4 + 4 + ((dnsSuffixList != null) ? 320 : 0));
         data[0] = (certHash.length == 48) ? 3 : 2 // Write certificate hash type: SHA256 = 2, SHA384 = 3
         certHash.copy(data, 1); // Write the hash
         data.writeUInt32LE(hostVpn ? 1 : 0, 65); // Write is HostVPN is enabled
