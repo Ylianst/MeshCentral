@@ -139,6 +139,7 @@ function lme_heci(options) {
     this._LME.on('connect', function ()
     {
         this._connected = true;
+        this._emitConnected = false;
         this.on('data', function (chunk) {
             // this = HECI
             var cmd = chunk.readUInt8(0);
@@ -181,7 +182,8 @@ function lme_heci(options) {
                             }
                             if (this[name][port] == null)
                             {
-                                try {
+                                try
+                                {
                                     // Bind a new server socket if not already present
                                     this[name][port] = require('net').createServer();
                                     this[name][port].descriptorMetadata = 'amt-lme (port: ' + port + ')';
@@ -196,8 +198,21 @@ function lme_heci(options) {
                                         this.HECI.LMS.bindDuplexStream(socket, socket.remoteFamily, socket.localPort - lme_port_offset);
                                     });
                                     this._binded[port] = true;
+                                    if (!this._emitConnected)
+                                    {
+                                        this._emitConnected = true;
+                                        this.LMS.emit('error', 'APF/BIND error');
+                                    }
                                     this.LMS.emit('bind', this._binded);
-                                } catch (ex) { console.log(ex, 'Port ' + port); }
+                                } catch (ex)
+                                {
+                                    console.info1(ex, 'Port ' + port);
+                                    if(!this._emitConnected)
+                                    {
+                                        this._emitConnected = true;
+                                        this.LMS.emit('error', 'APF/BIND error');
+                                    }
+                                }
                             }
                             var outBuffer = Buffer.alloc(5);
                             outBuffer.writeUInt8(81, 0);
@@ -408,7 +423,12 @@ function lme_heci(options) {
                     break;
             }
         });
-        this.LMS.emit('connect');
+        //
+        // Due to a change in behavior with AMT/11 (and possibly earlier), we are not going to emit 'connect' here, until
+        // we can verify that the first APF/Channel can be bound. Older AMT, like AMT/7 only allowed a single LME connection, so we
+        // used to emit connect here. However, newer AMT's will allow more than 1 LME connection, which will result in APF/Bind failure
+        //
+        //this.LMS.emit('connect');
         this.resume();
 
     });

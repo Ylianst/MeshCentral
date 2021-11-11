@@ -101,7 +101,6 @@ function SMBiosTables()
                 }
                 catch (ee)
                 {
-                    console.log('oops');
                 }
             }
             i += (ret[SMtype].peek()._strings.length == 0) ? 2 : 1;
