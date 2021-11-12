@@ -112,6 +112,9 @@
         <div class="cmtext" onclick="cmdeskshortcutaction(1,event)">Customize...</div>
     </div>
     <div id="deskPreConfigShortcutContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+        <span id="deskPreConfigShortcutContextMenu1"></span>
+        <span id="deskPreConfigShortcutContextMenu2"></span>
+        <div class="cmtext" onclick="cmdeskpreconfigtypeaction(-1,event)">Customize...</div>
     </div>
 
     <!--
@@ -684,7 +687,7 @@
                             <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
                             <input id="DeskESC" style="display:none" type="button" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
                             <input id="DeskClip" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
-                            <input id="DeskType" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
+                            <input id="DeskType" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
                             <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()" />Input</span></label>&nbsp;
                         </div>
                     </div>
@@ -1412,6 +1415,7 @@
         var miscState = {};
         var checkedNodeids = {};
         var deskKeyboardShortcuts = [];
+        var deskKeyboardStrings = [];
         var deskLastClipboardSent = null;
         var requestedLastConnects = false;
 
@@ -1627,6 +1631,10 @@
             var deskKeyboardShortcutsStr = getstore('deskKeyShortcuts', '0x0A002E,0x100000,0x100028,0x100026,0x10004C,0x10004D,0x11004D,0x100052,0x020073,0x080057,0x020009,0x100025,0x100027').split(',');
             for (var i in deskKeyboardShortcutsStr) { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); }
             updateDeskShortcutKeys();
+
+            // Set the user's desktop strings
+            try { deskKeyboardStrings = JSON.parse(getstore('deskStrings', '[]')); } catch (ex) {}
+            updateDesktopStrings();
 
             // Override the collapse button text
             updateCollapseAllButton();
@@ -2264,8 +2272,8 @@
                     if (serverinfo.preConfiguredRemoteInput) {
                         var x = '';
                         for (var i in serverinfo.preConfiguredRemoteInput) { x += '<div class="cmtext" onclick="cmdeskpreconfigtypeaction(' + i + ',event)">' + EscapeHtml(serverinfo.preConfiguredRemoteInput[i].name) + '</div>'; }
-                        QH('deskPreConfigShortcutContextMenu', x);
-                        Q('DeskType').setAttribute('cmenu', 'deskPreConfigShortcutContextMenu');
+                        if (x != '') { x += '<hr />'; }
+                        QH('deskPreConfigShortcutContextMenu1', x);
                     }
                     break;
                 }
@@ -2873,6 +2881,12 @@
                                         var deskKeyboardShortcutsStr = webstate.deskKeyShortcuts.split(',');
                                         for (var i in deskKeyboardShortcutsStr) { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); }
                                         updateDeskShortcutKeys();
+                                    }
+                                    if (webstate.deskStrings != null) {
+                                        // Set the user's desktop strings
+                                        var s = null;
+                                        try { s = JSON.parse(webstate.deskStrings); } catch (ex) {}
+                                        if (Array.isArray(s)) { deskKeyboardStrings = s; updateDesktopStrings(); }
                                     }
                                 }
                             } catch (ex) {}
@@ -5891,7 +5905,9 @@
 
         function cmdeskpreconfigtypeaction(action) {
             if (xxdialogMode) return;
-            showDeskTypeEx(serverinfo.preConfiguredRemoteInput[action].value); // Type a pre-configured input string
+            if (action == -1) { deskCustomizeStrings(); }
+            else if (action < 1000) { showDeskTypeEx(serverinfo.preConfiguredRemoteInput[action].value); } // Type server pre-configured input string
+            else { showDeskTypeEx(deskKeyboardStrings[action - 1000].v); } // Type user pre-configured input string
         }
 
         function p13deletefileCm(b, file) {
@@ -8695,6 +8711,75 @@
             if (Q('d1kctrl').checked)  { k |= 0x080000; }
             if (Q('d1kwin').checked)   { k |= 0x100000; }
             if ((k > 0) && (deskKeyboardShortcuts.indexOf(k) == -1)) { deskKeyboardShortcuts.push(k); deskUpdateShortcutList(); }
+        }
+
+        // Customize keyboard strings
+        function deskCustomizeStrings() {
+            if (xxdialogMode) return;
+            var x = '<div id=d2strings style="width:100%;height:180px;padding:4px;overflow-y:auto;border:1px solid gray"></div><div style=width:100%;padding:5px>';
+            x += addHtmlValue("Name", '<input type=text id=d2shortcutname style=width:230px maxlength=32 autocomplete=off onkeyup=deskCustomizeStringsUpdate(event) />');
+            x += addHtmlValue("Value", '<input type=text id=d2shortcutvalue style=width:230px maxlength=256 autocomplete=off onkeyup=deskCustomizeStringsUpdate(event) />');
+            x += addHtmlValue('', '<input id=d2addbutton type=button value=' + "Add" + ' onclick=addDeskCustomizeString() style=float:right />');
+            x + '</div>';
+            setDialogMode(2, "Keyboard Strings Customization", 1, deskCustomizeStringsEx, x);
+            deskUpdateStringsList();
+            deskCustomizeStringsUpdate();
+        }
+
+        function deskCustomizeStringsUpdate() {
+            QE('d2addbutton', ((Q('d2shortcutname').value != '') && (Q('d2shortcutvalue').value != '')));
+        }
+
+        function deskCustomizeStringsEx() {
+            putstore('deskStrings', JSON.stringify(deskKeyboardStrings));
+            updateDesktopStrings();
+        }
+
+        function deskUpdateStringsList() {
+            var x = '';
+            for (var i in deskKeyboardStrings) {
+                var orderButtons = '';
+                if (i != (deskKeyboardStrings.length - 1)) { orderButtons += '<img width=8 height=8 style=float:right;cursor:pointer;padding:3px src="images/c2.png" onclick=deskCustomizeStringDown(' + i + ')>'; }
+                if (i != 0) { orderButtons += '<img width=8 height=8 style=float:right;cursor:pointer;padding:3px src="images/c3.png" onclick=deskCustomizeStringUp(' + i + ')>'; }
+                x += '<div style="width:100%;background-color:#AAA;border-radius:4px;margin-bottom:4px;padding:4px;text-align:left;box-sizing:border-box" value=' + (i + 1000) + '><div><b>' + EscapeHtml(deskKeyboardStrings[i].n) + '</b><img width=10 height=10 style=float:right;cursor:pointer;padding:2px;margin-left:8px src="images/trash.png" onclick=removeDeskCustomizeString(' + i + ')>' + orderButtons + '</div>';
+                x += '<div stlye=font-size:x-small>' + EscapeHtml(deskKeyboardStrings[i].v) + '</div>';
+                x += '</div>';
+            }
+            if (x == '') { x = '<i>' + "No keyboard strings defined" + '</i>'; }
+            QH('d2strings', x);
+        }
+
+        function deskCustomizeStringDown(i) {
+            var x = deskKeyboardStrings[i + 1];
+            deskKeyboardStrings[i + 1] = deskKeyboardStrings[i];
+            deskKeyboardStrings[i] = x;
+            deskUpdateStringsList();
+        }
+
+        function deskCustomizeStringUp(i) {
+            var x = deskKeyboardStrings[i];
+            deskKeyboardStrings[i] = deskKeyboardStrings[i - 1];
+            deskKeyboardStrings[i - 1] = x;
+            deskUpdateStringsList();
+        }
+
+        function removeDeskCustomizeString(i) {
+            deskKeyboardStrings.splice(i, 1);
+            deskUpdateStringsList();
+        }
+
+        function addDeskCustomizeString() {
+            if (!Array.isArray(deskKeyboardStrings)) { deskKeyboardStrings = [];}
+            var name = Q('d2shortcutname').value;
+            var value = Q('d2shortcutvalue').value;
+            if ((name != '') && (value != '')) { deskKeyboardStrings.push({ n: name, v: value }); deskUpdateStringsList(); }
+        }
+
+        function updateDesktopStrings() {
+            var x = '';
+            for (var i in deskKeyboardStrings) { var j = (parseInt(i) + 1000); x += '<div class="cmtext" onclick="cmdeskpreconfigtypeaction(' + j + ',event)">' + EscapeHtml(deskKeyboardStrings[i].n) + '</div>'; }
+            if (x != '') { x += '<hr />' };
+            QH('deskPreConfigShortcutContextMenu2', x);
         }
 
         // Remote desktop special key combos for Windows
@@ -16688,7 +16773,7 @@
                         var k = localStorage.key(i);
                         if (k[0] != '_') {
                             s[k] = localStorage.getItem(k);
-                            if ((k != 'desktopsettings') && (k != 'stars') && (k != 'deskKeyShortcuts') && (typeof s[k] == 'string') && (s[k].length > 64)) { delete s[k]; }
+                            if ((k != 'desktopsettings') && (k != 'stars') && (k != 'deskKeyShortcuts') && (k != 'deskStrings') && (typeof s[k] == 'string') && (s[k].length > 64)) { delete s[k]; }
                         }
                     }
                 } catch (ex) {}

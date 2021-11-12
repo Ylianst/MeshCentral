@@ -7296,6 +7296,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             out.desktopsettings = JSON.stringify(out.desktopsettings);
         }
         if ((typeof state.deskKeyShortcuts == 'string') && (state.deskKeyShortcuts.length < 2048)) { out.deskKeyShortcuts = state.deskKeyShortcuts; }
+        if ((typeof state.deskStrings == 'string') && (state.deskStrings.length < 10000)) { out.deskStrings = state.deskStrings; }
         return JSON.stringify(out);
     }
 
