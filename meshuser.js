@@ -360,7 +360,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // Check if we have too many user sessions
             if (((typeof domain.limits.maxusersessions == 'number') && (domainUserSessionCount >= domain.limits.maxusersessions)) || ((typeof domain.limits.maxsingleusersessions == 'number') && (selfUserSessionCount >= domain.limits.maxsingleusersessions))) {
-                ws.send(JSON.stringify({ action: 'stopped', msg: 'Session count exceed' }));
+                try { ws.send(JSON.stringify({ action: 'stopped', msg: 'Session count exceed' })); } catch (ex) { }
                 try { ws.close(); } catch (e) { }
                 return;
             }
@@ -414,7 +414,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 var meshrights = parent.GetMeshRights(user, id);
                                 if ((meshrights === MESHRIGHT_ADMIN) || ((meshrights & MESHRIGHT_LIMITEVENTS) == 0) || (ids.indexOf(user._id) >= 0)) {
                                     // We have the device group rights to see this event or we are directly targetted by the event
-                                    ws.send(JSON.stringify({ action: 'event', event: event }));
+                                    try { ws.send(JSON.stringify({ action: 'event', event: event })); } catch (ex) { }
                                 } else {
                                     // Check if no other users are targeted by the event, if not, we can get this event.
                                     var userTarget = false;
@@ -424,16 +424,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             } else if (event.ugrpid != null) {
                                 if ((user.siteadmin & SITERIGHT_USERGROUPS) != 0) {
                                     // If we have the rights to see users in a group, send the group as is.
-                                    ws.send(JSON.stringify({ action: 'event', event: event }));
+                                    try { ws.send(JSON.stringify({ action: 'event', event: event })); } catch (ex) { }
                                 } else {
                                     // We don't have the rights to see otehr users in the user group, remove the links that are not for ourselves.
                                     var links = {};
                                     if (event.links) { for (var i in event.links) { if ((i == user._id) || i.startsWith('mesh/') || i.startsWith('node/')) { links[i] = event.links[i]; } } }
-                                    ws.send(JSON.stringify({ action: 'event', event: { ugrpid: event.ugrpid, domain: event.domain, time: event.time, name: event.name, action: event.action, username: event.username, links: links, h: event.h } }));
+                                    try { ws.send(JSON.stringify({ action: 'event', event: { ugrpid: event.ugrpid, domain: event.domain, time: event.time, name: event.name, action: event.action, username: event.username, links: links, h: event.h } })); } catch (ex) { }
                                 }
                             } else {
                                 // This is not a device group event, we can get this event.
-                                ws.send(JSON.stringify({ action: 'event', event: event }));
+                                try { ws.send(JSON.stringify({ action: 'event', event: event })); } catch (ex) { }
                             }
                         }
                     } catch (ex) { console.log(ex); }
@@ -4467,7 +4467,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'userWebState': {
                 if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
-                if (common.validateString(command.state, 1, 10000) == false) break; // Check state size, no more than 10k
+                if (common.validateString(command.state, 1, 30000) == false) break; // Check state size, no more than 30k
                 command.state = parent.filterUserWebState(command.state); // Filter the state to remove anything bad
                 if ((command.state == null) || (typeof command.state !== 'string')) break; // If state did not validate correctly, quit here.
                 db.Set({ _id: 'ws' + user._id, state: command.state });
