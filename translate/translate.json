@@ -1122,6 +1122,7 @@
     },
     {
       "en": ", View only desktop",
+      "fr": ", Visionner uniquement le bureau",
       "xloc": [
         "default.handlebars->39->906"
       ]
@@ -4057,6 +4058,7 @@
       "en": "AMT-Redir",
       "nl": "AMT-Redir",
       "es": "AMT-Redir",
+      "fr": "AMT-Redir",
       "xloc": [
         "default.handlebars->39->2625"
       ]
@@ -4065,6 +4067,7 @@
       "en": "AMT-WSMAN",
       "nl": "AMT-WSMAN",
       "es": "AMT-WSMAN",
+      "fr": "AMT-WSMAN",
       "xloc": [
         "default.handlebars->39->2624"
       ]
@@ -4552,6 +4555,7 @@
       "en": "Account created, name is {0}.",
       "nl": "Account aangemaakt, naam is {0}.",
       "es": "Cuenta creada, el nombre es {0}.",
+      "fr": "Compte créé, l'identifiant est : {0}.",
       "xloc": [
         "default.handlebars->39->2174"
       ]
@@ -5112,6 +5116,7 @@
       "pl": "Aktywny użytkownik",
       "pt-br": "Usuario activo",
       "es": "Usuario activo",
+      "fr": "Utilisateur actif",
       "xloc": [
         "default.handlebars->39->796"
       ]
@@ -5122,6 +5127,7 @@
       "pl": "Aktywni użytkownicy",
       "pt-br": "Usuarios activos",
       "es": "Usuarios activos",
+      "fr": "Utilisateurs actifs",
       "xloc": [
         "default.handlebars->39->795"
       ]
@@ -6121,6 +6127,7 @@
     },
     {
       "en": "Added device share {0} with unlimited time.",
+      "fr": "Ajout du partage de l'appareil {0} sans limitation de durée.",
       "xloc": [
         "default.handlebars->39->2177"
       ]
@@ -6789,6 +6796,7 @@
     },
     {
       "en": "Agent Self-Share",
+      "fr": "Auto-partage de l'agent",
       "xloc": [
         "default.handlebars->39->910"
       ]
@@ -6989,6 +6997,7 @@
       "en": "Agent connected with limited privilages",
       "nl": "Agent verbonden met beperkte privileges",
       "es": "Agente conectado con permisos limitados",
+      "fr": "Agent connecté avec des privilèges limités",
       "xloc": [
         "default.handlebars->39->230"
       ]
@@ -7022,6 +7031,7 @@
       "nl": "Agent has hcontrole wordt overgeslagen, dit is onveilig.",
       "pl": "Sprawdzanie skrótu agenta jest pomijane, jest to niebezpieczne.",
       "es": "Se ha omitido la comprobación hash del agente, esto es inseguro.",
+      "fr": "La vérification du hachage de l'agent a été ignorée. Cette action n'est pas sure.",
       "xloc": [
         "default.handlebars->39->87"
       ]
@@ -9945,6 +9955,7 @@
     },
     {
       "en": "Backup path can't be set within meshcentral-data folder, backup settings ignored.",
+      "fr": "Le chemin de sauvegarde ne peut pas être défini dans le dossier meshcentral-data, les paramètres de sauvegarde sont ignorés.",
       "xloc": [
         "default.handlebars->39->99"
       ]
@@ -10455,6 +10466,7 @@
       "en": "Bytes In",
       "nl": "Bytes in",
       "es": "Bytes entrantes",
+      "fr": "Octets entrants",
       "xloc": [
         "default.handlebars->39->2617"
       ]
@@ -10463,6 +10475,7 @@
       "en": "Bytes Out",
       "nl": "Bytes uit",
       "es": "Bytes salientes",
+      "fr": "Octets sortants",
       "xloc": [
         "default.handlebars->39->2618"
       ]
@@ -10596,6 +10609,7 @@
       "nl": "CIRA lokale FQDN's genegeerd wanneer server in LAN-only of WAN-only modus.",
       "pl": "Lokalna nazwa FQDN CIRA jest ignorowana, gdy serwer działa w trybie tylko LAN lub tylko WAN.",
       "es": "Los FQDN locales de CIRA no se usan cuando el servidor está en modo LAN-only o WAN-only.",
+      "fr": "Les noms locaux (FDQN) CIRA sont ignorés lorsque le serveur est configuré en LAN seulement ou en WAN seulement.",
       "xloc": [
         "default.handlebars->39->85"
       ]
@@ -10876,6 +10890,7 @@
       "nl": "Er mogen niet meer dan 4 CIRA lokale FQDN's zijn. Waarde wordt genegeerd.",
       "pl": "Nie może mieć więcej niż 4 lokalnych FQDN CIRA. Ignorowanie wartości.",
       "es": "No puede haber más de 4 FQDN locales de CIRA. Valor ignorado.",
+      "fr": "Impossible d'avoir plus de 4 noms complets de CIRA (FQDN) . Valeur ignorée.",
       "xloc": [
         "default.handlebars->39->86"
       ]
@@ -11519,6 +11534,7 @@
       "en": "Changed account display name to {0}.",
       "nl": "Weergavenaam account gewijzigd in {0}.",
       "es": "Cambiado el nombre visible de la cuenta a {0}.",
+      "fr": "Le nom du compte a changé : {0}.",
       "xloc": [
         "default.handlebars->39->2173"
       ]
@@ -14287,6 +14303,7 @@
       "en": "Connected devices:",
       "nl": "Verbonden apparaten:",
       "es": "Dispositivos conectados:",
+      "fr": "Appareils connectés :",
       "xloc": [
         "device-notify.html->2->5->1",
         "device-notify.txt"
@@ -14384,6 +14401,7 @@
     {
       "en": "Connecting to server...",
       "es": "Conectando al servidor...",
+      "fr": "Connexion au serveur ...",
       "xloc": [
         "player.handlebars->3->16"
       ]
@@ -19268,6 +19286,7 @@
       "nl": "Verbreken en vergrendelen",
       "pl": "Odłącz i zablokuj",
       "es": "Desconectar y bloquear",
+      "fr": "Déconnexion et verrouillage",
       "xloc": [
         "default.handlebars->deskDisconnectContextMenu->1"
       ]
@@ -19295,6 +19314,7 @@
     {
       "en": "Disconnect this session",
       "es": "Desconectar esta sesión",
+      "fr": "Déconnecter cette session",
       "xloc": [
         "default-mobile.handlebars->11->195",
         "default-mobile.handlebars->11->199",
@@ -19355,6 +19375,7 @@
       "en": "Disconnected devices:",
       "nl": "Losgekoppelde apparaten:",
       "es": "Dispositivos desconectados:",
+      "fr": "Appareils déconnectés :",
       "xloc": [
         "device-notify.html->2->7->1",
         "device-notify.txt"
@@ -21537,6 +21558,7 @@
       "en": "Edit User Group Features",
       "nl": "Functies van gebruikersgroepen bewerken",
       "es": "Editar características del grupo de usuarios",
+      "fr": "Modifier les caractéristiques du groupe",
       "xloc": [
         "default.handlebars->39->2379"
       ]
@@ -21760,6 +21782,7 @@
       "en": "Email Connect",
       "nl": "Email verbinden",
       "es": "Correo electrónico conectado",
+      "fr": "Connexion par mail",
       "xloc": [
         "default.handlebars->39->1773",
         "default.handlebars->39->812"
@@ -21769,6 +21792,7 @@
       "en": "Email Disconnect",
       "nl": "Email verbroken",
       "es": "Correo electrónico desconectado",
+      "fr": "Déconnexion par mail",
       "xloc": [
         "default.handlebars->39->1774",
         "default.handlebars->39->813"
@@ -21778,6 +21802,7 @@
       "en": "Email Notifications",
       "nl": "Email meldingen",
       "es": "Notificaciones por correo electrónico",
+      "fr": "Notifications par mail",
       "xloc": [
         "default.handlebars->39->1974",
         "default.handlebars->39->915"
@@ -25750,6 +25775,7 @@
       "en": "Generate Report",
       "nl": "Genereer rapport",
       "es": "Generar informe",
+      "fr": "Générer le rapport",
       "xloc": [
         "default.handlebars->39->2609"
       ]
@@ -25758,6 +25784,7 @@
       "en": "Generate Report...",
       "nl": "Genereer rapport...",
       "es": "Generar informe...",
+      "fr": "Générer le rapport ...",
       "xloc": [
         "default.handlebars->container->column_l->p60->3->1->0->3->3"
       ]
@@ -25935,6 +25962,7 @@
       "nl": "Klembord ophalen",
       "pl": "Pobierz schowek",
       "es": "Obtener portapapeles",
+      "fr": "Récupérer le presse-papier",
       "xloc": [
         "default.handlebars->39->1172"
       ]
@@ -26536,6 +26564,7 @@
       "en": "Guest",
       "nl": "Gast",
       "es": "Invitado",
+      "fr": "Invité",
       "xloc": [
         "default.handlebars->39->2615"
       ]
@@ -28631,6 +28660,7 @@
       "en": "Intel AMT CIRA connected",
       "nl": "Intel AMT CIRA verbonden",
       "es": "Intel AMT CIRA conectado",
+      "fr": "Intel AMT CIRA connecté",
       "xloc": [
         "default.handlebars->39->232"
       ]
@@ -28639,6 +28669,7 @@
       "en": "Intel AMT CIRA disconnected",
       "nl": "Intel AMT CIRA verbroken",
       "es": "Intel AMT CIRA desconectado",
+      "fr": "Intel AMT CIRA déconnecté",
       "xloc": [
         "default.handlebars->39->236"
       ]
@@ -28647,6 +28678,7 @@
       "en": "Intel AMT detected",
       "nl": "Intel AMT gedetecteerd",
       "es": "Intel AMT detectado",
+      "fr": "Intel AMT détecté",
       "xloc": [
         "default.handlebars->39->231"
       ]
@@ -28678,6 +28710,7 @@
       "en": "Intel AMT not detected",
       "nl": "Intel AMT niet gedetecteerd",
       "es": "Intel AMT no detectado",
+      "fr": "Intel AMT non détecté",
       "xloc": [
         "default.handlebars->39->235"
       ]
@@ -30101,6 +30134,7 @@
       "nl": "Ongeldige Let's Encrypt email adres, onmogelijk om te verhelpen: {0}",
       "pl": "Nieprawidłowy adres e-mail Let's Encrypt, nie można go rozwiązać: {0}",
       "es": "Dirección de correo Let's Encrypt no válida, no se puede resolver: {0}",
+      "fr": "L'adresse email fournit pour Let's Encrypt est invalide. Impossible de résoudre : {0}",
       "xloc": [
         "default.handlebars->39->93"
       ]
@@ -30110,6 +30144,7 @@
       "nl": "Ongeldige Let's Encrypt hostnamen.",
       "pl": "Nieprawidłowe nazwy hostów Let's Encrypt.",
       "es": "Nombres de host Let's Encrypt no válido.",
+      "fr": "Noms d'hôtes Let's Encrypt invalide.",
       "xloc": [
         "default.handlebars->39->89"
       ]
@@ -30119,6 +30154,7 @@
       "nl": "Ongeldige Let's Encrypt namen, mag geen * bevatten.",
       "pl": "Nieprawidłowe nazwy Let's Encrypt, nie mogą zawierać *.",
       "es": "Nombres Let's Encrypt no válidos, no pueden contener un *.",
+      "fr": "Noms Let's Encrypt invalides. Il ne doit pas contenir *.",
       "xloc": [
         "default.handlebars->39->90"
       ]
@@ -30128,6 +30164,7 @@
       "nl": "Ongeldige Let's Encrypt-namen, onmogelijk om te verhelpen: {0}",
       "pl": "Nieprawidłowe nazwy Let's Encrypt, niemożliwe do rozwiązania: {0}",
       "es": "Nombres Let's Encrypt no válidos, no se puede resolver: {0}",
+      "fr": "Noms Let-s Encrypt invalide. Impossible de résoudre : {0}",
       "xloc": [
         "default.handlebars->39->92"
       ]
@@ -30209,6 +30246,7 @@
       "nl": "Ongeldige \\\"LoginCookieEncryptionKey\\\" in config.json.",
       "pl": "Nieprawidłowy \\\"LoginCookieEncryptionKey\\\" w config.json.",
       "es": "\\\"LoginCookieEncryptionKey\\\" no válido en config.json.",
+      "fr": "Le champ \\\"LoginCookieEncryptionKey\\\" est invalide dans le fichier de configuration (config.json).",
       "xloc": [
         "default.handlebars->39->98"
       ]
@@ -31257,6 +31295,7 @@
     },
     {
       "en": "Keyboard Strings Customization",
+      "fr": "Personnalisation du clavier",
       "xloc": [
         "default.handlebars->39->1168"
       ]
@@ -31804,6 +31843,7 @@
       "en": "Last 7 days",
       "nl": "Laaste 7 dagen",
       "es": "Últimos 7 días",
+      "fr": "7 derniers jours",
       "xloc": [
         "default.handlebars->39->2602"
       ]
@@ -31860,6 +31900,7 @@
       "en": "Last Day",
       "nl": "Laaste dag",
       "es": "Último día",
+      "fr": "Dernier jour",
       "xloc": [
         "default.handlebars->39->2601"
       ]
@@ -32401,6 +32442,7 @@
       "en": "Left Web-RDP session after {0} second(s).",
       "nl": "Web-RDP sessie verlaten na {0} seconde(n).",
       "es": "Abandonar la sesión Web-RDP tras {0} segundo(s).",
+      "fr": "Fin de la session Web-RDP dans {0} seconde(s).",
       "xloc": [
         "default.handlebars->39->2171"
       ]
@@ -32409,6 +32451,7 @@
       "en": "Left Web-SFTP session after {0} second(s).",
       "nl": "Web-SFTP sessie verlaten na {0} seconde(n).",
       "es": "Abandonar la sesión Web-SFTP tras {0} segundo(s).",
+      "fr": "Fin de la session Web-SFTP dans {0} seconde(s).",
       "xloc": [
         "default.handlebars->39->2170"
       ]
@@ -32417,6 +32460,7 @@
       "en": "Left Web-SSH session after {0} second(s).",
       "nl": "Web-SSH sessie verlaten na {0} seconde(n).",
       "es": "Abandonar la sesión Web-SSH tras {0} segundo(s).",
+      "fr": "Fin de la session Web-SSH dans {0} seconde(s).",
       "xloc": [
         "default.handlebars->39->2169"
       ]
@@ -32425,6 +32469,7 @@
       "en": "Left Web-VNC session after {0} second(s).",
       "nl": "Web-VNC sessie verlaten na {0} seconde(n).",
       "es": "Abandonar la sesión Web-VNC tras {0} segundo(s).",
+      "fr": "Fin de la session Web-VNC dans {0} seconde(s).",
       "xloc": [
         "default.handlebars->39->2172"
       ]
@@ -32486,6 +32531,7 @@
       "en": "Left the desktop multiplex session after {0} second(s).",
       "nl": "Verliet de desktop multiplex sessie na {0} seconde(n).",
       "es": "Abandonar la sesión de escritorio multiplexada tras {0} segundo(s).",
+      "fr": "Fin de la connexion au bureau multiplexé dans {0} second(s).",
       "xloc": [
         "default.handlebars->39->2168"
       ]
@@ -32494,6 +32540,7 @@
       "en": "Length",
       "nl": "Duur",
       "es": "Longitud",
+      "fr": "Longueur",
       "xloc": [
         "default.handlebars->39->2616"
       ]
@@ -33741,6 +33788,7 @@
       "nl": "Vergrendelen bij verbreken",
       "pl": "Zablokuj na Odłącz",
       "es": "Bloquear al desconectar",
+      "fr": "Verrouiller lors de la déconnexion",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->6->3->d7deskAutoLockLabel",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->d7deskAutoLockLabel"
@@ -36182,6 +36230,7 @@
       "nl": "MeshCentral SSH ondersteuning vereist NodeJS 11 of hoger.",
       "pl": "Obsługa MeshCentral SSH wymaga NodeJS 11 lub nowszego.",
       "es": "El soporte SSH de MeshCentral requiere NodeJS 11 o superior.",
+      "fr": "Le support de SSH dans Meshcentral nécessite NodeJS 11 ou plus.",
       "xloc": [
         "default.handlebars->39->79"
       ]
@@ -36839,6 +36888,7 @@
       "nl": "Ontbrekend Let's Encrypt e-mailadres.",
       "pl": "Brak adresu e-mail Let's Encrypt.",
       "es": "Falta la dirección de correo de Let's Encrypt.",
+      "fr": "L'adresse mail pour Let's Encrypt est absente.",
       "xloc": [
         "default.handlebars->39->88"
       ]
@@ -36848,6 +36898,7 @@
       "nl": "Ontbrekende WebDAV parameters.",
       "pl": "Brak parametrów WebDAV.",
       "es": "Faltan parámetros WebDAV.",
+      "fr": "Paramètres WebDAV absents.",
       "xloc": [
         "default.handlebars->39->80"
       ]
@@ -37347,6 +37398,7 @@
       "en": "My Reports",
       "nl": "Mijn rapporten",
       "es": "Mis informes",
+      "fr": "Mes rapports",
       "xloc": [
         "default.handlebars->container->column_l->p60->p60title->1"
       ]
@@ -38751,6 +38803,7 @@
       "en": "No New Devices",
       "nl": "Geen nieuwe apparaten",
       "es": "No hay nuevos dispositivos",
+      "fr": "Aucun nouvel appareil",
       "xloc": [
         "default.handlebars->39->2306"
       ]
@@ -38806,6 +38859,7 @@
       "pl": "Brak zdalnego polecenia",
       "pt-br": "Sem Comando Remoto",
       "es": "No hay Comando remoto",
+      "fr": "Pas de commande à distante",
       "xloc": [
         "default.handlebars->39->2426",
         "default.handlebars->39->2495"
@@ -38817,6 +38871,7 @@
       "pl": "Brak pilota zdalnego sterowania",
       "pt-br": "Sem Controle Remoto",
       "es": "No hay Control remoto",
+      "fr": "Pas de contrôle à distance",
       "xloc": [
         "default.handlebars->39->2419",
         "default.handlebars->39->2488"
@@ -38828,6 +38883,7 @@
       "pl": "Brak resetowania/wyłączania",
       "pt-br": "Sem Resetar/Desligar",
       "es": "No hay Reiniciar/Apagar",
+      "fr": "Pas de redémarrage/arrêt",
       "xloc": [
         "default.handlebars->39->2428",
         "default.handlebars->39->2497"
@@ -38993,6 +39049,7 @@
       "pl": "Bez odinstalowywania",
       "pt-br": "Não desinstalar",
       "es": "No hay Desinstalar",
+      "fr": "Pas de désinstallation",
       "xloc": [
         "default.handlebars->39->2425",
         "default.handlebars->39->2494"
@@ -39004,6 +39061,7 @@
       "pl": "Bez budzenia",
       "pt-br": "Não acordar",
       "es": "No hay Despertar",
+      "fr": "Pas de réveil",
       "xloc": [
         "default.handlebars->39->2427",
         "default.handlebars->39->2496"
@@ -39492,6 +39550,7 @@
     },
     {
       "en": "No keyboard strings defined",
+      "fr": "Aucune personnalisation du clavier définie",
       "xloc": [
         "default.handlebars->39->1169"
       ]
@@ -41264,6 +41323,7 @@
       "pl": "OpenBSD x86-64",
       "pt-br": "OpenBSD x86-64",
       "es": "OpenBSD x86-64",
+      "fr": "OpenBSD x86-64",
       "xloc": [
         "default-mobile.handlebars->11->43",
         "default.handlebars->39->50"
@@ -41295,6 +41355,7 @@
       "pl": "OpenWRT x86-64",
       "pt-br": "OpenWRT x86-64",
       "es": "OpenWRT x86-64",
+      "fr": "OpenWRT x86-64",
       "xloc": [
         "default-mobile.handlebars->11->42",
         "default.handlebars->39->49"
@@ -47319,6 +47380,7 @@
       "en": "Removed account display name.",
       "nl": "Weergavenaam account verwijderd.",
       "es": "Eliminado el nombre visible de la cuenta.",
+      "fr": "Suppression du nom du compte",
       "xloc": [
         "default.handlebars->39->2175"
       ]
@@ -47719,6 +47781,7 @@
       "en": "Report returned no entires.",
       "nl": "Rapport heeft geen vermeldingen geretourneerd.",
       "es": "El informe no ha devuelto contenido.",
+      "fr": "Le rapport n'a renvoyé aucune données.",
       "xloc": [
         "default.handlebars->39->2619"
       ]
@@ -47746,6 +47809,7 @@
       "en": "Reports",
       "nl": "Rapport",
       "es": "Informes",
+      "fr": "Rapports",
       "xloc": [
         "default.handlebars->container->topbar->1->1->EventsSubMenuSpan->EventsSubMenu->1->0->EventsReport"
       ]
@@ -48816,6 +48880,7 @@
       "nl": "lopende",
       "pl": "Bieganie",
       "es": "Ejecutando",
+      "fr": "En cours d'exécution",
       "xloc": [
         "default.handlebars->39->1180",
         "default.handlebars->39->1184"
@@ -49112,6 +49177,7 @@
       "nl": "SMS gateway heeft beperkte mogelijkheden in LAN modus.",
       "pl": "Bramka SMS ma ograniczone zastosowanie w trybie LAN.",
       "es": "La puerta de enlace SMS tiene un uso limitado en modo LAN.",
+      "fr": "La passerelle SMS est bridée en mode LAN.",
       "xloc": [
         "default.handlebars->39->97"
       ]
@@ -49215,6 +49281,7 @@
       "nl": "SMTP server heeft beperkte mogelijkheden in LAN modus.",
       "pl": "Serwer SMTP ma ograniczone wykorzystanie w trybie LAN.",
       "es": "El servidor SMTP tiene un uso limitado en modo LAN.",
+      "fr": "Le serveur SMTP est bridé en mode LAN.",
       "xloc": [
         "default.handlebars->39->96"
       ]
@@ -49928,6 +49995,7 @@
       "nl": "Geheim",
       "pl": "Sekret",
       "es": "Secreto",
+      "fr": "Secret",
       "xloc": [
         "default.handlebars->39->191"
       ]
@@ -50152,6 +50220,7 @@
       "en": "Select Date & Time...",
       "nl": "Selecteer datum & Tijd...",
       "es": "Seleccionad fecha y hora...",
+      "fr": "Sélectionner la date et l'heure",
       "xloc": [
         "default.handlebars->39->1004",
         "default.handlebars->39->2607"
@@ -50895,6 +50964,7 @@
       "nl": "SendGrid server heeft beperkte mogelijkeden LAN modus.",
       "pl": "Serwer SendGrid ma ograniczone zastosowanie w trybie LAN.",
       "es": "El servidor SendGrid tiene un uso limitado en modo LAN.",
+      "fr": "Le serveur SendGrid a une utilisation limitée en mode LAN.",
       "xloc": [
         "default.handlebars->39->95"
       ]
@@ -51944,6 +52014,7 @@
       "en": "Session timeout.",
       "nl": "Sessie timeout.",
       "es": "La sesión ha expirado.",
+      "fr": "Durée de la session.",
       "xloc": [
         "ssh.handlebars->3->20"
       ]
@@ -52003,6 +52074,7 @@
       "nl": "Klembord instellen",
       "pl": "Ustaw schowek",
       "es": "Asignar portapapeles",
+      "fr": "Mettre dans le presse-papier",
       "xloc": [
         "default.handlebars->39->1173"
       ]
@@ -52697,7 +52769,8 @@
     {
       "en": "Show Guest Name",
       "nl": "Toon gasten naam",
-      "es": "Mostrar nombre de invitado"
+      "es": "Mostrar nombre de invitado",
+      "fr": "Montrer le nom de l'invité"
     },
     {
       "cs": "Zobrazit nápovědu",
@@ -52799,6 +52872,7 @@
       "en": "Show Traffic",
       "nl": "Toon verkeer",
       "es": "Mostrar tráfico",
+      "fr": "Montrer le traffic",
       "xloc": [
         "default.handlebars->39->2608"
       ]
@@ -56573,6 +56647,7 @@
       "en": "The following devices have changed their connection state.",
       "nl": "De volgende apparaten hebben hun verbindingsstatus gewijzigd.",
       "es": "Los siguientes dispositivos han cambiado su estado de conexión.",
+      "fr": "Ces appareils ont changé leur statut de connexion :",
       "xloc": [
         "device-notify.html->2->3->1",
         "device-notify.txt"
@@ -57815,6 +57890,7 @@
       "en": "To unsubscribe,",
       "nl": "Uitschrijven,",
       "es": "Para darse de baja,",
+      "fr": "Pour se désinscrire,",
       "xloc": [
         "device-notify.html->2->9->1"
       ]
@@ -57823,6 +57899,7 @@
       "en": "To unsubscribe, load this link within 1 hour of getting this message: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "nl": "Om je af te melden, open je deze link binnen 1 uur nadat je dit bericht hebt ontvangen: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "es": "Para darse de baja, abrir este enlace antes de 1 hora desde la recepción de este mensaje: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
+      "fr": "Pour se désinscrire, chargez le lien suivant (valable une heure à réception de ce message) : [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "xloc": [
         "device-notify.txt"
       ]
@@ -59211,6 +59288,7 @@
       "nl": "Kan CloudFlare vertrouwde proxy IPv6 adreslijst niet laden.",
       "pl": "Nie można załadować listy adresów IPv6 zaufanego serwera proxy CloudFlare.",
       "es": "No se puede cargar la lista de direcciones IPv6 de proxy de confianza Cloudfare.",
+      "fr": "Impossible de charger la liste d'adresses IPv6 du proxy de confiance CloudFlare.",
       "xloc": [
         "default.handlebars->39->94"
       ]
@@ -59220,6 +59298,7 @@
       "nl": "Kan Intel AMT TLS rootcertificaat voor standaarddomein niet laden.",
       "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny domyślnej.",
       "es": "No se puede cargar el certificado raíz TLS Intel AMT para el dominio por defecto.",
+      "fr": "Impossible de charger le certificat racine Intel AMT TLS pour le domaine par défaut.",
       "xloc": [
         "default.handlebars->39->83"
       ]
@@ -59229,6 +59308,7 @@
       "nl": "Kan Intel AMT TLS rootcertificaat voor domein {0} niet laden.",
       "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny {0}.",
       "es": "No se puede cargar el certificado raíz TLS Intel AMT para el dominio {0}.",
+      "fr": "Impossible de charger le certificat racine Intel AMT TLS pour le domaine {0}.",
       "xloc": [
         "default.handlebars->39->84"
       ]
@@ -59356,6 +59436,7 @@
       "nl": "Kan de Let's Encrypt module niet instellen.",
       "pl": "Nie można skonfigurować modułu Let's Encrypt.",
       "es": "No se puede configurar el módulo Let's Encrypt.",
+      "fr": "Impossible de configurer le module Let's Encrypt.",
       "xloc": [
         "default.handlebars->39->91"
       ]
@@ -59688,6 +59769,7 @@
       "en": "Unknown User",
       "nl": "Onbekende gebruiker",
       "es": "Usuario desconocido",
+      "fr": "Utilisateur inconnu",
       "xloc": [
         "default.handlebars->39->2636",
         "default.handlebars->39->2641"
@@ -59846,6 +59928,7 @@
       "nl": "Niet herkende configuratie instelling \\\"{0}\\\".",
       "pl": "Nierozpoznana opcja konfiguracji \\\"{0}\\\".",
       "es": "Opción de configuración desconocida \\\"{0}\\\".",
+      "fr": "Option de configuration non recnonnue \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->81"
       ]
@@ -61182,6 +61265,7 @@
       "en": "User Traffic Usage",
       "nl": "Gebruik van gebruikersverkeer",
       "es": "Uso de tráfico de usuario",
+      "fr": "Utilisation du traffic utilisateur",
       "xloc": [
         "default.handlebars->39->2593"
       ]
@@ -61458,6 +61542,7 @@
       "en": "User notifications changed",
       "nl": "Gebruikersmeldingen gewijzigd",
       "es": "Han cambiado las notificaciones del usuario",
+      "fr": "Notifications aux utilisateurs changés",
       "xloc": [
         "default.handlebars->39->2176"
       ]
@@ -62964,6 +63049,7 @@
       "en": "Web Page Notifications",
       "nl": "Webpagina meldingen",
       "es": "Notificaciones de página web",
+      "fr": "Notifications de pages Web",
       "xloc": [
         "default.handlebars->39->1970",
         "default.handlebars->39->911"
@@ -63094,6 +63180,7 @@
       "en": "Web-SFTP",
       "nl": "Web-SFTP",
       "es": "Web-SFTP",
+      "fr": "Web-SFTP",
       "xloc": [
         "default.handlebars->39->2629"
       ]
@@ -63197,6 +63284,7 @@
       "nl": "WebSocket compressie is uitgeschakeld, deze functie werkt niet meer in NodeJS v11.11 tot v12.15 en v13.2",
       "pl": "Kompresja WebSocket jest wyłączona, ta funkcja nie działa w NodeJS v11.11 do v12.15 i v13.2",
       "es": "Desactivada la compresión WebSocket, esta característica no funciona en NodeJS v11.11 a v12.15 y v13.2",
+      "fr": "La compression de la WebSocket est désactivée. Cette fonctionnalité n'est plus disponible dans NodeJS v11.11 à v12.15 et v13.2",
       "xloc": [
         "default.handlebars->39->82"
       ]
@@ -64828,6 +64916,7 @@
       "en": "[[[CONNECTIONS]]]",
       "nl": "[[[CONNECTIONS]]]",
       "es": "[[[CONNECTIONS]]]",
+      "fr": "[[[CONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->5->3->0"
       ]
@@ -64836,6 +64925,7 @@
       "en": "[[[DISCONNECTIONS]]]",
       "nl": "[[[DISCONNECTIONS]]]",
       "es": "[[[DISCONNECTIONS]]]",
+      "fr": "[[[DISCONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->7->3->0"
       ]
@@ -64971,6 +65061,7 @@
       "en": "[[[SERVERNAME]]] - Device Notification",
       "nl": "[[[SERVERNAME]]] - Apparaatmelding",
       "es": "[[[SERVERNAME]]] - Notificación del dispositivo",
+      "fr": "[[[SERVERNAME]]] - Notification de l'appareil",
       "xloc": [
         "device-notify.html->0",
         "device-notify.html->2->1->1->0->1->1",
@@ -67297,6 +67388,7 @@
       "en": "within 1 hour of getting this message.",
       "nl": "binnen 1 uur na ontvangst van dit bericht.",
       "es": "en 1 hora desde la recepción de este mensaje.",
+      "fr": "dans l'heure suivant la réception de ce message.",
       "xloc": [
         "device-notify.html->2->9->1"
       ]
