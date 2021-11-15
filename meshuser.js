@@ -2006,7 +2006,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (group != null) {
                         if (group.links == null) { group.links = {}; }
 
-                        var unknownUsers = [], addedCount = 0, failCount = 0, knownUsers;
+                        var unknownUsers = [], addedCount = 0, failCount = 0, knownUsers = [];
                         for (var i in command.usernames) {
                             // Check if the user exists
                             var chguserid = 'user/' + addUserDomain.id + '/' + command.usernames[i].toLowerCase();
