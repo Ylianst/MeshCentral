@@ -110,7 +110,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTCONFIG', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTINFO', 'AMTINFOJSON', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE', 'AMTWIFI', 'AMTWAKE', 'AMTSTARTCONFIG', 'AMTSTOPCONFIG'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTCONFIG', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTINFO', 'AMTINFOJSON', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE', 'AMTWIFI', 'AMTWAKE', 'AMTSTARTCONFIG', 'AMTSTOPCONFIG', 'AMTDDNS'];
 
     // Load the action file
     var actionfile = null;
@@ -201,6 +201,7 @@ function run(argv) {
         console.log('  AmtWifi           - Intel AMT Wifi interface settings.');
         console.log('  AmtWake           - Intel AMT Wake Alarms.');
         console.log('  AmtRPE            - Intel AMT Remote Platform Erase.');
+        console.log('  AmtDDNS           - Intel AMT DDNS settings.');
         console.log('\r\nHelp on a specific action using:\r\n');
         console.log('  meshcmd help [action]');
         exit(0); return;
@@ -416,6 +417,15 @@ function run(argv) {
             console.log('  --nvm                     Perform clear BIOS NVM variables.');
             console.log('  --bios                    Perform BIOS reload of golden configuration.');
             console.log('  --csme                    Perform CSME unconfigure.');
+        } else if (action == 'amtddns') {
+            console.log('AmtDDNS is used to query and set the Intel AMT dynamic DNS settings. Example usage:\r\n\r\n  meshcmd amtddns --host 1.2.3.4 --user admin --pass mypassword');
+            console.log('\r\nRequired arguments:\r\n');
+            console.log('  --host [hostname]                The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --pass [password]                The Intel AMT login password.');
+            console.log('\r\nOptional arguments:\r\n');
+            console.log('  --set [disabled/dhcp/enabled]    Set the dynamic DNS mode.');
+            console.log('  --interval [minutes]             Set update interval in minutes, default is 1440, minimum is 20.');
+            console.log('  --ttl [seconds]                  Set time to live, default is 900.');
         } else {
             actions.shift();
             console.log('Invalid action, usage:\r\n\r\n  meshcmd help [action]\r\n\r\nValid actions are: ' + actions.join(', ') + '.');
@@ -784,6 +794,15 @@ function run(argv) {
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
         if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
         performAmtPlatformErase(args);
+    } else if (settings.action == 'amtddns') { // Perform Intel AMT dynamic DNS get/set
+        if (settings.hostname == null) { settings.hostname = '127.0.0.1'; }
+        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        if (args.set != null) { args.set = args.set.toLowerCase(); }
+        if ((args.set != null) && (args.set != 'enabled') && (args.set != 'dhcp') && (args.set != 'disabled')) { console.log('Intel AMT DDNS can only bet set to "enabled", "dhcp" or "disabled".'); }
+        if (args.interval != null) { args.interval = parseInt(args.interval); if ((typeof args.interval != 'number') || (isNaN(args.interval))) { console.log('Interval must be a number.'); exit(1); return; } if (args.interval < 20) { console.log('Interval must be at least 20 minutes.'); exit(1); return; } }
+        if (args.ttl != null) { args.ttl = parseInt(args.ttl); if ((typeof args.ttl != 'number') || (isNaN(args.ttl))) { console.log('TTL must be a number.'); exit(1); return; } }
+        performAmtDynamicDNS(args);
     } else if (settings.action == 'amtfeatures') { // Perform remote Intel AMT feature configuration operation
         if (settings.hostname == null) { settings.hostname = '127.0.0.1'; }
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
@@ -2619,6 +2638,68 @@ function performAmtWakeConfig1(stack, name, response, status, args) {
         exit(1);
     }
 }
+
+
+//
+// Intel AMT Dinamic DNS
+//
+
+function performAmtDynamicDNS(args) {
+    var transport = require('amt-wsman-duk');
+    var wsman = require('amt-wsman');
+    var amt = require('amt');
+    wsstack = new wsman(transport, settings.hostname, settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls);
+    amtstack = new amt(wsstack);
+    amtstack.BatchEnum(null, ['*AMT_GeneralSettings'], performAmtDynamicDNS1, args);
+}
+
+function performAmtDynamicDNS1(stack, name, response, status, args) {
+    debug(0, "performAmtDynamicDNS1(" + status + "): " + JSON.stringify(response, null, 2));
+    if (status == 200) {
+        // View the current state
+        var body = response['AMT_GeneralSettings'].responses.Body;
+        var ddnsenabled = body['DDNSUpdateEnabled'];
+        var ddnsserver = body['DDNSUpdateByDHCPServerEnabled'];
+        var ddnsinverval = body['DDNSPeriodicUpdateInterval'];
+        var ddnsttl = body['DDNSTTL'];
+        var ddnsmode = (ddnsenabled == false) ? ((ddnsserver == true) ? 'DHCP' : 'Disabled') : 'Enabled';
+        if (args.set || args.ttl || args.interval) {
+            if (args.set == 'enabled') {
+                body['DDNSUpdateEnabled'] = true;
+                body['DDNSUpdateByDHCPServerEnabled'] = false;
+            } else {
+                if (args.set == 'dhcp') {
+                    body['DDNSUpdateEnabled'] = false;
+                    body['DDNSUpdateByDHCPServerEnabled'] = true;
+                } else {
+                    body['DDNSUpdateEnabled'] = false;
+                    body['DDNSUpdateByDHCPServerEnabled'] = false;
+                }
+            }
+            if (args.interval) { body['DDNSPeriodicUpdateInterval'] = args.interval; }
+            if (args.ttl) { body['DDNSTTL'] = args.ttl; }
+            amtstack.Put('AMT_GeneralSettings', body, function (stack, name, response, status, args) {
+                if (status == 200) {
+                    delete args.set;
+                    delete args.ttl;
+                    delete args.interval;
+                    amtstack.BatchEnum(null, ['*AMT_GeneralSettings'], performAmtDynamicDNS1, args);
+                } else {
+                    console.log('Unable to set new values, error: ' + status);
+                    exit(1);
+                }
+            }, args);
+        } else {
+            if (ddnsmode == 'Enabled') {
+                console.log('Intel AMT DDNS mode: ' + ddnsmode + ', TTL: ' + ddnsttl + ' minute(s), Update Interval: ' + ddnsinverval + ' seconds(s).');
+            } else {
+                console.log('Intel AMT DDNS mode: ' + ddnsmode + '.');
+            }
+            exit(1);
+        }
+    } else { console.log("Error, status " + status + "."); exit(1); }
+}
+
 
 
 //
