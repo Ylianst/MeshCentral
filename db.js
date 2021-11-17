@@ -1976,6 +1976,7 @@ module.exports.CreateDB = function (parent, func) {
         // SSL options different on mariadb/mysql
         var sslOptions = '';
         if (obj.databaseType == 4) {
+            if (props.awsrds) { cmd += ' --single-transaction'; }
             if (props.ssl) {
                 sslOptions = ' --ssl';
                 if (props.ssl.cacertpath) sslOptions = ' --ssl-ca=' + props.ssl.cacertpath;
