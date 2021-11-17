@@ -1303,7 +1303,7 @@
             QV('managePhoneNumber1', (features & 0x02000000) && (features & 0x04000000));
             QV('managePhoneNumber2', (features & 0x02000000) && !(features & 0x04000000));
 
-            //attemptWebRTC = false; // For now, default WebRTC off unless we set it in the URL.
+            attemptWebRTC = false; // For now, default WebRTC off unless we set it in the URL.
             if (args.webrtc != null) { attemptWebRTC = (args.webrtc == 1); }
 
             // Session Refresh Timer
