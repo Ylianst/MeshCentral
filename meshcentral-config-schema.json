@@ -22,6 +22,7 @@
             "password": { "type": "string", "description": "MariaDB password" },
             "connectionLimit": { "type": "number", "description": "MariaDB connection limit" },
             "database": { "type": "string", "default": "meshcentral", "description": "Name of MariaDB database used" },
+            "awsrds": { "type": "boolean", "default": false, "description": "Set true to resolve LOCK TABLE permissions on AWS RDS." },
             "ssl": { 
               "type": "object",
               "description": "SSL Options. Set to true (boolean) for default options.",
@@ -43,6 +44,7 @@
             "user": { "type": "string", "description": "MySQL username" },
             "password": { "type": "string", "description": "MySQL password" },
             "database": { "type": "string", "default": "meshcentral", "description": "Name of MySQL database used" },
+            "awsrds": { "type": "boolean", "default": false, "description": "Set true to resolve LOCK TABLE permissions on AWS RDS." },
             "ssl": { 
               "type": "object",
               "description": "SSL Options. Set to true (boolean) for default options.",
