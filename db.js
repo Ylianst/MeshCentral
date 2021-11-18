@@ -1973,10 +1973,11 @@ module.exports.CreateDB = function (parent, func) {
         if (props.host) { cmd += ' -h ' + props.host; }
         if (props.port) { cmd += ' -P ' + props.port; }
 
+        if (props.awsrds) { cmd += ' --single-transaction'; }
+
         // SSL options different on mariadb/mysql
         var sslOptions = '';
         if (obj.databaseType == 4) {
-            if (props.awsrds) { cmd += ' --single-transaction'; }
             if (props.ssl) {
                 sslOptions = ' --ssl';
                 if (props.ssl.cacertpath) sslOptions = ' --ssl-ca=' + props.ssl.cacertpath;
