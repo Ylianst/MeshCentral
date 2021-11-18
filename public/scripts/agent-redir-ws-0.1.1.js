@@ -43,6 +43,18 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     // Private method
     //obj.debug = function (msg) { console.log(msg); }
 
+    // Display websocket or webrtc data to the console
+    function logData(e, name) {
+        if (typeof e.data == 'object') {
+            var view = new Uint8Array(e.data), cmd = (view[0] << 8) + view[1], cmdsize = (view[2] << 8) + view[3];
+            console.log(name + ' binary data', cmd, cmdsize, e.data.byteLength, buf2hex(e.data).substring(0, 24));
+        } else if (typeof e.data == 'string') {
+            console.log(name + ' string data', e.data.length, e.data);
+        } else {
+            console.log(name + ' unknown data', e.data);
+        }
+    }
+
     obj.Start = function (nodeid) {
         var url2, url = window.location.protocol.replace('http', 'ws') + '//' + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/' + obj.urlname + '?browser=1&p=' + obj.protocol + (nodeid?('&nodeid=' + nodeid):'') + '&id=' + obj.tunnelid;
         //if (serverPublicNamePort) { url2 = window.location.protocol.replace('http', 'ws') + '//' + serverPublicNamePort + '/meshrelay.ashx?id=' + obj.tunnelid; } else { url2 = url; }
@@ -54,7 +66,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         obj.socket.binaryType = 'arraybuffer';
         obj.socket.onopen = obj.xxOnSocketConnected;
         obj.socket.onmessage = obj.xxOnMessage;
-        //obj.socket.onmessage = function (e) { console.log('Websocket data', e.data); obj.xxOnMessage(e); }
+        //obj.socket.onmessage = function (e) { logData(e, 'WebSocket'); obj.xxOnMessage(e); }
         obj.socket.onerror = function (e) { /* console.error(e); */ }
         obj.socket.onclose = obj.xxOnSocketClosed;
         obj.xxStateChange(1);
@@ -140,7 +152,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
                         obj.webchannel = obj.webrtc.createDataChannel('DataChannel', {}); // { ordered: false, maxRetransmits: 2 }
                         obj.webchannel.binaryType = 'arraybuffer';
                         obj.webchannel.onmessage = obj.xxOnMessage;
-                        //obj.webchannel.onmessage = function (e) { console.log('WebRTC data', e.data); obj.xxOnMessage(e); }
+                        //obj.webchannel.onmessage = function (e) { logData(e, 'WebRTC'); obj.xxOnMessage(e); }
                         obj.webchannel.onopen = function () { obj.webRtcActive = true; performWebRtcSwitch(); };
                         obj.webchannel.onclose = function (event) { if (obj.webRtcActive) { obj.Stop(); } }
                         obj.webrtc.onicecandidate = function (e) {
@@ -287,6 +299,9 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         }
         obj.xxStateChange(0);
     }
+
+    // Buffer is an ArrayBuffer
+    function buf2hex(buffer) { return [...new Uint8Array(buffer)].map(x => x.toString(16).padStart(2, '0')).join(''); }
 
     return obj;
 }

@@ -55,7 +55,7 @@ var CreateKvmDataChannel = function (webchannel, module, keepalive) {
                 fileReader.readAsArrayBuffer(e.data);
             } else {
                 // IE10, readAsBinaryString does not exist, use an alternative.
-                var binary = "", bytes = new Uint8Array(e.data), length = bytes.byteLength;
+                var binary = '', bytes = new Uint8Array(e.data), length = bytes.byteLength;
                 for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
                 obj.xxOnSocketData(binary);
             }
@@ -99,7 +99,7 @@ var CreateKvmDataChannel = function (webchannel, module, keepalive) {
         if (!data) return;
         if (typeof data === 'object') {
             // This is an ArrayBuffer, convert it to a string array (used in IE)
-            var binary = "", bytes = new Uint8Array(data), length = bytes.byteLength;
+            var binary = '', bytes = new Uint8Array(data), length = bytes.byteLength;
             for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
             data = binary;
         }
