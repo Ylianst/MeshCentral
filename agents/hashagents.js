@@ -27,10 +27,10 @@ var agents = {
     'meshagent_osx-universal-64': 10005
 }
 
-var agentinfo = [];
+var agentinfo = {};
 for (var i in agents) {
     var info = getAgentInfo(i, agents[i]);
-    if (info != null) { agentinfo.push(info); }
+    if (info != null) { agentinfo[agents[i]] = info; }
 }
 console.log(JSON.stringify(agentinfo, null, 2));
 process.exit();
@@ -38,5 +38,5 @@ process.exit();
 function getAgentInfo(filename, id) {
     if (fs.existsSync(filename) != true) return null;
     var stats = fs.statSync(filename);
-    return { id: id, filename: filename, hash: getSHA384FileHash(filename).toString('hex'), size: stats.size, mtime: stats.mtime };
+    return { filename: filename, hash: getSHA384FileHash(filename).toString('hex'), size: stats.size, mtime: stats.mtime };
 }

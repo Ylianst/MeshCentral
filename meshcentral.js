@@ -2716,6 +2716,10 @@ function CreateMeshCentralServer(config, args) {
 
     // Update the list of available mesh agents
     obj.updateMeshAgentsTable = function (func) {
+        // Load agent information file. This includes the data & time of the agent.
+        var agentInfo = [];
+        try { agentInfo = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'hashagents.json'), 'utf8')); } catch (ex) { }
+
         var archcount = 0;
         for (var archid in obj.meshAgentsArchitectureNumbers) {
             var agentpath = obj.path.join(__dirname, 'agents', obj.meshAgentsArchitectureNumbers[archid].localname);
@@ -2730,6 +2734,7 @@ function CreateMeshCentralServer(config, args) {
                 obj.meshAgentBinaries[archid].path = agentpath;
                 obj.meshAgentBinaries[archid].url = 'http://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?id=' + archid;
                 obj.meshAgentBinaries[archid].size = stats.size;
+                if ((agentInfo[archid] != null) && (agentInfo[archid].mtime != null)) { obj.meshAgentBinaries[archid].mtime = new Date(agentInfo[archid].mtime); } // Set agent time if available
 
                 // If this is a windows binary, pull binary information
                 if (obj.meshAgentsArchitectureNumbers[archid].platform == 'win32') {
