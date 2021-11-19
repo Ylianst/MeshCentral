@@ -3966,7 +3966,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if ((mesh != null) && (user.links != null) && (user.links[mesh._id] == null) && (user.links[node._id] == null)) {
                         // This user does not have a direct link to the device group or device. Find all user groups the would cause the link.
                         for (var i in user.links) {
-                            var ugrp = parent.userGroups[i];
+                            var ugrp = obj.userGroups[i];
                             if ((ugrp != null) && (ugrp.consent != null) && (ugrp.links != null) && ((ugrp.links[mesh._id] != null) || (ugrp.links[node._id] != null))) {
                                 consent |= ugrp.consent; // Add user group consent flags
                             }
