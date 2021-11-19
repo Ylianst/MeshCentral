@@ -681,6 +681,7 @@
                             <span id=DeskRefreshButton title="Refresh the desktop"><img id=DeskRefreshButtonImage src='images/icon-refresh.png' onclick=deskRefreshFunction() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskInputLockedButton title="Remote input is locked"><img id=DeskInputLockedButtonImage src='images/icon-keylock-red.png' onclick=deskInputLockFunction(0) height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskInputUnLockedButton title="Remote input is unlocked"><img id=DeskInputUnLockedButtonImage src='images/icon-keylock.png' onclick=deskInputLockFunction(1) height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskGuestShareButton title="Share the device with a guest"><img id=DeskInputUnLockedButtonImage src='images/icon-share2.png' onclick=showShareDevice() height=16 width=16 style=padding-top:2px /></span>
                         </div>
                         <div>
                             <select id="deskkeys" cmenu=deskKeyShortcutContextMenu></select>
@@ -6858,7 +6859,12 @@
                 if ((serverinfo != null) && (serverinfo.altmessenging != null) && (meshrights & 8) && (connectivity & 1)) {
                     for (var i in serverinfo.altmessenging) { x += '<input type=button value="' + EscapeHtml(serverinfo.altmessenging[i].name) + '" onclick=altDeviceChat(event,' + i + ') />'; }
                 }
-                if ((serverinfo.guestdevicesharing !== false) && (node.agent != null) && (node.agent.caps & 3) && (connectivity & 1) && ((meshrights & 0x80008) == 0x80008) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 0x1000) == 0))) { x += '<input type=button value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />'; }
+                if ((serverinfo.guestdevicesharing !== false) && (node.agent != null) && (node.agent.caps & 3) && (connectivity & 1) && ((meshrights & 0x80008) == 0x80008) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 0x1000) == 0))) {
+                    x += '<input type=button value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />';
+                    QV('DeskGuestShareButton', true);
+                } else {
+                    QV('DeskGuestShareButton', false);
+                }
 
                 // Custom UI
                 if ((customui != null) && (customui.devicebuttons != null)) {
