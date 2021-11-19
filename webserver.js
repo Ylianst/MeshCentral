@@ -4770,6 +4770,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { meshagentFilename = domain.agentcustomization.filename; }
 
             setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename, null, 'meshagent');
+            if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
             res.statusCode = 200;
             obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: Buffer.from(js, 'utf8'), peinfo: argentInfo.pe });
         } else if (req.query.id != null) {
@@ -4785,11 +4786,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((user != null) && ((user.siteadmin == 0xFFFFFFFF) || ((Array.isArray(obj.parent.config.settings.agentcoredumpusers)) && (obj.parent.config.settings.agentcoredumpusers.indexOf(user._id) >= 0)))) {
                     if (argentInfo.id == 3) {
                         setContentDispositionHeader(res, 'application/octet-stream', 'MeshService.pdb', null, 'MeshService.pdb');
+                        if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
                         try { res.sendFile(argentInfo.path.split('MeshService-signed.exe').join('MeshService.pdb')); } catch (ex) { }
                         return;
                     }
                     if (argentInfo.id == 4) {
                         setContentDispositionHeader(res, 'application/octet-stream', 'MeshService64.pdb', null, 'MeshService64.pdb');
+                        if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
                         try { res.sendFile(argentInfo.path.split('MeshService64-signed.exe').join('MeshService64.pdb')); } catch (ex) { }
                         return;
                     }
@@ -4802,6 +4805,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Get the agent filename
                 var meshagentFilename = argentInfo.rname;
                 if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { meshagentFilename = domain.agentcustomization.filename; }
+                if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
                 if (req.query.zip == 1) { if (argentInfo.zdata != null) { setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename + '.zip', null, 'meshagent.zip'); res.send(argentInfo.zdata); } else { try { res.sendStatus(404); } catch (ex) { } } return; } // Send compressed agent
                 setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename, null, 'meshagent');
                 if (argentInfo.data == null) { res.sendFile(argentInfo.path); } else { res.send(argentInfo.data); }
@@ -4883,6 +4887,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (parent.agentTranslations != null) { meshsettings += 'translation=' + parent.agentTranslations + '\r\n'; } // Translation strings, not for MeshCentral Assistant
                 }
                 setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, argentInfo.rname);
+                if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
                 obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
                 return;
             }
