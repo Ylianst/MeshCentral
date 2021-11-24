@@ -6069,8 +6069,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             var options = { entryPoint: domain.authstrategies.saml.idpurl, issuer: 'meshcentral' };
                             if (typeof domain.authstrategies.saml.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.saml.callbackurl; } else { options.callbackUrl = url + 'auth-saml-callback'; }
                             if (domain.authstrategies.saml.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.saml.disablerequestedauthncontext; }
-                            parent.debug('web', 'Adding SAML SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.saml.entityid == 'string') { options.issuer = domain.authstrategies.saml.entityid; }
+                            parent.debug('web', 'Adding SAML SSO with options: ' + JSON.stringify(options));
                             options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
                             const SamlStrategy = require('passport-saml').Strategy;
                             passport.use(new SamlStrategy(options,
@@ -6109,8 +6109,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             var options = { entryPoint: domain.authstrategies.intel.idpurl, issuer: 'meshcentral' };
                             if (typeof domain.authstrategies.intel.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.intel.callbackurl; } else { options.callbackUrl = url + 'auth-intel-callback'; }
                             if (domain.authstrategies.intel.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.intel.disablerequestedauthncontext; }
-                            parent.debug('web', 'Adding Intel SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.intel.entityid == 'string') { options.issuer = domain.authstrategies.intel.entityid; }
+                            parent.debug('web', 'Adding Intel SSO with options: ' + JSON.stringify(options));
                             options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
                             const SamlStrategy = require('passport-saml').Strategy;
                             passport.use(new SamlStrategy(options,
@@ -6150,8 +6150,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         } else {
                             var options = { entryPoint: domain.authstrategies.jumpcloud.idpurl, issuer: 'meshcentral' };
                             if (typeof domain.authstrategies.jumpcloud.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.jumpcloud.callbackurl; } else { options.callbackUrl = url + 'auth-jumpcloud-callback'; }
-                            parent.debug('web', 'Adding JumpCloud SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.jumpcloud.entityid == 'string') { options.issuer = domain.authstrategies.jumpcloud.entityid; }
+                            parent.debug('web', 'Adding JumpCloud SSO with options: ' + JSON.stringify(options));
                             options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
                             const SamlStrategy = require('passport-saml').Strategy;
                             passport.use(new SamlStrategy(options,
