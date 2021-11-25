@@ -186,6 +186,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
                     csr,
                     email: obj.parent.config.letsencrypt.email,
                     termsOfServiceAgreed: true,
+                    skipChallengeVerification: (obj.parent.config.letsencrypt.skipchallengeverification === true),
                     challengeCreateFn,
                     challengeRemoveFn
                 }).then(function (cert) {
