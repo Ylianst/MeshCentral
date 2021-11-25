@@ -7050,20 +7050,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (i.startsWith('mesh/')) {
                 // Grant access to a device group thru a direct link
                 const m = obj.meshes[i];
-                if ((m) && (m.deleted == null) && ((rights == null) || ((user.links[i].rights & rights) != 0))) {
-                    if (r.indexOf(m) == -1) { r.push(m); }
-                }
+                if ((m) && (r.indexOf(m) == -1) && (m.deleted == null) && ((rights == null) || ((user.links[i].rights & rights) != 0))) { r.push(m); }
             } else if (i.startsWith('ugrp/')) {
                 // Grant access to a device group thru a user group
                 const g = obj.userGroups[i];
-                if (g && (g.links != null) && ((rights == null) || ((user.links[i].rights & rights) != 0))) {
-                    for (var j in g.links) {
-                        if (j.startsWith('mesh/')) {
-                            const m = obj.meshes[j];
-                            if ((m) && (m.deleted == null)) {
-                                if (r.indexOf(m) == -1) { r.push(m); }
-                            }
-                        }
+                for (var j in g.links) {
+                    if (j.startsWith('mesh/') && ((rights == null) || ((g.links[j].rights != null) && (g.links[j].rights & rights) != 0))) {
+                        const m = obj.meshes[j];
+                        if ((m) && (m.deleted == null) && (r.indexOf(m) == -1)) { r.push(m); }
                     }
                 }
             }
