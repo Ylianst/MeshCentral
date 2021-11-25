@@ -625,11 +625,7 @@
                         </div>
                         <div>
                             <div id="idx_deskFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
-                            <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none" />
-                            <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                            <span id=connectbutton1hspan><input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                            <span id=disconnectbutton1span><input type=button id=disconnectbutton1 cmenu="deskDisconnectButton" value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
-                            <span id="deskstatus" style="line-height:22px">Disconnected</span><span id="deskmetadata"></span>
+                            <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none;margin-right:4px" /><span id=connectbutton1span style="margin-right:4px"><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span><span id=connectbutton1hspan style="margin-right:4px"><input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span><span id=disconnectbutton1span style="margin-right:4px"><input type=button id=disconnectbutton1 cmenu="deskDisconnectButton" value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span><span id="deskstatus" style="line-height:22px">Disconnected</span><span id="deskmetadata"></span>
                         </div>
                     </div>
                     <div id=deskarea3x>
@@ -720,10 +716,7 @@
                                 </div>
                                 <div>
                                     <div id="idx_termFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
-                                    <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none" />
-                                    <span id="connectbutton2span"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                                    <span id="connectbutton2hspan"><input type="button" id="connectbutton2h" value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                                    <span id="disconnectbutton2span"><input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
+                                    <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none" /><span id="connectbutton2span" style="margin-right:4px"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span><span id="connectbutton2hspan" style="margin-right:4px"><input type="button" id="connectbutton2h" value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span><span id="disconnectbutton2span" style="margin-right:4px"><input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
                                     <span id="termstatus" style="line-height:22px">Disconnected</span><span id="termtitle"></span>
                                 </div>
                             </td>
