@@ -52441,6 +52441,12 @@
       ]
     },
     {
+      "en": "Share the device with a guest",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
+      ]
+    },
+    {
       "cs": "SharedProcess",
       "de": "Geteilter Prozess",
       "en": "SharedProcess",
