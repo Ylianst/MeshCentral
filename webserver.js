@@ -6407,7 +6407,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 } else {
                                                     // We are authenticated with 2nd factor.
                                                     // Check email verification
-                                                    if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                                    if (emailcheck && (user.email != null) && (!(user._id.split('/')[2].startsWith('~'))) && (user.emailVerified !== true)) {
                                                         parent.debug('web', 'Invalid login, asking for email validation');
                                                         try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true })); ws.close(); } catch (e) { }
                                                     } else {
@@ -6421,7 +6421,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         }
                                     } else {
                                         // Check email verification
-                                        if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                        if (emailcheck && (user.email != null) && (!(user._id.split('/')[2].startsWith('~'))) && (user.emailVerified !== true)) {
                                             parent.debug('web', 'Invalid login, asking for email validation');
                                             var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
                                             var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
@@ -6554,7 +6554,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     } else {
                                         // We are authenticated with 2nd factor.
                                         // Check email verification
-                                        if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                        if (emailcheck && (user.email != null) && (!(user._id.split('/')[2].startsWith('~'))) && (user.emailVerified !== true)) {
                                             parent.debug('web', 'Invalid login, asking for email validation');
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, sms2fa: sms2fa, email2fasent: true })); ws.close(); } catch (e) { }
                                         } else {
@@ -6565,7 +6565,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             }
                         } else {
                             // Check email verification
-                            if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                            if (emailcheck && (user.email != null) && (!(user._id.split('/')[2].startsWith('~'))) && (user.emailVerified !== true)) {
                                 parent.debug('web', 'Invalid login, asking for email validation');
                                 var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.otpekey != null));
                                 var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
@@ -6668,7 +6668,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     } else {
                                         // We are authenticated with 2nd factor.
                                         // Check email verification
-                                        if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                        if (emailcheck && (user.email != null) && (!(user._id.split('/')[2].startsWith('~'))) && (user.emailVerified !== true)) {
+                                            parent.debug('web', 'Invalid login, asking for email validation');
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                         } else {
                                             func(ws, req, domain, user);
@@ -6679,7 +6680,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         } else {
                             // We are authenticated
                             // Check email verification
-                            if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                            if (emailcheck && (user.email != null) && (!(user._id.split('/')[2].startsWith('~'))) && (user.emailVerified !== true)) {
+                                parent.debug('web', 'Invalid login, asking for email validation');
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
                             } else {
                                 func(ws, req, domain, user);
