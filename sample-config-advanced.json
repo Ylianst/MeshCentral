@@ -467,6 +467,11 @@
     "from": "myemail@myserver.com",
     "apikey": "***********"
   },
+  "_sendmail": {
+    "newline": "unix",
+    "path": "/usr/sbin/sendmail",
+    "_args": [ "-f", "foo@example.com" ]
+  },
   "_sms": {
     "provider": "twilio",
     "sid": "ACxxxxxxxxx",

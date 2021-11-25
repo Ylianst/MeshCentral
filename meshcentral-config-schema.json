@@ -751,6 +751,16 @@
             },
             "required": [ "host", "port", "from", "tls" ]
           },
+          "sendmail": {
+            "title" : "Send email using the sendmail command",
+            "description": "Makes MeshCentral send emails using the Unix sendmail command. Allows MeshCentral to send email messages for 2FA or user notification.",
+            "type": "object",
+            "properties": {
+              "newline": { "type": "string", "default": "unix", "description": "Possible values are unix or windows" },
+              "path": { "type": "string", "default": "sendmail", "description": "Path to the sendmail command" },
+              "args": { "type": "array", "items": { "type": "string" }, "default": null, "description": "Array or arguments to pass to sendmail" }
+            }
+          },
           "authStrategies": {
             "type": "object",
             "additionalProperties": false,
