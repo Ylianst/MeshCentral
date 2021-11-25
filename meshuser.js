@@ -6799,22 +6799,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             try { files.filetree.f[user._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + '/user-' + usersplit[2])); } catch (e) { }
         }
 
-        // Add files for each mesh // TODO: Get all meshes including groups!!
-        for (var i in user.links) {
-            if ((user.links[i].rights & 32) != 0) { // Check that we have file permissions
-                var mesh = parent.meshes[i];
-                if (mesh) {
-                    var meshsplit = mesh._id.split('/');
-                    files.filetree.f[mesh._id] = { t: 4, n: mesh.name, f: {} };
-                    files.filetree.f[mesh._id].maxbytes = parent.getQuota(mesh._id, domain);
+        // Add files for each mesh
+        const meshes = parent.GetAllMeshWithRights(user, MESHRIGHT_SERVERFILES);
+        for (var i in meshes) {
+            const mesh = meshes[i];
+            var meshsplit = mesh._id.split('/');
+            files.filetree.f[mesh._id] = { t: 4, n: mesh.name, f: {} };
+            files.filetree.f[mesh._id].maxbytes = parent.getQuota(mesh._id, domain);
 
-                    // Read all files recursively
-                    try {
-                        files.filetree.f[mesh._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + '/mesh-' + meshsplit[2]));
-                    } catch (e) {
-                        files.filetree.f[mesh._id].f = {}; // Got an error, return empty folder. We will create the folder only when needed.
-                    }
-                }
+            // Read all files recursively
+            try {
+                files.filetree.f[mesh._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + '/mesh-' + meshsplit[2]));
+            } catch (e) {
+                files.filetree.f[mesh._id].f = {}; // Got an error, return empty folder. We will create the folder only when needed.
             }
         }
 
