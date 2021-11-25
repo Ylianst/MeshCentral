@@ -442,6 +442,7 @@
     "__comment__": "Requires NodeJS 8.x or better, Go to https://letsdebug.net/ first before trying Let's Encrypt.",
     "email": "myemail@myserver.com",
     "names": "myserver.com,customer1.myserver.com",
+    "skipChallengeVerification": false,
     "production": false
   },
   "_peers": {

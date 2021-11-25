@@ -858,6 +858,7 @@
       "properties": {
         "email": { "type": "string", "format": "email", "description": "Email address of the administrator of this server. Make sure this is a valid email address otherwise the certificate request will fail." },
         "names": { "type": "string" },
+        "skipChallengeVerification": { "type": "boolean", "default": false, "description": "By default, MeshCentral will perform a self-test to make sure HTTP port 80 can respond correctly before making a request to Let's Encrypt. In some cases, this self-test can't work and must be skipped." },
         "production": { "type": "boolean", "default": false, "description": "By default a test certificate will be obtained from Let's Encrypt. Always start by getting a test certificate and make sure that works before setting this to true and obtaining a production certificaite. Making too many bad requests for a production certificate will get you banned for a long period of time." }
       },
       "required": [ "email", "names" ]
