@@ -56,9 +56,9 @@ module.exports.CreateMeshMail = function (parent, domain) {
         // Setup Sendmail
         const nodemailer = require('nodemailer');
         var options = { sendmail: true };
-        if (typeof obj.config.smtp.newline == 'string') { options.newline = obj.config.smtp.newline; }
-        if (typeof obj.config.smtp.path == 'string') { options.path = obj.config.smtp.path; }
-        if (Array.isArray(obj.config.smtp.args)) { options.args = obj.config.smtp.args; }
+        if (typeof obj.config.sendmail.newline == 'string') { options.newline = obj.config.sendmail.newline; }
+        if (typeof obj.config.sendmail.path == 'string') { options.path = obj.config.sendmail.path; }
+        if (Array.isArray(obj.config.sendmail.args)) { options.args = obj.config.sendmail.args; }
         obj.smtpServer = nodemailer.createTransport(options);
     }
 
