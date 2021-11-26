@@ -573,6 +573,7 @@ function run(argv) {
                         getAmtOsDnsSuffix(mestate, function() {
                             if (args.json) {
                                 console.log(JSON.stringify(mestate, null, 2));
+                                exit(0);
                             } else if (mestate.ver && mestate.ProvisioningState && mestate.ProvisioningMode) {
                                 var str = 'Intel ME v' + mestate.ver;
                                 if (mestate.sku & 8) { str = 'Intel AMT v' + mestate.ver }
