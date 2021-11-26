@@ -1606,6 +1606,11 @@ function CreateMeshCentralServer(config, args) {
                     obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
                     obj.mailserver.verify();
                     if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
+                } else if (obj.config.sendmail != null) {
+                    // Sendmail server
+                    obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
+                    obj.mailserver.verify();
+                    if (obj.args.lanonly == true) { addServerWarning("Sendmail has limited use in LAN mode.", 18); }
                 }
 
                 // Setup the email server for each domain
