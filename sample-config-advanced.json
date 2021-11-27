@@ -483,5 +483,10 @@
     "id": "xxxxxxx",
     "token": "xxxxxxx",
     "from": "1-555-555-5555"
+  },
+  "___sms": {
+    "provider": "telnyx",
+    "apikey": "xxxxxxx",
+    "from": "1-555-555-5555"
   }
 }
