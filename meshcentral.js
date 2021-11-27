@@ -1610,7 +1610,7 @@ function CreateMeshCentralServer(config, args) {
                     // Sendmail server
                     obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
                     obj.mailserver.verify();
-                    if (obj.args.lanonly == true) { addServerWarning("Sendmail has limited use in LAN mode.", 18); }
+                    if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
                 }
 
                 // Setup the email server for each domain
@@ -1622,6 +1622,11 @@ function CreateMeshCentralServer(config, args) {
                         if (obj.args.lanonly == true) { addServerWarning("SendGrid server has limited use in LAN mode.", 17); }
                     } else if ((obj.config.domains[i].smtp != null) && (obj.config.domains[i].smtp.host != null) && (obj.config.domains[i].smtp.from != null)) {
                         // SMTP server
+                        obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
+                        obj.config.domains[i].mailserver.verify();
+                        if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
+                    } else if (obj.config.domains[i].sendmail != null) {
+                        // Sendmail server
                         obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
                         obj.config.domains[i].mailserver.verify();
                         if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
@@ -3349,7 +3354,7 @@ function mainStart() {
         if (domainCount == 0) { allsspi = false; }
         for (var i in config.domains) {
             if (i.startsWith('_')) continue;
-            if (config.domains[i].smtp != null) { nodemailer = true; }
+            if ((config.domains[i].smtp != null) || (config.domains[i].sendmail != null)) { nodemailer = true; }
             if (config.domains[i].sendgrid != null) { sendgrid = true; }
             if (config.domains[i].yubikey != null) { yubikey = true; }
             if (config.domains[i].auth == 'ldap') { ldap = true; }
@@ -3387,7 +3392,7 @@ function mainStart() {
         if (config.settings.plugins != null) { modules.push('semver'); } // Required for version compat testing and update checks
         if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent'); } // Required for HTTP/HTTPS proxy support
         else if (config.settings.xmongodb != null) { modules.push('mongojs'); } // Add MongoJS, old driver.
-        if (nodemailer || (config.smtp != null)) { modules.push('nodemailer'); } // Add SMTP support
+        if (nodemailer || (config.smtp != null) || (config.sendmail != null)) { modules.push('nodemailer'); } // Add SMTP support
         if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail'); } // Add SendGrid support
         if (args.translate) { modules.push('jsdom'); modules.push('esprima'); modules.push('minify-js'); modules.push('html-minifier'); } // Translation support
 
