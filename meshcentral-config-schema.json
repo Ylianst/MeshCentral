@@ -942,6 +942,15 @@
             "from": { "type": "string" }
           },
           "required": [ "provider", "id", "token", "from" ]
+        },
+        {
+          "type": "object", 
+          "properties": {
+            "provider": { "type": "string", "enum": [ "telnyx" ] },
+            "apikey": { "type": "string" },
+            "from": { "type": "string" }
+          },
+          "required": [ "provider", "apikey", "from" ]
         }
       ]
     }

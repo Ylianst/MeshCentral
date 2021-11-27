@@ -3418,6 +3418,7 @@ function mainStart() {
         // SMS support
         if ((config.sms != null) && (config.sms.provider == 'twilio')) { modules.push('twilio'); }
         if ((config.sms != null) && (config.sms.provider == 'plivo')) { modules.push('plivo'); }
+        if ((config.sms != null) && (config.sms.provider == 'telnyx')) { modules.push('telnyx'); }
 
         // Setup web based push notifications
         if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push'); }

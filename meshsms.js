@@ -30,6 +30,13 @@
     "token": "xxxxxxx",
     "from": "15555555555"
 }
+
+// For Telnyx, add this in config.json
+"sms": {
+    "provider": "telnyx",
+    "apikey": "xxxxxxx",
+    "from": "15555555555"
+}
 */
 
 // Construct a MeshAgent object, called upon connection
@@ -60,6 +67,15 @@ module.exports.CreateMeshSMS = function (parent) {
             // Setup Plivo
             var plivo = require('plivo');
             obj.provider = new plivo.Client(parent.config.sms.id, parent.config.sms.token);
+            break;
+        }
+        case 'telnyx': {
+            // Validate Telnyx configuration values
+            if (typeof parent.config.sms.apikey != 'string') { console.log('Invalid or missing SMS gateway provider apikey.'); return null; }
+            if (typeof parent.config.sms.from != 'string') { console.log('Invalid or missing SMS gateway provider from.'); return null; }
+
+            // Setup Telnyx
+            obj.provider = require('telnyx')(parent.config.sms.apikey);
             break;
         }
         default: {
@@ -98,6 +114,15 @@ module.exports.CreateMeshSMS = function (parent) {
                 if (func != null) { func(false, msg, null); }
             }
             );
+        } else if (parent.config.sms.provider == 'telnyx') { // Telnyx
+            obj.provider.messages.create({
+                from: parent.config.sms.from,
+                to: to,
+                text: msg
+            }, function (err, result) {
+                if (err != null) { parent.debug('email', 'SMS error: ' + err.type); } else { parent.debug('email', 'SMS result: ' + JSON.stringify(result)); }
+                if (func != null) { func((err == null), err ? err.type : null, result); }
+            });
         }
     }
 
