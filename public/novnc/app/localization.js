@@ -20,10 +20,8 @@ export class Localizer {
     }
 
     // Configure suitable language based on user preferences
-    setup(supportedLanguages, language) {
+    setup(supportedLanguages) {
         this.language = 'en'; // Default: US English
-
-        if (language != null) { this.language = language; return; }
 
         /*
          * Navigator.languages only available in Chrome (32+) and FireFox (32+)
