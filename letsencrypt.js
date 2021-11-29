@@ -227,7 +227,8 @@ module.exports.CreateLetsEncrypt = function (parent) {
             challenges: obj.challenges,
             production: obj.runAsProduction,
             webServer: obj.redirWebServerHooked,
-            certPath: obj.certPath
+            certPath: obj.certPath,
+            skipChallengeVerification: (obj.parent.config.letsencrypt.skipchallengeverification == true)
         };
         if (obj.configErr) { r.error = "WARNING: " + obj.configErr; }
         if (obj.certExpire) { r.cert = 'Present'; r.daysLeft = Math.floor((obj.certExpire - new Date()) / 86400000); } else { r.cert = 'None'; }
