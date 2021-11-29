@@ -5413,18 +5413,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var xevents = ['UTC Time, Local Time, State, Previous State'], prevState = 0;
                     for (var i in docs) {
                         if (docs[i].power != prevState) {
+                            var timedoc = docs[i].time;
+                            if (typeof timedoc == 'string') {
+                                timedoc = new Date(timedoc);
+                            }
                             prevState = docs[i].power;
                             var localTime = '';
                             if (timeConversionSystem == 1) { // Good way
-                                localTime = new Date(docs[i].time.getTime()).toLocaleString(req.query.l, { timeZone: req.query.tz })
+                                localTime = new Date(timedoc.getTime()).toLocaleString(req.query.l, { timeZone: req.query.tz })
                             } else if (timeConversionSystem == 2) { // Bad way
-                                localTime = new Date(docs[i].time.getTime() + (localTimeOffset * 60000)).toISOString();
+                                localTime = new Date(timedoc.getTime() + (localTimeOffset * 60000)).toISOString();
                                 localTime = localTime.substring(0, localTime.length - 1);
                             }
                             if (docs[i].oldPower != null) {
-                                xevents.push('\"' + docs[i].time.toISOString() + '\",\"' + localTime + '\",' + docs[i].power + ',' + docs[i].oldPower);
+                                xevents.push('\"' + timedoc.toISOString() + '\",\"' + localTime + '\",' + docs[i].power + ',' + docs[i].oldPower);
                             } else {
-                                xevents.push('\"' + docs[i].time.toISOString() + '\",\"' + localTime + '\",' + docs[i].power);
+                                xevents.push('\"' + timedoc.toISOString() + '\",\"' + localTime + '\",' + docs[i].power);
                             }
                         }
                     }
