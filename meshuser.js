@@ -3228,6 +3228,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         break;
                     }
 
+                    // This is to change device guest sharing to the new device group
+                    var changeDeviceShareMeshIdNodeCount = command.nodeids.length;
+                    var changeDeviceShareMeshIdNodeList = [];
+
                     // For each nodeid, change the group
                     for (var i = 0; i < command.nodeids.length; i++) {
                         var xnodeid = command.nodeids[i];
@@ -3236,14 +3240,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, xnodeid, function (node, rights, visible) {
                             // Check if we found this device
-                            if (node == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: 'Device not found' })); } catch (ex) { } } return; }
+                            if (node == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: 'Device not found' })); } catch (ex) { } } changeDeviceShareMeshIdNodeCount--; return; }
 
                             // Check if already in the right mesh
-                            if (node.meshid == command.meshid) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: 'Device already in correct group' })); } catch (ex) { } } return; }
+                            if (node.meshid == command.meshid) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: 'Device already in correct group' })); } catch (ex) { } } changeDeviceShareMeshIdNodeCount--; return; }
 
                             // Make sure both source and target mesh are the same type
-                            try { if (parent.meshes[node.meshid].mtype != parent.meshes[command.meshid].mtype) return; } catch (e) {
+                            try { if (parent.meshes[node.meshid].mtype != parent.meshes[command.meshid].mtype) { changeDeviceShareMeshIdNodeCount--; return; } } catch (e) {
                                 if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: 'Device groups are of different types' })); } catch (ex) { } }
+                                changeDeviceShareMeshIdNodeCount--;
                                 return;
                             };
 
@@ -3251,10 +3256,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             const targetMeshRights = parent.GetMeshRights(user, command.meshid);
                             if (((rights & MESHRIGHT_EDITMESH) == 0) || ((targetMeshRights & MESHRIGHT_EDITMESH) == 0)) {
                                 if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: 'Permission denied' })); } catch (ex) { } }
+                                changeDeviceShareMeshIdNodeCount--;
                                 return;
                             }
 
                             // Perform the switch, start by saving the node with the new meshid.
+                            changeDeviceShareMeshIdNodeList.push(node._id);
+                            changeDeviceShareMeshIdNodeCount--;
+                            if (changeDeviceShareMeshIdNodeCount == 0) { changeDeviceShareMeshId(changeDeviceShareMeshIdNodeList, command.meshid); }
                             const oldMeshId = node.meshid;
                             node.meshid = command.meshid;
                             db.Set(parent.cleanDevice(node));
@@ -4577,6 +4586,70 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 ws.send(JSON.stringify({ action: 'createInviteLink', meshid: command.meshid, url: url, expire: command.expire, cookie: inviteCookie, responseid: command.responseid, tag: command.tag }));
                 break;
             }
+            case 'deviceMeshShares': {
+                if (domain.guestdevicesharing === false) return; // This feature is not allowed.
+                var err = null;
+
+                // Argument validation
+                if (common.validateString(command.meshid, 8, 128) == false) { err = 'Invalid device group id'; } // Check the meshid
+                else if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                else if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
+                else {
+                    // Check if we have rights on this device group
+                    mesh = parent.meshes[command.meshid];
+                    if (mesh == null) { err = 'Invalid device group id'; } // Check the meshid
+                    else if (parent.GetMeshRights(user, mesh) == 0) { err = 'Access denied'; }
+                }
+
+                // Handle any errors
+                if (err != null) {
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deviceShares', responseid: command.responseid, result: err })); } catch (ex) { } }
+                    break;
+                }
+
+                // Get all device shares
+                parent.db.GetAllTypeNoTypeField('deviceshare', domain.id, function (err, docs) {
+                    if (err != null) return;
+                    var now = Date.now(), okDocs = [];
+                    for (var i = 0; i < docs.length; i++) {
+                        const doc = docs[i];
+                        if ((doc.expireTime != null) && (doc.expireTime < now)) {
+                            // This share is expired.
+                            parent.db.Remove(doc._id, function () { });
+
+                            // Send device share update
+                            var targets = parent.CreateNodeDispatchTargets(doc.xmeshid, doc.nodeid, ['server-users', user._id]);
+                            parent.parent.DispatchEvent(targets, obj, { etype: 'node', meshid: doc.xmeshid, nodeid: doc.nodeid, action: 'deviceShareUpdate', domain: domain.id, deviceShares: okDocs, nolog: 1 });
+                        } else {
+                            if (doc.xmeshid == null) {
+                                // This is an old share with missing meshid, fix it here.
+                                const f = function fixShareMeshId(err, nodes) {
+                                    if (err != null) return;
+                                    if (nodes.length == 1) {
+                                        // Add the meshid to the device share
+                                        fixShareMeshId.xdoc.xmeshid = nodes[0].meshid;
+                                        fixShareMeshId.xdoc.type = 'deviceshare';
+                                        delete fixShareMeshId.xdoc.meshid;
+                                        parent.db.Set(fixShareMeshId.xdoc);
+                                    } else {
+                                        // This node no longer exists, remove the device share.
+                                        parent.db.Remove(fixShareMeshId.xdoc._id);
+                                    }
+                                }
+                                f.xdoc = doc;
+                                db.Get(doc.nodeid, f);
+                            } else if (doc.xmeshid == command.meshid) {
+                                // This share is ok, remove extra data we don't need to send.
+                                delete doc._id; delete doc.domain; delete doc.type; delete doc.xmeshid;
+                                if (doc.userid != user._id) { delete doc.url; } // If this is not the user who created this link, don't give the link.
+                                okDocs.push(doc);
+                            }
+                        }
+                    }
+                    try { ws.send(JSON.stringify({ action: 'deviceMeshShares', meshid: command.meshid, deviceShares: okDocs })); } catch (ex) { }
+                });
+                break;
+            }
             case 'deviceShares': {
                 if (domain.guestdevicesharing === false) return; // This feature is not allowed.
                 var err = null;
@@ -4619,7 +4692,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 parent.db.Remove(doc._id, function () { }); removed = true;
                             } else {
                                 // This share is ok, remove extra data we don't need to send.
-                                delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type;
+                                delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type; delete doc.xmeshid;
                                 if (doc.userid != user._id) { delete doc.url; } // If this is not the user who created this link, don't give the link.
                                 okDocs.push(doc);
                             }
@@ -4810,7 +4883,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     try { ws.send(JSON.stringify(command)); } catch (ex) { }
 
                     // Create a device sharing database entry
-                    var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', nodeid: node._id, p: command.p, domain: node.domain, publicid: publicid, userid: user._id, guestName: command.guestname, consent: command.consent, url: url };
+                    var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', xmeshid: node.meshid, nodeid: node._id, p: command.p, domain: node.domain, publicid: publicid, userid: user._id, guestName: command.guestname, consent: command.consent, url: url };
                     if ((startTime != null) && (expireTime != null)) { shareEntry.startTime = startTime; shareEntry.expireTime = expireTime; }
                     if (command.viewOnly === true) { shareEntry.viewOnly = true; }
                     parent.db.Set(shareEntry);
@@ -4819,9 +4892,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
                     var event;
                     if ((startTime != null) && (expireTime != null)) {
-                        event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'addedDeviceShare', msg: 'Added device share: ' + command.guestname + '.', msgid: 101, msgArgs: [command.guestname, 'DATETIME:' + startTime, 'DATETIME:' + expireTime], domain: domain.id };
+                        event = { etype: 'node', userid: user._id, username: user.name, meshid: node.meshid, nodeid: node._id, action: 'addedDeviceShare', msg: 'Added device share: ' + command.guestname + '.', msgid: 101, msgArgs: [command.guestname, 'DATETIME:' + startTime, 'DATETIME:' + expireTime], domain: domain.id };
                     } else {
-                        event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'addedDeviceShare', msg: 'Added device share ' + command.guestname + ' with unlimited time.', msgid: 131, msgArgs: [command.guestname], domain: domain.id };
+                        event = { etype: 'node', userid: user._id, username: user.name, meshid: node.meshid, nodeid: node._id, action: 'addedDeviceShare', msg: 'Added device share ' + command.guestname + ' with unlimited time.', msgid: 131, msgArgs: [command.guestname], domain: domain.id };
                     }
                     parent.parent.DispatchEvent(targets, obj, event);
 
@@ -4835,7 +4908,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             const doc = docs[i];
                             if (doc.expireTime < now) { parent.db.Remove(doc._id, function () { }); delete docs[i]; } else {
                                 // This share is ok, remove extra data we don't need to send.
-                                delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type;
+                                delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type; delete doc.xmeshid;
                             }
                         }
 
@@ -6685,6 +6758,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             getNodeFunc.nodeid = nodeids[i];
             parent.GetNodeWithRights(domain, user, nodeids[i], getNodeFunc);
         }
+    }
+
+    // Update all device shares for a nodeid list to a new meshid
+    // This is used when devices move to a new device group, changes are not evented.
+    function changeDeviceShareMeshId(nodes, meshid) {
+        parent.db.GetAllTypeNoTypeField('deviceshare', domain.id, function (err, docs) {
+            if (err != null) return;
+            for (var i = 0; i < docs.length; i++) {
+                const doc = docs[i];
+                if (nodes.indexOf(doc.nodeid) >= 0) {
+                    doc.xmeshid = meshid;
+                    doc.type = 'deviceshare';
+                    db.Set(doc);
+                }
+            }
+        });
     }
 
     // Return detailed information about all nodes this user has access to
