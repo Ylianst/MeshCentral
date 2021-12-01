@@ -658,9 +658,10 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 // If this is a agent-less mesh, use the device guid 3 times as ID.
                 if (initialMesh.mtype == 1) {
                     // Intel AMT GUID (socket.tag.SystemId) will be used as NodeID
-                    var systemid = socket.tag.SystemId.split('-').join('');
-                    var nodeid = Buffer.from(systemid + systemid + systemid, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                    var domain = obj.parent.config.domains[initialMesh.domain];
+                    const systemid = socket.tag.SystemId.split('-').join('');
+                    const nodeid = Buffer.from(systemid + systemid + systemid, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                    const domain = obj.parent.config.domains[initialMesh.domain];
+                    if (domain == null) return;
                     socket.tag.domain = domain;
                     socket.tag.domainid = initialMesh.domain;
                     if (socket.tag.name == null) { socket.tag.name = ''; }
@@ -694,7 +695,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                             // Event the new node
                                             addedDeviceCount++;
-                                            var change = 'CIRA added device ' + socket.tag.name + ' to group ' + initialMesh.name;
+                                            var change = 'Added CIRA device ' + socket.tag.name + ' to group ' + initialMesh.name;
                                             obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: initialMesh.domain });
 
                                             // Add the connection to the MPS connection list
@@ -720,7 +721,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                     // Event the new node
                                     addedDeviceCount++;
-                                    var change = 'CIRA added device ' + socket.tag.name + ' to group ' + initialMesh.name;
+                                    var change = 'Added CIRA device ' + socket.tag.name + ' to group ' + initialMesh.name;
                                     obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: initialMesh.domain });
                                 });
                             }
@@ -740,10 +741,89 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     // Intel AMT GUID (socket.tag.SystemId) will be used to search the node
                     obj.db.getAmtUuidMeshNode(initialMesh.domain, initialMesh.mtype, socket.tag.SystemId, function (err, nodes) { // TODO: Need to optimize this request with indexes
                         if ((nodes == null) || (nodes.length === 0) || (obj.parent.webserver.meshes == null)) {
-                            // New CIRA connection for unknown node, disconnect.
+                            // New CIRA connection for unknown node, create a new device.
                             unknownNodeCount++;
                             console.log('CIRA connection for unknown node. groupid: ' + initialMesh._id + ', uuid: ' + socket.tag.SystemId);
-                            obj.close(socket);
+                            //obj.close(socket);
+                            //return;
+                            var domain = obj.parent.config.domains[initialMesh.domain];
+                            if (domain == null) return;
+
+                            // Check if we already have too many devices for this domain
+                            if (domain.limits && (typeof domain.limits.maxdevices == 'number')) {
+                                db.isMaxType(domain.limits.maxdevices, 'node', initialMesh.domain, function (ismax, count) {
+                                    if (ismax == true) {
+                                        // Too many devices in this domain.
+                                        maxDomainDevicesReached++;
+                                        console.log('Too many devices on this domain to accept the CIRA connection. meshid: ' + socket.tag.meshid);
+                                        obj.close(socket);
+                                    } else {
+                                        // Attempts reverse DNS loopup on the device IP address
+                                        require('dns').reverse(socket.remoteAddr, function (err, hostnames) {
+                                            var hostname = socket.remoteAddr;
+                                            if ((err == null) && (hostnames != null) && (hostnames.length > 0)) { hostname = hostnames[0]; }
+
+                                            // Set the device group
+                                            socket.tag.meshid = initialMesh._id;
+
+                                            const systemid = socket.tag.SystemId.split('-').join('');
+                                            const nodeid = Buffer.from(systemid + systemid + systemid, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                                            socket.tag.domain = domain;
+                                            socket.tag.domainid = initialMesh.domain;
+                                            socket.tag.name = hostname;
+                                            socket.tag.nodeid = 'node/' + initialMesh.domain + '/' + nodeid; // Turn 16bit systemid guid into 48bit nodeid that is base64 encoded
+                                            socket.tag.connectTime = Date.now();
+
+                                            // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                            var device = { type: 'node', mtype: 2, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: hostname, icon: (socket.tag.meiState && socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: hostname, domain: initialMesh.domain, intelamt: { user: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtuser == 'string')) ? socket.tag.meiState.amtuser : '', pass: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtpass == 'string')) ? socket.tag.meiState.amtpass : '', tls: 0, state: 2, agent: { id: 0, caps: 0 } } };
+                                            if ((socket.tag.meiState != null) && (typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                            obj.db.Set(device);
+
+                                            // Event the new node
+                                            addedDeviceCount++;
+                                            var change = 'Added CIRA device ' + socket.tag.name + ' to group ' + initialMesh.name;
+                                            obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: initialMesh.domain });
+
+                                            // Add the connection to the MPS connection list
+                                            addCiraConnection(socket);
+                                            SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
+                                        });
+                                    }
+                                });
+                                return;
+                            } else {
+                                // Attempts reverse DNS loopup on the device IP address
+                                require('dns').reverse(socket.remoteAddr, function (err, hostnames) {
+                                    var hostname = socket.remoteAddr;
+                                    if ((err == null) && (hostnames != null) && (hostnames.length > 0)) { hostname = hostnames[0]; }
+
+                                    // Set the device group
+                                    socket.tag.meshid = initialMesh._id;
+
+                                    const systemid = socket.tag.SystemId.split('-').join('');
+                                    const nodeid = Buffer.from(systemid + systemid + systemid, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                                    socket.tag.domain = domain;
+                                    socket.tag.domainid = initialMesh.domain;
+                                    socket.tag.name = hostname;
+                                    socket.tag.nodeid = 'node/' + initialMesh.domain + '/' + nodeid; // Turn 16bit systemid guid into 48bit nodeid that is base64 encoded
+                                    socket.tag.connectTime = Date.now();
+
+                                    // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                    var device = { type: 'node', mtype: 2, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: hostname, icon: (socket.tag.meiState && socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: hostname, domain: initialMesh.domain, agent: { ver: 0, id: 0, caps: 0 }, intelamt: { uuid: socket.tag.SystemId, user: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtuser == 'string')) ? socket.tag.meiState.amtuser : '', pass: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtpass == 'string')) ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
+                                    if ((socket.tag.meiState != null) && (typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                    obj.db.Set(device);
+                                    console.log('ADDED', device);
+
+                                    // Event the new node
+                                    addedDeviceCount++;
+                                    var change = 'Added CIRA device ' + socket.tag.name + ' to group ' + initialMesh.name;
+                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: initialMesh.domain });
+
+                                    // Add the connection to the MPS connection list
+                                    addCiraConnection(socket);
+                                    SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
+                                });
+                            }
                             return;
                         }
 
