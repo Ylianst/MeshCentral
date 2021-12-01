@@ -2322,6 +2322,7 @@
                     for (var m in message.nodes) {
                         for (var n in message.nodes[m]) {
                             if (message.nodes[m][n]._id == null) { console.log('Invalid node (' + n + '): ' + JSON.stringify(message.nodes)); continue; }
+                            if (message.nodes[m][n].name == null) { message.nodes[m][n].name = '???'; }
                             message.nodes[m][n].namel = message.nodes[m][n].name.toLowerCase();
                             if (message.nodes[m][n].rname) { message.nodes[m][n].rnamel = message.nodes[m][n].rname.toLowerCase(); } else { message.nodes[m][n].rnamel = message.nodes[m][n].namel; }
                             message.nodes[m][n].meshnamel = meshes[m]?meshes[m].name.toLowerCase():'*';
