@@ -1,5 +1,5 @@
 ﻿/**
-* @description MeshCentral letsEncrypt module, uses GreenLock to do all the work.
+* @description MeshCentral letsEncrypt module, uses ACME-Client to do all the work.
 * @author Ylian Saint-Hilaire
 * @copyright Intel Corporation 2018-2021
 * @license Apache-2.0
