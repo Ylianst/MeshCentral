@@ -1,5 +1,13 @@
 #!/usr/bin/env node
 
+/**
+* @description MeshCentral bot sample code
+* @author Ylian Saint-Hilaire
+* @copyright Intel Corporation 2018-2021
+* @license Apache-2.0
+* @version v0.0.1
+*/
+
 // Make sure we have the dependency modules
 try { require('minimist'); } catch (ex) { console.log('Missing module "minimist", type "npm install minimist" to install it.'); return; }
 try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm install ws" to install it.'); return; }
