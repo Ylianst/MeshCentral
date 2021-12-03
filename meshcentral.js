@@ -59,6 +59,7 @@ function CreateMeshCentralServer(config, args) {
     obj.meshAgentBinaries = {};       // Mesh Agent Binaries, Architecture type --> { hash:(sha384 hash), size:(binary size), path:(binary path) }
     obj.meshAgentInstallScripts = {}; // Mesh Install Scripts, Script ID -- { hash:(sha384 hash), size:(binary size), path:(binary path) }
     obj.multiServer = null;
+    obj.ipKvmManager = null;
     obj.maintenanceTimer = null;
     obj.serverId = null;
     obj.serverKey = Buffer.from(obj.crypto.randomBytes(48), 'binary');
@@ -1566,7 +1567,7 @@ function CreateMeshCentralServer(config, args) {
                 if ((typeof obj.config.settings.mqtt == 'object') && (typeof obj.config.settings.mqtt.auth == 'object') && (typeof obj.config.settings.mqtt.auth.keyid == 'string') && (typeof obj.config.settings.mqtt.auth.key == 'string')) { obj.mqttbroker = require("./mqttbroker.js").CreateMQTTBroker(obj, obj.db, obj.args); }
 
                 // Start the web server and if needed, the redirection web server.
-                obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.certificates);
+                obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.certificates, obj.StartEx5);
                 if (obj.redirserver != null) { obj.redirserver.hookMainWebServer(obj.certificates); }
 
                 // Update proxy certificates
@@ -1814,6 +1815,14 @@ function CreateMeshCentralServer(config, args) {
             });
         });
     };
+
+    // Called when the web server finished loading
+    obj.StartEx5 = function () {
+        // Setup the email server for each domain
+        var ipKvmSupport = false;
+        for (var i in obj.config.domains) { if (obj.config.domains[i].ipkvm == true) { ipKvmSupport = true; } }
+        if (ipKvmSupport) { obj.ipKvmManager = require('./meshipkvm').CreateIPKVMManager(obj); }
+    }
 
     // Refresh any certificate hashs from the reverse proxy
     obj.pendingProxyCertificatesRequests = 0;
