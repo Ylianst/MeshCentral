@@ -4102,6 +4102,9 @@
                                 r += '<td><div id=DevxCol' + deviceHeaderId2 + ((collapsed === true)?' style=display:none':'') + '>'; // Open collapse div
                                 r += '<div style=padding:10px><i>' + "No local devices in this device group";
                                 if (((meshrights & 4) != 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { r += ', <a href=# style=cursor:pointer onclick=\'return addLocalDeviceToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
+                            } else if (mesh.mtype == 4) {
+                                r += '<td><div id=DevxCol' + deviceHeaderId2 + ((collapsed === true)?' style=display:none':'') + '>'; // Open collapse div
+                                r += '<div style=padding:10px><i>' + "No devices in this device group";
                             }
                             r += '.</i></div></td>';
                             r += '</div>'; // End collapsing area
@@ -11315,8 +11318,15 @@
             var x = "Create a new device group using the options below." + '<br /><br />', localGroupType = '';
             x += addHtmlValue("Name", '<input id=dp2meshname style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
             if ((features & 1) == 0) { localGroupType += '<option value=3>' + "Local devices, no agent" + '</option>'; }
+            if (features2 & 0x10000) { localGroupType += '<option value=4>' + "IP KVM device" + '</option>'; }
             x += addHtmlValue("Type", '<div style=width:230px;margin:0;padding:0><select id=dp2meshtype style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) ><option value=2>' + "Manage using a software agent" + '</option><option value=1>' + "Intel&reg; AMT only, no agent" + '</option>' + localGroupType + '</select></div>');
             x += addHtmlValue("Description", '<div style=width:230px;margin:0;padding:0><textarea id=dp2meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
+            x += '<div id=d2ipkvm style=display:none><hr />';
+            x += addHtmlValue("Model", '<div style=width:230px;margin:0;padding:0><select id=dp2ipkvmmodel style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) ><option value=1>' + "Raritan Dominion KX III" + '</option></select></div>');
+            x += addHtmlValue("Hostname", '<input id=dp2ipkvmhost style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
+            x += addHtmlValue("Username", '<input id=dp2ipkvmuser style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
+            x += addHtmlValue("Password", '<input id=dp2ipkvmpass type=password style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
+            x += '</div>';
             setDialogMode(2, "New Device Group", 3, account_createMeshEx, x);
             account_validateMeshCreate();
             Q('dp2meshname').focus();
@@ -11324,13 +11334,27 @@
         }
 
         function account_validateMeshCreate(e, x) {
+            var meshtype = parseInt(Q('dp2meshtype').value);
             if ((x == 1) && (e != null) && (e.key == "Enter") && (Q('dp2meshname').value.length > 0)) { Q('dp2meshtype').focus(); }
             if ((x == 2) && (e != null) && (e.key == "Enter")) { Q('dp2meshdesc').focus(); }
-            QE('idx_dlgOkButton', Q('dp2meshname').value.length > 0);
+            var ok = (Q('dp2meshname').value.length > 0);
+            QV('d2ipkvm', meshtype == 4);
+            if (meshtype == 4) {
+                if ((Q('dp2ipkvmhost').value.length == 0) && (Q('dp2ipkvmuser').value.length == 0) && (Q('dp2ipkvmpass').value.length == 0)) { ok = false; }
+            }
+            QE('idx_dlgOkButton', ok);
         }
 
         function account_createMeshEx(button, tag) {
-            meshserver.send({ action: 'createmesh', meshname: Q('dp2meshname').value, meshtype: parseInt(Q('dp2meshtype').value), desc: Q('dp2meshdesc').value });
+            var meshtype = parseInt(Q('dp2meshtype').value);
+            var cmd = { action: 'createmesh', meshname: Q('dp2meshname').value, meshtype: meshtype, desc: Q('dp2meshdesc').value };
+            if (meshtype == 4) {
+                cmd.kvmmodel = parseInt(Q('dp2ipkvmmodel').value);
+                cmd.kvmhost = Q('dp2ipkvmhost').value;
+                cmd.kvmuser = Q('dp2ipkvmuser').value;
+                cmd.kvmpass = Q('dp2ipkvmpass').value;
+            }
+            meshserver.send(cmd);
         }
 
         function account_validateDeleteAccount() {
@@ -11545,6 +11569,7 @@
             if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMT only, no agent";
             if (currentMesh.mtype == 2) meshtype = "Managed using a software agent";
             if (currentMesh.mtype == 3) meshtype = "Local devices, no agent";
+            if (currentMesh.mtype == 4) { meshtype = "IP KVM device"; if (currentMesh.kvm.model == 1) { meshtype += ', ' + 'Raritan KX III'; } }
 
             var x = '';
             if ((args.hide & 8) != 0) { x += addHtmlValue("Name", mname); } // If title bar is hidden, display the mesh name here
@@ -11553,6 +11578,12 @@
             // Display group type
             x += addHtmlValue("Type", meshtype);
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
+
+            // Display IP KVM information if needed
+            if (currentMesh.mtype == 4) {
+                x += addHtmlValue("Hostname", currentMesh.kvm.host);
+                x += addHtmlValue("Username", currentMesh.kvm.user);
+            }
 
             // Display device group creator
             if ((currentMesh.creatorid != null) && (users != null) && (users[currentMesh.creatorid] != null)) {
@@ -11622,7 +11653,7 @@
             }
 
             // If the Intel AMT manager is active on the server, show the Intel AMT policy edit box.
-            if ((currentMesh.mtype != 3) && ((features2 & 1) != 0)) {
+            if ((currentMesh.mtype < 3) && ((features2 & 1) != 0)) {
                 // Intel AMT setup
                 var intelAmtPolicy = "No Policy";
                 if (currentMesh.amt) {
@@ -12566,7 +12597,9 @@
             var x = '<div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Web Page Notifications" + '</div>';
             x += '<div><label><input id=p20notifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
             x += '<div><label><input id=p20notifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
-            x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
+            if (currentMesh.mtype < 3) {
+                x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
+            }
             if (emailNotify) {
                 x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Email Notifications" + '</div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
@@ -12575,7 +12608,7 @@
             setDialogMode(2, "Notification Settings", 3, p20editMeshNotifyEx, x, emailNotify);
             Q('p20notifyIntelDeviceConnect').checked = (meshNotify & 2);
             Q('p20notifyIntelDeviceDisconnect').checked = (meshNotify & 4);
-            Q('p20notifyIntelAmtKvmActions').checked = (meshNotify & 8);
+            if (currentMesh.mtype < 3) { Q('p20notifyIntelAmtKvmActions').checked = (meshNotify & 8); }
             if (emailNotify) {
                 Q('p20enotifyIntelDeviceConnect').checked = (meshNotify & 16);
                 Q('p20enotifyIntelDeviceDisconnect').checked = (meshNotify & 32);
@@ -12587,7 +12620,7 @@
             var meshNotify = 0;
             meshNotify += Q('p20notifyIntelDeviceConnect').checked ? 2 : 0;
             meshNotify += Q('p20notifyIntelDeviceDisconnect').checked ? 4 : 0;
-            meshNotify += Q('p20notifyIntelAmtKvmActions').checked ? 8 : 0;
+            if (currentMesh.mtype < 3) { meshNotify += Q('p20notifyIntelAmtKvmActions').checked ? 8 : 0; }
             if (emailNotify) {
                 meshNotify += Q('p20enotifyIntelDeviceConnect').checked ? 16 : 0;
                 meshNotify += Q('p20enotifyIntelDeviceDisconnect').checked ? 32 : 0;

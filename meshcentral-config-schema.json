@@ -292,6 +292,7 @@
           "userQuota": { "type": "integer" },
           "meshQuota": { "type": "integer" },
           "loginKey": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": null, "description": "Requires that users add the value ?key=xxx in the URL in order to see the web site." },
+          "ipkvm": { "type": "boolean", "default": false, "description": "Set to true to enable IP KVM device support in this domain." },
           "minify": { "type": "boolean", "default": false, "description": "When enabled, the server will send reduced sided web pages." },
           "newAccounts": { "type": "boolean", "default": false, "description": "When set to true, allow new user accounts to be created from the login page." },
           "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
