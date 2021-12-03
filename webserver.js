@@ -2847,6 +2847,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((typeof domain.desktop == 'object') && (domain.desktop.viewonly == true)) { features2 += 0x00002000; } // Indicates remote desktop is viewonly
         if (domain.mailserver != null) { features2 += 0x00004000; } // Indicates email server is active
         if (domain.devicesearchbarserverandclientname) { features2 += 0x00008000; } // Search bar will find both server name and client name
+        if (domain.ipkvm) { features2 += 0x00010000; } // Indicates support for IP KVM device groups
         return { features: features, features2: features2 };
     }
 
@@ -7271,10 +7272,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.CloneSafeMesh = function (mesh) {
         if (typeof mesh != 'object') { return mesh; }
         var r = mesh;
-        if ((r.amt != null) && (r.amt.password != null)) {
+        if (((r.amt != null) && (r.amt.password != null)) || ((r.kvm != null) && (r.kvm.pass != null))) {
             r = Object.assign({}, r); // Shallow clone
-            r.amt = Object.assign({}, r.amt); // Shallow clone
-            if ((r.amt.password != null) && (r.amt.password != '')) { r.amt.password = 1; } // Remove the Intel AMT password from the policy
+            if ((r.amt != null) && (r.amt.password != null)) {
+                r.amt = Object.assign({}, r.amt); // Shallow clone
+                if ((r.amt.password != null) && (r.amt.password != '')) { r.amt.password = 1; } // Remove the Intel AMT password from the policy
+            }
+            if ((r.kvm != null) && (r.kvm.pass != null)) {
+                r.kvm = Object.assign({}, r.kvm); // Shallow clone
+                if ((r.kvm.pass != null) && (r.kvm.pass != '')) { r.kvm.pass = 1; } // Remove the IP KVM device password
+            }
         }
         return r;
     }

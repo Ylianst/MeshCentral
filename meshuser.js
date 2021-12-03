@@ -2457,10 +2457,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if ((domain.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != SITERIGHT_ADMIN)) { err = 'Email verification required'; } // User must verify it's email first.
 
                         // Create mesh
-                        else if (common.validateString(command.meshname, 1, 128) == false) { err = 'Invalid group name'; } // Meshname is between 1 and 64 characters
+                        else if (common.validateString(command.meshname, 1, 128) == false) { err = 'Invalid group name'; } // Meshname is between 1 and 128 characters
                         else if ((command.desc != null) && (common.validateString(command.desc, 0, 1024) == false)) { err = 'Invalid group description'; } // Mesh description is between 0 and 1024 characters
-                        else if ((command.meshtype < 1) && (command.meshtype > 3)) { err = 'Invalid group type'; } // Device group types are 1 = AMT, 2 = Agent, 3 = Local
+                        else if ((command.meshtype < 1) || (command.meshtype > 4)) { err = 'Invalid group type'; } // Device group types are 1 = AMT, 2 = Agent, 3 = Local
                         else if ((parent.args.wanonly == true) && (command.meshtype == 3)) { err = 'Invalid group type'; } // Local device group type is not allowed in WAN mode
+                        else if ((domain.ipkvm == null) && (command.meshtype == 4)) { err = 'Invalid group type'; } // IP KVM device group type is not allowed unless enabled
+                        if ((err == null) && (command.meshtype == 4)) {
+                            if (command.kvmmodel !== 1) { err = 'Invalid KVM model'; }
+                            else if (common.validateString(command.kvmhost, 1, 128) == false) { err = 'Invalid KVM hostname'; }
+                            else if (common.validateString(command.kvmuser, 1, 128) == false) { err = 'Invalid KVM username'; }
+                            else if (common.validateString(command.kvmpass, 1, 128) == false) { err = 'Invalid KVM password'; }
+                        }
                     } catch (ex) { err = 'Validation exception: ' + ex; }
 
                     // Handle any errors
@@ -2482,6 +2489,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Add flags and consent if present
                         if (typeof command.flags == 'number') { mesh.flags = command.flags; }
                         if (typeof command.consent == 'number') { mesh.consent = command.consent; }
+
+                        // Add KVM information if needed
+                        if (command.meshtype == 4) { mesh.kvm = { model: command.kvmmodel, host: command.kvmhost, user: command.kvmuser, pass: command.kvmpass }; }
 
                         // Save the new device group
                         db.Set(mesh);
