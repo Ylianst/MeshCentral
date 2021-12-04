@@ -13492,7 +13492,8 @@
                 }
                 if (sessions == 1) { lastAccess += nobreak("1 session"); } else { lastAccess += nobreak(format("{0} sessions", sessions)); }
             } else {
-                if (user.login) { lastAccess += '<span title="' + format("Last login: {0}", printDateTime(new Date(user.login * 1000))) + '">' + printDate(new Date(user.login * 1000)) + '</span>'; }
+                if (user.access) { lastAccess += '<span title="' + format("Last access: {0}", printDateTime(new Date(user.access * 1000))) + '">' + printDate(new Date(user.access * 1000)) + '</span>'; }
+                else if (user.login) { lastAccess += '<span title="' + format("Last login: {0}", printDateTime(new Date(user.login * 1000))) + '">' + printDate(new Date(user.login * 1000)) + '</span>'; }
             }
             if (self) { permissions += '<a href=# style=cursor:pointer onclick=\'return showUserAdminDialog(event,"' + encodeURIComponentEx(user._id) + '")\'>'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { permissions += "Locked" + ',&nbsp;'; }

@@ -476,7 +476,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     if (user == null) {
                         // Create a new user
-                        var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
                         if (email) { user['email'] = email; user['emailVerified'] = true; }
                         if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
                         if (obj.common.validateStrArray(domain.newaccountrealms)) { user.groups = domain.newaccountrealms; }
@@ -586,7 +586,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     if (user == null) {
                         // This user does not exist, create a new account.
-                        var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
                         if (email) { user['email'] = email; user['emailVerified'] = true; }
                         if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
                         if (obj.common.validateStrArray(domain.newaccountrealms)) { user.groups = domain.newaccountrealms; }
@@ -1221,7 +1221,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Save login time
         user.pastlogin = user.login;
-        user.login = Math.floor(Date.now() / 1000);
+        user.login = user.access = Math.floor(Date.now() / 1000);
         obj.db.SetUser(user);
 
         // Notify account login
@@ -1381,7 +1381,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 req.session.loginmode = 2;
                                 req.session.messageid = 104; // Username already exists.
                             } else {
-                                var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                                var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
                                 if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
                                 if (obj.common.validateStrArray(domain.newaccountrealms)) { user.groups = domain.newaccountrealms; }
                                 if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (req.body.apasswordhint)) { var hint = req.body.apasswordhint; if (hint.length > 250) { hint = hint.substring(0, 250); } user.passhint = hint; }
@@ -1508,7 +1508,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                             user.salt = salt;
                             user.hash = hash;
-                            user.passchange = nowSeconds;
+                            user.passchange = user.access = nowSeconds;
                             delete user.passtype;
                             obj.db.SetUser(user);
 
@@ -1819,7 +1819,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                                     userinfo.salt = salt;
                                                     userinfo.hash = hash;
                                                     delete userinfo.passtype;
-                                                    userinfo.passchange = Math.floor(Date.now() / 1000);
+                                                    userinfo.passchange = userinfo.access = Math.floor(Date.now() / 1000);
                                                     delete userinfo.passhint;
                                                     obj.db.SetUser(userinfo);
 
@@ -2323,7 +2323,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             }
                             user.salt = salt;
                             user.hash = hash;
-                            user.passchange = nowSeconds;
+                            user.passchange = user.access = nowSeconds;
                             delete user.passtype;
 
                             obj.db.SetUser(user);
@@ -2361,7 +2361,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (newAccountAllowed === true) {
                     // Create the user
                     parent.debug('web', 'handleStrategyLogin: creating new user: ' + userid);
-                    user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), domain: domain.id };
+                    user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
                     if (req.user.email != null) { user.email = req.user.email; user.emailVerified = true; }
                     if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; } // New accounts automatically assigned server rights.
                     if (domain.authstrategies[req.user.strategy].newaccountsrights) { user.siteadmin = obj.common.meshServerRightsArrayToNumber(domain.authstrategies[req.user.strategy].newaccountsrights); } // If there are specific SSO server rights, use these instead.
@@ -2554,7 +2554,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 user = obj.users[req.session.userid];
                 if ((user == null) || (user.sid != req.session.usersid)) {
                     // Create the domain user
-                    var usercount = 0, user2 = { type: 'user', _id: req.session.userid, name: req.connection.user, domain: domain.id, sid: req.session.usersid, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000) };
+                    var usercount = 0, user2 = { type: 'user', _id: req.session.userid, name: req.connection.user, domain: domain.id, sid: req.session.usersid, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000) };
                     if (domain.newaccountsrights) { user2.siteadmin = domain.newaccountsrights; }
                     if (obj.common.validateStrArray(domain.newaccountrealms)) { user2.groups = domain.newaccountrealms; }
                     for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }

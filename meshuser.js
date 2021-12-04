@@ -186,6 +186,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         obj.ws.xclosed = 10; // DEBUG
 
+        // Update user last access time
+        if (obj.user != null) {
+            const timeNow = Math.floor(Date.now() / 1000);
+            if (obj.user.access < (timeNow - 300)) { // Only update user access time if longer than 5 minutes
+                obj.user.access = timeNow;
+                parent.db.SetUser(user);
+
+                // Event the change
+                var message = { etype: 'user', userid: obj.user._id, username: obj.user.name, account: parent.CloneSafeUser(obj.user), action: 'accountchange', domain: domain.id, nolog: 1 };
+                if (parent.db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                var targets = ['*', 'server-users', obj.user._id];
+                if (obj.user.groups) { for (var i in obj.user.groups) { targets.push('server-users:' + i); } }
+                parent.parent.DispatchEvent(targets, obj, message);
+            }
+        }
+
         // Aggressive cleanup
         delete obj.user;
         delete obj.domain;

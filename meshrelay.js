@@ -508,6 +508,22 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: sessionUser._id, username: sessionUser.name, msgid: msgid, msgArgs: [obj.id, obj.peer.req.clientIp, req.clientIp], msg: msg + ' \"' + obj.id + '\" from ' + obj.peer.req.clientIp + ' to ' + req.clientIp, protocol: req.query.p, nodeid: req.query.nodeid };
                         if (obj.guestname) { event.guestname = obj.guestname; } else if (relayinfo.peer1.guestname) { event.guestname = relayinfo.peer1.guestname; } // If this is a sharing session, set the guest name here.
                         parent.parent.DispatchEvent(['*', sessionUser._id], obj, event);
+
+                        // Update user last access time
+                        if ((obj.user != null) && (obj.guestname == null)) {
+                            const timeNow = Math.floor(Date.now() / 1000);
+                            if (obj.user.access < (timeNow - 300)) { // Only update user access time if longer than 5 minutes
+                                obj.user.access = timeNow;
+                                parent.db.SetUser(obj.user);
+
+                                // Event the change
+                                var message = { etype: 'user', userid: obj.user._id, username: obj.user.name, account: parent.CloneSafeUser(obj.user), action: 'accountchange', domain: domain.id, nolog: 1 };
+                                if (parent.db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                var targets = ['*', 'server-users', obj.user._id];
+                                if (obj.user.groups) { for (var i in obj.user.groups) { targets.push('server-users:' + i); } }
+                                parent.parent.DispatchEvent(targets, obj, message);
+                            }
+                        }
                     }
                 } else {
                     // Connected already, drop (TODO: maybe we should re-connect?)
