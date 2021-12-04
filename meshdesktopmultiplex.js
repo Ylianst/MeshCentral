@@ -131,6 +131,25 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 if ((typeof sr == 'number') && (sr > 0) && (sr < 1000)) { peer.slowRelay = sr; }
             }
 
+            // Update user last access time
+            if ((peer.user != null) && (peer.guestName == null)) {
+                const user = parent.users[peer.user._id];
+                if (user != null) {
+                    const timeNow = Math.floor(Date.now() / 1000);
+                    if (user.access < (timeNow - 300)) { // Only update user access time if longer than 5 minutes
+                        user.access = timeNow;
+                        parent.db.SetUser(user);
+
+                        // Event the change
+                        var message = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id, nolog: 1 };
+                        if (parent.db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                        var targets = ['*', 'server-users', user._id];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        parent.parent.DispatchEvent(targets, obj, message);
+                    }
+                }
+            }
+
             // Check session recording
             var startRecord = false;
             if (typeof domain.sessionrecording == 'object') {
