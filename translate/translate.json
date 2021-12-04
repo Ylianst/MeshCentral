@@ -1125,6 +1125,7 @@
     },
     {
       "en": ", View only desktop",
+      "nl": ", Desktop alleen bekijken",
       "fr": ", Visionner uniquement le bureau",
       "xloc": [
         "default.handlebars->39->1812",
@@ -6132,6 +6133,7 @@
     },
     {
       "en": "Added device share {0} with unlimited time.",
+      "nl": "Apparaat delen {0} toegevoegd met onbeperkte tijd.",
       "fr": "Ajout du partage de l'appareil {0} sans limitation de durée.",
       "xloc": [
         "default.handlebars->39->2192"
@@ -6801,6 +6803,7 @@
     },
     {
       "en": "Agent Self-Share",
+      "nl": "Agent zelfdelend",
       "fr": "Auto-partage de l'agent",
       "xloc": [
         "default.handlebars->39->1816",
@@ -9961,6 +9964,7 @@
     },
     {
       "en": "Backup path can't be set within meshcentral-data folder, backup settings ignored.",
+      "nl": "Back-uppad kan niet worden ingesteld in de map meshcentral-data, back-upinstellingen genegeerd.",
       "fr": "Le chemin de sauvegarde ne peut pas être défini dans le dossier meshcentral-data, les paramètres de sauvegarde sont ignorés.",
       "xloc": [
         "default.handlebars->39->99"
@@ -14406,6 +14410,7 @@
     },
     {
       "en": "Connecting to server...",
+      "nl": "Verbinden met de server...",
       "es": "Conectando al servidor...",
       "fr": "Connexion au serveur ...",
       "xloc": [
@@ -19323,6 +19328,7 @@
     },
     {
       "en": "Disconnect this session",
+      "nl": "Deze sessie verbreken",
       "es": "Desconectar esta sesión",
       "fr": "Déconnecter cette session",
       "xloc": [
@@ -31306,6 +31312,7 @@
     },
     {
       "en": "Keyboard Strings Customization",
+      "nl": "Toetsenbord strings aanpassen",
       "fr": "Personnalisation du clavier",
       "xloc": [
         "default.handlebars->39->1168"
@@ -39561,6 +39568,7 @@
     },
     {
       "en": "No keyboard strings defined",
+      "nl": "Geen toetsenbord strings gedefineerd",
       "fr": "Aucune personnalisation du clavier définie",
       "xloc": [
         "default.handlebars->39->1169"
@@ -52452,6 +52460,7 @@
     },
     {
       "en": "Share the device with a guest",
+      "nl": "Deel het apparaat met een gast",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
