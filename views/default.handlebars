@@ -2984,8 +2984,8 @@
                         }
                         case 'createmesh': {
                             // A new mesh was created
-                            if ((meshes[message.event.meshid] == null) && ((serverinfo.manageAllDeviceGroups) || (message.event.links[userinfo._id] != null))) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
-                                meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links, creation: message.event.creation, creatorid: message.event.creatorid, creatorname: message.event.creatorname, flags: message.event.flags, consent: message.event.consent };
+                            if ((meshes[message.event.meshid] == null) && ((serverinfo.manageAllDeviceGroups) || (message.event.mesh.links[userinfo._id] != null))) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
+                                meshes[message.event.meshid] = message.event.mesh;
                                 mainUpdate(4 + 128 + 8192 + 16384);
                                 meshserver.send({ action: 'files' });
                             }
@@ -4366,7 +4366,11 @@
             } else if (view == 2) {
                 var states = [];
                 if (node.conn) {
-                    if ((node.conn & 1) != 0) { states.push('<span title="' + "Mesh agent is connected and ready for use." + '">' + "Agent" + '</span>'); }
+                    if (node.mtype == 4) {
+                        if ((node.conn & 1) != 0) { states.push('<span title="' + "IP-KVM port is connected and ready for use." + '">' + "IP-KVM" + '</span>'); }
+                    } else {
+                        if ((node.conn & 1) != 0) { states.push('<span title="' + "Mesh agent is connected and ready for use." + '">' + "Agent" + '</span>'); }
+                    }
                     if ((node.conn & 2) != 0) { states.push('<span title="' + "Intel&reg; AMT CIRA is connected and ready for use." + '">' + "CIRA" + '</span>'); }
                     else if ((node.conn & 4) != 0) { states.push('<span title="' + "Intel&reg; AMT is routable." + '">' + "AMT" + '</span>'); }
                     if ((node.conn & 8) != 0) { states.push('<span title="' + "Mesh agent is reachable using another agent as relay." + '">' + "Relay" + '</span>'); }
@@ -5130,7 +5134,13 @@
             var states = [];
             if (node.state > 0 && node.state < powerStatetable.length) state.push(powerStatetable[node.state]);
             if (node.conn) {
-                if ((node.conn & 1) != 0) { states.push('<span title="' + "Mesh agent is connected and ready for use." + '">' + "Agent" + '</span>'); }
+                if ((node.conn & 1) != 0) { 
+                    if (node.mtype == 4) {
+                        states.push('<span title="' + "IP KVM port is up and ready for use." + '">' + "IP-KVM" + '</span>');
+                    } else {
+                        states.push('<span title="' + "Mesh agent is connected and ready for use." + '">' + "Agent" + '</span>');
+                    }
+                }
                 if ((node.conn & 2) != 0) { states.push('<span title="' + "Intel&reg; AMT CIRA is connected and ready for use." + '">' + "CIRA" + '</span>'); }
                 else if ((node.conn & 4) != 0) { states.push('<span title="' + "Intel&reg; AMT is routable." + '">' + "AMT" + '</span>'); }
                 if ((node.conn & 8) != 0) { states.push('<span title="' + "Mesh agent is reachable using another agent as relay." + '">' + "Relay" + '</span>'); }
@@ -6659,7 +6669,7 @@
                 if ((node.rname != null) && (node.name != node.rname)) { x += addDeviceAttribute('<span title="' + "The name of this computer as set in the operating system" + '">' + "OS Name" + '</span>', '<span title="' + "The name of this computer as set in the operating system" + '">' + EscapeHtml(node.rname) + '</span>'); }
 
                 // Attribute: Host
-                if ((features & 1) == 0) { // If not WAN-only, local hostname is in use
+                if (((features & 1) == 0) && (node.mtype != 4)) { // If not WAN-only, local hostname is in use
                     x += addDeviceAttribute("Hostname", addLinkConditional('<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + (node.host?EscapeHtml(node.host):('<i>' + "None" + '</i>')) + '</span>', 'showEditNodeValueDialog(1)', meshrights & 4));
                 }
 
@@ -6669,6 +6679,12 @@
                     x += addDeviceAttribute("Description", '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + ' <img class=hoverButton src="images/link5.png" /></span>');
                 } else {
                     x += addDeviceAttribute("Description", description);
+                }
+
+                // IP-KVM information
+                if (node.mtype == 4) {
+                    if (node.portnum) { x += addDeviceAttribute("Port Number", node.portnum); }
+                    if (node.porttype) { x += addDeviceAttribute("Port Type", node.porttype); }
                 }
 
                 // Attribute: Mesh Agent
@@ -6854,20 +6870,22 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if (((meshrights & (4 + 8 + 64)) != 0) && (node.mtype != 3) && ((node.agent == null) || (node.agent.id != 34))) { x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
+                if (((meshrights & (4 + 8 + 64)) != 0) && (node.mtype < 3) && ((node.agent == null) || (node.agent.id != 34))) { x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponentEx(node._id) + '") />';
                 x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
-                if ((meshrights & 8) && ((connectivity & 1) || ((node.pmt == 1) && ((features2 & 2) != 0)))) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
-                //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
-                if ((meshrights & 8) && (connectivity & 1) || ((node.pmt == 1) && ((features2 & 2) != 0))) { x += '<input type=button value="' + "Chat" + '" title="' + "Open chat window to this computer" + '" onclick=deviceChat(event) />'; }
-                if ((serverinfo != null) && (serverinfo.altmessenging != null) && (meshrights & 8) && (connectivity & 1)) {
-                    for (var i in serverinfo.altmessenging) { x += '<input type=button value="' + EscapeHtml(serverinfo.altmessenging[i].name) + '" onclick=altDeviceChat(event,' + i + ') />'; }
-                }
-                if ((serverinfo.guestdevicesharing !== false) && (node.agent != null) && (node.agent.caps & 3) && (connectivity & 1) && ((meshrights & 0x80008) == 0x80008) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 0x1000) == 0))) {
-                    x += '<input type=button value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />';
-                    QV('DeskGuestShareButton', true);
-                } else {
-                    QV('DeskGuestShareButton', false);
+                if (node.mtype != 4) {
+                    if ((meshrights & 8) && ((connectivity & 1) || ((node.pmt == 1) && ((features2 & 2) != 0)))) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
+                    //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
+                    if ((meshrights & 8) && (connectivity & 1) || ((node.pmt == 1) && ((features2 & 2) != 0))) { x += '<input type=button value="' + "Chat" + '" title="' + "Open chat window to this computer" + '" onclick=deviceChat(event) />'; }
+                    if ((serverinfo != null) && (serverinfo.altmessenging != null) && (meshrights & 8) && (connectivity & 1)) {
+                        for (var i in serverinfo.altmessenging) { x += '<input type=button value="' + EscapeHtml(serverinfo.altmessenging[i].name) + '" onclick=altDeviceChat(event,' + i + ') />'; }
+                    }
+                    if ((serverinfo.guestdevicesharing !== false) && (node.agent != null) && (node.agent.caps & 3) && (connectivity & 1) && ((meshrights & 0x80008) == 0x80008) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 0x1000) == 0))) {
+                        x += '<input type=button value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />';
+                        QV('DeskGuestShareButton', true);
+                    } else {
+                        QV('DeskGuestShareButton', false);
+                    }
                 }
 
                 // Custom UI
@@ -6892,7 +6910,7 @@
 
                 // Show bottom buttons
                 x = '<div class="p10html3right">';
-                if ((meshrights & 1) != 0) { // MESHRIGHT_EDITMESH
+                if (((meshrights & 1) != 0) && (node.mtype != 4)) { // MESHRIGHT_EDITMESH
                     // TODO: Show change group only if there is another mesh of the same type.
                     x += '&nbsp;<a href=# onclick=p10showChangeGroupDialog(["' + node._id + '"]) title="' + "Move this device to a different device group" + '">' + "Change Group" + '</a>';
                 }
@@ -6978,7 +6996,14 @@
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
                 var agentPrivilages = '';
                 if ((node.agent != null) && (node.agent.root === false)) { agentPrivilages = ', <span title="' + "Agent is running on remote device with reduced privilages." + '">' + "Restricted" + '</span>'; }
-                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="' + "Agent connected" + '">' + "Agent connected" + '</span>' + agentPrivilages; }
+                if ((connectivity & 1) != 0) {
+                    if (powerstate.length > 0) { powerstate += '<br/>'; }
+                    if (node.mtype == 4) {
+                        powerstate += '<span style=font-size:12px title="' + "IP-KVM port connected" + '">' + "IP-KVM port connected" + '</span>' + agentPrivilages;
+                    } else {
+                        powerstate += '<span style=font-size:12px title="' + "Agent connected" + '">' + "Agent connected" + '</span>' + agentPrivilages;
+                    }
+                }
                 if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="' + "Intel&reg; AMT connected" + '">' + "Intel&reg; AMT connected" + '</span>'; }
                 else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="' + "Intel&reg; AMT detected" + '">' + "Intel&reg; AMT detected" + '</span>'; }
                 if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="' + "MQTT connected" + '">' + "MQTT channel connected" + '</span>'; }
@@ -7002,13 +7027,13 @@
                 // Show or hide the tabs
                 // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent, 3 = Local Device
                 // node.agent.caps (bitmask): 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console
-                QV('MainDevDesktop', desktopAccess && ((((node.agent == null) && ((typeof node.intelamt.sku !== 'number') || ((node.intelamt.sku & 8) != 0)))
+                QV('MainDevDesktop', desktopAccess && ((((node.agent == null) && (node.intelamt != null) && ((typeof node.intelamt.sku !== 'number') || ((node.intelamt.sku & 8) != 0)))
                     || ((node.agent != null) && ((node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2)))))
                     && ((meshrights & 8) || (meshrights & 256)))
                     );
-                QV('MainDevTerminal', (((node.agent == null) && (node.intelamt != null)) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
+                QV('MainDevTerminal', (((node.agent == null) && (node.intelamt != null)) || ((node.agent) && (node.agent.caps == null)) || ((node.agent) && ((node.agent.caps & 2) != 0)) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
                 QV('MainDevFiles', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 4) != 0) && (meshrights & 8) && fileAccess);
-                QV('MainDevInfo', (node.mtype != 3) & ((meshrights & 1048576) != 0));
+                QV('MainDevInfo', (node.mtype < 3) && ((meshrights & 1048576) != 0));
                 QV('MainDevAmt', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8) && amtAccess);
                 QV('MainDevConsole', (consoleRights && ((node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 8) != 0))) && (meshrights & 8));
                 QV('MainDevPlugins', false);
@@ -11564,6 +11589,7 @@
             if (mname.length == 0) { mname = '<i>' + "None" + '</i>'; }
             if ((meshrights & 1) != 0) { mname = '<span tabindex=0 title="' + "Click here to edit the device group name" + '" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)" style=cursor:pointer>' + mname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
             QH('p20meshName', mname);
+            QV('MeshSummary', (currentMesh.mtype != 4));
 
             var meshtype = format("Unknown #{0}", currentMesh.mtype);
             if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMT only, no agent";
@@ -11597,11 +11623,11 @@
             if (currentMesh.creation != null) { x += addHtmlValue("Creation Time", printDateTime(new Date(currentMesh.creation))); }
 
             // Display features
-            if (currentMesh.mtype < 3) {
+            if (currentMesh.mtype != 3) {
                 var meshFeatures = [];
                 if (currentMesh.flags) {
                     if (currentMesh.flags & 1) { meshFeatures.push("Auto-Remove"); }
-                    if (currentMesh.flags & 2) { meshFeatures.push("Hostname Sync"); }
+                    if (currentMesh.flags & 2) { meshFeatures.push((currentMesh.mtype == 4)?"Port Name Sync":"Hostname Sync"); }
                     if ((serverinfo.devGroupSessionRecording == 1) && (currentMesh.flags & 4)) { meshFeatures.push("Record Sessions"); }
                 }
                 if ((typeof currentMesh.expireDevs == 'number') && (currentMesh.expireDevs > 0)) { meshFeatures.push("Remove inactive"); }
@@ -12036,11 +12062,11 @@
             if (xxdialogMode) return;
             var flags = (currentMesh.flags)?currentMesh.flags:0, x = '', expire = 0;
             if ((typeof currentMesh.expireDevs == 'number') && (currentMesh.expireDevs > 0)) { expire = currentMesh.expireDevs; if (expire > 2000) { expire = 2000; } }
-            if (serverinfo.devGroupSessionRecording == 1) {
+            if ((serverinfo.devGroupSessionRecording == 1) && (currentMesh.mtype != 4)) {
                 x += '<div><label><input type=checkbox id=d20flag4 onchange=p20editmeshfeaturesValidate() ' + ((flags & 4) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
             }
-            if (currentMesh.mtype == 2) {
-                x += '<div><label><input type=checkbox id=d20flag2 onchange=p20editmeshfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + "Sync server device name to hostname" + '</label><br></div>';
+            if ((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) {
+                x += '<div><label><input type=checkbox id=d20flag2 onchange=p20editmeshfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + ((currentMesh.mtype == 4)?"Sync server device name to port name":"Sync server device name to hostname") + '</label><br></div>';
                 x += '<div><label><input type=checkbox id=d20flag1 onchange=p20editmeshfeaturesValidate() ' + ((flags & 1) ? 'checked' : '') + '>' + "Remove device on disconnect" + '</label><br></div>';
             }
             x += '<div><label><input type=checkbox id=d20expireDevice onchange=p20editmeshfeaturesValidate() ' + ((expire > 0) ? 'checked' : '') + '>' + "Automatically remove inactive devices" + '</label><br></div>';
@@ -12060,7 +12086,7 @@
 
         function p20editmeshfeaturesValidate() {
             var flags = 0, ok = true;
-            if ((currentMesh.mtype == 2) && (Q('d20flag1').checked)) { flags += 1; }
+            if (((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) && (Q('d20flag1').checked)) { flags += 1; }
             QE('d20expireDevice', (flags & 1) == 0);
             var x = ((flags & 1) == 0) && Q('d20expireDevice').checked;
             QV('d20expireDeviceDev', x);
@@ -12070,11 +12096,11 @@
 
         function p20editmeshfeaturesEx() {
             var flags = 0;
-            if (currentMesh.mtype == 2) {
+            if ((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) {
                 if (Q('d20flag1').checked) { flags += 1; }
                 if (Q('d20flag2').checked) { flags += 2; }
             }
-            if (serverinfo.devGroupSessionRecording == 1) { if (Q('d20flag4').checked) { flags += 4; } }
+            if ((serverinfo.devGroupSessionRecording == 1) && (currentMesh.mtype != 4)) { if (Q('d20flag4').checked) { flags += 4; } }
             var expireDevs = 0;
             if (((flags & 1) == 0) && Q('d20expireDevice').checked) { expireDevs = parseInt(Q('d20expireDeviceDays').value); }
             meshserver.send({ action: 'editmesh', meshid: currentMesh._id, flags: flags, expireDevs: expireDevs });

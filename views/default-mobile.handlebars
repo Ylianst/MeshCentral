@@ -1765,8 +1765,8 @@
                         }
                         case 'createmesh': {
                             // A new mesh was created
-                            if ((meshes[message.event.meshid] == null) && ((userinfo.manageAllDeviceGroups) || (message.event.links[userinfo._id] != null))) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
-                                meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
+                            if ((meshes[message.event.meshid] == null) && ((userinfo.manageAllDeviceGroups) || (message.event.mesh.links[userinfo._id] != null))) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
+                                meshes[message.event.meshid] = message.event.mesh;
                                 mainUpdate(4 + 128);
                                 meshserver.send({ action: 'files' });
                             }
@@ -3218,7 +3218,7 @@
             var states = [];
             if (node.state > 0 && node.state < powerStatetable.length) state.push(powerStatetable[node.state]);
             if (node.conn) {
-                if ((node.conn & 1) != 0) { states.push('<span>' + "Agent" + '</span>'); }
+                if ((node.conn & 1) != 0) { if (node.mtype == 4) { states.push('<span>' + ((node.mtype == 4)?"IP-KVM":"Agent") + '</span>'); } else { states.push('<span>' + "IP KVM" + '</span>'); } }
                 if ((node.conn & 2) != 0) { states.push('<span>' + "CIRA" + '</span>'); }
                 else if ((node.conn & 4) != 0) { states.push('<span>' + "Intel&reg; AMT" + '</span>'); }
                 if ((node.conn & 8) != 0) { states.push('<span>' + "Relay" + '</span>'); }
@@ -3356,7 +3356,7 @@
                 if (node.rname != null) { x += addDeviceAttribute('<span>' + "Name" + '</span>', '<span>' + EscapeHtml(node.rname) + '</span>'); }
 
                 // Attribute: Host
-                if ((features & 1) == 0) { // If not WAN-only, local hostname is in use
+                if (((features & 1) == 0) && (node.mtype != 4)) { // If not WAN-only, local hostname is in use
                     if ((meshrights & 4) != 0) {
                         if (node.host) {
                             x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + EscapeHtml(node.host) + '</span>');
@@ -3374,6 +3374,12 @@
                     x += addDeviceAttribute("Description", '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + '</span>');
                 } else {
                     x += addDeviceAttribute("Description", description);
+                }
+
+                // IP-KVM information
+                if (node.mtype == 4) {
+                    if (node.portnum) { x += addDeviceAttribute("Port Number", node.portnum); }
+                    if (node.porttype) { x += addDeviceAttribute("Port Type", node.porttype); }
                 }
 
                 // Attribute: Mesh Agent
@@ -3476,7 +3482,7 @@
                 var connectivity = node.conn;
                 if (connectivity && connectivity > 1) {
                     var cstate = [];
-                    if ((node.conn & 1) != 0) cstate.push('<span>' + "Agent" + '</span>');
+                    if ((node.conn & 1) != 0) cstate.push('<span>' + ((node.mtype == 4) ? "IP-KVM" : "Agent") + '</span>');
                     if ((node.conn & 2) != 0) cstate.push('<span>' + "Intel&reg; AMT CIRA" + '</span>');
                     else if ((node.conn & 4) != 0) cstate.push('<span>' + "Intel&reg; AMT" + '</span>');
                     if ((node.conn & 8) != 0) cstate.push('<span>' + "Agent Relay" + '</span>');
@@ -3488,7 +3494,7 @@
                 var groupingTags = '<i>' + "None" + '</i>';
                 if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;border-radius:5px">' + EscapeHtml(node.tags[i]) + '</span> '; } }
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=line-height:26px;cursor:pointer;color:black>' + groupingTags + '</span>');
+                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer;color:black>' + groupingTags + '</span>');
                 } else {
                     x += addDeviceAttribute("Tags", '<span style=line-height:26px;color:black>' + groupingTags + '</span>');
                 }
@@ -3536,7 +3542,7 @@
                 // Set the node power state
                 var powerstate = PowerStateStr(node.state);
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
-                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += "Mesh Agent"; }
+                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += ((mesh.mtype == 4) ? "IP-KVM" : "Mesh Agent"); }
                 if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += "Intel&reg; AMT connected"; }
                 else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += "Intel&reg; AMT detected"; }
                 if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += "MQTT channel connected"; }
@@ -3600,17 +3606,17 @@
             if ((currentDevicePanel != 1) &&
                 (currentNode != null) &&
                 ((meshrights & 8) || (meshrights & 256)) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 65536) == 0)) &&
-                (((currentNode.agent == null) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 1)))
+                (((currentNode.agent == null) && (currentNode.intelamt) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 1)))
             ) { menus.push({ n: "Desktop", f: 'setupDeviceMenu(1)' }); }
 
             if ((currentDevicePanel != 5) &&
                 (currentNode != null) &&
                 ((meshrights & 8) || (meshrights & 256)) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0)) &&
-                (((currentNode.agent == null) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 2)))
+                (((currentNode.agent == null) && (currentNode.intelamt) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 2)))
             ) { menus.push({ n: "Terminal", f: 'setupDeviceMenu(5)' }); }
 
-            if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype != 1) && (currentNode.agent.caps & 4))) { menus.push({ n: "Files", f: 'setupDeviceMenu(2)' }); }
-            if ((currentDevicePanel != 3) && (currentNode != null) && (currentNode.mtype != 3) && ((meshrights & 1048576) != 0)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
+            if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype != 1) && (currentNode.agent) && (currentNode.agent.caps & 4))) { menus.push({ n: "Files", f: 'setupDeviceMenu(2)' }); }
+            if ((currentDevicePanel != 3) && (currentNode != null) && (currentNode.mtype < 3) && ((meshrights & 1048576) != 0)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
             if ((currentDevicePanel != 4) && (currentNode != null) && (meshrights & 0x00000010) && (currentNode.mtype == 2)) { menus.push({ n: "Console", f: 'setupDeviceMenu(4)' }); }
             updateFooterMenu(menus);
             updateCurrentUrl();
@@ -5144,7 +5150,7 @@
         }
 
         function p13setActions() {
-            var advancedFeatures = (currentNode.agent.id != 14); // Reduct file feature on some devices.
+            var advancedFeatures = ((currentNode.agent) && (currentNode.agent.id != 14)); // Reduct file feature on some devices.
             if (p13filetree == null) {
                 QE('p13DeleteFileButton', false);
                 QE('p13NewFolderButton', false);

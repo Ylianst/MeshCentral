@@ -9,10 +9,12 @@
 function CreateIPKVMManager(parent) {
     const obj = {};
     const managedGroups = {} // meshid --> Manager
+    const managedPorts = {} // nodeid --> PortInfo
     
     // Subscribe for mesh creation events
     parent.AddEventDispatch(['server-createmesh', 'server-deletemesh'], obj);
     obj.HandleEvent = function (source, event, ids, id) {
+        console.log();
         if ((event != null) && (event.action == 'createmesh') && (event.mtype == 4)) {
             // Start managing this new device group
             startManagement(parent.webserver.meshes[event.meshid]);
@@ -36,6 +38,7 @@ function CreateIPKVMManager(parent) {
         if (mesh.kvm.model == 1) { // Raritan KX III
             const manager = CreateRaritanKX3Manager(host, port, mesh.kvm.user, mesh.kvm.pass);
             manager.meshid = mesh._id;
+            manager.domainid = mesh._id.split('/')[1];
             managedGroups[mesh._id] = manager;
             manager.onStateChanged = onStateChanged;
             manager.onPortsChanged = onPortsChanged;
@@ -46,7 +49,18 @@ function CreateIPKVMManager(parent) {
     // Stop managing a IP KVM device
     function stopManagement(meshid) {
         const manager = managedGroups[meshid];
-        if (manager != null) { delete managedGroups[meshid]; manager.stop(); }
+        if (manager != null) {
+            // Remove all managed ports
+            for (var i = 0; i < manager.ports.length; i++) {
+                const port = manager.ports[i];
+                const nodeid = generateIpKvmNodeId(manager.meshid, port.PortId, manager.domainid);
+                delete managedPorts[nodeid]; // Remove the managed port
+            }
+
+            // Remove the manager
+            delete managedGroups[meshid];
+            manager.stop();
+        }
     }
     
     // Called when a KVM device changes state
@@ -62,10 +76,80 @@ function CreateIPKVMManager(parent) {
     function onPortsChanged(sender, updatedPorts) {
         for (var i = 0; i < updatedPorts.length; i++) {
             const port = sender.ports[updatedPorts[i]];
+            const nodeid = generateIpKvmNodeId(sender.meshid, port.PortId, sender.domainid);
             if ((port.Status == 1) && (port.Class == 'KVM')) {
                 console.log(port.PortNumber + ', ' + port.PortId + ', ' + port.Name + ', ' + port.Type + ', ' + ((port.StatAvailable == 0) ? 'Idle' : 'Connected'));
+                if ((managedPorts[nodeid] == null) || (managedPorts[nodeid].name != port.Name)) {
+                    parent.db.Get(nodeid, function (err, nodes) {
+                        if ((err != null) || (nodes == null)) return;
+                        const mesh = parent.webserver.meshes[sender.meshid];
+                        if (nodes.length == 0) {
+                            // The device does not exist, create it
+                            const device = { type: 'node', mtype: 4, _id: nodeid, icon: 1, meshid: sender.meshid, name: port.Name, rname: port.Name, domain: sender.domainid, porttype: port.Type, portid: port.PortId, portnum: port.PortNumber };
+                            parent.db.Set(device);
+
+                            // Event the new node
+                            parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(sender.meshid, [nodeid]), obj, { etype: 'node', action: 'addnode', nodeid: nodeid, node: device, msgid: 57, msgArgs: [port.Name, mesh.name], msg: ('Added device ' + port.Name + ' to device group ' + mesh.name), domain: sender.domainid });
+                        } else {
+                            // The device exists, update it
+                            var changed = false;
+                            const device = nodes[0];
+                            if (device.rname != port.Name) { device.rname = port.Name; changed = true; } // Update the device port name
+                            if ((mesh.flags) && (mesh.flags & 2) && (device.name != port.Name)) { device.name = port.Name; changed = true; } // Sync device name to port name
+                            if (changed) {
+                                // Update the database and event the node change
+                                parent.db.Set(device);
+                                parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(sender.meshid, [nodeid]), obj, { etype: 'node', action: 'changenode', nodeid: nodeid, node: device, domain: sender.domainid, nolog: 1 });
+                            }
+                        }
+
+                        // Set the connectivity state if needed
+                        if (managedPorts[nodeid] == null) {
+                            parent.SetConnectivityState(sender.meshid, nodeid, Date.now(), 1, 1, null, null);
+                            managedPorts[nodeid] = { name: port.Name, busy: false };
+                        }
+
+                        // Update busy state
+                        const portInfo = managedPorts[nodeid];
+                        if (portInfo.busy != (port.StatAvailable != 0)) {
+                            console.log('Busy state', (port.StatAvailable != 0));
+                        }
+                    });
+                } else {
+                    // Update busy state
+                    const portInfo = managedPorts[nodeid];
+                    if (portInfo.busy != (port.StatAvailable != 0)) {
+                        console.log('Busy state', (port.StatAvailable != 0));
+                    }
+                }
+            } else {
+                if (managedPorts[nodeid] != null) {
+                    // This port is no longer connected
+                    parent.ClearConnectivityState(sender.meshid, nodeid, 1, null, null);
+
+                    // If the device group policy is set to auto-remove devices, remove it now
+                    if ((mesh.flags) && (mesh.flags & 1)) {                       // Auto-remove devices
+                        parent.db.Remove(nodeid);                                 // Remove node with that id
+                        parent.db.Remove('nt' + nodeid);                          // Remove notes
+                        parent.db.Remove('lc' + nodeid);                          // Remove last connect time
+                        parent.db.Remove('al' + nodeid);                          // Remove error log last time
+                        parent.db.RemoveAllNodeEvents(nodeid);                    // Remove all events for this node
+                        parent.db.removeAllPowerEventsForNode(nodeid);            // Remove all power events for this node
+
+                        // Event node deletion
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(sender.meshid, [nodeid]), obj, { etype: 'node', action: 'removenode', nodeid: nodeid, domain: domain.id, nolog: 1 });
+                    }
+
+                    // Remove the managed port
+                    delete managedPorts[nodeid];
+                }
             }
         }
+    }
+
+    // Generate the nodeid from the device group and device identifier
+    function generateIpKvmNodeId(meshid, portid, domainid) {
+        return 'node/' + domainid + '/' + parent.crypto.createHash('sha384').update(Buffer.from(meshid + '/' + portid)).digest().toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     }
 
     return obj;

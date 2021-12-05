@@ -2528,7 +2528,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.parent.DispatchEvent(targets, obj, event);
 
                         // Event the device group creation
-                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msgid: 76, msgArgs: [command.meshname], msg: 'Device group created: ' + command.meshname, domain: domain.id, creation: mesh.creation, creatorid: mesh.creatorid, creatorname: mesh.creatorname, flags: mesh.flags, consent: mesh.consent };
+                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: meshid, mtype: command.meshtype, mesh: parent.CloneSafeMesh(mesh), action: 'createmesh', msgid: 76, msgArgs: [command.meshname], msg: 'Device group created: ' + command.meshname, domain: domain.id };
                         parent.parent.DispatchEvent(['*', 'server-createmesh', meshid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
 
                         // Log in the auth log
