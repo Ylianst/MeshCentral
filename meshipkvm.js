@@ -161,6 +161,39 @@ function CreateIPKVMManager(parent) {
         return 'node/' + domainid + '/' + parent.crypto.createHash('sha384').update(Buffer.from(meshid + '/' + portid)).digest().toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     }
 
+    // Parse an incoming HTTP request URL
+    function parseIpKvmUrl(domain, url) {
+        const q = require('url').parse(url, true);
+        const i = q.path.indexOf('/ipkvm.ashx/');
+        if (i == -1) return null;
+        const urlargs = q.path.substring(i + 12).split('/');
+        if (urlargs[0].length != 64) return null;
+        const nodeid = 'node/' + domain.id + '/' + urlargs[0];
+        const nid = urlargs[0];
+        const kvmport = obj.managedPorts[nodeid];
+        if (kvmport == null) return null;
+        const kvmmanager = obj.managedGroups[kvmport.meshid];
+        if (kvmmanager == null) return null;
+        urlargs.shift();
+        var relurl = '/' + urlargs.join('/')
+        if (relurl.endsWith('/.websocket')) { relurl = relurl.substring(0, relurl.length - 11); }
+        return { relurl: relurl, preurl: q.path.substring(0, i + 76), nodeid: nodeid, nid: nid, kvmmanager: kvmmanager, kvmport: kvmport };
+    }
+
+    // Handle a IP-KVM HTTP get request
+    obj.handleIpKvmGet = function(domain, req, res, next) {
+        const reqinfo = parseIpKvmUrl(domain, req.url);
+        if (reqinfo == null) { next(); return; }
+        reqinfo.kvmmanager.handleIpKvmGet(domain, reqinfo, req, res, next);
+    }
+
+    // Handle a IP-KVM HTTP websocket request
+    obj.handleIpKvmWebSocket = function (domain, ws, req) {
+        const reqinfo = parseIpKvmUrl(domain, req.url);
+        if (reqinfo == null) { try { ws.close(); } catch (ex) { } return; }
+        reqinfo.kvmmanager.handleIpKvmWebSocket(domain, reqinfo, ws, req);
+    }
+
     return obj;
 }
 
@@ -420,6 +453,31 @@ function CreateRaritanKX3Manager(hostname, port, username, password) {
         });
         req.on('error', function (error) { console.log(error); setState(0); })
         req.end();
+    }
+
+    // Handle a IP-KVM HTTP get request
+    obj.handleIpKvmGet = function (domain, reqinfo, req, res, next) {
+        if (reqinfo.relurl == '/') { res.redirect(reqinfo.preurl + '/jsclient/Client.asp#portId=' + reqinfo.kvmport.portid); return; }
+
+        // Example: /jsclient/Client.asp#portId=P_000d5d20f64c_1
+        obj.fetch(reqinfo.relurl, null, [res, reqinfo], function (server, args, data, rres) {
+            const resx = args[0], xreqinfo = args[1];
+            if (rres.headers['content-type']) { resx.set('content-type', rres.headers['content-type']); }
+
+            // We need to replace the WebSocket code in one of the files to make it work with our server.
+            // Replace "b=new WebSocket(e+"//"+c+"/"+g);" in file "/js/js_kvm_client.1604062083669.min.js"
+            if (xreqinfo.relurl.startsWith('/js/js_kvm_client.')) {
+                data = data.replace('b=new WebSocket(e+"//"+c+"/"+g);', 'b=new WebSocket(e+"//"+c+"/ipkvm.ashx/' + xreqinfo.nid + '/"+g);');
+            }
+
+            resx.end(data);
+        });
+    }
+
+    // Handle a IP-KVM HTTP websocket request
+    obj.handleIpKvmWebSocket = function (domain, reqinfo, ws, req) {
+        //console.log('handleIpKvmWebSocket', reqinfo.preurl);
+        // TODO
     }
 
     return obj;
