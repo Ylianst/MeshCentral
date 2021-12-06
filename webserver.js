@@ -5848,6 +5848,59 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.get(url + 'pluginHandler.js', obj.handlePluginJS);
             }
 
+            // Setup IP-KVM relay if supported
+            if (domain.ipkvm) {
+                obj.app.ws(url + 'ipkvm.ashx/*', function (ws, req) {
+                    const domain = getDomain(req);
+                    if (domain == null) { parent.debug('web', 'ipkvm: failed domain checks.'); try { ws.close(); } catch (ex) { } return; }
+                    const q = require('url').parse(req.url, true);
+                    const i = q.path.indexOf('/ipkvm.ashx/');
+                    if (i == -1) { parent.debug('web', 'ipkvm: failed url checks.'); try { ws.close(); } catch (ex) { } return; }
+                    const urlargs = q.path.substring(i + 12).split('/');
+                    if (urlargs[0].length != 64) { parent.debug('web', 'ipkvm: failed nodeid length checks.'); try { ws.close(); } catch (ex) { } return; }
+                    const nodeid = 'node/' + domain.id + '/' + urlargs[0];
+                    const nid = urlargs[0];
+                    const kvmport = parent.ipKvmManager.managedPorts[nodeid];
+                    if (kvmport == null) { parent.debug('web', 'ipkvm: failed port checks.'); try { ws.close(); } catch (ex) { } return; }
+                    const kvmmanager = parent.ipKvmManager.managedGroups[kvmport.meshid];
+                    if (kvmmanager == null) { parent.debug('web', 'ipkvm: failed manager checks.'); try { ws.close(); } catch (ex) { } return; }
+                    urlargs.shift();
+                    var relurl = '/' + urlargs.join('/')
+                    if (relurl.endsWith('/.websocket')) { relurl = relurl.substring(0, relurl.length - 11); }
+                    console.log('ws', relurl); // TODO
+                });
+                obj.app.get(url + 'ipkvm.ashx/*', function (req, res, next) {
+                    const domain = getDomain(req);
+                    if (domain == null) { return; }
+                    const q = require('url').parse(req.url, true);
+                    const i = q.path.indexOf('/ipkvm.ashx/');
+                    if (i == -1) { next(); return; }
+                    const urlargs = q.path.substring(i + 12).split('/');
+                    if (urlargs[0].length != 64) { next(); return; }
+                    const nodeid = 'node/' + domain.id + '/' + urlargs[0];
+                    const nid = urlargs[0];
+                    const kvmport = parent.ipKvmManager.managedPorts[nodeid];
+                    if (kvmport == null) { next(); return; }
+                    const kvmmanager = parent.ipKvmManager.managedGroups[kvmport.meshid];
+                    if (kvmmanager == null) { next(); return; }
+                    urlargs.shift();
+                    const relurl = '/' + urlargs.join('/') + '#portId=' + kvmport.portid;
+                    // Example: /jsclient/Client.asp#portId=P_000d5d20f64c_1
+                    kvmmanager.fetch(relurl, null, [res, nid], function (server, args, data, rres) {
+                        const resx = args[0], nidx = args[1];
+                        if (rres.headers['content-type']) { resx.set('content-type', rres.headers['content-type']); }
+
+                        // We need to replace the WebSocket code in one of the files to make it work with our server.
+                        // Replace "b=new WebSocket(e+"//"+c+"/"+g);" in file "/js/js_kvm_client.1604062083669.min.js"
+                        if (relurl.startsWith('/js/js_kvm_client.')) {
+                            data = data.replace('b=new WebSocket(e+"//"+c+"/"+g);', 'b=new WebSocket(e+"//"+c+"/ipkvm.ashx/' + nidx + '/"+g);');
+                        }
+
+                        resx.end(data);
+                    });
+                });
+            }
+
             // Setup MSTSC.js if needed
             if (domain.mstsc === true) {
                 obj.app.get(url + 'mstsc.html', function (req, res) { handleMSTSCRequest(req, res, 'mstsc'); });

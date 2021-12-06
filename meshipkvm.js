@@ -8,7 +8,7 @@
 
 function CreateIPKVMManager(parent) {
     const obj = {};
-    const managedGroups = {} // meshid --> Manager
+    obj.managedGroups = {} // meshid --> Manager
     obj.managedPorts = {} // nodeid --> PortInfo
     
     // Subscribe for mesh creation events
@@ -31,14 +31,14 @@ function CreateIPKVMManager(parent) {
     
     // Start managing a IP KVM device
     function startManagement(mesh) {
-        if ((mesh == null) || (mesh.mtype != 4) || (mesh.kvm == null) || (mesh.deleted != null) || (managedGroups[mesh._id] != null)) return;
+        if ((mesh == null) || (mesh.mtype != 4) || (mesh.kvm == null) || (mesh.deleted != null) || (obj.managedGroups[mesh._id] != null)) return;
         var port = 443, hostSplit = mesh.kvm.host.split(':'), host = hostSplit[0];
         if (hostSplit.length == 2) { port = parseInt(hostSplit[1]); }
         if (mesh.kvm.model == 1) { // Raritan KX III
             const manager = CreateRaritanKX3Manager(host, port, mesh.kvm.user, mesh.kvm.pass);
             manager.meshid = mesh._id;
             manager.domainid = mesh._id.split('/')[1];
-            managedGroups[mesh._id] = manager;
+            obj.managedGroups[mesh._id] = manager;
             manager.onStateChanged = onStateChanged;
             manager.onPortsChanged = onPortsChanged;
             manager.start();
@@ -47,7 +47,7 @@ function CreateIPKVMManager(parent) {
     
     // Stop managing a IP KVM device
     function stopManagement(meshid) {
-        const manager = managedGroups[meshid];
+        const manager = obj.managedGroups[meshid];
         if (manager != null) {
             // Remove all managed ports
             for (var i = 0; i < manager.ports.length; i++) {
@@ -57,7 +57,7 @@ function CreateIPKVMManager(parent) {
             }
 
             // Remove the manager
-            delete managedGroups[meshid];
+            delete obj.managedGroups[meshid];
             manager.stop();
         }
     }
@@ -107,7 +107,7 @@ function CreateIPKVMManager(parent) {
                         // Set the connectivity state if needed
                         if (obj.managedPorts[nodeid] == null) {
                             parent.SetConnectivityState(sender.meshid, nodeid, Date.now(), 1, 1, null, null);
-                            obj.managedPorts[nodeid] = { name: port.Name };
+                            obj.managedPorts[nodeid] = { name: port.Name, meshid: sender.meshid, portid: port.PortId };
                         }
 
                         // Update busy state
@@ -265,7 +265,7 @@ function CreateRaritanKX3Manager(hostname, port, username, password) {
     }
 
     function fetchInitialInformation() {
-        fetch('/webs_cron.asp?_portsstatushash=&_devicesstatushash=&webs_job=sidebarupdates', null, null, function (server, tag, data) {
+        obj.fetch('/webs_cron.asp?_portsstatushash=&_devicesstatushash=&webs_job=sidebarupdates', null, null, function (server, tag, data) {
             const parsed = parseJsScript(data);
             for (var i in parsed['updateSidebarPanel']) {
                 if (parsed['updateSidebarPanel'][i][0] == "cron_device") {
@@ -273,7 +273,7 @@ function CreateRaritanKX3Manager(hostname, port, username, password) {
                     obj.deviceModel = getSubString(parsed['updateSidebarPanel'][i][1], "<div class=\"device-model\">", "<");
                 }
             }
-            fetch('/sidebar.asp', null, null, function (server, tag, data) {
+            obj.fetch('/sidebar.asp', null, null, function (server, tag, data) {
                 var dataBlock = getSubString(data, "updateKVMLinkHintOnContainer();", "devices.resetDevicesNew(1);");
                 if (dataBlock == null) { setState(0); return; }
                 const parsed = parseJsScript(dataBlock);
@@ -294,7 +294,7 @@ function CreateRaritanKX3Manager(hostname, port, username, password) {
     }
 
     obj.update = function () {
-        fetch('/webs_cron.asp?_portsstatushash=' + obj.portHash + '&_devicesstatushash=' + obj.deviceHash, null, null, function (server, tag, data) {
+        obj.fetch('/webs_cron.asp?_portsstatushash=' + obj.portHash + '&_devicesstatushash=' + obj.deviceHash, null, null, function (server, tag, data) {
             const parsed = parseJsScript(data);
             if (parsed['updatePortStatus']) {
                 obj.portCount = parseInt(parsed['updatePortStatus'][0][0]) - 2;
@@ -396,7 +396,7 @@ function CreateRaritanKX3Manager(hostname, port, username, password) {
         return ((char >= 'A') && (char <= 'Z')) || ((char >= 'a') && (char <= 'z')) || ((char >= '0') && (char <= '9'));
     }
 
-    function fetch(url, postdata, tag, func) {
+    obj.fetch = function(url, postdata, tag, func) {
         if (obj.state == 0) return;
         var data = '';
         const options = {
@@ -416,9 +416,9 @@ function CreateRaritanKX3Manager(hostname, port, username, password) {
             if (res.statusCode != 200) { setState(0); return; }
             if (res.headers['set-cookie'] != null) { for (var i in res.headers['set-cookie']) { if (res.headers['set-cookie'][i].startsWith('pp_session_id=')) { obj.authCookie = res.headers['set-cookie'][i].substring(14).split(';')[0]; } } }
             res.on('data', function (d) { data += d; });
-            res.on('end', function () { func(obj, tag, data); });
+            res.on('end', function () { func(obj, tag, data, res); });
         });
-        req.on('error', function (error) { setState(0); })
+        req.on('error', function (error) { console.log(error); setState(0); })
         req.end();
     }
 
