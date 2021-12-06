@@ -816,6 +816,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             const xagent = parent.wsagents[docs[i]._id];
                             if ((xagent != null) && (xagent.sessions != null)) { docs[i].sessions = xagent.sessions; }
 
+                            // Add IP-KVM sessions
+                            if (parent.parent.ipKvmManager != null) {
+                                const xipkvmport = parent.parent.ipKvmManager.managedPorts[docs[i]._id];
+                                if ((xipkvmport != null) && (xipkvmport.sessions != null)) { docs[i].sessions = xipkvmport.sessions; }
+                            }
+
                             r[meshid].push(docs[i]);
                         }
                         try { ws.send(JSON.stringify({ action: 'nodes', responseid: command.responseid, nodes: r, tag: command.tag })); } catch (ex) { }
