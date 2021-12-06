@@ -3994,7 +3994,7 @@
                         else if ((sort == 3) || (sort == 4)) { collapseName = 'tag:**xx**xx*TaG*xx**xx**'; }
                         var collapsed = (sort != 3) & (sort != 4) & CollapsedGroups[collapseName];
                         r += '<tr name=xxdevice2 colname=DevxCol' + collapseName + ' style=height:20px' + (collapsed?';display:none':'') + ' id=xv2' + node._id + '></tr>';
-                    } else if (((view == 3) || (view == 5)) && (node.conn & 1) && (((meshrights & 8) || (meshrights & 256)) != 0) && ((node.agent.caps & 1) != 0)) { // Check if we have rights and agent is capable of KVM.
+                    } else if (((view == 3) || (view == 5)) && (node.conn & 1) && (((meshrights & 8) || (meshrights & 256)) != 0) && (node.agent) && ((node.agent.caps & 1) != 0)) { // Check if we have rights and agent is capable of KVM.
                         // Draw the device (TODO: See if we can replace this with a standin in the future)
                         if ((Object.keys(checkedNodeids).length == 0) || checkedNodeids[node._id]) {
                             r += updateDeviceViewHtml(view, null, node);
@@ -4494,9 +4494,13 @@
                 if ((i == 'kvm') && (node.sessions.multidesk == null)) {
                     x += '<u>' + "Remote Desktop" + '</u>';
                     for (var j in node.sessions.kvm) {
-                        var trash = '';
-                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("kvm", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
-                        x += addHtmlValue2(getUserName(j), ((node.sessions.kvm[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.kvm[j]))) + trash);
+                        if (j.startsWith('user/')) {
+                            var trash = '';
+                            if (((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF))) { trash = ' <a href=# onclick=\'return endDeviceSession("kvm", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                            x += addHtmlValue2(getUserName(j), ((node.sessions.kvm[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.kvm[j]))) + trash);
+                        } else if (j == 'busy') {
+                            x += addHtmlValue2("Device is busy", ((node.sessions.kvm[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.kvm[j]))));
+                        }
                     }
                 } else if (i == 'multidesk') {
                     x += '<u>' + "Remote Desktop" + '</u>';

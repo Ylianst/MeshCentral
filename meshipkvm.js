@@ -9,12 +9,11 @@
 function CreateIPKVMManager(parent) {
     const obj = {};
     const managedGroups = {} // meshid --> Manager
-    const managedPorts = {} // nodeid --> PortInfo
+    obj.managedPorts = {} // nodeid --> PortInfo
     
     // Subscribe for mesh creation events
     parent.AddEventDispatch(['server-createmesh', 'server-deletemesh'], obj);
     obj.HandleEvent = function (source, event, ids, id) {
-        console.log();
         if ((event != null) && (event.action == 'createmesh') && (event.mtype == 4)) {
             // Start managing this new device group
             startManagement(parent.webserver.meshes[event.meshid]);
@@ -54,7 +53,7 @@ function CreateIPKVMManager(parent) {
             for (var i = 0; i < manager.ports.length; i++) {
                 const port = manager.ports[i];
                 const nodeid = generateIpKvmNodeId(manager.meshid, port.PortId, manager.domainid);
-                delete managedPorts[nodeid]; // Remove the managed port
+                delete obj.managedPorts[nodeid]; // Remove the managed port
             }
 
             // Remove the manager
@@ -65,11 +64,13 @@ function CreateIPKVMManager(parent) {
     
     // Called when a KVM device changes state
     function onStateChanged(sender, state) {
+        /*
         console.log('State: ' + ['Disconnected', 'Connecting', 'Connected'][state]);
         if (state == 2) {
             console.log('DeviceModel:', sender.deviceModel);
             console.log('FirmwareVersion:', sender.firmwareVersion);
         }
+        */
     }
     
     // Called when a KVM device changes state
@@ -78,8 +79,8 @@ function CreateIPKVMManager(parent) {
             const port = sender.ports[updatedPorts[i]];
             const nodeid = generateIpKvmNodeId(sender.meshid, port.PortId, sender.domainid);
             if ((port.Status == 1) && (port.Class == 'KVM')) {
-                console.log(port.PortNumber + ', ' + port.PortId + ', ' + port.Name + ', ' + port.Type + ', ' + ((port.StatAvailable == 0) ? 'Idle' : 'Connected'));
-                if ((managedPorts[nodeid] == null) || (managedPorts[nodeid].name != port.Name)) {
+                //console.log(port.PortNumber + ', ' + port.PortId + ', ' + port.Name + ', ' + port.Type + ', ' + ((port.StatAvailable == 0) ? 'Idle' : 'Connected'));
+                if ((obj.managedPorts[nodeid] == null) || (obj.managedPorts[nodeid].name != port.Name)) {
                     parent.db.Get(nodeid, function (err, nodes) {
                         if ((err != null) || (nodes == null)) return;
                         const mesh = parent.webserver.meshes[sender.meshid];
@@ -104,26 +105,34 @@ function CreateIPKVMManager(parent) {
                         }
 
                         // Set the connectivity state if needed
-                        if (managedPorts[nodeid] == null) {
+                        if (obj.managedPorts[nodeid] == null) {
                             parent.SetConnectivityState(sender.meshid, nodeid, Date.now(), 1, 1, null, null);
-                            managedPorts[nodeid] = { name: port.Name, busy: false };
+                            obj.managedPorts[nodeid] = { name: port.Name };
                         }
 
                         // Update busy state
-                        const portInfo = managedPorts[nodeid];
-                        if (portInfo.busy != (port.StatAvailable != 0)) {
-                            console.log('Busy state', (port.StatAvailable != 0));
+                        const portInfo = obj.managedPorts[nodeid];
+                        if ((portInfo.sessions != null) != (port.StatAvailable != 0)) {
+                            if (port.StatAvailable != 0) { portInfo.sessions = { kvm: { 'busy': 1 } } } else { delete portInfo.sessions; }
+
+                            // Event the new sessions, this will notify everyone that agent sessions have changed
+                            var event = { etype: 'node', action: 'devicesessions', nodeid: nodeid, domain: sender.domainid, sessions: portInfo.sessions, nolog: 1 };
+                            parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(sender.meshid, [nodeid]), obj, event);
                         }
                     });
                 } else {
                     // Update busy state
-                    const portInfo = managedPorts[nodeid];
-                    if (portInfo.busy != (port.StatAvailable != 0)) {
-                        console.log('Busy state', (port.StatAvailable != 0));
+                    const portInfo = obj.managedPorts[nodeid];
+                    if ((portInfo.sessions != null) != (port.StatAvailable != 0)) {
+                        if (port.StatAvailable != 0) { portInfo.sessions = { kvm: { 'busy': 1 } } } else { delete portInfo.sessions; }
+
+                        // Event the new sessions, this will notify everyone that agent sessions have changed
+                        var event = { etype: 'node', action: 'devicesessions', nodeid: nodeid, domain: sender.domainid, sessions: portInfo.sessions, nolog: 1 };
+                        parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(sender.meshid, [nodeid]), obj, event);
                     }
                 }
             } else {
-                if (managedPorts[nodeid] != null) {
+                if (obj.managedPorts[nodeid] != null) {
                     // This port is no longer connected
                     parent.ClearConnectivityState(sender.meshid, nodeid, 1, null, null);
 
@@ -141,7 +150,7 @@ function CreateIPKVMManager(parent) {
                     }
 
                     // Remove the managed port
-                    delete managedPorts[nodeid];
+                    delete obj.managedPorts[nodeid];
                 }
             }
         }

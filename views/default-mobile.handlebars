@@ -3136,9 +3136,13 @@
                 if ((i == 'kvm') && (node.sessions.multidesk == null)) {
                     x += '<u>' + "Remote Desktop" + '</u>';
                     for (var j in node.sessions.kvm) {
-                        var trash = '';
-                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("kvm", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
-                        x += addHtmlValue4(getUserName(j), ((node.sessions.kvm[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.kvm[j]))) + trash);
+                        if (j.startsWith('user/')) {
+                            var trash = '';
+                            if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("kvm", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                            x += addHtmlValue4(getUserName(j), ((node.sessions.kvm[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.kvm[j]))) + trash);
+                        } else if (j == 'busy') {
+                            x += addHtmlValue2("Device is busy", ((node.sessions.kvm[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.kvm[j]))));
+                        }
                     }
                 } else if (i == 'multidesk') {
                     x += '<u>' + "Remote Desktop" + '</u>';
@@ -3218,7 +3222,7 @@
             var states = [];
             if (node.state > 0 && node.state < powerStatetable.length) state.push(powerStatetable[node.state]);
             if (node.conn) {
-                if ((node.conn & 1) != 0) { if (node.mtype == 4) { states.push('<span>' + ((node.mtype == 4)?"IP-KVM":"Agent") + '</span>'); } else { states.push('<span>' + "IP KVM" + '</span>'); } }
+                if ((node.conn & 1) != 0) { states.push('<span>' + ((node.mtype == 4)?"IP-KVM":"Agent") + '</span>'); }
                 if ((node.conn & 2) != 0) { states.push('<span>' + "CIRA" + '</span>'); }
                 else if ((node.conn & 4) != 0) { states.push('<span>' + "Intel&reg; AMT" + '</span>'); }
                 if ((node.conn & 8) != 0) { states.push('<span>' + "Relay" + '</span>'); }
@@ -3514,7 +3518,7 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if (((meshrights & (4 + 8 + 64)) != 0) && (node.mtype != 3)) { x += '<input type=button value="' + "Actions" + '" onclick=deviceActionFunction() />'; }
+                if (((meshrights & (4 + 8 + 64)) != 0) && (node.mtype < 3)) { x += '<input type=button value="' + "Actions" + '" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value=Notes onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast onclick=deviceToastFunction() />';  }
 
@@ -3542,7 +3546,7 @@
                 // Set the node power state
                 var powerstate = PowerStateStr(node.state);
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
-                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += ((mesh.mtype == 4) ? "IP-KVM" : "Mesh Agent"); }
+                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += ((node.mtype == 4) ? "IP-KVM" : "Mesh Agent"); }
                 if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += "Intel&reg; AMT connected"; }
                 else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += "Intel&reg; AMT detected"; }
                 if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += "MQTT channel connected"; }
