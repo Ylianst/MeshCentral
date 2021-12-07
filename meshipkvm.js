@@ -211,12 +211,14 @@ function CreateIPKVMManager(parent) {
         const reqinfo = parseIpKvmUrl(domain, req.url);
         if (reqinfo == null) { next(); return; }
 
+        /*
         // Check node rights
         if ((req.session == null) || (req.session.userid == null)) { next(); return; }
         const user = parent.webserver.users[req.session.userid];
         if (user == null) { next(); return; }
         const rights = parent.webserver.GetNodeRights(user, reqinfo.kvmmanager.meshid, reqinfo.nodeid);
         if ((rights & MESHRIGHT_REMOTECONTROL) == 0) { next(); return; }
+        */
 
         // Process the request
         reqinfo.kvmmanager.handleIpKvmGet(domain, reqinfo, req, res, next);
@@ -228,12 +230,14 @@ function CreateIPKVMManager(parent) {
         const reqinfo = parseIpKvmUrl(domain, req.url);
         if (reqinfo == null) { try { ws.close(); } catch (ex) { } return; }
 
+        /*
         // Check node rights
         if ((req.session == null) || (req.session.userid == null)) { try { ws.close(); } catch (ex) { } return; }
         const user = parent.webserver.users[req.session.userid];
         if (user == null) { try { ws.close(); } catch (ex) { } return; }
         const rights = parent.webserver.GetNodeRights(user, reqinfo.kvmmanager.meshid, reqinfo.nodeid);
         if ((rights & MESHRIGHT_REMOTECONTROL) == 0) { try { ws.close(); } catch (ex) { } return; }
+        */
 
         // Process the request
         reqinfo.kvmmanager.handleIpKvmWebSocket(domain, reqinfo, ws, req);
@@ -517,8 +521,8 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
             if (rres.headers['content-type']) { resx.set('content-type', rres.headers['content-type']); }
             if (xreqinfo.relurl.startsWith('/js/js_kvm_client.')) {
                 data = data.toString();
-                // Since our cookies can't be read from the html page for security, we embed the cookie right into the page.
-                data = data.replace('module$js$helper$Extensions.Utils.getCookieValue("pp_session_id")', '"' + obj.authCookie + '"');
+                // Since our cookies can't be read from the html page for security, we embed a dummy cookie into the page.
+                data = data.replace('module$js$helper$Extensions.Utils.getCookieValue("pp_session_id")', '"DUMMCOOKIEY"');
                 // Add the connection information directly into the file.
                 data = data.replace('\'use strict\';', '\'use strict\';sessionStorage.setItem("portPermission","CCC");sessionStorage.setItem("appId","1638838693725_3965868704642470");sessionStorage.setItem("portId","' + xreqinfo.kvmport.portid + '");sessionStorage.setItem("channelName","' + xreqinfo.kvmport.name + '");sessionStorage.setItem("portType","' + xreqinfo.kvmport.portType + '");sessionStorage.setItem("portNo","' + xreqinfo.kvmport.portNo + '");');
                 // Replace the WebSocket code in one of the files to make it work with our server.
@@ -528,6 +532,11 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
         });
     }
 
+    // TODO:
+    // We need to hide the cookie from the web page.
+    // Find message with "{SHA256}", do a.substring(1, 65)
+    // Do SHA256(Nonce + Cookie) and return that to KVM device.
+
     // Handle a IP-KVM HTTP websocket request
     obj.handleIpKvmWebSocket = function (domain, reqinfo, ws, req) {
         ws._socket.pause();
@@ -535,7 +544,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
 
         if (reqinfo.kvmport.wsClient != null) {
             // Relay already open
-            console.log('IPKVM Relay already present');
+            //console.log('IPKVM Relay already present');
             try { ws.close(); } catch (ex) { }
         } else {
             // Setup a websocket-to-websocket relay
@@ -556,8 +565,19 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                     parent.parent.debug('relay', 'IPKVM: Relay websocket open');
                     this.wsBrowser.on('message', function (data) {
                         //console.log('KVM browser data', data, data.toString());
+
+                        // Replace the authentication command that used the dummy cookie with a command that has the correct hash
+                        if ((this.xAuthNonce != null) && (this.xAuthNonce != 1) && (data.length == 67) && (data[0] == 0x21) && (data[1] == 0x41)) {
+                            const hash = Buffer.from(require('crypto').createHash('sha256').update(this.xAuthNonce + obj.authCookie).digest().toString('hex'));
+                            data = Buffer.alloc(67);
+                            data[0] = 0x21; // Auth Command
+                            data[1] = 0x41; // Length
+                            hash.copy(data, 2); // Hash
+                            this.xAuthNonce = 1;
+                        }
+
                         this._socket.pause();
-                        this.wsClient.send(data);
+                        try { this.wsClient.send(data); } catch (ex) { }
                         this._socket.resume();
                     });
                     this.wsBrowser.on('close', function () {
@@ -576,9 +596,15 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                     this.wsBrowser._socket.resume();
                 });
                 reqinfo.kvmport.wsClient.on('message', function (data) { // Make sure to handle flow control.
-                    //console.log('KVM switch data', data, data.toString());
+                    //console.log('KVM switch data', data, data.length, data.toString());
+
+                    // If the data start with 0x21 and 0x41 followed by {SHA256}, store the authenticate nonce
+                    if ((this.wsBrowser.xAuthNonce == null) && (data.length == 67) && (data[0] == 0x21) && (data[1] == 0x41) && (data[2] == 0x7b) && (data[3] == 0x53) && (data[4] == 0x48)) {
+                        this.wsBrowser.xAuthNonce = data.slice(2).toString().substring(0, 64);
+                    }
+
                     this._socket.pause();
-                    this.wsBrowser.send(data);
+                    try { this.wsBrowser.send(data); } catch (ex) { }
                     this._socket.resume();
                 });
                 reqinfo.kvmport.wsClient.on('close', function () {

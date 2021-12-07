@@ -6891,6 +6891,9 @@
                         QV('DeskGuestShareButton', false);
                     }
                 }
+                if ((node.mtype == 4) && (meshrights & 8) && (connectivity & 1)) {
+                    x += '<input type=button value="' + "Remote Control" + '" title="' + "Remote Control" + '" onclick=openIpKvmRemoteControl("' + encodeURIComponentEx(node._id) + '") />';
+                }
 
                 // Custom UI
                 if ((customui != null) && (customui.devicebuttons != null)) {
@@ -7300,6 +7303,12 @@
         }
 
         function showNotesEx(buttons, tag) { meshserver.send({ action: 'setNotes', id: decodeURIComponent(tag), notes: encodeURIComponentEx(Q('d2devNotes').value) }); }
+
+        function openIpKvmRemoteControl(nodeid) {
+            if (xxdialogMode) return;
+            var nid = decodeURIComponent(nodeid).split('/')[2];
+            safeNewWindow('/ipkvm.ashx/' + nid + '/', 'ipkvm:' + nid);
+        }
 
         function deviceChat(e) {
             if (xxdialogMode) return;
