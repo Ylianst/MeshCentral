@@ -11,7 +11,31 @@ function CreateIPKVMManager(parent) {
     obj.parent = parent;
     obj.managedGroups = {} // meshid --> Manager
     obj.managedPorts = {} // nodeid --> PortInfo
-    
+
+    // Mesh Rights
+    const MESHRIGHT_EDITMESH = 0x00000001; // 1
+    const MESHRIGHT_MANAGEUSERS = 0x00000002; // 2
+    const MESHRIGHT_MANAGECOMPUTERS = 0x00000004; // 4
+    const MESHRIGHT_REMOTECONTROL = 0x00000008; // 8
+    const MESHRIGHT_AGENTCONSOLE = 0x00000010; // 16
+    const MESHRIGHT_SERVERFILES = 0x00000020; // 32
+    const MESHRIGHT_WAKEDEVICE = 0x00000040; // 64
+    const MESHRIGHT_SETNOTES = 0x00000080; // 128
+    const MESHRIGHT_REMOTEVIEWONLY = 0x00000100; // 256
+    const MESHRIGHT_NOTERMINAL = 0x00000200; // 512
+    const MESHRIGHT_NOFILES = 0x00000400; // 1024
+    const MESHRIGHT_NOAMT = 0x00000800; // 2048
+    const MESHRIGHT_DESKLIMITEDINPUT = 0x00001000; // 4096
+    const MESHRIGHT_LIMITEVENTS = 0x00002000; // 8192
+    const MESHRIGHT_CHATNOTIFY = 0x00004000; // 16384
+    const MESHRIGHT_UNINSTALL = 0x00008000; // 32768
+    const MESHRIGHT_NODESKTOP = 0x00010000; // 65536
+    const MESHRIGHT_REMOTECOMMAND = 0x00020000; // 131072
+    const MESHRIGHT_RESETOFF = 0x00040000; // 262144
+    const MESHRIGHT_GUESTSHARING = 0x00080000; // 524288
+    const MESHRIGHT_DEVICEDETAILS = 0x00100000; // ?1048576?
+    const MESHRIGHT_ADMIN = 0xFFFFFFFF;
+
     // Subscribe for mesh creation events
     parent.AddEventDispatch(['server-createmesh', 'server-deletemesh'], obj);
     obj.HandleEvent = function (source, event, ids, id) {
@@ -182,16 +206,36 @@ function CreateIPKVMManager(parent) {
     }
 
     // Handle a IP-KVM HTTP get request
-    obj.handleIpKvmGet = function(domain, req, res, next) {
+    obj.handleIpKvmGet = function (domain, req, res, next) {
+        // Parse the URL and get information about this KVM port
         const reqinfo = parseIpKvmUrl(domain, req.url);
         if (reqinfo == null) { next(); return; }
+
+        // Check node rights
+        if ((req.session == null) || (req.session.userid == null)) { next(); return; }
+        const user = parent.webserver.users[req.session.userid];
+        if (user == null) { next(); return; }
+        const rights = parent.webserver.GetNodeRights(user, reqinfo.kvmmanager.meshid, reqinfo.nodeid);
+        if ((rights & MESHRIGHT_REMOTECONTROL) == 0) { next(); return; }
+
+        // Process the request
         reqinfo.kvmmanager.handleIpKvmGet(domain, reqinfo, req, res, next);
     }
 
     // Handle a IP-KVM HTTP websocket request
     obj.handleIpKvmWebSocket = function (domain, ws, req) {
+        // Parse the URL and get information about this KVM port
         const reqinfo = parseIpKvmUrl(domain, req.url);
         if (reqinfo == null) { try { ws.close(); } catch (ex) { } return; }
+
+        // Check node rights
+        if ((req.session == null) || (req.session.userid == null)) { try { ws.close(); } catch (ex) { } return; }
+        const user = parent.webserver.users[req.session.userid];
+        if (user == null) { try { ws.close(); } catch (ex) { } return; }
+        const rights = parent.webserver.GetNodeRights(user, reqinfo.kvmmanager.meshid, reqinfo.nodeid);
+        if ((rights & MESHRIGHT_REMOTECONTROL) == 0) { try { ws.close(); } catch (ex) { } return; }
+
+        // Process the request
         reqinfo.kvmmanager.handleIpKvmWebSocket(domain, reqinfo, ws, req);
     }
 
@@ -308,6 +352,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                 }
             }
             obj.fetch('/sidebar.asp', null, null, function (server, tag, data) {
+                data = data.toString();
                 var dataBlock = getSubString(data, "updateKVMLinkHintOnContainer();", "devices.resetDevicesNew(1);");
                 if (dataBlock == null) { setState(0); return; }
                 const parsed = parseJsScript(dataBlock);
@@ -329,6 +374,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
 
     obj.update = function () {
         obj.fetch('/webs_cron.asp?_portsstatushash=' + obj.portHash + '&_devicesstatushash=' + obj.deviceHash, null, null, function (server, tag, data) {
+            data = data.toString();
             const parsed = parseJsScript(data);
             if (parsed['updatePortStatus']) {
                 obj.portCount = parseInt(parsed['updatePortStatus'][0][0]) - 2;
@@ -433,7 +479,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
     obj.fetch = function(url, postdata, tag, func) {
         if (obj.state == 0) return;
 
-        var data = '';
+        var data = [];
         const options = {
             hostname: hostname,
             port: port,
@@ -450,11 +496,11 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
             if (obj.state == 0) return;
             if (res.statusCode != 200) { setState(0); return; }
             if (res.headers['set-cookie'] != null) { for (var i in res.headers['set-cookie']) { if (res.headers['set-cookie'][i].startsWith('pp_session_id=')) { obj.authCookie = res.headers['set-cookie'][i].substring(14).split(';')[0]; } } }
-            res.on('data', function (d) { data += d; });
+            res.on('data', function (d) { data.push(d); });
             res.on('end', function () {
                 // This line is used for debugging only, used to swap a file.
-                //if (url.endsWith('js_kvm_client.1604062083669.min.js')) { data = parent.parent.fs.readFileSync('c:\\tmp\\js_kvm_client.1604062083669.min.js').toString(); }
-                func(obj, tag, data, res);
+                //if (url.endsWith('js_kvm_client.1604062083669.min.js')) { data = [ parent.parent.fs.readFileSync('c:\\tmp\\js_kvm_client.1604062083669.min.js') ] ; }
+                func(obj, tag, Buffer.concat(data), res);
             });
         });
         req.on('error', function (error) { console.log(error); setState(0); })
@@ -469,8 +515,8 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
         obj.fetch(reqinfo.relurl, null, [res, reqinfo], function (server, args, data, rres) {
             const resx = args[0], xreqinfo = args[1];
             if (rres.headers['content-type']) { resx.set('content-type', rres.headers['content-type']); }
-
             if (xreqinfo.relurl.startsWith('/js/js_kvm_client.')) {
+                data = data.toString();
                 // Since our cookies can't be read from the html page for security, we embed the cookie right into the page.
                 data = data.replace('module$js$helper$Extensions.Utils.getCookieValue("pp_session_id")', '"' + obj.authCookie + '"');
                 // Add the connection information directly into the file.
@@ -478,7 +524,6 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                 // Replace the WebSocket code in one of the files to make it work with our server.
                 data = data.replace('b=new WebSocket(e+"//"+c+"/"+g);', 'b=new WebSocket(e+"//"+c+"/ipkvm.ashx/' + xreqinfo.nid + '/"+g);');
             }
-
             resx.end(data);
         });
     }
@@ -497,7 +542,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
             try {
                 const options = {
                     rejectUnauthorized: false,
-                    servername: 'Raritan',
+                    servername: 'raritan', // We set this to remove the IP address warning from NodeJS.
                     headers: { Cookie: 'pp_session_id=' + obj.authCookie + '; view_length=32' }
                 };
                 parent.parent.debug('relay', 'IPKVM: Relay connecting to: wss://' + hostname + ':' + port + '/rfb');
