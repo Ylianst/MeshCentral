@@ -5719,11 +5719,11 @@
                     var terminalAccess = ((rights == 0xFFFFFFFF) || ((rights & 512) == 0));
                     var fileAccess = ((rights == 0xFFFFFFFF) || ((rights & 1024) == 0));
 
-                    QV('cxdesktop', ((node.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2))) && ((rights & 8) || (rights & 256)) && desktopAccess);
-                    QV('cxterminal', ((node.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (rights & 8) && terminalAccess);
-                    QV('cxfiles', ((node.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (rights & 8) && fileAccess);
+                    QV('cxdesktop', (node.mtype != 4) && ((node.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2))) && ((rights & 8) || (rights & 256)) && desktopAccess);
+                    QV('cxterminal', (node.mtype != 4) && ((node.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (rights & 8) && terminalAccess);
+                    QV('cxfiles', (node.mtype != 4) && ((node.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (rights & 8) && fileAccess);
                     QV('cxevents', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (rights & 8));
-                    QV('cxdetails', node.mtype != 3);
+                    QV('cxdetails', node.mtype < 3);
                     QV('cxconsole', (consoleRights && (node.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (rights & 8));
                     QV('cxmgroupsplit', true);
                     QV('cxstar', true);
