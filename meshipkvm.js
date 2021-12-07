@@ -202,7 +202,7 @@ function CreateIPKVMManager(parent) {
         urlargs.shift();
         var relurl = '/' + urlargs.join('/')
         if (relurl.endsWith('/.websocket')) { relurl = relurl.substring(0, relurl.length - 11); }
-        return { relurl: relurl, preurl: q.path.substring(0, i + 76), nodeid: nodeid, nid: nid, kvmmanager: kvmmanager, kvmport: kvmport };
+        return { domain: domain.id, relurl: relurl, preurl: q.path.substring(0, i + 76), nodeid: nodeid, nid: nid, kvmmanager: kvmmanager, kvmport: kvmport };
     }
 
     // Handle a IP-KVM HTTP get request
@@ -211,14 +211,12 @@ function CreateIPKVMManager(parent) {
         const reqinfo = parseIpKvmUrl(domain, req.url);
         if (reqinfo == null) { next(); return; }
 
-        /*
         // Check node rights
         if ((req.session == null) || (req.session.userid == null)) { next(); return; }
         const user = parent.webserver.users[req.session.userid];
         if (user == null) { next(); return; }
         const rights = parent.webserver.GetNodeRights(user, reqinfo.kvmmanager.meshid, reqinfo.nodeid);
         if ((rights & MESHRIGHT_REMOTECONTROL) == 0) { next(); return; }
-        */
 
         // Process the request
         reqinfo.kvmmanager.handleIpKvmGet(domain, reqinfo, req, res, next);
@@ -230,14 +228,17 @@ function CreateIPKVMManager(parent) {
         const reqinfo = parseIpKvmUrl(domain, req.url);
         if (reqinfo == null) { try { ws.close(); } catch (ex) { } return; }
 
-        /*
         // Check node rights
         if ((req.session == null) || (req.session.userid == null)) { try { ws.close(); } catch (ex) { } return; }
         const user = parent.webserver.users[req.session.userid];
         if (user == null) { try { ws.close(); } catch (ex) { } return; }
         const rights = parent.webserver.GetNodeRights(user, reqinfo.kvmmanager.meshid, reqinfo.nodeid);
         if ((rights & MESHRIGHT_REMOTECONTROL) == 0) { try { ws.close(); } catch (ex) { } return; }
-        */
+
+        // Add more logging data to the request information
+        reqinfo.clientIp = req.clientIp;
+        reqinfo.userid = req.session.userid;
+        reqinfo.username = user.name;
 
         // Process the request
         reqinfo.kvmmanager.handleIpKvmWebSocket(domain, reqinfo, ws, req);
@@ -532,10 +533,25 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
         });
     }
 
-    // TODO:
-    // We need to hide the cookie from the web page.
-    // Find message with "{SHA256}", do a.substring(1, 65)
-    // Do SHA256(Nonce + Cookie) and return that to KVM device.
+    function logConnection(wsClient) {
+        const kvmport = wsClient.kvmport
+        const reqinfo = wsClient.reqinfo;
+        var event = { etype: 'relay', action: 'relaylog', domain: reqinfo.domain, userid: reqinfo.userid, username: reqinfo.username, msgid: 15, msgArgs: [kvmport.portid, reqinfo.clientIp, kvmport.portNo], msg: 'Started desktop session' + ' \"' + kvmport.portid + '\" from ' + reqinfo.clientIp + ' to ' + kvmport.portNo, protocol: 2, nodeid: reqinfo.nodeid };
+        parent.parent.DispatchEvent(['*', reqinfo.userid, reqinfo.nodeid, kvmport.meshid], obj, event);
+    }
+
+    function logDisconnection(wsClient) {
+        const kvmport = wsClient.kvmport
+        const reqinfo = wsClient.reqinfo;
+        var event = { etype: 'relay', action: 'relaylog', domain: reqinfo.domain, userid: reqinfo.userid, username: reqinfo.username, msgid: 11, msgArgs: [kvmport.portid, reqinfo.clientIp, kvmport.portNo, Math.floor((Date.now() - kvmport.connectionStart) / 1000)], msg: 'Ended desktop session' + ' \"' + kvmport.portid + '\" from ' + reqinfo.clientIp + ' to ' + kvmport.portNo + ', ' + Math.floor((Date.now() - kvmport.connectionStart) / 1000) + ' second(s)', protocol: 2, nodeid: reqinfo.nodeid, bytesin: kvmport.bytesIn, bytesout: kvmport.bytesOut };
+        parent.parent.DispatchEvent(['*', reqinfo.userid, reqinfo.nodeid, kvmport.meshid], obj, event);
+
+        delete kvmport.bytesIn;
+        delete kvmport.bytesOut;
+        delete kvmport.connectionStart;
+        delete wsClient.kvmport;
+        delete wsClient.reqinfo;
+    }
 
     // Handle a IP-KVM HTTP websocket request
     obj.handleIpKvmWebSocket = function (domain, reqinfo, ws, req) {
@@ -560,6 +576,11 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                 reqinfo.kvmport.wsClient.wsBrowser = ws;
                 ws.wsClient = reqinfo.kvmport.wsClient;
                 reqinfo.kvmport.wsClient.kvmport = reqinfo.kvmport;
+                reqinfo.kvmport.wsClient.reqinfo = reqinfo;
+                reqinfo.kvmport.connectionStart = Date.now();
+                reqinfo.kvmport.bytesIn = 0;
+                reqinfo.kvmport.bytesOut = 0;
+                logConnection(reqinfo.kvmport.wsClient);
 
                 reqinfo.kvmport.wsClient.on('open', function () {
                     parent.parent.debug('relay', 'IPKVM: Relay websocket open');
@@ -576,6 +597,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                             this.xAuthNonce = 1;
                         }
 
+                        try { this.wsClient.kvmport.bytesOut += data.length; } catch (ex) { }
                         this._socket.pause();
                         try { this.wsClient.send(data); } catch (ex) { }
                         this._socket.resume();
@@ -585,6 +607,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
 
                         // Clean up
                         if (this.wsClient) {
+                            logDisconnection(this.wsClient);
                             try { this.wsClient.close(); } catch (ex) { }
                             if (this.wsClient.kvmport) { delete this.wsClient.kvmport.wsClient; delete this.wsClient.kvmport; }
                             delete this.wsClient.wsBrowser; delete this.wsClient;
@@ -603,6 +626,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                         this.wsBrowser.xAuthNonce = data.slice(2).toString().substring(0, 64);
                     }
 
+                    try { this.wsBrowser.wsClient.kvmport.bytesIn += data.length; } catch (ex) { }
                     this._socket.pause();
                     try { this.wsBrowser.send(data); } catch (ex) { }
                     this._socket.resume();
@@ -612,6 +636,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
 
                     // Clean up
                     if (this.wsBrowser) {
+                        logDisconnection(this.wsBrowser.wsClient);
                         try { this.wsBrowser.close(); } catch (ex) { }
                         delete this.wsBrowser.wsClient; delete this.wsBrowser;
                     }
