@@ -8,6 +8,7 @@
 
 function CreateIPKVMManager(parent) {
     const obj = {};
+    obj.parent = parent;
     obj.managedGroups = {} // meshid --> Manager
     obj.managedPorts = {} // nodeid --> PortInfo
     
@@ -35,7 +36,7 @@ function CreateIPKVMManager(parent) {
         var port = 443, hostSplit = mesh.kvm.host.split(':'), host = hostSplit[0];
         if (hostSplit.length == 2) { port = parseInt(hostSplit[1]); }
         if (mesh.kvm.model == 1) { // Raritan KX III
-            const manager = CreateRaritanKX3Manager(host, port, mesh.kvm.user, mesh.kvm.pass);
+            const manager = CreateRaritanKX3Manager(obj, host, port, mesh.kvm.user, mesh.kvm.pass);
             manager.meshid = mesh._id;
             manager.domainid = mesh._id.split('/')[1];
             obj.managedGroups[mesh._id] = manager;
@@ -107,7 +108,7 @@ function CreateIPKVMManager(parent) {
                         // Set the connectivity state if needed
                         if (obj.managedPorts[nodeid] == null) {
                             parent.SetConnectivityState(sender.meshid, nodeid, Date.now(), 1, 1, null, null);
-                            obj.managedPorts[nodeid] = { name: port.Name, meshid: sender.meshid, portid: port.PortId };
+                            obj.managedPorts[nodeid] = { name: port.Name, meshid: sender.meshid, portid: port.PortId, portType: port.PortType, portNo: port.PortIndex };
                         }
 
                         // Update busy state
@@ -197,7 +198,7 @@ function CreateIPKVMManager(parent) {
     return obj;
 }
 
-function CreateRaritanKX3Manager(hostname, port, username, password) {
+function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
     const https = require('https');
     const obj = {};
     var updateTimer = null;
@@ -431,6 +432,7 @@ function CreateRaritanKX3Manager(hostname, port, username, password) {
 
     obj.fetch = function(url, postdata, tag, func) {
         if (obj.state == 0) return;
+
         var data = '';
         const options = {
             hostname: hostname,
@@ -449,7 +451,11 @@ function CreateRaritanKX3Manager(hostname, port, username, password) {
             if (res.statusCode != 200) { setState(0); return; }
             if (res.headers['set-cookie'] != null) { for (var i in res.headers['set-cookie']) { if (res.headers['set-cookie'][i].startsWith('pp_session_id=')) { obj.authCookie = res.headers['set-cookie'][i].substring(14).split(';')[0]; } } }
             res.on('data', function (d) { data += d; });
-            res.on('end', function () { func(obj, tag, data, res); });
+            res.on('end', function () {
+                // This line is used for debugging only, used to swap a file.
+                //if (url.endsWith('js_kvm_client.1604062083669.min.js')) { data = parent.parent.fs.readFileSync('c:\\tmp\\js_kvm_client.1604062083669.min.js').toString(); }
+                func(obj, tag, data, res);
+            });
         });
         req.on('error', function (error) { console.log(error); setState(0); })
         req.end();
@@ -457,16 +463,19 @@ function CreateRaritanKX3Manager(hostname, port, username, password) {
 
     // Handle a IP-KVM HTTP get request
     obj.handleIpKvmGet = function (domain, reqinfo, req, res, next) {
-        if (reqinfo.relurl == '/') { res.redirect(reqinfo.preurl + '/jsclient/Client.asp#portId=' + reqinfo.kvmport.portid); return; }
+        if (reqinfo.relurl == '/') { res.redirect(reqinfo.preurl + '/jsclient/Client.asp'); return; }
 
         // Example: /jsclient/Client.asp#portId=P_000d5d20f64c_1
         obj.fetch(reqinfo.relurl, null, [res, reqinfo], function (server, args, data, rres) {
             const resx = args[0], xreqinfo = args[1];
             if (rres.headers['content-type']) { resx.set('content-type', rres.headers['content-type']); }
 
-            // We need to replace the WebSocket code in one of the files to make it work with our server.
-            // Replace "b=new WebSocket(e+"//"+c+"/"+g);" in file "/js/js_kvm_client.1604062083669.min.js"
             if (xreqinfo.relurl.startsWith('/js/js_kvm_client.')) {
+                // Since our cookies can't be read from the html page for security, we embed the cookie right into the page.
+                data = data.replace('module$js$helper$Extensions.Utils.getCookieValue("pp_session_id")', '"' + obj.authCookie + '"');
+                // Add the connection information directly into the file.
+                data = data.replace('\'use strict\';', '\'use strict\';sessionStorage.setItem("portPermission","CCC");sessionStorage.setItem("appId","1638838693725_3965868704642470");sessionStorage.setItem("portId","' + xreqinfo.kvmport.portid + '");sessionStorage.setItem("channelName","' + xreqinfo.kvmport.name + '");sessionStorage.setItem("portType","' + xreqinfo.kvmport.portType + '");sessionStorage.setItem("portNo","' + xreqinfo.kvmport.portNo + '");');
+                // Replace the WebSocket code in one of the files to make it work with our server.
                 data = data.replace('b=new WebSocket(e+"//"+c+"/"+g);', 'b=new WebSocket(e+"//"+c+"/ipkvm.ashx/' + xreqinfo.nid + '/"+g);');
             }
 
@@ -476,8 +485,73 @@ function CreateRaritanKX3Manager(hostname, port, username, password) {
 
     // Handle a IP-KVM HTTP websocket request
     obj.handleIpKvmWebSocket = function (domain, reqinfo, ws, req) {
+        ws._socket.pause();
         //console.log('handleIpKvmWebSocket', reqinfo.preurl);
-        // TODO
+
+        if (reqinfo.kvmport.wsClient != null) {
+            // Relay already open
+            console.log('IPKVM Relay already present');
+            try { ws.close(); } catch (ex) { }
+        } else {
+            // Setup a websocket-to-websocket relay
+            try {
+                const options = {
+                    rejectUnauthorized: false,
+                    servername: 'Raritan',
+                    headers: { Cookie: 'pp_session_id=' + obj.authCookie + '; view_length=32' }
+                };
+                parent.parent.debug('relay', 'IPKVM: Relay connecting to: wss://' + hostname + ':' + port + '/rfb');
+                const WebSocket = require('ws');
+                reqinfo.kvmport.wsClient = new WebSocket('wss://' + hostname + ':' + port + '/rfb', options);
+                reqinfo.kvmport.wsClient.wsBrowser = ws;
+                ws.wsClient = reqinfo.kvmport.wsClient;
+                reqinfo.kvmport.wsClient.kvmport = reqinfo.kvmport;
+
+                reqinfo.kvmport.wsClient.on('open', function () {
+                    parent.parent.debug('relay', 'IPKVM: Relay websocket open');
+                    this.wsBrowser.on('message', function (data) {
+                        //console.log('KVM browser data', data, data.toString());
+                        this._socket.pause();
+                        this.wsClient.send(data);
+                        this._socket.resume();
+                    });
+                    this.wsBrowser.on('close', function () {
+                        parent.parent.debug('relay', 'IPKVM: Relay browser websocket closed');
+
+                        // Clean up
+                        if (this.wsClient) {
+                            try { this.wsClient.close(); } catch (ex) { }
+                            if (this.wsClient.kvmport) { delete this.wsClient.kvmport.wsClient; delete this.wsClient.kvmport; }
+                            delete this.wsClient.wsBrowser; delete this.wsClient;
+                        }
+                    });
+                    this.wsBrowser.on('error', function (err) {
+                        parent.parent.debug('relay', 'IPKVM: Relay browser websocket error: ' + err);
+                    });
+                    this.wsBrowser._socket.resume();
+                });
+                reqinfo.kvmport.wsClient.on('message', function (data) { // Make sure to handle flow control.
+                    //console.log('KVM switch data', data, data.toString());
+                    this._socket.pause();
+                    this.wsBrowser.send(data);
+                    this._socket.resume();
+                });
+                reqinfo.kvmport.wsClient.on('close', function () {
+                    parent.parent.debug('relay', 'IPKVM: Relay websocket closed');
+
+                    // Clean up
+                    if (this.wsBrowser) {
+                        try { this.wsBrowser.close(); } catch (ex) { }
+                        delete this.wsBrowser.wsClient; delete this.wsBrowser;
+                    }
+                    if (this.kvmport) { delete this.kvmport.wsClient; delete this.kvmport; }
+                });
+                reqinfo.kvmport.wsClient.on('error', function (err) {
+                    parent.parent.debug('relay', 'IPKVM: Relay websocket error: ' + err);
+                    
+                });
+            } catch (ex) { console.log(ex); }
+        }
     }
 
     return obj;
