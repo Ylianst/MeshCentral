@@ -5850,11 +5850,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var userCount = 0;
             for (var i in command.users) {
                 if (domain.usernameisemail) { if (command.users[i].email) { command.users[i].user = command.users[i].email; } else { command.users[i].email = command.users[i].user; } } // If the email is the username, set this here.
-                if (common.validateUsername(command.users[i].user, 1, 256) == false) { err = 'Invalid username'; return; } // Username is between 1 and 64 characters, no spaces
-                if ((command.users[i].user[0] == '~') || (command.users[i].user.indexOf('/') >= 0)) { err = 'Invalid username'; return; } // This is a reserved user name or invalid name
-                if (common.validateString(command.users[i].pass, 1, 256) == false) { err = 'Invalid password'; return; } // Password is between 1 and 256 characters
-                if (common.checkPasswordRequirements(command.users[i].pass, domain.passwordrequirements) == false) { err = 'Invalid password'; return; } // Password does not meet requirements
-                if ((command.users[i].email != null) && (common.validateEmail(command.users[i].email, 1, 1024) == false)) { err = 'Invalid email'; return; } // Check if this is a valid email address
+                if (common.validateUsername(command.users[i].user, 1, 256) == false) { err = 'Invalid username'; } // Username is between 1 and 64 characters, no spaces
+                if ((command.users[i].user[0] == '~') || (command.users[i].user.indexOf('/') >= 0)) { err = 'Invalid username'; } // This is a reserved user name or invalid name
+                if (common.validateString(command.users[i].pass, 1, 256) == false) { err = 'Invalid password'; } // Password is between 1 and 256 characters
+                if (common.checkPasswordRequirements(command.users[i].pass, domain.passwordrequirements) == false) { err = 'Invalid password'; } // Password does not meet requirements
+                if ((command.users[i].email != null) && (common.validateEmail(command.users[i].email, 1, 1024) == false)) { err = 'Invalid email'; } // Check if this is a valid email address
                 userCount++;
             }
         }
