@@ -631,45 +631,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // pass through to switch statement until refactoring complete
 
         switch (command.action) {
-            case 'interuser':
-                {
-                    // Sends data between users only if allowed. Only a user in the "interUserMessaging": [] list, in the settings section of the config.json can receive and send inter-user messages from and to all users.
-                    if ((parent.parent.config.settings.interusermessaging == null) || (parent.parent.config.settings.interusermessaging == false) || (command.data == null)) return;
-                    if (typeof command.sessionid == 'string') { var userSessionId = command.sessionid.split('/'); if (userSessionId.length != 4) return; command.userid = userSessionId[0] + '/' + userSessionId[1] + '/' + userSessionId[2]; }
-                    if (common.validateString(command.userid, 0, 2014) == false) return;
-                    var userSplit = command.userid.split('/');
-                    if (userSplit.length == 1) { command.userid = 'user/' + domain.id + '/' + command.userid; userSplit = command.userid.split('/'); }
-                    if ((userSplit.length != 3) || (userSplit[0] != 'user') || (userSplit[1] != domain.id) || (parent.users[command.userid] == null)) return; // Make sure the target userid is valid and within the domain
-                    const allowed = ((parent.parent.config.settings.interusermessaging === true) || (parent.parent.config.settings.interusermessaging.indexOf(obj.user._id) >= 0) || (parent.parent.config.settings.interusermessaging.indexOf(command.userid) >= 0));
-                    if (allowed == false) return;
-
-                    // Get sessions
-                    var sessions = parent.wssessions[command.userid];
-                    if (sessions == null) break;
-
-                    // Create the notification message and send on all sessions except our own (no echo back).
-                    var notification = JSON.stringify({ action: 'interuser', sessionid: ws.sessionId, data: command.data, scope: (command.sessionid != null)?'session':'user' });
-                    for (var i in sessions) {
-                        if ((command.sessionid != null) && (sessions[i].sessionId != command.sessionid)) continue; // Send to a specific session
-                        if (sessions[i] != obj.ws) { try { sessions[i].send(notification); } catch (ex) { } }
-                    }
-
-                    // TODO: Send the message of user sessions connected to other servers.
-
-                    break;
-                }
-            case 'servertimelinestats':
-                {
-                    // Only accept if the "My Server" tab is allowed for this domain
-                    if (domain.myserver === false) break;
-
-                    if ((user.siteadmin & 21) == 0) return; // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
-                    if (common.validateInt(command.hours, 0, 24 * 30) == false) return;
-                    db.GetServerStats(command.hours, function (err, docs) {
-                        if (err == null) { try { ws.send(JSON.stringify({ action: 'servertimelinestats', events: docs })); } catch (ex) { } }
-                    });
-                    break;
-                }
             case 'nodes':
                 {
                     var links = [], extraids = null, err = null;
@@ -5422,6 +5383,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
         'intersession': serverCommandInterSession,
+        'interuser': serverCommandInterUser,
         'lastconnect': serverCommandLastConnect,
         'lastconnects': serverCommandLastConnects,
         'logincookie': serverCommandLoginCookie,
@@ -5435,6 +5397,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverconsole': serverCommandServerConsole,
         'servererrors': serverCommandServerErrors,
         'serverstats': serverCommandServerStats,
+        'servertimelinestats': serverCommandServerTimelineStats,
         'serverupdate': serverCommandServerUpdate,
         'serverversion': serverCommandServerVersion,
         'urlargs': serverCommandUrlArgs,
@@ -5886,6 +5849,30 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // TODO: Send the message of user sessions connected to other servers.
     }
 
+    function serverCommandInterUser(command) {
+        // Sends data between users only if allowed. Only a user in the "interUserMessaging": [] list, in the settings section of the config.json can receive and send inter-user messages from and to all users.
+        if ((parent.parent.config.settings.interusermessaging == null) || (parent.parent.config.settings.interusermessaging == false) || (command.data == null)) return;
+        if (typeof command.sessionid == 'string') { var userSessionId = command.sessionid.split('/'); if (userSessionId.length != 4) return; command.userid = userSessionId[0] + '/' + userSessionId[1] + '/' + userSessionId[2]; }
+        if (common.validateString(command.userid, 0, 2014) == false) return;
+        var userSplit = command.userid.split('/');
+        if (userSplit.length == 1) { command.userid = 'user/' + domain.id + '/' + command.userid; userSplit = command.userid.split('/'); }
+        if ((userSplit.length != 3) || (userSplit[0] != 'user') || (userSplit[1] != domain.id) || (parent.users[command.userid] == null)) return; // Make sure the target userid is valid and within the domain
+        const allowed = ((parent.parent.config.settings.interusermessaging === true) || (parent.parent.config.settings.interusermessaging.indexOf(obj.user._id) >= 0) || (parent.parent.config.settings.interusermessaging.indexOf(command.userid) >= 0));
+        if (allowed == false) return;
+
+        // Get sessions
+        var sessions = parent.wssessions[command.userid];
+        if (sessions == null) return;
+
+        // Create the notification message and send on all sessions except our own (no echo back).
+        var notification = JSON.stringify({ action: 'interuser', sessionid: ws.sessionId, data: command.data, scope: (command.sessionid != null)?'session':'user' });
+        for (var i in sessions) {
+            if ((command.sessionid != null) && (sessions[i].sessionId != command.sessionid)) continue; // Send to a specific session
+            if (sessions[i] != obj.ws) { try { sessions[i].send(notification); } catch (ex) { } }
+        }
+        // TODO: Send the message of user sessions connected to other servers.
+    }
+
     function serverCommandLastConnect(command) {
         if (!validNodeIdAndDomain(command)) return;
 
@@ -6086,6 +6073,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             obj.SendServerStats();
             obj.serverStatsTimer = setInterval(obj.SendServerStats, command.interval);
         }
+    }
+
+    function serverCommandServerTimelineStats(command) {
+        // Only accept if the "My Server" tab is allowed for this domain
+        if (domain.myserver === false) return;
+
+        if ((user.siteadmin & 21) == 0) return; // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
+        if (common.validateInt(command.hours, 0, 24 * 30) == false) return;
+        db.GetServerStats(command.hours, function (err, docs) {
+            if (err == null) { try { ws.send(JSON.stringify({ action: 'servertimelinestats', events: docs })); } catch (ex) { } }
+        });
     }
 
     function serverCommandServerUpdate(command) {
