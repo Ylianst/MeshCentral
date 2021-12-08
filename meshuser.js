@@ -1773,76 +1773,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
-            case 'removeuserfromusergroup':
-                {
-                    var err = null;
-                    try {
-                        if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { err = 'Permission denied'; }
-                        else if (common.validateString(command.ugrpid, 1, 1024) == false) { err = 'Invalid groupid'; }
-                        else if (common.validateString(command.userid, 1, 256) == false) { err = 'Invalid userid'; }
-                        else {
-                            var ugroupidsplit = command.ugrpid.split('/');
-                            if ((ugroupidsplit.length != 3) || (ugroupidsplit[0] != 'ugrp') || ((obj.crossDomain !== true) && (ugroupidsplit[1] != domain.id))) { err = 'Invalid groupid'; }
-                        }
-                    } catch (ex) { err = 'Validation exception: ' + ex; }
-
-                    // Fetch the domain
-                    var removeUserDomain = domain;
-                    if (obj.crossDomain !== true) { removeUserDomain = parent.parent.config.domains[ugroupidsplit[1]]; }
-                    if (removeUserDomain == null) { err = 'Invalid domain'; }
-
-                    // Handle any errors
-                    if (err != null) {
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeuserfromusergroup', responseid: command.responseid, result: err })); } catch (ex) { } }
-                        break;
-                    }
-
-                    // Check if the user exists
-                    if (command.userid.startsWith('user/') == false) {
-                        if (parent.users['user/' + removeUserDomain.id + '/' + command.userid.toLowerCase()] != null) { command.userid = 'user/' + removeUserDomain.id + '/' + command.userid.toLowerCase(); }
-                        else if (parent.users['user/' + removeUserDomain.id + '/' + command.userid] != null) { command.userid = 'user/' + removeUserDomain.id + '/' + command.userid; }
-                    }
-
-                    var chguser = parent.users[command.userid];
-                    if (chguser != null) {
-                        var change = false;
-                        if ((chguser.links != null) && (chguser.links[command.ugrpid] != null)) {
-                            change = true;
-                            delete chguser.links[command.ugrpid];
-
-                            // Notify user change
-                            var targets = ['*', 'server-users', user._id, chguser._id];
-                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 67, msgArgs: [chguser.name], msg: 'User group membership changed: ' + chguser.name, domain: removeUserDomain.id };
-                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                            parent.parent.DispatchEvent(targets, obj, event);
-
-                            db.SetUser(chguser);
-                            parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
-                        }
-
-                        // Get the user group
-                        var group = parent.userGroups[command.ugrpid];
-                        if (group != null) {
-                            // Remove the user from the group
-                            if ((group.links != null) && (group.links[command.userid] != null)) {
-                                change = true;
-                                delete group.links[command.userid];
-                                db.Set(group);
-
-                                // Notify user group change
-                                if (change) {
-                                    var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msgid: 72, msgArgs: [chguser.name, group.name], msg: 'Removed user ' + chguser.name + ' from user group ' + group.name, domain: removeUserDomain.id };
-                                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                                    parent.parent.DispatchEvent(['*', group._id, user._id, chguser._id], obj, event);
-                                }
-                            }
-                        }
-                    }
-
-                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeuserfromusergroup', responseid: command.responseid, result: 'ok', added: addedCount, failed: failCount })); } catch (ex) { } }
-
-                    break;
-                }
             case 'changemeshnotify':
                 {
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
@@ -5554,6 +5484,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'pong': serverCommandPong,
         'powertimeline': serverCommandPowerTimeline,
         'print': serverCommandPrint,
+        'removeuserfromusergroup': serverCommandRemoveUserFromUserGroup,
         'serverclearerrorlog': serverCommandServerClearErrorLog,
         'serverconsole': serverCommandServerConsole,
         'servererrors': serverCommandServerErrors,
@@ -6052,6 +5983,74 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverCommandPrint(command) { console.log(command.value); }
+
+    function serverCommandRemoveUserFromUserGroup(command) {
+        var err = null;
+        try {
+            if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { err = 'Permission denied'; }
+            else if (common.validateString(command.ugrpid, 1, 1024) == false) { err = 'Invalid groupid'; }
+            else if (common.validateString(command.userid, 1, 256) == false) { err = 'Invalid userid'; }
+            else {
+                var ugroupidsplit = command.ugrpid.split('/');
+                if ((ugroupidsplit.length != 3) || (ugroupidsplit[0] != 'ugrp') || ((obj.crossDomain !== true) && (ugroupidsplit[1] != domain.id))) { err = 'Invalid groupid'; }
+            }
+        } catch (ex) { err = 'Validation exception: ' + ex; }
+
+        // Fetch the domain
+        var removeUserDomain = domain;
+        if (obj.crossDomain !== true) { removeUserDomain = parent.parent.config.domains[ugroupidsplit[1]]; }
+        if (removeUserDomain == null) { err = 'Invalid domain'; }
+
+        // Handle any errors
+        if (err != null) {
+            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeuserfromusergroup', responseid: command.responseid, result: err })); } catch (ex) { } }
+            return;
+        }
+
+        // Check if the user exists
+        if (command.userid.startsWith('user/') == false) {
+            if (parent.users['user/' + removeUserDomain.id + '/' + command.userid.toLowerCase()] != null) { command.userid = 'user/' + removeUserDomain.id + '/' + command.userid.toLowerCase(); }
+            else if (parent.users['user/' + removeUserDomain.id + '/' + command.userid] != null) { command.userid = 'user/' + removeUserDomain.id + '/' + command.userid; }
+        }
+
+        var chguser = parent.users[command.userid];
+        if (chguser != null) {
+            var change = false;
+            if ((chguser.links != null) && (chguser.links[command.ugrpid] != null)) {
+                change = true;
+                delete chguser.links[command.ugrpid];
+
+                // Notify user change
+                var targets = ['*', 'server-users', user._id, chguser._id];
+                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 67, msgArgs: [chguser.name], msg: 'User group membership changed: ' + chguser.name, domain: removeUserDomain.id };
+                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                parent.parent.DispatchEvent(targets, obj, event);
+
+                db.SetUser(chguser);
+                parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
+            }
+
+            // Get the user group
+            var group = parent.userGroups[command.ugrpid];
+            if (group != null) {
+                // Remove the user from the group
+                if ((group.links != null) && (group.links[command.userid] != null)) {
+                    change = true;
+                    delete group.links[command.userid];
+                    db.Set(group);
+
+                    // Notify user group change
+                    if (change) {
+                        var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msgid: 72, msgArgs: [chguser.name, group.name], msg: 'Removed user ' + chguser.name + ' from user group ' + group.name, domain: removeUserDomain.id };
+                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                        parent.parent.DispatchEvent(['*', group._id, user._id, chguser._id], obj, event);
+                    }
+                }
+            }
+        }
+
+        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeuserfromusergroup', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+    }
 
     function serverCommandServerClearErrorLog(command) {
         // Clear the server error log if user has site update permissions
