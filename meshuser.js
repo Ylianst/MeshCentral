@@ -1377,140 +1377,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'userbroadcast', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
-            case 'adduser':
-                {
-                    // If the email is the username, set this here.
-                    if (domain.usernameisemail) { if (command.email) { command.username = command.email; } else { command.email = command.username; } }
-
-                    // Randomize the password if needed
-                    if (command.randomPassword === true) { command.pass = getRandomPassword(); }
-
-                    // Add a new user account
-                    var err = null, errid = 0, newusername, newuserid, newuserdomain;
-                    try {
-                        if ((user.siteadmin & 2) == 0) { err = "Permission denied"; errid = 1; }
-                        else if (common.validateUsername(command.username, 1, 256) == false) { err = "Invalid username"; errid = 2; } // Username is between 1 and 64 characters, no spaces
-                        else if ((command.username[0] == '~') || (command.username.indexOf('/') >= 0)) { err = "Invalid username"; errid = 2; } // Usernames cant' start with ~ and can't have '/'
-                        else if (common.validateString(command.pass, 1, 256) == false) { err = "Invalid password"; errid = 3; } // Password is between 1 and 256 characters
-                        else if ((command.randomPassword !== true) && (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false)) { err = "Invalid password"; errid = 3; } // Password does not meet requirements
-                        else if ((command.email != null) && (common.validateEmail(command.email, 1, 1024) == false)) { err = "Invalid email"; errid = 4; } // Check if this is a valid email address
-                        else if ((obj.crossDomain === true) && (command.domain != null) && ((typeof command.domain != 'string') || (parent.parent.config.domains[command.domain] == null))) { err = "Invalid domain"; errid = 5; } // Check if this is a valid domain
-                        else {
-                            newuserdomain = domain;
-                            if ((obj.crossDomain === true) && (command.domain != null)) { newuserdomain = parent.parent.config.domains[command.domain]; }
-                            newusername = command.username;
-                            newuserid = 'user/' + newuserdomain.id + '/' + command.username.toLowerCase();
-                            if (command.siteadmin != null) {
-                                if ((typeof command.siteadmin != 'number') || (Number.isInteger(command.siteadmin) == false)) { err = "Invalid site permissions"; errid = 6; } // Check permissions
-                                else if ((user.siteadmin != SITERIGHT_ADMIN) && ((command.siteadmin & (SITERIGHT_ADMIN - 224)) != 0)) { err = "Invalid site permissions"; errid = 6; }
-                            }
-                            if (parent.users[newuserid]) { err = "User already exists"; errid = 7; } // Account already exists
-                            else if ((newuserdomain.auth == 'sspi') || (newuserdomain.auth == 'ldap')) { err = "Unable to add user in this mode"; errid = 8; }
-                        }
-                    } catch (ex) { err = "Validation exception"; errid = 9; }
-
-                    // Handle any errors
-                    if (err != null) {
-                        if (command.responseid != null) {
-                            try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: err, msgid: errid })); } catch (ex) { }
-                        } else {
-                            // Send error back, user not found.
-                            displayNotificationMessage(err, "New Account", 'ServerNotify', null, 1, errid);
-                        }
-                        break;
-                    }
-
-                    // Check if we exceed the maximum number of user accounts
-                    db.isMaxType(newuserdomain.limits.maxuseraccounts, 'user', newuserdomain.id, function (maxExceed) {
-                        if (maxExceed) {
-                            // Account count exceed, do notification
-                            if (command.responseid != null) {
-                                // Respond privately if requested
-                                try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'maxUsersExceed' })); } catch (ex) { }
-                            } else {
-                                // Create the notification message
-                                var notification = { action: 'msg', type: 'notify', id: Math.random(), value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: newuserdomain.id, titleid: 2, msgid: 10 };
-
-                                // Get the list of sessions for this user
-                                var sessions = parent.wssessions[user._id];
-                                if (sessions != null) { for (i in sessions) { try { if (sessions[i].domainid == newuserdomain.id) { sessions[i].send(JSON.stringify(notification)); } } catch (ex) { } } }
-                                // TODO: Notify all sessions on other peers.
-                            }
-                        } else {
-                            // Remove any events for this userid
-                            if (command.removeEvents === true) { db.RemoveAllUserEvents(newuserdomain.id, newuserid); }
-
-                            // Create a new user
-                            var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: newuserdomain.id };
-                            if (command.siteadmin != null) { newuser.siteadmin = command.siteadmin; }
-                            else if (newuserdomain.newaccountsrights) { newuser.siteadmin = newuserdomain.newaccountsrights; }
-                            if (command.email != null) { newuser.email = command.email.toLowerCase(); if (command.emailVerified === true) { newuser.emailVerified = true; } } // Email
-                            if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
-                            if (user.groups) { newuser.groups = user.groups; } // New accounts are automatically part of our groups (Realms).
-                            if (common.validateString(command.realname, 1, 256)) { newuser.realname = command.realname; }
-                            if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { newuser.consent = command.consent; } change = 1; }
-                            if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete newuser.phone; } else { newuser.phone = command.phone; } change = 1; }
-
-                            // Auto-join any user groups
-                            if (typeof newuserdomain.newaccountsusergroups == 'object') {
-                                for (var i in newuserdomain.newaccountsusergroups) {
-                                    var ugrpid = newuserdomain.newaccountsusergroups[i];
-                                    if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + newuserdomain.id + '/' + ugrpid; }
-                                    var ugroup = parent.userGroups[ugrpid];
-                                    if (ugroup != null) {
-                                        // Add group to the user
-                                        if (newuser.links == null) { newuser.links = {}; }
-                                        newuser.links[ugroup._id] = { rights: 1 };
-
-                                        // Add user to the group
-                                        ugroup.links[newuser._id] = { userid: newuser._id, name: newuser.name, rights: 1 };
-                                        db.Set(ugroup);
-
-                                        // Notify user group change
-                                        var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msgid: 80, msgArgs: [newuser.name, ugroup.name], msg: 'Added user ' + newuser.name + ' to user group ' + ugroup.name, addUserDomain: newuserdomain.id };
-                                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                                        parent.parent.DispatchEvent(['*', ugroup._id, user._id, newuser._id], obj, event);
-                                    }
-                                }
-                            }
-
-                            parent.users[newuserid] = newuser;
-
-                            // Create a user, generate a salt and hash the password
-                            require('./pass').hash(command.pass, function (err, salt, hash, tag) {
-                                if (err == null) {
-                                    newuser.salt = salt;
-                                    newuser.hash = hash;
-                                    db.SetUser(newuser);
-
-                                    var event, targets = ['*', 'server-users'];
-                                    if (newuser.groups) { for (var i in newuser.groups) { targets.push('server-users:' + i); } }
-                                    if (command.email == null) {
-                                        event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msgid: 64, msgArgs: [command.username], msg: 'Account created, username is ' + command.username, domain: newuserdomain.id };
-                                    } else {
-                                        event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msgid: 65, msgArgs: [command.email.toLowerCase()], msg: 'Account created, email is ' + command.email.toLowerCase(), domain: newuserdomain.id };
-                                    }
-                                    if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
-                                    parent.parent.DispatchEvent(targets, obj, event);
-
-                                    // Perform email invitation
-                                    if ((command.emailInvitation == true) && (command.emailVerified == true) && command.email && domain.mailserver) {
-                                        domain.mailserver.sendAccountInviteMail(newuserdomain, (user.realname ? user.realname : user.name), newusername, command.email.toLowerCase(), command.pass, parent.getLanguageCodes(req));
-                                    }
-
-                                    // Log in the auth log
-                                    if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' created a user account ' + newuser.name); }
-
-                                    // OK Response
-                                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
-                                } else {
-                                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'passwordHashError' })); } catch (ex) { } }
-                                }
-                            }, 0);
-                        }
-                    });
-                    break;
-                }
             case 'edituser':
                 {
                     // Must be user administrator or edit self.
@@ -5764,6 +5630,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     const serverCommands = {
+        'adduser': serverCommandAddUser,
         'adduserbatch': serverCommandAddUserBatch,
         'files': serverCommandFiles,
         'getnetworkinfo': serverCommandGetNetworkInfo,
@@ -5838,6 +5705,139 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'webpush': [serverUserCommandWebPush, ""],
         'webstats': [serverUserCommandWebStats, ""]
     };
+
+    function serverCommandAddUser(command) {
+        // If the email is the username, set this here.
+        if (domain.usernameisemail) { if (command.email) { command.username = command.email; } else { command.email = command.username; } }
+
+        // Randomize the password if needed
+        if (command.randomPassword === true) { command.pass = getRandomPassword(); }
+
+        // Add a new user account
+        var err = null, errid = 0, newusername, newuserid, newuserdomain;
+        try {
+            if ((user.siteadmin & 2) == 0) { err = "Permission denied"; errid = 1; }
+            else if (common.validateUsername(command.username, 1, 256) == false) { err = "Invalid username"; errid = 2; } // Username is between 1 and 64 characters, no spaces
+            else if ((command.username[0] == '~') || (command.username.indexOf('/') >= 0)) { err = "Invalid username"; errid = 2; } // Usernames cant' start with ~ and can't have '/'
+            else if (common.validateString(command.pass, 1, 256) == false) { err = "Invalid password"; errid = 3; } // Password is between 1 and 256 characters
+            else if ((command.randomPassword !== true) && (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false)) { err = "Invalid password"; errid = 3; } // Password does not meet requirements
+            else if ((command.email != null) && (common.validateEmail(command.email, 1, 1024) == false)) { err = "Invalid email"; errid = 4; } // Check if this is a valid email address
+            else if ((obj.crossDomain === true) && (command.domain != null) && ((typeof command.domain != 'string') || (parent.parent.config.domains[command.domain] == null))) { err = "Invalid domain"; errid = 5; } // Check if this is a valid domain
+            else {
+                newuserdomain = domain;
+                if ((obj.crossDomain === true) && (command.domain != null)) { newuserdomain = parent.parent.config.domains[command.domain]; }
+                newusername = command.username;
+                newuserid = 'user/' + newuserdomain.id + '/' + command.username.toLowerCase();
+                if (command.siteadmin != null) {
+                    if ((typeof command.siteadmin != 'number') || (Number.isInteger(command.siteadmin) == false)) { err = "Invalid site permissions"; errid = 6; } // Check permissions
+                    else if ((user.siteadmin != SITERIGHT_ADMIN) && ((command.siteadmin & (SITERIGHT_ADMIN - 224)) != 0)) { err = "Invalid site permissions"; errid = 6; }
+                }
+                if (parent.users[newuserid]) { err = "User already exists"; errid = 7; } // Account already exists
+                else if ((newuserdomain.auth == 'sspi') || (newuserdomain.auth == 'ldap')) { err = "Unable to add user in this mode"; errid = 8; }
+            }
+        } catch (ex) { err = "Validation exception"; errid = 9; }
+
+        // Handle any errors
+        if (err != null) {
+            if (command.responseid != null) {
+                try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: err, msgid: errid })); } catch (ex) { }
+            } else {
+                // Send error back, user not found.
+                displayNotificationMessage(err, "New Account", 'ServerNotify', null, 1, errid);
+            }
+            return;
+        }
+
+        // Check if we exceed the maximum number of user accounts
+        db.isMaxType(newuserdomain.limits.maxuseraccounts, 'user', newuserdomain.id, function (maxExceed) {
+            if (maxExceed) {
+                // Account count exceed, do notification
+                if (command.responseid != null) {
+                    // Respond privately if requested
+                    try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'maxUsersExceed' })); } catch (ex) { }
+                } else {
+                    // Create the notification message
+                    var notification = { action: 'msg', type: 'notify', id: Math.random(), value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: newuserdomain.id, titleid: 2, msgid: 10 };
+
+                    // Get the list of sessions for this user
+                    var sessions = parent.wssessions[user._id];
+                    if (sessions != null) { for (var i in sessions) { try { if (sessions[i].domainid == newuserdomain.id) { sessions[i].send(JSON.stringify(notification)); } } catch (ex) { } } }
+                    // TODO: Notify all sessions on other peers.
+                }
+            } else {
+                // Remove any events for this userid
+                if (command.removeEvents === true) { db.RemoveAllUserEvents(newuserdomain.id, newuserid); }
+
+                // Create a new user
+                var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: newuserdomain.id };
+                if (command.siteadmin != null) { newuser.siteadmin = command.siteadmin; }
+                else if (newuserdomain.newaccountsrights) { newuser.siteadmin = newuserdomain.newaccountsrights; }
+                if (command.email != null) { newuser.email = command.email.toLowerCase(); if (command.emailVerified === true) { newuser.emailVerified = true; } } // Email
+                if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
+                if (user.groups) { newuser.groups = user.groups; } // New accounts are automatically part of our groups (Realms).
+                if (common.validateString(command.realname, 1, 256)) { newuser.realname = command.realname; }
+                if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { newuser.consent = command.consent; } change = 1; }
+                if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete newuser.phone; } else { newuser.phone = command.phone; } change = 1; }
+
+                // Auto-join any user groups
+                if (typeof newuserdomain.newaccountsusergroups == 'object') {
+                    for (var i in newuserdomain.newaccountsusergroups) {
+                        var ugrpid = newuserdomain.newaccountsusergroups[i];
+                        if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + newuserdomain.id + '/' + ugrpid; }
+                        var ugroup = parent.userGroups[ugrpid];
+                        if (ugroup != null) {
+                            // Add group to the user
+                            if (newuser.links == null) { newuser.links = {}; }
+                            newuser.links[ugroup._id] = { rights: 1 };
+
+                            // Add user to the group
+                            ugroup.links[newuser._id] = { userid: newuser._id, name: newuser.name, rights: 1 };
+                            db.Set(ugroup);
+
+                            // Notify user group change
+                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msgid: 80, msgArgs: [newuser.name, ugroup.name], msg: 'Added user ' + newuser.name + ' to user group ' + ugroup.name, addUserDomain: newuserdomain.id };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                            parent.parent.DispatchEvent(['*', ugroup._id, user._id, newuser._id], obj, event);
+                        }
+                    }
+                }
+
+                parent.users[newuserid] = newuser;
+
+                // Create a user, generate a salt and hash the password
+                require('./pass').hash(command.pass, function (err, salt, hash, tag) {
+                    if (err == null) {
+                        newuser.salt = salt;
+                        newuser.hash = hash;
+                        db.SetUser(newuser);
+
+                        var event, targets = ['*', 'server-users'];
+                        if (newuser.groups) { for (var i in newuser.groups) { targets.push('server-users:' + i); } }
+                        if (command.email == null) {
+                            event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msgid: 64, msgArgs: [command.username], msg: 'Account created, username is ' + command.username, domain: newuserdomain.id };
+                        } else {
+                            event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msgid: 65, msgArgs: [command.email.toLowerCase()], msg: 'Account created, email is ' + command.email.toLowerCase(), domain: newuserdomain.id };
+                        }
+                        if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
+                        parent.parent.DispatchEvent(targets, obj, event);
+
+                        // Perform email invitation
+                        if ((command.emailInvitation == true) && (command.emailVerified == true) && command.email && domain.mailserver) {
+                            domain.mailserver.sendAccountInviteMail(newuserdomain, (user.realname ? user.realname : user.name), newusername, command.email.toLowerCase(), command.pass, parent.getLanguageCodes(req));
+                        }
+
+                        // Log in the auth log
+                        if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' created a user account ' + newuser.name); }
+
+                        // OK Response
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+                    } else {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'passwordHashError' })); } catch (ex) { } }
+                    }
+                }, 0);
+            }
+        });
+    }
 
     function serverCommandAddUserBatch(command) {
         var err = null;
