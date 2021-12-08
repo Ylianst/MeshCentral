@@ -631,26 +631,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // pass through to switch statement until refactoring complete
 
         switch (command.action) {
-            case 'urlargs':
-                {
-                    console.log(req.query);
-                    console.log(command.args);
-                    break;
-                }
-            case 'intersession':
-                {
-                    // Sends data between sessions of the same user
-                    var sessions = parent.wssessions[obj.user._id];
-                    if (sessions == null) break;
-
-                    // Create the notification message and send on all sessions except our own (no echo back).
-                    var notification = JSON.stringify(command);
-                    for (var i in sessions) { if (sessions[i] != obj.ws) { try { sessions[i].send(notification); } catch (ex) { } } }
-
-                    // TODO: Send the message of user sessions connected to other servers.
-
-                    break;
-                }
             case 'interuser':
                 {
                     // Sends data between users only if allowed. Only a user in the "interUserMessaging": [] list, in the settings section of the config.json can receive and send inter-user messages from and to all users.
@@ -5477,6 +5457,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'files': serverCommandFiles,
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
+        'intersession': serverCommandInterSession,
         'lastconnect': serverCommandLastConnect,
         'lastconnects': serverCommandLastConnects,
         'meshes': serverCommandMeshes,
@@ -5491,6 +5472,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverstats': serverCommandServerStats,
         'serverupdate': serverCommandServerUpdate,
         'serverversion': serverCommandServerVersion,
+        'urlargs': serverCommandUrlArgs,
         'users': serverCommandUsers
     };
 
@@ -5901,6 +5883,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         });
     }
 
+    function serverCommandInterSession(command) {
+        // Sends data between sessions of the same user
+        var sessions = parent.wssessions[obj.user._id];
+        if (sessions == null) return;
+
+        // Create the notification message and send on all sessions except our own (no echo back).
+        var notification = JSON.stringify(command);
+        for (var i in sessions) { if (sessions[i] != obj.ws) { try { sessions[i].send(notification); } catch (ex) { } } }
+        // TODO: Send the message of user sessions connected to other servers.
+    }
+
     function serverCommandLastConnect(command) {
         if (!validNodeIdAndDomain(command)) return;
 
@@ -6112,6 +6105,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Check the server version
         if (userHasSiteUpdate() && domainHasMyServerUpgrade())
             parent.parent.getServerTags(function (tags, err) { try { ws.send(JSON.stringify({ action: 'serverversion', tags: tags })); } catch (ex) { } });
+    }
+
+    function serverCommandUrlArgs(command) {
+        console.log(req.query);
+        console.log(command.args);
     }
 
     function serverCommandUsers(command) {
