@@ -994,81 +994,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 });
                 break;
             }
-            case 'changeemail':
-                {
-                    // Do not allow this command when logged in using a login token
-                    if (req.session.loginToken != null) break;
-
-                    // If the email is the username, this command is not allowed.
-                    if (domain.usernameisemail) return;
-
-                    // If this account is settings locked, return here.
-                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
-
-                    // Change our own email address
-                    if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
-                    if (common.validateEmail(command.email, 1, 1024) == false) return;
-
-                    // Always lowercase the email address
-                    command.email = command.email.toLowerCase();
-
-                    if (obj.user.email != command.email) {
-                        // Check if this email is already validated on a different account
-                        db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
-                            if ((docs != null) && (docs.length > 0)) {
-                                // Notify the duplicate email error
-                                try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: 'Account Settings', id: Math.random(), tag: 'ServerNotify', value: 'Failed to change email address, another account already using: ' + command.email + '.', titleid: 4, msgid: 13, args: [command.email] })); } catch (ex) { }
-                            } else {
-                                // Update the user's email
-                                var oldemail = user.email;
-                                user.email = command.email;
-                                user.emailVerified = false;
-                                parent.db.SetUser(user);
-
-                                // Event the change
-                                var message = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id };
-                                if (db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                                if (oldemail != null) {
-                                    message.msg = 'Changed email of user ' + user.name + ' from ' + oldemail + ' to ' + user.email;
-                                } else {
-                                    message.msg = 'Set email of user ' + user.name + ' to ' + user.email;
-                                }
-
-                                var targets = ['*', 'server-users', user._id];
-                                if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                                parent.parent.DispatchEvent(targets, obj, message);
-
-                                // Log in the auth log
-                                if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' changed email from ' + oldemail + ' to ' + user.email); }
-
-                                // Send the verification email
-                                if (domain.mailserver != null) { domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req)); }
-                            }
-                        });
-                    }
-                    break;
-                }
-            case 'verifyemail':
-                {
-                    // Do not allow this command when logged in using a login token
-                    if (req.session.loginToken != null) break;
-
-                    // If this account is settings locked, return here.
-                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
-
-                    // Send a account email verification email
-                    if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
-                    if (common.validateString(command.email, 3, 1024) == false) return;
-
-                    // Always lowercase the email address
-                    command.email = command.email.toLowerCase();
-
-                    if ((domain.mailserver != null) && (obj.user.email.toLowerCase() == command.email)) {
-                        // Send the verification email
-                        domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req));
-                    }
-                    break;
-                }
             case 'wssessioncount':
                 {
                     // Request a list of all web socket user session count
@@ -5378,6 +5303,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'adduserbatch': serverCommandAddUserBatch,
         'addusertousergroup': serverCommandAddUserToUserGroup,
         'authcookie': serverCommandAuthCookie,
+        'changeemail': serverCommandChangeEmail,
         'changelang': serverCommandChangeLang,
         'files': serverCommandFiles,
         'getnetworkinfo': serverCommandGetNetworkInfo,
@@ -5401,7 +5327,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverupdate': serverCommandServerUpdate,
         'serverversion': serverCommandServerVersion,
         'urlargs': serverCommandUrlArgs,
-        'users': serverCommandUsers
+        'users': serverCommandUsers,
+        'verifyemail': serverCommandVerifyEmail
     };
 
     const serverUserCommands = {
@@ -5754,6 +5681,59 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 rcookie: parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey)
             }));
         } catch (ex) { }
+    }
+
+    function serverCommandChangeEmail(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        // If the email is the username, this command is not allowed.
+        if (domain.usernameisemail) return;
+
+        // If this account is settings locked, return here.
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
+
+        // Change our own email address
+        if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
+        if (common.validateEmail(command.email, 1, 1024) == false) return;
+
+        // Always lowercase the email address
+        command.email = command.email.toLowerCase();
+
+        if (obj.user.email != command.email) {
+            // Check if this email is already validated on a different account
+            db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
+                if ((docs != null) && (docs.length > 0)) {
+                    // Notify the duplicate email error
+                    try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: 'Account Settings', id: Math.random(), tag: 'ServerNotify', value: 'Failed to change email address, another account already using: ' + command.email + '.', titleid: 4, msgid: 13, args: [command.email] })); } catch (ex) { }
+                } else {
+                    // Update the user's email
+                    var oldemail = user.email;
+                    user.email = command.email;
+                    user.emailVerified = false;
+                    parent.db.SetUser(user);
+
+                    // Event the change
+                    var message = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id };
+                    if (db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                    if (oldemail != null) {
+                        message.msg = 'Changed email of user ' + user.name + ' from ' + oldemail + ' to ' + user.email;
+                    } else {
+                        message.msg = 'Set email of user ' + user.name + ' to ' + user.email;
+                    }
+
+                    var targets = ['*', 'server-users', user._id];
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    parent.parent.DispatchEvent(targets, obj, message);
+
+                    // Log in the auth log
+                    if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' changed email from ' + oldemail + ' to ' + user.email); }
+
+                    // Send the verification email
+                    if (domain.mailserver != null) { domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req)); }
+                }
+            });
+        }
     }
 
     function serverCommandChangeLang(command) {
@@ -6122,6 +6102,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
         }
         try { ws.send(JSON.stringify({ action: 'users', users: docs, tag: command.tag })); } catch (ex) { }
+    }
+
+    function serverCommandVerifyEmail(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        // If this account is settings locked, return here.
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
+
+        // Send a account email verification email
+        if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
+        if (common.validateString(command.email, 3, 1024) == false) return;
+
+        // Always lowercase the email address
+        command.email = command.email.toLowerCase();
+
+        if ((domain.mailserver != null) && (obj.user.email.toLowerCase() == command.email)) {
+            // Send the verification email
+            domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req));
+        }
     }
 
 
