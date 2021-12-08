@@ -658,14 +658,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     break;
                 }
-            case 'logincookie':
-                {
-                    // If allowed, return a login cookie
-                    if (parent.parent.config.settings.allowlogintoken === true) {
-                        try { ws.send(JSON.stringify({ action: 'logincookie', cookie: parent.parent.encodeCookie({ u: user._id, a: 3 }, parent.parent.loginCookieEncryptionKey) })); } catch (ex) { }
-                    }
-                    break;
-                }
             case 'servertimelinestats':
                 {
                     // Only accept if the "My Server" tab is allowed for this domain
@@ -1041,35 +1033,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 });
                 break;
             }
-            case 'changelang':
-                {
-                    // Do not allow this command when logged in using a login token
-                    if (req.session.loginToken != null) break;
-
-                    // If this account is settings locked, return here.
-                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
-
-                    if (common.validateString(command.lang, 1, 6) == false) return;
-
-                    // Always lowercase the language
-                    command.lang = command.lang.toLowerCase();
-
-                    // Update the user's language
-                    var oldlang = user.lang;
-                    if (command.lang == '*') { delete user.lang; } else { user.lang = command.lang; }
-                    parent.db.SetUser(user);
-
-                    // Event the change
-                    var message = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id, msgid: 2, msgArgs: [(oldlang ? oldlang : 'default'), (user.lang ? user.lang : 'default')] };
-                    if (db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                    message.msg = 'Changed language from ' + (oldlang ? oldlang : 'default') + ' to ' + (user.lang ? user.lang : 'default');
-
-                    var targets = ['*', 'server-users', user._id];
-                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                    parent.parent.DispatchEvent(targets, obj, message);
-
-                    break;
-                }
             case 'changeemail':
                 {
                     // Do not allow this command when logged in using a login token
@@ -5454,12 +5417,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'adduserbatch': serverCommandAddUserBatch,
         'addusertousergroup': serverCommandAddUserToUserGroup,
         'authcookie': serverCommandAuthCookie,
+        'changelang': serverCommandChangeLang,
         'files': serverCommandFiles,
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
         'intersession': serverCommandInterSession,
         'lastconnect': serverCommandLastConnect,
         'lastconnects': serverCommandLastConnects,
+        'logincookie': serverCommandLoginCookie,
         'meshes': serverCommandMeshes,
         'ping': serverCommandPing,
         'pong': serverCommandPong,
@@ -5828,6 +5793,33 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         } catch (ex) { }
     }
 
+    function serverCommandChangeLang(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        // If this account is settings locked, return here.
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
+
+        if (common.validateString(command.lang, 1, 6) == false) return;
+
+        // Always lowercase the language
+        command.lang = command.lang.toLowerCase();
+
+        // Update the user's language
+        var oldlang = user.lang;
+        if (command.lang == '*') { delete user.lang; } else { user.lang = command.lang; }
+        parent.db.SetUser(user);
+
+        // Event the change
+        var message = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id, msgid: 2, msgArgs: [(oldlang ? oldlang : 'default'), (user.lang ? user.lang : 'default')] };
+        if (db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+        message.msg = 'Changed language from ' + (oldlang ? oldlang : 'default') + ' to ' + (user.lang ? user.lang : 'default');
+
+        var targets = ['*', 'server-users', user._id];
+        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+        parent.parent.DispatchEvent(targets, obj, message);
+    }
+
     function serverCommandFiles(command) {
         // Send the full list of server files to the browser app
         updateUserFiles(user, ws, domain);
@@ -5930,6 +5922,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 try { ws.send(JSON.stringify({ action: 'lastconnects', lastconnects: response, tag: command.tag })); } catch (ex) { }
             });
         });
+    }
+
+    function serverCommandLoginCookie(command) {
+        // If allowed, return a login cookie
+        if (parent.parent.config.settings.allowlogintoken === true) {
+            try { ws.send(JSON.stringify({ action: 'logincookie', cookie: parent.parent.encodeCookie({ u: user._id, a: 3 }, parent.parent.loginCookieEncryptionKey) })); } catch (ex) { }
+        }
     }
 
     function serverCommandMeshes(command) {
