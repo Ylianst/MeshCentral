@@ -678,18 +678,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     break;
                 }
-            case 'authcookie':
-                {
-                    // Renew the authentication cookie
-                    try {
-                        ws.send(JSON.stringify({
-                            action: 'authcookie',
-                            cookie: parent.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: req.clientIp }, parent.parent.loginCookieEncryptionKey),
-                            rcookie: parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey)
-                        }));
-                    } catch (ex) { }
-                    break;
-                }
             case 'logincookie':
                 {
                     // If allowed, return a login cookie
@@ -5555,6 +5543,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'adduser': serverCommandAddUser,
         'adduserbatch': serverCommandAddUserBatch,
         'addusertousergroup': serverCommandAddUserToUserGroup,
+        'authcookie': serverCommandAuthCookie,
         'files': serverCommandFiles,
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
@@ -5914,6 +5903,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         }
 
         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: 'ok', added: addedCount, failed: failCount })); } catch (ex) { } }
+    }
+
+    function serverCommandAuthCookie(command) {
+        try {
+            ws.send(JSON.stringify({
+                action: 'authcookie',
+                cookie: parent.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: req.clientIp }, parent.parent.loginCookieEncryptionKey),
+                rcookie: parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey)
+            }));
+        } catch (ex) { }
     }
 
     function serverCommandFiles(command) {
