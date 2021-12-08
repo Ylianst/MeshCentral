@@ -1785,84 +1785,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
-            case 'addusertousergroup':
-                {
-                    var err = null;
-                    try {
-                        if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { err = 'Permission denied'; }
-                        else if (common.validateString(command.ugrpid, 1, 1024) == false) { err = 'Invalid groupid'; } // Check the meshid
-                        else if (common.validateStrArray(command.usernames, 1, 64) == false) { err = 'Invalid usernames'; } // Username is between 1 and 64 characters
-                        else {
-                            var ugroupidsplit = command.ugrpid.split('/');
-                            if ((ugroupidsplit.length != 3) || (ugroupidsplit[0] != 'ugrp') || ((obj.crossDomain !== true) && (ugroupidsplit[1] != domain.id))) { err = 'Invalid groupid'; }
-                        }
-                    } catch (ex) { err = 'Validation exception: ' + ex; }
-
-                    // Fetch the domain
-                    var addUserDomain = domain;
-                    if (obj.crossDomain === true) { addUserDomain = parent.parent.config.domains[ugroupidsplit[1]]; }
-                    if (addUserDomain == null) { err = 'Invalid domain'; }
-
-                    // Handle any errors
-                    if (err != null) {
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: err })); } catch (ex) { } }
-                        break;
-                    }
-
-                    // Get the user group
-                    var group = parent.userGroups[command.ugrpid];
-                    if (group != null) {
-                        if (group.links == null) { group.links = {}; }
-
-                        var unknownUsers = [], addedCount = 0, failCount = 0, knownUsers = [];
-                        for (var i in command.usernames) {
-                            // Check if the user exists
-                            var chguserid = 'user/' + addUserDomain.id + '/' + command.usernames[i].toLowerCase();
-                            var chguser = parent.users[chguserid];
-                            if (chguser == null) { chguserid = 'user/' + addUserDomain.id + '/' + command.usernames[i]; chguser = parent.users[chguserid]; }
-                            if (chguser != null) {
-                                // Add mesh to user
-                                if (chguser.links == null) { chguser.links = {}; }
-                                chguser.links[group._id] = { rights: 1 };
-                                db.SetUser(chguser);
-                                parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
-
-                                knownUsers.push(chguser)
-                                // Notify user change
-                                var targets = ['*', 'server-users', user._id, chguser._id];
-                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 67, msgArgs: [chguser.name], msg: 'User group membership changed: ' + chguser.name, domain: addUserDomain.id };
-                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                                parent.parent.DispatchEvent(targets, obj, event);
-
-                                // Add a user to the user group
-                                group.links[chguserid] = { userid: chguser._id, name: chguser.name, rights: 1 };
-                                addedCount++;
-                            } else {
-                                unknownUsers.push(command.usernames[i]);
-                                failCount++;
-                            }
-                        }
-
-                        if (addedCount > 0) {
-                            // Save the new group to the database
-                            db.Set(group);
-
-                            // Notify user group change
-                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msgid: 71, msgArgs: [knownUsers.map((u)=>u.name), group.name], msg: 'Added user(s) ' + knownUsers.map((u)=>u.name) + ' to user group ' + group.name, addUserDomain: domain.id };
-                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                            parent.parent.DispatchEvent(['*', group._id, user._id, chguserid], obj, event);
-                        }
-
-                        if (unknownUsers.length > 0) {
-                            // Send error back, user not found.
-                            displayNotificationMessage('User' + ((unknownUsers.length > 1) ? 's' : '') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', "Device Group", 'ServerNotify', 5, (unknownUsers.length > 1) ? 16 : 15, [EscapeHtml(unknownUsers.join(', '))]);
-                        }
-                    }
-
-                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: 'ok', added: addedCount, failed: failCount })); } catch (ex) { } }
-
-                    break;
-                }
             case 'removeuserfromusergroup':
                 {
                     var err = null;
@@ -5632,6 +5554,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const serverCommands = {
         'adduser': serverCommandAddUser,
         'adduserbatch': serverCommandAddUserBatch,
+        'addusertousergroup': serverCommandAddUserToUserGroup,
         'files': serverCommandFiles,
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
@@ -5917,6 +5840,82 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         });
     }
 
+    function serverCommandAddUserToUserGroup(command) {
+        var err = null;
+        try {
+            if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { err = 'Permission denied'; }
+            else if (common.validateString(command.ugrpid, 1, 1024) == false) { err = 'Invalid groupid'; } // Check the meshid
+            else if (common.validateStrArray(command.usernames, 1, 64) == false) { err = 'Invalid usernames'; } // Username is between 1 and 64 characters
+            else {
+                var ugroupidsplit = command.ugrpid.split('/');
+                if ((ugroupidsplit.length != 3) || (ugroupidsplit[0] != 'ugrp') || ((obj.crossDomain !== true) && (ugroupidsplit[1] != domain.id))) { err = 'Invalid groupid'; }
+            }
+        } catch (ex) { err = 'Validation exception: ' + ex; }
+
+        // Fetch the domain
+        var addUserDomain = domain;
+        if (obj.crossDomain === true) { addUserDomain = parent.parent.config.domains[ugroupidsplit[1]]; }
+        if (addUserDomain == null) { err = 'Invalid domain'; }
+
+        // Handle any errors
+        if (err != null) {
+            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: err })); } catch (ex) { } }
+            return;
+        }
+
+        // Get the user group
+        var group = parent.userGroups[command.ugrpid];
+        if (group != null) {
+            if (group.links == null) { group.links = {}; }
+
+            var unknownUsers = [], addedCount = 0, failCount = 0, knownUsers = [];
+            for (var i in command.usernames) {
+                // Check if the user exists
+                var chguserid = 'user/' + addUserDomain.id + '/' + command.usernames[i].toLowerCase();
+                var chguser = parent.users[chguserid];
+                if (chguser == null) { chguserid = 'user/' + addUserDomain.id + '/' + command.usernames[i]; chguser = parent.users[chguserid]; }
+                if (chguser != null) {
+                    // Add mesh to user
+                    if (chguser.links == null) { chguser.links = {}; }
+                    chguser.links[group._id] = { rights: 1 };
+                    db.SetUser(chguser);
+                    parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
+
+                    knownUsers.push(chguser);
+                    // Notify user change
+                    var targets = ['*', 'server-users', user._id, chguser._id];
+                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 67, msgArgs: [chguser.name], msg: 'User group membership changed: ' + chguser.name, domain: addUserDomain.id };
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                    parent.parent.DispatchEvent(targets, obj, event);
+
+                    // Add a user to the user group
+                    group.links[chguserid] = { userid: chguser._id, name: chguser.name, rights: 1 };
+                    addedCount++;
+                } else {
+                    unknownUsers.push(command.usernames[i]);
+                    failCount++;
+                }
+            }
+
+            if (addedCount > 0) {
+                // Save the new group to the database
+                db.Set(group);
+
+                // Notify user group change
+                var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msgid: 71, msgArgs: [knownUsers.map((u)=>u.name), group.name], msg: 'Added user(s) ' + knownUsers.map((u)=>u.name) + ' to user group ' + group.name, addUserDomain: domain.id };
+                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                parent.parent.DispatchEvent(['*', group._id, user._id, chguserid], obj, event);
+            }
+
+            if (unknownUsers.length > 0) {
+                // Send error back, user not found.
+                displayNotificationMessage('User' + ((unknownUsers.length > 1) ? 's' : '') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', "Device Group", 'ServerNotify', 5, (unknownUsers.length > 1) ? 16 : 15, [EscapeHtml(unknownUsers.join(', '))]);
+            }
+        }
+
+        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: 'ok', added: addedCount, failed: failCount })); } catch (ex) { } }
+    }
+
     function serverCommandFiles(command) {
         // Send the full list of server files to the browser app
         updateUserFiles(user, ws, domain);
@@ -6152,7 +6151,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var cmdTableEntry = serverUserCommands[cmd2];
             if (cmdTableEntry) {
                 if (cmdTableEntry[1] == '') {
-                    cmdData.result = 'No help available for this command.'
+                    cmdData.result = 'No help available for this command.';
                 } else {
                     cmdData.result = cmdTableEntry[1]; }
             } else { 
@@ -6322,7 +6321,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Reset bad login table
                 parent.badLoginTable = {};
                 parent.badLoginTableLastClean = 0;
-                cmdData.result = 'Done.'
+                cmdData.result = 'Done.';
             } else if (cmdData.cmdargs['_'] == '') {
                 // Show current bad login table
                 if (typeof parent.parent.config.settings.maxinvalidlogin.coolofftime == 'number') {
