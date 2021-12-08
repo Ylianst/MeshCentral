@@ -200,7 +200,7 @@ function CreateIPKVMManager(parent) {
         const kvmmanager = obj.managedGroups[kvmport.meshid];
         if (kvmmanager == null) return null;
         urlargs.shift();
-        var relurl = '/' + urlargs.join('/')
+        var relurl = '/' + urlargs.join('/');
         if (relurl.endsWith('/.websocket')) { relurl = relurl.substring(0, relurl.length - 11); }
         return { domain: domain.id, relurl: relurl, preurl: q.path.substring(0, i + 76), nodeid: nodeid, nid: nid, kvmmanager: kvmmanager, kvmport: kvmport };
     }
@@ -549,7 +549,6 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
         delete kvmport.bytesIn;
         delete kvmport.bytesOut;
         delete kvmport.connectionStart;
-        delete wsClient.kvmport;
         delete wsClient.reqinfo;
     }
 
@@ -609,8 +608,14 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                         if (this.wsClient) {
                             logDisconnection(this.wsClient);
                             try { this.wsClient.close(); } catch (ex) { }
-                            if (this.wsClient.kvmport) { delete this.wsClient.kvmport.wsClient; delete this.wsClient.kvmport; }
-                            delete this.wsClient.wsBrowser; delete this.wsClient;
+                            try { 
+                                if (this.wsClient.kvmport) {
+                                    delete this.wsClient.kvmport.wsClient;
+                                    delete this.wsClient.kvmport;
+                                }
+                                delete this.wsClient.wsBrowser;
+                                delete this.wsClient;
+                            } catch (ex) { console.log(ex); }
                         }
                     });
                     this.wsBrowser.on('error', function (err) {
@@ -635,12 +640,14 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                     parent.parent.debug('relay', 'IPKVM: Relay websocket closed');
 
                     // Clean up
+                    try {
                     if (this.wsBrowser) {
                         logDisconnection(this.wsBrowser.wsClient);
                         try { this.wsBrowser.close(); } catch (ex) { }
                         delete this.wsBrowser.wsClient; delete this.wsBrowser;
                     }
                     if (this.kvmport) { delete this.kvmport.wsClient; delete this.kvmport; }
+                    } catch (ex) { console.log(ex); }
                 });
                 reqinfo.kvmport.wsClient.on('error', function (err) {
                     parent.parent.debug('relay', 'IPKVM: Relay websocket error: ' + err);
