@@ -6015,9 +6015,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         var chguser = parent.users[command.userid];
         if (chguser != null) {
-            var change = false;
             if ((chguser.links != null) && (chguser.links[command.ugrpid] != null)) {
-                change = true;
                 delete chguser.links[command.ugrpid];
 
                 // Notify user change
@@ -6035,16 +6033,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             if (group != null) {
                 // Remove the user from the group
                 if ((group.links != null) && (group.links[command.userid] != null)) {
-                    change = true;
                     delete group.links[command.userid];
                     db.Set(group);
 
                     // Notify user group change
-                    if (change) {
-                        var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msgid: 72, msgArgs: [chguser.name, group.name], msg: 'Removed user ' + chguser.name + ' from user group ' + group.name, domain: removeUserDomain.id };
-                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                        parent.parent.DispatchEvent(['*', group._id, user._id, chguser._id], obj, event);
-                    }
+                    var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msgid: 72, msgArgs: [chguser.name, group.name], msg: 'Removed user ' + chguser.name + ' from user group ' + group.name, domain: removeUserDomain.id };
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                    parent.parent.DispatchEvent(['*', group._id, user._id, chguser._id], obj, event);
                 }
             }
         }
