@@ -5663,6 +5663,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 const manageAllDeviceGroups = ((user.siteadmin == 0xFFFFFFFF) && (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0));
                 if ((command.devGroup != null) && (manageAllDeviceGroups == false) && ((user.links == null) || (user.links[command.devGroup] == null))) break; // Asking for a device group that is not allowed
 
+                const msgIdFilter = [5, 10, 11, 12, 122, 123, 124, 125, 126];
+
                 if (command.type == 1) { // This is the remote session report. Shows desktop, terminal, files...
                     // If we are not user administrator on this site, only search for events with our own user id.
                     var ids = [user._id];
@@ -5676,7 +5678,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Get the events in the time range
                     // MySQL or MariaDB query will ignore the MsgID filter.
-                    db.GetEventsTimeRange(ids, domain.id, [5, 10, 11, 12, 122, 123, 124, 125, 126], new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
+                    db.GetEventsTimeRange(ids, domain.id, msgIdFilter, new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
                         if (err != null) return;
                         var data = { groups: {} };
                         var guestNamePresent = false;
@@ -5701,7 +5703,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Rows
                         for (var i in docs) {
                             // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
-                            if ((docs[i].msgid != 5) && (docs[i].msgid != 10) && (docs[i].msgid != 11) && (docs[i].msgid != 12) && ((docs[i].msgid < 122) && (docs[i].msgid > 126))) continue;
+                            if (msgIdFilter.indexOf(docs[i].msgid) < 0) continue;
                             if ((command.devGroup != null) && (docs[i].ids != null) && (docs[i].ids.indexOf(command.devGroup) == -1)) continue;
 
                             var entry = { time: docs[i].time.valueOf() };
@@ -5769,7 +5771,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Get the events in the time range
                     // MySQL or MariaDB query will ignore the MsgID filter.
-                    db.GetEventsTimeRange(ids, domain.id, [5, 10, 11, 12, 122, 123, 124, 125, 126], new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
+                    db.GetEventsTimeRange(ids, domain.id, msgIdFilter, new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
                         if (err != null) return;
                         var data = { groups: { 0: { entries: [] } } };
                         data.columns = [{ id: 'userid', title: "user", format: 'user' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: true }, { id: 'bytesin', title: "bytesin", format: 'bytes', align: 'center', sumBy: true }, { id: 'bytesout', title: "bytesout", format: 'bytes', align: 'center', sumBy: true }];
@@ -5778,7 +5780,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Sum all entry logs for each user
                         for (var i in docs) {
                             // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
-                            if ((docs[i].msgid != 5) && (docs[i].msgid != 10) && (docs[i].msgid != 11) && (docs[i].msgid != 12) && ((docs[i].msgid < 122) && (docs[i].msgid > 126))) continue;
+                            if (msgIdFilter.indexOf(docs[i].msgid) < 0) continue;
                             if ((command.devGroup != null) && (docs[i].ids != null) && (docs[i].ids.indexOf(command.devGroup) == -1)) continue;
 
                             // Fetch or create the user entry
