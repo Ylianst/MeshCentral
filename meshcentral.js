@@ -829,7 +829,7 @@ function CreateMeshCentralServer(config, args) {
                                 obj.db.Set(user, function () { console.log("Done."); process.exit(); return; });
                             } else {
                                 // Hash the password and reset the account.
-                                require('./pass').hash(obj.args.pass, user.salt, function (err, hash, tag) { if (err) { console.log("Unable to reset password: " + err); process.exit(); return; } user.hash = hash; obj.db.Set(user, function () { console.log("Done."); process.exit(); return; }); }, 0);
+                                require('./pass').hash(String(obj.args.pass), user.salt, function (err, hash, tag) { if (err) { console.log("Unable to reset password: " + err); process.exit(); return; } user.hash = hash; obj.db.Set(user, function () { console.log("Done."); process.exit(); return; }); }, 0);
                             }
                         });
                         return;
