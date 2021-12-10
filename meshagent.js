@@ -1641,7 +1641,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // An agent can only request images of accounts with rights to the device.
                     if (parent.GetNodeRights(command.userid, obj.dbMeshKey, obj.dbNodeKey) != 0) {
                         parent.db.Get('im' + command.userid, function (err, images) {
-                            if ((err == null) && (images != null) && (images.length == 1)) { command.image = images[0].image; }
+                            if ((err == null) && (images != null) && (images.length == 1)) {
+                                // Send back the account image
+                                command.image = images[0].image;
+                            } else {
+                                // Send back the default image if required
+                                if (command.default) {
+                                    try { command.image = 'data:image/png;base64,' + Buffer.from(parent.fs.readFileSync(parent.parent.path.join(__dirname, 'public', 'images', 'user-128.png')), 'binary').toString('base64'); } catch (ex) { }
+                                }
+                            }
                             obj.send(JSON.stringify(command));
                         });
                     }
