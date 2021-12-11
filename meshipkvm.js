@@ -318,7 +318,8 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
             res.on('data', function (d) { })
             fetchInitialInformation();
         })
-        req.on('error', function (error) { setState(0); })
+        req.on('error', function (error) { setState(0); });
+        req.on('timeout', function () { setState(0); });
         req.write(data);
         req.end();
     }
@@ -343,7 +344,8 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
             if (res.headers['set-cookie'] != null) { for (var i in res.headers['set-cookie']) { if (res.headers['set-cookie'][i].startsWith('pp_session_id=')) { obj.authCookie = res.headers['set-cookie'][i].substring(14).split(';')[0]; } } }
             res.on('data', function (d) { })
         });
-        req.on('error', function (error) { setState(0); })
+        req.on('error', function (error) { setState(0); });
+        req.on('timeout', function () { setState(0); });
         req.end();
     }
 
@@ -508,7 +510,8 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                 func(obj, tag, Buffer.concat(data), res);
             });
         });
-        req.on('error', function (error) { console.log(error); setState(0); })
+        req.on('error', function (error) { setState(0); });
+        req.on('timeout', function () { setState(0); });
         req.end();
     }
 
