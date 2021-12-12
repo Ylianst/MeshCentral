@@ -3493,6 +3493,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
+                    // Check of OTP 2FA is allowed
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.otp2factor == false)) break;
+
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
                     // Check if 2-step login is supported
@@ -3514,6 +3517,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
+
+                    // Check of OTP 2FA is allowed
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.otp2factor == false)) break;
 
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 

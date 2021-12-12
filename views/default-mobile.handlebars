@@ -1371,8 +1371,8 @@
             QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0) && (accountSettingsLocked == false)); // Hide Account Security if in single user mode or domain authentication, 2 factor auth not supported.
             QV('p2AccountImage', !accountSettingsLocked);
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
-            QV('manageAuthApp', features & 4096);
-            QV('manageOtp', ((features & 4096) != 0) && ((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0)));
+            QV('manageAuthApp', (features & 4096) && ((userinfo.otpsecret == 1) || ((features2 & 0x00020000) == 0)));
+            QV('manageOtp', (features & 4096) && ((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0)));
             QV('authPhoneNumberCheck', (userinfo.phone != null));
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
