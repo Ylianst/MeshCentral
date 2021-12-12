@@ -16,6 +16,9 @@ if [ -f "meshcentral-data/config.json" ]
         cp config.json.template meshcentral-data/config.json
         sed -i "s/\"cert\": \"myserver.mydomain.com\"/\"cert\": \"$HOSTNAME\"/" meshcentral-data/config.json
         sed -i "s/\"NewAccounts\": true/\"NewAccounts\": \"$ALLOW_NEW_ACCOUNTS\"/" meshcentral-data/config.json
+        sed -i "s/\"enabled\": false/\"enabled\": \"$ALLOWPLUGINS\"/" meshcentral-data/config.json
+        sed -i "s/\"localSessionRecording\": false/\"localSessionRecording\": \"$LOCALSESSIONRECORDING\"/" meshcentral-data/config.json
+        sed -i "s/\"minify\": true/\"minify\": \"$MINIFY\"/" meshcentral-data/config.json
         sed -i "s/\"WebRTC\": false/\"WebRTC\": \"$WEBRTC\"/" meshcentral-data/config.json
         sed -i "s/\"AllowFraming\": false/\"AllowFraming\": \"$IFRAME\"/" meshcentral-data/config.json
         if [ "$REVERSE_PROXY" != "false" ]
