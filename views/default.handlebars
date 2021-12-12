@@ -2120,6 +2120,7 @@
             QV('authPhoneNumberCheck', (userinfo.phone != null));
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
+            QV('manageAuthApp', (userinfo.otpsecret == 1) || ((features2 & 0x00020000) == 0));
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authPushAuthDevCheck', (userinfo.otpdev > 0) && ((features2 & 0x40) != 0));
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);

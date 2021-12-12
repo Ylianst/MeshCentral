@@ -2848,6 +2848,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.mailserver != null) { features2 += 0x00004000; } // Indicates email server is active
         if (domain.devicesearchbarserverandclientname) { features2 += 0x00008000; } // Search bar will find both server name and client name
         if (domain.ipkvm) { features2 += 0x00010000; } // Indicates support for IP KVM device groups
+        if ((domain.passwordrequirements) && (domain.passwordrequirements.otp2factor == false)) { features2 += 0x00020000; } // Indicates support for OTP 2FA is disabled
         return { features: features, features2: features2 };
     }
 
