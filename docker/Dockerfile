@@ -16,7 +16,9 @@ WORKDIR /opt/meshcentral
 
 RUN npm install meshcentral
 
-#Copy config template and startup script
+#Install dependencies for plugins
+RUN npm install nedb
+
 COPY config.json.template /opt/meshcentral/config.json.template
 COPY startup.sh startup.sh
 #environment variables
