@@ -3511,7 +3511,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (err) {
                 try { ws.close(); } catch (ex) { } // File does not exist
             } else {
-                obj.fs.open(filefullpath, function (err, fd) {
+                obj.fs.open(filefullpath, 'r', function (err, fd) {
                     if (err == null) {
                         // When data is received from the web socket
                         ws.on('message', function (msg) {
