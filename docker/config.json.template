@@ -1,6 +1,7 @@
 {
   "$schema": "http://info.meshcentral.com/downloads/meshcentral-config-schema.json",
   "settings": {
+    "plugins":{"enabled": false},
     "cert": "myserver.mydomain.com",
     "_WANonly": true,
     "_LANonly": true,
@@ -19,8 +20,9 @@
 	"": {
 	"_title": "MyServer",
     "_title2": "Servername",
-    "_minify": true,
+    "minify": true,
     "NewAccounts": true,
+    "localSessionRecording": false,
 	"_userNameIsEmail": true,
     "_certUrl": "my.reverse.proxy"
 	}
