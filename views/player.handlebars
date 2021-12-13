@@ -8,6 +8,7 @@
     <meta name="format-detection" content="telephone=no" />
     <meta name="robots" content="noindex,nofollow">
     <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{min}}.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2{{min}}.js"></script>
@@ -17,6 +18,8 @@
     <script type="text/javascript" src="scripts/zlib-inflate{{min}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-adler32{{min}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-crc32{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm-min.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-fit-min.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/webm-writer.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
 </head>
@@ -42,6 +45,8 @@
                 </div>
                 <div id=TermParent style="display:none">
                     <pre id=Term></pre>
+                </div>
+                <div id=XTermParent style="display:none;overflow:scroll;max-height:calc(100vh - 58px);height:calc(100vh - 58px)">
                 </div>
                 <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
             </div>
@@ -115,6 +120,7 @@
         var browser = null;
         var domainUrl = '{{{domainurl}}}';
         var urlargs;
+        var term = null;
 
         // Streaming values
         var ws = null;
@@ -414,6 +420,7 @@
             }
             QV('DeskParent', true);
             QV('TermParent', false);
+            QV('XTermParent', false);
             QV('ConvertAsWebM', false);
             if (recFileMetadata.protocol == 1) {
                 // MeshCentral remote terminal
@@ -526,11 +533,21 @@
                 videoWriterCurrentFrame = time;
             }
 
+            // MeshCentral Terminal options
+            if ((type == 2) && !flagBinary && flagUser && (data.length > 2) && (data[0] == '{')) {
+                var parsed = null;
+                try { parsed = JSON.parse(data); } catch (ex) { }
+                if ((parsed != null) && ((parsed.type == 'options') || (parsed.type == 'termsize')) && (typeof parsed.cols == 'number') && (typeof parsed.rows == 'number')) {
+                    term.resize(parsed.cols, parsed.rows);
+                    //console.log('termsize', parsed.cols, parsed.rows);
+                }
+            }
+
             if ((type == 2) && flagBinary && !flagUser) {
                 // Device --> User data
                 if (recFileProtocol == 1) {
                     // MeshCentral Terminal
-                    agentTerminal.ProcessData(data);
+                    writeXTerm(data);
                 } else if (recFileProtocol == 2) {
                     // MeshCentral Remote Desktop
                     var view = new Uint8Array(data.length);
@@ -582,6 +599,7 @@
         }
 
         function cleanup() {
+            clearXTerm();
             recFile = null;
             recFilePtr = 0;
             recFileMetadata = null;
@@ -610,6 +628,7 @@
             }
             QV('DeskParent', true);
             QV('TermParent', false);
+            QV('XTermParent', false);
         }
 
         function ondrop(e) {
@@ -740,6 +759,7 @@
 
         function togglePause() {
             if (xxdialogMode) return;
+            if (term != null) return;
             if (recFile != null) { if (playing == true) { pause(); } else { if (recFilePtr != recFile.size) { play(); } } } return false;
         }
 
@@ -752,11 +772,13 @@
             QE('PlayButton', false);
             QE('PauseButton', true);
             QE('RestartButton', false);
-            if ((recFileProtocol == 1) && (agentTerminal == null)) {
+            if ((recFileProtocol == 1) && (term == null)) {
                 QV('DeskParent', false);
-                QV('TermParent', true);
-                agentTerminal = CreateAmtRemoteTerminal('Term', {});
-                agentTerminal.State = 3;
+                QV('TermParent', false);
+                QV('XTermParent', true);
+                setupXTerm();
+                //agentTerminal = CreateAmtRemoteTerminal('Term', {});
+                //agentTerminal.State = 3;
             }
             readNextBlock(processBlock);
         }
@@ -792,6 +814,8 @@
             QH('timespan', '00:00:00');
             QV('DeskParent', true);
             QV('TermParent', false);
+            QV('XTermParent', false);
+            clearXTerm();
             if (agentDesktop) {
                 agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height);
             } else if (amtDesktop) {
@@ -1043,6 +1067,29 @@
             chars = new Uint8Array(buffer);
             for (i = _i = 0; 0 <= binLen ? _i < binLen : _i > binLen; i = 0 <= binLen ? ++_i : --_i) { chars[i] = String.prototype.charCodeAt.call(binary, i); }
             return chars;
+        }
+
+        function setupXTerm() {
+            // Setup the terminal
+            if (term != null) { term.dispose(); }
+            term = new Terminal();
+            term.open(Q('XTermParent'));
+            term.onData(function (data) { if (tunnel != null) { tunnel.sendText(data); } })
+            term.resize(80, 25);
+            //term.setOption('convertEol', true); // Consider \n to be \r\n, this should be taken care of by "termios"
+        }
+
+        function clearXTerm() {
+            if (term != null) { term.dispose(); term = null; }
+        }
+
+        function writeXTerm(data) {
+            if (term == null) return;
+            if (typeof data == 'string') {
+                term.writeUtf8(data);
+            } else {
+                term.writeUtf8(new Uint8Array(data));
+            }
         }
 
         start();
