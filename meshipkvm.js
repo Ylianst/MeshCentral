@@ -297,7 +297,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
         setState(1); // 1 = Connecting
         obj.authCookie = null;
         if (retryTimer != null) { clearTimeout(retryTimer); retryTimer = null; }
-        const data = new TextEncoder().encode('is_dotnet=0&is_javafree=0&is_standalone_client=0&is_javascript_kvm_client=1&is_javascript_rsc_client=1&login=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password) + '&action_login=Login');
+        const data = Buffer.from('is_dotnet=0&is_javafree=0&is_standalone_client=0&is_javascript_kvm_client=1&is_javascript_rsc_client=1&login=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password) + '&action_login=Login');
         const options = {
             hostname: hostname,
             port: port,
