@@ -6536,7 +6536,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try { info.nodeVersion = process.version; } catch (ex) { }
         try { info.runMode = (["Hybrid (LAN + WAN) mode", "WAN mode", "LAN mode"][(args.lanonly ? 2 : (args.wanonly ? 1 : 0))]); } catch (ex) { }
         try { info.productionMode = ((process.env.NODE_ENV != null) && (process.env.NODE_ENV == 'production')); } catch (ex) { }
-        try { info.database = ["Unknown", "NeDB", "MongoJS", "MongoDB", "MariaDB", "MySQL"][parent.parent.db.databaseType]; } catch (ex) { }
+        try { info.database = ["Unknown", "NeDB", "MongoJS", "MongoDB", "MariaDB", "MySQL", "PostgreSQL"][parent.parent.db.databaseType]; } catch (ex) { }
         try { if (parent.db.databaseType == 3) { info.dbChangeStream = parent.db.changeStream; } } catch (ex) { }
         try { if (parent.parent.multiServer != null) { info.serverId = parent.parent.multiServer.serverid; } } catch (ex) { }
         try { if (parent.parent.pluginHandler != null) { info.plugins = []; for (var i in parent.parent.pluginHandler.plugins) { info.plugins.push(i); } } } catch (ex) { }
