@@ -5968,7 +5968,7 @@
             if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMT only, no agent";
             if (currentMesh.mtype == 2) meshtype = "Managed using a software agent";
             if (currentMesh.mtype == 3) meshtype = "Local devices, no agent";
-            if (currentMesh.mtype == 4) { meshtype = "IP KVM device"; if (currentMesh.kvm.model == 1) { meshtype += ', ' + 'Raritan KX III'; } }
+            if (currentMesh.mtype == 4) { meshtype = "IP-KVM device"; if (currentMesh.kvm.model == 1) { meshtype += ', ' + 'Raritan KX III'; } }
 
             var x = '';
             x += addHtmlValue("Name", addLinkConditional(EscapeHtml(currentMesh.name), 'p20editmesh(1)', (meshrights & 1) != 0));
@@ -5976,7 +5976,7 @@
             x += addHtmlValue("Type", meshtype);
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
-            // Display IP KVM information if needed
+            // Display IP-KVM information if needed
             if (currentMesh.mtype == 4) {
                 x += addHtmlValue("Hostname", currentMesh.kvm.host);
                 x += addHtmlValue("Username", currentMesh.kvm.user);
