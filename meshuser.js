@@ -4641,16 +4641,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'twoFactorCookie': {
-                // Do not allow this command when logged in using a login token
-                if (req.session.loginToken != null) break;
+                try {
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
 
-                // Generate a two-factor cookie
-                if (((domain.twofactorcookiedurationdays == null) || (domain.twofactorcookiedurationdays > 0))) {
+                    // Do not allows this command is 2FA cookie duration is set to zero
+                    if (domain.twofactorcookiedurationdays === 0) break;
+
+                    // Generate a two-factor cookie
                     var maxCookieAge = domain.twofactorcookiedurationdays;
-                    if (typeof maxCookieAge != 'number') { maxCookieAge = 30; }
+                    if ((typeof maxCookieAge != 'number') || (maxCookieAge < 1)) { maxCookieAge = 30; }
                     const twoFactorCookie = parent.parent.encodeCookie({ userid: user._id, expire: maxCookieAge * 24 * 60 /*, ip: req.clientIp*/ }, parent.parent.loginCookieEncryptionKey);
                     try { ws.send(JSON.stringify({ action: 'twoFactorCookie', cookie: twoFactorCookie })); } catch (ex) { }
-                }
+                } catch (ex) { console.log(ex); }
                 break;
             }
             case 'amtsetupbin': {
