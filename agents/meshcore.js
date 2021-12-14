@@ -929,6 +929,42 @@ function sendWakeOnLanEx(hexMacList) {
     return (ret);
 }
 
+function server_promise_default(res, rej)
+{
+    this.resolve = res;
+    this.reject = rej;
+}
+function server_getUserImage(userid)
+{
+    var promise = require('promise');
+    var ret = new promise(server_promise_default);
+
+    if (require('MeshAgent')._promises == null) { require('MeshAgent')._promises = {}; }
+    require('MeshAgent')._promises[ret._hashCode()] = ret;
+    require('MeshAgent').SendCommand({ action: 'getUserImage', userid: userid, promise: ret._hashCode(), default: true });
+    return (ret);
+}
+require('MeshAgent')._consentTimers = {};
+function server_set_consentTimer(id)
+{
+    require('MeshAgent')._consentTimers[id] = new Date();
+}
+function server_check_consentTimer(id)
+{
+    if (require('MeshAgent')._consentTimers[id] != null)
+    {
+        if((new Date()) - require('MeshAgent')._consentTimers[id] < (60000*5))
+        {
+            return (true);
+        }
+        else
+        {
+            require('MeshAgent')._consentTimers[id] = null;
+        }
+    }
+    return (false);
+}
+
 // Handle a mesh agent command
 function handleServerCommand(data) {
     if (typeof data == 'object') {
@@ -994,6 +1030,13 @@ function handleServerCommand(data) {
                                 tunnel.realname = (data.realname ? data.realname : data.username) + (data.guestname ? (' - ' + data.guestname) : '');
                                 tunnel.guestname = data.guestname;
                                 tunnel.userid = data.userid;
+
+                                if (server_check_consentTimer(tunnel.userid))
+                                {
+                                    sendConsoleText('Deleting Consent Requirement');
+                                    tunnel.consent = (tunnel.consent & -57);
+                                }
+
                                 tunnel.desktopviewonly = data.desktopviewonly;
                                 tunnel.remoteaddr = data.remoteaddr;
                                 tunnel.state = 0;
@@ -1457,6 +1500,12 @@ function handleServerCommand(data) {
             case 'getUserImage':
                 if (data.pipe == true) { delete data.pipe; delete data.action; data.cmd = 'getUserImage'; broadcastToRegisteredApps(data); }
                 if (data.tag == 'info') { sendConsoleText(JSON.stringify(data, null, 2)); }
+                if (data.promise != null && require('MeshAgent')._promises[data.promise] != null)
+                {
+                    var p = require('MeshAgent')._promises[data.promise];
+                    delete require('MeshAgent')._promises[data.promise];
+                    p.resolve(data.image);
+                }
                 break;
             case 'wget': // Server uses this command to tell the agent to download a file using HTTPS/GET and place it in a given path. This is used for one-to-many file uploads.
                 agentFileHttpPendingRequests.push(data);
@@ -1986,10 +2035,45 @@ function onTunnelData(data) {
                         if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
                         if (this.httprequest.soptions.consentMsgTerminal != null) { consentMessage = this.httprequest.soptions.consentMsgTerminal.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                     }
-                    this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, 30);
+                    if (process.platform == 'win32')
+                    {
+                        var enhanced = false;
+                        try
+                        {
+                            require('win-userconsent');
+                            enhanced = true;
+                        }
+                        catch (z)
+                        {
+                        }
+                        if (enhanced)
+                        {
+                            var ipr = server_getUserImage(this.httprequest.userid);
+                            ipr.consentTitle = consentTitle;
+                            ipr.consentMessage = consentMessage;
+                            ipr.username = this.httprequest.realname;
+                            this.httprequest.tpromise._consent = ipr.then(function (img)
+                            {
+                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: 30000 });
+                                this.__childPromise.close = this.consent.close.bind(this.consent);
+                                return (this.consent);
+                            });
+                        }
+                        else
+                        {
+                            this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, 30);
+                        }
+                    }
+                    else
+                    {
+                        this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, 30);
+                    }
                     this.httprequest.tpromise._consent.retPromise = this.httprequest.tpromise;
                     this.httprequest.tpromise._consent.then(
-                        function () {
+                        function (always)
+                        {
+                            if (always) { server_set_consentTimer(this.retPromise.httprequest.userid); }
+
                             // Success
                             MeshServerLogEx(27, null, "Local user accepted remote terminal request (" + this.retPromise.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
                             this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
@@ -2312,7 +2396,8 @@ function onTunnelData(data) {
                 }
 
                 // Perform notification if needed. Toast messages may not be supported on all platforms.
-                if (this.httprequest.consent && (this.httprequest.consent & 8)) {
+                if (this.httprequest.consent && (this.httprequest.consent & 8))
+                {
                     // User Consent Prompt is required
                     // Send a console message back using the console channel, "\n" is supported.
                     this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
@@ -2321,13 +2406,56 @@ function onTunnelData(data) {
                         if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
                         if (this.httprequest.soptions.consentMsgDesktop != null) { consentMessage = this.httprequest.soptions.consentMsgDesktop.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                     }
-                    var pr = require('message-box').create(consentTitle, consentMessage, 30, null, tsid);
+                    var pr;
+                    if (process.platform == 'win32')
+                    {
+                        var enhanced = false;
+                        try
+                        { 
+                            require('win-userconsent');
+                            enhanced = true;
+                        }
+                        catch(z)
+                        {
+                        }
+                        if (enhanced)
+                        {
+                            var ipr = server_getUserImage(this.httprequest.userid);
+                            ipr.consentTitle = consentTitle;
+                            ipr.consentMessage = consentMessage;
+                            ipr.tsid = tsid;
+                            ipr.username = this.httprequest.realname;
+                            pr = ipr.then(function (img)
+                            {
+                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), uid: this.tsid, timeout: 30000 });
+                                this.__childPromise.close = this.consent.close.bind(this.consent);
+                                return (this.consent);
+                            });
+                        }
+                        else
+                        {
+                            pr = require('message-box').create(consentTitle, consentMessage, 30, null, tsid);
+                        }
+                    }
+                    else
+                    {
+                        pr = require('message-box').create(consentTitle, consentMessage, 30, null, tsid);
+                    }
                     pr.ws = this;
                     this.pause();
                     this._consentpromise = pr;
-                    this.prependOnceListener('end', function () { if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); } });
+                    this.prependOnceListener('end', function ()
+                    {
+                        if (this._consentpromise && this._consentpromise.close)
+                        {
+                            this._consentpromise.close();
+                        }
+                    });
                     pr.then(
-                        function () {
+                        function (always)
+                        {
+                            if (always) { server_set_consentTimer(this.ws.httprequest.userid); }
+                            
                             // Success
                             this.ws._consentpromise = null;
                             MeshServerLogEx(30, null, "Starting remote desktop after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
@@ -2473,13 +2601,49 @@ function onTunnelData(data) {
                         if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
                         if (this.httprequest.soptions.consentMsgFiles != null) { consentMessage = this.httprequest.soptions.consentMsgFiles.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                     }
-                    var pr = require('message-box').create(consentTitle, consentMessage, 30);
+                    var pr;
+                    if (process.platform == 'win32')
+                    {
+                        var enhanced = false;
+                        try
+                        {
+                            require('win-userconsent');
+                            enhanced = true;
+                        }
+                        catch (z)
+                        {
+                        }
+                        if (enhanced)
+                        {
+                            var ipr = server_getUserImage(this.httprequest.userid);
+                            ipr.consentTitle = consentTitle;
+                            ipr.consentMessage = consentMessage;
+                            ipr.username = this.httprequest.realname;
+                            pr = ipr.then(function (img)
+                            {
+                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: 30000 });
+                                this.__childPromise.close = this.consent.close.bind(this.consent);
+                                return (this.consent);
+                            });
+                        }
+                        else
+                        {
+                            pr = require('message-box').create(consentTitle, consentMessage, 30, null);
+                        }
+                    }
+                    else
+                    {
+                        pr = require('message-box').create(consentTitle, consentMessage, 30, null);
+                    }
                     pr.ws = this;
                     this.pause();
                     this._consentpromise = pr;
                     this.prependOnceListener('end', function () { if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); } });
                     pr.then(
-                        function () {
+                        function (always)
+                        {
+                            if (always) { server_set_consentTimer(this.ws.httprequest.userid); }
+
                             // Success
                             this.ws._consentpromise = null;
                             MeshServerLogEx(40, null, "Starting remote files after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
