@@ -2889,7 +2889,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
-                            // Check we have the rights to delete this device
+                            // Check we have the rights to wake this device
                             if ((node == null) || (visible == false) || (rights & MESHRIGHT_WAKEDEVICE) == 0) {
                                 if (command.nodeids.length == 1) { try { ws.send(JSON.stringify({ action: 'wakedevices', responseid: command.responseid, result: 'Invalid nodeid' })); } catch (ex) { } }
                                 return;
@@ -2897,6 +2897,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // If this device is connected on MQTT, send a wake action.
                             if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.publish(node._id, 'powerAction', 'wake'); }
+
+                            // If this is a IP-KVM or Power Distribution Unit (PDU), dispatch an action event
+                            if (node.mtype == 4) {
+                                // Send out an event to perform turn off command on the port
+                                //var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['devport-operation', 'server-users', user._id]);
+                                var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'turnon', domain: domain.id, nolog: 1, portid: node.portid, porttype: node.porttype, portnum: node.portnum, meshid: node.meshid, mtype: node.mtype };
+                                parent.parent.DispatchEvent([ 'devport-operation' ], obj, event);
+                                return;
+                            }
 
                             // Get the device interface information
                             db.Get('if' + node._id, function (err, nodeifs) {
@@ -3054,10 +3063,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if ((command.actiontype == 401) && common.validateInt(command.time, 1, 30000)) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: node._id, value: 'vibrate ' + command.time }, MESHRIGHT_ADMIN, 0); }
                             } else {
                                 // Check we have the rights to delete this device
-                                if ((rights & MESHRIGHT_RESETOFF) == 0) return;
+                                if ((rights & MESHRIGHT_RESETOFF) == 0) return;                                
 
                                 // If this device is connected on MQTT, send a power action.
                                 if ((parent.parent.mqttbroker != null) && (command.actiontype >= 0) && (command.actiontype <= 4)) { parent.parent.mqttbroker.publish(node._id, 'powerAction', ['', '', 'poweroff', 'reset', 'sleep'][command.actiontype]); }
+
+                                // If this is a IP-KVM or Power Distribution Unit (PDU), dispatch an action event
+                                if (node.mtype == 4) {
+                                    // Send out an event to perform turn off command on the port
+                                    //var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['devport-operation', 'server-users', user._id]);
+                                    var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'turnoff', domain: domain.id, nolog: 1, portid: node.portid, porttype: node.porttype, portnum: node.portnum, meshid: node.meshid, mtype: node.mtype };
+                                    parent.parent.DispatchEvent([ 'devport-operation' ], obj, event);
+                                    return;
+                                }
 
                                 if ((command.actiontype >= 300) && (command.actiontype < 400)) {
                                     if ((command.actiontype != 302) && (command.actiontype != 308) && (command.actiontype != 310)) return; // Invalid action type.

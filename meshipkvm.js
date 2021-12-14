@@ -37,14 +37,19 @@ function CreateIPKVMManager(parent) {
     const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
     // Subscribe for mesh creation events
-    parent.AddEventDispatch(['server-createmesh', 'server-deletemesh'], obj);
+    parent.AddEventDispatch(['server-createmesh', 'server-deletemesh', 'devport-operation'], obj);
     obj.HandleEvent = function (source, event, ids, id) {
-        if ((event != null) && (event.action == 'createmesh') && (event.mtype == 4)) {
+        if ((event == null) || (event.mtype != 4)) return;
+        if (event.action == 'createmesh') {
             // Start managing this new device group
             startManagement(parent.webserver.meshes[event.meshid]);
-        } else if ((event != null) && (event.action == 'deletemesh') && (event.mtype == 4)) {
+        } else if (event.action == 'deletemesh') {
             // Stop managing this device group
             stopManagement(event.meshid);
+        } else if ((event.action == 'turnon') || (event.action == 'turnoff')) {
+            // Perform power operation
+            const manager = obj.managedGroups[event.meshid];
+            if ((manager) && (manager.powerOperation)) { manager.powerOperation(event); }
         }
     }
 
@@ -120,7 +125,7 @@ function CreateIPKVMManager(parent) {
                         const mesh = parent.webserver.meshes[sender.meshid];
                         if (nodes.length == 0) {
                             // The device does not exist, create it
-                            const device = { type: 'node', mtype: 4, _id: nodeid, icon: 1, meshid: sender.meshid, name: port.Name, rname: port.Name, domain: sender.domainid, portid: port.PortId, portnum: port.PortNumber };
+                            const device = { type: 'node', mtype: 4, _id: nodeid, icon: 4, meshid: sender.meshid, name: port.Name, rname: port.Name, domain: sender.domainid, portid: port.PortId, portnum: port.PortNumber, porttype: 'PDU' };
                             parent.db.Set(device);
 
                             // Event the new node
@@ -140,13 +145,13 @@ function CreateIPKVMManager(parent) {
 
                         // Set the connectivity state if needed
                         if (obj.managedPorts[nodeid] == null) {
-                            parent.SetConnectivityState(sender.meshid, nodeid, Date.now(), 1, port.State?1:6, null, null);
+                            parent.SetConnectivityState(sender.meshid, nodeid, Date.now(), 1, port.State ? 1 : 8, null, null);
                             obj.managedPorts[nodeid] = { name: port.Name, meshid: sender.meshid, portid: port.PortId, portType: port.PortType, portNo: port.PortIndex };
                         }
                     });
                 } else {
                     // Update connectivity state
-                    parent.SetConnectivityState(sender.meshid, nodeid, Date.now(), 1, port.State ? 1 : 6, null, null);
+                    parent.SetConnectivityState(sender.meshid, nodeid, Date.now(), 1, port.State ? 1 : 8, null, null);
                 }
             } else if ((port.Status == 1) && (port.Class == 'KVM')) {
                 //console.log(port.PortNumber + ', ' + port.PortId + ', ' + port.Name + ', ' + port.Type + ', ' + ((port.StatAvailable == 0) ? 'Idle' : 'Connected'));
@@ -765,7 +770,7 @@ function CreateWebPowerSwitch(parent, hostname, port, username, password) {
         obj.update();
     }
 
-    obj.update = function() {
+    obj.update = function () {
         obj.fetch('/restapi/relay/outlets/all;/=name,physical_state/', 'GET', null, null, function (sender, tag, rdata, res) {
             if (res.statusCode == 207) {
                 var rdata2 = null;
@@ -780,7 +785,7 @@ function CreateWebPowerSwitch(parent, hostname, port, username, password) {
                         var portchanged = false;
                         if (obj.ports[i] == null) {
                             // Add the port
-                            obj.ports[i] = { PortNumber: i, PortId: 'p' + i, Name: portname, Status: 1, State: portstate, Class: 'PDU' };
+                            obj.ports[i] = { PortNumber: i + 1, PortId: 'p' + i, Name: portname, Status: 1, State: portstate, Class: 'PDU' };
                             portchanged = true;
                         } else {
                             // Update the port
@@ -800,9 +805,15 @@ function CreateWebPowerSwitch(parent, hostname, port, username, password) {
         });
     }
 
+    obj.powerOperation = function (event) {
+        if (typeof event.portnum != 'number') return;
+        if (event.action == 'turnon') { setPowerState(event.portnum - 1, true); }
+        else if (event.action == 'turnoff') { setPowerState(event.portnum - 1, false); }
+    }
+
     function setPowerState(port, state, func) {
         obj.fetch('/restapi/relay/outlets/' + port + '/state/', 'PUT', 'value=' + state, null, function (sender, tag, rdata, res) {
-            console.log('DATA:', res.statusCode, rdata.toString());
+            if (res.statusCode == 204) { obj.update(); }
         });
     }
 
