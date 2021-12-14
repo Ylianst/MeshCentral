@@ -3522,15 +3522,15 @@
                 x += '<input type=button value="' + "Notes" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast onclick=deviceToastFunction() />';  }
 
-                if ((node.mtype == 4) && (meshrights & 8) && (connectivity & 1)) {
+                if ((node.mtype == 4) && (connectivity & 1)) {
                     if (node.porttype == 'PDU') {
                         if (node.pwr == 1) {
-                            x += '<input type=button value="' + "Turn off" + '" title="' + "Turn off" + '" onclick=setIpPduState(0) />';
+                            if (meshrights & 0x40000) { x += '<input type=button value="' + "Turn off" + '" title="' + "Turn off" + '" onclick=setIpPduState(0) />'; }
                         } else if (node.pwr == 8) {
-                            x += '<input type=button value="' + "Turn on" + '" title="' + "Turn on" + '" onclick=setIpPduState(1) />';
+                            if (meshrights & 0x40) { x += '<input type=button value="' + "Turn on" + '" title="' + "Turn on" + '" onclick=setIpPduState(1) />'; }
                         }
                     } else {
-                        x += '<input type=button value="' + "Remote Control" + '" title="' + "Remote Control" + '" onclick=openIpKvmRemoteControl("' + encodeURIComponentEx(node._id) + '") />';
+                        if (meshrights & 8) { x += '<input type=button value="' + "Remote Control" + '" title="' + "Remote Control" + '" onclick=openIpKvmRemoteControl("' + encodeURIComponentEx(node._id) + '") />'; }x
                     }
                 }
 
