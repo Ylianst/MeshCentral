@@ -309,8 +309,16 @@
           "loginfooter": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is not logged in." },
           "guestDeviceSharing": { "type": "boolean", "default": true, "description": "When set to false, the desktop/terminal sharing link feature is not available." },
           "autoRemoveInactiveDevices": { "type": "integer", "default": 0, "minimum": 0, "maximum": 2000, "description": "Number of days a device can be inactive before it's removed. 0 disables this feature. Device group setting will override this value." },
-          "DeviceSearchBarServerAndClientName": { "type": "boolean", "default": false, "description": "When set to true, the devices search box will match on both the server name and client name of a device." },
-          "PreconfiguredRemoteInput": {
+          "deviceSearchBarServerAndClientName": { "type": "boolean", "default": false, "description": "When set to true, the devices search box will match on both the server name and client name of a device." },
+          "AgentSelfGuestSharing": {
+            "type": [ "boolean", "object" ],
+            "default": false,
+            "description": "When set to true, MeshCentral Asssitant can create it's own guest sharing links.",
+            "properties": {
+              "expire": { "type": "number", "description": "When set, limits the self-created guest sharing link to this number of minutes." }
+            }
+          },
+          "preConfiguredRemoteInput": {
             "type": "array",
             "default": null,
             "description": "When set, you can right click on the input button in the desktop tab and instantly remotely type one of these pre-configured strings.",
