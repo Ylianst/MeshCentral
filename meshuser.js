@@ -1940,7 +1940,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if ((parent.args.wanonly == true) && (command.meshtype == 3)) { err = 'Invalid group type'; } // Local device group type is not allowed in WAN mode
                         else if ((domain.ipkvm == null) && (command.meshtype == 4)) { err = 'Invalid group type'; } // IP KVM device group type is not allowed unless enabled
                         if ((err == null) && (command.meshtype == 4)) {
-                            if (command.kvmmodel !== 1) { err = 'Invalid KVM model'; }
+                            if ((command.kvmmodel < 1) || (command.kvmmodel > 2)) { err = 'Invalid KVM model'; }
                             else if (common.validateString(command.kvmhost, 1, 128) == false) { err = 'Invalid KVM hostname'; }
                             else if (common.validateString(command.kvmuser, 1, 128) == false) { err = 'Invalid KVM username'; }
                             else if (common.validateString(command.kvmpass, 1, 128) == false) { err = 'Invalid KVM password'; }

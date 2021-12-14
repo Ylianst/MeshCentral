@@ -47,13 +47,13 @@ function CreateIPKVMManager(parent) {
             stopManagement(event.meshid);
         }
     }
-    
+
     // Run thru the list of device groups that require 
     for (var i in parent.webserver.meshes) {
         const mesh = parent.webserver.meshes[i];
         if ((mesh.mtype == 4) && (mesh.deleted == null)) { startManagement(mesh); }
     }
-    
+
     // Start managing a IP KVM device
     function startManagement(mesh) {
         if ((mesh == null) || (mesh.mtype != 4) || (mesh.kvm == null) || (mesh.deleted != null) || (obj.managedGroups[mesh._id] != null)) return;
@@ -68,8 +68,17 @@ function CreateIPKVMManager(parent) {
             manager.onPortsChanged = onPortsChanged;
             manager.start();
         }
+        else if (mesh.kvm.model == 2) { // WebPowerSwitch 7
+            const manager = CreateWebPowerSwitch(obj, host, port, mesh.kvm.user, mesh.kvm.pass);
+            manager.meshid = mesh._id;
+            manager.domainid = mesh._id.split('/')[1];
+            obj.managedGroups[mesh._id] = manager;
+            manager.onStateChanged = onStateChanged;
+            manager.onPortsChanged = onPortsChanged;
+            manager.start();
+        }
     }
-    
+
     // Stop managing a IP KVM device
     function stopManagement(meshid) {
         const manager = obj.managedGroups[meshid];
@@ -86,24 +95,60 @@ function CreateIPKVMManager(parent) {
             manager.stop();
         }
     }
-    
+
     // Called when a KVM device changes state
     function onStateChanged(sender, state) {
         /*
         console.log('State: ' + ['Disconnected', 'Connecting', 'Connected'][state]);
         if (state == 2) {
-            console.log('DeviceModel:', sender.deviceModel);
-            console.log('FirmwareVersion:', sender.firmwareVersion);
+            if (sender.deviceModel) { console.log('DeviceModel:', sender.deviceModel); }
+            if (sender.firmwareVersion) { console.log('FirmwareVersion:', sender.firmwareVersion); }
         }
         */
     }
-    
+
     // Called when a KVM device changes state
     function onPortsChanged(sender, updatedPorts) {
         for (var i = 0; i < updatedPorts.length; i++) {
             const port = sender.ports[updatedPorts[i]];
             const nodeid = generateIpKvmNodeId(sender.meshid, port.PortId, sender.domainid);
-            if ((port.Status == 1) && (port.Class == 'KVM')) {
+            if ((port.Status == 1) && (port.Class == 'PDU')) {
+                //console.log(port.PortNumber + ', ' + port.PortId + ', ' + port.Name + ', ' + port.State);
+                if ((obj.managedPorts[nodeid] == null) || (obj.managedPorts[nodeid].name != port.Name)) {
+                    parent.db.Get(nodeid, function (err, nodes) {
+                        if ((err != null) || (nodes == null)) return;
+                        const mesh = parent.webserver.meshes[sender.meshid];
+                        if (nodes.length == 0) {
+                            // The device does not exist, create it
+                            const device = { type: 'node', mtype: 4, _id: nodeid, icon: 1, meshid: sender.meshid, name: port.Name, rname: port.Name, domain: sender.domainid, portid: port.PortId, portnum: port.PortNumber };
+                            parent.db.Set(device);
+
+                            // Event the new node
+                            parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(sender.meshid, [nodeid]), obj, { etype: 'node', action: 'addnode', nodeid: nodeid, node: device, msgid: 57, msgArgs: [port.Name, mesh.name], msg: ('Added device ' + port.Name + ' to device group ' + mesh.name), domain: sender.domainid });
+                        } else {
+                            // The device exists, update it
+                            var changed = false;
+                            const device = nodes[0];
+                            if (device.rname != port.Name) { device.rname = port.Name; changed = true; } // Update the device port name
+                            if ((mesh.flags) && (mesh.flags & 2) && (device.name != port.Name)) { device.name = port.Name; changed = true; } // Sync device name to port name
+                            if (changed) {
+                                // Update the database and event the node change
+                                parent.db.Set(device);
+                                parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(sender.meshid, [nodeid]), obj, { etype: 'node', action: 'changenode', nodeid: nodeid, node: device, domain: sender.domainid, nolog: 1 });
+                            }
+                        }
+
+                        // Set the connectivity state if needed
+                        if (obj.managedPorts[nodeid] == null) {
+                            parent.SetConnectivityState(sender.meshid, nodeid, Date.now(), 1, port.State?1:6, null, null);
+                            obj.managedPorts[nodeid] = { name: port.Name, meshid: sender.meshid, portid: port.PortId, portType: port.PortType, portNo: port.PortIndex };
+                        }
+                    });
+                } else {
+                    // Update connectivity state
+                    parent.SetConnectivityState(sender.meshid, nodeid, Date.now(), 1, port.State ? 1 : 6, null, null);
+                }
+            } else if ((port.Status == 1) && (port.Class == 'KVM')) {
                 //console.log(port.PortNumber + ', ' + port.PortId + ', ' + port.Name + ', ' + port.Type + ', ' + ((port.StatAvailable == 0) ? 'Idle' : 'Connected'));
                 if ((obj.managedPorts[nodeid] == null) || (obj.managedPorts[nodeid].name != port.Name)) {
                     parent.db.Get(nodeid, function (err, nodes) {
@@ -247,6 +292,9 @@ function CreateIPKVMManager(parent) {
     return obj;
 }
 
+
+
+// Create Raritan Dominion KX III Manager
 function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
     const https = require('https');
     const obj = {};
@@ -408,7 +456,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
         for (var i = 0; i < args.length; i++) {
             var parsed = parseJsScript(args[i]);
             var v = parsed.J[0][1], vv = parseInt(v);
-            out[parsed.J[0][0]] = (v == vv)?vv:v;
+            out[parsed.J[0][0]] = (v == vv) ? vv : v;
         }
         return out;
     }
@@ -483,7 +531,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
         return ((char >= 'A') && (char <= 'Z')) || ((char >= 'a') && (char <= 'z')) || ((char >= '0') && (char <= '9'));
     }
 
-    obj.fetch = function(url, postdata, tag, func) {
+    obj.fetch = function (url, postdata, tag, func) {
         if (obj.state == 0) return;
 
         var data = [];
@@ -493,7 +541,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
             rejectUnauthorized: false,
             checkServerIdentity: onCheckServerIdentity,
             path: url,
-            method: (postdata != null)?'POST':'GET',
+            method: (postdata != null) ? 'POST' : 'GET',
             headers: {
                 'Content-Type': 'text/html; charset=UTF-8',
                 'Cookie': 'pp_session_id=' + obj.authCookie
@@ -611,7 +659,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                         if (this.wsClient) {
                             logDisconnection(this.wsClient);
                             try { this.wsClient.close(); } catch (ex) { }
-                            try { 
+                            try {
                                 if (this.wsClient.kvmport) {
                                     delete this.wsClient.kvmport.wsClient;
                                     delete this.wsClient.kvmport;
@@ -644,17 +692,17 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
 
                     // Clean up
                     try {
-                    if (this.wsBrowser) {
-                        logDisconnection(this.wsBrowser.wsClient);
-                        try { this.wsBrowser.close(); } catch (ex) { }
-                        delete this.wsBrowser.wsClient; delete this.wsBrowser;
-                    }
-                    if (this.kvmport) { delete this.kvmport.wsClient; delete this.kvmport; }
+                        if (this.wsBrowser) {
+                            logDisconnection(this.wsBrowser.wsClient);
+                            try { this.wsBrowser.close(); } catch (ex) { }
+                            delete this.wsBrowser.wsClient; delete this.wsBrowser;
+                        }
+                        if (this.kvmport) { delete this.kvmport.wsClient; delete this.kvmport; }
                     } catch (ex) { console.log(ex); }
                 });
                 reqinfo.kvmport.wsClient.on('error', function (err) {
                     parent.parent.debug('relay', 'IPKVM: Relay websocket error: ' + err);
-                    
+
                 });
             } catch (ex) { console.log(ex); }
         }
@@ -662,5 +710,196 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
 
     return obj;
 }
+
+
+
+
+// Create WebPowerSwitch Manager
+function CreateWebPowerSwitch(parent, hostname, port, username, password) {
+    port = 80;
+    const https = require('http');
+    const crypto = require('crypto');
+    const obj = {};
+    var updateTimer = null;
+    var retryTimer = null;
+    var challenge = null;
+    var challengeRetry = 0;
+
+    obj.state = 0; // 0 = Disconnected, 1 = Connecting, 2 = Connected
+    obj.ports = [];
+    obj.portCount = 0;
+    obj.started = false;
+
+    obj.onStateChanged = null;
+    obj.onPortsChanged = null;
+
+    function onCheckServerIdentity(cert) {
+        console.log('TODO: Certificate Check');
+    }
+
+    obj.start = function () {
+        if (obj.started) return;
+        obj.started = true;
+        if (obj.state == 0) connect();
+    }
+
+    obj.stop = function () {
+        if (!obj.started) return;
+        obj.started = false;
+        if (retryTimer != null) { clearTimeout(retryTimer); retryTimer = null; }
+        setState(0);
+    }
+
+    function setState(newState) {
+        if (obj.state == newState) return;
+        obj.state = newState;
+        if (obj.onStateChanged != null) { obj.onStateChanged(obj, newState); }
+        if ((newState == 2) && (updateTimer == null)) { updateTimer = setInterval(obj.update, 10000); }
+        if ((newState != 2) && (updateTimer != null)) { clearInterval(updateTimer); updateTimer = null; }
+        if ((newState == 0) && (obj.started == true) && (retryTimer == null)) { retryTimer = setTimeout(connect, 20000); }
+    }
+
+    function connect() {
+        if (obj.state != 0) return;
+        setState(1); // 1 = Connecting
+        obj.update();
+    }
+
+    obj.update = function() {
+        obj.fetch('/restapi/relay/outlets/all;/=name,physical_state/', 'GET', null, null, function (sender, tag, rdata, res) {
+            if (res.statusCode == 207) {
+                var rdata2 = null;
+                if (rdata != null) { try { rdata2 = JSON.parse(rdata); } catch (ex) { } }
+                if (Array.isArray(rdata2)) {
+                    obj.portCount = (rdata2.length / 2);
+                    setState(2); // 2 = Connected
+                    const updatedPorts = [];
+                    for (var i = 0; i < (rdata2.length / 2); i++) {
+                        const portname = rdata2[i * 2];
+                        const portstate = rdata2[(i * 2) + 1];
+                        var portchanged = false;
+                        if (obj.ports[i] == null) {
+                            // Add the port
+                            obj.ports[i] = { PortNumber: i, PortId: 'p' + i, Name: portname, Status: 1, State: portstate, Class: 'PDU' };
+                            portchanged = true;
+                        } else {
+                            // Update the port
+                            const port = obj.ports[i];
+                            if (port.Name != portname) { port.Name = portname; portchanged = true; }
+                            if (port.State != portstate) { port.State = portstate; portchanged = true; }
+                        }
+                        if (portchanged) { updatedPorts.push(i); }
+                    }
+                    if ((updatedPorts.length > 0) && (obj.onPortsChanged != null)) { obj.onPortsChanged(obj, updatedPorts); }
+                } else {
+                    setState(0); // 0 = Disconnected
+                }
+            } else {
+                setState(0); // 0 = Disconnected
+            }
+        });
+    }
+
+    function setPowerState(port, state, func) {
+        obj.fetch('/restapi/relay/outlets/' + port + '/state/', 'PUT', 'value=' + state, null, function (sender, tag, rdata, res) {
+            console.log('DATA:', res.statusCode, rdata.toString());
+        });
+    }
+
+    obj.fetch = function (url, method, data, tag, func) {
+        //console.log('fetch', url, method, data, tag);
+        if (obj.state == 0) return;
+        if (typeof data == 'string') { data = Buffer.from(data); }
+
+        var rdata = [];
+        const options = {
+            hostname: hostname,
+            port: port,
+            rejectUnauthorized: false,
+            checkServerIdentity: onCheckServerIdentity,
+            path: url,
+            method: method,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'accept': 'application/json',
+                'X-CSRF': 'x'
+            }
+        }
+
+        if (data != null) { options.headers['Content-Length'] = data.length; }
+
+        if (challenge != null) {
+            const buf = Buffer.alloc(10);
+            challenge.cnonce = crypto.randomFillSync(buf).toString('hex');
+            challenge.nc = '00000001';
+            const ha1 = crypto.createHash('md5');
+            ha1.update([username, challenge.realm, password].join(':'));
+            var xha1 = ha1.digest('hex')
+            const ha2 = crypto.createHash('md5');
+            ha2.update([options.method, options.path].join(':'));
+            var xha2 = ha2.digest('hex');
+            const response = crypto.createHash('md5');
+            response.update([xha1, challenge.nonce, challenge.nc, challenge.cnonce, challenge.qop, xha2].join(':'));
+            var requestParams = {
+                "username": username,
+                "realm": challenge.realm,
+                "nonce": challenge.nonce,
+                "uri": options.path,
+                "response": response.digest("hex"),
+                "cnonce": challenge.cnonce,
+                "opaque": challenge.opaque
+            };
+            options.headers = options.headers || {};
+            options.headers.Authorization = renderDigest(requestParams) + ', algorithm=MD5, nc=' + challenge.nc + ', qop=' + challenge.qop;
+        }
+
+        const req = https.request(options, function (res) {
+            if (obj.state == 0) return;
+            //console.log('res.statusCode', res.statusCode);
+            //if (res.statusCode != 200) { console.log(res.statusCode, res.headers, Buffer.concat(data).toString()); setState(0); return; }
+            challengeRetry = 0;
+            res.on('data', function (d) { rdata.push(d); });
+            res.on('end', function () {
+                if (res.statusCode == 401) {
+                    challengeRetry++;
+                    if (challengeRetry > 4) { setState(0); return; }
+                    challenge = parseChallenge(res.headers['www-authenticate']);
+                    obj.fetch(url, method, data, tag, func);
+                    return;
+                } else {
+                    // This line is used for debugging only, used to swap a file.
+                    func(obj, tag, Buffer.concat(rdata), res);
+                }
+            });
+        });
+        req.on('error', function (error) { console.log(error); setState(0); });
+        req.on('timeout', function () { setState(0); });
+        if (data) { req.write(data); }
+        req.end();
+    }
+
+    function parseChallenge(header) {
+        header = header.replace('qop="auth,auth-int"', 'qop="auth"'); // We don't support auth-int yet, easiest way to get rid of it.
+        var prefix = 'Digest ';
+        var challenge = header.substr(header.indexOf(prefix) + prefix.length);
+        var parts = challenge.split(',');
+        var length = parts.length;
+        var params = {};
+        for (var i = 0; i < length; i++) {
+            var part = parts[i].match(/^\s*?([a-zA-Z0-0]+)="(.*)"\s*?$/);
+            if (part && part.length > 2) { params[part[1]] = part[2]; }
+        }
+        return params;
+    }
+
+    function renderDigest(params) {
+        var parts = [];
+        for (var i in params) { parts.push(i + '="' + params[i] + '"'); }
+        return 'Digest ' + parts.join(', ');
+    }
+
+    return obj;
+}
+
 
 module.exports.CreateIPKVMManager = CreateIPKVMManager;
