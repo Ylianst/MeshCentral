@@ -1090,7 +1090,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (typeof domain.terminal.launchcommand.freebsd == 'string') { serverInfo.termlaunchcommand.freebsd = domain.terminal.launchcommand.freebsd; }
         }
         // Enable agent self guest sharing if allowed
-        if (domain.agentselfguestsharing === true) { serverInfo.agentSelfGuestSharing = true; }
+        if (domain.agentselfguestsharing) { serverInfo.agentSelfGuestSharing = true; }
         obj.send(JSON.stringify(serverInfo));
 
         // Plug in handler
@@ -1686,7 +1686,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         });
                     } else {
                         // Add a new self-share, this will replace any share for this device
-                        if ((domain.agentselfguestsharing !== true) || (typeof command.flags != 'number')) return; // Check if agent self-sharing is allowed, this is off by default.
+                        if ((domain.agentselfguestsharing == null) || (domain.agentselfguestsharing == false) || (typeof command.flags != 'number')) return; // Check if agent self-sharing is allowed, this is off by default.
                         if ((command.flags & 2) == 0) { command.viewOnly = false; } // Only allow "view only" if desktop is shared.
                         addGuestSharing(command.flags, command.viewOnly, function (share) {
                             obj.guestSharing = true;
@@ -1730,6 +1730,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Create a device sharing database entry
         var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', nodeid: obj.dbNodeKey, p: flags, domain: domain.id, publicid: publicid, guestName: 'Agent', consent: 0x7F, url: url, extrakey: extrakey };
+
+        // Add expire time
+        if ((typeof domain.agentselfguestsharing == 'object') && (typeof domain.agentselfguestsharing.expire == 'number') && (domain.agentselfguestsharing.expire > 0)) {
+            shareEntry.startTime = Date.now();
+            shareEntry.expireTime = Date.now() + (60000 * domain.agentselfguestsharing.expire);
+        }
+
         if (viewOnly === true) { shareEntry.viewOnly = true; }
         parent.db.Set(shareEntry);
 
