@@ -10254,6 +10254,13 @@
         for (var n = 0; n <= 0xff; ++n) { var hexOctet = n.toString(16).padStart(2, '0'); byteToHex.push(hexOctet); }
         function arrayBufferToHex(arrayBuffer) { return Array.prototype.map.call( new Uint8Array(arrayBuffer), n => byteToHex[n] ).join(''); }
         function performHash(data, f) { window.crypto.subtle.digest('SHA-384', data).then(function (v) { f(arrayBufferToHex(v)); }, function() { f(null); }); }
+        function performHashOnFile(file, f) {
+            // TODO: At some point, try to make this work for files of unlimited size using a digest stream
+            var reader = new FileReader();
+            reader.onerror = function (err) { f(null); }
+            reader.onload = function () { window.crypto.subtle.digest('SHA-384', reader.result).then(function (v) { f(arrayBufferToHex(v)); }, function() { f(null); }); };
+            reader.readAsArrayBuffer(file);
+        }
 
         // Push the next file
         function p13uploadNextFile() {
@@ -10265,23 +10272,15 @@
                 Q('d2progressBar').max = file.size;
                 Q('d2progressBar').value = 0;
                 if (file.xdata == null) {
-                    // Load the data
-                    uploadFile.xreader = new FileReader();
-                    uploadFile.xreader.onload = function () {
-                        uploadFile.xdata = uploadFile.xreader.result;
-
-                        // If the remote file already exists and is smaller then our file, see if we can resume the trasfer
-                        var f = null;
-                        for (var i in p13filetree.dir) { if (p13filetree.dir[i].n == file.name) { f = p13filetree.dir[i]; } }
-                        if ((f != null) && (f.s <= uploadFile.xreader.result.byteLength)) {
-                            performHash(uploadFile.xreader.result.slice(0, f.s), function(hash) {
-                                files.sendText(JSON.stringify({ action: 'uploadhash', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, tag: { h: hash.toUpperCase(), s: f.s, skip: f.s == uploadFile.xreader.result.byteLength } }));
-                            });
-                        } else {
-                            files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
-                        }
-                    };
-                    uploadFile.xreader.readAsArrayBuffer(file);
+                    uploadFile.xfile = file;
+                    // If the remote file already exists and is smaller then our file, see if we can resume the trasfer
+                    var f = null;
+                    for (var i in p13filetree.dir) { if (p13filetree.dir[i].n == file.name) { f = p13filetree.dir[i]; } }
+                    if ((f != null) && (f.s <= uploadFile.xfile.size)) {
+                        performHashOnFile(uploadFile.xfile, function(hash) { files.sendText(JSON.stringify({ action: 'uploadhash', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, tag: { h: hash.toUpperCase(), s: f.s, skip: f.s == uploadFile.xfile.size } })); });
+                    } else {
+                        files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xfile.size }));
+                    }
                 } else {
                     // Data already loaded
                     uploadFile.xdata = file.xdata;
@@ -10309,7 +10308,7 @@
         function p13gotUploadData(cmd) {
             if ((uploadFile == null) || (parseInt(uploadFile.xfilePtr) != parseInt(cmd.reqid))) { return; }
             switch (cmd.action) {
-                case 'uploadstart': { p13uploadNextPart(false); for (var i = 0; i < 8; i++) { p13uploadNextPart(true); } break; } // Send 8 more blocks of 16k to fill the websocket.
+                case 'uploadstart': { uploadFile.xdataPriming = 8; p13uploadNextPart(false); break; } // Send 8 more blocks of 16k to fill the websocket.
                 case 'uploadack': { p13uploadNextPart(false); break; }
                 case 'uploaddone': { if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadNextFile(); } else { p13uploadFileTransferDone(); } break; }
                 case 'uploaderror': { p13uploadFileCancel(); break; }
@@ -10321,10 +10320,10 @@
                                 p13uploadNextFile();
                             } else {
                                 uploadFile.xptr = cmd.tag.s;
-                                files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength, append: true }));
+                                files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xfile.size, append: true }));
                             }
                         } else {
-                            files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength, append: false }));
+                            files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xfile.size, append: false }));
                         }
                     }
                     break;
@@ -10334,15 +10333,19 @@
 
         // Push the next part of the file into the websocket. If dataPriming is true, push more data only if it's not the last block of the file.
         function p13uploadNextPart(dataPriming) {
-            var data = uploadFile.xdata, start = uploadFile.xptr;
-            if (start >= data.byteLength) {
-                files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
-            } else {
-                var end = uploadFile.xptr + 16384;
-                if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
-                var dataslice = new Uint8Array(data.slice(start, end))
+            if (uploadFile.xreader != null) return; // Data reading already in process
+            if (uploadFile.xptr >= uploadFile.xfile.size) return;
+            var end = uploadFile.xptr + 16384;
+            if (end > uploadFile.xfile.size) { if (dataPriming == true) { return; } end = uploadFile.xfile.size; }
+            uploadFile.xreader = new FileReader();
+            uploadFile.xreader.onerror = function (err) { console.log(err); }
+            uploadFile.xreader.onload = function () {
+                var data = uploadFile.xreader.result;
+                delete uploadFile.xreader;
+                if (data == null) return;
+                var dataslice = new Uint8Array(data)
                 if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
-                    var datapart = new Uint8Array(end - start + 1);
+                    var datapart = new Uint8Array(data.byteLength + 1);
                     datapart.set(dataslice, 1); // Add a zero char at the start of the send, this will indicate that it's not a JSON command.
                     files.send(datapart);
                 } else {
@@ -10350,7 +10353,13 @@
                 }
                 uploadFile.xptr = end;
                 Q('d2progressBar').value = end;
-            }
+                if (uploadFile.xptr >= uploadFile.xfile.size) {
+                    files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
+                } else {
+                    if (uploadFile.xdataPriming > 0) { uploadFile.xdataPriming--; p13uploadNextPart(true); }
+                }
+            };
+            uploadFile.xreader.readAsArrayBuffer(uploadFile.xfile.slice(uploadFile.xptr, end));
         }
 
         //
