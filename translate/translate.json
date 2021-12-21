@@ -1125,8 +1125,9 @@
     },
     {
       "en": ", View only desktop",
-      "nl": ", Desktop alleen bekijken",
       "fr": ", Visionner uniquement le bureau",
+      "nl": ", Desktop alleen bekijken",
+      "pl": ", Tylko podgląd pulpitu",
       "xloc": [
         "default.handlebars->39->1854",
         "default.handlebars->39->933"
@@ -4063,18 +4064,20 @@
     },
     {
       "en": "AMT-Redir",
-      "nl": "AMT-Redir",
       "es": "AMT-Redir",
       "fr": "AMT-Redir",
+      "nl": "AMT-Redir",
+      "pl": "AMT-Przekier",
       "xloc": [
         "default.handlebars->39->2684"
       ]
     },
     {
       "en": "AMT-WSMAN",
-      "nl": "AMT-WSMAN",
       "es": "AMT-WSMAN",
       "fr": "AMT-WSMAN",
+      "nl": "AMT-WSMAN",
+      "pl": "AMT-WSMAN",
       "xloc": [
         "default.handlebars->39->2683"
       ]
@@ -4560,9 +4563,10 @@
     },
     {
       "en": "Account created, name is {0}.",
-      "nl": "Account aangemaakt, naam is {0}.",
       "es": "Cuenta creada, el nombre es {0}.",
       "fr": "Compte créé, l'identifiant est : {0}.",
+      "nl": "Account aangemaakt, naam is {0}.",
+      "pl": "Konto utworzono, jego nazwa to {0}.",
       "xloc": [
         "default.handlebars->39->2232"
       ]
@@ -5120,22 +5124,22 @@
     },
     {
       "en": "Active User",
+      "es": "Usuario activo",
+      "fr": "Utilisateur actif",
       "nl": "Actieve gebruiker",
       "pl": "Aktywny użytkownik",
       "pt-br": "Usuario activo",
-      "es": "Usuario activo",
-      "fr": "Utilisateur actif",
       "xloc": [
         "default.handlebars->39->813"
       ]
     },
     {
       "en": "Active Users",
+      "es": "Usuarios activos",
+      "fr": "Utilisateurs actifs",
       "nl": "Actieve gebruikers",
       "pl": "Aktywni użytkownicy",
       "pt-br": "Usuarios activos",
-      "es": "Usuarios activos",
-      "fr": "Utilisateurs actifs",
       "xloc": [
         "default.handlebars->39->812"
       ]
@@ -5218,7 +5222,7 @@
       "ja": "＆リレーマップを追加...",
       "ko": "릴레이 맵 추가 ...",
       "nl": "&Relay toewijzing toevoegen...",
-      "pl": "Dodaj Mapę $Przekazywania...",
+      "pl": "Dodaj Mapę $Przekierowania...",
       "pt": "Adicionar & retransmitir mapa ...",
       "pt-br": "Adicionar & retransmitir mapa ...",
       "ru": "Добавить & карту реле ...",
@@ -5571,7 +5575,7 @@
       "ja": "リレーマップを追加...",
       "ko": "릴레이 맵 추가 ...",
       "nl": "Toevoegen relay kaart...",
-      "pl": "Dodaj Mapę Przekazywania...",
+      "pl": "Dodaj Mapę Przekierowania...",
       "pt": "Adicionar mapa de retransmissão ...",
       "pt-br": "Adicionar mapa de retransmissão ...",
       "ru": "Добавить карту реле ...",
@@ -6135,8 +6139,9 @@
     },
     {
       "en": "Added device share {0} with unlimited time.",
-      "nl": "Apparaat delen {0} toegevoegd met onbeperkte tijd.",
       "fr": "Ajout du partage de l'appareil {0} sans limitation de durée.",
+      "nl": "Apparaat delen {0} toegevoegd met onbeperkte tijd.",
+      "pl": "Dodano udostępnianie urządzenia {0} z nieograniczonym czasem",
       "xloc": [
         "default.handlebars->39->2235"
       ]
@@ -6805,8 +6810,9 @@
     },
     {
       "en": "Agent Self-Share",
-      "nl": "Agent zelfdelend",
       "fr": "Auto-partage de l'agent",
+      "nl": "Agent zelfdelend",
+      "pl": "Samo-Udostępnianie Agenta",
       "xloc": [
         "default.handlebars->39->1858",
         "default.handlebars->39->937"
@@ -7006,9 +7012,10 @@
     },
     {
       "en": "Agent connected with limited privilages",
-      "nl": "Agent verbonden met beperkte privileges",
       "es": "Agente conectado con permisos limitados",
       "fr": "Agent connecté avec des privilèges limités",
+      "nl": "Agent verbonden met beperkte privileges",
+      "pl": "Agent połączony z ograniczonymi uprawnieniami",
       "xloc": [
         "default.handlebars->39->230"
       ]
@@ -7039,10 +7046,10 @@
     },
     {
       "en": "Agent hash checking is being skipped, this is unsafe.",
-      "nl": "Agent has hcontrole wordt overgeslagen, dit is onveilig.",
-      "pl": "Sprawdzanie skrótu agenta jest pomijane, jest to niebezpieczne.",
       "es": "Se ha omitido la comprobación hash del agente, esto es inseguro.",
       "fr": "La vérification du hachage de l'agent a été ignorée. Cette action n'est pas sure.",
+      "nl": "Agent has hcontrole wordt overgeslagen, dit is onveilig.",
+      "pl": "Sprawdzanie skrótu agenta jest pomijane, jest to niebezpieczne.",
       "xloc": [
         "default.handlebars->39->87"
       ]
@@ -9966,8 +9973,9 @@
     },
     {
       "en": "Backup path can't be set within meshcentral-data folder, backup settings ignored.",
-      "nl": "Back-uppad kan niet worden ingesteld in de map meshcentral-data, back-upinstellingen genegeerd.",
       "fr": "Le chemin de sauvegarde ne peut pas être défini dans le dossier meshcentral-data, les paramètres de sauvegarde sont ignorés.",
+      "nl": "Back-uppad kan niet worden ingesteld in de map meshcentral-data, back-upinstellingen genegeerd.",
+      "pl": "Ścieżka kopii zapasowej nie może być ustawiona wewnątrz folderu meshcentral-data, ustawienia kopii zignorowano.",
       "xloc": [
         "default.handlebars->39->99"
       ]
@@ -10476,18 +10484,20 @@
     },
     {
       "en": "Bytes In",
-      "nl": "Bytes in",
       "es": "Bytes entrantes",
       "fr": "Octets entrants",
+      "nl": "Bytes in",
+      "pl": "Bajtów Odebrano",
       "xloc": [
         "default.handlebars->39->2676"
       ]
     },
     {
       "en": "Bytes Out",
-      "nl": "Bytes uit",
       "es": "Bytes salientes",
       "fr": "Octets sortants",
+      "nl": "Bytes uit",
+      "pl": "Bajtów Wysłano",
       "xloc": [
         "default.handlebars->39->2677"
       ]
@@ -10618,10 +10628,10 @@
     },
     {
       "en": "CIRA local FQDN's ignored when server in LAN-only or WAN-only mode.",
-      "nl": "CIRA lokale FQDN's genegeerd wanneer server in LAN-only of WAN-only modus.",
-      "pl": "Lokalna nazwa FQDN CIRA jest ignorowana, gdy serwer działa w trybie tylko LAN lub tylko WAN.",
       "es": "Los FQDN locales de CIRA no se usan cuando el servidor está en modo LAN-only o WAN-only.",
       "fr": "Les noms locaux (FDQN) CIRA sont ignorés lorsque le serveur est configuré en LAN seulement ou en WAN seulement.",
+      "nl": "CIRA lokale FQDN's genegeerd wanneer server in LAN-only of WAN-only modus.",
+      "pl": "Lokalna nazwa FQDN CIRA jest ignorowana, gdy serwer działa w trybie tylko LAN lub tylko WAN.",
       "xloc": [
         "default.handlebars->39->85"
       ]
@@ -10899,10 +10909,10 @@
     },
     {
       "en": "Can't have more than 4 CIRA local FQDN's. Ignoring value.",
-      "nl": "Er mogen niet meer dan 4 CIRA lokale FQDN's zijn. Waarde wordt genegeerd.",
-      "pl": "Nie może mieć więcej niż 4 lokalnych FQDN CIRA. Ignorowanie wartości.",
       "es": "No puede haber más de 4 FQDN locales de CIRA. Valor ignorado.",
       "fr": "Impossible d'avoir plus de 4 noms complets de CIRA (FQDN) . Valeur ignorée.",
+      "nl": "Er mogen niet meer dan 4 CIRA lokale FQDN's zijn. Waarde wordt genegeerd.",
+      "pl": "Nie może mieć więcej niż 4 lokalnych FQDN CIRA. Ignorowanie wartości.",
       "xloc": [
         "default.handlebars->39->86"
       ]
@@ -11544,9 +11554,10 @@
     },
     {
       "en": "Changed account display name to {0}.",
-      "nl": "Weergavenaam account gewijzigd in {0}.",
       "es": "Cambiado el nombre visible de la cuenta a {0}.",
       "fr": "Le nom du compte a changé : {0}.",
+      "nl": "Weergavenaam account gewijzigd in {0}.",
+      "pl": "Zmieniono wyświetlaną nazwę konta na {0}.",
       "xloc": [
         "default.handlebars->39->2231"
       ]
@@ -14313,9 +14324,10 @@
     },
     {
       "en": "Connected devices:",
-      "nl": "Verbonden apparaten:",
       "es": "Dispositivos conectados:",
       "fr": "Appareils connectés :",
+      "nl": "Verbonden apparaten:",
+      "pl": "Podłączone urządzenia:",
       "xloc": [
         "device-notify.html->2->5->1",
         "device-notify.txt"
@@ -14412,9 +14424,10 @@
     },
     {
       "en": "Connecting to server...",
-      "nl": "Verbinden met de server...",
       "es": "Conectando al servidor...",
       "fr": "Connexion au serveur ...",
+      "nl": "Verbinden met de server...",
+      "pl": "Łączenie z serwerem...",
       "xloc": [
         "player.handlebars->3->16"
       ]
@@ -14536,7 +14549,7 @@
       "ja": "接続リレー",
       "ko": "연결 전달(Relay)",
       "nl": "Verbindings Relay",
-      "pl": "Przekazywanie Połączenia",
+      "pl": "Przekierowanie Połączenia",
       "pt": "Encaminhador de conexão",
       "pt-br": "Relé de conexão",
       "ru": "Ретранслятор подключения",
@@ -17183,7 +17196,7 @@
       "ja": "日付で降順",
       "ko": "날짜 내림차순",
       "nl": "Aflopend op datum",
-      "pl": "Zejdź według daty",
+      "pl": "Sortuj w dół według daty",
       "pt": "Descrescente por data",
       "pt-br": "Decrescente por data",
       "ru": "По дате по убыванию",
@@ -17211,7 +17224,7 @@
       "ja": "名前で降順",
       "ko": "이름 내림차순",
       "nl": "Aflopend op naam",
-      "pl": "Zejdź według nazwy",
+      "pl": "Sortuj w dół według nazwy",
       "pt": "Decrescente por nome",
       "pt-br": "Decrescente pelo nome",
       "ru": "По имени по убыванию",
@@ -17239,7 +17252,7 @@
       "ja": "サイズで降順",
       "ko": "크기 내림차순",
       "nl": "Aflopend op grootte",
-      "pl": "Zejdź według rozmiaru",
+      "pl": "Sortuj w dół według rozmiaru",
       "pt": "Decrescente por tamanho",
       "pt-br": "Decrescente por tamanho",
       "ru": "По размеру по убыванию",
@@ -18656,6 +18669,7 @@
     },
     {
       "en": "Device is busy",
+      "pl": "Urządzenie jest zajęte",
       "xloc": [
         "default-mobile.handlebars->11->198",
         "default.handlebars->39->374"
@@ -18984,6 +18998,7 @@
     },
     {
       "en": "Device is powered off.",
+      "pl": "Urządzenie jest wyłączone.",
       "xloc": [
         "default.handlebars->39->579"
       ]
@@ -19313,10 +19328,10 @@
     },
     {
       "en": "Disconnect and Lock",
-      "nl": "Verbreken en vergrendelen",
-      "pl": "Odłącz i zablokuj",
       "es": "Desconectar y bloquear",
       "fr": "Déconnexion et verrouillage",
+      "nl": "Verbreken en vergrendelen",
+      "pl": "Odłącz i zablokuj",
       "xloc": [
         "default.handlebars->deskDisconnectContextMenu->1"
       ]
@@ -19343,9 +19358,10 @@
     },
     {
       "en": "Disconnect this session",
-      "nl": "Deze sessie verbreken",
       "es": "Desconectar esta sesión",
       "fr": "Déconnecter cette session",
+      "nl": "Deze sessie verbreken",
+      "pl": "Rozłącz tą sesję",
       "xloc": [
         "default-mobile.handlebars->11->195",
         "default-mobile.handlebars->11->202",
@@ -19404,9 +19420,10 @@
     },
     {
       "en": "Disconnected devices:",
-      "nl": "Losgekoppelde apparaten:",
       "es": "Dispositivos desconectados:",
       "fr": "Appareils déconnectés :",
+      "nl": "Losgekoppelde apparaten:",
+      "pl": "Rozłączone urządzenia:",
       "xloc": [
         "device-notify.html->2->7->1",
         "device-notify.txt"
@@ -21587,9 +21604,10 @@
     },
     {
       "en": "Edit User Group Features",
-      "nl": "Functies van gebruikersgroepen bewerken",
       "es": "Editar características del grupo de usuarios",
       "fr": "Modifier les caractéristiques du groupe",
+      "nl": "Functies van gebruikersgroepen bewerken",
+      "pl": "Edytuj Opcje Grupy Użytkownika",
       "xloc": [
         "default.handlebars->39->2438"
       ]
@@ -21811,9 +21829,10 @@
     },
     {
       "en": "Email Connect",
-      "nl": "Email verbinden",
       "es": "Correo electrónico conectado",
       "fr": "Connexion par mail",
+      "nl": "Email verbinden",
+      "pl": "Połączenie Email",
       "xloc": [
         "default.handlebars->39->1815",
         "default.handlebars->39->829"
@@ -21821,9 +21840,10 @@
     },
     {
       "en": "Email Disconnect",
-      "nl": "Email verbroken",
       "es": "Correo electrónico desconectado",
       "fr": "Déconnexion par mail",
+      "nl": "Email verbroken",
+      "pl": "Rozłączenie Email",
       "xloc": [
         "default.handlebars->39->1816",
         "default.handlebars->39->830"
@@ -21831,9 +21851,10 @@
     },
     {
       "en": "Email Notifications",
-      "nl": "Email meldingen",
       "es": "Notificaciones por correo electrónico",
       "fr": "Notifications par mail",
+      "nl": "Email meldingen",
+      "pl": "Powiadomienia Email",
       "xloc": [
         "default.handlebars->39->2032",
         "default.handlebars->39->946"
@@ -25805,18 +25826,20 @@
     },
     {
       "en": "Generate Report",
-      "nl": "Genereer rapport",
       "es": "Generar informe",
       "fr": "Générer le rapport",
+      "nl": "Genereer rapport",
+      "pl": "Generuj Raport",
       "xloc": [
         "default.handlebars->39->2668"
       ]
     },
     {
       "en": "Generate Report...",
-      "nl": "Genereer rapport...",
       "es": "Generar informe...",
       "fr": "Générer le rapport ...",
+      "nl": "Genereer rapport...",
+      "pl": "Generuj Raport...",
       "xloc": [
         "default.handlebars->container->column_l->p60->3->1->0->3->3"
       ]
@@ -25991,10 +26014,10 @@
     },
     {
       "en": "Get Clipboard",
-      "nl": "Klembord ophalen",
-      "pl": "Pobierz schowek",
       "es": "Obtener portapapeles",
       "fr": "Récupérer le presse-papier",
+      "nl": "Klembord ophalen",
+      "pl": "Pobierz schowek",
       "xloc": [
         "default.handlebars->39->1203"
       ]
@@ -26261,7 +26284,7 @@
       "ja": "Googleドライブのバックアップは現在アクティブです。",
       "ko": "Google 드라이브 백업이 현재 활성화되어 있습니다.",
       "nl": "Google Drive backup is momenteel aktief",
-      "pl": "Kopia zapasowa Google Drive jest obecnie aktywny.",
+      "pl": "Kopia zapasowa Google Drive jest obecnie aktywna.",
       "pt": "O backup do Google Drive está ativo no momento.",
       "pt-br": "O backup do Google Drive está ativo no momento.",
       "ru": "Резервное копирование Google Диска в настоящее время активно.",
@@ -26449,9 +26472,9 @@
       ]
     },
     {
-      "en": "Group by",
       "cs": "Skupina vytvořená",
       "de": "Gruppiere nach",
+      "en": "Group by",
       "es": "Agrupar Por",
       "fi": "Ryhmittele",
       "fr": "Grouper par",
@@ -26594,9 +26617,10 @@
     },
     {
       "en": "Guest",
-      "nl": "Gast",
       "es": "Invitado",
       "fr": "Invité",
+      "nl": "Gast",
+      "pl": "Gość",
       "xloc": [
         "default.handlebars->39->2674"
       ]
@@ -27484,10 +27508,12 @@
       ]
     },
     {
-      "en": "IP KVM device"
+      "en": "IP KVM device",
+      "pl": "Urządzenie IP KVM"
     },
     {
-      "en": "IP KVM port is up and ready for use."
+      "en": "IP KVM port is up and ready for use.",
+      "pl": "Port IP KVM podniesiony i gotowy do użycia."
     },
     {
       "cs": "IP rozsah",
@@ -27542,6 +27568,7 @@
     },
     {
       "en": "IP-KVM",
+      "pl": "IP-KVM",
       "xloc": [
         "default-mobile.handlebars->11->248",
         "default-mobile.handlebars->11->305",
@@ -27552,12 +27579,14 @@
     },
     {
       "en": "IP-KVM / Power device",
+      "pl": "IP-KVM / Zasilanie urządzenia",
       "xloc": [
         "default.handlebars->39->1726"
       ]
     },
     {
       "en": "IP-KVM device",
+      "pl": "Urządzenie IP-KVM",
       "xloc": [
         "default-mobile.handlebars->11->619",
         "default.handlebars->39->1783"
@@ -27565,6 +27594,7 @@
     },
     {
       "en": "IP-KVM port connected",
+      "pl": "Podłączono z portem IP-KVM",
       "xloc": [
         "default.handlebars->39->903",
         "default.handlebars->39->904"
@@ -27572,12 +27602,14 @@
     },
     {
       "en": "IP-KVM port is connected and ready for use.",
+      "pl": "Port IP-KVM podłączony i gotowy do użycia.",
       "xloc": [
         "default.handlebars->39->350"
       ]
     },
     {
       "en": "IP-KVM port is up and ready for use.",
+      "pl": "Port IP-KVM podniesiony i gotowy do użycia.",
       "xloc": [
         "default.handlebars->39->591"
       ]
@@ -27646,7 +27678,7 @@
       "ja": "IPv4レイヤー",
       "ko": "IPv4 레이어",
       "nl": "IPv4 Laag",
-      "pl": "IPv4 Warstwa",
+      "pl": "Adres IPv4",
       "pt": "Camada IPv4",
       "pt-br": "Camada IPv4",
       "ru": "Уровень IPv4",
@@ -27750,7 +27782,7 @@
       "ja": "IPv6レイヤー",
       "ko": "IPv6 계층",
       "nl": "IPv6 Layer",
-      "pl": "IPv6 Warstwa",
+      "pl": "Adres IPv6",
       "pt": "Camada IPv6",
       "pt-br": "Camada IPv6",
       "ru": "Уровень IPv6",
@@ -28741,27 +28773,30 @@
     },
     {
       "en": "Intel AMT CIRA connected",
-      "nl": "Intel AMT CIRA verbonden",
       "es": "Intel AMT CIRA conectado",
       "fr": "Intel AMT CIRA connecté",
+      "nl": "Intel AMT CIRA verbonden",
+      "pl": "Intel AMT CIRA połączono",
       "xloc": [
         "default.handlebars->39->232"
       ]
     },
     {
       "en": "Intel AMT CIRA disconnected",
-      "nl": "Intel AMT CIRA verbroken",
       "es": "Intel AMT CIRA desconectado",
       "fr": "Intel AMT CIRA déconnecté",
+      "nl": "Intel AMT CIRA verbroken",
+      "pl": "Intel AMT CIRA rozłączono",
       "xloc": [
         "default.handlebars->39->236"
       ]
     },
     {
       "en": "Intel AMT detected",
-      "nl": "Intel AMT gedetecteerd",
       "es": "Intel AMT detectado",
       "fr": "Intel AMT détecté",
+      "nl": "Intel AMT gedetecteerd",
+      "pl": "Wykryto Intel AMT",
       "xloc": [
         "default.handlebars->39->231"
       ]
@@ -28791,9 +28826,10 @@
     },
     {
       "en": "Intel AMT not detected",
-      "nl": "Intel AMT niet gedetecteerd",
       "es": "Intel AMT no detectado",
       "fr": "Intel AMT non détecté",
+      "nl": "Intel AMT niet gedetecteerd",
+      "pl": "Nie wykryto Intel AMT",
       "xloc": [
         "default.handlebars->39->235"
       ]
@@ -30214,40 +30250,40 @@
     },
     {
       "en": "Invalid Let's Encrypt email address, unable to resolve: {0}",
-      "nl": "Ongeldige Let's Encrypt email adres, onmogelijk om te verhelpen: {0}",
-      "pl": "Nieprawidłowy adres e-mail Let's Encrypt, nie można go rozwiązać: {0}",
       "es": "Dirección de correo Let's Encrypt no válida, no se puede resolver: {0}",
       "fr": "L'adresse email fournit pour Let's Encrypt est invalide. Impossible de résoudre : {0}",
+      "nl": "Ongeldige Let's Encrypt email adres, onmogelijk om te verhelpen: {0}",
+      "pl": "Nieprawidłowy adres e-mail Let's Encrypt, nie można go rozwiązać: {0}",
       "xloc": [
         "default.handlebars->39->93"
       ]
     },
     {
       "en": "Invalid Let's Encrypt host names.",
-      "nl": "Ongeldige Let's Encrypt hostnamen.",
-      "pl": "Nieprawidłowe nazwy hostów Let's Encrypt.",
       "es": "Nombres de host Let's Encrypt no válido.",
       "fr": "Noms d'hôtes Let's Encrypt invalide.",
+      "nl": "Ongeldige Let's Encrypt hostnamen.",
+      "pl": "Nieprawidłowe nazwy hostów Let's Encrypt.",
       "xloc": [
         "default.handlebars->39->89"
       ]
     },
     {
       "en": "Invalid Let's Encrypt names, can't contain a *.",
-      "nl": "Ongeldige Let's Encrypt namen, mag geen * bevatten.",
-      "pl": "Nieprawidłowe nazwy Let's Encrypt, nie mogą zawierać *.",
       "es": "Nombres Let's Encrypt no válidos, no pueden contener un *.",
       "fr": "Noms Let's Encrypt invalides. Il ne doit pas contenir *.",
+      "nl": "Ongeldige Let's Encrypt namen, mag geen * bevatten.",
+      "pl": "Nieprawidłowe nazwy Let's Encrypt, nie mogą zawierać *.",
       "xloc": [
         "default.handlebars->39->90"
       ]
     },
     {
       "en": "Invalid Let's Encrypt names, unable to resolve: {0}",
-      "nl": "Ongeldige Let's Encrypt-namen, onmogelijk om te verhelpen: {0}",
-      "pl": "Nieprawidłowe nazwy Let's Encrypt, niemożliwe do rozwiązania: {0}",
       "es": "Nombres Let's Encrypt no válidos, no se puede resolver: {0}",
       "fr": "Noms Let-s Encrypt invalide. Impossible de résoudre : {0}",
+      "nl": "Ongeldige Let's Encrypt-namen, onmogelijk om te verhelpen: {0}",
+      "pl": "Nieprawidłowe nazwy Let's Encrypt, niemożliwe do rozwiązania: {0}",
       "xloc": [
         "default.handlebars->39->92"
       ]
@@ -30326,10 +30362,10 @@
     },
     {
       "en": "Invalid \\\"LoginCookieEncryptionKey\\\" in config.json.",
-      "nl": "Ongeldige \\\"LoginCookieEncryptionKey\\\" in config.json.",
-      "pl": "Nieprawidłowy \\\"LoginCookieEncryptionKey\\\" w config.json.",
       "es": "\\\"LoginCookieEncryptionKey\\\" no válido en config.json.",
       "fr": "Le champ \\\"LoginCookieEncryptionKey\\\" est invalide dans le fichier de configuration (config.json).",
+      "nl": "Ongeldige \\\"LoginCookieEncryptionKey\\\" in config.json.",
+      "pl": "Nieprawidłowy \\\"LoginCookieEncryptionKey\\\" w config.json.",
       "xloc": [
         "default.handlebars->39->98"
       ]
@@ -31378,8 +31414,9 @@
     },
     {
       "en": "Keyboard Strings Customization",
-      "nl": "Toetsenbord strings aanpassen",
       "fr": "Personnalisation du clavier",
+      "nl": "Toetsenbord strings aanpassen",
+      "pl": "Ustawienia Ciagów Klawiatury",
       "xloc": [
         "default.handlebars->39->1199"
       ]
@@ -31925,9 +31962,10 @@
     },
     {
       "en": "Last 7 days",
-      "nl": "Laaste 7 dagen",
       "es": "Últimos 7 días",
       "fr": "7 derniers jours",
+      "nl": "Laaste 7 dagen",
+      "pl": "Ostatnie 7 dni",
       "xloc": [
         "default.handlebars->39->2661"
       ]
@@ -31982,9 +32020,10 @@
     },
     {
       "en": "Last Day",
-      "nl": "Laaste dag",
       "es": "Último día",
       "fr": "Dernier jour",
+      "nl": "Laaste dag",
+      "pl": "Ostatni Dzień",
       "xloc": [
         "default.handlebars->39->2660"
       ]
@@ -32040,6 +32079,7 @@
     },
     {
       "en": "Last access: {0}",
+      "pl": "Ostatni dostęp: {0}",
       "xloc": [
         "default.handlebars->39->2273"
       ]
@@ -32530,36 +32570,40 @@
     },
     {
       "en": "Left Web-RDP session after {0} second(s).",
-      "nl": "Web-RDP sessie verlaten na {0} seconde(n).",
       "es": "Abandonar la sesión Web-RDP tras {0} segundo(s).",
       "fr": "Fin de la session Web-RDP dans {0} seconde(s).",
+      "nl": "Web-RDP sessie verlaten na {0} seconde(n).",
+      "pl": "Opuścił sesję Web-RDP po {0} sekundach.",
       "xloc": [
         "default.handlebars->39->2229"
       ]
     },
     {
       "en": "Left Web-SFTP session after {0} second(s).",
-      "nl": "Web-SFTP sessie verlaten na {0} seconde(n).",
       "es": "Abandonar la sesión Web-SFTP tras {0} segundo(s).",
       "fr": "Fin de la session Web-SFTP dans {0} seconde(s).",
+      "nl": "Web-SFTP sessie verlaten na {0} seconde(n).",
+      "pl": "Opuścił sesję Web-SFTP po {0} sekundach.",
       "xloc": [
         "default.handlebars->39->2228"
       ]
     },
     {
       "en": "Left Web-SSH session after {0} second(s).",
-      "nl": "Web-SSH sessie verlaten na {0} seconde(n).",
       "es": "Abandonar la sesión Web-SSH tras {0} segundo(s).",
       "fr": "Fin de la session Web-SSH dans {0} seconde(s).",
+      "nl": "Web-SSH sessie verlaten na {0} seconde(n).",
+      "pl": "Opuścił sesję Web-SSH po {0} sekundach.",
       "xloc": [
         "default.handlebars->39->2227"
       ]
     },
     {
       "en": "Left Web-VNC session after {0} second(s).",
-      "nl": "Web-VNC sessie verlaten na {0} seconde(n).",
       "es": "Abandonar la sesión Web-VNC tras {0} segundo(s).",
       "fr": "Fin de la session Web-VNC dans {0} seconde(s).",
+      "nl": "Web-VNC sessie verlaten na {0} seconde(n).",
+      "pl": "Opuścił sesję Web-VNC po {0} sekundach.",
       "xloc": [
         "default.handlebars->39->2230"
       ]
@@ -32619,18 +32663,20 @@
     },
     {
       "en": "Left the desktop multiplex session after {0} second(s).",
-      "nl": "Verliet de desktop multiplex sessie na {0} seconde(n).",
       "es": "Abandonar la sesión de escritorio multiplexada tras {0} segundo(s).",
       "fr": "Fin de la connexion au bureau multiplexé dans {0} second(s).",
+      "nl": "Verliet de desktop multiplex sessie na {0} seconde(n).",
+      "pl": "Opuścił sesję multiplex pulpitu po {0} sekundach.",
       "xloc": [
         "default.handlebars->39->2226"
       ]
     },
     {
       "en": "Length",
-      "nl": "Duur",
       "es": "Longitud",
       "fr": "Longueur",
+      "nl": "Duur",
+      "pl": "Długość",
       "xloc": [
         "default.handlebars->39->2675"
       ]
@@ -33876,10 +33922,10 @@
     },
     {
       "en": "Lock on Disconnect",
-      "nl": "Vergrendelen bij verbreken",
-      "pl": "Zablokuj na Odłącz",
       "es": "Bloquear al desconectar",
       "fr": "Verrouiller lors de la déconnexion",
+      "nl": "Vergrendelen bij verbreken",
+      "pl": "Zablokuj na Odłącz",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->6->3->d7deskAutoLockLabel",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->d7deskAutoLockLabel"
@@ -34367,7 +34413,7 @@
       "ja": "MAC層",
       "ko": "MAC 계층",
       "nl": "MAC Laag",
-      "pl": "Warstwa MAC",
+      "pl": "Adres MAC",
       "pt": "Camada MAC",
       "pt-br": "Camada MAC",
       "ru": "MAC-уровень",
@@ -36318,10 +36364,10 @@
     },
     {
       "en": "MeshCentral SSH support requires NodeJS 11 or higher.",
-      "nl": "MeshCentral SSH ondersteuning vereist NodeJS 11 of hoger.",
-      "pl": "Obsługa MeshCentral SSH wymaga NodeJS 11 lub nowszego.",
       "es": "El soporte SSH de MeshCentral requiere NodeJS 11 o superior.",
       "fr": "Le support de SSH dans Meshcentral nécessite NodeJS 11 ou plus.",
+      "nl": "MeshCentral SSH ondersteuning vereist NodeJS 11 of hoger.",
+      "pl": "Obsługa MeshCentral SSH wymaga NodeJS 11 lub nowszego.",
       "xloc": [
         "default.handlebars->39->79"
       ]
@@ -36976,20 +37022,20 @@
     },
     {
       "en": "Missing Let's Encrypt email address.",
-      "nl": "Ontbrekend Let's Encrypt e-mailadres.",
-      "pl": "Brak adresu e-mail Let's Encrypt.",
       "es": "Falta la dirección de correo de Let's Encrypt.",
       "fr": "L'adresse mail pour Let's Encrypt est absente.",
+      "nl": "Ontbrekend Let's Encrypt e-mailadres.",
+      "pl": "Brak adresu e-mail Let's Encrypt.",
       "xloc": [
         "default.handlebars->39->88"
       ]
     },
     {
       "en": "Missing WebDAV parameters.",
-      "nl": "Ontbrekende WebDAV parameters.",
-      "pl": "Brak parametrów WebDAV.",
       "es": "Faltan parámetros WebDAV.",
       "fr": "Paramètres WebDAV absents.",
+      "nl": "Ontbrekende WebDAV parameters.",
+      "pl": "Brak parametrów WebDAV.",
       "xloc": [
         "default.handlebars->39->80"
       ]
@@ -37488,9 +37534,10 @@
     },
     {
       "en": "My Reports",
-      "nl": "Mijn rapporten",
       "es": "Mis informes",
       "fr": "Mes rapports",
+      "nl": "Mijn rapporten",
+      "pl": "Moje Raporty",
       "xloc": [
         "default.handlebars->container->column_l->p60->p60title->1"
       ]
@@ -38893,9 +38940,10 @@
     },
     {
       "en": "No New Devices",
-      "nl": "Geen nieuwe apparaten",
       "es": "No hay nuevos dispositivos",
       "fr": "Aucun nouvel appareil",
+      "nl": "Geen nieuwe apparaten",
+      "pl": "Brak Nowych Urządzeń",
       "xloc": [
         "default.handlebars->39->2365"
       ]
@@ -38947,11 +38995,11 @@
     },
     {
       "en": "No Remote Command",
+      "es": "No hay Comando remoto",
+      "fr": "Pas de commande à distante",
       "nl": "Geen externe opdrachten",
       "pl": "Brak zdalnego polecenia",
       "pt-br": "Sem Comando Remoto",
-      "es": "No hay Comando remoto",
-      "fr": "Pas de commande à distante",
       "xloc": [
         "default.handlebars->39->2485",
         "default.handlebars->39->2554"
@@ -38959,11 +39007,11 @@
     },
     {
       "en": "No Remote Control",
+      "es": "No hay Control remoto",
+      "fr": "Pas de contrôle à distance",
       "nl": "geen afstandsbediening",
       "pl": "Brak pilota zdalnego sterowania",
       "pt-br": "Sem Controle Remoto",
-      "es": "No hay Control remoto",
-      "fr": "Pas de contrôle à distance",
       "xloc": [
         "default.handlebars->39->2478",
         "default.handlebars->39->2547"
@@ -38971,11 +39019,11 @@
     },
     {
       "en": "No Reset/Off",
+      "es": "No hay Reiniciar/Apagar",
+      "fr": "Pas de redémarrage/arrêt",
       "nl": "Geen herstart/uitschakelen",
       "pl": "Brak resetowania/wyłączania",
       "pt-br": "Sem Resetar/Desligar",
-      "es": "No hay Reiniciar/Apagar",
-      "fr": "Pas de redémarrage/arrêt",
       "xloc": [
         "default.handlebars->39->2487",
         "default.handlebars->39->2556"
@@ -39137,11 +39185,11 @@
     },
     {
       "en": "No Uninstall",
+      "es": "No hay Desinstalar",
+      "fr": "Pas de désinstallation",
       "nl": "Geen de-installatie",
       "pl": "Bez odinstalowywania",
       "pt-br": "Não desinstalar",
-      "es": "No hay Desinstalar",
-      "fr": "Pas de désinstallation",
       "xloc": [
         "default.handlebars->39->2484",
         "default.handlebars->39->2553"
@@ -39149,11 +39197,11 @@
     },
     {
       "en": "No Wake",
+      "es": "No hay Despertar",
+      "fr": "Pas de réveil",
       "nl": "Niet starten",
       "pl": "Bez budzenia",
       "pt-br": "Não acordar",
-      "es": "No hay Despertar",
-      "fr": "Pas de réveil",
       "xloc": [
         "default.handlebars->39->2486",
         "default.handlebars->39->2555"
@@ -39643,8 +39691,9 @@
     },
     {
       "en": "No keyboard strings defined",
-      "nl": "Geen toetsenbord strings gedefineerd",
       "fr": "Aucune personnalisation du clavier définie",
+      "nl": "Geen toetsenbord strings gedefineerd",
+      "pl": "Nie zdefiniowano ciągu klawiatury",
       "xloc": [
         "default.handlebars->39->1200"
       ]
@@ -40897,7 +40946,7 @@
       "ja": "オクシタン",
       "ko": "오크어",
       "nl": "Occitaans",
-      "pl": "prowansalski",
+      "pl": "Prowansalski",
       "pt": "Occitânico",
       "pt-br": "Occitano",
       "ru": "Окситанский",
@@ -40936,6 +40985,7 @@
     },
     {
       "en": "Off",
+      "pl": "Wyłącz",
       "xloc": [
         "default-mobile.handlebars->11->230",
         "default-mobile.handlebars->11->238",
@@ -41421,11 +41471,11 @@
     },
     {
       "en": "OpenBSD x86-64",
+      "es": "OpenBSD x86-64",
+      "fr": "OpenBSD x86-64",
       "nl": "OpenBSD x86-64",
       "pl": "OpenBSD x86-64",
       "pt-br": "OpenBSD x86-64",
-      "es": "OpenBSD x86-64",
-      "fr": "OpenBSD x86-64",
       "xloc": [
         "default-mobile.handlebars->11->43",
         "default.handlebars->39->50"
@@ -41453,11 +41503,11 @@
     },
     {
       "en": "OpenWRT x86-64",
+      "es": "OpenWRT x86-64",
+      "fr": "OpenWRT x86-64",
       "nl": "OpenWRT x86-64",
       "pl": "OpenWRT x86-64",
       "pt-br": "OpenWRT x86-64",
-      "es": "OpenWRT x86-64",
-      "fr": "OpenWRT x86-64",
       "xloc": [
         "default-mobile.handlebars->11->42",
         "default.handlebars->39->49"
@@ -42989,6 +43039,7 @@
     },
     {
       "en": "Perform power off?",
+      "pl": "Czy wykonać wyłączenie?",
       "xloc": [
         "default-mobile.handlebars->11->338",
         "default.handlebars->39->939"
@@ -42996,6 +43047,7 @@
     },
     {
       "en": "Perform power on?",
+      "pl": "Czy wykonać uruchomienie?",
       "xloc": [
         "default-mobile.handlebars->11->340",
         "default.handlebars->39->941"
@@ -43679,12 +43731,14 @@
     },
     {
       "en": "Port Name Sync",
+      "pl": "Synchronizacja Nazwy Portu",
       "xloc": [
         "default.handlebars->39->1794"
       ]
     },
     {
       "en": "Port Number",
+      "pl": "Numer Portu",
       "xloc": [
         "default-mobile.handlebars->11->273",
         "default.handlebars->39->757"
@@ -43692,6 +43746,7 @@
     },
     {
       "en": "Port Type",
+      "pl": "Typ Portu",
       "xloc": [
         "default-mobile.handlebars->11->274",
         "default.handlebars->39->758"
@@ -43836,6 +43891,7 @@
     },
     {
       "en": "Power Operation",
+      "pl": "Operacja Zasilania",
       "xloc": [
         "default-mobile.handlebars->11->337",
         "default-mobile.handlebars->11->339",
@@ -43945,6 +44001,7 @@
     },
     {
       "en": "Power switch is ready for use.",
+      "pl": "Włącznik jest gotowy do użycia.",
       "xloc": [
         "default.handlebars->39->589"
       ]
@@ -44962,7 +45019,7 @@
       "ja": "RDP",
       "ko": "RDP",
       "nl": "RDP",
-      "pl": "PROW",
+      "pl": "RDP",
       "pt": "RDP",
       "pt-br": "RDP",
       "ru": "RDP",
@@ -45015,7 +45072,7 @@
       "ja": "RDPポート",
       "ko": "RDP 포트",
       "nl": "RDP poort",
-      "pl": "Port PROW",
+      "pl": "Port RDP",
       "pt": "Porta RDP",
       "pt-br": "Porta RDP",
       "ru": "Порт RDP",
@@ -45059,7 +45116,7 @@
       "ja": "RDP2",
       "ko": "RDP2",
       "nl": "RDP2",
-      "pl": "PROW2",
+      "pl": "RDP2",
       "pt": "RDP2",
       "pt-br": "RDP2",
       "ru": "RDP2",
@@ -45634,7 +45691,7 @@
       "ja": "リレー",
       "ko": "전달(Relay)",
       "nl": "Relay",
-      "pl": "Przekazywanie",
+      "pl": "Przekierowanie",
       "pt": "Retransmissão",
       "pt-br": "Retransmissão",
       "ru": "Ретранслятор",
@@ -45661,7 +45718,7 @@
       "ja": "リレー数",
       "ko": "전달(Relay) 카운트",
       "nl": "Relay geteld",
-      "pl": "Licznik Przekazywania",
+      "pl": "Licznik Przekierowań",
       "pt": "Contagem de relés",
       "pt-br": "Contador de Retransmissão",
       "ru": "Число ретрансляций",
@@ -45705,7 +45762,7 @@
       "ja": "リレーエラー",
       "ko": "전달(Relay) 오류",
       "nl": "Doorstuurfout",
-      "pl": "Błędy Przekazywania",
+      "pl": "Błędy Przekierowań",
       "pt": "Erros de retransmissão",
       "pt-br": "Erros de retransmissão",
       "ru": "Ошибки ретранслятора",
@@ -45729,7 +45786,7 @@
       "ja": "リレーマッピング",
       "ko": "릴레이 매핑",
       "nl": "Doorstuurtoewijzing",
-      "pl": "Mapy Przekazywania",
+      "pl": "Mapowanie Przekierowania",
       "pt": "Mapeamento de retransmissão",
       "pt-br": "Mapeamento de retransmissão",
       "ru": "Отображение реле",
@@ -45749,7 +45806,7 @@
       "ja": "中継セッション",
       "ko": "전달(Relay) 세션",
       "nl": "Doorstuur Sessies",
-      "pl": "Przekazywanie Sesji",
+      "pl": "Przekierowanie Sesji",
       "pt": "Retransmissão de sessão ",
       "pt-br": "Sessões de retransmissão",
       "ru": "Сессии ретранслятора",
@@ -45774,7 +45831,7 @@
       "ja": "中継窓口",
       "ko": "전달자(Relay Teller)",
       "nl": "Relay teller",
-      "pl": "Operator Przekazywania",
+      "pl": "Operator Przekierowania",
       "pt": "Caixa de retransmissão",
       "pt-br": "Relay teller",
       "ru": "Реле-кассир",
@@ -47541,9 +47598,10 @@
     },
     {
       "en": "Removed account display name.",
-      "nl": "Weergavenaam account verwijderd.",
       "es": "Eliminado el nombre visible de la cuenta.",
       "fr": "Suppression du nom du compte",
+      "nl": "Weergavenaam account verwijderd.",
+      "pl": "Usunięto nazwę wyświetlania konta.",
       "xloc": [
         "default.handlebars->39->2233"
       ]
@@ -47942,17 +48000,18 @@
     },
     {
       "en": "Report returned no entires.",
-      "nl": "Rapport heeft geen vermeldingen geretourneerd.",
       "es": "El informe no ha devuelto contenido.",
       "fr": "Le rapport n'a renvoyé aucune données.",
+      "nl": "Rapport heeft geen vermeldingen geretourneerd.",
+      "pl": "Raport zwrócił brak wpisów.",
       "xloc": [
         "default.handlebars->39->2678"
       ]
     },
     {
-      "en": "Report.csv",
       "cs": "Report.csv",
       "de": "Report.csv",
+      "en": "Report.csv",
       "es": "Report.csv",
       "fi": "Report.csv",
       "fr": "Report.csv",
@@ -47970,9 +48029,10 @@
     },
     {
       "en": "Reports",
-      "nl": "Rapport",
       "es": "Informes",
       "fr": "Rapports",
+      "nl": "Rapport",
+      "pl": "Raporty",
       "xloc": [
         "default.handlebars->container->topbar->1->1->EventsSubMenuSpan->EventsSubMenu->1->0->EventsReport"
       ]
@@ -48075,7 +48135,7 @@
       "ja": "詳細をリクエストしています...",
       "ko": "세부정보 요청 중...",
       "nl": "Details opvragen...",
-      "pl": "Żądanie szczegółów...",
+      "pl": "Wysłano żądanie o szczegóły...",
       "pt": "Solicitando detalhes ...",
       "pt-br": "Solicitando detalhes ...",
       "ru": "Запрос подробностей ...",
@@ -48501,7 +48561,7 @@
       "ja": "バックアップを使用してサーバーを復元します。<span style = color：red>これにより既存のサーバーデータが削除されます</ span>。あなたが何をしているかを知っている場合にのみ、これを行ってください。",
       "ko": "<span style = color : red>기존 서버 데이터를 삭제합니다.</ span> 기존에 백업된 자료를 사용하여 서버를 복원합니다. 어떤 결과가 일어날 지 알고 있는 경우에만 이 작업을 수행하십시오.",
       "nl": "Herstel de server met een back-up, <span style = color: red> hiermee worden de bestaande servergegevens verwijderd </span>. Doe dit alleen als je weet wat je doet.",
-      "pl": "Przywróć serwer przy użyciu kopii zapasowej, <span style=color:red>spowoduje to usunięcie istniejących danych serwera</span>. Zrób to tylko wtedy, gdy wiesz co robisz.",
+      "pl": "Przywróć serwer przy użyciu kopii zapasowej, <span style=color:red>spowoduje to usunięcie istniejących danych serwera</span>. Wykonaj to tylko wtedy, kiedy wiesz co robisz.",
       "pt": "Restaurar o servidor usando um backup,  <span style=color:red>isso excluirá os dados existentes do servidor</span>. Faça isso apenas se você souber o que está fazendo.",
       "pt-br": "Restaure o servidor usando um backup, <span style = color: red> isso irá deletar os dados existentes do servidor </span>. Só faça isso se souber o que está fazendo.",
       "ru": "Восстановить сервер из резервной копии, <span style = color:red> это удалит существующие данные сервера </span>. Продолжайте дальше только если знаете, что делаете.",
@@ -49040,10 +49100,10 @@
     },
     {
       "en": "Running",
-      "nl": "lopende",
-      "pl": "Bieganie",
       "es": "Ejecutando",
       "fr": "En cours d'exécution",
+      "nl": "lopende",
+      "pl": "Uruchomiony",
       "xloc": [
         "default.handlebars->39->1211",
         "default.handlebars->39->1215"
@@ -49337,10 +49397,10 @@
     },
     {
       "en": "SMS gateway has limited use in LAN mode.",
-      "nl": "SMS gateway heeft beperkte mogelijkheden in LAN modus.",
-      "pl": "Bramka SMS ma ograniczone zastosowanie w trybie LAN.",
       "es": "La puerta de enlace SMS tiene un uso limitado en modo LAN.",
       "fr": "La passerelle SMS est bridée en mode LAN.",
+      "nl": "SMS gateway heeft beperkte mogelijkheden in LAN modus.",
+      "pl": "Bramka SMS ma ograniczone zastosowanie w trybie LAN.",
       "xloc": [
         "default.handlebars->39->97"
       ]
@@ -49441,10 +49501,10 @@
     },
     {
       "en": "SMTP server has limited use in LAN mode.",
-      "nl": "SMTP server heeft beperkte mogelijkheden in LAN modus.",
-      "pl": "Serwer SMTP ma ograniczone wykorzystanie w trybie LAN.",
       "es": "El servidor SMTP tiene un uso limitado en modo LAN.",
       "fr": "Le serveur SMTP est bridé en mode LAN.",
+      "nl": "SMTP server heeft beperkte mogelijkheden in LAN modus.",
+      "pl": "Serwer SMTP ma ograniczone wykorzystanie w trybie LAN.",
       "xloc": [
         "default.handlebars->39->96"
       ]
@@ -50155,10 +50215,10 @@
     },
     {
       "en": "Secret",
-      "nl": "Geheim",
-      "pl": "Sekret",
       "es": "Secreto",
       "fr": "Secret",
+      "nl": "Geheim",
+      "pl": "Sekret",
       "xloc": [
         "default.handlebars->39->191"
       ]
@@ -50381,9 +50441,10 @@
     },
     {
       "en": "Select Date & Time...",
-      "nl": "Selecteer datum & Tijd...",
       "es": "Seleccionad fecha y hora...",
       "fr": "Sélectionner la date et l'heure",
+      "nl": "Selecteer datum & Tijd...",
+      "pl": "Wybierz Datę i Czas...",
       "xloc": [
         "default.handlebars->39->1035",
         "default.handlebars->39->2666"
@@ -51124,10 +51185,10 @@
     },
     {
       "en": "SendGrid server has limited use in LAN mode.",
-      "nl": "SendGrid server heeft beperkte mogelijkeden LAN modus.",
-      "pl": "Serwer SendGrid ma ograniczone zastosowanie w trybie LAN.",
       "es": "El servidor SendGrid tiene un uso limitado en modo LAN.",
       "fr": "Le serveur SendGrid a une utilisation limitée en mode LAN.",
+      "nl": "SendGrid server heeft beperkte mogelijkeden LAN modus.",
+      "pl": "Serwer SendGrid ma ograniczone zastosowanie w trybie LAN.",
       "xloc": [
         "default.handlebars->39->95"
       ]
@@ -51259,7 +51320,7 @@
       "ja": "サーバーバックアップ",
       "ko": "서버 백업",
       "nl": "Server Back-up",
-      "pl": "Kopia Zapasowa Serwera",
+      "pl": "Kopia Zapasowa Danych Serwera",
       "pt": "Backup do servidor",
       "pt-br": "Backup do servidor",
       "ru": "Резервное копирование сервера",
@@ -51504,7 +51565,7 @@
       "ja": "サーバーの復元",
       "ko": "서버 복원",
       "nl": "Server herstellen",
-      "pl": "Przywracanie Serwera",
+      "pl": "Przywracanie Danych Serwera z Kopii Zapasowej",
       "pt": "Restauração do servidor",
       "pt-br": "Restauração do servidor",
       "ru": "Восстановление сервера",
@@ -52175,9 +52236,10 @@
     },
     {
       "en": "Session timeout.",
-      "nl": "Sessie timeout.",
       "es": "La sesión ha expirado.",
       "fr": "Durée de la session.",
+      "nl": "Sessie timeout.",
+      "pl": "Przekroczony czas Sesji.",
       "xloc": [
         "ssh.handlebars->3->20"
       ]
@@ -52234,10 +52296,10 @@
     },
     {
       "en": "Set Clipboard",
-      "nl": "Klembord instellen",
-      "pl": "Ustaw schowek",
       "es": "Asignar portapapeles",
       "fr": "Mettre dans le presse-papier",
+      "nl": "Klembord instellen",
+      "pl": "Ustaw schowek",
       "xloc": [
         "default.handlebars->39->1204"
       ]
@@ -52606,6 +52668,7 @@
     {
       "en": "Share the device with a guest",
       "nl": "Deel het apparaat met een gast",
+      "pl": "Współdziel to urządzenie z gościem",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -52938,9 +53001,10 @@
     },
     {
       "en": "Show Guest Name",
-      "nl": "Toon gasten naam",
       "es": "Mostrar nombre de invitado",
-      "fr": "Montrer le nom de l'invité"
+      "fr": "Montrer le nom de l'invité",
+      "nl": "Toon gasten naam",
+      "pl": "Pokaż Nazwę Gościa"
     },
     {
       "cs": "Zobrazit nápovědu",
@@ -53040,9 +53104,10 @@
     },
     {
       "en": "Show Traffic",
-      "nl": "Toon verkeer",
       "es": "Mostrar tráfico",
       "fr": "Montrer le traffic",
+      "nl": "Toon verkeer",
+      "pl": "Pokaż Ruch",
       "xloc": [
         "default.handlebars->39->2667"
       ]
@@ -55491,7 +55556,7 @@
       "ja": "停止",
       "ko": "중지됨",
       "nl": "Gestopt",
-      "pl": "Zatrzymane",
+      "pl": "Zatrzymany",
       "pt": "Parado",
       "pt-br": "Parado",
       "ru": "Остановлен",
@@ -55515,7 +55580,7 @@
       "ja": "停止。",
       "ko": "중지되었습니다.",
       "nl": "Gestopt.",
-      "pl": "Zatrzymane.",
+      "pl": "Zatrzymany.",
       "pt": "Parado.",
       "pt-br": "Parado.",
       "ru": "Остановился.",
@@ -55916,6 +55981,7 @@
     },
     {
       "en": "Switch",
+      "pl": "Przełącz",
       "xloc": [
         "default-mobile.handlebars->11->247",
         "default-mobile.handlebars->11->304",
@@ -55950,6 +56016,7 @@
     },
     {
       "en": "Switch port connected",
+      "pl": "Przełącz połączony port",
       "xloc": [
         "default.handlebars->39->901",
         "default.handlebars->39->902"
@@ -55957,6 +56024,7 @@
     },
     {
       "en": "Switch port is ready for use.",
+      "pl": "Przełącz port na gotowy do użycia.",
       "xloc": [
         "default.handlebars->39->348"
       ]
@@ -55987,6 +56055,7 @@
     },
     {
       "en": "Sync server device name to port name",
+      "pl": "Synchronizuj nazwę urządzenia serwera na nazwę portu",
       "xloc": [
         "default.handlebars->39->1923"
       ]
@@ -56821,6 +56890,7 @@
     },
     {
       "en": "The device is powered off",
+      "pl": "To urządzenie jest wyłączone",
       "xloc": [
         "default-mobile.handlebars->11->246",
         "default.handlebars->39->588"
@@ -56853,9 +56923,10 @@
     },
     {
       "en": "The following devices have changed their connection state.",
-      "nl": "De volgende apparaten hebben hun verbindingsstatus gewijzigd.",
       "es": "Los siguientes dispositivos han cambiado su estado de conexión.",
       "fr": "Ces appareils ont changé leur statut de connexion :",
+      "nl": "De volgende apparaten hebben hun verbindingsstatus gewijzigd.",
+      "pl": "Przedstawione urządzenia zmieniły stan połączenia.",
       "xloc": [
         "device-notify.html->2->3->1",
         "device-notify.txt"
@@ -58096,18 +58167,20 @@
     },
     {
       "en": "To unsubscribe,",
-      "nl": "Uitschrijven,",
       "es": "Para darse de baja,",
       "fr": "Pour se désinscrire,",
+      "nl": "Uitschrijven,",
+      "pl": "By się wypisać.",
       "xloc": [
         "device-notify.html->2->9->1"
       ]
     },
     {
       "en": "To unsubscribe, load this link within 1 hour of getting this message: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
-      "nl": "Om je af te melden, open je deze link binnen 1 uur nadat je dit bericht hebt ontvangen: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "es": "Para darse de baja, abrir este enlace antes de 1 hora desde la recepción de este mensaje: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "fr": "Pour se désinscrire, chargez le lien suivant (valable une heure à réception de ce message) : [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
+      "nl": "Om je af te melden, open je deze link binnen 1 uur nadat je dit bericht hebt ontvangen: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
+      "pl": "By się wypisać, załaduj ten link w ciągu 1 godziny od otrzymania wiadomości: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "xloc": [
         "device-notify.txt"
       ]
@@ -58926,6 +58999,7 @@
     },
     {
       "en": "Turn off",
+      "pl": "Wyłącz",
       "xloc": [
         "default-mobile.handlebars->11->324",
         "default-mobile.handlebars->11->325",
@@ -58935,6 +59009,7 @@
     },
     {
       "en": "Turn on",
+      "pl": "Włącz",
       "xloc": [
         "default-mobile.handlebars->11->326",
         "default-mobile.handlebars->11->327",
@@ -59125,7 +59200,7 @@
       "ja": "UDPリレー",
       "ko": "UDP 릴레이",
       "nl": "UDP relais",
-      "pl": "UDP przekazywanie",
+      "pl": "Przekierowanie UDP",
       "pt": "Retransmissão UDP",
       "pt-br": "Retransmissão UDP",
       "ru": "UDP реле",
@@ -59511,30 +59586,30 @@
     },
     {
       "en": "Unable to load CloudFlare trusted proxy IPv6 address list.",
-      "nl": "Kan CloudFlare vertrouwde proxy IPv6 adreslijst niet laden.",
-      "pl": "Nie można załadować listy adresów IPv6 zaufanego serwera proxy CloudFlare.",
       "es": "No se puede cargar la lista de direcciones IPv6 de proxy de confianza Cloudfare.",
       "fr": "Impossible de charger la liste d'adresses IPv6 du proxy de confiance CloudFlare.",
+      "nl": "Kan CloudFlare vertrouwde proxy IPv6 adreslijst niet laden.",
+      "pl": "Nie można załadować listy adresów IPv6 zaufanego serwera proxy CloudFlare.",
       "xloc": [
         "default.handlebars->39->94"
       ]
     },
     {
       "en": "Unable to load Intel AMT TLS root certificate for default domain.",
-      "nl": "Kan Intel AMT TLS rootcertificaat voor standaarddomein niet laden.",
-      "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny domyślnej.",
       "es": "No se puede cargar el certificado raíz TLS Intel AMT para el dominio por defecto.",
       "fr": "Impossible de charger le certificat racine Intel AMT TLS pour le domaine par défaut.",
+      "nl": "Kan Intel AMT TLS rootcertificaat voor standaarddomein niet laden.",
+      "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny domyślnej.",
       "xloc": [
         "default.handlebars->39->83"
       ]
     },
     {
       "en": "Unable to load Intel AMT TLS root certificate for domain {0}.",
-      "nl": "Kan Intel AMT TLS rootcertificaat voor domein {0} niet laden.",
-      "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny {0}.",
       "es": "No se puede cargar el certificado raíz TLS Intel AMT para el dominio {0}.",
       "fr": "Impossible de charger le certificat racine Intel AMT TLS pour le domaine {0}.",
+      "nl": "Kan Intel AMT TLS rootcertificaat voor domein {0} niet laden.",
+      "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny {0}.",
       "xloc": [
         "default.handlebars->39->84"
       ]
@@ -59659,10 +59734,10 @@
     },
     {
       "en": "Unable to setup Let's Encrypt module.",
-      "nl": "Kan de Let's Encrypt module niet instellen.",
-      "pl": "Nie można skonfigurować modułu Let's Encrypt.",
       "es": "No se puede configurar el módulo Let's Encrypt.",
       "fr": "Impossible de configurer le module Let's Encrypt.",
+      "nl": "Kan de Let's Encrypt module niet instellen.",
+      "pl": "Nie można skonfigurować modułu Let's Encrypt.",
       "xloc": [
         "default.handlebars->39->91"
       ]
@@ -59993,9 +60068,10 @@
     },
     {
       "en": "Unknown User",
-      "nl": "Onbekende gebruiker",
       "es": "Usuario desconocido",
       "fr": "Utilisateur inconnu",
+      "nl": "Onbekende gebruiker",
+      "pl": "Nieznany Użytkownik",
       "xloc": [
         "default.handlebars->39->2695",
         "default.handlebars->39->2700"
@@ -60151,10 +60227,10 @@
     },
     {
       "en": "Unrecognized configuration option \\\"{0}\\\".",
-      "nl": "Niet herkende configuratie instelling \\\"{0}\\\".",
-      "pl": "Nierozpoznana opcja konfiguracji \\\"{0}\\\".",
       "es": "Opción de configuración desconocida \\\"{0}\\\".",
       "fr": "Option de configuration non recnonnue \\\"{0}\\\".",
+      "nl": "Niet herkende configuratie instelling \\\"{0}\\\".",
+      "pl": "Nierozpoznana opcja konfiguracji \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->81"
       ]
@@ -61489,9 +61565,10 @@
     },
     {
       "en": "User Traffic Usage",
-      "nl": "Gebruik van gebruikersverkeer",
       "es": "Uso de tráfico de usuario",
       "fr": "Utilisation du traffic utilisateur",
+      "nl": "Gebruik van gebruikersverkeer",
+      "pl": "Wykorzystanie Pasma przez Użytkownika",
       "xloc": [
         "default.handlebars->39->2652"
       ]
@@ -61766,9 +61843,10 @@
     },
     {
       "en": "User notifications changed",
-      "nl": "Gebruikersmeldingen gewijzigd",
       "es": "Han cambiado las notificaciones del usuario",
       "fr": "Notifications aux utilisateurs changés",
+      "nl": "Gebruikersmeldingen gewijzigd",
+      "pl": "Powiadomienia użytkownika zmieniono",
       "xloc": [
         "default.handlebars->39->2234"
       ]
@@ -63276,9 +63354,10 @@
     },
     {
       "en": "Web Page Notifications",
-      "nl": "Webpagina meldingen",
       "es": "Notificaciones de página web",
       "fr": "Notifications de pages Web",
+      "nl": "Webpagina meldingen",
+      "pl": "Powiadomienia Strony Web",
       "xloc": [
         "default.handlebars->39->2028",
         "default.handlebars->39->942"
@@ -63286,6 +63365,7 @@
     },
     {
       "en": "Web Power Switch 7",
+      "pl": "Przełącznik Zasilania Web 7",
       "xloc": [
         "default.handlebars->39->1733"
       ]
@@ -63413,9 +63493,10 @@
     },
     {
       "en": "Web-SFTP",
-      "nl": "Web-SFTP",
       "es": "Web-SFTP",
       "fr": "Web-SFTP",
+      "nl": "Web-SFTP",
+      "pl": "Web-SFTP",
       "xloc": [
         "default.handlebars->39->2688"
       ]
@@ -63516,10 +63597,10 @@
     },
     {
       "en": "WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2",
-      "nl": "WebSocket compressie is uitgeschakeld, deze functie werkt niet meer in NodeJS v11.11 tot v12.15 en v13.2",
-      "pl": "Kompresja WebSocket jest wyłączona, ta funkcja nie działa w NodeJS v11.11 do v12.15 i v13.2",
       "es": "Desactivada la compresión WebSocket, esta característica no funciona en NodeJS v11.11 a v12.15 y v13.2",
       "fr": "La compression de la WebSocket est désactivée. Cette fonctionnalité n'est plus disponible dans NodeJS v11.11 à v12.15 et v13.2",
+      "nl": "WebSocket compressie is uitgeschakeld, deze functie werkt niet meer in NodeJS v11.11 tot v12.15 en v13.2",
+      "pl": "Kompresja WebSocket jest wyłączona, ta funkcja nie działa w NodeJS v11.11 do v12.15 i v13.2",
       "xloc": [
         "default.handlebars->39->82"
       ]
@@ -65149,18 +65230,20 @@
     },
     {
       "en": "[[[CONNECTIONS]]]",
-      "nl": "[[[CONNECTIONS]]]",
       "es": "[[[CONNECTIONS]]]",
       "fr": "[[[CONNECTIONS]]]",
+      "nl": "[[[CONNECTIONS]]]",
+      "pl": "[[[CONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->5->3->0"
       ]
     },
     {
       "en": "[[[DISCONNECTIONS]]]",
-      "nl": "[[[DISCONNECTIONS]]]",
       "es": "[[[DISCONNECTIONS]]]",
       "fr": "[[[DISCONNECTIONS]]]",
+      "nl": "[[[DISCONNECTIONS]]]",
+      "pl": "[[[DISCONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->7->3->0"
       ]
@@ -65177,7 +65260,7 @@
       "ja": "[[[SERVERNAME]]]",
       "ko": "[[[SERVERNAME]]]",
       "nl": "[[[SERVERNAME]]]",
-      "pl": "[[[NAZWA SERWERA]]]",
+      "pl": "[[[SERVERNAME]]]",
       "pt": "[[[SERVERNAME]]]",
       "pt-br": "[[[NOME DO SERVIDOR]]]",
       "ru": "[[[SERVERNAME]]]",
@@ -65203,7 +65286,7 @@
       "ja": "[[[SERVERNAME]]] - アカウントの招待",
       "ko": "[[[SERVERNAME]]] - 계정 초대",
       "nl": "[[[SERVERNAME]]] - Account uitnodiging",
-      "pl": "[[[SERVERNAME]]] - Zaproszenie do założenia Konta",
+      "pl": "[[[SERVERNAME]]] - Zaproszenie Do Założenia Konta",
       "pt": "[[[SERVERNAME]]] - Convite para conta",
       "pt-br": "[[[SERVERNAME]]] - Convite para conta",
       "ru": "[[[SERVERNAME]]] - приглашение в аккаунт",
@@ -65229,7 +65312,7 @@
       "ja": "[[[SERVERNAME]]] - アカウントログイン",
       "ko": "[[[SERVERNAME]]] - 계정 로그인",
       "nl": "[[[SERVERNAME]]] - Inloggen account",
-      "pl": "[[[SERVERNAME]]] - Logowanie do Konta",
+      "pl": "[[[SERVERNAME]]] - Logowanie Do Konta",
       "pt": "[[[SERVERNAME]]] - Login da conta",
       "pt-br": "[[[SERVERNAME]]] - Login da conta",
       "ru": "[[[SERVERNAME]]] - Вход в аккаунт",
@@ -65294,9 +65377,10 @@
     },
     {
       "en": "[[[SERVERNAME]]] - Device Notification",
-      "nl": "[[[SERVERNAME]]] - Apparaatmelding",
       "es": "[[[SERVERNAME]]] - Notificación del dispositivo",
       "fr": "[[[SERVERNAME]]] - Notification de l'appareil",
+      "nl": "[[[SERVERNAME]]] - Apparaatmelding",
+      "pl": "[[[SERVERNAME]]] - Powiadomienia Urządzenia",
       "xloc": [
         "device-notify.html->0",
         "device-notify.html->2->1->1->0->1->1",
@@ -65390,7 +65474,7 @@
       "ja": "[[[USERNAME]]]",
       "ko": "[[[USERNAME]]]",
       "nl": "[[[USERNAME]]]",
-      "pl": "[[[NAZWA UŻYTKOWNIKA]]]",
+      "pl": "[[[USERNAME]]]",
       "pt": "[[[NOME DO USUÁRIO]]]",
       "pt-br": "[[[NOME DO USUÁRIO]]]",
       "ru": "[[[USERNAME]]]",
@@ -67595,6 +67679,7 @@
       "fr": "v",
       "it": "v",
       "nl": "v",
+      "pl": "v",
       "pt": "v",
       "pt-br": "v"
     },
@@ -67621,9 +67706,10 @@
     },
     {
       "en": "within 1 hour of getting this message.",
-      "nl": "binnen 1 uur na ontvangst van dit bericht.",
       "es": "en 1 hora desde la recepción de este mensaje.",
       "fr": "dans l'heure suivant la réception de ce message.",
+      "nl": "binnen 1 uur na ontvangst van dit bericht.",
+      "pl": "w ciągu 1 godziny od otrzymania wiadomości.",
       "xloc": [
         "device-notify.html->2->9->1"
       ]
@@ -67709,7 +67795,7 @@
       "ja": "{0}アシスタント",
       "ko": "{0} 어시스턴트",
       "nl": "{0} Assistant",
-      "pl": "{0} Asystant",
+      "pl": "{0} Asystent",
       "pt": "{0} assistente",
       "pt-br": "{0} Assistente",
       "ru": "{0} Ассистент",
@@ -68984,6 +69070,7 @@
       "ja": "↺",
       "ko": "↺",
       "nl": "↺",
+      "pl": "↺",
       "pt": "↺",
       "pt-br": "↺",
       "ru": "↺",
@@ -69003,6 +69090,7 @@
       "ja": "↻",
       "ko": "↻",
       "nl": "↻",
+      "pl": "↻",
       "pt": "↻",
       "pt-br": "↻",
       "ru": "↻",
@@ -69022,6 +69110,7 @@
       "ja": "⇲",
       "ko": "⇲",
       "nl": "⇲",
+      "pl": "⇲",
       "pt": "⇲",
       "pt-br": "⇲",
       "ru": "⇲",
@@ -69041,6 +69130,7 @@
       "it": "≡",
       "ja": "≡",
       "nl": "≡",
+      "pl": "≡",
       "pt": "≡",
       "pt-br": "≡",
       "ru": "≡"
@@ -69056,6 +69146,7 @@
       "ja": "◀",
       "ko": "◀",
       "nl": "◀",
+      "pl": "◀",
       "pt": "◀",
       "pt-br": "◀",
       "ru": "◀",
@@ -69077,6 +69168,7 @@
       "ja": "♦",
       "ko": "♦",
       "nl": "♦",
+      "pl": "♦",
       "pt": "♦",
       "pt-br": "♦",
       "ru": "♦",
@@ -69100,6 +69192,7 @@
       "ja": "✓",
       "ko": "✓",
       "nl": "✓",
+      "pl": "✓",
       "pt": "✓",
       "pt-br": "✓",
       "ru": "✓",
@@ -69138,6 +69231,7 @@
       "ja": "✖",
       "ko": "✖",
       "nl": "✖",
+      "pl": "✖",
       "pt": "✖",
       "pt-br": "✖",
       "ru": "✖",
@@ -69163,6 +69257,7 @@
       "ja": "✗",
       "ko": "✗",
       "nl": "✗",
+      "pl": "✗",
       "pt": "✗",
       "pt-br": "✗",
       "ru": "✗",
