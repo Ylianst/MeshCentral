@@ -883,7 +883,7 @@ function CreateWebPowerSwitch(parent, hostname, port, username, password) {
                 }
             });
         });
-        req.on('error', function (error) { console.log(error); setState(0); });
+        req.on('error', function (error) { setState(0); });
         req.on('timeout', function () { setState(0); });
         if (data) { req.write(data); }
         req.end();
