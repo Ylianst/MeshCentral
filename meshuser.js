@@ -2902,7 +2902,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (node.mtype == 4) {
                                 // Send out an event to perform turn off command on the port
                                 //var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['devport-operation', 'server-users', user._id]);
-                                var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'turnon', domain: domain.id, nolog: 1, portid: node.portid, porttype: node.porttype, portnum: node.portnum, meshid: node.meshid, mtype: node.mtype };
+                                const event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'turnon', domain: domain.id, portid: node.portid, porttype: node.porttype, portnum: node.portnum, meshid: node.meshid, mtype: node.mtype, msgid: 132, msg: "Turn on." };
                                 parent.parent.DispatchEvent([ 'devport-operation' ], obj, event);
                                 return;
                             }
@@ -3072,7 +3072,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (node.mtype == 4) {
                                     // Send out an event to perform turn off command on the port
                                     //var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['devport-operation', 'server-users', user._id]);
-                                    var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'turnoff', domain: domain.id, nolog: 1, portid: node.portid, porttype: node.porttype, portnum: node.portnum, meshid: node.meshid, mtype: node.mtype };
+                                    var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'turnoff', domain: domain.id, portid: node.portid, porttype: node.porttype, portnum: node.portnum, meshid: node.meshid, mtype: node.mtype, msgid: 133, msg: "Turn off." };
                                     parent.parent.DispatchEvent([ 'devport-operation' ], obj, event);
                                     return;
                                 }
