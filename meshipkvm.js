@@ -110,6 +110,19 @@ function CreateIPKVMManager(parent) {
             if (sender.firmwareVersion) { console.log('FirmwareVersion:', sender.firmwareVersion); }
         }
         */
+
+        if (state == 0) {
+            // Disconnect all nodes for this device group
+            for (var i in sender.ports) {
+                const port = sender.ports[i];
+                const nodeid = generateIpKvmNodeId(sender.meshid, port.PortId, sender.domainid);
+                if (obj.managedPorts[nodeid] != null) {
+                    parent.ClearConnectivityState(sender.meshid, nodeid, 1, null, null);
+                    delete obj.managedPorts[nodeid];
+                }
+            }
+        }
+
     }
 
     // Called when a KVM device changes state
@@ -343,6 +356,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
         if ((newState == 2) && (updateTimer == null)) { updateTimer = setInterval(obj.update, 10000); }
         if ((newState != 2) && (updateTimer != null)) { clearInterval(updateTimer); updateTimer = null; }
         if ((newState == 0) && (obj.started == true) && (retryTimer == null)) { retryTimer = setTimeout(connect, 20000); }
+        if (newState == 0) { obj.ports = []; obj.portCount = 0; obj.deviceCount = 0; }
     }
 
     function connect() {
@@ -753,6 +767,7 @@ function CreateWebPowerSwitch(parent, hostname, port, username, password) {
         obj.started = false;
         if (retryTimer != null) { clearTimeout(retryTimer); retryTimer = null; }
         setState(0);
+        obj.ports = [];
     }
 
     function setState(newState) {
@@ -762,10 +777,12 @@ function CreateWebPowerSwitch(parent, hostname, port, username, password) {
         if ((newState == 2) && (updateTimer == null)) { updateTimer = setInterval(obj.update, 10000); }
         if ((newState != 2) && (updateTimer != null)) { clearInterval(updateTimer); updateTimer = null; }
         if ((newState == 0) && (obj.started == true) && (retryTimer == null)) { retryTimer = setTimeout(connect, 20000); }
+        if (newState == 0) { obj.ports = []; obj.portCount = 0; }
     }
 
     function connect() {
         if (obj.state != 0) return;
+        if (retryTimer != null) { clearTimeout(retryTimer); retryTimer = null; }
         setState(1); // 1 = Connecting
         obj.update();
     }
@@ -891,11 +908,11 @@ function CreateWebPowerSwitch(parent, hostname, port, username, password) {
 
     function parseChallenge(header) {
         header = header.replace('qop="auth,auth-int"', 'qop="auth"'); // We don't support auth-int yet, easiest way to get rid of it.
-        var prefix = 'Digest ';
-        var challenge = header.substr(header.indexOf(prefix) + prefix.length);
-        var parts = challenge.split(',');
-        var length = parts.length;
-        var params = {};
+        const prefix = 'Digest ';
+        const challenge = header.substr(header.indexOf(prefix) + prefix.length);
+        const parts = challenge.split(',');
+        const length = parts.length;
+        const params = {};
         for (var i = 0; i < length; i++) {
             var part = parts[i].match(/^\s*?([a-zA-Z0-0]+)="(.*)"\s*?$/);
             if (part && part.length > 2) { params[part[1]] = part[2]; }
@@ -904,7 +921,7 @@ function CreateWebPowerSwitch(parent, hostname, port, username, password) {
     }
 
     function renderDigest(params) {
-        var parts = [];
+        const parts = [];
         for (var i in params) { parts.push(i + '="' + params[i] + '"'); }
         return 'Digest ' + parts.join(', ');
     }
