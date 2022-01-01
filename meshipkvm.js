@@ -654,7 +654,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                 reqinfo.kvmport.wsClient.on('open', function () {
                     parent.parent.debug('relay', 'IPKVM: Relay websocket open');
                     this.wsBrowser.on('message', function (data) {
-                        //console.log('KVM browser data', data, data.toString());
+                        //console.log('KVM browser data', data.toString('hex'), data.toString('utf8'));
 
                         // Replace the authentication command that used the dummy cookie with a command that has the correct hash
                         if ((this.xAuthNonce != null) && (this.xAuthNonce != 1) && (data.length == 67) && (data[0] == 0x21) && (data[1] == 0x41)) {
@@ -664,6 +664,19 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                             data[1] = 0x41; // Length
                             hash.copy(data, 2); // Hash
                             this.xAuthNonce = 1;
+                        }
+
+                        // Check the port name
+                        if ((data[0] == 0x89) && (data.length > 4)) {
+                            const portNameLen = (data[2] << 8) + data[3];
+                            if (data.length == (4 + portNameLen)) {
+                                const portName = data.slice(4).toString('utf8');
+                                if (reqinfo.kvmport.portid != portName) {
+                                    // The browser required an unexpected port for remote control, disconnect not.
+                                    try { this._socket.close(); } catch (ex) { }
+                                    return;
+                                }
+                            }
                         }
 
                         try { this.wsClient.kvmport.bytesOut += data.length; } catch (ex) { }
@@ -694,7 +707,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
                     this.wsBrowser._socket.resume();
                 });
                 reqinfo.kvmport.wsClient.on('message', function (data) { // Make sure to handle flow control.
-                    //console.log('KVM switch data', data, data.length, data.toString());
+                    //console.log('KVM switch data', data, data.length, data.toString('hex'));
 
                     // If the data start with 0x21 and 0x41 followed by {SHA256}, store the authenticate nonce
                     if ((this.wsBrowser.xAuthNonce == null) && (data.length == 67) && (data[0] == 0x21) && (data[1] == 0x41) && (data[2] == 0x7b) && (data[3] == 0x53) && (data[4] == 0x48)) {
