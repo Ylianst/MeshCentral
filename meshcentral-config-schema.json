@@ -240,6 +240,17 @@
             "coolofftime": { "type": "integer", "default": null, "description": "Additional time in minute that login attempts will be denied once the invalid login limit is reached." }
           }
         },
+        "maxInvalid2fa": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "This section described a policy for how many times an IP address is allowed to attempt to perform two-factor authenticaiton (2FA) incorrectly. By default it's 10 times in 10 minutes, but this can be changed here.",
+          "properties": {
+            "exclude": { "type": "string", "default": null, "description": "Ranges of IP addresses that are not subject to invalid 2FA limitations. For example: 192.168.1.0/24,172.16.0.1"},
+            "time": { "type": "integer", "default": 10, "description": "Time in minutes over which the a maximum number of invalid 2FA attempts is allowed from an IP address." },
+            "count": { "type": "integer", "default": 10, "description": "Maximum number of invalid 2FA attempts from an IP address in the time period." },
+            "coolofftime": { "type": "integer", "default": null, "description": "Additional time in minute that 2FA attempts will be denied once the invalid 2FA limit is reached." }
+          }
+        },
         "amtProvisioningServer": {
           "type": "object",
           "additionalProperties": false,

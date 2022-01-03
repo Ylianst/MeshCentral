@@ -113,6 +113,12 @@
       "count": 10,
       "coolofftime": 10
     },
+    "__maxInvalid2fa": "Time in minutes, max amount of bad two-factor authentication from a source IP in the time before 2FA's are rejected.",
+    "_maxInvalid2fa": {
+      "time": 10,
+      "count": 10,
+      "coolofftime": 10
+    },
     "watchDog": { "interval": 100, "timeout": 400 },
     "_AmtProvisioningServer": {
       "port": 9971,
