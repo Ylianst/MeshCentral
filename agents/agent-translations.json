@@ -568,5 +568,35 @@
     "pressok": "Naciśnij OK by się rozłączyć",
     "sudo": "Proszę spróbować ponownie z sudo.",
     "ctrlc": "Naciśnij Ctrl-C by wyjść."
+  },
+  "da": {
+    "agent": "Agent",
+    "agentVersion": "Ny agentversion",
+    "group": "Enhedsgruppe",
+    "url": "Server URL",
+    "meshName": "Mesh Navn",
+    "meshId": "Mesh Identifier",
+    "serverId": "Serveridentifikator",
+    "setup": "Opsætning",
+    "update": "Opdatering",
+    "install": "Installér",
+    "uninstall": "Afinstaller",
+    "connect": "Forbind",
+    "disconnect": "Afbryd",
+    "cancel": "Annuller",
+    "pressok": "Tryk på OK for at afbryde",
+    "elevation": "Elleverede tilladelser er påkrævet for at installere/afinstallere agenten.",
+    "sudo": "Prøv venligst igen med sudo.",
+    "ctrlc": "Tryk på Ctrl-C for at afslutte.",
+    "commands": "Du kan køre tekstversionen fra kommandolinjen med følgende kommando(er)",
+    "graphicalerror": "Den grafiske version af dette installationsprogram kan ikke køre på dette system",
+    "zenity": "Prøv at installere/opdatere Zenity, og kør igen",
+    "status": [
+      "IKKE INSTALLERET",
+      "KØRER",
+      "KØRER IKKE"
+    ],
+    "statusDescription": "Aktuel agentstatus",
+    "description": "Klik på knapperne nedenfor for at installere eller afinstallere mesh-agenten. Når den er installeret, kører denne software i baggrunden, og tillader at denne computer kan administreres og kontrolleres af en fjernadministrator."
   }
 }
