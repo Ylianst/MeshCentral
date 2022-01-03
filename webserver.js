@@ -1097,6 +1097,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (result == false) {
                             var randomWaitTime = 0;
 
+                            // Check if 2FA is allowed for this IP address
+                            if (obj.checkAllow2Fa(req) == false) {
+                                // Wait and redirect the user
+                                setTimeout(function () {
+                                    req.session.messageid = 114; // IP address blocked, try again later.
+                                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                                }, 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095));
+                                return;
+                            }
+
                             // 2-step auth is required, but the token is not present or not valid.
                             if ((req.body.token != null) || (req.body.hwtoken != null)) {
                                 randomWaitTime = 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095); // This is a fail, wait a random time. 2 to 6 seconds.
@@ -1105,7 +1115,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 parent.debug('web', 'handleLoginRequest: invalid 2FA token');
                                 const ua = getUserAgentInfo(req);
                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { action: 'authfail', username: user.name, userid: user._id, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp, msgid: 108, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                                obj.setbadLogin(req);
+                                obj.setbad2Fa(req);
                             } else {
                                 parent.debug('web', 'handleLoginRequest: 2FA token required');
                             }
@@ -1599,6 +1609,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
                                 if (result == false) {
                                     if (i == 0) {
+
+                                        // Check if 2FA is allowed for this IP address
+                                        if (obj.checkAllow2Fa(req) == false) {
+                                            // Wait and redirect the user
+                                            setTimeout(function () {
+                                                req.session.messageid = 114; // IP address blocked, try again later.
+                                                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                                            }, 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095));
+                                            return;
+                                        }
+
                                         // 2-step auth is required, but the token is not present or not valid.
                                         parent.debug('web', 'handleResetAccountRequest: Invalid 2FA token, try again');
                                         if ((req.body.token != null) || (req.body.hwtoken != null)) {
@@ -1614,7 +1635,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                                 req.session.messageid = 108; // Invalid token, try again.
                                                 const ua = getUserAgentInfo(req);
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { action: 'authfail', username: user.name, userid: user._id, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp, msgid: 108, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                                                obj.setbadLogin(req);
+                                                obj.setbad2Fa(req);
                                             }
                                         }
                                         req.session.loginmode = 5;
@@ -7826,6 +7847,64 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
         obj.badLoginTableLastClean = 0;
+    }
+
+    // This is the invalid 2FA throttling code
+    obj.bad2faTable = {};
+    obj.bad2faTableLastClean = 0;
+    if (parent.config.settings == null) { parent.config.settings = {}; }
+    if (parent.config.settings.maxinvalid2fa !== false) {
+        if (typeof parent.config.settings.maxinvalid2fa != 'object') { parent.config.settings.maxinvalid2fa = { time: 10, count: 10 }; }
+        if (typeof parent.config.settings.maxinvalid2fa.time != 'number') { parent.config.settings.maxinvalid2fa.time = 10; }
+        if (typeof parent.config.settings.maxinvalid2fa.count != 'number') { parent.config.settings.maxinvalid2fa.count = 10; }
+        if ((typeof parent.config.settings.maxinvalid2fa.coolofftime != 'number') || (parent.config.settings.maxinvalid2fa.coolofftime < 1)) { parent.config.settings.maxinvalid2fa.coolofftime = null; }
+    }
+    obj.setbad2Fa = function (ip) { // Set an IP address that just did a bad 2FA request
+        if (parent.config.settings.maxinvalid2fa === false) return;
+        if (typeof ip == 'object') { ip = ip.clientIp; }
+        if (parent.config.settings.maxinvalid2fa != null) {
+            if (typeof parent.config.settings.maxinvalid2fa.exclude == 'string') {
+                const excludeSplit = parent.config.settings.maxinvalid2fa.exclude.split(',');
+                for (var i in excludeSplit) { if (require('ipcheck').match(ip, excludeSplit[i])) return; }
+            } else if (Array.isArray(parent.config.settings.maxinvalid2fa.exclude)) {
+                for (var i in parent.config.settings.maxinvalid2fa.exclude) { if (require('ipcheck').match(ip, parent.config.settings.maxinvalid2fa.exclude[i])) return; }
+            }
+        }
+        var splitip = ip.split('.');
+        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); }
+        if (++obj.bad2faTableLastClean > 100) { obj.cleanBad2faTable(); }
+        if (typeof obj.bad2faTable[ip] == 'number') { if (obj.bad2faTable[ip] < Date.now()) { delete obj.bad2faTable[ip]; } else { return; } }  // Check cooloff period
+        if (obj.bad2faTable[ip] == null) { obj.bad2faTable[ip] = [Date.now()]; } else { obj.bad2faTable[ip].push(Date.now()); }
+        if ((obj.bad2faTable[ip].length >= parent.config.settings.maxinvalid2fa.count) && (parent.config.settings.maxinvalid2fa.coolofftime != null)) {
+            obj.bad2faTable[ip] = Date.now() + (parent.config.settings.maxinvalid2fa.coolofftime * 60000); // Move to cooloff period
+        }
+    }
+    obj.checkAllow2Fa = function (ip) { // Check if an IP address is allowed to perform 2FA
+        if (parent.config.settings.maxinvalid2fa === false) return true;
+        if (typeof ip == 'object') { ip = ip.clientIp; }
+        var splitip = ip.split('.');
+        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first 
+        var cutoffTime = Date.now() - (parent.config.settings.maxinvalid2fa.time * 60000); // Time in minutes
+        var ipTable = obj.bad2faTable[ip];
+        if (ipTable == null) return true;
+        if (typeof ipTable == 'number') { if (obj.bad2faTable[ip] < Date.now()) { delete obj.bad2faTable[ip]; } else { return false; } } // Check cooloff period
+        while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
+        if (ipTable.length == 0) { delete obj.bad2faTable[ip]; return true; }
+        return (ipTable.length < parent.config.settings.maxinvalid2fa.count); // No more than x bad 2FAs in x minutes
+    }
+    obj.cleanBad2faTable = function () { // Clean up the IP address 2FA blockage table, we do this occasionaly.
+        if (parent.config.settings.maxinvalid2fa === false) return;
+        var cutoffTime = Date.now() - (parent.config.settings.maxinvalid2fa.time * 60000); // Time in minutes
+        for (var ip in obj.bad2faTable) {
+            var ipTable = obj.bad2faTable[ip];
+            if (typeof ipTable == 'number') {
+                if (obj.bad2faTable[ip] < Date.now()) { delete obj.bad2faTable[ip]; } // Check cooloff period
+            } else {
+                while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
+                if (ipTable.length == 0) { delete obj.bad2faTable[ip]; }
+            }
+        }
+        obj.bad2faTableLastClean = 0;
     }
 
     // Hold a websocket until additional arguments are provided within the socket.

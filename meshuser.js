@@ -5370,7 +5370,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'args': [serverUserCommandArgs, ""],
         'autobackup': [serverUserCommandAutoBackup, ""],
         'backupconfig': [serverUserCommandBackupConfig, ""],
-        'badlogins': [serverUserCommandBadLogins, ""],
+        'badlogins': [serverUserCommandBadLogins, "Displays or resets the invalid login rate limiting table."],
+        'bad2fa': [serverUserCommandBad2fa, "Displays or resets the invalid 2FA rate limiting table."],
         'certexpire': [serverUserCommandCertExpire, ""],
         'certhashes': [serverUserCommandCertHashes, ""],
         'closeusersessions': [serverUserCommandCloseUserSessions, "Disconnects all sessions for a specified user."],
@@ -6363,6 +6364,43 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (badLoginCount == 0) { cmdData.result += 'No bad logins.'; }
             } else {
                 cmdData.result = 'Usage: badlogin [reset]';
+            }
+        }
+    }
+
+    function serverUserCommandBad2fa(cmdData) {
+        if (parent.parent.config.settings.maxinvalid2fa == false) {
+            cmdData.result = 'Bad 2FA filter is disabled.';
+        } else {
+            if (cmdData.cmdargs['_'] == 'reset') {
+                // Reset bad login table
+                parent.bad2faTable = {};
+                parent.bad2faTableLastClean = 0;
+                cmdData.result = 'Done.';
+            } else if (cmdData.cmdargs['_'] == '') {
+                // Show current bad login table
+                if (typeof parent.parent.config.settings.maxinvalid2fa.coolofftime == 'number') {
+                    cmdData.result = "Max is " + parent.parent.config.settings.maxinvalid2fa.count + " bad 2FA(s) in " + parent.parent.config.settings.maxinvalid2fa.time + " minute(s), " + parent.parent.config.settings.maxinvalid2fa.coolofftime + " minute(s) cooloff.\r\n";
+                } else {
+                    cmdData.result = "Max is " + parent.parent.config.settings.maxinvalid2fa.count + " bad 2FA(s) in " + parent.parent.config.settings.maxinvalid2fa.time + " minute(s).\r\n";
+                }
+                var bad2faCount = 0;
+                parent.cleanBad2faTable();
+                for (var i in parent.bad2faTable) {
+                    bad2faCount++;
+                    if (typeof parent.bad2faTable[i] == 'number') {
+                        cmdData.result += "Cooloff for " + Math.floor((parent.bad2faTable[i] - Date.now()) / 60000) + " minute(s)\r\n";
+                    } else {
+                        if (parent.bad2faTable[i].length > 1) {
+                            cmdData.result += (i + ' - ' + parent.bad2faTable[i].length + " records\r\n");
+                        } else {
+                            cmdData.result += (i + ' - ' + parent.bad2faTable[i].length + " record\r\n");
+                        }
+                    }
+                }
+                if (bad2faCount == 0) { cmdData.result += 'No bad 2FA.'; }
+            } else {
+                cmdData.result = 'Usage: bad2fa [reset]';
             }
         }
     }
