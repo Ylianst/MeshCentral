@@ -738,6 +738,14 @@ function CreateMeshCentralServer(config, args) {
         // Check top level configuration for any unreconized values
         if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [ i ]); } } }
 
+        // Read IP lists from files if applicable
+        config.settings.userallowedip = obj.args.userallowedip = readIpListFromFile(obj.args.userallowedip);
+        config.settings.userblockedip = obj.args.userblockedip = readIpListFromFile(obj.args.userblockedip);
+        config.settings.agentallowedip = obj.args.agentallowedip = readIpListFromFile(obj.args.agentallowedip);
+        config.settings.agentblockedip = obj.args.agentblockedip = readIpListFromFile(obj.args.agentblockedip);
+        config.settings.swarmallowedip = obj.args.swarmallowedip = readIpListFromFile(obj.args.swarmallowedip);
+
+        // Check IP lists and ranges
         if (typeof obj.args.userallowedip == 'string') { if (obj.args.userallowedip == '') { config.settings.userallowedip = obj.args.userallowedip = null; } else { config.settings.userallowedip = obj.args.userallowedip = obj.args.userallowedip.split(','); } }
         if (typeof obj.args.userblockedip == 'string') { if (obj.args.userblockedip == '') { config.settings.userblockedip = obj.args.userblockedip = null; } else { config.settings.userblockedip = obj.args.userblockedip = obj.args.userblockedip.split(','); } }
         if (typeof obj.args.agentallowedip == 'string') { if (obj.args.agentallowedip == '') { config.settings.agentallowedip = obj.args.agentallowedip = null; } else { config.settings.agentallowedip = obj.args.agentallowedip = obj.args.agentallowedip.split(','); } }
@@ -3126,7 +3134,18 @@ function CreateMeshCentralServer(config, args) {
             } catch (ex) { obj.serverSelfWriteAllowed = false; }
         } catch (ex) { } // Do nothing since this is not a critical feature.
     };
-    
+
+    // Read a list of IP addresses from a file
+    function readIpListFromFile(arg) {
+        if ((typeof arg != 'string') || (!arg.startsWith('file:'))) return arg;
+        var lines = null;
+        try { lines = obj.fs.readFileSync(obj.path.join(obj.datapath, arg.substring(5))).toString().split('\r\n').join('\r').split('\r'); } catch (ex) { }
+        if (lines == null) return null;
+        var validLines = [];
+        for (var i in lines) { if ((lines[i].length > 0) && (((lines[i].charAt(0) > '0') && (lines[i].charAt(0) < '9')) || (lines[i].charAt(0) == ':'))) validLines.push(lines[i]); }
+        return validLines;
+    }
+
     // Logging funtions
     function logException(e) { e += ''; logErrorEvent(e); }
     function logInfoEvent(msg) { if (obj.servicelog != null) { obj.servicelog.info(msg); } console.log(msg); }
