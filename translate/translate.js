@@ -76,6 +76,7 @@ var minifyMeshCentralSourceFiles = [
     "../views/messenger.handlebars",
     "../views/player.handlebars",
     "../views/sharing.handlebars",
+    "../views/sharing-mobile.handlebars",
     "../views/mstsc.handlebars",
     "../views/ssh.handlebars",
     "../public/scripts/agent-desktop-0.0.2.js",
