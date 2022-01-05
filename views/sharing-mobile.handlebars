@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
     <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="robots" content="noindex,nofollow">
     <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/style-sharing.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+    <meta name="apple-mobile-web-app-title" content="{{{title}}}">
     <script type="text/javascript" src="scripts/common-0.0.1{{min}}.js"></script>
     <script type="text/javascript" src="scripts/amt-redir-ws-0.1.0{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/amt-wsman-ws-0.2.0{{{min}}}.js"></script>
@@ -28,15 +31,79 @@
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
     <title>{{{title}}}</title>
+    <style>
+
+        .deskButton {
+            box-shadow: 0px 0px 10px #000;
+            border-radius:20px;
+            position:absolute;
+            right:10px;
+            top:10px;
+            cursor:pointer;
+            background-color:#AAA;
+            z-index:1000;
+        }
+
+        .menuButton{
+            box-shadow: 0px 0px 10px #000;
+            border-radius:10px;
+            display:inline-block;
+            width:120px;
+            background-color:#AAA;
+            text-align:center;
+            padding:8px;
+            cursor:pointer;
+            margin:10px;
+            z-index:1000;
+        }
+
+        #dialog {
+            z-index:1000;
+            background-color:#EEE;
+            box-shadow:0px 0px 15px #666;
+            font-family:Arial,Helvetica,sans-serif;
+            border-radius:5px;
+            position:fixed;
+            top:90px;
+            width:300px;
+        }
+
+        .night #dialog {
+            color: black;
+            background-color:#AAA;
+        }
+
+    </style>
 </head>
 <body style="overflow:hidden;background-color:black;margin:0;padding:0;border:0;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
     <div id=p11 class="noselect" style="overflow:hidden;position:absolute;left:0;top:0;right:0;bottom:32px;display:none">
-        <div id=deskarea0>
+        <div id=p10dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:30px;width:300px;left:30px;display:none">
+            <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
+                <div style=padding:5px>Keyboard Shortcuts Customization</div>
+                <div style=width:100%;margin:6px></div>
+            </div>
+            <div style="margin-right:16px;margin-left:8px"><div id=p10dialog2 style="margin:auto;margin:3px"></div></div>
+            <div style="padding:10px;margin-bottom:20px"><input type="button" value="OK" style="float:right;width:80px" onclick="deskCustomizeKeysEx()"></div>
+        </div>
+        <img id="deskkeybutton1" src="images/mobile-desk-exit.png" class="deskButton" style="top:10px;display:none" onclick="exitButton(event)" />
+        <img id="deskkeybutton3a" src="images/mobile-desk-menu-open.png" class="deskButton" style="top:60px;display:none" onclick="toggleMenu(false)" />
+        <img id="deskkeybutton3b" src="images/mobile-desk-menu-close.png" class="deskButton" style="top:60px;display:none" onclick="toggleMenu(true)" />
+        <img id="deskkeybutton4a" src="images/mobile-desk-mouse-left.png" class="deskButton" style="top:110px;display:none" onclick="deskChangeMouseButton(0)" />
+        <img id="deskkeybutton4b" src="images/mobile-desk-mouse-right.png" class="deskButton" style="top:110px;display:none" onclick="deskChangeMouseButton(1)" />
+        <img id="deskkeybutton5a" src="images/mobile-desk-scale-out.png" class="deskButton" style="top:160px;display:none" onclick="deskChangeFullscreenZoom()" />
+        <img id="deskkeybutton5b" src="images/mobile-desk-scale-in.png" class="deskButton" style="top:160px;display:none" onclick="deskChangeFullscreenZoom()" />
+        <img id="deskkeybutton2a" src="images/mobile-desk-keyboard-open.png" class="deskButton" style="top:210px;display:none" onclick="toggleKeyboard()" />
+        <img id="deskkeybutton2b" src="images/mobile-desk-keyboard-close.png" class="deskButton" style="top:210px;display:none" onclick="toggleKeyboard()" />
+        <div style="position:absolute;top:0;left:0;z-index:200;opacity:0;width:1px;height:1px">
+            <input id="softKeyboard" autocapitalize="off" autocomplete="off" type="text" spellcheck="false" style="z-index:200;opacity:0;width:1px;height:1px" onfocus="keyboardFocusChange()" onblur="keyboardFocusChange()" />
+        </div>
+        <div id="deskButtonMenu" style="display:none;position:absolute;top:10px;left:10px;right:55px;bottom:10px;z-index:1000"></div>
+        <div id=deskarea0 style="position:absolute;top:0px;left:0px;right:0px;bottom:0px">
             <div id=deskarea1 class="areaHead" style="line-height:24px">
                 <div class="toright2">
                     <span id="p11power"></span>&nbsp;
-                    <input id="deskActionsSettings" type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
-                    <div id="desktopCustomUiButtons" style="float:left"></div>
+                    <input id="deskFullScreen" type="button" value="Full Screen" style="display:none" onkeypress="return false" onkeydown="return false" onclick="deskToggleFull(event)" class="mR" />
+                    <input id="deskActionsSettings" type="button" value="Settings..." onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
                     <div id="deskRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px"></div>
                 </div>
                 <div>
@@ -48,7 +115,6 @@
                 </div>
             </div>
             <div id=deskarea3x style="max-height:calc(100vh - 60px);height:calc(100vh - 60px);">
-                <div id=DeskFocus oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
                 <div id=DeskParent>
                     <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
                 </div>
@@ -205,62 +271,71 @@
             <div id=dialog2 style="">
                 <div id=id_dialogOptions></div>
             </div>
-            <div id=dialog7 style="">
+            <div id=dialog7 style="margin:auto;margin:3px">
                 <div id="d7meshkvm">
-                    <h4>Agent Remote Desktop</h4>
-                    <div>
-                        <div>Quality</div>
-                        <select id="d7bitmapquality" dir="rtl"></select>
-                    </div>
-                    <div>
-                        <div>Scaling</div>
-                        <select id="d7bitmapscaling" style="" dir="rtl">
-                            <option selected=selected value=1024>100%</option>
-                            <option value=896>87.5%</option>
-                            <option value=768>75%</option>
-                            <option value=640>62.5%</option>
-                            <option value=512>50%</option>
-                            <option value=384>37.5%</option>
-                            <option value=256>25%</option>
-                            <option value=128>12.5%</option>
-                        </select>
-                    </div>
-                    <div>
-                        <div>Frame rate</div>
-                        <select id="d7framelimiter" dir="rtl">
-                            <option selected=selected value=50>Fast</option>
-                            <option value=100>Medium</option>
-                            <option value=400>Slow</option>
-                            <option value=1000>Very slow</option>
-                        </select>
-                    </div>
-                    <div id="d7desktopOtherSettings">
-                        <div>Other Settings</div>
-                        <div id="d7otherset2" style="display:block">
-                            <label style="display:block"><input type="checkbox" id="d7deskSwapMouse" />Swap Mouse Buttons</label>
-                            <label style="display:block"><input type="checkbox" id="d7deskRemoteKeyMap" />Use Remote Keyboard Map</label>
-                        </div>
-                    </div>
+                    <h4 style="width:100%;border-bottom:1px solid gray">Agent Remote Desktop</h4>
+                    <table style="width:100%">
+                        <tr>
+                            <td>
+                                Quality
+                            </td>
+                            <td style="width:100px">
+                                <select id="d7bitmapquality" style="float:right;width:200px" dir="rtl"></select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Scaling
+                            </td>
+                            <td style="width:100px">
+                                <select id="d7bitmapscaling" style="float:right;width:200px" dir="rtl">
+                                    <option selected=selected value=1024>100%</option>
+                                    <option value=896>87.5%</option>
+                                    <option value=768>75%</option>
+                                    <option value=640>62.5%</option>
+                                    <option value=512>50%</option>
+                                    <option value=384>37.5%</option>
+                                    <option value=256>25%</option>
+                                    <option value=128>12.5%</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Rate
+                            </td>
+                            <td style="width:100px">
+                                <select id="d7framelimiter" style="float:right;width:200px" dir="rtl">
+                                    <option selected=selected value=50>Fast</option>
+                                    <option value=100>Medium</option>
+                                    <option value=400>Slow</option>
+                                    <option value=1000>Very slow</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox" id="d7deskAutoLock" />Lock on Disconnect</label>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
                 <div id="d7amtkvm">
-                    <h4>Intel&reg; AMT Hardware KVM</h4>
-                    <div>
-                        <div>Image Encoding</div>
-                        <select id="d7desktopmode">
-                            <option value="1">RLE8, Fastest</option>
-                            <option value="2">RLE16, Recommended</option>
-                            <option value="3">RAW8, Slow</option>
-                            <option value="4">RAW16, Very Slow</option>
-                        </select>
-                    </div>
-                    <div>
-                        <div>Other Settings</div>
-                        <div id="d7otherset" style="display:block">
-                            <label style="display:block"><input type="checkbox" id="d7showfocus" />Show Focus Tool</label>
-                            <label style="display:block"><input type="checkbox" id="d7showcursor" />Show Local Mouse Cursor</label>
-                            <label style="display:block"><input type="checkbox" id="d7localKeyMap" />Local Keyboard Map</label>
-                        </div>
-                    </div>
+                    <h4 style="width:100%;border-bottom:1px solid gray">Intel&reg; AMT Hardware KVM</h4>
+                    <table style="width:100%">
+                        <tr>
+                            <td>Encoding</td>
+                            <td style="width:100px">
+                                <select id="d7desktopmode" style="float:right;width:200px">
+                                    <option value="1">RLE8, Fastest</option>
+                                    <option value="2">RLE16, Recommended</option>
+                                    <option value="3">RAW8, Slow</option>
+                                    <option value="4">RAW16, Very Slow</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>
@@ -285,6 +360,7 @@
         var debugmode = urlargs.debug;
         var attemptWebRTC = false;
         var updateSessionTimer = null;
+        var deskKeyboardShortcuts = [];
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
         var nodeName = decodeURIComponent('{{{nodeName}}}');
         var webPageFullScreen = false;
@@ -318,10 +394,14 @@
         var p13FilesConsoleMsgTimer = null;
 
         function start() {
-            window.onresize = deskAdjust;
-            document.onkeypress = ondockeypress;
-            document.onkeydown = ondockeydown;
-            document.onkeyup = ondockeyup;
+            window.onresize = center;
+            center();
+            document.onkeypress = ondeskkeypress;
+            document.onkeydown = ondeskkeydown;
+            document.onkeyup = ondeskkeyup;
+            //document.onkeypress = ondockeypress;
+            //document.onkeydown = ondockeydown;
+            //document.onkeyup = ondockeyup;
             setupDesktop();
             setupTerminal();
             setupFiles();
@@ -351,6 +431,13 @@
             else if (features & 1) { go(12); } // Goto terminal
             else if (features & 4) { go(13); } // Goto files
             deskAdjust();
+
+            // Set the user's desktop shortcut keys
+            deskKeyboardShortcuts = [];
+            var deskKeyboardShortcutsStr = '0x0A002E,0x100000,0x100028,0x100026,0x10004C,0x10004D,0x11004D,0x100052,0x020073,0x080057,0x020009,0x100025,0x100027'.split(',');
+            for (var i in deskKeyboardShortcutsStr) { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); }
+            updateDeskShortcutKeys();
+            //updateTermShortcutKeys();
         }
 
         //
@@ -363,21 +450,34 @@
         function deskAdjust() {
             if ((xxcurrentView == 12) && (terminal != null) && (xtermfit != null)) { xtermfit.fit(); } // Terminal 
             QS('fileArea4')['height'] = 'calc(100vh - ' + (90 + Q('fileArea2').clientHeight) + 'px)'; // Files
-            var parentH = Q('DeskParent').clientHeight, parentW = Q('DeskParent').clientWidth;
-            var deskH = Q('Desk').height, deskW = Q('Desk').width;
 
-            // Fixed aspect ratio
-            if ((parentH / parentW) > (deskH / deskW)) {
-                var hNew = ((deskH * parentW) / deskW) + 'px';
-                QS('Desk').height = hNew;
+            if (fullscreen) {
+                QS('Desk')['margin-top'] = null;
+                QS('Desk')['margin-bottom'] = null;
+                QS('deskarea3x')['padding-right'] = '55px';
                 QS('Desk').width = '100%';
-            } else {
-                var wNew = ((deskW * parentH) / deskH) + 'px';
                 QS('Desk').height = '100%';
-                QS('Desk').width = wNew;
+                var parentH = Q('p11').clientHeight, parentW = Q('p11').clientWidth;
+                var deskH = Q('deskarea3x').clientHeight, deskW = Q('deskarea3x').clientWidth - 55;
+                if (parentH > deskH) { QS('deskarea3x').top = ((parentH - deskH) / 2) + 'px'; } else { QS('deskarea3x').top = null; }
+                if (parentW > deskW) { QS('deskarea3x').left = ((parentW - deskW) / 2) + 'px'; } else { QS('deskarea3x').left = null; }
+            } else {
+                var parentH = Q('DeskParent').clientHeight, parentW = Q('DeskParent').clientWidth;
+                var deskH = Q('Desk').height, deskW = Q('Desk').width;
+
+                // Fixed aspect ratio
+                if ((parentH / parentW) > (deskH / deskW)) {
+                    var hNew = ((deskH * parentW) / deskW) + 'px';
+                    QS('Desk').height = hNew;
+                    QS('Desk').width = '100%';
+                } else {
+                    var wNew = ((deskW * parentH) / deskH) + 'px';
+                    QS('Desk').height = '100%';
+                    QS('Desk').width = wNew;
+                }
+                QS('Desk')['margin-top'] = null;
+                QS('deskarea3x')['padding-right'] = null;
             }
-            QS('Desk')['margin-top'] = null;
-            QS('DeskParent').overflow = 'hidden';
         }
 
         function setupDesktop() {
@@ -427,8 +527,8 @@
             // Display this only if we have Chat & Notify permissions
             QV('DeskSaveImageButton', (deskState == 3) && (Q('Desk')['toBlob'] != null));
             QV('DeskControlSpan', viewOnly != 1);
-            QV('deskActionsBtn', (browserfullscreen == false));
-            QV('deskActionsSettings', (browserfullscreen == false));
+            QV('deskActionsBtn', true);
+            QV('deskActionsSettings', (deskState != 3));
             Q('DeskControl').checked = true;
             QS('DeskControlSpan').color = Q('DeskControl').checked ? null : 'red';
         }
@@ -639,6 +739,8 @@
             if ((desktop != null) && (desktop.webRtcActive == true)) { str += ", WebRTC"; }
             //if (desktop.m.stopInput == true) { str += ', Loopback'; }
             QH('deskstatus', str);
+            QV('deskFullScreen', state == 3);
+            QV('deskActionsSettings', state != 3);
             switch (state) {
                 case 0:
                     // Stop recording
@@ -647,7 +749,6 @@
                     // Disconnect and clean up the remote desktop
                     desktop.Stop();
                     desktop = null;
-                    QV('DeskFocus', false);
                     QV('termdisplays', false);
                     QV('deskRecordIcon', false);
                     if (fullscreen == true) { deskToggleFull(); }
@@ -694,8 +795,6 @@
 
         function showDesktopSettingsChanged() {
             desktopsettings.encoding = d7desktopmode.value;
-            desktopsettings.showfocus = d7showfocus.checked;
-            desktopsettings.showmouse = d7showcursor.checked;
             desktopsettings.quality = d7bitmapquality.value;
             desktopsettings.scaling = d7bitmapscaling.value;
             desktopsettings.framerate = d7framelimiter.value;
@@ -723,8 +822,6 @@
             for (var i in ops) { r += '<option value=' + ops[i] + '>' + ops[i] + '%</option>'; }
             QH('d7bitmapquality', r);
             d7desktopmode.value = desktopsettings.encoding;
-            d7showfocus.checked = desktopsettings.showfocus;
-            d7showcursor.checked = desktopsettings.showmouse;
             d7bitmapquality.value = 40; // Default value
             if (ops.indexOf(parseInt(desktopsettings.quality)) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
             d7bitmapscaling.value = desktopsettings.scaling;
@@ -734,72 +831,120 @@
             if (desktopsettings.localkeymap) { d7localKeyMap.checked = desktopsettings.localkeymap; }
         }
 
-        // Enter browser fullscreen
-        function enterBrowserFullscreen(elem) {
-            if (elem.requestFullscreen) { elem.requestFullscreen(); }
-            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
-            else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
-            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT); }
+        function toggleMenu(x) {
+            if (xxdialogMode) return;
+            QV('deskButtonMenu', fullscreen && !x && (xxcurrentView == 11));
+            QV('termButtonMenu', fullscreen && !x && (xxcurrentView == 12));
+            QV('deskkeybutton3a', fullscreen && x);
+            QV('deskkeybutton3b', fullscreen && !x);
         }
 
-        // Exit browser fullscreen
-        function exitBrowserFullscreen() {
-            if (document.exitFullscreen) { document.exitFullscreen(); }
-            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
-            else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
-            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+        function deskChangeMouseButton(x) {
+            if (xxdialogMode) return;
+            if (desktop == null) return;
+            desktop.m.SwapMouse = !desktop.m.SwapMouse;
+            QV('deskkeybutton4a', fullscreen && (!desktop.m.SwapMouse));
+            QV('deskkeybutton4b', fullscreen && (desktop.m.SwapMouse));
         }
 
-        // Return true if the browser is fullscreen. This is a delayed method that will return true/false late. Not very useful.
-        function isBrowserFullscreen() {
-            if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) { return false; } else { return true; }
+        function deskChangeFullscreenZoom() {
+            if (xxdialogMode) return;
+            if (xxcurrentView == 11) {
+                if (desktop == null) return;
+                if (fullscreenzoom == 1) { fullscreenzoom = 0.5; } else { fullscreenzoom = 1; }
+                QV('deskkeybutton5a', fullscreen && (fullscreenzoom == 1));
+                QV('deskkeybutton5b', fullscreen && (fullscreenzoom != 1));
+                QS('deskarea3x').width = (desktop.m.ScreenWidth * fullscreenzoom) + 'px';
+                QS('deskarea3x').height = (desktop.m.ScreenHeight * fullscreenzoom) + 'px';
+                deskAdjust();
+            }
+            if (xxcurrentView == 12) {
+                if (terminal == null) return;
+                xterm.setOption('fontSize', (xterm.getOption('fontSize') == 15) ? 10 : 15)
+            }
         }
 
         var fullscreen = false;
-        var browserfullscreen = false;
+        var fullscreenzoom = 1;
         function deskToggleFull(e) {
             var xtermActive = !((urlargs.xterm === 0) || ((terminal != null) && (xterm == null)));
             fullscreen = !fullscreen;
             if (fullscreen) {
-                QC('body').add('fulldesk');
-                QS('deskarea3x')['height'] = '100%';
-                QS('deskarea3x')['max-height'] = '100%';
+                QV('deskarea1', false);
+                QV('deskarea4', false);
+                QV('xfooter', false);
+                QS('p11').bottom = '0px';
+                QS('deskarea0').overflow = 'scroll';
+                QS('deskarea3x').width = (desktop.m.ScreenWidth * fullscreenzoom) + 'px';
+                QS('deskarea3x').height = QS('deskarea3x')['max-height'] = (desktop.m.ScreenHeight * fullscreenzoom) + 'px';
+                QS('deskarea3x')['padding-right'] = '55px';
                 if (xtermActive) {
                     // XTerm terminal
-                    QS('termTable')['position'] = 'absolute';
-                    QS('termTable')['top'] = QS('termTable')['bottom'] = QS('termTable')['left'] = QS('termTable')['right'] = '0';
+                    //QS('termTable')['position'] = 'absolute';
+                    //QS('termTable')['top'] = QS('termTable')['bottom'] = QS('termTable')['left'] = QS('termTable')['right'] = '0';
                 } else {
                     // Legacy terminal
-                    QS('termTable')['height'] = '100%';
-                    QS('termTable')['max-height'] = '100%';
-                }
-
-                // If shift is pressed, enter browser full screen.
-                if (e.shiftKey == true) {
-                    enterBrowserFullscreen(Q('container'));
-                    browserfullscreen = true;
+                    //QS('termTable')['height'] = '100%';
+                    //QS('termTable')['max-height'] = '100%';
                 }
             } else {
-                QC('body').remove('fulldesk');
-                var hide = urlargs.hide;
-                if (footerBar == false) { hide |= 4; }
-                var xh = (((hide & 1) ? 0 : 66) + ((hide & 2) ? 0 : 24) + ((hide & 4) ? 0 : 45) + ((hide & 8) ? 0 : 60)); // 0 to 195
-                QS('deskarea3x')['height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
-                QS('deskarea3x')['max-height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
+                QV('deskarea1', true);
+                QV('deskarea4', true);
+                QV('xfooter', true);
+                QS('p11').bottom = '32px';
+                QS('deskarea0').overflow = null;
+                QS('deskarea3x').width = null;
+                QS('deskarea3x').height = QS('deskarea3x')['max-height'] = 'calc(100vh - 60px)';
+                QS('deskarea3x')['padding-right'] = null;
                 if (xtermActive) {
                     // XTerm terminal
-                    QS('termTable')['position'] = null;
-                    QS('termTable')['top'] = QS('termTable')['bottom'] = QS('termTable')['left'] = QS('termTable')['right'] = null;
+                    //QS('termTable')['position'] = null;
+                    //QS('termTable')['top'] = QS('termTable')['bottom'] = QS('termTable')['left'] = QS('termTable')['right'] = null;
                 } else {
                     // Legacy terminal
-                    QS('termTable')['height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
-                    QS('termTable')['max-height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
+                    //QS('termTable')['height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
+                    //QS('termTable')['max-height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
                 }
-                if (browserfullscreen == true) { exitBrowserFullscreen(); browserfullscreen = false; }
             }
-            deskAdjust();
+
+            inputAllowed = true; // todo
+
+            // Show full screen buttons if needed
+            QV('deskkeybutton1', fullscreen);
+            if (xxcurrentView == 11) { // Desktop panel is being shown (11 = Desktop, 12 = Terminal)
+                // Move shortcut key to desktop position
+                QS('deskkeybutton2a').top = QS('deskkeybutton2b').top = '210px';
+                // Move the zoom button to normal or top position
+                QS('deskkeybutton5a').top = QS('deskkeybutton5b').top = (inputAllowed) ? '160px' : '60px'; // Zoom
+                QV('deskkeybutton2a', fullscreen && inputAllowed);
+                QV('deskkeybutton2b', false);
+                QV('deskkeybutton3a', fullscreen && inputAllowed);
+                QV('deskkeybutton3b', false);
+                QV('deskkeybutton4a', fullscreen && inputAllowed && (!desktop.m.SwapMouse));
+                QV('deskkeybutton4b', fullscreen && inputAllowed && (desktop.m.SwapMouse));
+                QV('deskkeybutton5a', fullscreen && (fullscreenzoom == 1));
+                QV('deskkeybutton5b', fullscreen && (fullscreenzoom != 1));
+            }
+            if (xxcurrentView == 12) {
+                // Move right buttons to terminal position
+                //QS('deskkeybutton3a').top = QS('deskkeybutton3b').top = '60px'; // Shortcuts
+                //QS('deskkeybutton5a').top = QS('deskkeybutton5b').top = '110px'; // Zoom
+                QS('deskkeybutton2a').top = QS('deskkeybutton2b').top = '110px'; // Keyboard
+                QV('deskkeybutton2a', fullscreen);
+                QV('deskkeybutton2b', false);
+                QV('deskkeybutton3a', fullscreen);
+                QV('deskkeybutton3b', false);
+                QV('deskkeybutton4a', false);
+                QV('deskkeybutton4b', false);
+                QV('deskkeybutton5a', false);
+                QV('deskkeybutton5a', false);
+                //QV('deskkeybutton5a', xterm.getOption('fontSize') == 15);
+                //QV('deskkeybutton5b', xterm.getOption('fontSize') != 15);
+            }
+
+            if (xxcurrentView == 11) { deskAdjust(); }
             updateDesktopButtons();
-            adjustPanels();
+            //adjustPanels();
             //setTimeout(adjustPanels, 10);
             //setTimeout(function() { xtermfit.fit(); }, 10);
             if (xterm != null) { if (xxcurrentView == 12) { xtermfit.fit(); xterm.focus(); } }
@@ -911,56 +1056,99 @@
             }
         }
 
-        function ondockeypress(e) {
+
+        var gotKeyPressEvent = false;
+        function ondeskkeypress(e, t) {
             setSessionActivity();
-            if (!xxdialogMode && desktop && isInputAllowed()) {
+            if (desktop && !xxdialogMode && (xxcurrentView == 11)) {
+                gotKeyPressEvent = true;
+                Q('softKeyboard').value = '';
                 // Check what keys we are allows to send
-                /*
-                if (currentNode != null) {
-                    var meshrights = GetNodeRights(currentNode);
-                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
-                    if (inputAllowed == false) return false;
-                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
-                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
-                }
-                */
+                var inputAllowed = true; // TODO
+                if (inputAllowed == false) return false;
                 return desktop.m.handleKeys(e);
             }
+            if (terminal && !xxdialogMode && (xxcurrentView == 12) (t !== 1)) {
+                if (e.altKey == true) { return true; }
+                gotKeyPressEvent = true;
+                Q('softKeyboard').value = '';
+                var k = 0;
+                if (e.charCode != 0) { k = e.charCode; } else if (e.keyCode != 0) { k = e.keyCode; }
+                if (k != 0) {
+                    if (terminal.urlname == 'sshterminalrelay.ashx') {
+                        // SSH
+                        terminal.socket.send('~' + String.fromCharCode(k));
+                    } else {
+                        // Agent
+                        terminal.sendText(String.fromCharCode(k));
+                    }
+                }
+                return false;
+            }
         }
 
-        function ondockeydown(e) {
+        function ondeskkeydown(e, t) {
             setSessionActivity();
-            if (!xxdialogMode && desktop && isInputAllowed()) {
+            if (desktop && !xxdialogMode && (xxcurrentView == 11)) {
+                gotKeyPressEvent = false;
+                Q('softKeyboard').value = '';
                 // Check what keys we are allows to send
-                /*
-                if (currentNode != null) {
-                    var meshrights = GetNodeRights(currentNode);
-                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
-                    if (inputAllowed == false) return false;
-                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
-                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
-                }
-                */
+                var inputAllowed = true; // TODO
+                if (inputAllowed == false) return false;
                 return desktop.m.handleKeyDown(e);
             }
-        }
-
-        function ondockeyup(e) {
-            setSessionActivity();
-            if (!xxdialogMode && desktop && isInputAllowed()) {
-                // Check what keys we are allows to send
-                /*
-                if (currentNode != null) {
-                    var meshrights = GetNodeRights(currentNode);
-                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
-                    if (inputAllowed == false) return false;
-                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
-                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
+            if (terminal && !xxdialogMode && (xxcurrentView == 12) && (t !== 1)) {
+                if (e.altKey == true) { return true; }
+                Q('softKeyboard').value = '';
+                gotKeyPressEvent = false;
+                var k = 0;
+                if (e.charCode != 0) { k = e.charCode; } else if (e.keyCode != 0) { k = e.keyCode; }
+                if (k == 8) { terminal.sendText(String.fromCharCode(k)); } // Enter and backspace
+                else if (e.ctrlKey && (k >= 64) && (k <= 95)) {
+                    // Ctrl keys
+                    if (terminal.urlname == 'sshterminalrelay.ashx') {
+                        // SSH
+                        terminal.socket.send('~' + String.fromCharCode(k - 64));
+                    } else {
+                        // Agent
+                        terminal.sendText(String.fromCharCode(k - 64));
+                    }
                 }
-                */
-                return desktop.m.handleKeyUp(e);
             }
         }
+
+        function ondeskkeyup(e, t) {
+            setSessionActivity();
+            if (desktop && !xxdialogMode && (xxcurrentView == 11)) {
+                var inputStr = Q('softKeyboard').value;
+                Q('softKeyboard').value = '';
+                // Check what keys we are allows to send
+                var inputAllowed = true; // TODO
+                if (inputAllowed == false) return false;
+                if ((gotKeyPressEvent == false) && (inputStr.length > 0) && desktop.m.SendKeyUnicode) {
+                    // This is a mobile keyboard, we need to send that is in the input control.
+                    var inputchar = inputStr[inputStr.length - 1].charCodeAt(0);
+                    desktop.m.SendKeyUnicode(desktop.m.KeyAction.DOWN, inputchar);
+                    desktop.m.SendKeyUnicode(desktop.m.KeyAction.UP, inputchar);
+                } else {
+                    return desktop.m.handleKeyUp(e);
+                }
+            }
+            if (terminal && !xxdialogMode && (xxcurrentView == 12) && (gotKeyPressEvent == false) && (t !== 1)) {
+                if (e.altKey == true) { return true; }
+                var inputStr = Q('softKeyboard').value;
+                Q('softKeyboard').value = '';
+                if (terminal.urlname == 'sshterminalrelay.ashx') {
+                    // SSH
+                    terminal.socket.send('~' + inputStr);
+                } else {
+                    // Agent
+                    if (inputStr) terminal.sendText(inputStr);
+                }
+                return false;
+            }
+        }
+
 
         // Remote desktop typing
         function showDeskType() {
@@ -1043,136 +1231,6 @@
             desktop.m.sendcad();
         }
 
-        /*
-        // Show process dialogs
-        function toggleDeskTools() {
-            if (xxdialogMode) return;
-            if (QS('DeskTools').display == 'none') {
-                QV('DeskTools', true);
-                Q('DeskTools').nodeid = currentNode._id;
-                QH('DeskToolsProcesses', '');
-                QH('DeskToolsServices', '');
-                QV('deskToolsTopTabService', false);
-                changeDeskToolTab(0)
-                refreshDeskTools(0);
-                refreshDeskTools(1);
-            } else {
-                QV('DeskTools', false);
-            }
-        }
-
-        var deskToolTabSelection = 0;
-        function changeDeskToolTab(tabnum) {
-            deskToolTabSelection = tabnum;
-            QV('DeskToolsProcessTab', tabnum == 0);
-            QV('DeskToolsServiceTab', tabnum == 1);
-            QS('deskToolsTopTabProcess')['bottom'] = (tabnum == 0) ? '0px' : '3px';
-            QS('deskToolsTopTabService')['bottom'] = (tabnum == 1) ? '0px' : '3px';
-            QS('deskToolsTopTabProcess')['color'] = (tabnum == 0) ? 'black' : 'gray';
-            QS('deskToolsTopTabService')['color'] = (tabnum == 1) ? 'black' : 'gray';
-        }
-
-        // Refresh all of the desktop tool panels
-        function refreshDeskTools(x) {
-            var sel = (x == null) ? deskToolTabSelection : x;
-            QV('DeskToolsRefreshButton', false);
-            setTimeout(refreshDeskToolsEx, 500);
-            if (sel == 0) meshserver.send({ action: 'msg', type: 'ps', nodeid: currentNode._id });
-            if (sel == 1) meshserver.send({ action: 'msg', type: 'services', nodeid: currentNode._id });
-        }
-        function refreshDeskToolsEx() { QV('DeskToolsRefreshButton', true); }
-        var deskTools = { sort: 1, ssort: 1, msg: null, smsg: null };
-        function sortProcess(sort) { deskTools.sort = sort; showDeskToolsProcesses(deskTools.msg); }
-        function sortService(sort) { deskTools.ssort = sort; showDeskToolsServices(deskTools.smsg); }
-        function sortProcessPid(a, b) { if (a.p > b.p) return 1; if (a.p < b.p) return (-1); return sortProcessName(a, b); }
-        function sortProcessName(a, b) { if (a.d > b.d) return 1; if (a.d < b.d) return (-1); return 0; }
-        function showDeskToolsProcesses(message) {
-            deskTools.msg = message;
-            if (message == null) { QH('DeskToolsProcesses', ''); return; }
-            if (Q('DeskTools').nodeid != message.nodeid) return;
-            var p = [], processes = null;
-            try { processes = JSON.parse(message.value); } catch (e) { }
-            if (processes != null) {
-                for (var pid in processes) { p.push({ p: parseInt(pid), c: processes[pid].cmd, d: processes[pid].cmd.toLowerCase(), u: processes[pid].user }); }
-                if (deskTools.sort == 0) { p.sort(sortProcessPid); } else if (deskTools.sort == 1) { p.sort(sortProcessName); }
-                var x = '';
-                for (var i in p) {
-                    if (p[i].p != 0) {
-                        var c = p[i].c;
-                        if (c.length > 30) { c = '<span title="' + EscapeHtml(c) + '">' + EscapeHtml(c.substring(0, 30)) + '...</span>' } else { c = EscapeHtml(c); }
-                        x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + EscapeHtml(p[i].p) + '</div><a href=# style=float:right;padding-right:5px;cursor:pointer title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")\'><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? EscapeHtml(p[i].u) : '') + '</div><div>' + c + '</div></div>';
-                    }
-                }
-                QH('DeskToolsProcesses', x);
-            }
-        }
-        function showDeskToolsServices(message) {
-            deskTools.smsg = message;
-            if (message == null) { QH('DeskToolsProcesses', ''); return; }
-            if (Q('DeskTools').nodeid != message.nodeid) return;
-            QV('deskToolsTopTabService', true);
-            var s = [], services = null;
-            try { services = JSON.parse(message.value); } catch (e) { }
-            deskTools.services = services;
-            if (services != null) {
-                for (var i in services) {
-                    if (services[i].status) {
-                        // Windows
-                        s.push({ p: capitalizeFirstLetter(services[i].status.state.toLowerCase()), d: services[i].displayName, i: i });
-                    } else if (services[i].serviceType) {
-                        // Linux (TODO: This the service status is not displayed, not sure start/stop/restart will work).
-                        s.push({ p: services[i].serviceType, d: services[i].name, i: i });
-                    }
-                }
-                if (deskTools.ssort == 0) { s.sort(sortProcessPid); } else if (deskTools.ssort == 1) { s.sort(sortProcessName); }
-                var x = '';
-                for (var i in s) {
-                    if (s[i].p != 0) {
-                        var c = s[i].d;
-                        if (c.length > 30) { c = '<span title="' + c + '">' + c.substring(0, 30) + '...</span>' } else { c = EscapeHtml(c); }
-                        x += '<div onclick=showServiceDetailsDialog(' + s[i].i + ') class=deskToolsBar><div style=width:70px;float:left;padding-right:5px>' + EscapeHtml(s[i].p) + '</div><div>' + c + '</div></div>';
-                    }
-                }
-                QH('DeskToolsServices', x);
-            }
-        }
-
-        function showServiceDetailsDialog(index) {
-            if (xxdialogMode) return;
-            var service = deskTools.services[index];
-            if (service != null) {
-                var x = '';
-                if (service.name) { x += addHtmlValue("Name", service.name); }
-                if (service.displayName) { x += addHtmlValue("Display name", service.displayName); }
-                if (service.status) {
-                    if (service.status.state) { x += addHtmlValue("State", capitalizeFirstLetter(service.status.state.toLowerCase())); }
-                    if (service.status.pid) { x += addHtmlValue("PID", service.status.pid); }
-                    var serviceTypes = [];
-                    if (service.status.isFileSystemDriver === true) { serviceTypes.push("FileSystemDriver"); }
-                    if (service.status.isInteractive === true) { serviceTypes.push("Interactive"); }
-                    if (service.status.isKernelDriver === true) { serviceTypes.push("KernelDriver"); }
-                    if (service.status.isOwnProcess === true) { serviceTypes.push("OwnProcess"); }
-                    if (service.status.isSharedProcess === true) { serviceTypes.push("SharedProcess"); }
-                    if (serviceTypes.length > 0) { x += addHtmlValue("Type", serviceTypes.join(', ')); }
-                }
-                x += '<br/><div style=float:right;margin-bottom:12px><input type=button value="' + "Close" + '" onclick=showServiceDetailsDialogEx(0,' + index + ')></div><div style=margin-bottom:12px><input type=button value="' + "Start" + '" onclick=showServiceDetailsDialogEx(1,' + index + ')><input type=button value="' + "Stop" + '" onclick=showServiceDetailsDialogEx(2,' + index + ')><input type=button value="' + "Restart" + '" onclick=showServiceDetailsDialogEx(3,' + index + ')></div>';
-                setDialogMode(2, "Service Details", 8, null, x, name);
-            }
-        }
-
-        function showServiceDetailsDialogEx(action, index) {
-            setDialogMode(0);
-            if (action == 0) return;
-            var service = deskTools.services[index];
-            if (service != null) {
-                if (action == 1) { meshserver.send({ action: 'msg', type: 'serviceStart', nodeid: currentNode._id, serviceName: service.name }); }
-                if (action == 2) { meshserver.send({ action: 'msg', type: 'serviceStop', nodeid: currentNode._id, serviceName: service.name }); }
-                if (action == 3) { meshserver.send({ action: 'msg', type: 'serviceRestart', nodeid: currentNode._id, serviceName: service.name }); }
-                setTimeout(function () { refreshDeskTools(1) }, 1000);
-            }
-        }
-        */
-
         // Toggle mouse and keyboard input
         function toggleKvmControl() { QS('DeskControlSpan').color = Q('DeskControl').checked ? null : 'red'; }
 
@@ -1212,10 +1270,209 @@
             dblClickDetectArgs.y = e.clientY;
         }
 
-        function dmousedown(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && isInputAllowed()) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } } dblClickDetect(e); }
-        function dmouseup(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && isInputAllowed()) if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mouseup(e); desktop.m.sendKeepAlive(); } else { desktop.m.mouseup(e); } }
-        function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && isInputAllowed()) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } }
-        function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && isInputAllowed()) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
+        function dmousedown(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('deskarea0').scrollLeft * (1 / fullscreenzoom); e.addy = Q('deskarea0').scrollTop * (1 / fullscreenzoom); } desktop.m.mousedown(e); } }
+        function dmouseup(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('deskarea0').scrollLeft * (1 / fullscreenzoom); e.addy = Q('deskarea0').scrollTop * (1 / fullscreenzoom); } desktop.m.mouseup(e); } }
+        function dmousemove(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('deskarea0').scrollLeft * (1 / fullscreenzoom); e.addy = Q('deskarea0').scrollTop * (1 / fullscreenzoom); } desktop.m.mousemove(e); } }
+        function dmousewheel(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && desktop.m.mousewheel) { if (fullscreen) { e.addx = Q('deskarea0').scrollLeft * (1 / fullscreenzoom); e.addy = Q('deskarea0').scrollTop * (1 / fullscreenzoom); } desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
+
+        var keyboardShown = false;
+        var keyboardShownTimer = null;
+        var fullScreenMode = false;
+        function toggleKeyboard() {
+            if (xxdialogMode) return;
+            if (keyboardShownTimer != null) { clearTimeout(keyboardShownTimer); }
+            if (keyboardShown) { Q('softKeyboard').blur(); keyboardShown = false; } else { Q('softKeyboard').focus(); keyboardShown = true; }
+            QV('deskkeybutton2a', fullscreen && !keyboardShown);
+            QV('deskkeybutton2b', fullscreen && keyboardShown);
+        }
+
+        function keyboardFocusChange() {
+            keyboardShownTimer = setTimeout(function () {
+                keyboardShownTimer = null;
+                keyboardShown = (Q('softKeyboard') == document.activeElement);
+                QV('deskkeybutton2a', fullscreen && !keyboardShown);
+                QV('deskkeybutton2b', fullscreen && keyboardShown);
+            }, 100);
+        }
+
+        function exitButton() {
+            if (xxdialogMode) return;
+            QV('deskButtonMenu', false);
+            QV('termButtonMenu', false);
+            if (fullscreenzoom == 1) {
+                deskToggleFull();
+            } else {
+                deskChangeFullscreenZoom();
+                setTimeout(deskToggleFull, 10);
+            }
+        }
+
+        function deskMenuButton(x) {
+            toggleMenu(true);
+            deskSendKeys(x);
+        }
+
+
+        //
+        // Desktop Shortcut Keys
+        //
+
+        function updateDeskShortcutKeys() {
+            var x = ''; //'<div class="menuButton" onclick="deskMenuButton(-1)">' + "Customize" + '</div>';
+            for (var i in deskKeyboardShortcuts) { x += '<div class="menuButton" onclick="deskMenuButton(' + deskKeyboardShortcuts[i] + ')">' + keyShortcutTotext(deskKeyboardShortcuts[i]) + '</div>'; }
+            QH('deskButtonMenu', x);
+        }
+
+        var keyStrings = { 8: "BackSpace", 9: "Tab", 13: "Enter", 27: "Escape", 44: "Print Screen", 45: "Insert", 46: "Del", 36: "Home", 35: "End", 33: "Page Up", 34: "Page Down", 37: "Left", 38: "Up", 39: "Right", 40: "Down", 0: "None" }
+
+        function keyShortcutTotext(n) {
+            var x = [];
+            if (n & 0x010000) { x.push("Shift"); }
+            if (n & 0x020000) { x.push("Alt"); }
+            if (n & 0x080000) { x.push("Ctrl"); }
+            if (n & 0x100000) { x.push("Win"); }
+            n = (n & 0xFFFF);
+            if ((n >= 112) && (n <= 123)) { x.push('F' + (n - 111)); } // Fx keys
+            else if ((n != 0) && (keyStrings[n])) { x.push(keyStrings[n]); }
+            else { if (n != 0) { x.push(String.fromCharCode(n)); } }
+            return x.join(' + ');
+        }
+
+        // Customize keyboard shortcuts
+        function deskCustomizeKeys() {
+            if (xxdialogMode) return;
+            var x = '<div id=d2shortcuts style="width:100%;height:180px;padding:4px;overflow-y:auto;border:1px solid gray"></div><div style=width:100%;padding:5px>';
+            x += '<label><input id=d1kshift type=checkbox /> ' + "Shift" + '</label><label> <input id=d1kalt type=checkbox /> ' + "Alt" + '</label><label> <input id=d1kctrl type=checkbox /> ' + "Ctrl" + '</label> <input id=d1kwin type=checkbox /> ' + "Win" + '</label>';
+            x += ' <select id=d2keySelect>';
+            for (var i in keyStrings) { x += '<option value=' + i + '>' + keyStrings[i] + '</option>'; }
+            for (var i = 1; i <= 12; i++) { x += '<option value=' + (i + 111) + '>F' + i + '</option>'; }
+            for (var i = 0; i < 10; i++) { x += '<option value=' + (i + 48) + '>' + i + '</option>'; }
+            for (var i = 0; i < 26; i++) { x += '<option value=' + (i + 65) + '>' + String.fromCharCode(i + 65) + '</option>'; }
+            x += '</select> <input type=button value=' + "Add" + ' onclick=addDeskCustomizeKey() /></div>';
+            QH('p10dialog2', x);
+            xxdialogMode = 2;
+            QV('p10dialog', true);
+            deskUpdateShortcutList();
+        }
+
+        function deskCustomizeKeysEx() {
+            QV('p10dialog', false);
+            xxdialogMode = 0;
+            //putstore('deskKeyShortcuts', deskKeyboardShortcuts.join(','));
+            updateDeskShortcutKeys();
+        }
+
+        function deskUpdateShortcutList() {
+            var x = '';
+            for (var i in deskKeyboardShortcuts) {
+                var kt = keyShortcutTotext(deskKeyboardShortcuts[i]), orderButtons = '';
+                if (i != (deskKeyboardShortcuts.length - 1)) { orderButtons += '<img width=8 height=8 style=float:right;cursor:pointer;padding:3px src="images/c2.png" onclick=deskCustomizeKeyDown(' + deskKeyboardShortcuts[i] + ')>'; }
+                if (i != 0) { orderButtons += '<img width=8 height=8 style=float:right;cursor:pointer;padding:3px src="images/c3.png" onclick=deskCustomizeKeyUp(' + deskKeyboardShortcuts[i] + ')>'; }
+                x += '<div style="width:100%;background-color:#AAA;border-radius:4px;margin-bottom:4px;padding:4px;text-align:left;box-sizing:border-box" value=' + deskKeyboardShortcuts[i] + '>' + kt + '<img width=10 height=10 style=float:right;cursor:pointer;padding:2px;margin-left:8px src="images/trash.png" onclick=removeDeskCustomizeKey(' + deskKeyboardShortcuts[i] + ')>' + orderButtons + '</div>';
+            }
+            if (x == '') { x = '<i>' + "No keyboard shortcuts defined" + '</i>'; }
+            QH('d2shortcuts', x);
+        }
+
+        function deskCustomizeKeyDown(k) {
+            var i = deskKeyboardShortcuts.indexOf(k), x = deskKeyboardShortcuts[i + 1];
+            deskKeyboardShortcuts[i + 1] = deskKeyboardShortcuts[i];
+            deskKeyboardShortcuts[i] = x;
+            deskUpdateShortcutList();
+        }
+
+        function deskCustomizeKeyUp(k) {
+            var i = deskKeyboardShortcuts.indexOf(k), x = deskKeyboardShortcuts[i];
+            deskKeyboardShortcuts[i] = deskKeyboardShortcuts[i - 1];
+            deskKeyboardShortcuts[i - 1] = x;
+            deskUpdateShortcutList();
+        }
+
+        function removeDeskCustomizeKey(k) {
+            var na = [];
+            for (var i in deskKeyboardShortcuts) { if (deskKeyboardShortcuts[i] != k) { na.push(deskKeyboardShortcuts[i]); } }
+            deskKeyboardShortcuts = na;
+            deskUpdateShortcutList();
+        }
+
+        function addDeskCustomizeKey() {
+            var k = parseInt(Q('d2keySelect').value);
+            if (Q('d1kshift').checked) { k |= 0x010000; }
+            if (Q('d1kalt').checked) { k |= 0x020000; }
+            if (Q('d1kctrl').checked) { k |= 0x080000; }
+            if (Q('d1kwin').checked) { k |= 0x100000; }
+            if ((k > 0) && (deskKeyboardShortcuts.indexOf(k) == -1)) { deskKeyboardShortcuts.push(k); deskUpdateShortcutList(); }
+        }
+
+        // Remote desktop special key combos for Windows
+        function deskSendKeys(ks) {
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
+
+            // Construct the key command
+            if (ks == -1) { deskCustomizeKeys(); return; } // Customize
+            if (ks == 0x0A002E) { desktop.m.sendcad(); return; } // CTRL-ALT-DEL
+            //if ((desktop.contype == 1) && (ks == 0x10004C)) { desktop.sendCtrlMsg('{"action":"lock"}'); return; } // Lock desktop, WIN + L
+
+            var flags = (ks & 0xFF0000) >> 16, key = (ks & 0xFFFF), keyArray = [], keyArray2 = [];
+            var amtTranslate = {
+                8: 0xff08, // BackSpace
+                9: 0xff09, // Tab
+                13: 0xff0d, // Return or Enter
+                27: 0xff1b, // Escape
+                45: 0xff63, // Insert
+                46: 0xffff, // Delete
+                36: 0xff50, // Home
+                35: 0xff57, // End
+                33: 0xff55, // Page Up
+                34: 0xff56, // Page Down
+                37: 0xff51, // Left arrow
+                38: 0xff52, // Up arrow
+                39: 0xff53, // Right arrow
+                40: 0xff54, // Down arrow
+                112: 0xffbe, // F1
+                113: 0xffbf, // F2
+                114: 0xffc0, // F3
+                115: 0xffc1, // F4
+                116: 0xffc2, // F5
+                117: 0xffc3, // F6
+                118: 0xffc4, // F7
+                119: 0xffc5, // F8
+                120: 0xffc6, // F9
+                121: 0xffc7, // F10
+                122: 0xffc8, // F11
+                123: 0xffc9  // F12
+            }
+
+            // 0x010000 = Shift
+            // 0x020000 = Left-Alt
+            // 0x080000 = Ctrl
+            // 0x100000 = Window
+
+            if (desktop.contype == 2) {
+                // Intel AMT
+                if (flags & 1) { keyArray.push([0xffe1, 1]); keyArray2.push([0xffe1, 0]); } // Shift
+                if (flags & 2) { keyArray.push([0xffe9, 1]); keyArray2.push([0xffe9, 0]); } // Left-alt
+                if (flags & 8) { keyArray.push([0xffe3, 1]); keyArray2.push([0xffe3, 0]); } // Ctrl
+                if (flags & 16) { keyArray.push([0xffe7, 1]); keyArray2.push([0xffe7, 0]); } // Windows key
+                if (amtTranslate[key]) { key = amtTranslate[key]; }
+                if ((key >= 65) && (key <= 90)) { key += 32; }
+                if (key != 0) { keyArray.push([key, 1]); keyArray2.push([key, 0]); }
+                keyArray2.reverse();
+                for (var i = 0; i < keyArray2.length; i++) { keyArray.push(keyArray2[i]); }
+                desktop.m.sendkey(keyArray);
+            } else {
+                // Agent desktop
+                if (flags & 1) { keyArray.push([desktop.m.KeyAction.DOWN, 16]); keyArray2.push([desktop.m.KeyAction.UP, 16]); } // Shift
+                if (flags & 2) { keyArray.push([desktop.m.KeyAction.EXDOWN, 18]); keyArray2.push([desktop.m.KeyAction.EXUP, 18]); } // Left-alt
+                if (flags & 8) { keyArray.push([desktop.m.KeyAction.EXDOWN, 17]); keyArray2.push([desktop.m.KeyAction.EXUP, 17]); } // Ctrl
+                if (flags & 16) { keyArray.push([desktop.m.KeyAction.EXDOWN, 0x5B]); keyArray2.push([desktop.m.KeyAction.EXUP, 0x5B]); } // Windows key
+                if (key != 0) { keyArray.push([desktop.m.KeyAction.DOWN, key]); keyArray2.push([desktop.m.KeyAction.UP, key]); }
+                keyArray2.reverse();
+                for (var i = 0; i < keyArray2.length; i++) { keyArray.push(keyArray2[i]); }
+                desktop.m.SendKeyMsgKC(keyArray);
+            }
+        }
+
 
         //
         // Terminal
@@ -2191,6 +2448,8 @@
             QH('xfooterMenu', '<tr>' + x);
         }
 
+        function center() { if (xtermfit) xtermfit.fit(); QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); deskAdjust(); }
+        function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
         function messagebox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t); }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
