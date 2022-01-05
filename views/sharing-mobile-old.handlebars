@@ -1,0 +1,2486 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="robots" content="noindex,nofollow">
+    <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/style-sharing.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
+    <link rel="apple-touch-icon" href="/favicon-303x303.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+    <meta name="apple-mobile-web-app-title" content="{{{title}}}">
+    <script type="text/javascript" src="scripts/common-0.0.1{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-redir-ws-0.1.0{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-wsman-ws-0.2.0{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/agent-redir-ws-0.1.1{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/agent-desktop-0.0.2{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-desktop-0.0.2{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-terminal-0.0.2{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/zlib{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/zlib-inflate{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/zlib-adler32{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/zlib-crc32{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-terminal-0.0.2{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
+    <title>{{{title}}}</title>
+    <style>
+
+        .deskButton {
+            box-shadow: 0px 0px 10px #000;
+            border-radius:20px;
+            position:absolute;
+            right:10px;
+            top:10px;
+            cursor:pointer;
+            background-color:#AAA;
+            z-index:1000;
+        }
+
+        .menuButton{
+            box-shadow: 0px 0px 10px #000;
+            border-radius:10px;
+            display:inline-block;
+            width:120px;
+            background-color:#AAA;
+            text-align:center;
+            padding:8px;
+            cursor:pointer;
+            margin:10px;
+            z-index:1000;
+        }
+
+        #dialog {
+            z-index:1000;
+            background-color:#EEE;
+            box-shadow:0px 0px 15px #666;
+            font-family:Arial,Helvetica,sans-serif;
+            border-radius:5px;
+            position:fixed;
+            top:90px;
+            width:300px;
+        }
+
+        .night #dialog {
+            color: black;
+            background-color:#AAA;
+        }
+
+    </style>
+</head>
+<body style="overflow:hidden;background-color:black;margin:0;padding:0;border:0;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
+    <div id=p11 class="noselect" style="overflow:hidden;position:absolute;left:0;top:0;right:0;bottom:32px;display:none">
+        <div id=p10dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:30px;width:300px;left:30px;display:none">
+            <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
+                <div style=padding:5px>Keyboard Shortcuts Customization</div>
+                <div style=width:100%;margin:6px></div>
+            </div>
+            <div style="margin-right:16px;margin-left:8px"><div id=p10dialog2 style="margin:auto;margin:3px"></div></div>
+            <div style="padding:10px;margin-bottom:20px"><input type="button" value="OK" style="float:right;width:80px" onclick="deskCustomizeKeysEx()"></div>
+        </div>
+        <img id="deskkeybutton1" src="images/mobile-desk-exit.png" class="deskButton" style="top:10px;display:none" onclick="exitButton(event)" />
+        <img id="deskkeybutton3a" src="images/mobile-desk-menu-open.png" class="deskButton" style="top:60px;display:none" onclick="toggleMenu(false)" />
+        <img id="deskkeybutton3b" src="images/mobile-desk-menu-close.png" class="deskButton" style="top:60px;display:none" onclick="toggleMenu(true)" />
+        <img id="deskkeybutton4a" src="images/mobile-desk-mouse-left.png" class="deskButton" style="top:110px;display:none" onclick="deskChangeMouseButton(0)" />
+        <img id="deskkeybutton4b" src="images/mobile-desk-mouse-right.png" class="deskButton" style="top:110px;display:none" onclick="deskChangeMouseButton(1)" />
+        <img id="deskkeybutton5a" src="images/mobile-desk-scale-out.png" class="deskButton" style="top:160px;display:none" onclick="deskChangeFullscreenZoom()" />
+        <img id="deskkeybutton5b" src="images/mobile-desk-scale-in.png" class="deskButton" style="top:160px;display:none" onclick="deskChangeFullscreenZoom()" />
+        <img id="deskkeybutton2a" src="images/mobile-desk-keyboard-open.png" class="deskButton" style="top:210px;display:none" onclick="toggleKeyboard()" />
+        <img id="deskkeybutton2b" src="images/mobile-desk-keyboard-close.png" class="deskButton" style="top:210px;display:none" onclick="toggleKeyboard()" />
+        <div style="position:absolute;top:0;left:0;z-index:200;opacity:0;width:1px;height:1px">
+            <input id="softKeyboard" autocapitalize="off" autocomplete="off" type="text" spellcheck="false" style="z-index:200;opacity:0;width:1px;height:1px" onfocus="keyboardFocusChange()" onblur="keyboardFocusChange()" />
+        </div>
+        <div id="deskButtonMenu" style="display:none;position:absolute;top:10px;left:10px;right:55px;bottom:10px;z-index:1000"></div>
+        <div id=deskarea0 style="position:absolute;top:0px;left:0px;right:0px;bottom:0px">
+            <div id=deskarea1 class="areaHead" style="line-height:24px">
+                <div class="toright2">
+                    <span id="p11power"></span>&nbsp;
+                    <input id="deskFullScreen" type="button" value="Full Screen" style="display:none" onkeypress="return false" onkeydown="return false" onclick="deskToggleFull(event)" class="mR" />
+                    <input id="deskActionsSettings" type="button" value="Settings..." onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
+                    <div id="deskRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px"></div>
+                </div>
+                <div>
+                    <div id="idx_deskFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
+                    <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                    <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                    <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
+                    &nbsp;<span id="deskstatus">Disconnected</span><span id="deskmetadata"></span>
+                </div>
+            </div>
+            <div id=deskarea3x style="max-height:calc(100vh - 60px);height:calc(100vh - 60px);">
+                <div id=DeskParent>
+                    <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
+                </div>
+                <div id=p11DeskConsoleMsg style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
+            </div>
+            <div id=deskarea4 class="areaFoot" style="min-height:24px">
+                <div class="toright2">
+                    <span id="DeskLatency" title="Desktop Session Latency"></span>
+                    <span id="DeskTimer" style="display:none" title="Session time"></span>&nbsp;
+                    <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onkeypress="return false" onkeydown="return false"></select>&nbsp;
+                    <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop"><img src='images/icon-camera.png' onclick=deskSaveImage() height=16 width=16 style=padding-top:2px /></span>
+                </div>
+                <div style="height:22px">
+                    <select id="deskkeys">
+                        <option value=10>Ctrl+Alt+Del</option>
+                        <option value=5>Win</option>
+                        <option value=0>Win+Down</option>
+                        <option value=1>Win+Up</option>
+                        <option value=2>Win+L</option>
+                        <option value=3>Win+M</option>
+                        <option value=4>Shift+Win+M</option>
+                        <option value=6>Win+R</option>
+                        <option value=7>Alt-F4</option>
+                        <option value=8>Ctrl-W</option>
+                        <option value=9>Alt-Tab</option>
+                        <option value=11>Win+Left</option>
+                        <option value=12>Win+Right</option>
+                    </select>
+                    <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
+                    <input id="DeskClip" style="" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
+                    <input id="DeskType" style="" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
+                    <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()" />Input</span></label>&nbsp;
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id=p12 class="noselect" style="overflow:hidden;position:absolute;left:0;top:0;right:0;bottom:32px;display:none;background-color:black">
+        <div id="p12warning" onclick=showFeaturesDlg()>
+            <div class="icon2"></div>
+            <div class="warningbox">Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p12warninga">, click here to enable it.</span></div>
+        </div>
+        <div id="p12warning2" onclick=showPowerActionDlg()>
+            <div class="icon2"></div>
+            <div class="warningbox">Remote computer is not powered on, click here to issue a power command.</div>
+        </div>
+        <div class="areaHead" style="position:absolute;top:0;left:0;right:0;height:24px">
+            <div class="toright2">
+                <div id="termRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
+                <div id="p12power" style="margin-top:3px;margin-right:4px;float:right"></div>
+            </div>
+            <div>
+                <span id="connectbutton2span"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
+                &nbsp;<span id="termstatus">Disconnected</span><span id="termtitle"></span>
+            </div>
+        </div>
+        <div id="termarea3xdiv" style="position:absolute;top:28px;bottom:28px;left:0;right:0"></div>
+        <div class="areaFoot" style="position:absolute;bottom:0;left:0;right:0;height:24px">
+            <div class="toright2">
+                <span id="TermLatency" title="Terminal Session Latency"></span>
+                <span id="TermTimer" title="Session time"></span>&nbsp;
+                <span id="terminalSettingsButtons" style="display:none">
+                    <input id="id_tcrbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="CR+LF" title="Toggle what the return key will send" onclick="termToggleCr()" />
+                    <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()" />
+                    <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()" />
+                </span>
+                <span id="terminalSizeDropDown" style="display:none">
+                    <select id="termSizeList" onkeypress="return false"><option value="1">80x25</option><option value="2">100x30</option></select>
+                </span>
+                <span id="specialKeyDropDown">
+                    <select id="specialkeylist" onkeypress="return false"></select>
+                    <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()" />
+                </span>
+            </div>
+            <div>
+                &nbsp;
+                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlcbutton" value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
+                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlxbutton" value="Ctl-X" onclick="termSendKey(24,'ctrlxbutton')" />
+                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="escbutton" value="ESC" onclick="termSendKey(27,'escbutton')" />
+                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="bsbutton" value="Backspace" onclick="termSendKey(8,'bsbutton')" style="display:none" />
+                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="pastebutton" value="Paste" title="Paste text into the terminal" onclick="showTermPasteDialog()" style="display:none" />
+            </div>
+        </div>
+        <div id=p12TermConsoleMsg style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:45px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p12clearConsoleMsg()></div>
+    </div>
+    <div id=p13 class="noselect" style="overflow:hidden;position:absolute;left:0;top:0;right:0;bottom:32px;display:none;background-color:white">
+        <div id="p13toolbar" style="position:absolute;left:0;top:0;right:0;bottom:28px">
+            <div class="areaHead">
+                <div class="toright2">
+                    <div id="filesRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
+                    <div id="p13power" style="margin-top:3px;margin-right:4px;float:right"></div>
+                </div>
+                <div>
+                    <input id=p13Connect value="Connect" onclick=connectFiles(event) type="button" />
+                    &nbsp;<span id=p13Status>Disconnected</span>
+                </div>
+            </div>
+            <div id="fileArea2" class="areaHead2" valign=bottom>
+                <div id="p13rightOfButtons" class="toright2"></div>
+                <div>
+                    <input type=button id=p13FolderUp disabled="disabled" onclick="p13folderup()" value="Up" />&nbsp;
+                    <input type=button id=p13SelectAllButton disabled="disabled" onclick="p13selectallfile()" value="Select All" />&nbsp;
+                    <input type=button id=p13RenameFileButton disabled="disabled" value="Rename" onclick="p13renamefile()" />&nbsp;
+                    <input type=button id=p13DeleteFileButton disabled="disabled" value="Delete" onclick="p13deletefile()" />&nbsp;
+                    <input type=button id=p13ViewFileButton disabled="disabled" value="Edit" onclick="p13viewfile()" />&nbsp;
+                    <input type=button id=p13NewFolderButton disabled="disabled" value="New Folder" onclick="p13createfolder()" />&nbsp;
+                    <input type=button id=p13UploadButton disabled="disabled" value="Upload" onclick="p13uploadFile()" />&nbsp;
+                    <input type=button id=p13CutButton disabled="disabled" value="Cut" onclick="p13copyFile(1)" />&nbsp;
+                    <input type=button id=p13CopyButton disabled="disabled" value="Copy" onclick="p13copyFile(0)" />&nbsp;
+                    <input type=button id=p13PasteButton disabled="disabled" value="Paste" onclick="p13pasteFile()" />&nbsp;
+                    <input type=button id=p13ZipButton disabled="disabled" value="Zip" onclick="p13zipFiles()" />&nbsp;
+                    <input type=button id=p13RefreshButton disabled="disabled" value="Refresh" onclick="p13folderup(9999)" />&nbsp;
+                    <input type=button id=p13FindButton disabled="disabled" value="Find" onclick="p13findfile()" />&nbsp;
+                </div>
+            </div>
+            <div class="areaHead3" style="line-height:28px">
+                <div class="toright2">
+                    <select id=p13sortdropdown onchange=p13updateFiles()>
+                        <option value=1 selected="selected">Sort by name</option>
+                        <option value=2>Sort by size</option>
+                        <option value=3>Sort by date</option>
+                        <option value=4>Descend by name</option>
+                        <option value=5>Descend by size</option>
+                        <option value=6>Descend by date</option>
+                    </select>
+                </div>
+                <div>&nbsp;&nbsp;<span id="p13currentpath"></span></div>
+            </div>
+            <div id="fileArea4" style="height:calc(100vh - 146px)">
+                <div id=p13FilesConsoleMsg style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:165px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p13clearConsoleMsg()></div>
+                <div id="p13filetable" style="width:100%;height:100%">
+                    <div id="p13bigok" style="display:none"><b>&checkmark;</b></div>
+                    <div id="p13bigfail" style="display:none"><b>&#10007;</b></div>
+                    <span id="p13files"></span>
+                </div>
+            </div>
+        </div>
+        <div class="areaFoot" style="position:absolute;left:0;right:0;bottom:0;height:28px">
+            &nbsp;<span id="p13bottomstatus"></span>
+        </div>
+    </div>
+    <div id=xfooter style="height:32px;width:100%;text-align:center;background-color:#113962;position:absolute;bottom:0px;margin:0;padding:0">
+        <table id=xfooterMenu cellpadding=0 cellspacing=0 style="height:32px;width:100%;color:white;cursor:pointer;table-layout:fixed"></table>
+    </div>
+    <div id=dialog class="noselect" style="display:none">
+        <div id=dialogHeader>
+            <div tabindex=0 id=id_dialogclose onclick=setDialogMode() onkeypress="if (event.key == 'Enter') setDialogMode()">&#x2716;</div>
+            <div id=id_dialogtitle></div>
+        </div>
+        <div id=dialogBody>
+            <div id=dialog1>
+                <div id=id_dialogMessage style=""></div>
+            </div>
+            <div id=dialog2 style="">
+                <div id=id_dialogOptions></div>
+            </div>
+            <div id=dialog7 style="margin:auto;margin:3px">
+                <div id="d7meshkvm">
+                    <h4 style="width:100%;border-bottom:1px solid gray">Agent Remote Desktop</h4>
+                    <table style="width:100%">
+                        <tr>
+                            <td>
+                                Quality
+                            </td>
+                            <td style="width:100px">
+                                <select id="d7bitmapquality" style="float:right;width:200px" dir="rtl"></select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Scaling
+                            </td>
+                            <td style="width:100px">
+                                <select id="d7bitmapscaling" style="float:right;width:200px" dir="rtl">
+                                    <option selected=selected value=1024>100%</option>
+                                    <option value=896>87.5%</option>
+                                    <option value=768>75%</option>
+                                    <option value=640>62.5%</option>
+                                    <option value=512>50%</option>
+                                    <option value=384>37.5%</option>
+                                    <option value=256>25%</option>
+                                    <option value=128>12.5%</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Rate
+                            </td>
+                            <td style="width:100px">
+                                <select id="d7framelimiter" style="float:right;width:200px" dir="rtl">
+                                    <option selected=selected value=50>Fast</option>
+                                    <option value=100>Medium</option>
+                                    <option value=400>Slow</option>
+                                    <option value=1000>Very slow</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox" id="d7deskAutoLock" />Lock on Disconnect</label>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="d7amtkvm">
+                    <h4 style="width:100%;border-bottom:1px solid gray">Intel&reg; AMT Hardware KVM</h4>
+                    <table style="width:100%">
+                        <tr>
+                            <td>Encoding</td>
+                            <td style="width:100px">
+                                <select id="d7desktopmode" style="float:right;width:200px">
+                                    <option value="1">RLE8, Fastest</option>
+                                    <option value="2">RLE16, Recommended</option>
+                                    <option value="3">RAW8, Slow</option>
+                                    <option value="4">RAW16, Very Slow</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="idx_dlgButtonBar">
+            <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)">
+            <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)">
+            <div><input id="idx_dlgDeleteButton" type="button" value="Delete" style="display:none" onclick="dialogclose(2)"></div>
+        </div>
+    </div>
+    <script>
+        var sessionActivity = null;
+        var desktop = null;
+        var agentPresent = true;
+        var intelAmtPresent = false;
+        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 100, localkeymap: false };
+        var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
+        var domain = '{{{domain}}}';
+        var domainUrl = '{{{domainurl}}}';
+        var authCookie = '{{{authCookie}}}';
+        var viewOnly = parseInt('{{{viewOnly}}}');
+        var urlargs = parseUriArgs();
+        var debugmode = urlargs.debug;
+        var attemptWebRTC = false;
+        var updateSessionTimer = null;
+        var deskKeyboardShortcuts = [];
+        var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
+        var nodeName = decodeURIComponent('{{{nodeName}}}');
+        var webPageFullScreen = false;
+        var expire = '{{{expire}}}';
+        if (expire != '') {
+            QH('p11power', printFlexDateTime(new Date(parseInt(expire))));
+            QH('p12power', printFlexDateTime(new Date(parseInt(expire))));
+            QH('p13power', printFlexDateTime(new Date(parseInt(expire))));
+        }
+        var features = parseInt('{{{features}}}');
+        var features2 = parseInt('{{{features2}}}');
+
+        // Load desktop settings
+        var t = null;
+        try { t = localStorage.getItem('desktopsettings'); } catch (ex) { }
+        if (t != null) { try { desktopsettings = JSON.parse(t); } catch (ex) { } }
+        if (((features2 & 1) == 0) && (desktopsettings.quality > 60)) { desktopsettings.quality = 60; }
+
+        // Terminal
+        var terminal = null;
+        var xterm = null;
+        var xtermfit = null;
+        var xtermResizeTimer = null;
+
+        // Files
+        var files = null
+
+        // Console messages timers
+        var p11DeskConsoleMsgTimer = null;
+        var p12TermConsoleMsgTimer = null;
+        var p13FilesConsoleMsgTimer = null;
+
+        function start() {
+            window.onresize = center;
+            center();
+            document.onkeypress = ondeskkeypress;
+            document.onkeydown = ondeskkeydown;
+            document.onkeyup = ondeskkeyup;
+            //document.onkeypress = ondockeypress;
+            //document.onkeydown = ondockeydown;
+            //document.onkeyup = ondockeyup;
+            setupDesktop();
+            setupTerminal();
+            setupFiles();
+
+            // Set the document title
+            if (nodeName.length > 0) { document.title += ' - ' + nodeName; }
+
+            // View only mode
+            if (viewOnly == 1) {
+                QV('deskkeys', false);
+                QV('DeskWD', false);
+                QV('DeskClip', false);
+                QV('DeskType', false);
+                QV('DeskControlSpan', false);
+            }
+
+            // Setup upload drag & drop
+            Q('p13filetable').addEventListener('drop', p13fileDragDrop, false);
+            Q('p13filetable').addEventListener('dragover', p13fileDragOver, false);
+            Q('p13filetable').addEventListener('dragleave', p13fileDragLeave, false);
+
+            // Setup feature visibility
+            QV('LeftMenuDesktop', features & 2);
+            QV('LeftMenuTerminal', features & 1);
+            QV('LeftMenuFiles', features & 4);
+            if (features & 2) { go(11); } // Goto desktop
+            else if (features & 1) { go(12); } // Goto terminal
+            else if (features & 4) { go(13); } // Goto files
+            deskAdjust();
+
+            // Set the user's desktop shortcut keys
+            deskKeyboardShortcuts = [];
+            var deskKeyboardShortcutsStr = '0x0A002E,0x100000,0x100028,0x100026,0x10004C,0x10004D,0x11004D,0x100052,0x020073,0x080057,0x020009,0x100025,0x100027'.split(',');
+            for (var i in deskKeyboardShortcutsStr) { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); }
+            updateDeskShortcutKeys();
+            //updateTermShortcutKeys();
+        }
+
+        //
+        // Desktop
+        //
+
+        function isInputAllowed() { return (viewOnly != 1) && (Q('DeskControl').checked == true); }
+        function clearConsoleMsg() { QH('p11DeskConsoleMsg', ''); }
+
+        function deskAdjust() {
+            if ((xxcurrentView == 12) && (terminal != null) && (xtermfit != null)) { xtermfit.fit(); } // Terminal 
+            QS('fileArea4')['height'] = 'calc(100vh - ' + (90 + Q('fileArea2').clientHeight) + 'px)'; // Files
+
+            if (fullscreen) {
+                QS('Desk')['margin-top'] = null;
+                QS('Desk')['margin-bottom'] = null;
+                QS('deskarea3x')['padding-right'] = '55px';
+                QS('Desk').width = '100%';
+                QS('Desk').height = '100%';
+                var parentH = Q('p11').clientHeight, parentW = Q('p11').clientWidth;
+                var deskH = Q('deskarea3x').clientHeight, deskW = Q('deskarea3x').clientWidth - 55;
+                if (parentH > deskH) { QS('deskarea3x').top = ((parentH - deskH) / 2) + 'px'; } else { QS('deskarea3x').top = null; }
+                if (parentW > deskW) { QS('deskarea3x').left = ((parentW - deskW) / 2) + 'px'; } else { QS('deskarea3x').left = null; }
+            } else {
+                var parentH = Q('DeskParent').clientHeight, parentW = Q('DeskParent').clientWidth;
+                var deskH = Q('Desk').height, deskW = Q('Desk').width;
+
+                // Fixed aspect ratio
+                if ((parentH / parentW) > (deskH / deskW)) {
+                    var hNew = ((deskH * parentW) / deskW) + 'px';
+                    QS('Desk').height = hNew;
+                    QS('Desk').width = '100%';
+                } else {
+                    var wNew = ((deskW * parentH) / deskH) + 'px';
+                    QS('Desk').height = '100%';
+                    QS('Desk').width = wNew;
+                }
+                QS('Desk')['margin-top'] = null;
+                QS('deskarea3x')['padding-right'] = null;
+            }
+        }
+
+        function setupDesktop() {
+            // Setup the remote desktop
+            if (desktop != null) { desktop.Stop(); desktop = null; }
+
+            // If the device desktop is already connected in multi-desktop, use that.
+            if (desktop == null) {
+                // Device is not already connected, just setup a blank canvas
+                QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
+
+                // Setup the mouse wheel
+                Q('Desk').addEventListener('DOMMouseScroll', function (e) { return dmousewheel(e); });
+                Q('Desk').addEventListener('mousewheel', function (e) { return dmousewheel(e); });
+            }
+            updateDesktopButtons();
+            deskAdjust();
+            updateMetadata(desktop, 'deskmetadata');
+        }
+
+        // Show and enable the right buttons
+        function updateDesktopButtons() {
+            var deskState = 0;
+            if (desktop != null) { deskState = desktop.State; }
+
+            // Show the right buttons
+            QV('disconnectbutton1span', (deskState != 0));
+            QV('connectbutton1span', (deskState == 0) && (agentPresent));
+            QV('connectbutton1hspan', (deskState == 0) && (intelAmtPresent));
+
+            // Show the right settings
+            QV('d7meshkvm', agentPresent && ((deskState == 0) || (desktop.contype == 1)));
+            QV('d7amtkvm', intelAmtPresent && ((deskState == 0) || (desktop.contype == 2)));
+
+            // Enable buttons
+            QE('connectbutton1', agentPresent);
+            QE('connectbutton1h', intelAmtPresent);
+            //QV('DeskClip', agentPresent && ((desktop == null) || (desktop.contype != 2))); // Clipboard not supported on macOS
+            QV('DeskClip', false); // Clipboard not supported on this page
+            QE('DeskClip', deskState == 3);
+            QE('DeskType', deskState == 3);
+            QV('DeskWD', viewOnly != 1);
+            QE('DeskWD', deskState == 3);
+            QV('deskkeys', viewOnly != 1);
+            QE('deskkeys', deskState == 3);
+
+            // Display this only if we have Chat & Notify permissions
+            QV('DeskSaveImageButton', (deskState == 3) && (Q('Desk')['toBlob'] != null));
+            QV('DeskControlSpan', viewOnly != 1);
+            QV('deskActionsBtn', true);
+            QV('deskActionsSettings', (deskState != 3));
+            Q('DeskControl').checked = true;
+            QS('DeskControlSpan').color = Q('DeskControl').checked ? null : 'red';
+        }
+
+        // Used to translate incoming agent console messages
+        var agentConsoleMessages = ['', "Waiting for user to grant access...", "Denied", "Failed to start remote terminal session, {0} ({1})", "Timeout", "Received invalid network data"];
+        function formatAgentConsoleMessage(msg, msgid, msgargs) {
+            var r;
+            if (msgargs == null) { msgargs = []; }
+            while (msgargs.length < 3) { msgargs.push(''); } // We need to call the format function in a way that works with older browsers and minifier, can't use apply() or ...
+            if (msgid && (msgid < agentConsoleMessages.length)) { r = EscapeHtml(format(agentConsoleMessages[msgid], (msgargs[0]), (msgargs[1]), (msgargs[2]))); } else { r = EscapeHtml(msg); }
+            return r.split('\n').join('<br />') + '<br /><br />';
+        }
+
+        function connectDesktop(e, contype, tsid, consent) {
+            if (xxdialogMode) return;
+            if ((e != null) && (e.shiftKey != false) && (contype == 3)) { contype = 1; } // If the shift key is not pressed, don't try to ask for session list.
+            QV('p11DeskSessionSelector', false);
+            p11clearConsoleMsg();
+            if (desktop == null) {
+                if (contype == 2) {
+                    // Setup the Intel AMT remote desktop
+                    //if ((desktopNode.intelamt.user == null) || (desktopNode.intelamt.user == '')) { editDeviceAmtSettings(desktopNode._id, connectDesktop, 2); return; }
+                    desktop = CreateAmtRedirect(CreateAmtRemoteDesktop('Desk'), authCookie);
+                    desktop.debugmode = debugmode;
+                    desktop.onStateChanged = onDesktopStateChange;
+                    desktop.m.stopInput = (viewOnly == 1);
+                    desktop.m.bpp = (desktopsettings.encoding == 1 || desktopsettings.encoding == 3) ? 1 : 2;
+                    desktop.m.useZRLE = (desktopsettings.encoding < 3);
+                    desktop.m.localKeyMap = desktopsettings.localkeymap;
+                    desktop.m.showmouse = desktopsettings.showmouse;
+                    desktop.m.onScreenSizeChange = deskAdjust;
+                    desktop.m.onKvmData = function (x) {
+                        //console.log('onKvmData (' + x.length + '): ' + x);
+                        // Send the presense probe only once if needed.
+                        if (x.length == 0) { if (!desktop.m._sentPresence) { desktop.m._sentPresence = true; desktop.m.sendKvmData(JSON.stringify({ action: 'present', ver: 1 })); } return; }
+                        var data = null;
+                        try { data = JSON.parse(x); } catch (e) { }
+                        if ((data != null) && (data.action != null)) {
+                            if (data.action == 'restart') {
+                                // Clear WebRTC channel
+                                webRtcDesktopReset();
+                                desktop.m.sendKvmData(JSON.stringify({ action: 'present', ver: 1 }));
+                            } else if ((data.action == 'present') && (webRtcDesktop == null)) {
+                                // Setup WebRTC channel
+                                webRtcDesktop = { platform: data.platform };
+                                var configuration = null; //{ "iceServers": [ { 'urls': 'stun:stun.services.mozilla.com' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
+                                if (typeof RTCPeerConnection !== 'undefined') { webRtcDesktop.webrtc = new RTCPeerConnection(configuration); }
+                                else if (typeof webkitRTCPeerConnection !== 'undefined') { webRtcDesktop.webrtc = new webkitRTCPeerConnection(configuration); }
+
+                                webRtcDesktop.webchannel = webRtcDesktop.webrtc.createDataChannel("DataChannel", {}); // { ordered: false, maxRetransmits: 2 }
+                                webRtcDesktop.webchannel.onopen = function () {
+                                    // Switch to software KVM
+                                    //if (urlvars && urlvars['kvmdatatrace']) { console.log('WebRTC Data Channel Open'); }
+                                    console.log('WebRTC Data Channel Open');
+                                    Q('deskstatus').textContent = StatusStrs[desktop.State] + ", Soft-KVM";
+                                    desktop.m.hold(true);
+                                    webRtcDesktop.webRtcActive = true;
+                                    webRtcDesktop.softdesktop = CreateKvmDataChannel(webRtcDesktop.webchannel, CreateAgentRemoteDesktop('Desk', Q('id_mainarea')), desktop.m);
+                                    webRtcDesktop.softdesktop.m.setRotation(desktop.m.rotation);
+                                    webRtcDesktop.softdesktop.m.onScreenSizeChange = deskAdjust;
+                                    if (desktopsettings.quality) { webRtcDesktop.softdesktop.m.CompressionLevel = desktopsettings.quality; } // Number from 1 to 100. 50 or less is best.
+                                    if (desktopsettings.scaling) { webRtcDesktop.softdesktop.m.ScalingLevel = desktopsettings.scaling; }
+                                    webRtcDesktop.softdesktop.Start();
+
+                                    // Check if we can get remote file access
+                                    // ###BEGIN###{DesktopInbandFiles}
+                                    /*
+                                    QV('go24', true); // Files
+                                    downloadFile = null;
+                                    p24files = webRtcDesktop.softdesktop;
+                                    p24targetpath = '';
+                                    webRtcDesktop.softdesktop.onControlMsg = onFilesControlData;
+                                    webRtcDesktop.softdesktop.sendCtrlMsg(JSON.stringify({ action: 'ls', reqid: 1, path: '' })); // Ask for the root folder
+                                    */
+                                    // ###END###{DesktopInbandFiles}
+                                }
+                                webRtcDesktop.webchannel.onclose = function (event) {
+                                    //if (urlvars['kvmdatatrace']) { console.log('WebRTC Data Channel Closed'); }
+                                    console.log('WebRTC Data Channel Closed');
+                                    webRtcDesktopReset();
+                                }
+                                webRtcDesktop.webrtc.onicecandidate = function (e) {
+                                    if (e.candidate == null) {
+                                        desktop.m.sendKvmData(JSON.stringify({ action: 'offer', ver: 1, sdp: webRtcDesktop.webrtcoffer.sdp }));
+                                    } else {
+                                        webRtcDesktop.webrtcoffer.sdp += ('a=' + e.candidate.candidate + '\r\n'); // New candidate, add it to the SDP
+                                    }
+                                }
+                                webRtcDesktop.webrtc.oniceconnectionstatechange = function () {
+                                    if ((webRtcDesktop != null) && (webRtcDesktop.webrtc != null) && ((webRtcDesktop.webrtc.iceConnectionState == 'disconnected') || (webRtcDesktop.webrtc.iceConnectionState == 'failed'))) { /*console.log('WebRTC ICE Failed');*/ webRtcDesktopReset(); }
+                                }
+                                webRtcDesktop.webrtc.createOffer(function (offer) {
+                                    // Got the offer
+                                    webRtcDesktop.webrtcoffer = offer;
+                                    webRtcDesktop.webrtc.setLocalDescription(offer, function () { }, webRtcDesktopReset);
+                                }, webRtcDesktopReset, { mandatory: { OfferToReceiveAudio: false, OfferToReceiveVideo: false } });
+                            } else if ((data.action == 'answer') && (webRtcDesktop != null)) {
+                                // Complete the WebRTC channel
+                                webRtcDesktop.webrtc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: data.sdp }), function () { }, webRtcDesktopReset);
+                            }
+                        }
+                    };
+                    desktop.Start(null, 16994, '*', '*', 0);
+                    desktop.contype = 2;
+                } else if ((contype == null) || (contype == 1) || (contype == 3)) {
+                    // Setup the Mesh Agent remote desktop
+                    desktop = CreateAgentRedirect(null, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, null, domainUrl);
+                    desktop.m.stopInput = (viewOnly == 1);
+                    desktop.m.mouseCursorActive(true);
+                    desktop.debugmode = debugmode;
+                    desktop.m.debugmode = debugmode;
+                    desktop.attemptWebRTC = attemptWebRTC;
+                    desktop.options = {};
+                    if (tsid != null) { desktop.options.tsid = tsid; }
+                    if (consent != null) { desktop.options.consent = consent; }
+                    desktop.onStateChanged = onDesktopStateChange;
+                    desktop.onConsoleMessageChange = function () {
+                        if (desktop.consoleMessage) {
+                            Q('p11DeskConsoleMsg').innerHTML += formatAgentConsoleMessage(desktop.consoleMessage, desktop.consoleMessageId, desktop.consoleMessageArgs);
+                            QV('p11DeskConsoleMsg', true);
+                            if (p11DeskConsoleMsgTimer != null) { clearTimeout(p11DeskConsoleMsgTimer); }
+                            if (desktop.consoleMessageTimeout) { p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, desktop.consoleMessageTimeout * 1000); }
+                        } else {
+                            p11clearConsoleMsg();
+                        }
+                    }
+                    desktop.onMetadataChange = function (metadata) { updateMetadata(desktop, 'deskmetadata'); }
+                    desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
+                    desktop.m.ScalingLevel = desktopsettings.scaling;
+                    if (desktopsettings.framerate) { desktop.m.FrameRateTimer = desktopsettings.framerate; }
+                    desktop.m.onDisplayinfo = deskDisplayInfo;
+                    desktop.m.onScreenSizeChange = deskAdjust;
+                    desktop.Start(null);
+                    desktop.latency.callback = function (ms) { console.log('latency', ms); updateSessionTime(); };
+                    desktop.contype = 1;
+                }
+            } else {
+                // Disconnect and clean up the remote desktop
+                desktop.Stop();
+                webRtcDesktopReset();
+                desktop = null;
+                //if (pluginHandler != null) { pluginHandler.callHook('onDesktopDisconnect'); }
+            }
+        }
+
+        function updateMetadata(conn, elementid) {
+            var str = '', viewerCount = 0;
+            if (conn && (conn.State == 3)) {
+                if (conn.metadata && conn.metadata.users) { for (var i in conn.metadata.users) { viewerCount += conn.metadata.users[i]; } }
+                if (viewerCount > 1) { str = '<span onclick=showSessionMetadata(1) style=cursor:pointer>' + format(", {0} watching", viewerCount) + '</span>'; }
+            }
+            QH('deskmetadata', str);
+            if ((conn == desktop) && (xxdialogTag == ('sessionMetadata1'))) { showSessionMetadata(1); }
+        }
+
+        function showSessionMetadata(cid) {
+            if (xxdialogMode && (xxdialogTag != ('sessionMetadata' + cid))) return;
+            if (xxdialogMode) { setDialogMode(0); }
+            var conn = null;
+            if (cid == 1) { conn = desktop; }
+            if (conn && conn.metadata) {
+                var x = '';
+                if (conn.metadata.startTime) { x += addHtmlValue4("Start Time", printDateTime(new Date(conn.metadata.startTime))); }
+                if (conn.metadata.users) {
+                    for (var i in conn.metadata.users) {
+                        var val = (conn.metadata.users[i] == 1) ? "1 connection" : format("{0} connections", conn.metadata.users[i]);
+                        var username = i.split('/')[2];
+                        if ((users != null) && (users[i] != null)) { username = users[i].name; }
+                        x += addHtmlValue4(format("User \"{0}\"", username), val);
+                    }
+                }
+                setDialogMode(2, "Session Information", 1, null, x, 'sessionMetadata' + cid);
+            }
+        }
+
+        function p11clearConsoleMsg() { QH('p11DeskConsoleMsg', ''); QV('p11DeskConsoleMsg', false); if (p11DeskConsoleMsgTimer) { clearTimeout(p11DeskConsoleMsgTimer); p11DeskConsoleMsgTimer = null; } }
+        function p12clearConsoleMsg() { QH('p12TermConsoleMsg', ''); QV('p12TermConsoleMsg', false); if (p12TermConsoleMsgTimer) { clearTimeout(p12TermConsoleMsgTimer); p12TermConsoleMsgTimer = null; } }
+        function p13clearConsoleMsg() { QH('p13FilesConsoleMsg', ''); QV('p13FilesConsoleMsg', false); if (p13FilesConsoleMsgTimer) { clearTimeout(p13FilesConsoleMsgTimer); p13FilesConsoleMsgTimer = null; } }
+
+        var webRtcDesktop = null;
+        function webRtcDesktopReset() {
+            if (webRtcDesktop == null) return;
+            if (webRtcDesktop.softdesktop != null) { webRtcDesktop.softdesktop.Stop(); webRtcDesktop.softdesktop = null; }
+            if (webRtcDesktop.webchannel != null) { try { webRtcDesktop.webchannel.close(); } catch (e) { } webRtcDesktop.webchannel = null; }
+            if (webRtcDesktop.webrtc != null) { try { webRtcDesktop.webrtc.close(); } catch (e) { } webRtcDesktop.webrtc = null; }
+            webRtcDesktop = null;
+            // Switch back to hardware KVM
+            if (desktop && desktop.m) {
+                desktop.m.hold(false);
+                Q('deskstatus').textContent = StatusStrs[desktop.State];
+            }
+            // ###BEGIN###{DesktopInbandFiles}
+            /*
+            p24files = null;
+            p24downloadFileCancel() // If any downloads are in process, cancel them.
+            p24uploadFileCancel(); // If any uploads are in process, cancel them.
+            QV('go24', false); // Files
+            if (currentView == 24) { go(14); }
+            */
+            // ###END###{DesktopInbandFiles}
+        }
+
+        function onDesktopStateChange(xdesktop, state) {
+            var xstate = state;
+            if ((xstate == 3) && (xdesktop.contype == 2)) { xstate++; }
+            var str = StatusStrs[xstate];
+            if ((desktop != null) && (desktop.webRtcActive == true)) { str += ", WebRTC"; }
+            //if (desktop.m.stopInput == true) { str += ', Loopback'; }
+            QH('deskstatus', str);
+            QV('deskFullScreen', state == 3);
+            QV('deskActionsSettings', state != 3);
+            switch (state) {
+                case 0:
+                    // Stop recording
+                    if (desktop.m.recordedData != null) { deskRecordSession(); }
+
+                    // Disconnect and clean up the remote desktop
+                    desktop.Stop();
+                    desktop = null;
+                    QV('termdisplays', false);
+                    QV('deskRecordIcon', false);
+                    if (fullscreen == true) { deskToggleFull(); }
+                    webRtcDesktopReset();
+                    deskPreferedStickyDisplay = 0;
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    if (desktop && (desktop.serverIsRecording == true)) { QV('deskRecordIcon', true); }
+                    desktop.startTime = new Date();
+                    if (updateSessionTimer == null) { updateSessionTimer = setInterval(updateSessionTime, 1000); }
+                    break;
+                default:
+                    //console.log('Unknown onDesktopStateChange state', state);
+                    break;
+            }
+            updateDesktopButtons();
+            deskAdjust();
+            setTimeout(deskAdjust, 50);
+            updateMetadata(desktop, 'deskmetadata');
+        }
+
+        function updateSessionTime() {
+            // Desktop
+            var latencyStr = '', seconds = 0;
+            if (desktop && desktop.startTime) {
+                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms, ', desktop.latency.current); }
+                seconds = Math.floor((new Date() - desktop.startTime) / 1000);
+                QH('DeskTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+            } else {
+                QH('DeskTimer', '');
+            }
+
+            if (desktop == null) { clearInterval(updateSessionTimer); updateSessionTimer = null; }
+        }
+
+        function showDesktopSettings() {
+            if (xxdialogMode) return;
+            applyDesktopSettings();
+            updateDesktopButtons();
+            setDialogMode(7, "Remote Desktop Settings", 3, showDesktopSettingsChanged);
+        }
+
+        function showDesktopSettingsChanged() {
+            desktopsettings.encoding = d7desktopmode.value;
+            desktopsettings.quality = d7bitmapquality.value;
+            desktopsettings.scaling = d7bitmapscaling.value;
+            desktopsettings.framerate = d7framelimiter.value;
+            desktopsettings.swapmouse = d7deskSwapMouse.checked;
+            desktopsettings.remotekeymap = d7deskRemoteKeyMap.checked;
+            desktopsettings.localkeymap = d7localKeyMap.checked;
+            localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
+            applyDesktopSettings();
+            if (desktop) {
+                if (desktop.contype == 1) {
+                    desktop.m.SwapMouse = desktopsettings.swapmouse;
+                    desktop.m.remoteKeyMap = desktopsettings.remotekeymap;
+                    if (desktop.State != 0) {
+                        desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate);
+                    }
+                }
+                if (desktop.contype == 2) {
+                    if (desktop.State != 0) { desktop.Stop(); setTimeout(function () { connectDesktop(null, 2); }, 50); }
+                }
+            }
+        }
+
+        function applyDesktopSettings() {
+            var r = '', ops = (features2 & 1) ? [90, 80, 70, 60, 50, 40, 30, 20, 10, 5, 1] : [60, 50, 40, 30, 20, 10, 5, 1]
+            for (var i in ops) { r += '<option value=' + ops[i] + '>' + ops[i] + '%</option>'; }
+            QH('d7bitmapquality', r);
+            d7desktopmode.value = desktopsettings.encoding;
+            d7bitmapquality.value = 40; // Default value
+            if (ops.indexOf(parseInt(desktopsettings.quality)) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
+            d7bitmapscaling.value = desktopsettings.scaling;
+            if (desktopsettings.framerate) { d7framelimiter.value = desktopsettings.framerate; } else { d7framelimiter.value = 100; }
+            if (desktopsettings.swapmouse != null) { d7deskSwapMouse.checked = desktopsettings.swapmouse; }
+            if (desktopsettings.remotekeymap != null) { d7deskRemoteKeyMap.checked = desktopsettings.remotekeymap; }
+            if (desktopsettings.localkeymap) { d7localKeyMap.checked = desktopsettings.localkeymap; }
+        }
+
+        function toggleMenu(x) {
+            if (xxdialogMode) return;
+            QV('deskButtonMenu', fullscreen && !x && (xxcurrentView == 11));
+            QV('termButtonMenu', fullscreen && !x && (xxcurrentView == 12));
+            QV('deskkeybutton3a', fullscreen && x);
+            QV('deskkeybutton3b', fullscreen && !x);
+        }
+
+        function deskChangeMouseButton(x) {
+            if (xxdialogMode) return;
+            if (desktop == null) return;
+            desktop.m.SwapMouse = !desktop.m.SwapMouse;
+            QV('deskkeybutton4a', fullscreen && (!desktop.m.SwapMouse));
+            QV('deskkeybutton4b', fullscreen && (desktop.m.SwapMouse));
+        }
+
+        function deskChangeFullscreenZoom() {
+            if (xxdialogMode) return;
+            if (xxcurrentView == 11) {
+                if (desktop == null) return;
+                if (fullscreenzoom == 1) { fullscreenzoom = 0.5; } else { fullscreenzoom = 1; }
+                QV('deskkeybutton5a', fullscreen && (fullscreenzoom == 1));
+                QV('deskkeybutton5b', fullscreen && (fullscreenzoom != 1));
+                QS('deskarea3x').width = (desktop.m.ScreenWidth * fullscreenzoom) + 'px';
+                QS('deskarea3x').height = (desktop.m.ScreenHeight * fullscreenzoom) + 'px';
+                deskAdjust();
+            }
+            if (xxcurrentView == 12) {
+                if (terminal == null) return;
+                xterm.setOption('fontSize', (xterm.getOption('fontSize') == 15) ? 10 : 15)
+            }
+        }
+
+        var fullscreen = false;
+        var fullscreenzoom = 1;
+        function deskToggleFull(e) {
+            var xtermActive = !((urlargs.xterm === 0) || ((terminal != null) && (xterm == null)));
+            fullscreen = !fullscreen;
+            if (fullscreen) {
+                QV('deskarea1', false);
+                QV('deskarea4', false);
+                QV('xfooter', false);
+                QS('p11').bottom = '0px';
+                QS('deskarea0').overflow = 'scroll';
+                QS('deskarea3x').width = (desktop.m.ScreenWidth * fullscreenzoom) + 'px';
+                QS('deskarea3x').height = QS('deskarea3x')['max-height'] = (desktop.m.ScreenHeight * fullscreenzoom) + 'px';
+                QS('deskarea3x')['padding-right'] = '55px';
+                if (xtermActive) {
+                    // XTerm terminal
+                    //QS('termTable')['position'] = 'absolute';
+                    //QS('termTable')['top'] = QS('termTable')['bottom'] = QS('termTable')['left'] = QS('termTable')['right'] = '0';
+                } else {
+                    // Legacy terminal
+                    //QS('termTable')['height'] = '100%';
+                    //QS('termTable')['max-height'] = '100%';
+                }
+            } else {
+                QV('deskarea1', true);
+                QV('deskarea4', true);
+                QV('xfooter', true);
+                QS('p11').bottom = '32px';
+                QS('deskarea0').overflow = null;
+                QS('deskarea3x').width = null;
+                QS('deskarea3x').height = QS('deskarea3x')['max-height'] = 'calc(100vh - 60px)';
+                QS('deskarea3x')['padding-right'] = null;
+                if (xtermActive) {
+                    // XTerm terminal
+                    //QS('termTable')['position'] = null;
+                    //QS('termTable')['top'] = QS('termTable')['bottom'] = QS('termTable')['left'] = QS('termTable')['right'] = null;
+                } else {
+                    // Legacy terminal
+                    //QS('termTable')['height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
+                    //QS('termTable')['max-height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
+                }
+            }
+
+            inputAllowed = true; // todo
+
+            // Show full screen buttons if needed
+            QV('deskkeybutton1', fullscreen);
+            if (xxcurrentView == 11) { // Desktop panel is being shown (11 = Desktop, 12 = Terminal)
+                // Move shortcut key to desktop position
+                QS('deskkeybutton2a').top = QS('deskkeybutton2b').top = '210px';
+                // Move the zoom button to normal or top position
+                QS('deskkeybutton5a').top = QS('deskkeybutton5b').top = (inputAllowed) ? '160px' : '60px'; // Zoom
+                QV('deskkeybutton2a', fullscreen && inputAllowed);
+                QV('deskkeybutton2b', false);
+                QV('deskkeybutton3a', fullscreen && inputAllowed);
+                QV('deskkeybutton3b', false);
+                QV('deskkeybutton4a', fullscreen && inputAllowed && (!desktop.m.SwapMouse));
+                QV('deskkeybutton4b', fullscreen && inputAllowed && (desktop.m.SwapMouse));
+                QV('deskkeybutton5a', fullscreen && (fullscreenzoom == 1));
+                QV('deskkeybutton5b', fullscreen && (fullscreenzoom != 1));
+            }
+            if (xxcurrentView == 12) {
+                // Move right buttons to terminal position
+                //QS('deskkeybutton3a').top = QS('deskkeybutton3b').top = '60px'; // Shortcuts
+                //QS('deskkeybutton5a').top = QS('deskkeybutton5b').top = '110px'; // Zoom
+                QS('deskkeybutton2a').top = QS('deskkeybutton2b').top = '110px'; // Keyboard
+                QV('deskkeybutton2a', fullscreen);
+                QV('deskkeybutton2b', false);
+                QV('deskkeybutton3a', fullscreen);
+                QV('deskkeybutton3b', false);
+                QV('deskkeybutton4a', false);
+                QV('deskkeybutton4b', false);
+                QV('deskkeybutton5a', false);
+                QV('deskkeybutton5a', false);
+                //QV('deskkeybutton5a', xterm.getOption('fontSize') == 15);
+                //QV('deskkeybutton5b', xterm.getOption('fontSize') != 15);
+            }
+
+            if (xxcurrentView == 11) { deskAdjust(); }
+            updateDesktopButtons();
+            //adjustPanels();
+            //setTimeout(adjustPanels, 10);
+            //setTimeout(function() { xtermfit.fit(); }, 10);
+            if (xterm != null) { if (xxcurrentView == 12) { xtermfit.fit(); xterm.focus(); } }
+        }
+
+        function mdeskAdjust(mod, sw, sh, cv) {
+            if (!mod || !sw || !sh || !cv) return;
+
+            // Check if we are in single desktop mode
+            if (cv.id == 'Desk') { deskAdjust(); return; }
+
+            // Figure out and adjust the size to fill the width of the div
+            var vsize = [{ x: 180, y: 101 }, { x: 302, y: 169 }, { x: 454, y: 255 }][Q('sizeselect').selectedIndex];
+            var realw = vsize.x + 2, tw = Q('xdevices').clientWidth - 30, xw = Math.floor(tw / realw);
+            xw = realw + Math.floor((tw - (xw * realw)) / xw);
+            vsize.y = vsize.y * (xw / vsize.x);
+            vsize.x = xw;
+            var mh = vsize.y, mw = vsize.x;
+            if (mod.State != 0) { mh = vsize.y; mw = (sw / sh) * vsize.y; }
+            QS(cv.id)['max-height'] = mh + 'px';
+            QS(cv.id)['max-width'] = mw + 'px';
+            QS(cv.id)['margin-top'] = '0';
+            QS(cv.id)['margin-bottom'] = '0';
+        }
+
+        // Remote desktop special key combos for Windows
+        function deskSendKeys() {
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
+            var ks = Q('deskkeys').value;
+            if (ks == 0) { // WIN+Down arrow
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7, 1], [0xff54, 1], [0xff54, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, Down arrow press, Down arrow release, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 40], [desktop.m.KeyAction.UP, 40], [desktop.m.KeyAction.EXUP, 0x5B]]); // Agent: L-Winkey press, Down arrow press, Down arrow release, L-Winkey release
+                }
+            } else if (ks == 1) { // WIN+Up arrow
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7, 1], [0xff52, 1], [0xff52, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, Up arrow press, Up arrow release, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 38], [desktop.m.KeyAction.UP, 38], [desktop.m.KeyAction.EXUP, 0x5B]]); // MeshAgent: L-Winkey press, Up arrow press, Up arrow release, L-Winkey release
+                }
+            } else if (ks == 2) { // WIN+L arrow
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7, 1], [0x6c, 1], [0x6c, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, 'l' press, 'l' release, Meta-left release
+                } else {
+                    desktop.sendCtrlMsg('{"action":"lock"}');
+                    //desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,76],[desktop.m.KeyAction.UP,76],[desktop.m.KeyAction.EXUP,0x5B]]); // MeshAgent: L-Winkey press, 'L' press, 'L' release, L-Winkey release
+                    //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.EXDOWN, 0x5B);
+                    //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.DOWN, 76);
+                    //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.UP, 76);
+                    //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.EXUP, 0x5B);
+                }
+            } else if (ks == 3) { // WIN+M arrow
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7, 1], [0x6d, 1], [0x6d, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, 'm' press, 'm' release, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 77], [desktop.m.KeyAction.UP, 77], [desktop.m.KeyAction.EXUP, 0x5B]]); // MeshAgent: L-Winkey press, 'M' press, 'M' release, L-Winkey release
+                }
+            } else if (ks == 4) { // Shift+WIN+M arrow
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe1, 1], [0xffe7, 1], [0x6d, 1], [0x6d, 0], [0xffe7, 0], [0xffe1, 0]]); // Intel AMT: Shift-left down, Meta-left down, 'm' press, 'm' release, Meta-left release, Shift-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.DOWN, 16], [desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 77], [desktop.m.KeyAction.UP, 77], [desktop.m.KeyAction.EXUP, 0x5B], [desktop.m.KeyAction.UP, 16]]);     // MeshAgent: L-shift press, L-Winkey press, 'M' press, 'M' release, L-Winkey release, L-shift release
+                }
+            } else if (ks == 5) { // WIN
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7, 1], [0xffe7, 0]]); // Intel AMT: Meta-left down, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.EXUP, 0x5B]]); // MeshAgent: L-Winkey press, L-Winkey release
+                }
+            } else if (ks == 6) { // WIN+R
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7, 1], [0x72, 1], [0x72, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, 'r' press, 'r' release, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 82], [desktop.m.KeyAction.UP, 82], [desktop.m.KeyAction.EXUP, 0x5B]]); // MeshAgent: L-Winkey press, 'R' press, 'R' release, L-Winkey release
+                }
+            } else if (ks == 7) { // ALT-F4
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe9, 1], [0xffc1, 1], [0xffc1, 0], [0xffe9, 0]]); // Intel AMT: Alt down, 'F4' press, 'F4' release, Alt release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 18], [desktop.m.KeyAction.DOWN, 115], [desktop.m.KeyAction.UP, 115], [desktop.m.KeyAction.EXUP, 18]]); // MeshAgent: Alt press, 'F4' press, 'F4' release, Alt release
+                }
+            } else if (ks == 8) { // CTRL-W
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe3, 1], [0x77, 1], [0x77, 0], [0xffe3, 0]]); // Intel AMT: Ctrl down, 'w' press, 'w' release, Ctrl release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 17], [desktop.m.KeyAction.DOWN, 87], [desktop.m.KeyAction.UP, 87], [desktop.m.KeyAction.EXUP, 17]]); // MeshAgent: Ctrl press, 'W' press, 'W' release, Ctrl release
+                }
+            } else if (ks == 9) { // ALT-TAB
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe9, 1], [0xff09, 1], [0xff09, 0], [0xffe9, 0]]); // Intel AMT: Alt down, 'TAB' press, 'TAB' release, Alt release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 18], [desktop.m.KeyAction.DOWN, 9], [desktop.m.KeyAction.UP, 9], [desktop.m.KeyAction.EXUP, 18]]); // MeshAgent: Alt press, 'TAB' press, 'TAB' release, Alt release
+                }
+            } else if (ks == 10) { // CTRL-ALT-DEL
+                desktop.m.sendcad();
+            } else if (ks == 11) { // WIN-LEFT
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7, 1], [0xff51, 1], [0xff51, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, Left arrow press, Left arrow release, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 37], [desktop.m.KeyAction.UP, 37], [desktop.m.KeyAction.EXUP, 0x5B]]);
+                }
+            } else if (ks == 12) { // WIN-RIGHT
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7, 1], [0xff53, 1], [0xff53, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, Right arrow press, Right arrow release, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 39], [desktop.m.KeyAction.UP, 39], [desktop.m.KeyAction.EXUP, 0x5B]]);
+                }
+            }
+        }
+
+
+        var gotKeyPressEvent = false;
+        function ondeskkeypress(e, t) {
+            setSessionActivity();
+            if (desktop && !xxdialogMode && (xxcurrentView == 11)) {
+                gotKeyPressEvent = true;
+                Q('softKeyboard').value = '';
+                // Check what keys we are allows to send
+                var inputAllowed = true; // TODO
+                if (inputAllowed == false) return false;
+                return desktop.m.handleKeys(e);
+            }
+            if (terminal && !xxdialogMode && (xxcurrentView == 12) (t !== 1)) {
+                if (e.altKey == true) { return true; }
+                gotKeyPressEvent = true;
+                Q('softKeyboard').value = '';
+                var k = 0;
+                if (e.charCode != 0) { k = e.charCode; } else if (e.keyCode != 0) { k = e.keyCode; }
+                if (k != 0) {
+                    if (terminal.urlname == 'sshterminalrelay.ashx') {
+                        // SSH
+                        terminal.socket.send('~' + String.fromCharCode(k));
+                    } else {
+                        // Agent
+                        terminal.sendText(String.fromCharCode(k));
+                    }
+                }
+                return false;
+            }
+        }
+
+        function ondeskkeydown(e, t) {
+            setSessionActivity();
+            if (desktop && !xxdialogMode && (xxcurrentView == 11)) {
+                gotKeyPressEvent = false;
+                Q('softKeyboard').value = '';
+                // Check what keys we are allows to send
+                var inputAllowed = true; // TODO
+                if (inputAllowed == false) return false;
+                return desktop.m.handleKeyDown(e);
+            }
+            if (terminal && !xxdialogMode && (xxcurrentView == 12) && (t !== 1)) {
+                if (e.altKey == true) { return true; }
+                Q('softKeyboard').value = '';
+                gotKeyPressEvent = false;
+                var k = 0;
+                if (e.charCode != 0) { k = e.charCode; } else if (e.keyCode != 0) { k = e.keyCode; }
+                if (k == 8) { terminal.sendText(String.fromCharCode(k)); } // Enter and backspace
+                else if (e.ctrlKey && (k >= 64) && (k <= 95)) {
+                    // Ctrl keys
+                    if (terminal.urlname == 'sshterminalrelay.ashx') {
+                        // SSH
+                        terminal.socket.send('~' + String.fromCharCode(k - 64));
+                    } else {
+                        // Agent
+                        terminal.sendText(String.fromCharCode(k - 64));
+                    }
+                }
+            }
+        }
+
+        function ondeskkeyup(e, t) {
+            setSessionActivity();
+            if (desktop && !xxdialogMode && (xxcurrentView == 11)) {
+                var inputStr = Q('softKeyboard').value;
+                Q('softKeyboard').value = '';
+                // Check what keys we are allows to send
+                var inputAllowed = true; // TODO
+                if (inputAllowed == false) return false;
+                if ((gotKeyPressEvent == false) && (inputStr.length > 0) && desktop.m.SendKeyUnicode) {
+                    // This is a mobile keyboard, we need to send that is in the input control.
+                    var inputchar = inputStr[inputStr.length - 1].charCodeAt(0);
+                    desktop.m.SendKeyUnicode(desktop.m.KeyAction.DOWN, inputchar);
+                    desktop.m.SendKeyUnicode(desktop.m.KeyAction.UP, inputchar);
+                } else {
+                    return desktop.m.handleKeyUp(e);
+                }
+            }
+            if (terminal && !xxdialogMode && (xxcurrentView == 12) && (gotKeyPressEvent == false) && (t !== 1)) {
+                if (e.altKey == true) { return true; }
+                var inputStr = Q('softKeyboard').value;
+                Q('softKeyboard').value = '';
+                if (terminal.urlname == 'sshterminalrelay.ashx') {
+                    // SSH
+                    terminal.socket.send('~' + inputStr);
+                } else {
+                    // Agent
+                    if (inputStr) terminal.sendText(inputStr);
+                }
+                return false;
+            }
+        }
+
+
+        // Remote desktop typing
+        function showDeskType() {
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
+            Q('DeskType').blur();
+            var x = '<div>' + "Enter text and click OK to remotely type it using a US english keyboard. Make sure to place the remote cursor at the correct position before proceeding." + '<div>';
+            x += '<textarea id=d2typeText style="margin-top:5px;width:100%;height:184px;resize:none" maxlength=2000></textarea>';
+            setDialogMode(2, "Remote Keyboard Entry", 3, showDeskTypeEx, x);
+            Q('d2typeText').focus();
+        }
+
+        var AmtDeskTypeTimer = null;
+        var AmtDeskTypeContent = null;
+        var DeskTypeTranslate = { 39: 222, 42: 106, 43: 107, 44: 188, 45: 189, 46: 190, 47: 191, 59: 186, 61: 187, 91: 219, 92: 220, 93: 221, 96: 192, 191: 111 };
+        var DeskTypeShiftTranslate = { 33: 49, 34: 222, 35: 51, 36: 52, 37: 53, 38: 55, 40: 57, 41: 48, 58: 186, 60: 188, 62: 190, 63: 191, 64: 50, 94: 54, 95: 189, 106: 56, 107: 187, 123: 219, 124: 220, 125: 221, 126: 192 };
+        function showDeskTypeEx() {
+            var txt = Q('d2typeText').value, ltxt = Q('d2typeText').value.toUpperCase(), x = [], shift = false;
+            if (desktop.contype == 2) {
+                // Intel AMT
+                for (var i in txt) { var a = txt.charCodeAt(i); x.push([a, 1], [a, 0]); }
+                AmtDeskTypeContent = x;
+                AmtDeskTypeTimer = setInterval(function () {
+                    var key = AmtDeskTypeContent.shift();
+                    if (desktop) { desktop.m.sendkey(key[0], key[1]); }
+                    if ((desktop == null) || (AmtDeskTypeContent.length == 0)) { clearInterval(AmtDeskTypeTimer); AmtDeskTypeContent = null; }
+                }, 10);
+            } else {
+                // MeshAgent
+                for (var i in txt) {
+                    var a = txt.charCodeAt(i), b = ltxt.charCodeAt(i);
+                    if (((a >= 65) && (a <= 90)) || ((a >= 97) && (a <= 122))) {
+                        if ((a == b) && (shift == false)) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
+                        if ((a != b) && (shift == true)) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // LShift up
+                    } else if ((a >= 48) && (a <= 57)) {
+                        if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
+                    } else if (DeskTypeTranslate[a]) {
+                        if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
+                        b = DeskTypeTranslate[a];
+                    } else if (DeskTypeShiftTranslate[a]) {
+                        if (shift == false) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
+                        b = DeskTypeShiftTranslate[a];
+                    }
+                    x.push([desktop.m.KeyAction.DOWN, b], [desktop.m.KeyAction.UP, b]);
+                }
+                if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
+                desktop.m.SendKeyMsgKC(x);
+            }
+        }
+
+        /*
+        // Show clipboard dialog
+        function showDeskClip() {
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
+            Q('DeskClip').blur();
+            var x = '';
+            x += '<input id=dlgClipGet type=button value="Get Clipboard" style=width:120px onclick=showDeskClipGet()>';
+            x += '<input id=dlgClipSet type=button value="Set Clipboard" style=width:120px onclick=showDeskClipSet()>';
+            x += '<div id=dlgClipStatus style="display:inline-block;margin-left:8px" ></div>';
+            x += '<textarea id=d2clipText style="width:100%;height:184px;resize:none" maxlength=65535></textarea>';
+            x += '<input type=button value="Close" style=width:80px;float:right onclick=dialogclose(0)><div style=height:26px;margin-top:3px><span id=linuxClipWarn style=display:none>' + "Remote clipboard is valid for 60 seconds." + '</span>&nbsp;</div><div></div>';
+            setDialogMode(2, "Remote Clipboard", 8, null, x, 'clipboard');
+            Q('d2clipText').focus();
+        }
+
+        function showDeskClipGet() {
+            if (desktop == null || desktop.State != 3) return;
+            meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id });
+        }
+
+        function showDeskClipSet() {
+            if (desktop == null || desktop.State != 3) return;
+            meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: Q('d2clipText').value });
+            //QV('linuxClipWarn', currentNode && currentNode.agent && (currentNode.agent.id > 4) && (currentNode.agent.id != 21) && (currentNode.agent.id != 22));
+        }
+        */
+
+        // Send CTRL-ALT-DEL
+        function sendCAD() {
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
+            desktop.m.sendcad();
+        }
+
+        // Toggle mouse and keyboard input
+        function toggleKvmControl() { QS('DeskControlSpan').color = Q('DeskControl').checked ? null : 'red'; }
+
+        // Save the desktop image to file
+        function deskSaveImage() {
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
+            var d = new Date(), n = "Desktop" + '-' + d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + '-' + ('0' + d.getHours()).slice(-2) + '-' + ('0' + d.getMinutes()).slice(-2);
+            Q('Desk')['toBlob'](function (blob) { saveAs(blob, n + '.png'); });
+        }
+
+        function deskDisplayInfo(sender, displays, selDisplay) {
+            var displayCount = 0, displaySelector = '';
+            for (var i in displays) {
+                displayCount++;
+                displaySelector += '<option' + ((selDisplay == i) ? ' selected' : '') + ' value=' + i + '>' + displays[i] + '</option>';
+                if ((deskPreferedStickyDisplay == i) && (selDisplay != deskPreferedStickyDisplay)) { desktop.m.SetDisplay(i); }
+                deskPreferedStickyDisplay = -1;
+            }
+            QH('termdisplays', displaySelector);
+            QV('termdisplays', displayCount > 1);
+        }
+
+        function deskGetDisplayNumbers(e) { desktop.m.GetDisplayNumbers(); }
+        var deskPreferedStickyDisplay = -1;
+        function deskSetDisplay(e) { desktop.m.SetDisplay(deskPreferedStickyDisplay = parseInt(Q('termdisplays').value)); Q('termdisplays').blur(); }
+
+        // Double click detection. This is important for macOS.
+        var dblClickDetectArgs = { t: 0, x: 0, y: 0 };
+        function dblClickDetect(e) {
+            if (e.buttons != 1) return;
+            var t = Date.now();
+            if (((t - dblClickDetectArgs.t) < 250) && (Math.abs(e.clientX - dblClickDetectArgs.x) < 2) && (Math.abs(e.clientY - dblClickDetectArgs.y) < 2)) {
+                if (!xxdialogMode && desktop != null && isInputAllowed()) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedblclick(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedblclick(e); } }
+            }
+            dblClickDetectArgs.t = t;
+            dblClickDetectArgs.x = e.clientX;
+            dblClickDetectArgs.y = e.clientY;
+        }
+
+        function dmousedown(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('deskarea0').scrollLeft * (1 / fullscreenzoom); e.addy = Q('deskarea0').scrollTop * (1 / fullscreenzoom); } desktop.m.mousedown(e); } }
+        function dmouseup(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('deskarea0').scrollLeft * (1 / fullscreenzoom); e.addy = Q('deskarea0').scrollTop * (1 / fullscreenzoom); } desktop.m.mouseup(e); } }
+        function dmousemove(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('deskarea0').scrollLeft * (1 / fullscreenzoom); e.addy = Q('deskarea0').scrollTop * (1 / fullscreenzoom); } desktop.m.mousemove(e); } }
+        function dmousewheel(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && desktop.m.mousewheel) { if (fullscreen) { e.addx = Q('deskarea0').scrollLeft * (1 / fullscreenzoom); e.addy = Q('deskarea0').scrollTop * (1 / fullscreenzoom); } desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
+
+        var keyboardShown = false;
+        var keyboardShownTimer = null;
+        var fullScreenMode = false;
+        function toggleKeyboard() {
+            if (xxdialogMode) return;
+            if (keyboardShownTimer != null) { clearTimeout(keyboardShownTimer); }
+            if (keyboardShown) { Q('softKeyboard').blur(); keyboardShown = false; } else { Q('softKeyboard').focus(); keyboardShown = true; }
+            QV('deskkeybutton2a', fullscreen && !keyboardShown);
+            QV('deskkeybutton2b', fullscreen && keyboardShown);
+        }
+
+        function keyboardFocusChange() {
+            keyboardShownTimer = setTimeout(function () {
+                keyboardShownTimer = null;
+                keyboardShown = (Q('softKeyboard') == document.activeElement);
+                QV('deskkeybutton2a', fullscreen && !keyboardShown);
+                QV('deskkeybutton2b', fullscreen && keyboardShown);
+            }, 100);
+        }
+
+        function exitButton() {
+            if (xxdialogMode) return;
+            QV('deskButtonMenu', false);
+            QV('termButtonMenu', false);
+            if (fullscreenzoom == 1) {
+                deskToggleFull();
+            } else {
+                deskChangeFullscreenZoom();
+                setTimeout(deskToggleFull, 10);
+            }
+        }
+
+        function deskMenuButton(x) {
+            toggleMenu(true);
+            deskSendKeys(x);
+        }
+
+
+        //
+        // Desktop Shortcut Keys
+        //
+
+        function updateDeskShortcutKeys() {
+            var x = ''; //'<div class="menuButton" onclick="deskMenuButton(-1)">' + "Customize" + '</div>';
+            for (var i in deskKeyboardShortcuts) { x += '<div class="menuButton" onclick="deskMenuButton(' + deskKeyboardShortcuts[i] + ')">' + keyShortcutTotext(deskKeyboardShortcuts[i]) + '</div>'; }
+            QH('deskButtonMenu', x);
+        }
+
+        var keyStrings = { 8: "BackSpace", 9: "Tab", 13: "Enter", 27: "Escape", 44: "Print Screen", 45: "Insert", 46: "Del", 36: "Home", 35: "End", 33: "Page Up", 34: "Page Down", 37: "Left", 38: "Up", 39: "Right", 40: "Down", 0: "None" }
+
+        function keyShortcutTotext(n) {
+            var x = [];
+            if (n & 0x010000) { x.push("Shift"); }
+            if (n & 0x020000) { x.push("Alt"); }
+            if (n & 0x080000) { x.push("Ctrl"); }
+            if (n & 0x100000) { x.push("Win"); }
+            n = (n & 0xFFFF);
+            if ((n >= 112) && (n <= 123)) { x.push('F' + (n - 111)); } // Fx keys
+            else if ((n != 0) && (keyStrings[n])) { x.push(keyStrings[n]); }
+            else { if (n != 0) { x.push(String.fromCharCode(n)); } }
+            return x.join(' + ');
+        }
+
+        // Customize keyboard shortcuts
+        function deskCustomizeKeys() {
+            if (xxdialogMode) return;
+            var x = '<div id=d2shortcuts style="width:100%;height:180px;padding:4px;overflow-y:auto;border:1px solid gray"></div><div style=width:100%;padding:5px>';
+            x += '<label><input id=d1kshift type=checkbox /> ' + "Shift" + '</label><label> <input id=d1kalt type=checkbox /> ' + "Alt" + '</label><label> <input id=d1kctrl type=checkbox /> ' + "Ctrl" + '</label> <input id=d1kwin type=checkbox /> ' + "Win" + '</label>';
+            x += ' <select id=d2keySelect>';
+            for (var i in keyStrings) { x += '<option value=' + i + '>' + keyStrings[i] + '</option>'; }
+            for (var i = 1; i <= 12; i++) { x += '<option value=' + (i + 111) + '>F' + i + '</option>'; }
+            for (var i = 0; i < 10; i++) { x += '<option value=' + (i + 48) + '>' + i + '</option>'; }
+            for (var i = 0; i < 26; i++) { x += '<option value=' + (i + 65) + '>' + String.fromCharCode(i + 65) + '</option>'; }
+            x += '</select> <input type=button value=' + "Add" + ' onclick=addDeskCustomizeKey() /></div>';
+            QH('p10dialog2', x);
+            xxdialogMode = 2;
+            QV('p10dialog', true);
+            deskUpdateShortcutList();
+        }
+
+        function deskCustomizeKeysEx() {
+            QV('p10dialog', false);
+            xxdialogMode = 0;
+            //putstore('deskKeyShortcuts', deskKeyboardShortcuts.join(','));
+            updateDeskShortcutKeys();
+        }
+
+        function deskUpdateShortcutList() {
+            var x = '';
+            for (var i in deskKeyboardShortcuts) {
+                var kt = keyShortcutTotext(deskKeyboardShortcuts[i]), orderButtons = '';
+                if (i != (deskKeyboardShortcuts.length - 1)) { orderButtons += '<img width=8 height=8 style=float:right;cursor:pointer;padding:3px src="images/c2.png" onclick=deskCustomizeKeyDown(' + deskKeyboardShortcuts[i] + ')>'; }
+                if (i != 0) { orderButtons += '<img width=8 height=8 style=float:right;cursor:pointer;padding:3px src="images/c3.png" onclick=deskCustomizeKeyUp(' + deskKeyboardShortcuts[i] + ')>'; }
+                x += '<div style="width:100%;background-color:#AAA;border-radius:4px;margin-bottom:4px;padding:4px;text-align:left;box-sizing:border-box" value=' + deskKeyboardShortcuts[i] + '>' + kt + '<img width=10 height=10 style=float:right;cursor:pointer;padding:2px;margin-left:8px src="images/trash.png" onclick=removeDeskCustomizeKey(' + deskKeyboardShortcuts[i] + ')>' + orderButtons + '</div>';
+            }
+            if (x == '') { x = '<i>' + "No keyboard shortcuts defined" + '</i>'; }
+            QH('d2shortcuts', x);
+        }
+
+        function deskCustomizeKeyDown(k) {
+            var i = deskKeyboardShortcuts.indexOf(k), x = deskKeyboardShortcuts[i + 1];
+            deskKeyboardShortcuts[i + 1] = deskKeyboardShortcuts[i];
+            deskKeyboardShortcuts[i] = x;
+            deskUpdateShortcutList();
+        }
+
+        function deskCustomizeKeyUp(k) {
+            var i = deskKeyboardShortcuts.indexOf(k), x = deskKeyboardShortcuts[i];
+            deskKeyboardShortcuts[i] = deskKeyboardShortcuts[i - 1];
+            deskKeyboardShortcuts[i - 1] = x;
+            deskUpdateShortcutList();
+        }
+
+        function removeDeskCustomizeKey(k) {
+            var na = [];
+            for (var i in deskKeyboardShortcuts) { if (deskKeyboardShortcuts[i] != k) { na.push(deskKeyboardShortcuts[i]); } }
+            deskKeyboardShortcuts = na;
+            deskUpdateShortcutList();
+        }
+
+        function addDeskCustomizeKey() {
+            var k = parseInt(Q('d2keySelect').value);
+            if (Q('d1kshift').checked) { k |= 0x010000; }
+            if (Q('d1kalt').checked) { k |= 0x020000; }
+            if (Q('d1kctrl').checked) { k |= 0x080000; }
+            if (Q('d1kwin').checked) { k |= 0x100000; }
+            if ((k > 0) && (deskKeyboardShortcuts.indexOf(k) == -1)) { deskKeyboardShortcuts.push(k); deskUpdateShortcutList(); }
+        }
+
+        // Remote desktop special key combos for Windows
+        function deskSendKeys(ks) {
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
+
+            // Construct the key command
+            if (ks == -1) { deskCustomizeKeys(); return; } // Customize
+            if (ks == 0x0A002E) { desktop.m.sendcad(); return; } // CTRL-ALT-DEL
+            //if ((desktop.contype == 1) && (ks == 0x10004C)) { desktop.sendCtrlMsg('{"action":"lock"}'); return; } // Lock desktop, WIN + L
+
+            var flags = (ks & 0xFF0000) >> 16, key = (ks & 0xFFFF), keyArray = [], keyArray2 = [];
+            var amtTranslate = {
+                8: 0xff08, // BackSpace
+                9: 0xff09, // Tab
+                13: 0xff0d, // Return or Enter
+                27: 0xff1b, // Escape
+                45: 0xff63, // Insert
+                46: 0xffff, // Delete
+                36: 0xff50, // Home
+                35: 0xff57, // End
+                33: 0xff55, // Page Up
+                34: 0xff56, // Page Down
+                37: 0xff51, // Left arrow
+                38: 0xff52, // Up arrow
+                39: 0xff53, // Right arrow
+                40: 0xff54, // Down arrow
+                112: 0xffbe, // F1
+                113: 0xffbf, // F2
+                114: 0xffc0, // F3
+                115: 0xffc1, // F4
+                116: 0xffc2, // F5
+                117: 0xffc3, // F6
+                118: 0xffc4, // F7
+                119: 0xffc5, // F8
+                120: 0xffc6, // F9
+                121: 0xffc7, // F10
+                122: 0xffc8, // F11
+                123: 0xffc9  // F12
+            }
+
+            // 0x010000 = Shift
+            // 0x020000 = Left-Alt
+            // 0x080000 = Ctrl
+            // 0x100000 = Window
+
+            if (desktop.contype == 2) {
+                // Intel AMT
+                if (flags & 1) { keyArray.push([0xffe1, 1]); keyArray2.push([0xffe1, 0]); } // Shift
+                if (flags & 2) { keyArray.push([0xffe9, 1]); keyArray2.push([0xffe9, 0]); } // Left-alt
+                if (flags & 8) { keyArray.push([0xffe3, 1]); keyArray2.push([0xffe3, 0]); } // Ctrl
+                if (flags & 16) { keyArray.push([0xffe7, 1]); keyArray2.push([0xffe7, 0]); } // Windows key
+                if (amtTranslate[key]) { key = amtTranslate[key]; }
+                if ((key >= 65) && (key <= 90)) { key += 32; }
+                if (key != 0) { keyArray.push([key, 1]); keyArray2.push([key, 0]); }
+                keyArray2.reverse();
+                for (var i = 0; i < keyArray2.length; i++) { keyArray.push(keyArray2[i]); }
+                desktop.m.sendkey(keyArray);
+            } else {
+                // Agent desktop
+                if (flags & 1) { keyArray.push([desktop.m.KeyAction.DOWN, 16]); keyArray2.push([desktop.m.KeyAction.UP, 16]); } // Shift
+                if (flags & 2) { keyArray.push([desktop.m.KeyAction.EXDOWN, 18]); keyArray2.push([desktop.m.KeyAction.EXUP, 18]); } // Left-alt
+                if (flags & 8) { keyArray.push([desktop.m.KeyAction.EXDOWN, 17]); keyArray2.push([desktop.m.KeyAction.EXUP, 17]); } // Ctrl
+                if (flags & 16) { keyArray.push([desktop.m.KeyAction.EXDOWN, 0x5B]); keyArray2.push([desktop.m.KeyAction.EXUP, 0x5B]); } // Windows key
+                if (key != 0) { keyArray.push([desktop.m.KeyAction.DOWN, key]); keyArray2.push([desktop.m.KeyAction.UP, key]); }
+                keyArray2.reverse();
+                for (var i = 0; i < keyArray2.length; i++) { keyArray.push(keyArray2[i]); }
+                desktop.m.SendKeyMsgKC(keyArray);
+            }
+        }
+
+
+        //
+        // Terminal
+        //
+
+        function setupTerminal() {
+            // Setup the terminal
+            if (terminal != null) { terminal.Stop(); terminal = null; }
+            updateTerminalButtons();
+
+            // Terminal special keys
+            var x = '';
+            for (var c = 1; c < 27; c++) x += '<option value=\'' + c + '\'>' + "Ctrl" + '-' + String.fromCharCode(64 + c) + ' (' + c + ')</option>';
+            QH('specialkeylist', x);
+        }
+
+        // Show and enable the right buttons
+        function updateTerminalButtons() {
+            var termState = ((terminal != null) && (terminal.state != 0));
+
+            // Show the right buttons
+            QV('disconnectbutton2span', termState == true);
+            QV('connectbutton2span', termState == false);
+            //QV('terminalSizeDropDown', termState == false);
+
+            // Enable buttons
+            QE('connectbutton2', true);
+
+            // Key buttons
+            QE('ctrlcbutton', termState);
+            QE('ctrlxbutton', termState);
+            QE('escbutton', termState);
+            QE('bsbutton', termState);
+            QE('pastebutton', termState);
+            QE('specialkeylist', termState);
+            QE('specialkeylistinput', termState);
+
+            // Terminal settings
+            QV('terminalSettingsButtons', (terminal) && (terminal.contype == 2));
+            if (terminal) {
+                Q('id_ttypebutton').value = terminalEmulations[terminal.m.terminalEmulation];
+                Q('id_tfxkeysbutton').value = fxEmulations[terminal.m.fxEmulation];
+                Q('id_tcrbutton').value = (terminal.m.lineFeed == '\r\n') ? "CR+LF" : "LF";
+            }
+
+            // Display extra buttons on legacy terminal
+            var xtermActive = true;
+            QV('termarea3xdiv', xtermActive);
+            QV('bsbutton', !xtermActive);
+            QV('pastebutton', !xtermActive);
+            QV('devListToolbarViewIcons2', xtermActive);
+            QE('termSizeList', terminal == null);
+        }
+
+        // Called when the terminal state changes
+        function onTerminalStateChange(xterminal, state) {
+            var xstate = state;
+            if ((xstate == 3) && (xterminal.contype == 2)) { xstate++; }
+            var str = StatusStrs[xstate];
+            if (terminal.webRtcActive == true) { str += ", WebRTC"; }
+            QH('termstatus', str);
+            switch (state) {
+                case 0:
+                    // Disconnected, clear the terminal
+                    QH('termtitle', '');
+                    QV('termRecordIcon', false);
+                    if (xterm == null) {
+                        xterminal.m.TermResetScreen();
+                        xterminal.m.TermDraw();
+                    } else {
+                        xterm.dispose();
+                        xterm = xtermfit = null;
+                    }
+                    if (terminal != null) { terminal.Stop(); terminal = null; }
+                    break;
+                case 3:
+                    if (xterminal && (xterminal.serverIsRecording == true)) { QV('termRecordIcon', true); }
+                    terminal.startTime = new Date();
+                    if (updateSessionTimer == null) { updateSessionTimer = setInterval(updateSessionTime, 1000); }
+                    if (xterm != null) { xterm.focus(); }
+                    break;
+                default:
+                    //console.log('Unhandled onTerminalStateChange state', state);
+                    break;
+            }
+            updateTerminalButtons();
+        }
+
+        function updateSessionTime() {
+            // Terminal
+            var latencyStr = '', seconds = 0;
+            if (terminal && terminal.startTime) {
+                if (terminal.latency && (terminal.latency.current >= 0)) { latencyStr = format('{0} ms, ', terminal.latency.current); }
+                seconds = Math.floor((new Date() - terminal.startTime) / 1000);
+                QH('TermTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+            } else {
+                QH('TermTimer', '');
+            }
+
+            if (terminal == null) { clearInterval(updateSessionTimer); updateSessionTimer = null; }
+        }
+
+        // DEBUG
+        var autoConnectTerminalTimer = null;
+        function autoConnectTerminal(e) { if (autoConnectTerminalTimer == null) { autoConnectTerminalTimer = setInterval(connectTerminal, 100); } else { clearInterval(autoConnectTerminalTimer); autoConnectTerminalTimer = null; } }
+
+        // Handles a tunnel to a remote shell
+        function CreateRemoteTunnel(onTunnelUpdate, options) {
+            var obj = { protocol: 1 };
+            if ((options != null) && (typeof options.protocol == 'number')) { obj.protocol = options.protocol; }
+            obj.onTunnelUpdate = onTunnelUpdate;
+            obj.xxStateChange = function (state) { }
+            obj.ProcessBinaryData = function (data) { obj.onTunnelUpdate(data); }
+            obj.ProcessData = function (data) { obj.onTunnelUpdate(data); }
+            obj.terminalEmulation = 1;
+            obj.fxEmulation = 0;
+            obj.lineFeed = '\r\n';
+            return obj;
+        }
+
+        function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
+
+        // Send the new terminal size to the agent
+        function xTermSendResize() {
+            xtermResizeTimer = null;
+            if ((xterm != null) && (terminal != null) && (terminal.sendCtrlMsg != null)) { terminal.sendCtrlMsg(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: xterm.cols, rows: xterm.rows })); }
+        }
+
+        // Used to translate incoming agent console messages
+        var agentConsoleMessages = ['', "Waiting for user to grant access...", "Denied", "Failed to start remote terminal session, {0} ({1})", "Timeout", "Received invalid network data"];
+        function formatAgentConsoleMessage(msg, msgid, msgargs) {
+            var r;
+            if (msgargs == null) { msgargs = []; }
+            while (msgargs.length < 3) { msgargs.push(''); } // We need to call the format function in a way that works with older browsers and minifier, can't use apply() or ...
+            if (msgid && (msgid < agentConsoleMessages.length)) { r = EscapeHtml(format(agentConsoleMessages[msgid], (msgargs[0]), (msgargs[1]), (msgargs[2]))); } else { r = EscapeHtml(msg); }
+            return r.split('\n').join('<br />') + '<br /><br />';
+        }
+
+        function connectTerminal(e, contype, options) {
+            p12clearConsoleMsg();
+            if (!terminal) {
+                // Terminal setup
+                var termoptions = { protocol: ((options != null) && (typeof options.protocol == 'number')) ? options.protocol : 1 };
+                if (options && options.requireLogin) { termoptions.requireLogin = true; }
+                /*
+                if ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) == -1) {
+                    if (Q('termSizeList').value == 1) { termoptions.cols = 80; termoptions.rows = 25; termoptions.xterm = true; }
+                    else if (Q('termSizeList').value == 2) { termoptions.cols = 100; termoptions.rows = 30; termoptions.xterm = true; }
+                    else if (Q('termSizeList').value == 3) {
+                        // TODO: Try to improve terminal auto-size.
+                        termoptions.cols = Math.floor((Q('column_l').clientWidth - 60) / 10);
+                        termoptions.rows = Math.floor((Q('column_l').clientHeight - 120) / 20);
+                        termoptions.xterm = true;
+                    }
+                }
+                */
+
+                /*
+                // If shift is pressed
+                if ((e && (e.shiftKey == true))) {
+                    if (currentNode.agent.id > 4) {
+                        if (termoptions.protocol == 1) { termoptions.protocol = 7; } // Switch to user shell
+                    } else {
+                        if (termoptions.protocol == 1) { termoptions.protocol = 6; } // Switch to Powershell
+                    }
+                }
+                */
+
+                // Setup a mesh agent xterm terminal
+                QV('termarea3xdiv', true);
+
+                // Setup the terminal with auto-fit
+                if (xterm != null) { xterm.dispose(); }
+                xtermfit = new FitAddon.FitAddon();
+                xterm = new Terminal();
+                if (xtermfit) { xterm.loadAddon(xtermfit); }
+                xterm.open(Q('termarea3xdiv')); // termarea3x
+                xterm.onData(function (data) { if (terminal != null) { terminal.sendText(data); } })
+                if (xtermfit) { xtermfit.fit(); }
+                xterm.onTitleChange(function (title) { QH('termtitle', ' - ' + EscapeHtml(title)); });
+                xterm.onResize(function (size) {
+                    // Despam resize
+                    if (xtermResizeTimer) clearTimeout(xtermResizeTimer);
+                    xtermResizeTimer = setTimeout(xTermSendResize, 200);
+                });
+
+                // Setup a terminal tunnel to the agent
+                terminal = CreateAgentRedirect(null, CreateRemoteTunnel(tunnelUpdate, options), serverPublicNamePort, authCookie, null, domainUrl);
+                terminal.debugmode = debugmode;
+                terminal.m.debugmode = debugmode;
+                terminal.options = { cols: xterm.cols, rows: xterm.rows };
+                if (options && options.requireLogin) { terminal.options.requireLogin = true; }
+                terminal.Start(null);
+                terminal.onStateChanged = onTerminalStateChange;
+                terminal.contype = 1;
+                terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
+                terminal.onConsoleMessageChange = function (server, msg) {
+                    if (terminal.consoleMessage) {
+                        Q('p12TermConsoleMsg').innerHTML += formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs);
+                        QV('p12TermConsoleMsg', true);
+                        if (p12TermConsoleMsgTimer != null) { clearTimeout(p12TermConsoleMsgTimer); }
+                        if (terminal.consoleMessageTimeout) { p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, terminal.consoleMessageTimeout * 1000); }
+                    } else {
+                        p12clearConsoleMsg();
+                    }
+                };
+            } else {
+                terminal.Stop();
+                terminal = null;
+            }
+            Q('connectbutton2').blur(); // Deselect the connect button so the button does not get key presses.
+        }
+
+        var terminalEmulations = ["UTF8 Terminal", "Extended ASCII", "Intel ASCII"];
+        function termToggleType() {
+            if (!terminal || xxdialogMode) return;
+            terminal.m.terminalEmulation = (terminal.m.terminalEmulation + 1) % 3;
+            Q('id_ttypebutton').value = terminalEmulations[terminal.m.terminalEmulation];
+            Q('id_ttypebutton').blur(); // Deselect the connect button so the button does not get key presses.
+        }
+
+        var fxEmulations = ["Intel (F10 = ESC+[OM)", "Alternate (F10 = ESC+0)", "VT100+ (F10 = ESC+[OY)"];
+        function termToggleFx() {
+            if (!terminal || xxdialogMode) return;
+            terminal.m.fxEmulation = (terminal.m.fxEmulation + 1) % 3;
+            Q('id_tfxkeysbutton').value = fxEmulations[terminal.m.fxEmulation];
+            Q('id_tfxkeysbutton').blur(); // Deselect the connect button so the button does not get key presses.
+        }
+
+        function termToggleCr() {
+            if (!terminal || xxdialogMode) return;
+            if (terminal.m.lineFeed == '\n') { terminal.m.lineFeed = '\r\n'; } else { terminal.m.lineFeed = '\n'; }
+            Q('id_tcrbutton').value = (terminal.m.lineFeed == '\r\n') ? "CR+LF" : "LF";
+        }
+
+        function termSendKey(key, id) {
+            if (!terminal || xxdialogMode) return;
+            if (xterm != null) {
+                if (terminal.sendText) {
+                    // MeshAgent
+                    terminal.sendText(String.fromCharCode(key));
+                } else {
+                    // CIRA
+                    terminal.send(String.fromCharCode(key));
+                }
+                xterm.focus();
+            } else if (terminal != null) {
+                terminal.m.TermSendKey(key);
+                Q(id).blur(); // Deselect the connect button so the button does not get key presses.
+            }
+        }
+
+        function showTermPasteDialog() {
+            if (!terminal || xxdialogMode) return;
+            Q('pastebutton').blur();
+            setDialogMode(2, "Paste", 3, showTermPasteDialogEx, '<textarea id=d2pasteText style="width:100%;height:184px;resize:none"></textarea>');
+            Q('d2pasteText').focus();
+        }
+
+        function showTermPasteDialogEx() {
+            if (!terminal) return;
+            terminal.m.TermSendKeys(Q('d2pasteText').value);
+        }
+
+        // Send special key
+        function sendSpecialKey() {
+            if (xterm != null) {
+                terminal.sendText(String.fromCharCode(Q('specialkeylist').value));
+                xterm.focus();
+            } else if (terminal != null) {
+                terminal.m.TermSendKey(Q('specialkeylist').value);
+                Q('specialkeylist').blur();
+                Q('specialkeylistinput').blur();
+            }
+        }
+
+        function p12clearConsoleMsg() { QH('p12TermConsoleMsg', ''); QV('p12TermConsoleMsg', false); if (p12TermConsoleMsgTimer) { clearTimeout(p12TermConsoleMsgTimer); p12TermConsoleMsgTimer = null; } }
+
+
+
+        //
+        // Files
+        // 
+
+        function setupFiles() {
+            // Setup the files tab
+            if (files != null) { files.Stop(); files = null; }
+        }
+
+        function onFilesStateChange(xfiles, state) {
+            p13Connect.value = (state == 0) ? "Connect" : "Disconnect";
+            var str = StatusStrs[state];
+            if (files.webRtcActive == true) { str += ", WebRTC"; }
+            Q('p13Status').textContent = str;
+            switch (state) {
+                case 0:
+                    // Disconnected, clear the files
+                    QH('p13files', '');
+                    p13filetree = null;
+                    p13filetreelocation = [];
+                    QH('p13currentpath', '');
+                    QE('p13FolderUp', false);
+                    QV('filesRecordIcon', false);
+                    p13setActions();
+                    if (files != null) { files.Stop(); files = null; }
+                    if (xxdialogTag == 'fileMsgDialog') { setDialogMode(0); }
+                    break;
+                case 3:
+                    p13targetpath = '';
+                    if (files) {
+                        files.sendText({ action: 'ls', reqid: 1, path: '' });
+                        if (files.serverIsRecording == true) { QV('filesRecordIcon', true); }
+                    }
+                    break;
+                default:
+                    //console.log('Unknown onFilesStateChange state', state);
+                    break;
+            }
+        }
+
+        function CreateRemoteFiles(onFileUpdate) {
+            var obj = { protocol: 5 };
+            obj.onFileUpdate = onFileUpdate;
+            obj.xxStateChange = function (state) { }
+            obj.ProcessData = function (data) { obj.onFileUpdate(data); }
+            return obj;
+        }
+
+        function connectFiles(e) {
+            p13clearConsoleMsg();
+            if (!files) {
+                // Setup a mesh agent files
+                files = CreateAgentRedirect(null, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, null, domainUrl);
+                files.attemptWebRTC = attemptWebRTC;
+                files.onStateChanged = onFilesStateChange;
+                files.onConsoleMessageChange = function () {
+                    if (files.consoleMessage) {
+                        Q('p13FilesConsoleMsg').innerHTML += formatAgentConsoleMessage(files.consoleMessage, files.consoleMessageId, files.consoleMessageArgs);
+                        QV('p13FilesConsoleMsg', true);
+                        if (p13FilesConsoleMsgTimer != null) { clearTimeout(p13FilesConsoleMsgTimer); }
+                        if (files.consoleMessageTimeout) { p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, files.consoleMessageTimeout * 1000); }
+                    } else {
+                        p13clearConsoleMsg();
+                    }
+                }
+                files.Start(null);
+            } else {
+                //QH('Term', '');
+                files.Stop();
+                files = null;
+            }
+            p13clipboard = p13clipboardFolder = null;
+            p13clipboardCut = 0;
+            p13updateClipview();
+        }
+
+        var p13filetree = null;
+        var p13targetpath = null;
+        var p13filetreelocation = [];
+
+        function p13fileOperationDialogEx(b) { if ((b == 0) && (files != null)) { files.sendText({ action: 'cancel' }); } }
+
+        function p13gotFiles(data) {
+            if ((data.length > 0) && (data.charCodeAt(0) != 123)) { p13gotDownloadBinaryData(data); return; } // This is ok because 4 first bytes is a control value.
+            //console.log('p13gotFiles', data);
+            try { data = JSON.parse(decode_utf8(data)); } catch (ex) { data = JSON.parse(data); }
+            if (data.action == 'download') { p13gotDownloadCommand(data); return; }
+
+            // Find file result
+            if (data.action == 'findfile') {
+                if (xxdialogTag == data.reqid) {
+                    if (data.r == null) {
+                        QE('d2findFilter', true);
+                        QE('filefind_dlgOkButton', true);
+                        xxdialogTag = null;
+                        if (Q('d2findResults').innerHTML == '') { QH('d2findResults', '<div style=text-align:center;margin:10px><i>' + "No files found" + '</i></div>'); }
+                    } else {
+                        QA('d2findResults', '<div style=white-space:nowrap>' + EscapeHtml(data.r) + '</div>');
+                    }
+                }
+                return;
+            }
+
+            // Process file upload commands
+            if ((data.action != null) && (data.action.startsWith('upload'))) { p13gotUploadData(data); return; }
+
+            // Display a dialog message
+            if (data.action == 'dialogmessage') {
+                if ((data.msg == null) && (xxdialogTag == 'fileMsgDialog')) {
+                    setDialogMode(0); // Close the dialog box
+                } else if ((data.msg == 'zipping') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
+                    // Show the dialog box message
+                    setDialogMode(2, "File Operation", 10, p13fileOperationDialogEx, '<div style=margin:10px>' + "Compressing files..." + '<div>', 'fileMsgDialog');
+                } else if ((data.msg == 'zippingFile') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
+                    // Show the dialog box message
+                    setDialogMode(2, "File Operation", 10, p13fileOperationDialogEx, '<div style=margin:10px>' + EscapeHtml(data.file) + '<div><br /><progress value=' + EscapeHtml(data.progress) + ' style=width:100% max=100 />', 'fileMsgDialog');
+                }
+                return;
+            }
+
+            // Refresh file folder
+            if (data.action == 'refresh') { p13folderup(9999); return; }
+
+            if (data.path != null) {
+                data.path = data.path.replace(/\//g, '\\');
+                if ((p13filetree != null) && (data.path == p13filetree.path)) {
+                    // This is an update to the same folder
+                    var checkedNames = p13getCheckedNames();
+                    p13filetree = data;
+                    p13updateFiles(checkedNames);
+                } else {
+                    // Make both paths use the same seperator not start with /
+                    var x1 = data.path.replace(/\//g, '\\'), x2 = p13targetpath.replace(/\//g, '\\');
+                    while ((x1.length > 0) && (x1[0] == '\\')) { x1 = x1.substring(1); }
+                    while ((x2.length > 0) && (x2[0] == '\\')) { x2 = x2.substring(1); }
+                    if ((x1 == x2) || ((data.path == '\\') && (p13targetpath == ''))) {
+                        // This is a different folder
+                        p13filetree = data;
+                        p13updateFiles();
+                    }
+                }
+            }
+        }
+
+        function p13getCheckedNames() {
+            // Save all existing checked boxes
+            var checkedNames = [], checkboxes = document.getElementsByName('fd');
+            for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { checkedNames.push(p13filetree.dir[checkboxes[i].value].n) }; }
+            return checkedNames;
+        }
+
+        function p13updateFiles(checkedNames) {
+            var html1 = '', html2 = '', displayPath = '<a href=# style=cursor:pointer onclick="return p13folderup(0)">' + "Root" + '</a>', fullPath = 'Root';
+
+            // Work on parsing the file path
+            var x = p13filetree.path.split('\\');
+            p13filetreelocation = [];
+            for (var i in x) { if (x[i] != '') { p13filetreelocation.push(x[i]); } } // Remove empty spaces
+            for (var i in p13filetreelocation) { displayPath += ' / <a href=# style=cursor:pointer onclick="return p13folderup(' + (parseInt(i) + 1) + ')">' + EscapeHtml(p13filetreelocation[i]) + '</a>' } // Setup the path we display
+            var newlinkpath = p13filetreelocation.join('/');
+
+            // Sort the files
+            var filetreexx = p13sort_files(p13filetree.dir);
+
+            // Display all files and folders at this location
+            for (var i in filetreexx) {
+                // Figure out the name and shortname
+                var f = filetreexx[i], name = f.n, shortname;
+                shortname = name;
+                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                name = EscapeHtml(name);
+
+                // Figure out the date
+                var fdatestr = '';
+                if (f.d != null) {
+                    var fdate = new Date(f.d);
+                    if (typeof f.d == 'number') { fdate = new Date(f.d * 1000); }
+                    var fdatestr = printDateTime(fdate) + '&nbsp;';
+                }
+
+                // Figure out the size
+                var fsize = '';
+                if (f.s != null) { fsize = getFileSizeStr(f.s); }
+
+                var h = '';
+                if (f.t < 3) {
+                    var right = '', title = '';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                } else {
+                    var link = shortname;
+                    if (f.s > 0) {
+                        // Local link
+                        //link = '<a href=# style=cursor:pointer onclick="return p13downloadfile(\'' + encodeURIComponentEx(newlinkpath + '/' + name) + '\',\'' + encodeURIComponentEx(name) + '\',' + f.s + ')">' + shortname + '</a>';
+                        // Server link
+                        //link = '<a href="devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '" download="' + name + '" style=cursor:pointer>' + shortname + '</a>';
+                        // Server link
+                        //link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
+                        link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
+                    }
+                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                }
+
+                if (f.t < 3) { html1 += h; } else { html2 += h; }
+            }
+
+            // Display the files and path
+            QH('p13files', html1 + html2);
+            QH('p13currentpath', displayPath);
+            QE('p13FolderUp', p13filetreelocation.length != 0);
+
+            // Re-check all boxes if needed using names
+            if (checkedNames != null) { var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkedNames.indexOf(p13filetree.dir[checkboxes[i].value].n) >= 0) { checkboxes[i].checked = true; } } }
+
+            // Update the actions buttons
+            p13setActions();
+        }
+
+        function p13folderset(x) {
+            p13targetpath = joinPaths(p13filetree.path, p13filetree.dir[x].n).split('\\').join('/');
+            files.sendText({ action: 'ls', reqid: 1, path: p13targetpath });
+        }
+
+        function p13folderup(x) {
+            if (x == null) { p13filetreelocation.pop(); } else { while (p13filetreelocation.length > x) { p13filetreelocation.pop(); } }
+            p13targetpath = p13filetreelocation.join('/');
+            files.sendText({ action: 'ls', reqid: 1, path: p13targetpath });
+            return false;
+        }
+
+        function p13findfile() {
+            if (xxdialogMode) return;
+            var x = addHtmlValue("Filter", '<input id=d2findFilter style="width:230px" onkeyup=p13findfileValidate() onkeydown=p13findfileDown(event) placeholder="*.txt"></input>');
+            x += '<div id=d2findResults style="width:100%;height:184px;background-color:white;border:1px solid black;padding:3px;overflow:scroll;margin-top:8px"></div>';
+            x += '<div style=margin-top:8px><input id=filefind_dlgCancelButton type=button value=' + "Close" + ' style=float:right;width:80px;margin-left:5px onclick=p13findfileCancel()>';
+            x += '<input id=filefind_dlgOkButton type=submit value=' + "Search" + ' style=float:right;width:80px onclick=p13findfileEx()><br /><br /></div>';
+            setDialogMode(2, "Find Files", 0, null, x);
+            p13findfileValidate();
+            Q('d2findFilter').focus();
+        }
+
+        function p13findfileDown(e) { if (e.code == "Enter") { p13findfileEx(); } }
+        function p13findfileValidate() { QE('filefind_dlgOkButton', Q('d2findFilter').value.length > 0); }
+        function p13findfileCancel() { if (xxdialogTag != null) { files.sendText({ action: 'cancelfindfile', reqid: xxdialogTag }); } dialogclose(0) }
+
+        function p13findfileEx(b, t) {
+            if (Q('d2findFilter').value.length == 0) return;
+            var winagent = true;//((currentNode.agent.id > 0) && (currentNode.agent.id < 5));
+            var slash = winagent ? '\\' : '/';
+            var path = p13filetreelocation.join(slash) + slash;
+            if (!winagent) { path = slash + path; }
+            xxdialogTag = 'find:' + Math.random();
+            files.sendText({ action: 'findfile', reqid: xxdialogTag, path: path, filter: Q('d2findFilter').value });
+            QH('d2findResults', '');
+            QE('d2findFilter', false);
+            QE('filefind_dlgOkButton', false);
+        }
+
+        var p13sortorder;
+        function p13sort_filename(a, b) { if (a.ln > b.ln) return (1 * p13sortorder); if (a.ln < b.ln) return (-1 * p13sortorder); return 0; }
+        function p13sort_timestamp(a, b) { if (a.d > b.d) return (1 * p13sortorder); if (a.d < b.d) return (-1 * p13sortorder); return 0; }
+        function p13sort_bysize(a, b) { if (a.s == b.s) return p13sort_filename(a, b); return (((a.s - b.s)) * p13sortorder); }
+
+        function p13sort_files(files) {
+            var r = [], sortselection = Q('p13sortdropdown').value;
+            for (var i in files) { files[i].nx = i; if (files[i].s == null) { files[i].s = 0; } if (files[i].n == null) { files[i].n = i; } files[i].ln = files[i].n.toLowerCase(); r.push(files[i]); }
+            p13sortorder = 1;
+            if (sortselection > 3) { p13sortorder = -1; sortselection -= 3; }
+            if (sortselection == 1) { r.sort(p13sort_filename); }
+            else if (sortselection == 2) { r.sort(p13sort_bysize); }
+            else if (sortselection == 3) { r.sort(p13sort_timestamp); }
+            return r;
+        }
+
+        function p13setActions() {
+            var advancedFeatures = true; //(currentNode.agent.id != 14); // Reduct file feature on some devices.
+            if (p13filetree == null) {
+                QE('p13DeleteFileButton', false);
+                QE('p13NewFolderButton', false);
+                QE('p13UploadButton', false);
+                QE('p13RenameFileButton', false);
+                QE('p13ViewFileButton', false);
+                QE('p13SelectAllButton', false);
+                Q('p13SelectAllButton').value = "Select All";
+                QE('p13RefreshButton', false);
+                QE('p13FindButton', false);
+                QE('p13CutButton', false);
+                QE('p13CopyButton', false);
+                QE('p13ZipButton', false);
+                QE('p13PasteButton', false);
+            } else {
+                var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
+                var winAgent = true; //((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14);
+                QE('p13DeleteFileButton', (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13NewFolderButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false) /*|| (currentNode.agent.id == 14)*/));
+                QE('p13RenameFileButton', advancedFeatures && (cc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13ViewFileButton', advancedFeatures && (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13SelectAllButton', tc > 0);
+                Q('p13SelectAllButton').value = (cc > 0 ? "Select None" : "Select All");
+                QE('p13RefreshButton', true);
+                QE('p13FindButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13CutButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13CopyButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13ZipButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
+            }
+        }
+
+        function p13getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == '3'))) cc++; } return cc; }
+        function p13getFileSelDirCount() { var cc = 0, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '999')) cc++; } return cc; }
+        function p13getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fd'); return checkboxes.length; }
+        function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
+        function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
+        function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
+        function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p13recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox id=p13recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
+        function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles, rec: Q('p13recdeleteinput').checked }); p13folderup(999); }
+        function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }); focusTextBox('p13renameinput'); p13fileNameCheck(); }
+        function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.sendText(t); p13folderup(999); }
+        function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); } }
+        function p13uploadFile() { setDialogMode(2, "Upload File", 3, p13uploadFileEx, '<input type=file name=files id=p13uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />'); updateUploadDialogOk('p13uploadinput'); }
+        function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q('p13uploadinput').files.length > 0); }
+        function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); }
+        function p13viewfile() {
+            var checkboxes = document.getElementsByName('fd');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    if (p13filetree.dir[checkboxes[i].value].s <= 204800) {
+                        p13downloadfile(encodeURIComponentEx(p13filetreelocation.join('/') + '/' + p13filetree.dir[checkboxes[i].value].n), encodeURIComponentEx(p13filetree.dir[checkboxes[i].value].n), p13filetree.dir[checkboxes[i].value].s, 'viewer');
+                    } else { messagebox("File Editor", "Only files less than 200k can be edited."); }
+                    break;
+                }
+            }
+        }
+
+        function p13zipFiles() {
+            var inputFiles = [], checkboxes = document.getElementsByName('fd');
+            for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { inputFiles.push(p13filetree.dir[checkboxes[i].value].n); } }
+            setDialogMode(2, "Zip Filename", 3, p13zipFilesEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="" />', { action: 'zip', path: p13filetreelocation.join('/'), files: inputFiles });
+            focusTextBox('p13renameinput');
+            p13fileNameCheck();
+        }
+
+        function p13zipFilesEx(b, tag) {
+            tag.output = Q('p13renameinput').value;
+            if (!tag.output.toLowerCase().endsWith('.zip')) { tag.output += '.zip'; }
+            files.sendText(tag);
+        }
+
+        var p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0;
+        function p13copyFile(cut) { var checkboxes = document.getElementsByName('fd'); p13clipboard = []; p13clipboardCut = cut, p13clipboardFolder = p13targetpath; for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '3')) { p13clipboard.push(p13filetree.dir[checkboxes[i].value].n); } } p13updateClipview(); }
+        function p13pasteFile() {
+            var x = '';
+            if ((p13clipboard != null) && (p13clipboard.length > 0)) {
+                if (p13clipboardCut == 0) {
+                    if (p13clipboard.length > 1) { x = format("Confirm copy of {0} entries to this location?", p13clipboard.length); } else { x = format("Confirm copy of 1 entrie to this location?"); }
+                } else {
+                    if (p13clipboard.length > 1) { x = format("Confirm move of {0} entries to this location?", p13clipboard.length); } else { x = format("Confirm move of 1 entrie to this location?"); }
+                }
+            }
+            setDialogMode(2, "Paste", 3, p13pasteFileEx, x);
+        }
+        function p13pasteFileEx() { files.sendText({ action: (p13clipboardCut == 0 ? 'copy' : 'move'), reqid: 1, scpath: p13clipboardFolder, dspath: p13targetpath, names: p13clipboard }); p13folderup(999); if (p13clipboardCut == 1) { p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0; p13updateClipview(); } }
+        function p13updateClipview() {
+            var x = '';
+            if ((p13clipboard != null) && (p13clipboard.length > 0)) {
+                if (p13clipboardCut == 0) {
+                    if (p13clipboard.length > 1) {
+                        x = format("Holding {0} entries for copy" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "Clear" + '</a>.', p13clipboard.length);
+                    } else {
+                        x = format("Holding 1 entrie for copy" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "Clear" + '</a>.');
+                    }
+                } else {
+                    if (p13clipboard.length > 1) {
+                        x = format("Holding {0} entries for move" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "Clear" + '</a>.', p13clipboard.length);
+                    } else {
+                        x = format("Holding 1 entrie for move" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "Clear" + '</a>.');
+                    }
+                }
+            }
+            QH('p13bottomstatus', x);
+            p13setActions();
+        }
+        function p13clearClip() { p13clipboard = null; p13clipboardFolder = null; p13clipboardCut = 0; p13updateClipview(); return false; }
+
+        function p13fileDragDrop(e) {
+            haltEvent(e);
+            QV('p13bigfail', false);
+            QV('p13bigok', false);
+            if ((e.dataTransfer == null) || (e.dataTransfer.files.length == 0) || (p13filetree == null)) return;
+
+            // Check if these are files we can upload, remove all folders.
+            var files = [];
+            for (var i in e.dataTransfer.files) { if ((e.dataTransfer.files[i].size != null) && (e.dataTransfer.files[i].size != 0)) { files.push(e.dataTransfer.files[i]); } }
+            if (files.length == 0) return;
+
+            p13doUploadFiles(files);
+        }
+
+        var p13dragtimer = null;
+        function p13fileDragOver(e) {
+            haltEvent(e);
+            if (p13dragtimer != null) { clearTimeout(p13dragtimer); p13dragtimer = null; }
+            var ac = (p13filetree != null); // Set to true if we can accept the file
+            QV('p13bigok', ac);
+            QV('p13bigfail', !ac);
+        }
+
+        function p13fileDragLeave(e) {
+            haltEvent(e);
+            if (e.target.id != 'p13filetable') {
+                QV('p13bigfail', false);
+                QV('p13bigok', false);
+            } else {
+                p13dragtimer = setTimeout(function () { QV('p13bigfail', false); QV('p13bigok', false); p13dragtimer = null; }, 10);
+            }
+        }
+
+        //
+        // FILES DOWNLOAD
+        //
+
+        var gdownloadFile; // Global state for file download
+
+        // Called by the html page to start a download, arguments are: path, file name and file size.
+        function p13downloadfile(x, y, z, tag) {
+            if (xxdialogMode || !files) return;
+            gdownloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random(), tag: tag }
+            //console.log('p13downloadFileCancel', gdownloadFile);
+            files.sendText({ action: 'download', sub: 'start', id: gdownloadFile.id, path: gdownloadFile.path });
+            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + gdownloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
+        }
+
+        // Called by the html page to cancel the download
+        function p13downloadFileCancel() { setDialogMode(0); files.sendText({ action: 'download', sub: 'cancel', id: gdownloadFile.id }); gdownloadFile = null; }
+
+        // Called by the transport when download control command is received
+        function p13gotDownloadCommand(cmd) {
+            //console.log('p13gotDownloadCommand', cmd);
+            if ((gdownloadFile == null) || (cmd.id != gdownloadFile.id)) return;
+            if (cmd.sub == 'start') { gdownloadFile.state = 1; files.sendText({ action: 'download', sub: 'startack', id: gdownloadFile.id }); }
+            else if (cmd.sub == 'cancel') { gdownloadFile = null; setDialogMode(0); }
+        }
+
+        // Called by the transport when binary data is received
+        function p13gotDownloadBinaryData(data) {
+            if (!gdownloadFile || gdownloadFile.state == 0) return;
+            if (data.length > 4) {
+                gdownloadFile.tsize += (data.length - 4); // Add to the total bytes received
+                gdownloadFile.data += data.substring(4); // Append the data
+                Q('d2progressBar').value = gdownloadFile.tsize; // Change the progress bar
+            }
+            if ((ReadInt(data, 0) & 1) != 0) { // Check end flag
+                if (gdownloadFile.tag == 'viewer') {
+                    // View the file in the dialog box
+                    setDialogMode(4, EscapeHtml(gdownloadFile.file), 3, p13editSaveBack, null, gdownloadFile.file);
+                    QS('dialog').width = 'auto';
+                    QS('dialog').bottom = '80px';
+                    QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
+                    Q('d4editorarea').value = gdownloadFile.data;
+                    gdownloadFile = null;
+                } else {
+                    // Save the file to disk
+                    saveAs(data2blob(gdownloadFile.data), gdownloadFile.file); gdownloadFile = null; setDialogMode(0); // Save the file
+                }
+            } else {
+                files.sendText({ action: 'download', sub: 'ack', id: gdownloadFile.id }); // Send the ACK
+            }
+        }
+
+        var d4EditWrapVal = 0;
+        var d4EditSizeVal = 0;
+        function d4ToggleWrap(update) {
+            if (!update) { d4EditWrapVal = ++d4EditWrapVal % 2; }
+            Q('d4WrapButton').value = ["Wrap: ON", "Wrap: OFF"][d4EditWrapVal];
+            QS('d4editorarea').overflow = (d4EditWrapVal == 0) ? 'auto' : 'scroll';
+            QS('d4editorarea')['white-space'] = (d4EditWrapVal == 0) ? null : 'pre';
+            putstore('editorWrap', d4EditWrapVal);
+        }
+
+        function d4ToggleSize(update) {
+            if (!update) { d4EditSizeVal = ++d4EditSizeVal % 4; }
+            QS('d4editorarea')['font-size'] = ['100%', '125%', '150%', '200%'][d4EditSizeVal];
+            Q('d4SizeButton').value = ["Size: 100%", "Size: 125%", "Size: 150%", "Size: 200%"][d4EditSizeVal];
+            putstore('editorSize', d4EditSizeVal);
+        }
+
+        function p13editSaveBack(b, tag) {
+            var data = new TextEncoder().encode(Q('d4editorarea').value);
+            p13uploadFileContinue(1, [{ name: tag, size: data.byteLength, type: 'text/plain', xdata: data }]);
+        }
+
+        //
+        // FILES UPLOAD
+        //
+
+        var uploadFile;
+        function p13doUploadFiles(files) {
+            if (xxdialogMode) return;
+
+            // Check if we are going to overwrite any files
+            var winAgent = true;//((currentNode.agent.id > 0) && (currentNode.agent.id < 5));
+            var targetFiles = [], overWriteCount = 0;
+            for (var i in p13filetree.dir) { if (winAgent) { targetFiles.push(p13filetree.dir[i].n.toLowerCase()); } else { targetFiles.push(p13filetree.dir[i].n); } }
+            for (var i = 0; i < files.length; i++) {
+                if (winAgent) {
+                    if (targetFiles.indexOf(files[i].name.toLowerCase()) >= 0) { overWriteCount++; }
+                } else {
+                    if (targetFiles.indexOf(files[i].name) >= 0) { overWriteCount++; }
+                }
+            }
+
+            if (overWriteCount == 0) {
+                // If no overwrite, go ahead with upload
+                p13uploadFileContinue(1, files);
+            } else {
+                // Otherwise, prompt for confirmation
+                setDialogMode(2, "Upload File", 3, p13uploadFileContinue, format((overWriteCount == 1) ? "Upload will overwrite 1 file. Continue?" : "Upload will overwrite {0} files. Continue?", overWriteCount), files);
+            }
+        }
+
+        function p13uploadFileContinue(b, files) {
+            uploadFile = {};
+            uploadFile.xpath = p13filetreelocation.join('/');
+            uploadFile.xfiles = files;
+            uploadFile.xfilePtr = -1;
+            setDialogMode(2, "Upload File", 10, p13uploadFileCancel, '<div id=p13dfileName>' + "Connecting..." + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=0 />');
+            p13uploadNextFile();
+        }
+
+        // Perform SHA-384 hashing
+        const byteToHex = [];
+        for (var n = 0; n <= 0xff; ++n) { var hexOctet = n.toString(16).padStart(2, '0'); byteToHex.push(hexOctet); }
+        function arrayBufferToHex(arrayBuffer) { return Array.prototype.map.call(new Uint8Array(arrayBuffer), n => byteToHex[n]).join(''); }
+        function performHash(data, f) { window.crypto.subtle.digest('SHA-384', data).then(function (v) { f(arrayBufferToHex(v)); }, function () { f(null); }); }
+
+        // Push the next file
+        function p13uploadNextFile() {
+            uploadFile.xfilePtr++;
+            if (uploadFile.xfiles.length > uploadFile.xfilePtr) {
+                uploadFile.xptr = 0;
+                var file = uploadFile.xfiles[uploadFile.xfilePtr];
+                QH('p13dfileName', file.name);
+                Q('d2progressBar').max = file.size;
+                Q('d2progressBar').value = 0;
+                if (file.xdata == null) {
+                    // Load the data
+                    uploadFile.xreader = new FileReader();
+                    uploadFile.xreader.onload = function () {
+                        uploadFile.xdata = uploadFile.xreader.result;
+
+                        // If the remote file already exists and is smaller then our file, see if we can resume the trasfer
+                        var f = null;
+                        for (var i in p13filetree.dir) { if (p13filetree.dir[i].n == file.name) { f = p13filetree.dir[i]; } }
+                        if ((f != null) && (f.s <= uploadFile.xreader.result.byteLength)) {
+                            performHash(uploadFile.xreader.result.slice(0, f.s), function (hash) {
+                                files.sendText(JSON.stringify({ action: 'uploadhash', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, tag: { h: hash.toUpperCase(), s: f.s, skip: f.s == uploadFile.xreader.result.byteLength } }));
+                            });
+                        } else {
+                            files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
+                        }
+                    };
+                    uploadFile.xreader.readAsArrayBuffer(file);
+                } else {
+                    // Data already loaded
+                    uploadFile.xdata = file.xdata;
+                    files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
+                }
+            } else {
+                p13uploadFileTransferDone();
+            }
+        }
+
+        // Used to cancel the entire transfer.
+        function p13uploadFileCancel(button, tag) {
+            if (uploadFile != null) { files.sendText(JSON.stringify({ action: 'uploadcancel', reqid: uploadFile.xfilePtr })); uploadFile = null; }
+            p13uploadFileTransferDone();
+        }
+
+        // Used to cancel the entire transfer.
+        function p13uploadFileTransferDone() {
+            uploadFile = null; // No more files to upload, clean up.
+            setDialogMode(0); // Close the dialog box
+            p13folderup(9999); // Refresh the current folder
+        }
+
+        // Receive upload ack from the mesh agent, use this to keep sending more data
+        function p13gotUploadData(cmd) {
+            if ((uploadFile == null) || (parseInt(uploadFile.xfilePtr) != parseInt(cmd.reqid))) { return; }
+            switch (cmd.action) {
+                case 'uploadstart': { p13uploadNextPart(false); for (var i = 0; i < 8; i++) { p13uploadNextPart(true); } break; } // Send 8 more blocks of 16k to fill the websocket.
+                case 'uploadack': { p13uploadNextPart(false); break; }
+                case 'uploaddone': { if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadNextFile(); } else { p13uploadFileTransferDone(); } break; }
+                case 'uploaderror': { p13uploadFileCancel(); break; }
+                case 'uploadhash': {
+                    var file = uploadFile.xfiles[uploadFile.xfilePtr];
+                    if (file) {
+                        if (cmd.tag.h === cmd.hash) {
+                            if (cmd.tag.skip) {
+                                p13uploadNextFile();
+                            } else {
+                                uploadFile.xptr = cmd.tag.s;
+                                files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength, append: true }));
+                            }
+                        } else {
+                            files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength, append: false }));
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Push the next part of the file into the websocket. If dataPriming is true, push more data only if it's not the last block of the file.
+        function p13uploadNextPart(dataPriming) {
+            var data = uploadFile.xdata, start = uploadFile.xptr;
+            if (start >= data.byteLength) {
+                files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
+            } else {
+                var end = uploadFile.xptr + 16384;
+                if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
+                var dataslice = new Uint8Array(data.slice(start, end))
+                if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
+                    var datapart = new Uint8Array(end - start + 1);
+                    datapart.set(dataslice, 1); // Add a zero char at the start of the send, this will indicate that it's not a JSON command.
+                    files.send(datapart);
+                } else {
+                    files.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
+                }
+                uploadFile.xptr = end;
+                Q('d2progressBar').value = end;
+            }
+        }
+
+
+
+        //
+        // POPUP DIALOG
+        //
+
+        // null = Hidden, 1 = Generic Message
+        var xxdialogMode;
+        var xxdialogFunc;
+        var xxdialogButtons;
+        var xxdialogTag;
+        var xxcurrentView = -1;
+
+        // Display a dialog box
+        // Parameters: Dialog Mode (0 = none), Dialog Title, Buttons (1 = OK, 2 = Cancel, 3 = OK & Cancel), Call back function(0 = Cancel, 1 = OK), Dialog Content (Mode 2 only)
+        function setDialogMode(x, y, b, f, c, tag) {
+            xxdialogMode = x;
+            xxdialogFunc = f;
+            xxdialogButtons = b;
+            xxdialogTag = tag;
+            QE('idx_dlgOkButton', true);
+            QV('idx_dlgOkButton', b & 1);
+            QV('idx_dlgCancelButton', b & 2);
+            QV('id_dialogclose', (b & 2) || (b & 8));
+            QV('idx_dlgDeleteButton', b & 4);
+            QV('idx_dlgButtonBar', b & 7);
+            if (y) QH('id_dialogtitle', y);
+            for (var i = 1; i < 8; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
+            QV('dialog', x);
+            if (c) { if (x == 2) { QH('id_dialogOptions', c); } else { QH('id_dialogMessage', c); } }
+        }
+
+        function dialogclose(x) {
+            var f = xxdialogFunc, b = xxdialogButtons, t = xxdialogTag;
+            setDialogMode();
+            if (((b & 8) || x) && f) f(x, t);
+        }
+
+        function go(x) {
+            if (xxdialogMode) return;
+            QV('p11', x == 11);
+            QV('p12', x == 12);
+            QV('p13', x == 13);
+            xxcurrentView = x;
+            setupDeviceMenu();
+        }
+
+        function setupDeviceMenu() {
+            var menus = [];
+            if (features & 2) { menus.push({ n: "Desktop", f: 'go(11)', s: (xxcurrentView == 11) }); }
+            if (features & 1) { menus.push({ n: "Terminal", f: 'go(12)', s: (xxcurrentView == 12) }); }
+            if (features & 4) { menus.push({ n: "Files", f: 'go(13)', s: (xxcurrentView == 13) }); }
+            updateFooterMenu(menus);
+        }
+
+        function updateFooterMenu(options) {
+            while (options != null && options.length < 3) { options.push({ n: '' }); }
+            var x = '', prev = '';
+            if (options != null) { for (var i in options) { x += '<td style="cursor:pointer' + ((prev == '') ? '' : ';border-left:solid 1px white') + (options[i].s ? ';background-color:#487099' : '') + '" onclick="' + options[i].f + '">' + options[i].n; prev = options[i].n; } }
+            QH('xfooterMenu', '<tr>' + x);
+        }
+
+        function center() { if (xtermfit) xtermfit.fit(); QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); deskAdjust(); }
+        function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
+        function messagebox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
+        function statusbox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t); }
+        function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+        function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
+        function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+        function setSessionActivity() { sessionActivity = Date.now(); /*QH('idleTimeoutNotify', '');*/ }
+        function printDate(d) { return d.toLocaleDateString(urlargs.locale); }
+        function printTime(d) { return d.toLocaleTimeString(urlargs.locale); }
+        function printDateTime(d) { return d.toLocaleString(urlargs.locale); }
+        function printFlexDateTime(d) { if (printDate(new Date()) == printDate(d)) { return format("Expires at {0}", printTime(d)); } else { return format("Expires {0}", printDateTime(d)); } }
+        function getFileSizeStr(size) { if (typeof size != 'number') { size = 0; } if (size == 1) return "1 byte"; return format("{0} bytes", size); }
+        function encodeURIComponentEx(txt) { return encodeURIComponent(txt).replace(/'/g, '%27'); };
+        function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
+        function focusTextBox(x) { setTimeout(function () { Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
+        var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
+
+        // Webkit seems to have a problem with "download" tag causing "network error", but openning the download in a hidden frame fixes it.
+        // So we do that for all browsers except FireFox
+        function downloadFile(link, name, closeDialog) {
+            var element = document.createElement('a');
+            element.setAttribute('href', link);
+            element.setAttribute('rel', 'noreferrer noopener');
+            element.setAttribute('target', 'fileDownloadFrame');
+            if (navigator.userAgent.indexOf('Firefox') >= 0) { element.setAttribute('download', decodeURIComponent(name ? name : '')); }
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            if (closeDialog) { setDialogMode(0); }
+        }
+
+        start();
+    </script>
+</body>
+</html>
