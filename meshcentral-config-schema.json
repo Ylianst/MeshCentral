@@ -1,5 +1,5 @@
 {
-  "id": "https://info.meshcentral.com/downloads/meshcentral-config-schema.json",
+  "id": "https://raw.githubusercontent.com/Ylianst/MeshCentral/master/meshcentral-config-schema.json",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "MeshCentral configuration file schema",
   "type": "object",
