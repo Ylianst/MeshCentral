@@ -459,19 +459,9 @@
                 <div id=p10 style=display:none;position:absolute;bottom:0;top:0;width:100%;overflow:hidden>
                     <table id=p10deskTopTable cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;position:absolute;top:0">
                         <tr style=padding:0>
-                            <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
-                                <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
-                                    <div class="menucurve"></div>
-                                </div>
-                                <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
-                            </td>
                             <td>
-                                <a id=MainComputerImage style=cursor:pointer onclick=p10showiconselector()></a>
-                            </td>
-                            <td>
-                                <div style=margin-left:5px>
-                                    <strong><span id=p10deviceName></span></strong><br />
-                                    <span id=MainComputerState></span>
+                                <div style="margin-left:10px;margin-top:14px;font-size:20px">
+                                    <strong><span id=p10deviceName></span></strong>
                                 </div>
                             </td>
                         </tr>
@@ -522,15 +512,10 @@
                         <div id=deskarea4 style="position:absolute;bottom:0px;width:100%;height:32px">
                             <div style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
                                 <div style=float:right;text-align:right>
-                                    <span id=DeskChatButton><img src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
-                                    <span id=DeskToastButton><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
                                     <!--<input id=DeskToolsButton type=button value=Tools onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
                                 </div>
                                 <div>
-                                    <input id="deskActionsBtn" type=button style="margin-left:3px;height:28px" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
                                     <input type="button" value="Settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" style="height:28px">
-                                    <input type="button" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none;height:28px">
-                                    <!--<input type="button" id="DeskSpecialKeys" value="Keys" onkeypress="return false" onkeydown="return false" onclick="sendSpecialKeys()" style="height:28px">-->
                                     <input type="button" id="DeskScreens" value="Screens" onkeypress="return false" onkeydown="return false" onclick="deskSelectScreens()" style="display:none;height:28px">
                                     <label><span id="DeskControlSpan" style="display:none"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span></label>
                                 </div>
@@ -562,7 +547,6 @@
                                 <div class="areaFoot">
                                     <div class="toright2"></div>
                                     <div style="height:28px">
-                                        <input id="termActionsBtn" style="margin-left:3px;height:28px" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
                                     </div>
                                 </div>
                             </div>
@@ -574,7 +558,6 @@
                             <tr>
                                 <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px;line-height:24px">
                                     <div style="float:right;text-align:right">
-                                        <input id="filesActionsBtn" type=button onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:2px />
                                         <div id="filesCustomUpperRight" style="float:left;margin-right:6px"></div>
                                     </div>
                                     <div style="margin-left:2px">
@@ -755,13 +738,14 @@
     <script>
         'use strict';
         var args = parseUriArgs();
+        var urlargs = args;
         var sessionTime = parseInt('{{{sessiontime}}}');
         var sessionRefreshTimer = null;
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
         var authCookie = '{{{authCookie}}}';
         var authRelayCookie = '{{{authRelayCookie}}}';
-        var viewOnly = parseInt('{{{viewOnly}}}');
+        var viewOnly = (parseInt('{{{viewOnly}}}') == 1);
         var authCookieRenewTimer = null;
         var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
         var debugmode = false;
@@ -777,6 +761,7 @@
         var xtermResizeTimer = null;
         var features = parseInt('{{{features}}}');
         var features2 = parseInt('{{{features2}}}');
+        var nodeName = decodeURIComponent('{{{nodeName}}}');
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -788,6 +773,7 @@
         check_webp_feature('lossy', function (f, x) { webpSupport = x; });
 
         function startup() {
+            QH('p10deviceName', nodeName);
             if ((features & 32) == 0) {
                 // Guard against other site's top frames (web bugs).
                 var loc = null;
@@ -799,6 +785,9 @@
             window.onresize = center;
             center();
             go(10);
+
+            // Set the document title
+            if (nodeName.length > 0) { document.title += ' - ' + nodeName; }
 
             // Document keys
             document.onkeypress = ondeskkeypress;
@@ -820,6 +809,8 @@
             for (var i in deskKeyboardShortcutsStr) { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); }
             updateDeskShortcutKeys();
             updateTermShortcutKeys();
+            updateDesktopButtons();
+            updateTerminalButtons();
 
             if (features & 2) { currentDevicePanel = 1; } // Goto desktop
             else if (features & 1) { currentDevicePanel = 5; } // Goto terminal
@@ -853,13 +844,7 @@
                 gotKeyPressEvent = true;
                 Q('softKeyboard').value = '';
                 // Check what keys we are allows to send
-                if (currentNode != null) {
-                    var meshrights = GetMeshRights(currentNode.meshid);
-                    var inputAllowed = ((features2 & 0x2000) == 0) && ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
-                    if (inputAllowed == false) return false;
-                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
-                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
-                }
+                if (viewOnly) return false;
                 return desktop.m.handleKeys(e);
             }
             if (terminal && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 5) && (t !== 1)) {
@@ -887,13 +872,7 @@
                 gotKeyPressEvent = false;
                 Q('softKeyboard').value = '';
                 // Check what keys we are allows to send
-                if (currentNode != null) {
-                    var meshrights = GetMeshRights(currentNode.meshid);
-                    var inputAllowed = ((features2 & 0x2000) == 0) && ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
-                    if (inputAllowed == false) return false;
-                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
-                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
-                }
+                if (viewOnly) return false;
                 return desktop.m.handleKeyDown(e);
             }
             if (terminal && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 5) && (t !== 1)) {
@@ -922,13 +901,7 @@
                 var inputStr = Q('softKeyboard').value;
                 Q('softKeyboard').value = '';
                 // Check what keys we are allows to send
-                if (currentNode != null) {
-                    var meshrights = GetMeshRights(currentNode.meshid);
-                    var inputAllowed = ((features2 & 0x2000) == 0) && ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
-                    if (inputAllowed == false) return false;
-                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
-                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
-                }
+                if (viewOnly) return;
                 if ((gotKeyPressEvent == false) && (inputStr.length > 0) && desktop.m.SendKeyUnicode) {
                     // This is a mobile keyboard, we need to send that is in the input control.
                     var inputchar = inputStr[inputStr.length - 1].charCodeAt(0);
@@ -1035,15 +1008,15 @@
 
         // Show and enable the right buttons
         function updateDesktopButtons() {
-            var mesh = meshes[currentNode.meshid];
             var deskState = 0;
             if (desktop != null) { deskState = desktop.State; }
-            var meshrights = GetNodeRights(currentNode);
 
             // Show the right buttons
             QV('disconnectbutton1', (deskState != 0));
             QE('deskFullScreen', (deskState != 0));
-            QV('connectbutton1', (deskState == 0) && ((meshrights & 8) || (meshrights & 256)) && (currentNode.agent != null) && (currentNode.agent.caps & 1));
+            QV('connectbutton1', (deskState == 0));
+            QV('connectbutton1h', false);
+            /*
             QV('connectbutton1h',
                 (deskState == 0) &&
                 (meshrights & 8) &&
@@ -1056,29 +1029,15 @@
                   ((currentNode.intelamt.sku & 8) != 0))))
                 )
             );
+            */
 
             // Show the right settings
-            QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (currentNode.agent == null))) && ((deskState == 0) || (desktop.contype == 2)));
-            QV('d7meshkvm', ((currentNode.agent != null) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1))));
+            QV('d7amtkvm', false);
+            QV('d7meshkvm', true);
 
             // Enable buttons
-            var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
-            QE('connectbutton1', online);
-            var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
-            QE('connectbutton1h', hwonline);
-            //QE('deskSaveBtn', deskState == 3);
-            //QV('DeskCAD', meshrights & 8);
-            //QE('DeskCAD', deskState == 3);
-            //QV('DeskWD', (currentNode.agent) && (currentNode.agent.id < 5));
-            //QE('DeskWD', deskState == 3);
-            //QV('deskkeys', (currentNode.agent) && (currentNode.agent.id < 5));
-            //QE('deskkeys', deskState == 3);
-            //QE('DeskToolsButton', online);
-            QV('DeskToastButton', ((meshrights & 16384) != 0) && (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8));
-            //QE('DeskToastButton', online);
-            QV('deskActionsBtn', meshrights & 8);
-            Q('DeskControl').checked = ((meshrights & 8) != 0);
-            if (online == false) QV('DeskTools', false);
+            QE('connectbutton1', true);
+            QE('connectbutton1h', false);
         }
 
         // Used to translate incoming agent console messages
@@ -1096,7 +1055,6 @@
             QV('p11DeskSessionSelector', false);
             p11clearConsoleMsg();
             if (desktop == null) {
-                desktopNode = currentNode;
                 if (contype == 2) {
                     // Setup the Intel AMT remote desktop
                     if ((desktopNode.intelamt.user == null) || (desktopNode.intelamt.user == '')) { editDeviceAmtSettings(desktopNode._id, connectDesktop); return; }
@@ -1109,9 +1067,9 @@
                     desktop.m.onScreenSizeChange = function (o, x, y) { if (fullscreen) { QS('deskarea3').width = (x * fullscreenzoom) + 'px'; QS('deskarea3').height = (y * fullscreenzoom) + 'px'; } deskAdjust(); }
                     desktop.Start(desktopNode._id, 16994, '*', '*', 0);
                     desktop.contype = 2;
-                } else if ((contype == null) || (contype == 1) || ((contype == 3) && (currentNode.agent.id > 4))) {
+                } else if ((contype == null) || (contype == 1) || ((contype == 3))) {
                     // Setup the Mesh Agent remote desktop
-                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                    desktop = CreateAgentRedirect(null, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, null, domainUrl);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
@@ -1137,11 +1095,11 @@
                     desktop.m.FrameRateTimer = desktopsettings.framerate;
                     desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = function (o, x, y) { if (fullscreen) { QS('deskarea3').width = (x * fullscreenzoom) + 'px'; QS('deskarea3').height = (y * fullscreenzoom) + 'px'; } deskAdjust(); }
-                    desktop.Start(desktopNode._id);
+                    desktop.Start(null);
                     desktop.contype = 1;
                 } else if (contype == 3) {
                     // Ask for user sessions
-                    meshserver.send({ action: 'msg', type: 'userSessions', nodeid: currentNode._id, tag: consent });
+                    //meshserver.send({ action: 'msg', type: 'userSessions', nodeid: currentNode._id, tag: consent });
                 }
             } else {
                 // Disconnect and clean up the remote desktop
@@ -1483,9 +1441,7 @@
             QV('deskarea4', !fullscreen);
             QV('termarea1', !fullscreen);
             QV('termarea4', !fullscreen);
-
-            var rights = GetNodeRights(currentNode);
-            var inputAllowed = ((features2 & 0x2000) == 0) && (currentNode.agent.id != 14) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
+            var inputAllowed = !viewOnly;
 
             // Show full screen buttons if needed
             QV('deskkeybutton1', fullscreen);
@@ -1570,7 +1526,7 @@
                     QS('termarea3')['padding-right'] = null;
                     QS('termarea3')['height'] = 'calc(100% - 60px)';
                 }
-                QS('body')['background-color'] = nightMode ? '#000' : '#FFF';
+                QS('body')['background-color'] = '#FFF';
                 QS('p10')['background-color'] = null;
             }
             if (currentDevicePanel == 1) { deskAdjust(); }
@@ -1664,40 +1620,15 @@
 
         // Show and enable the right buttons
         function updateTerminalButtons() {
-            var mtype = (currentNode.agent == 1) ? 1 : 2;
             var termState = ((terminal != null) && (terminal.state != 0));
             QE('termFullScreen', (termState != 0));
 
-            // If we are looking at a local non-windows device, enable terminal and files capability.
-            if ((terminalNode.mtype == 3) && (terminalNode.agent != null) && (terminalNode.agent.id > 4) && (features2 & 0x00000200)) { terminalNode.agent.caps = 6; }
-
             // Show the right buttons
-            QV('disconnectbutton2span', (termState == true));
-            QV('connectbutton2span', (termState == false) && (currentNode.agent != null) && (currentNode.agent.caps & 2));
+            QV('disconnectbutton2span', termState == true);
+            QV('connectbutton2span', termState == false);
 
             // Enable buttons
-            var online = ((terminalNode.conn & 1) != 0) || (terminalNode.mtype == 3); // If Agent (1) connected, enable Terminal
-            QE('connectbutton2', online);
-
-            // Enable action button if mesh type is not "local devices"
-            QV('termActionsBtn', terminalNode.mtype != 3);
-            if (terminalNode.mtype != 3) {
-                QH('terminalCustomUpperRight', '');
-            } else {
-                QH('terminalCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (terminalNode.sshport ? terminalNode.sshport : 22)) + '</a>');
-            }
-        }
-
-        function cmsshportaction(action) {
-            if (xxdialogMode) return;
-            var x = "SSH remote connection port:" + '<br /><br /><input type=text placeholder="22" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10sshport type=text>';
-            setDialogMode(2, "SSH Connection", 3, function () {
-                // Save the new SSH port to the server
-                var sshport = ((Q('d10sshport').value.length > 0) ? parseInt(Q('d10sshport').value) : 22);
-                meshserver.send({ action: 'changedevice', nodeid: currentNode._id, sshport: sshport });
-            }, x, currentNode);
-            Q('d10sshport').focus();
-            if (currentNode.sshport != null) { Q('d10sshport').value = currentNode.sshport; }
+            QE('connectbutton2', true);
         }
 
         // Called when the terminal state changes
@@ -1878,14 +1809,13 @@
                 document.getElementsByClassName('xterm-viewport')[0].style.overflow = 'hidden';
 
                 // Setup a terminal tunnel to the agent
-                terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel((currentNode.mtype == 3) ? sshTunnelUpdate : tunnelUpdate, termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
-                if (currentNode.mtype == 3) { terminal.urlname = 'sshterminalrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
+                terminal = CreateAgentRedirect(null, CreateRemoteTunnel(tunnelUpdate, options), serverPublicNamePort, authCookie, null, domainUrl);
                 terminal.debugmode = debugmode;
                 terminal.m.debugmode = debugmode;
                 terminal.options = termoptions;
                 terminal.options = { cols: xterm.cols, rows: xterm.rows };
                 if (termoptions.requireLogin) { terminal.options.requireLogin = true; }
-                terminal.Start(terminalNode._id);
+                terminal.Start(null);
                 terminal.onStateChanged = onTerminalStateChange;
                 terminal.contype = 1;
                 terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
@@ -1924,14 +1854,9 @@
         // FILES
         //
 
-        var filesNode;
         function setupFiles() {
             // Setup the files tab
-            var samenode = (filesNode == currentNode);
-            filesNode = currentNode;
-            var online = ((filesNode.conn & 1) != 0) || (filesNode.mtype == 3); // If Agent (1) connected, enable Terminal
-            QE('p13Connect', online);
-            if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
+            QE('p13Connect', true);
             p13setActions();
         }
 
@@ -1957,9 +1882,6 @@
                     p13filetreelocation = [];
                     p13targetpath = '';
                     if (files) {
-                        var filepaths = [];
-                        try { filepaths = JSON.parse(getstore('_devFilePaths', '[]')); } catch (ex) { }
-                        for (var i = 0; i < filepaths.length; i++) { if (filepaths[i].n == currentNode._id) { p13targetpath = filepaths[i].p; } }
                         p13filetreelocation = p13targetpath.split('/');
                         files.sendText({ action: 'ls', reqid: 1, path: p13targetpath });
                         //if (files.serverIsRecording == true) { QV('filesRecordIcon', true); }
@@ -1987,8 +1909,7 @@
             p13clearConsoleMsg();
             if (!files) {
                 // Setup a mesh agent files
-                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
-                if (filesNode.mtype == 3) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
+                files = CreateAgentRedirect(null, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, null, domainUrl);
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
@@ -2001,7 +1922,7 @@
                         p13clearConsoleMsg();
                     }
                 }
-                files.Start(filesNode._id);
+                files.Start(null);
             } else {
                 //QH('Term', '');
                 files.Stop();
@@ -2148,7 +2069,6 @@
         function p13folderset(x) {
             p13targetpath = joinPaths(p13filetree.path, p13filetree.dir[x].n).split('\\').join('/');
             if (files) {
-                p13storeCurrentPath(p13targetpath);
                 files.sendText({ action: 'ls', reqid: 1, path: p13targetpath });
             }
         }
@@ -2157,21 +2077,8 @@
             if (x == null) { p13filetreelocation.pop(); } else { while (p13filetreelocation.length > x) { p13filetreelocation.pop(); } }
             p13targetpath = p13filetreelocation.join('/');
             if (files) {
-                p13storeCurrentPath(p13targetpath);
                 files.sendText({ action: 'ls', reqid: 1, path: p13targetpath });
             }
-        }
-
-        // Store the current path for a given node as browser state.
-        // This is so, when reconnecting to a device, you go back to the same path.
-        function p13storeCurrentPath(path) {
-            var filepaths = [], j = -1;
-            try { filepaths = JSON.parse(getstore('_devFilePaths', '[]')); } catch (ex) { }
-            for (var i = 0; i < filepaths.length; i++) { if (filepaths[i].n == currentNode._id) { j = i; } }
-            if (j >= 0) { filepaths.splice(j, 1); }
-            filepaths.push({ n: currentNode._id, p: path });
-            while (filepaths.length > 40) { filepaths.shift(); } // Keep only 40 devices worth of paths.
-            putstore('_devFilePaths', JSON.stringify(filepaths));
         }
 
         var p13sortorder;
@@ -2191,7 +2098,7 @@
         }
 
         function p13setActions() {
-            var advancedFeatures = ((currentNode.agent) && (currentNode.agent.id != 14)); // Reduct file feature on some devices.
+            var advancedFeatures = true; //((currentNode.agent) && (currentNode.agent.id != 14)); // Reduct file feature on some devices.
             if (p13filetree == null) {
                 QE('p13DeleteFileButton', false);
                 QE('p13NewFolderButton', false);
@@ -2205,7 +2112,7 @@
                 QE('p13PasteButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
-                var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
+                var winAgent = true; //((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
                 QE('p13DeleteFileButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13NewFolderButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13UploadButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
@@ -2213,16 +2120,12 @@
                 QE('p13SelectAllButton', tc > 0);
                 Q('p13SelectAllButton').value = (cc > 0 ? "None" : "All");
                 QE('p13RefreshButton', true);
-                QE('p13CutButton', advancedFeatures && (cc > 0) && (cc == sfc) && (currentNode.mtype != 3) && ((p13filetreelocation.length > 0) || (winAgent == false)));
-                QE('p13CopyButton', advancedFeatures && (cc > 0) && (cc == sfc) && (currentNode.mtype != 3) && ((p13filetreelocation.length > 0) || (winAgent == false)));
-                QE('p13PasteButton', advancedFeatures && (currentNode.mtype != 3) && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
+                //QE('p13FindButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13CutButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13CopyButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                //QE('p13ZipButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
             }
-            if (filesNode.mtype != 3) {
-                QH('filesCustomUpperRight', '');
-            } else {
-                QH('filesCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (filesNode.sshport ? filesNode.sshport : 22)) + '</a>');
-            }
-            QV('filesActionsBtn', filesNode.mtype != 3);
         }
 
         function p13getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == '3'))) cc++; } return cc; }
@@ -2329,67 +2232,6 @@
             }
         }
 
-        /*
-        var downloadFile; // Global state for file download
-
-        // Called by the html page to start a download, arguments are: path, file name and file size.
-        function p13downloadfile(x, y, z) {
-            if (xxdialogMode) return;
-            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort, authCookie, authRelayCookie, domainUrl); // Create our websocket file transport
-            downloadFile.ctrlMsgAllowed = false;
-            downloadFile.onStateChanged = onFileDownloadStateChange;
-            downloadFile.xpath = decodeURIComponent(x);
-            downloadFile.xfile = decodeURIComponent(y);
-            downloadFile.xsize = z;
-            downloadFile.xtsize = 0;
-            downloadFile.xstate = 0;
-            downloadFile.Start(filesNode._id);
-            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + downloadFile.xfile + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
-        }
-
-        // Called by the html page to cancel the download
-        function p13downloadFileCancel(button, tag) {
-            //console.log('p13downloadFileCancel');
-            downloadFile.Stop();
-            delete downloadFile;
-            downloadFile = null;
-        }
-
-        // Called by the file transport to indicate when the transport connection state has changed
-        function onFileDownloadStateChange(xdownloadFile, state) {
-            switch (state) {
-                case 0: // Transport as disconnected. If this is not part of an abort, we need to save the file
-                    setDialogMode(0); // Close any dialog boxes if present
-                    if ((downloadFile != null) && (downloadFile.xstate == 1)) { saveAs(data2blob(downloadFile.xdata), downloadFile.xfile); } // Save the file
-                    break;
-                case 3: // Transport as connected, send a command to indicate we want to start a file download
-                    downloadFile.send(JSON.stringify({ action: 'download', reqid: 1, path: downloadFile.xpath }));
-                    break;
-                default:
-                    console.log('Unknown onFileDownloadStateChange state', state);
-                    break;
-            }
-        }
-
-        // Called by the transport when data is received
-        function p13gotDownloadData(data) {
-            if (downloadFile.xstate == 0) { // If state is 0, this is a command confirming if the file will be transfered.
-                var cmd = JSON.parse(data);
-                if (cmd.action == 'downloadstart') { // Yes, the file is about to start
-                    downloadFile.xstate = 1; // Switch to state 1, we will start receiving the file data
-                    downloadFile.xdata = ''; // Start with empty data
-                    downloadFile.send('a'); // Send the first ACK
-                } else if (cmd.action == 'downloaderror') { // Problem opening this file, cancel
-                    p13downloadFileCancel();
-                }
-            } else { // We are in the process of receiving the file
-                downloadFile.xtsize += (data.length); // Add to the total bytes received
-                downloadFile.xdata += data; // Append the data
-                Q('d2progressBar').value = downloadFile.xtsize; // Change the progress bar
-                downloadFile.send('a'); // Send the ACK
-            }
-        }
-        */
 
         //
         // FILES UPLOAD
@@ -2400,7 +2242,7 @@
             if (xxdialogMode) return;
 
             // Check if we are going to overwrite any files
-            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
+            var winAgent = true; //((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
             var targetFiles = [], overWriteCount = 0;
             for (var i in p13filetree.dir) { if (winAgent) { targetFiles.push(p13filetree.dir[i].n.toLowerCase()); } else { targetFiles.push(p13filetree.dir[i].n); } }
             for (var i = 0; i < files.length; i++) {
@@ -2602,7 +2444,7 @@
         //
 
         function getNodeAmtVersion(node) { if ((node == null) || (node.intelamt == null) || (typeof node.intelamt.ver != 'string')) return 0; var verSplit = node.intelamt.ver.split('.'); if (verSplit.length < 2) return 0; return parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100); }
-        function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); } } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
+        function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); } } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function center() { if (xtermfit) xtermfit.fit(); QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); deskAdjust(); }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
