@@ -84,6 +84,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.blockedAgents = 0;
     obj.renderPages = null;
     obj.renderLanguages = [];
+    obj.destroyedSessions = {};
 
     // Mesh Rights
     const MESHRIGHT_EDITMESH            = 0x00000001;
@@ -768,6 +769,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (req.session.userid) {
             var user = obj.users[req.session.userid];
             if (user != null) { obj.parent.DispatchEvent(['*'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'logout', msgid: 2, msg: 'Account logout', domain: domain.id }); }
+            if (req.session.x) { clearDestroyedSessions(); obj.destroyedSessions[req.session.userid + '/' + req.session.x] = Date.now(); } // Destroy this session
         }
         req.session = null;
         parent.debug('web', 'handleLogoutRequest: success.');
@@ -1260,6 +1262,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         delete req.session.currentNode;
         req.session.userid = userid;
         req.session.ip = req.clientIp;
+        setSessionRandom(req);
 
         // If a login token was used, add this information and expire time to the session.
         if ((loginOptions != null) && (loginOptions.tokenName != null) && (loginOptions.tokenUser != null)) {
@@ -1423,6 +1426,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 obj.users[user._id] = user;
                                 req.session.userid = user._id;
                                 req.session.ip = req.clientIp; // Bind this session to the IP address of the request
+                                setSessionRandom(req);
                                 // Create a user, generate a salt and hash the password
                                 require('./pass').hash(req.body.password1, function (err, salt, hash, tag) {
                                     if (err) throw err;
@@ -1531,6 +1535,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             parent.debug('web', 'handleResetPasswordRequest: success');
                             req.session.userid = userid;
                             req.session.ip = req.clientIp; // Bind this session to the IP address of the request
+                            setSessionRandom(req);
                             completeLoginRequest(req, res, domain, obj.users[userid], userid, req.session.tuser, req.session.tpass, direct, loginOptions);
                         }, 0);
                     }
@@ -2425,6 +2430,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     parent.DispatchEvent(targets, obj, event);
 
                     req.session.userid = userid;
+                    setSessionRandom(req);
                 } else {
                     // New users not allowed
                     parent.debug('web', 'handleStrategyLogin: Can\'t create new accounts');
@@ -2449,6 +2455,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
                 parent.debug('web', 'handleStrategyLogin: succesful login: ' + userid);
                 req.session.userid = userid;
+                setSessionRandom(req);
             }
         }
         //res.redirect(domain.url); // This does not handle cookie correctly.
@@ -2500,6 +2507,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 req.session.userid = userid;
                 delete req.session.currentNode;
                 req.session.ip = req.clientIp; // Bind this session to the IP address of the request
+                setSessionRandom(req);
                 handleRootRequestEx(req, res, domain, direct);
             });
         } else if ((req.session != null) && (typeof req.session.loginToken == 'string')) {
@@ -2531,6 +2539,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             req.session.userid = 'user/' + domain.id + '/~';
             delete req.session.currentNode;
             req.session.ip = req.clientIp; // Bind this session to the IP address of the request
+            setSessionRandom(req);
             if (obj.users[req.session.userid] == null) {
                 // Create the dummy user ~ with impossible password
                 parent.debug('web', 'handleRootRequestEx: created dummy user in nouser mode.');
@@ -2544,6 +2553,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();
             delete req.session.currentNode;
             req.session.ip = req.clientIp; // Bind this session to the IP address of the request
+            setSessionRandom(req);
         } else if (req.query.login && (obj.parent.loginCookieEncryptionKey != null)) {
             var loginCookie = obj.parent.decodeCookie(req.query.login, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
             //if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != req.clientIp)) { loginCookie = null; } // If the cookie if binded to an IP address, check here.
@@ -2554,6 +2564,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 req.session.userid = loginCookie.u;
                 delete req.session.currentNode;
                 req.session.ip = req.clientIp; // Bind this session to the IP address of the request
+                setSessionRandom(req);
             } else {
                 parent.debug('web', 'handleRootRequestEx: cookie auth failed.');
             }
@@ -2570,6 +2581,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 req.session.usersGroups = req.connection.userGroups;
                 delete req.session.currentNode;
                 req.session.ip = req.clientIp; // Bind this session to the IP address of the request
+                setSessionRandom(req);
 
                 // Check if this user exists, create it if not.
                 user = obj.users[req.session.userid];
@@ -5576,6 +5588,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Add HTTP security headers to all responses
         obj.app.use(function (req, res, next) {
+            // Check if a session is destroyed
+            if (typeof req.session.userid == 'string') {
+                if (typeof req.session.x == 'string') {
+                    if (obj.destroyedSessions[req.session.userid + '/' + req.session.x] != null) {
+                        delete req.session.userid;
+                        delete req.session.ip;
+                        delete req.session.t;
+                        delete req.session.x;
+                    }
+                } else {
+                    // Legacy session without a random, add one.
+                    setSessionRandom(req);
+                }
+            }
 
             // Remove legacy values from the session to keep the session as small as possible
             delete req.session.domainid;
@@ -7930,6 +7956,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             xfunc.func = func;
             ws.on('message', xfunc);
         }
+    }
+
+    // Set a random value to this session. Only works if the session has a userid.
+    // This random value along with the userid is used to destroy the session when logging out.
+    function setSessionRandom(req) {
+        if ((req.session == null) || (req.session.userid == null) || (req.session.x != null)) return;
+        var x = obj.crypto.randomBytes(6).toString('base64');
+        while (obj.destroyedSessions[req.session.userid + '/' + x] != null) { x = obj.crypto.randomBytes(6).toString('base64'); }
+        req.session.x = x;
+    }
+
+    // Remove all destroyed sessions after 2 hours, these sessions would have timed out anyway.
+    function clearDestroyedSessions() {
+        var toRemove = [], t = Date.now() - (2 * 60 * 60 * 1000);
+        for (var i in obj.destroyedSessions) { if (obj.destroyedSessions[i] < t) { toRemove.push(i); } }
+        for (var i in toRemove) { delete obj.destroyedSessions[toRemove[i]]; }
     }
 
     return obj;
