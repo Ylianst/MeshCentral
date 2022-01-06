@@ -796,6 +796,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (device.agent.id != obj.agentInfo.agentId) { device.agent.id = obj.agentInfo.agentId; change = 1; changes.push('agent type'); }
                 if ((device.agent.caps & 24) != (obj.agentInfo.capabilities & 24)) { device.agent.caps = obj.agentInfo.capabilities; change = 1; changes.push('agent capabilities'); } // If agent console or javascript support changes, update capabilities
                 if (mesh.flags && (mesh.flags & 2) && (device.name != obj.agentInfo.computerName)) { device.name = obj.agentInfo.computerName; change = 1; } // We want the server name to be sync'ed to the hostname
+                if (device.ip != obj.remoteaddr) { device.ip = obj.remoteaddr; change = 1; }
 
                 if (change == 1) {
                     // Do some clean up if needed, these values should not be in the database.
