@@ -51,7 +51,7 @@
     "loadavg-windows": "^1.1.1",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "node-forge": "^0.10.0",
+    "node-forge": "^1.0.0",
     "node-rdpjs-2": "^0.3.5",
     "node-windows": "^0.1.4",
     "otplib": "^10.2.3",
