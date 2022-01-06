@@ -756,6 +756,7 @@ function CreateWebPowerSwitch(parent, hostname, port, username, password) {
     var retryTimer = null;
     var challenge = null;
     var challengeRetry = 0;
+    var nonceCounter = 1;
 
     obj.state = 0; // 0 = Disconnected, 1 = Connecting, 2 = Connected
     obj.ports = [];
@@ -872,7 +873,7 @@ function CreateWebPowerSwitch(parent, hostname, port, username, password) {
         if (challenge != null) {
             const buf = Buffer.alloc(10);
             challenge.cnonce = crypto.randomFillSync(buf).toString('hex');
-            challenge.nc = '00000001';
+            challenge.nc = nonceCounter++;
             const ha1 = crypto.createHash('md5');
             ha1.update([username, challenge.realm, password].join(':'));
             var xha1 = ha1.digest('hex')
@@ -886,7 +887,7 @@ function CreateWebPowerSwitch(parent, hostname, port, username, password) {
                 "realm": challenge.realm,
                 "nonce": challenge.nonce,
                 "uri": options.path,
-                "response": response.digest("hex"),
+                "response": response.digest('hex'),
                 "cnonce": challenge.cnonce,
                 "opaque": challenge.opaque
             };
