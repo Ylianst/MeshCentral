@@ -1,4 +1,4 @@
-[[[SERVERNAME]]] - Device Notification
+[[[SERVERNAME]]] - Enheds Notifikation
 ~<area-header>
 Følgende enheder har ændret deres forbindelsestilstand.
 ~</area-header>
