@@ -807,6 +807,7 @@
       "pt": ")",
       "pt-br": ")",
       "ru": ")",
+      "da": ")",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3createMeshLink1"
       ]
@@ -1177,6 +1178,7 @@
       "fr": ", Visionner uniquement le bureau",
       "nl": ", Desktop alleen bekijken",
       "pl": ", Tylko podgląd pulpitu",
+      "da": ", Vis kun skrivebord",
       "xloc": [
         "default.handlebars->39->1854",
         "default.handlebars->39->933"
@@ -1424,6 +1426,7 @@
       "pt": "-",
       "pt-br": "-",
       "ru": "-",
+      "da": "-",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2createMeshLink1",
         "ssh.handlebars->p11->deskarea0->deskarea1->3",
@@ -2928,6 +2931,7 @@
       "pt": "3",
       "pt-br": "3",
       "ru": "3",
+      "da": "3",
       "xloc": [
         "default-mobile.handlebars->11->497"
       ]
@@ -3957,7 +3961,7 @@
       "tr": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\"> Donanım anahtarları </a>, ikincil oturum açma kimlik doğrulaması olarak kullanılır.",
       "zh-chs": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">硬件密钥</a>用作辅助登录身份验证。",
       "zh-cht": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">硬件密鑰</a>用作輔助登入身份驗證。",
-      "da": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\"> Hårdvaranycklar </a> används som sekundär inloggningsautentisering.",
+      "da": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">Hardwarenøgler</a> bruges som sekundær login-godkendelse.",
       "xloc": [
         "default.handlebars->39->210"
       ]
@@ -3982,7 +3986,7 @@
       "tr": "<b style = color: green> 2 adımlı giriş aktivasyonu kaldırıldı </b>. Bu özelliği istediğiniz zaman yeniden etkinleştirebilirsiniz.",
       "zh-chs": "<b style=color:green>删除了两步登录激活</ b>。您可以随时重新激活此功能。",
       "zh-cht": "<b style = color：green>刪除了兩步登入啟用</ b>。你可以隨時重新啟用此功能。",
-      "da": "<b style = color: green> 2-stegs inloggningsaktivering har tagits bort </b>. Du kan återaktivera den här funktionen när som helst.",
+      "da": "<b style=color:green>2-trins loginaktivering fjernet</b>. Du kan til enhver tid genaktivere denne funktion.",
       "xloc": [
         "default-mobile.handlebars->11->65"
       ]
@@ -4007,7 +4011,7 @@
       "tr": "<b style = color: green> 2 adımlı oturum açma etkinleştirmesi başarılı </b>. Şimdi tekrar giriş yapmak için geçerli bir jetona ihtiyacınız olacak.",
       "zh-chs": "<b style=color:green>两步登录激活成功</ b>。您现在需要一个有效的保安编码才能再次登录。",
       "zh-cht": "<b style = color：green>兩步登入啟用成功</ b>。你現在需要一個有效的保安編碼才能再次登入。",
-      "da": "<b style = color: green> 2-stegs inloggningsaktivering lyckades </b>. Du behöver nu en giltig token för att logga in igen.",
+      "da": "<b style=color:green>2-trins loginaktivering lykkedes</b>. Du skal nu bruge et gyldigt token for at logge på igen.",
       "xloc": [
         "default-mobile.handlebars->11->62"
       ]
@@ -4032,7 +4036,7 @@
       "tr": "<b style = color: red> 2 adımlı oturum açma etkinleştirilemedi </b>. Sırrı uygulamadan temizleyin ve tekrar deneyin. Doğru kodu girmek için yalnızca birkaç dakikanız var.",
       "zh-chs": "<b style=color:red>两步登录激活失败</ b>。从应用程序中清除机密，然后重试。您只有几分钟的时间来输入正确的代码。",
       "zh-cht": "<b style = color：red>兩步登入啟動失敗</ b>。從應用程序中清除秘密，然後重試。你只有幾分鐘的時間來輸入正確的代碼。",
-      "da": "<b style = color: red> Aktivering av tvåstegsinloggning misslyckades </b>. Rensa hemligheten från applikationen och försök igen. Du har bara några minuter på dig att ange rätt kod.",
+      "da": "<b style=color:red>2-trins loginaktivering mislykkedes</b>. Ryd hemmeligheden fra applikationen, og prøv igen. Du har kun et par minutter til at indtaste den rigtige kode.",
       "xloc": [
         "default-mobile.handlebars->11->63"
       ]
@@ -4057,7 +4061,7 @@
       "tr": "<b style = color: red> 2 adımlı giriş aktivasyonu kaldırılamadı </b>. Tekrar deneyin.",
       "zh-chs": "<b style=color:red>两步登录激活删除失败</ b>。再试一次。",
       "zh-cht": "<b style = color：red>兩步登入啟動刪除失敗</ b>。再試一次。",
-      "da": "<b style = color: red> borttagning av tvåstegs inloggningsaktivering misslyckades </b>. Försök igen.",
+      "da": "<b style=color:red>Fjernelse af aktivering af 2-trins login mislykkedes</b>. Prøv igen.",
       "xloc": [
         "default-mobile.handlebars->11->66"
       ]
@@ -5148,7 +5152,7 @@
       "tr": "Intel&reg; AMT'yi Yönetici Kontrol Modunda (ACM) FAT formatlı bir USB anahtarı kullanarak etkinleştirin. Setup.bin dosyasını üzerine yerleştirin ve bu anahtarla bir veya daha fazla bilgisayarı başlatın.",
       "zh-chs": "使用FAT格式的USB密钥在管理控制模式（ACM）中激活英特尔&reg;AMT。将setup.bin放在其上，然后使用此键引导一台或多台计算机。",
       "zh-cht": "使用FAT格式的USB密鑰在管理控制模式（ACM）中激活英特爾&reg;AMT。將setup.bin放在其上，然後使用此鍵引導一台或多台計算機。",
-      "da": "Aktiver Intel® AMT i Admin Control Model (ACM) ved hjælp af en FAT-formateret USB-nøgle. Placer setup.bin på den og start en eller flere computere med denne nøgle.",
+      "da": "Aktiver Intel® AMT i Admin Control Mode (ACM) ved hjælp af en FAT-formateret USB-nøgle. Placer setup.bin på den og start en eller flere computere med denne nøgle.",
       "xloc": [
         "default.handlebars->39->441"
       ]
@@ -7932,7 +7936,7 @@
       "sv": "Nästan klar",
       "tr": "Neredeyse bitti",
       "zh-chs": "快完成了",
-      "da": "Næstan klar"
+      "da": "Næsten klar"
     },
     {
       "cs": "Alpine Linux x86 64 Bit (MUSL)",
@@ -10741,7 +10745,7 @@
       "tr": "Yayın yapmak",
       "zh-chs": "广播",
       "zh-cht": "廣播",
-      "da": "Udsendelse",
+      "da": "Meddelelse",
       "xloc": [
         "default.handlebars->39->2419",
         "default.handlebars->container->column_l->p4->3->1->0->3->1"
@@ -11359,7 +11363,7 @@
       "tr": "Çağrı Hatası",
       "zh-chs": "呼叫错误",
       "zh-cht": "呼叫錯誤",
-      "da": "Call Error",
+      "da": "Opkaldsfejl",
       "xloc": [
         "default.handlebars->39->2844"
       ]
@@ -14108,7 +14112,7 @@
       "tr": "{0} girişin bu konuma taşınmasını onaylıyor musunuz?",
       "zh-chs": "确认将{0}个条目移到此位置？",
       "zh-cht": "確認將{0}個條目移到該位置？",
-      "da": "Vil du bekræfte flytning af {0} poster til denne placering?",
+      "da": "Bekræft flytning af {0} poster til denne placering?",
       "xloc": [
         "default.handlebars->39->1305",
         "sharing.handlebars->11->71"
@@ -15350,7 +15354,7 @@
       "sv": "Konvertera till WebM",
       "tr": "WebM'ye Dönüştür",
       "zh-chs": "转换为 WebM",
-      "da": "Konvertere til WebM",
+      "da": "Konverter til WebM",
       "xloc": [
         "player.handlebars->3->55",
         "player.handlebars->p11->deskarea0->deskarea1->1"
@@ -19252,7 +19256,7 @@
       "tr": "Cihaz bağlantılarının kesilmesi",
       "zh-chs": "设备断开连接。",
       "zh-cht": "裝置斷開連接。",
-      "da": "Anheds afbrydelser",
+      "da": "Enheds afbrydelser",
       "xloc": [
         "default.handlebars->39->1697",
         "default.handlebars->39->2030",
@@ -19443,6 +19447,7 @@
     {
       "en": "Device is busy",
       "pl": "Urządzenie jest zajęte",
+      "da": "Enheden er optaget",
       "xloc": [
         "default-mobile.handlebars->11->198",
         "default.handlebars->39->374"
@@ -19785,6 +19790,7 @@
     {
       "en": "Device is powered off.",
       "pl": "Urządzenie jest wyłączone.",
+      "da": "Enheden er slukket",
       "xloc": [
         "default.handlebars->39->579"
       ]
@@ -20626,7 +20632,7 @@
       "tr": "Yapılandırma",
       "zh-chs": "不要配置",
       "zh-cht": "不要配置",
-      "da": "Konfigurera inte"
+      "da": "Konfigurer ikke"
     },
     {
       "cs": "Nepřipojovat k serveru",
@@ -21519,7 +21525,7 @@
       "tr": "Yinelenen Grup ...",
       "zh-chs": "复制群组...",
       "zh-cht": "複製群組...",
-      "da": "Dubblettgrupp ...",
+      "da": "Dubbletgruppe...",
       "xloc": [
         "default.handlebars->container->column_l->p50->3->1->0->3->3"
       ]
@@ -22341,7 +22347,7 @@
       "tr": "Notları Düzenle",
       "zh-chs": "编辑笔记",
       "zh-cht": "編輯筆記",
-      "da": "Redigera anteckningar",
+      "da": "Rediger noter",
       "xloc": [
         "default-mobile.handlebars->11->672",
         "default.handlebars->39->1989"
@@ -28400,7 +28406,7 @@
       "tr": "Bekleyin, gönderilen postayı sıfırlayın.",
       "zh-chs": "稍等，重置电邮已发送。",
       "zh-cht": "稍等，重置電郵已發送。",
-      "da": "Vent, nulstil mail sendt."
+      "da": "Vent, nulstillings mail sendt."
     },
     {
       "cs": "Drží se jeden záznam pro kopii",
@@ -28643,18 +28649,20 @@
       "tr": "Macarca",
       "zh-chs": "匈牙利文",
       "zh-cht": "匈牙利文",
-      "da": "Ungersk",
+      "da": "Ungarsk",
       "xloc": [
         "default.handlebars->39->1559"
       ]
     },
     {
       "en": "IP KVM device",
-      "pl": "Urządzenie IP KVM"
+      "pl": "Urządzenie IP KVM",
+      "da": "IP KVM device"
     },
     {
       "en": "IP KVM port is up and ready for use.",
-      "pl": "Port IP KVM podniesiony i gotowy do użycia."
+      "pl": "Port IP KVM podniesiony i gotowy do użycia.",
+      "da": "IP KVM-porten er oppe og klar til brug."
     },
     {
       "cs": "IP rozsah",
@@ -28712,6 +28720,7 @@
     {
       "en": "IP-KVM",
       "pl": "IP-KVM",
+      "da": "IP-KVM",
       "xloc": [
         "default-mobile.handlebars->11->248",
         "default-mobile.handlebars->11->305",
@@ -28723,6 +28732,7 @@
     {
       "en": "IP-KVM / Power device",
       "pl": "IP-KVM / Zasilanie urządzenia",
+      "da": "IP-KVM / Power device",
       "xloc": [
         "default.handlebars->39->1726"
       ]
@@ -28730,6 +28740,7 @@
     {
       "en": "IP-KVM device",
       "pl": "Urządzenie IP-KVM",
+      "da": "IP-KVM device",
       "xloc": [
         "default-mobile.handlebars->11->619",
         "default.handlebars->39->1783"
@@ -28738,6 +28749,7 @@
     {
       "en": "IP-KVM port connected",
       "pl": "Podłączono z portem IP-KVM",
+      "da": "IP-KVM port forbundet",
       "xloc": [
         "default.handlebars->39->903",
         "default.handlebars->39->904"
@@ -28746,6 +28758,7 @@
     {
       "en": "IP-KVM port is connected and ready for use.",
       "pl": "Port IP-KVM podłączony i gotowy do użycia.",
+      "da": "IP-KVM-porten er tilsluttet og klar til brug.",
       "xloc": [
         "default.handlebars->39->350"
       ]
@@ -28753,6 +28766,7 @@
     {
       "en": "IP-KVM port is up and ready for use.",
       "pl": "Port IP-KVM podniesiony i gotowy do użycia.",
+      "da": "IP-KVM-porten er oppe og klar til brug.",
       "xloc": [
         "default.handlebars->39->591"
       ]
@@ -30336,7 +30350,7 @@
       "tr": "Intel&reg; AMT Politikası",
       "zh-chs": "英特尔&reg;AMT政策",
       "zh-cht": "Intel&reg; AMT政策",
-      "da": "Intel&reg; AMT-policy",
+      "da": "Intel® AMT-politik",
       "xloc": [
         "default.handlebars->39->1878"
       ]
@@ -30517,7 +30531,7 @@
       "tr": "Intel&reg; AMT WSMAN",
       "zh-chs": "英特尔&reg;AMT WSMAN",
       "zh-cht": "Intle&reg; AMT WSMAN",
-      "da": "Intel&reg; AMT WSMAN",
+      "da": "Intel® AMT WSMAN",
       "xloc": [
         "default.handlebars->39->2628",
         "default.handlebars->39->2635",
@@ -30796,7 +30810,7 @@
       "tr": "Yalnızca Intel&reg; AMT",
       "zh-chs": "仅限英特尔&reg;AMT",
       "zh-cht": "僅限Intel&reg; AMT",
-      "da": "Endast Intel&reg; AMT",
+      "da": "Kun Intel® AMT",
       "xloc": [
         "default-mobile.handlebars->11->124"
       ]
@@ -30821,7 +30835,7 @@
       "tr": "Yalnızca Intel&reg; AMT, aracı yok",
       "zh-chs": "仅限英特尔&reg;AMT，无代理",
       "zh-cht": "僅限Intel&reg; AMT，無代理",
-      "da": "Intel® AMT only, ingen agent",
+      "da": "Kun Intel® AMT, ingen agent",
       "xloc": [
         "default-mobile.handlebars->11->616",
         "default.handlebars->39->1729",
@@ -30946,7 +30960,7 @@
       "tr": "Intel&reg; ME",
       "zh-chs": "英特尔&reg;ME",
       "zh-cht": "Intel&reg; ME",
-      "da": "Intel&reg; ME",
+      "da": "Intel® ME",
       "xloc": [
         "default-mobile.handlebars->11->300",
         "default.handlebars->39->787"
@@ -30997,7 +31011,7 @@
       "tr": "Intel&reg; SM",
       "zh-chs": "英特尔&reg;SM",
       "zh-cht": "Intel&reg; M",
-      "da": "Intel&reg; SM",
+      "da": "Intel® SM",
       "xloc": [
         "default-mobile.handlebars->11->302",
         "default.handlebars->39->791"
@@ -31827,7 +31841,7 @@
       "sv": "Felaktigt lösenord",
       "tr": "Geçersiz şifre",
       "zh-chs": "无效的密码",
-      "da": "Forkert kodeord",
+      "da": "Ugyldigt kodeord",
       "xloc": [
         "default-mobile.handlebars->11->703",
         "default-mobile.handlebars->11->78",
@@ -33294,7 +33308,7 @@
       "fr": "7 derniers jours",
       "nl": "Laaste 7 dagen",
       "pl": "Ostatnie 7 dni",
-      "da": "Sidste 7 dage",
+      "da": "Seneste 7 dage",
       "xloc": [
         "default.handlebars->39->2663"
       ]
@@ -33414,6 +33428,7 @@
     {
       "en": "Last access: {0}",
       "pl": "Ostatni dostęp: {0}",
+      "da": "Seneste adgang: {0}",
       "xloc": [
         "default.handlebars->39->2275"
       ]
@@ -33672,7 +33687,7 @@
       "tr": "En son",
       "zh-chs": "最新",
       "zh-cht": "最新",
-      "da": "Senast",
+      "da": "Seneste",
       "xloc": [
         "default.handlebars->container->column_l->p42->p42tbl->1->0->6"
       ]
@@ -34087,7 +34102,7 @@
       "sv": "Ljusläge",
       "tr": "Işık modu",
       "zh-chs": "灯光模式",
-      "da": "Lys mode",
+      "da": "Lys tilstand",
       "xloc": [
         "default-mobile.handlebars->11->84",
         "default.handlebars->39->59"
@@ -35030,7 +35045,7 @@
       "tr": "Yerel Klavye Haritası",
       "zh-chs": "本地键盘图",
       "zh-cht": "本地鍵盤圖",
-      "da": "Lokal tangentbordskarta",
+      "da": "Lokal tastatur Map",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->5",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->5"
@@ -36828,7 +36843,7 @@
       "tr": "Telefon numarasını yönetin",
       "zh-chs": "管理电话号码",
       "zh-cht": "管理電話號碼",
-      "da": "Hantera telefonnummer",
+      "da": "Administrer telefonnummer",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->1->managePhoneNumber2->0",
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountSecurity->3->managePhoneNumber1->0",
@@ -36905,7 +36920,7 @@
       "tr": "Bir yazılım aracısı kullanarak yönetin",
       "zh-chs": "使用软件代理进行管理",
       "zh-cht": "使用軟體代理進行管理",
-      "da": "Hantera med en programvaruagent",
+      "da": "Administrer ved hjælp af en softwareagent",
       "xloc": [
         "default.handlebars->39->1728"
       ]
@@ -37315,7 +37330,7 @@
       "tr": "Mesh Aracı Konsolu",
       "zh-chs": "网格代理控制台",
       "zh-cht": "網格代理控制台",
-      "da": "Mesh Agent Console",
+      "da": "Mesh Agent konsol",
       "xloc": [
         "default-mobile.handlebars->11->654",
         "default.handlebars->39->1955"
@@ -37521,7 +37536,7 @@
       "tr": "MeshAgent güncellemesi",
       "zh-chs": "MeshAgent更新",
       "zh-cht": "MeshAgent更新",
-      "da": "MeshAgent-uppdatering",
+      "da": "MeshAgent-opdatering",
       "xloc": [
         "default.handlebars->39->2815"
       ]
@@ -38479,7 +38494,7 @@
       "sv": "budbärare",
       "tr": "haberci",
       "zh-chs": "信使",
-      "da": "Budbringer",
+      "da": "Messenger",
       "xloc": [
         "default.handlebars->39->2630",
         "default.handlebars->39->2687"
@@ -38932,7 +38947,7 @@
       "sv": "Flera användare",
       "tr": "Birden Çok Kullanıcı",
       "zh-chs": "多个用户",
-      "da": "Flera användare"
+      "da": "Flere brugere"
     },
     {
       "cs": "Multiplexor",
@@ -42693,6 +42708,7 @@
     {
       "en": "Off",
       "pl": "Wyłącz",
+      "da": "slukket",
       "xloc": [
         "default-mobile.handlebars->11->230",
         "default-mobile.handlebars->11->238",
@@ -44832,6 +44848,7 @@
     {
       "en": "Perform power off?",
       "pl": "Czy wykonać wyłączenie?",
+      "da": "Vil du slukke?",
       "xloc": [
         "default-mobile.handlebars->11->338",
         "default.handlebars->39->939"
@@ -44840,6 +44857,7 @@
     {
       "en": "Perform power on?",
       "pl": "Czy wykonać uruchomienie?",
+      "da": "Vil du tænde?",
       "xloc": [
         "default-mobile.handlebars->11->340",
         "default.handlebars->39->941"
@@ -45552,6 +45570,7 @@
     {
       "en": "Port Name Sync",
       "pl": "Synchronizacja Nazwy Portu",
+      "da": "Port Navn Synkronisering",
       "xloc": [
         "default.handlebars->39->1794"
       ]
@@ -45559,6 +45578,7 @@
     {
       "en": "Port Number",
       "pl": "Numer Portu",
+      "da": "Port Nummer",
       "xloc": [
         "default-mobile.handlebars->11->273",
         "default.handlebars->39->757"
@@ -45567,6 +45587,7 @@
     {
       "en": "Port Type",
       "pl": "Typ Portu",
+      "da": "Port Type",
       "xloc": [
         "default-mobile.handlebars->11->274",
         "default.handlebars->39->758"
@@ -45718,6 +45739,7 @@
     {
       "en": "Power Operation",
       "pl": "Operacja Zasilania",
+      "da": "Power Operation",
       "xloc": [
         "default-mobile.handlebars->11->337",
         "default-mobile.handlebars->11->339",
@@ -45832,6 +45854,7 @@
     {
       "en": "Power switch is ready for use.",
       "pl": "Włącznik jest gotowy do użycia.",
+      "da": "Power knap er klar til brug.",
       "xloc": [
         "default.handlebars->39->589"
       ]
@@ -46703,7 +46726,7 @@
       "sv": "Tryck lokalt urklipp till fjärrenheten",
       "tr": "Yerel panoyu uzak cihaza itin",
       "zh-chs": "将本地剪贴板推送到远程设备",
-      "da": "Skub det lokale udklipsholder til fjernenheden"
+      "da": "Skub den lokale udklipsholder til fjernenheden"
     },
     {
       "cs": "Oznámení push se nezdařilo.",
@@ -47158,6 +47181,7 @@
     },
     {
       "en": "Raritan Dominion KX III",
+      "da": "Raritan Dominion KX III",
       "xloc": [
         "default.handlebars->39->1732"
       ]
@@ -48684,7 +48708,7 @@
       "tr": "Uzak Kullanıcı",
       "zh-chs": "远程用户",
       "zh-cht": "遠程用戶",
-      "da": "Fjärranvändare"
+      "da": "Fjernbrugere"
     },
     {
       "cs": "Pouze prohlížení na dálku",
@@ -49575,7 +49599,7 @@
       "sv": "Ta bort {0} objekt?",
       "tr": "{0} öğe kaldırılsın mı?",
       "zh-chs": "删除 {0} 项？",
-      "da": "Vil du fjerne {0} elementer?"
+      "da": "Fjern {0} elementer?"
     },
     {
       "en": "Removed account display name.",
@@ -54504,7 +54528,7 @@
       "sv": "Ställ in RDP-port ...",
       "tr": "RDP bağlantı noktasını ayarla...",
       "zh-chs": "设置 RDP 端口...",
-      "da": "Ställ in RDP-port ..."
+      "da": "Sæt RDP port..."
     },
     {
       "cs": "Nastavit tmavý režim",
@@ -54865,6 +54889,7 @@
       "en": "Share the device with a guest",
       "nl": "Deel het apparaat met een gast",
       "pl": "Współdziel to urządzenie z gościem",
+      "da": "Del enheden med en gæst",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -58316,6 +58341,7 @@
     {
       "en": "Switch",
       "pl": "Przełącz",
+      "da": "Switch",
       "xloc": [
         "default-mobile.handlebars->11->247",
         "default-mobile.handlebars->11->304",
@@ -58352,6 +58378,7 @@
     {
       "en": "Switch port connected",
       "pl": "Przełącz połączony port",
+      "da": "Switch port forbundet",
       "xloc": [
         "default.handlebars->39->901",
         "default.handlebars->39->902"
@@ -58360,6 +58387,7 @@
     {
       "en": "Switch port is ready for use.",
       "pl": "Przełącz port na gotowy do użycia.",
+      "da": "Switch port er klar til brug.",
       "xloc": [
         "default.handlebars->39->348"
       ]
@@ -58392,6 +58420,7 @@
     {
       "en": "Sync server device name to port name",
       "pl": "Synchronizuj nazwę urządzenia serwera na nazwę portu",
+      "da": "Synkroniser serverenhedsnavnet med portnavnet",
       "xloc": [
         "default.handlebars->39->1923"
       ]
@@ -59260,6 +59289,7 @@
     {
       "en": "The device is powered off",
       "pl": "To urządzenie jest wyłączone",
+      "da": "Enheden er slukket",
       "xloc": [
         "default-mobile.handlebars->11->246",
         "default.handlebars->39->588"
@@ -60383,7 +60413,7 @@
       "tr": "\\\"{0}\\\" cihaz grubuna yeni bir bilgisayar eklemek için örgü aracıyı indirin ve yönetilecek bilgisayara kurun. Bu aracı yükleyicinin içinde gömülü sunucu ve aygıt grubu bilgileri vardır.",
       "zh-chs": "要将新计算机添加到设备组“ {0} ”，请下载网状代理并安装该计算机以进行管理。该代理安装程序中已嵌入了服务器和设备组讯息。",
       "zh-cht": "要將新電腦新增到裝置群“ {0} ”，請下載mesh agent並安裝該電腦以進行管理。該代理安裝程序中已嵌入了伺服器和裝置群訊息。",
-      "da": "För att lägga till en ny dator i enhetsgruppen \\\"{0}\\\", ladda ner nätagenten och installera den för hantering av datorn. Det här agentinstallatören har server- och enhetsgruppinformation inbäddad.",
+      "da": "For at tilføje en ny computer til enhedsgruppen \\\"{0}\\\", skal du downloade mesh-agenten og installere den på den computer, der skal administreres. Dette agentinstallationsprogram har server- og enhedsgruppeoplysninger indlejret i sig.",
       "xloc": [
         "default.handlebars->39->534"
       ]
@@ -61459,6 +61489,7 @@
     {
       "en": "Turn off",
       "pl": "Wyłącz",
+      "da": "Sluk",
       "xloc": [
         "default-mobile.handlebars->11->324",
         "default-mobile.handlebars->11->325",
@@ -61468,6 +61499,7 @@
     },
     {
       "en": "Turn off.",
+      "da": "Sluk.",
       "xloc": [
         "default.handlebars->39->2237"
       ]
@@ -61475,6 +61507,7 @@
     {
       "en": "Turn on",
       "pl": "Włącz",
+      "da": "Tænd",
       "xloc": [
         "default-mobile.handlebars->11->326",
         "default-mobile.handlebars->11->327",
@@ -61484,6 +61517,7 @@
     },
     {
       "en": "Turn on.",
+      "da": "Tænd.",
       "xloc": [
         "default.handlebars->39->2236"
       ]
@@ -62022,7 +62056,7 @@
       "tr": "Web soketine bağlanılamıyor",
       "zh-chs": "无法连接网络套接字",
       "zh-cht": "無法連接網絡插座",
-      "da": "Kunne ikke forbinde web-socket",
+      "da": "Kan ikke forbinde web-socket",
       "xloc": [
         "default-mobile.handlebars->11->50",
         "default.handlebars->39->63"
@@ -62131,7 +62165,7 @@
       "sv": "Det gick inte att öppna filen: {0}",
       "tr": "Dosya açılamıyor: {0}",
       "zh-chs": "无法打开文件：{0}",
-      "da": "Filen kunne ikke åbnes: {0}"
+      "da": "Kan ikke åbne filen: {0}"
     },
     {
       "cs": "Nedaří se ověřit se",
@@ -62754,7 +62788,7 @@
       "fr": "Option de configuration non recnonnue \\\"{0}\\\".",
       "nl": "Niet herkende configuratie instelling \\\"{0}\\\".",
       "pl": "Nierozpoznana opcja konfiguracji \\\"{0}\\\".",
-      "da": "Ugenkendt konfigurationsmulighed \\\"{0}\\\".",
+      "da": "Ikke genkendt konfigurationsmulighed \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->81"
       ]
@@ -64486,7 +64520,7 @@
       "tr": "Kullanıcı kimliği",
       "zh-chs": "用户识别码",
       "zh-cht": "用戶識別碼",
-      "da": "Användar ID",
+      "da": "BrugerID",
       "xloc": [
         "player.handlebars->3->21"
       ]
@@ -66018,6 +66052,7 @@
     {
       "en": "Web Power Switch 7",
       "pl": "Przełącznik Zasilania Web 7",
+      "da": "Web Power Switch 7",
       "xloc": [
         "default.handlebars->39->1733"
       ]
@@ -67964,6 +67999,7 @@
       "fr": "[[[CONNECTIONS]]]",
       "nl": "[[[CONNECTIONS]]]",
       "pl": "[[[CONNECTIONS]]]",
+      "da": "[[[CONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->5->3->0"
       ]
@@ -67974,6 +68010,7 @@
       "fr": "[[[DISCONNECTIONS]]]",
       "nl": "[[[DISCONNECTIONS]]]",
       "pl": "[[[DISCONNECTIONS]]]",
+      "da": "[[[DISCONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->7->3->0"
       ]
@@ -68116,6 +68153,7 @@
       "fr": "[[[SERVERNAME]]] - Notification de l'appareil",
       "nl": "[[[SERVERNAME]]] - Apparaatmelding",
       "pl": "[[[SERVERNAME]]] - Powiadomienia Urządzenia",
+      "da": "[[[SERVERNAME]]] - Enheds Notifikation",
       "xloc": [
         "device-notify.html->0",
         "device-notify.html->2->1->1->0->1->1",
@@ -68708,7 +68746,7 @@
       "tr": "kopya",
       "zh-chs": "复制",
       "zh-cht": "複製",
-      "da": "kopi",
+      "da": "kopier",
       "xloc": [
         "default-mobile.handlebars->11->154",
         "default.handlebars->39->2099"
