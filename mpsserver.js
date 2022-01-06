@@ -30,6 +30,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     const net = require('net');
     const tls = require('tls');
     const MAX_IDLE = 90000;         // 90 seconds max idle time, higher than the typical KEEP-ALIVE periode of 60 seconds
+    const KEEPALIVE_INTERVAL = 30;   // 30 seconds is typical keepalive interval for AMT CIRA connection
 
     // This MPS server is also a tiny HTTPS server. HTTP responses are here.
     obj.httpResponses = {
@@ -151,7 +152,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         // Check if there is already a connection of the same type
         var sameType = false, connections = obj.ciraConnections[socket.tag.nodeid];
         if (connections != null) { for (var i in connections) { var conn = connections[i]; if (conn.tag.connType === socket.tag.connType) { sameType = true; } } }
-        
+
         // Add this connection to the connections list
         if (connections == null) { obj.ciraConnections[socket.tag.nodeid] = [socket]; } else { obj.ciraConnections[socket.tag.nodeid].push(socket); }
 
@@ -380,7 +381,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             if (args.mpsdebug) { var buf = Buffer.from(data, 'binary'); console.log("MPS <-- (" + buf.length + "):" + buf.toString('hex')); } // Print out received bytes
 
             // Traffic accounting
-            parent.webserver.trafficStats.CIRAIn +=  (this.bytesRead - this.bytesReadEx);
+            parent.webserver.trafficStats.CIRAIn += (this.bytesRead - this.bytesReadEx);
             parent.webserver.trafficStats.CIRAOut += (this.bytesWritten - this.bytesWrittenEx);
             this.bytesReadEx = this.bytesRead;
             this.bytesWrittenEx = this.bytesWritten;
@@ -562,6 +563,13 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 if (len < 5) return 0;
                 parent.debug('mpscmd', '--> KEEPALIVE_REPLY');
                 return 5;
+            }
+            case APFProtocol.KEEPALIVE_OPTIONS_REPLY: {
+                if (len < 9) return 0;
+                const keepaliveInterval = common.ReadInt(data, 1);
+                const timeout = common.ReadInt(data, 5);
+                parent.debug('mpscmd', '--> KEEPALIVE_OPTIONS_REPLY', keepaliveInterval, timeout);
+                return 9;
             }
             case APFProtocol.PROTOCOLVERSION: {
                 if (len < 93) return 0;
@@ -888,6 +896,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     parent.debug('mpscmd', '--> GLOBAL_REQUEST', request, addr + ':' + port);
                     if (socket.tag.boundPorts.indexOf(port) == -1) { socket.tag.boundPorts.push(port); }
                     SendTcpForwardSuccessReply(socket, port);
+                    //5900 port is the last TCP port on which connections for forwarding are to be cancelled. Ports order: 16993, 16992, 664, 623, 16995, 16994, 5900
+                    //Request keepalive interval time
+                    if (port === 5900) { SendKeepaliveOptionsRequest(socket, KEEPALIVE_INTERVAL, 0); }
                     return 14 + requestLen + addrLen;
                 }
 
@@ -1140,7 +1151,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         for (var i in connections) { obj.close(connections[i]); }
     };
 
-    obj.SendJsonControl = function(socket, data) {
+    obj.SendJsonControl = function (socket, data) {
         if (socket.tag.connType == 0) return; // This command is valid only for connections that are not really CIRA.
         if (typeof data == 'object') { parent.debug('mpscmd', '<-- JSON_CONTROL', data.action); data = JSON.stringify(data); } else { parent.debug('mpscmd', '<-- JSON_CONTROL'); }
         Write(socket, String.fromCharCode(APFProtocol.JSON_CONTROL) + common.IntToStr(data.length) + data);
@@ -1171,6 +1182,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     function SendKeepAliveReply(socket, cookie) {
         parent.debug('mpscmd', '<-- KEEPALIVE_REPLY', cookie);
         Write(socket, String.fromCharCode(APFProtocol.KEEPALIVE_REPLY) + common.IntToStr(cookie));
+    }
+
+    function SendKeepaliveOptionsRequest(socket, keepaliveTime, timeout) {
+        parent.debug('mpscmd', '<-- KEEPALIVE_OPTIONS_REQUEST', keepaliveTime, timeout);
+        Write(socket, String.fromCharCode(APFProtocol.KEEPALIVE_OPTIONS_REQUEST) + common.IntToStr(keepaliveTime) + common.IntToStr(timeout));
     }
 
     function SendChannelOpenFailure(socket, senderChannel, reasonCode) {
@@ -1289,7 +1305,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             if (typeof data == 'string') { data = Buffer.from(data, 'binary'); } // Make sure we always handle buffers when sending data.
             if (cirachannel.state == 1 || cirachannel.sendcredits == 0 || cirachannel.sendBuffer != null) {
                 // Channel is connected, but we are out of credits. Add the data to the outbound buffer.
-                if (cirachannel.sendBuffer == null) { cirachannel.sendBuffer = data; } else { cirachannel.sendBuffer = Buffer.concat([ cirachannel.sendBuffer, data ]); }
+                if (cirachannel.sendBuffer == null) { cirachannel.sendBuffer = data; } else { cirachannel.sendBuffer = Buffer.concat([cirachannel.sendBuffer, data]); }
                 return true;
             }
             // Compute how much data we can send                
