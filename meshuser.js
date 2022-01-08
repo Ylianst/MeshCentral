@@ -2171,139 +2171,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'editmesh', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
-            case 'addmeshuser':
-                {
-                    var err = null, mesh, meshIdSplit;
-                    if (typeof command.userid == 'string') { command.userids = [command.userid]; }
-
-                    // Resolve the device group name if needed
-                    if ((typeof command.meshname == 'string') && (command.meshid == null)) {
-                        for (var i in parent.meshes) {
-                            var m = parent.meshes[i];
-                            if ((m.mtype == 2) && (m.name == command.meshname) && parent.IsMeshViewable(user, m)) {
-                                if (command.meshid == null) { command.meshid = m._id; } else { err = 'Duplicate device groups found'; }
-                            }
-                        }
-                    }
-
-                    var selfMeshRights = 0;
-                    try {
-                        if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid groupid'; } // Check the meshid
-                        else if (common.validateInt(command.meshadmin) == false) { err = 'Invalid group rights'; } // Mesh rights must be an integer
-                        else if ((common.validateStrArray(command.usernames, 1, 64) == false) && (common.validateStrArray(command.userids, 1, 128) == false)) { err = 'Invalid usernames'; } // Username is between 1 and 64 characters
-                        else {
-                            if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
-                            mesh = parent.meshes[command.meshid];
-                            meshIdSplit = command.meshid.split('/');
-                            if (mesh == null) { err = 'Unknown group'; }
-                            else if (((selfMeshRights = parent.GetMeshRights(user, mesh)) & MESHRIGHT_MANAGEUSERS) == 0) { err = 'Permission denied'; }
-                            else if ((meshIdSplit.length != 3) || (meshIdSplit[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
-                        }
-                    } catch (ex) { err = 'Validation exception: ' + ex; }
-
-                    // Handle any errors
-                    if (err != null) {
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addmeshuser', responseid: command.responseid, result: err })); } catch (ex) { } }
-                        break;
-                    }
-
-                    // Convert user names to userid's
-                    if (command.userids == null) {
-                        command.userids = [];
-                        for (var i in command.usernames) {
-                            if (parent.users['user/' + domain.id + '/' + command.usernames[i].toLowerCase()] != null) { command.userids.push('user/' + domain.id + '/' + command.usernames[i].toLowerCase()); }
-                            else if (parent.users['user/' + domain.id + '/' + command.usernames[i]] != null) { command.userids.push('user/' + domain.id + '/' + command.usernames[i]); }
-                        }
-                    }
-                    var unknownUsers = [], successCount = 0, failCount = 0, msgs = [];
-                    for (var i in command.userids) {
-                        // Check if the user exists
-                        var newuserid = command.userids[i], newuser = null;
-                        if (newuserid.startsWith('user/')) { newuser = parent.users[newuserid]; }
-                        else if (newuserid.startsWith('ugrp/')) { newuser = parent.userGroups[newuserid]; }
-
-                        // Search for a user name in that windows domain is the username starts with *\
-                        if ((newuser == null) && (newuserid.startsWith('user/' + domain.id + '/*\\')) == true) {
-                            var search = newuserid.split('/')[2].substring(1);
-                            for (var i in parent.users) { if (i.endsWith(search) && (parent.users[i].domain == domain.id)) { newuser = parent.users[i]; command.userids[i] = newuserid = parent.users[i]._id; break; } }
-                        }
-
-                        // Make sure this user is in the same domain as the device group
-                        if (meshIdSplit[1] != newuserid.split('/')[1]) { msgs.push("Mismatch domains"); continue; }
-
-                        if (newuser != null) {
-                            // Can't add or modify self
-                            if (newuserid == obj.user._id) { msgs.push("Can't change self"); continue; }
-
-                            var targetMeshRights = 0;
-                            if ((newuser.links != null) && (newuser.links[command.meshid] != null) && (newuser.links[command.meshid].rights != null)) { targetMeshRights = newuser.links[command.meshid].rights; }
-                            if ((targetMeshRights === MESHRIGHT_ADMIN) && (selfMeshRights != MESHRIGHT_ADMIN)) { msgs.push("Can't change rights of device group administrator"); continue; } // A non-admin can't kick out an admin
-
-                            if (command.remove === true) {
-                                // Remove mesh from user or user group
-                                delete newuser.links[command.meshid];
-                            } else {
-                                // Adjust rights since we can't add more rights that we have outself for MESHRIGHT_MANAGEUSERS
-                                if ((selfMeshRights != MESHRIGHT_ADMIN) && (command.meshadmin == MESHRIGHT_ADMIN)) { msgs.push("Can't set device group administrator, if not administrator"); continue; }
-                                if (((selfMeshRights & 2) == 0) && ((command.meshadmin & 2) != 0) && ((targetMeshRights & 2) == 0)) { command.meshadmin -= 2; }
-
-                                // Add mesh to user or user group
-                                if (newuser.links == null) { newuser.links = {}; }
-                                if (newuser.links[command.meshid]) { newuser.links[command.meshid].rights = command.meshadmin; } else { newuser.links[command.meshid] = { rights: command.meshadmin }; }
-                            }
-                            if (newuserid.startsWith('user/')) { db.SetUser(newuser); }
-                            else if (newuserid.startsWith('ugrp/')) { db.Set(newuser); }
-                            parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
-
-                            if (newuserid.startsWith('user/')) {
-                                // Notify user change
-                                var targets = ['*', 'server-users', user._id, newuser._id];
-                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(newuser), action: 'accountchange', msgid: 78, msgArgs: [newuser.name], msg: 'Device group membership changed: ' + newuser.name, domain: domain.id };
-                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                                parent.parent.DispatchEvent(targets, obj, event);
-                            } else if (newuserid.startsWith('ugrp/')) {
-                                // Notify user group change
-                                var targets = ['*', 'server-ugroups', user._id, newuser._id];
-                                var event = { etype: 'ugrp', username: user.name, ugrpid: newuser._id, name: newuser.name, desc: newuser.desc, action: 'usergroupchange', links: newuser.links, msgid: 79, msgArgs: [newuser.name], msg: 'User group changed: ' + newuser.name, domain: domain.id };
-                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                                parent.parent.DispatchEvent(targets, obj, event);
-                            }
-
-                            var event;
-                            if (command.remove === true) {
-                                // Remove userid from the mesh
-                                delete mesh.links[newuserid];
-                                db.Set(mesh);
-                                event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + newuser.name + ' from device group ' + mesh.name, domain: domain.id, invite: mesh.invite };
-                            } else {
-                                // Add userid to the mesh
-                                mesh.links[newuserid] = { name: newuser.name, rights: command.meshadmin };
-                                db.Set(mesh);
-                                event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to device group ' + mesh.name, domain: domain.id, invite: mesh.invite };
-                            }
-
-                            // Notify mesh change
-                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id, newuserid]), obj, event);
-                            if (command.remove === true) { msgs.push("Removed user " + newuserid.split('/')[2]); } else { msgs.push("Added user " + newuserid.split('/')[2]); }
-                            successCount++;
-                        } else {
-                            msgs.push("Unknown user " + newuserid.split('/')[2]);
-                            unknownUsers.push(newuserid.split('/')[2]);
-                            failCount++;
-                        }
-                    }
-
-                    if ((successCount == 0) && (failCount == 0)) { msgs.push("Nothing done"); }
-
-                    if (unknownUsers.length > 0) {
-                        // Send error back, user not found.
-                        displayNotificationMessage('User' + ((unknownUsers.length > 1) ? 's' : '') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', "Device Group", 'ServerNotify', 5, (unknownUsers.length > 1) ? 16 : 15, [EscapeHtml(unknownUsers.join(', '))]);
-                    }
-
-                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addmeshuser', responseid: command.responseid, result: msgs.join(', '), success: successCount, failed: failCount })); } catch (ex) { } }
-                    break;
-                }
             case 'adddeviceuser': {
                 if (typeof command.userid == 'string') { command.userids = [command.userid]; }
                 var err = null, nodeIdSplit;
@@ -3319,19 +3186,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                         });
                     }
-                    break;
-                }
-            case 'agentdisconnect':
-                {
-                    if (common.validateInt(command.disconnectMode) == false) return; // Check disconnect mode
-
-                    // Get the node and the rights for this node
-                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if ((node == null) || (((rights & MESHRIGHT_AGENTCONSOLE) == 0) && (user.siteadmin != SITERIGHT_ADMIN))) return;
-
-                        // Force mesh agent disconnection
-                        parent.forceMeshAgentDisconnect(user, domain, node._id, command.disconnectMode);
-                    });
                     break;
                 }
             case 'close':
@@ -5328,9 +5182,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     const serverCommands = {
+        'addmeshuser': serverCommandAddMeshUser,
         'adduser': serverCommandAddUser,
         'adduserbatch': serverCommandAddUserBatch,
         'addusertousergroup': serverCommandAddUserToUserGroup,
+        'agentdisconnect': serverCommandAgentDisconnect,
         'authcookie': serverCommandAuthCookie,
         'changeemail': serverCommandChangeEmail,
         'changelang': serverCommandChangeLang,
@@ -5415,6 +5271,138 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'webpush': [serverUserCommandWebPush, ""],
         'webstats': [serverUserCommandWebStats, ""]
     };
+
+    function serverCommandAddMeshUser(command) {
+        var err = null, mesh, meshIdSplit;
+        if (typeof command.userid == 'string') { command.userids = [command.userid]; }
+    
+        // Resolve the device group name if needed
+        if ((typeof command.meshname == 'string') && (command.meshid == null)) {
+            for (var i in parent.meshes) {
+                var m = parent.meshes[i];
+                if ((m.mtype == 2) && (m.name == command.meshname) && parent.IsMeshViewable(user, m)) {
+                    if (command.meshid == null) { command.meshid = m._id; } else { err = 'Duplicate device groups found'; }
+                }
+            }
+        }
+    
+        var selfMeshRights = 0;
+        try {
+            if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid groupid'; } // Check the meshid
+            else if (common.validateInt(command.meshadmin) == false) { err = 'Invalid group rights'; } // Mesh rights must be an integer
+            else if ((common.validateStrArray(command.usernames, 1, 64) == false) && (common.validateStrArray(command.userids, 1, 128) == false)) { err = 'Invalid usernames'; } // Username is between 1 and 64 characters
+            else {
+                if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                mesh = parent.meshes[command.meshid];
+                meshIdSplit = command.meshid.split('/');
+                if (mesh == null) { err = 'Unknown group'; }
+                else if (((selfMeshRights = parent.GetMeshRights(user, mesh)) & MESHRIGHT_MANAGEUSERS) == 0) { err = 'Permission denied'; }
+                else if ((meshIdSplit.length != 3) || (meshIdSplit[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
+            }
+        } catch (ex) { err = 'Validation exception: ' + ex; }
+    
+        // Handle any errors
+        if (err != null) {
+            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addmeshuser', responseid: command.responseid, result: err })); } catch (ex) { } }
+            return;
+        }
+    
+        // Convert user names to userid's
+        if (command.userids == null) {
+            command.userids = [];
+            for (var i in command.usernames) {
+                if (parent.users['user/' + domain.id + '/' + command.usernames[i].toLowerCase()] != null) { command.userids.push('user/' + domain.id + '/' + command.usernames[i].toLowerCase()); }
+                else if (parent.users['user/' + domain.id + '/' + command.usernames[i]] != null) { command.userids.push('user/' + domain.id + '/' + command.usernames[i]); }
+            }
+        }
+        var unknownUsers = [], successCount = 0, failCount = 0, msgs = [];
+        for (var i in command.userids) {
+            // Check if the user exists
+            var newuserid = command.userids[i], newuser = null;
+            if (newuserid.startsWith('user/')) { newuser = parent.users[newuserid]; }
+            else if (newuserid.startsWith('ugrp/')) { newuser = parent.userGroups[newuserid]; }
+    
+            // Search for a user name in that windows domain is the username starts with *\
+            if ((newuser == null) && (newuserid.startsWith('user/' + domain.id + '/*\\')) == true) {
+                var search = newuserid.split('/')[2].substring(1);
+                for (var i in parent.users) { if (i.endsWith(search) && (parent.users[i].domain == domain.id)) { newuser = parent.users[i]; command.userids[i] = newuserid = parent.users[i]._id; break; } }
+            }
+    
+            // Make sure this user is in the same domain as the device group
+            if (meshIdSplit[1] != newuserid.split('/')[1]) { msgs.push("Mismatch domains"); continue; }
+    
+            if (newuser != null) {
+                // Can't add or modify self
+                if (newuserid == obj.user._id) { msgs.push("Can't change self"); continue; }
+    
+                var targetMeshRights = 0;
+                if ((newuser.links != null) && (newuser.links[command.meshid] != null) && (newuser.links[command.meshid].rights != null)) { targetMeshRights = newuser.links[command.meshid].rights; }
+                if ((targetMeshRights === MESHRIGHT_ADMIN) && (selfMeshRights != MESHRIGHT_ADMIN)) { msgs.push("Can't change rights of device group administrator"); continue; } // A non-admin can't kick out an admin
+    
+                if (command.remove === true) {
+                    // Remove mesh from user or user group
+                    delete newuser.links[command.meshid];
+                } else {
+                    // Adjust rights since we can't add more rights that we have outself for MESHRIGHT_MANAGEUSERS
+                    if ((selfMeshRights != MESHRIGHT_ADMIN) && (command.meshadmin == MESHRIGHT_ADMIN)) { msgs.push("Can't set device group administrator, if not administrator"); continue; }
+                    if (((selfMeshRights & 2) == 0) && ((command.meshadmin & 2) != 0) && ((targetMeshRights & 2) == 0)) { command.meshadmin -= 2; }
+    
+                    // Add mesh to user or user group
+                    if (newuser.links == null) { newuser.links = {}; }
+                    if (newuser.links[command.meshid]) { newuser.links[command.meshid].rights = command.meshadmin; } else { newuser.links[command.meshid] = { rights: command.meshadmin }; }
+                }
+                if (newuserid.startsWith('user/')) { db.SetUser(newuser); }
+                else if (newuserid.startsWith('ugrp/')) { db.Set(newuser); }
+                parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
+    
+                if (newuserid.startsWith('user/')) {
+                    // Notify user change
+                    var targets = ['*', 'server-users', user._id, newuser._id];
+                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(newuser), action: 'accountchange', msgid: 78, msgArgs: [newuser.name], msg: 'Device group membership changed: ' + newuser.name, domain: domain.id };
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                    parent.parent.DispatchEvent(targets, obj, event);
+                } else if (newuserid.startsWith('ugrp/')) {
+                    // Notify user group change
+                    var targets = ['*', 'server-ugroups', user._id, newuser._id];
+                    var event = { etype: 'ugrp', username: user.name, ugrpid: newuser._id, name: newuser.name, desc: newuser.desc, action: 'usergroupchange', links: newuser.links, msgid: 79, msgArgs: [newuser.name], msg: 'User group changed: ' + newuser.name, domain: domain.id };
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                    parent.parent.DispatchEvent(targets, obj, event);
+                }
+    
+                var event;
+                if (command.remove === true) {
+                    // Remove userid from the mesh
+                    delete mesh.links[newuserid];
+                    db.Set(mesh);
+                    event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + newuser.name + ' from device group ' + mesh.name, domain: domain.id, invite: mesh.invite };
+                } else {
+                    // Add userid to the mesh
+                    mesh.links[newuserid] = { name: newuser.name, rights: command.meshadmin };
+                    db.Set(mesh);
+                    event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to device group ' + mesh.name, domain: domain.id, invite: mesh.invite };
+                }
+    
+                // Notify mesh change
+                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
+                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id, newuserid]), obj, event);
+                if (command.remove === true) { msgs.push("Removed user " + newuserid.split('/')[2]); } else { msgs.push("Added user " + newuserid.split('/')[2]); }
+                successCount++;
+            } else {
+                msgs.push("Unknown user " + newuserid.split('/')[2]);
+                unknownUsers.push(newuserid.split('/')[2]);
+                failCount++;
+            }
+        }
+    
+        if ((successCount == 0) && (failCount == 0)) { msgs.push("Nothing done"); }
+    
+        if (unknownUsers.length > 0) {
+            // Send error back, user not found.
+            displayNotificationMessage('User' + ((unknownUsers.length > 1) ? 's' : '') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', "Device Group", 'ServerNotify', 5, (unknownUsers.length > 1) ? 16 : 15, [EscapeHtml(unknownUsers.join(', '))]);
+        }
+    
+        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addmeshuser', responseid: command.responseid, result: msgs.join(', '), success: successCount, failed: failCount })); } catch (ex) { } }
+    }
 
     function serverCommandAddUser(command) {
         // If the email is the username, set this here.
@@ -5701,6 +5689,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         }
 
         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: 'ok', added: addedCount, failed: failCount })); } catch (ex) { } }
+    }
+
+    function serverCommandAgentDisconnect(command) {
+        if (common.validateInt(command.disconnectMode) == false) return; // Check disconnect mode
+
+        // Get the node and the rights for this node
+        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+            if ((node == null) || (((rights & MESHRIGHT_AGENTCONSOLE) == 0) && (user.siteadmin != SITERIGHT_ADMIN))) return;
+
+            // Force mesh agent disconnection
+            parent.forceMeshAgentDisconnect(user, domain, node._id, command.disconnectMode);
+        });
     }
 
     function serverCommandAuthCookie(command) {
