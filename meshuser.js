@@ -51,7 +51,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_REMOTECOMMAND       = 0x00020000; // 131072
     const MESHRIGHT_RESETOFF            = 0x00040000; // 262144
     const MESHRIGHT_GUESTSHARING        = 0x00080000; // 524288
-    const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // ‭1048576‬
+    const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // 1048576
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
