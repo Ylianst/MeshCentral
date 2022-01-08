@@ -5728,7 +5728,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverCommandClose(command) {
         // Close the web socket session
-        try { delete obj.req.session.ws; } catch (e) { }
+        try { if (obj.req.session.ws == ws) delete obj.req.session.ws; } catch (e) { }
         try { ws.close(); } catch (e) { }
     }
 
