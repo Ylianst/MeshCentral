@@ -3564,70 +3564,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete obj.hardwareKeyRegistrationRequest;
                     break;
                 }
-            case 'verifyPhone': {
-                // Do not allow this command when logged in using a login token
-                if (req.session.loginToken != null) break;
-
-                if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
-                if (parent.parent.smsserver == null) return;
-                if (common.validateString(command.phone, 1, 18) == false) break; // Check phone length
-                if (isPhoneNumber(command.phone) == false) break; // Check phone
-
-                const code = common.zeroPad(getRandomSixDigitInteger(), 6)
-                const phoneCookie = parent.parent.encodeCookie({ a: 'verifyPhone', c: code, p: command.phone, s: ws.sessionId });
-                parent.parent.smsserver.sendPhoneCheck(domain, command.phone, code, parent.getLanguageCodes(req), function (success) {
-                    ws.send(JSON.stringify({ action: 'verifyPhone', cookie: phoneCookie, success: success }));
-                });
-                break;
-            }
-            case 'confirmPhone': {
-                // Do not allow this command when logged in using a login token
-                if (req.session.loginToken != null) break;
-
-                if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
-                if ((parent.parent.smsserver == null) || (typeof command.cookie != 'string') || (typeof command.code != 'string') || (obj.failedSmsCookieCheck == 1)) break; // Input checks
-                var cookie = parent.parent.decodeCookie(command.cookie);
-                if (cookie == null) break; // Invalid cookie
-                if (cookie.s != ws.sessionId) break; // Invalid session
-                if (cookie.c != command.code) {
-                    obj.failedSmsCookieCheck = 1;
-                    // Code does not match, delay the response to limit how many guesses we can make and don't allow more than 1 guess at any given time.
-                    setTimeout(function () {
-                        ws.send(JSON.stringify({ action: 'verifyPhone', cookie: command.cookie, success: true }));
-                        delete obj.failedSmsCookieCheck;
-                    }, 2000 + (parent.crypto.randomBytes(2).readUInt16BE(0) % 4095));
-                    break;
-                }
-
-                // Set the user's phone
-                user.phone = cookie.p;
-                db.SetUser(user);
-
-                // Event the change
-                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 96, msgArgs: [user.name], msg: 'Verified phone number of user ' + EscapeHtml(user.name), domain: domain.id };
-                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
-
-                break;
-            }
-            case 'removePhone': {
-                // Do not allow this command when logged in using a login token
-                if (req.session.loginToken != null) break;
-
-                if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
-                if (user.phone == null) break;
-
-                // Clear the user's phone
-                delete user.phone;
-                db.SetUser(user);
-
-                // Event the change
-                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 97, msgArgs: [user.name], msg: 'Removed phone number of user ' + EscapeHtml(user.name), domain: domain.id };
-                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
-
-                break;
-            }
             case 'smsuser': { // Send a SMS message to a user
                 var errMsg = null, errId = 0, smsuser = null;
                 if (parent.parent.smsserver == null) { errMsg = "SMS gateway not enabled"; errId = 23; }
@@ -5048,6 +4984,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'changeemail': serverCommandChangeEmail,
         'changelang': serverCommandChangeLang,
         'close': serverCommandClose,
+        'confirmPhone': serverCommandConfirmPhone,
         'files': serverCommandFiles,
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
@@ -5061,6 +4998,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'pong': serverCommandPong,
         'powertimeline': serverCommandPowerTimeline,
         'print': serverCommandPrint,
+        'removePhone': serverCommandremovePhone,
         'removeuserfromusergroup': serverCommandRemoveUserFromUserGroup,
         'serverclearerrorlog': serverCommandServerClearErrorLog,
         'serverconsole': serverCommandServerConsole,
@@ -5071,7 +5009,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverversion': serverCommandServerVersion,
         'urlargs': serverCommandUrlArgs,
         'users': serverCommandUsers,
-        'verifyemail': serverCommandVerifyEmail
+        'verifyemail': serverCommandVerifyEmail,
+        'verifyPhone': serverCommandVerifyPhone
     };
 
     const serverUserCommands = {
@@ -5793,6 +5732,35 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try { ws.close(); } catch (e) { }
     }
 
+    function serverCommandConfirmPhone(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+        if ((parent.parent.smsserver == null) || (typeof command.cookie != 'string') || (typeof command.code != 'string') || (obj.failedSmsCookieCheck == 1)) return; // Input checks
+        var cookie = parent.parent.decodeCookie(command.cookie);
+        if (cookie == null) return; // Invalid cookie
+        if (cookie.s != ws.sessionId) return; // Invalid session
+        if (cookie.c != command.code) {
+            obj.failedSmsCookieCheck = 1;
+            // Code does not match, delay the response to limit how many guesses we can make and don't allow more than 1 guess at any given time.
+            setTimeout(function () {
+                ws.send(JSON.stringify({ action: 'verifyPhone', cookie: command.cookie, success: true }));
+                delete obj.failedSmsCookieCheck;
+            }, 2000 + (parent.crypto.randomBytes(2).readUInt16BE(0) % 4095));
+            return;
+        }
+
+        // Set the user's phone
+        user.phone = cookie.p;
+        db.SetUser(user);
+
+        // Event the change
+        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 96, msgArgs: [user.name], msg: 'Verified phone number of user ' + EscapeHtml(user.name), domain: domain.id };
+        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+        parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+    }
+
     function serverCommandFiles(command) {
         // Send the full list of server files to the browser app
         updateUserFiles(user, ws, domain);
@@ -5973,6 +5941,23 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverCommandPrint(command) { console.log(command.value); }
 
+    function serverCommandremovePhone(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+        if (user.phone == null) return;
+
+        // Clear the user's phone
+        delete user.phone;
+        db.SetUser(user);
+
+        // Event the change
+        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 97, msgArgs: [user.name], msg: 'Removed phone number of user ' + EscapeHtml(user.name), domain: domain.id };
+        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+        parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+    }
+
     function serverCommandRemoveUserFromUserGroup(command) {
         var err = null;
         try {
@@ -6152,6 +6137,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // Send the verification email
             domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req));
         }
+    }
+
+    function serverCommandVerifyPhone(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+        if (parent.parent.smsserver == null) return;
+        if (common.validateString(command.phone, 1, 18) == false) return; // Check phone length
+        if (isPhoneNumber(command.phone) == false) return; // Check phone
+
+        const code = common.zeroPad(getRandomSixDigitInteger(), 6);
+        const phoneCookie = parent.parent.encodeCookie({ a: 'verifyPhone', c: code, p: command.phone, s: ws.sessionId });
+        parent.parent.smsserver.sendPhoneCheck(domain, command.phone, code, parent.getLanguageCodes(req), function (success) {
+            ws.send(JSON.stringify({ action: 'verifyPhone', cookie: phoneCookie, success: success }));
+        });
     }
 
 
