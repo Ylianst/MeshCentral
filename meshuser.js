@@ -3188,13 +3188,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
-            case 'close':
-                {
-                    // Close the web socket session
-                    if (obj.req.session && obj.req.session.ws && obj.req.session.ws == ws) { delete obj.req.session.ws; }
-                    try { ws.close(); } catch (e) { }
-                    break;
-                }
             case 'getcookie':
                 {
                     // Check if this user has rights on this nodeid
@@ -5190,6 +5183,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'authcookie': serverCommandAuthCookie,
         'changeemail': serverCommandChangeEmail,
         'changelang': serverCommandChangeLang,
+        'close': serverCommandClose,
         'files': serverCommandFiles,
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
@@ -5791,6 +5785,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         var targets = ['*', 'server-users', user._id];
         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
         parent.parent.DispatchEvent(targets, obj, message);
+    }
+
+    function serverCommandClose(command) {
+        // Close the web socket session
+        try { delete obj.req.session.ws; } catch (e) { }
+        try { ws.close(); } catch (e) { }
     }
 
     function serverCommandFiles(command) {
