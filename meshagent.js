@@ -60,7 +60,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if ((arg == 1) || (arg == null)) { try { ws.close(); if (obj.nodeid != null) { parent.parent.debug('agent', 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { 
             try { 
-                if (ws._socket.parent != null)
+                if (ws._socket._parent != null)
                     ws._socket._parent.end();
                 else
                     ws._socket.end();
