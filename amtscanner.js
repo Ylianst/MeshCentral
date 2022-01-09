@@ -214,6 +214,7 @@ module.exports.CreateAmtScanner = function (parent) {
 
     // Look for all Intel AMT computers that may be locally reachable and poll their presence
     obj.performSpecificScan = function (node) {
+        if ((node == null) || (node.host == null)) return;
         var host = node.host.toLowerCase();
         const ciraConnections = obj.parent.mpsserver ? obj.parent.mpsserver.GetConnectionToNode(node._id, null, true) : null; // See if any OOB connections are present
         if ((host != '127.0.0.1') && (host != '::1') && (host.toLowerCase() != 'localhost') && (ciraConnections == null)) {
