@@ -1203,6 +1203,17 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             switch (command.action) {
                 case 'msg':
                     {
+                        // If the same console command is processed many times, kick out this agent.
+                        // This is a safety mesure to guard against the agent DOS'ing the server.
+                        if (command.type == 'console') {
+                            if (obj.consoleKickValue == command.value) {
+                                if (obj.consoleKickCount) { obj.consoleKickCount++; } else { obj.consoleKickCount = 1; }
+                                if (obj.consoleKickCount > 30) { obj.close(); return; } // 30 identical console messages received, kick out this agent.
+                            } else {
+                                obj.consoleKickValue = command.value;
+                            }
+                        }
+
                         // Route a message
                         parent.routeAgentCommand(command, obj.domain.id, obj.dbNodeKey, obj.dbMeshKey);
                         break;
