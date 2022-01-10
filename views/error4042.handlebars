@@ -10,7 +10,7 @@
     <link type=text/css href="/styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <title>{{{title1}}} - Download</title>
-    <style>
+    <style nonce="{{{cspNonce}}}">
         body {
             background-color: cadetblue;
             background: linear-gradient(to bottom right, #369, #036);
@@ -18,27 +18,84 @@
             overflow: hidden;
         }
 
-        a:link { color: #c8c8c8; }
-        a:visited { color: #c8c8c8; }
-        a:hover { color: #c8c8c8; }
-        a:active { color: #c8c8c8; }
+        a:link {
+            color: #c8c8c8;
+        }
+
+        a:visited {
+            color: #c8c8c8;
+        }
+
+        a:hover {
+            color: #c8c8c8;
+        }
+
+        a:active {
+            color: #c8c8c8;
+        }
+
+        #backImage {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            z-index: -1;
+            height: 60%;
+            opacity: 0.1;
+        }
+
+        #centralTable {
+            height: 100%;
+            z-index: 1;
+        }
+
+        #text1 {
+            text-align: center;
+            padding-top: 30px;
+            font-size: 160px;
+            font-family: Arial;
+            color: #bbb;
+        }
+
+        #text2 {
+            text-align: center;
+            font-size: 20px;
+            font-family: Arial;
+            color: #999;
+        }
+
+        #text3 {
+            text-align: center;
+            padding-top: 20px;
+            font-size: 20px;
+            font-family: Arial;
+            color: #999;
+        }
+
+        #flink1 {
+            margin-left: 4px;
+        }
+
+        #flink2 {
+            float: right;
+            margin-right: 4px;
+        }
     </style>
 </head>
 <body>
-    <img style="position:absolute;left:0;bottom:0;z-index:-1;height:60%;opacity:0.1" src="../../images/login/back.png" />
-    <table id="centralTable" class="container" style="height:100%;z-index:1">
+    <img id="backImage" src="../../images/login/back.png" />
+    <table id="centralTable" class="container">
         <tr>
             <td style="width:100%;text-align:center">
-                <div style="text-align:center;padding-top:30px;font-size:160px;font-family:Arial;color:#bbb"><b>404</b></div>
-                <div style="text-align:center;font-size:20px;font-family:Arial;color:#999">This page does not exist</div>
-                <div style="text-align:center;padding-top:20px;font-size:20px;font-family:Arial;color:#999"><a href="/"><b>Go to main site</b></a></div>
+                <div id="text1"><b>404</b></div>
+                <div id="text2">This page does not exist</div>
+                <div id="text3"><a href="/"><b>Go to main site</b></a></div>
             </td>
         </tr>
         <tr style="height:20px">
             <td>
                 <div>
-                    <div id="flink" style="margin-left:4px">{{{footer}}}</div>
-                    <div id="flink" style="float:right;margin-right:4px">{{{rootCertLink}}}&nbsp;<a href=../../terms>Terms &amp; Privacy</a></div>
+                    <div id="flink1">{{{footer}}}</div>
+                    <div id="flink2">{{{rootCertLink}}}&nbsp;<a href=../../terms>Terms &amp; Privacy</a></div>
                 </div>
             </td>
         </tr>

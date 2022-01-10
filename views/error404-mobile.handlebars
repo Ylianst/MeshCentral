@@ -9,7 +9,11 @@
     <meta name="robots" content="noindex,nofollow" />
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <title>{{{title}}}</title>
-    <style type="text/css">
+    <style nonce="{{{cspNonce}}}">
+        body {
+            overflow-y:hidden;max-width:100%;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif
+        }
+
         a {
            color: #036;
             text-decoration: underline;
@@ -20,35 +24,95 @@
             text-decoration: underline;
         }
 
-            #footer a:hover {
-                color: #fff;
-                text-decoration: none;
-            }
+        #footer a:hover {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        #masthead {
+            background:url(logo.png) 0px 0px;background-size:341px 50px;background-color:#036;background-repeat:no-repeat;height:50px;width:100%;overflow:hidden
+        }
+
+        #title1 {
+            float:left;height:66px;color:#c8c8c8;padding-left:10px;padding-top:4px
+        }
+
+        #title1a {
+            font-size:36px;font-family:Arial,Helvetica,sans-serif
+        }
+        
+        #title2 {
+            float:left;height:66px;color:#c8c8c8;padding-left:5px;padding-top:7px
+        }
+
+        #title2a {
+            font-size:12px;font-family:Arial,Helvetica,sans-serif
+        }
+
+        #page_content {
+            overflow-y:scroll;position:absolute;bottom:32px;top:50px;width:100%
+        }
+
+        #column_l { 
+            padding-left:10px;padding-right:10px
+        }
+
+        #text1 {
+            text-align:center;padding-top:30px;font-size:100px;font-family:Arial;color:#bbb
+        }
+
+        #text2 {
+            text-align:center;font-size:16px;font-family:Arial;color:#999
+        }
+
+        #text3 {
+            text-align:center;padding-top:16px;font-size:20px;font-family:Arial;color:#999
+        }
+
+        #text3l {
+            text-decoration:none
+        }
+
+        #footer {
+            height:32px;width:100%;text-align:center;background-color:#113962;position:absolute;bottom:0px
+        }
+
+        #footertable {
+            width:100%
+        }
+
+        #footerLeft {
+            text-align:left;color:white
+        }
+
+        #footerRight {
+            text-align:right
+        }
     </style>
 </head>
-<body onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;max-width:100%;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
+<body>
     <div id="container">
         <!-- Begin Masthead -->
-        <div id=masthead style="background:url(logo.png) 0px 0px;background-size:341px 50px;background-color:#036;background-repeat:no-repeat;height:50px;width:100%;overflow:hidden">
-            <div style="float:left;height:66px;color:#c8c8c8;padding-left:10px;padding-top:4px">
-                <strong><font style="font-size:36px;font-family:Arial,Helvetica,sans-serif">{{{title}}}</font></strong>
+        <div id=masthead>
+            <div id="title1">
+                <strong><font id="title1a">{{{title}}}</font></strong>
             </div>
-            <div style="float:left;height:66px;color:#c8c8c8;padding-left:5px;padding-top:7px">
-                <strong><font style="font-size:12px;font-family:Arial,Helvetica,sans-serif">{{{title2}}}</font></strong>
-            </div>
-        </div>
-        <div id=page_content style="overflow-y:scroll;position:absolute;bottom:32px;top:50px;width:100%">
-            <div id="column_l" style="padding-left:10px;padding-right:10px">
-                <div style="text-align:center;padding-top:30px;font-size:100px;font-family:Arial;color:#bbb"><b>404</b></div>
-                <div style="text-align:center;font-size:16px;font-family:Arial;color:#999">This page does not exist</div>
-                <div style="text-align:center;padding-top:16px;font-size:20px;font-family:Arial;color:#999"><a href="/" style="text-decoration:none"><b>Go to main site</b></a></div>
+            <div id="title2">
+                <strong><font id="title2a">{{{title2}}}</font></strong>
             </div>
         </div>
-        <div id=footer style="height:32px;width:100%;text-align:center;background-color:#113962;position:absolute;bottom:0px">
-            <table cellpadding=0 cellspacing=6 style=width:100%>
+        <div id=page_content>
+            <div id="column_l">
+                <div id="text1"><b>404</b></div>
+                <div id="text2">This page does not exist</div>
+                <div id="text3"><a id="text3l "href="/"><b>Go to main site</b></a></div>
+            </div>
+        </div>
+        <div id=footer>
+            <table id=footertable cellpadding=0 cellspacing=6>
                 <tr>
-                    <td style=text-align:left;color:white>{{{footer}}}</td>
-                    <td style=text-align:right>{{{rootCertLink}}}&nbsp;<a href="/">Back</a></td>
+                    <td id="footerLeft">{{{footer}}}</td>
+                    <td id="footerRight">{{{rootCertLink}}}&nbsp;<a href="/">Back</a></td>
                 </tr>
             </table>
         </div>

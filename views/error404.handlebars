@@ -10,53 +10,128 @@
     <link type="text/css" href="/styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <title>{{{title}}}</title>
+    <style nonce="{{{cspNonce}}}">
+        #xbody {
+            overflow:hidden;
+        }
+
+        #masthead {
+            background:url(logo.png) 0px 0px;background-color:#036;background-repeat:no-repeat;height:66px;width:100%;overflow:hidden;
+        }
+
+        #title1 {
+            float:left;text-shadow: 1px 1px 2px #000
+        }
+
+        #title2 {
+            float:left; height: 66px; color:#c8c8c8; padding-left:16px; padding-top:7px
+        }
+
+        #title2a {
+            font-size:46px; font-family: Arial, Helvetica, sans-serif;text-shadow: 1px 1px 2px #000
+        }
+
+        #title3 {
+            float:left; height: 66px; color:#c8c8c8; padding-left:5px; padding-top:14px
+        }
+
+        #title3a {
+            font-size:14px; font-family: Arial, Helvetica, sans-serif;text-shadow: 1px 1px 2px #000
+        }
+
+        #footerLeft {
+            text-align:left
+        }
+
+        #footerRight {
+            text-align:right
+        }
+
+        #topbar {
+            height:24px;position:relative
+        }
+
+        #page_leftbar_div {
+            height:16px
+        }
+
+        #uiMenu {
+
+        }
+
+        #text1 {
+            text-align:center;padding-top:30px;font-size:200px;font-family:Arial;color:#bbb
+        }
+        
+        #text2 {
+            text-align:center;font-size:20px;font-family:Arial;color:#999
+        }
+        
+        #text3 {
+            text-align:center;padding-top:20px;font-size:20px;font-family:Arial;color:#999
+        }
+
+        #column_l {
+            max-height:calc(100vh - 135px);overflow-y:auto
+        }
+    </style>
 </head>
-<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="display:none;overflow:hidden">
+<body id="xbody">
     <div id="container">
         <!-- Begin Masthead -->
-        <div id="masthead" class=noselect style="background:url(logo.png) 0px 0px;background-color:#036;background-repeat:no-repeat;height:66px;width:100%;overflow:hidden;">
-            <div style="float:left;text-shadow: 1px 1px 2px #000">{{{titlehtml}}}</div>
-            <div style="float:left; height: 66px; color:#c8c8c8; padding-left:16px; padding-top:7px">
-                <strong><font style="font-size:46px; font-family: Arial, Helvetica, sans-serif;text-shadow: 1px 1px 2px #000">{{{title1}}}</font></strong>
+        <div id="masthead" class=noselect>
+            <div id="title1">{{{titlehtml}}}</div>
+            <div id="title2">
+                <strong><font id="title2a">{{{title1}}}</font></strong>
             </div>
-            <div style="float:left; height: 66px; color:#c8c8c8; padding-left:5px; padding-top:14px">
-                <strong><font style="font-size:14px; font-family: Arial, Helvetica, sans-serif;text-shadow: 1px 1px 2px #000">{{{title2}}}</font></strong>
+            <div id="title3">
+                <strong><font id="title3a">{{{title2}}}</font></strong>
             </div>
         </div>
         <div id="page_leftbar">
-            <div style="height:16px"></div>
+            <div id="page_leftbar_div"></div>
         </div>
-        <div id=topbar class="noselect style3" style="height:24px;position:relative">
-            <div id=uiMenuButton title="User interface selection" onclick="showUserInterfaceSelectMenu()">
+        <div id=topbar class="noselect style3">
+            <div id=uiMenuButton title="User interface selection">
                 &diams;
-                <div id=uiMenu style="display:none">
-                    <div id=uiViewButton1 class=uiSelector onclick=userInterfaceSelectMenu(1) title="Left bar interface"><div class="uiSelector1"></div></div>
-                    <div id=uiViewButton2 class=uiSelector onclick=userInterfaceSelectMenu(2) title="Top bar interface"><div class="uiSelector2"></div></div>
-                    <div id=uiViewButton3 class=uiSelector onclick=userInterfaceSelectMenu(3) title="Fixed width interface"><div class="uiSelector3"></div></div>
-                    <div id=uiViewButton4 class=uiSelector onclick=toggleNightMode() title="Toggle night mode"><div class="uiSelector4"></div></div>
+                <div id=uiMenu>
+                    <div id=uiViewButton1 class=uiSelector title="Left bar interface"><div class="uiSelector1"></div></div>
+                    <div id=uiViewButton2 class=uiSelector title="Top bar interface"><div class="uiSelector2"></div></div>
+                    <div id=uiViewButton3 class=uiSelector title="Fixed width interface"><div class="uiSelector3"></div></div>
+                    <div id=uiViewButton4 class=uiSelector title="Toggle night mode"><div class="uiSelector4"></div></div>
                 </div>
             </div>
         </div>
-        <div id="column_l" style="max-height:calc(100vh - 135px);overflow-y:auto">
-            <div style="text-align:center;padding-top:30px;font-size:200px;font-family:Arial;color:#bbb"><b>404</b></div>
-            <div style="text-align:center;font-size:20px;font-family:Arial;color:#999">This page does not exist</div>
-            <div style="text-align:center;padding-top:20px;font-size:20px;font-family:Arial;color:#999"><a href="/" style="text-decoration:none"><b>Go to main site</b></a></div>
+        <div id="column_l">
+            <div id="text1"><b>404</b></div>
+            <div id="text2">This page does not exist</div>
+            <div id="text3"><a href="/" style="text-decoration:none"><b>Go to main site</b></a></div>
         </div>
         <div id="footer">
             <table cellpadding="0" cellspacing="10" style="width: 100%">
                 <tr>
-                    <td style="text-align:left"></td>
-                    <td style="text-align:right"><a href="/">Back</a></td>
+                    <td id="footerLeft"></td>
+                    <td id="footerRight"><a href="/">Back</a></td>
                 </tr>
             </table>
         </div>
     </div>
-    <script>
+    <script nonce="{{{cspNonce}}}">
         'use strict';
         var uiMode = parseInt(getstore('uiMode', 1));
         var webPageStackMenu = false;
         var webPageFullScreen = true;
         var nightMode = (getstore('_nightMode', '0') == '1');
+        var menuVisible = false;
+        QV('uiMenu', menuVisible);
+        if (nightMode) { QC('xbody').add('night'); } else { QC('xbody').remove('night'); }
+
+        // Setup handlers
+        Q('uiMenuButton').onclick = showUserInterfaceSelectMenu;
+        Q('uiViewButton1').onclick = function () { userInterfaceSelectMenu(1); }
+        Q('uiViewButton2').onclick = function () { userInterfaceSelectMenu(2); }
+        Q('uiViewButton3').onclick = function () { userInterfaceSelectMenu(3); }
+        Q('uiViewButton4').onclick = toggleNightMode;
 
         var terms = '{{{terms}}}';
         if (terms != '') { QH('column_l', decodeURIComponent(terms)); }
@@ -70,7 +145,8 @@
             Q('uiViewButton3').classList.remove('uiSelectorSel');
             Q('uiViewButton4').classList.remove('uiSelectorSel');
             try { Q('uiViewButton' + uiMode).classList.add('uiSelectorSel'); } catch (ex) { }
-            QV('uiMenu', (QS('uiMenu').display == 'none'));
+            menuVisible = !menuVisible;
+            QV('uiMenu', menuVisible);
             if (nightMode) { Q('uiViewButton4').classList.add('uiSelectorSel'); }
         }
 
@@ -85,7 +161,7 @@
 
         function toggleNightMode() {
             nightMode = !nightMode;
-            if (nightMode) { QC('body').add('night'); } else { QC('body').remove('night'); }
+            if (nightMode) { QC('xbody').add('night'); } else { QC('xbody').remove('night'); }
             putstore('_nightMode', nightMode ? '1' : '0');
         }
 
@@ -95,19 +171,19 @@
             var hide = 0;
             //if (args.hide) { hide = parseInt(args.hide); }
             if (webPageFullScreen == false) {
-                QC('body').remove('menu_stack');
-                QC('body').remove('fullscreen');
-                QC('body').remove('arg_hide');
+                QC('xbody').remove('menu_stack');
+                QC('xbody').remove('fullscreen');
+                QC('xbody').remove('arg_hide');
                 //if (xxcurrentView >= 10) QC('column_l').add('room4submenu');
                 //QV('UserDummyMenuSpan', false);
                 //QV('page_leftbar', false);
             } else {
-                QC('body').add('fullscreen');
-                if (hide & 16) QC('body').add('arg_hide'); // This is replacement for QV('page_leftbar', !(hide & 16));
+                QC('xbody').add('fullscreen');
+                if (hide & 16) QC('xbody').add('arg_hide'); // This is replacement for QV('page_leftbar', !(hide & 16));
                 //QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
                 //QV('page_leftbar', true);
             }
-            QV('body', true);
+            QV('xbody', true);
         }
 
         // If FullScreen, toggle menu to be horisontal or vertical
@@ -118,9 +194,9 @@
                     putstore('webPageStackMenu', webPageStackMenu);
                 }
                 if (webPageStackMenu == false) {
-                    QC('body').remove('menu_stack');
+                    QC('xbody').remove('menu_stack');
                 } else {
-                    QC('body').add('menu_stack');
+                    QC('xbody').add('menu_stack');
                     //if (xxcurrentView >= 10) QC('column_l').remove('room4submenu');
                 }
             }
@@ -130,7 +206,7 @@
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function Q(x) { return document.getElementById(x); }                            // "Q"
         function QS(x) { try { return Q(x).style; } catch (x) { } }                     // "Q" style
-        function QV(x, y) { try { QS(x).display = (y ? '' : 'none'); } catch (x) { } }  // "Q" visible
+        function QV(x, y) { try { QS(x).display = (y ? '' : 'none'); } catch (ex) { console.log(ex); } }  // "Q" visible
         function QH(x, y) { Q(x).innerHTML = y; }                                       // "Q" html
         function QC(x) { try { return Q(x).classList; } catch (x) { } }                 // "Q" class
     </script>
