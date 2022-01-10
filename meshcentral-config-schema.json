@@ -318,7 +318,14 @@
           "hide": { "type": "integer", "default": 0, "description": "Sum of: 1 = Hide header, 2 = Hide tab, 4 = Hide footer, 8 = Hide title, 16 = Hide left bar, 32 = Hide back buttons" },
           "footer": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is logged in." },
           "loginfooter": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is not logged in." },
-          "guestDeviceSharing": { "type": "boolean", "default": true, "description": "When set to false, the desktop/terminal sharing link feature is not available." },
+          "guestDeviceSharing": {
+            "type": [ "boolean", "object" ],
+            "default": true,
+            "description": "When set to false, the desktop/terminal sharing link feature is not available.",
+            "properties": {
+              "maxSessionTime": { "type": "number", "description": "When set, limits the maximum length of a guest session, in minutes." }
+            }
+          },
           "autoRemoveInactiveDevices": { "type": "integer", "default": 0, "minimum": 0, "maximum": 2000, "description": "Number of days a device can be inactive before it's removed. 0 disables this feature. Device group setting will override this value." },
           "deviceSearchBarServerAndClientName": { "type": "boolean", "default": false, "description": "When set to true, the devices search box will match on both the server name and client name of a device." },
           "agentSelfGuestSharing": {
