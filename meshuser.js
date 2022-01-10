@@ -4478,16 +4478,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 });
                 break;
             }
-            case 'trafficstats': {
-                try { ws.send(JSON.stringify({ action: 'trafficstats', stats: parent.getTrafficStats() })); } catch (ex) { }
-                break;
-            }
-            case 'trafficdelta': {
-                const stats = parent.getTrafficDelta(obj.trafficStats);
-                obj.trafficStats = stats.current;
-                try { ws.send(JSON.stringify({ action: 'trafficdelta', delta: stats.delta })); } catch (ex) { }
-                break;
-            }
             case 'getDeviceDetails': {
                 if ((common.validateStrArray(command.nodeids, 1) == false) && (command.nodeids != null)) break; // Check nodeids
                 if (common.validateString(command.type, 3, 4) == false) break; // Check type
@@ -4898,6 +4888,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverversion': serverCommandServerVersion,
         'setClip': serverCommandSetClip,
         'smsuser': serverCommandSmsUser,
+        'trafficdelta': serverCommandTrafficDelta,
+        'trafficstats': serverCommandtrafficStats,
         'updateUserImage': serverCommandUpdateUserImage,
         'urlargs': serverCommandUrlArgs,
         'users': serverCommandUsers,
@@ -6076,6 +6068,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (typeof msg == 'string') { displayNotificationMessage("SMS error: " + msg, null, null, null, 29, [msg]); } else { displayNotificationMessage("SMS error", null, null, null, 28); }
             }
         });
+    }
+
+    function serverCommandTrafficDelta(command) {
+        const stats = parent.getTrafficDelta(obj.trafficStats);
+        obj.trafficStats = stats.current;
+        try { ws.send(JSON.stringify({ action: 'trafficdelta', delta: stats.delta })); } catch (ex) { }
+    }
+
+    function serverCommandtrafficStats(command) {
+        try { ws.send(JSON.stringify({ action: 'trafficstats', stats: parent.getTrafficStats() })); } catch (ex) { }
     }
 
     function serverCommandUpdateUserImage(command) {
