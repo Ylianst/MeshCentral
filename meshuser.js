@@ -4327,10 +4327,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'previousLogins': {
                 // TODO: Make a better database call to get filtered data.
                 if (command.userid == null) {
+                    var splitUser = user._id.split('/');
                     // Get previous logins for self
                     if (db.GetUserLoginEvents) {
                         // New way
-                        db.GetUserLoginEvents(domain.id, user._id, function (err, docs) {
+                        db.GetUserLoginEvents(domain.id, splitUser[2], function (err, docs) {
                             if (err != null) return;
                             var e = [];
                             for (var i in docs) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs, tn: docs[i].tokenName }); }
@@ -4338,7 +4339,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         });
                     } else {
                         // Old way
-                        db.GetUserEvents([user._id], domain.id, user._id.split('/')[2], function (err, docs) {
+                        db.GetUserEvents([user._id], domain.id, splitUser[2], function (err, docs) {
                             if (err != null) return;
                             var e = [];
                             for (var i in docs) {
@@ -4356,7 +4357,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((obj.crossDomain === true) || (splitUser[1] === domain.id)) {
                             if (db.GetUserLoginEvents) {
                                 // New way
-                                db.GetUserLoginEvents(splitUser[1], command.userid, function (err, docs) {
+                                db.GetUserLoginEvents(splitUser[1], splitUser[2], function (err, docs) {
                                     if (err != null) return;
                                     var e = [];
                                     for (var i in docs) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); }
