@@ -116,8 +116,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         obj.expireTimer = setTimeout(function () { for (var i in req.session) { delete req.session[i]; } obj.close(); }, delta);
     }
 
-    // Send a message to the user
-    //obj.send = function (data) { try { if (typeof data == 'string') { ws.send(Buffer.from(data, 'binary')); } else { ws.send(data); } } catch (e) { } }
+    // Send data through the websocket
+    obj.send = function (object) { try { ws.send(JSON.stringify(object)); } catch(e) {} }
 
     // Clean a IPv6 address that encodes a IPv4 address
     function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }
@@ -4813,7 +4813,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     
         // Handle any errors
         if (err != null) {
-            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adddeviceuser', responseid: command.responseid, result: err })); } catch (ex) { } }
+            if (command.responseid != null) { obj.send({ action: 'adddeviceuser', responseid: command.responseid, result: err }); }
             return;
         }
     
@@ -4929,7 +4929,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 parent.parent.DispatchEvent(dispatchTargets, obj, event);
             }
     
-            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adddeviceuser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+            if (command.responseid != null) { obj.send({ action: 'adddeviceuser', responseid: command.responseid, result: 'ok' }); }
         });
     }
 
@@ -4964,7 +4964,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     
         // Handle any errors
         if (err != null) {
-            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addmeshuser', responseid: command.responseid, result: err })); } catch (ex) { } }
+            if (command.responseid != null) { obj.send({ action: 'addmeshuser', responseid: command.responseid, result: err }); }
             return;
         }
     
@@ -5062,7 +5062,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             displayNotificationMessage('User' + ((unknownUsers.length > 1) ? 's' : '') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', "Device Group", 'ServerNotify', 5, (unknownUsers.length > 1) ? 16 : 15, [EscapeHtml(unknownUsers.join(', '))]);
         }
     
-        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addmeshuser', responseid: command.responseid, result: msgs.join(', '), success: successCount, failed: failCount })); } catch (ex) { } }
+        if (command.responseid != null) { obj.send({ action: 'addmeshuser', responseid: command.responseid, result: msgs.join(', '), success: successCount, failed: failCount }); }
     }
 
     function serverCommandAddUser(command) {
@@ -5099,7 +5099,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Handle any errors
         if (err != null) {
             if (command.responseid != null) {
-                try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: err, msgid: errid })); } catch (ex) { }
+                obj.send({ action: 'adduser', responseid: command.responseid, result: err, msgid: errid });
             } else {
                 // Send error back, user not found.
                 displayNotificationMessage(err, "New Account", 'ServerNotify', null, 1, errid);
@@ -5113,7 +5113,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Account count exceed, do notification
                 if (command.responseid != null) {
                     // Respond privately if requested
-                    try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'maxUsersExceed' })); } catch (ex) { }
+                    obj.send({ action: 'adduser', responseid: command.responseid, result: 'maxUsersExceed' });
                 } else {
                     // Create the notification message
                     var notification = { action: 'msg', type: 'notify', id: Math.random(), value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: newuserdomain.id, titleid: 2, msgid: 10 };
@@ -5189,9 +5189,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' created a user account ' + newuser.name); }
 
                         // OK Response
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+                        if (command.responseid != null) { obj.send({ action: 'adduser', responseid: command.responseid, result: 'ok' }); }
                     } else {
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'passwordHashError' })); } catch (ex) { } }
+                        if (command.responseid != null) { obj.send({ action: 'adduser', responseid: command.responseid, result: 'passwordHashError' }); }
                     }
                 }, 0);
             }
@@ -5220,7 +5220,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Handle any errors
         if (err != null) {
-            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduserbatch', responseid: command.responseid, result: err })); } catch (ex) { } }
+            if (command.responseid != null) { obj.send({ action: 'adduserbatch', responseid: command.responseid, result: err }); }
             return;
         }
 
@@ -5295,7 +5295,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Handle any errors
         if (err != null) {
-            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: err })); } catch (ex) { } }
+            if (command.responseid != null) { obj.send({ action: 'addusertousergroup', responseid: command.responseid, result: err }); }
             return;
         }
 
@@ -5349,7 +5349,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
         }
 
-        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: 'ok', added: addedCount, failed: failCount })); } catch (ex) { } }
+        if (command.responseid != null) { obj.send({ action: 'addusertousergroup', responseid: command.responseid, result: 'ok', added: addedCount, failed: failCount }); }
     }
 
     function serverCommandAgentDisconnect(command) {
@@ -5396,7 +5396,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
                 if ((docs != null) && (docs.length > 0)) {
                     // Notify the duplicate email error
-                    try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: 'Account Settings', id: Math.random(), tag: 'ServerNotify', value: 'Failed to change email address, another account already using: ' + command.email + '.', titleid: 4, msgid: 13, args: [command.email] })); } catch (ex) { }
+                    obj.send({ action: 'msg', type: 'notify', title: 'Account Settings', id: Math.random(), tag: 'ServerNotify', value: 'Failed to change email address, another account already using: ' + command.email + '.', titleid: 4, msgid: 13, args: [command.email] });
                 } else {
                     // Update the user's email
                     var oldemail = user.email;
@@ -5541,7 +5541,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             if (node.mtype == 3) { cookieContent.lc = 1; command.localRelay = true; } // Indicate this is for a local connection
             command.cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
             command.trustedCert = parent.isTrustedCert(domain);
-            try { ws.send(JSON.stringify(command)); } catch (ex) { }
+            obj.send(command);
         });
     }
 
@@ -5550,11 +5550,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Get the node and the rights for this node
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-            if ((visible == false) || ((rights & MESHRIGHT_DEVICEDETAILS) == 0)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
+            if ((visible == false) || ((rights & MESHRIGHT_DEVICEDETAILS) == 0)) { obj.send({ action: 'getnetworkinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' }); return; }
 
             // Get network information about this node
             db.Get('if' + node._id, function (err, netinfos) {
-                if ((netinfos == null) || (netinfos.length != 1)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, netif: null, netif2: null })); } catch (ex) { } return; }
+                if ((netinfos == null) || (netinfos.length != 1)) { obj.send({ action: 'getnetworkinfo', nodeid: node._id, netif: null, netif2: null }); return; }
                 var netinfo = netinfos[0];
 
                 // Unescape any field names that have special characters if needed
@@ -5565,7 +5565,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                 }
 
-                try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, updateTime: netinfo.updateTime, netif: netinfo.netif, netif2: netinfo.netif2 })); } catch (ex) { }
+                obj.send({ action: 'getnetworkinfo', nodeid: node._id, updateTime: netinfo.updateTime, netif: netinfo.netif, netif2: netinfo.netif2 });
             });
         });
     }
@@ -5575,7 +5575,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Get the node and the rights for this node
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-            if ((visible == false) || ((rights & MESHRIGHT_DEVICEDETAILS) == 0)) { try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
+            if ((visible == false) || ((rights & MESHRIGHT_DEVICEDETAILS) == 0)) { obj.send({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' }); return; }
             // Query the database system information
             db.Get('si' + command.nodeid, function (err, docs) {
                 if ((docs != null) && (docs.length > 0)) {
@@ -5587,9 +5587,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete doc.domain;
                     delete doc._id;
                     if (command.nodeinfo === true) { doc.node = node; doc.rights = rights; }
-                    try { ws.send(JSON.stringify(doc)); } catch (ex) { }
+                    obj.send(doc);
                 } else {
-                    try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: node._id, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { }
+                    obj.send({ action: 'getsysinfo', nodeid: node._id, tag: command.tag, noinfo: true, result: 'Invalid device id' });
                 }
             });
         });
@@ -5635,14 +5635,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Get the node and the rights for this node
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-            if (visible == false) { try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
+            if (visible == false) { obj.send({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' }); return; }
 
             // Query the database for the last time this node connected
             db.Get('lc' + command.nodeid, function (err, docs) {
                 if ((docs != null) && (docs.length > 0)) {
-                    try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr })); } catch (ex) { }
+                    obj.send({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr });
                 } else {
-                    try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'No data' })); } catch (ex) { }
+                    obj.send({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'No data' });
                 }
             });
         });
@@ -5663,7 +5663,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (docs == null) return;
                 const response = {};
                 for (var j in docs) { response[docs[j]._id.substring(2)] = docs[j].time; }
-                try { ws.send(JSON.stringify({ action: 'lastconnects', lastconnects: response, tag: command.tag })); } catch (ex) { }
+                obj.send({ action: 'lastconnects', lastconnects: response, tag: command.tag });
             });
         });
     }
@@ -5671,13 +5671,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function serverCommandLoginCookie(command) {
         // If allowed, return a login cookie
         if (parent.parent.config.settings.allowlogintoken === true) {
-            try { ws.send(JSON.stringify({ action: 'logincookie', cookie: parent.parent.encodeCookie({ u: user._id, a: 3 }, parent.parent.loginCookieEncryptionKey) })); } catch (ex) { }
+            obj.send({ action: 'logincookie', cookie: parent.parent.encodeCookie({ u: user._id, a: 3 }, parent.parent.loginCookieEncryptionKey) });
         }
     }
 
     function serverCommandMeshes(command) {
         // Request a list of all meshes this user as rights to
-        try { ws.send(JSON.stringify({ action: 'meshes', meshes: parent.GetAllMeshWithRights(user).map(parent.CloneSafeMesh), tag: command.tag })); } catch (ex) { }
+        obj.send({ action: 'meshes', meshes: parent.GetAllMeshWithRights(user).map(parent.CloneSafeMesh), tag: command.tag });
     }
 
     function serverCommandPing(command) { try { ws.send('{action:"pong"}'); } catch (ex) { } }
@@ -5708,11 +5708,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         previousPower = doc.power;
                     }
-                    try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: node._id, timeline: timeline, tag: command.tag })); } catch (ex) { }
+                    obj.send({ action: 'powertimeline', nodeid: node._id, timeline: timeline, tag: command.tag });
                 } else {
                     // No records found, send current state if we have it
                     var state = parent.parent.GetConnectivityState(command.nodeid);
-                    if (state != null) { try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: node._id, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag })); } catch (ex) { } }
+                    if (state != null) { obj.send({ action: 'powertimeline', nodeid: node._id, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag }); }
                 }
             });
         });
@@ -5756,7 +5756,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Handle any errors
         if (err != null) {
-            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeuserfromusergroup', responseid: command.responseid, result: err })); } catch (ex) { } }
+            if (command.responseid != null) { obj.send({ action: 'removeuserfromusergroup', responseid: command.responseid, result: err }); }
             return;
         }
 
@@ -5797,7 +5797,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
         }
 
-        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeuserfromusergroup', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+        if (command.responseid != null) { obj.send({ action: 'removeuserfromusergroup', responseid: command.responseid, result: 'ok' }); }
     }
 
     function serverCommandReport(command) {
@@ -5840,13 +5840,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         } else { cmdData.result = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.'; }
 
         // Send back the command result
-        if (cmdData.result != '') { try { ws.send(JSON.stringify({ action: 'serverconsole', value: cmdData.result, tag: command.tag })); } catch (ex) { } }
+        if (cmdData.result != '') { obj.send({ action: 'serverconsole', value: cmdData.result, tag: command.tag }); }
     }
 
     function serverCommandServerErrors(command) {
         // Load the server error log
         if (userHasSiteUpdate() && domainHasMyServerErrorLog())
-            fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { try { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } catch (ex) { } });
+            fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { obj.send({ action: 'servererrors', data: data }); });
     }
 
     function serverCommandServerStats(command) {
@@ -5871,7 +5871,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if ((user.siteadmin & 21) == 0) return; // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
         if (common.validateInt(command.hours, 0, 24 * 30) == false) return;
         db.GetServerStats(command.hours, function (err, docs) {
-            if (err == null) { try { ws.send(JSON.stringify({ action: 'servertimelinestats', events: docs })); } catch (ex) { } }
+            if (err == null) { obj.send({ action: 'servertimelinestats', events: docs }); }
         });
     }
 
@@ -5890,7 +5890,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Check the server version
         if (userHasSiteUpdate() && domainHasMyServerUpgrade())
-            parent.parent.getServerTags(function (tags, err) { try { ws.send(JSON.stringify({ action: 'serverversion', tags: tags })); } catch (ex) { } });
+            parent.parent.getServerTags(function (tags, err) { obj.send({ action: 'serverversion', tags: tags }); });
     }
 
     function serverCommandSetClip(command) {
@@ -5932,11 +5932,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function serverCommandTrafficDelta(command) {
         const stats = parent.getTrafficDelta(obj.trafficStats);
         obj.trafficStats = stats.current;
-        try { ws.send(JSON.stringify({ action: 'trafficdelta', delta: stats.delta })); } catch (ex) { }
+        obj.send({ action: 'trafficdelta', delta: stats.delta });
     }
 
     function serverCommandTrafficStats(command) {
-        try { ws.send(JSON.stringify({ action: 'trafficstats', stats: parent.getTrafficStats() })); } catch (ex) { }
+        obj.send({ action: 'trafficstats', stats: parent.getTrafficStats() });
     }
 
     function serverCommandUpdateAgents(command) {
@@ -5988,7 +5988,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverCommandUsers(command) {
         // Request a list of all users
-        if ((user.siteadmin & 2) == 0) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'users', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } } return; }
+        if ((user.siteadmin & 2) == 0) { if (command.responseid != null) { obj.send({ action: 'users', responseid: command.responseid, result: 'Access denied' }); } return; }
         var docs = [];
         for (i in parent.users) {
             if (((obj.crossDomain === true) || (parent.users[i].domain == domain.id)) && (parent.users[i].name != '~')) {
@@ -5998,7 +5998,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             }
         }
-        try { ws.send(JSON.stringify({ action: 'users', users: docs, tag: command.tag })); } catch (ex) { }
+        obj.send({ action: 'users', users: docs, tag: command.tag });
     }
 
     function serverCommandVerifyEmail(command) {
@@ -6036,7 +6036,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             ws.send(JSON.stringify({ action: 'verifyPhone', cookie: phoneCookie, success: success }));
         });
     }
-
 
     function serverUserCommandHelp(cmdData) {
         var fin = '', f = '', availcommands = [];
