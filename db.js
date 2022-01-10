@@ -784,11 +784,12 @@ module.exports.CreateDB = function (parent, func) {
                 // Check if we need to reset indexes
                 var indexesByName = {}, indexCount = 0;
                 for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-                if ((indexCount != 5) || (indexesByName['Username1'] == null) || (indexesByName['DomainNodeTime1'] == null) || (indexesByName['IdsAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
+                if ((indexCount != 6) || (indexesByName['Username1'] == null) || (indexesByName['UserIdAction1'] == null) || (indexesByName['DomainNodeTime1'] == null) || (indexesByName['IdsAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
                     // Reset all indexes
                     console.log("Resetting events indexes...");
                     obj.eventsfile.dropIndexes(function (err) {
                         obj.eventsfile.createIndex({ username: 1 }, { sparse: 1, name: 'Username1' });
+                        obj.eventsfile.createIndex({ userid: 1, action: 1 }, { sparse: 1, name: 'UserIdAction1' });
                         obj.eventsfile.createIndex({ domain: 1, nodeid: 1, time: -1 }, { sparse: 1, name: 'DomainNodeTime1' });
                         obj.eventsfile.createIndex({ ids: 1, time: -1 }, { sparse: 1, name: 'IdsAndTime1' });
                         obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
