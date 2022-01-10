@@ -1069,7 +1069,11 @@ function handleServerCommand(data) {
                                 else if ((data.protocol == 'files') && (tunnels[i].protocol == 5)) { disconnect = true; }
                                 else if ((data.protocol == 'tcp') && (tunnels[i].tcpport != null)) { disconnect = true; }
                                 else if ((data.protocol == 'udp') && (tunnels[i].udpport != null)) { disconnect = true; }
-                                if (disconnect) { if (tunnels[i].s != null) { tunnels[i].s.end(); } else { tunnels[i].end(); } }
+                                if (disconnect) {
+                                    if (tunnels[i].s != null) { tunnels[i].s.end(); } else { tunnels[i].end(); }
+
+                                    // TODO: Log tunnel disconnection
+                                }
                             }
                         }
                         break;
