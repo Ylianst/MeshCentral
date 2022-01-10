@@ -5809,145 +5809,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         const msgIdFilter = [5, 10, 11, 12, 122, 123, 124, 125, 126];
 
-        if (command.type == 1) { // This is the remote session report. Shows desktop, terminal, files...
-            // If we are not user administrator on this site, only search for events with our own user id.
-            var ids = [user._id];
-            if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) {
-                if (command.devGroup != null) {
-                    ids = [ user._id, command.devGroup ];
-                } else {
-                    if (manageAllDeviceGroups) { ids = ['*']; } else if (user.links) { for (var i in user.links) { ids.push(i); } }
-                }
-            }
-
-            // Get the events in the time range
-            // MySQL or MariaDB query will ignore the MsgID filter.
-            db.GetEventsTimeRange(ids, domain.id, msgIdFilter, new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
-                if (err != null) return;
-                var data = { groups: {} };
-                var guestNamePresent = false;
-
-                // Columns
-                if (command.groupBy == 1) {
-                    data.groupFormat = 'user';
-                    data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'meshid', title: "devgroup", format: 'mesh' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
-                } else if (command.groupBy == 2) {
-                    data.groupFormat = 'nodemesh';
-                    data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'userid', title: "user", format: 'user' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
-                } else if (command.groupBy == 3) {
-                    data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'meshid', title: "devgroup", format: 'mesh' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'userid', title: "user", format: 'user' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
-                }
-
-                // Add traffic columns
-                if (command.showTraffic) {
-                    data.columns.push({ id: 'bytesin', title: "bytesin", format: 'bytes', align: 'center', sumBy: 'protocol' });
-                    data.columns.push({ id: 'bytesout', title: "bytesout", format: 'bytes', align: 'center', sumBy: 'protocol' });
-                }
-
-                // Rows
-                for (var i in docs) {
-                    // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
-                    if (msgIdFilter.indexOf(docs[i].msgid) < 0) continue;
-                    if ((command.devGroup != null) && (docs[i].ids != null) && (docs[i].ids.indexOf(command.devGroup) == -1)) continue;
-
-                    var entry = { time: docs[i].time.valueOf() };
-
-                    // UserID
-                    if (command.groupBy != 1) { entry.userid = docs[i].userid; }
-                    if (command.groupBy != 2) { entry.nodeid = docs[i].nodeid; }
-                    entry.protocol = docs[i].protocol;
-
-                    // Device Group
-                    if (docs[i].ids != null) { for (var j in docs[i].ids) { if (docs[i].ids[j].startsWith('mesh/')) { entry.meshid = docs[i].ids[j]; } } }
-
-                    // Add traffic data
-                    if (command.showTraffic) { entry.bytesin = docs[i].bytesin; entry.bytesout = docs[i].bytesout; }
-
-                    // Add guest name if present
-                    if (docs[i].guestname != null) { entry.guestname = docs[i].guestname; guestNamePresent = true; }
-
-                    // Session length
-                    if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }
-                    else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { entry.length = docs[i].msgArgs[0]; }
-
-                    if (command.groupBy == 1) { // Add entry to per user
-                        if (data.groups[docs[i].userid] == null) { data.groups[docs[i].userid] = { entries: [] }; }
-                        data.groups[docs[i].userid].entries.push(entry);
-                    } else if (command.groupBy == 2) { // Add entry to per mesh+device
-                        if (entry.meshid != null) {
-                            var k = docs[i].nodeid + '/' + entry.meshid;
-                            if (data.groups[k] == null) { data.groups[k] = { entries: [] }; }
-                            data.groups[k].entries.push(entry);
-                        } else {
-                            if (data.groups[docs[i].nodeid] == null) { data.groups[docs[i].nodeid] = { entries: [] }; }
-                            data.groups[docs[i].nodeid].entries.push(entry);
-                        }
-                    } else if (command.groupBy == 3) { // Add entry to per day
-                        var day;
-                        if ((typeof command.l == 'string') && (typeof command.tz == 'string')) {
-                            day = new Date(docs[i].time).toLocaleDateString(command.l, { timeZone: command.tz });
-                        } else {
-                            day = docs[i].time; // TODO
-                        }
-                        if (data.groups[day] == null) { data.groups[day] = { entries: [] }; }
-                        data.groups[day].entries.push(entry);
-                    }
-
-                }
-
-                // Remove guest column if not needed
-                if (guestNamePresent == false) {
-                    if ((command.groupBy == 1) || (command.groupBy == 3)) {
-                        data.columns.splice(3, 1);
-                    } else if (command.groupBy == 2) {
-                        data.columns.splice(2, 1);
-                    }
-                }
-
-                try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
-            });
-        }
-
-        if (command.type == 2) { // This is the user traffic usage report.
-            // If we are not user administrator on this site, only search for events with our own user id.
-            var ids = [user._id]; // If we are nto user administrator, only count our own traffic.
-            if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) { ids = ['*']; } // If user administrator, count traffic of all users.
-
-            // Get the events in the time range
-            // MySQL or MariaDB query will ignore the MsgID filter.
-            db.GetEventsTimeRange(ids, domain.id, msgIdFilter, new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
-                if (err != null) return;
-                var data = { groups: { 0: { entries: [] } } };
-                data.columns = [{ id: 'userid', title: "user", format: 'user' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: true }, { id: 'bytesin', title: "bytesin", format: 'bytes', align: 'center', sumBy: true }, { id: 'bytesout', title: "bytesout", format: 'bytes', align: 'center', sumBy: true }];
-                var userEntries = {};
-
-                // Sum all entry logs for each user
-                for (var i in docs) {
-                    // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
-                    if (msgIdFilter.indexOf(docs[i].msgid) < 0) continue;
-                    if ((command.devGroup != null) && (docs[i].ids != null) && (docs[i].ids.indexOf(command.devGroup) == -1)) continue;
-
-                    // Fetch or create the user entry
-                    var userEntry = userEntries[docs[i].userid];
-                    if (userEntry == null) { userEntry = { userid: docs[i].userid, length: 0, bytesin: 0, bytesout: 0}; }
-                    if (docs[i].bytesin) { userEntry.bytesin += docs[i].bytesin; }
-                    if (docs[i].bytesout) { userEntry.bytesout += docs[i].bytesout; }
-
-                    // Session length
-                    if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { userEntry.length += docs[i].msgArgs[3]; }
-                    else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { userEntry.length += docs[i].msgArgs[0]; }
-
-                    // Set the user entry
-                    userEntries[docs[i].userid] = userEntry;
-                }
-
-                var userEntries2 = [];
-                for (var i in userEntries) { userEntries2.push(userEntries[i]); }
-                data.groups[0].entries = userEntries2;
-
-                try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
-            });
-        }
+        if (command.type == 1)
+            remoteSessionReport(command, manageAllDeviceGroups, msgIdFilter);
+        if (command.type == 2)
+            trafficUsageReport(command, msgIdFilter);
     }
 
     function serverCommandServerClearErrorLog(command) {
@@ -6822,6 +6687,145 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function domainHasMyServerUpgrade()  { return !((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.upgrade !== true))); }
 
     function csvClean(s) { return '\"' + s.split('\"').join('').split(',').join('').split('\r').join('').split('\n').join('') + '\"'; }
+
+    function remoteSessionReport(command, manageAllDeviceGroups, msgIdFilter) {
+        // If we are not user administrator on this site, only search for events with our own user id.
+        var ids = [user._id];
+        if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) {
+            if (command.devGroup != null) {
+                ids = [ user._id, command.devGroup ];
+            } else {
+                if (manageAllDeviceGroups) { ids = ['*']; } else if (user.links) { for (var i in user.links) { ids.push(i); } }
+            }
+        }
+
+        // Get the events in the time range
+        // MySQL or MariaDB query will ignore the MsgID filter.
+        db.GetEventsTimeRange(ids, domain.id, msgIdFilter, new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
+            if (err != null) return;
+            var data = { groups: {} };
+            var guestNamePresent = false;
+
+            // Columns
+            if (command.groupBy == 1) {
+                data.groupFormat = 'user';
+                data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'meshid', title: "devgroup", format: 'mesh' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
+            } else if (command.groupBy == 2) {
+                data.groupFormat = 'nodemesh';
+                data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'userid', title: "user", format: 'user' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
+            } else if (command.groupBy == 3) {
+                data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'meshid', title: "devgroup", format: 'mesh' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'userid', title: "user", format: 'user' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
+            }
+
+            // Add traffic columns
+            if (command.showTraffic) {
+                data.columns.push({ id: 'bytesin', title: "bytesin", format: 'bytes', align: 'center', sumBy: 'protocol' });
+                data.columns.push({ id: 'bytesout', title: "bytesout", format: 'bytes', align: 'center', sumBy: 'protocol' });
+            }
+
+            // Rows
+            for (var i in docs) {
+                // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
+                if (msgIdFilter.indexOf(docs[i].msgid) < 0) continue;
+                if ((command.devGroup != null) && (docs[i].ids != null) && (docs[i].ids.indexOf(command.devGroup) == -1)) continue;
+
+                var entry = { time: docs[i].time.valueOf() };
+
+                // UserID
+                if (command.groupBy != 1) { entry.userid = docs[i].userid; }
+                if (command.groupBy != 2) { entry.nodeid = docs[i].nodeid; }
+                entry.protocol = docs[i].protocol;
+
+                // Device Group
+                if (docs[i].ids != null) { for (var j in docs[i].ids) { if (docs[i].ids[j].startsWith('mesh/')) { entry.meshid = docs[i].ids[j]; } } }
+
+                // Add traffic data
+                if (command.showTraffic) { entry.bytesin = docs[i].bytesin; entry.bytesout = docs[i].bytesout; }
+
+                // Add guest name if present
+                if (docs[i].guestname != null) { entry.guestname = docs[i].guestname; guestNamePresent = true; }
+
+                // Session length
+                if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }
+                else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { entry.length = docs[i].msgArgs[0]; }
+
+                if (command.groupBy == 1) { // Add entry to per user
+                    if (data.groups[docs[i].userid] == null) { data.groups[docs[i].userid] = { entries: [] }; }
+                    data.groups[docs[i].userid].entries.push(entry);
+                } else if (command.groupBy == 2) { // Add entry to per mesh+device
+                    if (entry.meshid != null) {
+                        var k = docs[i].nodeid + '/' + entry.meshid;
+                        if (data.groups[k] == null) { data.groups[k] = { entries: [] }; }
+                        data.groups[k].entries.push(entry);
+                    } else {
+                        if (data.groups[docs[i].nodeid] == null) { data.groups[docs[i].nodeid] = { entries: [] }; }
+                        data.groups[docs[i].nodeid].entries.push(entry);
+                    }
+                } else if (command.groupBy == 3) { // Add entry to per day
+                    var day;
+                    if ((typeof command.l == 'string') && (typeof command.tz == 'string')) {
+                        day = new Date(docs[i].time).toLocaleDateString(command.l, { timeZone: command.tz });
+                    } else {
+                        day = docs[i].time; // TODO
+                    }
+                    if (data.groups[day] == null) { data.groups[day] = { entries: [] }; }
+                    data.groups[day].entries.push(entry);
+                }
+            }
+
+            // Remove guest column if not needed
+            if (guestNamePresent == false) {
+                if ((command.groupBy == 1) || (command.groupBy == 3)) {
+                    data.columns.splice(3, 1);
+                } else if (command.groupBy == 2) {
+                    data.columns.splice(2, 1);
+                }
+            }
+
+            try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
+        });
+    }
+
+    function trafficUsageReport(command, msgIdFilter) {
+        // If we are not user administrator on this site, only search for events with our own user id.
+        var ids = [user._id]; // If we are nto user administrator, only count our own traffic.
+        if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) { ids = ['*']; } // If user administrator, count traffic of all users.
+
+        // Get the events in the time range
+        // MySQL or MariaDB query will ignore the MsgID filter.
+        db.GetEventsTimeRange(ids, domain.id, msgIdFilter, new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
+            if (err != null) return;
+            var data = { groups: { 0: { entries: [] } } };
+            data.columns = [{ id: 'userid', title: "user", format: 'user' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: true }, { id: 'bytesin', title: "bytesin", format: 'bytes', align: 'center', sumBy: true }, { id: 'bytesout', title: "bytesout", format: 'bytes', align: 'center', sumBy: true }];
+            var userEntries = {};
+
+            // Sum all entry logs for each user
+            for (var i in docs) {
+                // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
+                if (msgIdFilter.indexOf(docs[i].msgid) < 0) continue;
+                if ((command.devGroup != null) && (docs[i].ids != null) && (docs[i].ids.indexOf(command.devGroup) == -1)) continue;
+
+                // Fetch or create the user entry
+                var userEntry = userEntries[docs[i].userid];
+                if (userEntry == null) { userEntry = { userid: docs[i].userid, length: 0, bytesin: 0, bytesout: 0}; }
+                if (docs[i].bytesin) { userEntry.bytesin += docs[i].bytesin; }
+                if (docs[i].bytesout) { userEntry.bytesout += docs[i].bytesout; }
+
+                // Session length
+                if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { userEntry.length += docs[i].msgArgs[3]; }
+                else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { userEntry.length += docs[i].msgArgs[0]; }
+
+                // Set the user entry
+                userEntries[docs[i].userid] = userEntry;
+            }
+
+            var userEntries2 = [];
+            for (var i in userEntries) { userEntries2.push(userEntries[i]); }
+            data.groups[0].entries = userEntries2;
+
+            try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
+        });
+    }
 
     // Return detailed information about an array of nodeid's
     function getDeviceDetailedInfo(nodeids, type, func) {
