@@ -3507,32 +3507,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete obj.hardwareKeyRegistrationRequest;
                     break;
                 }
-            case 'getClip': {
-                if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-
-                // Get the node and the rights for this node
-                parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                    if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
-
-                    // Ask for clipboard data from agent
-                    var agent = parent.wsagents[node._id];
-                    if (agent != null) { try { agent.send(JSON.stringify({ action: 'getClip' })); } catch (ex) { } }
-                });
-                break;
-            }
-            case 'setClip': {
-                if (common.validateString(command.data, 1, 65535) == false) break; // Check 
-
-                // Get the node and the rights for this node
-                parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                    if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
-
-                    // Send clipboard data to the agent
-                    var agent = parent.wsagents[node._id];
-                    if (agent != null) { try { agent.send(JSON.stringify({ action: 'setClip', data: command.data })); } catch (ex) { } }
-                });
-                break;
-            }
             case 'userWebState': {
                 if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
                 if (common.validateString(command.state, 1, 30000) == false) break; // Check state size, no more than 30k
@@ -4888,6 +4862,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'confirmPhone': serverCommandConfirmPhone,
         'emailuser': serverCommandEmailUser,
         'files': serverCommandFiles,
+        'getClip': serverCommandGetClip,
         'getcookie': serverCommandGetCookie,
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
@@ -4910,6 +4885,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'servertimelinestats': serverCommandServerTimelineStats,
         'serverupdate': serverCommandServerUpdate,
         'serverversion': serverCommandServerVersion,
+        'setClip': serverCommandSetClip,
         'smsuser': serverCommandSmsUser,
         'updateUserImage': serverCommandUpdateUserImage,
         'urlargs': serverCommandUrlArgs,
@@ -5690,6 +5666,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         updateUserFiles(user, ws, domain);
     }
 
+    function serverCommandGetClip(command) {
+        if (common.validateString(command.nodeid, 1, 1024) == false) return; // Check nodeid
+
+        // Get the node and the rights for this node
+        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+            if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
+
+            // Ask for clipboard data from agent
+            var agent = parent.wsagents[node._id];
+            if (agent != null) { try { agent.send(JSON.stringify({ action: 'getClip' })); } catch (ex) { } }
+        });
+    }
+
     function serverCommandGetCookie(command) {
         // Check if this user has rights on this nodeid
         if (common.validateString(command.nodeid, 1, 1024) == false) return; // Check nodeid
@@ -6040,6 +6029,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Check the server version
         if (userHasSiteUpdate() && domainHasMyServerUpgrade())
             parent.parent.getServerTags(function (tags, err) { try { ws.send(JSON.stringify({ action: 'serverversion', tags: tags })); } catch (ex) { } });
+    }
+
+    function serverCommandSetClip(command) {
+        if (common.validateString(command.data, 1, 65535) == false) return; // Check 
+
+        // Get the node and the rights for this node
+        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+            if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
+
+            // Send clipboard data to the agent
+            var agent = parent.wsagents[node._id];
+            if (agent != null) { try { agent.send(JSON.stringify({ action: 'setClip', data: command.data })); } catch (ex) { } }
+        });
     }
 
     function serverCommandSmsUser(command) {
