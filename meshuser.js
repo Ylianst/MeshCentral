@@ -3527,29 +3527,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete obj.hardwareKeyRegistrationRequest;
                     break;
                 }
-            case 'smsuser': { // Send a SMS message to a user
-                var errMsg = null, errId = 0, smsuser = null;
-                if (parent.parent.smsserver == null) { errMsg = "SMS gateway not enabled"; errId = 23; }
-                else if ((user.siteadmin & 2) == 0) { errMsg = "No user management rights"; errId = 24; }
-                else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = "Invalid username"; errId = 2; }
-                else if (common.validateString(command.msg, 1, 160) == false) { errMsg = "Invalid SMS message"; errId = 25; }
-                else {
-                    smsuser = parent.users[command.userid];
-                    if (smsuser == null) { errMsg = "Invalid username"; errId = 2; }
-                    else if (smsuser.phone == null) { errMsg = "No phone number for this user"; errId = 26; }
-                }
-
-                if (errMsg != null) { displayNotificationMessage(errMsg); break; }
-
-                parent.parent.smsserver.sendSMS(smsuser.phone, command.msg, function (success, msg) {
-                    if (success) {
-                        displayNotificationMessage("SMS succesfuly sent.", null, null, null, 27);
-                    } else {
-                        if (typeof msg == 'string') { displayNotificationMessage("SMS error: " + msg, null, null, null, 29, [msg]); } else { displayNotificationMessage("SMS error", null, null, null, 28); }
-                    }
-                });
-                break;
-            }
             case 'emailuser': { // Send a email message to a user
                 var errMsg = null, emailuser = null;
                 if (domain.mailserver == null) { errMsg = 'Email server not enabled'; }
@@ -4970,6 +4947,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'servertimelinestats': serverCommandServerTimelineStats,
         'serverupdate': serverCommandServerUpdate,
         'serverversion': serverCommandServerVersion,
+        'smsuser': serverCommandSmsUser,
         'updateUserImage': serverCommandUpdateUserImage,
         'urlargs': serverCommandUrlArgs,
         'users': serverCommandUsers,
@@ -6061,6 +6039,29 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Check the server version
         if (userHasSiteUpdate() && domainHasMyServerUpgrade())
             parent.parent.getServerTags(function (tags, err) { try { ws.send(JSON.stringify({ action: 'serverversion', tags: tags })); } catch (ex) { } });
+    }
+
+    function serverCommandSmsUser(command) {
+        var errMsg = null, smsuser = null;
+        if (parent.parent.smsserver == null) { errMsg = "SMS gateway not enabled"; }
+        else if ((user.siteadmin & 2) == 0) { errMsg = "No user management rights"; }
+        else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = "Invalid username"; }
+        else if (common.validateString(command.msg, 1, 160) == false) { errMsg = "Invalid SMS message"; }
+        else {
+            smsuser = parent.users[command.userid];
+            if (smsuser == null) { errMsg = "Invalid username"; }
+            else if (smsuser.phone == null) { errMsg = "No phone number for this user"; }
+        }
+
+        if (errMsg != null) { displayNotificationMessage(errMsg); return; }
+
+        parent.parent.smsserver.sendSMS(smsuser.phone, command.msg, function (success, msg) {
+            if (success) {
+                displayNotificationMessage("SMS succesfuly sent.", null, null, null, 27);
+            } else {
+                if (typeof msg == 'string') { displayNotificationMessage("SMS error: " + msg, null, null, null, 29, [msg]); } else { displayNotificationMessage("SMS error", null, null, null, 28); }
+            }
+        });
     }
 
     function serverCommandUpdateUserImage(command) {
