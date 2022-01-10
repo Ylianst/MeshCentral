@@ -116,8 +116,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         obj.expireTimer = setTimeout(function () { for (var i in req.session) { delete req.session[i]; } obj.close(); }, delta);
     }
 
-    // Send a message to the user
-    //obj.send = function (data) { try { if (typeof data == 'string') { ws.send(Buffer.from(data, 'binary')); } else { ws.send(data); } } catch (e) { } }
+    // Send data through the websocket
+    obj.send = function (object) { try { ws.send(JSON.stringify(object)); } catch(e) {} }
 
     // Clean a IPv6 address that encodes a IPv4 address
     function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }
@@ -4318,12 +4318,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 break;
             }
-            case 'updateAgents': {
-                // Update agents for selected devices
-                if (common.validateStrArray(command.nodeids, 1) == false) break; // Check nodeids
-                for (var i in command.nodeids) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: command.nodeids[i], value: 'agentupdate' }, MESHRIGHT_ADMIN, 0); }
-                break;
-            }
             case 'previousLogins': {
                 // TODO: Make a better database call to get filtered data.
                 if (command.userid == null) {
@@ -4477,16 +4471,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var event = { etype: 'user', userid: user._id, username: user.name, action: 'loginTokenAdded', msgid: 115, msg: "Added login token", domain: domain.id, newToken: { name: command.name, tokenUser: tokenUser, created: created, expire: expire } };
                     parent.parent.DispatchEvent(targets, obj, event);
                 });
-                break;
-            }
-            case 'trafficstats': {
-                try { ws.send(JSON.stringify({ action: 'trafficstats', stats: parent.getTrafficStats() })); } catch (ex) { }
-                break;
-            }
-            case 'trafficdelta': {
-                const stats = parent.getTrafficDelta(obj.trafficStats);
-                obj.trafficStats = stats.current;
-                try { ws.send(JSON.stringify({ action: 'trafficdelta', delta: stats.delta })); } catch (ex) { }
                 break;
             }
             case 'getDeviceDetails': {
@@ -4670,158 +4654,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 break;
             }
-            case 'report': {
-                // Report request. Validate the input
-                if (common.validateInt(command.type, 1, 2) == false) break; // Validate type
-                if (common.validateInt(command.groupBy, 1, 3) == false) break; // Validate groupBy: 1 = User, 2 = Device, 3 = Day
-                if ((typeof command.start != 'number') || (typeof command.end != 'number') || (command.start >= command.end)) break; // Validate start and end time
-                const manageAllDeviceGroups = ((user.siteadmin == 0xFFFFFFFF) && (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0));
-                if ((command.devGroup != null) && (manageAllDeviceGroups == false) && ((user.links == null) || (user.links[command.devGroup] == null))) break; // Asking for a device group that is not allowed
-
-                const msgIdFilter = [5, 10, 11, 12, 122, 123, 124, 125, 126];
-
-                if (command.type == 1) { // This is the remote session report. Shows desktop, terminal, files...
-                    // If we are not user administrator on this site, only search for events with our own user id.
-                    var ids = [user._id];
-                    if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) {
-                        if (command.devGroup != null) {
-                            ids = [ user._id, command.devGroup ];
-                        } else {
-                            if (manageAllDeviceGroups) { ids = ['*']; } else if (user.links) { for (var i in user.links) { ids.push(i); } }
-                        }
-                    }
-
-                    // Get the events in the time range
-                    // MySQL or MariaDB query will ignore the MsgID filter.
-                    db.GetEventsTimeRange(ids, domain.id, msgIdFilter, new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
-                        if (err != null) return;
-                        var data = { groups: {} };
-                        var guestNamePresent = false;
-
-                        // Columns
-                        if (command.groupBy == 1) {
-                            data.groupFormat = 'user';
-                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'meshid', title: "devgroup", format: 'mesh' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
-                        } else if (command.groupBy == 2) {
-                            data.groupFormat = 'nodemesh';
-                            data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'userid', title: "user", format: 'user' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
-                        } else if (command.groupBy == 3) {
-                            data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'meshid', title: "devgroup", format: 'mesh' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'userid', title: "user", format: 'user' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
-                        }
-
-                        // Add traffic columns
-                        if (command.showTraffic) {
-                            data.columns.push({ id: 'bytesin', title: "bytesin", format: 'bytes', align: 'center', sumBy: 'protocol' });
-                            data.columns.push({ id: 'bytesout', title: "bytesout", format: 'bytes', align: 'center', sumBy: 'protocol' });
-                        }
-
-                        // Rows
-                        for (var i in docs) {
-                            // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
-                            if (msgIdFilter.indexOf(docs[i].msgid) < 0) continue;
-                            if ((command.devGroup != null) && (docs[i].ids != null) && (docs[i].ids.indexOf(command.devGroup) == -1)) continue;
-
-                            var entry = { time: docs[i].time.valueOf() };
-
-                            // UserID
-                            if (command.groupBy != 1) { entry.userid = docs[i].userid; }
-                            if (command.groupBy != 2) { entry.nodeid = docs[i].nodeid; }
-                            entry.protocol = docs[i].protocol;
-
-                            // Device Group
-                            if (docs[i].ids != null) { for (var j in docs[i].ids) { if (docs[i].ids[j].startsWith('mesh/')) { entry.meshid = docs[i].ids[j]; } } }
-
-                            // Add traffic data
-                            if (command.showTraffic) { entry.bytesin = docs[i].bytesin; entry.bytesout = docs[i].bytesout; }
-
-                            // Add guest name if present
-                            if (docs[i].guestname != null) { entry.guestname = docs[i].guestname; guestNamePresent = true; }
-
-                            // Session length
-                            if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }
-                            else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { entry.length = docs[i].msgArgs[0]; }
-
-                            if (command.groupBy == 1) { // Add entry to per user
-                                if (data.groups[docs[i].userid] == null) { data.groups[docs[i].userid] = { entries: [] }; }
-                                data.groups[docs[i].userid].entries.push(entry);
-                            } else if (command.groupBy == 2) { // Add entry to per mesh+device
-                                if (entry.meshid != null) {
-                                    var k = docs[i].nodeid + '/' + entry.meshid;
-                                    if (data.groups[k] == null) { data.groups[k] = { entries: [] }; }
-                                    data.groups[k].entries.push(entry);
-                                } else {
-                                    if (data.groups[docs[i].nodeid] == null) { data.groups[docs[i].nodeid] = { entries: [] }; }
-                                    data.groups[docs[i].nodeid].entries.push(entry);
-                                }
-                            } else if (command.groupBy == 3) { // Add entry to per day
-                                var day;
-                                if ((typeof command.l == 'string') && (typeof command.tz == 'string')) {
-                                    day = new Date(docs[i].time).toLocaleDateString(command.l, { timeZone: command.tz });
-                                } else {
-                                    day = docs[i].time; // TODO
-                                }
-                                if (data.groups[day] == null) { data.groups[day] = { entries: [] }; }
-                                data.groups[day].entries.push(entry);
-                            }
-
-                        }
-
-                        // Remove guest column if not needed
-                        if (guestNamePresent == false) {
-                            if ((command.groupBy == 1) || (command.groupBy == 3)) {
-                                data.columns.splice(3, 1);
-                            } else if (command.groupBy == 2) {
-                                data.columns.splice(2, 1);
-                            }
-                        }
-
-                        try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
-                    });
-                }
-
-                if (command.type == 2) { // This is the user traffic usage report.
-                    // If we are not user administrator on this site, only search for events with our own user id.
-                    var ids = [user._id]; // If we are nto user administrator, only count our own traffic.
-                    if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) { ids = ['*']; } // If user administrator, count traffic of all users.
-
-                    // Get the events in the time range
-                    // MySQL or MariaDB query will ignore the MsgID filter.
-                    db.GetEventsTimeRange(ids, domain.id, msgIdFilter, new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
-                        if (err != null) return;
-                        var data = { groups: { 0: { entries: [] } } };
-                        data.columns = [{ id: 'userid', title: "user", format: 'user' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: true }, { id: 'bytesin', title: "bytesin", format: 'bytes', align: 'center', sumBy: true }, { id: 'bytesout', title: "bytesout", format: 'bytes', align: 'center', sumBy: true }];
-                        var userEntries = {};
-
-                        // Sum all entry logs for each user
-                        for (var i in docs) {
-                            // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
-                            if (msgIdFilter.indexOf(docs[i].msgid) < 0) continue;
-                            if ((command.devGroup != null) && (docs[i].ids != null) && (docs[i].ids.indexOf(command.devGroup) == -1)) continue;
-
-                            // Fetch or create the user entry
-                            var userEntry = userEntries[docs[i].userid];
-                            if (userEntry == null) { userEntry = { userid: docs[i].userid, length: 0, bytesin: 0, bytesout: 0}; }
-                            if (docs[i].bytesin) { userEntry.bytesin += docs[i].bytesin; }
-                            if (docs[i].bytesout) { userEntry.bytesout += docs[i].bytesout; }
-
-                            // Session length
-                            if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { userEntry.length += docs[i].msgArgs[3]; }
-                            else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { userEntry.length += docs[i].msgArgs[0]; }
-
-                            // Set the user entry
-                            userEntries[docs[i].userid] = userEntry;
-                        }
-
-                        var userEntries2 = [];
-                        for (var i in userEntries) { userEntries2.push(userEntries[i]); }
-                        data.groups[0].entries = userEntries2;
-
-                        try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
-                    });
-                }
-
-                break;
-            }
             case 'endDesktopMultiplex': {
                 var err = null, xuser = null;
                 try {
@@ -4900,6 +4732,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'print': serverCommandPrint,
         'removePhone': serverCommandremovePhone,
         'removeuserfromusergroup': serverCommandRemoveUserFromUserGroup,
+        'report': serverCommandReport,
         'serverclearerrorlog': serverCommandServerClearErrorLog,
         'serverconsole': serverCommandServerConsole,
         'servererrors': serverCommandServerErrors,
@@ -4909,6 +4742,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverversion': serverCommandServerVersion,
         'setClip': serverCommandSetClip,
         'smsuser': serverCommandSmsUser,
+        'trafficdelta': serverCommandTrafficDelta,
+        'trafficstats': serverCommandTrafficStats,
+        'updateAgents': serverCommandUpdateAgents,
         'updateUserImage': serverCommandUpdateUserImage,
         'urlargs': serverCommandUrlArgs,
         'users': serverCommandUsers,
@@ -4988,7 +4824,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     
         // Handle any errors
         if (err != null) {
-            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adddeviceuser', responseid: command.responseid, result: err })); } catch (ex) { } }
+            if (command.responseid != null) { obj.send({ action: 'adddeviceuser', responseid: command.responseid, result: err }); }
             return;
         }
     
@@ -5104,7 +4940,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 parent.parent.DispatchEvent(dispatchTargets, obj, event);
             }
     
-            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adddeviceuser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+            if (command.responseid != null) { obj.send({ action: 'adddeviceuser', responseid: command.responseid, result: 'ok' }); }
         });
     }
 
@@ -5139,7 +4975,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     
         // Handle any errors
         if (err != null) {
-            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addmeshuser', responseid: command.responseid, result: err })); } catch (ex) { } }
+            if (command.responseid != null) { obj.send({ action: 'addmeshuser', responseid: command.responseid, result: err }); }
             return;
         }
     
@@ -5237,7 +5073,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             displayNotificationMessage('User' + ((unknownUsers.length > 1) ? 's' : '') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', "Device Group", 'ServerNotify', 5, (unknownUsers.length > 1) ? 16 : 15, [EscapeHtml(unknownUsers.join(', '))]);
         }
     
-        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addmeshuser', responseid: command.responseid, result: msgs.join(', '), success: successCount, failed: failCount })); } catch (ex) { } }
+        if (command.responseid != null) { obj.send({ action: 'addmeshuser', responseid: command.responseid, result: msgs.join(', '), success: successCount, failed: failCount }); }
     }
 
     function serverCommandAddUser(command) {
@@ -5274,7 +5110,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Handle any errors
         if (err != null) {
             if (command.responseid != null) {
-                try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: err, msgid: errid })); } catch (ex) { }
+                obj.send({ action: 'adduser', responseid: command.responseid, result: err, msgid: errid });
             } else {
                 // Send error back, user not found.
                 displayNotificationMessage(err, "New Account", 'ServerNotify', null, 1, errid);
@@ -5288,7 +5124,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Account count exceed, do notification
                 if (command.responseid != null) {
                     // Respond privately if requested
-                    try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'maxUsersExceed' })); } catch (ex) { }
+                    obj.send({ action: 'adduser', responseid: command.responseid, result: 'maxUsersExceed' });
                 } else {
                     // Create the notification message
                     var notification = { action: 'msg', type: 'notify', id: Math.random(), value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: newuserdomain.id, titleid: 2, msgid: 10 };
@@ -5364,9 +5200,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' created a user account ' + newuser.name); }
 
                         // OK Response
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+                        if (command.responseid != null) { obj.send({ action: 'adduser', responseid: command.responseid, result: 'ok' }); }
                     } else {
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'passwordHashError' })); } catch (ex) { } }
+                        if (command.responseid != null) { obj.send({ action: 'adduser', responseid: command.responseid, result: 'passwordHashError' }); }
                     }
                 }, 0);
             }
@@ -5395,7 +5231,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Handle any errors
         if (err != null) {
-            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduserbatch', responseid: command.responseid, result: err })); } catch (ex) { } }
+            if (command.responseid != null) { obj.send({ action: 'adduserbatch', responseid: command.responseid, result: err }); }
             return;
         }
 
@@ -5470,7 +5306,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Handle any errors
         if (err != null) {
-            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: err })); } catch (ex) { } }
+            if (command.responseid != null) { obj.send({ action: 'addusertousergroup', responseid: command.responseid, result: err }); }
             return;
         }
 
@@ -5524,7 +5360,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
         }
 
-        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: 'ok', added: addedCount, failed: failCount })); } catch (ex) { } }
+        if (command.responseid != null) { obj.send({ action: 'addusertousergroup', responseid: command.responseid, result: 'ok', added: addedCount, failed: failCount }); }
     }
 
     function serverCommandAgentDisconnect(command) {
@@ -5571,7 +5407,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
                 if ((docs != null) && (docs.length > 0)) {
                     // Notify the duplicate email error
-                    try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: 'Account Settings', id: Math.random(), tag: 'ServerNotify', value: 'Failed to change email address, another account already using: ' + command.email + '.', titleid: 4, msgid: 13, args: [command.email] })); } catch (ex) { }
+                    obj.send({ action: 'msg', type: 'notify', title: 'Account Settings', id: Math.random(), tag: 'ServerNotify', value: 'Failed to change email address, another account already using: ' + command.email + '.', titleid: 4, msgid: 13, args: [command.email] });
                 } else {
                     // Update the user's email
                     var oldemail = user.email;
@@ -5716,7 +5552,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             if (node.mtype == 3) { cookieContent.lc = 1; command.localRelay = true; } // Indicate this is for a local connection
             command.cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
             command.trustedCert = parent.isTrustedCert(domain);
-            try { ws.send(JSON.stringify(command)); } catch (ex) { }
+            obj.send(command);
         });
     }
 
@@ -5725,11 +5561,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Get the node and the rights for this node
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-            if ((visible == false) || ((rights & MESHRIGHT_DEVICEDETAILS) == 0)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
+            if ((visible == false) || ((rights & MESHRIGHT_DEVICEDETAILS) == 0)) { obj.send({ action: 'getnetworkinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' }); return; }
 
             // Get network information about this node
             db.Get('if' + node._id, function (err, netinfos) {
-                if ((netinfos == null) || (netinfos.length != 1)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, netif: null, netif2: null })); } catch (ex) { } return; }
+                if ((netinfos == null) || (netinfos.length != 1)) { obj.send({ action: 'getnetworkinfo', nodeid: node._id, netif: null, netif2: null }); return; }
                 var netinfo = netinfos[0];
 
                 // Unescape any field names that have special characters if needed
@@ -5740,7 +5576,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                 }
 
-                try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, updateTime: netinfo.updateTime, netif: netinfo.netif, netif2: netinfo.netif2 })); } catch (ex) { }
+                obj.send({ action: 'getnetworkinfo', nodeid: node._id, updateTime: netinfo.updateTime, netif: netinfo.netif, netif2: netinfo.netif2 });
             });
         });
     }
@@ -5750,7 +5586,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Get the node and the rights for this node
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-            if ((visible == false) || ((rights & MESHRIGHT_DEVICEDETAILS) == 0)) { try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
+            if ((visible == false) || ((rights & MESHRIGHT_DEVICEDETAILS) == 0)) { obj.send({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' }); return; }
             // Query the database system information
             db.Get('si' + command.nodeid, function (err, docs) {
                 if ((docs != null) && (docs.length > 0)) {
@@ -5762,9 +5598,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete doc.domain;
                     delete doc._id;
                     if (command.nodeinfo === true) { doc.node = node; doc.rights = rights; }
-                    try { ws.send(JSON.stringify(doc)); } catch (ex) { }
+                    obj.send(doc);
                 } else {
-                    try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: node._id, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { }
+                    obj.send({ action: 'getsysinfo', nodeid: node._id, tag: command.tag, noinfo: true, result: 'Invalid device id' });
                 }
             });
         });
@@ -5810,14 +5646,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Get the node and the rights for this node
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-            if (visible == false) { try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
+            if (visible == false) { obj.send({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' }); return; }
 
             // Query the database for the last time this node connected
             db.Get('lc' + command.nodeid, function (err, docs) {
                 if ((docs != null) && (docs.length > 0)) {
-                    try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr })); } catch (ex) { }
+                    obj.send({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr });
                 } else {
-                    try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'No data' })); } catch (ex) { }
+                    obj.send({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'No data' });
                 }
             });
         });
@@ -5838,7 +5674,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (docs == null) return;
                 const response = {};
                 for (var j in docs) { response[docs[j]._id.substring(2)] = docs[j].time; }
-                try { ws.send(JSON.stringify({ action: 'lastconnects', lastconnects: response, tag: command.tag })); } catch (ex) { }
+                obj.send({ action: 'lastconnects', lastconnects: response, tag: command.tag });
             });
         });
     }
@@ -5846,13 +5682,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function serverCommandLoginCookie(command) {
         // If allowed, return a login cookie
         if (parent.parent.config.settings.allowlogintoken === true) {
-            try { ws.send(JSON.stringify({ action: 'logincookie', cookie: parent.parent.encodeCookie({ u: user._id, a: 3 }, parent.parent.loginCookieEncryptionKey) })); } catch (ex) { }
+            obj.send({ action: 'logincookie', cookie: parent.parent.encodeCookie({ u: user._id, a: 3 }, parent.parent.loginCookieEncryptionKey) });
         }
     }
 
     function serverCommandMeshes(command) {
         // Request a list of all meshes this user as rights to
-        try { ws.send(JSON.stringify({ action: 'meshes', meshes: parent.GetAllMeshWithRights(user).map(parent.CloneSafeMesh), tag: command.tag })); } catch (ex) { }
+        obj.send({ action: 'meshes', meshes: parent.GetAllMeshWithRights(user).map(parent.CloneSafeMesh), tag: command.tag });
     }
 
     function serverCommandPing(command) { try { ws.send('{action:"pong"}'); } catch (ex) { } }
@@ -5883,11 +5719,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         previousPower = doc.power;
                     }
-                    try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: node._id, timeline: timeline, tag: command.tag })); } catch (ex) { }
+                    obj.send({ action: 'powertimeline', nodeid: node._id, timeline: timeline, tag: command.tag });
                 } else {
                     // No records found, send current state if we have it
                     var state = parent.parent.GetConnectivityState(command.nodeid);
-                    if (state != null) { try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: node._id, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag })); } catch (ex) { } }
+                    if (state != null) { obj.send({ action: 'powertimeline', nodeid: node._id, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag }); }
                 }
             });
         });
@@ -5931,7 +5767,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Handle any errors
         if (err != null) {
-            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeuserfromusergroup', responseid: command.responseid, result: err })); } catch (ex) { } }
+            if (command.responseid != null) { obj.send({ action: 'removeuserfromusergroup', responseid: command.responseid, result: err }); }
             return;
         }
 
@@ -5972,7 +5808,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
         }
 
-        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeuserfromusergroup', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+        if (command.responseid != null) { obj.send({ action: 'removeuserfromusergroup', responseid: command.responseid, result: 'ok' }); }
+    }
+
+    function serverCommandReport(command) {
+        if (common.validateInt(command.type, 1, 2) == false) return; // Validate type
+        if (common.validateInt(command.groupBy, 1, 3) == false) return; // Validate groupBy: 1 = User, 2 = Device, 3 = Day
+        if ((typeof command.start != 'number') || (typeof command.end != 'number') || (command.start >= command.end)) return; // Validate start and end time
+        const manageAllDeviceGroups = ((user.siteadmin == 0xFFFFFFFF) && (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0));
+        if ((command.devGroup != null) && (manageAllDeviceGroups == false) && ((user.links == null) || (user.links[command.devGroup] == null))) return; // Asking for a device group that is not allowed
+
+        const msgIdFilter = [5, 10, 11, 12, 122, 123, 124, 125, 126];
+
+        if (command.type == 1)
+            remoteSessionReport(command, manageAllDeviceGroups, msgIdFilter);
+        if (command.type == 2)
+            trafficUsageReport(command, msgIdFilter);
     }
 
     function serverCommandServerClearErrorLog(command) {
@@ -6000,13 +5851,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         } else { cmdData.result = 'Unknown command \"' + cmd + '\", type \"help\" for list of available commands.'; }
 
         // Send back the command result
-        if (cmdData.result != '') { try { ws.send(JSON.stringify({ action: 'serverconsole', value: cmdData.result, tag: command.tag })); } catch (ex) { } }
+        if (cmdData.result != '') { obj.send({ action: 'serverconsole', value: cmdData.result, tag: command.tag }); }
     }
 
     function serverCommandServerErrors(command) {
         // Load the server error log
         if (userHasSiteUpdate() && domainHasMyServerErrorLog())
-            fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { try { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } catch (ex) { } });
+            fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { obj.send({ action: 'servererrors', data: data }); });
     }
 
     function serverCommandServerStats(command) {
@@ -6031,7 +5882,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if ((user.siteadmin & 21) == 0) return; // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
         if (common.validateInt(command.hours, 0, 24 * 30) == false) return;
         db.GetServerStats(command.hours, function (err, docs) {
-            if (err == null) { try { ws.send(JSON.stringify({ action: 'servertimelinestats', events: docs })); } catch (ex) { } }
+            if (err == null) { obj.send({ action: 'servertimelinestats', events: docs }); }
         });
     }
 
@@ -6050,7 +5901,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Check the server version
         if (userHasSiteUpdate() && domainHasMyServerUpgrade())
-            parent.parent.getServerTags(function (tags, err) { try { ws.send(JSON.stringify({ action: 'serverversion', tags: tags })); } catch (ex) { } });
+            parent.parent.getServerTags(function (tags, err) { obj.send({ action: 'serverversion', tags: tags }); });
     }
 
     function serverCommandSetClip(command) {
@@ -6087,6 +5938,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (typeof msg == 'string') { displayNotificationMessage("SMS error: " + msg, null, null, null, 29, [msg]); } else { displayNotificationMessage("SMS error", null, null, null, 28); }
             }
         });
+    }
+
+    function serverCommandTrafficDelta(command) {
+        const stats = parent.getTrafficDelta(obj.trafficStats);
+        obj.trafficStats = stats.current;
+        obj.send({ action: 'trafficdelta', delta: stats.delta });
+    }
+
+    function serverCommandTrafficStats(command) {
+        obj.send({ action: 'trafficstats', stats: parent.getTrafficStats() });
+    }
+
+    function serverCommandUpdateAgents(command) {
+        // Update agents for selected devices
+        if (common.validateStrArray(command.nodeids, 1) == false) return; // Check nodeids
+        for (var i in command.nodeids) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: command.nodeids[i], value: 'agentupdate' }, MESHRIGHT_ADMIN, 0); }
     }
 
     function serverCommandUpdateUserImage(command) {
@@ -6132,7 +5999,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverCommandUsers(command) {
         // Request a list of all users
-        if ((user.siteadmin & 2) == 0) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'users', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } } return; }
+        if ((user.siteadmin & 2) == 0) { if (command.responseid != null) { obj.send({ action: 'users', responseid: command.responseid, result: 'Access denied' }); } return; }
         var docs = [];
         for (i in parent.users) {
             if (((obj.crossDomain === true) || (parent.users[i].domain == domain.id)) && (parent.users[i].name != '~')) {
@@ -6142,7 +6009,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             }
         }
-        try { ws.send(JSON.stringify({ action: 'users', users: docs, tag: command.tag })); } catch (ex) { }
+        obj.send({ action: 'users', users: docs, tag: command.tag });
     }
 
     function serverCommandVerifyEmail(command) {
@@ -6180,7 +6047,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             ws.send(JSON.stringify({ action: 'verifyPhone', cookie: phoneCookie, success: success }));
         });
     }
-
 
     function serverUserCommandHelp(cmdData) {
         var fin = '', f = '', availcommands = [];
@@ -6831,6 +6697,145 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function domainHasMyServerUpgrade()  { return !((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.upgrade !== true))); }
 
     function csvClean(s) { return '\"' + s.split('\"').join('').split(',').join('').split('\r').join('').split('\n').join('') + '\"'; }
+
+    function remoteSessionReport(command, manageAllDeviceGroups, msgIdFilter) {
+        // If we are not user administrator on this site, only search for events with our own user id.
+        var ids = [user._id];
+        if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) {
+            if (command.devGroup != null) {
+                ids = [ user._id, command.devGroup ];
+            } else {
+                if (manageAllDeviceGroups) { ids = ['*']; } else if (user.links) { for (var i in user.links) { ids.push(i); } }
+            }
+        }
+
+        // Get the events in the time range
+        // MySQL or MariaDB query will ignore the MsgID filter.
+        db.GetEventsTimeRange(ids, domain.id, msgIdFilter, new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
+            if (err != null) return;
+            var data = { groups: {} };
+            var guestNamePresent = false;
+
+            // Columns
+            if (command.groupBy == 1) {
+                data.groupFormat = 'user';
+                data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'meshid', title: "devgroup", format: 'mesh' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
+            } else if (command.groupBy == 2) {
+                data.groupFormat = 'nodemesh';
+                data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'userid', title: "user", format: 'user' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
+            } else if (command.groupBy == 3) {
+                data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: 'nodeid', title: "device", format: 'node' }, { id: 'meshid', title: "devgroup", format: 'mesh' }, { id: 'guestname', title: "guest", align: 'center' }, { id: 'userid', title: "user", format: 'user' }, { id: 'protocol', title: "session", format: 'protocol', align: 'center' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: 'protocol' } ];
+            }
+
+            // Add traffic columns
+            if (command.showTraffic) {
+                data.columns.push({ id: 'bytesin', title: "bytesin", format: 'bytes', align: 'center', sumBy: 'protocol' });
+                data.columns.push({ id: 'bytesout', title: "bytesout", format: 'bytes', align: 'center', sumBy: 'protocol' });
+            }
+
+            // Rows
+            for (var i in docs) {
+                // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
+                if (msgIdFilter.indexOf(docs[i].msgid) < 0) continue;
+                if ((command.devGroup != null) && (docs[i].ids != null) && (docs[i].ids.indexOf(command.devGroup) == -1)) continue;
+
+                var entry = { time: docs[i].time.valueOf() };
+
+                // UserID
+                if (command.groupBy != 1) { entry.userid = docs[i].userid; }
+                if (command.groupBy != 2) { entry.nodeid = docs[i].nodeid; }
+                entry.protocol = docs[i].protocol;
+
+                // Device Group
+                if (docs[i].ids != null) { for (var j in docs[i].ids) { if (docs[i].ids[j].startsWith('mesh/')) { entry.meshid = docs[i].ids[j]; } } }
+
+                // Add traffic data
+                if (command.showTraffic) { entry.bytesin = docs[i].bytesin; entry.bytesout = docs[i].bytesout; }
+
+                // Add guest name if present
+                if (docs[i].guestname != null) { entry.guestname = docs[i].guestname; guestNamePresent = true; }
+
+                // Session length
+                if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }
+                else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { entry.length = docs[i].msgArgs[0]; }
+
+                if (command.groupBy == 1) { // Add entry to per user
+                    if (data.groups[docs[i].userid] == null) { data.groups[docs[i].userid] = { entries: [] }; }
+                    data.groups[docs[i].userid].entries.push(entry);
+                } else if (command.groupBy == 2) { // Add entry to per mesh+device
+                    if (entry.meshid != null) {
+                        var k = docs[i].nodeid + '/' + entry.meshid;
+                        if (data.groups[k] == null) { data.groups[k] = { entries: [] }; }
+                        data.groups[k].entries.push(entry);
+                    } else {
+                        if (data.groups[docs[i].nodeid] == null) { data.groups[docs[i].nodeid] = { entries: [] }; }
+                        data.groups[docs[i].nodeid].entries.push(entry);
+                    }
+                } else if (command.groupBy == 3) { // Add entry to per day
+                    var day;
+                    if ((typeof command.l == 'string') && (typeof command.tz == 'string')) {
+                        day = new Date(docs[i].time).toLocaleDateString(command.l, { timeZone: command.tz });
+                    } else {
+                        day = docs[i].time; // TODO
+                    }
+                    if (data.groups[day] == null) { data.groups[day] = { entries: [] }; }
+                    data.groups[day].entries.push(entry);
+                }
+            }
+
+            // Remove guest column if not needed
+            if (guestNamePresent == false) {
+                if ((command.groupBy == 1) || (command.groupBy == 3)) {
+                    data.columns.splice(3, 1);
+                } else if (command.groupBy == 2) {
+                    data.columns.splice(2, 1);
+                }
+            }
+
+            try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
+        });
+    }
+
+    function trafficUsageReport(command, msgIdFilter) {
+        // If we are not user administrator on this site, only search for events with our own user id.
+        var ids = [user._id]; // If we are nto user administrator, only count our own traffic.
+        if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) { ids = ['*']; } // If user administrator, count traffic of all users.
+
+        // Get the events in the time range
+        // MySQL or MariaDB query will ignore the MsgID filter.
+        db.GetEventsTimeRange(ids, domain.id, msgIdFilter, new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
+            if (err != null) return;
+            var data = { groups: { 0: { entries: [] } } };
+            data.columns = [{ id: 'userid', title: "user", format: 'user' }, { id: 'length', title: "length", format: 'seconds', align: 'center', sumBy: true }, { id: 'bytesin', title: "bytesin", format: 'bytes', align: 'center', sumBy: true }, { id: 'bytesout', title: "bytesout", format: 'bytes', align: 'center', sumBy: true }];
+            var userEntries = {};
+
+            // Sum all entry logs for each user
+            for (var i in docs) {
+                // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
+                if (msgIdFilter.indexOf(docs[i].msgid) < 0) continue;
+                if ((command.devGroup != null) && (docs[i].ids != null) && (docs[i].ids.indexOf(command.devGroup) == -1)) continue;
+
+                // Fetch or create the user entry
+                var userEntry = userEntries[docs[i].userid];
+                if (userEntry == null) { userEntry = { userid: docs[i].userid, length: 0, bytesin: 0, bytesout: 0}; }
+                if (docs[i].bytesin) { userEntry.bytesin += docs[i].bytesin; }
+                if (docs[i].bytesout) { userEntry.bytesout += docs[i].bytesout; }
+
+                // Session length
+                if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { userEntry.length += docs[i].msgArgs[3]; }
+                else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { userEntry.length += docs[i].msgArgs[0]; }
+
+                // Set the user entry
+                userEntries[docs[i].userid] = userEntry;
+            }
+
+            var userEntries2 = [];
+            for (var i in userEntries) { userEntries2.push(userEntries[i]); }
+            data.groups[0].entries = userEntries2;
+
+            try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
+        });
+    }
 
     // Return detailed information about an array of nodeid's
     function getDeviceDetailedInfo(nodeids, type, func) {
