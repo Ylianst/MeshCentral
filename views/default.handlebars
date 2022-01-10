@@ -7471,7 +7471,11 @@
             x += addHtmlValue("Type", '<select id=d2shareType style=float:right;width:250px onchange=showShareDeviceValidate()>' + y + '</select>');
             var options = { 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days", 0 : "Unlimited" }
             y = '';
-            for (var i in options) { y += '<option value=' + i + '>' + options[i] + '</option>'; }
+            for (var i in options) {
+                if ((serverinfo.guestdevicesharingmaxtime == null) || ((i > 0) && (i <= serverinfo.guestdevicesharingmaxtime))) {
+                    y += '<option value=' + i + '>' + options[i] + '</option>';
+                }
+            }
             x += addHtmlValue("Validity", '<select id=d2timeRange style=float:right;width:250px onchange=showShareDeviceValidate()><option value=0>' + "Starting now" + '</option><option value=1>' + "Time range" + '</option></select>');
             x += '<div id=d2modenow>';
             x += addHtmlValue("Expire Time", '<select id=d2inviteExpire style=float:right;width:250px>' + y + '</select>');

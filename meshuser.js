@@ -559,7 +559,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             serverinfo.magenturl = 'mc://' + agentServerName + ((agentHttpsPort != 443) ? (':' + agentHttpsPort) : '') + ((xdomain != '') ? ('/' + xdomain) : '');
             serverinfo.domainsuffix = xdomain;
 
-            if (domain.guestdevicesharing === false) { serverinfo.guestdevicesharing = false; }
+            if (domain.guestdevicesharing === false) { serverinfo.guestdevicesharing = false; } else {
+                if (typeof domain.guestdevicesharing == 'object') {
+                    if (typeof domain.guestdevicesharing.maxsessiontime == 'number') { serverinfo.guestdevicesharingmaxtime = domain.guestdevicesharing.maxsessiontime; }
+                }
+            }
             if (typeof domain.userconsentflags == 'number') { serverinfo.consent = domain.userconsentflags; }
             if ((typeof domain.usersessionidletimeout == 'number') && (domain.usersessionidletimeout > 0)) { serverinfo.timeout = (domain.usersessionidletimeout * 60 * 1000); }
             if (user.siteadmin === SITERIGHT_ADMIN) {
@@ -3949,9 +3953,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 else if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
                 else if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
                 if (common.validateString(command.guestname, 1, 128) == false) { err = 'Invalid guest name'; } // Check the guest name
-                else if ((command.expire != null) && (typeof command.expire != 'number')) { err = 'Invalid expire time'; } // Check the expire time in hours
-                else if ((command.start != null) && (typeof command.start != 'number')) { err = 'Invalid start time'; } // Check the start time in seconds
-                else if ((command.end != null) && (typeof command.end != 'number')) { err = 'Invalid end time'; } // Check the end time in seconds
+                else if ((command.expire != null) && (typeof command.expire != 'number')) { err = 'Invalid expire time'; } // Check the expire time in minutes
+                else if ((command.start != null) && (typeof command.start != 'number')) { err = 'Invalid start time'; } // Check the start time in UTC seconds
+                else if ((command.end != null) && (typeof command.end != 'number')) { err = 'Invalid end time'; } // Check the end time in UTC seconds
                 else if (common.validateInt(command.consent, 0, 256) == false) { err = 'Invalid flags'; } // Check the flags
                 else if (common.validateInt(command.p, 1, 7) == false) { err = 'Invalid protocol'; } // Check the protocol, 1 = Terminal, 2 = Desktop, 4 = Files
                 else if ((command.expire == null) && ((command.start == null) || (command.end == null) || (command.start > command.end))) { err = 'No time specified'; } // Check that a time range is present
@@ -3965,6 +3969,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (err != null) {
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createDeviceShareLink', responseid: command.responseid, result: err })); } catch (ex) { } }
                     break;
+                }
+
+                // Correct maximum session length if needed
+                if ((typeof domain.guestdevicesharing == 'object') && (typeof domain.guestdevicesharing.maxsessiontime == 'number') && (domain.guestdevicesharing.maxsessiontime > 0)) {
+                    const maxtime = domain.guestdevicesharing.maxsessiontime;
+                    if ((command.expire != null) && (command.expire > maxtime)) { command.expire = maxtime; }
+                    if ((command.start != null) && (command.end != null)) { if ((command.end - command.start) > (maxtime * 60)) { command.end = (command.start + (maxtime * 60)); } }
                 }
 
                 // Get the device rights
