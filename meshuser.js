@@ -5941,7 +5941,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverCommandUpdateAgents(command) {
         // Update agents for selected devices
-        if (common.validateStrArray(command.nodeids, 1) == false) break; // Check nodeids
+        if (common.validateStrArray(command.nodeids, 1) == false) return; // Check nodeids
         for (var i in command.nodeids) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: command.nodeids[i], value: 'agentupdate' }, MESHRIGHT_ADMIN, 0); }
     }
 
