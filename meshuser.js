@@ -1337,43 +1337,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'edituser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
-            case 'updateUserImage':
-                {
-                    if (req.session.loginToken != null) break; // Do not allow this command when logged in using a login token
-
-                    var uid = user._id;
-                    if ((typeof command.userid == 'string') && ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0)) { uid = command.userid; }
-
-                    var chguser = parent.users[uid], flags = 0, change = 0;
-                    if (chguser == null) break;
-                    if (typeof chguser.flags == 'number') { flags = chguser.flags; }
-
-                    if (command.image == 0) {
-                        // Delete the image
-                        db.Remove('im' + uid);
-                        if ((flags & 1) != 0) { flags -= 1; change = 1; }
-                    } else if ((typeof command.image == 'string') && (command.image.length < 600000) && ((command.image.startsWith('data:image/png;base64,') || (command.image.startsWith('data:image/jpeg;base64,'))))) {
-                        // Save the new image
-                        db.Set({ _id: 'im' + uid, image: command.image });
-                        if ((flags & 1) == 0) { flags += 1; }
-                        change = 1;
-                    }
-
-                    // Update the user if needed
-                    if (change == 1) {
-                        chguser.flags = flags;
-                        db.SetUser(chguser);
-
-                        // Event the change
-                        var targets = ['*', 'server-users', user._id, chguser._id];
-                        if (allTargetGroups) { for (var i in allTargetGroups) { targets.push('server-users:' + i); } }
-                        var event = { etype: 'user', userid: uid, username: chguser.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 66, msgArgs: [chguser.name], msg: 'Account changed: ' + chguser.name, domain: domain.id, accountImageChange: 1 };
-                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                        parent.parent.DispatchEvent(targets, obj, event);
-                    }
-
-                    break;
-                }
             case 'usergroups':
                 {
                     // Return only groups in the same administrative domain
@@ -3055,26 +3018,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
-            case 'getcookie':
-                {
-                    // Check if this user has rights on this nodeid
-                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if ((node == null) || ((rights & MESHRIGHT_REMOTECONTROL) == 0) || (visible == false)) return; // Access denied.
-
-                        // Add a user authentication cookie to a url
-                        var cookieContent = { userid: user._id, domainid: user.domain };
-                        if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
-                        if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want the agent to TCP connect to a remote address
-                        if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want the agent to TCP connect to a remote port
-                        if (command.ip) { cookieContent.ip = command.ip; } // Indicates the browser want to agent to relay a TCP connection to a IP:port
-                        if (node.mtype == 3) { cookieContent.lc = 1; command.localRelay = true; } // Indicate this is for a local connection
-                        command.cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
-                        command.trustedCert = parent.isTrustedCert(domain);
-                        try { ws.send(JSON.stringify(command)); } catch (ex) { }
-                    });
-                    break;
-                }
             case 'inviteAgent':
                 {
                     var err = null, mesh = null;
@@ -3568,74 +3511,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete obj.hardwareKeyRegistrationRequest;
                     break;
                 }
-            case 'smsuser': { // Send a SMS message to a user
-                var errMsg = null, errId = 0, smsuser = null;
-                if (parent.parent.smsserver == null) { errMsg = "SMS gateway not enabled"; errId = 23; }
-                else if ((user.siteadmin & 2) == 0) { errMsg = "No user management rights"; errId = 24; }
-                else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = "Invalid username"; errId = 2; }
-                else if (common.validateString(command.msg, 1, 160) == false) { errMsg = "Invalid SMS message"; errId = 25; }
-                else {
-                    smsuser = parent.users[command.userid];
-                    if (smsuser == null) { errMsg = "Invalid username"; errId = 2; }
-                    else if (smsuser.phone == null) { errMsg = "No phone number for this user"; errId = 26; }
-                }
-
-                if (errMsg != null) { displayNotificationMessage(errMsg); break; }
-
-                parent.parent.smsserver.sendSMS(smsuser.phone, command.msg, function (success, msg) {
-                    if (success) {
-                        displayNotificationMessage("SMS succesfuly sent.", null, null, null, 27);
-                    } else {
-                        if (typeof msg == 'string') { displayNotificationMessage("SMS error: " + msg, null, null, null, 29, [msg]); } else { displayNotificationMessage("SMS error", null, null, null, 28); }
-                    }
-                });
-                break;
-            }
-            case 'emailuser': { // Send a email message to a user
-                var errMsg = null, emailuser = null;
-                if (domain.mailserver == null) { errMsg = 'Email server not enabled'; }
-                else if ((user.siteadmin & 2) == 0) { errMsg = 'No user management rights'; }
-                else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = 'Invalid userid'; }
-                else if (common.validateString(command.subject, 1, 1000) == false) { errMsg = 'Invalid subject message'; }
-                else if (common.validateString(command.msg, 1, 10000) == false) { errMsg = 'Invalid message'; }
-                else {
-                    emailuser = parent.users[command.userid];
-                    if (emailuser == null) { errMsg = 'Invalid userid'; }
-                    else if (emailuser.email == null) { errMsg = 'No validated email address for this user'; }
-                    else if (emailuser.emailVerified !== true) { errMsg = 'No validated email address for this user'; }
-                }
-
-                if (errMsg != null) { displayNotificationMessage(errMsg); break; }
-                domain.mailserver.sendMail(emailuser.email, command.subject, command.msg);
-                displayNotificationMessage("Email sent.", null, null, null, 14);
-                break;
-            }
-            case 'getClip': {
-                if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-
-                // Get the node and the rights for this node
-                parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                    if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
-
-                    // Ask for clipboard data from agent
-                    var agent = parent.wsagents[node._id];
-                    if (agent != null) { try { agent.send(JSON.stringify({ action: 'getClip' })); } catch (ex) { } }
-                });
-                break;
-            }
-            case 'setClip': {
-                if (common.validateString(command.data, 1, 65535) == false) break; // Check 
-
-                // Get the node and the rights for this node
-                parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                    if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
-
-                    // Send clipboard data to the agent
-                    var agent = parent.wsagents[node._id];
-                    if (agent != null) { try { agent.send(JSON.stringify({ action: 'setClip', data: command.data })); } catch (ex) { } }
-                });
-                break;
-            }
             case 'userWebState': {
                 if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
                 if (common.validateString(command.state, 1, 30000) == false) break; // Check state size, no more than 30k
@@ -4996,7 +4871,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'changelang': serverCommandChangeLang,
         'close': serverCommandClose,
         'confirmPhone': serverCommandConfirmPhone,
+        'emailuser': serverCommandEmailUser,
         'files': serverCommandFiles,
+        'getClip': serverCommandGetClip,
+        'getcookie': serverCommandGetCookie,
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
         'intersession': serverCommandInterSession,
@@ -5018,6 +4896,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'servertimelinestats': serverCommandServerTimelineStats,
         'serverupdate': serverCommandServerUpdate,
         'serverversion': serverCommandServerVersion,
+        'setClip': serverCommandSetClip,
+        'smsuser': serverCommandSmsUser,
+        'updateUserImage': serverCommandUpdateUserImage,
         'urlargs': serverCommandUrlArgs,
         'users': serverCommandUsers,
         'verifyemail': serverCommandVerifyEmail,
@@ -5772,9 +5653,60 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
     }
 
+    function serverCommandEmailUser(command) {
+        var errMsg = null, emailuser = null;
+        if (domain.mailserver == null) { errMsg = 'Email server not enabled'; }
+        else if ((user.siteadmin & 2) == 0) { errMsg = 'No user management rights'; }
+        else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = 'Invalid userid'; }
+        else if (common.validateString(command.subject, 1, 1000) == false) { errMsg = 'Invalid subject message'; }
+        else if (common.validateString(command.msg, 1, 10000) == false) { errMsg = 'Invalid message'; }
+        else {
+            emailuser = parent.users[command.userid];
+            if (emailuser == null) { errMsg = 'Invalid userid'; }
+            else if (emailuser.email == null) { errMsg = 'No validated email address for this user'; }
+            else if (emailuser.emailVerified !== true) { errMsg = 'No validated email address for this user'; }
+        }
+
+        if (errMsg != null) { displayNotificationMessage(errMsg); return; }
+        domain.mailserver.sendMail(emailuser.email, command.subject, command.msg);
+        displayNotificationMessage("Email sent.", null, null, null, 14);
+    }
+
     function serverCommandFiles(command) {
         // Send the full list of server files to the browser app
         updateUserFiles(user, ws, domain);
+    }
+
+    function serverCommandGetClip(command) {
+        if (common.validateString(command.nodeid, 1, 1024) == false) return; // Check nodeid
+
+        // Get the node and the rights for this node
+        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+            if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
+
+            // Ask for clipboard data from agent
+            var agent = parent.wsagents[node._id];
+            if (agent != null) { try { agent.send(JSON.stringify({ action: 'getClip' })); } catch (ex) { } }
+        });
+    }
+
+    function serverCommandGetCookie(command) {
+        // Check if this user has rights on this nodeid
+        if (common.validateString(command.nodeid, 1, 1024) == false) return; // Check nodeid
+        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+            if ((node == null) || ((rights & MESHRIGHT_REMOTECONTROL) == 0) || (visible == false)) return; // Access denied.
+
+            // Add a user authentication cookie to a url
+            var cookieContent = { userid: user._id, domainid: user.domain };
+            if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
+            if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want the agent to TCP connect to a remote address
+            if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want the agent to TCP connect to a remote port
+            if (command.ip) { cookieContent.ip = command.ip; } // Indicates the browser want to agent to relay a TCP connection to a IP:port
+            if (node.mtype == 3) { cookieContent.lc = 1; command.localRelay = true; } // Indicate this is for a local connection
+            command.cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
+            command.trustedCert = parent.isTrustedCert(domain);
+            try { ws.send(JSON.stringify(command)); } catch (ex) { }
+        });
     }
 
     function serverCommandGetNetworkInfo(command) {
@@ -6108,6 +6040,78 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Check the server version
         if (userHasSiteUpdate() && domainHasMyServerUpgrade())
             parent.parent.getServerTags(function (tags, err) { try { ws.send(JSON.stringify({ action: 'serverversion', tags: tags })); } catch (ex) { } });
+    }
+
+    function serverCommandSetClip(command) {
+        if (common.validateString(command.data, 1, 65535) == false) return; // Check 
+
+        // Get the node and the rights for this node
+        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+            if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
+
+            // Send clipboard data to the agent
+            var agent = parent.wsagents[node._id];
+            if (agent != null) { try { agent.send(JSON.stringify({ action: 'setClip', data: command.data })); } catch (ex) { } }
+        });
+    }
+
+    function serverCommandSmsUser(command) {
+        var errMsg = null, smsuser = null;
+        if (parent.parent.smsserver == null) { errMsg = "SMS gateway not enabled"; }
+        else if ((user.siteadmin & 2) == 0) { errMsg = "No user management rights"; }
+        else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = "Invalid username"; }
+        else if (common.validateString(command.msg, 1, 160) == false) { errMsg = "Invalid SMS message"; }
+        else {
+            smsuser = parent.users[command.userid];
+            if (smsuser == null) { errMsg = "Invalid username"; }
+            else if (smsuser.phone == null) { errMsg = "No phone number for this user"; }
+        }
+
+        if (errMsg != null) { displayNotificationMessage(errMsg); return; }
+
+        parent.parent.smsserver.sendSMS(smsuser.phone, command.msg, function (success, msg) {
+            if (success) {
+                displayNotificationMessage("SMS succesfuly sent.", null, null, null, 27);
+            } else {
+                if (typeof msg == 'string') { displayNotificationMessage("SMS error: " + msg, null, null, null, 29, [msg]); } else { displayNotificationMessage("SMS error", null, null, null, 28); }
+            }
+        });
+    }
+
+    function serverCommandUpdateUserImage(command) {
+        if (req.session.loginToken != null) return; // Do not allow this command when logged in using a login token
+
+        var uid = user._id;
+        if ((typeof command.userid == 'string') && ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0)) { uid = command.userid; }
+
+        var chguser = parent.users[uid], flags = 0, change = 0;
+        if (chguser == null) return;
+        if (typeof chguser.flags == 'number') { flags = chguser.flags; }
+
+        if (command.image == 0) {
+            // Delete the image
+            db.Remove('im' + uid);
+            if ((flags & 1) != 0) { flags -= 1; change = 1; }
+        } else if ((typeof command.image == 'string') && (command.image.length < 600000) && ((command.image.startsWith('data:image/png;base64,') || (command.image.startsWith('data:image/jpeg;base64,'))))) {
+            // Save the new image
+            db.Set({ _id: 'im' + uid, image: command.image });
+            if ((flags & 1) == 0) { flags += 1; }
+            change = 1;
+        }
+
+        // Update the user if needed
+        if (change == 1) {
+            chguser.flags = flags;
+            db.SetUser(chguser);
+
+            // Event the change
+            var targets = ['*', 'server-users', user._id, chguser._id];
+            var allTargetGroups = chguser.groups;
+            if (allTargetGroups) { for (var i in allTargetGroups) { targets.push('server-users:' + i); } }
+            var event = { etype: 'user', userid: uid, username: chguser.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 66, msgArgs: [chguser.name], msg: 'Account changed: ' + chguser.name, domain: domain.id, accountImageChange: 1 };
+            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+            parent.parent.DispatchEvent(targets, obj, event);
+        }
     }
 
     function serverCommandUrlArgs(command) {
