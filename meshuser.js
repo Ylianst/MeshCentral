@@ -4848,6 +4848,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((viewer.user._id == command.xuserid) && (viewer.guestName == command.guestname)) { viewersToClose.push(viewer); } // Only close viewers that match the userid and guestname if present.
                     }
                     for (var i = 0; i < viewersToClose.length; i++) { viewersToClose[i].close(); } // Close any viewers we need closed.
+
+                    // Log the desktop session disconnection
+                    var targets = ['*', user._id, command.xuserid];
+                    const splitxuser = command.xuserid.split('/');
+                    var xusername = splitxuser[2];
+                    if (command.guestname != null) { xusername += '/' + command.guestname; }
+                    var event = { etype: 'user', userid: user._id, username: user.name, nodeid: command.nodeid, xuserid: command.xuserid, action: 'endsession', msgid: 134, msgArgs: [xusername], msg: 'Disconnected desktop session of user ' + xusername, domain: domain.id };
+                    if (command.guestname != null) { event.guestname = command.guestname; }
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                    parent.parent.DispatchEvent(targets, obj, event);
                 });
 
                 break;
