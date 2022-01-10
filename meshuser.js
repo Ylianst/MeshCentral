@@ -1333,43 +1333,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'edituser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
-            case 'updateUserImage':
-                {
-                    if (req.session.loginToken != null) break; // Do not allow this command when logged in using a login token
-
-                    var uid = user._id;
-                    if ((typeof command.userid == 'string') && ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0)) { uid = command.userid; }
-
-                    var chguser = parent.users[uid], flags = 0, change = 0;
-                    if (chguser == null) break;
-                    if (typeof chguser.flags == 'number') { flags = chguser.flags; }
-
-                    if (command.image == 0) {
-                        // Delete the image
-                        db.Remove('im' + uid);
-                        if ((flags & 1) != 0) { flags -= 1; change = 1; }
-                    } else if ((typeof command.image == 'string') && (command.image.length < 600000) && ((command.image.startsWith('data:image/png;base64,') || (command.image.startsWith('data:image/jpeg;base64,'))))) {
-                        // Save the new image
-                        db.Set({ _id: 'im' + uid, image: command.image });
-                        if ((flags & 1) == 0) { flags += 1; }
-                        change = 1;
-                    }
-
-                    // Update the user if needed
-                    if (change == 1) {
-                        chguser.flags = flags;
-                        db.SetUser(chguser);
-
-                        // Event the change
-                        var targets = ['*', 'server-users', user._id, chguser._id];
-                        if (allTargetGroups) { for (var i in allTargetGroups) { targets.push('server-users:' + i); } }
-                        var event = { etype: 'user', userid: uid, username: chguser.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 66, msgArgs: [chguser.name], msg: 'Account changed: ' + chguser.name, domain: domain.id, accountImageChange: 1 };
-                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                        parent.parent.DispatchEvent(targets, obj, event);
-                    }
-
-                    break;
-                }
             case 'usergroups':
                 {
                     // Return only groups in the same administrative domain
@@ -5007,6 +4970,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'servertimelinestats': serverCommandServerTimelineStats,
         'serverupdate': serverCommandServerUpdate,
         'serverversion': serverCommandServerVersion,
+        'updateUserImage': serverCommandUpdateUserImage,
         'urlargs': serverCommandUrlArgs,
         'users': serverCommandUsers,
         'verifyemail': serverCommandVerifyEmail,
@@ -6097,6 +6061,42 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Check the server version
         if (userHasSiteUpdate() && domainHasMyServerUpgrade())
             parent.parent.getServerTags(function (tags, err) { try { ws.send(JSON.stringify({ action: 'serverversion', tags: tags })); } catch (ex) { } });
+    }
+
+    function serverCommandUpdateUserImage(command) {
+        if (req.session.loginToken != null) return; // Do not allow this command when logged in using a login token
+
+        var uid = user._id;
+        if ((typeof command.userid == 'string') && ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0)) { uid = command.userid; }
+
+        var chguser = parent.users[uid], flags = 0, change = 0;
+        if (chguser == null) return;
+        if (typeof chguser.flags == 'number') { flags = chguser.flags; }
+
+        if (command.image == 0) {
+            // Delete the image
+            db.Remove('im' + uid);
+            if ((flags & 1) != 0) { flags -= 1; change = 1; }
+        } else if ((typeof command.image == 'string') && (command.image.length < 600000) && ((command.image.startsWith('data:image/png;base64,') || (command.image.startsWith('data:image/jpeg;base64,'))))) {
+            // Save the new image
+            db.Set({ _id: 'im' + uid, image: command.image });
+            if ((flags & 1) == 0) { flags += 1; }
+            change = 1;
+        }
+
+        // Update the user if needed
+        if (change == 1) {
+            chguser.flags = flags;
+            db.SetUser(chguser);
+
+            // Event the change
+            var targets = ['*', 'server-users', user._id, chguser._id];
+            var allTargetGroups = chguser.groups;
+            if (allTargetGroups) { for (var i in allTargetGroups) { targets.push('server-users:' + i); } }
+            var event = { etype: 'user', userid: uid, username: chguser.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 66, msgArgs: [chguser.name], msg: 'Account changed: ' + chguser.name, domain: domain.id, accountImageChange: 1 };
+            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+            parent.parent.DispatchEvent(targets, obj, event);
+        }
     }
 
     function serverCommandUrlArgs(command) {
