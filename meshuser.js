@@ -3014,26 +3014,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
-            case 'getcookie':
-                {
-                    // Check if this user has rights on this nodeid
-                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if ((node == null) || ((rights & MESHRIGHT_REMOTECONTROL) == 0) || (visible == false)) return; // Access denied.
-
-                        // Add a user authentication cookie to a url
-                        var cookieContent = { userid: user._id, domainid: user.domain };
-                        if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
-                        if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want the agent to TCP connect to a remote address
-                        if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want the agent to TCP connect to a remote port
-                        if (command.ip) { cookieContent.ip = command.ip; } // Indicates the browser want to agent to relay a TCP connection to a IP:port
-                        if (node.mtype == 3) { cookieContent.lc = 1; command.localRelay = true; } // Indicate this is for a local connection
-                        command.cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
-                        command.trustedCert = parent.isTrustedCert(domain);
-                        try { ws.send(JSON.stringify(command)); } catch (ex) { }
-                    });
-                    break;
-                }
             case 'inviteAgent':
                 {
                     var err = null, mesh = null;
@@ -3527,25 +3507,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete obj.hardwareKeyRegistrationRequest;
                     break;
                 }
-            case 'emailuser': { // Send a email message to a user
-                var errMsg = null, emailuser = null;
-                if (domain.mailserver == null) { errMsg = 'Email server not enabled'; }
-                else if ((user.siteadmin & 2) == 0) { errMsg = 'No user management rights'; }
-                else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = 'Invalid userid'; }
-                else if (common.validateString(command.subject, 1, 1000) == false) { errMsg = 'Invalid subject message'; }
-                else if (common.validateString(command.msg, 1, 10000) == false) { errMsg = 'Invalid message'; }
-                else {
-                    emailuser = parent.users[command.userid];
-                    if (emailuser == null) { errMsg = 'Invalid userid'; }
-                    else if (emailuser.email == null) { errMsg = 'No validated email address for this user'; }
-                    else if (emailuser.emailVerified !== true) { errMsg = 'No validated email address for this user'; }
-                }
-
-                if (errMsg != null) { displayNotificationMessage(errMsg); break; }
-                domain.mailserver.sendMail(emailuser.email, command.subject, command.msg);
-                displayNotificationMessage("Email sent.", null, null, null, 14);
-                break;
-            }
             case 'getClip': {
                 if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
 
@@ -4925,7 +4886,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'changelang': serverCommandChangeLang,
         'close': serverCommandClose,
         'confirmPhone': serverCommandConfirmPhone,
+        'emailuser': serverCommandEmailUser,
         'files': serverCommandFiles,
+        'getcookie': serverCommandGetCookie,
         'getnetworkinfo': serverCommandGetNetworkInfo,
         'getsysinfo': serverCommandGetSysInfo,
         'intersession': serverCommandInterSession,
@@ -5703,9 +5666,47 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
     }
 
+    function serverCommandEmailUser(command) {
+        var errMsg = null, emailuser = null;
+        if (domain.mailserver == null) { errMsg = 'Email server not enabled'; }
+        else if ((user.siteadmin & 2) == 0) { errMsg = 'No user management rights'; }
+        else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = 'Invalid userid'; }
+        else if (common.validateString(command.subject, 1, 1000) == false) { errMsg = 'Invalid subject message'; }
+        else if (common.validateString(command.msg, 1, 10000) == false) { errMsg = 'Invalid message'; }
+        else {
+            emailuser = parent.users[command.userid];
+            if (emailuser == null) { errMsg = 'Invalid userid'; }
+            else if (emailuser.email == null) { errMsg = 'No validated email address for this user'; }
+            else if (emailuser.emailVerified !== true) { errMsg = 'No validated email address for this user'; }
+        }
+
+        if (errMsg != null) { displayNotificationMessage(errMsg); return; }
+        domain.mailserver.sendMail(emailuser.email, command.subject, command.msg);
+        displayNotificationMessage("Email sent.", null, null, null, 14);
+    }
+
     function serverCommandFiles(command) {
         // Send the full list of server files to the browser app
         updateUserFiles(user, ws, domain);
+    }
+
+    function serverCommandGetCookie(command) {
+        // Check if this user has rights on this nodeid
+        if (common.validateString(command.nodeid, 1, 1024) == false) return; // Check nodeid
+        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+            if ((node == null) || ((rights & MESHRIGHT_REMOTECONTROL) == 0) || (visible == false)) return; // Access denied.
+
+            // Add a user authentication cookie to a url
+            var cookieContent = { userid: user._id, domainid: user.domain };
+            if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
+            if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want the agent to TCP connect to a remote address
+            if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want the agent to TCP connect to a remote port
+            if (command.ip) { cookieContent.ip = command.ip; } // Indicates the browser want to agent to relay a TCP connection to a IP:port
+            if (node.mtype == 3) { cookieContent.lc = 1; command.localRelay = true; } // Indicate this is for a local connection
+            command.cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
+            command.trustedCert = parent.isTrustedCert(domain);
+            try { ws.send(JSON.stringify(command)); } catch (ex) { }
+        });
     }
 
     function serverCommandGetNetworkInfo(command) {
