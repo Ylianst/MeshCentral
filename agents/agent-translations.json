@@ -27,7 +27,10 @@
       "NOT RUNNING"
     ],
     "statusDescription": "Current Agent Status",
-    "description": "Click the buttons below to install or uninstall the mesh agent. When installed, this software runs in the background allowing this computer to be managed and controlled by a remote administrator."
+    "description": "Click the buttons below to install or uninstall the mesh agent. When installed, this software runs in the background allowing this computer to be managed and controlled by a remote administrator.",
+    "allow": "Allow",
+    "deny": "Deny",
+    "autoAllowForFive": "Auto accept all connections for next 5 minutes"
   },
   "cs": {
     "agent": "Agent",
@@ -57,7 +60,9 @@
       "NEFUNGUJE"
     ],
     "statusDescription": "Aktuální stav agenta",
-    "description": "Kliknutím na tlačítka níže nainstalujete nebo odinstalujete agenta sítě. Po instalaci je tento software spuštěn na pozadí, což umožňuje spravovat a ovládat tento počítač vzdáleným správcem."
+    "description": "Kliknutím na tlačítka níže nainstalujete nebo odinstalujete agenta sítě. Po instalaci je tento software spuštěn na pozadí, což umožňuje spravovat a ovládat tento počítač vzdáleným správcem.",
+    "allow": "Dovolit",
+    "deny": "Odmítnout"
   },
   "de": {
     "agent": "Agent",
@@ -87,7 +92,9 @@
       "NICHT LAUFEN"
     ],
     "statusDescription": "Aktueller Agentenstatus",
-    "description": "Klicken Sie auf die Schaltflächen unten, um den Mesh Agent zu installieren oder zu deinstallieren. Bei der Installation wird diese Software im Hintergrund ausgeführt, sodass dieser Computer von einem Remote-Administrator verwaltet und gesteuert werden kann."
+    "description": "Klicken Sie auf die Schaltflächen unten, um den Mesh Agent zu installieren oder zu deinstallieren. Bei der Installation wird diese Software im Hintergrund ausgeführt, sodass dieser Computer von einem Remote-Administrator verwaltet und gesteuert werden kann.",
+    "allow": "Erlauben",
+    "deny": "Verweigern"
   },
   "es": {
     "agent": "Agente",
@@ -117,7 +124,9 @@
       "NO EJECUTANDOSE"
     ],
     "statusDescription": "Estado Actual del Agente",
-    "description": "Haz clic en los botones a continuación para instalar o desinstalar el agente de malla. Cuando se instala, este software se ejecuta en segundo plano, lo que permite que este equipo sea administrado y controlado por un administrador remoto."
+    "description": "Haz clic en los botones a continuación para instalar o desinstalar el agente de malla. Cuando se instala, este software se ejecuta en segundo plano, lo que permite que este equipo sea administrado y controlado por un administrador remoto.",
+    "allow": "Permitir",
+    "deny": "Negar"
   },
   "fi": {
     "agent": "Agentti",
@@ -147,7 +156,9 @@
       "EI RUNNING"
     ],
     "statusDescription": "Agentin nykyinen tila",
-    "description": "Napsauta alla olevia painikkeita asentaaksesi tai poistaaksesi verkkoagentin. Asennettuna tämä ohjelmisto toimii taustalla, jolloin etävalvoja hallitsee ja hallitsee tietokonetta."
+    "description": "Napsauta alla olevia painikkeita asentaaksesi tai poistaaksesi verkkoagentin. Asennettuna tämä ohjelmisto toimii taustalla, jolloin etävalvoja hallitsee ja hallitsee tietokonetta.",
+    "allow": "Sallia",
+    "deny": "Kieltää"
   },
   "fr": {
     "agent": "Agent",
@@ -177,7 +188,9 @@
       "NE PAS COURRIR"
     ],
     "statusDescription": "Statut actuel de l'agent",
-    "description": "Cliquez sur les boutons ci-dessous pour installer ou désinstaller l'agent de maillage. Une fois installé, ce logiciel s'exécute en arrière-plan permettant à cet ordinateur d'être géré et contrôlé par un administrateur distant."
+    "description": "Cliquez sur les boutons ci-dessous pour installer ou désinstaller l'agent de maillage. Une fois installé, ce logiciel s'exécute en arrière-plan permettant à cet ordinateur d'être géré et contrôlé par un administrateur distant.",
+    "allow": "Permettre",
+    "deny": "Refuser"
   },
   "hi": {
     "agent": "एजेंट",
@@ -207,7 +220,9 @@
       "चल नहीं रहा"
     ],
     "statusDescription": "वर्तमान एजेंट की स्थिति",
-    "description": "मेष एजेंट को स्थापित या अनइंस्टॉल करने के लिए नीचे दिए गए बटन पर क्लिक करें। स्थापित होने पर, यह सॉफ़्टवेयर पृष्ठभूमि में चलता है, जिससे यह कंप्यूटर दूरस्थ व्यवस्थापक द्वारा प्रबंधित और नियंत्रित किया जा सकता है।"
+    "description": "मेष एजेंट को स्थापित या अनइंस्टॉल करने के लिए नीचे दिए गए बटन पर क्लिक करें। स्थापित होने पर, यह सॉफ़्टवेयर पृष्ठभूमि में चलता है, जिससे यह कंप्यूटर दूरस्थ व्यवस्थापक द्वारा प्रबंधित और नियंत्रित किया जा सकता है।",
+    "allow": "अनुमति",
+    "deny": "मना"
   },
   "ja": {
     "agent": "エージェント",
@@ -237,7 +252,9 @@
       "走っていない"
     ],
     "statusDescription": "現在のエージェントステータス",
-    "description": "下のボタンをクリックして、メッシュエージェントをインストールまたはアンインストールします。インストールすると、このソフトウェアはバックグラウンドで実行され、リモート管理者がこのコンピューターを管理および制御できるようになります。"
+    "description": "下のボタンをクリックして、メッシュエージェントをインストールまたはアンインストールします。インストールすると、このソフトウェアはバックグラウンドで実行され、リモート管理者がこのコンピューターを管理および制御できるようになります。",
+    "allow": "許可する",
+    "deny": "拒否"
   },
   "ko": {
     "agent": "에이전트",
@@ -267,7 +284,9 @@
     ],
     "statusDescription": "에이전트 상태",
     "description": "메시 에이전트를 설치 또는 제거하려면 아래 버튼을 클릭하십시오. 이 프로그램은 설치하면 백그라운드에서 실행되므로 원격 관리자가이 컴퓨터를 관리하고 제어 할 수 있습니다.",
-    "graphicalerror": "이 설치 프로그램의 그래픽 버전은이 시스템에서 실행할 수 없습니다."
+    "graphicalerror": "이 설치 프로그램의 그래픽 버전은이 시스템에서 실행할 수 없습니다.",
+    "allow": "허용하다",
+    "deny": "거부"
   },
   "nl": {
     "agent": "Agent",
@@ -297,7 +316,9 @@
     ],
     "statusDescription": "Huidige agent status",
     "description": "Klik op de onderstaande knoppen om de mesh-agent te installeren of te verwijderen. Na installatie wordt deze software op de achtergrond uitgevoerd, zodat deze computer kan worden beheerd en bestuurd door een externe beheerder.",
-    "graphicalerror": "De grafische versie van dit installatieprogramma kan niet op dit systeem worden uitgevoerd"
+    "graphicalerror": "De grafische versie van dit installatieprogramma kan niet op dit systeem worden uitgevoerd",
+    "allow": "Toestaan",
+    "deny": "Weigeren"
   },
   "pt": {
     "agent": "Agente",
@@ -327,7 +348,9 @@
       "NÃO CORRENDO"
     ],
     "statusDescription": "Status atual do agente",
-    "description": "Clique nos botões abaixo para instalar ou desinstalar o agente mesh. Quando instalado, este software é executado em segundo plano, permitindo que o computador seja gerenciado e controlado por um administrador remoto."
+    "description": "Clique nos botões abaixo para instalar ou desinstalar o agente mesh. Quando instalado, este software é executado em segundo plano, permitindo que o computador seja gerenciado e controlado por um administrador remoto.",
+    "allow": "Permitir",
+    "deny": "Negar"
   },
   "ru": {
     "agent": "Агент",
@@ -357,7 +380,9 @@
       "НЕ ЗАПУЩЕН"
     ],
     "statusDescription": "Текущий статус агента",
-    "description": "Нажмите кнопки ниже, чтобы установить или удалить агент сетки. После установки это программное обеспечение работает в фоновом режиме, позволяя управлять этим компьютером удаленным администратором."
+    "description": "Нажмите кнопки ниже, чтобы установить или удалить агент сетки. После установки это программное обеспечение работает в фоновом режиме, позволяя управлять этим компьютером удаленным администратором.",
+    "allow": "Разрешать",
+    "deny": "Отрицать"
   },
   "tr": {
     "agent": "Ajan",
@@ -387,7 +412,9 @@
       "KOŞMAK YOK"
     ],
     "statusDescription": "Mevcut Temsilci Durumu",
-    "description": "Mesh aracısını yüklemek veya kaldırmak için aşağıdaki düğmelere tıklayın. Bu yazılım yüklendiğinde arka planda çalışarak bu bilgisayarın bir uzak yönetici tarafından yönetilmesine ve kontrol edilmesine olanak tanır."
+    "description": "Mesh aracısını yüklemek veya kaldırmak için aşağıdaki düğmelere tıklayın. Bu yazılım yüklendiğinde arka planda çalışarak bu bilgisayarın bir uzak yönetici tarafından yönetilmesine ve kontrol edilmesine olanak tanır.",
+    "allow": "İzin vermek",
+    "deny": "İnkar etmek"
   },
   "zh-chs": {
     "agent": "代理",
@@ -417,7 +444,9 @@
       "不在运行"
     ],
     "statusDescription": "当前代理状态",
-    "description": "单击下面的按钮以安装或卸载网状代理。安装后，该软件将在后台运行，从而允许该计算机由远程管理员进行管理和控制。"
+    "description": "单击下面的按钮以安装或卸载网状代理。安装后，该软件将在后台运行，从而允许该计算机由远程管理员进行管理和控制。",
+    "allow": "允许",
+    "deny": "否定"
   },
   "zh-cht": {
     "agent": "代理",
@@ -477,7 +506,9 @@
       "NON IN ESECUZIONE"
     ],
     "statusDescription": "Stato attuale dell'agente",
-    "description": "Fare clic sui pulsanti sottostanti per installare o disinstallare l'agente mesh. Una volta installato, questo software viene eseguito in background consentendo a questo computer di essere gestito e controllato da un amministratore remoto."
+    "description": "Fare clic sui pulsanti sottostanti per installare o disinstallare l'agente mesh. Una volta installato, questo software viene eseguito in background consentendo a questo computer di essere gestito e controllato da un amministratore remoto.",
+    "allow": "Permettere",
+    "deny": "Negare"
   },
   "sv": {
     "agent": "Agent",
@@ -507,7 +538,9 @@
       "SPRINGER INTE"
     ],
     "statusDescription": "Aktuell agentstatus",
-    "description": "Klicka på knapparna nedan för att installera eller avinstallera nätagenten. När den installeras körs denna programvara i bakgrunden så att den här datorn kan hanteras och styras av en fjärradministratör."
+    "description": "Klicka på knapparna nedan för att installera eller avinstallera nätagenten. När den installeras körs denna programvara i bakgrunden så att den här datorn kan hanteras och styras av en fjärradministratör.",
+    "allow": "Tillåta",
+    "deny": "Förneka"
   },
   "pt-br": {
     "agent": "Agente",
@@ -537,7 +570,9 @@
       "NÃO EXECUTANDO"
     ],
     "statusDescription": "Status atual do agente",
-    "description": "Clique nos botões abaixo para instalar ou desinstalar o agente mesh. Quando instalado, este software é executado em segundo plano, permitindo que o computador seja gerenciado e controlado por um administrador remoto."
+    "description": "Clique nos botões abaixo para instalar ou desinstalar o agente mesh. Quando instalado, este software é executado em segundo plano, permitindo que o computador seja gerenciado e controlado por um administrador remoto.",
+    "allow": "Permitir",
+    "deny": "Negar"
   },
   "pl": {
     "agentVersion": "Nowa Wersja Agenta",
@@ -567,7 +602,9 @@
     "setup": "Konfiguracja",
     "pressok": "Naciśnij OK by się rozłączyć",
     "sudo": "Proszę spróbować ponownie z sudo.",
-    "ctrlc": "Naciśnij Ctrl-C by wyjść."
+    "ctrlc": "Naciśnij Ctrl-C by wyjść.",
+    "allow": "Zezwól",
+    "deny": "Odrzucono"
   },
   "da": {
     "agent": "Agent",
@@ -597,6 +634,8 @@
       "KØRER IKKE"
     ],
     "statusDescription": "Aktuel agentstatus",
-    "description": "Klik på knapperne nedenfor for at installere eller afinstallere mesh-agenten. Når den er installeret, kører denne software i baggrunden, og tillader at denne computer kan administreres og kontrolleres af en fjernadministrator."
+    "description": "Klik på knapperne nedenfor for at installere eller afinstallere mesh-agenten. Når den er installeret, kører denne software i baggrunden, og tillader at denne computer kan administreres og kontrolleres af en fjernadministrator.",
+    "allow": "Tillad",
+    "deny": "Afslå"
   }
 }
