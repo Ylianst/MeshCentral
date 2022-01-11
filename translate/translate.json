@@ -8156,7 +8156,7 @@
       "it": "Chiedi sempre",
       "ja": "常にプロンプ​​ト",
       "ko": "항상 묻기",
-      "nl": "Altijd prompt",
+      "nl": "Altijd vragen",
       "pl": "Zawsze Pytaj",
       "pt": "Sempre alerta",
       "pt-br": "Sempre Perguntar",
@@ -19446,6 +19446,7 @@
     },
     {
       "en": "Device is busy",
+      "nl": "Apparaat is bezet",
       "pl": "Urządzenie jest zajęte",
       "da": "Enheden er optaget",
       "xloc": [
@@ -19789,6 +19790,7 @@
     },
     {
       "en": "Device is powered off.",
+      "nl": "Apparaat is uitgeschakeld.",
       "pl": "Urządzenie jest wyłączone.",
       "da": "Enheden er slukket",
       "xloc": [
@@ -26010,24 +26012,28 @@
     },
     {
       "en": "Forcibly disconnected desktop session of user {0}",
+      "nl": "Geforceerd verbroken desktopsessie van gebruiker {0}",
       "xloc": [
         "default.handlebars->39->2238"
       ]
     },
     {
       "en": "Forcibly disconnected files session of user {0}",
+      "nl": "Geforceerd verbroken bestandssessie van gebruiker {0}",
       "xloc": [
         "default.handlebars->39->2240"
       ]
     },
     {
       "en": "Forcibly disconnected routing session of user {0}",
+      "nl": "Geforceerd verbroken routeringssessie van gebruiker {0}",
       "xloc": [
         "default.handlebars->39->2241"
       ]
     },
     {
       "en": "Forcibly disconnected terminal session of user {0}",
+      "nl": "Geforceerd verbroken terminalsessie van gebruiker {0}",
       "xloc": [
         "default.handlebars->39->2239"
       ]
@@ -28680,11 +28686,13 @@
     },
     {
       "en": "IP KVM device",
+      "nl": "IP KVM apparaat",
       "pl": "Urządzenie IP KVM",
       "da": "IP KVM device"
     },
     {
       "en": "IP KVM port is up and ready for use.",
+      "nl": "IP KVM poort is actief en klaar voor gebruik.",
       "pl": "Port IP KVM podniesiony i gotowy do użycia.",
       "da": "IP KVM-porten er oppe og klar til brug."
     },
@@ -28743,6 +28751,7 @@
     },
     {
       "en": "IP-KVM",
+      "nl": "IP-KVM",
       "pl": "IP-KVM",
       "da": "IP-KVM",
       "xloc": [
@@ -28755,6 +28764,7 @@
     },
     {
       "en": "IP-KVM / Power device",
+      "nl": "IP-KVM / Power device",
       "pl": "IP-KVM / Zasilanie urządzenia",
       "da": "IP-KVM / Power device",
       "xloc": [
@@ -28763,6 +28773,7 @@
     },
     {
       "en": "IP-KVM device",
+      "nl": "IP-KVM device",
       "pl": "Urządzenie IP-KVM",
       "da": "IP-KVM device",
       "xloc": [
@@ -28772,6 +28783,7 @@
     },
     {
       "en": "IP-KVM port connected",
+      "nl": "IP-KVM poort verbonden",
       "pl": "Podłączono z portem IP-KVM",
       "da": "IP-KVM port forbundet",
       "xloc": [
@@ -28781,6 +28793,7 @@
     },
     {
       "en": "IP-KVM port is connected and ready for use.",
+      "nl": "IP-KVM poort is verbonden en klaar voor gebruik.",
       "pl": "Port IP-KVM podłączony i gotowy do użycia.",
       "da": "IP-KVM-porten er tilsluttet og klar til brug.",
       "xloc": [
@@ -28789,6 +28802,7 @@
     },
     {
       "en": "IP-KVM port is up and ready for use.",
+      "nl": "IP-KVM poort is actief en klaar voor gebruik.",
       "pl": "Port IP-KVM podniesiony i gotowy do użycia.",
       "da": "IP-KVM-porten er oppe og klar til brug.",
       "xloc": [
@@ -33451,6 +33465,7 @@
     },
     {
       "en": "Last access: {0}",
+      "nl": "Laatste toegang: {0}",
       "pl": "Ostatni dostęp: {0}",
       "da": "Seneste adgang: {0}",
       "xloc": [
@@ -42731,6 +42746,7 @@
     },
     {
       "en": "Off",
+      "nl": "Uit",
       "pl": "Wyłącz",
       "da": "slukket",
       "xloc": [
@@ -44871,6 +44887,7 @@
     },
     {
       "en": "Perform power off?",
+      "nl": "Uitschakelen uitvoeren?",
       "pl": "Czy wykonać wyłączenie?",
       "da": "Vil du slukke?",
       "xloc": [
@@ -44880,6 +44897,7 @@
     },
     {
       "en": "Perform power on?",
+      "nl": "Inschakelen uitvoeren?",
       "pl": "Czy wykonać uruchomienie?",
       "da": "Vil du tænde?",
       "xloc": [
@@ -45593,6 +45611,7 @@
     },
     {
       "en": "Port Name Sync",
+      "nl": "Poort naam synchronisatie",
       "pl": "Synchronizacja Nazwy Portu",
       "da": "Port Navn Synkronisering",
       "xloc": [
@@ -45601,6 +45620,7 @@
     },
     {
       "en": "Port Number",
+      "en": "Poort nummer",
       "pl": "Numer Portu",
       "da": "Port Nummer",
       "xloc": [
@@ -45610,6 +45630,7 @@
     },
     {
       "en": "Port Type",
+      "nl": "Poort type",
       "pl": "Typ Portu",
       "da": "Port Type",
       "xloc": [
@@ -45762,6 +45783,7 @@
     },
     {
       "en": "Power Operation",
+      "nl": "Power Operation",
       "pl": "Operacja Zasilania",
       "da": "Power Operation",
       "xloc": [
@@ -45877,6 +45899,7 @@
     },
     {
       "en": "Power switch is ready for use.",
+      "nl": "Aan/uit-schakelaar is klaar voor gebruik.",
       "pl": "Włącznik jest gotowy do użycia.",
       "da": "Power knap er klar til brug.",
       "xloc": [
@@ -47205,6 +47228,7 @@
     },
     {
       "en": "Raritan Dominion KX III",
+      "nl": "Raritan Dominion KX III",
       "da": "Raritan Dominion KX III",
       "xloc": [
         "default.handlebars->39->1732"
@@ -58364,6 +58388,7 @@
     },
     {
       "en": "Switch",
+      "nl": "Schakelaar",
       "pl": "Przełącz",
       "da": "Switch",
       "xloc": [
@@ -58401,6 +58426,7 @@
     },
     {
       "en": "Switch port connected",
+      "nl": "Schakelpoort verbonden",
       "pl": "Przełącz połączony port",
       "da": "Switch port forbundet",
       "xloc": [
@@ -58410,6 +58436,7 @@
     },
     {
       "en": "Switch port is ready for use.",
+      "nl": "Schakelpoort is klaar voor gebruik..",
       "pl": "Przełącz port na gotowy do użycia.",
       "da": "Switch port er klar til brug.",
       "xloc": [
@@ -58443,6 +58470,7 @@
     },
     {
       "en": "Sync server device name to port name",
+      "nl": "Synchroniseer de naam van de server met de poortnaam",
       "pl": "Synchronizuj nazwę urządzenia serwera na nazwę portu",
       "da": "Synkroniser serverenhedsnavnet med portnavnet",
       "xloc": [
@@ -59312,6 +59340,7 @@
     },
     {
       "en": "The device is powered off",
+      "nl": "Het apparaat is uitgeschakeld",
       "pl": "To urządzenie jest wyłączone",
       "da": "Enheden er slukket",
       "xloc": [
@@ -61512,6 +61541,7 @@
     },
     {
       "en": "Turn off",
+      "nn": "Uitschakelen",
       "pl": "Wyłącz",
       "da": "Sluk",
       "xloc": [
@@ -61523,6 +61553,7 @@
     },
     {
       "en": "Turn off.",
+      "nl": "Uitschakelen",
       "da": "Sluk.",
       "xloc": [
         "default.handlebars->39->2237"
@@ -61530,6 +61561,7 @@
     },
     {
       "en": "Turn on",
+      "nl": "Inschakelen",
       "pl": "Włącz",
       "da": "Tænd",
       "xloc": [
@@ -61541,6 +61573,7 @@
     },
     {
       "en": "Turn on.",
+      "nl": "Inschakelen.",
       "da": "Tænd.",
       "xloc": [
         "default.handlebars->39->2236"
@@ -66075,6 +66108,7 @@
     },
     {
       "en": "Web Power Switch 7",
+      "nl": "Web Power Switch 7",
       "pl": "Przełącznik Zasilania Web 7",
       "da": "Web Power Switch 7",
       "xloc": [
