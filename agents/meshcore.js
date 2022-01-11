@@ -602,6 +602,7 @@ function MeshServerLogEx(id, args, msg, state) {
     var msg = { action: 'log', msgid: id, msgArgs: args, msg: msg };
     if (state) {
         if (state.userid) { msg.userid = state.userid; }
+        if (state.xuserid) { msg.xuserid = state.xuserid; }
         if (state.username) { msg.username = state.username; }
         if (state.sessionid) { msg.sessionid = state.sessionid; }
         if (state.remoteaddr) { msg.remoteaddr = state.remoteaddr; }
@@ -1063,16 +1064,19 @@ function handleServerCommand(data) {
                         if ((data.rights != 4294967295) && (data.xuserid != data.userid)) return; // This command requires full admin rights on the device or user self-closes it's own sessions
                         for (var i in tunnels) {
                             if ((tunnels[i].userid == data.xuserid) && (tunnels[i].guestname == data.guestname)) {
-                                var disconnect = false;
-                                if ((data.protocol == 'kvm') && (tunnels[i].protocol == 2)) { disconnect = true; }
-                                else if ((data.protocol == 'terminal') && (tunnels[i].protocol == 1)) { disconnect = true; }
-                                else if ((data.protocol == 'files') && (tunnels[i].protocol == 5)) { disconnect = true; }
-                                else if ((data.protocol == 'tcp') && (tunnels[i].tcpport != null)) { disconnect = true; }
-                                else if ((data.protocol == 'udp') && (tunnels[i].udpport != null)) { disconnect = true; }
+                                var disconnect = false, msgid = 0;
+                                if ((data.protocol == 'kvm') && (tunnels[i].protocol == 2)) { msgid = 134; disconnect = true; }
+                                else if ((data.protocol == 'terminal') && (tunnels[i].protocol == 1)) { msgid = 135; disconnect = true; }
+                                else if ((data.protocol == 'files') && (tunnels[i].protocol == 5)) { msgid = 136; disconnect = true; }
+                                else if ((data.protocol == 'tcp') && (tunnels[i].tcpport != null)) { msgid = 137; disconnect = true; }
+                                else if ((data.protocol == 'udp') && (tunnels[i].udpport != null)) { msgid = 137; disconnect = true; }
                                 if (disconnect) {
                                     if (tunnels[i].s != null) { tunnels[i].s.end(); } else { tunnels[i].end(); }
 
-                                    // TODO: Log tunnel disconnection
+                                    // Log tunnel disconnection
+                                    var xusername = data.xuserid.split('/')[2];
+                                    if (data.guestname != null) { xusername += '/' + guestname; }
+                                    MeshServerLogEx(msgid, [xusername], "Forcibly disconnected session of user: " + xusername, data);
                                 }
                             }
                         }

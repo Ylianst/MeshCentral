@@ -1355,6 +1355,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 var loguser = parent.users[command.userid];
                                 if (loguser) { event.userid = command.userid; event.username = loguser.name; targets.push(command.userid); }
                             }
+                            if (typeof command.xuserid == 'string') {
+                                var xloguser = parent.users[command.xuserid];
+                                if (xloguser) { targets.push(command.xuserid); }
+                            }
                             if ((typeof command.sessionid == 'string') && (command.sessionid.length < 500)) { event.sessionid = command.sessionid; }
                             parent.parent.DispatchEvent(targets, obj, event);
                         }
