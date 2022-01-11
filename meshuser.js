@@ -597,7 +597,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // See how many times bad login attempts where made since the last login
             const lastLoginTime = parent.users[user._id].pastlogin;
             if (lastLoginTime != null) {
-                db.GetFailedLoginCount(user.name, user.domain, new Date(lastLoginTime * 1000), function (count) {
+                db.GetFailedLoginCount(user._id, user.domain, new Date(lastLoginTime * 1000), function (count) {
                     if (count > 0) { try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: "Security Warning", tag: 'ServerNotify', id: Math.random(), value: "There has been " + count + " failed login attempts on this account since the last login.", titleid: 3, msgid: 12, args: [count] })); } catch (ex) { } delete user.pastlogin; }
                 });
             }
@@ -890,24 +890,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'events':
                 {
                     // User filtered events
-                    if ((command.user != null) && ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0)) {
-                        // TODO: Add the meshes command.user has access to (???)
-                        var filter = ['user/' + domain.id + '/' + command.user];
+                    if ((command.userid != null) && ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0)) {
+                        const userSplit = command.userid.split('/');
+                        if ((userSplit.length != 3) || (userSplit[1] != domain.id)) return;
 
-                        const userSplit = command.user.split('/');
-                        if (userSplit.length == 3) { filter = []; if ((userSplit[0] == 'user') && (userSplit[1] == domain.id)) { filter = [command.user]; } }
+                        // TODO: Add the meshes command.userid has access to (???)
+                        var filter = [command.userid];
 
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
                             // Send the list of all events for this session
-                            db.GetUserEvents(filter, domain.id, command.user, function (err, docs) {
+                            db.GetUserEvents(filter, domain.id, command.userid, function (err, docs) {
                                 if (err != null) return;
-                                try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { }
+                                try { ws.send(JSON.stringify({ action: 'events', events: docs, userid: command.userid, tag: command.tag })); } catch (ex) { }
                             });
                         } else {
                             // Send the list of most recent events for this session, up to 'limit' count
-                            db.GetUserEventsWithLimit(filter, domain.id, command.user, command.limit, function (err, docs) {
+                            db.GetUserEventsWithLimit(filter, domain.id, command.userid, command.limit, function (err, docs) {
                                 if (err != null) return;
-                                try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { }
+                                try { ws.send(JSON.stringify({ action: 'events', events: docs, userid: command.userid, tag: command.tag })); } catch (ex) { }
                             });
                         }
                     } else if (command.nodeid != null) { // Device filtered events
@@ -4325,7 +4325,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Get previous logins for self
                     if (db.GetUserLoginEvents) {
                         // New way
-                        db.GetUserLoginEvents(domain.id, splitUser[2], function (err, docs) {
+                        db.GetUserLoginEvents(domain.id, user._id, function (err, docs) {
                             if (err != null) return;
                             var e = [];
                             for (var i in docs) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs, tn: docs[i].tokenName }); }
@@ -4333,7 +4333,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         });
                     } else {
                         // Old way
-                        db.GetUserEvents([user._id], domain.id, splitUser[2], function (err, docs) {
+                        db.GetUserEvents([user._id], domain.id, user._id, function (err, docs) {
                             if (err != null) return;
                             var e = [];
                             for (var i in docs) {
@@ -4351,7 +4351,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((obj.crossDomain === true) || (splitUser[1] === domain.id)) {
                             if (db.GetUserLoginEvents) {
                                 // New way
-                                db.GetUserLoginEvents(splitUser[1], splitUser[2], function (err, docs) {
+                                db.GetUserLoginEvents(splitUser[1], command.userid, function (err, docs) {
                                     if (err != null) return;
                                     var e = [];
                                     for (var i in docs) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); }
@@ -4359,7 +4359,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 });
                             } else {
                                 // Old way
-                                db.GetUserEvents([command.userid], splitUser[1], splitUser[2], function (err, docs) {
+                                db.GetUserEvents([command.userid], domain.id, user._id, function (err, docs) {
                                     if (err != null) return;
                                     var e = [];
                                     for (var i in docs) { if ((docs[i].msgArgs) && (docs[i].userid == command.userid) && ((docs[i].action == 'authfail') || (docs[i].action == 'login'))) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); } }

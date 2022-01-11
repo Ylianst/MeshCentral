@@ -2612,7 +2612,7 @@
                     if ((message.nodeid != null) && (currentNode != null) && (message.nodeid == currentNode._id)) {
                         currentDeviceEvents = message.events;
                         mainUpdate(1024);
-                    } else if ((message.user != null) && (message.user == currentUser.name)) {
+                    } else if ((message.userid != null) && (currentUser != null) && (message.userid == currentUser._id)) {
                         currentUserEvents = message.events;
                         mainUpdate(2048);
                     } else {
@@ -15182,7 +15182,7 @@
         }
 
         function refreshUsersEvents() {
-            meshserver.send({ action: 'events', limit: parseInt(p31limitdropdown.value), user: currentUser.name });
+            meshserver.send({ action: 'events', limit: parseInt(p31limitdropdown.value), userid: currentUser._id });
         }
 
 

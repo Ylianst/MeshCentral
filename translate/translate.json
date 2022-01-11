@@ -45568,6 +45568,11 @@
       ]
     },
     {
+      "en": "Poort nummer",
+      "pl": "Numer Portu",
+      "da": "Port Nummer"
+    },
+    {
       "cs": "Mapování portů",
       "de": "Port-Mapping",
       "en": "Port Mapping",
@@ -45620,9 +45625,6 @@
     },
     {
       "en": "Port Number",
-      "en": "Poort nummer",
-      "pl": "Numer Portu",
-      "da": "Port Nummer",
       "xloc": [
         "default-mobile.handlebars->11->273",
         "default.handlebars->39->757"
