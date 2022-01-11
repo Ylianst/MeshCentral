@@ -7840,7 +7840,10 @@
       "sv": "Tillåta",
       "tr": "İzin vermek",
       "zh-chs": "允许",
-      "da": "Tillad"
+      "da": "Tillad",
+      "xloc": [
+        "agent-translations.json"
+      ]
     },
     {
       "cs": "Umožnit uživatelům spravovat tuto skupinu a zařízení v této skupině.",
@@ -9867,6 +9870,12 @@
       "da": "Auto",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar->9"
+      ]
+    },
+    {
+      "en": "Auto accept all connections for next 5 minutes",
+      "xloc": [
+        "agent-translations.json"
       ]
     },
     {
@@ -17901,7 +17910,10 @@
       "sv": "Förneka",
       "tr": "İnkar etmek",
       "zh-chs": "否定",
-      "da": "Afslå"
+      "da": "Afslå",
+      "xloc": [
+        "agent-translations.json"
+      ]
     },
     {
       "cs": "Sestupně podle data",
