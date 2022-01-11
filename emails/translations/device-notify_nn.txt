@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - Device Notification
+~<area-header>
+The following devices have changed their connection state.
+~</area-header>
+~<area-connections>
+~
+Connected devices:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Disconnected devices:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+To unsubscribe, load this link within 1 hour of getting this message: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>
