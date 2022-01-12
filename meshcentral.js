@@ -2476,6 +2476,16 @@ function CreateMeshCentralServer(config, args) {
             if (modulesDir == null) { try { moduleDirPath = obj.path.join(meshcorePath, 'modules_meshcore'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } } // Use non-minified mofules.
             if (modulesDir != null) {
                 for (var i in modulesDir) {
+                    if (modulesDir[i].toLowerCase().endsWith('.json')) {
+                        var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 5);
+                        if (moduleName.endsWith('.min')) { moduleName = moduleName.substring(0, moduleName.length - 6); } // Remove the ".min" for ".min.json" files.
+                        var moduleData = ['var ', moduleName, ' = JSON.parse("', obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('utf8')), '");\r\n'];
+
+                        // Add to all cores
+                        modulesAdd['windows-amt'].push(...moduleData);
+                        modulesAdd['linux-amt'].push(...moduleData);
+                        modulesAdd['linux-noamt'].push(...moduleData);
+                    }
                     if (modulesDir[i].toLowerCase().endsWith('.js')) {
                         var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
                         if (moduleName.endsWith('.min')) { moduleName = moduleName.substring(0, moduleName.length - 4); } // Remove the ".min" for ".min.js" files.
@@ -2539,7 +2549,7 @@ function CreateMeshCentralServer(config, args) {
                 obj.defaultMeshCoresHash[i] = obj.crypto.createHash('sha384').update(obj.defaultMeshCores[i]).digest('binary');
                 obj.debug('main', 'Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.');
                 //console.log('Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.'); // DEBUG, Print the core size
-                //obj.fs.writeFile("C:\\temp\\" + i + ".js", obj.defaultMeshCores[i].substring(4)); // DEBUG, Write the core to file
+                //obj.fs.writeFile("C:\\temp\\" + i + ".js", obj.defaultMeshCores[i].substring(4), function () { }); // DEBUG, Write the core to file
 
                 // Compress the mesh cores with DEFLATE
                 var callback = function MeshCoreDeflateCb(err, buffer) { if (err == null) { obj.defaultMeshCoresDeflate[MeshCoreDeflateCb.i] = buffer; } }
