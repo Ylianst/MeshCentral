@@ -7842,7 +7842,7 @@
       "zh-chs": "允许",
       "da": "Tillad",
       "xloc": [
-        "agent-translations.json"
+        "coretranslations.json"
       ]
     },
     {
@@ -9875,7 +9875,7 @@
     {
       "en": "Auto accept all connections for next 5 minutes",
       "xloc": [
-        "agent-translations.json"
+        "coretranslations.json"
       ]
     },
     {
@@ -17912,7 +17912,7 @@
       "zh-chs": "否定",
       "da": "Afslå",
       "xloc": [
-        "agent-translations.json"
+        "coretranslations.json"
       ]
     },
     {
@@ -71506,6 +71506,24 @@
       "tr": "{0} uzak oturum etkin.",
       "zh-chs": "{0} 个远程会话处于活动状态。",
       "da": "{0} fjernsessioner er aktive."
+    },
+    {
+      "en": "{0} requesting remote desktop access. Grant access?",
+      "xloc": [
+        "coretranslations.json"
+      ]
+    },
+    {
+      "en": "{0} requesting remote file Access. Grant access?",
+      "xloc": [
+        "coretranslations.json"
+      ]
+    },
+    {
+      "en": "{0} requesting remote terminal access. Grant access?",
+      "xloc": [
+        "coretranslations.json"
+      ]
     },
     {
       "cs": "{0} sekund {1}",

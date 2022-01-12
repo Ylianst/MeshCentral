@@ -52,7 +52,8 @@ var meshCentralSourceFiles = [
     "../emails/mesh-invite.txt",
     "../emails/device-notify.txt",
     "../emails/sms-messages.txt",
-    '../agents/agent-translations.json'
+    "../agents/agent-translations.json",
+    "../agents/modules_meshcore/coretranslations.json"
 ];
 
 var minifyMeshCentralSourceFiles = [
