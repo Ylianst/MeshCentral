@@ -225,13 +225,37 @@ module.exports.CreateDB = function (parent, func) {
         }
     }
 
+    // Remove all reference to a domain from the database
+    obj.removeDomain = function (domainName, func) {
+        var pendingCalls;
+        // Remove all events, power events and SMBIOS data from the main collection. They are all in seperate collections now.
+        if ((obj.databaseType == 4) || (obj.databaseType == 5) || (obj.databaseType == 6)) {
+            // MariaDB, MySQL or PostgreSQL
+            pendingCalls = 2;
+            sqlDbQuery('DELETE FROM main WHERE domain = $1', [domainName], function () { if (--pendingCalls == 0) { func(); } });
+            sqlDbQuery('DELETE FROM events WHERE domain = $1', [domainName], function () { if (--pendingCalls == 0) { func(); } });
+        } else if (obj.databaseType == 3) {
+            // MongoDB
+            pendingCalls = 3;
+            obj.file.deleteMany({ domain: domainName }, { multi: true }, function () { if (--pendingCalls == 0) { func(); } });
+            obj.eventsfile.deleteMany({ domain: domainName }, { multi: true }, function () { if (--pendingCalls == 0) { func(); } });
+            obj.powerfile.deleteMany({ domain: domainName }, { multi: true }, function () { if (--pendingCalls == 0) { func(); } });
+        } else {
+            // NeDB or MongoJS
+            pendingCalls = 3;
+            obj.file.remove({ domain: domainName }, { multi: true }, function () { if (--pendingCalls == 0) { func(); } });
+            obj.eventsfile.remove({ domain: domainName }, { multi: true }, function () { if (--pendingCalls == 0) { func(); } });
+            obj.powerfile.remove({ domain: domainName }, { multi: true }, function () { if (--pendingCalls == 0) { func(); } });
+        }
+    }
+
     obj.cleanup = function (func) {
         // TODO: Remove all mesh links to invalid users
         // TODO: Remove all meshes that dont have any links
 
         // Remove all events, power events and SMBIOS data from the main collection. They are all in seperate collections now.
         if ((obj.databaseType == 4) || (obj.databaseType == 5) || (obj.databaseType == 6)) {
-            // MariaDB or MySQL
+            // MariaDB, MySQL or PostgreSQL
             obj.RemoveAllOfType('event', function () { });
             obj.RemoveAllOfType('power', function () { });
             obj.RemoveAllOfType('smbios', function () { });
@@ -569,8 +593,8 @@ module.exports.CreateDB = function (parent, func) {
                 parent.debug('db', 'Checking tables...');
                 sqlDbBatchExec([
                     'CREATE TABLE IF NOT EXISTS main (id VARCHAR(256) NOT NULL, type CHAR(32), domain CHAR(64), extra CHAR(255), extraex CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
-                    'CREATE TABLE IF NOT EXISTS events(id INT NOT NULL AUTO_INCREMENT, time DATETIME, domain CHAR(64), action CHAR(255), nodeid CHAR(255), userid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK(json_valid(doc)))',
-                    'CREATE TABLE IF NOT EXISTS eventids(fkid INT NOT NULL, target CHAR(255), CONSTRAINT fk_eventid FOREIGN KEY (fkid) REFERENCES events (id) ON DELETE CASCADE ON UPDATE RESTRICT)',
+                    'CREATE TABLE IF NOT EXISTS events (id INT NOT NULL AUTO_INCREMENT, time DATETIME, domain CHAR(64), action CHAR(255), nodeid CHAR(255), userid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK(json_valid(doc)))',
+                    'CREATE TABLE IF NOT EXISTS eventids (fkid INT NOT NULL, target CHAR(255), CONSTRAINT fk_eventid FOREIGN KEY (fkid) REFERENCES events (id) ON DELETE CASCADE ON UPDATE RESTRICT)',
                     'CREATE TABLE IF NOT EXISTS serverstats (time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(time), CHECK (json_valid(doc)))',
                     'CREATE TABLE IF NOT EXISTS power (id INT NOT NULL AUTO_INCREMENT, time DATETIME, nodeid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
                     'CREATE TABLE IF NOT EXISTS smbios (id CHAR(255), time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',

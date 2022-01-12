@@ -1287,6 +1287,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         delete command.action;
                         command.updateTime = Date.now();
                         command._id = 'if' + obj.dbNodeKey;
+                        command.domain = domain.id;
                         command.type = 'ifinfo';
                         db.Set(command);
 
