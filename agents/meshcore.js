@@ -105,8 +105,7 @@ function getCoreTranslation()
             if (coretranslations[lang] == null) { lang = 'en'; }
             if (coretranslations[lang] != null) { ret = coretranslations[lang]; }
         }
-        catch (x)
-        { }
+        catch (ex) { }
     }
 
     setDefaultCoreTranslation(ret, 'allow', 'Allow');
