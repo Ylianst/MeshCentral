@@ -1,5 +1,5 @@
 /*
-Copyright 2018-2021 Intel Corporation
+Copyright 2018-2022 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -87,6 +87,33 @@ if (require('MeshAgent').ARCHID == null) {
     }
     if (id != null) { Object.defineProperty(require('MeshAgent'), 'ARCHID', { value: id }); }
 }
+
+function setDefaultCoreTranslation(obj, field, value)
+{
+    if (obj[field] == null || obj[field] == '') { obj[field] = value; }
+}
+
+function getCoreTranslation()
+{
+    var ret = {};
+    var lang = require('util-language').current;
+    if (global.coretranslations != null)
+    {
+        if (coretranslations[lang] == null) { lang = lang.split('-')[0]; }
+        if (coretranslations[lang] == null) { lang = 'en'; }
+        if (coretranslations[lang] != null) { ret = coretranslations[lang]; }
+    }
+
+    setDefaultCoreTranslation(ret, 'allow', 'Allow');
+    setDefaultCoreTranslation(ret, 'deny', 'Deny');
+    setDefaultCoreTranslation(ret, 'autoAllowForFive', 'Auto accept all connections for next 5 minutes');
+    setDefaultCoreTranslation(ret, 'terminalConsent', '{0} requesting remote terminal access. Grant access?');
+    setDefaultCoreTranslation(ret, 'desktopConsent', '{0} requesting remote desktop access. Grant access?');
+    setDefaultCoreTranslation(ret, 'fileConsent', '{0} requesting remote file Access. Grant access?');
+    return (ret);
+}
+var currentTranslation = getCoreTranslation();
+
 function lockDesktop(uid)
 {
     switch (process.platform)
@@ -2038,8 +2065,11 @@ function onTunnelData(data) {
                 // Perform User-Consent if needed. 
                 if (this.httprequest.consent && (this.httprequest.consent & 16)) {
                     this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
-                    var consentMessage = this.httprequest.username + " requesting remote terminal access. Grant access?", consentTitle = 'MeshCentral';
-                    if (this.httprequest.soptions != null) {
+                    var consentMessage = currentTranslation['terminalConsent'].replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username);
+                    var consentTitle = 'MeshCentral';
+
+                    if (this.httprequest.soptions != null)
+                    {
                         if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
                         if (this.httprequest.soptions.consentMsgTerminal != null) { consentMessage = this.httprequest.soptions.consentMsgTerminal.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                     }
@@ -2060,9 +2090,10 @@ function onTunnelData(data) {
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
                             ipr.username = this.httprequest.realname;
+                            ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
                             this.httprequest.tpromise._consent = ipr.then(function (img)
                             {
-                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: 30000 });
+                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: 30000, translations: this.translations });
                                 this.__childPromise.close = this.consent.close.bind(this.consent);
                                 return (this.consent);
                             });
@@ -2409,8 +2440,10 @@ function onTunnelData(data) {
                     // User Consent Prompt is required
                     // Send a console message back using the console channel, "\n" is supported.
                     this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
-                    var consentMessage = this.httprequest.realname + " requesting remote desktop access. Grant access?", consentTitle = 'MeshCentral';
-                    if (this.httprequest.soptions != null) {
+                    var consentMessage = currentTranslation['desktopConsent'].replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username);
+                    var consentTitle = 'MeshCentral';
+                    if (this.httprequest.soptions != null)
+                    {
                         if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
                         if (this.httprequest.soptions.consentMsgDesktop != null) { consentMessage = this.httprequest.soptions.consentMsgDesktop.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                     }
@@ -2433,9 +2466,10 @@ function onTunnelData(data) {
                             ipr.consentMessage = consentMessage;
                             ipr.tsid = tsid;
                             ipr.username = this.httprequest.realname;
+                            ipr.translation = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
                             pr = ipr.then(function (img)
                             {
-                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), uid: this.tsid, timeout: 30000 });
+                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), uid: this.tsid, timeout: 30000, translations: this.translation });
                                 this.__childPromise.close = this.consent.close.bind(this.consent);
                                 return (this.consent);
                             });
@@ -2604,8 +2638,11 @@ function onTunnelData(data) {
                     // User Consent Prompt is required
                     // Send a console message back using the console channel, "\n" is supported.
                     this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
-                    var consentMessage = this.httprequest.realname + " requesting remote file Access. Grant access?", consentTitle = 'MeshCentral';
-                    if (this.httprequest.soptions != null) {
+                    var consentMessage = currentTranslation['fileConsent'].replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username);
+                    var consentTitle = 'MeshCentral';
+
+                    if (this.httprequest.soptions != null)
+                    {
                         if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
                         if (this.httprequest.soptions.consentMsgFiles != null) { consentMessage = this.httprequest.soptions.consentMsgFiles.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                     }
@@ -2627,9 +2664,10 @@ function onTunnelData(data) {
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
                             ipr.username = this.httprequest.realname;
+                            ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
                             pr = ipr.then(function (img)
                             {
-                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: 30000 });
+                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: 30000, translations: this.translations });
                                 this.__childPromise.close = this.consent.close.bind(this.consent);
                                 return (this.consent);
                             });
