@@ -526,69 +526,106 @@ function AmtStackCreateService(wsmanStack) {
 
     var _EventTrapSourceTypes = "Platform firmware (e.g. BIOS)|SMI handler|ISV system management software|Alert ASIC|IPMI|BIOS vendor|System board set vendor|System integrator|Third party add-in|OSV|NIC|System management card".split('|');
     var _SystemFirmwareError = "Unspecified.|No system memory is physically installed in the system.|No usable system memory, all installed memory has experienced an unrecoverable failure.|Unrecoverable hard-disk/ATAPI/IDE device failure.|Unrecoverable system-board failure.|Unrecoverable diskette subsystem failure.|Unrecoverable hard-disk controller failure.|Unrecoverable PS/2 or USB keyboard failure.|Removable boot media not found.|Unrecoverable video controller failure.|No video device detected.|Firmware (BIOS) ROM corruption detected.|CPU voltage mismatch (processors that share same supply have mismatched voltage requirements)|CPU speed matching failure".split('|');
-    var _SystemFirmwareProgress = "Unspecified.|Memory initialization.|Starting hard-disk initialization and test|Secondary processor(s) initialization|User authentication|User-initiated system setup|USB resource configuration|PCI resource configuration|Option ROM initialization|Video initialization|Cache initialization|SM Bus initialization|Keyboard controller initialization|Embedded controller/management controller initialization|Docking station attachment|Enabling docking station|Docking station ejection|Disabling docking station|Calling operating system wake-up vector|Starting operating system boot process|Baseboard or motherboard initialization|reserved|Floppy initialization|Keyboard test|Pointing device test|Primary processor initialization".split('|');
+    var _SystemFirmwareProgress = "Unspecified.|Memory initialization.|Starting hard-disk initialization and test|Secondary processor(s) initialization|User authentication|Entering BIOS setup|USB resource configuration|PCI resource configuration|Option ROM initialization|Video initialization|Cache initialization|SM Bus initialization|Keyboard controller initialization|Embedded controller/management controller initialization|Docking station attachment|Enabling docking station|Docking station ejection|Disabling docking station|Calling operating system wake-up vector|Starting operating system boot process|Baseboard or motherboard initialization|reserved|Floppy initialization|Keyboard test|Pointing device test|Primary processor initialization".split('|');
     var _SystemEntityTypes = "Unspecified|Other|Unknown|Processor|Disk|Peripheral|System management module|System board|Memory module|Processor module|Power supply|Add in card|Front panel board|Back panel board|Power system board|Drive backplane|System internal expansion board|Other system board|Processor board|Power unit|Power module|Power management board|Chassis back panel board|System chassis|Sub chassis|Other chassis board|Disk drive bay|Peripheral bay|Device bay|Fan cooling|Cooling unit|Cable interconnect|Memory device|System management software|BIOS|Intel(r) ME|System bus|Group|Intel(r) ME|External environment|Battery|Processing blade|Connectivity switch|Processor/memory module|I/O module|Processor I/O module|Management controller firmware|IPMI channel|PCI bus|PCI express bus|SCSI bus|SATA/SAS bus|Processor front side bus".split('|');
-    obj.RealmNames = "||Redirection|PT Administration|Hardware Asset|Remote Control|Storage|Event Manager|Storage Admin|Agent Presence Local|Agent Presence Remote|Circuit Breaker|Network Time|General Information|Firmware Update|EIT|LocalUN|Endpoint Access Control|Endpoint Access Control Admin|Event Log Reader|Audit Log|ACL Realm|||Local System".split('|');
-    obj.WatchdogCurrentStates = { 1: 'Not Started', 2: 'Stopped', 4: 'Running', 8: 'Expired', 16: 'Suspended' };
+    obj.RealmNames = "||Redirection||Hardware Asset|Remote Control|Storage|Event Manager|Storage Admin|Agent Presence Local|Agent Presence Remote|Circuit Breaker|Network Time|General Information|Firmware Update|EIT|LocalUN|Endpoint Access Control|Endpoint Access Control Admin|Event Log Reader|Audit Log|ACL Realm|||Local System".split('|');
+    obj.WatchdogCurrentStates = { 1: "Not Started", 2: "Stopped", 4: "Running", 8: "Expired", 16: "Suspended" };
+    var _OCRProgressEvents = ["Boot parameters received from CSME", "CSME Boot Option % added successfully", "HTTPS URI name resolved", "HTTPS connected successfully", "HTTPSBoot download is completed", "Attempt to boot", "Exit boot services"];
+    var _OCRErrorEvents = ['', "No network connection available", "Name resolution of URI failed", "Connect to URI failed", "OEM app not found at local URI", "HTTPS TLS Auth failed", "HTTPS Digest Auth failed", "Verified boot failed (bad image)", "HTTPS Boot File not found"];
+    var _OCRSource = { 1: '', 2: "HTTPS", 4: "Local PBA", 8: "WinRE" };
 
     function _GetEventDetailStr(eventSensorType, eventOffset, eventDataField, entity) {
-
-        if (eventSensorType == 15)
-        {
+        if (eventSensorType == 15) {
             if (eventDataField[0] == 235) return "Invalid Data";
-            if (eventOffset == 0) return _SystemFirmwareError[eventDataField[1]];
-            return _SystemFirmwareProgress[eventDataField[1]];
+            if (eventOffset == 0) {
+                return _SystemFirmwareError[eventDataField[1]];
+            } else if (eventOffset == 3) {
+                if ((eventDataField[0] == 170) && (eventDataField[1] == 48)) {
+                    return format("AMT One Click Recovery: {0}", _OCRErrorEvents[eventDataField[2]]);
+                } else if ((eventDataField[0] == 170) && (eventDataField[1] == 64)) {
+                    if (eventDataField[2] == 1) return "Got an error erasing Device SSD";
+                    if (eventDataField[2] == 2) return "Erasing Device TPM is not supported";
+                    if (eventDataField[2] == 3) return "Reached Max Counter";
+                } else {
+                    return "OEM Specific Firmware Error event";
+                }
+            } else if (eventOffset == 5) {
+                if ((eventDataField[0] == 170) && (eventDataField[1] == 48)) {
+                    if (eventDataField[2] == 1) {
+                        return format("AMT One Click Recovery: CSME Boot Option {0}:{1} added successfully", (eventDataField[3]), _OCRSource[(eventDataField[3])]);
+                    } else if (eventDataField[2] < 7) {
+                        return format("AMT One Click Recovery: {0}", _OCRProgressEvents[eventDataField[2]]);
+                    } else {
+                        return format("AMT One Click Recovery: Unknown progress event {0}", eventDataField[2]);
+                    }
+                } else if ((eventDataField[0] == 170) && (eventDataField[1] == 64)) {
+                    if (eventDataField[2] == 1) {
+                        if (eventDataField[3] == 2) return "Started erasing Device SSD";
+                        if (eventDataField[3] == 3) return "Started erasing Device TPM";
+                        if (eventDataField[3] == 5) return "Started erasing Device BIOS Reload of Golden Config";
+                    }
+                    if (eventDataField[2] == 2) {
+                        if (eventDataField[3] == 2) return "Erasing Device SSD ended successfully";
+                        if (eventDataField[3] == 3) return "Erasing Device TPM ended successfully";
+                        if (eventDataField[3] == 5) return "Erasing Device BIOS Reload of Golden Config ended successfully";
+                    }
+                    if (eventDataField[2] == 3) return "Beginning Platform Erase";
+                    if (eventDataField[2] == 4) return "Clear Reserved Parameters";
+                    if (eventDataField[2] == 5) return "All setting decremented";
+                } else {
+                    return "OEM Specific Firmware Progress event";
+                }
+            } else {
+                return _SystemFirmwareProgress[eventDataField[1]];
+            }
         }
 
-        if (eventSensorType == 18 && eventDataField[0] == 170) // System watchdog event
-        {
-            return "Agent watchdog " + char2hex(eventDataField[4]) + char2hex(eventDataField[3]) + char2hex(eventDataField[2]) + char2hex(eventDataField[1]) + "-" + char2hex(eventDataField[6]) + char2hex(eventDataField[5]) + "-... changed to " + obj.WatchdogCurrentStates[eventDataField[7]];
+        if ((eventSensorType == 18) && (eventDataField[0] == 170)) { // System watchdog event
+            return "Agent watchdog " + char2hex(eventDataField[4]) + char2hex(eventDataField[3]) + char2hex(eventDataField[2]) + char2hex(eventDataField[1]) + '-' + char2hex(eventDataField[6]) + char2hex(eventDataField[5]) + '-...' + " changed to " + obj.WatchdogCurrentStates[eventDataField[7]];
         }
 
-        //if (eventSensorType == 5 && eventOffset == 0) // System chassis
-        //{
-        //    return "Case intrusion";
-        //}
+        if ((eventSensorType == 5) && (eventOffset == 0)) { // System chassis
+            return "Case intrusion";
+        }
 
-        //if (eventSensorType == 192 && eventOffset == 0 && eventDataField[0] == 170 && eventDataField[1] == 48)
-        //{
-        //    if (eventDataField[2] == 0) return "A remote Serial Over LAN session was established.";
-        //    if (eventDataField[2] == 1) return "Remote Serial Over LAN session finished. User control was restored.";
-        //    if (eventDataField[2] == 2) return "A remote IDE-Redirection session was established.";
-        //    if (eventDataField[2] == 3) return "Remote IDE-Redirection session finished. User control was restored.";
-        //}
+        if ((eventSensorType == 192) && (eventOffset == 0) && (eventDataField[0] == 170) && (eventDataField[1] == 48)) {
+            if (eventDataField[2] == 0) return "A remote Serial Over LAN session was established.";
+            if (eventDataField[2] == 1) return "Remote Serial Over LAN session finished. User control was restored.";
+            if (eventDataField[2] == 2) return "A remote IDE-Redirection session was established.";
+            if (eventDataField[2] == 3) return "Remote IDE-Redirection session finished. User control was restored.";
+        }
 
-        //if (eventSensorType == 36)
-        //{
-        //    long handle = ((long)(eventDataField[1]) << 24) + ((long)(eventDataField[2]) << 16) + ((long)(eventDataField[3]) << 8) + (long)(eventDataField[4]);
-        //    string nic = string.Format("#{0}", eventDataField[0]);
-        //    if (eventDataField[0] == 0xAA) nic = "wired"; // TODO: Add wireless *****
-        //    //if (eventDataField[0] == 0xAA) nic = "wireless";
+        if (eventSensorType == 36) {
+            var handle = (eventDataField[1] << 24) + (eventDataField[2] << 16) + (eventDataField[3] << 8) + eventDataField[4];
+            var nic = '#' + eventDataField[0];
+            if (eventDataField[0] == 0xAA) nic = "wired"; // TODO: Add wireless *****
+            //if (eventDataField[0] == 0xAA) nic = "wireless";
 
-        //    if (handle == 4294967293) { return string.Format("All received packet filter was matched on {0} interface.", nic); }
-        //    if (handle == 4294967292) { return string.Format("All outbound packet filter was matched on {0} interface.", nic); }
-        //    if (handle == 4294967290) { return string.Format("Spoofed packet filter was matched on {0} interface.", nic); }
-        //    return string.Format("Filter {0} was matched on {1} interface.", handle, nic);
-        //}
+            if (handle == 4294967293) { return "All received packet filter was matched on " + nic + " interface."; }
+            if (handle == 4294967292) { return "All outbound packet filter was matched on " + nic + " interface."; }
+            if (handle == 4294967290) { return "Spoofed packet filter was matched on " + nic + " interface."; }
+            return "Filter " + handle + " was matched on " + nic + " interface.";
+        }
 
-        //if (eventSensorType == 192)
-        //{
-        //    if (eventDataField[2] == 0) return "Security policy invoked. Some or all network traffic (TX) was stopped.";
-        //    if (eventDataField[2] == 2) return "Security policy invoked. Some or all network traffic (RX) was stopped.";
-        //    return "Security policy invoked.";
-        //}
+        if (eventSensorType == 192) {
+            if (eventDataField[2] == 0) return "Security policy invoked. Some or all network traffic (TX) was stopped.";
+            if (eventDataField[2] == 2) return "Security policy invoked. Some or all network traffic (RX) was stopped.";
+            return "Security policy invoked.";
+        }
 
-        //if (eventSensorType == 193)
-        //{
-        //    if (eventDataField[0] == 0xAA && eventDataField[1] == 0x30 && eventDataField[2] == 0x00 && eventDataField[3] == 0x00) { return "User request for remote connection."; }
-        //    if (eventDataField[0] == 0xAA && eventDataField[1] == 0x20 && eventDataField[2] == 0x03 && eventDataField[3] == 0x01) { return "EAC error: attempt to get posture while NAC in Intel(r) AMT is disabled."; // eventDataField = 0xAA20030100000000 }
-        //    if (eventDataField[0] == 0xAA && eventDataField[1] == 0x20 && eventDataField[2] == 0x04 && eventDataField[3] == 0x00) { return "Certificate revoked. "; }
-        //}
+        if (eventSensorType == 193) {
+            if ((eventDataField[0] == 0xAA) && (eventDataField[1] == 0x30) && (eventDataField[2] == 0x00) && (eventDataField[3] == 0x00)) { return "User request for remote connection."; }
+            if ((eventDataField[0] == 0xAA) && (eventDataField[1] == 0x20) && (eventDataField[2] == 0x03) && (eventDataField[3] == 0x01)) { return "EAC error: attempt to get posture while NAC in Intel® AMT is disabled."; } // eventDataField = 0xAA20030100000000
+            if ((eventDataField[0] == 0xAA) && (eventDataField[1] == 0x20) && (eventDataField[2] == 0x04) && (eventDataField[3] == 0x00)) { return "HWA Error: general error"; } // Used to be "Certificate revoked." but don"t know the source of this.
+        }
 
         if (eventSensorType == 6) return "Authentication failed " + (eventDataField[1] + (eventDataField[2] << 8)) + " times. The system may be under attack.";
         if (eventSensorType == 30) return "No bootable media";
         if (eventSensorType == 32) return "Operating system lockup or power interrupt";
-        if (eventSensorType == 35) return "System boot failure";
+        if (eventSensorType == 35) {
+            if (eventDataField[0] == 64) return "BIOS POST (Power On Self-Test) Watchdog Timeout."; // 64,2,252,84,89,0,0,0
+            return "System boot failure";
+        }
         if (eventSensorType == 37) return "System firmware started (at least one CPU is properly executing).";
         return "Unknown Sensor Type #" + eventSensorType;
     }
@@ -599,110 +636,120 @@ function AmtStackCreateService(wsmanStack) {
 
     var _AmtAuditStringTable =
     {
-        16: 'Security Admin',
-        17: 'RCO',
-        18: 'Redirection Manager',
-        19: 'Firmware Update Manager',
-        20: 'Security Audit Log',
-        21: 'Network Time',
-        22: 'Network Administration',
-        23: 'Storage Administration',
-        24: 'Event Manager',
-        25: 'Circuit Breaker Manager',
-        26: 'Agent Presence Manager',
-        27: 'Wireless Configuration',
-        28: 'EAC',
-        29: 'KVM',
-        30: 'User Opt-In Events',
-        32: 'Screen Blanking',
-        33: 'Watchdog Events',
-        1600: 'Provisioning Started',
-        1601: 'Provisioning Completed',
-        1602: 'ACL Entry Added',
-        1603: 'ACL Entry Modified',
-        1604: 'ACL Entry Removed',
-        1605: 'ACL Access with Invalid Credentials',
-        1606: 'ACL Entry State',
-        1607: 'TLS State Changed',
-        1608: 'TLS Server Certificate Set',
-        1609: 'TLS Server Certificate Remove',
-        1610: 'TLS Trusted Root Certificate Added',
-        1611: 'TLS Trusted Root Certificate Removed',
-        1612: 'TLS Preshared Key Set',
-        1613: 'Kerberos Settings Modified',
-        1614: 'Kerberos Main Key Modified',
-        1615: 'Flash Wear out Counters Reset',
-        1616: 'Power Package Modified',
-        1617: 'Set Realm Authentication Mode',
-        1618: 'Upgrade Client to Admin Control Mode',
-        1619: 'Unprovisioning Started',
-        1700: 'Performed Power Up',
-        1701: 'Performed Power Down',
-        1702: 'Performed Power Cycle',
-        1703: 'Performed Reset',
-        1704: 'Set Boot Options',
-        1800: 'IDER Session Opened',
-        1801: 'IDER Session Closed',
-        1802: 'IDER Enabled',
-        1803: 'IDER Disabled',
-        1804: 'SoL Session Opened',
-        1805: 'SoL Session Closed',
-        1806: 'SoL Enabled',
-        1807: 'SoL Disabled',
-        1808: 'KVM Session Started',
-        1809: 'KVM Session Ended',
-        1810: 'KVM Enabled',
-        1811: 'KVM Disabled',
-        1812: 'VNC Password Failed 3 Times',
-        1900: 'Firmware Updated',
-        1901: 'Firmware Update Failed',
-        2000: 'Security Audit Log Cleared',
-        2001: 'Security Audit Policy Modified',
-        2002: 'Security Audit Log Disabled',
-        2003: 'Security Audit Log Enabled',
-        2004: 'Security Audit Log Exported',
-        2005: 'Security Audit Log Recovered',
-        2100: 'Intel(R) ME Time Set',
-        2200: 'TCPIP Parameters Set',
-        2201: 'Host Name Set',
-        2202: 'Domain Name Set',
-        2203: 'VLAN Parameters Set',
-        2204: 'Link Policy Set',
-        2205: 'IPv6 Parameters Set',
-        2300: 'Global Storage Attributes Set',
-        2301: 'Storage EACL Modified',
-        2302: 'Storage FPACL Modified',
-        2303: 'Storage Write Operation',
-        2400: 'Alert Subscribed',
-        2401: 'Alert Unsubscribed',
-        2402: 'Event Log Cleared',
-        2403: 'Event Log Frozen',
-        2500: 'CB Filter Added',
-        2501: 'CB Filter Removed',
-        2502: 'CB Policy Added',
-        2503: 'CB Policy Removed',
-        2504: 'CB Default Policy Set',
-        2505: 'CB Heuristics Option Set',
-        2506: 'CB Heuristics State Cleared',
-        2600: 'Agent Watchdog Added',
-        2601: 'Agent Watchdog Removed',
-        2602: 'Agent Watchdog Action Set',
-        2700: 'Wireless Profile Added',
-        2701: 'Wireless Profile Removed',
-        2702: 'Wireless Profile Updated',
-        2800: 'EAC Posture Signer SET',
-        2801: 'EAC Enabled',
-        2802: 'EAC Disabled',
-        2803: 'EAC Posture State',
-        2804: 'EAC Set Options',
-        2900: 'KVM Opt-in Enabled',
-        2901: 'KVM Opt-in Disabled',
-        2902: 'KVM Password Changed',
-        2903: 'KVM Consent Succeeded',
-        2904: 'KVM Consent Failed',
-        3000: 'Opt-In Policy Change',
-        3001: 'Send Consent Code Event',
-        3002: 'Start Opt-In Blocked Event'
+        16: "Security Admin",
+        17: "RCO",
+        18: "Redirection Manager",
+        19: "Firmware Update Manager",
+        20: "Security Audit Log",
+        21: "Network Time",
+        22: "Network Administration",
+        23: "Storage Administration",
+        24: "Event Manager",
+        25: "Circuit Breaker Manager",
+        26: "Agent Presence Manager",
+        27: "Wireless Configuration",
+        28: "EAC",
+        29: "KVM",
+        30: "User Opt-In Events",
+        32: "Screen Blanking",
+        33: "Watchdog Events",
+        1600: "Provisioning Started",
+        1601: "Provisioning Completed",
+        1602: "ACL Entry Added",
+        1603: "ACL Entry Modified",
+        1604: "ACL Entry Removed",
+        1605: "ACL Access with Invalid Credentials",
+        1606: "ACL Entry State",
+        1607: "TLS State Changed",
+        1608: "TLS Server Certificate Set",
+        1609: "TLS Server Certificate Remove",
+        1610: "TLS Trusted Root Certificate Added",
+        1611: "TLS Trusted Root Certificate Removed",
+        1612: "TLS Preshared Key Set",
+        1613: "Kerberos Settings Modified",
+        1614: "Kerberos Main Key Modified",
+        1615: "Flash Wear out Counters Reset",
+        1616: "Power Package Modified",
+        1617: "Set Realm Authentication Mode",
+        1618: "Upgrade Client to Admin Control Mode",
+        1619: "Unprovisioning Started",
+        1700: "Performed Power Up",
+        1701: "Performed Power Down",
+        1702: "Performed Power Cycle",
+        1703: "Performed Reset",
+        1704: "Set Boot Options",
+        1705: "Remote graceful power down initiated",
+        1706: "Remote graceful reset initiated",
+        1707: "Remote Standby initiated",
+        1708: "Remote Hiberate initiated",
+        1709: "Remote NMI initiated",
+        1800: "IDER Session Opened",
+        1801: "IDER Session Closed",
+        1802: "IDER Enabled",
+        1803: "IDER Disabled",
+        1804: "SoL Session Opened",
+        1805: "SoL Session Closed",
+        1806: "SoL Enabled",
+        1807: "SoL Disabled",
+        1808: "KVM Session Started",
+        1809: "KVM Session Ended",
+        1810: "KVM Enabled",
+        1811: "KVM Disabled",
+        1812: "VNC Password Failed 3 Times",
+        1900: "Firmware Updated",
+        1901: "Firmware Update Failed",
+        2000: "Security Audit Log Cleared",
+        2001: "Security Audit Policy Modified",
+        2002: "Security Audit Log Disabled",
+        2003: "Security Audit Log Enabled",
+        2004: "Security Audit Log Exported",
+        2005: "Security Audit Log Recovered",
+        2100: "Intel&reg; ME Time Set",
+        2200: "TCPIP Parameters Set",
+        2201: "Host Name Set",
+        2202: "Domain Name Set",
+        2203: "VLAN Parameters Set",
+        2204: "Link Policy Set",
+        2205: "IPv6 Parameters Set",
+        2300: "Global Storage Attributes Set",
+        2301: "Storage EACL Modified",
+        2302: "Storage FPACL Modified",
+        2303: "Storage Write Operation",
+        2400: "Alert Subscribed",
+        2401: "Alert Unsubscribed",
+        2402: "Event Log Cleared",
+        2403: "Event Log Frozen",
+        2500: "CB Filter Added",
+        2501: "CB Filter Removed",
+        2502: "CB Policy Added",
+        2503: "CB Policy Removed",
+        2504: "CB Default Policy Set",
+        2505: "CB Heuristics Option Set",
+        2506: "CB Heuristics State Cleared",
+        2600: "Agent Watchdog Added",
+        2601: "Agent Watchdog Removed",
+        2602: "Agent Watchdog Action Set",
+        2700: "Wireless Profile Added",
+        2701: "Wireless Profile Removed",
+        2702: "Wireless Profile Updated",
+        2703: "An existing profile sync was modified",
+        2704: "An existing profile link preference was changed",
+        2705: "Wireless profile share with UEFI enabled setting was changed",
+        2800: "EAC Posture Signer SET",
+        2801: "EAC Enabled",
+        2802: "EAC Disabled",
+        2803: "EAC Posture State",
+        2804: "EAC Set Options",
+        2900: "KVM Opt-in Enabled",
+        2901: "KVM Opt-in Disabled",
+        2902: "KVM Password Changed",
+        2903: "KVM Consent Succeeded",
+        2904: "KVM Consent Failed",
+        3000: "Opt-In Policy Change",
+        3001: "Send Consent Code Event",
+        3002: "Start Opt-In Blocked Event",
+        3301: "A user has modified the Watchdog Action settings",
+        3302: "A user has modified a Watchdog to add, remove, or alter the Watchdog Action connected to it"
     }
 
     // Return human readable extended audit log data
