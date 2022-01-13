@@ -96,12 +96,17 @@ function setDefaultCoreTranslation(obj, field, value)
 function getCoreTranslation()
 {
     var ret = {};
-    var lang = require('util-language').current;
     if (global.coretranslations != null)
     {
-        if (coretranslations[lang] == null) { lang = lang.split('-')[0]; }
-        if (coretranslations[lang] == null) { lang = 'en'; }
-        if (coretranslations[lang] != null) { ret = coretranslations[lang]; }
+        try
+        {
+            var lang = require('util-language').current;
+            if (coretranslations[lang] == null) { lang = lang.split('-')[0]; }
+            if (coretranslations[lang] == null) { lang = 'en'; }
+            if (coretranslations[lang] != null) { ret = coretranslations[lang]; }
+        }
+        catch (x)
+        { }
     }
 
     setDefaultCoreTranslation(ret, 'allow', 'Allow');
