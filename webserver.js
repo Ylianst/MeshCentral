@@ -6902,8 +6902,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 agent.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
             } else if (coretype == 'custom') {
                 agent.agentCoreCheck = 1000; // Tell the agent object we are using a custom core.
-                const hash = obj.crypto.createHash('sha384').update(Buffer.from(coredata, 'binary')).digest().toString('binary'); // Perform a SHA384 hash on the core module
-                agent.sendBinary(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + hash + coredata); // Send the code module to the agent
+                var buf = Buffer.from(coredata, 'utf8');
+                const hash = obj.crypto.createHash('sha384').update(buf).digest().toString('binary'); // Perform a SHA384 hash on the core module
+                agent.sendBinary(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + hash + buf.toString('binary')); // Send the code module to the agent
             }
         }
     };
