@@ -5,7 +5,11 @@
     "autoAllowForFive": "Auto accept all connections for next 5 minutes",
     "terminalConsent": "{0} requesting remote terminal access. Grant access?",
     "desktopConsent": "{0} requesting remote desktop access. Grant access?",
-    "fileConsent": "{0} requesting remote file Access. Grant access?"
+    "fileConsent": "{0} requesting remote file Access. Grant access?",
+    "terminalNotify": "{0} started a remote terminal session.",
+    "desktopNotify": "{0} started a remote desktop session.",
+    "fileNotify": "{0} started a remote file session.",
+    "privacyBar":  "Sharing desktop with: {0}"
   },
   "cs": {
     "allow": "Dovolit",
@@ -41,7 +45,11 @@
   },
   "ko": {
     "allow": "허용하다",
-    "deny": "거부"
+    "deny": "거부하다",
+    "terminalNotify": "원격 터미널 세션이 시작되었습니다: {0}",
+    "desktopNotify": "원격 데스크톱 세션이 시작되었습니다: {0}",
+    "fileNotify": "원격 파일 전송 세션이 시작되었습니다: {0}",
+    "privacyBar": "다음과 데스크탑 공유: {0}"
   },
   "nl": {
     "allow": "Toestaan",
