@@ -5502,33 +5502,53 @@
 
         // Push the next part of the file into the websocket. If dataPriming is true, push more data only if it's not the last block of the file.
         function p13uploadNextPart(dataPriming) {
-            if (uploadFile.xreader != null) return; // Data reading already in process
-            if (uploadFile.xptr >= uploadFile.xfile.size) return;
-            var end = uploadFile.xptr + 16384;
-            if (end > uploadFile.xfile.size) { if (dataPriming == true) { return; } end = uploadFile.xfile.size; }
-            uploadFile.xreader = new FileReader();
-            uploadFile.xreader.onerror = function (err) { console.log(err); }
-            uploadFile.xreader.onload = function () {
-                var data = uploadFile.xreader.result;
-                delete uploadFile.xreader;
-                if (data == null) return;
-                var dataslice = new Uint8Array(data)
-                if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
-                    var datapart = new Uint8Array(data.byteLength + 1);
-                    datapart.set(dataslice, 1); // Add a zero char at the start of the send, this will indicate that it's not a JSON command.
-                    files.send(datapart);
-                } else {
-                    files.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
-                }
-                uploadFile.xptr = end;
-                Q('d2progressBar').value = end;
-                if (uploadFile.xptr >= uploadFile.xfile.size) {
+            if (uploadFile.xdata) {
+                var data = uploadFile.xdata, start = uploadFile.xptr;
+                if (start >= data.byteLength) {
                     files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
                 } else {
-                    if (uploadFile.xdataPriming > 0) { uploadFile.xdataPriming--; p13uploadNextPart(true); }
+                    var end = uploadFile.xptr + 16384;
+                    if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
+                    var dataslice = new Uint8Array(data.slice(start, end))
+                    if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
+                        var datapart = new Uint8Array(end - start + 1);
+                        datapart.set(dataslice, 1); // Add a zero char at the start of the send, this will indicate that it's not a JSON command.
+                        files.send(datapart);
+                    } else {
+                        files.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
+                    }
+                    uploadFile.xptr = end;
+                    Q('d2progressBar').value = end;
                 }
-            };
-            uploadFile.xreader.readAsArrayBuffer(uploadFile.xfile.slice(uploadFile.xptr, end));
+            } else if (uploadFile.xfile) {
+                if (uploadFile.xreader != null) return; // Data reading already in process
+                if (uploadFile.xptr >= uploadFile.xfile.size) return;
+                var end = uploadFile.xptr + 16384;
+                if (end > uploadFile.xfile.size) { if (dataPriming == true) { return; } end = uploadFile.xfile.size; }
+                uploadFile.xreader = new FileReader();
+                uploadFile.xreader.onerror = function (err) { console.log(err); }
+                uploadFile.xreader.onload = function () {
+                    var data = uploadFile.xreader.result;
+                    delete uploadFile.xreader;
+                    if (data == null) return;
+                    var dataslice = new Uint8Array(data)
+                    if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
+                        var datapart = new Uint8Array(data.byteLength + 1);
+                        datapart.set(dataslice, 1); // Add a zero char at the start of the send, this will indicate that it's not a JSON command.
+                        files.send(datapart);
+                    } else {
+                        files.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
+                    }
+                    uploadFile.xptr = end;
+                    Q('d2progressBar').value = end;
+                    if (uploadFile.xptr >= uploadFile.xfile.size) {
+                        files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
+                    } else {
+                        if (uploadFile.xdataPriming > 0) { uploadFile.xdataPriming--; p13uploadNextPart(true); }
+                    }
+                };
+                uploadFile.xreader.readAsArrayBuffer(uploadFile.xfile.slice(uploadFile.xptr, end));
+            }
         }
 
         //
