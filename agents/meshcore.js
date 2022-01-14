@@ -100,7 +100,7 @@ function getCoreTranslation()
     {
         try
         {
-            var lang = require('util-language').current;
+            var lang = require('util-language').current; 
             if (coretranslations[lang] == null) { lang = lang.split('-')[0]; }
             if (coretranslations[lang] == null) { lang = 'en'; }
             if (coretranslations[lang] != null) { ret = coretranslations[lang]; }
@@ -114,6 +114,11 @@ function getCoreTranslation()
     setDefaultCoreTranslation(ret, 'terminalConsent', '{0} requesting remote terminal access. Grant access?');
     setDefaultCoreTranslation(ret, 'desktopConsent', '{0} requesting remote desktop access. Grant access?');
     setDefaultCoreTranslation(ret, 'fileConsent', '{0} requesting remote file Access. Grant access?');
+    setDefaultCoreTranslation(ret, 'terminalNotify', '{0} started a remote terminal session.');
+    setDefaultCoreTranslation(ret, 'desktopNotify', '{0} started a remote desktop session.');
+    setDefaultCoreTranslation(ret, 'fileNotify', '{0} started a remote file session.');
+    setDefaultCoreTranslation(ret, 'privacyBar', 'Sharing desktop with: {0}');
+
     return (ret);
 }
 var currentTranslation = getCoreTranslation();
@@ -1057,7 +1062,7 @@ function handleServerCommand(data) {
                                 tunnel.rights = data.rights;
                                 tunnel.consent = data.consent;
                                 if (global._MSH && _MSH().LocalConsent != null) { tunnel.consent |= parseInt(_MSH().LocalConsent); }
-                                tunnel.privacybartext = data.privacybartext ? data.privacybartext : "Sharing desktop with: {0}";
+                                tunnel.privacybartext = data.privacybartext ? data.privacybartext : currentTranslation['privacyBar'];
                                 tunnel.username = data.username + (data.guestname ? (' - ' + data.guestname) : '');
                                 tunnel.realname = (data.realname ? data.realname : data.username) + (data.guestname ? (' - ' + data.guestname) : '');
                                 tunnel.guestname = data.guestname;
@@ -2274,10 +2279,13 @@ function onTunnelData(data) {
                                 }
 
                                 // Toast Notification, if required
-                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2)) {
+                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2))
+                                {
                                     // User Notifications is required
-                                    var notifyMessage = this.ws.httprequest.username + " started a remote terminal session.", notifyTitle = "MeshCentral";
-                                    if (this.ws.httprequest.soptions != null) {
+                                    var notifyMessage = currentTranslation['terminalNotify'].replace('{0}', this.ws.httprequest.username);
+                                    var notifyTitle = "MeshCentral";
+                                    if (this.ws.httprequest.soptions != null)
+                                    {
                                         if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
                                         if (this.ws.httprequest.soptions.notifyMsgTerminal != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgTerminal.replace('{0}', this.ws.httprequest.realname).replace('{1}', this.ws.httprequest.username); }
                                     }
@@ -2506,10 +2514,13 @@ function onTunnelData(data) {
                             this.ws._consentpromise = null;
                             MeshServerLogEx(30, null, "Starting remote desktop after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                             this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
-                            if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1)) {
+                            if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1))
+                            {
                                 // User Notifications is required
-                                var notifyMessage = this.ws.httprequest.realname + " started a remote desktop session.", notifyTitle = "MeshCentral";
-                                if (this.ws.httprequest.soptions != null) {
+                                var notifyMessage = currentTranslation['desktopNotify'].replace('{0}', this.ws.httprequest.realname);
+                                var notifyTitle = "MeshCentral";
+                                if (this.ws.httprequest.soptions != null)
+                                {
                                     if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
                                     if (this.ws.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.ws.httprequest.realname).replace('{1}', this.ws.httprequest.username); }
                                 }
@@ -2559,7 +2570,8 @@ function onTunnelData(data) {
                     if (this.httprequest.consent && (this.httprequest.consent & 1)) {
                         // User Notifications is required
                         MeshServerLogEx(35, null, "Started remote desktop with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                        var notifyMessage = this.httprequest.realname + " started a remote desktop session.", notifyTitle = "MeshCentral";
+                        var notifyMessage = currentTranslation['desktopNotify'].replace('{0}', this.ws.httprequest.realname);
+                        var notifyTitle = "MeshCentral";
                         if (this.httprequest.soptions != null) {
                             if (this.httprequest.soptions.notifyTitle != null) { notifyTitle = this.httprequest.soptions.notifyTitle; }
                             if (this.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
@@ -2638,7 +2650,8 @@ function onTunnelData(data) {
                 };
 
                 // Perform notification if needed. Toast messages may not be supported on all platforms.
-                if (this.httprequest.consent && (this.httprequest.consent & 32)) {
+                if (this.httprequest.consent && (this.httprequest.consent & 32))
+                {
                     // User Consent Prompt is required
                     // Send a console message back using the console channel, "\n" is supported.
                     this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
@@ -2700,8 +2713,10 @@ function onTunnelData(data) {
                             this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                             if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 4)) {
                                 // User Notifications is required
-                                var notifyMessage = this.ws.httprequest.realname + " started a remote file session.", notifyTitle = "MeshCentral";
-                                if (this.ws.httprequest.soptions != null) {
+                                var notifyMessage = currentTranslation['fileNotify'].replace('{0}',  this.ws.httprequest.realname);
+                                var notifyTitle = "MeshCentral";
+                                if (this.ws.httprequest.soptions != null)
+                                {
                                     if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
                                     if (this.ws.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgFiles.replace('{0}', this.ws.httprequest.realname).replace('{1}', this.ws.httprequest.username); }
                                 }
@@ -2715,13 +2730,18 @@ function onTunnelData(data) {
                             MeshServerLogEx(41, null, "Failed to start remote files after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                             this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
                         });
-                } else {
+                }
+                else
+                {
                     // User Consent Prompt is not required
-                    if (this.httprequest.consent && (this.httprequest.consent & 4)) {
+                    if (this.httprequest.consent && (this.httprequest.consent & 4))
+                    {
                         // User Notifications is required
                         MeshServerLogEx(42, null, "Started remote files with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                        var notifyMessage = this.httprequest.realname + " started a remote file session.", notifyTitle = "MeshCentral";
-                        if (this.httprequest.soptions != null) {
+                        var notifyMessage = currentTranslation['fileNotify'].replace('{0}', this.ws.httprequest.realname);
+                        var notifyTitle = "MeshCentral";
+                        if (this.httprequest.soptions != null)
+                        {
                             if (this.httprequest.soptions.notifyTitle != null) { notifyTitle = this.httprequest.soptions.notifyTitle; }
                             if (this.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.httprequest.soptions.notifyMsgFiles.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                         }
