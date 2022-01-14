@@ -10182,7 +10182,7 @@
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
-                    Q('d4editorarea').value = gdownloadFile.data;
+                    Q('d4editorarea').value = decode_utf8(gdownloadFile.data);
                     gdownloadFile = null;
                 } else {
                     // Save the file to disk
