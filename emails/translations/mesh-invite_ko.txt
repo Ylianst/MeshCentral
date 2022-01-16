@@ -22,7 +22,6 @@ Apple OSX인 경우, 다음 링크로 이동하여 과정을 완료하십시오.
 ~</area-osx>
 ~<area-linux>
 Linux의 경우, 다음을 잘라내어 터미널에 붙여 넣어 에이전트를 설치하십시오.
-
 ~
 ~wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] '[[[MESHIDHEX]]]'
 ~
