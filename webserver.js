@@ -550,6 +550,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // LDAP login
                 var LdapAuth = require('ldapauth-fork');
                 var ldap = new LdapAuth(domain.ldapoptions);
+                ldap.on('error', function (err) { console.log('ldap error: ', err); });
                 ldap.authenticate(name, pass, function (err, xxuser) {
                     try { ldap.close(); } catch (ex) { console.log(ex); } // Close the LDAP object
                     if (err) { fn(new Error('invalid password')); return; }
