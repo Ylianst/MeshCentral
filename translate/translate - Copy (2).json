@@ -9874,7 +9874,7 @@
     },
     {
       "en": "Auto accept all connections for next 5 minutes",
-      "fr": "Accepter automatiquement les connexions pendant les 5 prochaines minutes",
+      "fr": "Accepter automatiquement les connexions dans les 5 prochaines minutes",
       "xloc": [
         "coretranslations.json"
       ]
@@ -23251,7 +23251,7 @@
       "ja": "Web通知を有効にする",
       "ko": "웹 알림 사용",
       "nl": "Schakel webmeldingen in",
-      "pl": "Włącz powiadomienia przeglądarki",
+      "pl": "Włącz powiadomienia przeglądarki\n",
       "pt": "Ativar notificações da web",
       "pt-br": "Habilitar notificações da web",
       "ru": "Включить веб уведомления",
@@ -25886,7 +25886,7 @@
       "hi": "लिनक्स में, एजेंट को स्थापित करने के लिए टर्मिनल में निम्नलिखित को काटें और चिपकाएँ:",
       "it": "Per Linux, taglia e incolla quanto segue in un terminale per installare l'agente:",
       "ja": "Linuxの場合は、ターミナルで以下をカットアンドペーストしてエージェントをインストールします。",
-      "ko": "Linux의 경우, 다음을 잘라내어 터미널에 붙여 넣어 에이전트를 설치하십시오.",
+      "ko": "Linux의 경우, 다음을 잘라내어 터미널에 붙여 넣어 에이전트를 설치하십시오.\n",
       "nl": "Voor Linux, knip het volgende en plak dit in een terminal om de agent te installeren:",
       "pl": "W systemie Linuks, wytnij i wklej poniższe polecenia w terminalu, aby zainstalować agenta:",
       "pt": "Para Linux, recorte e cole o seguinte em um terminal para instalar o agente:",
@@ -26028,7 +26028,7 @@
     {
       "en": "Forcibly disconnected desktop session of user {0}",
       "nl": "Geforceerd verbroken desktopsessie van gebruiker {0}",
-      "fr": "Déconnexion forcée de la session de bureau pour l'utilisateur {0}",
+      "fr": "Déconnexion forcée de la session de bureau de l'utilisateur {0}",
       "xloc": [
         "default.handlebars->39->2238"
       ]
@@ -26036,7 +26036,7 @@
     {
       "en": "Forcibly disconnected files session of user {0}",
       "nl": "Geforceerd verbroken bestandssessie van gebruiker {0}",
-      "fr": "Déconnexion forcée de la session de fichier pour l'utilisateur {0}",
+      "fr": "Déconnexion forcée de la session d'accès à aux fichiers de l'utilisateur {0}",
       "xloc": [
         "default.handlebars->39->2240"
       ]
@@ -26044,7 +26044,7 @@
     {
       "en": "Forcibly disconnected routing session of user {0}",
       "nl": "Geforceerd verbroken routeringssessie van gebruiker {0}",
-      "fr": "Déconnexion forcée de la session de routage pour l'utilisateur {0}",
+      "fr": "Déconnexion forcée de la session de routage de l'utilisateur {0}",
       "xloc": [
         "default.handlebars->39->2241"
       ]
@@ -26052,7 +26052,7 @@
     {
       "en": "Forcibly disconnected terminal session of user {0}",
       "nl": "Geforceerd verbroken terminalsessie van gebruiker {0}",
-      "fr": "Déconnexion forcée du terminal pour l'utilisateur {0}",
+      "fr": "Déconnexion forcée de la session de terminal de l'utilisateur {0}",
       "xloc": [
         "default.handlebars->39->2239"
       ]
@@ -28707,15 +28707,14 @@
       "en": "IP KVM device",
       "nl": "IP KVM apparaat",
       "pl": "Urządzenie IP KVM",
-      "da": "IP KVM device",
-      "fr": "Appareil IP KVM"
+      "da": "IP KVM device"
     },
     {
       "en": "IP KVM port is up and ready for use.",
       "nl": "IP KVM poort is actief en klaar voor gebruik.",
       "pl": "Port IP KVM podniesiony i gotowy do użycia.",
       "da": "IP KVM-porten er oppe og klar til brug.",
-      "fr": "Le port IP KVM est opérationnel et prêt à être utilisé."
+      "fr": "Le port KVM IP est en ligne et prêt."
     },
     {
       "cs": "IP rozsah",
@@ -28775,7 +28774,7 @@
       "nl": "IP-KVM",
       "pl": "IP-KVM",
       "da": "IP-KVM",
-      "fr": "IP-KVM",
+      "fr": "KVM IP",
       "xloc": [
         "default-mobile.handlebars->11->248",
         "default-mobile.handlebars->11->305",
@@ -28799,7 +28798,7 @@
       "nl": "IP-KVM device",
       "pl": "Urządzenie IP-KVM",
       "da": "IP-KVM device",
-      "fr": "Appareil IP-KVM",
+      "fr": "Appareil KVM IP",
       "xloc": [
         "default-mobile.handlebars->11->619",
         "default.handlebars->39->1783"
@@ -28810,7 +28809,7 @@
       "nl": "IP-KVM poort verbonden",
       "pl": "Podłączono z portem IP-KVM",
       "da": "IP-KVM port forbundet",
-      "fr": "port IP-KVM connecté",
+      "fr": "Port KVM IP connecté",
       "xloc": [
         "default.handlebars->39->903",
         "default.handlebars->39->904"
@@ -28821,7 +28820,6 @@
       "nl": "IP-KVM poort is verbonden en klaar voor gebruik.",
       "pl": "Port IP-KVM podłączony i gotowy do użycia.",
       "da": "IP-KVM-porten er tilsluttet og klar til brug.",
-      "fr": "Le port IP-KVM est opérationnel et prêt à être utilisé.",
       "xloc": [
         "default.handlebars->39->350"
       ]
@@ -28831,7 +28829,6 @@
       "nl": "IP-KVM poort is actief en klaar voor gebruik.",
       "pl": "Port IP-KVM podniesiony i gotowy do użycia.",
       "da": "IP-KVM-porten er oppe og klar til brug.",
-      "fr": "Le port IP-KVM est opérationnel et prêt à être utilisé.",
       "xloc": [
         "default.handlebars->39->591"
       ]
@@ -33495,7 +33492,7 @@
       "nl": "Laatste toegang: {0}",
       "pl": "Ostatni dostęp: {0}",
       "da": "Seneste adgang: {0}",
-      "fr": "Dernier accès : {0}",
+      "fr": "Dernier accès: {0}",
       "xloc": [
         "default.handlebars->39->2279"
       ]
@@ -42777,7 +42774,6 @@
       "nl": "Uit",
       "pl": "Wyłącz",
       "da": "slukket",
-      "fr": "Éteint",
       "xloc": [
         "default-mobile.handlebars->11->230",
         "default-mobile.handlebars->11->238",
@@ -44919,7 +44915,7 @@
       "nl": "Uitschakelen uitvoeren?",
       "pl": "Czy wykonać wyłączenie?",
       "da": "Vil du slukke?",
-      "fr": "Éteindre ?",
+      "fr": "Eteindre ?",
       "xloc": [
         "default-mobile.handlebars->11->338",
         "default.handlebars->39->939"
@@ -44930,7 +44926,7 @@
       "nl": "Inschakelen uitvoeren?",
       "pl": "Czy wykonać uruchomienie?",
       "da": "Vil du tænde?",
-      "fr": "Démarrer ?",
+      "fr": "Allumer ?",
       "xloc": [
         "default-mobile.handlebars->11->340",
         "default.handlebars->39->941"
@@ -45940,7 +45936,7 @@
       "nl": "Aan/uit-schakelaar is klaar voor gebruik.",
       "pl": "Włącznik jest gotowy do użycia.",
       "da": "Power knap er klar til brug.",
-      "fr": "Power switch est prêt à être utilisé.",
+      "fr": "Interrupteur d'alimentation prêt",
       "xloc": [
         "default.handlebars->39->589"
       ]
@@ -47269,7 +47265,6 @@
       "en": "Raritan Dominion KX III",
       "nl": "Raritan Dominion KX III",
       "da": "Raritan Dominion KX III",
-      "fr": "Raritan Dominion KX III",
       "xloc": [
         "default.handlebars->39->1732"
       ]
@@ -55033,12 +55028,6 @@
       ]
     },
     {
-      "en": "Sharing desktop with: {0}",
-      "xloc": [
-        "coretranslations.json"
-      ]
-    },
-    {
       "cs": "Odkaz na sdílení vypršel.",
       "de": "Der Freigabelink ist abgelaufen.",
       "en": "Sharing link is expired.",
@@ -58477,7 +58466,7 @@
       "nl": "Schakelpoort verbonden",
       "pl": "Przełącz połączony port",
       "da": "Switch port forbundet",
-      "fr": "Le port du Switch est connecté.",
+      "fr": "Port du switch connecté",
       "xloc": [
         "default.handlebars->39->901",
         "default.handlebars->39->902"
@@ -58488,7 +58477,7 @@
       "nl": "Schakelpoort is klaar voor gebruik..",
       "pl": "Przełącz port na gotowy do użycia.",
       "da": "Switch port er klar til brug.",
-      "fr": "Le port du Switch est prêt à être utilisé.",
+      "fr": "Le port du switch est prêt.",
       "xloc": [
         "default.handlebars->39->348"
       ]
@@ -58523,7 +58512,7 @@
       "nl": "Synchroniseer de naam van de server met de poortnaam",
       "pl": "Synchronizuj nazwę urządzenia serwera na nazwę portu",
       "da": "Synkroniser serverenhedsnavnet med portnavnet",
-      "fr": "Synchronisation du nom du serveur avec le nom du port",
+      "fr": "Synchroniser le nom de l'appareil avec le nom du port",
       "xloc": [
         "default.handlebars->39->1923"
       ]
@@ -59394,7 +59383,7 @@
       "nl": "Het apparaat is uitgeschakeld",
       "pl": "To urządzenie jest wyłączone",
       "da": "Enheden er slukket",
-      "fr": "L'appareil est éteint",
+      "fr": "Cet appareil est éteint",
       "xloc": [
         "default-mobile.handlebars->11->246",
         "default.handlebars->39->588"
@@ -59763,7 +59752,7 @@
       "en": "This is a executable on OS's with graphical user interfaces. You need to 'chmod +x meshagent' and run this file.",
       "es": "Este es un ejecutable en sistemas operativos con interfaces gráficas de usuario. Necesita 'chmod + x meshagent' y ejecutar este archivo.",
       "fi": "Tämä on suoritettava käyttöjärjestelmissä, joissa on graafiset käyttöliittymät. Sinun on 'chmod + x meshagent' ja suoritettava tämä tiedosto.",
-      "fr": "Le fichier téléchargé avec la commande « Wget » fournie est un exécutable pour les systèmes avec une interface graphique. Vous devrez le rendre exécutable avant de pouvoir l’installer. (chmod +x meshcentral)",
+      "fr": "C'est un exécutable pour les OS avec interface graphique. Vous devrez 'chmod +x meshagent' et lancer ce fichier.",
       "hi": "यह OS के ग्राफिकल यूजर इंटरफेस के साथ एक निष्पादन योग्य है। आपको need chmod + x meshagent ’की जरूरत है और इस फाइल को चलाएं।",
       "it": "Questo è un eseguibile su sistemi operativi con interfacce utente grafiche. Devi 'chmod +x meshagent' ed eseguire questo file.",
       "ja": "これは、グラフィカルユーザーインターフェイスを備えたOS上で実行可能なファイルです。 'chmod + x meshagent'を実行して、このファイルを実行する必要があります。",
@@ -60389,7 +60378,7 @@
       "en": "To add a mobile device to group \\\"{0}\\\", download the MeshAgent application and scan this QR code.",
       "es": "Para agregar un dispositivo móvil al grupo \\\"{0}\\\", descarga la aplicación MeshAgent y escana éste código QR.",
       "fi": "Jos haluat lisätä mobiililaitteen ryhmään \\\"{0}\\\", lataa MeshAgent -sovellus ja skannaa tämä QR -koodi.",
-      "fr": "Pour ajouter un appareil mobile au groupe \\\"{0}\\\", téléchargez l'application MeshAgent et scannez ce QR Code.",
+      "fr": "Pour ajouter un appareil mobile au groupe \\\"{0}\\\", téléchargez l'applicatin MeshAgent et scannez ce QR Code.",
       "hi": "\\\"{0}\\\" समूह में मोबाइल डिवाइस जोड़ने के लिए, MeshAgent एप्लिकेशन डाउनलोड करें और इस क्यूआर कोड को स्कैन करें।",
       "it": "Per aggiungere un dispositivo mobile al gruppo \\\"{0}\\\", scarica l'applicazione MeshAgent e scansiona questo codice QR.",
       "ja": "グループ\\\"{0}\\\"にモバイルデバイスを追加するには、MeshAgentアプリケーションをダウンロードして、このQRコードをスキャンします。",
@@ -61596,7 +61585,7 @@
       "nn": "Uitschakelen",
       "pl": "Wyłącz",
       "da": "Sluk",
-      "fr": "Éteindre",
+      "fr": "Eteindre",
       "xloc": [
         "default-mobile.handlebars->11->324",
         "default-mobile.handlebars->11->325",
@@ -61608,7 +61597,7 @@
       "en": "Turn off.",
       "nl": "Uitschakelen",
       "da": "Sluk.",
-      "fr": "Éteindre.",
+      "fr": "Eteindre.",
       "xloc": [
         "default.handlebars->39->2237"
       ]
@@ -66167,7 +66156,6 @@
       "nl": "Web Power Switch 7",
       "pl": "Przełącznik Zasilania Web 7",
       "da": "Web Power Switch 7",
-      "fr": "Web Power Switch 7",
       "xloc": [
         "default.handlebars->39->1733"
       ]
@@ -71552,21 +71540,21 @@
     },
     {
       "en": "{0} requesting remote desktop access. Grant access?",
-      "fr": "{0} demande(s) d'utilisation du bureau distant. Autoriser l'accès ?",
+      "fr": "{0} demande l'accès à distance à votre bureau. Autoriser l'accès ?",
       "xloc": [
         "coretranslations.json"
       ]
     },
     {
       "en": "{0} requesting remote file Access. Grant access?",
-      "fr": "{0} demande(s) d'accès à un fichier distant. Autoriser l'accès ?",
+      "fr": "{0} demande l'accès à distance aux fichiers sur cet ordinateur. Autoriser l'accès ?",
       "xloc": [
         "coretranslations.json"
       ]
     },
     {
       "en": "{0} requesting remote terminal access. Grant access?",
-      "fr": "{0} demande(s) d'utilisation du terminal distant. Autoriser l'accès ?",
+      "fr": "{0} demande l'accès à distance au terminal. Autoriser l'accès ?",
       "xloc": [
         "coretranslations.json"
       ]
@@ -71822,24 +71810,6 @@
       "da": "{0} indstillinger (.msh)",
       "xloc": [
         "default.handlebars->39->529"
-      ]
-    },
-    {
-      "en": "{0} started a remote desktop session.",
-      "xloc": [
-        "coretranslations.json"
-      ]
-    },
-    {
-      "en": "{0} started a remote file session.",
-      "xloc": [
-        "coretranslations.json"
-      ]
-    },
-    {
-      "en": "{0} started a remote terminal session.",
-      "xloc": [
-        "coretranslations.json"
       ]
     },
     {

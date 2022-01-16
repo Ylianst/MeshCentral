@@ -3324,7 +3324,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'translations': {
-                response = JSON.stringify(coretranslations);
+                response = JSON.stringify(coretranslations, null, 2);
                 break;
             }
             case 'dhcp': // This command is only supported on Linux, this is because Linux does not give us the DNS suffix for each network adapter independently so we have to ask the DHCP server.

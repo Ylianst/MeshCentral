@@ -9,7 +9,7 @@
     "terminalNotify": "{0} started a remote terminal session.",
     "desktopNotify": "{0} started a remote desktop session.",
     "fileNotify": "{0} started a remote file session.",
-    "privacyBar":  "Sharing desktop with: {0}"
+    "privacyBar": "Sharing desktop with: {0}"
   },
   "cs": {
     "allow": "Dovolit",
@@ -29,7 +29,11 @@
   },
   "fr": {
     "allow": "Permettre",
-    "deny": "Refuser"
+    "deny": "Refuser",
+    "autoAllowForFive": "Accepter automatiquement les connexions pendant les 5 prochaines minutes",
+    "terminalConsent": "{0} demande(s) d'utilisation du terminal distant. Autoriser l'accès ?",
+    "desktopConsent": "{0} demande(s) d'utilisation du bureau distant. Autoriser l'accès ?",
+    "fileConsent": "{0} demande(s) d'accès à un fichier distant. Autoriser l'accès ?"
   },
   "hi": {
     "allow": "अनुमति",
@@ -45,7 +49,7 @@
   },
   "ko": {
     "allow": "허용하다",
-    "deny": "거부하다",
+    "deny": "거부",
     "terminalNotify": "원격 터미널 세션이 시작되었습니다: {0}",
     "desktopNotify": "원격 데스크톱 세션이 시작되었습니다: {0}",
     "fileNotify": "원격 파일 전송 세션이 시작되었습니다: {0}",
