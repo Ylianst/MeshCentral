@@ -149,6 +149,7 @@
       "_AutoRemoveInactiveDevices": 37,
       "_DeviceSearchBarServerAndClientName": false,
       "_loginKey": [ "abc", "123" ],
+      "_agentKey": [ "abc", "123" ],
       "_newAccounts": true,
       "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
       "_userNameIsEmail": true,
