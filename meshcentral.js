@@ -2403,7 +2403,7 @@ function CreateMeshCentralServer(config, args) {
     };
 
     // Escape a code string
-    obj.escapeCodeString = function (str) {
+    obj.escapeCodeString = function (str, keepUtf8) {
         const escapeCodeStringTable = { '\'': '\\\'', '\"': '\\"', '\\': '\\\\', '\b': '\\b', '\f': '\\f', '\n': '\\n', '\r': '\\r', '\t': '\\t' };
         var r = '', c, cr, table;
         for (var i = 0; i < str.length; i++) {
@@ -2411,6 +2411,8 @@ function CreateMeshCentralServer(config, args) {
             table = escapeCodeStringTable[c];
             if (table != null) {
                 r += table;
+            } else if (keepUtf8 === true) {
+                r += c;
             } else {
                 cr = c.charCodeAt(0);
                 if ((cr >= 32) && (cr <= 127)) { r += c; }
@@ -2477,20 +2479,22 @@ function CreateMeshCentralServer(config, args) {
             if (modulesDir != null) {
                 for (var i in modulesDir) {
                     if (modulesDir[i].toLowerCase().endsWith('.json')) {
+                        // We are adding a JSON file to the meshcores
                         var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 5);
                         if (moduleName.endsWith('.min')) { moduleName = moduleName.substring(0, moduleName.length - 6); } // Remove the ".min" for ".min.json" files.
-                        var d = obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('utf8').split('\'').join('\\\'');
-                        var moduleData = ['var ', moduleName, ' = JSON.parse(\'', d, '\');\r\n'];
+                        const jsonData = obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('utf8'), true);
+                        const moduleData = ['var ', moduleName, ' = JSON.parse(\'', jsonData, '\');\r\n'];
 
-                        // Add to all cores
+                        // Add to all major cores
                         modulesAdd['windows-amt'].push(...moduleData);
                         modulesAdd['linux-amt'].push(...moduleData);
                         modulesAdd['linux-noamt'].push(...moduleData);
                     }
                     if (modulesDir[i].toLowerCase().endsWith('.js')) {
+                        // We are adding a JS file to the meshcores
                         var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
                         if (moduleName.endsWith('.min')) { moduleName = moduleName.substring(0, moduleName.length - 4); } // Remove the ".min" for ".min.js" files.
-                        var moduleData = [ 'try { addModule("', moduleName, '", "', obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')), '"); addedModules.push("', moduleName, '"); } catch (e) { }\r\n' ];
+                        const moduleData = [ 'try { addModule("', moduleName, '", "', obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')), '"); addedModules.push("', moduleName, '"); } catch (e) { }\r\n' ];
 
                         // Merge this module
                         // NOTE: "smbios" module makes some non-AI Linux segfault, only include for IA platforms.
@@ -2513,19 +2517,15 @@ function CreateMeshCentralServer(config, args) {
                         }
 
                         // Merge this module to recovery modules if needed
-                        if (modulesAdd['windows-recovery'] != null)
-                        {
-                            if ((moduleName == 'win-console') || (moduleName == 'win-message-pump') || (moduleName == 'win-terminal') || (moduleName == 'win-virtual-terminal'))
-                            {
+                        if (modulesAdd['windows-recovery'] != null) {
+                            if ((moduleName == 'win-console') || (moduleName == 'win-message-pump') || (moduleName == 'win-terminal') || (moduleName == 'win-virtual-terminal')) {
                                 modulesAdd['windows-recovery'].push(...moduleData);
                             }
                         }
 
                         // Merge this module to agent recovery modules if needed
-                        if (modulesAdd['windows-agentrecovery'] != null)
-                        {
-                            if ((moduleName == 'win-console') || (moduleName == 'win-message-pump') || (moduleName == 'win-terminal') || (moduleName == 'win-virtual-terminal'))
-                            {
+                        if (modulesAdd['windows-agentrecovery'] != null) {
+                            if ((moduleName == 'win-console') || (moduleName == 'win-message-pump') || (moduleName == 'win-terminal') || (moduleName == 'win-virtual-terminal')) {
                                 modulesAdd['windows-agentrecovery'].push(...moduleData);
                             }
                         }
@@ -2551,11 +2551,12 @@ function CreateMeshCentralServer(config, args) {
                 obj.defaultMeshCoresHash[i] = obj.crypto.createHash('sha384').update(obj.defaultMeshCores[i]).digest('binary');
                 obj.debug('main', 'Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.');
 
+                // These lines will write all modules to files. Great for debugging.
                 //console.log('Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.'); // DEBUG, Print the core size
                 //obj.fs.writeFile("C:\\temp\\" + i + ".js", obj.defaultMeshCores[i].slice(4), function () { }); // DEBUG, Write the core to file
 
                 // Compress the mesh cores with DEFLATE
-                var callback = function MeshCoreDeflateCb(err, buffer) { if (err == null) { obj.defaultMeshCoresDeflate[MeshCoreDeflateCb.i] = buffer; } }
+                const callback = function MeshCoreDeflateCb(err, buffer) { if (err == null) { obj.defaultMeshCoresDeflate[MeshCoreDeflateCb.i] = buffer; } }
                 callback.i = i;
                 require('zlib').deflate(obj.defaultMeshCores[i], { level: require('zlib').Z_BEST_COMPRESSION }, callback);
             }
