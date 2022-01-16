@@ -1675,7 +1675,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 command.image = images[0].image;
                             } else {
                                 // Send back the default image if required
-                                if (command.default) {
+                                if ((command.default) || (command.sentDefault)) {
                                     try { command.image = 'data:image/png;base64,' + Buffer.from(parent.fs.readFileSync(parent.parent.path.join(__dirname, 'public', 'images', 'user-128.png')), 'binary').toString('base64'); } catch (ex) { }
                                 }
                             }
