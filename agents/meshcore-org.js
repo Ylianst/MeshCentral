@@ -423,7 +423,7 @@ function updateRegisteredAppsToServer() {
     if ((obj.DAIPC == null) || (obj.DAIPC._daipc == null)) return;
     var apps = {};
     for (var i in obj.DAIPC._daipc) { if (apps[obj.DAIPC._daipc[i]._registered] == null) { apps[obj.DAIPC._daipc[i]._registered] = 1; } else { apps[obj.DAIPC._daipc[i]._registered]++; } }
-    try { mesh.SendCommand({ action: 'sessions', type: 'app', value: apps }); } catch (ex) { }
+    try { mesh.SendCommand({ action: 'sessions', type: 'app', value: apps }); } catch (e) { }
 }
 
 // Remove a registered app
@@ -434,14 +434,16 @@ function removeRegisteredApp(pipe) {
 
 function diagnosticAgent_uninstall() {
     require('service-manager').manager.uninstallService('meshagentDiagnostic');
-    require('task-scheduler').delete('meshagentDiagnostic/periodicStart'); // TODO: Using "delete" here breaks the minifier since this is a reserved keyword
+    require('task-scheduler').delete('meshagentDiagnostic/periodicStart');
 }
 function diagnosticAgent_installCheck(install) {
     try {
         var diag = require('service-manager').manager.getService('meshagentDiagnostic');
         return (diag);
-    } catch (ex) { }
-    if (!install) { return null; }
+    }
+    catch (e) {
+    }
+    if (!install) { return (null); }
 
     var svc = null;
     try {
@@ -456,7 +458,9 @@ function diagnosticAgent_installCheck(install) {
             });
         svc = require('service-manager').manager.getService('meshagentDiagnostic');
     }
-    catch (ex) { return null; }
+    catch (e) {
+        return (null);
+    }
     var proxyConfig = require('global-tunnel').proxyConfig;
     var cert = require('MeshAgent').GenerateAgentCertificate('CN=MeshNodeDiagnosticCertificate');
     var nodeid = require('tls').loadCertificate(cert.root).getKeyHash().toString('base64');
@@ -469,7 +473,8 @@ function diagnosticAgent_installCheck(install) {
     if (cert.tls) { ddb.Put('SelfNodeTlsCert', cert.tls.pfx); }
     if (proxyConfig) {
         ddb.Put('WebProxy', proxyConfig.host + ':' + proxyConfig.port);
-    } else {
+    }
+    else {
         ddb.Put('ignoreProxyFile', '1');
     }
 
@@ -494,7 +499,7 @@ if ((require('fs').existsSync(process.cwd() + 'batterystate.txt')) && (require('
             try {
                 require('MeshAgent')._batteryFileTimer = null;
                 var data = null;
-                try { data = require('fs').readFileSync(process.cwd() + 'batterystate.txt').toString(); } catch (ex) { }
+                try { data = require('fs').readFileSync(process.cwd() + 'batterystate.txt').toString(); } catch (e) { }
                 if ((data != null) && (data.length < 10)) {
                     data = data.split(',');
                     if ((data.length == 2) && ((data[0] == 'ac') || (data[0] == 'dc'))) {
@@ -502,7 +507,7 @@ if ((require('fs').existsSync(process.cwd() + 'batterystate.txt')) && (require('
                         if ((level >= 0) && (level <= 100)) { require('MeshAgent').SendCommand({ action: 'battery', state: data[0], level: level }); }
                     }
                 }
-            } catch (ex) { }
+            } catch (e) { }
         }, 1000);
     });
 }
@@ -531,7 +536,8 @@ else {
             });
         }
     }
-    catch (ex) { }
+    catch (e) {
+    }
 }
 
 
@@ -539,7 +545,7 @@ else {
 var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? ((process.versions.compileTime ? process.versions.compileTime : '').split(', ')[1].replace('  ', ' ') + ', ' + crc32c(require('MeshAgent').coreHash)) : ('MeshCore v6')), caps: 14, root: require('user-sessions').isRoot() }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent
 
 // Get the operating system description string
-try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (ex) { }
+try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (e) { }
 
 
 // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
@@ -570,7 +576,7 @@ try {
     userSession.emit('changed');
     //userSession.on('locked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has LOCKED the desktop'); });
     //userSession.on('unlocked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has UNLOCKED the desktop'); });
-} catch (ex) { }
+} catch (e) { }
 
 var meshServerConnectionState = 0;
 var tunnels = {};
@@ -631,7 +637,7 @@ if (mesh.hasKVM == 1) {   // if the agent is compiled with KVM support
         } else if (process.platform == 'linux' || process.platform == 'freebsd') {
             require('monitor-info').on('kvmSupportDetected', function (value) { meshCoreObj.caps |= 1; meshCoreObjChanged(); });
         }
-    } catch (ex) { }
+    } catch (e) { }
 }
 mesh.DAIPC = obj.DAIPC;
 
@@ -642,7 +648,7 @@ try {
     networkMonitor.on('change', function () { sendNetworkUpdateNagle(); });
     networkMonitor.on('add', function (addr) { sendNetworkUpdateNagle(); });
     networkMonitor.on('remove', function (addr) { sendNetworkUpdateNagle(); });
-} catch (ex) { networkMonitor = null; }
+} catch (e) { networkMonitor = null; }
 */
 
 // Fetch the SMBios Tables
@@ -650,7 +656,7 @@ var SMBiosTables = null;
 var SMBiosTablesRaw = null;
 try {
     var SMBiosModule = null;
-    try { SMBiosModule = require('smbios'); } catch (ex) { }
+    try { SMBiosModule = require('smbios'); } catch (e) { }
     if (SMBiosModule != null) {
         SMBiosModule.get(function (data) {
             if (data != null) {
@@ -670,14 +676,14 @@ try {
             }
         });
     }
-} catch (ex) { sendConsoleText("ex1: " + ex); }
+} catch (e) { sendConsoleText("ex1: " + e); }
 
 // Try to load up the WIFI scanner
 try {
     var wifiScannerLib = require('wifi-scanner');
     wifiScanner = new wifiScannerLib();
     wifiScanner.on('accessPoint', function (data) { sendConsoleText("wifiScanner: " + data); });
-} catch (ex) { wifiScannerLib = null; wifiScanner = null; }
+} catch (e) { wifiScannerLib = null; wifiScanner = null; }
 
 // Get our location (lat/long) using our public IP address
 var getIpLocationDataExInProgress = false;
@@ -700,7 +706,7 @@ function getIpLocationDataEx(func) {
                             var result = JSON.parse(geoData);
                             if (result.ip && result.loc) { location = result; }
                         }
-                    } catch (ex) { }
+                    } catch (e) { }
                     if (func) { getIpLocationDataExCounts[1]++; func(location); }
                 }
             } else
@@ -709,7 +715,7 @@ function getIpLocationDataEx(func) {
         }).end();
         return true;
     }
-    catch (ex) { return false; }
+    catch (e) { return false; }
 }
 
 // Setup script task. Allows running scripts at scheduled intervals
@@ -919,7 +925,7 @@ function sendWakeOnLanEx(hexMacList) {
                             require('MeshAgent').wakesockets.sockets.push(socket);
                             ++ret;
                         }
-                        catch (ex) { }
+                        catch (e) { }
                     }
                 }
             }
@@ -933,7 +939,7 @@ function sendWakeOnLanEx(hexMacList) {
         ret = require('MeshAgent').wakesockets.sockets.length;
     }
 
-    return ret;
+    return (ret);
 }
 
 function server_promise_default(res, rej) {
@@ -941,13 +947,13 @@ function server_promise_default(res, rej) {
     this.reject = rej;
 }
 function server_getUserImage(userid) {
-    var xpromise = require('promise');
-    var ret = new xpromise(server_promise_default);
+    var promise = require('promise');
+    var ret = new promise(server_promise_default);
 
     if (require('MeshAgent')._promises == null) { require('MeshAgent')._promises = {}; }
     require('MeshAgent')._promises[ret._hashCode()] = ret;
-    require('MeshAgent').SendCommand({ action: 'getUserImage', userid: userid, promise: ret._hashCode(), sentDefault: true });
-    return ret;
+    require('MeshAgent').SendCommand({ action: 'getUserImage', userid: userid, promise: ret._hashCode(), default: true });
+    return (ret);
 }
 require('MeshAgent')._consentTimers = {};
 function server_set_consentTimer(id) {
@@ -955,10 +961,14 @@ function server_set_consentTimer(id) {
 }
 function server_check_consentTimer(id) {
     if (require('MeshAgent')._consentTimers[id] != null) {
-        if ((new Date()) - require('MeshAgent')._consentTimers[id] < (60000 * 5)) return true;
-        require('MeshAgent')._consentTimers[id] = null;
+        if ((new Date()) - require('MeshAgent')._consentTimers[id] < (60000 * 5)) {
+            return (true);
+        }
+        else {
+            require('MeshAgent')._consentTimers[id] = null;
+        }
     }
-    return false;
+    return (false);
 }
 
 // Handle a mesh agent command
@@ -1080,7 +1090,7 @@ function handleServerCommand(data) {
                         // Display a message box
                         if (data.title && data.msg) {
                             MeshServerLogEx(18, [data.title, data.msg], "Displaying message box, title=" + data.title + ", message=" + data.msg, data);
-                            try { require('message-box').create(data.title, data.msg, 120).then(function () { }).catch(function () { }); } catch (ex) { }
+                            try { require('message-box').create(data.title, data.msg, 120).then(function () { }).catch(function () { }); } catch (e) { }
                         }
                         break;
                     }
@@ -1129,14 +1139,14 @@ function handleServerCommand(data) {
                         // Kill a process
                         if (data.value) {
                             MeshServerLogEx(19, [data.value], "Killing process " + data.value, data);
-                            try { process.kill(data.value); } catch (ex) { sendConsoleText("pskill: " + JSON.stringify(e)); }
+                            try { process.kill(data.value); } catch (e) { sendConsoleText("pskill: " + JSON.stringify(e)); }
                         }
                         break;
                     }
                     case 'services': {
                         // Return the list of installed services
                         var services = null;
-                        try { services = require('service-manager').manager.enumerateService(); } catch (ex) { }
+                        try { services = require('service-manager').manager.enumerateService(); } catch (e) { }
                         if (services != null) { mesh.SendCommand({ action: 'msg', type: 'services', value: JSON.stringify(services), sessionid: data.sessionid }); }
                         break;
                     }
@@ -1145,7 +1155,7 @@ function handleServerCommand(data) {
                         try {
                             var service = require('service-manager').manager.getService(data.serviceName);
                             if (service != null) { service.stop(); }
-                        } catch (ex) { }
+                        } catch (e) { }
                         break;
                     }
                     case 'serviceStart': {
@@ -1153,7 +1163,7 @@ function handleServerCommand(data) {
                         try {
                             var service = require('service-manager').manager.getService(data.serviceName);
                             if (service != null) { service.start(); }
-                        } catch (ex) { }
+                        } catch (e) { }
                         break;
                     }
                     case 'serviceRestart': {
@@ -1161,7 +1171,7 @@ function handleServerCommand(data) {
                         try {
                             var service = require('service-manager').manager.getService(data.serviceName);
                             if (service != null) { service.restart(); }
-                        } catch (ex) { }
+                        } catch (e) { }
                         break;
                     }
                     case 'deskBackground':
@@ -1194,7 +1204,7 @@ function handleServerCommand(data) {
                                     if (current != '/dev/null') { require('MeshAgent')._wallpaper = current; }
                                     require('linux-gnome-helpers').setDesktopWallpaper(id, current != '/dev/null' ? undefined : require('MeshAgent')._wallpaper);
                                 }
-                            } catch (ex) {
+                            } catch (e) {
                                 sendConsoleText(e);
                             }
                             break;
@@ -1321,7 +1331,7 @@ function handleServerCommand(data) {
                 // data.runAsUser: 0=Agent,1=UserOrAgent,2=UserOnly
                 var options = {};
                 if (data.runAsUser > 0) {
-                    try { options.uid = require('user-sessions').consoleUid(); } catch (ex) { }
+                    try { options.uid = require('user-sessions').consoleUid(); } catch (e) { }
                     options.type = require('child_process').SpawnTypes.TERM;
                 }
                 if (data.runAsUser == 2) {
@@ -1368,7 +1378,7 @@ function handleServerCommand(data) {
                 }
 
                 if (require('service-manager').manager.getService(agentName).isMe()) {
-                    try { diagnosticAgent_uninstall(); } catch (ex) { }
+                    try { diagnosticAgent_uninstall(); } catch (e) { }
                     var js = "require('service-manager').manager.getService('" + agentName + "').stop(); require('service-manager').manager.uninstallService('" + agentName + "'); process.exit();";
                     this.child = require('child_process').execFile(process.execPath, [process.platform == 'win32' ? (process.execPath.split('\\').pop()) : (process.execPath.split('/').pop()), '-b64exec', Buffer.from(js).toString('base64')], { type: 4, detached: true });
                 }
@@ -1396,7 +1406,7 @@ function handleServerCommand(data) {
                 if (data.title && data.msg) {
                     MeshServerLogEx(26, [data.title, data.msg], "Displaying toast message, title=" + data.title + ", message=" + data.msg, data);
                     data.msg = data.msg.split('\r').join('\\r').split('\n').join('\\n');
-                    try { require('toaster').Toast(data.title, data.msg); } catch (ex) { }
+                    try { require('toaster').Toast(data.title, data.msg); } catch (e) { }
                 }
                 break;
             }
@@ -1450,7 +1460,7 @@ function handleServerCommand(data) {
             case 'ping': { mesh.SendCommand('{"action":"pong"}'); break; }
             case 'pong': { break; }
             case 'plugin': {
-                try { require(data.plugin).consoleaction(data, data.rights, data.sessionid, this); } catch (ex) { throw ex; }
+                try { require(data.plugin).consoleaction(data, data.rights, data.sessionid, this); } catch (e) { throw e; }
                 break;
             }
             case 'coredump':
@@ -1571,7 +1581,7 @@ function downloadFile(downloadoptions) {
 function handleApfJsonControl(data) {
     if (data.action == 'console') { addAmtEvent(data.msg); } // Add console message to AMT event log
     if (data.action == 'mestate') { amt.getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
-    if (data.action == 'close') { try { apftunnel.disconnect(); } catch (ex) { } apftunnel = null; } // Close the CIRA-LMS connection
+    if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; } // Close the CIRA-LMS connection
     if (amt.amtMei != null) {
         if (data.action == 'deactivate') { // Request CCM deactivation
             amt.amtMei.unprovision(1, function (status) { if (apftunnel) apftunnel.sendMeiDeactivationState(status); }); // 0 = Success
@@ -1640,18 +1650,18 @@ function getSystemInformation(func) {
         if (results.hardware && results.hardware.windows) {
             // Remove extra entries and things that change quickly
             var x = results.hardware.windows.osinfo;
-            try { delete x.FreePhysicalMemory; } catch (ex) { }
-            try { delete x.FreeSpaceInPagingFiles; } catch (ex) { }
-            try { delete x.FreeVirtualMemory; } catch (ex) { }
-            try { delete x.LocalDateTime; } catch (ex) { }
-            try { delete x.MaxProcessMemorySize; } catch (ex) { }
-            try { delete x.TotalVirtualMemorySize; } catch (ex) { }
-            try { delete x.TotalVisibleMemorySize; } catch (ex) { }
+            try { delete x.FreePhysicalMemory; } catch (e) { }
+            try { delete x.FreeSpaceInPagingFiles; } catch (e) { }
+            try { delete x.FreeVirtualMemory; } catch (e) { }
+            try { delete x.LocalDateTime; } catch (e) { }
+            try { delete x.MaxProcessMemorySize; } catch (e) { }
+            try { delete x.TotalVirtualMemorySize; } catch (e) { }
+            try { delete x.TotalVisibleMemorySize; } catch (e) { }
             try {
                 if (results.hardware.windows.memory) { for (var i in results.hardware.windows.memory) { delete results.hardware.windows.memory[i].Node; } }
                 if (results.hardware.windows.osinfo) { delete results.hardware.windows.osinfo.Node; }
                 if (results.hardware.windows.partitions) { for (var i in results.hardware.windows.partitions) { delete results.hardware.windows.partitions[i].Node; } }
-            } catch (ex) { }
+            } catch (e) { }
         }
         results.hardware.agentvers = process.versions;
         var hasher = require('SHA384Stream').create();
@@ -1692,7 +1702,7 @@ function getSystemInformation(func) {
             func(results);
         }
         */
-    } catch (ex) { func(null, e); }
+    } catch (e) { func(null, e); }
 }
 
 // Get a formated response for a given directory path
@@ -1701,7 +1711,7 @@ function getDirectoryInfo(reqpath) {
     if (((reqpath == undefined) || (reqpath == '')) && (process.platform == 'win32')) {
         // List all the drives in the root, or the root itself
         var results = null;
-        try { results = fs.readDrivesSync(); } catch (ex) { } // TODO: Anyway to get drive total size and free space? Could draw a progress bar.
+        try { results = fs.readDrivesSync(); } catch (e) { } // TODO: Anyway to get drive total size and free space? Could draw a progress bar.
         if (results != null) {
             for (var i = 0; i < results.length; ++i) {
                 var drive = { n: results[i].name, t: 1 };
@@ -1714,14 +1724,14 @@ function getDirectoryInfo(reqpath) {
         if (reqpath == '') { reqpath = '/'; }
         var results = null, xpath = obj.path.join(reqpath, '*');
         //if (process.platform == "win32") { xpath = xpath.split('/').join('\\'); }
-        try { results = fs.readdirSync(xpath); } catch (ex) { }
-        try { if ((results != null) && (results.length == 0) && (fs.existsSync(reqpath) == false)) { results = null; } } catch (ex) { }
+        try { results = fs.readdirSync(xpath); } catch (e) { }
+        try { if ((results != null) && (results.length == 0) && (fs.existsSync(reqpath) == false)) { results = null; } } catch (e) { }
         if (results != null) {
             for (var i = 0; i < results.length; ++i) {
                 if ((results[i] != '.') && (results[i] != '..')) {
                     var stat = null, p = obj.path.join(reqpath, results[i]);
                     //if (process.platform == "win32") { p = p.split('/').join('\\'); }
-                    try { stat = fs.statSync(p); } catch (ex) { } // TODO: Get file size/date
+                    try { stat = fs.statSync(p); } catch (e) { } // TODO: Get file size/date
                     if ((stat != null) && (stat != undefined)) {
                         if (stat.isDirectory() == true) {
                             response.dir.push({ n: results[i], t: 2, d: stat.mtime });
@@ -1769,7 +1779,7 @@ function onTunnelUpgrade(response, s, head) {
         if (s.httprequest.userid != null) {
             var userid = getUserIdAndGuestNameFromHttpRequest(s.httprequest);
             if (tunnelUserCount.tcp[userid] == null) { tunnelUserCount.tcp[userid] = 1; } else { tunnelUserCount.tcp[userid]++; }
-            try { mesh.SendCommand({ action: 'sessions', type: 'tcp', value: tunnelUserCount.tcp }); } catch (ex) { }
+            try { mesh.SendCommand({ action: 'sessions', type: 'tcp', value: tunnelUserCount.tcp }); } catch (e) { }
             broadcastSessionsToRegisteredApps();
         }
     } if (this.udpport != null) {
@@ -1787,7 +1797,7 @@ function onTunnelUpgrade(response, s, head) {
         if (s.httprequest.userid != null) {
             var userid = getUserIdAndGuestNameFromHttpRequest(s.httprequest);
             if (tunnelUserCount.udp[userid] == null) { tunnelUserCount.udp[userid] = 1; } else { tunnelUserCount.udp[userid]++; }
-            try { mesh.SendCommand({ action: 'sessions', type: 'udp', value: tunnelUserCount.tcp }); } catch (ex) { }
+            try { mesh.SendCommand({ action: 'sessions', type: 'udp', value: tunnelUserCount.tcp }); } catch (e) { }
             broadcastSessionsToRegisteredApps();
         }
     } else {
@@ -1853,12 +1863,12 @@ function onTunnelClosed() {
         if (this.httprequest.tcpport != null) {
             var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest);
             if (tunnelUserCount.tcp[userid] != null) { tunnelUserCount.tcp[userid]--; if (tunnelUserCount.tcp[userid] <= 0) { delete tunnelUserCount.tcp[userid]; } }
-            try { mesh.SendCommand({ action: 'sessions', type: 'tcp', value: tunnelUserCount.tcp }); } catch (ex) { }
+            try { mesh.SendCommand({ action: 'sessions', type: 'tcp', value: tunnelUserCount.tcp }); } catch (e) { }
             broadcastSessionsToRegisteredApps();
         } else if (this.httprequest.udpport != null) {
             var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest);
             if (tunnelUserCount.udp[userid] != null) { tunnelUserCount.udp[userid]--; if (tunnelUserCount.udp[userid] <= 0) { delete tunnelUserCount.udp[userid]; } }
-            try { mesh.SendCommand({ action: 'sessions', type: 'udp', value: tunnelUserCount.udp }); } catch (ex) { }
+            try { mesh.SendCommand({ action: 'sessions', type: 'udp', value: tunnelUserCount.udp }); } catch (e) { }
             broadcastSessionsToRegisteredApps();
         }
     }
@@ -1902,9 +1912,9 @@ function onTunnelClosed() {
 
     // Clean up WebRTC
     if (this.webrtc != null) {
-        if (this.webrtc.rtcchannel) { try { this.webrtc.rtcchannel.close(); } catch (ex) { } this.webrtc.rtcchannel.removeAllListeners('data'); this.webrtc.rtcchannel.removeAllListeners('end'); delete this.webrtc.rtcchannel; }
+        if (this.webrtc.rtcchannel) { try { this.webrtc.rtcchannel.close(); } catch (e) { } this.webrtc.rtcchannel.removeAllListeners('data'); this.webrtc.rtcchannel.removeAllListeners('end'); delete this.webrtc.rtcchannel; }
         if (this.webrtc.websocket) { delete this.webrtc.websocket; }
-        try { this.webrtc.close(); } catch (ex) { }
+        try { this.webrtc.close(); } catch (e) { }
         this.webrtc.removeAllListeners('connected');
         this.webrtc.removeAllListeners('disconnected');
         this.webrtc.removeAllListeners('dataChannel');
@@ -1914,6 +1924,7 @@ function onTunnelClosed() {
     // Clean up WebSocket
     this.removeAllListeners('data');
 }
+
 function onTunnelSendOk() { /*sendConsoleText("Tunnel #" + this.index + " SendOK.", this.sessionid);*/ }
 function onTunnelData(data) {
     //console.log("OnTunnelData");
@@ -1925,11 +1936,11 @@ function onTunnelData(data) {
         if (data[0] == 0) {
             // If data starts with zero, skip the first byte. This is used to escape binary file data from JSON.
             this.httprequest.uploadFileSize += (data.length - 1);
-            try { fs.writeSync(this.httprequest.uploadFile, data, 1, data.length - 1); } catch (ex) { sendConsoleText('FileUpload Error'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
+            try { fs.writeSync(this.httprequest.uploadFile, data, 1, data.length - 1); } catch (e) { sendConsoleText('FileUpload Error'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
         } else {
             // If data does not start with zero, save as-is.
             this.httprequest.uploadFileSize += data.length;
-            try { fs.writeSync(this.httprequest.uploadFile, data); } catch (ex) { sendConsoleText('FileUpload Error'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
+            try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { sendConsoleText('FileUpload Error'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
         }
         this.write(Buffer.from(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data.
         return;
@@ -1955,8 +1966,8 @@ function onTunnelData(data) {
                 //
                 var stats = null;
                 if ((process.platform != 'win32') && (this.httprequest.xoptions.file.startsWith('/') == false)) { this.httprequest.xoptions.file = '/' + this.httprequest.xoptions.file; }
-                try { stats = require('fs').statSync(this.httprequest.xoptions.file) } catch (ex) { }
-                try { if (stats) { this.httprequest.downloadFile = fs.createReadStream(this.httprequest.xoptions.file, { flags: 'rbN' }); } } catch (ex) { }
+                try { stats = require('fs').statSync(this.httprequest.xoptions.file) } catch (e) { }
+                try { if (stats) { this.httprequest.downloadFile = fs.createReadStream(this.httprequest.xoptions.file, { flags: 'rbN' }); } } catch (e) { }
                 if (this.httprequest.downloadFile) {
                     MeshServerLogEx(106, [this.httprequest.xoptions.file, stats.size], 'Download: \"' + this.httprequest.xoptions.file + '\", Size: ' + stats.size, this.httprequest);
                     //sendConsoleText('BasicFileTransfer, ok, ' + this.httprequest.xoptions.file + ', ' + JSON.stringify(stats));
@@ -2005,7 +2016,7 @@ function onTunnelData(data) {
                     if (this.httprequest.userid != null) {
                         var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest);
                         if (tunnelUserCount.terminal[userid] != null) { tunnelUserCount.terminal[userid]--; if (tunnelUserCount.terminal[userid] <= 0) { delete tunnelUserCount.terminal[userid]; } }
-                        try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (ex) { }
+                        try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (e) { }
                         broadcastSessionsToRegisteredApps();
                     }
 
@@ -2140,8 +2151,8 @@ function onTunnelData(data) {
                                     });
                                 }
                             }
-                            catch (ex) {
-                                this.httprequest.connectionPromise._rej('Failed to start remote terminal session, ' + ex.toString());
+                            catch (e) {
+                                this.httprequest.connectionPromise._rej('Failed to start remote terminal session, ' + e.toString());
                             }
                         }
                         else {
@@ -2182,8 +2193,8 @@ function onTunnelData(data) {
                                     this.httprequest.connectionPromise._rej('Failed to start remote terminal session, no shell found');
                                 }
                             }
-                            catch (ex) {
-                                this.httprequest.connectionPromise._rej('Failed to start remote terminal session, ' + ex.toString());
+                            catch (e) {
+                                this.httprequest.connectionPromise._rej('Failed to start remote terminal session, ' + e.toString());
                             }
                         }
 
@@ -5004,4 +5015,3 @@ function onWebSocketUpgrade(response, s, head) {
 
 mesh.AddCommandHandler(handleServerCommand);
 mesh.AddConnectHandler(handleServerConnection);
-
