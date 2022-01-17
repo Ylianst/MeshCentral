@@ -3618,11 +3618,36 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             obj.db.Get('deviceshare-' + c.pid, function (err, docs) {
                 if ((err != null) || (docs == null) || (docs.length != 1)) { res.sendStatus(404); return; }
                 const doc = docs[0];
+
+                // If this is a recurrent share, check if we are at the currect time to make use of it
+                if (typeof doc.recurring == 'number') {
+                    const now = Date.now();
+                    if (now >= doc.startTime) { // We don't want to move the validity window before the start time
+                        const deltaTime = (now - doc.startTime);
+                        if (doc.recurring === 1) {
+                            // This moves the start time to the next valid daily window
+                            const oneDay = (24 * 60 * 60 * 1000);
+                            var addition = Math.floor(deltaTime / oneDay);
+                            if ((deltaTime - (addition * oneDay)) > (doc.duration * 60000)) { addition++; } // If we are passed the current windows, move to the next one. This will show link as not being valid yet.
+                            doc.startTime += (addition * oneDay);
+                        } else if (doc.recurring === 2) {
+                            // This moves the start time to the next valid weekly window
+                            const oneWeek = (7 * 24 * 60 * 60 * 1000);
+                            var addition = Math.floor(deltaTime / oneWeek);
+                            if ((deltaTime - (addition * oneWeek)) > (doc.duration * 60000)) { addition++; } // If we are passed the current windows, move to the next one. This will show link as not being valid yet.
+                            doc.startTime += (addition * oneWeek);
+                        }
+                    }
+                }
+
                 // Generate an old style cookie from the information in the database
                 var cookie = { a: 5, p: doc.p, gn: doc.guestName, nid: doc.nodeid, cf: doc.consent, pid: doc.publicid, k: doc.extrakey };
                 if (doc.userid) { cookie.uid = doc.userid; }
                 if ((cookie.userid == null) && (cookie.pid.startsWith('AS:node/'))) { cookie.nouser = 1; }
-                if ((doc.startTime != null) && (doc.expireTime != null)) { cookie.start = doc.startTime; cookie.expire = doc.expireTime; }
+                if (doc.startTime != null) {
+                    if (doc.expireTime != null) { cookie.start = doc.startTime; cookie.expire = doc.expireTime; }
+                    else if (doc.duration != null) { cookie.start = doc.startTime; cookie.expire = doc.startTime + (doc.duration * 60000); }
+                }
                 if (doc.viewOnly === true) { cookie.vo = 1; }
                 handleSharingRequestEx(req, res, domain, cookie);
             });
