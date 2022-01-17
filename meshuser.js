@@ -3834,6 +3834,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 else if ((command.end != null) && (typeof command.end != 'number')) { err = 'Invalid end time'; } // Check the end time in UTC seconds
                 else if (common.validateInt(command.consent, 0, 256) == false) { err = 'Invalid flags'; } // Check the flags
                 else if (common.validateInt(command.p, 1, 7) == false) { err = 'Invalid protocol'; } // Check the protocol, 1 = Terminal, 2 = Desktop, 4 = Files
+                else if ((command.recurring != null) && (common.validateInt(command.recurring, 1, 2) == false)) { err = 'Invalid recurring value'; } // Check the recurring value, 1 = Daily, 2 = Weekly
+                else if ((command.recurring != null) && ((command.end != null) || (command.start == null) || (command.expire == null))) { err = 'Invalid recurring command'; }
                 else if ((command.expire == null) && ((command.start == null) || (command.end == null) || (command.start > command.end))) { err = 'No time specified'; } // Check that a time range is present
                 else {
                     if (command.nodeid.split('/').length == 1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
@@ -3893,8 +3895,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_REMOTEVIEWONLY) != 0)) { command.viewOnly = true; command.p = (command.p & 1); }
 
                     // Create cookie
-                    var publicid = getRandomPassword(), startTime = null, expireTime = null;
-                    if (command.expire != null) {
+                    var publicid = getRandomPassword(), startTime = null, expireTime = null, duration = null;
+                    if (command.recurring) {
+                        // Recurring share
+                        startTime = command.start * 1000;
+                        duration = command.expire;
+                    } else if (command.expire != null) {
                         if (command.expire !== 0) {
                             // Now until expire in hours
                             startTime = Date.now();
@@ -3911,6 +3917,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     //var cookie = { a: 5, p: command.p, uid: user._id, gn: command.guestname, nid: node._id, cf: command.consent, pid: publicid }; // Old style sharing cookie
                     var cookie = { a: 6, pid: publicid }; // New style sharing cookie
                     if ((startTime != null) && (expireTime != null)) { command.start = startTime; command.expire = cookie.e = expireTime; }
+                    else if ((startTime != null) && (duration != null)) { command.start = startTime; }
                     const inviteCookie = parent.parent.encodeCookie(cookie, parent.parent.invitationLinkEncryptionKey);
                     if (inviteCookie == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createDeviceShareLink', responseid: command.responseid, result: 'Unable to generate shareing cookie' })); } catch (ex) { } } return; }
 
@@ -3929,13 +3936,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Create a device sharing database entry
                     var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', xmeshid: node.meshid, nodeid: node._id, p: command.p, domain: node.domain, publicid: publicid, userid: user._id, guestName: command.guestname, consent: command.consent, url: url };
                     if ((startTime != null) && (expireTime != null)) { shareEntry.startTime = startTime; shareEntry.expireTime = expireTime; }
+                    else if ((startTime != null) && (duration != null)) { shareEntry.startTime = startTime; shareEntry.duration = duration; }
+                    if (command.recurring) { shareEntry.recurring = command.recurring; }
                     if (command.viewOnly === true) { shareEntry.viewOnly = true; }
                     parent.db.Set(shareEntry);
 
                     // Send out an event that we added a device share
                     var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
                     var event;
-                    if ((startTime != null) && (expireTime != null)) {
+                    if (command.recurring == 1) {
+                        event = { etype: 'node', userid: user._id, username: user.name, meshid: node.meshid, nodeid: node._id, action: 'addedDeviceShare', msg: 'Added device share ' + command.guestname + ' recurring daily.', msgid: 138, msgArgs: [command.guestname], domain: domain.id };
+                    } else if (command.recurring == 2) {
+                        event = { etype: 'node', userid: user._id, username: user.name, meshid: node.meshid, nodeid: node._id, action: 'addedDeviceShare', msg: 'Added device share ' + command.guestname + ' recurring weekly.', msgid: 139, msgArgs: [command.guestname], domain: domain.id };
+                    } else if ((startTime != null) && (expireTime != null)) {
                         event = { etype: 'node', userid: user._id, username: user.name, meshid: node.meshid, nodeid: node._id, action: 'addedDeviceShare', msg: 'Added device share: ' + command.guestname + '.', msgid: 101, msgArgs: [command.guestname, 'DATETIME:' + startTime, 'DATETIME:' + expireTime], domain: domain.id };
                     } else {
                         event = { etype: 'node', userid: user._id, username: user.name, meshid: node.meshid, nodeid: node._id, action: 'addedDeviceShare', msg: 'Added device share ' + command.guestname + ' with unlimited time.', msgid: 131, msgArgs: [command.guestname], domain: domain.id };
