@@ -22,7 +22,7 @@
   <ItemGroup>
     <Compile Include="agents\meshcmd.js" />
     <Compile Include="agents\meshcmd.min.js" />
-    <Compile Include="agents\meshcore.js" />
+    <Compile Include="agents\meshcore-clean.js" />
     <Compile Include="agents\meshcore.min.js" />
     <Compile Include="agents\meshinstall-linux.js" />
     <Compile Include="agents\modules_meshcmd\amt-apfclient.js" />
