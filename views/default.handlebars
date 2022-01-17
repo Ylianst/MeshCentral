@@ -3456,10 +3456,18 @@
                     x += addHtmlValue("Device", node.name);
                     x += addHtmlValue("Guest Name", message.guestname);
                     x += addHtmlValue("User Input", message.viewOnly ? "Not allowed, view only" : "Allowed");
-                    if ((message.start != null) && (message.expire)) {
-                        x += addHtmlValue("Start Time", printDateTime(new Date(message.start)));
-                        x += addHtmlValue("Expire Time", printDateTime(new Date(message.expire)));
+                    if (message.start && message.expire) {
+                        if (message.recurring) {
+                            x += addHtmlValue("Start Time", printDateTime(new Date(message.start)));
+                            if (message.expire < 2) { x += addHtmlValue("Duration", format("{0} minute", message.expire) ); }
+                            else { x += addHtmlValue("Duration", format("{0} minutes", message.expire) ); }
+                        } else {
+                            x += addHtmlValue("Start Time", printDateTime(new Date(message.start)));
+                            x += addHtmlValue("Expire Time", printDateTime(new Date(message.expire)));
+                        }
                     }
+                    if (message.recurring == 1) { x += addHtmlValue("Recurring", "Daily"); }
+                    if (message.recurring == 2) { x += addHtmlValue("Recurring", "Weekly"); }
                     var y = [];
                     if (message.consent & 0x0007) { y.push("Notify"); }
                     if (message.consent & 0x0038) { y.push("Prompt"); }
@@ -7186,6 +7194,15 @@
                         var type = ['', "Terminal", "Desktop", "Desktop + Terminal", "Files", "Terminal + Files", "Desktop + Files", "Desktop + Terminal + Files"][dshare.p];
                         var details = type;
                         if ((dshare.startTime != null) && (dshare.expireTime != null)) { details = format("{0}, {1} to {2}", type, printFlexDateTime(new Date(dshare.startTime)), printFlexDateTime(new Date(dshare.expireTime))); }
+                        if ((dshare.startTime != null) && (dshare.duration != null)) {
+                            if (dshare.duration < 2) {
+                                details = format("{0}, {1} for {2} minute", type, printFlexDateTime(new Date(dshare.startTime)), dshare.duration);
+                            } else {
+                                details = format("{0}, {1} for {2} minutes", type, printFlexDateTime(new Date(dshare.startTime)), dshare.duration);
+                            }
+                        }
+                        if (dshare.recurring == 1) { details += ", Reccuring daily"; }
+                        if (dshare.recurring == 2) { details += ", Reccuring weekly"; }
                         if (((dshare.p & 2) != 0) && (dshare.viewOnly === true)) { details += ", View only desktop"; }
                         if (dshare.consent != null) {
                             if (dshare.consent == 0) { details += ", No Consent"; } else {
@@ -7460,7 +7477,7 @@
             var allFeatures = '<option value=7>' + "Desktop + Terminal + Files" + '</option>';
             if ((rights != 0xFFFFFFFF) && ((rights & 0x700) != 0)) { allFeatures = ''; }
 
-            var y = '';
+            var y = '', z = '';
             if ((currentNode.agent.caps & 1) == 1) { y += (deskFull + '<option value=3>' + "Desktop, View only" + '</option>'); } // Agent is desktop capable
             if ((currentNode.agent.caps & 2) == 2) { y += fullTerm; } // Agent is terminal capable
             if ((currentNode.agent.caps & 4) == 4) { y += fullFiles; } // Agent is files capable
@@ -7475,12 +7492,18 @@
                 if ((serverinfo.guestdevicesharingmaxtime == null) || ((i > 0) && (i <= serverinfo.guestdevicesharingmaxtime))) {
                     y += '<option value=' + i + '>' + options[i] + '</option>';
                 }
+                if ((i > 0) && (i <= 720) && ((serverinfo.guestdevicesharingmaxtime == null) || ((i > 0) && (i <= serverinfo.guestdevicesharingmaxtime)))) {
+                    z += '<option value=' + i + '>' + options[i] + '</option>';
+                }
             }
-            x += addHtmlValue("Validity", '<select id=d2timeRange style=float:right;width:250px onchange=showShareDeviceValidate()><option value=0>' + "Starting now" + '</option><option value=1>' + "Time range" + '</option></select>');
+            x += addHtmlValue("Validity", '<select id=d2timeRange style=float:right;width:250px onchange=showShareDeviceValidate()><option value=0>' + "Starting now" + '</option><option value=1>' + "Time range" + '</option><option value=2>' + "Recurring daily" + '</option><option value=3>' + "Recurring weekly" + '</option></select>');
             x += '<div id=d2modenow>';
             x += addHtmlValue("Expire Time", '<select id=d2inviteExpire style=float:right;width:250px>' + y + '</select>');
             x += '</div><div id=d2moderange style=display:none>';
             x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += '</div><div id=d2moderecurring style=display:none>';
+            x += addHtmlValue("Start Time", '<input id=d2timeStartSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Duration", '<select id=d2inviteDuration style=float:right;width:250px>' + z + '</select>');
             x += '</div>';
             if (currentNode.agent.caps & 1) { x += addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=1>' + "Prompt for consent" + '</option><option value=0>' + "Notify Only" + '</option></select>'); }
             setDialogMode(2, "Share Device", 3, showShareDeviceEx, x);
@@ -7488,12 +7511,14 @@
             var tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             var rangeTime = flatpickr('#d2timeRangeSelector', { mode: 'range', enableTime: true, minDate: new Date(), defaultDate: [ new Date(), tomorrow ] });
-            xxdialogTag = rangeTime;
+            var startTime = flatpickr('#d2timeStartSelector', { enableTime: true, minDate: new Date(), defaultDate: new Date() });
+            xxdialogTag = { range: rangeTime, start: startTime };
         }
 
         function showShareDeviceValidate() {
             QV('d2modenow', Q('d2timeRange').value == 0);
             QV('d2moderange', Q('d2timeRange').value == 1);
+            QV('d2moderecurring', Q('d2timeRange').value >= 2);
             var ok = true;
             if (Q('d2inviteName').value.trim().length == 0) { ok = false; }
             QE('idx_dlgOkButton', ok);
@@ -7519,8 +7544,10 @@
 
             if (Q('d2timeRange').value == 0) {
                 meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, expire: parseInt(Q('d2inviteExpire').value), consent: consent, viewOnly: viewOnly });
+            } else if (Q('d2timeRange').value == 1) {
+                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.range.selectedDates[0].getTime() / 1000), end: Math.floor(tag.range.selectedDates[1].getTime() / 1000), consent: consent, viewOnly: viewOnly });
             } else {
-                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.selectedDates[0].getTime() / 1000), end: Math.floor(tag.selectedDates[1].getTime() / 1000), consent: consent, viewOnly: viewOnly });
+                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.start.selectedDates[0].getTime() / 1000), expire: parseInt(Q('d2inviteDuration').value), recurring: Q('d2timeRange').value - 1, consent: consent, viewOnly: viewOnly });
             }
         }
 
@@ -13378,7 +13405,9 @@
             134: "Forcibly disconnected desktop session of user {0}",
             135: "Forcibly disconnected terminal session of user {0}",
             136: "Forcibly disconnected files session of user {0}",
-            137: "Forcibly disconnected routing session of user {0}"
+            137: "Forcibly disconnected routing session of user {0}",
+            138: "Added device share {0} recurring daily.",
+            139: "Added device share {0} recurring weekly."
         };
 
         // Highlights the device being hovered
