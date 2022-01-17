@@ -2479,7 +2479,7 @@ function onTunnelData(data) {
                     if (this.httprequest.consent && (this.httprequest.consent & 1)) {
                         // User Notifications is required
                         MeshServerLogEx(35, null, "Started remote desktop with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                        var notifyMessage = currentTranslation['desktopNotify'].replace('{0}', this.ws.httprequest.realname);
+                        var notifyMessage = currentTranslation['desktopNotify'].replace('{0}', this.httprequest.realname);
                         var notifyTitle = "MeshCentral";
                         if (this.httprequest.soptions != null) {
                             if (this.httprequest.soptions.notifyTitle != null) { notifyTitle = this.httprequest.soptions.notifyTitle; }
