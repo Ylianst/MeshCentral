@@ -11883,6 +11883,15 @@
                     var type = ['', "Terminal", "Desktop", "Desktop + Terminal", "Files", "Terminal + Files", "Desktop + Files", "Desktop + Terminal + Files"][dshare.p];
                     var details = type;
                     if ((dshare.startTime != null) && (dshare.expireTime != null)) { details = format("{0}, {1} to {2}", type, printFlexDateTime(new Date(dshare.startTime)), printFlexDateTime(new Date(dshare.expireTime))); }
+                    if ((dshare.startTime != null) && (dshare.duration != null)) {
+                        if (dshare.duration < 2) {
+                            details = format("{0}, {1} for {2} minute", type, printFlexDateTime(new Date(dshare.startTime)), dshare.duration);
+                        } else {
+                            details = format("{0}, {1} for {2} minutes", type, printFlexDateTime(new Date(dshare.startTime)), dshare.duration);
+                        }
+                    }
+                    if (dshare.recurring == 1) { details += ", Reccuring daily"; }
+                    if (dshare.recurring == 2) { details += ", Reccuring weekly"; }
                     if (((dshare.p & 2) != 0) && (dshare.viewOnly === true)) { details += ", View only desktop"; }
                     if (dshare.consent != null) {
                         if (dshare.consent == 0) { details += ", No Consent"; } else {
