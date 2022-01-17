@@ -227,6 +227,7 @@ if (args['_'].length == 0) {
         }
         case 'devicesharing': {
             if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
+            else if ((args.daily != null) && (args.weekly != null)) { console.log(winRemoveSingleQuotes("Can't specify both --daily and --weekly at the same time.")); }
             else { ok = true; }
             break;
         }
@@ -839,6 +840,7 @@ if (args['_'].length == 0) {
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid'"));
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --remove abcdef"));
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --start " + localISOTime + " --duration 30"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --start " + localISOTime + " --duration 30 --daily"));
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --type desktop,terminal --consent prompt"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
@@ -855,6 +857,8 @@ if (args['_'].length == 0) {
                         console.log("  --start [yyyy-mm-ddThh:mm:ss]   - Start time, default is now.");
                         console.log("  --end [yyyy-mm-ddThh:mm:ss]     - End time.");
                         console.log("  --duration [minutes]            - Duration of the share, default is 60 minutes.");
+                        console.log("  --daily                         - Add recurring daily device share.");
+                        console.log("  --weekly                        - Add recurring weekly device share.");
                         break;
                     }
                     case 'agentdownload': {
@@ -1608,12 +1612,25 @@ function serverConnect() {
                     if (args.end) { if (start == null) { start = Math.floor(Date.now() / 1000) } end = Math.floor(Date.parse(args.end) / 1000); if (end <= start) { console.log("End time must be ahead of start time."); process.exit(1); return; } }
                     if (args.duration) { if (start == null) { start = Math.floor(Date.now() / 1000) } end = start + parseInt(args.duration * 60); }
 
-                    if ((start == null) && (end == null)) {
-                        // Unlimited sharing
-                        ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, expire: 0, viewOnly: viewOnly, responseid: 'meshctrl' }));
+                    // Recurring
+                    var recurring = 0;
+                    if (args.daily) { recurring = 1; } else if (args.weekly) { recurring = 2; }
+                    if (recurring > 0) {
+                        if (args.end != null) { console.log("End time can't be specified for recurring shares, use --duration only."); process.exit(1); return; }
+                        if (args.duration == null) { args.duration = 60; } else { args.duration = parseInt(args.duration); }
+                        if (start == null) { start = Math.floor(Date.now() / 1000) }
+                        if ((typeof args.duration != 'number') || (args.duration < 1)) { console.log("Invalid duration value."); process.exit(1); return; }
+
+                        // Recurring sharing
+                        ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, start: start, expire: args.duration, recurring: recurring, viewOnly: viewOnly, responseid: 'meshctrl' }));
                     } else {
-                        // Time limited sharing
-                        ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, start: start, end: end, viewOnly: viewOnly, responseid: 'meshctrl' }));
+                        if ((start == null) && (end == null)) {
+                            // Unlimited sharing
+                            ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, expire: 0, viewOnly: viewOnly, responseid: 'meshctrl' }));
+                        } else {
+                            // Time limited sharing
+                            ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, start: start, end: end, viewOnly: viewOnly, responseid: 'meshctrl' }));
+                        }
                     }
                 } else if (args.remove) {
                     ws.send(JSON.stringify({ action: 'removeDeviceShare', nodeid: args.id, publicid: args.remove, responseid: 'meshctrl' }));
@@ -1807,6 +1824,9 @@ function serverConnect() {
                                 console.log('User Consent: ' + consent.join(', '));
                                 if (share.startTime) { console.log('Start Time:   ' + new Date(share.startTime).toLocaleString()); }
                                 if (share.expireTime) { console.log('Expire Time:  ' + new Date(share.expireTime).toLocaleString()); }
+                                if (share.duration) { console.log('Duration:     ' + share.duration + ' minute' + ((share.duration > 1) ? 's' : '')); }
+                                if (share.recurring == 1) { console.log('Recurring:    ' + 'Daily'); }
+                                if (share.recurring == 2) { console.log('Recurring:    ' + 'Weekly'); }
                                 console.log('URL:          ' + share.url);
                             }
                         }
