@@ -1122,7 +1122,7 @@ function handleServerCommand(data) {
                         // Kill a process
                         if (data.value) {
                             MeshServerLogEx(19, [data.value], "Killing process " + data.value, data);
-                            try { process.kill(data.value); } catch (ex) { sendConsoleText("pskill: " + JSON.stringify(e)); }
+                            try { process.kill(data.value); } catch (ex) { sendConsoleText("pskill: " + JSON.stringify(ex)); }
                         }
                         break;
                     }
@@ -1188,7 +1188,7 @@ function handleServerCommand(data) {
                                     require('linux-gnome-helpers').setDesktopWallpaper(id, current != '/dev/null' ? undefined : require('MeshAgent')._wallpaper);
                                 }
                             } catch (ex) {
-                                sendConsoleText(e);
+                                sendConsoleText(ex);
                             }
                             break;
                         }
@@ -1683,7 +1683,7 @@ function getSystemInformation(func) {
             func(results);
         }
         */
-    } catch (ex) { func(null, e); }
+    } catch (ex) { func(null, ex); }
 }
 
 // Get a formated response for a given directory path
@@ -2446,8 +2446,7 @@ function onTunnelData(data) {
                                 try {
                                     this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace('{0}', this.ws.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.ws.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid);
                                     MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-                                }
-                                catch (ex) {
+                                } catch (ex) {
                                     if (process.platform != 'darwin') {
                                         MeshServerLogEx(32, null, "Remote Desktop Connection Bar Failed or Not Supported (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                     }
@@ -2499,8 +2498,7 @@ function onTunnelData(data) {
                         try {
                             this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid);
                             MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                        }
-                        catch (ex) {
+                        } catch (ex) {
                             MeshServerLogEx(32, null, "Remote Desktop Connection Bar Failed or not Supported (" + this.httprequest.remoteaddr + ")", this.httprequest);
                         }
                         if (this.httprequest.desktop.kvm.connectionBar) {
@@ -2906,7 +2904,7 @@ function onTunnelData(data) {
 
             switch (cmd.action) {
                 case 'plugin': {
-                    try { require(cmd.plugin).consoleaction(cmd, null, null, this); } catch (ex) { throw e; }
+                    try { require(cmd.plugin).consoleaction(cmd, null, null, this); } catch (ex) { throw ex; }
                     break;
                 }
                 default: {
@@ -3577,10 +3575,10 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (process.platform == 'win32') {
                     // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
                     var writtenSize = 0;
-                    try { writtenSize = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize'); } catch (ex) { response = e; }
+                    try { writtenSize = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize'); } catch (ex) { response = ex; }
                     if (writtenSize != actualSize) {
                         response = "Size updated from: " + writtenSize + " to: " + actualSize;
-                        try { require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize', actualSize); } catch (ex) { response = e; }
+                        try { require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize', actualSize); } catch (ex) { response = ex; }
                     } else
                     { response = "Agent Size: " + actualSize + " kb"; }
                 } else
