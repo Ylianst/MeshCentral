@@ -249,6 +249,7 @@
         "description": "Compagny® Product™ agent for remote monitoring, management and assistance.",
         "companyName": "Compagny",
         "serviceName": "compagnyagent",
+        "image": "agent-logo.png",
         "fileName": "compagnyagent"
       },
       "_assistantCustomization": {

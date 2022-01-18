@@ -4944,6 +4944,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (domain.agentcustomization.companyname != null) { meshsettings += 'companyName=' + domain.agentcustomization.companyname + '\r\n'; }
                         if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
                         if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
+                        if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
                     }
                     if (parent.agentTranslations != null) { meshsettings += 'translation=' + parent.agentTranslations + '\r\n'; } // Translation strings, not for MeshCentral Assistant
                 }
@@ -5315,6 +5316,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (domain.agentcustomization.companyname != null) { meshsettings += 'companyName=' + domain.agentcustomization.companyname + '\r\n'; }
             if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
             if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
+            if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
         }
         if (parent.agentTranslations != null) { meshsettings += 'translation=' + parent.agentTranslations + '\r\n'; }
 
@@ -5415,6 +5417,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (domain.agentcustomization.companyname != null) { meshsettings += 'companyName=' + domain.agentcustomization.companyname + '\r\n'; }
             if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
             if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
+            if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
         }
         if (parent.agentTranslations != null) { meshsettings += 'translation=' + parent.agentTranslations + '\r\n'; }
         return meshsettings;
