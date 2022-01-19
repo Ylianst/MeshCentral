@@ -423,7 +423,16 @@ module.exports.CreateDB = function (parent, func) {
     // Get the number of records in the database for various types, this is the slow NeDB way.
     // WARNING: This is a terrible query for database performance. Only do this when needed. This query will look at almost every document in the database.
     obj.getStats = function (func) {
-        if (obj.databaseType == 3) {
+        if (obj.databaseType == 6) {
+            // PostgreSQL
+            // TODO
+        } else if (obj.databaseType == 5) {
+            // MySQL
+            // TODO
+        } else if (obj.databaseType == 4) {
+            // MariaDB
+            // TODO
+        } else if (obj.databaseType == 3) {
             // MongoDB
             obj.file.aggregate([{ "$group": { _id: "$type", count: { $sum: 1 } } }]).toArray(function (err, docs) {
                 var counters = {}, totalCount = 0;
@@ -1260,7 +1269,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.RemoveAllEvents = function (domain) { sqlDbQuery('DELETE FROM events', null, function (err, docs) { }); };
             obj.RemoveAllNodeEvents = function (domain, nodeid) { if ((domain == null) || (nodeid == null)) return; sqlDbQuery('DELETE FROM events WHERE domain = $1 AND nodeid = $2', [domain, nodeid], function (err, docs) { }); };
             obj.RemoveAllUserEvents = function (domain, userid) { if ((domain == null) || (userid == null)) return; sqlDbQuery('DELETE FROM events WHERE domain = $1 AND userid = $2', [domain, userid], function (err, docs) { }); };
-            obj.GetFailedLoginCount = function (userid, domainid, lastlogin, func) { sqlDbQuery('SELECT COUNT(*) FROM events WHERE action = \'authfail\' AND domain = $1 AND userid = $2 AND time > $3', [domainid, userid, lastlogin], function (err, response, raw) { func(err == null ? raw.rows[0].count : 0); }); }
+            obj.GetFailedLoginCount = function (userid, domainid, lastlogin, func) { sqlDbQuery('SELECT COUNT(*) FROM events WHERE action = \'authfail\' AND domain = $1 AND userid = $2 AND time > $3', [domainid, userid, lastlogin], function (err, response, raw) { func(err == null ? parseInt(raw.rows[0].count) : 0); }); }
 
             // Database actions on the power collection
             obj.getAllPower = function (func) { sqlDbQuery('SELECT doc FROM power', null, func); };
@@ -1305,10 +1314,10 @@ module.exports.CreateDB = function (parent, func) {
             // Get database information (TODO: Complete this)
             obj.getDbStats = function (func) {
                 obj.stats = { c: 4 };
-                sqlDbExec('SELECT COUNT(id) FROM main', null, function (err, response) { obj.stats.meshcentral = response['COUNT(id)']; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                sqlDbExec('SELECT COUNT(time) FROM serverstats', null, function (err, response) { obj.stats.serverstats = response['COUNT(time)']; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                sqlDbExec('SELECT COUNT(id) FROM power', null, function (err, response) { obj.stats.power = response['COUNT(id)']; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                sqlDbExec('SELECT COUNT(id) FROM smbios', null, function (err, response) { obj.stats.smbios = response['COUNT(id)']; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                sqlDbQuery('SELECT COUNT(*) FROM main', null, function (err, response, raw) { obj.stats.meshcentral = (err == null ? parseInt(raw.rows[0].count) : 0); if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                sqlDbQuery('SELECT COUNT(*) FROM serverstats', null, function (err, response, raw) { obj.stats.serverstats = (err == null ? parseInt(raw.rows[0].count) : 0); if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                sqlDbQuery('SELECT COUNT(*) FROM power', null, function (err, response, raw) { obj.stats.power = (err == null ? parseInt(raw.rows[0].count) : 0); if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                sqlDbQuery('SELECT COUNT(*) FROM smbios', null, function (err, response, raw) { obj.stats.smbios = (err == null ? parseInt(raw.rows[0].count) : 0); if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
             }
 
             // Plugin operations
