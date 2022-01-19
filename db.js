@@ -686,32 +686,38 @@ module.exports.CreateDB = function (parent, func) {
             const { Pool, Client } = require('pg');
             connectinArgs.database = dbname;
             Datastore = new Client(connectinArgs);
-            Datastore.connect()
-            parent.debug('db', 'Checking tables...');
-            sqlDbBatchExec([
-                'CREATE TABLE IF NOT EXISTS main (id VARCHAR(256) PRIMARY KEY NOT NULL, type CHAR(32), domain CHAR(64), extra CHAR(255), extraex CHAR(255), doc JSON)',
-                'CREATE TABLE IF NOT EXISTS events(id SERIAL PRIMARY KEY, time TIMESTAMP, domain CHAR(64), action CHAR(255), nodeid CHAR(255), userid CHAR(255), doc JSON)',
-                'CREATE TABLE IF NOT EXISTS eventids(fkid INT NOT NULL, target CHAR(255), CONSTRAINT fk_eventid FOREIGN KEY (fkid) REFERENCES events (id) ON DELETE CASCADE ON UPDATE RESTRICT)',
-                'CREATE TABLE IF NOT EXISTS serverstats (time TIMESTAMP PRIMARY KEY, expire TIMESTAMP, doc JSON)',
-                'CREATE TABLE IF NOT EXISTS power (id SERIAL PRIMARY KEY, time TIMESTAMP, nodeid CHAR(255), doc JSON)',
-                'CREATE TABLE IF NOT EXISTS smbios (id CHAR(255) PRIMARY KEY, time TIMESTAMP, expire TIMESTAMP, doc JSON)',
-                'CREATE TABLE IF NOT EXISTS plugin (id SERIAL PRIMARY KEY, doc JSON)'
-            ], function (results) {
-                parent.debug('db', 'Checking indexes...');
-                sqlDbExec('CREATE INDEX ndxtypedomainextra ON main (type, domain, extra)', null, function (err, response) { });
-                sqlDbExec('CREATE INDEX ndxextra ON main (extra)', null, function (err, response) { });
-                sqlDbExec('CREATE INDEX ndxextraex ON main (extraex)', null, function (err, response) { });
-                sqlDbExec('CREATE INDEX ndxeventstime ON events(time)', null, function (err, response) { });
-                sqlDbExec('CREATE INDEX ndxeventsusername ON events(domain, userid, time)', null, function (err, response) { });
-                sqlDbExec('CREATE INDEX ndxeventsdomainnodeidtime ON events(domain, nodeid, time)', null, function (err, response) { });
-                sqlDbExec('CREATE INDEX ndxeventids ON eventids(target)', null, function (err, response) { });
-                sqlDbExec('CREATE INDEX ndxserverstattime ON serverstats (time)', null, function (err, response) { });
-                sqlDbExec('CREATE INDEX ndxserverstatexpire ON serverstats (expire)', null, function (err, response) { });
-                sqlDbExec('CREATE INDEX ndxpowernodeidtime ON power (nodeid, time)', null, function (err, response) { });
-                sqlDbExec('CREATE INDEX ndxsmbiostime ON smbios (time)', null, function (err, response) { });
-                sqlDbExec('CREATE INDEX ndxsmbiosexpire ON smbios (expire)', null, function (err, response) { });
+            Datastore.connect();
+            if (err == null) {
+                // Database was created, create the tables
+                parent.debug('db', 'Creating tables...');
+                sqlDbBatchExec([
+                    'CREATE TABLE IF NOT EXISTS main (id VARCHAR(256) PRIMARY KEY NOT NULL, type CHAR(32), domain CHAR(64), extra CHAR(255), extraex CHAR(255), doc JSON)',
+                    'CREATE TABLE IF NOT EXISTS events(id SERIAL PRIMARY KEY, time TIMESTAMP, domain CHAR(64), action CHAR(255), nodeid CHAR(255), userid CHAR(255), doc JSON)',
+                    'CREATE TABLE IF NOT EXISTS eventids(fkid INT NOT NULL, target CHAR(255), CONSTRAINT fk_eventid FOREIGN KEY (fkid) REFERENCES events (id) ON DELETE CASCADE ON UPDATE RESTRICT)',
+                    'CREATE TABLE IF NOT EXISTS serverstats (time TIMESTAMP PRIMARY KEY, expire TIMESTAMP, doc JSON)',
+                    'CREATE TABLE IF NOT EXISTS power (id SERIAL PRIMARY KEY, time TIMESTAMP, nodeid CHAR(255), doc JSON)',
+                    'CREATE TABLE IF NOT EXISTS smbios (id CHAR(255) PRIMARY KEY, time TIMESTAMP, expire TIMESTAMP, doc JSON)',
+                    'CREATE TABLE IF NOT EXISTS plugin (id SERIAL PRIMARY KEY, doc JSON)'
+                ], function (results) {
+                    parent.debug('db', 'Creating indexes...');
+                    sqlDbExec('CREATE INDEX ndxtypedomainextra ON main (type, domain, extra)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxextra ON main (extra)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxextraex ON main (extraex)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxeventstime ON events(time)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxeventsusername ON events(domain, userid, time)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxeventsdomainnodeidtime ON events(domain, nodeid, time)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxeventids ON eventids(target)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxserverstattime ON serverstats (time)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxserverstatexpire ON serverstats (expire)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxpowernodeidtime ON power (nodeid, time)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxsmbiostime ON smbios (time)', null, function (err, response) { });
+                    sqlDbExec('CREATE INDEX ndxsmbiosexpire ON smbios (expire)', null, function (err, response) { });
+                    setupFunctions(func);
+                });
+            } else {
+                // Database already existed, skip table and index creation
                 setupFunctions(func);
-            });
+            }
         });
     } else if (parent.args.mongodb) {
         // Use MongoDB
