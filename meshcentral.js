@@ -1550,7 +1550,10 @@ function CreateMeshCentralServer(config, args) {
 
         // Load MeshAgent translation strings
         try {
-            var translations = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'agent-translations.json')).toString());
+            var translationpath = obj.path.join(__dirname, 'agents', 'agent-translations.json');
+            var translationpath2 = obj.path.join(obj.datapath, 'agents', 'agent-translations.json');
+            if (obj.fs.existsSync(translationpath2)) { translationpath = translationpath2; } // If the agent is present in "meshcentral-data/agents", use that one instead.
+            var translations = JSON.parse(obj.fs.readFileSync(translationpath).toString());
             if (translations['zh-chs']) { translations['zh-hans'] = translations['zh-chs']; delete translations['zh-chs']; }
             if (translations['zh-cht']) { translations['zh-hant'] = translations['zh-cht']; delete translations['zh-cht']; }
             obj.agentTranslations = JSON.stringify(translations);
@@ -2628,6 +2631,9 @@ function CreateMeshCentralServer(config, args) {
         for (var toolname in meshToolsList) {
             if (meshToolsList[toolname].winhash === true) {
                 var toolpath = obj.path.join(__dirname, 'agents', meshToolsList[toolname].localname);
+                var toolpath2 = obj.path.join(obj.datapath, 'agents', meshToolsList[toolname].localname);
+                if (obj.fs.existsSync(toolpath2)) { toolpath = toolpath2; } // If the tool is present in "meshcentral-data/agents", use that one instead.
+
                 var hashStream = obj.crypto.createHash('sha384');
                 hashStream.toolname = toolname;
                 hashStream.toolpath = toolpath;
@@ -2644,6 +2650,9 @@ function CreateMeshCentralServer(config, args) {
                 obj.exeHandler.hashExecutableFile(options);
             } else {
                 var toolpath = obj.path.join(__dirname, 'agents', meshToolsList[toolname].localname);
+                var toolpath2 = obj.path.join(obj.datapath, 'agents', meshToolsList[toolname].localname);
+                if (obj.fs.existsSync(toolpath2)) { toolpath = toolpath2; } // If the tool is present in "meshcentral-data/agents", use that one instead.
+
                 var stream = null;
                 try {
                     stream = obj.fs.createReadStream(toolpath);
@@ -2772,6 +2781,8 @@ function CreateMeshCentralServer(config, args) {
         var archcount = 0;
         for (var archid in obj.meshAgentsArchitectureNumbers) {
             var agentpath = obj.path.join(__dirname, 'agents', obj.meshAgentsArchitectureNumbers[archid].localname);
+            var agentpath2 = obj.path.join(obj.datapath, 'agents', obj.meshAgentsArchitectureNumbers[archid].localname);
+            if (obj.fs.existsSync(agentpath2)) { agentpath = agentpath2; } // If the agent is present in "meshcentral-data/agents", use that one instead.
 
             // Fetch all the agent binary information
             var stats = null;
