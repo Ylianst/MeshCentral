@@ -1103,7 +1103,7 @@ module.exports.CreateDB = function (parent, func) {
                     else if (results.command == 'SELECT') {
                         for (var i in results.rows) { if (results.rows[i].doc) { if (typeof results.rows[i].doc == 'string') { docs.push(JSON.parse(results.rows[i].doc)); } else { docs.push(results.rows[i].doc); } } }
                     }
-                    if (func) { try { func(null, docs); } catch (ex) { console.log('SQLERR5', ex); } }
+                    if (func) { try { func(null, docs, results); } catch (ex) { console.log('SQLERR5', ex); } }
                 }
             });
         }
@@ -1260,7 +1260,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.RemoveAllEvents = function (domain) { sqlDbQuery('DELETE FROM events', null, function (err, docs) { }); };
             obj.RemoveAllNodeEvents = function (domain, nodeid) { if ((domain == null) || (nodeid == null)) return; sqlDbQuery('DELETE FROM events WHERE domain = $1 AND nodeid = $2', [domain, nodeid], function (err, docs) { }); };
             obj.RemoveAllUserEvents = function (domain, userid) { if ((domain == null) || (userid == null)) return; sqlDbQuery('DELETE FROM events WHERE domain = $1 AND userid = $2', [domain, userid], function (err, docs) { }); };
-            obj.GetFailedLoginCount = function (userid, domainid, lastlogin, func) { sqlDbExec('SELECT COUNT(id) FROM events WHERE action = "authfail" AND domain = $1 AND userid = $2 AND time > $3', [domainid, userid, lastlogin], function (err, response) { func(err == null ? response['COUNT(id)'] : 0); }); }
+            obj.GetFailedLoginCount = function (userid, domainid, lastlogin, func) { sqlDbQuery('SELECT COUNT(*) FROM events WHERE action = \'authfail\' AND domain = $1 AND userid = $2 AND time > $3', [domainid, userid, lastlogin], function (err, response, raw) { func(err == null ? raw.rows[0].count : 0); }); }
 
             // Database actions on the power collection
             obj.getAllPower = function (func) { sqlDbQuery('SELECT doc FROM power', null, func); };
