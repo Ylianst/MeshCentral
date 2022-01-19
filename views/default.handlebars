@@ -1247,6 +1247,7 @@
                 <div id=dialog4 style="">
                     <input id="d4WrapButton" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
                     <input id="d4SizeButton" type="button" value="Small" onclick="d4ToggleSize()" />
+                    <input id="d4EncodingButton" type="button" value="Raw" onclick="d4ToggleEncoding()" />
                     <textarea id=d4editorarea autocomplete="off" style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
                 </div>
                 <div id=dialog7 style="">
@@ -1581,8 +1582,10 @@
             // Set the file editor
             d4EditWrapVal = getstore('editorWrap', 0);
             d4EditSizeVal = getstore('editorSize', 0);
+            d4EditEncodingVal = getstore('editorEncoding', 0);
             d4ToggleWrap(true);
             d4ToggleSize(true);
+            d4ToggleEncoding(true);
             if (pluginHandler != null) pluginHandler.callHook('onWebUIStartupEnd');
 
             // Deleted non-english style and fix all topbar titles
@@ -10209,7 +10212,13 @@
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
-                    Q('d4editorarea').value = decode_utf8(gdownloadFile.data);
+                    if (d4EditEncodingVal == 1) {
+                        // UTF8 Encoding
+                        Q('d4editorarea').value = decode_utf8(gdownloadFile.data);
+                    } else {
+                        // RAW Encoding
+                        Q('d4editorarea').value = gdownloadFile.data;
+                    }
                     gdownloadFile = null;
                 } else {
                     // Save the file to disk
@@ -10222,6 +10231,7 @@
 
         var d4EditWrapVal = 0;
         var d4EditSizeVal = 0;
+        var d4EditEncodingVal = 0;
         function d4ToggleWrap(update) {
             if (!update) { d4EditWrapVal = ++d4EditWrapVal % 2; }
             Q('d4WrapButton').value = ["Wrap: ON","Wrap: OFF"][d4EditWrapVal];
@@ -10237,8 +10247,28 @@
             putstore('editorSize', d4EditSizeVal);
         }
 
+        function d4ToggleEncoding(update) {
+            if (!update) {
+                d4EditEncodingVal = ++d4EditEncodingVal % 2;
+                if (d4EditEncodingVal == 1) {
+                    Q('d4editorarea').value = decode_utf8(Q('d4editorarea').value);
+                } else {
+                    Q('d4editorarea').value = encode_utf8(Q('d4editorarea').value);
+                }
+            }
+            Q('d4EncodingButton').value = ["Encoding: RAW","Encoding: UTF8"][d4EditEncodingVal];
+            putstore('editorEncoding', d4EditEncodingVal);
+        }
+
         function p13editSaveBack(b, tag) {
-            var data = new TextEncoder().encode(Q('d4editorarea').value);
+            var data;
+            if (d4EditEncodingVal == 1) {
+                // UTF8 encoding
+                data = new TextEncoder().encode(Q('d4editorarea').value);
+            } else {
+                // RAW encoding
+                data = new TextEncoder().encode(decode_utf8(Q('d4editorarea').value));
+            }
             p13uploadFileContinue(1, [{ name: tag, size: data.byteLength, type: 'text/plain', xdata: data }]);
         }
 
