@@ -284,7 +284,7 @@
                             <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All" id="ExpandAllButton" src="images/icon-expand.png" loading=lazy width=9 height=11 onclick="cmexpandaction(1)" />
                             <input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
-                            <input id=SearchInput type=search autocomplete=off placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
+                            <input id=SearchInput type=search autocomplete=off placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any"/>&nbsp;
                             <span id=SearchInputClearButton style="display:none;position:relative"><img src="images/x16.png" type="button" onclick="clearDeviceSearch()" style="position:absolute;cursor:pointer;left:-18px;top:-8px" srcset="images/x32.png 2x"/></span>
                             <select id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
                                 <option value=0>All</option>
