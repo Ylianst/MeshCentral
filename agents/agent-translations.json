@@ -514,7 +514,11 @@
       "DZIAŁA",
       "NIE DZIAŁA"
     ],
-    "statusDescription": "Obecny Status Agenta"
+    "statusDescription": "Obecny Status Agenta",
+    "agentVersion": "Nowa Wersja",
+    "elevation": "Do zainstalowania/odinstalowania tego oprogramowania wymagane są podwyższone uprawnienia.",
+    "graphicalerror": "Graficzna wersja tego instalatora nie może być uruchomiona w tym systemie",
+    "description": "Kliknij poniższe przyciski, aby zainstalować lub odinstalować oprogramowanie zdalnego dostępu. Po zainstalowaniu, to oprogramowanie działa w tle, umożliwiając zarządzanie i kontrolowanie tego komputera przez zdalnego administratora."
   },
   "pt-br": {
     "agent": "Agente",

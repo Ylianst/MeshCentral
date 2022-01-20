@@ -85,7 +85,15 @@
   },
   "pl": {
     "allow": "Zezwól",
-    "deny": "Odrzucono"
+    "deny": "Odrzucono",
+    "autoAllowForFive": "Automatycznie akceptuj wszystkie połączenia przez następne 5 minut",
+    "terminalConsent": "{0} prosi o zdalny dostęp do terminala. Przyznać dostęp?",
+    "desktopConsent": "{0} prosi o zdalny dostęp do pulpitu. Przyznać dostęp?",
+    "fileConsent": "{0} prosi o zdalny dostęp do plików. Przyznać dostęp?",
+    "terminalNotify": "{0} rozpoczął sesję dostępu do terminala.",
+    "desktopNotify": "{0} rozpoczął sesję dostępu do pulpitu.",
+    "fileNotify": "{0} rozpoczął sesję dostępu do plików.",
+    "privacyBar": "Współdzielenie pulpitu z: {0}"
   },
   "pt-br": {
     "allow": "Permitir",
