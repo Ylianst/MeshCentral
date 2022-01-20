@@ -226,6 +226,10 @@ body {
     -ms-grid-row: 2;
 }
 
+.logoncontrolspan, .logoncontrolspan2 {
+    color: white;
+}
+
 .topbar_td {
     width: 100px;
     height: 24px;
