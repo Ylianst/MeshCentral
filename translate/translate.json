@@ -1082,7 +1082,7 @@
     },
     {
       "en": ", Reccuring daily",
-	  "pl": ", Powtarzaj codziennie",
+      "pl": ", Powtarzaj codziennie",
       "xloc": [
         "default.handlebars->39->1876",
         "default.handlebars->39->944"
@@ -1090,7 +1090,7 @@
     },
     {
       "en": ", Reccuring weekly",
-	  "pl": ", Powtarzaj co tydzień",
+      "pl": ", Powtarzaj co tydzień",
       "xloc": [
         "default.handlebars->39->1877",
         "default.handlebars->39->945"
@@ -6414,14 +6414,14 @@
     },
     {
       "en": "Added device share {0} recurring daily.",
-	  "pl": "Dodano udostępnienie urządzenia {0} reaktywowane codziennie.",
+      "pl": "Dodano udostępnienie urządzenia {0} reaktywowane codziennie.",
       "xloc": [
         "default.handlebars->39->2266"
       ]
     },
     {
       "en": "Added device share {0} recurring weekly.",
-	  "pl": "Dodano udostępnienie urządzenia {0} reaktywowane co tydzień.",
+      "pl": "Dodano udostępnienie urządzenia {0} reaktywowane co tydzień.",
       "xloc": [
         "default.handlebars->39->2267"
       ]
@@ -9905,7 +9905,7 @@
     {
       "en": "Auto accept all connections for next 5 minutes",
       "fr": "Accepter automatiquement les connexions pendant les 5 prochaines minutes",
-	  "pl": "Automatycznie akceptuj wszystkie połączenia przez następne 5 minut",
+      "pl": "Automatycznie akceptuj wszystkie połączenia przez następne 5 minut",
       "xloc": [
         "coretranslations.json"
       ]
@@ -13290,7 +13290,7 @@
     },
     {
       "en": "Click the buttons below to install or uninstall this remote management software. When installed, this software runs in the background allowing this computer to be managed and controlled by a remote administrator.",
-	  "pl": "Kliknij poniższe przyciski, aby zainstalować lub odinstalować oprogramowanie zdalnego dostępu. Po zainstalowaniu, to oprogramowanie działa w tle, umożliwiając zarządzanie i kontrolowanie tego komputera przez zdalnego administratora.",
+      "pl": "Kliknij poniższe przyciski, aby zainstalować lub odinstalować oprogramowanie zdalnego dostępu. Po zainstalowaniu, to oprogramowanie działa w tle, umożliwiając zarządzanie i kontrolowanie tego komputera przez zdalnego administratora.",
       "xloc": [
         "agent-translations.json"
       ]
@@ -17018,7 +17018,7 @@
     },
     {
       "en": "Daily",
-	  "pl": "Dziennie",
+      "pl": "Dziennie",
       "xloc": [
         "default.handlebars->39->266"
       ]
@@ -22654,7 +22654,7 @@
     },
     {
       "en": "Elevated permissions are required to install/uninstall this software.",
-	  "pl": "Do zainstalowania/odinstalowania tego oprogramowania wymagane są podwyższone uprawnienia.",
+      "pl": "Do zainstalowania/odinstalowania tego oprogramowania wymagane są podwyższone uprawnienia.",
       "xloc": [
         "agent-translations.json"
       ]
@@ -23392,14 +23392,14 @@
     },
     {
       "en": "Encoding: RAW",
-	  "pl": "Kodowanie: RAW",
+      "pl": "Kodowanie: RAW",
       "xloc": [
         "default.handlebars->39->1341"
       ]
     },
     {
       "en": "Encoding: UTF8",
-	  "pl": "Kodowanie: UTF8",
+      "pl": "Kodowanie: UTF8",
       "xloc": [
         "default.handlebars->39->1342"
       ]
@@ -26093,7 +26093,7 @@
       "en": "Forcibly disconnected desktop session of user {0}",
       "nl": "Geforceerd verbroken desktopsessie van gebruiker {0}",
       "fr": "Déconnexion forcée de la session de bureau pour l'utilisateur {0}",
-	  "pl": "Wymuszone rozłączenie sesji pulpitu użytkownika {0}",
+      "pl": "Wymuszone rozłączenie sesji pulpitu użytkownika {0}",
       "xloc": [
         "default.handlebars->39->2262"
       ]
@@ -26102,7 +26102,7 @@
       "en": "Forcibly disconnected files session of user {0}",
       "nl": "Geforceerd verbroken bestandssessie van gebruiker {0}",
       "fr": "Déconnexion forcée de la session de fichier pour l'utilisateur {0}",
-	  "pl": "Wymuszone rozłączenie sesji plików użytkownika {0}",
+      "pl": "Wymuszone rozłączenie sesji plików użytkownika {0}",
       "xloc": [
         "default.handlebars->39->2264"
       ]
@@ -26111,7 +26111,7 @@
       "en": "Forcibly disconnected routing session of user {0}",
       "nl": "Geforceerd verbroken routeringssessie van gebruiker {0}",
       "fr": "Déconnexion forcée de la session de routage pour l'utilisateur {0}",
-	  "pl": "Wymuszone rozłączenie sesji routingu użytkownika {0}",
+      "pl": "Wymuszone rozłączenie sesji routingu użytkownika {0}",
       "xloc": [
         "default.handlebars->39->2265"
       ]
@@ -26120,7 +26120,7 @@
       "en": "Forcibly disconnected terminal session of user {0}",
       "nl": "Geforceerd verbroken terminalsessie van gebruiker {0}",
       "fr": "Déconnexion forcée du terminal pour l'utilisateur {0}",
-	  "pl": "Wymuszone rozłączenie sesji terminala użytkownika {0}",
+      "pl": "Wymuszone rozłączenie sesji terminala użytkownika {0}",
       "xloc": [
         "default.handlebars->39->2263"
       ]
@@ -40098,7 +40098,7 @@
     },
     {
       "en": "New Version",
-	  "pl": "Nowa Wersja",
+      "pl": "Nowa Wersja",
       "xloc": [
         "agent-translations.json"
       ]
@@ -45729,7 +45729,7 @@
     {
       "en": "Port Number",
       "fr": "Numéro de port",
-	  "pl": "Numer Portu",
+      "pl": "Numer Portu",
       "xloc": [
         "default-mobile.handlebars->11->273",
         "default.handlebars->39->766"
@@ -47341,7 +47341,7 @@
       "nl": "Raritan Dominion KX III",
       "da": "Raritan Dominion KX III",
       "fr": "Raritan Dominion KX III",
-	  "pl": "Raritan Dominion KX III",
+      "pl": "Raritan Dominion KX III",
       "xloc": [
         "default.handlebars->39->1752"
       ]
@@ -47373,7 +47373,7 @@
     },
     {
       "en": "Raw",
-	  "pl": "Surowe",
+      "pl": "Surowe",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog4"
       ]
@@ -47611,7 +47611,7 @@
     },
     {
       "en": "Recurring",
-	  "pl": "Powtarzanie",
+      "pl": "Powtarzanie",
       "xloc": [
         "default.handlebars->39->265",
         "default.handlebars->39->267"
@@ -47619,14 +47619,14 @@
     },
     {
       "en": "Recurring daily",
-	  "pl": "Powtarzanie codzienne",
+      "pl": "Powtarzanie codzienne",
       "xloc": [
         "default.handlebars->39->1046"
       ]
     },
     {
       "en": "Recurring weekly",
-	  "pl": "Powtarzanie co tydzień",
+      "pl": "Powtarzanie co tydzień",
       "xloc": [
         "default.handlebars->39->1047"
       ]
@@ -55136,7 +55136,7 @@
     },
     {
       "en": "Sharing desktop with: {0}",
-	  "pl": "Współdzielenie pulpitu z: {0}",
+      "pl": "Współdzielenie pulpitu z: {0}",
       "xloc": [
         "coretranslations.json"
       ]
@@ -59567,7 +59567,7 @@
     },
     {
       "en": "The graphical version of this installer cannot run on this system",
-	  "pl": "Graficzna wersja tego instalatora nie może być uruchomiona w tym systemie",
+      "pl": "Graficzna wersja tego instalatora nie może być uruchomiona w tym systemie",
       "xloc": [
         "agent-translations.json"
       ]
@@ -61718,7 +61718,7 @@
       "nl": "Uitschakelen",
       "da": "Sluk.",
       "fr": "Éteindre.",
-	  "pl": "Wyłącz.",
+      "pl": "Wyłącz.",
       "xloc": [
         "default.handlebars->39->2261"
       ]
@@ -61741,7 +61741,7 @@
       "nl": "Inschakelen.",
       "da": "Tænd.",
       "fr": "Allumer.",
-	  "pl": "Włącz.",
+      "pl": "Włącz.",
       "xloc": [
         "default.handlebars->39->2260"
       ]
@@ -66555,7 +66555,7 @@
     },
     {
       "en": "Weekly",
-	  "pl": "Tygodniowo",
+      "pl": "Tygodniowo",
       "xloc": [
         "default.handlebars->39->268"
       ]
@@ -71478,14 +71478,14 @@
     },
     {
       "en": "{0} minute",
-	  "pl": "{0} minuta",
+      "pl": "{0} minuta",
       "xloc": [
         "default.handlebars->39->260"
       ]
     },
     {
       "en": "{0} minutes",
-	  "pl": "{0} minut",
+      "pl": "{0} minut",
       "xloc": [
         "default.handlebars->39->262"
       ]
@@ -71685,7 +71685,7 @@
     {
       "en": "{0} requesting remote desktop access. Grant access?",
       "fr": "{0} demande(s) d'utilisation du bureau distant. Autoriser l'accès ?",
-	  "pl": "{0} prosi o zdalny dostęp do pulpitu. Przyznać dostęp?",
+      "pl": "{0} prosi o zdalny dostęp do pulpitu. Przyznać dostęp?",
       "xloc": [
         "coretranslations.json"
       ]
@@ -71693,7 +71693,7 @@
     {
       "en": "{0} requesting remote file Access. Grant access?",
       "fr": "{0} demande(s) d'accès à un fichier distant. Autoriser l'accès ?",
-	  "pl": "{0} prosi o zdalny dostęp do plików. Przyznać dostęp?",
+      "pl": "{0} prosi o zdalny dostęp do plików. Przyznać dostęp?",
       "xloc": [
         "coretranslations.json"
       ]
@@ -71701,7 +71701,7 @@
     {
       "en": "{0} requesting remote terminal access. Grant access?",
       "fr": "{0} demande(s) d'utilisation du terminal distant. Autoriser l'accès ?",
-	  "pl": "{0} prosi o zdalny dostęp do terminala. Przyznać dostęp?",
+      "pl": "{0} prosi o zdalny dostęp do terminala. Przyznać dostęp?",
       "xloc": [
         "coretranslations.json"
       ]
@@ -71961,21 +71961,21 @@
     },
     {
       "en": "{0} started a remote desktop session.",
-	  "pl": "{0} rozpoczął sesję dostępu do pulpitu.",
+      "pl": "{0} rozpoczął sesję dostępu do pulpitu.",
       "xloc": [
         "coretranslations.json"
       ]
     },
     {
       "en": "{0} started a remote file session.",
-	  "pl": "{0} rozpoczął sesję dostępu do plików.",
+      "pl": "{0} rozpoczął sesję dostępu do plików.",
       "xloc": [
         "coretranslations.json"
       ]
     },
     {
       "en": "{0} started a remote terminal session.",
-	  "pl": "{0} rozpoczął sesję dostępu do terminala.",
+      "pl": "{0} rozpoczął sesję dostępu do terminala.",
       "xloc": [
         "coretranslations.json"
       ]
@@ -72105,7 +72105,7 @@
     },
     {
       "en": "{0}, {1} for {2} minute",
-	  "pl": "{0}, {1} dla {2} minuty",
+      "pl": "{0}, {1} dla {2} minuty",
       "xloc": [
         "default.handlebars->39->1874",
         "default.handlebars->39->942"
@@ -72113,7 +72113,7 @@
     },
     {
       "en": "{0}, {1} for {2} minutes",
-	  "pl": "{0}, {1} dla {2} minut",
+      "pl": "{0}, {1} dla {2} minut",
       "xloc": [
         "default.handlebars->39->1875",
         "default.handlebars->39->943"
