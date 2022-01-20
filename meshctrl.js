@@ -2048,7 +2048,11 @@ function serverConnect() {
                                 for (var j in devicesInMesh) {
                                     var n = devicesInMesh[j];
                                     nodecount++;
-                                    console.log('\"' + settings.xmeshes[i]._id.split('/')[2] + '\",\"' + settings.xmeshes[i].name.split('\"').join('') + '\",\"' + n._id.split('/')[2] + '\",\"' + n.name.split('\"').join('') + '\",' + (n.icon ? n.icon : 0) + ',' + (n.conn ? n.conn : 0) + ',' + (n.pwr ? n.pwr : 0));
+                                    if (settings.xmeshes) {
+                                        console.log('\"' + settings.xmeshes[i]._id.split('/')[2] + '\",\"' + settings.xmeshes[i].name.split('\"').join('') + '\",\"' + n._id.split('/')[2] + '\",\"' + n.name.split('\"').join('') + '\",' + (n.icon ? n.icon : 0) + ',' + (n.conn ? n.conn : 0) + ',' + (n.pwr ? n.pwr : 0));
+                                    } else {
+                                        console.log('\"' + n._id.split('/')[2] + '\",\"' + n.name.split('\"').join('') + '\",' + (n.icon ? n.icon : 0) + ',' + (n.conn ? n.conn : 0) + ',' + (n.pwr ? n.pwr : 0));
+                                    }
                                 }
                             }
                             if (nodecount == 0) { console.log('None'); }
@@ -2069,7 +2073,6 @@ function serverConnect() {
                                     nodes.push(devicesInMesh[j]);
                                 }
                             }
-
                             console.log(JSON.stringify(nodes, ' ', 2));
                         } else {
                             // Display the list of nodes in text format
