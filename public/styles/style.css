@@ -136,8 +136,10 @@ body {
     width: 100%;
     grid-area: header;
     -ms-grid-column: 1;
+    grid-column: 1;
     -ms-grid-column-span: 2;
     -ms-grid-row: 1;
+    grid-row: 1;
 }
 
 .fulldesk #masthead {
@@ -178,7 +180,9 @@ body {
 
 #page_leftbar {
     -ms-grid-column: 1;
+    grid-column: 1;
     -ms-grid-row: 2;
+    grid-row: 2;
     -ms-grid-row-span: 3;
     height: 100%;
     /* height: calc(100vh - 66px); */
@@ -213,7 +217,9 @@ body {
     position: relative;
     grid-area: nav;
     -ms-grid-column: 2;
+    grid-column: 2;
     -ms-grid-row: 2;
+    grid-row: 2;
 }
 
 .fulldesk #topbar {
@@ -222,8 +228,14 @@ body {
 
 .menu_stack #topbar, .login #topbar, .arg_hide #topbar {
     -ms-grid-column: 1;
+    grid-column: 1;
     -ms-grid-column-span: 2;
     -ms-grid-row: 2;
+    grid-row: 2;
+}
+
+.logoncontrolspan, .logoncontrolspan2 {
+    color: white;
 }
 
 .topbar_td {
@@ -330,14 +342,18 @@ body {
 
 .menu_stack.fullscreen.fulldesk #column_l {
     -ms-grid-column: 1;
+    grid-column: 1;
     -ms-grid-row: 1;
+    grid-row: 1;
     -ms-grid-column-span: 2;
     -ms-grid-row-span: 4;
 }
 
 .fullscreen #column_l {
     -ms-grid-column: 2;
+    grid-column: 1;
     -ms-grid-row: 3;
+    grid-row: 3;
     grid-area: content;
     width: unset;
     /* height: calc(100vh - 111px);
@@ -347,8 +363,10 @@ body {
 
 .menu_stack.fullscreen #column_l, .login #column_l, .arg_hide #column_l {
     -ms-grid-column: 1;
+    grid-column: 1;
     -ms-grid-column-span: 2;
     -ms-grid-row: 3;
+    grid-row: 3;
 }
 
 .fulldesk #column_l {
@@ -360,7 +378,9 @@ body {
     padding: 0;
     max-height: none;
     -ms-grid-column: 1;
+    grid-column: 1;
     -ms-grid-row: 1;
+    grid-row: 1;
     background-color: rgb(0, 51, 102);
 }
 
@@ -430,7 +450,9 @@ body {
 
 #footer {
     -ms-grid-column: 2;
+    grid-column: 2;
     -ms-grid-row: 4;
+    grid-row: 4;
     grid-area: footer;
     clear: both;
     overflow: auto;
@@ -447,8 +469,10 @@ body {
 
 .menu_stack.fullscreen #footer, .login #footer, .arg_hide #footer {
     -ms-grid-column: 1;
+    grid-column: 1;
     -ms-grid-column-span: 2;
     -ms-grid-row: 4;
+    grid-row: 4;
 }
 
 /* Support for footer made with table */
@@ -1112,6 +1136,7 @@ NoMeshesPanel img {
     height: calc(100vh - 295px);
     overflow: auto;
     -webkit-user-select: none;
+    user-select: none;
     position: relative;
 }
 
@@ -1120,6 +1145,7 @@ NoMeshesPanel img {
     width: 100%;
     overflow: auto;
     -webkit-user-select: none;
+    user-select: none;
     background-color: lightsteelblue;
 }
 
@@ -1900,6 +1926,7 @@ a {
     -khtml-user-select: none;
     -webkit-user-select: none;
     -o-user-select: none;
+    user-select: none;
     cursor: default;
     -khtml-user-drag: element;
     clear: both;
@@ -2446,7 +2473,9 @@ a {
 #deskarea1 {
     grid-area: deskarea1;
     -ms-grid-column: 1;
+    grid-column: 1;
     -ms-grid-row: 1;
+    grid-row: 1;
     min-height: 20px;
 }
 
@@ -2455,7 +2484,9 @@ a {
     grid-area: deskarea2;
     background-color: gray;
     -ms-grid-column: 1;
+    grid-column: 1;
     -ms-grid-row: 2;
+    grid-row: 2;
 }
 
 #progressbar {
@@ -2484,7 +2515,9 @@ a {
     max-height: 100%;
     height: 100%;
     -ms-grid-column: 1;
+    grid-column: 1;
     -ms-grid-row: 3;
+    grid-row: 3;
 }
 
 #DeskFocus {
@@ -2509,6 +2542,7 @@ a {
     overflow: hidden;
     width: 100%;
     -ms-touch-action: none;
+    touch-action: none;
     position: absolute;
     top: 0px;
     bottom: 0px;
@@ -2624,7 +2658,9 @@ a {
 #deskarea4 {
     grid-area: deskarea4;
     -ms-grid-column: 1;
+    grid-column: 1;
     -ms-grid-row: 4;
+    grid-row: 4;
 }
 
 #DeskChatButton, #DeskNotifyButton, #DeskOpenWebButton, #DeskBackgroundButton, #DeskSaveImageButton, #DeskRecordButton, #DeskClipboardInButton, #DeskClipboardOutButton, #DeskRefreshButton, #DeskLockButton, #DeskInputLockedButton, #DeskInputUnLockedButton, #DeskGuestShareButton {
@@ -2726,6 +2762,7 @@ a {
     height: calc(100vh - 323px);
     overflow: auto;
     -webkit-user-select: none;
+    user-select: none;
 }
 
 .room4submenu #p13filetable {
