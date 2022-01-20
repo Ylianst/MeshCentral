@@ -25631,6 +25631,12 @@
       ]
     },
     {
+      "en": "Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any",
+      "xloc": [
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar"
+      ]
+    },
+    {
       "cs": "Nalézt",
       "de": "Finden",
       "en": "Find",
