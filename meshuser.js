@@ -1592,7 +1592,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changemeshnotify', responseid: command.responseid, result: err })); } catch (ex) { } } break; }
 
                     // Change the device group notification
+                    if (user.links == null) { user.links = {}; }
                     if (user.links[command.meshid]) {
+                        // The user has direct rights for this device group
                         if (command.notify == 0) {
                             delete user.links[command.meshid].notify;
                         } else {
