@@ -665,13 +665,13 @@ module.exports.CreateDB = function (parent, func) {
         } else if (parent.args.mysql) {
             // Use MySQL
             obj.databaseType = 5;
-            var tempDatastore = require('mysql').createConnection(connectionObject);
+            var tempDatastore = require('mysql').createPool(connectionObject);
             tempDatastore.query('CREATE DATABASE IF NOT EXISTS ' + dbname, function (error) {
                 if (error != null) {
                     console.log('Auto-create database failed: ' + error);
                 }
                 connectionObject.database = dbname;
-                Datastore = require('mysql').createConnection(connectionObject);
+                Datastore = require('mysql').createPool(connectionObject);
                 createTablesIfNotExist(dbname);
             });
             setTimeout(function () { tempDatastore.end(); }, 2000);

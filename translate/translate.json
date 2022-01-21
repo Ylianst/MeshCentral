@@ -748,7 +748,7 @@
     },
     {
       "cs": "(Žádný)",
-      "de": "(Keiner)",
+      "de": "(keiner)",
       "en": "(None)",
       "es": "(Ninguno)",
       "fi": "(Ei mitään)",
@@ -1081,6 +1081,7 @@
       ]
     },
     {
+      "de": ", täglich wiederkehrend",
       "en": ", Reccuring daily",
       "pl": ", Powtarzaj codziennie",
       "xloc": [
@@ -1089,6 +1090,7 @@
       ]
     },
     {
+      "de": ", wöchentlich wiederkehrend",
       "en": ", Reccuring weekly",
       "pl": ", Powtarzaj co tydzień",
       "xloc": [
