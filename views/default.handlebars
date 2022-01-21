@@ -5235,35 +5235,39 @@
         }
 
         function groupActionFunction() {
-            var addedOptions = '', nodeids = getCheckedDevices(), added = 0;
+            var addedOptions = [], nodeids = getCheckedDevices(), added = 0;
 
             // Check if any of the selected devices have a MQTT connection active
             if (features & 0x00400000) {
-                for (var i in nodeids) { if ((getNodeFromId(nodeids[i]).conn & 16) != 0) { addedOptions += '<option value=103>' + "Send MQTT Message" + '</option>'; break; } }
+                for (var i in nodeids) { if ((getNodeFromId(nodeids[i]).conn & 16) != 0) { addedOptions.push({ v:103, name: "Send MQTT Message" });; break; } }
             }
 
-            // Display the "Uninstall Agent" option if allowed and we selected connected devices.
+            // Display the options that are allowed depending on what devices are selected.
+            addedOptions.push({ v: 105, name: "Export device information", s:true });
             for (var i in nodeids) {
                 var node = getNodeFromId(nodeids[i]), rights = GetNodeRights(node);
-                if ((rights & 1) && ((added & 2) == 0)) { added |= 2; addedOptions += '<option value=102>' + "Move to device group" + '</option>'; }
-                if (((node.conn & 1) != 0) && ((rights & 0x8000) != 0) && ((added & 1) == 0)) { added |= 1; addedOptions += '<option value=104>' + "Uninstall Agent" + '</option>'; }
-                if ((rights & 64) && ((added & 8) == 0)) { added |= 8; addedOptions += '<option value=100>' + "Wake-up devices" + '</option>'; }
-                if ((rights & 262144) && ((added & 4) == 0)) { added |= 4; addedOptions += '<option value=4>' + "Sleep devices" + '</option><option value=3>' + "Reset devices" + '</option><option value=2>' + "Power off devices" + '</option>'; }
-                if ((rights & 131072) && ((added & 16) == 0)) { added |= 16; addedOptions += '<option value=106>' + "Run commands" + '</option>'; }
-                if ((rights & 16384) && ((added & 32) == 0)) { added |= 32; addedOptions += '<option value=108>' + "Device notification" + '</option>'; }
-                if ((rights & 4) && ((added & 64) == 0)) { added |= 64; addedOptions += '<option value=107>' + "Edit tags" + '</option>'; }
-                if ((rights & 8) && ((added & 256) == 0)) { added |= 256; addedOptions += '<option value=109>' + "Upload files" + '</option>'; }
-                if ((rights & 32768) && ((added & 128) == 0)) { added |= 128; addedOptions += '<option value=101>' + "Delete devices" + '</option>'; }
+                if ((rights & 1) && ((added & 2) == 0)) { added |= 2; addedOptions.push({ v: 102, name: "Move to device group" }); }
+                if (((node.conn & 1) != 0) && ((rights & 0x8000) != 0) && ((added & 1) == 0)) { added |= 1; addedOptions.push({ v: 104, name: "Uninstall Agent" }); }
+                if ((rights & 64) && ((added & 8) == 0)) { added |= 8; addedOptions.push({ v: 100, name: "Wake-up devices" }); }
+                if ((rights & 262144) && ((added & 4) == 0)) { added |= 4; addedOptions.push({ v: 4, name: "Sleep devices" }); addedOptions.push({ v: 3, name: "Reset devices" }); addedOptions.push({ v: 2, name: "Power off devices" }); }
+                if ((rights & 131072) && ((added & 16) == 0)) { added |= 16; addedOptions.push({ v: 106, name: "Run commands" }); }
+                if ((rights & 16384) && ((added & 32) == 0)) { added |= 32; addedOptions.push({ v: 108, name: "Device notification" }); }
+                if ((rights & 4) && ((added & 64) == 0)) { added |= 64; addedOptions.push({ v: 107, name: "Edit tags" }); }
+                if ((rights & 8) && ((added & 256) == 0)) { added |= 256; addedOptions.push({ v: 109, name: "Upload files" }); }
+                if ((rights & 32768) && ((added & 128) == 0)) { added |= 128; addedOptions.push({ v: 101, name: "Delete devices" }); }
                 if ((node.agent != null) && (features2 & 0x00000010) && (rights == 0xFFFFFFFF) && ((added & 512) == 0)) {
                     added |= 512;
-                    addedOptions += '<option value=110>' + "Force agent update" + '</option>';
-                    addedOptions += '<option value=111>' + "Clear agent core" + '</option>';
-                    addedOptions += '<option value=112>' + "Upload default server core" + '</option>';
+                    addedOptions.push({ v: 110, name: "Force agent update" });
+                    addedOptions.push({ v: 111, name: "Clear agent core" });
+                    addedOptions.push({ v: 112, name: "Upload default server core" });
                 }
             }
 
+            var addedOptionsStr = '';
+            addedOptions.sort(nameSort);
+            for (var i in addedOptions) { addedOptionsStr += '<option value=' + addedOptions[i].v + (addedOptions[i].s?' selected':'') + '>' + addedOptions[i].name + '</option>'; }
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights." + '<br /><br />';
-            x += addHtmlValue("Operation", '<select id=d2groupop><option value=105>' + "Export device information" + '</option>' + '</option>' + addedOptions + '</select>');
+            x += addHtmlValue("Operation", '<select id=d2groupop>' + addedOptionsStr + '</select>');
             setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
         }
 
