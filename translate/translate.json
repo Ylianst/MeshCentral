@@ -71692,7 +71692,7 @@
     },
     {
       "en": "{0} requesting remote desktop access. Grant access?",
-      "fr": "{0} demande(s) d'utilisation du bureau distant. Autoriser l'accès ?",
+      "fr": "{0} demande(nt) l'utilisation du bureau à distance. Autoriser l'accès ?",
       "pl": "{0} prosi o zdalny dostęp do pulpitu. Przyznać dostęp?",
       "xloc": [
         "coretranslations.json"
@@ -71700,7 +71700,7 @@
     },
     {
       "en": "{0} requesting remote file Access. Grant access?",
-      "fr": "{0} demande(s) d'accès à un fichier distant. Autoriser l'accès ?",
+      "fr": "{0} demande(nt) d'accès à un fichier à distance. Autoriser l'accès ?",
       "pl": "{0} prosi o zdalny dostęp do plików. Przyznać dostęp?",
       "xloc": [
         "coretranslations.json"
@@ -71708,7 +71708,7 @@
     },
     {
       "en": "{0} requesting remote terminal access. Grant access?",
-      "fr": "{0} demande(s) d'utilisation du terminal distant. Autoriser l'accès ?",
+      "fr": "{0} demande(nt) d'utilisation du terminal à distance. Autoriser l'accès ?",
       "pl": "{0} prosi o zdalny dostęp do terminala. Przyznać dostęp?",
       "xloc": [
         "coretranslations.json"
