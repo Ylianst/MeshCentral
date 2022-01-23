@@ -13,7 +13,15 @@
   },
   "cs": {
     "allow": "Dovolit",
-    "deny": "Odmítnout"
+    "deny": "Odmítnout",
+    "autoAllowForFive": "Automaticky přijímat všechna připojení na dalších 5 minut",
+    "terminalConsent": "{0} žádá o vzdálený terminálový přístup. Přístup povolen?",
+    "desktopConsent": "{0} žádá o přístup ke vzdálené ploše. Přístup povolen?",
+    "fileConsent": "{0} požaduje vzdálený přístup k souboru. Přístup povolen?",
+    "terminalNotify": "{0} zahájil relaci vzdáleného terminálu.",
+    "desktopNotify": "{0} zahájil relaci vzdálené plochy.",
+    "fileNotify": "{0} zahájil relaci vzdáleného souboru.",
+    "privacyBar": "Sdílení plochy s: {0}"
   },
   "de": {
     "allow": "Erlauben",
@@ -29,11 +37,27 @@
   },
   "es": {
     "allow": "Permitir",
-    "deny": "Negar"
+    "deny": "Negar",
+    "autoAllowForFive": "Aceptar automáticamente todas las conexiones durante los próximos 5 minutos",
+    "terminalConsent": "{0} solicitando acceso a terminal remoto. ¿Autorizará el acceso?",
+    "desktopConsent": "{0} solicita acceso a escritorio remoto. ¿Autorizará el acceso?",
+    "fileConsent": "{0} solicita acceso remoto al archivo. ¿Autorizará el acceso?",
+    "terminalNotify": "{0} inició una sesión de terminal remota.",
+    "desktopNotify": "{0} inició una sesión de escritorio remoto.",
+    "fileNotify": "{0} inició una sesión de archivo remoto.",
+    "privacyBar": "Compartir escritorio con: {0}"
   },
   "fi": {
     "allow": "Sallia",
-    "deny": "Kieltää"
+    "deny": "Kieltää",
+    "autoAllowForFive": "Hyväksy automaattisesti kaikki yhteydet seuraavan 5 minuutin ajan",
+    "terminalConsent": "{0} pyytää etäpäätteen käyttöoikeutta. Myönnetäänkö käyttöoikeus?",
+    "desktopConsent": "{0} pyytää etätyöpöytäkäyttöä. Myönnetäänkö käyttöoikeus?",
+    "fileConsent": "{0} pyytää etäkäyttöoikeutta tiedostoon. Myönnetäänkö käyttöoikeus?",
+    "terminalNotify": "{0} aloitti etäpääteistunnon.",
+    "desktopNotify": "{0} aloitti etätyöpöytäistunnon.",
+    "fileNotify": "{0} aloitti etätiedostoistunnon.",
+    "privacyBar": "Työpöytä jaetaan seuraavien kanssa: {0}"
   },
   "fr": {
     "allow": "Permettre",
@@ -49,15 +73,39 @@
   },
   "hi": {
     "allow": "अनुमति",
-    "deny": "मना"
+    "deny": "मना",
+    "autoAllowForFive": "अगले 5 मिनट के लिए सभी कनेक्शन स्वतः स्वीकार करें",
+    "terminalConsent": "{0} दूरस्थ टर्मिनल पहुंच का अनुरोध कर रहा है। अनुदान पहुँच?",
+    "desktopConsent": "{0} दूरस्थ डेस्कटॉप पहुंच का अनुरोध कर रहा है। अनुदान पहुँच?",
+    "fileConsent": "{0} दूरस्थ फ़ाइल एक्सेस का अनुरोध करना। अनुदान पहुँच?",
+    "terminalNotify": "{0} ने दूरस्थ टर्मिनल सत्र प्रारंभ किया।",
+    "desktopNotify": "{0} ने दूरस्थ डेस्कटॉप सत्र प्रारंभ किया।",
+    "fileNotify": "{0} ने दूरस्थ फ़ाइल सत्र प्रारंभ किया।",
+    "privacyBar": "इसके साथ डेस्कटॉप साझा करना: {0}"
   },
   "it": {
     "allow": "Permettere",
-    "deny": "Negare"
+    "deny": "Negare",
+    "autoAllowForFive": "Accetta automaticamente tutte le connessioni per i prossimi 5 minuti",
+    "terminalConsent": "{0} che richiede l'accesso al terminale remoto. Concedere l'accesso?",
+    "desktopConsent": "{0} che richiede l'accesso al desktop remoto. Concedere l'accesso?",
+    "fileConsent": "{0} che richiede l'accesso al file remoto. Concedere l'accesso?",
+    "terminalNotify": "{0} ha avviato una sessione di terminale remoto.",
+    "desktopNotify": "{0} ha avviato una sessione desktop remoto.",
+    "fileNotify": "{0} ha avviato una sessione di file remota.",
+    "privacyBar": "Condivisione del desktop con: {0}"
   },
   "ja": {
     "allow": "許可する",
-    "deny": "拒否"
+    "deny": "拒否",
+    "autoAllowForFive": "次の5分間はすべての接続を自動受け入れます",
+    "terminalConsent": "{0}リモート端末アクセスを要求しています。アクセス許可？",
+    "desktopConsent": "{0}リモートデスクトップアクセスを要求しています。アクセス許可？",
+    "fileConsent": "{0}リモートファイルアクセスを要求しています。アクセス許可？",
+    "terminalNotify": "{0}がリモートターミナルセッションを開始しました。",
+    "desktopNotify": "{0}はリモートデスクトップセッションを開始しました。",
+    "fileNotify": "{0}がリモートファイルセッションを開始しました。",
+    "privacyBar": "デスクトップの共有：{0}"
   },
   "ko": {
     "allow": "허용하다",
@@ -101,7 +149,15 @@
   },
   "da": {
     "allow": "Tillad",
-    "deny": "Afslå"
+    "deny": "Afslå",
+    "autoAllowForFive": "Accepter automatisk alle forbindelser i de næste 5 minutter",
+    "terminalConsent": "{0} anmoder om ekstern terminaladgang. Give adgang?",
+    "desktopConsent": "{0} anmoder om fjernskrivebordsadgang. Give adgang?",
+    "fileConsent": "{0} anmoder om fjernadgang til fil. Give adgang?",
+    "terminalNotify": "{0} startede en fjernterminalsession.",
+    "desktopNotify": "{0} startede en fjernskrivebordssession.",
+    "fileNotify": "{0} startede en ekstern filsession.",
+    "privacyBar": "Deler skrivebordet med: {0}"
   },
   "pl": {
     "allow": "Zezwól",
