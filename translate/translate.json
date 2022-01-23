@@ -62373,6 +62373,7 @@
     },
     {
       "en": "Unable to load Intel AMT TLS root certificate for default domain.",
+      "de": "Konnte Intel AMT TLS root Zertifikat für Standarddomain nicht laden.",
       "es": "No se puede cargar el certificado raíz TLS Intel AMT para el dominio por defecto.",
       "fr": "Impossible de charger le certificat racine Intel AMT TLS pour le domaine par défaut.",
       "nl": "Kan Intel AMT TLS rootcertificaat voor standaarddomein niet laden.",
@@ -62384,6 +62385,7 @@
     },
     {
       "en": "Unable to load Intel AMT TLS root certificate for domain {0}.",
+      "de": "Konnte Intel AMT TLS root Zertifikat für domain {0} nicht laden.",
       "es": "No se puede cargar el certificado raíz TLS Intel AMT para el dominio {0}.",
       "fr": "Impossible de charger le certificat racine Intel AMT TLS pour le domaine {0}.",
       "nl": "Kan Intel AMT TLS rootcertificaat voor domein {0} niet laden.",
@@ -62518,6 +62520,7 @@
     },
     {
       "en": "Unable to setup Let's Encrypt module.",
+      "de": "Einrichten Let's Encrypt Modul nicht möglich.",
       "es": "No se puede configurar el módulo Let's Encrypt.",
       "fr": "Impossible de configurer le module Let's Encrypt.",
       "nl": "Kan de Let's Encrypt module niet instellen.",
@@ -62865,6 +62868,7 @@
     },
     {
       "en": "Unknown User",
+      "de": "Benutzer unbekannt",
       "es": "Usuario desconocido",
       "fr": "Utilisateur inconnu",
       "nl": "Onbekende gebruiker",
@@ -63031,6 +63035,7 @@
     },
     {
       "en": "Unrecognized configuration option \\\"{0}\\\".",
+      "de": "Unbekannte Konfigurationsoption \\\"{0}\\\".",
       "es": "Opción de configuración desconocida \\\"{0}\\\".",
       "fr": "Option de configuration non recnonnue \\\"{0}\\\".",
       "nl": "Niet herkende configuratie instelling \\\"{0}\\\".",
@@ -64423,6 +64428,7 @@
     },
     {
       "en": "User Traffic Usage",
+      "de": "Benutzer Datendverkehrsaufkommen",
       "es": "Uso de tráfico de usuario",
       "fr": "Utilisation du traffic utilisateur",
       "nl": "Gebruik van gebruikersverkeer",
@@ -64713,6 +64719,7 @@
     },
     {
       "en": "User notifications changed",
+      "de": "Bneutzer Benachrichtigung geändert",
       "es": "Han cambiado las notificaciones del usuario",
       "fr": "Notifications aux utilisateurs changés",
       "nl": "Gebruikersmeldingen gewijzigd",
@@ -66286,6 +66293,7 @@
     },
     {
       "en": "Web Page Notifications",
+      "de": "Webseiten Benachrichtigung",
       "es": "Notificaciones de página web",
       "fr": "Notifications de pages Web",
       "nl": "Webpagina meldingen",
@@ -66298,6 +66306,7 @@
     },
     {
       "en": "Web Power Switch 7",
+      "de": "Web Power Switch 7",
       "nl": "Web Power Switch 7",
       "pl": "Przełącznik Zasilania Web 7",
       "da": "Web Power Switch 7",
@@ -66434,6 +66443,7 @@
     },
     {
       "en": "Web-SFTP",
+      "de": "Web-SFTP",
       "es": "Web-SFTP",
       "fr": "Web-SFTP",
       "nl": "Web-SFTP",
@@ -66578,6 +66588,7 @@
     },
     {
       "en": "Weekly",
+      "en": "wöchentlich",
       "nl": "Wekelijks",
       "pl": "Tygodniowo",
       "xloc": [
@@ -68806,7 +68817,7 @@
     },
     {
       "cs": "zrušit",
-      "de": "cancelhelp",
+      "de": "Support-Anfrage abbrechen",
       "en": "cancelhelp",
       "es": "cancelar ayuda",
       "fi": "peruuta apua",
@@ -69284,7 +69295,7 @@
     },
     {
       "cs": "Firefox",
-      "de": "Feuerfuchs",
+      "de": "Firefox",
       "en": "firefox",
       "es": "firefox",
       "fi": "firefox",
@@ -69363,7 +69374,7 @@
     },
     {
       "cs": "skupina:",
-      "de": "gruppe:",
+      "de": "Gruppe:",
       "en": "group:",
       "es": "grupo:",
       "fi": "ryhmä:",
@@ -70833,6 +70844,7 @@
     },
     {
       "en": "within 1 hour of getting this message.",
+      "de": "innerhalb 1 Stunde nach erhalt dieser Nachricht.",
       "es": "en 1 hora desde la recepción de este mensaje.",
       "fr": "dans l'heure suivant la réception de ce message.",
       "nl": "binnen 1 uur na ontvangst van dit bericht.",
@@ -71502,6 +71514,7 @@
     },
     {
       "en": "{0} minute",
+      "de": "{0} Minute",
       "nl": "{0} minuut",
       "pl": "{0} minuta",
       "xloc": [
@@ -71510,6 +71523,7 @@
     },
     {
       "en": "{0} minutes",
+      "de": "{0} Minuten",
       "nl": "{0} minuten",
       "pl": "{0} minut",
       "xloc": [
@@ -72097,7 +72111,7 @@
     },
     {
       "cs": "{0} uur resterend",
-      "de": "{0} Ihr Resterend",
+      "de": "{0} Stunde(n) verbleibend",
       "en": "{0} uur resterend",
       "es": "{0} nuestro restaurante",
       "fi": "{0} uur resterend",
@@ -72143,6 +72157,7 @@
     },
     {
       "en": "{0}, {1} for {2} minute",
+      "de": "{0}, {1} vor {2} Minute",
       "nl": "{0}, {1} voor {2} minuut",
       "pl": "{0}, {1} dla {2} minuty",
       "xloc": [
@@ -72152,6 +72167,7 @@
     },
     {
       "en": "{0}, {1} for {2} minutes",
+      "de": "{0}, {1} vor {2} Minuten",
       "nl": "{0}, {1} voor {2} minuten",
       "pl": "{0}, {1} dla {2} minut",
       "xloc": [
