@@ -1082,9 +1082,16 @@
       ]
     },
     {
+      "cs": ", Opakující se denně",
+      "da": ", Tilbagevendende dagligt",
       "de": ", täglich wiederkehrend",
       "en": ", Reccuring daily",
+      "es": ", Recurriendo diariamente",
+      "fi": ", Toistuu päivittäin",
       "fr": ", Se reproduisant quotidiennement",
+      "hi": ", आवर्ती दैनिक",
+      "it": ", Ricorrente ogni giorno",
+      "ja": "、毎日のリキュレーション",
       "nl": ", Dagelijks terugkerend",
       "pl": ", Powtarzaj codziennie",
       "xloc": [
@@ -1093,9 +1100,16 @@
       ]
     },
     {
+      "cs": ", Opakující se týdně",
+      "da": ", Tilbagevendende ugentligt",
       "de": ", wöchentlich wiederkehrend",
       "en": ", Reccuring weekly",
+      "es": ", Recurrente semanalmente",
+      "fi": ", Toistuu viikoittain",
       "fr": ", Récurrence hebdomadaire",
+      "hi": ", आवर्ती साप्ताहिक",
+      "it": ", Ricorrente settimanale",
+      "ja": "、毎週のリキュレーション",
       "nl": ", Wekelijks terugkerend",
       "pl": ", Powtarzaj co tydzień",
       "xloc": [
@@ -1197,9 +1211,16 @@
       "zh-chs": "， 只读"
     },
     {
+      "cs": ", Zobrazit pouze plochu",
       "da": ", Vis kun skrivebord",
+      "de": ", Nur Desktop anzeigen",
       "en": ", View only desktop",
+      "es": ", Ver solo escritorio",
+      "fi": ", Näytä vain työpöytä",
       "fr": ", Visionner uniquement le bureau",
+      "hi": ", केवल डेस्कटॉप देखें",
+      "it": ", Visualizza solo desktop",
+      "ja": "、デスクトップのみを表示",
       "nl": ", Desktop alleen bekijken",
       "pl": ", Tylko podgląd pulpitu",
       "xloc": [
@@ -4257,10 +4278,16 @@
       ]
     },
     {
+      "cs": "AMT-Redir",
       "da": "AMT-Redir",
+      "de": "AMT-Redir",
       "en": "AMT-Redir",
       "es": "AMT-Redir",
+      "fi": "AMT-Redir",
       "fr": "AMT-Redir",
+      "hi": "एएमटी-रेडिर",
+      "it": "AMT-Redir",
+      "ja": "AMT-Redir",
       "nl": "AMT-Redir",
       "pl": "AMT-Przekier",
       "xloc": [
@@ -4268,10 +4295,16 @@
       ]
     },
     {
+      "cs": "AMT-WSMAN",
       "da": "AMT-WSMAN",
+      "de": "AMT-WSMAN",
       "en": "AMT-WSMAN",
       "es": "AMT-WSMAN",
+      "fi": "AMT-WSMAN",
       "fr": "AMT-WSMAN",
+      "hi": "एएमटी-WSMAN",
+      "it": "AMT-WSMAN",
+      "ja": "AMT-WSMAN",
       "nl": "AMT-WSMAN",
       "pl": "AMT-WSMAN",
       "xloc": [
@@ -4777,10 +4810,16 @@
       ]
     },
     {
+      "cs": "Účet byl vytvořen, jméno je {0}.",
       "da": "Konto oprettet, navnet er {0}",
+      "de": "Konto erstellt, Name ist {0}.",
       "en": "Account created, name is {0}.",
       "es": "Cuenta creada, el nombre es {0}.",
+      "fi": "Tili luotu, nimi on {0}.",
       "fr": "Compte créé, l'identifiant est : {0}.",
+      "hi": "खाता बनाया गया, नाम है {0}.",
+      "it": "Account creato, il nome è {0}.",
+      "ja": "アカウントが作成されました。名前は{0}です。",
       "nl": "Account aangemaakt, naam is {0}.",
       "pl": "Konto utworzono, jego nazwa to {0}.",
       "xloc": [
@@ -5361,10 +5400,16 @@
       ]
     },
     {
+      "cs": "Aktivní uživatel",
       "da": "Aktive bruger",
+      "de": "Aktiver Nutzer",
       "en": "Active User",
       "es": "Usuario activo",
+      "fi": "Aktiivinen käyttäjä",
       "fr": "Utilisateur actif",
+      "hi": "सक्रिय उपयोगकर्ता",
+      "it": "Utente attivo",
+      "ja": "アクティブユーザー",
       "nl": "Actieve gebruiker",
       "pl": "Aktywny użytkownik",
       "pt-br": "Usuario activo",
@@ -5373,10 +5418,16 @@
       ]
     },
     {
+      "cs": "Aktivní uživatelé",
       "da": "Aktive brugere",
+      "de": "Aktive Benutzer",
       "en": "Active Users",
       "es": "Usuarios activos",
+      "fi": "Aktiiviset käyttäjät",
       "fr": "Utilisateurs actifs",
+      "hi": "सक्रिय उपयोगकर्ता",
+      "it": "Utenti attivi",
+      "ja": "アクティブユーザー",
       "nl": "Actieve gebruikers",
       "pl": "Aktywni użytkownicy",
       "pt-br": "Usuarios activos",
@@ -6420,8 +6471,16 @@
       ]
     },
     {
+      "cs": "Bylo přidáno sdílení zařízení {0}, které se opakuje denně.",
+      "da": "Tilføjet enhedsandel {0} tilbagevendende dagligt.",
+      "de": "Täglich wiederkehrende Gerätefreigabe {0} hinzugefügt.",
       "en": "Added device share {0} recurring daily.",
+      "es": "Dispositivo compartido compartido {0} recurrente diariamente.",
+      "fi": "Lisätty laitejako {0} toistuvasti päivittäin.",
       "fr": "Ajout du partage d'appareil {0} récurrent quotidiennement.",
+      "hi": "जोड़ा गया डिवाइस शेयर {0} प्रतिदिन आवर्ती।",
+      "it": "Aggiunta condivisione dispositivo {0} ricorrente ogni giorno.",
+      "ja": "毎日繰り返されるデバイス共有{0}を追加しました。",
       "nl": "Apparaat delen toegevoegd {0} dagelijks terugkerend.",
       "pl": "Dodano udostępnienie urządzenia {0} reaktywowane codziennie.",
       "xloc": [
@@ -6429,8 +6488,16 @@
       ]
     },
     {
+      "cs": "Bylo přidáno sdílení zařízení {0} opakující se týdně.",
+      "da": "Tilføjet enhedsdeling {0} tilbagevendende ugentligt.",
+      "de": "Wöchentlich wiederkehrende Gerätefreigabe {0} hinzugefügt.",
       "en": "Added device share {0} recurring weekly.",
+      "es": "Dispositivo compartido {0} recurrente semanalmente.",
+      "fi": "Lisätty laitejako {0} toistuvasti viikoittain.",
       "fr": "Ajout du partage d'appareil {0} récurrent hebdomadaire.",
+      "hi": "जोड़ा गया डिवाइस शेयर {0} आवर्ती साप्ताहिक।",
+      "it": "Aggiunta la condivisione del dispositivo {0} ricorrente ogni settimana.",
+      "ja": "毎週繰り返されるデバイス共有{0}を追加しました。",
       "nl": "Apparaat delen toegevoegd {0} wekelijks terugkerend.",
       "pl": "Dodano udostępnienie urządzenia {0} reaktywowane co tydzień.",
       "xloc": [
@@ -6438,9 +6505,16 @@
       ]
     },
     {
+      "cs": "Přidáno sdílení zařízení {0} s neomezeným časem.",
       "da": "Tilføjet enhedsdeling {0} med ubegrænset tid.",
+      "de": "Gerätefreigabe {0} mit unbegrenzter Zeit hinzugefügt.",
       "en": "Added device share {0} with unlimited time.",
+      "es": "Dispositivo compartido {0} agregado con tiempo ilimitado.",
+      "fi": "Lisätty laitteen jako {0} rajoittamattomaksi ajaksi.",
       "fr": "Ajout du partage de l'appareil {0} sans limitation de durée.",
+      "hi": "असीमित समय के साथ जोड़ा गया डिवाइस शेयर {0}।",
+      "it": "Aggiunta condivisione dispositivo {0} con tempo illimitato.",
+      "ja": "無制限の時間でデバイス共有{0}を追加しました。",
       "nl": "Apparaat delen {0} toegevoegd met onbeperkte tijd.",
       "pl": "Dodano udostępnianie urządzenia {0} z nieograniczonym czasem",
       "xloc": [
@@ -7137,9 +7211,16 @@
       "zh-chs": "代理选择"
     },
     {
+      "cs": "Agent Self-Share",
       "da": "Agent selv-deling",
+      "de": "Agent-Selbstfreigabe",
       "en": "Agent Self-Share",
+      "es": "Autocompartido del agente",
+      "fi": "Agentin omavastuu",
       "fr": "Auto-partage de l'agent",
+      "hi": "एजेंट सेल्फ-शेयर",
+      "it": "Auto-condivisione dell'agente",
+      "ja": "エージェントの自己共有",
       "nl": "Agent zelfdelend",
       "pl": "Samo-Udostępnianie Agenta",
       "xloc": [
@@ -7348,10 +7429,16 @@
       ]
     },
     {
+      "cs": "Agent spojený s omezenými privilegii",
       "da": "Agent tilsluttet med begrænsede rettigheder",
+      "de": "Agent mit eingeschränkten Privilegien verbunden",
       "en": "Agent connected with limited privilages",
       "es": "Agente conectado con permisos limitados",
+      "fi": "Agentti, jolla on rajoitetut oikeudet",
       "fr": "Agent connecté avec des privilèges limités",
+      "hi": "सीमित विशेषाधिकारों से जुड़े एजेंट",
+      "it": "Agente connesso con privilegi limitati",
+      "ja": "限られた特権に接続されたエージェント",
       "nl": "Agent verbonden met beperkte privileges",
       "pl": "Agent połączony z ograniczonymi uprawnieniami",
       "xloc": [
@@ -7384,10 +7471,16 @@
       ]
     },
     {
+      "cs": "Kontrola hash agenta se přeskakuje, není to bezpečné.",
       "da": "Agent-hash-tjek springes over, dette er usikkert.",
+      "de": "Die Agent-Hash-Überprüfung wird übersprungen, dies ist unsicher.",
       "en": "Agent hash checking is being skipped, this is unsafe.",
       "es": "Se ha omitido la comprobación hash del agente, esto es inseguro.",
+      "fi": "Agentin hajautustarkistus ohitetaan, tämä ei ole turvallista.",
       "fr": "La vérification du hachage de l'agent a été ignorée. Cette action n'est pas sure.",
+      "hi": "एजेंट हैश जाँच को छोड़ दिया जा रहा है, यह असुरक्षित है।",
+      "it": "Il controllo dell'hash dell'agente è stato ignorato, questo non è sicuro.",
+      "ja": "エージェントのハッシュチェックはスキップされています。これは安全ではありません。",
       "nl": "Agent has hcontrole wordt overgeslagen, dit is onveilig.",
       "pl": "Sprawdzanie skrótu agenta jest pomijane, jest to niebezpieczne.",
       "xloc": [
@@ -9914,9 +10007,16 @@
       ]
     },
     {
+      "cs": "Automaticky přijímat všechna připojení na dalších 5 minut",
+      "da": "Accepter automatisk alle forbindelser i de næste 5 minutter",
       "de": "Alle Verbindungen für die nächsten 5 Minuten erlauben",
       "en": "Auto accept all connections for next 5 minutes",
+      "es": "Aceptar automáticamente todas las conexiones durante los próximos 5 minutos",
+      "fi": "Hyväksy automaattisesti kaikki yhteydet seuraavan 5 minuutin ajan",
       "fr": "Accepter automatiquement les connexions pendant les 5 prochaines minutes",
+      "hi": "अगले 5 मिनट के लिए सभी कनेक्शन स्वतः स्वीकार करें",
+      "it": "Accetta automaticamente tutte le connessioni per i prossimi 5 minuti",
+      "ja": "次の5分間はすべての接続を自動受け入れます",
       "nl": "Alle verbindingen automatisch accepteren voor de komende 5 minuten",
       "pl": "Automatycznie akceptuj wszystkie połączenia przez następne 5 minut",
       "xloc": [
@@ -10447,9 +10547,16 @@
       ]
     },
     {
+      "cs": "Cestu zálohy nelze nastavit ve složce meshcentral-data, nastavení zálohování je ignorováno.",
       "da": "Sikkerhedskopieringsstien kan ikke indstilles i mappen meshcentral-data, sikkerhedskopieringsindstillinger ignoreres.",
+      "de": "Backup-Pfad kann nicht innerhalb des Meshcentral-Data-Ordners festgelegt werden, Backup-Einstellungen werden ignoriert.",
       "en": "Backup path can't be set within meshcentral-data folder, backup settings ignored.",
+      "es": "La ruta de la copia de seguridad no se puede configurar dentro de la carpeta meshcentral-data, la configuración de la copia de seguridad se ignora.",
+      "fi": "Varmuuskopiointipolkua ei voi määrittää meshcentral-data-kansiossa, varmuuskopiointiasetuksia ei huomioida.",
       "fr": "Le chemin de sauvegarde ne peut pas être défini dans le dossier meshcentral-data, les paramètres de sauvegarde sont ignorés.",
+      "hi": "बैकअप पथ को मेशसेंट्रल-डेटा फ़ोल्डर में सेट नहीं किया जा सकता है, बैकअप सेटिंग्स पर ध्यान नहीं दिया जाता है।",
+      "it": "Il percorso di backup non può essere impostato all'interno della cartella meshcentral-data, le impostazioni di backup ignorate.",
+      "ja": "meshcentral-dataフォルダー内にバックアップパスを設定することはできません。バックアップ設定は無視されます。",
       "nl": "Back-uppad kan niet worden ingesteld in de map meshcentral-data, back-upinstellingen genegeerd.",
       "pl": "Ścieżka kopii zapasowej nie może być ustawiona wewnątrz folderu meshcentral-data, ustawienia kopii zignorowano.",
       "xloc": [
@@ -10980,10 +11087,16 @@
       ]
     },
     {
+      "cs": "Bytes In",
       "da": "Bytes Ind",
+      "de": "Bytes ein",
       "en": "Bytes In",
       "es": "Bytes entrantes",
+      "fi": "Tavua sisään",
       "fr": "Octets entrants",
+      "hi": "बाइट्स इन",
+      "it": "Byte dentro",
+      "ja": "バイトイン",
       "nl": "Bytes in",
       "pl": "Bajtów Odebrano",
       "xloc": [
@@ -10991,10 +11104,16 @@
       ]
     },
     {
+      "cs": "Bytes Out",
       "da": "Bytes Ud",
+      "de": "Bytes aus",
       "en": "Bytes Out",
       "es": "Bytes salientes",
+      "fi": "Bytes Out",
       "fr": "Octets sortants",
+      "hi": "बाइट्स आउट",
+      "it": "Byte in uscita",
+      "ja": "バイトアウト",
       "nl": "Bytes uit",
       "pl": "Bajtów Wysłano",
       "xloc": [
@@ -11131,10 +11250,16 @@
       ]
     },
     {
+      "cs": "Místní FQDN CIRA jsou ignorovány, když je server v režimu pouze LAN nebo WAN.",
       "da": "Lokale CIRA FQDN'er ignoreres, når serveren er i LAN-only eller WAN-only tilstand.",
+      "de": "Lokale CIRA-FQDNs werden ignoriert, wenn sich der Server im Nur-LAN- oder Nur-WAN-Modus befindet.",
       "en": "CIRA local FQDN's ignored when server in LAN-only or WAN-only mode.",
       "es": "Los FQDN locales de CIRA no se usan cuando el servidor está en modo LAN-only o WAN-only.",
+      "fi": "CIRA:n paikalliset FQDN:t ohitetaan, kun palvelin on vain LAN- tai WAN-tilassa.",
       "fr": "Les noms locaux (FDQN) CIRA sont ignorés lorsque le serveur est configuré en LAN seulement ou en WAN seulement.",
+      "hi": "CIRA स्थानीय FQDN की उपेक्षा की जाती है जब सर्वर LAN-only या WAN-only मोड में होता है।",
+      "it": "FQDN locali CIRA ignorati quando il server è in modalità solo LAN o solo WAN.",
+      "ja": "サーバーがLANのみまたはWANのみのモードの場合、CIRAローカルFQDNは無視されます。",
       "nl": "CIRA lokale FQDN's genegeerd wanneer server in LAN-only of WAN-only modus.",
       "pl": "Lokalna nazwa FQDN CIRA jest ignorowana, gdy serwer działa w trybie tylko LAN lub tylko WAN.",
       "xloc": [
@@ -11424,10 +11549,16 @@
       ]
     },
     {
+      "cs": "Nemůže mít více než 4 místní FQDN CIRA. Ignorování hodnoty.",
       "da": "Kan ikke have mere end 4 lokale CIRA FQDN'er. Ignorerer værdi.",
+      "de": "Kann nicht mehr als 4 lokale CIRA-FQDNs haben. Wert ignorieren.",
       "en": "Can't have more than 4 CIRA local FQDN's. Ignoring value.",
       "es": "No puede haber más de 4 FQDN locales de CIRA. Valor ignorado.",
+      "fi": "CIRA:n paikallista FQDN:ää voi olla enintään 4. Arvon huomioiminen.",
       "fr": "Impossible d'avoir plus de 4 noms complets de CIRA (FQDN) . Valeur ignorée.",
+      "hi": "4 से अधिक CIRA स्थानीय FQDN नहीं हो सकते। मूल्य की उपेक्षा।",
+      "it": "Non può avere più di 4 FQDN locali CIRA. Ignorando il valore.",
+      "ja": "4つを超えるCIRAローカルFQDNを持つことはできません。値を無視します。",
       "nl": "Er mogen niet meer dan 4 CIRA lokale FQDN's zijn. Waarde wordt genegeerd.",
       "pl": "Nie może mieć więcej niż 4 lokalnych FQDN CIRA. Ignorowanie wartości.",
       "xloc": [
@@ -12096,10 +12227,16 @@
       ]
     },
     {
+      "cs": "Zobrazovaný název účtu byl změněn na {0}.",
       "da": "Ændrede kontoens visningsnavn til {0}.",
+      "de": "Anzeigename des Kontos in {0} geändert.",
       "en": "Changed account display name to {0}.",
       "es": "Cambiado el nombre visible de la cuenta a {0}.",
+      "fi": "Tilin näyttönimeksi vaihdettiin {0}.",
       "fr": "Le nom du compte a changé : {0}.",
+      "hi": "खाता प्रदर्शन नाम बदलकर {0} कर दिया गया।",
+      "it": "Nome visualizzato dell'account modificato in {0}.",
+      "ja": "アカウントの表示名を{0}に変更しました。",
       "nl": "Weergavenaam account gewijzigd in {0}.",
       "pl": "Zmieniono wyświetlaną nazwę konta na {0}.",
       "xloc": [
@@ -13304,8 +13441,16 @@
       "zh-cht": "單擊下面的按鈕以安裝或卸載網狀代理。安裝後，該軟件將在後台運行，從而允許該計算機由遠程管理員進行管理和控制。"
     },
     {
+      "cs": "Klepnutím na tlačítka níže nainstalujete nebo odinstalujete tento software pro vzdálenou správu. Když je tento software nainstalován, běží na pozadí, což umožňuje spravovat a ovládat tento počítač vzdáleným správcem.",
+      "da": "Klik på knapperne nedenfor for at installere eller afinstallere denne fjernstyringssoftware. Når den er installeret, kører denne software i baggrunden, så denne computer kan administreres og kontrolleres af en fjernadministrator.",
+      "de": "Klicken Sie auf die Schaltflächen unten, um diese Fernverwaltungssoftware zu installieren oder zu deinstallieren. Nach der Installation wird diese Software im Hintergrund ausgeführt, sodass dieser Computer von einem entfernten Administrator verwaltet und gesteuert werden kann.",
       "en": "Click the buttons below to install or uninstall this remote management software. When installed, this software runs in the background allowing this computer to be managed and controlled by a remote administrator.",
+      "es": "Haga clic en los botones a continuación para instalar o desinstalar este software de administración remota. Cuando se instala, este software se ejecuta en segundo plano, lo que permite que un administrador remoto administre y controle esta computadora.",
+      "fi": "Napsauta alla olevia painikkeita asentaaksesi tai poistaaksesi tämän etähallintaohjelmiston. Kun ohjelmisto on asennettu, se toimii taustalla, jolloin etäjärjestelmänvalvoja voi hallita ja ohjata tätä tietokonetta.",
       "fr": "Cliquez sur les boutons ci-dessous pour installer ou désinstaller ce logiciel de gestion à distance. Une fois installé, ce logiciel s'exécute en arrière-plan, ce qui permet à cet ordinateur d'être géré et contrôlé par un administrateur distant.",
+      "hi": "इस दूरस्थ प्रबंधन सॉफ़्टवेयर को स्थापित या अनइंस्टॉल करने के लिए नीचे दिए गए बटनों पर क्लिक करें। स्थापित होने पर, यह सॉफ़्टवेयर पृष्ठभूमि में चलता है जिससे इस कंप्यूटर को दूरस्थ व्यवस्थापक द्वारा प्रबंधित और नियंत्रित किया जा सकता है।",
+      "it": "Fare clic sui pulsanti seguenti per installare o disinstallare questo software di gestione remota. Una volta installato, questo software viene eseguito in background consentendo a questo computer di essere gestito e controllato da un amministratore remoto.",
+      "ja": "このリモート管理ソフトウェアをインストールまたはアンインストールするには、下のボタンをクリックしてください。インストールすると、このソフトウェアはバックグラウンドで実行され、リモート管理者がこのコンピューターを管理および制御できるようになります。",
       "nl": "Klik op de onderstaande knoppen om deze software voor beheer op afstand te installeren of te verwijderen. Na installatie draait deze software op de achtergrond waardoor deze computer kan worden beheerd en gecontroleerd door een externe beheerder.",
       "pl": "Kliknij poniższe przyciski, aby zainstalować lub odinstalować oprogramowanie zdalnego dostępu. Po zainstalowaniu, to oprogramowanie działa w tle, umożliwiając zarządzanie i kontrolowanie tego komputera przez zdalnego administratora.",
       "xloc": [
@@ -14988,10 +15133,16 @@
       ]
     },
     {
+      "cs": "Připojená zařízení:",
       "da": "Forbundne enheder:",
+      "de": "Verbundene Geräte:",
       "en": "Connected devices:",
       "es": "Dispositivos conectados:",
+      "fi": "Kytketyt laitteet:",
       "fr": "Appareils connectés :",
+      "hi": "जुड़ी हुई डिवाइसेज:",
+      "it": "Dispositivi collegati:",
+      "ja": "接続されているデバイス：",
       "nl": "Verbonden apparaten:",
       "pl": "Podłączone urządzenia:",
       "xloc": [
@@ -15093,10 +15244,16 @@
       "zh-chs": "连接"
     },
     {
+      "cs": "Připojení k serveru...",
       "da": "Forbinder til serveren...",
+      "de": "Verbindung zum Server herstellen...",
       "en": "Connecting to server...",
       "es": "Conectando al servidor...",
+      "fi": "Yhdistetään palvelimeen...",
       "fr": "Connexion au serveur ...",
+      "hi": "सर्वर से कनेक्ट हो रहा है...",
+      "it": "Connessione al server...",
+      "ja": "サーバーにつなげる...",
       "nl": "Verbinden met de server...",
       "pl": "Łączenie z serwerem...",
       "xloc": [
@@ -15317,8 +15474,17 @@
       ]
     },
     {
+      "cs": "Souhlas",
+      "da": "Samtykke",
+      "de": "Zustimmung",
       "en": "Consent",
+      "es": "Consentimiento",
+      "fi": "Suostumus",
       "fr": "Consentement",
+      "hi": "सहमति",
+      "it": "Consenso",
+      "ja": "同意",
+      "nl": "Toestemming",
       "xloc": [
         "default.handlebars->39->2274"
       ]
@@ -17041,8 +17207,16 @@
       ]
     },
     {
+      "cs": "Denně",
+      "da": "Daglige",
+      "de": "Täglich",
       "en": "Daily",
+      "es": "A diario",
+      "fi": "Päivittäin",
       "fr": "du quotidien",
+      "hi": "दैनिक",
+      "it": "Quotidiano",
+      "ja": "毎日",
       "nl": "Dagelijks",
       "pl": "Dziennie",
       "xloc": [
@@ -19500,8 +19674,17 @@
       ]
     },
     {
+      "cs": "Skupina zařízení {0} byla změněna: {1}",
+      "da": "Enhedsgruppe {0} blev ændret: {1}",
+      "de": "Gerätegruppe {0} wurde geändert: {1}",
       "en": "Device group {0} was changed: {1}",
+      "es": "Se cambió el grupo de dispositivos {0}: {1}",
+      "fi": "Laiteryhmää {0} muutettiin: {1}",
       "fr": "Le groupe d'appareils {0} a été modifié : {1}",
+      "hi": "उपकरण समूह {0} बदल दिया गया था: {1}",
+      "it": "Il gruppo di dispositivi {0} è stato modificato: {1}",
+      "ja": "デバイスグループ{0}が変更されました：{1}",
+      "nl": "Apparaatgroep {0} is gewijzigd: {1}",
       "xloc": [
         "default.handlebars->39->2270"
       ]
@@ -19535,9 +19718,16 @@
       ]
     },
     {
+      "cs": "Zařízení je zaneprázdněné",
       "da": "Enheden er optaget",
+      "de": "Gerät ist beschäftigt",
       "en": "Device is busy",
+      "es": "El dispositivo está ocupado",
+      "fi": "Laite on varattu",
       "fr": "L'appareil est occupé",
+      "hi": "डिवाइस व्यस्त है",
+      "it": "Il dispositivo è occupato",
+      "ja": "デバイスがビジーです",
       "nl": "Apparaat is bezet",
       "pl": "Urządzenie jest zajęte",
       "xloc": [
@@ -19880,9 +20070,16 @@
       ]
     },
     {
+      "cs": "Zařízení je vypnuto.",
       "da": "Enheden er slukket",
+      "de": "Gerät ist ausgeschaltet.",
       "en": "Device is powered off.",
+      "es": "El dispositivo está apagado.",
+      "fi": "Laitteen virta on katkaistu.",
       "fr": "L'appareil est éteint.",
+      "hi": "डिवाइस बंद है।",
+      "it": "Il dispositivo è spento.",
+      "ja": "デバイスの電源がオフになっています。",
       "nl": "Apparaat is uitgeschakeld.",
       "pl": "Urządzenie jest wyłączone.",
       "xloc": [
@@ -20226,10 +20423,16 @@
       ]
     },
     {
+      "cs": "Odpojit a uzamknout",
       "da": "Afbryd og lås",
+      "de": "Trennen und sperren",
       "en": "Disconnect and Lock",
       "es": "Desconectar y bloquear",
+      "fi": "Irrota ja lukitse",
       "fr": "Déconnexion et verrouillage",
+      "hi": "डिस्कनेक्ट और लॉक",
+      "it": "Disconnetti e blocca",
+      "ja": "切断してロックする",
       "nl": "Verbreken en vergrendelen",
       "pl": "Odłącz i zablokuj",
       "xloc": [
@@ -20258,10 +20461,16 @@
       "zh-chs": "断开与服务器的连接并关闭？"
     },
     {
+      "cs": "Odpojit tuto relaci",
       "da": "Afbryd denne session",
+      "de": "Trennen Sie diese Sitzung",
       "en": "Disconnect this session",
       "es": "Desconectar esta sesión",
+      "fi": "Katkaise tämän istunnon yhteys",
       "fr": "Déconnecter cette session",
+      "hi": "इस सत्र को डिस्कनेक्ट करें",
+      "it": "Disconnetti questa sessione",
+      "ja": "このセッションを切断します",
       "nl": "Deze sessie verbreken",
       "pl": "Rozłącz tą sesję",
       "xloc": [
@@ -20322,10 +20531,16 @@
       ]
     },
     {
+      "cs": "Odpojená zařízení:",
       "da": "Afbrudte enheder:",
+      "de": "Getrennte Geräte:",
       "en": "Disconnected devices:",
       "es": "Dispositivos desconectados:",
+      "fi": "Irrotetut laitteet:",
       "fr": "Appareils déconnectés :",
+      "hi": "डिस्कनेक्ट किए गए डिवाइस:",
+      "it": "Dispositivi disconnessi:",
+      "ja": "切断されたデバイス：",
       "nl": "Losgekoppelde apparaten:",
       "pl": "Rozłączone urządzenia:",
       "xloc": [
@@ -22600,10 +22815,16 @@
       ]
     },
     {
+      "cs": "Upravit funkce skupiny uživatelů",
       "da": "Rediger brugergruppe funktioner",
+      "de": "Benutzergruppenfunktionen bearbeiten",
       "en": "Edit User Group Features",
       "es": "Editar características del grupo de usuarios",
+      "fi": "Muokkaa käyttäjäryhmän ominaisuuksia",
       "fr": "Modifier les caractéristiques du groupe",
+      "hi": "उपयोगकर्ता समूह सुविधाओं को संपादित करें",
+      "it": "Modifica le caratteristiche del gruppo di utenti",
+      "ja": "ユーザーグループ機能の編集",
       "nl": "Functies van gebruikersgroepen bewerken",
       "pl": "Edytuj Opcje Grupy Użytkownika",
       "xloc": [
@@ -22687,8 +22908,16 @@
       ]
     },
     {
+      "cs": "K instalaci/odinstalaci tohoto softwaru jsou vyžadována zvýšená oprávnění.",
+      "da": "Forhøjede tilladelser er nødvendige for at installere/afinstallere denne software.",
+      "de": "Zum Installieren/Deinstallieren dieser Software sind erhöhte Berechtigungen erforderlich.",
       "en": "Elevated permissions are required to install/uninstall this software.",
+      "es": "Se requieren permisos elevados para instalar/desinstalar este software.",
+      "fi": "Tämän ohjelmiston asentaminen/asennuksen poistaminen edellyttää korotettuja käyttöoikeuksia.",
       "fr": "Des autorisations élevées sont requises pour installer/désinstaller ce logiciel.",
+      "hi": "इस सॉफ़्टवेयर को स्थापित/अनइंस्टॉल करने के लिए उन्नत अनुमतियों की आवश्यकता होती है।",
+      "it": "Per installare/disinstallare questo software sono necessarie autorizzazioni elevate.",
+      "ja": "このソフトウェアをインストール/アンインストールするには、昇格された権限が必要です。",
       "nl": "Verhoogde machtigingen zijn vereist om deze software te installeren/verwijderen.",
       "pl": "Do zainstalowania/odinstalowania tego oprogramowania wymagane są podwyższone uprawnienia.",
       "xloc": [
@@ -22840,10 +23069,16 @@
       ]
     },
     {
+      "cs": "Email Connect",
       "da": "Email Connect",
+      "de": "E-Mail-Verbindung",
       "en": "Email Connect",
       "es": "Correo electrónico conectado",
+      "fi": "Sähköpostiyhteys",
       "fr": "Connexion par mail",
+      "hi": "ईमेल कनेक्ट",
+      "it": "Collegamento e-mail",
+      "ja": "メールコネクト",
       "nl": "Email verbinden",
       "pl": "Połączenie Email",
       "xloc": [
@@ -22852,10 +23087,16 @@
       ]
     },
     {
+      "cs": "Odpojení e-mailu",
       "da": "Email Disconnect",
+      "de": "E-Mail trennen",
       "en": "Email Disconnect",
       "es": "Correo electrónico desconectado",
+      "fi": "Sähköposti Katkaise yhteys",
       "fr": "Déconnexion par mail",
+      "hi": "ईमेल डिस्कनेक्ट",
+      "it": "Disconnessione e-mail",
+      "ja": "メール切断",
       "nl": "Email verbroken",
       "pl": "Rozłączenie Email",
       "xloc": [
@@ -22864,10 +23105,16 @@
       ]
     },
     {
+      "cs": "E-mailová upozornění",
       "da": "E-mail notifikationer",
+      "de": "E-Mail Benachrichtigungen",
       "en": "Email Notifications",
       "es": "Notificaciones por correo electrónico",
+      "fi": "sähköposti-ilmoitukset",
       "fr": "Notifications par mail",
+      "hi": "ईमेल सूचनाएं",
+      "it": "notifiche di posta elettronica",
+      "ja": "電子メール通知",
       "nl": "Email meldingen",
       "pl": "Powiadomienia Email",
       "xloc": [
@@ -23427,8 +23674,16 @@
       ]
     },
     {
+      "cs": "Kódování: RAW",
+      "da": "Kodning: RAW",
+      "de": "Kodierung: RAW",
       "en": "Encoding: RAW",
+      "es": "Codificación: RAW",
+      "fi": "Koodaus: RAW",
       "fr": "Encodage : RAW",
+      "hi": "एन्कोडिंग: रॉ",
+      "it": "Codifica: RAW",
+      "ja": "エンコーディング：RAW",
       "nl": "Codering: RAW",
       "pl": "Kodowanie: RAW",
       "xloc": [
@@ -23436,8 +23691,16 @@
       ]
     },
     {
+      "cs": "Kódování: UTF8",
+      "da": "Kodning: UTF8",
+      "de": "Kodierung: UTF8",
       "en": "Encoding: UTF8",
+      "es": "Codificación: UTF8",
+      "fi": "Koodaus: UTF8",
       "fr": "Encodage : UTF8",
+      "hi": "एन्कोडिंग: UTF8",
+      "it": "Codifica: UTF8",
+      "ja": "エンコーディング：UTF8",
       "nl": "Codering: UTF8",
       "pl": "Kodowanie: UTF8",
       "xloc": [
@@ -25671,8 +25934,16 @@
       ]
     },
     {
+      "cs": "Filtr: uživatel:xxx nebo u:xxx ip:xxx skupina:xxx nebo g:xxx tag:xxx nebo t: xxx atag:xxx nebo a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc: noupdate wsc:nofirewall wsc:any",
+      "da": "Filter: bruger:xxx eller u:xxx ip:xxx group:xxx eller g:xxx tag:xxx eller t: xxx atag:xxx eller a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc: nuupdate wsc:nofirewall wsc:any",
+      "de": "Filter: user:xxx oder u:xxx ip:xxx group:xxx oder g:xxx tag:xxx oder t: xxx atag:xxx oder a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc: kein Update wsc:nofirewall wsc:beliebig",
       "en": "Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any",
+      "es": "Filtro: usuario:xxx o u:xxx ip:xxx grupo:xxx o g:xxx etiqueta:xxx o t: xxx atag:xxx o a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc: noupdate wsc:nofirewall wsc:cualquiera",
+      "fi": "Suodatin: user:xxx tai u:xxx ip:xxx group:xxx tai g:xxx tag:xxx tai t: xxx atag:xxx tai a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc: noupdate wsc:nofirewall wsc:any",
       "fr": "Filtre : utilisateur:xxx ou u:xxx ip:xxx groupe:xxx ou g:xxx tag:xxx ou t:xxx atag:xxx ou a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any",
+      "hi": "फ़िल्टर: उपयोगकर्ता: xxx या यू: xxx आईपी: xxx समूह: xxx या जी: xxx टैग: xxx या टी: xxx atag: xxx या a: xxx ओएस: xxx amt: xxx desc: xxx wsc: ठीक wsc: noav wsc: noupdate wsc:nofirewall wsc:any",
+      "it": "Filtro: utente:xxx o u:xxx ip:xxx gruppo:xxx o g:xxx tag:xxx o t: xxx atag:xxx o a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc: noupdate wsc:nofirewall wsc:qualsiasi",
+      "ja": "フィルタ：user：xxxまたはu：xxx ip：xxx group：xxxまたはg：xxx tag：xxxまたはt：xxx atag：xxxまたはa：xxx os：xxx amt：xxx desc：xxx wsc：ok wsc：noav wsc： noupdate wsc：nofirewall wsc：any",
       "nl": "Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar"
@@ -25863,8 +26134,17 @@
       ]
     },
     {
+      "cs": "Vlajky",
+      "da": "Flag",
+      "de": "Flaggen",
       "en": "Flags",
+      "es": "Banderas",
+      "fi": "Liput",
       "fr": "Drapeaux",
+      "hi": "झंडे",
+      "it": "Bandiere",
+      "ja": "フラグ",
+      "nl": "vlaggen",
       "xloc": [
         "default.handlebars->39->2273"
       ]
@@ -26145,8 +26425,16 @@
       ]
     },
     {
+      "cs": "Násilně odpojená relace počítače uživatele {0}",
+      "da": "Tvungen afbrudt desktopsession for brugeren {0}",
+      "de": "Desktop-Sitzung von Benutzer {0} zwangsweise getrennt",
       "en": "Forcibly disconnected desktop session of user {0}",
+      "es": "Sesión de escritorio desconectada a la fuerza del usuario {0}",
+      "fi": "Käyttäjän {0} yhteys pakotettu katkaistiin",
       "fr": "Déconnexion forcée de la session de bureau pour l'utilisateur {0}",
+      "hi": "उपयोगकर्ता का डेस्कटॉप सत्र जबरन डिस्कनेक्ट किया गया {0}",
+      "it": "Sessione desktop dell'utente {0} disconnessa forzatamente",
+      "ja": "ユーザー{0}のデスクトップセッションを強制的に切断しました",
       "nl": "Geforceerd verbroken desktopsessie van gebruiker {0}",
       "pl": "Wymuszone rozłączenie sesji pulpitu użytkownika {0}",
       "xloc": [
@@ -26154,8 +26442,16 @@
       ]
     },
     {
+      "cs": "Vynuceně odpojená relace souborů uživatele {0}",
+      "da": "Tvangsafbrudt filsession for bruger {0}",
+      "de": "Dateisitzung von Benutzer {0} zwangsweise getrennt",
       "en": "Forcibly disconnected files session of user {0}",
+      "es": "Sesión de archivos desconectada a la fuerza del usuario {0}",
+      "fi": "Käyttäjän {0} väkisin katkaistu tiedostoistunto",
       "fr": "Déconnexion forcée de la session de fichier pour l'utilisateur {0}",
+      "hi": "उपयोगकर्ता का सत्र जबरन डिस्कनेक्ट किया गया {0}",
+      "it": "Sessione di file disconnessa forzatamente dell'utente {0}",
+      "ja": "ユーザー{0}のファイルセッションを強制的に切断しました",
       "nl": "Geforceerd verbroken bestandssessie van gebruiker {0}",
       "pl": "Wymuszone rozłączenie sesji plików użytkownika {0}",
       "xloc": [
@@ -26163,8 +26459,16 @@
       ]
     },
     {
+      "cs": "Násilně odpojená relace směrování uživatele {0}",
+      "da": "Tvangsafbrudt routingsession for brugeren {0}",
+      "de": "Routing-Sitzung von Benutzer {0} zwangsweise getrennt",
       "en": "Forcibly disconnected routing session of user {0}",
+      "es": "Sesión de enrutamiento desconectada a la fuerza del usuario {0}",
+      "fi": "Käyttäjän {0} yhteys pakotettu katkaistu reititysistuntoon",
       "fr": "Déconnexion forcée de la session de routage pour l'utilisateur {0}",
+      "hi": "उपयोगकर्ता {0} का जबरन डिस्कनेक्ट किया गया रूटिंग सत्र",
+      "it": "Sessione di routing disconnessa forzatamente dell'utente {0}",
+      "ja": "ユーザー{0}のルーティングセッションを強制的に切断しました",
       "nl": "Geforceerd verbroken routeringssessie van gebruiker {0}",
       "pl": "Wymuszone rozłączenie sesji routingu użytkownika {0}",
       "xloc": [
@@ -26172,8 +26476,16 @@
       ]
     },
     {
+      "cs": "Násilně odpojená terminálová relace uživatele {0}",
+      "da": "Tvangsafbrudt terminalsession for brugeren {0}",
+      "de": "Terminalsitzung von Benutzer {0} zwangsweise getrennt",
       "en": "Forcibly disconnected terminal session of user {0}",
+      "es": "Sesión de terminal desconectada a la fuerza del usuario {0}",
+      "fi": "Käyttäjän {0} väkisin katkaistu pääteistunto",
       "fr": "Déconnexion forcée du terminal pour l'utilisateur {0}",
+      "hi": "उपयोगकर्ता का जबरन डिस्कनेक्ट किया गया टर्मिनल सत्र {0}",
+      "it": "Sessione terminale dell'utente {0} disconnessa forzatamente",
+      "ja": "ユーザー{0}のターミナルセッションを強制的に切断しました",
       "nl": "Geforceerd verbroken terminalsessie van gebruiker {0}",
       "pl": "Wymuszone rozłączenie sesji terminala użytkownika {0}",
       "xloc": [
@@ -27073,10 +27385,16 @@
       ]
     },
     {
+      "cs": "Vygenerovat zprávu",
       "da": "Generer rapport",
+      "de": "Bericht generieren",
       "en": "Generate Report",
       "es": "Generar informe",
+      "fi": "Luo raportti",
       "fr": "Générer le rapport",
+      "hi": "रिपोर्ट बनाओ",
+      "it": "Genera rapporto",
+      "ja": "レポートの生成",
       "nl": "Genereer rapport",
       "pl": "Generuj Raport",
       "xloc": [
@@ -27084,10 +27402,16 @@
       ]
     },
     {
+      "cs": "Vygenerovat zprávu...",
       "da": "Generer rapport...",
+      "de": "Bericht generieren...",
       "en": "Generate Report...",
       "es": "Generar informe...",
+      "fi": "Luo raportti...",
       "fr": "Générer le rapport ...",
+      "hi": "रिपोर्ट बनाओ...",
+      "it": "Genera rapporto...",
+      "ja": "レポートを生成...",
       "nl": "Genereer rapport...",
       "pl": "Generuj Raport...",
       "xloc": [
@@ -27270,10 +27594,16 @@
       ]
     },
     {
+      "cs": "Získejte schránku",
       "da": "Hent Udklipsholder",
+      "de": "Holen Sie sich die Zwischenablage",
       "en": "Get Clipboard",
       "es": "Obtener portapapeles",
+      "fi": "Hanki leikepöytä",
       "fr": "Récupérer le presse-papier",
+      "hi": "क्लिपबोर्ड प्राप्त करें",
+      "it": "Ottieni Appunti",
+      "ja": "クリップボードを取得",
       "nl": "Klembord ophalen",
       "pl": "Pobierz schowek",
       "xloc": [
@@ -27774,8 +28104,17 @@
       ]
     },
     {
+      "cs": "Skupinové jméno",
+      "da": "Gruppe navn",
+      "de": "Gruppenname",
       "en": "Group name",
+      "es": "Nombre del grupo",
+      "fi": "Ryhmän nimi",
       "fr": "Nom de groupe",
+      "hi": "समूह नाम",
+      "it": "Nome del gruppo",
+      "ja": "グループ名",
+      "nl": "Groepsnaam",
       "xloc": [
         "default.handlebars->39->2271"
       ]
@@ -27906,10 +28245,16 @@
       ]
     },
     {
+      "cs": "Host",
       "da": "Gæst",
+      "de": "Gast",
       "en": "Guest",
       "es": "Invitado",
+      "fi": "Vieras",
       "fr": "Invité",
+      "hi": "अतिथि",
+      "it": "Ospite",
+      "ja": "ゲスト",
       "nl": "Gast",
       "pl": "Gość",
       "xloc": [
@@ -28835,16 +29180,30 @@
       ]
     },
     {
+      "cs": "IP KVM zařízení",
       "da": "IP KVM device",
+      "de": "IP-KVM-Gerät",
       "en": "IP KVM device",
+      "es": "Dispositivo IP KVM",
+      "fi": "IP KVM-laite",
       "fr": "Appareil IP KVM",
+      "hi": "आईपी ​​केवीएम डिवाइस",
+      "it": "Dispositivo IP KVM",
+      "ja": "IPKVMデバイス",
       "nl": "IP KVM apparaat",
       "pl": "Urządzenie IP KVM"
     },
     {
+      "cs": "IP KVM port je aktivní a připraven k použití.",
       "da": "IP KVM-porten er oppe og klar til brug.",
+      "de": "Der IP-KVM-Port ist aktiviert und einsatzbereit.",
       "en": "IP KVM port is up and ready for use.",
+      "es": "El puerto IP KVM está activo y listo para usar.",
+      "fi": "IP KVM -portti on valmis ja valmis käytettäväksi.",
       "fr": "Le port IP KVM est opérationnel et prêt à être utilisé.",
+      "hi": "IP KVM पोर्ट तैयार है और उपयोग के लिए तैयार है।",
+      "it": "La porta IP KVM è attiva e pronta per l'uso.",
+      "ja": "IP KVMポートが起動し、使用できるようになりました。",
       "nl": "IP KVM poort is actief en klaar voor gebruik.",
       "pl": "Port IP KVM podniesiony i gotowy do użycia."
     },
@@ -28902,9 +29261,16 @@
       ]
     },
     {
+      "cs": "IP-KVM",
       "da": "IP-KVM",
+      "de": "IP-KVM",
       "en": "IP-KVM",
+      "es": "IP-KVM",
+      "fi": "IP-KVM",
       "fr": "IP-KVM",
+      "hi": "आईपी-केवीएम",
+      "it": "IP-KVM",
+      "ja": "IP-KVM",
       "nl": "IP-KVM",
       "pl": "IP-KVM",
       "xloc": [
@@ -28916,9 +29282,16 @@
       ]
     },
     {
+      "cs": "IP-KVM / napájecí zařízení",
       "da": "IP-KVM / Power device",
+      "de": "IP-KVM / Power-Gerät",
       "en": "IP-KVM / Power device",
+      "es": "IP-KVM / Dispositivo de alimentación",
+      "fi": "IP-KVM / Virtalaite",
       "fr": "KVM IP / Allumer l'appareil",
+      "hi": "आईपी-केवीएम / पावर डिवाइस",
+      "it": "IP-KVM / Dispositivo di alimentazione",
+      "ja": "IP-KVM /パワーデバイス",
       "nl": "IP-KVM / Power device",
       "pl": "IP-KVM / Zasilanie urządzenia",
       "xloc": [
@@ -28926,9 +29299,16 @@
       ]
     },
     {
+      "cs": "IP-KVM zařízení",
       "da": "IP-KVM device",
+      "de": "IP-KVM-Gerät",
       "en": "IP-KVM device",
+      "es": "Dispositivo IP-KVM",
+      "fi": "IP-KVM-laite",
       "fr": "Appareil IP-KVM",
+      "hi": "आईपी-केवीएम डिवाइस",
+      "it": "Dispositivo IP-KVM",
+      "ja": "IP-KVMデバイス",
       "nl": "IP-KVM device",
       "pl": "Urządzenie IP-KVM",
       "xloc": [
@@ -28937,9 +29317,16 @@
       ]
     },
     {
+      "cs": "IP-KVM port připojen",
       "da": "IP-KVM port forbundet",
+      "de": "IP-KVM-Port verbunden",
       "en": "IP-KVM port connected",
+      "es": "Puerto IP-KVM conectado",
+      "fi": "IP-KVM-portti kytketty",
       "fr": "port IP-KVM connecté",
+      "hi": "IP-KVM पोर्ट कनेक्टेड",
+      "it": "Porta IP-KVM collegata",
+      "ja": "IP-KVMポートが接続されています",
       "nl": "IP-KVM poort verbonden",
       "pl": "Podłączono z portem IP-KVM",
       "xloc": [
@@ -28948,9 +29335,16 @@
       ]
     },
     {
+      "cs": "Port IP-KVM je připojen a připraven k použití.",
       "da": "IP-KVM-porten er tilsluttet og klar til brug.",
+      "de": "Der IP-KVM-Port ist angeschlossen und einsatzbereit.",
       "en": "IP-KVM port is connected and ready for use.",
+      "es": "El puerto IP-KVM está conectado y listo para usar.",
+      "fi": "IP-KVM-portti on kytketty ja valmis käytettäväksi.",
       "fr": "Le port IP-KVM est opérationnel et prêt à être utilisé.",
+      "hi": "आईपी-केवीएम पोर्ट जुड़ा हुआ है और उपयोग के लिए तैयार है।",
+      "it": "La porta IP-KVM è collegata e pronta per l'uso.",
+      "ja": "IP-KVMポートが接続され、使用できるようになります。",
       "nl": "IP-KVM poort is verbonden en klaar voor gebruik.",
       "pl": "Port IP-KVM podłączony i gotowy do użycia.",
       "xloc": [
@@ -28958,9 +29352,16 @@
       ]
     },
     {
+      "cs": "Port IP-KVM je aktivní a připraven k použití.",
       "da": "IP-KVM-porten er oppe og klar til brug.",
+      "de": "Der IP-KVM-Port ist aktiviert und einsatzbereit.",
       "en": "IP-KVM port is up and ready for use.",
+      "es": "El puerto IP-KVM está activo y listo para usar.",
+      "fi": "IP-KVM-portti on valmis ja valmis käytettäväksi.",
       "fr": "Le port IP-KVM est opérationnel et prêt à être utilisé.",
+      "hi": "आईपी-केवीएम पोर्ट तैयार है और उपयोग के लिए तैयार है।",
+      "it": "La porta IP-KVM è attiva e pronta per l'uso.",
+      "ja": "IP-KVMポートが起動し、使用できるようになりました。",
       "nl": "IP-KVM poort is actief en klaar voor gebruik.",
       "pl": "Port IP-KVM podniesiony i gotowy do użycia.",
       "xloc": [
@@ -30173,10 +30574,16 @@
       ]
     },
     {
+      "cs": "Připojeno Intel AMT CIRA",
       "da": "Intel AMT CIRA forbundet",
+      "de": "Intel AMT CIRA verbunden",
       "en": "Intel AMT CIRA connected",
       "es": "Intel AMT CIRA conectado",
+      "fi": "Intel AMT CIRA kytketty",
       "fr": "Intel AMT CIRA connecté",
+      "hi": "Intel AMT CIRA कनेक्टेड",
+      "it": "Intel AMT CIRA connesso",
+      "ja": "Intel AMTCIRA接続",
       "nl": "Intel AMT CIRA verbonden",
       "pl": "Intel AMT CIRA połączono",
       "xloc": [
@@ -30184,10 +30591,16 @@
       ]
     },
     {
+      "cs": "Intel AMT CIRA odpojen",
       "da": "Intel AMT CIRA afbrudt",
+      "de": "Intel AMT CIRA getrennt",
       "en": "Intel AMT CIRA disconnected",
       "es": "Intel AMT CIRA desconectado",
+      "fi": "Intel AMT CIRA irrotettu",
       "fr": "Intel AMT CIRA déconnecté",
+      "hi": "Intel AMT CIRA डिस्कनेक्ट हो गया",
+      "it": "Intel AMT CIRA disconnesso",
+      "ja": "Intel AMTCIRAが切断されました",
       "nl": "Intel AMT CIRA verbroken",
       "pl": "Intel AMT CIRA rozłączono",
       "xloc": [
@@ -30195,10 +30608,16 @@
       ]
     },
     {
+      "cs": "Zjištěno Intel AMT",
       "da": "Intel AMT detekteret",
+      "de": "Intel AMT erkannt",
       "en": "Intel AMT detected",
       "es": "Intel AMT detectado",
+      "fi": "Intel AMT havaittu",
       "fr": "Intel AMT détecté",
+      "hi": "इंटेल एएमटी का पता चला",
+      "it": "Rilevata Intel AMT",
+      "ja": "IntelAMTが検出されました",
       "nl": "Intel AMT gedetecteerd",
       "pl": "Wykryto Intel AMT",
       "xloc": [
@@ -30230,10 +30649,16 @@
       ]
     },
     {
+      "cs": "Intel AMT nebyl detekován",
       "da": "Intel AMT ikke detekteret",
+      "de": "Intel AMT nicht erkannt",
       "en": "Intel AMT not detected",
       "es": "Intel AMT no detectado",
+      "fi": "Intel AMT:tä ei havaittu",
       "fr": "Intel AMT non détecté",
+      "hi": "इंटेल एएमटी का पता नहीं चला",
+      "it": "Intel AMT non rilevato",
+      "ja": "IntelAMTが検出されない",
       "nl": "Intel AMT niet gedetecteerd",
       "pl": "Nie wykryto Intel AMT",
       "xloc": [
@@ -31239,8 +31664,17 @@
       ]
     },
     {
+      "cs": "Změna zásad Intel(r) AMT",
+      "da": "Ændring af Intel(r) AMT-politik",
+      "de": "Intel(r) AMT-Richtlinienänderung",
       "en": "Intel(r) AMT policy change",
+      "es": "Cambio de política de Intel(r) AMT",
+      "fi": "Intel(r) AMT -käytännön muutos",
       "fr": "Changement de politique Intel(r) AMT",
+      "hi": "इंटेल (आर) एएमटी नीति परिवर्तन",
+      "it": "Modifica della politica Intel(r) AMT",
+      "ja": "Intel（r）AMTポリシーの変更",
+      "nl": "Intel(r) AMT-beleidswijziging",
       "xloc": [
         "default.handlebars->39->2269"
       ]
@@ -31720,10 +32154,16 @@
       ]
     },
     {
+      "cs": "Neplatná e-mailová adresa Let's Encrypt, nelze vyřešit: {0}",
       "da": "Ugyldig Let's Encrypt-e-mailadresse, kan ikke løse: {0}",
+      "de": "Ungültige Let's Encrypt-E-Mail-Adresse, kann nicht aufgelöst werden: {0}",
       "en": "Invalid Let's Encrypt email address, unable to resolve: {0}",
       "es": "Dirección de correo Let's Encrypt no válida, no se puede resolver: {0}",
+      "fi": "Virheellinen Let's Encrypt -sähköpostiosoite, ei voida ratkaista: {0}",
       "fr": "L'adresse email fournit pour Let's Encrypt est invalide. Impossible de résoudre : {0}",
+      "hi": "अमान्य आइए ईमेल पता एन्क्रिप्ट करें, हल करने में असमर्थ: {0}",
+      "it": "Indirizzo email Let's Encrypt non valido, impossibile da risolvere: {0}",
+      "ja": "無効なLet'sEncryptの電子メールアドレス、解決できません：{0}",
       "nl": "Ongeldige Let's Encrypt email adres, onmogelijk om te verhelpen: {0}",
       "pl": "Nieprawidłowy adres e-mail Let's Encrypt, nie można go rozwiązać: {0}",
       "xloc": [
@@ -31731,10 +32171,16 @@
       ]
     },
     {
+      "cs": "Neplatné názvy hostitelů Let's Encrypt.",
       "da": "Ugyldig Let's Encrypt host navne.",
+      "de": "Ungültige Let's Encrypt-Hostnamen.",
       "en": "Invalid Let's Encrypt host names.",
       "es": "Nombres de host Let's Encrypt no válido.",
+      "fi": "Virheelliset Let's Encrypt -isäntänimet.",
       "fr": "Noms d'hôtes Let's Encrypt invalide.",
+      "hi": "अमान्य आइए होस्ट नामों को एन्क्रिप्ट करें।",
+      "it": "Nomi host Let's Encrypt non validi.",
+      "ja": "無効なLet'sEncryptのホスト名。",
       "nl": "Ongeldige Let's Encrypt hostnamen.",
       "pl": "Nieprawidłowe nazwy hostów Let's Encrypt.",
       "xloc": [
@@ -31742,10 +32188,16 @@
       ]
     },
     {
+      "cs": "Neplatná jména Let's Encrypt, nesmí obsahovat *.",
       "da": "Ugyldige Let's Encrypt-navne, kan ikke indeholde en *.",
+      "de": "Ungültige Let's Encrypt-Namen, darf kein * enthalten.",
       "en": "Invalid Let's Encrypt names, can't contain a *.",
       "es": "Nombres Let's Encrypt no válidos, no pueden contener un *.",
+      "fi": "Virheelliset Let's Encrypt -nimet, ei voi sisältää *-merkkiä.",
       "fr": "Noms Let's Encrypt invalides. Il ne doit pas contenir *.",
+      "hi": "अमान्य आइए नाम एन्क्रिप्ट करें, इसमें *.",
+      "it": "Nomi Let's Encrypt non validi, non possono contenere un *.",
+      "ja": "無効なLet'sEncrypt名、*を含めることはできません。",
       "nl": "Ongeldige Let's Encrypt namen, mag geen * bevatten.",
       "pl": "Nieprawidłowe nazwy Let's Encrypt, nie mogą zawierać *.",
       "xloc": [
@@ -31753,10 +32205,16 @@
       ]
     },
     {
+      "cs": "Neplatná jména Let's Encrypt, nelze vyřešit: {0}",
       "da": "Ugyldige Let's Encrypt-navne, ude af stand til at løse: {0}",
+      "de": "Ungültige Let's Encrypt-Namen, nicht auflösbar: {0}",
       "en": "Invalid Let's Encrypt names, unable to resolve: {0}",
       "es": "Nombres Let's Encrypt no válidos, no se puede resolver: {0}",
+      "fi": "Virheelliset Let's Encrypt -nimet, ei voi ratkaista: {0}",
       "fr": "Noms Let-s Encrypt invalide. Impossible de résoudre : {0}",
+      "hi": "अमान्य आइए नाम एन्क्रिप्ट करें, हल करने में असमर्थ: {0}",
+      "it": "Nomi Let's Encrypt non validi, impossibile da risolvere: {0}",
+      "ja": "無効なLet'sEncrypt名、解決できません：{0}",
       "nl": "Ongeldige Let's Encrypt-namen, onmogelijk om te verhelpen: {0}",
       "pl": "Nieprawidłowe nazwy Let's Encrypt, niemożliwe do rozwiązania: {0}",
       "xloc": [
@@ -31839,10 +32297,16 @@
       ]
     },
     {
+      "cs": "Neplatný \\\"LoginCookieEncryptionKey\\\" v config.json.",
       "da": "Ugyldig \\\"LoginCookieEncryptionKey\\\" i config.json.",
+      "de": "Ungültiger \\\"LoginCookieEncryptionKey\\\" in config.json.",
       "en": "Invalid \\\"LoginCookieEncryptionKey\\\" in config.json.",
       "es": "\\\"LoginCookieEncryptionKey\\\" no válido en config.json.",
+      "fi": "Virheellinen \\\"LoginCookieEncryptionKey\\\" tiedostossa config.json.",
       "fr": "Le champ \\\"LoginCookieEncryptionKey\\\" est invalide dans le fichier de configuration (config.json).",
+      "hi": "config.json में अमान्य \\\"LoginCookieEncryptionKey\\\"।",
+      "it": "\\\"LoginCookieEncryptionKey\\\" non valido in config.json.",
+      "ja": "config.jsonの「LoginCookieEncryptionKey」が無効です。",
       "nl": "Ongeldige \\\"LoginCookieEncryptionKey\\\" in config.json.",
       "pl": "Nieprawidłowy \\\"LoginCookieEncryptionKey\\\" w config.json.",
       "xloc": [
@@ -32380,8 +32844,17 @@
       ]
     },
     {
+      "cs": "Kód pozvánky",
+      "da": "Invitations kode",
+      "de": "Code einladen",
       "en": "Invite code",
+      "es": "Codigo de invitacion",
+      "fi": "Kutsukoodi",
       "fr": "Code d'invitation",
+      "hi": "निमंत्रण कोड",
+      "it": "Codice di invito",
+      "ja": "招待コード",
+      "nl": "Uitnodigingscode",
       "xloc": [
         "default.handlebars->39->2276"
       ]
@@ -32942,9 +33415,16 @@
       ]
     },
     {
+      "cs": "Přizpůsobení řetězců klávesnice",
       "da": "Tilpasning af tastaturstrenge",
+      "de": "Anpassung der Tastatursaiten",
       "en": "Keyboard Strings Customization",
+      "es": "Personalización de cuerdas de teclado",
+      "fi": "Näppäimistön kielten mukauttaminen",
       "fr": "Personnalisation du clavier",
+      "hi": "कीबोर्ड स्ट्रिंग्स अनुकूलन",
+      "it": "Personalizzazione delle stringhe della tastiera",
+      "ja": "キーボード弦のカスタマイズ",
       "nl": "Toetsenbord strings aanpassen",
       "pl": "Ustawienia Ciagów Klawiatury",
       "xloc": [
@@ -33513,10 +33993,16 @@
       ]
     },
     {
+      "cs": "Posledních 7 dní",
       "da": "Seneste 7 dage",
+      "de": "Letzten 7 Tage",
       "en": "Last 7 days",
       "es": "Últimos 7 días",
+      "fi": "Viimeiset 7 päivää",
       "fr": "7 derniers jours",
+      "hi": "आखिरी 7 दिन",
+      "it": "Ultimi 7 giorni",
+      "ja": "過去7日間",
       "nl": "Laaste 7 dagen",
       "pl": "Ostatnie 7 dni",
       "xloc": [
@@ -33574,10 +34060,16 @@
       ]
     },
     {
+      "cs": "Poslední den",
       "da": "Seneste dag",
+      "de": "Letzter Tag",
       "en": "Last Day",
       "es": "Último día",
+      "fi": "Viimeinen päivä",
       "fr": "Dernier jour",
+      "hi": "आखिरी दिन",
+      "it": "Ultimo giorno",
+      "ja": "最終日",
       "nl": "Laaste dag",
       "pl": "Ostatni Dzień",
       "xloc": [
@@ -33636,9 +34128,16 @@
       ]
     },
     {
+      "cs": "Poslední přístup: {0}",
       "da": "Seneste adgang: {0}",
+      "de": "Letzter Zugriff: {0}",
       "en": "Last access: {0}",
+      "es": "Último acceso: {0}",
+      "fi": "Viimeisin käyttöoikeus: {0}",
       "fr": "Dernier accès : {0}",
+      "hi": "अंतिम पहुंच: {0}",
+      "it": "Ultimo accesso: {0}",
+      "ja": "最終アクセス：{0}",
       "nl": "Laatste toegang: {0}",
       "pl": "Ostatni dostęp: {0}",
       "xloc": [
@@ -34150,10 +34649,16 @@
       ]
     },
     {
+      "cs": "Opuštění webové relace RDP po {0} sekundách.",
       "da": "Forlod Web-RDP-session efter {0} sekund(er).",
+      "de": "Web-RDP-Sitzung nach {0} Sekunde(n) verlassen.",
       "en": "Left Web-RDP session after {0} second(s).",
       "es": "Abandonar la sesión Web-RDP tras {0} segundo(s).",
+      "fi": "Poistui Web-RDP-istunnosta {0} sekunnin kuluttua.",
       "fr": "Fin de la session Web-RDP dans {0} seconde(s).",
+      "hi": "{0} सेकंड के बाद वेब-आरडीपी सत्र छोड़ दिया।",
+      "it": "Ha lasciato la sessione Web-RDP dopo {0} secondo/i.",
+      "ja": "{0}秒後にWeb-RDPセッションを終了しました。",
       "nl": "Web-RDP sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-RDP po {0} sekundach.",
       "xloc": [
@@ -34161,10 +34666,16 @@
       ]
     },
     {
+      "cs": "Opuštění webové relace SFTP po {0} sekundách.",
       "da": "Forlod Web-SFTP-session efter {0} sekund(er).",
+      "de": "Web-SFTP-Sitzung nach {0} Sekunde(n) verlassen.",
       "en": "Left Web-SFTP session after {0} second(s).",
       "es": "Abandonar la sesión Web-SFTP tras {0} segundo(s).",
+      "fi": "Poistui Web-SFTP-istunnosta {0} sekunnin kuluttua.",
       "fr": "Fin de la session Web-SFTP dans {0} seconde(s).",
+      "hi": "{0} सेकंड (सेकंड) के बाद वेब-एसएफ़टीपी सत्र छोड़ दिया।",
+      "it": "Ha lasciato la sessione Web-SFTP dopo {0} secondo/i.",
+      "ja": "{0}秒後にWeb-SFTPセッションを終了しました。",
       "nl": "Web-SFTP sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-SFTP po {0} sekundach.",
       "xloc": [
@@ -34172,10 +34683,16 @@
       ]
     },
     {
+      "cs": "Opuštění Web-SSH relace po {0} sekundách.",
       "da": "Forlod Web-SSH-session efter {0} sekund(er).",
+      "de": "Web-SSH-Sitzung nach {0} Sekunde(n) verlassen.",
       "en": "Left Web-SSH session after {0} second(s).",
       "es": "Abandonar la sesión Web-SSH tras {0} segundo(s).",
+      "fi": "Poistui Web-SSH-istunnosta {0} sekunnin kuluttua.",
       "fr": "Fin de la session Web-SSH dans {0} seconde(s).",
+      "hi": "{0} सेकंड के बाद वेब-एसएसएच सत्र छोड़ दिया।",
+      "it": "Ha lasciato la sessione Web-SSH dopo {0} secondo/i.",
+      "ja": "{0}秒後にWeb-SSHセッションを終了しました。",
       "nl": "Web-SSH sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-SSH po {0} sekundach.",
       "xloc": [
@@ -34183,10 +34700,16 @@
       ]
     },
     {
+      "cs": "Opustili relaci Web-VNC po {0} sekundách.",
       "da": "Forlod Web-VNC-session efter {0} sekund(er).",
+      "de": "Web-VNC-Sitzung nach {0} Sekunde(n) verlassen.",
       "en": "Left Web-VNC session after {0} second(s).",
       "es": "Abandonar la sesión Web-VNC tras {0} segundo(s).",
+      "fi": "Poistui Web-VNC-istunnosta {0} sekunnin kuluttua.",
       "fr": "Fin de la session Web-VNC dans {0} seconde(s).",
+      "hi": "{0} सेकंड (सेकंड) के बाद वेब-वीएनसी सत्र छोड़ दिया।",
+      "it": "Ha lasciato la sessione Web-VNC dopo {0} secondo/i.",
+      "ja": "{0}秒後にWeb-VNCセッションを終了しました。",
       "nl": "Web-VNC sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-VNC po {0} sekundach.",
       "xloc": [
@@ -34249,10 +34772,16 @@
       ]
     },
     {
+      "cs": "Po {0} sekundách jste opustili relaci multiplexu na ploše.",
       "da": "Forlod desktop-multiplekssessionen efter {0} sekund(er).",
+      "de": "Verließ die Desktop-Multiplex-Sitzung nach {0} Sekunde(n).",
       "en": "Left the desktop multiplex session after {0} second(s).",
       "es": "Abandonar la sesión de escritorio multiplexada tras {0} segundo(s).",
+      "fi": "Poistui työpöydän multipleksi-istunnosta {0} sekunnin kuluttua.",
       "fr": "Fin de la connexion au bureau multiplexé dans {0} second(s).",
+      "hi": "{0} सेकंड (सेकंड) के बाद डेस्कटॉप मल्टीप्लेक्स सत्र छोड़ दिया।",
+      "it": "Ha lasciato la sessione multiplex desktop dopo {0} secondo/i.",
+      "ja": "{0}秒後にデスクトップマルチプレックスセッションを終了しました。",
       "nl": "Verliet de desktop multiplex sessie na {0} seconde(n).",
       "pl": "Opuścił sesję multiplex pulpitu po {0} sekundach.",
       "xloc": [
@@ -34260,10 +34789,16 @@
       ]
     },
     {
+      "cs": "Délka",
       "da": "Længde",
+      "de": "Länge",
       "en": "Length",
       "es": "Longitud",
+      "fi": "Pituus",
       "fr": "Longueur",
+      "hi": "लंबाई",
+      "it": "Lunghezza",
+      "ja": "長さ",
       "nl": "Duur",
       "pl": "Długość",
       "xloc": [
@@ -35561,10 +36096,16 @@
       ]
     },
     {
+      "cs": "Zamknout na Odpojit",
       "da": "Lås ved afbrydelse",
+      "de": "Sperren bei Trennen",
       "en": "Lock on Disconnect",
       "es": "Bloquear al desconectar",
+      "fi": "Lukitse Katkaise yhteys",
       "fr": "Verrouiller lors de la déconnexion",
+      "hi": "डिस्कनेक्ट पर लॉक करें",
+      "it": "Blocca su Disconnessione",
+      "ja": "ロックオン切断",
       "nl": "Vergrendelen bij verbreken",
       "pl": "Zablokuj na Odłącz",
       "xloc": [
@@ -38101,10 +38642,16 @@
       ]
     },
     {
+      "cs": "Podpora MeshCentral SSH vyžaduje NodeJS 11 nebo vyšší.",
       "da": "MeshCentral SSH-understøttelse kræver NodeJS 11 eller højere.",
+      "de": "Für die Unterstützung von MeshCentral SSH ist NodeJS 11 oder höher erforderlich.",
       "en": "MeshCentral SSH support requires NodeJS 11 or higher.",
       "es": "El soporte SSH de MeshCentral requiere NodeJS 11 o superior.",
+      "fi": "MeshCentral SSH -tuki vaatii NodeJS 11:n tai uudemman.",
       "fr": "Le support de SSH dans Meshcentral nécessite NodeJS 11 ou plus.",
+      "hi": "MeshCentral SSH समर्थन के लिए NodeJS 11 या उच्चतर की आवश्यकता है।",
+      "it": "Il supporto MeshCentral SSH richiede NodeJS 11 o versioni successive.",
+      "ja": "MeshCentral SSHのサポートには、NodeJS11以降が必要です。",
       "nl": "MeshCentral SSH ondersteuning vereist NodeJS 11 of hoger.",
       "pl": "Obsługa MeshCentral SSH wymaga NodeJS 11 lub nowszego.",
       "xloc": [
@@ -38787,10 +39334,16 @@
       ]
     },
     {
+      "cs": "Chybí e-mailová adresa Let's Encrypt.",
       "da": "Mangler Let's Encrypt email-adresse.",
+      "de": "Fehlende E-Mail-Adresse von Let's Encrypt.",
       "en": "Missing Let's Encrypt email address.",
       "es": "Falta la dirección de correo de Let's Encrypt.",
+      "fi": "Let's Encrypt -sähköpostiosoite puuttuu.",
       "fr": "L'adresse mail pour Let's Encrypt est absente.",
+      "hi": "लेट्स एनक्रिप्ट ईमेल एड्रेस गुम है।",
+      "it": "Manca l'indirizzo e-mail Let's Encrypt.",
+      "ja": "Let'sEncryptのメールアドレスがありません。",
       "nl": "Ontbrekend Let's Encrypt e-mailadres.",
       "pl": "Brak adresu e-mail Let's Encrypt.",
       "xloc": [
@@ -38798,10 +39351,16 @@
       ]
     },
     {
+      "cs": "Chybí parametry WebDAV.",
       "da": "Manglende WebDAV-parametre.",
+      "de": "Fehlende WebDAV-Parameter.",
       "en": "Missing WebDAV parameters.",
       "es": "Faltan parámetros WebDAV.",
+      "fi": "Puuttuvat WebDAV-parametrit.",
       "fr": "Paramètres WebDAV absents.",
+      "hi": "WebDAV पैरामीटर मौजूद नहीं हैं।",
+      "it": "Parametri WebDAV mancanti.",
+      "ja": "WebDAVパラメーターがありません。",
       "nl": "Ontbrekende WebDAV parameters.",
       "pl": "Brak parametrów WebDAV.",
       "xloc": [
@@ -39321,10 +39880,16 @@
       ]
     },
     {
+      "cs": "Moje zprávy",
       "da": "Mine rapporter",
+      "de": "Meine Berichte",
       "en": "My Reports",
       "es": "Mis informes",
+      "fi": "Omat raportit",
       "fr": "Mes rapports",
+      "hi": "मेरी रिपोर्ट",
+      "it": "I miei rapporti",
+      "ja": "マイレポート",
       "nl": "Mijn rapporten",
       "pl": "Moje Raporty",
       "xloc": [
@@ -40173,8 +40738,16 @@
       ]
     },
     {
+      "cs": "Nová verze",
+      "da": "Ny version",
+      "de": "Neue Version",
       "en": "New Version",
+      "es": "Nueva versión",
+      "fi": "Uusi versio",
       "fr": "Nouvelle version",
+      "hi": "नया संस्करण",
+      "it": "Nuova versione",
+      "ja": "新しいバージョン",
       "nl": "Nieuwe versie",
       "pl": "Nowa Wersja",
       "xloc": [
@@ -40790,10 +41363,16 @@
       ]
     },
     {
+      "cs": "Žádná nová zařízení",
       "da": "Ingen nye enheder",
+      "de": "Keine neuen Geräte",
       "en": "No New Devices",
       "es": "No hay nuevos dispositivos",
+      "fi": "Ei uusia laitteita",
       "fr": "Aucun nouvel appareil",
+      "hi": "कोई नया उपकरण नहीं",
+      "it": "Nessun nuovo dispositivo",
+      "ja": "新しいデバイスはありません",
       "nl": "Geen nieuwe apparaten",
       "pl": "Brak Nowych Urządzeń",
       "xloc": [
@@ -40848,10 +41427,16 @@
       "zh-chs": "无端口映射\r\n\r\n单击“添加”开始。"
     },
     {
+      "cs": "Žádné dálkové ovládání",
       "da": "Ingen fjernkommando",
+      "de": "Kein Fernbefehl",
       "en": "No Remote Command",
       "es": "No hay Comando remoto",
+      "fi": "Ei kauko-ohjausta",
       "fr": "Pas de commande à distante",
+      "hi": "कोई रिमोट कमांड नहीं",
+      "it": "Nessun comando a distanza",
+      "ja": "リモートコマンドなし",
       "nl": "Geen externe opdrachten",
       "pl": "Brak zdalnego polecenia",
       "pt-br": "Sem Comando Remoto",
@@ -40861,10 +41446,16 @@
       ]
     },
     {
+      "cs": "Žádné dálkové ovládání",
       "da": "Ingen fjernadgang",
+      "de": "Keine Fernbedienung",
       "en": "No Remote Control",
       "es": "No hay Control remoto",
+      "fi": "Ei kaukosäädintä",
       "fr": "Pas de contrôle à distance",
+      "hi": "कोई रिमोट कंट्रोल नहीं",
+      "it": "Nessun telecomando",
+      "ja": "リモコンなし",
       "nl": "geen afstandsbediening",
       "pl": "Brak pilota zdalnego sterowania",
       "pt-br": "Sem Controle Remoto",
@@ -40874,10 +41465,16 @@
       ]
     },
     {
+      "cs": "Bez resetu/vypnutí",
       "da": "Ingen Reset/Off",
+      "de": "Kein Zurücksetzen/Aus",
       "en": "No Reset/Off",
       "es": "No hay Reiniciar/Apagar",
+      "fi": "Ei nollausta/pois",
       "fr": "Pas de redémarrage/arrêt",
+      "hi": "कोई रीसेट / बंद नहीं",
+      "it": "Nessun ripristino/disattivazione",
+      "ja": "リセット/オフなし",
       "nl": "Geen herstart/uitschakelen",
       "pl": "Brak resetowania/wyłączania",
       "pt-br": "Sem Resetar/Desligar",
@@ -41047,10 +41644,16 @@
       ]
     },
     {
+      "cs": "Žádná odinstalace",
       "da": "Ingen afinstallation",
+      "de": "Keine Deinstallation",
       "en": "No Uninstall",
       "es": "No hay Desinstalar",
+      "fi": "Ei asennusta",
       "fr": "Pas de désinstallation",
+      "hi": "कोई स्थापना रद्द नहीं",
+      "it": "Nessuna disinstallazione",
+      "ja": "アンインストールなし",
       "nl": "Geen de-installatie",
       "pl": "Bez odinstalowywania",
       "pt-br": "Não desinstalar",
@@ -41060,10 +41663,16 @@
       ]
     },
     {
+      "cs": "Žádné probuzení",
       "da": "Ingen Wake",
+      "de": "Kein Aufwachen",
       "en": "No Wake",
       "es": "No hay Despertar",
+      "fi": "Ei herätystä",
       "fr": "Pas de réveil",
+      "hi": "कोई जागो",
+      "it": "Nessun risveglio",
+      "ja": "ウェイクなし",
       "nl": "Niet starten",
       "pl": "Bez budzenia",
       "pt-br": "Não acordar",
@@ -41575,9 +42184,16 @@
       ]
     },
     {
+      "cs": "Nejsou definovány žádné klávesové řetězce",
       "da": "Ingen tastaturstrenge defineret",
+      "de": "Keine Tastaturzeichenfolgen definiert",
       "en": "No keyboard strings defined",
+      "es": "No hay cadenas de teclado definidas",
+      "fi": "Näppäimistön merkkijonoja ei ole määritetty",
       "fr": "Aucune personnalisation du clavier définie",
+      "hi": "कोई कीबोर्ड स्ट्रिंग परिभाषित नहीं है",
+      "it": "Nessuna stringa della tastiera definita",
+      "ja": "キーボード文字列が定義されていません",
       "nl": "Geen toetsenbord strings gedefineerd",
       "pl": "Nie zdefiniowano ciągu klawiatury",
       "xloc": [
@@ -42921,9 +43537,16 @@
       ]
     },
     {
+      "cs": "Vypnuto",
       "da": "slukket",
+      "de": "aus",
       "en": "Off",
+      "es": "Apagado",
+      "fi": "Vinossa",
       "fr": "Éteint",
+      "hi": "बंद",
+      "it": "Spento",
+      "ja": "オフ",
       "nl": "Uit",
       "pl": "Wyłącz",
       "xloc": [
@@ -43430,10 +44053,16 @@
       "zh-chs": "打开..."
     },
     {
+      "cs": "OpenBSD x86-64",
       "da": "OpenBSD x86-64",
+      "de": "OpenBSD x86-64",
       "en": "OpenBSD x86-64",
       "es": "OpenBSD x86-64",
+      "fi": "OpenBSD x86-64",
       "fr": "OpenBSD x86-64",
+      "hi": "ओपनबीएसडी x86-64",
+      "it": "OpenBSD x86-64",
+      "ja": "OpenBSD x86-64",
       "nl": "OpenBSD x86-64",
       "pl": "OpenBSD x86-64",
       "pt-br": "OpenBSD x86-64",
@@ -43464,10 +44093,16 @@
       "zh-chs": "开放式SSH"
     },
     {
+      "cs": "OpenWRT x86-64",
       "da": "OpenWRT x86-64",
+      "de": "OpenWRT x86-64",
       "en": "OpenWRT x86-64",
       "es": "OpenWRT x86-64",
+      "fi": "OpenWRT x86-64",
       "fr": "OpenWRT x86-64",
+      "hi": "ओपनडब्लूआरटी x86-64",
+      "it": "OpenWRT x86-64",
+      "ja": "OpenWRT x86-64",
       "nl": "OpenWRT x86-64",
       "pl": "OpenWRT x86-64",
       "pt-br": "OpenWRT x86-64",
@@ -45063,9 +45698,16 @@
       ]
     },
     {
+      "cs": "Provést vypnutí?",
       "da": "Vil du slukke?",
+      "de": "Ausschalten durchführen?",
       "en": "Perform power off?",
+      "es": "¿Apagar?",
+      "fi": "Poistetaanko virta?",
       "fr": "Éteindre ?",
+      "hi": "बिजली बंद करें?",
+      "it": "Eseguire lo spegnimento?",
+      "ja": "電源オフを実行しますか？",
       "nl": "Uitschakelen uitvoeren?",
       "pl": "Czy wykonać wyłączenie?",
       "xloc": [
@@ -45074,9 +45716,16 @@
       ]
     },
     {
+      "cs": "Zapnout napájení?",
       "da": "Vil du tænde?",
+      "de": "Einschalten durchführen?",
       "en": "Perform power on?",
+      "es": "¿Realizar encendido?",
+      "fi": "Laitetaanko virta päälle?",
       "fr": "Démarrer ?",
+      "hi": "पावर चालू करें?",
+      "it": "Eseguire l'accensione?",
+      "ja": "電源を入れますか？",
       "nl": "Inschakelen uitvoeren?",
       "pl": "Czy wykonać uruchomienie?",
       "xloc": [
@@ -45789,9 +46438,16 @@
       "zh-chs": "端口映射帮助"
     },
     {
+      "cs": "Synchronizace názvu portu",
       "da": "Port Navn Synkronisering",
+      "de": "Synchronisierung des Portnamens",
       "en": "Port Name Sync",
+      "es": "Sincronización de nombre de puerto",
+      "fi": "Portin nimen synkronointi",
       "fr": "Sync nom de port",
+      "hi": "पोर्ट नाम सिंक",
+      "it": "Sincronizzazione nome porta",
+      "ja": "ポート名同期",
       "nl": "Poort naam synchronisatie",
       "pl": "Synchronizacja Nazwy Portu",
       "xloc": [
@@ -45799,8 +46455,16 @@
       ]
     },
     {
+      "cs": "Číslo portu",
+      "da": "Portnummer",
+      "de": "Port-Nummer",
       "en": "Port Number",
+      "es": "Número de puerto",
+      "fi": "Porttinumero",
       "fr": "Numéro de port",
+      "hi": "पोर्ट नंबर",
+      "it": "Numero di porta",
+      "ja": "ポート番号",
       "nl": "Poortnummer",
       "pl": "Numer Portu",
       "xloc": [
@@ -45809,9 +46473,16 @@
       ]
     },
     {
+      "cs": "Typ portu",
       "da": "Port Type",
+      "de": "Porttyp",
       "en": "Port Type",
+      "es": "Tipo de puerto",
+      "fi": "Portin tyyppi",
       "fr": "Type de port",
+      "hi": "पोर्ट प्रकार",
+      "it": "Tipo di porta",
+      "ja": "ポートタイプ",
       "nl": "Poort type",
       "pl": "Typ Portu",
       "xloc": [
@@ -45963,9 +46634,16 @@
       ]
     },
     {
+      "cs": "Provoz napájení",
       "da": "Power Operation",
+      "de": "Leistungsbetrieb",
       "en": "Power Operation",
+      "es": "Operación de energía",
+      "fi": "Virtakäyttö",
       "fr": "Alimentation",
+      "hi": "पावर ऑपरेशन",
+      "it": "Operazione di potenza",
+      "ja": "電源操作",
       "nl": "Power Operation",
       "pl": "Operacja Zasilania",
       "xloc": [
@@ -46080,9 +46758,16 @@
       ]
     },
     {
+      "cs": "Vypínač je připraven k použití.",
       "da": "Power knap er klar til brug.",
+      "de": "Netzschalter ist betriebsbereit.",
       "en": "Power switch is ready for use.",
+      "es": "El interruptor de encendido está listo para usar.",
+      "fi": "Virtakytkin on käyttövalmis.",
       "fr": "Power switch est prêt à être utilisé.",
+      "hi": "पावर स्विच उपयोग के लिए तैयार है।",
+      "it": "L'interruttore di alimentazione è pronto per l'uso.",
+      "ja": "電源スイッチを使用する準備が整いました。",
       "nl": "Aan/uit-schakelaar is klaar voor gebruik.",
       "pl": "Włącznik jest gotowy do użycia.",
       "xloc": [
@@ -47410,9 +48095,16 @@
       ]
     },
     {
+      "cs": "Raritan Dominion KX III",
       "da": "Raritan Dominion KX III",
+      "de": "Raritan-Dominion KX III",
       "en": "Raritan Dominion KX III",
+      "es": "Raritan Dominio KX III",
+      "fi": "Raritan Dominion KX III",
       "fr": "Raritan Dominion KX III",
+      "hi": "रारिटन ​​डोमिनियन केएक्स III",
+      "it": "Dominio Raritan KX III",
+      "ja": "ラリタンドミニオンKXIII",
       "nl": "Raritan Dominion KX III",
       "pl": "Raritan Dominion KX III",
       "xloc": [
@@ -47445,8 +48137,16 @@
       ]
     },
     {
+      "cs": "Drsný",
+      "da": "Rå",
+      "de": "Roh",
       "en": "Raw",
+      "es": "Crudo",
+      "fi": "Raaka",
       "fr": "Brut",
+      "hi": "कच्चा",
+      "it": "Crudo",
+      "ja": "生",
       "nl": "Raw",
       "pl": "Surowe",
       "xloc": [
@@ -47685,8 +48385,16 @@
       ]
     },
     {
+      "cs": "Opakující se",
+      "da": "Tilbagevendende",
+      "de": "Wiederkehrend",
       "en": "Recurring",
+      "es": "Periódico",
+      "fi": "Toistuva",
       "fr": "Récurrent",
+      "hi": "पुनरावर्ती",
+      "it": "Ricorrente",
+      "ja": "繰り返し",
       "nl": "Terugkerend",
       "pl": "Powtarzanie",
       "xloc": [
@@ -47695,8 +48403,16 @@
       ]
     },
     {
+      "cs": "Denně se opakující",
+      "da": "Tilbagevendende dagligt",
+      "de": "Täglich wiederkehrend",
       "en": "Recurring daily",
+      "es": "Recurrente diariamente",
+      "fi": "Toistuva päivittäin",
       "fr": "Récurrent quotidiennement",
+      "hi": "आवर्ती दैनिक",
+      "it": "Quotidiano ricorrente",
+      "ja": "毎日繰り返される",
       "nl": "Dagelijks terugkerend",
       "pl": "Powtarzanie codzienne",
       "xloc": [
@@ -47704,8 +48420,16 @@
       ]
     },
     {
+      "cs": "Opakující se týdně",
+      "da": "Tilbagevendende ugentligt",
+      "de": "Wöchentlich wiederkehrend",
       "en": "Recurring weekly",
+      "es": "Semanal recurrente",
+      "fi": "Toistuu viikoittain",
       "fr": "Récurrent hebdomadaire",
+      "hi": "आवर्ती साप्ताहिक",
+      "it": "Settimanale ricorrente",
+      "ja": "毎週繰り返される",
       "nl": "Wekelijks terugkerend",
       "pl": "Powtarzanie co tydzień",
       "xloc": [
@@ -49872,10 +50596,16 @@
       "zh-chs": "删除 {0} 项？"
     },
     {
+      "cs": "Zobrazovaný název účtu byl odstraněn.",
       "da": "Fjernet kontovisningsnavn.",
+      "de": "Anzeigename des Kontos entfernt.",
       "en": "Removed account display name.",
       "es": "Eliminado el nombre visible de la cuenta.",
+      "fi": "Tilin näyttönimi poistettu.",
       "fr": "Suppression du nom du compte",
+      "hi": "खाता प्रदर्शन नाम हटाया गया।",
+      "it": "Nome visualizzato dell'account rimosso.",
+      "ja": "アカウントの表示名を削除しました。",
       "nl": "Weergavenaam account verwijderd.",
       "pl": "Usunięto nazwę wyświetlania konta.",
       "xloc": [
@@ -50291,10 +51021,16 @@
       ]
     },
     {
+      "cs": "Zpráva nevrátila žádné celistvosti.",
       "da": "Rapporten gav ingen poster.",
+      "de": "Der Bericht hat keine Einträge zurückgegeben.",
       "en": "Report returned no entires.",
       "es": "El informe no ha devuelto contenido.",
+      "fi": "Raportti ei palauttanut kokonaisia.",
       "fr": "Le rapport n'a renvoyé aucune données.",
+      "hi": "रिपोर्ट कोई संपूर्ण नहीं लौटा।",
+      "it": "Il rapporto non ha restituito l'intero.",
+      "ja": "レポートは全体を返しませんでした。",
       "nl": "Rapport heeft geen vermeldingen geretourneerd.",
       "pl": "Raport zwrócił brak wpisów.",
       "xloc": [
@@ -50309,7 +51045,9 @@
       "es": "Report.csv",
       "fi": "Report.csv",
       "fr": "Report.csv",
+      "hi": "रिपोर्ट.सीएसवी",
       "it": "Report.csv",
+      "ja": "Report.csv",
       "nl": "Report.csv",
       "pl": "Report.csv",
       "pt": "Report.csv",
@@ -50322,10 +51060,16 @@
       ]
     },
     {
+      "cs": "Zprávy",
       "da": "Rapporter",
+      "de": "Berichte",
       "en": "Reports",
       "es": "Informes",
+      "fi": "Raportit",
       "fr": "Rapports",
+      "hi": "रिपोर्टों",
+      "it": "Rapporti",
+      "ja": "レポート",
       "nl": "Rapport",
       "pl": "Raporty",
       "xloc": [
@@ -51438,10 +52182,16 @@
       "zh-cht": "在此裝置上運行命令。"
     },
     {
+      "cs": "Běh",
       "da": "Kører",
+      "de": "Betrieb",
       "en": "Running",
       "es": "Ejecutando",
+      "fi": "Juoksemassa",
       "fr": "En cours d'exécution",
+      "hi": "दौड़ना",
+      "it": "In esecuzione",
+      "ja": "ランニング",
       "nl": "lopende",
       "pl": "Uruchomiony",
       "xloc": [
@@ -51748,10 +52498,16 @@
       ]
     },
     {
+      "cs": "SMS brána má omezené použití v režimu LAN.",
       "da": "SMS-gateway har begrænset brug i LAN-tilstand.",
+      "de": "Das SMS-Gateway kann im LAN-Modus nur eingeschränkt verwendet werden.",
       "en": "SMS gateway has limited use in LAN mode.",
       "es": "La puerta de enlace SMS tiene un uso limitado en modo LAN.",
+      "fi": "SMS-yhdyskäytävän käyttö on rajoitettua LAN-tilassa.",
       "fr": "La passerelle SMS est bridée en mode LAN.",
+      "hi": "लैन मोड में एसएमएस गेटवे का सीमित उपयोग है।",
+      "it": "Il gateway SMS ha un uso limitato in modalità LAN.",
+      "ja": "SMSゲートウェイは、LANモードでの使用が制限されています。",
       "nl": "SMS gateway heeft beperkte mogelijkheden in LAN modus.",
       "pl": "Bramka SMS ma ograniczone zastosowanie w trybie LAN.",
       "xloc": [
@@ -51857,10 +52613,16 @@
       ]
     },
     {
+      "cs": "SMTP server má omezené použití v režimu LAN.",
       "da": "SMTP-serveren har begrænset brug i LAN-tilstand.",
+      "de": "Der SMTP-Server kann im LAN-Modus nur eingeschränkt verwendet werden.",
       "en": "SMTP server has limited use in LAN mode.",
       "es": "El servidor SMTP tiene un uso limitado en modo LAN.",
+      "fi": "SMTP-palvelimen käyttö on rajoitettua LAN-tilassa.",
       "fr": "Le serveur SMTP est bridé en mode LAN.",
+      "hi": "लैन मोड में एसएमटीपी सर्वर का सीमित उपयोग होता है।",
+      "it": "Il server SMTP ha un uso limitato in modalità LAN.",
+      "ja": "SMTPサーバーはLANモードでの使用が制限されています。",
       "nl": "SMTP server heeft beperkte mogelijkheden in LAN modus.",
       "pl": "Serwer SMTP ma ograniczone wykorzystanie w trybie LAN.",
       "xloc": [
@@ -52601,10 +53363,16 @@
       ]
     },
     {
+      "cs": "Tajný",
       "da": "Hemmelighed",
+      "de": "Geheimnis",
       "en": "Secret",
       "es": "Secreto",
+      "fi": "Salaisuus",
       "fr": "Secret",
+      "hi": "गुप्त",
+      "it": "Segreto",
+      "ja": "ひみつ",
       "nl": "Geheim",
       "pl": "Sekret",
       "xloc": [
@@ -52836,10 +53604,16 @@
       ]
     },
     {
+      "cs": "Vyberte datum a čas...",
       "da": "Vælg dato og tid...",
+      "de": "Datum & Uhrzeit auswählen...",
       "en": "Select Date & Time...",
       "es": "Seleccionad fecha y hora...",
+      "fi": "Valitse päivämäärä ja aika...",
       "fr": "Sélectionner la date et l'heure",
+      "hi": "दिनांक और समय चुनें...",
+      "it": "Seleziona data e ora...",
+      "ja": "日付と時刻を選択...",
       "nl": "Selecteer datum & Tijd...",
       "pl": "Wybierz Datę i Czas...",
       "xloc": [
@@ -53612,10 +54386,16 @@
       ]
     },
     {
+      "cs": "SendGrid server má omezené použití v režimu LAN.",
       "da": "SendGrid-serveren har begrænset brug i LAN mode.",
+      "de": "Der SendGrid-Server kann im LAN-Modus nur eingeschränkt verwendet werden.",
       "en": "SendGrid server has limited use in LAN mode.",
       "es": "El servidor SendGrid tiene un uso limitado en modo LAN.",
+      "fi": "SendGrid-palvelimen käyttö on rajoitettua LAN-tilassa.",
       "fr": "Le serveur SendGrid a une utilisation limitée en mode LAN.",
+      "hi": "सेंडग्रिड सर्वर का लैन मोड में सीमित उपयोग है।",
+      "it": "Il server SendGrid ha un uso limitato in modalità LAN.",
+      "ja": "SendGridサーバーはLANモードでの使用が制限されています。",
       "nl": "SendGrid server heeft beperkte mogelijkeden LAN modus.",
       "pl": "Serwer SendGrid ma ograniczone zastosowanie w trybie LAN.",
       "xloc": [
@@ -54707,10 +55487,16 @@
       ]
     },
     {
+      "cs": "Časový limit relace.",
       "da": "Session timeout.",
+      "de": "Session-Timeout.",
       "en": "Session timeout.",
       "es": "La sesión ha expirado.",
+      "fi": "Istunto vanhentunut.",
       "fr": "Durée de la session.",
+      "hi": "सत्र मध्यांतर।",
+      "it": "Timeout della sessione.",
+      "ja": "セッションタイムアウト。",
       "nl": "Sessie timeout.",
       "pl": "Przekroczony czas Sesji.",
       "xloc": [
@@ -54770,10 +55556,16 @@
       ]
     },
     {
+      "cs": "Nastavit schránku",
       "da": "Indstil udklipsholder",
+      "de": "Zwischenablage festlegen",
       "en": "Set Clipboard",
       "es": "Asignar portapapeles",
+      "fi": "Aseta leikepöytä",
       "fr": "Mettre dans le presse-papier",
+      "hi": "क्लिपबोर्ड सेट करें",
+      "it": "Imposta appunti",
+      "ja": "クリップボードを設定する",
       "nl": "Klembord instellen",
       "pl": "Ustaw schowek",
       "xloc": [
@@ -55157,9 +55949,16 @@
       ]
     },
     {
+      "cs": "Sdílejte zařízení s hostem",
       "da": "Del enheden med en gæst",
+      "de": "Teilen Sie das Gerät mit einem Gast",
       "en": "Share the device with a guest",
+      "es": "Compartir el dispositivo con un invitado",
+      "fi": "Jaa laite vieraan kanssa",
       "fr": "Partager l'appareil avec un invité",
+      "hi": "डिवाइस को किसी मेहमान के साथ शेयर करें",
+      "it": "Condividi il dispositivo con un ospite",
+      "ja": "デバイスをゲストと共有する",
       "nl": "Deel het apparaat met een gast",
       "pl": "Współdziel to urządzenie z gościem",
       "xloc": [
@@ -55216,9 +56015,16 @@
       ]
     },
     {
+      "cs": "Sdílení plochy s: {0}",
+      "da": "Deler skrivebordet med: {0}",
       "de": "Teile desktop mit: {0}",
       "en": "Sharing desktop with: {0}",
+      "es": "Compartir escritorio con: {0}",
+      "fi": "Työpöytä jaetaan seuraavien kanssa: {0}",
       "fr": "Partage du bureau avec : {0}",
+      "hi": "इसके साथ डेस्कटॉप साझा करना: {0}",
+      "it": "Condivisione del desktop con: {0}",
+      "ja": "デスクトップの共有：{0}",
       "nl": "Bureaublad delen met: {0}",
       "pl": "Współdzielenie pulpitu z: {0}",
       "xloc": [
@@ -55517,10 +56323,16 @@
       ]
     },
     {
+      "cs": "Zobrazit jméno hosta",
       "da": "Vis gæstenavn",
+      "de": "Gastnamen anzeigen",
       "en": "Show Guest Name",
       "es": "Mostrar nombre de invitado",
+      "fi": "Näytä vieraan nimi",
       "fr": "Montrer le nom de l'invité",
+      "hi": "अतिथि का नाम दिखाएं",
+      "it": "Mostra il nome dell'ospite",
+      "ja": "ゲスト名を表示",
       "nl": "Toon gasten naam",
       "pl": "Pokaż Nazwę Gościa"
     },
@@ -55625,10 +56437,16 @@
       "zh-chs": "显示会话..."
     },
     {
+      "cs": "Zobrazit provoz",
       "da": "Vis trafik",
+      "de": "Verkehr anzeigen",
       "en": "Show Traffic",
       "es": "Mostrar tráfico",
+      "fi": "Näytä liikenne",
       "fr": "Montrer le traffic",
+      "hi": "ट्रैफ़िक दिखाएं",
+      "it": "Mostra traffico",
+      "ja": "トラフィックを表示",
       "nl": "Toon verkeer",
       "pl": "Pokaż Ruch",
       "xloc": [
@@ -58623,9 +59441,16 @@
       ]
     },
     {
+      "cs": "Přepínač",
       "da": "Switch",
+      "de": "Schalten",
       "en": "Switch",
+      "es": "Cambiar",
+      "fi": "Vaihtaa",
       "fr": "Switch",
+      "hi": "स्विच",
+      "it": "Interruttore",
+      "ja": "スイッチ",
       "nl": "Schakelaar",
       "pl": "Przełącz",
       "xloc": [
@@ -58662,9 +59487,16 @@
       ]
     },
     {
+      "cs": "Port přepínače je připojen",
       "da": "Switch port forbundet",
+      "de": "Switch-Port verbunden",
       "en": "Switch port connected",
+      "es": "Puerto de conmutador conectado",
+      "fi": "Kytkimen portti kytketty",
       "fr": "Le port du Switch est connecté.",
+      "hi": "स्विच पोर्ट कनेक्टेड",
+      "it": "Porta interruttore collegata",
+      "ja": "スイッチポートが接続されています",
       "nl": "Schakelpoort verbonden",
       "pl": "Przełącz połączony port",
       "xloc": [
@@ -58673,9 +59505,16 @@
       ]
     },
     {
+      "cs": "Přepínací port je připraven k použití.",
       "da": "Switch port er klar til brug.",
+      "de": "Der Switch-Port ist einsatzbereit.",
       "en": "Switch port is ready for use.",
+      "es": "El puerto del conmutador está listo para usarse.",
+      "fi": "Kytkinportti on käyttövalmis.",
       "fr": "Le port du Switch est prêt à être utilisé.",
+      "hi": "स्विच पोर्ट उपयोग के लिए तैयार है।",
+      "it": "La porta dello switch è pronta per l'uso.",
+      "ja": "スイッチポートを使用する準備が整いました。",
       "nl": "Schakelpoort is klaar voor gebruik..",
       "pl": "Przełącz port na gotowy do użycia.",
       "xloc": [
@@ -58708,9 +59547,16 @@
       ]
     },
     {
+      "cs": "Synchronizujte název zařízení serveru s názvem portu",
       "da": "Synkroniser serverenhedsnavnet med portnavnet",
+      "de": "Synchronisieren Sie den Gerätenamen des Servers mit dem Portnamen",
       "en": "Sync server device name to port name",
+      "es": "Sincronizar el nombre del dispositivo del servidor con el nombre del puerto",
+      "fi": "Synkronoi palvelimen laitteen nimi portin nimeen",
       "fr": "Synchronisation du nom du serveur avec le nom du port",
+      "hi": "सर्वर डिवाइस का नाम पोर्ट नाम से सिंक करें",
+      "it": "Sincronizza il nome del dispositivo del server con il nome della porta",
+      "ja": "サーバーデバイス名をポート名に同期する",
       "nl": "Synchroniseer de naam van de server met de poortnaam",
       "pl": "Synchronizuj nazwę urządzenia serwera na nazwę portu",
       "xloc": [
@@ -59579,9 +60425,16 @@
       ]
     },
     {
+      "cs": "Zařízení je vypnuto",
       "da": "Enheden er slukket",
+      "de": "Das Gerät ist ausgeschaltet",
       "en": "The device is powered off",
+      "es": "El dispositivo está apagado",
+      "fi": "Laitteesta on katkaistu virta",
       "fr": "L'appareil est éteint",
+      "hi": "डिवाइस बंद है",
+      "it": "Il dispositivo è spento",
+      "ja": "デバイスの電源がオフになっています",
       "nl": "Het apparaat is uitgeschakeld",
       "pl": "To urządzenie jest wyłączone",
       "xloc": [
@@ -59616,10 +60469,16 @@
       ]
     },
     {
+      "cs": "Následující zařízení změnila svůj stav připojení.",
       "da": "Følgende enheder har ændret deres forbindelsestilstand.",
+      "de": "Die folgenden Geräte haben ihren Verbindungsstatus geändert.",
       "en": "The following devices have changed their connection state.",
       "es": "Los siguientes dispositivos han cambiado su estado de conexión.",
+      "fi": "Seuraavat laitteet ovat muuttaneet yhteystilaa.",
       "fr": "Ces appareils ont changé leur statut de connexion :",
+      "hi": "निम्न उपकरणों ने अपनी कनेक्शन स्थिति बदल दी है।",
+      "it": "I seguenti dispositivi hanno cambiato il loro stato di connessione.",
+      "ja": "次のデバイスは接続状態を変更しました。",
       "nl": "De volgende apparaten hebben hun verbindingsstatus gewijzigd.",
       "pl": "Przedstawione urządzenia zmieniły stan połączenia.",
       "xloc": [
@@ -59650,8 +60509,16 @@
       "zh-cht": "此安裝程序的圖形版本無法在此系統上運行"
     },
     {
+      "cs": "Na tomto systému nelze spustit grafickou verzi tohoto instalačního programu",
+      "da": "Den grafiske version af dette installationsprogram kan ikke køre på dette system",
+      "de": "Die grafische Version dieses Installationsprogramms kann auf diesem System nicht ausgeführt werden",
       "en": "The graphical version of this installer cannot run on this system",
+      "es": "La versión gráfica de este instalador no puede ejecutarse en este sistema",
+      "fi": "Tämän asennusohjelman graafista versiota ei voi käyttää tässä järjestelmässä",
       "fr": "La version graphique de ce programme d'installation ne peut pas s'exécuter sur ce système",
+      "hi": "इस इंस्टालर का आलेखीय संस्करण इस सिस्टम पर नहीं चल सकता",
+      "it": "La versione grafica di questo programma di installazione non può essere eseguita su questo sistema",
+      "ja": "このインストーラーのグラフィカルバージョンは、このシステムでは実行できません",
       "nl": "De grafische versie van dit installatieprogramma kan niet op dit systeem draaien",
       "pl": "Graficzna wersja tego instalatora nie może być uruchomiona w tym systemie",
       "xloc": [
@@ -60919,10 +61786,16 @@
       ]
     },
     {
+      "cs": "Chcete-li se odhlásit,",
       "da": "For at afmelde,",
+      "de": "Deabonnieren,",
       "en": "To unsubscribe,",
       "es": "Para darse de baja,",
+      "fi": "Lopettaa tilauksen,",
       "fr": "Pour se désinscrire,",
+      "hi": "सदस्यता रद्द करने के लिए,",
+      "it": "Per annullare l'iscrizione,",
+      "ja": "退会するには、",
       "nl": "Uitschrijven,",
       "pl": "By się wypisać.",
       "xloc": [
@@ -60930,10 +61803,16 @@
       ]
     },
     {
+      "cs": "Chcete-li se odhlásit, načtěte tento odkaz do 1 hodiny od obdržení této zprávy: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "da": "For at afmelde, skal du indlæse dette link inden for 1 time efter at have modtaget denne besked: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
+      "de": "Um sich abzumelden, laden Sie diesen Link innerhalb von 1 Stunde nach Erhalt dieser Nachricht: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "en": "To unsubscribe, load this link within 1 hour of getting this message: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "es": "Para darse de baja, abrir este enlace antes de 1 hora desde la recepción de este mensaje: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
+      "fi": "Peruuta tilaus lataamalla tämä linkki tunnin sisällä tämän viestin vastaanottamisesta: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "fr": "Pour se désinscrire, chargez le lien suivant (valable une heure à réception de ce message) : [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
+      "hi": "सदस्यता समाप्त करने के लिए, यह संदेश मिलने के 1 घंटे के भीतर इस लिंक को लोड करें: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
+      "it": "Per annullare l'iscrizione, carica questo link entro 1 ora dalla ricezione di questo messaggio: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
+      "ja": "登録を解除するには、次のメッセージが表示されてから1時間以内に次のリンクを読み込みます：[[[SERVERURL]]] [[[[UNSUBSCRIBELINK]]]",
       "nl": "Om je af te melden, open je deze link binnen 1 uur nadat je dit bericht hebt ontvangen: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "pl": "By się wypisać, załaduj ten link w ciągu 1 godziny od otrzymania wiadomości: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "xloc": [
@@ -61787,9 +62666,16 @@
       ]
     },
     {
+      "cs": "Vypnout",
       "da": "Sluk",
+      "de": "Schalte aus",
       "en": "Turn off",
+      "es": "Apagar",
+      "fi": "Sammuttaa",
       "fr": "Éteindre",
+      "hi": "बंद करें",
+      "it": "Spegni",
+      "ja": "消す",
       "nl": "Uitschakelen",
       "pl": "Wyłącz",
       "xloc": [
@@ -61800,9 +62686,16 @@
       ]
     },
     {
+      "cs": "Vypnout.",
       "da": "Sluk.",
+      "de": "Schalte aus.",
       "en": "Turn off.",
+      "es": "Apagar.",
+      "fi": "Sammuttaa.",
       "fr": "Éteindre.",
+      "hi": "बंद करें।",
+      "it": "Spegni.",
+      "ja": "消す。",
       "nl": "Uitschakelen",
       "pl": "Wyłącz.",
       "xloc": [
@@ -61810,9 +62703,16 @@
       ]
     },
     {
+      "cs": "Zapnout",
       "da": "Tænd",
+      "de": "Anmachen",
       "en": "Turn on",
+      "es": "Encender",
+      "fi": "Kiihottua",
       "fr": "Allumer",
+      "hi": "चालू करो",
+      "it": "Accendere",
+      "ja": "オンにする",
       "nl": "Inschakelen",
       "pl": "Włącz",
       "xloc": [
@@ -61823,9 +62723,16 @@
       ]
     },
     {
+      "cs": "Zapnout.",
       "da": "Tænd.",
+      "de": "Anmachen.",
       "en": "Turn on.",
+      "es": "Encender.",
+      "fi": "Kiihottua.",
       "fr": "Allumer.",
+      "hi": "चालू करो।",
+      "it": "Accendere.",
+      "ja": "オンにする。",
       "nl": "Inschakelen.",
       "pl": "Włącz.",
       "xloc": [
@@ -62424,10 +63331,16 @@
       ]
     },
     {
+      "cs": "Nelze načíst seznam adres IPv6 důvěryhodného proxy serveru CloudFlare.",
       "da": "Kan ikke indlæse CloudFlare-betroede proxy IPv6-adresseliste.",
+      "de": "Liste der vertrauenswürdigen Proxy-IPv6-Adressen von CloudFlare kann nicht geladen werden.",
       "en": "Unable to load CloudFlare trusted proxy IPv6 address list.",
       "es": "No se puede cargar la lista de direcciones IPv6 de proxy de confianza Cloudfare.",
+      "fi": "CloudFlaren luotettujen välityspalvelinten IPv6-osoiteluetteloa ei voi ladata.",
       "fr": "Impossible de charger la liste d'adresses IPv6 du proxy de confiance CloudFlare.",
+      "hi": "CloudFlare विश्वसनीय प्रॉक्सी IPv6 पता सूची लोड करने में असमर्थ।",
+      "it": "Impossibile caricare l'elenco di indirizzi IPv6 del proxy attendibile CloudFlare.",
+      "ja": "CloudFlareの信頼できるプロキシIPv6アドレスリストを読み込めません。",
       "nl": "Kan CloudFlare vertrouwde proxy IPv6 adreslijst niet laden.",
       "pl": "Nie można załadować listy adresów IPv6 zaufanego serwera proxy CloudFlare.",
       "xloc": [
@@ -62435,11 +63348,16 @@
       ]
     },
     {
+      "cs": "Nelze načíst kořenový certifikát Intel AMT TLS pro výchozí doménu.",
       "da": "Kan ikke indlæse Intel AMT TLS-rodcertifikat for standarddomæne.",
       "de": "Konnte Intel AMT TLS root Zertifikat für Standarddomain nicht laden.",
       "en": "Unable to load Intel AMT TLS root certificate for default domain.",
       "es": "No se puede cargar el certificado raíz TLS Intel AMT para el dominio por defecto.",
+      "fi": "Intel AMT TLS -juurivarmennetta ei voi ladata oletustoimialueelle.",
       "fr": "Impossible de charger le certificat racine Intel AMT TLS pour le domaine par défaut.",
+      "hi": "डिफ़ॉल्ट डोमेन के लिए Intel AMT TLS रूट प्रमाणपत्र लोड करने में असमर्थ।",
+      "it": "Impossibile caricare il certificato radice Intel AMT TLS per il dominio predefinito.",
+      "ja": "デフォルトドメインのIntelAMTTLSルート証明書を読み込めません。",
       "nl": "Kan Intel AMT TLS rootcertificaat voor standaarddomein niet laden.",
       "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny domyślnej.",
       "xloc": [
@@ -62447,11 +63365,16 @@
       ]
     },
     {
+      "cs": "Nelze načíst kořenový certifikát Intel AMT TLS pro doménu {0}.",
       "da": "Kan ikke indlæse Intel AMT TLS-rodcertifikat for domænet {0}.",
       "de": "Konnte Intel AMT TLS root Zertifikat für domain {0} nicht laden.",
       "en": "Unable to load Intel AMT TLS root certificate for domain {0}.",
       "es": "No se puede cargar el certificado raíz TLS Intel AMT para el dominio {0}.",
+      "fi": "Ei voida ladata Intel AMT TLS -juurivarmennetta verkkotunnukselle {0}.",
       "fr": "Impossible de charger le certificat racine Intel AMT TLS pour le domaine {0}.",
+      "hi": "डोमेन {0} के लिए Intel AMT TLS रूट प्रमाणपत्र लोड करने में असमर्थ.",
+      "it": "Impossibile caricare il certificato radice Intel AMT TLS per il dominio {0}.",
+      "ja": "ドメイン{0}のIntelAMTTLSルート証明書を読み込めません。",
       "nl": "Kan Intel AMT TLS rootcertificaat voor domein {0} niet laden.",
       "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny {0}.",
       "xloc": [
@@ -62582,11 +63505,16 @@
       ]
     },
     {
+      "cs": "Nelze nastavit modul Let's Encrypt.",
       "da": "Kan ikke konfigurere Let's Encrypt-modulet.",
       "de": "Einrichten Let's Encrypt Modul nicht möglich.",
       "en": "Unable to setup Let's Encrypt module.",
       "es": "No se puede configurar el módulo Let's Encrypt.",
+      "fi": "Let's Encrypt -moduulia ei voi asentaa.",
       "fr": "Impossible de configurer le module Let's Encrypt.",
+      "hi": "लेट्स एनक्रिप्ट मॉड्यूल सेट करने में असमर्थ।",
+      "it": "Impossibile configurare il modulo Let's Encrypt.",
+      "ja": "Let'sEncryptモジュールをセットアップできません。",
       "nl": "Kan de Let's Encrypt module niet instellen.",
       "pl": "Nie można skonfigurować modułu Let's Encrypt.",
       "xloc": [
@@ -62930,11 +63858,16 @@
       ]
     },
     {
+      "cs": "Neznámý uživatel",
       "da": "Ukendt bruger",
       "de": "Benutzer unbekannt",
       "en": "Unknown User",
       "es": "Usuario desconocido",
+      "fi": "Tuntematon käyttäjä",
       "fr": "Utilisateur inconnu",
+      "hi": "अज्ञात उपयोगकर्ता",
+      "it": "Utente sconosciuto",
+      "ja": "不明なユーザー",
       "nl": "Onbekende gebruiker",
       "pl": "Nieznany Użytkownik",
       "xloc": [
@@ -63097,11 +64030,16 @@
       ]
     },
     {
+      "cs": "Nerozpoznaná možnost konfigurace \\\"{0}\\\".",
       "da": "Ikke genkendt konfigurationsmulighed \\\"{0}\\\".",
       "de": "Unbekannte Konfigurationsoption \\\"{0}\\\".",
       "en": "Unrecognized configuration option \\\"{0}\\\".",
       "es": "Opción de configuración desconocida \\\"{0}\\\".",
+      "fi": "Tuntematon määritysvaihtoehto \\\"{0}\\\".",
       "fr": "Option de configuration non recnonnue \\\"{0}\\\".",
+      "hi": "अपरिचित कॉन्फ़िगरेशन विकल्प \\\"{0}\\\"।",
+      "it": "Opzione di configurazione non riconosciuta \\\"{0}\\\".",
+      "ja": "認識されない構成オプション\\\"{0}\\\"。",
       "nl": "Niet herkende configuratie instelling \\\"{0}\\\".",
       "pl": "Nierozpoznana opcja konfiguracji \\\"{0}\\\".",
       "xloc": [
@@ -64490,11 +65428,16 @@
       ]
     },
     {
+      "cs": "Využití uživatelského provozu",
       "da": "Brugertrafik",
       "de": "Benutzer Datendverkehrsaufkommen",
       "en": "User Traffic Usage",
       "es": "Uso de tráfico de usuario",
+      "fi": "Käyttäjäliikenteen käyttö",
       "fr": "Utilisation du traffic utilisateur",
+      "hi": "उपयोगकर्ता यातायात उपयोग",
+      "it": "Utilizzo del traffico degli utenti",
+      "ja": "ユーザートラフィックの使用",
       "nl": "Gebruik van gebruikersverkeer",
       "pl": "Wykorzystanie Pasma przez Użytkownika",
       "xloc": [
@@ -64781,11 +65724,16 @@
       ]
     },
     {
+      "cs": "Uživatelská oznámení se změnila",
       "da": "Brugermeddelelser ændret",
       "de": "Bneutzer Benachrichtigung geändert",
       "en": "User notifications changed",
       "es": "Han cambiado las notificaciones del usuario",
+      "fi": "Käyttäjäilmoitukset muutettu",
       "fr": "Notifications aux utilisateurs changés",
+      "hi": "उपयोगकर्ता सूचनाएं बदली गईं",
+      "it": "Notifiche utente cambiate",
+      "ja": "ユーザー通知が変更されました",
       "nl": "Gebruikersmeldingen gewijzigd",
       "pl": "Powiadomienia użytkownika zmieniono",
       "xloc": [
@@ -66355,11 +67303,16 @@
       ]
     },
     {
+      "cs": "Upozornění na webové stránce",
       "da": "Websidemeddelelser",
       "de": "Webseiten Benachrichtigung",
       "en": "Web Page Notifications",
       "es": "Notificaciones de página web",
+      "fi": "Web-sivun ilmoitukset",
       "fr": "Notifications de pages Web",
+      "hi": "वेब पेज सूचनाएं",
+      "it": "Notifiche della pagina web",
+      "ja": "Webページの通知",
       "nl": "Webpagina meldingen",
       "pl": "Powiadomienia Strony Web",
       "xloc": [
@@ -66368,10 +67321,16 @@
       ]
     },
     {
+      "cs": "Webový vypínač 7",
       "da": "Web Power Switch 7",
       "de": "Web Power Switch 7",
       "en": "Web Power Switch 7",
+      "es": "Interruptor de encendido web 7",
+      "fi": "Verkkovirtakytkin 7",
       "fr": "Web Power Switch 7",
+      "hi": "वेब पावर स्विच 7",
+      "it": "Interruttore di alimentazione web 7",
+      "ja": "Web電源スイッチ7",
       "nl": "Web Power Switch 7",
       "pl": "Przełącznik Zasilania Web 7",
       "xloc": [
@@ -66505,11 +67464,16 @@
       ]
     },
     {
+      "cs": "Web-SFTP",
       "da": "Web-SFTP",
       "de": "Web-SFTP",
       "en": "Web-SFTP",
       "es": "Web-SFTP",
+      "fi": "Web-SFTP",
       "fr": "Web-SFTP",
+      "hi": "वेब-एसएफटीपी",
+      "it": "Web-SFTP",
+      "ja": "Web-SFTP",
       "nl": "Web-SFTP",
       "pl": "Web-SFTP",
       "xloc": [
@@ -66615,10 +67579,16 @@
       ]
     },
     {
+      "cs": "Komprese WebSocket je zakázána, tato funkce je nefunkční v NodeJS v11.11 až v12.15 a v13.2",
       "da": "WebSocket-komprimering er deaktiveret. Denne funktion er ødelagt i NodeJS v11.11 til v12.15 og v13.2",
+      "de": "Die WebSocket-Komprimierung ist deaktiviert, diese Funktion ist in NodeJS v11.11 bis v12.15 und v13.2 defekt",
       "en": "WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2",
       "es": "Desactivada la compresión WebSocket, esta característica no funciona en NodeJS v11.11 a v12.15 y v13.2",
+      "fi": "WebSocket-pakkaus on poistettu käytöstä, tämä ominaisuus on rikki NodeJS v11.11 - v12.15 ja v13.2",
       "fr": "La compression de la WebSocket est désactivée. Cette fonctionnalité n'est plus disponible dans NodeJS v11.11 à v12.15 et v13.2",
+      "hi": "WebSocket संपीड़न अक्षम है, यह सुविधा NodeJS v11.11 से v12.15 और v13.2 . में टूट गई है",
+      "it": "La compressione WebSocket è disabilitata, questa funzione è interrotta in NodeJS da v11.11 a v12.15 e v13.2",
+      "ja": "WebSocket圧縮が無効になっているため、この機能はNodeJSv11.11からv12.15およびv13.2で機能しなくなります。",
       "nl": "WebSocket compressie is uitgeschakeld, deze functie werkt niet meer in NodeJS v11.11 tot v12.15 en v13.2",
       "pl": "Kompresja WebSocket jest wyłączona, ta funkcja nie działa w NodeJS v11.11 do v12.15 i v13.2",
       "xloc": [
@@ -66650,8 +67620,17 @@
       ]
     },
     {
+      "cs": "Týdně",
+      "da": "Ugentlig",
+      "de": "Wöchentlich",
       "en": "Weekly",
+      "es": "Semanalmente",
+      "fi": "Viikoittain",
       "fr": "Hebdomadaire",
+      "hi": "साप्ताहिक",
+      "it": "settimanalmente",
+      "ja": "毎週",
+      "nl": "Wekelijks",
       "xloc": [
         "default.handlebars->39->268"
       ]
@@ -68323,10 +69302,16 @@
       ]
     },
     {
+      "cs": "[[[CONNECTIONS]]]",
       "da": "[[[CONNECTIONS]]]",
+      "de": "[[[CONNECTIONS]]]",
       "en": "[[[CONNECTIONS]]]",
       "es": "[[[CONNECTIONS]]]",
+      "fi": "[[[CONNECTIONS]]]",
       "fr": "[[[CONNECTIONS]]]",
+      "hi": "[[[CONNECTIONS]]]",
+      "it": "[[[CONNECTIONS]]]",
+      "ja": "[[[CONNECTIONS]]]",
       "nl": "[[[CONNECTIONS]]]",
       "pl": "[[[CONNECTIONS]]]",
       "xloc": [
@@ -68334,10 +69319,16 @@
       ]
     },
     {
+      "cs": "[[[DISCONNECTIONS]]]",
       "da": "[[[DISCONNECTIONS]]]",
+      "de": "[[[DISCONNECTIONS]]]",
       "en": "[[[DISCONNECTIONS]]]",
       "es": "[[[DISCONNECTIONS]]]",
+      "fi": "[[[DISCONNECTIONS]]]",
       "fr": "[[[DISCONNECTIONS]]]",
+      "hi": "[[[DISCONNECTIONS]]]",
+      "it": "[[[DISCONNESSIONI]]]",
+      "ja": "[[[DISCONNECTIONS]]]",
       "nl": "[[[DISCONNECTIONS]]]",
       "pl": "[[[DISCONNECTIONS]]]",
       "xloc": [
@@ -68346,7 +69337,7 @@
     },
     {
       "cs": "[[[SERVERNAME]]]",
-      "da": "[[[SERVER NAMN]]]",
+      "da": "[[[SERVERNAME]]]",
       "de": "[[[SERVERNAME]]]",
       "en": "[[[SERVERNAME]]]",
       "es": "[[[SERVERNAME]]]",
@@ -68359,9 +69350,9 @@
       "nl": "[[[SERVERNAME]]]",
       "pl": "[[[SERVERNAME]]]",
       "pt": "[[[SERVERNAME]]]",
-      "pt-br": "[[[NOME DO SERVIDOR]]]",
+      "pt-br": "[[[SERVERNAME]]]",
       "ru": "[[[SERVERNAME]]]",
-      "sv": "[[[SERVER NAMN]]]",
+      "sv": "[[[SERVERNAME]]]",
       "tr": "[[[SERVERNAME]]]",
       "zh-chs": "[[[SERVERNAME]]]",
       "zh-cht": "[[[SERVERNAME]]",
@@ -68477,10 +69468,16 @@
       ]
     },
     {
+      "cs": "[[[SERVERNAME]]] – Oznámení zařízení",
       "da": "[[[SERVERNAME]]] - Enheds Notifikation",
+      "de": "[[[SERVERNAME]]] – Gerätebenachrichtigung",
       "en": "[[[SERVERNAME]]] - Device Notification",
       "es": "[[[SERVERNAME]]] - Notificación del dispositivo",
+      "fi": "[[[SERVERNAME]]] - Laitteen ilmoitus",
       "fr": "[[[SERVERNAME]]] - Notification de l'appareil",
+      "hi": "[[[SERVERNAME]]] - डिवाइस नोटिफिकेशन",
+      "it": "[[[SERVERNAME]]] - Notifica dispositivo",
+      "ja": "[[[SERVERNAME]]]-デバイス通知",
       "nl": "[[[SERVERNAME]]] - Apparaatmelding",
       "pl": "[[[SERVERNAME]]] - Powiadomienia Urządzenia",
       "xloc": [
@@ -68569,7 +69566,7 @@
     },
     {
       "cs": "[[[USERNAME]]]",
-      "da": "[[[BRUGERNAVN]]]",
+      "da": "[[[USERNAME]]]",
       "de": "[[[USERNAME]]]",
       "en": "[[[USERNAME]]]",
       "es": "[[[USERNAME]]]",
@@ -68581,10 +69578,10 @@
       "ko": "[[[USERNAME]]]",
       "nl": "[[[USERNAME]]]",
       "pl": "[[[USERNAME]]]",
-      "pt": "[[[NOME DO USUÁRIO]]]",
-      "pt-br": "[[[NOME DO USUÁRIO]]]",
+      "pt": "[[[USERNAME]]]",
+      "pt-br": "[[[USERNAME]]]",
       "ru": "[[[USERNAME]]]",
-      "sv": "[[[ANVÄNDARNAMN]]]",
+      "sv": "[[[USERNAME]]]",
       "tr": "[[[USERNAME]]]",
       "zh-chs": "[[[USERNAME]]]",
       "zh-cht": "[[[USERNAME]]]",
@@ -68630,7 +69627,7 @@
       "nl": "\\\\'",
       "pl": "\\\\'",
       "pt": "\\\\'",
-      "pt-br": "\\\\ '",
+      "pt-br": "\\\\'",
       "ru": "\\\\'",
       "sv": "\\\\'",
       "tr": "\\\\'",
@@ -68648,10 +69645,10 @@
       "es": "a:",
       "fi": "a:",
       "fr": "a:",
-      "hi": "ए:",
+      "hi": "a:",
       "it": "a:",
-      "ja": "a：",
-      "ko": "ㅏ:",
+      "ja": "a:",
+      "ko": "a:",
       "nl": "a:",
       "pl": "a:",
       "pt": "a:",
@@ -68659,8 +69656,8 @@
       "ru": "а:",
       "sv": "a:",
       "tr": "a:",
-      "zh-chs": "a：",
-      "zh-cht": "a：",
+      "zh-chs": "a:",
+      "zh-cht": "a:",
       "xloc": [
         "default-mobile.handlebars->11->173",
         "default-mobile.handlebars->11->174",
@@ -70904,11 +71901,16 @@
       "zh-cht": "v0.8.0"
     },
     {
+      "cs": "do 1 hodiny od obdržení této zprávy.",
       "da": "inden for 1 time efter at have modtaget denne besked.",
       "de": "innerhalb 1 Stunde nach erhalt dieser Nachricht.",
       "en": "within 1 hour of getting this message.",
       "es": "en 1 hora desde la recepción de este mensaje.",
+      "fi": "tunnin sisällä tämän viestin vastaanottamisesta.",
       "fr": "dans l'heure suivant la réception de ce message.",
+      "hi": "यह संदेश मिलने के 1 घंटे के भीतर।",
+      "it": "entro 1 ora dalla ricezione di questo messaggio.",
+      "ja": "このメッセージを受け取ってから1時間以内。",
       "nl": "binnen 1 uur na ontvangst van dit bericht.",
       "pl": "w ciągu 1 godziny od otrzymania wiadomości.",
       "xloc": [
@@ -71574,9 +72576,16 @@
       ]
     },
     {
+      "cs": "{0} minuta",
+      "da": "{0} minut",
       "de": "{0} Minute",
       "en": "{0} minute",
+      "es": "{0} minuto",
+      "fi": "{0} minuutti",
       "fr": "{0} minutes",
+      "hi": "{0} मिनट",
+      "it": "{0} minuto",
+      "ja": "{0}分",
       "nl": "{0} minuut",
       "pl": "{0} minuta",
       "xloc": [
@@ -71584,9 +72593,16 @@
       ]
     },
     {
+      "cs": "{0} minut",
+      "da": "{0} minutter",
       "de": "{0} Minuten",
       "en": "{0} minutes",
+      "es": "{0} minutos",
+      "fi": "{0} minuuttia",
       "fr": "{0} minutes",
+      "hi": "{0} मिनट",
+      "it": "{0} minuti",
+      "ja": "{0}分",
       "nl": "{0} minuten",
       "pl": "{0} minut",
       "xloc": [
@@ -71786,9 +72802,16 @@
       "zh-chs": "{0} 个远程会话处于活动状态。"
     },
     {
+      "cs": "{0} žádá o přístup ke vzdálené ploše. Přístup povolen?",
+      "da": "{0} anmoder om fjernskrivebordsadgang. Give adgang?",
       "de": "{0} erbittet Fern-Desktopzugriff. Zugang erlauben?",
       "en": "{0} requesting remote desktop access. Grant access?",
+      "es": "{0} solicita acceso a escritorio remoto. ¿Autorizará el acceso?",
+      "fi": "{0} pyytää etätyöpöytäkäyttöä. Myönnetäänkö käyttöoikeus?",
       "fr": "{0} demande(nt) l'utilisation du bureau à distance. Autoriser l'accès ?",
+      "hi": "{0} दूरस्थ डेस्कटॉप पहुंच का अनुरोध कर रहा है। अनुदान पहुँच?",
+      "it": "{0} che richiede l'accesso al desktop remoto. Concedere l'accesso?",
+      "ja": "{0}リモートデスクトップアクセスを要求しています。アクセス許可？",
       "nl": "{0} verzoekt om toegang tot extern bureaublad.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do pulpitu. Przyznać dostęp?",
       "xloc": [
@@ -71796,9 +72819,16 @@
       ]
     },
     {
+      "cs": "{0} požaduje vzdálený přístup k souboru. Přístup povolen?",
+      "da": "{0} anmoder om fjernadgang til fil. Give adgang?",
       "de": "{0} erbittet Fern-Dateizugriff. Zugang erlauben?",
       "en": "{0} requesting remote file Access. Grant access?",
+      "es": "{0} solicita acceso remoto al archivo. ¿Autorizará el acceso?",
+      "fi": "{0} pyytää etäkäyttöoikeutta tiedostoon. Myönnetäänkö käyttöoikeus?",
       "fr": "{0} demande(nt) d'accès à un fichier à distance. Autoriser l'accès ?",
+      "hi": "{0} दूरस्थ फ़ाइल एक्सेस का अनुरोध करना। अनुदान पहुँच?",
+      "it": "{0} che richiede l'accesso al file remoto. Concedere l'accesso?",
+      "ja": "{0}リモートファイルアクセスを要求しています。アクセス許可？",
       "nl": "{0} verzoekt om externe bestandstoegang.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do plików. Przyznać dostęp?",
       "xloc": [
@@ -71806,9 +72836,16 @@
       ]
     },
     {
+      "cs": "{0} žádá o vzdálený terminálový přístup. Přístup povolen?",
+      "da": "{0} anmoder om ekstern terminaladgang. Give adgang?",
       "de": "{0} erbittet Fern-Terminalzugriff. Zugang erlauben?",
       "en": "{0} requesting remote terminal access. Grant access?",
+      "es": "{0} solicitando acceso a terminal remoto. ¿Autorizará el acceso?",
+      "fi": "{0} pyytää etäpäätteen käyttöoikeutta. Myönnetäänkö käyttöoikeus?",
       "fr": "{0} demande(nt) d'utilisation du terminal à distance. Autoriser l'accès ?",
+      "hi": "{0} दूरस्थ टर्मिनल पहुंच का अनुरोध कर रहा है। अनुदान पहुँच?",
+      "it": "{0} che richiede l'accesso al terminale remoto. Concedere l'accesso?",
+      "ja": "{0}リモート端末アクセスを要求しています。アクセス許可？",
       "nl": "{0} verzoekt om toegang tot externe terminal.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do terminala. Przyznać dostęp?",
       "xloc": [
@@ -72069,9 +73106,16 @@
       ]
     },
     {
+      "cs": "{0} zahájil relaci vzdálené plochy.",
+      "da": "{0} startede en fjernskrivebordssession.",
       "de": "{0} hat eine Fern-Desktopzugriff-Sitzung gestartet.",
       "en": "{0} started a remote desktop session.",
+      "es": "{0} inició una sesión de escritorio remoto.",
+      "fi": "{0} aloitti etätyöpöytäistunnon.",
       "fr": "{0} a démarré une session de bureau à distance.",
+      "hi": "{0} ने दूरस्थ डेस्कटॉप सत्र प्रारंभ किया।",
+      "it": "{0} ha avviato una sessione desktop remoto.",
+      "ja": "{0}はリモートデスクトップセッションを開始しました。",
       "nl": "{0} heeft een extern bureaubladsessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do pulpitu.",
       "xloc": [
@@ -72079,9 +73123,16 @@
       ]
     },
     {
+      "cs": "{0} zahájil relaci vzdáleného souboru.",
+      "da": "{0} startede en ekstern filsession.",
       "de": "{0} hat eine Fern-Dateizugriff-Sitzung gestartet.",
       "en": "{0} started a remote file session.",
+      "es": "{0} inició una sesión de archivo remoto.",
+      "fi": "{0} aloitti etätiedostoistunnon.",
       "fr": "{0} a démarré une session de fichiers à distance.",
+      "hi": "{0} ने दूरस्थ फ़ाइल सत्र प्रारंभ किया।",
+      "it": "{0} ha avviato una sessione di file remota.",
+      "ja": "{0}がリモートファイルセッションを開始しました。",
       "nl": "{0} heeft een externe bestandssessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do plików.",
       "xloc": [
@@ -72089,9 +73140,16 @@
       ]
     },
     {
+      "cs": "{0} zahájil relaci vzdáleného terminálu.",
+      "da": "{0} startede en fjernterminalsession.",
       "de": "{0} hat eine Fern-Terminalzugriff-Sitzung gestartet.",
       "en": "{0} started a remote terminal session.",
+      "es": "{0} inició una sesión de terminal remota.",
+      "fi": "{0} aloitti etäpääteistunnon.",
       "fr": "{0} a démarré une session de terminal distant.",
+      "hi": "{0} ने दूरस्थ टर्मिनल सत्र प्रारंभ किया।",
+      "it": "{0} ha avviato una sessione di terminale remoto.",
+      "ja": "{0}がリモートターミナルセッションを開始しました。",
       "nl": "{0} heeft een externe terminalsessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do terminala.",
       "xloc": [
@@ -72222,9 +73280,16 @@
       ]
     },
     {
+      "cs": "{0}, {1} po dobu {2} minut",
+      "da": "{0}, {1} i {2} minut",
       "de": "{0}, {1} vor {2} Minute",
       "en": "{0}, {1} for {2} minute",
+      "es": "{0}, {1} por {2} minuto",
+      "fi": "{0}, {1} {2} minuutin ajan",
       "fr": "{0}, {1} pendant {2} minute",
+      "hi": "{0}, {1} {2} मिनट के लिए",
+      "it": "{0}, {1} per {2} minuto",
+      "ja": "{0}、{1}は{2}分",
       "nl": "{0}, {1} voor {2} minuut",
       "pl": "{0}, {1} dla {2} minuty",
       "xloc": [
@@ -72233,9 +73298,16 @@
       ]
     },
     {
+      "cs": "{0}, {1} po dobu {2} minut",
+      "da": "{0}, {1} i {2} minutter",
       "de": "{0}, {1} vor {2} Minuten",
       "en": "{0}, {1} for {2} minutes",
+      "es": "{0}, {1} durante {2} minutos",
+      "fi": "{0}, {1} {2} minuutin ajan",
       "fr": "{0}, {1} pendant {2} minutes",
+      "hi": "{0}, {1} {2} मिनट के लिए",
+      "it": "{0}, {1} per {2} minuti",
+      "ja": "{0}、{1}は{2}分",
       "nl": "{0}, {1} voor {2} minuten",
       "pl": "{0}, {1} dla {2} minut",
       "xloc": [

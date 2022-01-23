@@ -55,7 +55,11 @@
       "BĚH",
       "NEFUNGUJE"
     ],
-    "statusDescription": "Aktuální stav agenta"
+    "statusDescription": "Aktuální stav agenta",
+    "agentVersion": "Nová verze",
+    "elevation": "K instalaci/odinstalaci tohoto softwaru jsou vyžadována zvýšená oprávnění.",
+    "graphicalerror": "Na tomto systému nelze spustit grafickou verzi tohoto instalačního programu",
+    "description": "Klepnutím na tlačítka níže nainstalujete nebo odinstalujete tento software pro vzdálenou správu. Když je tento software nainstalován, běží na pozadí, což umožňuje spravovat a ovládat tento počítač vzdáleným správcem."
   },
   "de": {
     "agent": "Agent",
@@ -82,7 +86,11 @@
       "LAUFEN",
       "NICHT LAUFEN"
     ],
-    "statusDescription": "Aktueller Agentenstatus"
+    "statusDescription": "Aktueller Agentenstatus",
+    "agentVersion": "Neue Version",
+    "elevation": "Zum Installieren/Deinstallieren dieser Software sind erhöhte Berechtigungen erforderlich.",
+    "graphicalerror": "Die grafische Version dieses Installationsprogramms kann auf diesem System nicht ausgeführt werden",
+    "description": "Klicken Sie auf die Schaltflächen unten, um diese Fernverwaltungssoftware zu installieren oder zu deinstallieren. Nach der Installation wird diese Software im Hintergrund ausgeführt, sodass dieser Computer von einem entfernten Administrator verwaltet und gesteuert werden kann."
   },
   "es": {
     "agent": "Agente",
@@ -109,7 +117,11 @@
       "EJECUTANDO",
       "NO EJECUTANDOSE"
     ],
-    "statusDescription": "Estado Actual del Agente"
+    "statusDescription": "Estado Actual del Agente",
+    "agentVersion": "Nueva versión",
+    "elevation": "Se requieren permisos elevados para instalar/desinstalar este software.",
+    "graphicalerror": "La versión gráfica de este instalador no puede ejecutarse en este sistema",
+    "description": "Haga clic en los botones a continuación para instalar o desinstalar este software de administración remota. Cuando se instala, este software se ejecuta en segundo plano, lo que permite que un administrador remoto administre y controle esta computadora."
   },
   "fi": {
     "agent": "Agentti",
@@ -136,7 +148,11 @@
       "Juoksu",
       "EI RUNNING"
     ],
-    "statusDescription": "Agentin nykyinen tila"
+    "statusDescription": "Agentin nykyinen tila",
+    "agentVersion": "Uusi versio",
+    "elevation": "Tämän ohjelmiston asentaminen/asennuksen poistaminen edellyttää korotettuja käyttöoikeuksia.",
+    "graphicalerror": "Tämän asennusohjelman graafista versiota ei voi käyttää tässä järjestelmässä",
+    "description": "Napsauta alla olevia painikkeita asentaaksesi tai poistaaksesi tämän etähallintaohjelmiston. Kun ohjelmisto on asennettu, se toimii taustalla, jolloin etäjärjestelmänvalvoja voi hallita ja ohjata tätä tietokonetta."
   },
   "fr": {
     "agent": "Agent",
@@ -194,7 +210,11 @@
       "चल रहा है",
       "चल नहीं रहा"
     ],
-    "statusDescription": "वर्तमान एजेंट की स्थिति"
+    "statusDescription": "वर्तमान एजेंट की स्थिति",
+    "agentVersion": "नया संस्करण",
+    "elevation": "इस सॉफ़्टवेयर को स्थापित/अनइंस्टॉल करने के लिए उन्नत अनुमतियों की आवश्यकता होती है।",
+    "graphicalerror": "इस इंस्टालर का आलेखीय संस्करण इस सिस्टम पर नहीं चल सकता",
+    "description": "इस दूरस्थ प्रबंधन सॉफ़्टवेयर को स्थापित या अनइंस्टॉल करने के लिए नीचे दिए गए बटनों पर क्लिक करें। स्थापित होने पर, यह सॉफ़्टवेयर पृष्ठभूमि में चलता है जिससे इस कंप्यूटर को दूरस्थ व्यवस्थापक द्वारा प्रबंधित और नियंत्रित किया जा सकता है।"
   },
   "it": {
     "agent": "Agente",
@@ -221,7 +241,11 @@
       "IN ESECUZIONE",
       "NON IN ESECUZIONE"
     ],
-    "statusDescription": "Stato attuale dell'agente"
+    "statusDescription": "Stato attuale dell'agente",
+    "agentVersion": "Nuova versione",
+    "elevation": "Per installare/disinstallare questo software sono necessarie autorizzazioni elevate.",
+    "graphicalerror": "La versione grafica di questo programma di installazione non può essere eseguita su questo sistema",
+    "description": "Fare clic sui pulsanti seguenti per installare o disinstallare questo software di gestione remota. Una volta installato, questo software viene eseguito in background consentendo a questo computer di essere gestito e controllato da un amministratore remoto."
   },
   "ja": {
     "agent": "エージェント",
@@ -248,7 +272,11 @@
       "ランニング",
       "走っていない"
     ],
-    "statusDescription": "現在のエージェントステータス"
+    "statusDescription": "現在のエージェントステータス",
+    "agentVersion": "新しいバージョン",
+    "elevation": "このソフトウェアをインストール/アンインストールするには、昇格された権限が必要です。",
+    "graphicalerror": "このインストーラーのグラフィカルバージョンは、このシステムでは実行できません",
+    "description": "このリモート管理ソフトウェアをインストールまたはアンインストールするには、下のボタンをクリックしてください。インストールすると、このソフトウェアはバックグラウンドで実行され、リモート管理者がこのコンピューターを管理および制御できるようになります。"
   },
   "ko": {
     "agent": "에이전트",
@@ -495,7 +523,11 @@
       "KØRER",
       "KØRER IKKE"
     ],
-    "statusDescription": "Aktuel agentstatus"
+    "statusDescription": "Aktuel agentstatus",
+    "agentVersion": "Ny version",
+    "elevation": "Forhøjede tilladelser er nødvendige for at installere/afinstallere denne software.",
+    "graphicalerror": "Den grafiske version af dette installationsprogram kan ikke køre på dette system",
+    "description": "Klik på knapperne nedenfor for at installere eller afinstallere denne fjernstyringssoftware. Når den er installeret, kører denne software i baggrunden, så denne computer kan administreres og kontrolleres af en fjernadministrator."
   },
   "pl": {
     "agent": "Agent",
