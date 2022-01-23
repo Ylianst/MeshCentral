@@ -9910,6 +9910,7 @@
     },
     {
       "en": "Auto accept all connections for next 5 minutes",
+      "de": "Alle Verbindungen für die nächsten 5 Minuten erlauben",
       "nl": "Alle verbindingen automatisch accepteren voor de komende 5 minuten",
       "fr": "Accepter automatiquement les connexions pendant les 5 prochaines minutes",
       "pl": "Automatycznie akceptuj wszystkie połączenia przez następne 5 minut",
@@ -12867,7 +12868,7 @@
       "zh-chs": "清除代理核心",
       "da": "Fjern agent kerne",
       "xloc": [
-        "default.handlebars->39->628",
+        "default.handlebars->39->629",
         "default.handlebars->39->672"
       ]
     },
@@ -17680,7 +17681,7 @@
       "zh-cht": "刪除裝置",
       "da": "Slet enheder",
       "xloc": [
-        "default.handlebars->39->626"
+        "default.handlebars->39->627"
       ]
     },
     {
@@ -19962,7 +19963,7 @@
       "zh-cht": "設備通知",
       "da": "Enhedsmeddelelse",
       "xloc": [
-        "default.handlebars->39->623"
+        "default.handlebars->39->624"
       ]
     },
     {
@@ -22658,7 +22659,7 @@
       "zh-cht": "編輯標籤",
       "da": "Rediger Tags",
       "xloc": [
-        "default.handlebars->39->624"
+        "default.handlebars->39->625"
       ]
     },
     {
@@ -24863,7 +24864,7 @@
       "zh-cht": "輸出裝置訊息",
       "da": "Eksporter enhedsoplysninger",
       "xloc": [
-        "default.handlebars->39->632"
+        "default.handlebars->39->616"
       ]
     },
     {
@@ -26055,7 +26056,7 @@
       "zh-chs": "强制代理更新",
       "da": "Tving agentopdatering",
       "xloc": [
-        "default.handlebars->39->627"
+        "default.handlebars->39->628"
       ]
     },
     {
@@ -38977,7 +38978,7 @@
       "zh-cht": "移至裝置群",
       "da": "Flyt til enhedsgruppe",
       "xloc": [
-        "default.handlebars->39->616"
+        "default.handlebars->39->617"
       ]
     },
     {
@@ -43500,7 +43501,7 @@
         "default.handlebars->39->1076",
         "default.handlebars->39->2325",
         "default.handlebars->39->2409",
-        "default.handlebars->39->631",
+        "default.handlebars->39->632",
         "default.handlebars->39->651"
       ]
     },
@@ -46018,7 +46019,7 @@
       "zh-cht": "關閉裝置",
       "da": "Sluk enheder",
       "xloc": [
-        "default.handlebars->39->621"
+        "default.handlebars->39->622"
       ]
     },
     {
@@ -50671,7 +50672,7 @@
       "zh-cht": "重置裝置",
       "da": "Nulstil enheder",
       "xloc": [
-        "default.handlebars->39->620"
+        "default.handlebars->39->621"
       ]
     },
     {
@@ -51324,7 +51325,7 @@
       "zh-cht": "運行命令",
       "da": "Kør kommandoer",
       "xloc": [
-        "default.handlebars->39->622"
+        "default.handlebars->39->623"
       ]
     },
     {
@@ -52938,7 +52939,7 @@
       "zh-cht": "選擇要在所有選定裝置上執行的操作。僅在擁有適當權限的情況下才能執行操作。",
       "da": "Vælg en handling, der skal udføres på alle valgte enheder. Handlinger vil kun blive udført med de rette rettigheder.",
       "xloc": [
-        "default.handlebars->39->630"
+        "default.handlebars->39->631"
       ]
     },
     {
@@ -55155,6 +55156,7 @@
     },
     {
       "en": "Sharing desktop with: {0}",
+      "de": "Teile desktop mit: {0}",
       "nl": "Bureaublad delen met: {0}",
       "pl": "Współdzielenie pulpitu z: {0}",
       "xloc": [
@@ -56370,7 +56372,7 @@
       "zh-cht": "把裝置休眠",
       "da": "Sæt enheder i slumretilstand",
       "xloc": [
-        "default.handlebars->39->619"
+        "default.handlebars->39->620"
       ]
     },
     {
@@ -62599,7 +62601,7 @@
       "xloc": [
         "default-mobile.handlebars->11->660",
         "default.handlebars->39->1075",
-        "default.handlebars->39->617"
+        "default.handlebars->39->618"
       ]
     },
     {
@@ -63313,7 +63315,7 @@
       "xloc": [
         "default-mobile.handlebars->11->607",
         "default.handlebars->39->1448",
-        "default.handlebars->39->629",
+        "default.handlebars->39->630",
         "default.handlebars->39->674"
       ]
     },
@@ -63363,7 +63365,7 @@
       "zh-cht": "上傳文件",
       "da": "Upload filer",
       "xloc": [
-        "default.handlebars->39->625"
+        "default.handlebars->39->626"
       ]
     },
     {
@@ -66199,7 +66201,7 @@
       "zh-cht": "喚醒裝置",
       "da": "Væk enheder",
       "xloc": [
-        "default.handlebars->39->618"
+        "default.handlebars->39->619"
       ]
     },
     {
@@ -71708,6 +71710,7 @@
     },
     {
       "en": "{0} requesting remote desktop access. Grant access?",
+      "de": "{0} erbittet Fern-Desktopzugriff. Zugang erlauben?",
       "fr": "{0} demande(nt) l'utilisation du bureau à distance. Autoriser l'accès ?",
       "nl": "{0} verzoekt om toegang tot extern bureaublad.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do pulpitu. Przyznać dostęp?",
@@ -71717,6 +71720,7 @@
     },
     {
       "en": "{0} requesting remote file Access. Grant access?",
+      "de": "{0} erbittet Fern-Dateizugriff. Zugang erlauben?",
       "fr": "{0} demande(nt) d'accès à un fichier à distance. Autoriser l'accès ?",
       "nl": "{0} verzoekt om externe bestandstoegang.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do plików. Przyznać dostęp?",
@@ -71726,6 +71730,7 @@
     },
     {
       "en": "{0} requesting remote terminal access. Grant access?",
+      "de": "{0} erbittet Fern-Terminalzugriff. Zugang erlauben?",
       "fr": "{0} demande(nt) d'utilisation du terminal à distance. Autoriser l'accès ?",
       "nl": "{0} verzoekt om toegang tot externe terminal.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do terminala. Przyznać dostęp?",
@@ -71988,6 +71993,7 @@
     },
     {
       "en": "{0} started a remote desktop session.",
+      "de": "{0} hat eine Fern-Desktopzugriff-Sitzung gestartet.",
       "nl": "{0} heeft een extern bureaubladsessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do pulpitu.",
       "xloc": [
@@ -71996,6 +72002,7 @@
     },
     {
       "en": "{0} started a remote file session.",
+      "de": "{0} hat eine Fern-Dateizugriff-Sitzung gestartet.",
       "nl": "{0} heeft een externe bestandssessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do plików.",
       "xloc": [
@@ -72004,6 +72011,7 @@
     },
     {
       "en": "{0} started a remote terminal session.",
+      "de": "{0} hat eine Fern-Terminalzugriff-Sitzung gestartet.",
       "nl": "{0} heeft een externe terminalsessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do terminala.",
       "xloc": [

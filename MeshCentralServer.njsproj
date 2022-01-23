@@ -22,7 +22,6 @@
   <ItemGroup>
     <Compile Include="agents\meshcmd.js" />
     <Compile Include="agents\meshcmd.min.js" />
-    <Compile Include="agents\meshcore-clean.js" />
     <Compile Include="agents\meshcore.min.js" />
     <Compile Include="agents\meshinstall-linux.js" />
     <Compile Include="agents\modules_meshcmd\amt-apfclient.js" />
@@ -58,7 +57,6 @@
     <Compile Include="agents\modules_meshcore\amt-mei.js" />
     <Compile Include="agents\modules_meshcore\linux-dhcp.js" />
     <Compile Include="agents\modules_meshcore\monitor-border.js" />
-    <Compile Include="agents\modules_meshcore\scripttask.js" />
     <Compile Include="agents\modules_meshcore\smbios.js" />
     <Compile Include="agents\modules_meshcore\sysinfo.js" />
     <Compile Include="agents\modules_meshcore\util-agentlog.js" />
@@ -231,6 +229,7 @@
     <Content Include="agents\MeshService64-signed.exe" />
     <Content Include="agents\MeshService64.exe" />
     <Content Include="agents\MeshService64.pdb" />
+    <Content Include="agents\modules_meshcore\coretranslations.json" />
     <Content Include="CreateSourcePackage.bat" />
     <Content Include="emails\account-check.html" />
     <Content Include="emails\account-check.txt" />

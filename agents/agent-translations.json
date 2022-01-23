@@ -298,7 +298,11 @@
       "ACTIEF",
       "NIET ACTIEF"
     ],
-    "statusDescription": "Huidige agent status"
+    "statusDescription": "Huidige agent status",
+    "agentVersion": "Nieuwe versie",
+    "elevation": "Verhoogde machtigingen zijn vereist om deze software te installeren/verwijderen.",
+    "graphicalerror": "De grafische versie van dit installatieprogramma kan niet op dit systeem draaien",
+    "description": "Klik op de onderstaande knoppen om deze software voor beheer op afstand te installeren of te verwijderen. Na installatie draait deze software op de achtergrond waardoor deze computer kan worden beheerd en gecontroleerd door een externe beheerder."
   },
   "pt": {
     "agent": "Agente",
