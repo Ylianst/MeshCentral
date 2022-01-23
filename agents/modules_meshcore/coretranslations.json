@@ -17,7 +17,15 @@
   },
   "de": {
     "allow": "Erlauben",
-    "deny": "Verweigern"
+    "deny": "Verweigern",
+    "autoAllowForFive": "Alle Verbindungen für die nächsten 5 Minuten erlauben",
+    "terminalConsent": "{0} erbittet Fern-Terminalzugriff. Zugang erlauben?",
+    "desktopConsent": "{0} erbittet Fern-Desktopzugriff. Zugang erlauben?",
+    "fileConsent": "{0} erbittet Fern-Dateizugriff. Zugang erlauben?",
+    "terminalNotify": "{0} hat eine Fern-Terminalzugriff-Sitzung gestartet.",
+    "desktopNotify": "{0} hat eine Fern-Desktopzugriff-Sitzung gestartet.",
+    "fileNotify": "{0} hat eine Fern-Dateizugriff-Sitzung gestartet.",
+    "privacyBar": "Teile desktop mit: {0}"
   },
   "es": {
     "allow": "Permitir",
