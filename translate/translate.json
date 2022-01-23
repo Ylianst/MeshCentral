@@ -390,7 +390,7 @@
       "pt-br": " nó",
       "ru": " устройство",
       "sv": " nod",
-      "tr": " düğüm",
+      "tr": " cihaz",
       "zh-chs": " 节点",
       "zh-cht": " 節點",
       "xloc": [
@@ -415,7 +415,7 @@
       "pt-br": " nós",
       "ru": " устройства",
       "sv": " knutpunkter",
-      "tr": " düğümler",
+      "tr": " cihaz",
       "zh-chs": " 节点",
       "zh-cht": " 節點",
       "xloc": [
@@ -1447,7 +1447,7 @@
       "pt-br": ", {0} assistindo",
       "ru": ", {0} смотрят",
       "sv": ", {0} tittar på",
-      "tr": ", {0} izliyor",
+      "tr": ", {0} kişi izliyor",
       "zh-chs": "，{0}观看",
       "zh-cht": "，{0}觀看",
       "xloc": [
@@ -1980,7 +1980,7 @@
       "pt-br": "1 nó",
       "ru": "1 устройство",
       "sv": "1 nod",
-      "tr": "1 düğüm",
+      "tr": "1 cihaz",
       "zh-chs": "1个节点",
       "zh-cht": "1個節點",
       "xloc": [
@@ -2145,7 +2145,7 @@
       "pt-br": "1 sessão",
       "ru": "1 сессия",
       "sv": "1 session",
-      "tr": "1 seans",
+      "tr": "1 oturum",
       "zh-chs": "1节",
       "zh-cht": "1節",
       "xloc": [
@@ -3769,7 +3769,7 @@
       "pt-br": "Status de energia de 7 dias",
       "ru": "7-дневная статистика работы",
       "sv": "7-dagars strömtillstånd",
-      "tr": "7 Günlük Güç Durumu",
+      "tr": "7 Günlük Çalışma Durumu",
       "zh-chs": "7天电源状态",
       "zh-cht": "7天電源狀態",
       "xloc": [
@@ -4053,7 +4053,7 @@
       "pt-br": "<b style = color: green> Ativação de autenticação em duas etapas bem-sucedida </b>. Agora você precisará de um token válido para fazer o login novamente.",
       "ru": "<b style=color:green>Активация двухэтапного входа успешна</b>. Теперь вам понадобится действительный токен, чтобы снова войти в систему.",
       "sv": "<b style = color: green> 2-stegs inloggningsaktivering lyckades </b>. Du behöver nu en giltig token för att logga in igen.",
-      "tr": "<b style = color: green> 2 adımlı oturum açma etkinleştirmesi başarılı </b>. Şimdi tekrar giriş yapmak için geçerli bir jetona ihtiyacınız olacak.",
+      "tr": "<b style = color: green> 2 adımlı oturum açma etkinleştirmesi başarılı </b>. Şimdi tekrar giriş yapmak için geçerli bir anahtara ihtiyacınız olacak.",
       "zh-chs": "<b style=color:green>两步登录激活成功</ b>。您现在需要一个有效的保安编码才能再次登录。",
       "zh-cht": "<b style = color：green>兩步登入啟用成功</ b>。你現在需要一個有效的保安編碼才能再次登入。",
       "xloc": [
@@ -4563,7 +4563,7 @@
       "pt-br": "Acessar arquivos do servidor",
       "ru": "Доступ к файлам сервера",
       "sv": "Åtkomst till serverfiler",
-      "tr": "Sunucu dosyalarına erişim",
+      "tr": "Sunucu dosyalarına erişin",
       "zh-chs": "访问服务器档案",
       "zh-cht": "存取伺服器檔案",
       "xloc": [
@@ -4752,7 +4752,7 @@
       "pt-br": "Ações da conta",
       "ru": "Действия учетной записи",
       "sv": "Kontoåtgärder",
-      "tr": "Hesap eylemleri",
+      "tr": "Hesap işlemleri",
       "zh-chs": "帐户动作",
       "zh-cht": "帳戶動作",
       "xloc": [
@@ -5154,7 +5154,7 @@
       "pt-br": "Arquivo de ação",
       "ru": "Файл действий",
       "sv": "Åtgärdsfil",
-      "tr": "Eylem Dosyası",
+      "tr": "İşlem Dosyası",
       "zh-chs": "动作档案",
       "zh-cht": "動作檔案",
       "xloc": [
@@ -5180,7 +5180,7 @@
       "pt-br": "Ações",
       "ru": "Действия",
       "sv": "Åtgärder",
-      "tr": "Hareketler",
+      "tr": "İşlemler",
       "zh-chs": "动作",
       "zh-cht": "動作",
       "xloc": [
@@ -5543,7 +5543,7 @@
       "pt-br": "Adicionar Agente",
       "ru": "Добавить агент",
       "sv": "Lägg till agent",
-      "tr": "Temsilci Ekle",
+      "tr": "Agent Ekle",
       "zh-chs": "添加代理",
       "zh-cht": "新增代理",
       "xloc": [
@@ -5865,7 +5865,7 @@
       "pt-br": "Adicionar Agente Mesh",
       "ru": "Добавить Mesh Agent",
       "sv": "Lägg till Mesh Agent",
-      "tr": "Mesh Aracısı Ekle",
+      "tr": "Mesh Agent Ekle",
       "zh-chs": "添加 Mesh Agent",
       "zh-cht": "新增 Mesh Agent",
       "xloc": [
@@ -6817,7 +6817,7 @@
       "pt-br": "Domínios Administrativos",
       "ru": "Области администратора",
       "sv": "Admin Realms",
-      "tr": "Admin Realms",
+      "tr": "Yönetici Bölgesi",
       "zh-chs": "管理领域",
       "zh-cht": "管理領域",
       "xloc": [
@@ -6868,7 +6868,7 @@
       "pt-br": "Domínios Administrativos",
       "ru": "Административные области",
       "sv": "Administrativa områden",
-      "tr": "İdari Bölgeler",
+      "tr": "Yönetim Bölgesi",
       "zh-chs": "管理领域",
       "zh-cht": "管理領域",
       "xloc": [
@@ -7003,7 +7003,7 @@
       "pt-br": "Ação do Agente",
       "ru": "Управление агентом",
       "sv": "Agentåtgärd",
-      "tr": "Aracı Eylemi",
+      "tr": "Agent İşlemleri",
       "zh-chs": "代理指令",
       "zh-cht": "代理指令",
       "xloc": [
@@ -7029,7 +7029,7 @@
       "pt-br": "Console do Agente",
       "ru": "Консоль агента",
       "sv": "Agentkonsol",
-      "tr": "Aracı Konsolu",
+      "tr": "Agent Komut Satırı",
       "zh-chs": "代理控制台",
       "zh-cht": "代理控制台",
       "xloc": [
@@ -7104,7 +7104,7 @@
       "pt-br": "Instalação do Agente",
       "ru": "Установка агента",
       "sv": "Agentinstallation",
-      "tr": "Aracı Kurulumu",
+      "tr": "Agent Kurulumu",
       "zh-chs": "代理安装",
       "zh-cht": "代理安裝",
       "xloc": [
@@ -7129,7 +7129,7 @@
       "pt-br": "Mensagens do Agente",
       "ru": "Сообщения агента",
       "sv": "Agentmeddelanden",
-      "tr": "Temsilci Mesajları",
+      "tr": "Agent Mesajları",
       "zh-chs": "代理消息",
       "zh-cht": "代理訊息",
       "xloc": [
@@ -7155,7 +7155,7 @@
       "pt-br": "Agente de Retransmissão",
       "ru": "Ретранслятор агента",
       "sv": "Agentrelä",
-      "tr": "Temsilci Geçişi",
+      "tr": "Agent Yayını",
       "zh-chs": "代理中继",
       "zh-cht": "代理中繼",
       "xloc": [
@@ -7180,7 +7180,7 @@
       "pt-br": "Agente de Desktop Remoto",
       "ru": "Агент удаленного рабочего стола",
       "sv": "Agent Remote Desktop",
-      "tr": "Agent Remote Desktop",
+      "tr": "Agent Uzak Masaüstü",
       "zh-chs": "代理远程桌面",
       "zh-cht": "代理遠程桌面",
       "xloc": [
@@ -7246,7 +7246,7 @@
       "pt-br": "Sessões de Agente",
       "ru": "Сессии агентов",
       "sv": "Agent sessioner",
-      "tr": "Temsilci Oturumları",
+      "tr": "Agent Oturumları",
       "zh-chs": "代理时段",
       "zh-cht": "代理時段",
       "xloc": [
@@ -7292,7 +7292,7 @@
       "pt-br": "Etiqueta do Agente",
       "ru": "Тег агента",
       "sv": "Agent Tag",
-      "tr": "Ajan Etiketi",
+      "tr": "Agent Etiketi",
       "zh-chs": "代理标签",
       "zh-cht": "代理標籤",
       "xloc": [
@@ -7343,7 +7343,7 @@
       "pt-br": "Tipos de agente",
       "ru": "Типы агента",
       "sv": "Agenttyper",
-      "tr": "Ajan Türleri",
+      "tr": "Agent Türleri",
       "zh-chs": "代理类型",
       "zh-cht": "代理類型",
       "xloc": [
@@ -7394,7 +7394,7 @@
       "pt-br": "Agente encerrou sessão com {0}% de compressão de agente para servidor. Enviado: {1}, compactado: {2}",
       "ru": "Агент закрыл сеанс с {0}% сжатия агента на сервер. Отправлено: {1}, сжато: {2}",
       "sv": "Agent stängde session med {0}% agent till server-komprimering. Skickat: {1}, komprimerad: {2}",
-      "tr": "Ajan,% {0} ajandan sunucuya sıkıştırma ile oturumu kapattı. Gönderildi: {1}, Sıkıştırıldı: {2}",
+      "tr": "Agent oturumu %{0} agent-sunucu sıkıştırması ile kapattı. Gönderilen: {1}, Sıkıştırılan: {2}",
       "zh-chs": "代理关闭了与服务器压缩的{0}％代理会话。已发送：{1}，已压缩：{2}",
       "zh-cht": "代理關閉了與{0}％代理到服務器壓縮的會話。已發送：{1}，已壓縮：{2}",
       "xloc": [
@@ -7419,7 +7419,7 @@
       "pt-br": "Agente conectado",
       "ru": "Агент подключен",
       "sv": "Agent i drift",
-      "tr": "Aracı bağlandı",
+      "tr": "Agent bağlandı",
       "zh-chs": "代理已连接",
       "zh-cht": "代理已連接",
       "xloc": [
@@ -7463,7 +7463,7 @@
       "pt-br": "Agente desconectado",
       "ru": "Агент отключился",
       "sv": "Agent frånkopplad",
-      "tr": "Aracı bağlantısı kesildi",
+      "tr": "Agent bağlantısı kesildi",
       "zh-chs": "代理已断开连接",
       "zh-cht": "代理已斷開連接",
       "xloc": [
@@ -7568,7 +7568,7 @@
       "pt-br": "Agente está offline",
       "ru": "Агент оффлайн",
       "sv": "Agent är offline",
-      "tr": "Temsilci çevrimdışı",
+      "tr": "Agent çevrimdışı",
       "zh-chs": "代理离线",
       "zh-cht": "代理離線",
       "xloc": [
@@ -7594,7 +7594,7 @@
       "pt-br": "Agente está online",
       "ru": "Агент онлайн",
       "sv": "Agent är online",
-      "tr": "Temsilci çevrimiçi",
+      "tr": "Agent çevrimiçi",
       "zh-chs": "代理在线",
       "zh-cht": "代理在線",
       "xloc": [
@@ -7683,7 +7683,7 @@
       "pt-br": "O agente está sendo executado em um dispositivo remoto com privilégios reduzidos.",
       "ru": "Агент работает на удаленном устройстве с ограниченными правами.",
       "sv": "Agent körs på fjärrenhet med minskade förmåner.",
-      "tr": "Aracı, azaltılmış ayrıcalıklara sahip uzak cihazda çalışıyor.",
+      "tr": "Agent, düşük yetkili cihazda çalışıyor.",
       "zh-chs": "代理在特权降低的远程设备上运行。",
       "zh-cht": "代理在特權降低的遠程設備上運行。",
       "xloc": [
@@ -7792,7 +7792,7 @@
       "pt-br": "Agentes",
       "ru": "Агенты",
       "sv": "Agenter",
-      "tr": "Ajanlar",
+      "tr": "Agentlar",
       "zh-chs": "代理",
       "zh-cht": "代理",
       "xloc": [
@@ -10096,7 +10096,7 @@
       "pt-br": "Download automatizado do arquivo de dump central do agente: \\\"{0}\\\"",
       "ru": "Автоматическая загрузка файла дампа ядра агента: \\\"{0}\\\"",
       "sv": "Automatisk nedladdning av agentens kärndumpfil: \\\"{0}\\\"",
-      "tr": "Aracı çekirdek döküm dosyasının otomatik indirilmesi: \\\"{0}\\\"",
+      "tr": "Agent çekirdek döküm dosyasının otomatik indirilmesi: \\\"{0}\\\"",
       "zh-chs": "自动下载代理程序核心转储文件：“{0}”",
       "zh-cht": "自動下載代理程序核心轉儲文件：“{0}”",
       "xloc": [
@@ -10215,7 +10215,7 @@
       "pt-br": "Memória disponivel",
       "ru": "Доступная память",
       "sv": "Tillgängligt minne",
-      "tr": "Kullanılabilir Hafıza",
+      "tr": "Kullanılabilir Bellek",
       "zh-chs": "可用內存",
       "zh-cht": "可用內存",
       "xloc": [
@@ -10656,7 +10656,7 @@
       "pt-br": "Carregando Arquivo em Lote",
       "ru": "Пакетная загрузка файла",
       "sv": "Batchfil uppladdning",
-      "tr": "Toplu Dosya Yükleme",
+      "tr": "Toplu Dosya Gönderme",
       "zh-chs": "批处理文件上传",
       "zh-cht": "批處理文件上傳",
       "xloc": [
@@ -10905,7 +10905,7 @@
       "pt-br": "Notificar Todos",
       "ru": "Отправить сообщение",
       "sv": "Meddelande",
-      "tr": "Yayın yapmak",
+      "tr": "Duyuru yap",
       "zh-chs": "广播",
       "zh-cht": "廣播",
       "xloc": [
@@ -10931,7 +10931,7 @@
       "pt-br": "Mensagem da notificação",
       "ru": "Отправить сообщение",
       "sv": "Sänd meddelande",
-      "tr": "Yayın mesajı",
+      "tr": "Duyuru mesajı",
       "zh-chs": "广播消息",
       "zh-cht": "廣播消息",
       "xloc": [
@@ -11583,7 +11583,7 @@
       "pt-br": "Cancelar",
       "ru": "Отмена",
       "sv": "Avbryt",
-      "tr": "İptal etmek",
+      "tr": "İptal",
       "zh-chs": "取消",
       "zh-cht": "取消",
       "xloc": [
@@ -12094,7 +12094,7 @@
       "pt-br": "Alterar o módulo Java Script do agente",
       "ru": "Изменить модуль кода Java Script агента",
       "sv": "Ändra agent Java Script-kodmodulen",
-      "tr": "Ajan Java Script kod modülünü değiştirin",
+      "tr": "Agent Java Script kod modülünü değiştir",
       "zh-chs": "更改代理的Java脚本代码模块",
       "zh-cht": "更改代理的Java腳本代碼模塊",
       "xloc": [
@@ -12984,7 +12984,7 @@
       "pt-br": "Apagar Tokens",
       "ru": "Очистить токены",
       "sv": "Rensa poletter",
-      "tr": "Jetonları Temizle",
+      "tr": "Anahtarları Temizle",
       "zh-chs": "清除保安编码",
       "zh-cht": "清除保安編碼",
       "xloc": [
@@ -14011,7 +14011,7 @@
       "pt-br": "confirme",
       "ru": "Подтвердить",
       "sv": "Bekräfta",
-      "tr": "Onaylamak",
+      "tr": "Onayla",
       "zh-chs": "确认",
       "zh-cht": "確認",
       "xloc": [
@@ -15387,7 +15387,7 @@
       "pt-br": "Relé de conexão",
       "ru": "Ретранслятор подключения",
       "sv": "Anslutningsrelä",
-      "tr": "Bağlantı Rölesi",
+      "tr": "Bağlantı Yayını",
       "zh-chs": "连接转发器",
       "zh-cht": "連接轉發器",
       "xloc": [
@@ -15507,7 +15507,7 @@
       "pt-br": "Console",
       "ru": "Консоль",
       "sv": "Konsol",
-      "tr": "Konsol",
+      "tr": "Agent Komut Satırı",
       "zh-chs": "控制台",
       "zh-cht": "控制台",
       "xloc": [
@@ -15537,7 +15537,7 @@
       "pt-br": "Console -",
       "ru": "Консоль - ",
       "sv": "Konsol -",
-      "tr": "Konsol -",
+      "tr": "Agent Komut Satırı -",
       "zh-chs": "控制台 -",
       "zh-cht": "控制台 -",
       "xloc": [
@@ -15721,7 +15721,7 @@
       "pt-br": "Copie o URL do agente de 32 bits do Windows para a área de transferência",
       "ru": "Скопировать URL-адрес агента Windows 32bit в буфер обмена",
       "sv": "Kopiera Windows 32bit agent URL till Urklipp",
-      "tr": "Windows 32bit ajan URL'sini panoya kopyala",
+      "tr": "Windows 32bit agent URL'sini kopyala",
       "zh-chs": "将Windows 32位代理URL复制到剪贴板",
       "zh-cht": "將Windows 32位代理URL複製到剪貼板",
       "xloc": [
@@ -15746,7 +15746,7 @@
       "pt-br": "Copie o URL do agente de 64 bits do Windows para a área de transferência",
       "ru": "Скопировать URL-адрес агента Windows 64bit в буфер обмена",
       "sv": "Kopiera Windows 64bit agent URL till Urklipp",
-      "tr": "Windows 64bit ajan URL'sini panoya kopyalayın",
+      "tr": "Windows 64bit agent URL'sini kopyala",
       "zh-chs": "将Windows 64位代理URL复制到剪贴板",
       "zh-cht": "將Windows 64位代理URL複製到剪貼板",
       "xloc": [
@@ -15771,7 +15771,7 @@
       "pt-br": "Copiar endereço para a área de transferência",
       "ru": "Скопировать адрес в буфер обмена",
       "sv": "Kopiera adressen till Urklipp",
-      "tr": "Adresi panoya kopyala",
+      "tr": "Adresi kopyala",
       "zh-chs": "将地址复制到剪贴板",
       "zh-cht": "將地址複製到剪貼板",
       "xloc": [
@@ -16661,7 +16661,7 @@
       "pt-br": "Criação",
       "ru": "Создано",
       "sv": "Skapande",
-      "tr": "Yaratılış",
+      "tr": "Oluşturulma",
       "zh-chs": "创建",
       "zh-cht": "創建",
       "xloc": [
@@ -16711,7 +16711,7 @@
       "pt-br": "Token de criação:",
       "ru": "Создание токена:",
       "sv": "Skapat token:",
-      "tr": "Oluşturma Simgesi:",
+      "tr": "Oluşturma Anahtarı:",
       "zh-chs": "创建保安编码：",
       "zh-cht": "創建保安編碼：",
       "xloc": [
@@ -16738,7 +16738,7 @@
       "pt-br": "O Criador",
       "ru": "Создатель",
       "sv": "Skapare",
-      "tr": "Yaratıcı",
+      "tr": "Oluşturan",
       "zh-chs": "创建者",
       "zh-cht": "創作者",
       "xloc": [
@@ -17021,7 +17021,7 @@
       "pt-br": "Status atual do agente",
       "ru": "Текущий статус агента",
       "sv": "Aktuell agentstatus",
-      "tr": "Mevcut Temsilci Durumu",
+      "tr": "Mevcut Agent Durumu",
       "zh-chs": "当前代理状态",
       "zh-cht": "當前代理狀態",
       "xloc": [
@@ -17145,7 +17145,7 @@
       "pt-br": "Recortar",
       "ru": "Вырезать",
       "sv": "Klipp Ut",
-      "tr": "Kesmek",
+      "tr": "Kes",
       "zh-chs": "切",
       "zh-cht": "切",
       "xloc": [
@@ -17691,7 +17691,7 @@
       "pt-br": "Excluir Nó",
       "ru": "Удалить устройство",
       "sv": "Radera knutpunkt",
-      "tr": "Düğümü Sil",
+      "tr": "Cihazı Sil",
       "zh-chs": "删除节点",
       "zh-cht": "刪除節點",
       "xloc": [
@@ -17717,7 +17717,7 @@
       "pt-br": "Excluir nós",
       "ru": "Удалить устройства",
       "sv": "Ta bort noder",
-      "tr": "Düğümleri Sil",
+      "tr": "Cihazları Sil",
       "zh-chs": "删除节点",
       "zh-cht": "刪除節點"
     },
@@ -18177,7 +18177,7 @@
       "pt-br": "Decrescente por data",
       "ru": "По дате по убыванию",
       "sv": "Gå ned efter datum",
-      "tr": "Tarihe göre iniş",
+      "tr": "Tarihe göre ters",
       "zh-chs": "按日期降序",
       "zh-cht": "按日期降序",
       "xloc": [
@@ -18206,7 +18206,7 @@
       "pt-br": "Decrescente pelo nome",
       "ru": "По имени по убыванию",
       "sv": "Gå ned efter namn",
-      "tr": "Ada göre alçalma",
+      "tr": "Ada göre ters",
       "zh-chs": "按名称降序",
       "zh-cht": "按名稱降序",
       "xloc": [
@@ -18235,7 +18235,7 @@
       "pt-br": "Decrescente por tamanho",
       "ru": "По размеру по убыванию",
       "sv": "Gå ned efter storlek",
-      "tr": "Boyuta göre alçalt",
+      "tr": "Boyuta göre ters",
       "zh-chs": "按大小降序",
       "zh-cht": "按大小降序",
       "xloc": [
@@ -18332,7 +18332,7 @@
       "pt-br": "Área de Trabalho",
       "ru": "Рабочий стол",
       "sv": "Skrivbord",
-      "tr": "Masaüstü Bilgisayar",
+      "tr": "Masaüstü",
       "zh-chs": "桌面",
       "zh-cht": "桌面",
       "xloc": [
@@ -18830,7 +18830,7 @@
       "pt-br": "Detalhes",
       "ru": "Детали",
       "sv": "Detaljer",
-      "tr": "ayrıntılar",
+      "tr": "Ayrıntılar",
       "zh-chs": "细节",
       "zh-cht": "細節",
       "xloc": [
@@ -18883,7 +18883,7 @@
       "pt-br": "Dispositivo",
       "ru": "Устройство",
       "sv": "Enhet",
-      "tr": "cihaz",
+      "tr": "Cihaz",
       "zh-chs": "设备",
       "zh-cht": "裝置",
       "xloc": [
@@ -19511,7 +19511,7 @@
       "pt-br": "Desconexões de dispositivos",
       "ru": "Отключения устройств",
       "sv": "Avbrott av enhet",
-      "tr": "Cihaz bağlantılarının kesilmesi",
+      "tr": "Cihaz kopmaları",
       "zh-chs": "设备断开连接。",
       "zh-cht": "裝置斷開連接。",
       "xloc": [
@@ -19778,7 +19778,7 @@
       "pt-br": "O dispositivo está hibernando (S4) ",
       "ru": "Устройство находится в режиме гибернации (S4)",
       "sv": "Enheten är i viloläge (S4)",
-      "tr": "Aygıt hazırda bekletme modunda (S4)",
+      "tr": "Cihaz hazırda bekletme modunda (S4)",
       "zh-chs": "设备正在休眠（S4）",
       "zh-cht": "裝置正在休眠（S4）",
       "xloc": [
@@ -19855,7 +19855,7 @@
       "pt-br": "O dispositivo está em estado de hibernação (S4).",
       "ru": "Устройство находится в режиме гибернации (S4).",
       "sv": "Enheten är i viloläge (S4).",
-      "tr": "Aygıt hazırda bekletme durumunda (S4).",
+      "tr": "Cihaz hazırda bekletme durumunda (S4).",
       "zh-chs": "设备处于休眠状态（S4）。",
       "zh-cht": "裝置處於休眠狀態（S4）。",
       "xloc": [
@@ -19931,7 +19931,7 @@
       "pt-br": "O dispositivo está em estado de suspensão (S1).",
       "ru": "Устройство находится в спящем режиме (S1).",
       "sv": "Enheten är i viloläge (S1).",
-      "tr": "Aygıt uyku durumunda (S1).",
+      "tr": "Cihaz uyku durumunda (S1).",
       "zh-chs": "设备处于睡眠状态（S1）。",
       "zh-cht": "裝置處於睡眠狀態（S1）。",
       "xloc": [
@@ -19982,7 +19982,7 @@
       "pt-br": "O dispositivo está em estado de suspensão (S2).",
       "ru": "Устройство находится в спящем режиме (S2).",
       "sv": "Enheten är i viloläge (S2).",
-      "tr": "Aygıt uyku durumunda (S2).",
+      "tr": "Cihaz uyku durumunda (S2).",
       "zh-chs": "设备处于睡眠状态（S2）。",
       "zh-cht": "裝置處於睡眠狀態（S2）。",
       "xloc": [
@@ -20061,7 +20061,7 @@
       "pt-br": "O dispositivo está ligado",
       "ru": "Устройство включено",
       "sv": "Enheten är i drift",
-      "tr": "Cihaza güç verildi",
+      "tr": "Cihaz çalışıyor",
       "zh-chs": "设备已连接电源",
       "zh-cht": "裝置已連接電源",
       "xloc": [
@@ -20687,7 +20687,7 @@
       "pt-br": "Exibir nome do grupo de dispositivos",
       "ru": "Отобразить имя группы устройств",
       "sv": "Visa enhetsgruppens namn",
-      "tr": "Aygıt grubu adını görüntüle",
+      "tr": "Cihaz grubu adını görüntüle",
       "zh-chs": "显示设备组名称",
       "zh-cht": "顯示裝置群名稱",
       "xloc": [
@@ -21359,7 +21359,7 @@
       "pt-br": "Baixar o texto do console",
       "ru": "Скачать текст из консоли",
       "sv": "Ladda ner konsoltext",
-      "tr": "Konsol metnini indirin",
+      "tr": "Komut satırı metnini indirin",
       "zh-chs": "下载控制台文字",
       "zh-cht": "下載控制台文字",
       "xloc": [
@@ -21384,7 +21384,7 @@
       "pt-br": "Baixar pontos de dados (.csv)",
       "ru": "Скачать data points (.csv)",
       "sv": "Ladda ner datapunkter (.csv)",
-      "tr": "Veri noktalarını (.csv) indirin",
+      "tr": "Veri dosyası olarak indir (.csv)",
       "zh-chs": "下载数据点（.csv）",
       "zh-cht": "下載數據點（.csv）",
       "xloc": [
@@ -21458,7 +21458,7 @@
       "pt-br": "Baixar eventos de energia",
       "ru": "Скачать события состояния питания",
       "sv": "Ladda ner krafthändelser",
-      "tr": "Güç olaylarını indirin",
+      "tr": "Çalışma günlüğünü indir",
       "zh-chs": "下载电源事件",
       "zh-cht": "下載電源事件",
       "xloc": [
@@ -21683,7 +21683,7 @@
       "pt-br": "Baixar rastreamento (.csv)",
       "ru": "Скачать трассировку (.csv)",
       "sv": "Ladda ner spårning (.csv)",
-      "tr": "İzi indir (.csv)",
+      "tr": "İndir (.csv)",
       "zh-chs": "下载跟踪（.csv）",
       "zh-cht": "下載追蹤（.csv）",
       "xloc": [
@@ -21807,7 +21807,7 @@
       "pt-br": "Duplicar Agente",
       "ru": "Повторяющийся агент",
       "sv": "Duplicera agent",
-      "tr": "Yinelenen Aracı",
+      "tr": "Yinelenen Agent",
       "zh-chs": "代理重复",
       "zh-cht": "代理重複",
       "xloc": [
@@ -21882,7 +21882,7 @@
       "pt-br": "Duplicar Agente",
       "ru": "Скопировать агент",
       "sv": "Duplikatagent",
-      "tr": "Yinelenen aracı",
+      "tr": "Yinelenen agent",
       "zh-chs": "复制代理",
       "zh-cht": "複製代理"
     },
@@ -22422,7 +22422,7 @@
       "pt-br": "Editar recursos do grupo de dispositivos",
       "ru": "Редактировать функции группы устройств",
       "sv": "Redigera enhetsgruppsfunktioner",
-      "tr": "Aygıt Grubu Özelliklerini Düzenle",
+      "tr": "Cihaz Grubu Özelliklerini Düzenle",
       "zh-chs": "编辑设备组功能",
       "zh-cht": "編輯裝置群功能",
       "xloc": [
@@ -22447,7 +22447,7 @@
       "pt-br": "Editar permissões do grupo de dispositivos",
       "ru": "Редактировать права группы устройств",
       "sv": "Redigera enhetsgruppsbehörigheter",
-      "tr": "Aygıt Grubu İzinlerini Düzenle",
+      "tr": "Cihaz Grubu İzinlerini Düzenle",
       "zh-chs": "编辑设备组权限",
       "zh-cht": "編輯裝置群權限",
       "xloc": [
@@ -24441,7 +24441,7 @@
       "pt-br": "Insira o token de criação de conta",
       "ru": "Введите токен создания аккаунта",
       "sv": "Ange kontot skapande token",
-      "tr": "Hesap oluşturma jetonunu girin",
+      "tr": "Hesap oluşturma anahtarını girin",
       "zh-chs": "输入创建帐户保安编码",
       "zh-cht": "輸入新建帳戶保安編碼",
       "xloc": [
@@ -25678,7 +25678,7 @@
       "pt-br": "Arquivos de arquivo",
       "ru": "Файловые файлы",
       "sv": "Arkivfiler",
-      "tr": "Dosya Dosyaları",
+      "tr": "Dosyaları Arşivle",
       "zh-chs": "文件文件",
       "zh-cht": "文件文件"
     },
@@ -26661,7 +26661,7 @@
       "pt-br": "Gratuito",
       "ru": "Свободно",
       "sv": "Fri",
-      "tr": "Bedava",
+      "tr": "Boş",
       "zh-chs": "自由",
       "zh-cht": "自由",
       "xloc": [
@@ -27377,7 +27377,7 @@
       "pt-br": "Gerar novos tokens",
       "ru": "Генерация новых токенов",
       "sv": "Skapa nya token",
-      "tr": "Yeni Jeton Oluşturun",
+      "tr": "Yeni Anahtar Oluşturun",
       "zh-chs": "生成新保安编码",
       "zh-cht": "產生新保安編碼",
       "xloc": [
@@ -27838,7 +27838,7 @@
       "pt-br": "Google Drive Console",
       "ru": "Консоль Google Диска",
       "sv": "Google Drive-konsol",
-      "tr": "Google Drive Konsolu",
+      "tr": "Google Drive Komut Satırı",
       "zh-chs": "Google云端硬盘控制台",
       "zh-cht": "Google雲端硬盤控制台",
       "xloc": [
@@ -27990,7 +27990,7 @@
       "pt-br": "Ação do Grupo",
       "ru": "Групповое действие",
       "sv": "Gruppåtgärd",
-      "tr": "Grup Eylemi",
+      "tr": "Grup İşlemleri",
       "zh-chs": "集体指令",
       "zh-cht": "集體指令",
       "xloc": [
@@ -28526,7 +28526,7 @@
       "pt-br": "Forçar desconexão do Agente ",
       "ru": "Жесткое отключение агента",
       "sv": "Agent för hårddisk",
-      "tr": "Sabit bağlantı kesme aracı",
+      "tr": "Agent bağlantısını zorla kes",
       "zh-chs": "强行断开代理",
       "zh-cht": "強行斷開代理",
       "xloc": [
@@ -31943,7 +31943,7 @@
       "pt-br": "Interfaces",
       "ru": "Интерфейсы",
       "sv": "Gränssnitt",
-      "tr": "Arayüzler",
+      "tr": "Ağ cihazları",
       "zh-chs": "介面",
       "zh-cht": "介面",
       "xloc": [
@@ -32331,7 +32331,7 @@
       "pt-br": "Token de criação de conta inválido.",
       "ru": "Некорректный токен создания учетной записи.",
       "sv": "Ogiltigt konto skapande token.",
-      "tr": "Geçersiz hesap oluşturma belirteci.",
+      "tr": "Geçersiz hesap oluşturma anahtarı.",
       "zh-chs": "无效的帐户创建保安编码。",
       "zh-cht": "無效的帳戶建立保安編碼。",
       "xloc": [
@@ -32559,7 +32559,7 @@
       "pt-br": "Token inválido, tente novamente.",
       "ru": "Некорректный токен, попробуйте еще.",
       "sv": "Ogiltig token, försök igen.",
-      "tr": "Geçersiz jeton, tekrar deneyin.",
+      "tr": "Geçersiz anahtar, tekrar deneyin.",
       "zh-chs": "保安编码无效，请重试。",
       "zh-cht": "保安編碼無效，請重試。",
       "xloc": [
@@ -34162,7 +34162,7 @@
       "pt-br": "Último endereço do agente",
       "ru": "Последний адрес агента",
       "sv": "Senaste adressen",
-      "tr": "Son temsilci adresi",
+      "tr": "Son agent adresi",
       "zh-chs": "上次代理地址",
       "zh-cht": "上次代理地址",
       "xloc": [
@@ -34195,7 +34195,7 @@
       "pt-br": "Última conexão do agente",
       "ru": "Последнее подключение агента",
       "sv": "Senaste anslutningen",
-      "tr": "Son ajan bağlantısı",
+      "tr": "Son agent bağlantısı",
       "zh-chs": "上次代理连接",
       "zh-cht": "上次代理連接",
       "xloc": [
@@ -34899,7 +34899,7 @@
       "pt-br": "Limite de 10 uploads de arquivo ao mesmo tempo.",
       "ru": "Ограничение загрузки 10 файлов одновременно.",
       "sv": "Begränsning av 10 filuppladdningar samtidigt.",
-      "tr": "Aynı anda 10 dosya yükleme sınırı.",
+      "tr": "Aynı anda 10 dosya gönderilebilir.",
       "zh-chs": "一次最多可上传10个档案。",
       "zh-cht": "一次最多可上傳10個檔案。",
       "xloc": [
@@ -35863,7 +35863,7 @@
       "pt-br": "Carregar Arquivo Local",
       "ru": "Локальная загрузка файлов",
       "sv": "Lokal filöverföring",
-      "tr": "Yerel dosya yükleme",
+      "tr": "Yerel dosya gönderme",
       "zh-chs": "本地档案上传",
       "zh-cht": "本地檔案上傳",
       "xloc": [
@@ -36014,7 +36014,7 @@
       "pt-br": "Bloquear conta",
       "ru": "Заблокировать учетную запись",
       "sv": "Lås konto",
-      "tr": "Kilitli hesap",
+      "tr": "Hesabı Kilitle",
       "zh-chs": "锁定账户",
       "zh-cht": "鎖定賬戶",
       "xloc": [
@@ -36088,7 +36088,7 @@
       "pt-br": "Bloquear conta",
       "ru": "Заблокировать учетную запись",
       "sv": "Lås konto",
-      "tr": "Kilitli hesap",
+      "tr": "Hesabı Kilitle",
       "zh-chs": "锁定账户",
       "zh-cht": "鎖定賬戶",
       "xloc": [
@@ -36540,7 +36540,7 @@
       "pt-br": "Token de login:",
       "ru": "Логин токен:",
       "sv": "Inloggningstoken:",
-      "tr": "Giriş jetonu:",
+      "tr": "Giriş anahtarı:",
       "zh-chs": "登入保安编码：",
       "zh-cht": "登入保安編碼：",
       "xloc": [
@@ -37334,7 +37334,7 @@
       "pt-br": "Gerenciar computadores do grupo de dispositivos",
       "ru": "Управление компьютерами группы устройств",
       "sv": "Hantera enhetsgruppdatorer",
-      "tr": "Aygıt Grubu Bilgisayarlarını Yönetin",
+      "tr": "Cihaz Grubu Bilgisayarlarını Yönetin",
       "zh-chs": "管理设备组计算机",
       "zh-cht": "管理裝置群電腦",
       "xloc": [
@@ -37671,7 +37671,7 @@
       "pt-br": "Gerenciar usando um agente de software",
       "ru": "Управление с помощью программного агента",
       "sv": "Hantera med en programvaruagent",
-      "tr": "Bir yazılım aracısı kullanarak yönetin",
+      "tr": "Agent kullanarak yönetin",
       "zh-chs": "使用软件代理进行管理",
       "zh-cht": "使用軟體代理進行管理",
       "xloc": [
@@ -38015,7 +38015,7 @@
       "pt-br": "Memória",
       "ru": "ОЗУ",
       "sv": "Minne",
-      "tr": "Hafıza",
+      "tr": "Bellek",
       "zh-chs": "记忆体",
       "zh-cht": "記憶體",
       "xloc": [
@@ -38081,7 +38081,7 @@
       "pt-br": "Mesh Agent Console",
       "ru": "Консоль Mesh Agent",
       "sv": "Mesh Agent Console",
-      "tr": "Mesh Aracı Konsolu",
+      "tr": "Mesh Aracı Komut Satırı",
       "zh-chs": "网格代理控制台",
       "zh-cht": "網格代理控制台",
       "xloc": [
@@ -38154,7 +38154,7 @@
       "pt-br": "Mesh Relay",
       "ru": "Ретранслятор Mesh",
       "sv": "Mesh Relay",
-      "tr": "Mesh Röle",
+      "tr": "Mesh Yayını",
       "zh-chs": "网格中继",
       "zh-cht": "Mesh Relay",
       "xloc": [
@@ -39463,7 +39463,7 @@
       "pt-br": "Modificar a localização do nó",
       "ru": "Изменить позицию узла",
       "sv": "Ändra nodplats",
-      "tr": "Düğüm konumunu değiştir",
+      "tr": "Cihaz konumunu değiştir",
       "zh-chs": "修改节点位置",
       "zh-cht": "修改節點位置",
       "xloc": [
@@ -39814,7 +39814,7 @@
       "pt-br": "Meus Dispositivos",
       "ru": "Мои устройства",
       "sv": "Mina enheter",
-      "tr": "Benim cihazlarım",
+      "tr": "Cihazlarım",
       "zh-chs": "我的设备",
       "zh-cht": "我的裝置",
       "xloc": [
@@ -39868,7 +39868,7 @@
       "pt-br": "Meus Arquivos",
       "ru": "Мои файлы",
       "sv": "Mina filer",
-      "tr": "Benim dosyalarım",
+      "tr": "Dosyalarım",
       "zh-chs": "我的档案",
       "zh-cht": "我的檔案",
       "xloc": [
@@ -39941,7 +39941,7 @@
       "pt-br": "Meu Console do Servidor",
       "ru": "Консоль моего сервера",
       "sv": "Min serverkonsol",
-      "tr": "Sunucu Konsolum",
+      "tr": "Sunucu Komut Satırı",
       "zh-chs": "我的服务器控制台",
       "zh-cht": "我的伺服器控制台",
       "xloc": [
@@ -40597,7 +40597,7 @@
       "pt-br": "Nova versão do agente",
       "ru": "Новая версия агента",
       "sv": "Ny agentversion",
-      "tr": "Yeni Temsilci Sürümü",
+      "tr": "Yeni Agent Sürümü",
       "zh-chs": "新代理版本",
       "zh-cht": "新代理版本"
     },
@@ -40730,7 +40730,7 @@
       "pt-br": "Novos Tokens",
       "ru": "Новые токены",
       "sv": "Nya poletter",
-      "tr": "Yeni Jetonlar",
+      "tr": "Yeni Anahtarlar",
       "zh-chs": "新保安编码",
       "zh-cht": "新保安編碼",
       "xloc": [
@@ -40898,7 +40898,7 @@
       "pt-br": "Sem Tokens Ativos",
       "ru": "Активных токенов нет",
       "sv": "Inga aktiva poletter",
-      "tr": "Aktif Jeton Yok",
+      "tr": "Aktif Anahtar Yok",
       "zh-chs": "没有有效保安编码",
       "zh-cht": "沒有有效保安編碼",
       "xloc": [
@@ -42584,7 +42584,7 @@
       "pt-br": "NodeID",
       "ru": "NodeID",
       "sv": "NodeID",
-      "tr": "Düğüm Kimliği",
+      "tr": "Cihaz Kimliği",
       "zh-chs": "节点ID",
       "zh-cht": "節點ID",
       "xloc": [
@@ -43406,7 +43406,7 @@
       "pt-br": "OK",
       "ru": "ОК",
       "sv": "OK",
-      "tr": "tamam",
+      "tr": "Tamam",
       "zh-chs": "OK",
       "zh-cht": "OK",
       "xloc": [
@@ -43725,7 +43725,7 @@
       "pt-br": "On-line",
       "ru": "В сети",
       "sv": "Uppkopplad",
-      "tr": "İnternet üzerinden",
+      "tr": "Çevrimiçi",
       "zh-chs": "线上",
       "zh-cht": "線上",
       "xloc": [
@@ -44185,7 +44185,7 @@
       "pt-br": "Operação",
       "ru": "Операция",
       "sv": "Drift",
-      "tr": "Operasyon",
+      "tr": "İşlem",
       "zh-chs": "运作",
       "zh-cht": "操作",
       "xloc": [
@@ -44793,7 +44793,7 @@
       "pt-br": "Dica de senha:",
       "ru": "Подсказка пароля:",
       "sv": "Godkänt tips:",
-      "tr": "Geçiş İpucu:",
+      "tr": "İpucu:",
       "zh-chs": "通过提示：",
       "zh-cht": "通過提示：",
       "xloc": [
@@ -45195,7 +45195,7 @@
       "pt-br": "Colar",
       "ru": "Вставить",
       "sv": "Klistra In",
-      "tr": "Yapıştırmak",
+      "tr": "Yapıştır",
       "zh-chs": "粘贴",
       "zh-cht": "糊",
       "xloc": [
@@ -45377,7 +45377,7 @@
       "pt-br": "Executar ação do agente",
       "ru": "Произвести действие агента",
       "sv": "Utför agentåtgärd",
-      "tr": "Aracı Eylemi Gerçekleştir",
+      "tr": "Agent İşlemi Gerçekleştir",
       "zh-chs": "执行代理指令",
       "zh-cht": "執行代理指令",
       "xloc": [
@@ -45751,7 +45751,7 @@
       "pt-br": "Executando ação de energia = {0}, forçado = {1}",
       "ru": "Выполнение силового воздействия = {0}, принудительное = {1}",
       "sv": "Utför kraftåtgärd = {0}, tvingad = {1}",
-      "tr": "Güçlü eylem gerçekleştiriliyor = {0}, zorunlu = {1}",
+      "tr": "Açma/kapatma işlemi = {0}, zorunlu = {1}",
       "zh-chs": "执行电源操作= {0}，强制执行= {1}",
       "zh-cht": "執行電源操作= {0}，強制執行= {1}",
       "xloc": [
@@ -46006,7 +46006,7 @@
       "pt-br": "Coloque o nó aqui",
       "ru": "Поместить узел сюда",
       "sv": "Placera noden här",
-      "tr": "Düğümü buraya yerleştirin",
+      "tr": "Cihazı buraya koy",
       "zh-chs": "将节点放在这里",
       "zh-cht": "將節點放在這裡",
       "xloc": [
@@ -46600,7 +46600,7 @@
       "pt-br": "Ligar",
       "ru": "Питание",
       "sv": "I drift",
-      "tr": "Güç",
+      "tr": "Çalışma",
       "zh-chs": "电源",
       "zh-cht": "電源",
       "xloc": [
@@ -46625,7 +46625,7 @@
       "pt-br": "Ações de energia ...",
       "ru": "Управление питанием...",
       "sv": "Kraftåtgärder ...",
-      "tr": "Güç İşlemleri ...",
+      "tr": "Açma/Kapatma İşlemleri ...",
       "zh-chs": "电源指令...",
       "zh-cht": "電源指令...",
       "xloc": [
@@ -46671,7 +46671,7 @@
       "pt-br": "Estado de energia",
       "ru": "Состояние питания",
       "sv": "Strömtillstånd",
-      "tr": "Güç Durumu",
+      "tr": "Çalışma Durumu",
       "zh-chs": "电源状态",
       "zh-cht": "電源狀態",
       "xloc": [
@@ -46696,7 +46696,7 @@
       "pt-br": "Estados de energia",
       "ru": "Состояния питания",
       "sv": "Driftstatus",
-      "tr": "Güç Durumları",
+      "tr": "Çalışma Durumları",
       "zh-chs": "电源状态",
       "zh-cht": "電源狀態",
       "xloc": [
@@ -46750,7 +46750,7 @@
       "pt-br": "Desligar dispositivos",
       "ru": "Выключить устройства",
       "sv": "Stäng av enheter",
-      "tr": "Cihazları kapatın",
+      "tr": "Cihazları kapat",
       "zh-chs": "关闭设备",
       "zh-cht": "關閉裝置",
       "xloc": [
@@ -46792,7 +46792,7 @@
       "pt-br": "Ligado",
       "ru": "Включено",
       "sv": "I drift",
-      "tr": "Güçlendirilmiş",
+      "tr": "Açık",
       "zh-chs": "有电源",
       "zh-cht": "有電源",
       "xloc": [
@@ -47198,7 +47198,7 @@
       "pt-br": "Controle do processo",
       "ru": "Управление процессами",
       "sv": "Processkontroll",
-      "tr": "Süreç kontrolü",
+      "tr": "İşlem Kontrolü",
       "zh-chs": "进程控制",
       "zh-cht": "進程控制",
       "xloc": [
@@ -47271,7 +47271,7 @@
       "pt-br": "Processos",
       "ru": "Процессы",
       "sv": "Processer",
-      "tr": "Süreçler",
+      "tr": "İşlemler",
       "zh-chs": "进程",
       "zh-cht": "進程",
       "xloc": [
@@ -47296,7 +47296,7 @@
       "pt-br": "Processando o comando do console: \\\"{0}\\\"",
       "ru": "Команда консоли обработки: \\\"{0}\\\"",
       "sv": "Behandlingskonsolkommando: \\\"{0}\\\"",
-      "tr": "Konsol komutu işleniyor: \\\"{0}\\\"",
+      "tr": "Komut işleniyor: \\\"{0}\\\"",
       "zh-chs": "处理控制台命令：“{0}”",
       "zh-cht": "處理控制台命令：“{0}”",
       "xloc": [
@@ -48220,7 +48220,7 @@
       "pt-br": "Domínios",
       "ru": "Области",
       "sv": "Riker",
-      "tr": "Krallıklar",
+      "tr": "Bölgeler",
       "zh-chs": "境界",
       "zh-cht": "境界",
       "xloc": [
@@ -48564,7 +48564,7 @@
       "pt-br": "Atualizar núcleos do agente",
       "ru": "Обновить ядра агентов",
       "sv": "Uppdatera agentkärnor",
-      "tr": "Ajan Çekirdeklerini Yenile",
+      "tr": "Agent Çekirdeklerini Yenile",
       "zh-chs": "刷新代理核心",
       "zh-cht": "刷新代理核心",
       "xloc": [
@@ -48614,7 +48614,7 @@
       "pt-br": "Retransmissão",
       "ru": "Ретранслятор",
       "sv": "Relä",
-      "tr": "Röle",
+      "tr": "Yayın",
       "zh-chs": "中继",
       "zh-cht": "中繼",
       "xloc": [
@@ -48642,7 +48642,7 @@
       "pt-br": "Contador de Retransmissão",
       "ru": "Число ретрансляций",
       "sv": "Antal Relay",
-      "tr": "Röle Sayısı",
+      "tr": "Yayın Sayısı",
       "zh-chs": "中继数量",
       "zh-cht": "中繼數量",
       "xloc": [
@@ -48688,7 +48688,7 @@
       "pt-br": "Erros de retransmissão",
       "ru": "Ошибки ретранслятора",
       "sv": "Reläfel",
-      "tr": "Röle Hataları",
+      "tr": "Yayın Hataları",
       "zh-chs": "中继错误",
       "zh-cht": "中繼錯誤",
       "xloc": [
@@ -48734,7 +48734,7 @@
       "pt-br": "Sessões de retransmissão",
       "ru": "Сессии ретранслятора",
       "sv": "Relay sessioner",
-      "tr": "Geçiş Oturumları",
+      "tr": "Yayın Oturumları",
       "zh-chs": "中继连接",
       "zh-cht": "中繼連接",
       "xloc": [
@@ -48760,7 +48760,7 @@
       "pt-br": "Relay teller",
       "ru": "Реле-кассир",
       "sv": "Reläräknare",
-      "tr": "Röle vezne",
+      "tr": "Yayın habercisi",
       "zh-chs": "中继柜员",
       "zh-cht": "中繼櫃員"
     },
@@ -48929,7 +48929,7 @@
       "pt-br": "Instalação de Agente Remoto",
       "ru": "Установка удаленного агента",
       "sv": "Installation av fjärragent",
-      "tr": "Uzaktan Aracı Kurulumu",
+      "tr": "Uzaktan Agent Kurulumu",
       "zh-chs": "远程代理安装",
       "zh-cht": "遠程代理安裝",
       "xloc": [
@@ -49943,7 +49943,7 @@
       "pt-br": "Remover dispositivo",
       "ru": "Удалить устройство",
       "sv": "Ta bort enheten",
-      "tr": "Aygıtı kaldır",
+      "tr": "Cihazı kaldır",
       "zh-chs": "删除设备",
       "zh-cht": "刪除裝置"
     },
@@ -49987,7 +49987,7 @@
       "pt-br": "Remover permissões do grupo de dispositivos",
       "ru": "Удалить разрешения группы устройств",
       "sv": "Ta bort enhetsgruppsbehörigheter",
-      "tr": "Aygıt Grubu İzinlerini Kaldır",
+      "tr": "Cihaz Grubu İzinlerini Kaldır",
       "zh-chs": "删除设备组权限",
       "zh-cht": "刪除裝置群權限",
       "xloc": [
@@ -50361,7 +50361,7 @@
       "pt-br": "Remover a localização do nó",
       "ru": "Удалить местоположение узла",
       "sv": "Ta bort nodplats",
-      "tr": "Düğüm konumunu kaldır",
+      "tr": "Cihaz konumunu kaldır",
       "zh-chs": "删除节点位置",
       "zh-cht": "刪除節點位置",
       "xloc": [
@@ -50906,7 +50906,7 @@
       "pt-br": "Renomear",
       "ru": "Переименовать",
       "sv": "Döp om",
-      "tr": "Adını değiştirmek",
+      "tr": "Yeniden adlandır",
       "zh-chs": "改名",
       "zh-cht": "改名",
       "xloc": [
@@ -52074,7 +52074,7 @@
       "pt-br": "Executar como agente",
       "ru": "Запуск от имени агента",
       "sv": "Kör som agent",
-      "tr": "Temsilci olarak çalıştır",
+      "tr": "Agent olarak çalıştır",
       "zh-chs": "以代理身份运行",
       "zh-cht": "以代理身份運行",
       "xloc": [
@@ -53027,7 +53027,7 @@
       "pt-br": "Salvar localização do nó",
       "ru": "Сохранить расположение узла",
       "sv": "Spara nodplats",
-      "tr": "Düğüm konumunu kaydedin",
+      "tr": "Cihaz konumunu kaydedin",
       "zh-chs": "保存节点位置",
       "zh-cht": "保存節點位置",
       "xloc": [
@@ -55045,7 +55045,7 @@
       "pt-br": "Ações do servidor",
       "ru": "Действия сервера",
       "sv": "Serveråtgärder",
-      "tr": "Sunucu eylemleri",
+      "tr": "Sunucu işlemleri",
       "zh-chs": "服务器指令",
       "zh-cht": "伺服器指令",
       "xloc": [
@@ -56150,7 +56150,7 @@
       "pt-br": "Shift + WIN + M",
       "ru": "Shift + WIN + M",
       "sv": "Skift + WIN + M.",
-      "tr": "Üst Karakter + WIN + M",
+      "tr": "Shift + Win + M",
       "zh-chs": "Shift + WIN + M",
       "zh-cht": "Shift + WIN + M"
     },
@@ -56172,7 +56172,7 @@
       "pt-br": "Shift + Win + M",
       "ru": "Shift+Win+M",
       "sv": "Skift + Vinn + M",
-      "tr": "Üst Karakter + Kazan + M",
+      "tr": "Shift + Win + M",
       "zh-chs": "Shift + Win + M",
       "zh-cht": "Shift + Win + M",
       "xloc": [
@@ -56223,7 +56223,7 @@
       "pt-br": "Mostrar",
       "ru": "Показать",
       "sv": "Show",
-      "tr": "Göstermek",
+      "tr": "Göster",
       "zh-chs": "显示",
       "zh-cht": "顯示",
       "xloc": [
@@ -57248,7 +57248,7 @@
       "pt-br": "Hibernar dispositivos",
       "ru": "Отправить в сон",
       "sv": "Sätt i vila",
-      "tr": "Uyku cihazları",
+      "tr": "Cihazları Uyut",
       "zh-chs": "把装置休眠",
       "zh-cht": "把裝置休眠",
       "xloc": [
@@ -57429,7 +57429,7 @@
       "pt-br": "Desconectar Agente",
       "ru": "Програмное отключение агента",
       "sv": "Mjuk avbrytare",
-      "tr": "Yumuşak bağlantı kesme ajanı",
+      "tr": "Agent bağlantısını kes",
       "zh-chs": "软断开代理",
       "zh-cht": "軟斷開代理",
       "xloc": [
@@ -57481,7 +57481,7 @@
       "pt-br": "Grupo de Agente de Software",
       "ru": "Группа программных агентов",
       "sv": "Software Agent Group",
-      "tr": "Yazılım Aracı Grubu",
+      "tr": "Agent Grubu",
       "zh-chs": "软件代理组",
       "zh-cht": "軟體代理群",
       "xloc": [
@@ -57556,7 +57556,7 @@
       "pt-br": "Ordenar",
       "ru": "Сортировка",
       "sv": "Sortera",
-      "tr": "Çeşit",
+      "tr": "Sırala",
       "zh-chs": "排序",
       "zh-cht": "排序",
       "xloc": [
@@ -58312,7 +58312,7 @@
       "pt-br": "Favoritos",
       "ru": "Помечено",
       "sv": "Medverkade",
-      "tr": "Yıldızlı",
+      "tr": "İşaretli",
       "zh-chs": "已加星标",
       "zh-cht": "已加星標",
       "xloc": [
@@ -60138,7 +60138,7 @@
       "pt-br": "Terminal",
       "ru": "Терминал",
       "sv": "Terminal",
-      "tr": "terminal",
+      "tr": "Komut Satırı",
       "zh-chs": "终端",
       "zh-cht": "終端機",
       "xloc": [
@@ -60203,7 +60203,7 @@
       "pt-br": "Terminal -",
       "ru": "Терминал - ",
       "sv": "Terminal -",
-      "tr": "Terminal -",
+      "tr": "Komut Satırı -",
       "zh-chs": "终端 -",
       "zh-cht": "終端機 -",
       "xloc": [
@@ -60228,7 +60228,7 @@
       "pt-br": "Notificação de Terminal",
       "ru": "Терминал уведомление",
       "sv": "Terminalavisering",
-      "tr": "Terminal Bildirimi",
+      "tr": "Komut Satırı Bildirimi",
       "zh-chs": "终端通知",
       "zh-cht": "終端機通知",
       "xloc": [
@@ -60256,7 +60256,7 @@
       "pt-br": "Prompt de Terminal",
       "ru": "Запрос терминала",
       "sv": "Terminalprompt",
-      "tr": "Terminal İstemi",
+      "tr": "Komut Satırı",
       "zh-chs": "终端提示",
       "zh-cht": "終端機提示",
       "xloc": [
@@ -60308,7 +60308,7 @@
       "pt-br": "Latência da Sessão Terminal",
       "ru": "Задержка терминальной сессии",
       "sv": "Terminal Session Latency",
-      "tr": "Terminal Oturum Gecikmesi",
+      "tr": "Komut Satırı Oturum Gecikmesi",
       "zh-chs": "终端会话延迟",
       "zh-cht": "終端會話延遲",
       "xloc": [
@@ -60333,7 +60333,7 @@
       "pt-br": "Compartilhamento de terminal",
       "ru": "Совместное использование терминала",
       "sv": "Terminaldelning",
-      "tr": "Terminal Paylaşımı",
+      "tr": "Komut Satırı Paylaşımı",
       "zh-chs": "终端共享",
       "zh-cht": "終端共享",
       "xloc": [
@@ -61888,7 +61888,7 @@
       "pt-br": "Alternar Favorito",
       "ru": "Переключить звезду",
       "sv": "Växla stjärna",
-      "tr": "Yıldızı Değiştir",
+      "tr": "İşaretle",
       "zh-chs": "切换星",
       "zh-cht": "切換星",
       "xloc": [
@@ -62190,7 +62190,7 @@
       "pt-br": "Símbolo",
       "ru": "Токен",
       "sv": "Tecken",
-      "tr": "Jeton",
+      "tr": "Anahtar",
       "zh-chs": "代币",
       "zh-cht": "代幣",
       "xloc": [
@@ -62803,7 +62803,7 @@
       "pt-br": "Digite",
       "ru": "Удаленный ввод",
       "sv": "Typ",
-      "tr": "tip",
+      "tr": "Yazı",
       "zh-chs": "类型",
       "zh-cht": "類型",
       "xloc": [
@@ -62956,7 +62956,7 @@
       "pt-br": "Terminal UTF8",
       "ru": "Терминал UTF8",
       "sv": "UTF8-terminal",
-      "tr": "UTF8 Terminali",
+      "tr": "UTF8 Komut Satırı",
       "zh-chs": "UTF8终端",
       "zh-cht": "UTF8終端",
       "xloc": [
@@ -63589,7 +63589,7 @@
       "pt-br": "Desinstalar agente",
       "ru": "Удаление агента",
       "sv": "Avinstallera Agent",
-      "tr": "Aracıyı Kaldır",
+      "tr": "Agent'ı Kaldır",
       "zh-chs": "卸载代理",
       "zh-cht": "卸載代理",
       "xloc": [
@@ -63616,7 +63616,7 @@
       "pt-br": "Desinstalar Agente / Excluir Dispositivo",
       "ru": "Удалить агент / Удалить устройство",
       "sv": "Avinstallera Agent / Radera enhet",
-      "tr": "Aracıyı Kaldır / Cihazı Sil",
+      "tr": "Agent'ı Kaldır / Cihazı Sil",
       "zh-chs": "卸载代理/删除设备",
       "zh-cht": "卸載代理/刪除設備",
       "xloc": [
@@ -63641,7 +63641,7 @@
       "pt-br": "Desinstalar agente",
       "ru": "Удалить агент",
       "sv": "Avinstallera agent",
-      "tr": "Aracıyı kaldır",
+      "tr": "Agent'ı kaldır",
       "zh-chs": "卸载代理",
       "zh-cht": "卸載代理",
       "xloc": [
@@ -63746,7 +63746,7 @@
       "pt-br": "Ação Desconhecida",
       "ru": "Неизвестное действие",
       "sv": "Okänd åtgärd",
-      "tr": "Bilinmeyen Eylem",
+      "tr": "Bilinmeyen İşlem",
       "zh-chs": "未知动作",
       "zh-cht": "未知動作",
       "xloc": [
@@ -63771,7 +63771,7 @@
       "pt-br": "Dispositivo desconhecido",
       "ru": "Неизвестное устройство",
       "sv": "Okänd enhet",
-      "tr": "Bilinmeyen aygıt",
+      "tr": "Bilinmeyen cihaz",
       "zh-chs": "未知设备",
       "zh-cht": "未知裝置",
       "xloc": [
@@ -63797,7 +63797,7 @@
       "pt-br": "Grupo de Dispositivos Desconhecido",
       "ru": "Неизвестная группа устройств",
       "sv": "Okänd enhetsgrupp",
-      "tr": "Bilinmeyen Aygıt Grubu",
+      "tr": "Bilinmeyen Cihaz Grubu",
       "zh-chs": "未知设备组",
       "zh-cht": "未知裝置群",
       "xloc": [
@@ -64089,7 +64089,7 @@
       "pt-br": "Acima",
       "ru": "Up",
       "sv": "Upp",
-      "tr": "Gmp",
+      "tr": "Yukarı",
       "zh-chs": "向上",
       "zh-cht": "向上",
       "xloc": [
@@ -64196,7 +64196,7 @@
       "pt-br": "Carregar",
       "ru": "Загрузить",
       "sv": "Ladda upp",
-      "tr": "Yükle",
+      "tr": "Gönder",
       "zh-chs": "上载",
       "zh-cht": "上載",
       "xloc": [
@@ -64226,7 +64226,7 @@
       "pt-br": "Carregar Arquivo",
       "ru": "Загрузить файл",
       "sv": "Ladda upp fil",
-      "tr": "Dosya yükleme",
+      "tr": "Dosya gönder",
       "zh-chs": "上载档案",
       "zh-cht": "上載檔案",
       "xloc": [
@@ -64263,7 +64263,7 @@
       "pt-br": "Carregar Núcleo do Agente Mesh",
       "ru": "Загрузить ядро Mesh Agent",
       "sv": "Ladda upp Mesh Agent Core",
-      "tr": "Mesh Agent Core Yükle",
+      "tr": "Mesh Agent Çekirdeğini Gönder",
       "zh-chs": "上载网格代理核心",
       "zh-cht": "上載mesh agent核心",
       "xloc": [
@@ -64289,7 +64289,7 @@
       "pt-br": "Carregar um Arquivo de Núcleo",
       "ru": "Загрузить файл ядра",
       "sv": "Ladda upp en kärnfil",
-      "tr": "Çekirdek dosya yükleyin",
+      "tr": "Çekirdek dosya gönder",
       "zh-chs": "上载核心档案",
       "zh-cht": "上載核心檔案",
       "xloc": [
@@ -64315,7 +64315,7 @@
       "pt-br": "Carregar o Núcleo Padrão do Servidor",
       "ru": "Загрузить ядро по умолчанию с сервера ",
       "sv": "Ladda upp standardserverkärnan",
-      "tr": "Varsayılan sunucu çekirdeğini yükleyin",
+      "tr": "Varsayılan sunucu çekirdeğini gönderin",
       "zh-chs": "上载默认服务器核心",
       "zh-cht": "上載默認伺服器核心",
       "xloc": [
@@ -64367,7 +64367,7 @@
       "pt-br": "Carregar de Arquivos",
       "ru": "Загрузить файлы",
       "sv": "Ladda upp filer",
-      "tr": "Dosyaları yükle",
+      "tr": "Dosyaları gönder",
       "zh-chs": "上传文件",
       "zh-cht": "上傳文件",
       "xloc": [
@@ -64417,7 +64417,7 @@
       "pt-br": "Carregar Núcleo de Recuperação",
       "ru": "Загрузить ядро восстановления",
       "sv": "Ladda upp återställningskärna",
-      "tr": "Kurtarma çekirdeğini yükleyin",
+      "tr": "Kurtarma çekirdeğini gönder",
       "zh-chs": "上传恢复核心",
       "zh-cht": "上傳恢復核心",
       "xloc": [
@@ -64521,7 +64521,7 @@
       "pt-br": "O upload substituirá {0} arquivos. Continuar?",
       "ru": "Загрузка перезапишет {0} файлов. Продолжить?",
       "sv": "Uppladdning skriver över {0} filer. Fortsätta?",
-      "tr": "Yükleme, {0} dosyanın üzerine yazacak. Devam et?",
+      "tr": "Gönderme işlemi {0} dosyanın üzerine yazsın mı?",
       "zh-chs": "上传将覆盖{0}个档案。继续？",
       "zh-cht": "上傳將覆蓋{0}個檔案。繼續？",
       "xloc": [
@@ -64549,7 +64549,7 @@
       "pt-br": "O upload substituirá o {0} arquivo {1}. Continuar?",
       "ru": "Загрузка перезапишет {0} файлов. Продолжить?",
       "sv": "Uppladdningen skriver över {0} filen {1}. Fortsätta?",
-      "tr": "Yükleme, {0} dosyanın {1} üzerine yazılır. Devam et?",
+      "tr": "Gönderme işlemi {0} dosyanın {1} üzerine yazsın mı?",
       "zh-chs": "上传将覆盖{0}档案{1}。继续？",
       "zh-cht": "上傳將覆蓋{0}檔案{1}。繼續？"
     },
@@ -64571,7 +64571,7 @@
       "pt-br": "Upload: \\\"{0}\\\"",
       "ru": "Загрузить: \\\"{0}\\\"",
       "sv": "Ladda upp: \\\"{0}\\\"",
-      "tr": "Yükle: \\\"{0}\\\"",
+      "tr": "Gönder: \\\"{0}\\\"",
       "zh-chs": "上传：“{0}”",
       "zh-cht": "上傳：“{0}”",
       "xloc": [
@@ -66290,7 +66290,7 @@
       "pt-br": "Fornecedor",
       "ru": "Вендор",
       "sv": "Leverantör",
-      "tr": "SATICI",
+      "tr": "Üretici",
       "zh-chs": "供应商",
       "zh-cht": "供應商",
       "xloc": [
@@ -67135,7 +67135,7 @@
       "pt-br": "Despertar",
       "ru": "Услуга",
       "sv": "Väck",
-      "tr": "Uyanmak",
+      "tr": "Uyandır",
       "zh-chs": "唤醒",
       "zh-cht": "喚醒",
       "xloc": [
@@ -67161,7 +67161,7 @@
       "pt-br": "Reativar Dispositivos",
       "ru": "Разбудить устройства",
       "sv": "Väck enheter",
-      "tr": "Aygıtları Uyandır",
+      "tr": "Cihazları Uyandır",
       "zh-chs": "唤醒设备",
       "zh-cht": "喚醒裝置",
       "xloc": [
@@ -67189,7 +67189,7 @@
       "pt-br": "Reativar",
       "ru": "Разбудить",
       "sv": "Väck",
-      "tr": "Uyanmak",
+      "tr": "Uyandır",
       "zh-chs": "唤醒",
       "zh-cht": "喚醒",
       "xloc": [
@@ -67215,7 +67215,7 @@
       "pt-br": "Reativar Dispositivos",
       "ru": "Разбудить устройства",
       "sv": "Väck enheter",
-      "tr": "Uyandırma cihazları",
+      "tr": "Cihazları uyandır",
       "zh-chs": "唤醒设备",
       "zh-cht": "喚醒裝置",
       "xloc": [
@@ -67265,7 +67265,7 @@
       "pt-br": "Fraco",
       "ru": "Слабый",
       "sv": "Svag",
-      "tr": "Güçsüz",
+      "tr": "Zayıf",
       "zh-chs": "弱",
       "zh-cht": "弱",
       "xloc": [
@@ -67430,7 +67430,7 @@
       "pt-br": "Web Socket Relay",
       "ru": "Ретранслятор Web Socket",
       "sv": "Web Socket Relay",
-      "tr": "Web Soket Röle",
+      "tr": "Web Soket Yayını",
       "zh-chs": "Web套接字中继",
       "zh-cht": "Web插座中繼",
       "xloc": [
@@ -67960,7 +67960,7 @@
       "pt-br": "Win+Esquerda",
       "ru": "Win+Влево",
       "sv": "Vinn + vänster",
-      "tr": "Kazan + Sol",
+      "tr": "Win + Sol",
       "zh-chs": "Win+向左",
       "zh-cht": "Win+向左",
       "xloc": [
@@ -67985,7 +67985,7 @@
       "pt-br": "Win + M",
       "ru": "Win+M",
       "sv": "Vinn + M",
-      "tr": "Kazan + M",
+      "tr": "Win + M",
       "zh-chs": "Win+M",
       "zh-cht": "Win+M",
       "xloc": [
@@ -68011,7 +68011,7 @@
       "pt-br": "Win + R",
       "ru": "Win+R",
       "sv": "Vinn + R",
-      "tr": "Kazan + R",
+      "tr": "Win + R",
       "zh-chs": "Win+R",
       "zh-cht": "Win+R",
       "xloc": [
@@ -68037,7 +68037,7 @@
       "pt-br": "Win + Right",
       "ru": "Win+Вправо",
       "sv": "Vinn + höger",
-      "tr": "Kazan + Sağ",
+      "tr": "Win + Sağ",
       "zh-chs": "Win+向右",
       "zh-cht": "Win+向右",
       "xloc": [
@@ -68062,7 +68062,7 @@
       "pt-br": "Win + Up",
       "ru": "Win+Вверх",
       "sv": "Vinn + upp",
-      "tr": "Kazan + Yukarı",
+      "tr": "Win + Yukarı",
       "zh-chs": "Win+向上",
       "zh-cht": "Win+向上",
       "xloc": [
@@ -68088,7 +68088,7 @@
       "pt-br": "Executável Win32",
       "ru": "Исполняемый файл Win32",
       "sv": "Win32 körbar",
-      "tr": "Win32 Yürütülebilir",
+      "tr": "Win32 Çalıştırılabilir",
       "zh-chs": "Win32可执行档案",
       "zh-cht": "Win32可執行檔案",
       "xloc": [
@@ -68357,7 +68357,7 @@
       "pt-br": "Console do Windows 32 bits",
       "ru": "Консоль Windows 32bit",
       "sv": "Windows 32-bitars konsol",
-      "tr": "Windows 32bit konsolu",
+      "tr": "Windows 32bit komut satırı",
       "zh-chs": "Windows 32位控制台",
       "zh-cht": "Windows 32位控制台",
       "xloc": [
@@ -68434,7 +68434,7 @@
       "pt-br": "Console do Windows 64 bits",
       "ru": "Консоль Windows 64bit",
       "sv": "Windows 64-bitars konsol",
-      "tr": "Windows 64bit konsolu",
+      "tr": "Windows 64bit komut satırı",
       "zh-chs": "Windows 64位控制台",
       "zh-cht": "Windows 64位控制台",
       "xloc": [
@@ -68512,7 +68512,7 @@
       "pt-br": "Console Windows MinCore",
       "ru": "Консоль Windows MinCore",
       "sv": "Windows MinCore-konsol",
-      "tr": "Windows MinCore konsolu",
+      "tr": "Windows MinCore komut satırı",
       "zh-chs": "Windows MinCore控制台",
       "zh-cht": "Windows MinCore控制台",
       "xloc": [
@@ -69064,7 +69064,7 @@
       "pt-br": "Seu token de login é: [[[TOKEN]]]",
       "ru": "Ваш токен для входа: [[[TOKEN]]]",
       "sv": "Din inloggningstoken är: [[[TOKEN]]]",
-      "tr": "Giriş jetonunuz: [[[TOKEN]]]",
+      "tr": "Giriş anahtarınız: [[[TOKEN]]]",
       "zh-chs": "您的登录保安编码为：[[[TOKEN]]]",
       "zh-cht": "你的登入保安編碼為：[[[TOKEN]]]",
       "xloc": [
@@ -69269,7 +69269,7 @@
       "pt-br": "[[0]] token de acesso é: [[1]]",
       "ru": "[[0]] токен доступа: [[1]]",
       "sv": "[[0]] åtkomsttoken är: [[1]]",
-      "tr": "[[0]] erişim jetonu: [[1]]",
+      "tr": "[[0]] erişim anahtarı: [[1]]",
       "zh-chs": "[[0]]访问保安编码是：[[1]]",
       "zh-cht": "[[0]]訪問保安編碼是：[[1]]",
       "xloc": [
@@ -69460,7 +69460,7 @@
       "pt-br": "[[[SERVERNAME]]] - Instalação do Agente",
       "ru": "[[[SERVERNAME]]] - Установка агента",
       "sv": "[[[SERVERNAME]]] - Agentinstallation",
-      "tr": "[[[SERVERNAME]]] - Aracı Kurulumu",
+      "tr": "[[[SERVERNAME]]] - Agent Kurulumu",
       "zh-chs": "[[[SERVERNAME]]]-代理程序安装",
       "zh-cht": "[[[SERVERNAME]]]-代理程序安裝",
       "xloc": [
@@ -70394,7 +70394,7 @@
       "pt-br": "Livre",
       "ru": "свободно",
       "sv": "fri",
-      "tr": "Bedava",
+      "tr": "Boş",
       "zh-chs": "免费",
       "zh-cht": "免費",
       "xloc": [
@@ -71216,7 +71216,7 @@
       "pt-br": "Mover",
       "ru": "переместить",
       "sv": "flytta",
-      "tr": "hareket",
+      "tr": "taşı",
       "zh-chs": "移动",
       "zh-cht": "移動",
       "xloc": [
@@ -71961,7 +71961,7 @@
       "pt-br": "{0} - Instalação do Agente",
       "ru": "{0} - установка агента",
       "sv": "{0} - Agentinstallation",
-      "tr": "{0} - Aracı Kurulumu",
+      "tr": "{0} - Agent Kurulumu",
       "zh-chs": "{0}-代理安装",
       "zh-cht": "{0}-代理安裝",
       "xloc": [
@@ -72698,7 +72698,7 @@
       "pt-br": "{0} nós",
       "ru": "{0} устройств",
       "sv": "{0} noder",
-      "tr": "{0} düğüm",
+      "tr": "{0} cihaz",
       "zh-chs": "{0}个节点",
       "zh-cht": "{0}個節點",
       "xloc": [
