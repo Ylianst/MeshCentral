@@ -1094,6 +1094,7 @@
       "ja": "、毎日のリキュレーション",
       "nl": ", Dagelijks terugkerend",
       "pl": ", Powtarzaj codziennie",
+      "tr": ", Günlük yinelenen",
       "xloc": [
         "default.handlebars->39->1876",
         "default.handlebars->39->944"
@@ -1112,6 +1113,7 @@
       "ja": "、毎週のリキュレーション",
       "nl": ", Wekelijks terugkerend",
       "pl": ", Powtarzaj co tydzień",
+      "tr": ", Haftalık yinelenen",
       "xloc": [
         "default.handlebars->39->1877",
         "default.handlebars->39->945"
@@ -1223,6 +1225,7 @@
       "ja": "、デスクトップのみを表示",
       "nl": ", Desktop alleen bekijken",
       "pl": ", Tylko podgląd pulpitu",
+      "tr": ", Yalnızca masaüstünü görüntüle",
       "xloc": [
         "default.handlebars->39->1878",
         "default.handlebars->39->946"
@@ -4290,6 +4293,7 @@
       "ja": "AMT-Redir",
       "nl": "AMT-Redir",
       "pl": "AMT-Przekier",
+      "tr": "AMT-Yönlendirme",
       "xloc": [
         "default.handlebars->39->2726"
       ]
@@ -4307,6 +4311,7 @@
       "ja": "AMT-WSMAN",
       "nl": "AMT-WSMAN",
       "pl": "AMT-WSMAN",
+      "tr": "AMT-WSMAN",
       "xloc": [
         "default.handlebars->39->2725"
       ]
@@ -4822,6 +4827,7 @@
       "ja": "アカウントが作成されました。名前は{0}です。",
       "nl": "Account aangemaakt, naam is {0}.",
       "pl": "Konto utworzono, jego nazwa to {0}.",
+      "tr": "Hesap oluşturuldu, ad {0}.",
       "xloc": [
         "default.handlebars->39->2256"
       ]
@@ -5413,6 +5419,7 @@
       "nl": "Actieve gebruiker",
       "pl": "Aktywny użytkownik",
       "pt-br": "Usuario activo",
+      "tr": "Aktif Kullanıcı",
       "xloc": [
         "default.handlebars->39->822"
       ]
@@ -5431,6 +5438,7 @@
       "nl": "Actieve gebruikers",
       "pl": "Aktywni użytkownicy",
       "pt-br": "Usuarios activos",
+      "tr": "Aktif Kullanıcılar",
       "xloc": [
         "default.handlebars->39->821"
       ]
@@ -6483,6 +6491,7 @@
       "ja": "毎日繰り返されるデバイス共有{0}を追加しました。",
       "nl": "Apparaat delen toegevoegd {0} dagelijks terugkerend.",
       "pl": "Dodano udostępnienie urządzenia {0} reaktywowane codziennie.",
+      "tr": "Her gün yinelenen {0} cihaz paylaşımı eklendi.",
       "xloc": [
         "default.handlebars->39->2266"
       ]
@@ -6500,6 +6509,7 @@
       "ja": "毎週繰り返されるデバイス共有{0}を追加しました。",
       "nl": "Apparaat delen toegevoegd {0} wekelijks terugkerend.",
       "pl": "Dodano udostępnienie urządzenia {0} reaktywowane co tydzień.",
+      "tr": "Haftalık olarak yinelenen {0} cihaz paylaşımı eklendi.",
       "xloc": [
         "default.handlebars->39->2267"
       ]
@@ -6517,6 +6527,7 @@
       "ja": "無制限の時間でデバイス共有{0}を追加しました。",
       "nl": "Apparaat delen {0} toegevoegd met onbeperkte tijd.",
       "pl": "Dodano udostępnianie urządzenia {0} z nieograniczonym czasem",
+      "tr": "Sınırsız süre ile cihaz paylaşımı {0} eklendi.",
       "xloc": [
         "default.handlebars->39->2259"
       ]
@@ -7223,6 +7234,7 @@
       "ja": "エージェントの自己共有",
       "nl": "Agent zelfdelend",
       "pl": "Samo-Udostępnianie Agenta",
+      "tr": "Temsilci Kendi Paylaşımı",
       "xloc": [
         "default.handlebars->39->1882",
         "default.handlebars->39->950"
@@ -7441,6 +7453,7 @@
       "ja": "限られた特権に接続されたエージェント",
       "nl": "Agent verbonden met beperkte privileges",
       "pl": "Agent połączony z ograniczonymi uprawnieniami",
+      "tr": "Sınırlı ayrıcalıklarla bağlantılı aracı",
       "xloc": [
         "default.handlebars->39->230"
       ]
@@ -7483,6 +7496,7 @@
       "ja": "エージェントのハッシュチェックはスキップされています。これは安全ではありません。",
       "nl": "Agent has hcontrole wordt overgeslagen, dit is onveilig.",
       "pl": "Sprawdzanie skrótu agenta jest pomijane, jest to niebezpieczne.",
+      "tr": "Aracı karma denetimi atlanıyor, bu güvenli değil.",
       "xloc": [
         "default.handlebars->39->87"
       ]
@@ -10019,6 +10033,7 @@
       "ja": "次の5分間はすべての接続を自動受け入れます",
       "nl": "Alle verbindingen automatisch accepteren voor de komende 5 minuten",
       "pl": "Automatycznie akceptuj wszystkie połączenia przez następne 5 minut",
+      "tr": "Sonraki 5 dakika boyunca tüm bağlantıları otomatik olarak kabul et",
       "xloc": [
         "coretranslations.json"
       ]
@@ -10559,6 +10574,7 @@
       "ja": "meshcentral-dataフォルダー内にバックアップパスを設定することはできません。バックアップ設定は無視されます。",
       "nl": "Back-uppad kan niet worden ingesteld in de map meshcentral-data, back-upinstellingen genegeerd.",
       "pl": "Ścieżka kopii zapasowej nie może być ustawiona wewnątrz folderu meshcentral-data, ustawienia kopii zignorowano.",
+      "tr": "Yedekleme yolu meshcentral-data klasörü içinde ayarlanamaz, yedekleme ayarları yok sayılır.",
       "xloc": [
         "default.handlebars->39->99"
       ]
@@ -11099,6 +11115,7 @@
       "ja": "バイトイン",
       "nl": "Bytes in",
       "pl": "Bajtów Odebrano",
+      "tr": "Bayt Girişi",
       "xloc": [
         "default.handlebars->39->2718"
       ]
@@ -11116,6 +11133,7 @@
       "ja": "バイトアウト",
       "nl": "Bytes uit",
       "pl": "Bajtów Wysłano",
+      "tr": "Bayt Bitti",
       "xloc": [
         "default.handlebars->39->2719"
       ]
@@ -11262,6 +11280,7 @@
       "ja": "サーバーがLANのみまたはWANのみのモードの場合、CIRAローカルFQDNは無視されます。",
       "nl": "CIRA lokale FQDN's genegeerd wanneer server in LAN-only of WAN-only modus.",
       "pl": "Lokalna nazwa FQDN CIRA jest ignorowana, gdy serwer działa w trybie tylko LAN lub tylko WAN.",
+      "tr": "Sunucu yalnızca LAN veya yalnızca WAN modundayken CIRA yerel FQDN'leri yoksayılır.",
       "xloc": [
         "default.handlebars->39->85"
       ]
@@ -11561,6 +11580,7 @@
       "ja": "4つを超えるCIRAローカルFQDNを持つことはできません。値を無視します。",
       "nl": "Er mogen niet meer dan 4 CIRA lokale FQDN's zijn. Waarde wordt genegeerd.",
       "pl": "Nie może mieć więcej niż 4 lokalnych FQDN CIRA. Ignorowanie wartości.",
+      "tr": "4'ten fazla CIRA yerel FQDN'si olamaz. Değeri görmezden gelmek.",
       "xloc": [
         "default.handlebars->39->86"
       ]
@@ -12239,6 +12259,7 @@
       "ja": "アカウントの表示名を{0}に変更しました。",
       "nl": "Weergavenaam account gewijzigd in {0}.",
       "pl": "Zmieniono wyświetlaną nazwę konta na {0}.",
+      "tr": "Hesap görünen adı {0} olarak değiştirildi.",
       "xloc": [
         "default.handlebars->39->2255"
       ]
@@ -13453,6 +13474,7 @@
       "ja": "このリモート管理ソフトウェアをインストールまたはアンインストールするには、下のボタンをクリックしてください。インストールすると、このソフトウェアはバックグラウンドで実行され、リモート管理者がこのコンピューターを管理および制御できるようになります。",
       "nl": "Klik op de onderstaande knoppen om deze software voor beheer op afstand te installeren of te verwijderen. Na installatie draait deze software op de achtergrond waardoor deze computer kan worden beheerd en gecontroleerd door een externe beheerder.",
       "pl": "Kliknij poniższe przyciski, aby zainstalować lub odinstalować oprogramowanie zdalnego dostępu. Po zainstalowaniu, to oprogramowanie działa w tle, umożliwiając zarządzanie i kontrolowanie tego komputera przez zdalnego administratora.",
+      "tr": "Bu uzaktan yönetim yazılımını yüklemek veya kaldırmak için aşağıdaki düğmelere tıklayın. Yüklendiğinde, bu yazılım arka planda çalışır ve bu bilgisayarın uzak bir yönetici tarafından yönetilmesine ve kontrol edilmesine olanak tanır.",
       "xloc": [
         "agent-translations.json"
       ]
@@ -15145,6 +15167,7 @@
       "ja": "接続されているデバイス：",
       "nl": "Verbonden apparaten:",
       "pl": "Podłączone urządzenia:",
+      "tr": "Bağlı cihazlar:",
       "xloc": [
         "device-notify.html->2->5->1",
         "device-notify.txt"
@@ -15256,6 +15279,7 @@
       "ja": "サーバーにつなげる...",
       "nl": "Verbinden met de server...",
       "pl": "Łączenie z serwerem...",
+      "tr": "Sunucuya baglanıyor...",
       "xloc": [
         "player.handlebars->3->16"
       ]
@@ -15485,6 +15509,7 @@
       "it": "Consenso",
       "ja": "同意",
       "nl": "Toestemming",
+      "tr": "Onay",
       "xloc": [
         "default.handlebars->39->2274"
       ]
@@ -17219,6 +17244,7 @@
       "ja": "毎日",
       "nl": "Dagelijks",
       "pl": "Dziennie",
+      "tr": "Günlük",
       "xloc": [
         "default.handlebars->39->266"
       ]
@@ -19685,6 +19711,7 @@
       "it": "Il gruppo di dispositivi {0} è stato modificato: {1}",
       "ja": "デバイスグループ{0}が変更されました：{1}",
       "nl": "Apparaatgroep {0} is gewijzigd: {1}",
+      "tr": "{0} cihaz grubu değiştirildi: {1}",
       "xloc": [
         "default.handlebars->39->2270"
       ]
@@ -19730,6 +19757,7 @@
       "ja": "デバイスがビジーです",
       "nl": "Apparaat is bezet",
       "pl": "Urządzenie jest zajęte",
+      "tr": "Aygıt meşgul",
       "xloc": [
         "default-mobile.handlebars->11->198",
         "default.handlebars->39->383"
@@ -20082,6 +20110,7 @@
       "ja": "デバイスの電源がオフになっています。",
       "nl": "Apparaat is uitgeschakeld.",
       "pl": "Urządzenie jest wyłączone.",
+      "tr": "Cihaz kapalı.",
       "xloc": [
         "default.handlebars->39->588"
       ]
@@ -20435,6 +20464,7 @@
       "ja": "切断してロックする",
       "nl": "Verbreken en vergrendelen",
       "pl": "Odłącz i zablokuj",
+      "tr": "Bağlantıyı Kes ve Kilitle",
       "xloc": [
         "default.handlebars->deskDisconnectContextMenu->1"
       ]
@@ -20473,6 +20503,7 @@
       "ja": "このセッションを切断します",
       "nl": "Deze sessie verbreken",
       "pl": "Rozłącz tą sesję",
+      "tr": "Bu oturumun bağlantısını kes",
       "xloc": [
         "default-mobile.handlebars->11->195",
         "default-mobile.handlebars->11->202",
@@ -20543,6 +20574,7 @@
       "ja": "切断されたデバイス：",
       "nl": "Losgekoppelde apparaten:",
       "pl": "Rozłączone urządzenia:",
+      "tr": "Bağlantısı kesilen cihazlar:",
       "xloc": [
         "device-notify.html->2->7->1",
         "device-notify.txt"
@@ -22827,6 +22859,7 @@
       "ja": "ユーザーグループ機能の編集",
       "nl": "Functies van gebruikersgroepen bewerken",
       "pl": "Edytuj Opcje Grupy Użytkownika",
+      "tr": "Kullanıcı Grubu Özelliklerini Düzenle",
       "xloc": [
         "default.handlebars->39->2480"
       ]
@@ -22920,6 +22953,7 @@
       "ja": "このソフトウェアをインストール/アンインストールするには、昇格された権限が必要です。",
       "nl": "Verhoogde machtigingen zijn vereist om deze software te installeren/verwijderen.",
       "pl": "Do zainstalowania/odinstalowania tego oprogramowania wymagane są podwyższone uprawnienia.",
+      "tr": "Bu yazılımı yüklemek/kaldırmak için yüksek izinler gerekir.",
       "xloc": [
         "agent-translations.json"
       ]
@@ -23081,6 +23115,7 @@
       "ja": "メールコネクト",
       "nl": "Email verbinden",
       "pl": "Połączenie Email",
+      "tr": "E-posta Bağlantısı",
       "xloc": [
         "default.handlebars->39->1835",
         "default.handlebars->39->838"
@@ -23099,6 +23134,7 @@
       "ja": "メール切断",
       "nl": "Email verbroken",
       "pl": "Rozłączenie Email",
+      "tr": "E-posta Bağlantısını Kes",
       "xloc": [
         "default.handlebars->39->1836",
         "default.handlebars->39->839"
@@ -23117,6 +23153,7 @@
       "ja": "電子メール通知",
       "nl": "Email meldingen",
       "pl": "Powiadomienia Email",
+      "tr": "E-posta Bildirimleri",
       "xloc": [
         "default.handlebars->39->2056",
         "default.handlebars->39->959"
@@ -23686,6 +23723,7 @@
       "ja": "エンコーディング：RAW",
       "nl": "Codering: RAW",
       "pl": "Kodowanie: RAW",
+      "tr": "kodlama: RAW",
       "xloc": [
         "default.handlebars->39->1341"
       ]
@@ -23703,6 +23741,7 @@
       "ja": "エンコーディング：UTF8",
       "nl": "Codering: UTF8",
       "pl": "Kodowanie: UTF8",
+      "tr": "Kodlama: UTF8",
       "xloc": [
         "default.handlebars->39->1342"
       ]
@@ -25945,6 +25984,7 @@
       "it": "Filtro: utente:xxx o u:xxx ip:xxx gruppo:xxx o g:xxx tag:xxx o t: xxx atag:xxx o a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc: noupdate wsc:nofirewall wsc:qualsiasi",
       "ja": "フィルタ：user：xxxまたはu：xxx ip：xxx group：xxxまたはg：xxx tag：xxxまたはt：xxx atag：xxxまたはa：xxx os：xxx amt：xxx desc：xxx wsc：ok wsc：noav wsc： noupdate wsc：nofirewall wsc：any",
       "nl": "Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any",
+      "tr": "Filtre: user:xxx veya u:xxx ip:xxx group:xxx veya g:xxx etiketi:xxx veya t: xxx atag:xxx veya a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc: noupdate wsc:nofirewall wsc:herhangi biri",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar"
       ]
@@ -26145,6 +26185,7 @@
       "it": "Bandiere",
       "ja": "フラグ",
       "nl": "vlaggen",
+      "tr": "Bayraklar",
       "xloc": [
         "default.handlebars->39->2273"
       ]
@@ -26437,6 +26478,7 @@
       "ja": "ユーザー{0}のデスクトップセッションを強制的に切断しました",
       "nl": "Geforceerd verbroken desktopsessie van gebruiker {0}",
       "pl": "Wymuszone rozłączenie sesji pulpitu użytkownika {0}",
+      "tr": "{0} kullanıcısının bağlantısı zorla kesildi masaüstü oturumu",
       "xloc": [
         "default.handlebars->39->2262"
       ]
@@ -26454,6 +26496,7 @@
       "ja": "ユーザー{0}のファイルセッションを強制的に切断しました",
       "nl": "Geforceerd verbroken bestandssessie van gebruiker {0}",
       "pl": "Wymuszone rozłączenie sesji plików użytkownika {0}",
+      "tr": "{0} kullanıcısının bağlantısı zorla kesilen dosyalar oturumu",
       "xloc": [
         "default.handlebars->39->2264"
       ]
@@ -26471,6 +26514,7 @@
       "ja": "ユーザー{0}のルーティングセッションを強制的に切断しました",
       "nl": "Geforceerd verbroken routeringssessie van gebruiker {0}",
       "pl": "Wymuszone rozłączenie sesji routingu użytkownika {0}",
+      "tr": "{0} kullanıcısının bağlantısı zorla kesildi yönlendirme oturumu",
       "xloc": [
         "default.handlebars->39->2265"
       ]
@@ -26488,6 +26532,7 @@
       "ja": "ユーザー{0}のターミナルセッションを強制的に切断しました",
       "nl": "Geforceerd verbroken terminalsessie van gebruiker {0}",
       "pl": "Wymuszone rozłączenie sesji terminala użytkownika {0}",
+      "tr": "{0} kullanıcısının bağlantısı zorla kesildi terminal oturumu",
       "xloc": [
         "default.handlebars->39->2263"
       ]
@@ -27397,6 +27442,7 @@
       "ja": "レポートの生成",
       "nl": "Genereer rapport",
       "pl": "Generuj Raport",
+      "tr": "Rapor oluştur",
       "xloc": [
         "default.handlebars->39->2710"
       ]
@@ -27414,6 +27460,7 @@
       "ja": "レポートを生成...",
       "nl": "Genereer rapport...",
       "pl": "Generuj Raport...",
+      "tr": "Rapor oluştur...",
       "xloc": [
         "default.handlebars->container->column_l->p60->3->1->0->3->3"
       ]
@@ -27606,6 +27653,7 @@
       "ja": "クリップボードを取得",
       "nl": "Klembord ophalen",
       "pl": "Pobierz schowek",
+      "tr": "Pano Al",
       "xloc": [
         "default.handlebars->39->1221"
       ]
@@ -28115,6 +28163,7 @@
       "it": "Nome del gruppo",
       "ja": "グループ名",
       "nl": "Groepsnaam",
+      "tr": "Grup ismi",
       "xloc": [
         "default.handlebars->39->2271"
       ]
@@ -28257,6 +28306,7 @@
       "ja": "ゲスト",
       "nl": "Gast",
       "pl": "Gość",
+      "tr": "Misafir",
       "xloc": [
         "default.handlebars->39->2716"
       ]
@@ -29191,7 +29241,8 @@
       "it": "Dispositivo IP KVM",
       "ja": "IPKVMデバイス",
       "nl": "IP KVM apparaat",
-      "pl": "Urządzenie IP KVM"
+      "pl": "Urządzenie IP KVM",
+      "tr": "IP KVM cihazı"
     },
     {
       "cs": "IP KVM port je aktivní a připraven k použití.",
@@ -29205,7 +29256,8 @@
       "it": "La porta IP KVM è attiva e pronta per l'uso.",
       "ja": "IP KVMポートが起動し、使用できるようになりました。",
       "nl": "IP KVM poort is actief en klaar voor gebruik.",
-      "pl": "Port IP KVM podniesiony i gotowy do użycia."
+      "pl": "Port IP KVM podniesiony i gotowy do użycia.",
+      "tr": "IP KVM portu hazır ve kullanıma hazır."
     },
     {
       "cs": "IP rozsah",
@@ -29273,6 +29325,7 @@
       "ja": "IP-KVM",
       "nl": "IP-KVM",
       "pl": "IP-KVM",
+      "tr": "IP-KVM",
       "xloc": [
         "default-mobile.handlebars->11->248",
         "default-mobile.handlebars->11->305",
@@ -29294,6 +29347,7 @@
       "ja": "IP-KVM /パワーデバイス",
       "nl": "IP-KVM / Power device",
       "pl": "IP-KVM / Zasilanie urządzenia",
+      "tr": "IP-KVM / Güç cihazı",
       "xloc": [
         "default.handlebars->39->1746"
       ]
@@ -29311,6 +29365,7 @@
       "ja": "IP-KVMデバイス",
       "nl": "IP-KVM device",
       "pl": "Urządzenie IP-KVM",
+      "tr": "IP-KVM cihazı",
       "xloc": [
         "default-mobile.handlebars->11->619",
         "default.handlebars->39->1803"
@@ -29329,6 +29384,7 @@
       "ja": "IP-KVMポートが接続されています",
       "nl": "IP-KVM poort verbonden",
       "pl": "Podłączono z portem IP-KVM",
+      "tr": "IP-KVM bağlantı noktası bağlandı",
       "xloc": [
         "default.handlebars->39->912",
         "default.handlebars->39->913"
@@ -29347,6 +29403,7 @@
       "ja": "IP-KVMポートが接続され、使用できるようになります。",
       "nl": "IP-KVM poort is verbonden en klaar voor gebruik.",
       "pl": "Port IP-KVM podłączony i gotowy do użycia.",
+      "tr": "IP-KVM portu bağlı ve kullanıma hazır.",
       "xloc": [
         "default.handlebars->39->359"
       ]
@@ -29364,6 +29421,7 @@
       "ja": "IP-KVMポートが起動し、使用できるようになりました。",
       "nl": "IP-KVM poort is actief en klaar voor gebruik.",
       "pl": "Port IP-KVM podniesiony i gotowy do użycia.",
+      "tr": "IP-KVM portu hazır ve kullanıma hazır.",
       "xloc": [
         "default.handlebars->39->600"
       ]
@@ -30586,6 +30644,7 @@
       "ja": "Intel AMTCIRA接続",
       "nl": "Intel AMT CIRA verbonden",
       "pl": "Intel AMT CIRA połączono",
+      "tr": "Intel AMT CIRA bağlandı",
       "xloc": [
         "default.handlebars->39->232"
       ]
@@ -30603,6 +30662,7 @@
       "ja": "Intel AMTCIRAが切断されました",
       "nl": "Intel AMT CIRA verbroken",
       "pl": "Intel AMT CIRA rozłączono",
+      "tr": "Intel AMT CIRA'nın bağlantısı kesildi",
       "xloc": [
         "default.handlebars->39->236"
       ]
@@ -30620,6 +30680,7 @@
       "ja": "IntelAMTが検出されました",
       "nl": "Intel AMT gedetecteerd",
       "pl": "Wykryto Intel AMT",
+      "tr": "Intel AMT algılandı",
       "xloc": [
         "default.handlebars->39->231"
       ]
@@ -30661,6 +30722,7 @@
       "ja": "IntelAMTが検出されない",
       "nl": "Intel AMT niet gedetecteerd",
       "pl": "Nie wykryto Intel AMT",
+      "tr": "Intel AMT algılanmadı",
       "xloc": [
         "default.handlebars->39->235"
       ]
@@ -31675,6 +31737,7 @@
       "it": "Modifica della politica Intel(r) AMT",
       "ja": "Intel（r）AMTポリシーの変更",
       "nl": "Intel(r) AMT-beleidswijziging",
+      "tr": "Intel(r) AMT ilke değişikliği",
       "xloc": [
         "default.handlebars->39->2269"
       ]
@@ -32166,6 +32229,7 @@
       "ja": "無効なLet'sEncryptの電子メールアドレス、解決できません：{0}",
       "nl": "Ongeldige Let's Encrypt email adres, onmogelijk om te verhelpen: {0}",
       "pl": "Nieprawidłowy adres e-mail Let's Encrypt, nie można go rozwiązać: {0}",
+      "tr": "Geçersiz Let's Encrypt e-posta adresi çözülemedi: {0}",
       "xloc": [
         "default.handlebars->39->93"
       ]
@@ -32183,6 +32247,7 @@
       "ja": "無効なLet'sEncryptのホスト名。",
       "nl": "Ongeldige Let's Encrypt hostnamen.",
       "pl": "Nieprawidłowe nazwy hostów Let's Encrypt.",
+      "tr": "Geçersiz Let's Encrypt ana bilgisayar adları.",
       "xloc": [
         "default.handlebars->39->89"
       ]
@@ -32200,6 +32265,7 @@
       "ja": "無効なLet'sEncrypt名、*を含めることはできません。",
       "nl": "Ongeldige Let's Encrypt namen, mag geen * bevatten.",
       "pl": "Nieprawidłowe nazwy Let's Encrypt, nie mogą zawierać *.",
+      "tr": "Geçersiz Let's Encrypt adları, * içeremez.",
       "xloc": [
         "default.handlebars->39->90"
       ]
@@ -32217,6 +32283,7 @@
       "ja": "無効なLet'sEncrypt名、解決できません：{0}",
       "nl": "Ongeldige Let's Encrypt-namen, onmogelijk om te verhelpen: {0}",
       "pl": "Nieprawidłowe nazwy Let's Encrypt, niemożliwe do rozwiązania: {0}",
+      "tr": "Geçersiz Let's Encrypt adları çözülemedi: {0}",
       "xloc": [
         "default.handlebars->39->92"
       ]
@@ -32309,6 +32376,7 @@
       "ja": "config.jsonの「LoginCookieEncryptionKey」が無効です。",
       "nl": "Ongeldige \\\"LoginCookieEncryptionKey\\\" in config.json.",
       "pl": "Nieprawidłowy \\\"LoginCookieEncryptionKey\\\" w config.json.",
+      "tr": "config.json'da geçersiz \\\"LoginCookieEncryptionKey\\\".",
       "xloc": [
         "default.handlebars->39->98"
       ]
@@ -32855,6 +32923,7 @@
       "it": "Codice di invito",
       "ja": "招待コード",
       "nl": "Uitnodigingscode",
+      "tr": "Davet kodu",
       "xloc": [
         "default.handlebars->39->2276"
       ]
@@ -33427,6 +33496,7 @@
       "ja": "キーボード弦のカスタマイズ",
       "nl": "Toetsenbord strings aanpassen",
       "pl": "Ustawienia Ciagów Klawiatury",
+      "tr": "Klavye Dizileri Özelleştirme",
       "xloc": [
         "default.handlebars->39->1217"
       ]
@@ -34005,6 +34075,7 @@
       "ja": "過去7日間",
       "nl": "Laaste 7 dagen",
       "pl": "Ostatnie 7 dni",
+      "tr": "Son 7 gün",
       "xloc": [
         "default.handlebars->39->2703"
       ]
@@ -34072,6 +34143,7 @@
       "ja": "最終日",
       "nl": "Laaste dag",
       "pl": "Ostatni Dzień",
+      "tr": "Son gun",
       "xloc": [
         "default.handlebars->39->2702"
       ]
@@ -34140,6 +34212,7 @@
       "ja": "最終アクセス：{0}",
       "nl": "Laatste toegang: {0}",
       "pl": "Ostatni dostęp: {0}",
+      "tr": "Son erişim: {0}",
       "xloc": [
         "default.handlebars->39->2315"
       ]
@@ -34661,6 +34734,7 @@
       "ja": "{0}秒後にWeb-RDPセッションを終了しました。",
       "nl": "Web-RDP sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-RDP po {0} sekundach.",
+      "tr": "{0} saniye sonra Web-RDP oturumundan ayrıldı.",
       "xloc": [
         "default.handlebars->39->2253"
       ]
@@ -34678,6 +34752,7 @@
       "ja": "{0}秒後にWeb-SFTPセッションを終了しました。",
       "nl": "Web-SFTP sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-SFTP po {0} sekundach.",
+      "tr": "{0} saniye sonra Web-SFTP oturumundan ayrıldı.",
       "xloc": [
         "default.handlebars->39->2252"
       ]
@@ -34695,6 +34770,7 @@
       "ja": "{0}秒後にWeb-SSHセッションを終了しました。",
       "nl": "Web-SSH sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-SSH po {0} sekundach.",
+      "tr": "{0} saniye sonra Web-SSH oturumundan ayrıldı.",
       "xloc": [
         "default.handlebars->39->2251"
       ]
@@ -34712,6 +34788,7 @@
       "ja": "{0}秒後にWeb-VNCセッションを終了しました。",
       "nl": "Web-VNC sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-VNC po {0} sekundach.",
+      "tr": "{0} saniye sonra Web-VNC oturumundan ayrıldı.",
       "xloc": [
         "default.handlebars->39->2254"
       ]
@@ -34784,6 +34861,7 @@
       "ja": "{0}秒後にデスクトップマルチプレックスセッションを終了しました。",
       "nl": "Verliet de desktop multiplex sessie na {0} seconde(n).",
       "pl": "Opuścił sesję multiplex pulpitu po {0} sekundach.",
+      "tr": "{0} saniye sonra masaüstü multipleks oturumundan ayrıldı.",
       "xloc": [
         "default.handlebars->39->2250"
       ]
@@ -34801,6 +34879,7 @@
       "ja": "長さ",
       "nl": "Duur",
       "pl": "Długość",
+      "tr": "Uzunluk",
       "xloc": [
         "default.handlebars->39->2717"
       ]
@@ -36108,6 +36187,7 @@
       "ja": "ロックオン切断",
       "nl": "Vergrendelen bij verbreken",
       "pl": "Zablokuj na Odłącz",
+      "tr": "Bağlantıyı Keste Kilitle",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->6->3->d7deskAutoLockLabel",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->d7deskAutoLockLabel"
@@ -38654,6 +38734,7 @@
       "ja": "MeshCentral SSHのサポートには、NodeJS11以降が必要です。",
       "nl": "MeshCentral SSH ondersteuning vereist NodeJS 11 of hoger.",
       "pl": "Obsługa MeshCentral SSH wymaga NodeJS 11 lub nowszego.",
+      "tr": "MeshCentral SSH desteği, NodeJS 11 veya üstünü gerektirir.",
       "xloc": [
         "default.handlebars->39->79"
       ]
@@ -39346,6 +39427,7 @@
       "ja": "Let'sEncryptのメールアドレスがありません。",
       "nl": "Ontbrekend Let's Encrypt e-mailadres.",
       "pl": "Brak adresu e-mail Let's Encrypt.",
+      "tr": "Let's Encrypt e-posta adresi eksik.",
       "xloc": [
         "default.handlebars->39->88"
       ]
@@ -39363,6 +39445,7 @@
       "ja": "WebDAVパラメーターがありません。",
       "nl": "Ontbrekende WebDAV parameters.",
       "pl": "Brak parametrów WebDAV.",
+      "tr": "WebDAV parametreleri eksik.",
       "xloc": [
         "default.handlebars->39->80"
       ]
@@ -39892,6 +39975,7 @@
       "ja": "マイレポート",
       "nl": "Mijn rapporten",
       "pl": "Moje Raporty",
+      "tr": "Raporlarım",
       "xloc": [
         "default.handlebars->container->column_l->p60->p60title->1"
       ]
@@ -40750,6 +40834,7 @@
       "ja": "新しいバージョン",
       "nl": "Nieuwe versie",
       "pl": "Nowa Wersja",
+      "tr": "Yeni sürüm",
       "xloc": [
         "agent-translations.json"
       ]
@@ -41375,6 +41460,7 @@
       "ja": "新しいデバイスはありません",
       "nl": "Geen nieuwe apparaten",
       "pl": "Brak Nowych Urządzeń",
+      "tr": "Yeni Cihaz Yok",
       "xloc": [
         "default.handlebars->39->2407"
       ]
@@ -41440,6 +41526,7 @@
       "nl": "Geen externe opdrachten",
       "pl": "Brak zdalnego polecenia",
       "pt-br": "Sem Comando Remoto",
+      "tr": "Uzaktan Komut Yok",
       "xloc": [
         "default.handlebars->39->2527",
         "default.handlebars->39->2596"
@@ -41459,6 +41546,7 @@
       "nl": "geen afstandsbediening",
       "pl": "Brak pilota zdalnego sterowania",
       "pt-br": "Sem Controle Remoto",
+      "tr": "Uzaktan Kumanda Yok",
       "xloc": [
         "default.handlebars->39->2520",
         "default.handlebars->39->2589"
@@ -41478,6 +41566,7 @@
       "nl": "Geen herstart/uitschakelen",
       "pl": "Brak resetowania/wyłączania",
       "pt-br": "Sem Resetar/Desligar",
+      "tr": "Sıfırlama/Kapatma Yok",
       "xloc": [
         "default.handlebars->39->2529",
         "default.handlebars->39->2598"
@@ -41657,6 +41746,7 @@
       "nl": "Geen de-installatie",
       "pl": "Bez odinstalowywania",
       "pt-br": "Não desinstalar",
+      "tr": "Kaldırma Yok",
       "xloc": [
         "default.handlebars->39->2526",
         "default.handlebars->39->2595"
@@ -41676,6 +41766,7 @@
       "nl": "Niet starten",
       "pl": "Bez budzenia",
       "pt-br": "Não acordar",
+      "tr": "Uyanmak yok",
       "xloc": [
         "default.handlebars->39->2528",
         "default.handlebars->39->2597"
@@ -42196,6 +42287,7 @@
       "ja": "キーボード文字列が定義されていません",
       "nl": "Geen toetsenbord strings gedefineerd",
       "pl": "Nie zdefiniowano ciągu klawiatury",
+      "tr": "Tanımlanmış klavye dizesi yok",
       "xloc": [
         "default.handlebars->39->1218"
       ]
@@ -43549,6 +43641,7 @@
       "ja": "オフ",
       "nl": "Uit",
       "pl": "Wyłącz",
+      "tr": "Kapalı",
       "xloc": [
         "default-mobile.handlebars->11->230",
         "default-mobile.handlebars->11->238",
@@ -44066,6 +44159,7 @@
       "nl": "OpenBSD x86-64",
       "pl": "OpenBSD x86-64",
       "pt-br": "OpenBSD x86-64",
+      "tr": "OpenBSD x86-64",
       "xloc": [
         "default-mobile.handlebars->11->43",
         "default.handlebars->39->50"
@@ -44106,6 +44200,7 @@
       "nl": "OpenWRT x86-64",
       "pl": "OpenWRT x86-64",
       "pt-br": "OpenWRT x86-64",
+      "tr": "OpenWRT x86-64",
       "xloc": [
         "default-mobile.handlebars->11->42",
         "default.handlebars->39->49"
@@ -45710,6 +45805,7 @@
       "ja": "電源オフを実行しますか？",
       "nl": "Uitschakelen uitvoeren?",
       "pl": "Czy wykonać wyłączenie?",
+      "tr": "Güç kapatılsın mı?",
       "xloc": [
         "default-mobile.handlebars->11->338",
         "default.handlebars->39->952"
@@ -45728,6 +45824,7 @@
       "ja": "電源を入れますか？",
       "nl": "Inschakelen uitvoeren?",
       "pl": "Czy wykonać uruchomienie?",
+      "tr": "Güç açık mı?",
       "xloc": [
         "default-mobile.handlebars->11->340",
         "default.handlebars->39->954"
@@ -46450,6 +46547,7 @@
       "ja": "ポート名同期",
       "nl": "Poort naam synchronisatie",
       "pl": "Synchronizacja Nazwy Portu",
+      "tr": "Bağlantı Noktası Adı Senkronizasyonu",
       "xloc": [
         "default.handlebars->39->1814"
       ]
@@ -46467,6 +46565,7 @@
       "ja": "ポート番号",
       "nl": "Poortnummer",
       "pl": "Numer Portu",
+      "tr": "Port numarası",
       "xloc": [
         "default-mobile.handlebars->11->273",
         "default.handlebars->39->766"
@@ -46485,6 +46584,7 @@
       "ja": "ポートタイプ",
       "nl": "Poort type",
       "pl": "Typ Portu",
+      "tr": "Bağlantı Noktası Türü",
       "xloc": [
         "default-mobile.handlebars->11->274",
         "default.handlebars->39->767"
@@ -46646,6 +46746,7 @@
       "ja": "電源操作",
       "nl": "Power Operation",
       "pl": "Operacja Zasilania",
+      "tr": "Güç Çalışması",
       "xloc": [
         "default-mobile.handlebars->11->337",
         "default-mobile.handlebars->11->339",
@@ -46770,6 +46871,7 @@
       "ja": "電源スイッチを使用する準備が整いました。",
       "nl": "Aan/uit-schakelaar is klaar voor gebruik.",
       "pl": "Włącznik jest gotowy do użycia.",
+      "tr": "Güç anahtarı kullanıma hazırdır.",
       "xloc": [
         "default.handlebars->39->598"
       ]
@@ -48107,6 +48209,7 @@
       "ja": "ラリタンドミニオンKXIII",
       "nl": "Raritan Dominion KX III",
       "pl": "Raritan Dominion KX III",
+      "tr": "Raritan Dominion KX III",
       "xloc": [
         "default.handlebars->39->1752"
       ]
@@ -48149,6 +48252,7 @@
       "ja": "生",
       "nl": "Raw",
       "pl": "Surowe",
+      "tr": "Çiğ",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog4"
       ]
@@ -48397,6 +48501,7 @@
       "ja": "繰り返し",
       "nl": "Terugkerend",
       "pl": "Powtarzanie",
+      "tr": "yinelenen",
       "xloc": [
         "default.handlebars->39->265",
         "default.handlebars->39->267"
@@ -48415,6 +48520,7 @@
       "ja": "毎日繰り返される",
       "nl": "Dagelijks terugkerend",
       "pl": "Powtarzanie codzienne",
+      "tr": "Günlük yinelenen",
       "xloc": [
         "default.handlebars->39->1046"
       ]
@@ -48432,6 +48538,7 @@
       "ja": "毎週繰り返される",
       "nl": "Wekelijks terugkerend",
       "pl": "Powtarzanie co tydzień",
+      "tr": "Haftalık yinelenen",
       "xloc": [
         "default.handlebars->39->1047"
       ]
@@ -50608,6 +50715,7 @@
       "ja": "アカウントの表示名を削除しました。",
       "nl": "Weergavenaam account verwijderd.",
       "pl": "Usunięto nazwę wyświetlania konta.",
+      "tr": "Hesabın görünen adı kaldırıldı.",
       "xloc": [
         "default.handlebars->39->2257"
       ]
@@ -51033,6 +51141,7 @@
       "ja": "レポートは全体を返しませんでした。",
       "nl": "Rapport heeft geen vermeldingen geretourneerd.",
       "pl": "Raport zwrócił brak wpisów.",
+      "tr": "Rapor hiçbir bütün döndürmedi.",
       "xloc": [
         "default.handlebars->39->2720"
       ]
@@ -51072,6 +51181,7 @@
       "ja": "レポート",
       "nl": "Rapport",
       "pl": "Raporty",
+      "tr": "Raporlar",
       "xloc": [
         "default.handlebars->container->topbar->1->1->EventsSubMenuSpan->EventsSubMenu->1->0->EventsReport"
       ]
@@ -52194,6 +52304,7 @@
       "ja": "ランニング",
       "nl": "lopende",
       "pl": "Uruchomiony",
+      "tr": "Koşma",
       "xloc": [
         "default.handlebars->39->1229",
         "default.handlebars->39->1233"
@@ -52510,6 +52621,7 @@
       "ja": "SMSゲートウェイは、LANモードでの使用が制限されています。",
       "nl": "SMS gateway heeft beperkte mogelijkheden in LAN modus.",
       "pl": "Bramka SMS ma ograniczone zastosowanie w trybie LAN.",
+      "tr": "SMS ağ geçidinin LAN modunda sınırlı kullanımı vardır.",
       "xloc": [
         "default.handlebars->39->97"
       ]
@@ -52625,6 +52737,7 @@
       "ja": "SMTPサーバーはLANモードでの使用が制限されています。",
       "nl": "SMTP server heeft beperkte mogelijkheden in LAN modus.",
       "pl": "Serwer SMTP ma ograniczone wykorzystanie w trybie LAN.",
+      "tr": "SMTP sunucusunun LAN modunda sınırlı kullanımı vardır.",
       "xloc": [
         "default.handlebars->39->96"
       ]
@@ -53375,6 +53488,7 @@
       "ja": "ひみつ",
       "nl": "Geheim",
       "pl": "Sekret",
+      "tr": "Gizli",
       "xloc": [
         "default.handlebars->39->191"
       ]
@@ -53616,6 +53730,7 @@
       "ja": "日付と時刻を選択...",
       "nl": "Selecteer datum & Tijd...",
       "pl": "Wybierz Datę i Czas...",
+      "tr": "Tarih ve Saati Seçin...",
       "xloc": [
         "default.handlebars->39->1050",
         "default.handlebars->39->1052",
@@ -54398,6 +54513,7 @@
       "ja": "SendGridサーバーはLANモードでの使用が制限されています。",
       "nl": "SendGrid server heeft beperkte mogelijkeden LAN modus.",
       "pl": "Serwer SendGrid ma ograniczone zastosowanie w trybie LAN.",
+      "tr": "SendGrid sunucusunun LAN modunda sınırlı kullanımı vardır.",
       "xloc": [
         "default.handlebars->39->95"
       ]
@@ -55499,6 +55615,7 @@
       "ja": "セッションタイムアウト。",
       "nl": "Sessie timeout.",
       "pl": "Przekroczony czas Sesji.",
+      "tr": "Oturum zaman aşımına uğradı.",
       "xloc": [
         "ssh.handlebars->3->20"
       ]
@@ -55568,6 +55685,7 @@
       "ja": "クリップボードを設定する",
       "nl": "Klembord instellen",
       "pl": "Ustaw schowek",
+      "tr": "Panoyu Ayarla",
       "xloc": [
         "default.handlebars->39->1222"
       ]
@@ -55961,6 +56079,7 @@
       "ja": "デバイスをゲストと共有する",
       "nl": "Deel het apparaat met een gast",
       "pl": "Współdziel to urządzenie z gościem",
+      "tr": "Cihazı bir misafirle paylaşın",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -56027,6 +56146,7 @@
       "ja": "デスクトップの共有：{0}",
       "nl": "Bureaublad delen met: {0}",
       "pl": "Współdzielenie pulpitu z: {0}",
+      "tr": "Masaüstünü şu kişilerle paylaşma: {0}",
       "xloc": [
         "coretranslations.json"
       ]
@@ -56334,7 +56454,8 @@
       "it": "Mostra il nome dell'ospite",
       "ja": "ゲスト名を表示",
       "nl": "Toon gasten naam",
-      "pl": "Pokaż Nazwę Gościa"
+      "pl": "Pokaż Nazwę Gościa",
+      "tr": "Misafir Adını Göster"
     },
     {
       "cs": "Zobrazit nápovědu",
@@ -56449,6 +56570,7 @@
       "ja": "トラフィックを表示",
       "nl": "Toon verkeer",
       "pl": "Pokaż Ruch",
+      "tr": "Trafiği Göster",
       "xloc": [
         "default.handlebars->39->2709"
       ]
@@ -59453,6 +59575,7 @@
       "ja": "スイッチ",
       "nl": "Schakelaar",
       "pl": "Przełącz",
+      "tr": "Değiştirmek",
       "xloc": [
         "default-mobile.handlebars->11->247",
         "default-mobile.handlebars->11->304",
@@ -59499,6 +59622,7 @@
       "ja": "スイッチポートが接続されています",
       "nl": "Schakelpoort verbonden",
       "pl": "Przełącz połączony port",
+      "tr": "Bağlantı noktasını değiştir",
       "xloc": [
         "default.handlebars->39->910",
         "default.handlebars->39->911"
@@ -59517,6 +59641,7 @@
       "ja": "スイッチポートを使用する準備が整いました。",
       "nl": "Schakelpoort is klaar voor gebruik..",
       "pl": "Przełącz port na gotowy do użycia.",
+      "tr": "Anahtar portu kullanıma hazırdır.",
       "xloc": [
         "default.handlebars->39->357"
       ]
@@ -59559,6 +59684,7 @@
       "ja": "サーバーデバイス名をポート名に同期する",
       "nl": "Synchroniseer de naam van de server met de poortnaam",
       "pl": "Synchronizuj nazwę urządzenia serwera na nazwę portu",
+      "tr": "Sunucu cihaz adını bağlantı noktası adıyla senkronize et",
       "xloc": [
         "default.handlebars->39->1947"
       ]
@@ -60437,6 +60563,7 @@
       "ja": "デバイスの電源がオフになっています",
       "nl": "Het apparaat is uitgeschakeld",
       "pl": "To urządzenie jest wyłączone",
+      "tr": "Cihaz kapalı",
       "xloc": [
         "default-mobile.handlebars->11->246",
         "default.handlebars->39->597"
@@ -60481,6 +60608,7 @@
       "ja": "次のデバイスは接続状態を変更しました。",
       "nl": "De volgende apparaten hebben hun verbindingsstatus gewijzigd.",
       "pl": "Przedstawione urządzenia zmieniły stan połączenia.",
+      "tr": "Aşağıdaki cihazlar bağlantı durumlarını değiştirdi.",
       "xloc": [
         "device-notify.html->2->3->1",
         "device-notify.txt"
@@ -60521,6 +60649,7 @@
       "ja": "このインストーラーのグラフィカルバージョンは、このシステムでは実行できません",
       "nl": "De grafische versie van dit installatieprogramma kan niet op dit systeem draaien",
       "pl": "Graficzna wersja tego instalatora nie może być uruchomiona w tym systemie",
+      "tr": "Bu yükleyicinin grafik sürümü bu sistemde çalışamaz",
       "xloc": [
         "agent-translations.json"
       ]
@@ -61798,6 +61927,7 @@
       "ja": "退会するには、",
       "nl": "Uitschrijven,",
       "pl": "By się wypisać.",
+      "tr": "Abonelikten çıkmak,",
       "xloc": [
         "device-notify.html->2->9->1"
       ]
@@ -61815,6 +61945,7 @@
       "ja": "登録を解除するには、次のメッセージが表示されてから1時間以内に次のリンクを読み込みます：[[[SERVERURL]]] [[[[UNSUBSCRIBELINK]]]",
       "nl": "Om je af te melden, open je deze link binnen 1 uur nadat je dit bericht hebt ontvangen: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "pl": "By się wypisać, załaduj ten link w ciągu 1 godziny od otrzymania wiadomości: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
+      "tr": "Aboneliğinizi iptal etmek için, bu mesajı aldıktan sonraki 1 saat içinde bu bağlantıyı yükleyin: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "xloc": [
         "device-notify.txt"
       ]
@@ -62678,6 +62809,7 @@
       "ja": "消す",
       "nl": "Uitschakelen",
       "pl": "Wyłącz",
+      "tr": "Kapat",
       "xloc": [
         "default-mobile.handlebars->11->324",
         "default-mobile.handlebars->11->325",
@@ -62698,6 +62830,7 @@
       "ja": "消す。",
       "nl": "Uitschakelen",
       "pl": "Wyłącz.",
+      "tr": "Kapat.",
       "xloc": [
         "default.handlebars->39->2261"
       ]
@@ -62715,6 +62848,7 @@
       "ja": "オンにする",
       "nl": "Inschakelen",
       "pl": "Włącz",
+      "tr": "Aç",
       "xloc": [
         "default-mobile.handlebars->11->326",
         "default-mobile.handlebars->11->327",
@@ -62735,6 +62869,7 @@
       "ja": "オンにする。",
       "nl": "Inschakelen.",
       "pl": "Włącz.",
+      "tr": "Aç.",
       "xloc": [
         "default.handlebars->39->2260"
       ]
@@ -63343,6 +63478,7 @@
       "ja": "CloudFlareの信頼できるプロキシIPv6アドレスリストを読み込めません。",
       "nl": "Kan CloudFlare vertrouwde proxy IPv6 adreslijst niet laden.",
       "pl": "Nie można załadować listy adresów IPv6 zaufanego serwera proxy CloudFlare.",
+      "tr": "CloudFlare güvenilir proxy IPv6 adres listesi yüklenemiyor.",
       "xloc": [
         "default.handlebars->39->94"
       ]
@@ -63360,6 +63496,7 @@
       "ja": "デフォルトドメインのIntelAMTTLSルート証明書を読み込めません。",
       "nl": "Kan Intel AMT TLS rootcertificaat voor standaarddomein niet laden.",
       "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny domyślnej.",
+      "tr": "Varsayılan etki alanı için Intel AMT TLS kök sertifikası yüklenemiyor.",
       "xloc": [
         "default.handlebars->39->83"
       ]
@@ -63377,6 +63514,7 @@
       "ja": "ドメイン{0}のIntelAMTTLSルート証明書を読み込めません。",
       "nl": "Kan Intel AMT TLS rootcertificaat voor domein {0} niet laden.",
       "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny {0}.",
+      "tr": "{0} alanı için Intel AMT TLS kök sertifikası yüklenemiyor.",
       "xloc": [
         "default.handlebars->39->84"
       ]
@@ -63517,6 +63655,7 @@
       "ja": "Let'sEncryptモジュールをセットアップできません。",
       "nl": "Kan de Let's Encrypt module niet instellen.",
       "pl": "Nie można skonfigurować modułu Let's Encrypt.",
+      "tr": "Let's Encrypt modülü kurulamıyor.",
       "xloc": [
         "default.handlebars->39->91"
       ]
@@ -63870,6 +64009,7 @@
       "ja": "不明なユーザー",
       "nl": "Onbekende gebruiker",
       "pl": "Nieznany Użytkownik",
+      "tr": "Bilinmeyen kullanıcı",
       "xloc": [
         "default.handlebars->39->2737",
         "default.handlebars->39->2742"
@@ -64042,6 +64182,7 @@
       "ja": "認識されない構成オプション\\\"{0}\\\"。",
       "nl": "Niet herkende configuratie instelling \\\"{0}\\\".",
       "pl": "Nierozpoznana opcja konfiguracji \\\"{0}\\\".",
+      "tr": "Tanınmayan yapılandırma seçeneği \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->81"
       ]
@@ -65440,6 +65581,7 @@
       "ja": "ユーザートラフィックの使用",
       "nl": "Gebruik van gebruikersverkeer",
       "pl": "Wykorzystanie Pasma przez Użytkownika",
+      "tr": "Kullanıcı Trafiği Kullanımı",
       "xloc": [
         "default.handlebars->39->2694"
       ]
@@ -65736,6 +65878,7 @@
       "ja": "ユーザー通知が変更されました",
       "nl": "Gebruikersmeldingen gewijzigd",
       "pl": "Powiadomienia użytkownika zmieniono",
+      "tr": "Kullanıcı bildirimleri değişti",
       "xloc": [
         "default.handlebars->39->2258"
       ]
@@ -67315,6 +67458,7 @@
       "ja": "Webページの通知",
       "nl": "Webpagina meldingen",
       "pl": "Powiadomienia Strony Web",
+      "tr": "Web Sayfası Bildirimleri",
       "xloc": [
         "default.handlebars->39->2052",
         "default.handlebars->39->955"
@@ -67333,6 +67477,7 @@
       "ja": "Web電源スイッチ7",
       "nl": "Web Power Switch 7",
       "pl": "Przełącznik Zasilania Web 7",
+      "tr": "Web Güç Anahtarı 7",
       "xloc": [
         "default.handlebars->39->1753"
       ]
@@ -67476,6 +67621,7 @@
       "ja": "Web-SFTP",
       "nl": "Web-SFTP",
       "pl": "Web-SFTP",
+      "tr": "Web-SFTP",
       "xloc": [
         "default.handlebars->39->2730"
       ]
@@ -67591,6 +67737,7 @@
       "ja": "WebSocket圧縮が無効になっているため、この機能はNodeJSv11.11からv12.15およびv13.2で機能しなくなります。",
       "nl": "WebSocket compressie is uitgeschakeld, deze functie werkt niet meer in NodeJS v11.11 tot v12.15 en v13.2",
       "pl": "Kompresja WebSocket jest wyłączona, ta funkcja nie działa w NodeJS v11.11 do v12.15 i v13.2",
+      "tr": "WebSocket sıkıştırması devre dışı, bu özellik NodeJS v11.11'den v12.15'e ve v13.2'de bozuk",
       "xloc": [
         "default.handlebars->39->82"
       ]
@@ -67631,6 +67778,7 @@
       "it": "settimanalmente",
       "ja": "毎週",
       "nl": "Wekelijks",
+      "tr": "Haftalık",
       "xloc": [
         "default.handlebars->39->268"
       ]
@@ -69314,6 +69462,7 @@
       "ja": "[[[CONNECTIONS]]]",
       "nl": "[[[CONNECTIONS]]]",
       "pl": "[[[CONNECTIONS]]]",
+      "tr": "[[[CONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->5->3->0"
       ]
@@ -69331,6 +69480,7 @@
       "ja": "[[[DISCONNECTIONS]]]",
       "nl": "[[[DISCONNECTIONS]]]",
       "pl": "[[[DISCONNECTIONS]]]",
+      "tr": "[[[DISCONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->7->3->0"
       ]
@@ -69480,6 +69630,7 @@
       "ja": "[[[SERVERNAME]]]-デバイス通知",
       "nl": "[[[SERVERNAME]]] - Apparaatmelding",
       "pl": "[[[SERVERNAME]]] - Powiadomienia Urządzenia",
+      "tr": "[[[SERVERNAME]]] - Cihaz Bildirimi",
       "xloc": [
         "device-notify.html->0",
         "device-notify.html->2->1->1->0->1->1",
@@ -71913,6 +72064,7 @@
       "ja": "このメッセージを受け取ってから1時間以内。",
       "nl": "binnen 1 uur na ontvangst van dit bericht.",
       "pl": "w ciągu 1 godziny od otrzymania wiadomości.",
+      "tr": "Bu mesajı aldıktan sonra 1 saat içinde.",
       "xloc": [
         "device-notify.html->2->9->1"
       ]
@@ -72588,6 +72740,7 @@
       "ja": "{0}分",
       "nl": "{0} minuut",
       "pl": "{0} minuta",
+      "tr": "{0} dakika",
       "xloc": [
         "default.handlebars->39->260"
       ]
@@ -72605,6 +72758,7 @@
       "ja": "{0}分",
       "nl": "{0} minuten",
       "pl": "{0} minut",
+      "tr": "{0} dakika",
       "xloc": [
         "default.handlebars->39->262"
       ]
@@ -72814,6 +72968,7 @@
       "ja": "{0}リモートデスクトップアクセスを要求しています。アクセス許可？",
       "nl": "{0} verzoekt om toegang tot extern bureaublad.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do pulpitu. Przyznać dostęp?",
+      "tr": "{0} uzak masaüstü erişimi istiyor. Erişim izni veriyor musunuz?",
       "xloc": [
         "coretranslations.json"
       ]
@@ -72831,6 +72986,7 @@
       "ja": "{0}リモートファイルアクセスを要求しています。アクセス許可？",
       "nl": "{0} verzoekt om externe bestandstoegang.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do plików. Przyznać dostęp?",
+      "tr": "{0} uzak dosya Erişimi istiyor. Erişim izni veriyor musunuz?",
       "xloc": [
         "coretranslations.json"
       ]
@@ -72848,6 +73004,7 @@
       "ja": "{0}リモート端末アクセスを要求しています。アクセス許可？",
       "nl": "{0} verzoekt om toegang tot externe terminal.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do terminala. Przyznać dostęp?",
+      "tr": "{0} uzak terminal erişimi istiyor. Erişim izni veriyor musunuz?",
       "xloc": [
         "coretranslations.json"
       ]
@@ -73118,6 +73275,7 @@
       "ja": "{0}はリモートデスクトップセッションを開始しました。",
       "nl": "{0} heeft een extern bureaubladsessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do pulpitu.",
+      "tr": "{0} bir uzak masaüstü oturumu başlattı.",
       "xloc": [
         "coretranslations.json"
       ]
@@ -73135,6 +73293,7 @@
       "ja": "{0}がリモートファイルセッションを開始しました。",
       "nl": "{0} heeft een externe bestandssessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do plików.",
+      "tr": "{0} bir uzak dosya oturumu başlattı.",
       "xloc": [
         "coretranslations.json"
       ]
@@ -73152,6 +73311,7 @@
       "ja": "{0}がリモートターミナルセッションを開始しました。",
       "nl": "{0} heeft een externe terminalsessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do terminala.",
+      "tr": "{0} bir uzak terminal oturumu başlattı.",
       "xloc": [
         "coretranslations.json"
       ]
@@ -73292,6 +73452,7 @@
       "ja": "{0}、{1}は{2}分",
       "nl": "{0}, {1} voor {2} minuut",
       "pl": "{0}, {1} dla {2} minuty",
+      "tr": "{0}, {1} için {2} dakika",
       "xloc": [
         "default.handlebars->39->1874",
         "default.handlebars->39->942"
@@ -73310,6 +73471,7 @@
       "ja": "{0}、{1}は{2}分",
       "nl": "{0}, {1} voor {2} minuten",
       "pl": "{0}, {1} dla {2} minut",
+      "tr": "{0}, {1} için {2} dakika",
       "xloc": [
         "default.handlebars->39->1875",
         "default.handlebars->39->943"

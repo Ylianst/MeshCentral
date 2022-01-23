@@ -430,7 +430,7 @@
     "uninstall": "Kaldır",
     "connect": "Bağlan",
     "disconnect": "Bağlantıyı kes",
-    "cancel": "İptal etmek",
+    "cancel": "İptal",
     "close": "Kapat",
     "pressok": "Bağlantıyı kesmek için Tamam'a basın",
     "sudo": "Lütfen sudo ile tekrar deneyin.",
@@ -442,7 +442,11 @@
       "KOŞU",
       "KOŞMAK YOK"
     ],
-    "statusDescription": "Mevcut Temsilci Durumu"
+    "statusDescription": "Mevcut Agent Durumu",
+    "agentVersion": "Yeni sürüm",
+    "elevation": "Bu yazılımı yüklemek/kaldırmak için yüksek izinler gerekir.",
+    "graphicalerror": "Bu yükleyicinin grafik sürümü bu sistemde çalışamaz",
+    "description": "Bu uzaktan yönetim yazılımını yüklemek veya kaldırmak için aşağıdaki düğmelere tıklayın. Yüklendiğinde, bu yazılım arka planda çalışır ve bu bilgisayarın uzak bir yönetici tarafından yönetilmesine ve kontrol edilmesine olanak tanır."
   },
   "zh-chs": {
     "agent": "代理",

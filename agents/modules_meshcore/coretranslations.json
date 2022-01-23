@@ -141,7 +141,15 @@
   },
   "tr": {
     "allow": "İzin vermek",
-    "deny": "İnkar etmek"
+    "deny": "İnkar etmek",
+    "autoAllowForFive": "Sonraki 5 dakika boyunca tüm bağlantıları otomatik olarak kabul et",
+    "terminalConsent": "{0} uzak terminal erişimi istiyor. Erişim izni veriyor musunuz?",
+    "desktopConsent": "{0} uzak masaüstü erişimi istiyor. Erişim izni veriyor musunuz?",
+    "fileConsent": "{0} uzak dosya Erişimi istiyor. Erişim izni veriyor musunuz?",
+    "terminalNotify": "{0} bir uzak terminal oturumu başlattı.",
+    "desktopNotify": "{0} bir uzak masaüstü oturumu başlattı.",
+    "fileNotify": "{0} bir uzak dosya oturumu başlattı.",
+    "privacyBar": "Masaüstünü şu kişilerle paylaşma: {0}"
   },
   "zh-chs": {
     "allow": "允许",
