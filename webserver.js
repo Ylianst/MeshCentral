@@ -2777,7 +2777,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     webstate: encodeURIComponent(webstate).replace(/'/g, '%27'),
                     amtscanoptions: amtscanoptions,
                     pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports()
-                }, dbGetFunc.req, domain));
+                }, dbGetFunc.req, domain), user);
             }
             xdbGetFunc.req = req;
             xdbGetFunc.res = res;
@@ -7616,7 +7616,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Render a page using the proper language
-    function render(req, res, filename, args) {
+    function render(req, res, filename, args, user) {
         if (obj.renderPages != null) {
             // Get the list of acceptable languages in order
             var acceptLanguages = obj.getLanguageCodes(req);
@@ -7625,19 +7625,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var fileOptions = obj.renderPages[obj.path.basename(filename)];
             if (fileOptions != null) {
                 for (var i in acceptLanguages) {
-                    if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) { args.lang = 'en'; break; } // English requested, break out.
+                    if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) {
+                        // English requested
+                        args.lang = 'en';
+                        if (user && (user.llang != 'en')) { user.llang = 'en'; obj.db.SetUser(user); } // Set user 'last language' used if needed.
+                        break;
+                    }
                     if (fileOptions[acceptLanguages[i]] != null) {
                         // Found a match. If the file no longer exists, default to English.
                         obj.fs.exists(fileOptions[acceptLanguages[i]] + '.handlebars', function (exists) {
                             if (exists) { args.lang = acceptLanguages[i]; res.render(fileOptions[acceptLanguages[i]], args); } else { args.lang = 'en'; res.render(filename, args); }
                         });
+                        if (user && (user.llang != acceptLanguages[i])) { user.llang = acceptLanguages[i]; obj.db.SetUser(user); }  // Set user 'last language' used if needed.
                         return;
                     }
                 }
             }
         }
 
-        // No matches found, render the default english page.
+        // No matches found, render the default English page.
         res.render(filename, args);
     }
 

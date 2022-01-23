@@ -679,7 +679,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
         if (domain == null) return;
 
         // Send the email
-        obj.sendDeviceNotifyMail(domain, user.name, user.email, connections, disconnections, 'us-en', null);
+        obj.sendDeviceNotifyMail(domain, user.name, user.email, connections, disconnections, user.llang, null);
 
         // Clean up
         delete obj.deviceNotifications[userid];
