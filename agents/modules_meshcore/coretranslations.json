@@ -41,7 +41,11 @@
     "autoAllowForFive": "Accepter automatiquement les connexions pendant les 5 prochaines minutes",
     "terminalConsent": "{0} demande(nt) d'utilisation du terminal à distance. Autoriser l'accès ?",
     "desktopConsent": "{0} demande(nt) l'utilisation du bureau à distance. Autoriser l'accès ?",
-    "fileConsent": "{0} demande(nt) d'accès à un fichier à distance. Autoriser l'accès ?"
+    "fileConsent": "{0} demande(nt) d'accès à un fichier à distance. Autoriser l'accès ?",
+    "terminalNotify": "{0} a démarré une session de terminal distant.",
+    "desktopNotify": "{0} a démarré une session de bureau à distance.",
+    "fileNotify": "{0} a démarré une session de fichiers à distance.",
+    "privacyBar": "Partage du bureau avec : {0}"
   },
   "hi": {
     "allow": "अनुमति",
