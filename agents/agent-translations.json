@@ -163,7 +163,11 @@
       "FONCTIONNEMENT",
       "NE PAS COURRIR"
     ],
-    "statusDescription": "Statut actuel de l'agent"
+    "statusDescription": "Statut actuel de l'agent",
+    "agentVersion": "Nouvelle version",
+    "elevation": "Des autorisations élevées sont requises pour installer/désinstaller ce logiciel.",
+    "graphicalerror": "La version graphique de ce programme d'installation ne peut pas s'exécuter sur ce système",
+    "description": "Cliquez sur les boutons ci-dessous pour installer ou désinstaller ce logiciel de gestion à distance. Une fois installé, ce logiciel s'exécute en arrière-plan, ce qui permet à cet ordinateur d'être géré et contrôlé par un administrateur distant."
   },
   "hi": {
     "agent": "एजेंट",
