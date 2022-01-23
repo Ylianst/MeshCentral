@@ -15318,6 +15318,7 @@
     },
     {
       "en": "Consent",
+      "nl": "Toestemming",
       "fr": "Consentement",
       "xloc": [
         "default.handlebars->39->2274"
@@ -19501,6 +19502,7 @@
     },
     {
       "en": "Device group {0} was changed: {1}",
+      "nl": "Apparaatgroep {0} is gewijzigd: {1}",
       "fr": "Le groupe d'appareils {0} a été modifié : {1}",
       "xloc": [
         "default.handlebars->39->2270"
@@ -27775,6 +27777,7 @@
     },
     {
       "en": "Group name",
+      "nl": "Groepsnaam",
       "fr": "Nom de groupe",
       "xloc": [
         "default.handlebars->39->2271"
@@ -31240,6 +31243,7 @@
     },
     {
       "en": "Intel(r) AMT policy change",
+      "nl": "Intel(r) AMT beleidswijziging",
       "fr": "Changement de politique Intel(r) AMT",
       "xloc": [
         "default.handlebars->39->2269"
@@ -32381,6 +32385,7 @@
     },
     {
       "en": "Invite code",
+      "nl": "Uitnodigingscode",
       "fr": "Code d'invitation",
       "xloc": [
         "default.handlebars->39->2276"
@@ -66651,6 +66656,7 @@
     },
     {
       "en": "Weekly",
+      "nl": "Wekelijks",
       "fr": "Hebdomadaire",
       "xloc": [
         "default.handlebars->39->268"
