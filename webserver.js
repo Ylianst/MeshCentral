@@ -7628,7 +7628,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) {
                         // English requested
                         args.lang = 'en';
-                        if (user && (user.llang != 'en')) { user.llang = 'en'; obj.db.SetUser(user); } // Set user 'last language' used if needed.
+                        if (user && user.llang) { delete user.llang; obj.db.SetUser(user); } // Clear user 'last language' used if needed. Since English is the default, remove "last language".
                         break;
                     }
                     if (fileOptions[acceptLanguages[i]] != null) {

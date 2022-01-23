@@ -13450,8 +13450,20 @@
             136: "Forcibly disconnected files session of user {0}",
             137: "Forcibly disconnected routing session of user {0}",
             138: "Added device share {0} recurring daily.",
-            139: "Added device share {0} recurring weekly."
+            139: "Added device share {0} recurring weekly.",
+            140: "Changed device {0} from group {1}: {2}",
+            141: "Intel(r) AMT policy change",
+            142: "Device group {0} was changed: {1}"
         };
+
+        var eventsShortMessageId = {
+            1: "Group name",
+            2: "Description",
+            3: "Flags",
+            4: "Consent",
+            5: "Auto-Remove",
+            6: "Invite code"
+        }
 
         // Highlights the device being hovered
         function eventMouseHover(e, over) {
@@ -13486,7 +13498,14 @@
                         if (event.msgArgs != null) {
                             for (var i in event.msgArgs) {
                                 var xx = event.msgArgs[i];
-                                if ((typeof xx == 'string') && (xx.indexOf('DATETIME:') == 0)) { xx = printFlexDateTime(new Date(parseInt(xx.substring(9)))); }
+                                if (Array.isArray(xx)) {
+                                    var x2 = [];
+                                    for (var j in xx) { if ((typeof xx[j] == 'number') && (eventsShortMessageId[xx[j]])) { x2.push(eventsShortMessageId[xx[j]]); } else { x2.push(xx[j]); } }
+                                    xx = x2.join(", ");
+                                } else {
+                                    if ((typeof xx == 'string') && (xx.indexOf('DATETIME:') == 0)) { xx = printFlexDateTime(new Date(parseInt(xx.substring(9)))); }
+                                    
+                                }
                                 msg = msg.split('{' + i + '}').join(xx);
                             }
                         }
