@@ -1083,6 +1083,7 @@
     {
       "de": ", täglich wiederkehrend",
       "en": ", Reccuring daily",
+      "nl": ", Dagelijks terugkerend",
       "pl": ", Powtarzaj codziennie",
       "xloc": [
         "default.handlebars->39->1876",
@@ -1092,6 +1093,7 @@
     {
       "de": ", wöchentlich wiederkehrend",
       "en": ", Reccuring weekly",
+      "nl": ", Wekelijks terugkerend",
       "pl": ", Powtarzaj co tydzień",
       "xloc": [
         "default.handlebars->39->1877",
@@ -6416,6 +6418,7 @@
     },
     {
       "en": "Added device share {0} recurring daily.",
+      "nl": "Apparaat delen toegevoegd {0} dagelijks terugkerend.",
       "pl": "Dodano udostępnienie urządzenia {0} reaktywowane codziennie.",
       "xloc": [
         "default.handlebars->39->2266"
@@ -6423,6 +6426,7 @@
     },
     {
       "en": "Added device share {0} recurring weekly.",
+      "nl": "Apparaat delen toegevoegd {0} wekelijks terugkerend.",
       "pl": "Dodano udostępnienie urządzenia {0} reaktywowane co tydzień.",
       "xloc": [
         "default.handlebars->39->2267"
@@ -9906,6 +9910,7 @@
     },
     {
       "en": "Auto accept all connections for next 5 minutes",
+      "nl": "Alle verbindingen automatisch accepteren voor de komende 5 minuten",
       "fr": "Accepter automatiquement les connexions pendant les 5 prochaines minutes",
       "pl": "Automatycznie akceptuj wszystkie połączenia przez następne 5 minut",
       "xloc": [
@@ -13292,6 +13297,7 @@
     },
     {
       "en": "Click the buttons below to install or uninstall this remote management software. When installed, this software runs in the background allowing this computer to be managed and controlled by a remote administrator.",
+      "nl": "Klik op de onderstaande knoppen om deze software voor beheer op afstand te installeren of te verwijderen. Na installatie draait deze software op de achtergrond waardoor deze computer kan worden beheerd en gecontroleerd door een externe beheerder.",
       "pl": "Kliknij poniższe przyciski, aby zainstalować lub odinstalować oprogramowanie zdalnego dostępu. Po zainstalowaniu, to oprogramowanie działa w tle, umożliwiając zarządzanie i kontrolowanie tego komputera przez zdalnego administratora.",
       "xloc": [
         "agent-translations.json"
@@ -17020,6 +17026,7 @@
     },
     {
       "en": "Daily",
+      "nl": "Dagelijks",
       "pl": "Dziennie",
       "xloc": [
         "default.handlebars->39->266"
@@ -22656,6 +22663,7 @@
     },
     {
       "en": "Elevated permissions are required to install/uninstall this software.",
+      "nl": "Verhoogde machtigingen zijn vereist om deze software te installeren/verwijderen.",
       "pl": "Do zainstalowania/odinstalowania tego oprogramowania wymagane są podwyższone uprawnienia.",
       "xloc": [
         "agent-translations.json"
@@ -23394,6 +23402,7 @@
     },
     {
       "en": "Encoding: RAW",
+      "nl": "Codering: RAW",
       "pl": "Kodowanie: RAW",
       "xloc": [
         "default.handlebars->39->1341"
@@ -23401,6 +23410,7 @@
     },
     {
       "en": "Encoding: UTF8",
+      "nl": "Codering: UTF8",
       "pl": "Kodowanie: UTF8",
       "xloc": [
         "default.handlebars->39->1342"
@@ -25634,6 +25644,7 @@
     },
     {
       "en": "Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any",
+      "nl": "Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar"
       ]
@@ -40106,6 +40117,7 @@
     },
     {
       "en": "New Version",
+      "nl": "Nieuwe versie",
       "pl": "Nowa Wersja",
       "xloc": [
         "agent-translations.json"
@@ -45677,12 +45689,6 @@
       ]
     },
     {
-      "en": "Poort nummer",
-      "pl": "Numer Portu",
-      "da": "Port Nummer",
-      "fr": "Numéro de port"
-    },
-    {
       "cs": "Mapování portů",
       "de": "Port-Mapping",
       "en": "Port Mapping",
@@ -45736,6 +45742,7 @@
     },
     {
       "en": "Port Number",
+      "nl": "Poortnummer",
       "fr": "Numéro de port",
       "pl": "Numer Portu",
       "xloc": [
@@ -47381,6 +47388,7 @@
     },
     {
       "en": "Raw",
+      "nl": "Raw",
       "pl": "Surowe",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog4"
@@ -47619,6 +47627,7 @@
     },
     {
       "en": "Recurring",
+      "nl": "Terugkerend",
       "pl": "Powtarzanie",
       "xloc": [
         "default.handlebars->39->265",
@@ -47627,6 +47636,7 @@
     },
     {
       "en": "Recurring daily",
+      "nl": "Dagelijks terugkerend",
       "pl": "Powtarzanie codzienne",
       "xloc": [
         "default.handlebars->39->1046"
@@ -47634,6 +47644,7 @@
     },
     {
       "en": "Recurring weekly",
+      "nl": "Wekelijks terugkerend",
       "pl": "Powtarzanie co tydzień",
       "xloc": [
         "default.handlebars->39->1047"
@@ -55144,6 +55155,7 @@
     },
     {
       "en": "Sharing desktop with: {0}",
+      "nl": "Bureaublad delen met: {0}",
       "pl": "Współdzielenie pulpitu z: {0}",
       "xloc": [
         "coretranslations.json"
@@ -59575,6 +59587,7 @@
     },
     {
       "en": "The graphical version of this installer cannot run on this system",
+      "nl": "De grafische versie van dit installatieprogramma kan niet op dit systeem draaien",
       "pl": "Graficzna wersja tego instalatora nie może być uruchomiona w tym systemie",
       "xloc": [
         "agent-translations.json"
@@ -61710,7 +61723,7 @@
     },
     {
       "en": "Turn off",
-      "nn": "Uitschakelen",
+      "nl": "Uitschakelen",
       "pl": "Wyłącz",
       "da": "Sluk",
       "fr": "Éteindre",
@@ -66563,6 +66576,7 @@
     },
     {
       "en": "Weekly",
+      "nl": "Wekelijks",
       "pl": "Tygodniowo",
       "xloc": [
         "default.handlebars->39->268"
@@ -71486,6 +71500,7 @@
     },
     {
       "en": "{0} minute",
+      "nl": "{0} minuut",
       "pl": "{0} minuta",
       "xloc": [
         "default.handlebars->39->260"
@@ -71493,6 +71508,7 @@
     },
     {
       "en": "{0} minutes",
+      "nl": "{0} minuten",
       "pl": "{0} minut",
       "xloc": [
         "default.handlebars->39->262"
@@ -71693,6 +71709,7 @@
     {
       "en": "{0} requesting remote desktop access. Grant access?",
       "fr": "{0} demande(nt) l'utilisation du bureau à distance. Autoriser l'accès ?",
+      "nl": "{0} verzoekt om toegang tot extern bureaublad.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do pulpitu. Przyznać dostęp?",
       "xloc": [
         "coretranslations.json"
@@ -71701,6 +71718,7 @@
     {
       "en": "{0} requesting remote file Access. Grant access?",
       "fr": "{0} demande(nt) d'accès à un fichier à distance. Autoriser l'accès ?",
+      "nl": "{0} verzoekt om externe bestandstoegang.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do plików. Przyznać dostęp?",
       "xloc": [
         "coretranslations.json"
@@ -71709,6 +71727,7 @@
     {
       "en": "{0} requesting remote terminal access. Grant access?",
       "fr": "{0} demande(nt) d'utilisation du terminal à distance. Autoriser l'accès ?",
+      "nl": "{0} verzoekt om toegang tot externe terminal.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do terminala. Przyznać dostęp?",
       "xloc": [
         "coretranslations.json"
@@ -71969,6 +71988,7 @@
     },
     {
       "en": "{0} started a remote desktop session.",
+      "nl": "{0} heeft een extern bureaubladsessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do pulpitu.",
       "xloc": [
         "coretranslations.json"
@@ -71976,6 +71996,7 @@
     },
     {
       "en": "{0} started a remote file session.",
+      "nl": "{0} heeft een externe bestandssessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do plików.",
       "xloc": [
         "coretranslations.json"
@@ -71983,6 +72004,7 @@
     },
     {
       "en": "{0} started a remote terminal session.",
+      "nl": "{0} heeft een externe terminalsessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do terminala.",
       "xloc": [
         "coretranslations.json"
@@ -72113,6 +72135,7 @@
     },
     {
       "en": "{0}, {1} for {2} minute",
+      "nl": "{0}, {1} voor {2} minuut",
       "pl": "{0}, {1} dla {2} minuty",
       "xloc": [
         "default.handlebars->39->1874",
@@ -72121,6 +72144,7 @@
     },
     {
       "en": "{0}, {1} for {2} minutes",
+      "nl": "{0}, {1} voor {2} minuten",
       "pl": "{0}, {1} dla {2} minut",
       "xloc": [
         "default.handlebars->39->1875",
