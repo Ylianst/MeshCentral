@@ -1,22 +1,22 @@
-[[[SERVERNAME]]] - Device Notification
+[[[SERVERNAME]]] - Cihaz Bildirimi
 ~<area-header>
-The following devices have changed their connection state.
+Aşağıdaki cihazlar bağlantı durumlarını değiştirdi.
 ~</area-header>
 ~<area-connections>
 ~
-Connected devices:
+Bağlı cihazlar:
 ~
 ~[[[CONNECTIONS]]]
 ~
 ~</area-connections>
 ~<area-disconnections>
 ~
-Disconnected devices:
+Bağlantısı kesilen cihazlar:
 ~
 ~[[[DISCONNECTIONS]]]
 ~
 ~</area-disconnections>
 ~<area-footer>
 
-To unsubscribe, load this link within 1 hour of getting this message: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+Aboneliğinizi iptal etmek için, bu mesajı aldıktan sonraki 1 saat içinde bu bağlantıyı yükleyin: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
 ~</area-footer>
