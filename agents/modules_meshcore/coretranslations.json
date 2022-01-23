@@ -39,9 +39,9 @@
     "allow": "Permettre",
     "deny": "Refuser",
     "autoAllowForFive": "Accepter automatiquement les connexions pendant les 5 prochaines minutes",
-    "terminalConsent": "{0} demande(s) d'utilisation du terminal distant. Autoriser l'accès ?",
-    "desktopConsent": "{0} demande(s) d'utilisation du bureau distant. Autoriser l'accès ?",
-    "fileConsent": "{0} demande(s) d'accès à un fichier distant. Autoriser l'accès ?"
+    "terminalConsent": "{0} demande(nt) d'utilisation du terminal à distance. Autoriser l'accès ?",
+    "desktopConsent": "{0} demande(nt) l'utilisation du bureau à distance. Autoriser l'accès ?",
+    "fileConsent": "{0} demande(nt) d'accès à un fichier à distance. Autoriser l'accès ?"
   },
   "hi": {
     "allow": "अनुमति",
@@ -65,7 +65,15 @@
   },
   "nl": {
     "allow": "Toestaan",
-    "deny": "Weigeren"
+    "deny": "Weigeren",
+    "autoAllowForFive": "Alle verbindingen automatisch accepteren voor de komende 5 minuten",
+    "terminalConsent": "{0} verzoekt om toegang tot externe terminal.Toegang verlenen?",
+    "desktopConsent": "{0} verzoekt om toegang tot extern bureaublad.Toegang verlenen?",
+    "fileConsent": "{0} verzoekt om externe bestandstoegang.Toegang verlenen?",
+    "terminalNotify": "{0} heeft een externe terminalsessie gestart.",
+    "desktopNotify": "{0} heeft een extern bureaubladsessie gestart.",
+    "fileNotify": "{0} heeft een externe bestandssessie gestart.",
+    "privacyBar": "Bureaublad delen met: {0}"
   },
   "pt": {
     "allow": "Permitir",
