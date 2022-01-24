@@ -1,22 +1,22 @@
-[[[SERVERNAME]]] - Device Notification
+[[[SERVERNAME]]] - Laitteen ilmoitus
 ~<area-header>
-The following devices have changed their connection state.
+Seuraavat laitteet ovat muuttaneet yhteystilaa.
 ~</area-header>
 ~<area-connections>
 ~
-Connected devices:
+Kytketyt laitteet:
 ~
 ~[[[CONNECTIONS]]]
 ~
 ~</area-connections>
 ~<area-disconnections>
 ~
-Disconnected devices:
+Irrotetut laitteet:
 ~
 ~[[[DISCONNECTIONS]]]
 ~
 ~</area-disconnections>
 ~<area-footer>
 
-To unsubscribe, load this link within 1 hour of getting this message: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+Peruuta tilaus lataamalla tämä linkki tunnin sisällä tämän viestin vastaanottamisesta: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
 ~</area-footer>

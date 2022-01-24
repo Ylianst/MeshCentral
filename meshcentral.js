@@ -1,7 +1,7 @@
 /**
 * @description MeshCentral main module
 * @author Ylian Saint-Hilaire
-* @copyright Intel Corporation 2018-2021
+* @copyright Intel Corporation 2018-2022
 * @license Apache-2.0
 * @version v0.0.1
 */
@@ -1285,6 +1285,7 @@ function CreateMeshCentralServer(config, args) {
                 if (typeof obj.config.domains[i].agentcustomization.description != 'string') { delete obj.config.domains[i].agentcustomization.description; } else { obj.config.domains[i].agentcustomization.description = obj.config.domains[i].agentcustomization.description.split('\r').join('').split('\n').join(''); }
                 if (typeof obj.config.domains[i].agentcustomization.companyname != 'string') { delete obj.config.domains[i].agentcustomization.companyname; } else { obj.config.domains[i].agentcustomization.companyname = obj.config.domains[i].agentcustomization.companyname.split('\r').join('').split('\n').join(''); }
                 if (typeof obj.config.domains[i].agentcustomization.servicename != 'string') { delete obj.config.domains[i].agentcustomization.servicename; } else { obj.config.domains[i].agentcustomization.servicename = obj.config.domains[i].agentcustomization.servicename.split('\r').join('').split('\n').join('').split(' ').join('').split('"').join('').split('\'').join('').split('>').join('').split('<').join('').split('/').join('').split('\\').join(''); }
+                if (typeof obj.config.domains[i].agentcustomization.image != 'string') { delete obj.config.domains[i].agentcustomization.image; } else { try { obj.config.domains[i].agentcustomization.image = 'data:image/png;base64,' + Buffer.from(obj.fs.readFileSync(obj.getConfigFilePath(obj.config.domains[i].agentcustomization.image)), 'binary').toString('base64'); } catch (ex) { console.log(ex); delete obj.config.domains[i].agentcustomization.image; } }
             } else {
                 delete obj.config.domains[i].agentcustomization;
             }
@@ -1549,7 +1550,10 @@ function CreateMeshCentralServer(config, args) {
 
         // Load MeshAgent translation strings
         try {
-            var translations = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'agent-translations.json')).toString());
+            var translationpath = obj.path.join(__dirname, 'agents', 'agent-translations.json');
+            var translationpath2 = obj.path.join(obj.datapath, 'agents', 'agent-translations.json');
+            if (obj.fs.existsSync(translationpath2)) { translationpath = translationpath2; } // If the agent is present in "meshcentral-data/agents", use that one instead.
+            var translations = JSON.parse(obj.fs.readFileSync(translationpath).toString());
             if (translations['zh-chs']) { translations['zh-hans'] = translations['zh-chs']; delete translations['zh-chs']; }
             if (translations['zh-cht']) { translations['zh-hant'] = translations['zh-cht']; delete translations['zh-cht']; }
             obj.agentTranslations = JSON.stringify(translations);
@@ -2627,6 +2631,9 @@ function CreateMeshCentralServer(config, args) {
         for (var toolname in meshToolsList) {
             if (meshToolsList[toolname].winhash === true) {
                 var toolpath = obj.path.join(__dirname, 'agents', meshToolsList[toolname].localname);
+                var toolpath2 = obj.path.join(obj.datapath, 'agents', meshToolsList[toolname].localname);
+                if (obj.fs.existsSync(toolpath2)) { toolpath = toolpath2; } // If the tool is present in "meshcentral-data/agents", use that one instead.
+
                 var hashStream = obj.crypto.createHash('sha384');
                 hashStream.toolname = toolname;
                 hashStream.toolpath = toolpath;
@@ -2643,6 +2650,9 @@ function CreateMeshCentralServer(config, args) {
                 obj.exeHandler.hashExecutableFile(options);
             } else {
                 var toolpath = obj.path.join(__dirname, 'agents', meshToolsList[toolname].localname);
+                var toolpath2 = obj.path.join(obj.datapath, 'agents', meshToolsList[toolname].localname);
+                if (obj.fs.existsSync(toolpath2)) { toolpath = toolpath2; } // If the tool is present in "meshcentral-data/agents", use that one instead.
+
                 var stream = null;
                 try {
                     stream = obj.fs.createReadStream(toolpath);
@@ -2771,6 +2781,8 @@ function CreateMeshCentralServer(config, args) {
         var archcount = 0;
         for (var archid in obj.meshAgentsArchitectureNumbers) {
             var agentpath = obj.path.join(__dirname, 'agents', obj.meshAgentsArchitectureNumbers[archid].localname);
+            var agentpath2 = obj.path.join(obj.datapath, 'agents', obj.meshAgentsArchitectureNumbers[archid].localname);
+            if (obj.fs.existsSync(agentpath2)) { agentpath = agentpath2; } // If the agent is present in "meshcentral-data/agents", use that one instead.
 
             // Fetch all the agent binary information
             var stats = null;

@@ -226,6 +226,10 @@ body {
     -ms-grid-row: 2;
 }
 
+.logoncontrolspan, .logoncontrolspan2 {
+    color: white;
+}
+
 .topbar_td {
     width: 100px;
     height: 24px;
@@ -1112,6 +1116,7 @@ NoMeshesPanel img {
     height: calc(100vh - 295px);
     overflow: auto;
     -webkit-user-select: none;
+    user-select: none;
     position: relative;
 }
 
@@ -1120,6 +1125,7 @@ NoMeshesPanel img {
     width: 100%;
     overflow: auto;
     -webkit-user-select: none;
+    user-select: none;
     background-color: lightsteelblue;
 }
 
@@ -1900,6 +1906,7 @@ a {
     -khtml-user-select: none;
     -webkit-user-select: none;
     -o-user-select: none;
+    user-select: none;
     cursor: default;
     -khtml-user-drag: element;
     clear: both;
@@ -2509,6 +2516,7 @@ a {
     overflow: hidden;
     width: 100%;
     -ms-touch-action: none;
+    touch-action: none;
     position: absolute;
     top: 0px;
     bottom: 0px;
@@ -2726,6 +2734,7 @@ a {
     height: calc(100vh - 323px);
     overflow: auto;
     -webkit-user-select: none;
+    user-select: none;
 }
 
 .room4submenu #p13filetable {

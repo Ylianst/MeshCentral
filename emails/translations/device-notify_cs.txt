@@ -1,22 +1,22 @@
-[[[SERVERNAME]]] - Device Notification
+[[[SERVERNAME]]] – Oznámení zařízení
 ~<area-header>
-The following devices have changed their connection state.
+Následující zařízení změnila svůj stav připojení.
 ~</area-header>
 ~<area-connections>
 ~
-Connected devices:
+Připojená zařízení:
 ~
 ~[[[CONNECTIONS]]]
 ~
 ~</area-connections>
 ~<area-disconnections>
 ~
-Disconnected devices:
+Odpojená zařízení:
 ~
 ~[[[DISCONNECTIONS]]]
 ~
 ~</area-disconnections>
 ~<area-footer>
 
-To unsubscribe, load this link within 1 hour of getting this message: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+Chcete-li se odhlásit, načtěte tento odkaz do 1 hodiny od obdržení této zprávy: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
 ~</area-footer>

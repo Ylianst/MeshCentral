@@ -1,7 +1,7 @@
 /**
 * @description MeshCentral e-mail server communication modules
 * @author Ylian Saint-Hilaire
-* @copyright Intel Corporation 2018-2021
+* @copyright Intel Corporation 2018-2022
 * @license Apache-2.0
 * @version v0.0.1
 */
@@ -679,7 +679,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
         if (domain == null) return;
 
         // Send the email
-        obj.sendDeviceNotifyMail(domain, user.name, user.email, connections, disconnections, 'us-en', null);
+        obj.sendDeviceNotifyMail(domain, user.name, user.email, connections, disconnections, user.llang, null);
 
         // Clean up
         delete obj.deviceNotifications[userid];

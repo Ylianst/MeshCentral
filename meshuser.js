@@ -1,7 +1,7 @@
 ﻿/**
 * @description MeshCentral MeshAgent
 * @author Ylian Saint-Hilaire & Bryan Roe
-* @copyright Intel Corporation 2018-2021
+* @copyright Intel Corporation 2018-2022
 * @license Apache-2.0
 * @version v0.0.1
 */
@@ -1474,8 +1474,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Get the domain
-                    var delGroupDomain = parent.parent.config.domains[ugroupidsplit[1]];
-                    if (delGroupDomain == null) { err = "Invalid domain id"; }
+                    var delGroupDomain;
+                    if (ugroupidsplit != null) {
+                        delGroupDomain = parent.parent.config.domains[ugroupidsplit[1]];
+                        if (delGroupDomain == null) { err = "Invalid domain id"; }
+                    }
 
                     // Handle any errors
                     if (err != null) {
@@ -1592,7 +1595,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changemeshnotify', responseid: command.responseid, result: err })); } catch (ex) { } } break; }
 
                     // Change the device group notification
+                    if (user.links == null) { user.links = {}; }
                     if (user.links[command.meshid]) {
+                        // The user has direct rights for this device group
                         if (command.notify == 0) {
                             delete user.links[command.meshid].notify;
                         } else {
@@ -2095,18 +2100,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_EDITMESH) == 0) return;
                     if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
-                    if ((common.validateString(command.meshname, 1, 128) == true) && (command.meshname != mesh.name)) { change = 'Group name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
-                    if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Group "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
-                    if ((common.validateInt(command.flags) == true) && (command.flags != mesh.flags)) { if (change != '') change += ' and flags changed'; else change += 'Group "' + mesh.name + '" flags changed'; mesh.flags = command.flags; }
-                    if ((common.validateInt(command.consent) == true) && (command.consent != mesh.consent)) { if (change != '') change += ' and consent changed'; else change += 'Group "' + mesh.name + '" consent changed'; mesh.consent = command.consent; }
-                    if ((common.validateInt(command.expireDevs, 0, 2000) == true) && (command.expireDevs != mesh.expireDevs)) { if (change != '') change += ' and auto-remove changed'; else change += 'Group "' + mesh.name + '" auto-remove changed'; if (command.expireDevs == 0) { delete mesh.expireDevs; } else { mesh.expireDevs = command.expireDevs; } }
+                    var changesids = [];
+                    if ((common.validateString(command.meshname, 1, 128) == true) && (command.meshname != mesh.name)) { change = 'Device group name changed from "' + mesh.name + '" to "' + command.meshname + '"'; changesids.push(1); mesh.name = command.meshname; }
+                    if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Device group "' + mesh.name + '" description changed'; changesids.push(2); mesh.desc = command.desc; }
+                    if ((common.validateInt(command.flags) == true) && (command.flags != mesh.flags)) { if (change != '') change += ' and flags changed'; else change += 'Device group "' + mesh.name + '" flags changed'; changesids.push(3); mesh.flags = command.flags; }
+                    if ((common.validateInt(command.consent) == true) && (command.consent != mesh.consent)) { if (change != '') change += ' and consent changed'; else change += 'Device group "' + mesh.name + '" consent changed'; changesids.push(4); mesh.consent = command.consent; }
+                    if ((common.validateInt(command.expireDevs, 0, 2000) == true) && (command.expireDevs != mesh.expireDevs)) { if (change != '') change += ' and auto-remove changed'; else change += 'Device group "' + mesh.name + '" auto-remove changed'; changesids.push(5); if (command.expireDevs == 0) { delete mesh.expireDevs; } else { mesh.expireDevs = command.expireDevs; } }
 
                     // See if we need to change device group invitation codes
                     if (mesh.mtype == 2) {
                         if (command.invite === '*') {
                             // Clear invite codes
                             if (mesh.invite != null) { delete mesh.invite; }
-                            if (change != '') { change += ' and invite code changed'; } else { change += 'Group "' + mesh.name + '" invite code changed'; }
+                            if (change != '') { change += ' and invite code changed'; } else { change += 'Device group "' + mesh.name + '" invite code changed'; }
+                            changesids.push(6);
                         } else if ((typeof command.invite == 'object') && (Array.isArray(command.invite.codes)) && (typeof command.invite.flags == 'number')) {
                             // Set invite codes
                             if ((mesh.invite == null) || (mesh.invite.codes != command.invite.codes) || (mesh.invite.flags != command.invite.flags)) {
@@ -2123,14 +2130,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     return;
                                 }
                                 mesh.invite = { codes: command.invite.codes, flags: command.invite.flags };
-                                if (change != '') { change += ' and invite code changed'; } else { change += 'Group "' + mesh.name + '" invite code changed'; }
+                                if (change != '') { change += ' and invite code changed'; } else { change += 'Device group "' + mesh.name + '" invite code changed'; }
+                                changesids.push(6);
                             }
                         }
                     }
 
                     if (change != '') {
                         db.Set(mesh);
-                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, consent: mesh.consent, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite, expireDevs: command.expireDevs };
+                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, consent: mesh.consent, action: 'meshchange', links: mesh.links, msgid: 142, msgArgs: [ mesh.name, changesids ], msg: change, domain: domain.id, invite: mesh.invite, expireDevs: command.expireDevs };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id]), obj, event);
                     }
@@ -2254,7 +2262,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     mesh = parent.meshes[command.meshid];
-                    change = '';
                     if (mesh) {
                         // Check if this user has rights to do this
                         if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_EDITMESH) == 0) return;
@@ -2263,7 +2270,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // TODO: Check if this is a change from the existing policy
 
                         // Perform the Intel AMT policy change
-                        change = 'Intel AMT policy change';
                         var amtpolicy = { type: command.amtpolicy.type };
                         if ((command.amtpolicy.type === 2) || (command.amtpolicy.type === 3)) {
                             amtpolicy = { type: command.amtpolicy.type, badpass: command.amtpolicy.badpass, cirasetup: command.amtpolicy.cirasetup };
@@ -2275,7 +2281,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.Set(mesh);
                         var amtpolicy2 = Object.assign({}, amtpolicy); // Shallow clone
                         if (amtpolicy2.password != null) { amtpolicy2.password = 1; }
-                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, amt: amtpolicy2, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
+                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, amt: amtpolicy2, action: 'meshchange', links: mesh.links, msgid: 141, msg: "Intel(r) AMT policy change", domain: domain.id, invite: mesh.invite };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id]), obj, event);
 
@@ -2961,6 +2967,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Event the node change. Only do this if the database will not do it.
                             event.msg = 'Changed device ' + node.name + ' from group ' + mesh.name + ': ' + changes.join(', ');
                             event.node = parent.CloneSafeNode(node);
+                            event.msgid = 140;
+                            event.msgArgs = [ node.name, mesh.name, changes.join(', ') ];
                             if (amtchange == 1) { event.amtchange = 1; } // This will give a hint to the AMT Manager to reconnect using new AMT credentials
                             if (command.rdpport == 3389) { event.node.rdpport = 3389; }
                             if (command.rfbport == 5900) { event.node.rfbport = 5900; }
@@ -4360,7 +4368,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                 } else {
                     // Get previous logins for specific userid
-                    if (user.siteadmin === SITERIGHT_ADMIN) {
+                    if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) {
                         var splitUser = command.userid.split('/');
                         if ((obj.crossDomain === true) || (splitUser[1] === domain.id)) {
                             if (db.GetUserLoginEvents) {
@@ -5100,7 +5108,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Add a new user account
         var err = null, errid = 0, newusername, newuserid, newuserdomain;
         try {
-            if ((user.siteadmin & 2) == 0) { err = "Permission denied"; errid = 1; }
+            if ((user.siteadmin & MESHRIGHT_MANAGEUSERS) == 0) { err = "Permission denied"; errid = 1; }
             else if (common.validateUsername(command.username, 1, 256) == false) { err = "Invalid username"; errid = 2; } // Username is between 1 and 64 characters, no spaces
             else if ((command.username[0] == '~') || (command.username.indexOf('/') >= 0)) { err = "Invalid username"; errid = 2; } // Usernames cant' start with ~ and can't have '/'
             else if (common.validateString(command.pass, 1, 256) == false) { err = "Invalid password"; errid = 3; } // Password is between 1 and 256 characters
