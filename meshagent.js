@@ -1657,7 +1657,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
                 case 'getUserImage': {
                     // Validate input
-                    if (typeof command.userid != 'string') return;
+                    if (typeof command.userid != 'string') {
+                        // Send back the default image if required
+                        if ((command.default) || (command.sentDefault)) {
+                            try { command.image = 'data:image/png;base64,' + Buffer.from(parent.fs.readFileSync(parent.parent.path.join(__dirname, 'public', 'images', 'user-128.png')), 'binary').toString('base64'); } catch (ex) { }
+                            obj.send(JSON.stringify(command));
+                        }
+                        return;
+                    }
                     var useridsplit = command.userid.split('/');
                     if ((useridsplit.length != 3) || (useridsplit[1] != domain.id)) return;
 
