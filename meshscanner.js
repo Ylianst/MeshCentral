@@ -1,7 +1,7 @@
 ﻿/**
 * @description MeshCentral Mesh Agent Local Scanner
 * @author Ylian Saint-Hilaire
-* @copyright Intel Corporation 2018-2021
+* @copyright Intel Corporation 2018-2022
 * @license Apache-2.0
 * @version v0.0.1
 */

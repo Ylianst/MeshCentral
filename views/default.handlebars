@@ -132,7 +132,7 @@
             <div style="float:right">
                 <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="display: none;" title="Click to view current notifications">0</div>
             </div>
-            <p id="logoutControl"><span id=logoutControlSpan style="color:white"></span><span id=idleTimeoutNotify style="color:yellow"></span></p>
+            <p id="logoutControl"><span id=logoutControlSpan class="logoncontrolspan" style="color:white"></span><span id=idleTimeoutNotify style="color:yellow"></span></p>
         </div>
         <div id="page_leftbar">
             <div style="height:16px"></div>
@@ -284,7 +284,7 @@
                             <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All" id="ExpandAllButton" src="images/icon-expand.png" loading=lazy width=9 height=11 onclick="cmexpandaction(1)" />
                             <input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
-                            <input id=SearchInput type=search autocomplete=off placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
+                            <input id=SearchInput type=search autocomplete=off placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any"/>&nbsp;
                             <span id=SearchInputClearButton style="display:none;position:relative"><img src="images/x16.png" type="button" onclick="clearDeviceSearch()" style="position:absolute;cursor:pointer;left:-18px;top:-8px" srcset="images/x32.png 2x"/></span>
                             <select id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
                                 <option value=0>All</option>
@@ -1121,7 +1121,7 @@
                         <td class="style14">
                             <div style="float:right">
                             </div>
-                            <div>
+                            <div id="p50userGroupOps">
                                 <input type=button id=UsersGroupsSelectAllButton onclick="p50usersSelectallButtonFunction()" value="Select All" />
                                 <input type=button id=UsersGroupsGroupActionButton disabled="disabled" value="Group Action" onclick=p50usersGroupActionFunction() />
                                 <input id=NewUserGroupButton type=button onclick=showCreateUserGroupDialog(1) value="New Group..." />
@@ -1247,6 +1247,7 @@
                 <div id=dialog4 style="">
                     <input id="d4WrapButton" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
                     <input id="d4SizeButton" type="button" value="Small" onclick="d4ToggleSize()" />
+                    <input id="d4EncodingButton" type="button" value="Raw" onclick="d4ToggleEncoding()" />
                     <textarea id=d4editorarea autocomplete="off" style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
                 </div>
                 <div id=dialog7 style="">
@@ -1581,8 +1582,10 @@
             // Set the file editor
             d4EditWrapVal = getstore('editorWrap', 0);
             d4EditSizeVal = getstore('editorSize', 0);
+            d4EditEncodingVal = getstore('editorEncoding', 0);
             d4ToggleWrap(true);
             d4ToggleSize(true);
+            d4ToggleEncoding(true);
             if (pluginHandler != null) pluginHandler.callHook('onWebUIStartupEnd');
 
             // Deleted non-english style and fix all topbar titles
@@ -2050,6 +2053,7 @@
                 // We are user administrator
                 if (users == null) { meshserver.send({ action: 'users' }); }
                 if (wssessions == null) { meshserver.send({ action: 'wssessioncount' }); }
+                mainUpdate(8192 + 16384);
             } else {
                 // We are not user administrator
                 users = null;
@@ -5232,35 +5236,39 @@
         }
 
         function groupActionFunction() {
-            var addedOptions = '', nodeids = getCheckedDevices(), added = 0;
+            var addedOptions = [], nodeids = getCheckedDevices(), added = 0;
 
             // Check if any of the selected devices have a MQTT connection active
             if (features & 0x00400000) {
-                for (var i in nodeids) { if ((getNodeFromId(nodeids[i]).conn & 16) != 0) { addedOptions += '<option value=103>' + "Send MQTT Message" + '</option>'; break; } }
+                for (var i in nodeids) { if ((getNodeFromId(nodeids[i]).conn & 16) != 0) { addedOptions.push({ v:103, name: "Send MQTT Message" });; break; } }
             }
 
-            // Display the "Uninstall Agent" option if allowed and we selected connected devices.
+            // Display the options that are allowed depending on what devices are selected.
+            addedOptions.push({ v: 105, name: "Export device information", s:true });
             for (var i in nodeids) {
                 var node = getNodeFromId(nodeids[i]), rights = GetNodeRights(node);
-                if ((rights & 1) && ((added & 2) == 0)) { added |= 2; addedOptions += '<option value=102>' + "Move to device group" + '</option>'; }
-                if (((node.conn & 1) != 0) && ((rights & 0x8000) != 0) && ((added & 1) == 0)) { added |= 1; addedOptions += '<option value=104>' + "Uninstall Agent" + '</option>'; }
-                if ((rights & 64) && ((added & 8) == 0)) { added |= 8; addedOptions += '<option value=100>' + "Wake-up devices" + '</option>'; }
-                if ((rights & 262144) && ((added & 4) == 0)) { added |= 4; addedOptions += '<option value=4>' + "Sleep devices" + '</option><option value=3>' + "Reset devices" + '</option><option value=2>' + "Power off devices" + '</option>'; }
-                if ((rights & 131072) && ((added & 16) == 0)) { added |= 16; addedOptions += '<option value=106>' + "Run commands" + '</option>'; }
-                if ((rights & 16384) && ((added & 32) == 0)) { added |= 32; addedOptions += '<option value=108>' + "Device notification" + '</option>'; }
-                if ((rights & 4) && ((added & 64) == 0)) { added |= 64; addedOptions += '<option value=107>' + "Edit tags" + '</option>'; }
-                if ((rights & 8) && ((added & 256) == 0)) { added |= 256; addedOptions += '<option value=109>' + "Upload files" + '</option>'; }
-                if ((rights & 32768) && ((added & 128) == 0)) { added |= 128; addedOptions += '<option value=101>' + "Delete devices" + '</option>'; }
+                if ((rights & 1) && ((added & 2) == 0)) { added |= 2; addedOptions.push({ v: 102, name: "Move to device group" }); }
+                if (((node.conn & 1) != 0) && ((rights & 0x8000) != 0) && ((added & 1) == 0)) { added |= 1; addedOptions.push({ v: 104, name: "Uninstall Agent" }); }
+                if ((rights & 64) && ((added & 8) == 0)) { added |= 8; addedOptions.push({ v: 100, name: "Wake-up devices" }); }
+                if ((rights & 262144) && ((added & 4) == 0)) { added |= 4; addedOptions.push({ v: 4, name: "Sleep devices" }); addedOptions.push({ v: 3, name: "Reset devices" }); addedOptions.push({ v: 2, name: "Power off devices" }); }
+                if ((rights & 131072) && ((added & 16) == 0)) { added |= 16; addedOptions.push({ v: 106, name: "Run commands" }); }
+                if ((rights & 16384) && ((added & 32) == 0)) { added |= 32; addedOptions.push({ v: 108, name: "Device notification" }); }
+                if ((rights & 4) && ((added & 64) == 0)) { added |= 64; addedOptions.push({ v: 107, name: "Edit tags" }); }
+                if ((rights & 8) && ((added & 256) == 0)) { added |= 256; addedOptions.push({ v: 109, name: "Upload files" }); }
+                if ((rights & 32768) && ((added & 128) == 0)) { added |= 128; addedOptions.push({ v: 101, name: "Delete devices" }); }
                 if ((node.agent != null) && (features2 & 0x00000010) && (rights == 0xFFFFFFFF) && ((added & 512) == 0)) {
                     added |= 512;
-                    addedOptions += '<option value=110>' + "Force agent update" + '</option>';
-                    addedOptions += '<option value=111>' + "Clear agent core" + '</option>';
-                    addedOptions += '<option value=112>' + "Upload default server core" + '</option>';
+                    addedOptions.push({ v: 110, name: "Force agent update" });
+                    addedOptions.push({ v: 111, name: "Clear agent core" });
+                    addedOptions.push({ v: 112, name: "Upload default server core" });
                 }
             }
 
+            var addedOptionsStr = '';
+            addedOptions.sort(nameSort);
+            for (var i in addedOptions) { addedOptionsStr += '<option value=' + addedOptions[i].v + (addedOptions[i].s?' selected':'') + '>' + addedOptions[i].name + '</option>'; }
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights." + '<br /><br />';
-            x += addHtmlValue("Operation", '<select id=d2groupop><option value=105>' + "Export device information" + '</option>' + '</option>' + addedOptions + '</select>');
+            x += addHtmlValue("Operation", '<select id=d2groupop>' + addedOptionsStr + '</select>');
             setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
         }
 
@@ -10209,7 +10217,13 @@
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
-                    Q('d4editorarea').value = decode_utf8(gdownloadFile.data);
+                    if (d4EditEncodingVal == 1) {
+                        // UTF8 Encoding
+                        Q('d4editorarea').value = decode_utf8(gdownloadFile.data);
+                    } else {
+                        // RAW Encoding
+                        Q('d4editorarea').value = gdownloadFile.data;
+                    }
                     gdownloadFile = null;
                 } else {
                     // Save the file to disk
@@ -10222,6 +10236,7 @@
 
         var d4EditWrapVal = 0;
         var d4EditSizeVal = 0;
+        var d4EditEncodingVal = 0;
         function d4ToggleWrap(update) {
             if (!update) { d4EditWrapVal = ++d4EditWrapVal % 2; }
             Q('d4WrapButton').value = ["Wrap: ON","Wrap: OFF"][d4EditWrapVal];
@@ -10237,8 +10252,28 @@
             putstore('editorSize', d4EditSizeVal);
         }
 
+        function d4ToggleEncoding(update) {
+            if (!update) {
+                d4EditEncodingVal = ++d4EditEncodingVal % 2;
+                if (d4EditEncodingVal == 1) {
+                    Q('d4editorarea').value = decode_utf8(Q('d4editorarea').value);
+                } else {
+                    Q('d4editorarea').value = encode_utf8(Q('d4editorarea').value);
+                }
+            }
+            Q('d4EncodingButton').value = ["Encoding: RAW","Encoding: UTF8"][d4EditEncodingVal];
+            putstore('editorEncoding', d4EditEncodingVal);
+        }
+
         function p13editSaveBack(b, tag) {
-            var data = new TextEncoder().encode(Q('d4editorarea').value);
+            var data;
+            if (d4EditEncodingVal == 1) {
+                // UTF8 encoding
+                data = new TextEncoder().encode(Q('d4editorarea').value);
+            } else {
+                // RAW encoding
+                data = new TextEncoder().encode(decode_utf8(Q('d4editorarea').value));
+            }
             p13uploadFileContinue(1, [{ name: tag, size: data.byteLength, type: 'text/plain', xdata: data }]);
         }
 
@@ -13416,8 +13451,20 @@
             136: "Forcibly disconnected files session of user {0}",
             137: "Forcibly disconnected routing session of user {0}",
             138: "Added device share {0} recurring daily.",
-            139: "Added device share {0} recurring weekly."
+            139: "Added device share {0} recurring weekly.",
+            140: "Changed device {0} from group {1}: {2}",
+            141: "Intel(r) AMT policy change",
+            142: "Device group {0} was changed: {1}"
         };
+
+        var eventsShortMessageId = {
+            1: "Group name",
+            2: "Description",
+            3: "Flags",
+            4: "Consent",
+            5: "Auto-Remove",
+            6: "Invite code"
+        }
 
         // Highlights the device being hovered
         function eventMouseHover(e, over) {
@@ -13452,7 +13499,14 @@
                         if (event.msgArgs != null) {
                             for (var i in event.msgArgs) {
                                 var xx = event.msgArgs[i];
-                                if ((typeof xx == 'string') && (xx.indexOf('DATETIME:') == 0)) { xx = printFlexDateTime(new Date(parseInt(xx.substring(9)))); }
+                                if (Array.isArray(xx)) {
+                                    var x2 = [];
+                                    for (var j in xx) { if ((typeof xx[j] == 'number') && (eventsShortMessageId[xx[j]])) { x2.push(eventsShortMessageId[xx[j]]); } else { x2.push(xx[j]); } }
+                                    xx = x2.join(", ");
+                                } else {
+                                    if ((typeof xx == 'string') && (xx.indexOf('DATETIME:') == 0)) { xx = printFlexDateTime(new Date(parseInt(xx.substring(9)))); }
+                                    
+                                }
                                 msg = msg.split('{' + i + '}').join(xx);
                             }
                         }
@@ -14186,6 +14240,9 @@
         //
 
         function updateUserGroups() {
+            // Display user group operations only if allowed for us
+            QV('p50userGroupOps', (userinfo.siteadmin & 256) != 0); // SITERIGHT_USERGROUPS = 256
+
             // Sort the list of group names
             var sortedGroups = [], x = '';
             if (usergroups) { for (var i in usergroups) { sortedGroups.push(usergroups[i]); } }
@@ -14210,7 +14267,7 @@
 
             // Re-check userid's
             elements = document.getElementsByClassName('UserGroupCheckbox');
-            for (var i=0;i<elements.length;i++) { elements[i].checked = ((checkedUserGroupids.indexOf(elements[i].value) >= 0)); }
+            for (var i = 0; i < elements.length; i++) { elements[i].checked = ((checkedUserGroupids.indexOf(elements[i].value) >= 0)); }
             p50updateInfo();
 
             // Update current user panel if needed

@@ -1,7 +1,7 @@
 /**
 * @description MeshCentral web server
 * @author Ylian Saint-Hilaire
-* @copyright Intel Corporation 2018-2021
+* @copyright Intel Corporation 2018-2022
 * @license Apache-2.0
 * @version v0.0.1
 */
@@ -2777,7 +2777,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     webstate: encodeURIComponent(webstate).replace(/'/g, '%27'),
                     amtscanoptions: amtscanoptions,
                     pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports()
-                }, dbGetFunc.req, domain));
+                }, dbGetFunc.req, domain), user);
             }
             xdbGetFunc.req = req;
             xdbGetFunc.res = res;
@@ -4944,6 +4944,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (domain.agentcustomization.companyname != null) { meshsettings += 'companyName=' + domain.agentcustomization.companyname + '\r\n'; }
                         if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
                         if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
+                        if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
                     }
                     if (parent.agentTranslations != null) { meshsettings += 'translation=' + parent.agentTranslations + '\r\n'; } // Translation strings, not for MeshCentral Assistant
                 }
@@ -5315,6 +5316,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (domain.agentcustomization.companyname != null) { meshsettings += 'companyName=' + domain.agentcustomization.companyname + '\r\n'; }
             if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
             if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
+            if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
         }
         if (parent.agentTranslations != null) { meshsettings += 'translation=' + parent.agentTranslations + '\r\n'; }
 
@@ -5415,6 +5417,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (domain.agentcustomization.companyname != null) { meshsettings += 'companyName=' + domain.agentcustomization.companyname + '\r\n'; }
             if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
             if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
+            if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
         }
         if (parent.agentTranslations != null) { meshsettings += 'translation=' + parent.agentTranslations + '\r\n'; }
         return meshsettings;
@@ -6339,7 +6342,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.agentapp.ws(url + 'agent.ashx', function (ws, req) {
                     var domain = checkAgentIpAddress(ws, req);
                     if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
-                    //console.log('Agent connect: ' + req.clientIp);
+                    if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
                     try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
                 });
 
@@ -7613,7 +7616,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Render a page using the proper language
-    function render(req, res, filename, args) {
+    function render(req, res, filename, args, user) {
         if (obj.renderPages != null) {
             // Get the list of acceptable languages in order
             var acceptLanguages = obj.getLanguageCodes(req);
@@ -7622,19 +7625,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var fileOptions = obj.renderPages[obj.path.basename(filename)];
             if (fileOptions != null) {
                 for (var i in acceptLanguages) {
-                    if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) { args.lang = 'en'; break; } // English requested, break out.
+                    if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) {
+                        // English requested
+                        args.lang = 'en';
+                        if (user && user.llang) { delete user.llang; obj.db.SetUser(user); } // Clear user 'last language' used if needed. Since English is the default, remove "last language".
+                        break;
+                    }
                     if (fileOptions[acceptLanguages[i]] != null) {
                         // Found a match. If the file no longer exists, default to English.
                         obj.fs.exists(fileOptions[acceptLanguages[i]] + '.handlebars', function (exists) {
                             if (exists) { args.lang = acceptLanguages[i]; res.render(fileOptions[acceptLanguages[i]], args); } else { args.lang = 'en'; res.render(filename, args); }
                         });
+                        if (user && (user.llang != acceptLanguages[i])) { user.llang = acceptLanguages[i]; obj.db.SetUser(user); }  // Set user 'last language' used if needed.
                         return;
                     }
                 }
             }
         }
 
-        // No matches found, render the default english page.
+        // No matches found, render the default English page.
         res.render(filename, args);
     }
 

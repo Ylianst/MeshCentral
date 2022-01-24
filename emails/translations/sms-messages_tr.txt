@@ -1,2 +1,2 @@
 [[0]] doğrulama kodu: [[1]]
-[[0]] erişim jetonu: [[1]]
+[[0]] erişim anahtarı: [[1]]
