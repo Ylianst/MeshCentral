@@ -4368,7 +4368,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                 } else {
                     // Get previous logins for specific userid
-                    if (user.siteadmin === SITERIGHT_ADMIN) {
+                    if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) {
                         var splitUser = command.userid.split('/');
                         if ((obj.crossDomain === true) || (splitUser[1] === domain.id)) {
                             if (db.GetUserLoginEvents) {
