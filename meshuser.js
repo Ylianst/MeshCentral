@@ -5135,7 +5135,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 obj.send({ action: 'adduser', responseid: command.responseid, result: err, msgid: errid });
             } else {
                 // Send error back, user not found.
-                displayNotificationMessage(err, "New Account", 'ServerNotify', null, 1, errid);
+                displayNotificationMessage(err, "New Account", 'ServerNotify', 1, errid);
             }
             return;
         }
