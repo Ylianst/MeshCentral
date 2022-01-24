@@ -1474,8 +1474,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Get the domain
-                    var delGroupDomain = parent.parent.config.domains[ugroupidsplit[1]];
-                    if (delGroupDomain == null) { err = "Invalid domain id"; }
+                    var delGroupDomain;
+                    if (ugroupidsplit != null) {
+                        delGroupDomain = parent.parent.config.domains[ugroupidsplit[1]];
+                        if (delGroupDomain == null) { err = "Invalid domain id"; }
+                    }
 
                     // Handle any errors
                     if (err != null) {
