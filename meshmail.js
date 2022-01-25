@@ -1,7 +1,7 @@
 /**
 * @description MeshCentral e-mail server communication modules
 * @author Ylian Saint-Hilaire
-* @copyright Intel Corporation 2018-2021
+* @copyright Intel Corporation 2018-2022
 * @license Apache-2.0
 * @version v0.0.1
 */
@@ -66,6 +66,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
     function getTemplate(name, domain, lang) {
         parent.debug('email', 'Getting mail template for: ' + name + ', lang: ' + lang);
         if (Array.isArray(lang)) { lang = lang[0]; } // TODO: For now, we only use the first language given.
+        if (lang != null) { lang = lang.split('-')[0]; } // Take the first part of the language, "xx-xx"
 
         var r = {}, emailsPath = null;
         if ((domain != null) && (domain.webemailspath != null)) { emailsPath = domain.webemailspath; }

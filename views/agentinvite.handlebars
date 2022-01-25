@@ -73,7 +73,7 @@
                 </div>
             </div>
         </div>
-        <div id="column_l" style="max-height:calc(100vh - 135px);overflow-y:auto">
+        <div id="column_l" style="overflow-y:auto">
             <h1><span id="groupname">Remote Agent Installation</span></h1>
             <p>
                 You have been invited to install an application that will allow a remote operator to securely access your computer including the desktop and files. Only follow the instructions below if this invitation was expected and you know who will be accessing your computer. Select your operating system and follow the instructions below for installation.
@@ -183,14 +183,41 @@
         var magenturl = '{{{magenturl}}}';
         var groupName = decodeURIComponent('{{{meshname}}}');
         var urlargs = parseUriArgs();
-        if (groupName != '') {
-            QH('groupname', format("Remote Agent Installation for {0}", escapeHtml(groupName)));
-            document.title = format("{0} - Agent Installation", groupName);
-        } else {
-            document.title = "Agent Installation";
+
+        function startup() {
+            // Setup page visuals
+            var hide = 0;
+            var globalHide = parseInt('{{{hide}}}');
+            if (globalHide || urlargs.hide) {
+                if (urlargs.hide) { hide = parseInt(urlargs.hide); }
+                if (globalHide) { hide = (hide | globalHide); }
+            }
+            urlargs.hide = hide;
+            QV('masthead', !(hide & 1));
+            QV('topbar', !(hide & 2));
+            QV('footer', !(hide & 4));
+            if ((hide & 4) != 0) { QC('body').add('nofooter'); } else { QC('body').remove('nofooter'); }
+            if (hide != 0) {
+                // Fix the main grid to zero-height elements we want to hide.
+                if (uiMode == 2) {
+                    QS('container')['grid-template-rows'] = ((hide & 1) ? '0' : '66') + 'px fit-content(48px) auto ' + ((hide & 4) ? '0' : '45') + 'px';
+                    QS('container')['-ms-grid-rows'] = ((hide & 1) ? '0' : '66') + 'px fit-content(48px) auto ' + ((hide & 4) ? '0' : '45') + 'px';
+                } else {
+                    QS('container')['grid-template-rows'] = ((hide & 1) ? '0' : '66') + 'px ' + ((hide & 2) ? '0' : '24') + 'px auto ' + ((hide & 4) ? '0' : '45') + 'px';
+                    QS('container')['-ms-grid-rows'] = ((hide & 1) ? '0' : '66') + 'px ' + ((hide & 2) ? '0' : '24') + 'px auto ' + ((hide & 4) ? '0' : '45') + 'px';
+                }
+            }
+
+            if (groupName != '') {
+                QH('groupname', format("Remote Agent Installation for {0}", escapeHtml(groupName)));
+                document.title = format("{0} - Agent Installation", groupName);
+            } else {
+                document.title = "Agent Installation";
+            }
+
+            userInterfaceSelectMenu();
+            setup();
         }
-        userInterfaceSelectMenu();
-        setup();
 
         // Create the QR code
         new QRCode(Q('android_qrimage'), { text: magenturl, width: 220, height: 220, colorDark: '#000000', colorLight: '#FFF', correctLevel: QRCode.CorrectLevel.M });

@@ -1,7 +1,7 @@
 /**
 * @description MeshCentral web server
 * @author Ylian Saint-Hilaire
-* @copyright Intel Corporation 2018-2021
+* @copyright Intel Corporation 2018-2022
 * @license Apache-2.0
 * @version v0.0.1
 */
@@ -1893,7 +1893,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         for (var i in obj.meshes) {
             if ((obj.meshes[i].domain == domain.id) && (obj.meshes[i].deleted == null) && (obj.meshes[i].invite != null) && (obj.meshes[i].invite.codes.indexOf(req.body.inviteCode) >= 0)) {
                 // Send invitation link, valid for 1 minute.
-                res.redirect(domain.url + 'agentinvite?c=' + parent.encodeCookie({ a: 4, mid: i, f: obj.meshes[i].invite.flags, expire: 1 }, parent.invitationLinkEncryptionKey) + (req.query.key ? ('&key=' + req.query.key) : ''));
+                res.redirect(domain.url + 'agentinvite?c=' + parent.encodeCookie({ a: 4, mid: i, f: obj.meshes[i].invite.flags, expire: 1 }, parent.invitationLinkEncryptionKey) + (req.query.key ? ('&key=' + req.query.key) : '') + (req.query.hide ? ('&hide=' + req.query.hide) : ''));
                 return;
             }
         }

@@ -1,7 +1,7 @@
 ﻿/**
 * @description MeshCentral Intel(R) AMT Local Scanner
 * @author Ylian Saint-Hilaire & Joko Sastriawan
-* @copyright Intel Corporation 2018-2021
+* @copyright Intel Corporation 2018-2022
 * @license Apache-2.0
 * @version v0.0.1
 */
