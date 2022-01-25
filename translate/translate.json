@@ -320,7 +320,7 @@
       "pt-br": " Os usuários precisam fazer login neste servidor antes de serem adicionados a um grupo de dispositivos.",
       "ru": " Для добавления в группу устройств, пользователь должен зайти на сервер хотя бы один раз.",
       "sv": " Användare måste logga in på den här servern en gång innan de kan läggas till i en enhetsgrupp.",
-      "tr": " Kullanıcıların bir aygıt grubuna eklenmeden önce bu sunucuda bir kez oturum açması gerekir.",
+      "tr": " Kullanıcıların bir cihaz grubuna eklenmeden önce bu sunucuda bir kez oturum açması gerekir.",
       "zh-chs": " 用户需要先登录到该服务器一次，然后才能将其添加到设备组。",
       "zh-cht": " 用戶需要先登入到該伺服器一次，然後才能將其新增到裝置群。",
       "xloc": [
@@ -511,7 +511,7 @@
       "pt-br": "&Excluir",
       "ru": "&Удалить",
       "sv": "&Radera",
-      "tr": "&Silmek",
+      "tr": "&Sil",
       "zh-chs": "＆删除"
     },
     {
@@ -553,7 +553,7 @@
       "pt-br": "&Abrir",
       "ru": "&Открыть",
       "sv": "&Öppna",
-      "tr": "&Açık",
+      "tr": "&Aç",
       "zh-chs": "＆打开"
     },
     {
@@ -595,7 +595,7 @@
       "pt-br": "&Abrir...",
       "ru": "&Открыть",
       "sv": "&Öppna...",
-      "tr": "&Açık...",
+      "tr": "&Aç...",
       "zh-chs": "＆打开..."
     },
     {
@@ -616,7 +616,7 @@
       "pt-br": "&Renomear",
       "ru": "&Переименовать",
       "sv": "&Döp om",
-      "tr": "&Yeniden isimlendirmek",
+      "tr": "&Yeniden adlandır",
       "zh-chs": "＆改名"
     },
     {
@@ -658,7 +658,7 @@
       "pt-br": "&Iniciar Agente",
       "ru": "&Запустить Агент",
       "sv": "& Starta agent",
-      "tr": "&Başlat Aracısı",
+      "tr": "&Agent'ı Başlat",
       "zh-chs": "启动代理 (&S)"
     },
     {
@@ -764,7 +764,7 @@
       "pt-br": "(Nenhum)",
       "ru": "(Никто)",
       "sv": "(Ingen)",
-      "tr": "(Hiçbiri)",
+      "tr": "(Yok)",
       "zh-chs": "（没有任何）"
     },
     {
@@ -830,7 +830,7 @@
       "pt-br": "* 8 caracteres, 1 maiúsculas, 1 minúscula, 1 numérico, 1 não alfanumérico.",
       "ru": "* 8 символов, 1 верхний, 1 нижний, 1 числовой, 1 не буквенно-цифровой.",
       "sv": "* 8 tecken, 1 övre, 1 nedre, 1 numerisk, 1 icke-alfanumerisk.",
-      "tr": "* 8 karakter, 1 büyük, 1 alt, 1 sayısal, 1 alfa olmayan sayısal.",
+      "tr": "* 8 karakter, 1 büyük, 1 küçük, 1 sayısal, 1 işaret.",
       "zh-chs": "* 8个字符，1个大写，1个小写，1个数字，1个非字母数字。",
       "zh-cht": "* 8個字符，1個大寫，1個小寫，1個數字，1個非字母數字。",
       "xloc": [
@@ -1073,7 +1073,7 @@
       "pt-br": ", Solicitar Autorização",
       "ru": ", Запрос согласия",
       "sv": ", Be om samtycke",
-      "tr": ", Onay istemi",
+      "tr": ", Onay sor",
       "zh-chs": "，提示同意",
       "zh-cht": "，提示同意",
       "xloc": [
@@ -1158,7 +1158,7 @@
       "pt-br": ", Soft-KVM",
       "ru": ", Soft-KVM",
       "sv": ", Soft-KVM",
-      "tr": ", Yumuşak-KVM",
+      "tr": ", Yazılımsal-KVM",
       "zh-chs": "，软体KVM",
       "zh-cht": "，軟體KVM",
       "xloc": [
@@ -1310,7 +1310,7 @@
       "pt-br": ", para que este link funcione, você deve fazer o download do MeshCentral Router, executá-lo e clicar no botão de instalação.",
       "ru": ", чтобы эта ссылка работала, вы должны загрузить MeshCentral Router, запустить его и нажать кнопку установки.",
       "sv": ", för att den här länken ska fungera måste du ladda ner MeshCentral Router och köra den och klicka på installationsknappen.",
-      "tr": ", bu bağlantının çalışması için MeshCentral Router'ı indirip çalıştırmanız ve kur düğmesine tıklamanız gerekir.",
+      "tr": ", bu bağlantının çalışması için MeshCentral Router'ı indirip çalıştırmanız ve kur (install) düğmesine tıklamanız gerekir.",
       "zh-chs": "，要使此连结起作用，您必须下载及运行MeshCentral Router，然后单击安装按钮。",
       "zh-cht": "，要使此連結起作用，你必須下載及運行MeshCentral Router，然後單擊安裝按鈕。"
     },
@@ -1906,7 +1906,7 @@
       "pt-br": "1 minuto até desconectar",
       "ru": "1 минута до разъединения",
       "sv": "1 minut till frånkoppling",
-      "tr": "Bağlantı kesilmesine 1 dakika kaldı",
+      "tr": "Bağlantının kesilmesine 1 dakika kaldı",
       "zh-chs": "1分钟之后断开连接",
       "zh-cht": "1分鐘之後離線",
       "xloc": [
@@ -1958,7 +1958,7 @@
       "pt-br": "Mais 1 usuário não mostrado, use a caixa de pesquisa para procurar usuários ...",
       "ru": "Еще 1 пользователь не показан, используйте поиск чтобы найти пользователей...",
       "sv": "1 användare till visas inte, använd sökrutan för att leta efter användare ...",
-      "tr": "1 kullanıcı daha gösterilmiyor, kullanıcıları aramak için arama kutusunu kullanın ...",
+      "tr": "Gösterilmeyen 1 kullanıcı daha, kullanıcıları aramak için arama kutusunu kullanın ...",
       "zh-chs": "有1个用户没有显示，请使用搜索框查找用户...",
       "zh-cht": "有1個用戶沒有顯示，請使用搜尋框搜尋用戶...",
       "xloc": [
@@ -2979,6 +2979,7 @@
       "pt": "3",
       "pt-br": "3",
       "ru": "3",
+      "tr": "3",
       "xloc": [
         "default-mobile.handlebars->11->497"
       ]
@@ -3105,7 +3106,7 @@
       "pt-br": "32 bits",
       "ru": "32-битный",
       "sv": "32-bitars",
-      "tr": "32 bit",
+      "tr": "32-bit",
       "zh-chs": "32 位",
       "xloc": [
         "default-mobile.handlebars->11->507",
@@ -3649,7 +3650,7 @@
       "pt-br": "64 bits",
       "ru": "64-битный",
       "sv": "64-bitars",
-      "tr": "64 bit",
+      "tr": "64-bit",
       "zh-chs": "64 位",
       "xloc": [
         "default-mobile.handlebars->11->509",
@@ -4081,7 +4082,7 @@
       "pt-br": "<b style = color: red> Falha na ativação da autenticação em 2 etapas </b>. Apague o segredo do aplicativo e tente novamente. Você tem apenas alguns minutos para inserir o código adequado.",
       "ru": "<b style=color:red>Активация двухэтапного входа не удалась</b>. Удалите ключ из приложения и попробуйте еще раз. У вас есть всего несколько минут, чтобы ввести правильный код.",
       "sv": "<b style = color: red> Aktivering av tvåstegsinloggning misslyckades </b>. Rensa hemligheten från applikationen och försök igen. Du har bara några minuter på dig att ange rätt kod.",
-      "tr": "<b style = color: red> 2 adımlı oturum açma etkinleştirilemedi </b>. Sırrı uygulamadan temizleyin ve tekrar deneyin. Doğru kodu girmek için yalnızca birkaç dakikanız var.",
+      "tr": "<b style = color: red> 2 adımlı oturum açma etkinleştirilemedi </b>. Uygulamadan şifreyi kaldırın ve tekrar deneyin. Doğru kodu girmek için yalnızca birkaç dakikanız var.",
       "zh-chs": "<b style=color:red>两步登录激活失败</ b>。从应用程序中清除机密，然后重试。您只有几分钟的时间来输入正确的代码。",
       "zh-cht": "<b style = color：red>兩步登入啟動失敗</ b>。從應用程序中清除秘密，然後重試。你只有幾分鐘的時間來輸入正確的代碼。",
       "xloc": [
@@ -4226,7 +4227,7 @@
       "pt-br": "ALT + TAB",
       "ru": "ALT + TAB",
       "sv": "ALT + TABB",
-      "tr": "ALT + SEKME",
+      "tr": "ALT + TAB",
       "zh-chs": "ALT + Tab",
       "zh-cht": "ALT + Tab"
     },
@@ -4672,7 +4673,7 @@
       "pt-br": "Segurança da conta",
       "ru": "Безопасность учетной записи",
       "sv": "kontosäkerhet",
-      "tr": "hesap Güvenliği",
+      "tr": "Hesap Güvenliği",
       "zh-chs": "账户安全",
       "zh-cht": "帳號安全",
       "xloc": [
@@ -4706,7 +4707,7 @@
       "pt-br": "Configurações da conta",
       "ru": "Настройки аккаунта",
       "sv": "Kontoinställningar",
-      "tr": "Hesap ayarları",
+      "tr": "Hesap Ayarları",
       "zh-chs": "帐号设定",
       "xloc": [
         "default-mobile.handlebars->11->698",
@@ -4731,7 +4732,7 @@
       "pt-br": "Verificação de conta",
       "ru": "Верификация учетной записи",
       "sv": "Konto verifikation",
-      "tr": "Hesap doğrulama",
+      "tr": "Hesap Doğrulama",
       "zh-chs": "帐户验证",
       "zh-cht": "帳戶驗證",
       "xloc": [
@@ -4850,7 +4851,7 @@
       "pt-br": "Conta criada, o nome de usuário é {0}",
       "ru": "Аккаунт создан, имя пользователя: {0}",
       "sv": "Kontot har skapats, användarnamnet är {0}",
-      "tr": "Hesap oluşturuldu, kullanıcı adı {0}",
+      "tr": "Hesap oluşturuldu, kullanıcı adı: {0}",
       "zh-chs": "创建帐户，用户名是{0}",
       "zh-cht": "帳戶已創建，用戶名是{0}",
       "xloc": [
@@ -5108,7 +5109,7 @@
       "pt-br": "Segurança da conta",
       "ru": "Безопасность учетной записи",
       "sv": "Kontosäkerhet",
-      "tr": "Hesap Güvenliği",
+      "tr": "Hesap güvenliği",
       "zh-chs": "帐户安全",
       "zh-cht": "帳戶安全",
       "xloc": [
@@ -5133,7 +5134,7 @@
       "pt-br": "Açao",
       "ru": "Действиe",
       "sv": "Åtgärd",
-      "tr": "Aksiyon",
+      "tr": "İşlem",
       "zh-chs": "指令",
       "zh-cht": "指令",
       "xloc": [
@@ -5399,7 +5400,7 @@
       "pt-br": "Tokens de login ativo",
       "ru": "Активные токены входа",
       "sv": "Aktiva inloggnings Token",
-      "tr": "Aktif Giriş Jetonları",
+      "tr": "Aktif Giriş Anahtarları",
       "zh-chs": "活动登录令牌",
       "xloc": [
         "default.handlebars->39->1767"
@@ -5509,7 +5510,7 @@
       "pt-br": "Adicionar & mapear ...",
       "ru": "Добавить & карту ...",
       "sv": "Lägg till & mappa ...",
-      "tr": "&Harita ekle...",
+      "tr": "&Eşleştirme ekle...",
       "zh-chs": "添加地图 (&M)..."
     },
     {
@@ -5530,7 +5531,7 @@
       "pt-br": "Adicionar & retransmitir mapa ...",
       "ru": "Добавить & карту реле ...",
       "sv": "Lägg till & vidarebefordra karta ...",
-      "tr": "Haritayı &Geçerek Ekle...",
+      "tr": "&Yayın Eşleştirmesi Ekle...",
       "zh-chs": "添加中继地图 (&R)..."
     },
     {
@@ -5599,7 +5600,7 @@
       "pt-br": "Adicionar Dispositivo",
       "ru": "Добавить устройство",
       "sv": "Lägg till enhet",
-      "tr": "Cihaz ekle",
+      "tr": "Cihaz Ekle",
       "zh-chs": "添加设备",
       "zh-cht": "新增裝置",
       "xloc": [
@@ -5827,7 +5828,7 @@
       "pt-br": "Adicionar mapa ...",
       "ru": "Добавить карту ...",
       "sv": "Lägg till karta ...",
-      "tr": "Harita Ekle...",
+      "tr": "Eşleştirme Ekle...",
       "zh-chs": "添加地图..."
     },
     {
@@ -5898,7 +5899,7 @@
       "pt-br": "Adicionar mapa de retransmissão ...",
       "ru": "Добавить карту реле ...",
       "sv": "Lägg till reläkarta ...",
-      "tr": "Geçiş Haritası Ekle...",
+      "tr": "Yayın Eşleştirmesi Ekle...",
       "zh-chs": "添加中继地图..."
     },
     {
@@ -6322,7 +6323,7 @@
       "pt-br": "Adicione um novo computador a este grupo de dispositivos instalando o agente mesh.",
       "ru": "Добавьте новый компьютер в эту группу устройств, установив агент сетки.",
       "sv": "Lägg till en ny dator i den här enhetsgruppen genom att installera nätagenten.",
-      "tr": "Mesh aracısını kurarak bu aygıt grubuna yeni bir bilgisayar ekleyin.",
+      "tr": "Mesh agent kurarak bu cihaz grubuna yeni bir bilgisayar ekleyin.",
       "zh-chs": "通过安装Mesh Agent将新计算机添加到该设备组。",
       "zh-cht": "通過安裝Mesh Agent將新電腦新增到該裝置群。",
       "xloc": [
@@ -6576,7 +6577,7 @@
       "pt-br": "Token de login adicionado",
       "ru": "Добавлен токен входа",
       "sv": "Lagt inloggningstoken",
-      "tr": "Giriş belirteci eklendi",
+      "tr": "Giriş anahtarı eklendi",
       "zh-chs": "添加登录令牌",
       "xloc": [
         "default.handlebars->39->2243"
@@ -6725,7 +6726,7 @@
       "pt-br": "Endereços",
       "ru": "Адреса",
       "sv": "Adresser",
-      "tr": "Adresler",
+      "tr": "Adres",
       "zh-chs": "地址",
       "zh-cht": "地址",
       "xloc": [
@@ -6853,7 +6854,7 @@
       "pt-br": "Admin Shell",
       "ru": "Admin Shell",
       "sv": "Admin Shell",
-      "tr": "Yönetici Kabuğu",
+      "tr": "Yönetici Komut Satırı",
       "zh-chs": "管理控制台",
       "zh-cht": "管理控制台",
       "xloc": [
@@ -6929,7 +6930,7 @@
       "pt-br": "africâner",
       "ru": "Африканский",
       "sv": "Afrikanska",
-      "tr": "Afrikaans",
+      "tr": "Afrikalı",
       "zh-chs": "南非文",
       "zh-cht": "南非文",
       "xloc": [
@@ -6954,7 +6955,7 @@
       "pt-br": "Agente",
       "ru": "Агент",
       "sv": "Agent",
-      "tr": "Ajan",
+      "tr": "Agent",
       "zh-chs": "代理",
       "zh-cht": "代理",
       "xloc": [
@@ -6988,7 +6989,7 @@
       "pt-br": "Agente + Intel&reg; AMT",
       "ru": "Агент + Intel&reg; AMT",
       "sv": "Agent + Intel&reg; AMT",
-      "tr": "Aracı + Intel&reg; AMT",
+      "tr": "Agent + Intel&reg; AMT",
       "zh-chs": "代理+英特尔AMT",
       "zh-cht": "代理+Intel&reg; AMT",
       "xloc": [
@@ -7066,7 +7067,7 @@
       "pt-br": "Contadores de erros do agente",
       "ru": "Счетчик ошибок агента",
       "sv": "Agent felräknare",
-      "tr": "Aracı Hata Sayaçları",
+      "tr": "Agent Hata Sayaçları",
       "zh-chs": "代理错误计数器",
       "zh-cht": "代理錯誤計數器",
       "xloc": [
@@ -7091,7 +7092,7 @@
       "pt-br": "Endereço IP do agente",
       "ru": "IP-адрес агента",
       "sv": "Agentens IP-adress",
-      "tr": "Aracı IP adresi",
+      "tr": "Agent IP adresi",
       "zh-chs": "代理IP地址",
       "xloc": [
         "default.handlebars->39->313"
@@ -7218,7 +7219,7 @@
       "pt-br": "Selecionar Agent",
       "ru": "Агент Выбрать",
       "sv": "Agent Select",
-      "tr": "Temsilci Seçimi",
+      "tr": "Agent Seçimi",
       "zh-chs": "代理选择"
     },
     {
@@ -7234,7 +7235,7 @@
       "ja": "エージェントの自己共有",
       "nl": "Agent zelfdelend",
       "pl": "Samo-Udostępnianie Agenta",
-      "tr": "Temsilci Kendi Paylaşımı",
+      "tr": "Agent Kendisinin-Paylaşımı",
       "xloc": [
         "default.handlebars->39->1882",
         "default.handlebars->39->950"
@@ -7283,7 +7284,7 @@
       "pt-br": "Snapshot do Agente",
       "ru": "Снимок агента",
       "sv": "Agent ögonblicksbild",
-      "tr": "Aracı Anlık Görüntüsü",
+      "tr": "Agent Anlık Görüntüsü",
       "zh-chs": "代理快照"
     },
     {
@@ -7330,7 +7331,7 @@
       "pt-br": "Tipo do Agente",
       "ru": "Тип агента",
       "sv": "Agenttyp",
-      "tr": "Temsilci Türü",
+      "tr": "Agent Türü",
       "zh-chs": "代理类型",
       "xloc": [
         "default.handlebars->39->307",
@@ -7381,7 +7382,7 @@
       "pt-br": "Versão do Agente",
       "ru": "Версия агента",
       "sv": "Agentversion",
-      "tr": "Aracı Sürümü",
+      "tr": "Agent Sürümü",
       "zh-chs": "代理版本",
       "xloc": [
         "default.handlebars->39->308",
@@ -7453,7 +7454,7 @@
       "ja": "限られた特権に接続されたエージェント",
       "nl": "Agent verbonden met beperkte privileges",
       "pl": "Agent połączony z ograniczonymi uprawnieniami",
-      "tr": "Sınırlı ayrıcalıklarla bağlantılı aracı",
+      "tr": "Agent kısıtlı yetkiler ile bağlandı",
       "xloc": [
         "default.handlebars->39->230"
       ]
@@ -7496,7 +7497,7 @@
       "ja": "エージェントのハッシュチェックはスキップされています。これは安全ではありません。",
       "nl": "Agent has hcontrole wordt overgeslagen, dit is onveilig.",
       "pl": "Sprawdzanie skrótu agenta jest pomijane, jest to niebezpieczne.",
-      "tr": "Aracı karma denetimi atlanıyor, bu güvenli değil.",
+      "tr": "Agent doğrulaması atlandı, bu güvenli değil.",
       "xloc": [
         "default.handlebars->39->87"
       ]
@@ -7519,7 +7520,7 @@
       "pt-br": "Agente continua pendente",
       "ru": "Агент ожидает продолжения",
       "sv": "Agent fortsätter i väntan",
-      "tr": "Temsilci beklemeye devam ediyor",
+      "tr": "Agent beklemeye devam ediyor",
       "zh-chs": "代理正在继续等待"
     },
     {
@@ -7540,7 +7541,7 @@
       "pt-br": "Agente está desconectado",
       "ru": "Агент отключен",
       "sv": "Agent är frånkopplad",
-      "tr": "Aracının bağlantısı kesildi",
+      "tr": "Agent bağlantısı kesildi",
       "zh-chs": "代理已断开连接"
     },
     {
@@ -7561,7 +7562,7 @@
       "pt-br": "Agente não encontrado",
       "ru": "Агент отсутствует",
       "sv": "Agent saknas",
-      "tr": "Ajan kayıp",
+      "tr": "Agent kayıp",
       "zh-chs": "代理不见了"
     },
     {
@@ -7634,7 +7635,7 @@
       "pt-br": "Agente está em pausa pendente",
       "ru": "Агент ожидает приостановки",
       "sv": "Agent är paus i väntan",
-      "tr": "Aracı duraklatma bekliyor",
+      "tr": "Agent beklemeye ara verdi",
       "zh-chs": "代理暂停待定"
     },
     {
@@ -7655,7 +7656,7 @@
       "pt-br": "Agente está em pausa",
       "ru": "Агент приостановлен",
       "sv": "Agent är pausad",
-      "tr": "Aracı duraklatıldı",
+      "tr": "Agent duraklatıldı",
       "zh-chs": "代理已暂停"
     },
     {
@@ -7697,7 +7698,7 @@
       "pt-br": "O agente está sendo executado em um dispositivo remoto com privilégios reduzidos.",
       "ru": "Агент работает на удаленном устройстве с ограниченными правами.",
       "sv": "Agent körs på fjärrenhet med minskade förmåner.",
-      "tr": "Agent, düşük yetkili cihazda çalışıyor.",
+      "tr": "Agent, kısıtlı yetkili cihazda çalışıyor.",
       "zh-chs": "代理在特权降低的远程设备上运行。",
       "zh-cht": "代理在特權降低的遠程設備上運行。",
       "xloc": [
@@ -7722,7 +7723,7 @@
       "pt-br": "Agente está pendente de início",
       "ru": "Агент ожидает запуска",
       "sv": "Agent väntar",
-      "tr": "Temsilci beklemeye başladı",
+      "tr": "Agent beklemeye başladı",
       "zh-chs": "代理正在启动待处理"
     },
     {
@@ -7743,7 +7744,7 @@
       "pt-br": "Agente está parado",
       "ru": "Агент остановлен",
       "sv": "Agent stoppas",
-      "tr": "Aracı durduruldu",
+      "tr": "Agent durduruldu",
       "zh-chs": "代理已停止"
     },
     {
@@ -7764,7 +7765,7 @@
       "pt-br": "Agente está parado pendente",
       "ru": "Агент остановлен в ожидании",
       "sv": "Agent stoppas i väntan",
-      "tr": "Aracı beklemede durduruldu",
+      "tr": "Aracı beklemeyi durdurdu",
       "zh-chs": "代理停止等待"
     },
     {
@@ -7785,7 +7786,7 @@
       "pt-br": "Agente não instalado",
       "ru": "Агент не установлен",
       "sv": "Agent inte installerad",
-      "tr": "Aracı yüklenmedi",
+      "tr": "Agent yüklenmedi",
       "zh-chs": "未安装代理"
     },
     {
@@ -7806,7 +7807,7 @@
       "pt-br": "Agentes",
       "ru": "Агенты",
       "sv": "Agenter",
-      "tr": "Agentlar",
+      "tr": "Agent",
       "zh-chs": "代理",
       "zh-cht": "代理",
       "xloc": [
@@ -7856,7 +7857,7 @@
       "pt-br": "Tudo",
       "ru": "Все",
       "sv": "Allt",
-      "tr": "Herşey",
+      "tr": "Hepsi",
       "zh-chs": "所有",
       "zh-cht": "所有",
       "xloc": [
@@ -7885,7 +7886,7 @@
       "pt-br": "Todos disponíveis",
       "ru": "Все в наличии",
       "sv": "Alla tillgängliga",
-      "tr": "Tüm Mevcut",
+      "tr": "Mevcutların Hepsi",
       "zh-chs": "全部可用",
       "zh-cht": "全部可用",
       "xloc": [
@@ -7935,7 +7936,7 @@
       "pt-br": "Todos os eventos",
       "ru": "Все события",
       "sv": "Alla händelser",
-      "tr": "Tüm Etkinlikler",
+      "tr": "Tüm Olaylar",
       "zh-chs": "所有事件",
       "zh-cht": "所有事件",
       "xloc": [
@@ -7960,7 +7961,7 @@
       "pt-br": "Focar tudo",
       "ru": "Фокусирование всех",
       "sv": "Allt fokus",
-      "tr": "Tüm Odak",
+      "tr": "Tüm Odaklananlar",
       "zh-chs": "全部聚焦",
       "zh-cht": "全部聚焦",
       "xloc": [
@@ -7987,7 +7988,7 @@
       "pt-br": "Permitir",
       "ru": "Разрешать",
       "sv": "Tillåta",
-      "tr": "İzin vermek",
+      "tr": "İzin ver",
       "zh-chs": "允许",
       "xloc": [
         "coretranslations.json"
@@ -8133,7 +8134,7 @@
       "pt-br": "Alt",
       "ru": "Alt",
       "sv": "Alt",
-      "tr": "alt",
+      "tr": "Alt",
       "zh-chs": "替代",
       "xloc": [
         "default-mobile.handlebars->11->422",
@@ -8238,7 +8239,7 @@
       "pt-br": "Alternar Porta",
       "ru": "Поменять порт",
       "sv": "Alternativ hamn",
-      "tr": "Alternatif Bağlantı Noktası",
+      "tr": "Alternatif Port",
       "zh-chs": "备用端口",
       "zh-cht": "備用端口",
       "xloc": [
@@ -8265,7 +8266,7 @@
       "pt-br": "Porta Alternativa",
       "ru": "Альтернативный порт",
       "sv": "Alternativ hamn",
-      "tr": "Alternatif Bağlantı Noktası",
+      "tr": "Alternatif Port",
       "zh-chs": "替代端口"
     },
     {
@@ -8464,7 +8465,7 @@
       "pt-br": "Download do APK Android",
       "ru": "Скачать Android APK",
       "sv": "Android APK-nedladdning",
-      "tr": "Android APK İndirme",
+      "tr": "Android APK İndir",
       "zh-chs": "Android APK 下载",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->androtab->5->5->1"
@@ -8614,7 +8615,7 @@
       "pt-br": "Qualquer suportado",
       "ru": "Любые поддерживаемые",
       "sv": "Alla stöds",
-      "tr": "Herhangi bir desteklenen",
+      "tr": "Herhangi desteklenen",
       "zh-chs": "任何可支持的",
       "zh-cht": "任何可支持的",
       "xloc": [
@@ -8740,7 +8741,7 @@
       "pt-br": "Aplicativo",
       "ru": "заявка",
       "sv": "Ansökan",
-      "tr": "Başvuru",
+      "tr": "Uygulama",
       "zh-chs": "应用"
     },
     {
@@ -8782,7 +8783,7 @@
       "pt-br": "Link do aplicativo",
       "ru": "Ссылка на приложение",
       "sv": "Applikationslänk",
-      "tr": "Başvuru Bağlantısı",
+      "tr": "Uygulama Bağlantısı",
       "zh-chs": "申请链接"
     },
     {
@@ -9377,7 +9378,7 @@
       "pt-br": "Tem certeza que deseja excluir o grupo {0}? Excluir o grupo de dispositivos também excluirá todas as informações sobre os dispositivos desse grupo.",
       "ru": "Вы действительно хотите удалить группу \\\"{0}\\\"? Удаление группы приведет к удалению всей информации связанной с устройствами в этой группе.",
       "sv": "Är du säker på att du vill ta bort gruppen {0}? Radering av enhetsgruppen raderar också all information om enheter inom denna grupp.",
-      "tr": "{0} grubunu silmek istediğinizden emin misiniz? Aygıt grubunun silinmesi, bu grup içindeki aygıtlar hakkındaki tüm bilgileri de silecektir.",
+      "tr": "{0} grubunu silmek istediğinizden emin misiniz? Cihaz grubunun silinmesi, bu grup içindeki cihazlar hakkındaki tüm bilgileri de silecektir.",
       "zh-chs": "你确定要删除组{0}吗？删除设备组还将删除该组中有关设备的所有信息。",
       "zh-cht": "你確定要刪除群{0}嗎？刪除裝置群還將刪除該群中有關裝置的所有訊息。",
       "xloc": [
@@ -9403,7 +9404,7 @@
       "pt-br": "Tem certeza que deseja excluir o nó {0}?",
       "ru": "Вы действительно хотите удалить устройство \\\"{0}\\\"?",
       "sv": "Är du säker på att du vill ta bort nod {0}?",
-      "tr": "{0} düğümünü silmek istediğinizden emin misiniz?",
+      "tr": "{0} cihazını silmek istediğinizden emin misiniz?",
       "zh-chs": "您确定要删除节点{0}吗？",
       "zh-cht": "你確定要刪除節點{0}嗎？",
       "xloc": [
@@ -9428,7 +9429,7 @@
       "pt-br": "Tem certeza de que deseja desinstalar o agente selecionado?",
       "ru": "Вы действительно хотите деинсталировать выбранного агента?",
       "sv": "Är du säker på att du vill avinstallera vald agent?",
-      "tr": "Seçili aracıyı kaldırmak istediğinizden emin misiniz?",
+      "tr": "Seçili agent'ı kaldırmak istediğinizden emin misiniz?",
       "zh-chs": "您确定要卸载所选代理吗？",
       "zh-cht": "你確定要卸載所選代理嗎？",
       "xloc": [
@@ -9453,7 +9454,7 @@
       "pt-br": "Tem certeza de que deseja desinstalar os agentes {0} selecionados?",
       "ru": "Вы действительно хотите деинсталлировать выбранных {0} агентов?",
       "sv": "Är du säker på att du vill avinstallera de valda {0} agenterna?",
-      "tr": "Seçili {0} aracılarını kaldırmak istediğinizden emin misiniz?",
+      "tr": "Seçili {0} agent'ı kaldırmak istediğinizden emin misiniz?",
       "zh-chs": "您确定要卸载所选的{0}代理吗？",
       "zh-cht": "你確定要卸載所選的{0}代理嗎？",
       "xloc": [
@@ -9478,7 +9479,7 @@
       "pt-br": "Tem certeza de que deseja {0} o plug-in: {1}",
       "ru": "Вы уверенны, что {0} плагин: {1}",
       "sv": "Är du säker på att du vill {0} plugin: {1}",
-      "tr": "Eklentiyi {0} kullanmak istediğinizden emin misiniz: {1}",
+      "tr": "Eklentiyi {0} yapmak istediğinizden emin misiniz: {1}",
       "zh-chs": "您确定要{0}插件吗：{1}",
       "zh-cht": "你確定要{0}外掛嗎：{1}",
       "xloc": [
@@ -9628,7 +9629,7 @@
       "pt-br": "Assistente",
       "ru": "Ассистент",
       "sv": "Assistent",
-      "tr": "asistan",
+      "tr": "Asistan",
       "zh-chs": "Assistant",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tandrotab",
@@ -9699,7 +9700,7 @@
       "pt-br": "Assistente para Windows (.exe)",
       "ru": "Ассистент для Windows (.exe)",
       "sv": "Assistent för Windows (.exe)",
-      "tr": "Windows Yardımcısı (.exe)",
+      "tr": "Windows için Asistan (.exe)",
       "zh-chs": "Windows 助手 (.exe)",
       "xloc": [
         "default.handlebars->39->550",
@@ -9724,7 +9725,7 @@
       "pt-br": "O assistante é uma ferramenta da bandeja do sistema do Windows que pode ser usada quando a ajuda é necessária. Ele não é um agente executado em segundo plano no computador gerenciado; em vez disso, é uma ferramenta que se conecta ao servidor apenas quando solicitada.",
       "ru": "Ассистент - это инструмент на панели задач Windows, который можно использовать, когда требуется помощь..Это не агент, который работает в фоновом режиме управляемого компьютера, это инструмент, который подключается к серверу только по запросу..",
       "sv": "Assistant är ett verktyg för verktygsfältet i Windows som kan användas när fjärrdatorn behöver hjälp. Detta är inte en agent som körs i bakgrunden på fjärrdatorn, utan det är ett verktyg som bara ansluter till servern på begäran.",
-      "tr": "Asistan, yardım gerektiğinde kullanılabilecek bir Windows sistem tepsisi aracıdır. Bu, yönetilen bilgisayarın arka planında çalışan bir aracı değil, sunucuya yalnızca istendiğinde bağlanan bir araçtır.",
+      "tr": "Asistan, sağ alt köşede yardım gerektiğinde kullanılabilecek bir Windows aracıdır. Bu, yönetilen bilgisayarda arka planda çalışan bir araç değil, sunucuya yalnızca istek yapıldığında bağlanılabilen bir araçtır.",
       "zh-chs": "助手是 Windows 系统托盘工具，可在需要帮助时使用。这不是在托管计算机后台运行的代理，而是仅在请求时才连接到服务器的工具。",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->assistab->3->3"
@@ -9819,7 +9820,7 @@
       "pt-br": "Autenticação",
       "ru": "Аутентификация",
       "sv": "Autentisering",
-      "tr": "kimlik doğrulama",
+      "tr": "Kimlik doğrulama",
       "zh-chs": "验证",
       "xloc": [
         "default-mobile.handlebars->11->438",
@@ -9904,7 +9905,7 @@
       "pt-br": "Erro de autenticação",
       "ru": "Ошибка аутентификации",
       "sv": "Verifieringsfel",
-      "tr": "Doğrulama hatası",
+      "tr": "Kimlik Doğrulama Hatası",
       "zh-chs": "授权错误",
       "xloc": [
         "default-mobile.handlebars->11->448",
@@ -9931,7 +9932,7 @@
       "pt-br": "App autenticador",
       "ru": "Приложение-аутентификатор",
       "sv": "Authenticator-app",
-      "tr": "Authenticator Uygulaması",
+      "tr": "Kimlik Doğrulama Uygulaması",
       "zh-chs": "认证软件",
       "zh-cht": "認證軟體",
       "xloc": [
@@ -9963,7 +9964,7 @@
       "pt-br": "A ativação do aplicativo Authenticator foi bem-sucedida.",
       "ru": "Приложение для аутентификации активированно успешно.",
       "sv": "Authenticator-appaktivering lyckades.",
-      "tr": "Authenticator uygulaması aktivasyonu başarılı.",
+      "tr": "Kimlik doğrulama uygulaması aktivasyonu başarılı.",
       "zh-chs": "认证软件激活成功。",
       "zh-cht": "認證軟體啟動成功。",
       "xloc": [
@@ -9988,7 +9989,7 @@
       "pt-br": "O aplicativo do autenticador foi removido.",
       "ru": "Приложение для аутентификации удалено.",
       "sv": "Authenticator-applikationen har tagits bort.",
-      "tr": "Authenticator uygulaması kaldırıldı.",
+      "tr": "Kimlik doğrulama uygulaması kaldırıldı.",
       "zh-chs": "认证软件已删除。",
       "zh-cht": "認證軟體已刪除。",
       "xloc": [
@@ -10421,7 +10422,7 @@
       "pt-br": "BackSpace",
       "ru": "Backspace",
       "sv": "BackSpace",
-      "tr": "Geri Alan",
+      "tr": "Silme",
       "zh-chs": "退格",
       "xloc": [
         "default-mobile.handlebars->11->405",
@@ -10528,7 +10529,7 @@
       "pt-br": "Backspace",
       "ru": "Backspace",
       "sv": "Backspace",
-      "tr": "Geri tuşu",
+      "tr": "Silme",
       "zh-chs": "退格键",
       "zh-cht": "退格鍵",
       "xloc": [
@@ -14735,7 +14736,7 @@
       "pt-br": "Confirma a remoção do dispositivo selecionado?",
       "ru": "Подтвердить удаление выбранного устройства?",
       "sv": "Bekräfta borttagning av vald enhet?",
-      "tr": "Seçili aygıtın kaldırılması onaylansın mı?",
+      "tr": "Seçili cihazların kaldırılması onaylansın mı?",
       "zh-chs": "确认移除所选设备？",
       "xloc": [
         "default.handlebars->39->634"
@@ -19781,7 +19782,7 @@
       "pt-br": "O dispositivo foi detectado, mas o estado de energia não pôde ser obtido.",
       "ru": "Устройство обнаружено, но состояние питания не может быть получено.",
       "sv": "Enheten detekteras men strömtillståndet kunde inte uppnås.",
-      "tr": "Aygıt algılandı ancak güç durumu elde edilemedi.",
+      "tr": "Cihaz algılandı ancak açık/kapalı durumu elde edilemedi.",
       "zh-chs": "检测到设备，但无法获得电源状态。",
       "zh-cht": "檢測到裝置，但無法獲得電源狀態。",
       "xloc": [
@@ -24528,7 +24529,7 @@
       "pt-br": "Insira o token aqui para login em 2 etapas:",
       "ru": "Для двухэтапного входа введите токен здесь:",
       "sv": "Ange token här för tvåstegsinloggning:",
-      "tr": "2 adımlı giriş için jetonu buraya girin:",
+      "tr": "2 adımlı giriş için anahtarı buraya girin:",
       "zh-chs": "在此处输入保安编码以进行两步登录：",
       "zh-cht": "在此處輸入保安編碼以進行兩步登入：",
       "xloc": [
@@ -30382,7 +30383,7 @@
       "pt-br": "Instale o <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Autenticador Google </a> ou um aplicativo compatível e escaneie o código de barras, use <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> este link </a> ou digite o segredo. Em seguida, insira o token de 6 dígitos atual abaixo para ativar o login em 2 etapas.",
       "ru": "Установите <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> или совместимое приложение и отсканируйте штрих-код, используйте <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank>эту ссылку</a> или введите код. Затем введите ниже текущий токен из 6 цифр для активации двухшаговой авторизации.",
       "sv": "Installera <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator </a> eller ett kompatibelt program och skanna streckkoden, använd <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> den här länken </a> eller skriv hemligheten. Ange sedan den aktuella 6-siffriga token nedan för att aktivera 2-stegsinloggning.",
-      "tr": "<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator'ı yükleyin </a> veya uyumlu bir uygulama ve barkodu tarayın, <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> bu bağlantıyı </a> kullanın veya sırrı girin. Ardından, 2 Adımlı girişi etkinleştirmek için mevcut 6 haneli jetonu girin.",
+      "tr": "<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator'ı yükleyin </a> veya uyumlu bir uygulama ve barkodu tarayın, <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> bu bağlantıyı </a> kullanın veya şifreyi girin. Ardından, 2 Adımlı girişi etkinleştirmek için mevcut 6 haneli anahtarı girin.",
       "zh-chs": "安装<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator</a>或兼容的应用软件并扫描条码，使用<a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank>此连结</a>或输入密码。然后，在下面输入当前的6位数保安编码以激活两步登录。",
       "zh-cht": "安裝<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator</a>或兼容的應用軟體並掃描條碼，使用<a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank>此鏈結</a>或輸入密碼。然後，在下面輸入當前的6位數保安編碼以啟動兩步登入。",
       "xloc": [
@@ -30407,7 +30408,7 @@
       "pt-br": "Instale o <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Autenticador Google </a> ou um aplicativo compatível, use <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> este link </a> ou digite o segredo abaixo. Em seguida, insira o token de 6 dígitos atual para ativar o login em 2 etapas.",
       "ru": "Установите <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> или совместимое приложение, используйте <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank>эту ссылку</a> или введите код ниже. Затем введите ниже текущий токен из 6 цифр для активации двухшаговой авторизации.",
       "sv": "Installera <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator </a> eller ett kompatibelt program, använd <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> den här länken </a> eller skriv hemligheten nedan. Ange sedan den aktuella 6-siffriga token för att aktivera 2-stegsinloggning.",
-      "tr": "<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator'ı yükleyin </a> veya uyumlu bir uygulama için <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> bu bağlantıyı </a> kullanın veya aşağıdaki sırrı girin. Ardından, 2 Adımlı oturum açma özelliğini etkinleştirmek için mevcut 6 basamaklı jetonu girin.",
+      "tr": "<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator'ı yükleyin </a> veya uyumlu bir uygulama için <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> bu bağlantıyı </a> kullanın veya aşağıdaki şifreyi girin. Ardından, 2 Adımlı oturum açma özelliğini etkinleştirmek için mevcut 6 basamaklı anahtarı girin.",
       "zh-chs": "安装<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator</a>或兼容的应用软件，请使用<a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank>此连结</a>或在下面输入密码。然后，输入当前的6位数保安编码以激活两步登录。",
       "zh-cht": "安裝<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator</a>或兼容的應用軟體，請使用<a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank>此鏈結</a>或在下面輸入密碼。然後，輸入當前的6位數保安編碼以啟動兩步登入。",
       "xloc": [
@@ -32946,7 +32947,7 @@
       "pt-br": "Convide alguém para instalar o agente mesh, compartilhando um link de convite. Este link direciona o usuário às instruções de instalação para o grupo de dispositivos \\\"{0}\\\". O link é público e nenhuma conta para este servidor é necessária.",
       "ru": "Пригласите установить Mesh Agent поделившись ссылкой. Эта ссылка ведет на инструкции для установки для группы устройств \\\"{0}\\\". Ссылка общедоступна и не требует наличия учетной записи на сервере.",
       "sv": "Bjud in någon att installera Mesh-agenten genom att dela en inbjudningslänk. Denna länken visar användaren installationsinstruktioner för enhetsgruppen \\\"{0}\\\". Länken är offentlig och inget konto för server behövs.",
-      "tr": "Bir davet bağlantısı paylaşarak birini örgü aracısını yüklemeye davet edin. Bu bağlantı, kullanıcıyı \\\"{0}\\\" aygıt grubu için kurulum talimatlarına yönlendirir. Bağlantı geneldir ve bu sunucu için herhangi bir hesaba gerek yoktur.",
+      "tr": "Bir davet bağlantısı paylaşarak birini Mesh Agent yüklemeye davet edin. Bu bağlantı, kullanıcıyı \\\"{0}\\\" cihaz grubu için kurulum talimatlarına yönlendirir. Bağlantı geneldir ve bu sunucu için herhangi bir hesaba gerek yoktur.",
       "zh-chs": "通过共享邀请连结来邀请某人安装网格代理。该连结为用户提供“ {0} ”设备组的安装说明。该连结是公用的，不需要这服务器的帐户。",
       "zh-cht": "通過共享邀請鏈結來邀請某人安裝mesh agent。該鏈結將用戶指向“ {0} ”裝置群的安裝說明。該鏈結是公用的，不需要這伺服器的帳戶。",
       "xloc": [
@@ -40303,7 +40304,7 @@
       "pt-br": "Acesse a URL abaixo, conceda acesso e copie o código do token de volta.",
       "ru": "Перейдите по URL-адресу ниже, предоставьте доступ и скопируйте код токена обратно.",
       "sv": "Nagivera till webbadressen nedan, ge åtkomst och kopiera token-koden tillbaka.",
-      "tr": "Aşağıdaki URL'ye gidin, erişim verin ve jeton kodunu geri kopyalayın.",
+      "tr": "Aşağıdaki URL'ye gidin, erişim verin ve anahtar kodunu geri kopyalayın.",
       "zh-chs": "导航到下面的URL，授予访问权限并将令牌代码复制回去。",
       "zh-cht": "導航到下面的URL，授予訪問權限並將令牌代碼複製回去。",
       "xloc": [
@@ -41319,7 +41320,7 @@
       "pt-br": "Nenhum dispositivo Intel&reg; AMT neste grupo de dispositivos",
       "ru": "В этой группе нет устройств Intel&reg; AMT",
       "sv": "Inga Intel&reg; AMT-enheter i den här enhetsgruppen",
-      "tr": "Bu aygıt grubunda Intel&reg; AMT aygıtı yok",
+      "tr": "Bu cihaz grubunda Intel&reg; AMT cihazı yok",
       "zh-chs": "此设备组中没有英特尔&reg; AMT 设备",
       "xloc": [
         "default.handlebars->39->325"
@@ -50444,7 +50445,7 @@
       "pt-br": "Remover token de login",
       "ru": "Удалить токен входа",
       "sv": "Ta bort inloggningstoken",
-      "tr": "Giriş jetonunu kaldır",
+      "tr": "Giriş anahtarını kaldır",
       "zh-chs": "删除登录令牌",
       "xloc": [
         "default.handlebars->39->1771"
@@ -60719,7 +60720,7 @@
       "pt-br": "O nome do grupo de dispositivos ao qual este computador pertence.",
       "ru": "Имя группы устройств, к которой принадлежит этот компьютер.",
       "sv": "Namnet på den enhetsgrupp som den här datorn tillhör.",
-      "tr": "Bu bilgisayarın ait olduğu aygıt grubunun adı.",
+      "tr": "Bu bilgisayarın ait olduğu cihaz grubunun adı.",
       "zh-chs": "此计算机所属的设备组的名称。",
       "zh-cht": "此電腦所屬的裝置群的名稱。",
       "xloc": [
@@ -61333,7 +61334,7 @@
       "pt-br": "Isso não removerá os dispositivos do servidor, mas os dispositivos não poderão mais se conectar ao servidor. Todo o acesso remoto aos dispositivos será perdido. Os dispositivos devem estar conectados para que este comando funcione.",
       "ru": "Это не приведет к удалению устройств с сервера, но они больше не смогут подключаться к серверу. Весь удаленный доступ к устройствам будет потерян. Устройства должны быть подключены, чтобы эта команда работала.",
       "sv": "Detta tar inte bort enheterna från servern, men enheterna kan inte längre ansluta till servern. All fjärråtkomst till enheterna förloras. Enheterna måste vara anslutna för att detta kommando ska fungera.",
-      "tr": "Bu, aygıtları sunucudan kaldırmaz, ancak aygıtlar artık sunucuya bağlanamaz. Cihazlara tüm uzaktan erişim kaybedilecektir. Bu komutun çalışması için cihazların bağlı olması gerekir.",
+      "tr": "Bu, cihazları sunucudan kaldırmaz, ancak cihazlar artık sunucuya bağlanamaz. Cihazlara tüm uzaktan erişim kaybedilecektir. Bu komutun çalışması için cihazların bağlı olması gerekir.",
       "zh-chs": "这不会从服务器上删除该设备，但是该设备将不再能够连接到服务器。该设备的所有远程访问都将丢失。该设备必须连线，此命令才能起作用。",
       "zh-cht": "這不會從伺服器上刪除該裝置，但是該裝置將不再能夠連接到伺服器。該裝置的所有遠程訪問都將丟失。該設備必須連線，此命令才能起作用。",
       "xloc": [
@@ -61682,7 +61683,7 @@
       "pt-br": "Para adicionar um novo computador ao grupo de dispositivos \\\"{0}\\\", baixe o agente mesh e instale-o no computador para gerenciar. Este agente possui informações do servidor e do grupo de dispositivos incorporadas a ele.",
       "ru": "Чтобы добавить новый компьютер в группу устройств \\\"{0}\\\", скачайте Mesh Agent и установите его для управления этим компьютером. В этот агент встроена информация о текущем сервере и группе устройств.",
       "sv": "För att lägga till en ny dator i enhetsgruppen \\\"{0}\\\", ladda ner nätagenten och installera den för hantering av datorn. Den här agenten har server- och enhetsgruppinformation inbäddad.",
-      "tr": "\\\"{0}\\\" cihaz grubuna yeni bir bilgisayar eklemek için örgü aracıyı indirin ve yönetilecek bilgisayara kurun. Bu aracı, içinde gömülü sunucu ve aygıt grubu bilgilerine sahiptir.",
+      "tr": "\\\"{0}\\\" cihaz grubuna yeni bir bilgisayar eklemek için Mesh Agent indirin ve yönetilecek bilgisayara kurun. Bu agent, içinde gömülü sunucu ve cihaz grubu bilgilerine sahiptir.",
       "zh-chs": "要将新计算机添加到设备组“ {0} ”，请下载网状代理并安装该计算机以进行管理。这代理中已嵌入了服务器和设备组信息。",
       "zh-cht": "要將新電腦新增到裝置群“ {0} ”，請下載mesh agent並安裝該電腦以進行管理。這agent中已嵌入了伺服器和裝置群訊息。",
       "xloc": [
@@ -61707,7 +61708,7 @@
       "pt-br": "Para adicionar um novo computador ao grupo de dispositivos \\\"{0}\\\", baixe o agente mesh e instale-o no computador para gerenciar. Este instalador de agente possui informações de servidor e grupo de dispositivos incorporadas a ele.",
       "ru": "Чтобы добавить новый компьютер в группу устройств \\\"{0}\\\", скачайте Mesh Agent и установите его для управления этим компьютером. В этот установщик агента встроена информация о текущем сервере и группе устройств.",
       "sv": "För att lägga till en ny dator i enhetsgruppen \\\"{0}\\\", ladda ner nätagenten och installera den för hantering av datorn. Det här agentinstallatören har server- och enhetsgruppinformation inbäddad.",
-      "tr": "\\\"{0}\\\" cihaz grubuna yeni bir bilgisayar eklemek için örgü aracıyı indirin ve yönetilecek bilgisayara kurun. Bu aracı yükleyicinin içinde gömülü sunucu ve aygıt grubu bilgileri vardır.",
+      "tr": "\\\"{0}\\\" cihaz grubuna yeni bir bilgisayar eklemek için Mesh Agent indirin ve yönetilecek bilgisayara kurun. Bu agent yükleyicinin içinde gömülü sunucu ve cihaz grubu bilgileri vardır.",
       "zh-chs": "要将新计算机添加到设备组“ {0} ”，请下载网状代理并安装该计算机以进行管理。该代理安装程序中已嵌入了服务器和设备组讯息。",
       "zh-cht": "要將新電腦新增到裝置群“ {0} ”，請下載mesh agent並安裝該電腦以進行管理。該代理安裝程序中已嵌入了伺服器和裝置群訊息。",
       "xloc": [
@@ -62349,7 +62350,7 @@
       "pt-br": "Nome do token",
       "ru": "Имя токена",
       "sv": "Token Namn",
-      "tr": "Jeton Adı",
+      "tr": "Anahtar Adı",
       "zh-chs": "代币名称",
       "xloc": [
         "default.handlebars->39->1711"
@@ -67903,7 +67904,7 @@
       "pt-br": "Quando ativado, em cada login, você terá a opção de receber um token de login para sua conta de e-mail para aumentar a segurança.",
       "ru": "При включении при каждом входе в систему вам будет предоставлена возможность получать токен для входа в свою учетную запись электронной почты для обеспечения дополнительной безопасности.",
       "sv": "När det är aktiverat får du vid varje inloggning möjlighet att få en inloggningstoken till ditt e-postkonto för ökad säkerhet.",
-      "tr": "Etkinleştirildiğinde, her girişte, ek güvenlik için e-posta hesabınıza bir giriş jetonu alma seçeneği verilecektir.",
+      "tr": "Etkinleştirildiğinde, her girişte, ek güvenlik için e-posta hesabınıza bir giriş anahtarı alma seçeneği verilecektir.",
       "zh-chs": "启用后，每次登录时，您都可以选择向电邮帐户接收登录保安编码，以提高安全性。",
       "zh-cht": "啟用後，每次登入時，你都可以選擇向電郵帳戶接收登入保安編碼，以提高安全性。",
       "xloc": [
@@ -69187,7 +69188,7 @@
       "pt-br": "Agora você precisará de um token válido para fazer o login novamente.",
       "ru": "Теперь вам понадобится действительный токен, чтобы снова войти в систему.",
       "sv": "Du behöver nu en giltig token för att logga in igen.",
-      "tr": "Şimdi tekrar giriş yapmak için geçerli bir jetona ihtiyacınız olacak.",
+      "tr": "Şimdi tekrar giriş yapmak için geçerli bir anahtara ihtiyacınız olacak.",
       "zh-chs": "您现在需要一个有效的保安编码才能再次登录。",
       "zh-cht": "你現在需要一個有效的保安編碼才能再次登入。",
       "xloc": [
@@ -69861,7 +69862,7 @@
       "pt-br": "admin",
       "ru": "админ",
       "sv": "administration",
-      "tr": "yönetim",
+      "tr": "yönetici",
       "zh-chs": "管理员",
       "zh-cht": "管理員",
       "xloc": [
@@ -70119,7 +70120,7 @@
       "pt-br": "Clique aqui para criar um grupo de dispositivos",
       "ru": "для создания группы устройств нажмите сюда",
       "sv": "klicka här för att skapa en enhetsgrupp",
-      "tr": "bir aygıt grubu oluşturmak için burayı tıklayın",
+      "tr": "bir cihaz grubu oluşturmak için burayı tıklayın",
       "zh-chs": "单击此处创建设备组",
       "zh-cht": "單擊此處創建裝置群",
       "xloc": [
@@ -70297,7 +70298,7 @@
       "pt-br": "Lista de dispositivos",
       "ru": "список устройств",
       "sv": "enhetslista",
-      "tr": "aygıt listesi",
+      "tr": "cihaz listesi",
       "zh-chs": "设备列表",
       "xloc": [
         "default.handlebars->39->298"

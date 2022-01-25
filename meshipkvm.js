@@ -1,7 +1,7 @@
 /**
 * @description MeshCentral IP KVM Management Module
 * @author Ylian Saint-Hilaire
-* @copyright Intel Corporation 2021
+* @copyright Intel Corporation 2021-2022
 * @license Apache-2.0
 * @version v0.0.1
 */
