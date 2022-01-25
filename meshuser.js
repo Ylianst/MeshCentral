@@ -1,7 +1,7 @@
 ﻿/**
 * @description MeshCentral MeshAgent
 * @author Ylian Saint-Hilaire & Bryan Roe
-* @copyright Intel Corporation 2018-2021
+* @copyright Intel Corporation 2018-2022
 * @license Apache-2.0
 * @version v0.0.1
 */
@@ -1474,8 +1474,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Get the domain
-                    var delGroupDomain = parent.parent.config.domains[ugroupidsplit[1]];
-                    if (delGroupDomain == null) { err = "Invalid domain id"; }
+                    var delGroupDomain;
+                    if (ugroupidsplit != null) {
+                        delGroupDomain = parent.parent.config.domains[ugroupidsplit[1]];
+                        if (delGroupDomain == null) { err = "Invalid domain id"; }
+                    }
 
                     // Handle any errors
                     if (err != null) {
@@ -4365,7 +4368,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                 } else {
                     // Get previous logins for specific userid
-                    if (user.siteadmin === SITERIGHT_ADMIN) {
+                    if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) {
                         var splitUser = command.userid.split('/');
                         if ((obj.crossDomain === true) || (splitUser[1] === domain.id)) {
                             if (db.GetUserLoginEvents) {
@@ -5105,7 +5108,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Add a new user account
         var err = null, errid = 0, newusername, newuserid, newuserdomain;
         try {
-            if ((user.siteadmin & 2) == 0) { err = "Permission denied"; errid = 1; }
+            if ((user.siteadmin & MESHRIGHT_MANAGEUSERS) == 0) { err = "Permission denied"; errid = 1; }
             else if (common.validateUsername(command.username, 1, 256) == false) { err = "Invalid username"; errid = 2; } // Username is between 1 and 64 characters, no spaces
             else if ((command.username[0] == '~') || (command.username.indexOf('/') >= 0)) { err = "Invalid username"; errid = 2; } // Usernames cant' start with ~ and can't have '/'
             else if (common.validateString(command.pass, 1, 256) == false) { err = "Invalid password"; errid = 3; } // Password is between 1 and 256 characters
@@ -5132,7 +5135,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 obj.send({ action: 'adduser', responseid: command.responseid, result: err, msgid: errid });
             } else {
                 // Send error back, user not found.
-                displayNotificationMessage(err, "New Account", 'ServerNotify', null, 1, errid);
+                displayNotificationMessage(err, "New Account", 'ServerNotify', 1, errid);
             }
             return;
         }
