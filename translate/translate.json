@@ -40263,7 +40263,7 @@
     {
       "cs": "NEFUNGUJE",
       "da": "KØRER IKKE",
-      "de": "NICHT LAUFEN",
+      "de": "NICHT GESTARTET",
       "en": "NOT RUNNING",
       "es": "NO EJECUTANDOSE",
       "fi": "EI RUNNING",
@@ -48124,7 +48124,7 @@
     {
       "cs": "BĚH",
       "da": "KØRER",
-      "de": "LAUFEN",
+      "de": "GESTARTET",
       "en": "RUNNING",
       "es": "EJECUTANDO",
       "fi": "Juoksu",
