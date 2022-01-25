@@ -10265,7 +10265,7 @@
     {
       "cs": "ŠPATNÝ",
       "da": "Ugyldig",
-      "de": "SCHLECHT",
+      "de": "PROBLEM",
       "en": "BAD",
       "es": "MALO",
       "fi": "HUONO",
@@ -52294,7 +52294,7 @@
     {
       "cs": "Běh",
       "da": "Kører",
-      "de": "Betrieb",
+      "de": "gestartet",
       "en": "Running",
       "es": "Ejecutando",
       "fi": "Juoksemassa",
