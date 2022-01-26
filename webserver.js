@@ -5215,7 +5215,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var bin = parent.defaultMeshCores[req.query.dlcore];
                 if ((bin == null) || (bin.length < 5)) { try { res.sendStatus(404); } catch (ex) { } return; }
                 setContentDispositionHeader(res, 'application/octet-stream', req.query.dlcore + '.js', null, 'meshcore.js');
-                res.send(bin.substring(4));
+                res.send(bin.slice(4));
                 return;
             }
 
