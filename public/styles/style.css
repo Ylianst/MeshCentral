@@ -257,6 +257,10 @@ body {
     right: 3px;
 }
 
+.LogoffLinkColor {
+    color:white;
+}
+
 #logoutControlSpan2 {
     cursor: pointer;
     color: white;
