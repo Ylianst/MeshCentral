@@ -140,7 +140,7 @@
     "deny": "Förneka"
   },
   "tr": {
-    "allow": "İzin vermek",
+    "allow": "İzin ver",
     "deny": "İnkar etmek",
     "autoAllowForFive": "Sonraki 5 dakika boyunca tüm bağlantıları otomatik olarak kabul et",
     "terminalConsent": "{0} uzak terminal erişimi istiyor. Erişim izni veriyor musunuz?",

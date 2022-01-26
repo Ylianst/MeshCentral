@@ -21869,7 +21869,7 @@
       "zh-chs": "复制群组...",
       "zh-cht": "複製群組...",
       "xloc": [
-        "default.handlebars->container->column_l->p50->3->1->0->3->3"
+        "default.handlebars->container->column_l->p50->3->1->0->3->p50userGroupOps"
       ]
     },
     {
@@ -28048,7 +28048,7 @@
         "default.handlebars->39->633",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar",
         "default.handlebars->container->column_l->p4->3->1->0->3->3",
-        "default.handlebars->container->column_l->p50->3->1->0->3->3"
+        "default.handlebars->container->column_l->p50->3->1->0->3->p50userGroupOps"
       ]
     },
     {
@@ -40768,7 +40768,7 @@
       "zh-chs": "新组...",
       "zh-cht": "新群...",
       "xloc": [
-        "default.handlebars->container->column_l->p50->3->1->0->3->3"
+        "default.handlebars->container->column_l->p50->3->1->0->3->p50userGroupOps"
       ]
     },
     {
@@ -53711,7 +53711,7 @@
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
         "default.handlebars->container->column_l->p4->3->1->0->3->3",
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
-        "default.handlebars->container->column_l->p50->3->1->0->3->3",
+        "default.handlebars->container->column_l->p50->3->1->0->3->p50userGroupOps",
         "default.handlebars->meshContextMenu->cxselectall",
         "sharing.handlebars->11->56",
         "sharing.handlebars->11->58",

@@ -83,8 +83,8 @@
     "zenity": "Versuchen Sie, Zenity zu installieren / zu aktualisieren, und führen Sie es erneut aus",
     "status": [
       "NICHT INSTALLIERT",
-      "LAUFEN",
-      "NICHT LAUFEN"
+      "GESTARTET",
+      "NICHT GESTARTET"
     ],
     "statusDescription": "Aktueller Agentenstatus",
     "agentVersion": "Neue Version",
@@ -418,7 +418,7 @@
     "statusDescription": "Aktuell agentstatus"
   },
   "tr": {
-    "agent": "Ajan",
+    "agent": "Agent",
     "group": "Cihaz Grubu",
     "url": "Sunucu URL'si",
     "meshName": "Mesh Adı",
