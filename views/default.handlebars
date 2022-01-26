@@ -132,7 +132,7 @@
             <div style="float:right">
                 <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="display: none;" title="Click to view current notifications">0</div>
             </div>
-            <p id="logoutControl"><span id=logoutControlSpan class="logoncontrolspan" style="color:white"></span><span id=idleTimeoutNotify style="color:yellow"></span></p>
+            <p id="logoutControl"><span id=logoutControlSpan class="logoncontrolspan"></span><span id=idleTimeoutNotify style="color:yellow"></span></p>
         </div>
         <div id="page_leftbar">
             <div style="height:16px"></div>
@@ -158,7 +158,7 @@
         <div id=topbar class=noselect>
             <div>
                 <div style="position:relative">
-                    <span id=logoutControlSpan2 style="color:white"></span>
+                    <span id=logoutControlSpan2></span>
                     <div tabindex=0 id=uiMenuButton title="User interface selection" onclick="showUserInterfaceSelectMenu()" onkeypress="if (event.key == 'Enter') showUserInterfaceSelectMenu()">
                         &diams;
                         <div id=uiMenu style="display:none">
@@ -1492,8 +1492,8 @@
             // Setup logout control
             var logoutControl = '';
             if (logoutControls) {
-                if (logoutControls.name != null) { logoutControl = ('<span onclick=go(2) style="color:white;cursor:pointer">' + format("Welcome {0}.", logoutControls.name) + '</span>'); }
-                if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href="' + logoutControls.logoutUrl + '" style="color:white">' + "Logout" + '</a>'); }
+                if (logoutControls.name != null) { logoutControl = ('<span onclick=go(2) CLASS="LogoffLinkColor" style="cursor:pointer">' + format("Welcome {0}.", logoutControls.name) + '</span>'); }
+                if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href="' + logoutControls.logoutUrl + '" CLASS="LogoffLinkColor">' + "Logout" + '</a>'); }
             }
             if (args.hide & 1) { QH('logoutControlSpan2', logoutControl); } else { QH('logoutControlSpan', logoutControl); }
 
