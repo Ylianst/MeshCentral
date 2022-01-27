@@ -405,8 +405,11 @@
                 else if (p == 200) { p = "Intel&reg; AMT KVM"; }
                 x += addInfoNoEsc("Protocol", p);
             }
-            if (recFileMetadata.bpp == 1) { x += addInfoNoEsc("Color Quality", "256 colors"); }
-            if (recFileMetadata.bpp == 2) { x += addInfoNoEsc("Color Quality", "65536 colors"); }
+            var encQualityStr = "2 byte-per-pixel";
+            if (recFileMetadata.bpp == 1) { encQualityStr = "1 byte-per-pixel" }
+            if (recFileMetadata.graymode) { if (recFileMetadata.lowcolor) { encQualityStr += ", 16 grays"; } else { encQualityStr += ", 256 grays"; } }
+            x += addInfoNoEsc("Encoding Quality", encQualityStr);
+
             if (recFileMetadata.indexInterval) {
                 recFileIndexBasePtr = recFilePtr;
                 x += addInfoNoEsc("Seeking", format("Indexed every {0} seconds", recFileMetadata.indexInterval));
@@ -457,7 +460,10 @@
                 amtDesktop = CreateAmtRemoteDesktop('Desk');
                 amtDesktop.onScreenSizeChange = deskAdjust;
                 amtDesktop.onPreDrawImage = preCanvasDraw;
+                if (recFileMetadata.screenSize) { amtDesktop.width = recFileMetadata.screenSize[0]; amtDesktop.height = recFileMetadata.screenSize[1]; }
                 if (recFileMetadata.bpp) { amtDesktop.bpp = recFileMetadata.bpp; }
+                if (recFileMetadata.graymode) { amtDesktop.graymode = recFileMetadata.graymode; }
+                if (recFileMetadata.lowcolor) { amtDesktop.lowcolor = recFileMetadata.lowcolor; }
                 amtDesktop.State = 3;
                 amtDesktop.Start();
                 deskAdjust();
@@ -475,7 +481,10 @@
                 amtDesktop.onPreDrawImage = preCanvasDraw;
                 amtDesktop.State = 3;
                 amtDesktop.Start();
+                if (recFileMetadata.screenSize) { amtDesktop.width = recFileMetadata.screenSize[0]; amtDesktop.height = recFileMetadata.screenSize[1]; }
                 if (recFileMetadata.bpp) { amtDesktop.bpp = recFileMetadata.bpp; }
+                if (recFileMetadata.graymode) { amtDesktop.graymode = recFileMetadata.graymode; }
+                if (recFileMetadata.lowcolor) { amtDesktop.lowcolor = recFileMetadata.lowcolor; }
                 amtDesktop.state = 3;
                 deskAdjust();
                 QV('ConvertAsWebM', browser == 'chrome'); // Only show the "Convert to WebM button when in Chrome
@@ -583,7 +592,9 @@
                 // User --> Device data
                 if (recFileProtocol == 101) {
                     // Intel AMT KVM
-                    if (rstr2hex(data) == '0000000008080001000700070003050200000000') { amtDesktop.bpp = 1; } // Switch to 1 byte per pixel.
+                    if (rstr2hex(data) == '0000000008080001000700070003050200000000') { console.log('RGB8'); amtDesktop.bpp = 1; } // Switch to 1 byte per pixel, 256 colors
+                    if (rstr2hex(data) == '000000000808000100FF00000000000000000000') { console.log('GRAY8'); amtDesktop.bpp = 1; obj.graymode = true; } // Switch to 1 byte per pixel, 256 grays
+                    if (rstr2hex(data) == '0000000008040001000F00000000000000000000') { console.log('GRAY4'); amtDesktop.bpp = 1; obj.graymode = true; obj.lowcolor = true; } // Switch to 1 byte per pixel, 16 grays
                 }
             }
 
@@ -824,7 +835,13 @@
                 amtDesktop.onScreenSizeChange = deskAdjust;
                 amtDesktop.State = 3;
                 amtDesktop.Start();
-                if (recFileMetadata.protocol == 200) { if (recFileMetadata.bpp) { amtDesktop.bpp = recFileMetadata.bpp; } amtDesktop.state = 3; }
+                if (recFileMetadata.protocol == 200) {
+                    if (recFileMetadata.screenSize) { amtDesktop.width = recFileMetadata.screenSize[0]; amtDesktop.height = recFileMetadata.screenSize[1]; }
+                    if (recFileMetadata.bpp) { amtDesktop.bpp = recFileMetadata.bpp; }
+                    if (recFileMetadata.graymode) { amtDesktop.graymode = recFileMetadata.graymode; }
+                    if (recFileMetadata.lowcolor) { amtDesktop.lowcolor = recFileMetadata.lowcolor; }
+                    amtDesktop.state = 3;
+                }
             } else if (agentTerminal) {
                 agentTerminal = null;
             }
