@@ -1,0 +1,24 @@
+name: Deploy Docs
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - docs/**
+
+defaults:
+  run:
+    working-directory: docs
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      - run: pip install --upgrade pip
+      - run: pip install --upgrade setuptools wheel
+      - run: pip install mkdocs mkdocs-material pymdown-extensions
+      - run: mkdocs gh-deploy --force
