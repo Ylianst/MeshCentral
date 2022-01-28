@@ -50,6 +50,9 @@
         <div id="cxevents" class="cmtext" onclick="cmaction(5,event)">Events</div>
         <div id="cxdetails" class="cmtext" onclick="cmaction(6,event)">Details</div>
         <div id="cxconsole" class="cmtext" onclick="cmaction(7,event)">Console</div>
+        <div id="cxwebrdp" class="cmtext" onclick="cmaction(11,event)">Web-RDP</div>
+        <div id="cxwebvnc" class="cmtext" onclick="cmaction(12,event)">Web-VNC</div>
+        <div id="cxwebssh" class="cmtext" onclick="cmaction(13,event)">Web-SSH</div>
         <div id="cxplugins" class="cmtext" onclick="cmaction(8,event)" style="display:none">Plugins</div>
         <hr id="cxmgroupsplit" />
         <div id="cxstar" class="cmtext" onclick="cmaction(10,event)" style="display:none">Toggle Star</div>
@@ -5749,12 +5752,16 @@
                     var terminalAccess = ((rights == 0xFFFFFFFF) || ((rights & 512) == 0));
                     var fileAccess = ((rights == 0xFFFFFFFF) || ((rights & 1024) == 0));
 
-                    QV('cxdesktop', (node.mtype != 4) && ((node.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2))) && ((rights & 8) || (rights & 256)) && desktopAccess);
-                    QV('cxterminal', (node.mtype != 4) && ((node.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (rights & 8) && terminalAccess);
+                    QV('cxdesktop', ((node.conn & 1) != 0) && (node.mtype != 4) && ((node.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2))) && ((rights & 8) || (rights & 256)) && desktopAccess);
+                    QV('cxterminal', ((node.conn & 1) != 0) && (node.mtype != 4) && ((node.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (rights & 8) && terminalAccess);
                     QV('cxfiles', (node.mtype != 4) && ((node.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (rights & 8) && fileAccess);
                     QV('cxevents', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (rights & 8));
                     QV('cxdetails', node.mtype < 3);
+                    QV('cxwebrdp', ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0) && ((features & 0x20000000) == 0)));
+                    QV('cxwebvnc', ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0) && ((features & 0x40000000) == 0)));
+                    QV('cxwebssh', ((features2 & 0x200) && (((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0)));
                     QV('cxconsole', (consoleRights && (node.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (rights & 8));
+
                     QV('cxmgroupsplit', true);
                     QV('cxstar', true);
                     break;
@@ -5780,7 +5787,7 @@
             element.style.display = 'block';
         }
 
-        function cmaction(action,event) {
+        function cmaction(action, event) {
             var nodeid;
             if (Q('viewselect').value == 1) {
                 nodeid = contextelement.children[0].children[0].children[1].children[0].attributes.onclick.value;
@@ -5819,6 +5826,9 @@
                 updateDeviceViewDevice(nodeid);
                 if (Q('DevFilterSelect').value == 3) { mainUpdate(1); }
             }
+            else if (action == 11) { p10mstsc(nodeid); } // Web-RDP
+            else if (action == 12) { p10rfb(nodeid); } // Web-VNC
+            else if (action == 13) { p10ssh(nodeid); } // Web-SSH
         }
 
         function cmmeshaction(action) {
