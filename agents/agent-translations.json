@@ -65,7 +65,7 @@
     "agent": "Agent",
     "group": "Gerätegruppe",
     "url": "Server-URL",
-    "meshName": "Maschenname",
+    "meshName": "MESH Name",
     "meshId": "Gruppen-ID",
     "serverId": "Server-ID",
     "setup": "Konfiguration",
