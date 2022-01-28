@@ -1,0 +1,63 @@
+.md-header {
+    background-color: #0b3e81 !important;
+    color: white !important;
+}
+.md-search__input {
+    background-color: white !important;
+}
+.md-search__icon[for=__search]{
+    color: initial;
+}
+.md-container {
+    background-color: #0b3e81;
+}
+.md-footer-meta__inner {
+    background-color: #0b3e81;
+}
+.md-grid {
+}
+.md-nav__item .md-nav__link--active {
+    color: white;
+}
+.md-nav__link {
+    color: white;
+}
+.md-nav__link[data-md-state=blur] {
+    color: white;
+}
+.md-typeset a {
+    color: whitesmoke;
+    text-decoration: underline;
+    text-shadow: 4px 4px 8px black;
+}
+.md-typeset h1 {
+    color: white;
+    text-shadow: 4px 4px 8px black;
+}
+.md-typeset h2 {
+    color: white;
+    text-shadow: 4px 4px 8px black;
+}
+.md-typeset h3 {
+    color: white;
+    text-shadow: 4px 4px 8px black;
+}
+.md-typeset h4 {
+    color: white;
+    text-shadow: 4px 4px 8px black;
+}
+.md-typeset h5 {
+    color: white;
+    text-shadow: 4px 4px 8px black;
+}
+.md-main {
+    color: white !important;
+    background-color: #113962;
+    background: linear-gradient(to bottom, #104893 0%,#113962 100%);
+}
+a:link {
+    color: #c8c8c8;
+}
+.html {
+    background-color: #0b3e81;
+}

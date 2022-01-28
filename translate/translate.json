@@ -30301,7 +30301,7 @@
       "ja": "入力",
       "ko": "입력",
       "nl": "Invoer",
-      "pl": "Wprowadzanie",
+      "pl": "Sterowanie",
       "pt": "Entrada",
       "pt-br": "Entrada",
       "ru": "Ввод",
@@ -38195,7 +38195,7 @@
     {
       "cs": "Název oka",
       "da": "Mesh Navn",
-      "de": "Maschenname",
+      "de": "MESH Name",
       "en": "Mesh Name",
       "es": "Nombre de malla",
       "fi": "Verkon nimi",
