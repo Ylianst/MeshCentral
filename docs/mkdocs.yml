@@ -1,0 +1,54 @@
+site_name: "MeshCentral2 Documentation"
+nav:
+  - Home: index.md
+site_description: "A remote monitoring and management tool"
+site_author: " Ylianst"
+site_url: "https://git.meshcentral.com/"
+
+# Repository
+repo_name: "Ylianst/MeshCentral"
+repo_url: "https://github.com/Ylianst/MeshCentral"
+edit_uri: ""
+
+theme:
+  name: "material"
+  logo: "images/favicon.ico"
+  favicon: "images/favicon.ico"
+  language: "en"
+  palette:
+    primary: "white"
+    accent: "indigo"
+  features:
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - pymdownx.keys
+  - pymdownx.inlinehilite
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - codehilite:
+      guess_lang: false
+  - toc:
+      permalink: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
