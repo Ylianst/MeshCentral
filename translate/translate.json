@@ -955,6 +955,18 @@
       "zh-chs": ", 1 个连接。"
     },
     {
+      "en": ", 16 grays",
+      "xloc": [
+        "player.handlebars->3->35"
+      ]
+    },
+    {
+      "en": ", 256 grays",
+      "xloc": [
+        "player.handlebars->3->36"
+      ]
+    },
+    {
       "cs": ", Pouze Intel&reg; AMT",
       "da": ", Kun Intel&reg; AMT",
       "de": ", nur Intel&reg; AMT",
@@ -1758,6 +1770,12 @@
       ]
     },
     {
+      "en": "1 byte-per-pixel",
+      "xloc": [
+        "player.handlebars->3->34"
+      ]
+    },
+    {
       "cs": "1 připojení",
       "da": "1 forbindelse",
       "de": "1 Verbindung",
@@ -2321,7 +2339,7 @@
       "tr": "10 kare/sn",
       "zh-chs": "10 帧/秒",
       "xloc": [
-        "player.handlebars->3->46"
+        "player.handlebars->3->47"
       ]
     },
     {
@@ -2397,7 +2415,7 @@
       "zh-chs": "10％",
       "zh-cht": "10％",
       "xloc": [
-        "player.handlebars->3->54"
+        "player.handlebars->3->55"
       ]
     },
     {
@@ -2605,6 +2623,12 @@
       ]
     },
     {
+      "en": "2 byte-per-pixel",
+      "xloc": [
+        "player.handlebars->3->33"
+      ]
+    },
+    {
       "cs": "2 dny",
       "da": "2 dage",
       "de": "2 Tage",
@@ -2781,7 +2805,7 @@
       "tr": "20 kare/sn",
       "zh-chs": "20 帧/秒",
       "xloc": [
-        "player.handlebars->3->47"
+        "player.handlebars->3->48"
       ]
     },
     {
@@ -2806,7 +2830,7 @@
       "zh-chs": "20％",
       "zh-cht": "20％",
       "xloc": [
-        "player.handlebars->3->53"
+        "player.handlebars->3->54"
       ]
     },
     {
@@ -2882,10 +2906,7 @@
       "sv": "256 färger",
       "tr": "256 renk",
       "zh-chs": "256色",
-      "zh-cht": "256色",
-      "xloc": [
-        "player.handlebars->3->34"
-      ]
+      "zh-cht": "256色"
     },
     {
       "cs": "Záložní kódy 2FA byly vymazány",
@@ -3292,7 +3313,7 @@
       "zh-chs": "40％",
       "zh-cht": "40％",
       "xloc": [
-        "player.handlebars->3->52"
+        "player.handlebars->3->53"
       ]
     },
     {
@@ -3602,7 +3623,7 @@
       "zh-chs": "60％",
       "zh-cht": "60％",
       "xloc": [
-        "player.handlebars->3->51"
+        "player.handlebars->3->52"
       ]
     },
     {
@@ -3728,10 +3749,7 @@
       "sv": "65536 färger",
       "tr": "65536 renk",
       "zh-chs": "65536色",
-      "zh-cht": "65536色",
-      "xloc": [
-        "player.handlebars->3->36"
-      ]
+      "zh-cht": "65536色"
     },
     {
       "cs": "Stav přihlášení za 7 dnů",
@@ -3883,7 +3901,7 @@
       "zh-chs": "80％",
       "zh-cht": "80％",
       "xloc": [
-        "player.handlebars->3->50"
+        "player.handlebars->3->51"
       ]
     },
     {
@@ -3961,7 +3979,7 @@
       "zh-chs": "90％",
       "zh-cht": "90％",
       "xloc": [
-        "player.handlebars->3->49"
+        "player.handlebars->3->50"
       ]
     },
     {
@@ -13762,11 +13780,7 @@
       "sv": "Färgkvalitet",
       "tr": "Renk kalitesi",
       "zh-chs": "色彩品质",
-      "zh-cht": "色彩品質",
-      "xloc": [
-        "player.handlebars->3->33",
-        "player.handlebars->3->35"
-      ]
+      "zh-cht": "色彩品質"
     },
     {
       "cs": "Sloupce",
@@ -15618,7 +15632,7 @@
       "tr": "WebM'ye Dönüştür",
       "zh-chs": "转换为 WebM",
       "xloc": [
-        "player.handlebars->3->55",
+        "player.handlebars->3->56",
         "player.handlebars->p11->deskarea0->deskarea1->1"
       ]
     },
@@ -21819,7 +21833,7 @@
       "zh-chs": "拖放.mcrec档案或单击 “打开档案...”",
       "zh-cht": "拖放.mcrec檔案或單擊 “打開檔案...”",
       "xloc": [
-        "player.handlebars->3->44"
+        "player.handlebars->3->45"
       ]
     },
     {
@@ -23709,6 +23723,12 @@
       "zh-cht": "編碼",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->1->0->1"
+      ]
+    },
+    {
+      "en": "Encoding Quality",
+      "xloc": [
+        "player.handlebars->3->37"
       ]
     },
     {
@@ -26685,7 +26705,7 @@
       "zh-cht": "框速率",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->1",
-        "player.handlebars->3->45",
+        "player.handlebars->3->46",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->1"
       ]
     },
@@ -30182,7 +30202,7 @@
       "zh-chs": "每{0}秒索引一次",
       "zh-cht": "每{0}秒索引一次",
       "xloc": [
-        "player.handlebars->3->38"
+        "player.handlebars->3->39"
       ]
     },
     {
@@ -43952,7 +43972,7 @@
       "zh-chs": "打开档案...",
       "zh-cht": "打開檔案...",
       "xloc": [
-        "player.handlebars->3->56",
+        "player.handlebars->3->57",
         "player.handlebars->p11->deskarea0->deskarea1->3"
       ]
     },
@@ -47055,10 +47075,10 @@
       "zh-chs": "按[空格]播放/暂停。",
       "zh-cht": "按[空格]播放/暫停。",
       "xloc": [
-        "player.handlebars->3->39",
         "player.handlebars->3->40",
         "player.handlebars->3->41",
-        "player.handlebars->3->42"
+        "player.handlebars->3->42",
+        "player.handlebars->3->43"
       ]
     },
     {
@@ -47816,7 +47836,7 @@
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->0->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->3->1",
-        "player.handlebars->3->48",
+        "player.handlebars->3->49",
         "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->3->1"
       ]
     },
@@ -53654,7 +53674,7 @@
       "zh-chs": "寻求",
       "zh-cht": "尋求",
       "xloc": [
-        "player.handlebars->3->37"
+        "player.handlebars->3->38"
       ]
     },
     {
@@ -67606,7 +67626,8 @@
       "zh-cht": "網絡RDP",
       "xloc": [
         "default.handlebars->39->2729",
-        "default.handlebars->39->904"
+        "default.handlebars->39->904",
+        "default.handlebars->contextMenu->cxwebrdp"
       ]
     },
     {
@@ -67649,7 +67670,8 @@
       "zh-chs": "网络SSH",
       "xloc": [
         "default.handlebars->39->2730",
-        "default.handlebars->39->906"
+        "default.handlebars->39->906",
+        "default.handlebars->contextMenu->cxwebssh"
       ]
     },
     {
@@ -67674,7 +67696,8 @@
       "zh-chs": "网络VNC",
       "xloc": [
         "default.handlebars->39->2732",
-        "default.handlebars->39->902"
+        "default.handlebars->39->902",
+        "default.handlebars->contextMenu->cxwebvnc"
       ]
     },
     {
@@ -70277,7 +70300,7 @@
       "zh-chs": "data：image / png; base64，",
       "zh-cht": "data：image / png; base64，",
       "xloc": [
-        "player.handlebars->3->43"
+        "player.handlebars->3->44"
       ]
     },
     {
