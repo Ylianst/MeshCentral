@@ -1071,9 +1071,43 @@ function handleServerCommand(data) {
                     }
                     case 'messagebox': {
                         // Display a message box
-                        if (data.title && data.msg) {
+                        if (data.title && data.msg)
+                        {
                             MeshServerLogEx(18, [data.title, data.msg], "Displaying message box, title=" + data.title + ", message=" + data.msg, data);
-                            try { require('message-box').create(data.title, data.msg, 120).then(function () { }).catch(function () { }); } catch (ex) { }
+                            if (process.platform == 'win32')
+                            {
+                                if(global._clientmessage)
+                                {
+                                    global._clientmessage.addMessage(data.msg);
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        require('win-dialog');
+                                        var ipr = server_getUserImage(data.userid);
+                                        ipr.title = data.title;
+                                        ipr.message = data.msg;
+                                        ipr.username = data.username;
+                                        global._clientmessage = ipr.then(function (img)
+                                        {
+                                            this.messagebox = require('win-dialog').create(this.title, this.message, this.username, { timeout: 120000, b64Image: img.split(',').pop() }); 
+                                            this.__childPromise.addMessage = this.messagebox.addMessage.bind(this.messagebox);
+                                            return (this.messagebox);
+                                        });
+
+                                        global._clientmessage.then(function () { global._clientmessage = null; });
+                                    }
+                                    catch(z)
+                                    {
+                                        try { require('message-box').create(data.title, data.msg, 120).then(function () { }).catch(function () { }); } catch (ex) { }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                try { require('message-box').create(data.title, data.msg, 120).then(function () { }).catch(function () { }); } catch (ex) { }
+                            }
                         }
                         break;
                     }
