@@ -572,7 +572,7 @@
       "pl": "&Otwórz Mapowania...",
       "pt": "& Abrir mapeamentos ...",
       "pt-br": "&Abrir mapeamentos ...",
-      "ru": "&Открыть, сопоставить...",
+      "ru": "&Открыть переадресации...",
       "sv": "& Öppna kartläggningar ...",
       "tr": "&Eşlemeleri Aç...",
       "zh-chs": "打开映射 (&O)..."
@@ -593,7 +593,7 @@
       "pl": "&Otwórz...",
       "pt": "&Abrir...",
       "pt-br": "&Abrir...",
-      "ru": "&Открыть",
+      "ru": "Открыть...",
       "sv": "&Öppna...",
       "tr": "&Aç...",
       "zh-chs": "＆打开..."
@@ -635,7 +635,7 @@
       "pl": "&Zapisz Mapowania...",
       "pt": "& Salvar mapeamentos ...",
       "pt-br": "&Salvar mapeamentos ...",
-      "ru": "&Сохранить сопоставления...",
+      "ru": "&Сохранить переадресации...",
       "sv": "& Spara kartor ...",
       "tr": "&Eşlemeleri Kaydet...",
       "zh-chs": "保存映射(&S)..."
@@ -879,7 +879,7 @@
       "pl": "* Pozostawić puste, aby przypisać losowe hasło do każdego urządzenia.",
       "pt": "* Deixe em branco para atribuir uma senha aleatória a cada dispositivo.",
       "pt-br": "* Deixe em branco para atribuir uma senha aleatória a cada dispositivo.",
-      "ru": "* Оставьте пустым для установления случайного пароля каждому устройству.",
+      "ru": "* Оставьте пустым для установки случайного пароля каждому устройству.",
       "sv": "* Lämna tomt för att tilldela ett slumpmässigt lösenord till varje enhet.",
       "tr": "* Her cihaza rastgele bir şifre atamak için boş bırakın.",
       "zh-chs": "*保留空白可为每个设备分配一个随机密码。",
@@ -956,12 +956,14 @@
     },
     {
       "en": ", 16 grays",
+      "ru": ", 16 оттенков серого",
       "xloc": [
         "player.handlebars->3->35"
       ]
     },
     {
       "en": ", 256 grays",
+      "ru": ", 256 оттенков серого",
       "xloc": [
         "player.handlebars->3->36"
       ]
@@ -1106,6 +1108,7 @@
       "ja": "、毎日のリキュレーション",
       "nl": ", Dagelijks terugkerend",
       "pl": ", Powtarzaj codziennie",
+      "ru": ", Ежедневно",
       "tr": ", Günlük yinelenen",
       "xloc": [
         "default.handlebars->39->1877",
@@ -1125,6 +1128,7 @@
       "ja": "、毎週のリキュレーション",
       "nl": ", Wekelijks terugkerend",
       "pl": ", Powtarzaj co tydzień",
+      "ru": ", Еженедельно",
       "tr": ", Haftalık yinelenen",
       "xloc": [
         "default.handlebars->39->1878",
@@ -1194,7 +1198,7 @@
       "pl": ", Pasek narzędzi",
       "pt": ", Barra de ferramentas",
       "pt-br": ", Barra de ferramentas",
-      "ru": ", Панель инструментов",
+      "ru": ", Панель-уведомление",
       "sv": ", Verktygsfält",
       "tr": ", Araç Çubuğu",
       "zh-chs": ", 工具栏",
@@ -1237,6 +1241,7 @@
       "ja": "、デスクトップのみを表示",
       "nl": ", Desktop alleen bekijken",
       "pl": ", Tylko podgląd pulpitu",
+      "ru": ",  Только просмотр рабочего стола",
       "tr": ", Yalnızca masaüstünü görüntüle",
       "xloc": [
         "default.handlebars->39->1879",
@@ -1771,6 +1776,7 @@
     },
     {
       "en": "1 byte-per-pixel",
+      "ru": "1 байт на пиксель",
       "xloc": [
         "player.handlebars->3->34"
       ]
@@ -2624,6 +2630,7 @@
     },
     {
       "en": "2 byte-per-pixel",
+      "ru": "2 байта на пиксель",
       "xloc": [
         "player.handlebars->3->33"
       ]
@@ -4312,6 +4319,7 @@
       "ja": "AMT-Redir",
       "nl": "AMT-Redir",
       "pl": "AMT-Przekier",
+      "ru": "AMT-Redir",
       "tr": "AMT-Yönlendirme",
       "xloc": [
         "default.handlebars->39->2727"
@@ -4330,6 +4338,7 @@
       "ja": "AMT-WSMAN",
       "nl": "AMT-WSMAN",
       "pl": "AMT-WSMAN",
+      "ru": "AMT-WSMAN",
       "tr": "AMT-WSMAN",
       "xloc": [
         "default.handlebars->39->2726"
@@ -4846,6 +4855,7 @@
       "ja": "アカウントが作成されました。名前は{0}です。",
       "nl": "Account aangemaakt, naam is {0}.",
       "pl": "Konto utworzono, jego nazwa to {0}.",
+      "ru": "Аккаунт создан, имя {0}.",
       "tr": "Hesap oluşturuldu, ad {0}.",
       "xloc": [
         "default.handlebars->39->2257"
@@ -5260,7 +5270,7 @@
       "pl": "Aktywacja kamery i mikrofonu",
       "pt": "Ativar câmera e microfone",
       "pt-br": "Ativar câmera e microfone",
-      "ru": "Активирование камеры и микрофона",
+      "ru": "Включить камеру и микрофон",
       "sv": "Aktivera kamera och mikrofon",
       "tr": "Kamera ve mikrofonu etkinleştirin",
       "zh-chs": "激活相机和麦克风",
@@ -5285,7 +5295,7 @@
       "pl": "Aktywuj mikrofon",
       "pt": "Ativar microfone",
       "pt-br": "Ative o microfone",
-      "ru": "Активирование микрофона",
+      "ru": "Включить микрофон",
       "sv": "Aktivera mikrofon",
       "tr": "Mikrofonu etkinleştir",
       "zh-chs": "激活麦克风",
@@ -5390,7 +5400,7 @@
       "pl": "Aktywne Udostępnianie Urządzeń",
       "pt": "Compartilhamento de dispositivo ativo",
       "pt-br": "Compartilhamento de dispositivo ativo",
-      "ru": "Совместное использование активного устройства",
+      "ru": "Активные гоcтевые доступы к устройствам",
       "sv": "Aktiv enhetsdelning",
       "tr": "Aktif Cihaz Paylaşımı",
       "zh-chs": "主动设备共享",
@@ -5438,6 +5448,7 @@
       "nl": "Actieve gebruiker",
       "pl": "Aktywny użytkownik",
       "pt-br": "Usuario activo",
+      "ru": "Активный пользователь",
       "tr": "Aktif Kullanıcı",
       "xloc": [
         "default.handlebars->39->823"
@@ -5457,6 +5468,7 @@
       "nl": "Actieve gebruikers",
       "pl": "Aktywni użytkownicy",
       "pt-br": "Usuarios activos",
+      "ru": "Активные пользователи",
       "tr": "Aktif Kullanıcılar",
       "xloc": [
         "default.handlebars->39->822"
@@ -5526,7 +5538,7 @@
       "pl": "Dodaj &Mapę...",
       "pt": "Adicionar & mapear ...",
       "pt-br": "Adicionar & mapear ...",
-      "ru": "Добавить & карту ...",
+      "ru": "Добавить переадресацию...",
       "sv": "Lägg till & mappa ...",
       "tr": "&Eşleştirme ekle...",
       "zh-chs": "添加地图 (&M)..."
@@ -5547,7 +5559,7 @@
       "pl": "Dodaj Mapę $Przekierowania...",
       "pt": "Adicionar & retransmitir mapa ...",
       "pt-br": "Adicionar & retransmitir mapa ...",
-      "ru": "Добавить & карту реле ...",
+      "ru": "Добавить релей переадресацию...",
       "sv": "Lägg till & vidarebefordra karta ...",
       "tr": "&Yayın Eşleştirmesi Ekle...",
       "zh-chs": "添加中继地图 (&R)..."
@@ -5844,7 +5856,7 @@
       "pl": "Dodaj Mapę...",
       "pt": "Adicionar mapa ...",
       "pt-br": "Adicionar mapa ...",
-      "ru": "Добавить карту ...",
+      "ru": "Добавить переадресацию...",
       "sv": "Lägg till karta ...",
       "tr": "Eşleştirme Ekle...",
       "zh-chs": "添加地图..."
@@ -5915,7 +5927,7 @@
       "pl": "Dodaj Mapę Przekierowania...",
       "pt": "Adicionar mapa de retransmissão ...",
       "pt-br": "Adicionar mapa de retransmissão ...",
-      "ru": "Добавить карту реле ...",
+      "ru": "Добавить релей переадресацию...",
       "sv": "Lägg till reläkarta ...",
       "tr": "Yayın Eşleştirmesi Ekle...",
       "zh-chs": "添加中继地图..."
@@ -6339,7 +6351,7 @@
       "pl": "Dodaj nowy komputer do tej grupy urządzeń, instalując agenta sieciowego.",
       "pt": "Adicione um novo computador a este grupo de dispositivos instalando o agente mesh.",
       "pt-br": "Adicione um novo computador a este grupo de dispositivos instalando o agente mesh.",
-      "ru": "Добавьте новый компьютер в эту группу устройств, установив агент сетки.",
+      "ru": "Добавьте новый компьютер в эту группу устройств, установив Mesh Agent.",
       "sv": "Lägg till en ny dator i den här enhetsgruppen genom att installera nätagenten.",
       "tr": "Mesh agent kurarak bu cihaz grubuna yeni bir bilgisayar ekleyin.",
       "zh-chs": "通过安装Mesh Agent将新计算机添加到该设备组。",
@@ -6510,6 +6522,7 @@
       "ja": "毎日繰り返されるデバイス共有{0}を追加しました。",
       "nl": "Apparaat delen toegevoegd {0} dagelijks terugkerend.",
       "pl": "Dodano udostępnienie urządzenia {0} reaktywowane codziennie.",
+      "ru": "Добавлен ежедневный общий доступ к устройству {0}.",
       "tr": "Her gün yinelenen {0} cihaz paylaşımı eklendi.",
       "xloc": [
         "default.handlebars->39->2267"
@@ -6528,6 +6541,7 @@
       "ja": "毎週繰り返されるデバイス共有{0}を追加しました。",
       "nl": "Apparaat delen toegevoegd {0} wekelijks terugkerend.",
       "pl": "Dodano udostępnienie urządzenia {0} reaktywowane co tydzień.",
+      "ru": "Добавлен еженедельный общий доступ к устройству {0}.",
       "tr": "Haftalık olarak yinelenen {0} cihaz paylaşımı eklendi.",
       "xloc": [
         "default.handlebars->39->2268"
@@ -6546,6 +6560,7 @@
       "ja": "無制限の時間でデバイス共有{0}を追加しました。",
       "nl": "Apparaat delen {0} toegevoegd met onbeperkte tijd.",
       "pl": "Dodano udostępnianie urządzenia {0} z nieograniczonym czasem",
+      "ru": "Добавлен общий доступ к устройству {0} с неограниченным временем.",
       "tr": "Sınırsız süre ile cihaz paylaşımı {0} eklendi.",
       "xloc": [
         "default.handlebars->39->2260"
@@ -6666,7 +6681,7 @@
       "pl": "Dodano grupę użytkowników {0} do grupy urządzeń {1}",
       "pt": "Grupo de usuários {0} adicionado ao grupo de dispositivos {1}",
       "pt-br": "Grupo de usuários {0} adicionado ao grupo de dispositivos {1}",
-      "ru": "Добавлена ​​группа пользователей {0} в группу устройств {1}",
+      "ru": "Группа пользователей {0} добавлена в группу устройств {1}",
       "sv": "Har lagt till användargrupp {0} i enhetsgrupp {1}",
       "tr": "{1} cihaz grubuna {0} kullanıcı grubu eklendi",
       "zh-chs": "已将用户组{0}添加到设备组{1}",
@@ -6691,7 +6706,7 @@
       "pl": "Dodano użytkownika {0} do grupy użytkowników {1}",
       "pt": "Adicionou o usuário {0} ao grupo de usuários {1}",
       "pt-br": "Usuário adicionado {0} ao grupo de usuários {1}",
-      "ru": "Добавлен пользователь {0} в группу пользователей {1}",
+      "ru": "Пользователь {0} добавлен в группу пользователей {1}",
       "sv": "Har lagt till användare {0} i användargruppen {1}",
       "tr": "{1} kullanıcı grubuna {0} kullanıcısı eklendi",
       "zh-chs": "已将用户{0}添加到用户组{1}",
@@ -7235,7 +7250,7 @@
       "pl": "Wybór agenta",
       "pt": "Agent Select",
       "pt-br": "Selecionar Agent",
-      "ru": "Агент Выбрать",
+      "ru": "Выбор Агента",
       "sv": "Agent Select",
       "tr": "Agent Seçimi",
       "zh-chs": "代理选择"
@@ -7253,6 +7268,7 @@
       "ja": "エージェントの自己共有",
       "nl": "Agent zelfdelend",
       "pl": "Samo-Udostępnianie Agenta",
+      "ru": "Общий доступ из Агента",
       "tr": "Agent Kendisinin-Paylaşımı",
       "xloc": [
         "default.handlebars->39->1883",
@@ -7472,6 +7488,7 @@
       "ja": "限られた特権に接続されたエージェント",
       "nl": "Agent verbonden met beperkte privileges",
       "pl": "Agent połączony z ograniczonymi uprawnieniami",
+      "ru": "Агент подключен с ограниченными привилегиями",
       "tr": "Agent kısıtlı yetkiler ile bağlandı",
       "xloc": [
         "default.handlebars->39->231"
@@ -7515,6 +7532,7 @@
       "ja": "エージェントのハッシュチェックはスキップされています。これは安全ではありません。",
       "nl": "Agent has hcontrole wordt overgeslagen, dit is onveilig.",
       "pl": "Sprawdzanie skrótu agenta jest pomijane, jest to niebezpieczne.",
+      "ru": "Проверка хэша агента пропущена, это небезопасно.",
       "tr": "Agent doğrulaması atlandı, bu güvenli değil.",
       "xloc": [
         "default.handlebars->39->88"
@@ -8004,7 +8022,7 @@
       "pl": "Zezwól",
       "pt": "Permitir",
       "pt-br": "Permitir",
-      "ru": "Разрешать",
+      "ru": "Разрешить",
       "sv": "Tillåta",
       "tr": "İzin ver",
       "zh-chs": "允许",
@@ -8380,7 +8398,7 @@
       "pl": "Konto zostało utworzone dla Ciebie na serwerze",
       "pt": "Uma conta foi criada para você no servidor",
       "pt-br": "Uma conta foi criada para você no servidor",
-      "ru": "Учетная запись была создана для вас на сервере",
+      "ru": "Для вас была создана учетная запись на сервере",
       "sv": "Ett konto skapades åt dig på servern",
       "tr": "Sunucuda sizin için bir hesap oluşturuldu",
       "zh-chs": "在服务器上为您创建了一个帐户",
@@ -8405,7 +8423,7 @@
       "pl": "Konto zostało utworzone dla Ciebie na serwerze [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), możesz uzyskać do niego dostęp podając nazwę użytkownika \"[[[ACCOUNTNAME]]]\" i hasło \"[[[PASSWORD]]]\".",
       "pt": "Uma conta foi criada para você no servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), você pode acessá-la agora com o nome de usuário \"[[[ACCOUNTNAME]]]\" e a senha \"[[[PASSWORD] ]] \".",
       "pt-br": "Uma conta foi criada para você no servidor [[[SERVERNAME]]] ([[[SERVERURL]]] / [[[URLARGS1]]]), você pode acessá-la agora com o nome de usuário \"[[[ACCOUNTNAME]]]\" e senha \"[[[PASSWORD]]]\".",
-      "ru": "Учетная запись была создана для вас на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), теперь вы можете получить к ней доступ с именем пользователя «[[[ACCOUNTNAME]]]» и паролем «[[[PASSWORD] ]] \".",
+      "ru": "Для вас на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) была создана учетная запись, теперь вы можете получить к ней доступ с именем пользователя «[[[ACCOUNTNAME]]]» и паролем «[[[PASSWORD] ]] \".",
       "sv": "Ett konto skapades åt dig på servern [[[SERVERNAME]]] ([[[SERVERURL]]] / [[[URLARGS1]]], du kan komma åt det nu med användarnamnet \"[[[ACCOUNTNAME]]]\" och lösenord \"[[[LÖSENORD]]]\".",
       "tr": "[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) sunucusunda sizin için bir hesap oluşturuldu, şimdi \"[[[ACCOUNTNAME]]]\" kullanıcı adı ve \"[[[PASSWORD]]]\" ile bu hesaba erişebilirsiniz.",
       "zh-chs": "已在服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/[[[URLARGS1]]]）上为您创建了一个帐户，您现在可以使用用户名“ [[[ACCOUNTNAME]]]”和密码“ [[[PASSWORD] ]]”。",
@@ -8757,7 +8775,7 @@
       "pl": "Aplikacja",
       "pt": "Aplicativo",
       "pt-br": "Aplicativo",
-      "ru": "заявка",
+      "ru": "Приложение",
       "sv": "Ansökan",
       "tr": "Uygulama",
       "zh-chs": "应用"
@@ -9570,7 +9588,7 @@
       "pl": "Zapytaj o zgodę",
       "pt": "Peça consentimento",
       "pt-br": "Peça autorização",
-      "ru": "Спросите согласия",
+      "ru": "Спросить согласия",
       "sv": "Fråga samtycke",
       "tr": "Onay isteyin",
       "zh-chs": "询问同意",
@@ -9595,7 +9613,7 @@
       "pl": "Zapytaj o zgodę + Bar",
       "pt": "Peça Consentimento + Bar",
       "pt-br": "Peça Autorização + Bar",
-      "ru": "Спросите согласия + бар",
+      "ru": "Спросить согласия + панель-уведомление",
       "sv": "Fråga samtycke + bar",
       "tr": "Onay Sor + Bar",
       "zh-chs": "询问同意+工具栏",
@@ -9695,7 +9713,7 @@
       "pl": "Aktualizacja Asystenta",
       "pt": "Atualização do assistente",
       "pt-br": "Atualização do assistente",
-      "ru": "Ассистент Обновление",
+      "ru": "Обновление Ассистента",
       "sv": "Assistentuppdatering",
       "tr": "Asistan Güncellemesi",
       "zh-chs": "助理更新"
@@ -10052,6 +10070,7 @@
       "ja": "次の5分間はすべての接続を自動受け入れます",
       "nl": "Alle verbindingen automatisch accepteren voor de komende 5 minuten",
       "pl": "Automatycznie akceptuj wszystkie połączenia przez następne 5 minut",
+      "ru": "Автоматически принимать все соединения в течение 5 минут",
       "tr": "Sonraki 5 dakika boyunca tüm bağlantıları otomatik olarak kabul et",
       "xloc": [
         "coretranslations.json"
@@ -10593,6 +10612,7 @@
       "ja": "meshcentral-dataフォルダー内にバックアップパスを設定することはできません。バックアップ設定は無視されます。",
       "nl": "Back-uppad kan niet worden ingesteld in de map meshcentral-data, back-upinstellingen genegeerd.",
       "pl": "Ścieżka kopii zapasowej nie może być ustawiona wewnątrz folderu meshcentral-data, ustawienia kopii zignorowano.",
+      "ru": "Путь резервного копирования не может в папке meshcentral-data, параметры резервного копирования игнорируются.",
       "tr": "Yedekleme yolu meshcentral-data klasörü içinde ayarlanamaz, yedekleme ayarları yok sayılır.",
       "xloc": [
         "default.handlebars->39->100"
@@ -11134,6 +11154,7 @@
       "ja": "バイトイン",
       "nl": "Bytes in",
       "pl": "Bajtów Odebrano",
+      "ru": "Входящих байт",
       "tr": "Bayt Girişi",
       "xloc": [
         "default.handlebars->39->2719"
@@ -11152,6 +11173,7 @@
       "ja": "バイトアウト",
       "nl": "Bytes uit",
       "pl": "Bajtów Wysłano",
+      "ru": "Исходящих байт",
       "tr": "Bayt Bitti",
       "xloc": [
         "default.handlebars->39->2720"
@@ -11299,6 +11321,7 @@
       "ja": "サーバーがLANのみまたはWANのみのモードの場合、CIRAローカルFQDNは無視されます。",
       "nl": "CIRA lokale FQDN's genegeerd wanneer server in LAN-only of WAN-only modus.",
       "pl": "Lokalna nazwa FQDN CIRA jest ignorowana, gdy serwer działa w trybie tylko LAN lub tylko WAN.",
+      "ru": "Локальные полные доменные имена CIRA игнорируются, когда сервер находится в режиме LAN-only или WAN-only.",
       "tr": "Sunucu yalnızca LAN veya yalnızca WAN modundayken CIRA yerel FQDN'leri yoksayılır.",
       "xloc": [
         "default.handlebars->39->86"
@@ -11599,6 +11622,7 @@
       "ja": "4つを超えるCIRAローカルFQDNを持つことはできません。値を無視します。",
       "nl": "Er mogen niet meer dan 4 CIRA lokale FQDN's zijn. Waarde wordt genegeerd.",
       "pl": "Nie może mieć więcej niż 4 lokalnych FQDN CIRA. Ignorowanie wartości.",
+      "ru": "Локальных полных доменных имен CIRA не может быть более 4. Игнорируем значение.",
       "tr": "4'ten fazla CIRA yerel FQDN'si olamaz. Değeri görmezden gelmek.",
       "xloc": [
         "default.handlebars->39->87"
@@ -11700,7 +11724,7 @@
       "pl": "Objętość",
       "pt": "Capacidade",
       "pt-br": "Capacidade",
-      "ru": "Вместимость",
+      "ru": "Объем",
       "sv": "Kapacitet",
       "tr": "Kapasite",
       "zh-chs": "容量",
@@ -12278,6 +12302,7 @@
       "ja": "アカウントの表示名を{0}に変更しました。",
       "nl": "Weergavenaam account gewijzigd in {0}.",
       "pl": "Zmieniono wyświetlaną nazwę konta na {0}.",
+      "ru": "Изменено отображаемое имя учетной записи на {0}.",
       "tr": "Hesap görünen adı {0} olarak değiştirildi.",
       "xloc": [
         "default.handlebars->39->2256"
@@ -13474,7 +13499,7 @@
       "pl": "Kliknij poniższe przyciski, aby zainstalować lub odinstalować agenta. Po zainstalowaniu, to oprogramowanie działa w tle, umożliwiając zarządzanie i kontrolowanie tego komputera przez zdalnego administratora.",
       "pt": "Clique nos botões abaixo para instalar ou desinstalar o agente mesh. Quando instalado, este software é executado em segundo plano, permitindo que o computador seja gerenciado e controlado por um administrador remoto.",
       "pt-br": "Clique nos botões abaixo para instalar ou desinstalar o agente mesh. Quando instalado, este software é executado em segundo plano, permitindo que o computador seja gerenciado e controlado por um administrador remoto.",
-      "ru": "Нажмите кнопки ниже, чтобы установить или удалить агент сетки. После установки это программное обеспечение работает в фоновом режиме, позволяя управлять этим компьютером удаленным администратором.",
+      "ru": "Нажмите кнопки ниже, чтобы установить или удалить Mesh Agent. После установки это программное обеспечение работает в фоновом режиме, позволяя управлять этим компьютером удаленным администратором.",
       "sv": "Klicka på knapparna nedan för att installera eller avinstallera nätagenten. När den installeras körs denna programvara i bakgrunden så att den här datorn kan hanteras och styras av en fjärradministratör.",
       "tr": "Mesh aracısını yüklemek veya kaldırmak için aşağıdaki düğmelere tıklayın. Bu yazılım yüklendiğinde arka planda çalışarak bu bilgisayarın bir uzak yönetici tarafından yönetilmesine ve kontrol edilmesine olanak tanır.",
       "zh-chs": "单击下面的按钮以安装或卸载网状代理。安装后，该软件将在后台运行，从而允许该计算机由远程管理员进行管理和控制。",
@@ -13493,6 +13518,7 @@
       "ja": "このリモート管理ソフトウェアをインストールまたはアンインストールするには、下のボタンをクリックしてください。インストールすると、このソフトウェアはバックグラウンドで実行され、リモート管理者がこのコンピューターを管理および制御できるようになります。",
       "nl": "Klik op de onderstaande knoppen om deze software voor beheer op afstand te installeren of te verwijderen. Na installatie draait deze software op de achtergrond waardoor deze computer kan worden beheerd en gecontroleerd door een externe beheerder.",
       "pl": "Kliknij poniższe przyciski, aby zainstalować lub odinstalować oprogramowanie zdalnego dostępu. Po zainstalowaniu, to oprogramowanie działa w tle, umożliwiając zarządzanie i kontrolowanie tego komputera przez zdalnego administratora.",
+      "ru": "Нажмите кнопки ниже, чтобы установить или удалить это программное обеспечение для удаленного управления..После установки это программное обеспечение работает в фоновом режиме, что позволяет удаленному администратору управлять этим компьютером.",
       "tr": "Bu uzaktan yönetim yazılımını yüklemek veya kaldırmak için aşağıdaki düğmelere tıklayın. Yüklendiğinde, bu yazılım arka planda çalışır ve bu bilgisayarın uzak bir yönetici tarafından yönetilmesine ve kontrol edilmesine olanak tanır.",
       "xloc": [
         "agent-translations.json"
@@ -15182,6 +15208,7 @@
       "ja": "接続されているデバイス：",
       "nl": "Verbonden apparaten:",
       "pl": "Podłączone urządzenia:",
+      "ru": "Подключенные устройства:",
       "tr": "Bağlı cihazlar:",
       "xloc": [
         "device-notify.html->2->5->1",
@@ -15294,6 +15321,7 @@
       "ja": "サーバーにつなげる...",
       "nl": "Verbinden met de server...",
       "pl": "Łączenie z serwerem...",
+      "ru": "Подключение к серверу...",
       "tr": "Sunucuya baglanıyor...",
       "xloc": [
         "player.handlebars->3->16"
@@ -15424,7 +15452,7 @@
       "pl": "Przekierowanie Połączenia",
       "pt": "Encaminhador de conexão",
       "pt-br": "Relé de conexão",
-      "ru": "Ретранслятор подключения",
+      "ru": "Ретранслятор подключений",
       "sv": "Anslutningsrelä",
       "tr": "Bağlantı Yayını",
       "zh-chs": "连接转发器",
@@ -15524,6 +15552,7 @@
       "it": "Consenso",
       "ja": "同意",
       "nl": "Toestemming",
+      "ru": "Согласие",
       "tr": "Onay",
       "xloc": [
         "default.handlebars->39->2275"
@@ -15600,7 +15629,7 @@
       "pl": "Kontrola",
       "pt": "Ao controle",
       "pt-br": "Controle",
-      "ru": "контроль",
+      "ru": "Управление",
       "sv": "Kontrollera",
       "tr": "Kontrol",
       "zh-chs": "控制",
@@ -17259,6 +17288,7 @@
       "ja": "毎日",
       "nl": "Dagelijks",
       "pl": "Dziennie",
+      "ru": "Ежедневно",
       "tr": "Günlük",
       "xloc": [
         "default.handlebars->39->267"
@@ -17356,7 +17386,7 @@
       "pl": "Data & Czas",
       "pt": "Datas e Horário",
       "pt-br": "Datas e Horários",
-      "ru": "Дата & Время",
+      "ru": "Дата и время",
       "sv": "Datum och tid",
       "tr": "Tarihler ve Saat",
       "zh-chs": "日期和时间",
@@ -18192,7 +18222,7 @@
       "pl": "Odrzucono",
       "pt": "Negar",
       "pt-br": "Negar",
-      "ru": "Отрицать",
+      "ru": "Отказать",
       "sv": "Förneka",
       "tr": "İnkar etmek",
       "zh-chs": "否定",
@@ -18349,7 +18379,7 @@
       "pl": "DeskControl",
       "pt": "DeskControl",
       "pt-br": "DeskControl",
-      "ru": "Управление рабочего стола",
+      "ru": "DeskControl",
       "sv": "DeskControl",
       "tr": "DeskControl",
       "zh-chs": "桌面控制",
@@ -18536,7 +18566,7 @@
       "pl": "Powiadomienie Pulpitu",
       "pt": "Notificação na área de trabalho",
       "pt-br": "Notificar área de trabalho",
-      "ru": "Уведомление на рабочем столе",
+      "ru": "Рабочий стол: уведомить",
       "sv": "Skrivbordsavisering",
       "tr": "Masaüstü Bildirimi",
       "zh-chs": "桌面通知",
@@ -18564,7 +18594,7 @@
       "pl": "Zapytanie o Pulpit",
       "pt": "Prompt da área de trabalho",
       "pt-br": "Desktop Prompt",
-      "ru": "Запрос рабочего стола",
+      "ru": "Рабочий стол: запросить",
       "sv": "Prompt på skrivbordet",
       "tr": "Masaüstü İstemi",
       "zh-chs": "桌面提示",
@@ -18592,7 +18622,7 @@
       "pl": "Zapytanie o Pulpit+Pasek Narzędzi",
       "pt": "Prompt da área de trabalho + barra de ferramentas",
       "pt-br": "Prompt da área de trabalho + barra de ferramentas",
-      "ru": "Запрос рабочего стола + панель инструментов",
+      "ru": "Рабочий стол: запросить + панель-уведомление",
       "sv": "Desktop Prompt + Toolbar",
       "tr": "Masaüstü İstemi + Araç Çubuğu",
       "zh-chs": "桌面提示+工具栏",
@@ -18717,7 +18747,7 @@
       "pl": "Pasek narzędzi Pulpitu",
       "pt": "Barra de ferramentas da área de trabalho",
       "pt-br": "Barra de ferramentas da área de trabalho",
-      "ru": "Панель инструментов рабочего стола",
+      "ru": "Панель-уведомление на экране",
       "sv": "Desktop Toolbar",
       "tr": "Masaüstü Araç Çubuğu",
       "zh-chs": "桌面工具栏",
@@ -19080,7 +19110,7 @@
       "pl": "Grupa Urządzeń",
       "pt": "Grupo de dispositivos",
       "pt-br": "Grupo de Dispositivos",
-      "ru": "Группа устройства",
+      "ru": "Группа устройств",
       "sv": "Enhetsgrupp",
       "tr": "Cihaz Grubu",
       "zh-chs": "设备组",
@@ -19726,6 +19756,7 @@
       "it": "Il gruppo di dispositivi {0} è stato modificato: {1}",
       "ja": "デバイスグループ{0}が変更されました：{1}",
       "nl": "Apparaatgroep {0} is gewijzigd: {1}",
+      "ru": "Группа устройств {0} изменена: {1}",
       "tr": "{0} cihaz grubu değiştirildi: {1}",
       "xloc": [
         "default.handlebars->39->2271"
@@ -19772,6 +19803,7 @@
       "ja": "デバイスがビジーです",
       "nl": "Apparaat is bezet",
       "pl": "Urządzenie jest zajęte",
+      "ru": "Устройство занято",
       "tr": "Aygıt meşgul",
       "xloc": [
         "default-mobile.handlebars->11->198",
@@ -20125,6 +20157,7 @@
       "ja": "デバイスの電源がオフになっています。",
       "nl": "Apparaat is uitgeschakeld.",
       "pl": "Urządzenie jest wyłączone.",
+      "ru": "Устройство выключено.",
       "tr": "Cihaz kapalı.",
       "xloc": [
         "default.handlebars->39->589"
@@ -20222,7 +20255,7 @@
       "pl": "Powiadomienie urządzenia",
       "pt": "Notificação de dispositivo",
       "pt-br": "Notificação de dispositivo",
-      "ru": "Уведомление об устройстве",
+      "ru": "Отправить уведомление",
       "sv": "Enhetsmeddelande",
       "tr": "Cihaz bildirimi",
       "zh-chs": "设备通知",
@@ -20479,6 +20512,7 @@
       "ja": "切断してロックする",
       "nl": "Verbreken en vergrendelen",
       "pl": "Odłącz i zablokuj",
+      "ru": "Разъединить и заблокировать",
       "tr": "Bağlantıyı Kes ve Kilitle",
       "xloc": [
         "default.handlebars->deskDisconnectContextMenu->1"
@@ -20518,6 +20552,7 @@
       "ja": "このセッションを切断します",
       "nl": "Deze sessie verbreken",
       "pl": "Rozłącz tą sesję",
+      "ru": "Отключить этот сеанс",
       "tr": "Bu oturumun bağlantısını kes",
       "xloc": [
         "default-mobile.handlebars->11->195",
@@ -20589,6 +20624,7 @@
       "ja": "切断されたデバイス：",
       "nl": "Losgekoppelde apparaten:",
       "pl": "Rozłączone urządzenia:",
+      "ru": "Отключенные устройства:",
       "tr": "Bağlantısı kesilen cihazlar:",
       "xloc": [
         "device-notify.html->2->7->1",
@@ -20636,7 +20672,7 @@
       "pl": "Wyświetlić okno komunikatu na urządzeniu zdalnym.",
       "pt": "Exibe uma caixa de mensagem no dispositivo remoto.",
       "pt-br": "Exibe uma caixa de mensagem no dispositivo remoto.",
-      "ru": "Отобразите окно сообщения на удаленном устройстве.",
+      "ru": "Показать окно с сообщением на удаленном устройстве.",
       "sv": "Visa en meddelanderuta på fjärrenheten.",
       "tr": "Uzak cihazda bir mesaj kutusu görüntüleyin.",
       "zh-chs": "在远程设备上显示一个消息框。",
@@ -20661,7 +20697,7 @@
       "pl": "Wyświetlenie powiadomienia na komputerze zdalnym",
       "pt": "Exibir uma notificação no computador remoto",
       "pt-br": "Exibir uma notificação no computador remoto",
-      "ru": "Отобразить уведомление на удаленном компьютере",
+      "ru": "Показать уведомление на удаленном компьютере",
       "sv": "Visa en avisering på fjärrdatorn",
       "tr": "Uzak bilgisayarda bir bildirim görüntüle",
       "zh-chs": "在远程计算机上显示通知",
@@ -20686,7 +20722,7 @@
       "pl": "Wyświetlanie wiadomości tekstowej na urządzeniu zdalnym",
       "pt": "Exibir uma mensagem de texto no dispositivo remoto",
       "pt-br": "Exibir uma mensagem de texto no dispositivo remoto",
-      "ru": "Отображение текстового сообщения на удаленном устройстве",
+      "ru": "Показать текстовое сообщение на удаленном устройстве",
       "sv": "Visa ett textmeddelande på fjärrenheten",
       "tr": "Uzak cihazda bir metin mesajı görüntüleyin",
       "zh-chs": "在远程设备上显示短信",
@@ -20732,7 +20768,7 @@
       "pl": "Wyświetl nazwę grupy urządzeń",
       "pt": "Exibir nome do grupo de dispositivos",
       "pt-br": "Exibir nome do grupo de dispositivos",
-      "ru": "Отобразить имя группы устройств",
+      "ru": "Показывать имя группы устройств",
       "sv": "Visa enhetsgruppens namn",
       "tr": "Cihaz grubu adını görüntüle",
       "zh-chs": "显示设备组名称",
@@ -20831,7 +20867,7 @@
       "pl": "Wyświetlanie okna komunikatu, tytuł=\\\"{0}\\\", wiadomość=\\\"{1}\\\"",
       "pt": "Exibindo caixa de mensagem, título = \\\"{0}\\\", mensagem = \\\"{1}\\\"",
       "pt-br": "Exibindo caixa de mensagem, título = \\\"{0}\\\", mensagem = \\\"{1}\\\"",
-      "ru": "Отображается окно сообщения, title = \\\"{0}\\\", message = \\\"{1}\\\"",
+      "ru": "Показано окно с сообщением, title = \\\"{0}\\\", message = \\\"{1}\\\"",
       "sv": "Visar meddelanderuta, titel = \\\"{0}\\\", meddelande = \\\"{1} \\\"",
       "tr": "Mesaj kutusu görüntüleniyor, başlık = \\\"{0}\\\", mesaj = \\\"{1}\\\"",
       "zh-chs": "显示消息框，标题= “{0}”，消息= “{1}”",
@@ -20856,7 +20892,7 @@
       "pl": "Wyświetlanie wysuwanego komunikatu, tytuł=\\\"{0}\\\", wiadomość=\\\"{1}\\\"",
       "pt": "Exibindo mensagem do sistema, title = \\\"{0}\\\", mensagem = \\\"{1}\\\"",
       "pt-br": "Exibindo mensagem do sistema, title = \\\"{0}\\\", mensagem = \\\"{1}\\\"",
-      "ru": "Отображается тост-сообщение, title = \\\"{0}\\\", message = \\\"{1}\\\"",
+      "ru": "Показано всплывающее сообщение(тост), title = \\\"{0}\\\", message = \\\"{1}\\\"",
       "sv": "Visar toastmeddelande, titel = \\\"{0}\\\", meddelande = \\\"{1} \\\"",
       "tr": "Tost mesajı görüntüleniyor, başlık = \\\"{0}\\\", mesaj = \\\"{1}\\\"",
       "zh-chs": "显示吐司消息，标题= “{0}”，消息= “{1}”",
@@ -20938,7 +20974,7 @@
       "pl": "Nie pytaj przez {0} dni.",
       "pt": "Não pergunte por {0} dias.",
       "pt-br": "Não pergunte por {0} dias.",
-      "ru": "Не просите {0} дней.",
+      "ru": "Не спрашивать {0} дней.",
       "sv": "Be inte om {0} dagar.",
       "tr": "{0} gün sormayın.",
       "zh-chs": "不要要求 {0} 天。"
@@ -21252,7 +21288,7 @@
       "pl": "Pobierz MeshCentral Router, narzędzie do mapowania portów TCP.",
       "pt": "Faça o download do MeshCentral Router, uma ferramenta de mapeamento de portas TCP.",
       "pt-br": "Baixe o MeshCentral Router, uma ferramenta de mapeamento de portas TCP.",
-      "ru": "Скачать MeshCentral Router, инструмент сопоставления TCP портов.",
+      "ru": "Скачать MeshCentral Router, инструмент переадресации TCP портов.",
       "sv": "Ladda ner MeshCentral Router, ett TCP-portmappningsverktyg.",
       "tr": "Bir TCP bağlantı noktası eşleme aracı olan MeshCentral Router'ı indirin.",
       "zh-chs": "下载MeshCentral Router，一个TCP端口映射工具。",
@@ -21528,7 +21564,7 @@
       "pl": "Pobierz zdalny schowek do schowka lokalnego",
       "pt": "Baixe a área de transferência remota para a área de transferência local",
       "pt-br": "Baixe a área de transferência remota para a área de transferência local",
-      "ru": "Загрузить удаленный буфер обмена в локальный буфер обмена",
+      "ru": "Получить удаленный буфер обмена в локальный буфер обмена",
       "sv": "Ladda ner fjärrklipp till lokalt urklipp",
       "tr": "Uzak panoyu yerel panoya indirin",
       "zh-chs": "将远程剪贴板下载到本地剪贴板",
@@ -21627,7 +21663,7 @@
       "pl": "Pobierz listę urządzeń w jednym z poniższych formatów plików.",
       "pt": "Faça o download da lista de dispositivos com um dos formatos de arquivo abaixo.",
       "pt-br": "Baixe a lista de dispositivos com um dos formatos de arquivo abaixo.",
-      "ru": "Загрузите список устройств с одним из форматов файлов ниже.",
+      "ru": "Скачайте список устройств в одном из форматов доступных ниже.",
       "sv": "Ladda ner listan över enheter med ett av filformaten nedan.",
       "tr": "Aşağıdaki dosya biçimlerinden birine sahip cihazların listesini indirin.",
       "zh-chs": "使用以下一种档案格式下载设备列表。",
@@ -21652,7 +21688,7 @@
       "pl": "Pobierz listę zdarzeń w jednym z poniższych formatów plików.",
       "pt": "Faça o download da lista de eventos com um dos formatos de arquivo abaixo.",
       "pt-br": "Baixe a lista de eventos com um dos formatos de arquivo abaixo.",
-      "ru": "Скачать список событий в одном из форматов ниже.",
+      "ru": "Скачайте список событий в одном из форматов доступных ниже.",
       "sv": "Ladda ner listan över händelser med ett av filformaten nedan.",
       "tr": "Aşağıdaki dosya biçimlerinden birine sahip olayların listesini indirin.",
       "zh-chs": "使用以下一种档案格式下载事件列表。",
@@ -21677,7 +21713,7 @@
       "pl": "Pobierz listę użytkowników za pomocą jednego z poniższych formatów plików.",
       "pt": "Baixe a lista de usuários com um dos formatos de arquivo abaixo.",
       "pt-br": "Baixe a lista de usuários com um dos formatos de arquivo abaixo.",
-      "ru": "Скачать список пользователей в одном из форматов ниже.",
+      "ru": "Скачайте список пользователей в одном из форматов доступных ниже.",
       "sv": "Ladda ner listan över användare med ett av filformaten nedan.",
       "tr": "Aşağıdaki dosya biçimlerinden birine sahip kullanıcıların listesini indirin.",
       "zh-chs": "使用以下一种档案格式下载用户列表。",
@@ -22436,7 +22472,7 @@
       "pl": "Edytuj Grupę Urządzeń",
       "pt": "Editar grupo de dispositivos",
       "pt-br": "Editar Grupo de Dispositivos",
-      "ru": "Редактировать группу устройств",
+      "ru": "Редактирование группы устройств",
       "sv": "Redigera enhetsgrupp",
       "tr": "Cihaz Grubunu Düzenle",
       "zh-chs": "编辑设备组",
@@ -22874,6 +22910,7 @@
       "ja": "ユーザーグループ機能の編集",
       "nl": "Functies van gebruikersgroepen bewerken",
       "pl": "Edytuj Opcje Grupy Użytkownika",
+      "ru": "Редактировать функции групп пользователей",
       "tr": "Kullanıcı Grubu Özelliklerini Düzenle",
       "xloc": [
         "default.handlebars->39->2481"
@@ -22968,6 +23005,7 @@
       "ja": "このソフトウェアをインストール/アンインストールするには、昇格された権限が必要です。",
       "nl": "Verhoogde machtigingen zijn vereist om deze software te installeren/verwijderen.",
       "pl": "Do zainstalowania/odinstalowania tego oprogramowania wymagane są podwyższone uprawnienia.",
+      "ru": "Для установки/удаления этого программного обеспечения требуются повышенные права.",
       "tr": "Bu yazılımı yüklemek/kaldırmak için yüksek izinler gerekir.",
       "xloc": [
         "agent-translations.json"
@@ -23130,6 +23168,7 @@
       "ja": "メールコネクト",
       "nl": "Email verbinden",
       "pl": "Połączenie Email",
+      "ru": "Подлючение электронной почты",
       "tr": "E-posta Bağlantısı",
       "xloc": [
         "default.handlebars->39->1836",
@@ -23149,6 +23188,7 @@
       "ja": "メール切断",
       "nl": "Email verbroken",
       "pl": "Rozłączenie Email",
+      "ru": "Отключение электронной почты",
       "tr": "E-posta Bağlantısını Kes",
       "xloc": [
         "default.handlebars->39->1837",
@@ -23168,6 +23208,7 @@
       "ja": "電子メール通知",
       "nl": "Email meldingen",
       "pl": "Powiadomienia Email",
+      "ru": "Уведомления по электронной почте",
       "tr": "E-posta Bildirimleri",
       "xloc": [
         "default.handlebars->39->2057",
@@ -23727,6 +23768,7 @@
     },
     {
       "en": "Encoding Quality",
+      "ru": "Качество кодирования",
       "xloc": [
         "player.handlebars->3->37"
       ]
@@ -23744,6 +23786,7 @@
       "ja": "エンコーディング：RAW",
       "nl": "Codering: RAW",
       "pl": "Kodowanie: RAW",
+      "ru": "Кодировка: RAW",
       "tr": "kodlama: RAW",
       "xloc": [
         "default.handlebars->39->1342"
@@ -23762,6 +23805,7 @@
       "ja": "エンコーディング：UTF8",
       "nl": "Codering: UTF8",
       "pl": "Kodowanie: UTF8",
+      "ru": "Кодировка: UTF8",
       "tr": "Kodlama: UTF8",
       "xloc": [
         "default.handlebars->39->1343"
@@ -23833,7 +23877,7 @@
       "pl": "Zakończenie sesji pulpitu \\\"{0}\\\" od {1} do {2}, {3} sekund(y)",
       "pt": "Sessão de desktop encerrada \\\"{0}\\\" de {1} a {2}, {3} segundo(s)",
       "pt-br": "Sessão de desktop encerrada \\\"{0}\\\" de {1} a {2}, {3} segundo (s)",
-      "ru": "Сеанс рабочего стола \\\"{0}\\\" завершен с {1} до {2}, {3} сек.",
+      "ru": "Завершен сеанс рабочего стола \\\"{0}\\\"  от {1} к {2}, {3} сек.",
       "sv": "Avslutade skrivbords session \\\"{0}\\\" från {1} till {2}, {3} sekund (er)",
       "tr": "{1} ile {2} arasında \\\"{0}\\\" masaüstü oturumu {3} saniye sona erdi",
       "zh-chs": "从{1}到{2}，{3}秒结束了桌面会话“{0}”",
@@ -23858,7 +23902,7 @@
       "pl": "Zakończono sesję zarządzania plikami \\\"{0}\\\" od {1} do {2}, {3} sekund(y)",
       "pt": "Sessão de gerenciamento de arquivo encerrada \\\"{0}\\\" de {1} a {2}, {3} segundo(s)",
       "pt-br": "Sessão de gerenciamento de arquivo encerrada \\\"{0}\\\" de {1} a {2}, {3} segundo (s)",
-      "ru": "Завершился сеанс управления файлами \\\"{0}\\\" с {1} до {2}, {3} сек.",
+      "ru": "Завершен сеанс управления файлами \\\"{0}\\\" от {1} к {2}, {3} сек.",
       "sv": "Avslutad filhanteringssession \\\"{0}\\\" från {1} till {2}, {3} sekund (er)",
       "tr": "Dosya yönetimi oturumu \\\"{0}\\\" {1} ile {2} arasında sona erdi, {3} saniye",
       "zh-chs": "从{1}到{2}，{3}秒结束了文件管理会话“{0}”",
@@ -23883,7 +23927,7 @@
       "pl": "Zakończona sesja lokalnego przekaźnika \\\"{0}\\\", protokół {1} do {2}, {3} sekund",
       "pt": "Sessão de retransmissão local encerrada \\\"{0}\\\", protocolo {1} a {2}, {3} segundo (s)",
       "pt-br": "Sessão de retransmissão local encerrada \\\"{0}\\\", protocolo {1} a {2}, {3} segundo (s)",
-      "ru": "Завершен сеанс локальной ретрансляции \\\"{0}\\\", протокол с {1} до {2}, {3} сек.",
+      "ru": "Завершен сеанс локальной ретрансляции \\\"{0}\\\" протокол {1} к {2}, {3} сек.",
       "sv": "Avslutade lokal relä sejour \\\"{0}\\\", protokoll {1} till {2}, {3} sekund(er)",
       "tr": "Yerel geçiş oturumu \\\"{0}\\\", {1} - {2} protokolü, {3} saniye sona erdi",
       "zh-chs": "结束本地中继会话\\\"{0}\\\"，协议 {1} 到 {2}，{3} 秒",
@@ -23907,7 +23951,7 @@
       "pl": "Zakończono sesję komunikatora \\\"{0}\\\" od {1} do {2}, {3} sekund(y)",
       "pt": "Sessão do messenger encerrada \\\"{0}\\\" de {1} a {2}, {3} segundo (s)",
       "pt-br": "Sessão do messenger encerrada \\\"{0}\\\" de {1} a {2}, {3} segundo (s)",
-      "ru": "Завершился сеанс обмена сообщениями \\\"{0}\\\" с {1} до {2}, {3} сек.",
+      "ru": "Завершен сеанс обмена сообщениями \\\"{0}\\\" от {1} к {2}, {3} сек.",
       "sv": "Avslutade messenger-session \\\"{0}\\\" från {1} till {2}, {3} sekund (er)",
       "tr": "{1} ile {2} arasında \\\"{0}\\\" mesajlaşma oturumu sona erdi, {3} saniye",
       "zh-chs": "从 {1} 到 {2}，{3} 秒结束了 Messenger 会话 \\\"{0}\\\"",
@@ -23931,7 +23975,7 @@
       "pl": "Zakończenie sesji przekaźnikowej \\\"{0}\\\" od {1} do {2}, {3} sekunda(y)",
       "pt": "Sessão de retransmissão encerrada \\\"{0}\\\" de {1} a {2}, {3} segundo(s)",
       "pt-br": "Sessão de retransmissão encerrada \\\"{0}\\\" de {1} a {2}, {3} segundo (s)",
-      "ru": "Завершился сеанс ретрансляции \\\"{0}\\\" с {1} до {2}, {3} сек.",
+      "ru": "Завершен сеанс ретрансляции \\\"{0}\\\" от {1} к {2}, {3} сек.",
       "sv": "Avslutade relä session \\\"{0}\\\" från {1} till {2}, {3} sekund (er)",
       "tr": "\\\"{0}\\\" geçiş oturumu {1} ile {2} arasında sona erdi, {3} saniye",
       "zh-chs": "从{1}到{2}，{3}秒结束了中继会话“{0}”",
@@ -23956,7 +24000,7 @@
       "pl": "Zakończenie sesji terminala \\\"{0}\\\" od {1} do {2}, {3} sekund(y)",
       "pt": "Sessão de terminal encerrada \\\"{0}\\\" de {1} a {2}, {3} segundo(s)",
       "pt-br": "Sessão de terminal encerrada \\\"{0}\\\" de {1} a {2}, {3} segundo (s)",
-      "ru": "Завершенный сеанс терминала \\\"{0}\\\" с {1} до {2}, {3} сек.",
+      "ru": "Завершен сеанс терминала \\\"{0}\\\" с {1} до {2}, {3} сек.",
       "sv": "Avslutad terminalsession \\\"{0}\\\" från {1} till {2}, {3} sekund (er)",
       "tr": "{1} ile {2} arasında \\\"{0}\\\" terminal oturumu sona erdi, {3} saniye",
       "zh-chs": "从{1}到{2}，{3}秒结束了终端会话“{0}”",
@@ -24735,7 +24779,7 @@
       "pl": "Błąd, nie można zmienić hasła na powszechnie używane.",
       "pt": "Erro, não foi possível alterar a senha comumente usada.",
       "pt-br": "Erro, não foi possível alterar a senha comumente usada.",
-      "ru": "Ошибка: невозможно изменить часто используемый пароль.",
+      "ru": "Ошибка: невозможно изменить на часто используемый пароль.",
       "sv": "Fel, det går inte att ändra till ett vanligt använt lösenord.",
       "tr": "Hata, yaygın olarak kullanılan parolaya geçilemiyor.",
       "zh-chs": "错误，无法更改为常用密码。",
@@ -24760,7 +24804,7 @@
       "pl": "Błąd, nie można zmienić hasła na poprzednio używane.",
       "pt": "Erro, não foi possível alterar a senha usada anteriormente.",
       "pt-br": "Erro, não foi possível alterar a senha usada anteriormente.",
-      "ru": "Ошибка: невозможно изменить ранее использованный пароль.",
+      "ru": "Ошибка: невозможно изменить на ранее использованный пароль.",
       "sv": "Fel, kunde inte ändra till tidigare använt lösenord.",
       "tr": "Hata, daha önce kullanılan parolaya geçilemiyor.",
       "zh-chs": "错误，无法更改为以前使用的密码。",
@@ -24906,7 +24950,7 @@
       "pl": "Zdarzenie",
       "pt": "Evento",
       "pt-br": "Evento",
-      "ru": "Мероприятие",
+      "ru": "Событие",
       "sv": "Händelse",
       "tr": "Etkinlik",
       "zh-chs": "事件"
@@ -25079,7 +25123,7 @@
       "pl": "Rozwiń Wszystko",
       "pt": "Expandir todos",
       "pt-br": "Expandir todos",
-      "ru": "Расширить все",
+      "ru": "Развернуть все",
       "sv": "Expandera alla",
       "tr": "Hepsini genişlet",
       "zh-chs": "展开全部",
@@ -25130,7 +25174,7 @@
       "pl": "Czas Wygaśnięcia",
       "pt": "Tempo de expiração",
       "pt-br": "Tempo de expiração",
-      "ru": "Срок действия",
+      "ru": "Время действия",
       "sv": "Giltighetstid",
       "tr": "Vade zamanı",
       "zh-chs": "到期时间",
@@ -25208,7 +25252,7 @@
       "pl": "Eksport informacji o urządzeniu",
       "pt": "Exportar informações do dispositivo",
       "pt-br": "Exportar informações do dispositivo",
-      "ru": "Экспорт информации об устройстве",
+      "ru": "Экспорт информации об устройствах",
       "sv": "Exportera enhetsinformation",
       "tr": "Cihaz bilgilerini dışa aktar",
       "zh-chs": "输出设备信息",
@@ -25459,7 +25503,7 @@
       "pl": "Nie udało się uruchomić pulpitu zdalnego po odmowie użytkownika lokalnego",
       "pt": "Falha ao iniciar a área de trabalho remota após rejeição do usuário local",
       "pt-br": "Falha ao iniciar a área de trabalho remota após rejeição do usuário local",
-      "ru": "Не удалось запустить удаленный рабочий стол после отказа локального пользователя",
+      "ru": "Не удалось запустить сеанс удаленного рабочего стола после отказа локального пользователя",
       "sv": "Det gick inte att starta fjärrskrivbordet, för att lokal användare avvisade anslutningen",
       "tr": "Yerel kullanıcı reddedildikten sonra uzak masaüstü başlatılamadı",
       "zh-chs": "本地用户拒绝后无法启动远程桌面",
@@ -25505,7 +25549,7 @@
       "pl": "Nie udało się uruchomić zdalnych plików po odrzuceniu przez lokalnego użytkownika",
       "pt": "Falha ao iniciar arquivos remotos após rejeição do usuário local",
       "pt-br": "Falha ao iniciar arquivos remotos após rejeição do usuário local",
-      "ru": "Не удалось запустить удаленные файлы после отказа локального пользователя",
+      "ru": "Не удалось запустить сеанс управления файлами после отказа локального пользователя",
       "sv": "Det gick inte att starta fjärrfiler, för att lokal användare avvisade anslutningen",
       "tr": "Yerel kullanıcı reddettikten sonra uzak dosyalar başlatılamadı",
       "zh-chs": "本地用户拒绝后无法启动远程文件",
@@ -25835,7 +25879,7 @@
       "pl": "Sterownik systemu plików",
       "pt": "Driver do sistema de arquivos",
       "pt-br": "FileSystemDriver",
-      "ru": "Драйвер файловой системы",
+      "ru": "FileSystemDriver",
       "sv": "FileSystemDriver",
       "tr": "FileSystemDriver",
       "zh-chs": "文件系统驱动",
@@ -25923,7 +25967,7 @@
       "pl": "Powiadomienie Plików",
       "pt": "Notificação arquivos",
       "pt-br": "Arquivos de notificação",
-      "ru": "Уведомление файлов",
+      "ru": "Файлы: уведомить",
       "sv": "Filer meddelas",
       "tr": "Dosyalar Bildir",
       "zh-chs": "档案通知",
@@ -25951,7 +25995,7 @@
       "pl": "Zapytanie o Pliki",
       "pt": "Arquivos do prompt",
       "pt-br": "Arquivos Prompt",
-      "ru": "Запрос файлов",
+      "ru": "Файлы: запросить",
       "sv": "Filer uppmanas",
       "tr": "Dosya İstemi",
       "zh-chs": "档案提示",
@@ -26005,6 +26049,7 @@
       "it": "Filtro: utente:xxx o u:xxx ip:xxx gruppo:xxx o g:xxx tag:xxx o t: xxx atag:xxx o a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc: noupdate wsc:nofirewall wsc:qualsiasi",
       "ja": "フィルタ：user：xxxまたはu：xxx ip：xxx group：xxxまたはg：xxx tag：xxxまたはt：xxx atag：xxxまたはa：xxx os：xxx amt：xxx desc：xxx wsc：ok wsc：noav wsc： noupdate wsc：nofirewall wsc：any",
       "nl": "Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any",
+      "ru": "Фильтр: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any",
       "tr": "Filtre: user:xxx veya u:xxx ip:xxx group:xxx veya g:xxx etiketi:xxx veya t: xxx atag:xxx veya a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc: noupdate wsc:nofirewall wsc:herhangi biri",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar"
@@ -26026,7 +26071,7 @@
       "pl": "Znajdź",
       "pt": "Encontrar",
       "pt-br": "Encontrar",
-      "ru": "найти",
+      "ru": "Найти",
       "sv": "Hitta",
       "tr": "Bul",
       "zh-chs": "找",
@@ -26206,6 +26251,7 @@
       "it": "Bandiere",
       "ja": "フラグ",
       "nl": "vlaggen",
+      "ru": "Флаги",
       "tr": "Bayraklar",
       "xloc": [
         "default.handlebars->39->2274"
@@ -26499,6 +26545,7 @@
       "ja": "ユーザー{0}のデスクトップセッションを強制的に切断しました",
       "nl": "Geforceerd verbroken desktopsessie van gebruiker {0}",
       "pl": "Wymuszone rozłączenie sesji pulpitu użytkownika {0}",
+      "ru": "Принудительно отключен сеанс рабочего стола пользователя {0}",
       "tr": "{0} kullanıcısının bağlantısı zorla kesildi masaüstü oturumu",
       "xloc": [
         "default.handlebars->39->2263"
@@ -26517,6 +26564,7 @@
       "ja": "ユーザー{0}のファイルセッションを強制的に切断しました",
       "nl": "Geforceerd verbroken bestandssessie van gebruiker {0}",
       "pl": "Wymuszone rozłączenie sesji plików użytkownika {0}",
+      "ru": "Принудительно отключен файловый сеанс пользователя {0}",
       "tr": "{0} kullanıcısının bağlantısı zorla kesilen dosyalar oturumu",
       "xloc": [
         "default.handlebars->39->2265"
@@ -26535,6 +26583,7 @@
       "ja": "ユーザー{0}のルーティングセッションを強制的に切断しました",
       "nl": "Geforceerd verbroken routeringssessie van gebruiker {0}",
       "pl": "Wymuszone rozłączenie sesji routingu użytkownika {0}",
+      "ru": "Принудительно отключен сеанс маршрутизации пользователя {0}",
       "tr": "{0} kullanıcısının bağlantısı zorla kesildi yönlendirme oturumu",
       "xloc": [
         "default.handlebars->39->2266"
@@ -26553,6 +26602,7 @@
       "ja": "ユーザー{0}のターミナルセッションを強制的に切断しました",
       "nl": "Geforceerd verbroken terminalsessie van gebruiker {0}",
       "pl": "Wymuszone rozłączenie sesji terminala użytkownika {0}",
+      "ru": "Принудительно отключен терминальный сеанс пользователя {0}",
       "tr": "{0} kullanıcısının bağlantısı zorla kesildi terminal oturumu",
       "xloc": [
         "default.handlebars->39->2264"
@@ -27463,6 +27513,7 @@
       "ja": "レポートの生成",
       "nl": "Genereer rapport",
       "pl": "Generuj Raport",
+      "ru": "Создать отчет",
       "tr": "Rapor oluştur",
       "xloc": [
         "default.handlebars->39->2711"
@@ -27481,6 +27532,7 @@
       "ja": "レポートを生成...",
       "nl": "Genereer rapport...",
       "pl": "Generuj Raport...",
+      "ru": "Создать отчет...",
       "tr": "Rapor oluştur...",
       "xloc": [
         "default.handlebars->container->column_l->p60->3->1->0->3->3"
@@ -27674,6 +27726,7 @@
       "ja": "クリップボードを取得",
       "nl": "Klembord ophalen",
       "pl": "Pobierz schowek",
+      "ru": "Получить буфер",
       "tr": "Pano Al",
       "xloc": [
         "default.handlebars->39->1222"
@@ -27878,7 +27931,7 @@
       "pl": "Google Drive Backup",
       "pt": "Backup do Google Drive",
       "pt-br": "Backup do Google Drive",
-      "ru": "Резервное копирование Google Диска",
+      "ru": "Резервное копирование на Google Диск",
       "sv": "Backup av Google Drive",
       "tr": "Google Drive Yedekleme",
       "zh-chs": "Google云端硬盘备份",
@@ -27930,7 +27983,7 @@
       "pl": "Google Drive backup",
       "pt": "Backup do Google Drive",
       "pt-br": "Backup do Google Drive",
-      "ru": "Резервное копирование Google Диска",
+      "ru": "Резервное копирование на Google Диск",
       "sv": "Google Drive-säkerhetskopia",
       "tr": "Google Drive yedeklemesi",
       "zh-chs": "Google云端硬盘备份",
@@ -27955,7 +28008,7 @@
       "pl": "Kopia zapasowa Google Drive jest obecnie aktywna.",
       "pt": "O backup do Google Drive está ativo no momento.",
       "pt-br": "O backup do Google Drive está ativo no momento.",
-      "ru": "Резервное копирование Google Диска в настоящее время активно.",
+      "ru": "Резервное копирование на Google Диск в настоящее время активно.",
       "sv": "Säkerhetskopiering av Google Drive är för närvarande aktiv.",
       "tr": "Google Drive yedeklemesi şu anda aktif.",
       "zh-chs": "Google云端硬盘备份当前处于活动状态。",
@@ -28087,7 +28140,7 @@
       "pl": "Grupuj Przez",
       "pt": "Grupo por",
       "pt-br": "Grupo por",
-      "ru": "Группа по",
+      "ru": "Группировать по",
       "sv": "Grupp av",
       "tr": "Gruplama Ölçütü",
       "zh-chs": "通过...分组",
@@ -28163,7 +28216,7 @@
       "pl": "Grupuj Przez",
       "pt": "Grupo por",
       "pt-br": "Grupo por",
-      "ru": "Группа по",
+      "ru": "Группировать по",
       "sv": "Grupp av",
       "tr": "Gruplama Ölçütü",
       "zh-chs": "通过...分组",
@@ -28184,6 +28237,7 @@
       "it": "Nome del gruppo",
       "ja": "グループ名",
       "nl": "Groepsnaam",
+      "ru": "Название группы",
       "tr": "Grup ismi",
       "xloc": [
         "default.handlebars->39->2272"
@@ -28255,7 +28309,7 @@
       "pl": "Tagi-Grupy",
       "pt": "Group-Tags",
       "pt-br": "Groupo-Etiquetas",
-      "ru": "Групповые теги",
+      "ru": "Группа и теги",
       "sv": "Grupp-taggar",
       "tr": "Grup Etiketleri",
       "zh-chs": "组标签",
@@ -28327,6 +28381,7 @@
       "ja": "ゲスト",
       "nl": "Gast",
       "pl": "Gość",
+      "ru": "Гость",
       "tr": "Misafir",
       "xloc": [
         "default.handlebars->39->2717"
@@ -28621,7 +28676,7 @@
       "pl": "Pula Łącznie",
       "pt": "Total da pilha",
       "pt-br": "Pilha Total",
-      "ru": "Всего кучи",
+      "ru": "Heap Total",
       "sv": "Heap totalt",
       "tr": "Yığın Toplamı",
       "zh-chs": "堆总数",
@@ -28646,7 +28701,7 @@
       "pl": "Wykorzystanie Puli",
       "pt": "Pilha usada",
       "pt-br": "Pilha usada",
-      "ru": "Куча используется",
+      "ru": "Heap Used",
       "sv": "Högen används",
       "tr": "Kullanılan Yığın",
       "zh-chs": "堆使用",
@@ -28722,7 +28777,7 @@
       "pl": "Pomoc",
       "pt": "Socorro",
       "pt-br": "Ajuda",
-      "ru": "Помогите",
+      "ru": "Помощь",
       "sv": "Hjälp",
       "tr": "Yardım",
       "zh-chs": "救命",
@@ -28819,7 +28874,7 @@
       "pl": "Prośba pomocy od {0}: {1}",
       "pt": "Ajuda solicitada a {0}: {1}",
       "pt-br": "Ajuda solicitada de {0}: {1}",
-      "ru": "Справка запрошена от {0}: {1}",
+      "ru": "Запрошена помощь от {0}: {1}",
       "sv": "Hjälp begärd från {0}: {1}",
       "tr": "{0} tarafından yardım istendi: {1}",
       "zh-chs": "从{0}请求的帮助：{1}",
@@ -29263,6 +29318,7 @@
       "ja": "IPKVMデバイス",
       "nl": "IP KVM apparaat",
       "pl": "Urządzenie IP KVM",
+      "ru": "IP KVM-устройство",
       "tr": "IP KVM cihazı"
     },
     {
@@ -29278,6 +29334,7 @@
       "ja": "IP KVMポートが起動し、使用できるようになりました。",
       "nl": "IP KVM poort is actief en klaar voor gebruik.",
       "pl": "Port IP KVM podniesiony i gotowy do użycia.",
+      "ru": "Порт IP KVM подключен и готов к использованию.",
       "tr": "IP KVM portu hazır ve kullanıma hazır."
     },
     {
@@ -29346,6 +29403,7 @@
       "ja": "IP-KVM",
       "nl": "IP-KVM",
       "pl": "IP-KVM",
+      "ru": "IP-KVM",
       "tr": "IP-KVM",
       "xloc": [
         "default-mobile.handlebars->11->248",
@@ -29368,6 +29426,7 @@
       "ja": "IP-KVM /パワーデバイス",
       "nl": "IP-KVM / Power device",
       "pl": "IP-KVM / Zasilanie urządzenia",
+      "ru": "IP-KVM / Устройство питания",
       "tr": "IP-KVM / Güç cihazı",
       "xloc": [
         "default.handlebars->39->1747"
@@ -29386,6 +29445,7 @@
       "ja": "IP-KVMデバイス",
       "nl": "IP-KVM device",
       "pl": "Urządzenie IP-KVM",
+      "ru": "IP-KVM-устройство",
       "tr": "IP-KVM cihazı",
       "xloc": [
         "default-mobile.handlebars->11->619",
@@ -29405,6 +29465,7 @@
       "ja": "IP-KVMポートが接続されています",
       "nl": "IP-KVM poort verbonden",
       "pl": "Podłączono z portem IP-KVM",
+      "ru": "Порт IP-KVM подключен",
       "tr": "IP-KVM bağlantı noktası bağlandı",
       "xloc": [
         "default.handlebars->39->913",
@@ -29424,6 +29485,7 @@
       "ja": "IP-KVMポートが接続され、使用できるようになります。",
       "nl": "IP-KVM poort is verbonden en klaar voor gebruik.",
       "pl": "Port IP-KVM podłączony i gotowy do użycia.",
+      "ru": "Порт IP-KVM подключен и готов к использованию.",
       "tr": "IP-KVM portu bağlı ve kullanıma hazır.",
       "xloc": [
         "default.handlebars->39->360"
@@ -29442,6 +29504,7 @@
       "ja": "IP-KVMポートが起動し、使用できるようになりました。",
       "nl": "IP-KVM poort is actief en klaar voor gebruik.",
       "pl": "Port IP-KVM podniesiony i gotowy do użycia.",
+      "ru": "Порт IP-KVM запущен и готов к использованию.",
       "tr": "IP-KVM portu hazır ve kullanıma hazır.",
       "xloc": [
         "default.handlebars->39->601"
@@ -30082,7 +30145,7 @@
       "pl": "Dezaktywuj dni do usunięcia",
       "pt": "Inativar dias até a remoção",
       "pt-br": "Dias inativos até a remoção",
-      "ru": "Деактивировать дни до удаления",
+      "ru": "Кол-во дней без активности до удаления:",
       "sv": "Inaktivera dagar till borttagning",
       "tr": "Kaldırılana kadar günleri devre dışı bırak",
       "zh-chs": "停用天数直到移除",
@@ -30130,7 +30193,7 @@
       "pl": "Dołącz szczegóły urządzenia",
       "pt": "Incluir detalhes do dispositivo",
       "pt-br": "Incluir detalhes do dispositivo",
-      "ru": "Включить детали об устройстве",
+      "ru": "Добавить подробные сведения об устройствах",
       "sv": "Inkludera enhetsinformation",
       "tr": "Cihaz ayrıntılarını dahil et",
       "zh-chs": "包括设备详细信息",
@@ -30401,7 +30464,7 @@
       "pl": "Zainstaluj <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> lub kompatybilną aplikację i zeskanuj kod kreskowy, użyj <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank>tego linka</a> lub wpisz klucz. Następnie wprowadź aktualny 6-cyfrowy token poniżej, aby aktywować logowanie dwuetapowe.",
       "pt": "Instale o <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator </a> ou um aplicativo compatível e digitalize o código de barras, use <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> esse link </a> ou digite o segredo. Em seguida, insira o token atual de 6 dígitos abaixo para ativar o login em duas etapas.",
       "pt-br": "Instale o <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Autenticador Google </a> ou um aplicativo compatível e escaneie o código de barras, use <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> este link </a> ou digite o segredo. Em seguida, insira o token de 6 dígitos atual abaixo para ativar o login em 2 etapas.",
-      "ru": "Установите <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> или совместимое приложение и отсканируйте штрих-код, используйте <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank>эту ссылку</a> или введите код. Затем введите ниже текущий токен из 6 цифр для активации двухшаговой авторизации.",
+      "ru": "Установите <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> или совместимое приложение и отсканируйте штрих-код, используйте <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank>эту ссылку</a> или введите ключ. Затем введите ниже текущий токен из 6 цифр для активации двухфакторной авторизации.",
       "sv": "Installera <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator </a> eller ett kompatibelt program och skanna streckkoden, använd <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> den här länken </a> eller skriv hemligheten. Ange sedan den aktuella 6-siffriga token nedan för att aktivera 2-stegsinloggning.",
       "tr": "<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator'ı yükleyin </a> veya uyumlu bir uygulama ve barkodu tarayın, <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> bu bağlantıyı </a> kullanın veya şifreyi girin. Ardından, 2 Adımlı girişi etkinleştirmek için mevcut 6 haneli anahtarı girin.",
       "zh-chs": "安装<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator</a>或兼容的应用软件并扫描条码，使用<a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank>此连结</a>或输入密码。然后，在下面输入当前的6位数保安编码以激活两步登录。",
@@ -30426,7 +30489,7 @@
       "pl": "Zainstaluj <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> lub kompatybilną aplikację, użyj <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> tego linka</a> lub wpisz klucz poniżej. Następnie wprowadź aktualny 6-cyfrowy token, aby aktywować logowanie dwuetapowe.",
       "pt": "Instale o <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator </a> ou um aplicativo compatível, use <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> este link </a> ou digite o segredo abaixo. Em seguida, insira o token atual de 6 dígitos para ativar o login em duas etapas.",
       "pt-br": "Instale o <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Autenticador Google </a> ou um aplicativo compatível, use <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> este link </a> ou digite o segredo abaixo. Em seguida, insira o token de 6 dígitos atual para ativar o login em 2 etapas.",
-      "ru": "Установите <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> или совместимое приложение, используйте <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank>эту ссылку</a> или введите код ниже. Затем введите ниже текущий токен из 6 цифр для активации двухшаговой авторизации.",
+      "ru": "Установите <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> или совместимое приложение, используйте <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank>эту ссылку</a> или введите ключ ниже. Затем введите ниже текущий токен из 6 цифр для активации двухфакторной авторизации.",
       "sv": "Installera <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator </a> eller ett kompatibelt program, använd <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> den här länken </a> eller skriv hemligheten nedan. Ange sedan den aktuella 6-siffriga token för att aktivera 2-stegsinloggning.",
       "tr": "<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator'ı yükleyin </a> veya uyumlu bir uygulama için <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> bu bağlantıyı </a> kullanın veya aşağıdaki şifreyi girin. Ardından, 2 Adımlı oturum açma özelliğini etkinleştirmek için mevcut 6 basamaklı anahtarı girin.",
       "zh-chs": "安装<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator</a>或兼容的应用软件，请使用<a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank>此连结</a>或在下面输入密码。然后，输入当前的6位数保安编码以激活两步登录。",
@@ -30665,6 +30728,7 @@
       "ja": "Intel AMTCIRA接続",
       "nl": "Intel AMT CIRA verbonden",
       "pl": "Intel AMT CIRA połączono",
+      "ru": "Intel AMT CIRA подключен",
       "tr": "Intel AMT CIRA bağlandı",
       "xloc": [
         "default.handlebars->39->233"
@@ -30683,6 +30747,7 @@
       "ja": "Intel AMTCIRAが切断されました",
       "nl": "Intel AMT CIRA verbroken",
       "pl": "Intel AMT CIRA rozłączono",
+      "ru": "Intel AMT CIRA отключен",
       "tr": "Intel AMT CIRA'nın bağlantısı kesildi",
       "xloc": [
         "default.handlebars->39->237"
@@ -30701,6 +30766,7 @@
       "ja": "IntelAMTが検出されました",
       "nl": "Intel AMT gedetecteerd",
       "pl": "Wykryto Intel AMT",
+      "ru": "Обнаружен Intel AMT",
       "tr": "Intel AMT algılandı",
       "xloc": [
         "default.handlebars->39->232"
@@ -30743,6 +30809,7 @@
       "ja": "IntelAMTが検出されない",
       "nl": "Intel AMT niet gedetecteerd",
       "pl": "Nie wykryto Intel AMT",
+      "ru": "Intel AMT не обнаружен",
       "tr": "Intel AMT algılanmadı",
       "xloc": [
         "default.handlebars->39->236"
@@ -31758,6 +31825,7 @@
       "it": "Modifica della politica Intel(r) AMT",
       "ja": "Intel（r）AMTポリシーの変更",
       "nl": "Intel(r) AMT-beleidswijziging",
+      "ru": "Изменение политик Intel(r) AMT",
       "tr": "Intel(r) AMT ilke değişikliği",
       "xloc": [
         "default.handlebars->39->2270"
@@ -32250,6 +32318,7 @@
       "ja": "無効なLet'sEncryptの電子メールアドレス、解決できません：{0}",
       "nl": "Ongeldige Let's Encrypt email adres, onmogelijk om te verhelpen: {0}",
       "pl": "Nieprawidłowy adres e-mail Let's Encrypt, nie można go rozwiązać: {0}",
+      "ru": "Недопустимый адрес электронной почты Let's Encrypt, не удалось разрешить: {0}",
       "tr": "Geçersiz Let's Encrypt e-posta adresi çözülemedi: {0}",
       "xloc": [
         "default.handlebars->39->94"
@@ -32268,6 +32337,7 @@
       "ja": "無効なLet'sEncryptのホスト名。",
       "nl": "Ongeldige Let's Encrypt hostnamen.",
       "pl": "Nieprawidłowe nazwy hostów Let's Encrypt.",
+      "ru": "Недопустимые имена хостов Let's Encrypt.",
       "tr": "Geçersiz Let's Encrypt ana bilgisayar adları.",
       "xloc": [
         "default.handlebars->39->90"
@@ -32286,6 +32356,7 @@
       "ja": "無効なLet'sEncrypt名、*を含めることはできません。",
       "nl": "Ongeldige Let's Encrypt namen, mag geen * bevatten.",
       "pl": "Nieprawidłowe nazwy Let's Encrypt, nie mogą zawierać *.",
+      "ru": "Недопустимые имена Let's Encrypt, имена не могут содержать *.",
       "tr": "Geçersiz Let's Encrypt adları, * içeremez.",
       "xloc": [
         "default.handlebars->39->91"
@@ -32304,6 +32375,7 @@
       "ja": "無効なLet'sEncrypt名、解決できません：{0}",
       "nl": "Ongeldige Let's Encrypt-namen, onmogelijk om te verhelpen: {0}",
       "pl": "Nieprawidłowe nazwy Let's Encrypt, niemożliwe do rozwiązania: {0}",
+      "ru": "Недопустимые имена Let's Encrypt, не удалось разрешить: {0}",
       "tr": "Geçersiz Let's Encrypt adları çözülemedi: {0}",
       "xloc": [
         "default.handlebars->39->93"
@@ -32397,6 +32469,7 @@
       "ja": "config.jsonの「LoginCookieEncryptionKey」が無効です。",
       "nl": "Ongeldige \\\"LoginCookieEncryptionKey\\\" in config.json.",
       "pl": "Nieprawidłowy \\\"LoginCookieEncryptionKey\\\" w config.json.",
+      "ru": "Некорректный \\\"LoginCookieEncryptionKey\\\" в config.json.",
       "tr": "config.json'da geçersiz \\\"LoginCookieEncryptionKey\\\".",
       "xloc": [
         "default.handlebars->39->99"
@@ -32646,7 +32719,7 @@
       "pl": "Nieprawidłowy token, spróbuj ponownie.",
       "pt": "Token inválido, tente novamente.",
       "pt-br": "Token inválido, tente novamente.",
-      "ru": "Некорректный токен, попробуйте еще.",
+      "ru": "Некорректный токен, попробуйте еще раз.",
       "sv": "Ogiltig token, försök igen.",
       "tr": "Geçersiz anahtar, tekrar deneyin.",
       "zh-chs": "保安编码无效，请重试。",
@@ -32722,7 +32795,7 @@
       "pl": "Nieprawidłowa nazwa użytkownika lub hasło",
       "pt": "nome de usuário ou senha inválidos",
       "pt-br": "nome de usuário ou senha inválidos",
-      "ru": "неправильное имя пользователя или пароль",
+      "ru": "Неправильное имя пользователя или пароль",
       "sv": "Ogiltigt användarnamn eller lösenord",
       "tr": "Geçersiz kullanıcı adı veya şifre",
       "zh-chs": "无效的用户名或密码"
@@ -32944,6 +33017,7 @@
       "it": "Codice di invito",
       "ja": "招待コード",
       "nl": "Uitnodigingscode",
+      "ru": "Код приглашения",
       "tr": "Davet kodu",
       "xloc": [
         "default.handlebars->39->2277"
@@ -32990,7 +33064,7 @@
       "pl": "Zaproś kogoś do zainstalowania agenta na tej grupie urządzeń.",
       "pt": "Convide alguém para instalar o agente mesh neste grupo de dispositivos.",
       "pt-br": "Convide alguém para instalar o agente mesh neste grupo de dispositivos.",
-      "ru": "Пригласите кого-нибудь установить агент сетки в этой группе устройств.",
+      "ru": "Пригласите кого-нибудь установить Mesh Agent в этой группе устройств.",
       "sv": "Bjud in någon att installera Mesh-agenten på den här enhetsgruppen.",
       "tr": "Birini bu cihaz grubuna mesh aracısını kurmaya davet edin.",
       "zh-chs": "邀请某人在该设备组上安装网格代理。",
@@ -33214,7 +33288,7 @@
       "pl": "Dołączył do sesji multipleksu pulpitów",
       "pt": "Ingressou na sessão multiplex de desktop",
       "pt-br": "Ingressou na sessão multiplex de desktop",
-      "ru": "Присоединенный сеанс мультиплексирования настольных ПК",
+      "ru": "Присоединился к сеансу мультиплексированного рабочего стола",
       "sv": "Gått med multiplex-session på skrivbordet",
       "tr": "Masaüstü multipleks oturumuna katıldı",
       "zh-chs": "已加入桌面Multiplex会话",
@@ -33418,7 +33492,7 @@
       "pl": "Hasło klucza",
       "pt": "Senha da chave",
       "pt-br": "Contraseña clave",
-      "ru": "Ключевой пароль",
+      "ru": "Пароль ключа",
       "sv": "Nyckel lösenord",
       "tr": "Anahtar Parola",
       "zh-chs": "密钥密码",
@@ -33517,6 +33591,7 @@
       "ja": "キーボード弦のカスタマイズ",
       "nl": "Toetsenbord strings aanpassen",
       "pl": "Ustawienia Ciagów Klawiatury",
+      "ru": "Настройка клавиатурных строк",
       "tr": "Klavye Dizileri Özelleştirme",
       "xloc": [
         "default.handlebars->39->1218"
@@ -33585,7 +33660,7 @@
       "pl": "Zabijanie procesu {0}",
       "pt": "Processo de morte {0}",
       "pt-br": "Matando processo {0}",
-      "ru": "Процесс убийства {0}",
+      "ru": "Завершение процесса {0}",
       "sv": "Avlivningsprocessen {0}",
       "tr": "Öldürme süreci {0}",
       "zh-chs": "杀死进程{0}",
@@ -33835,7 +33910,7 @@
       "pl": "Duże",
       "pt": "ampla",
       "pt-br": "Grande",
-      "ru": "Большой/крупный",
+      "ru": "Большой",
       "sv": "Stor",
       "tr": "Büyük",
       "zh-chs": "大",
@@ -34096,6 +34171,7 @@
       "ja": "過去7日間",
       "nl": "Laaste 7 dagen",
       "pl": "Ostatnie 7 dni",
+      "ru": "Последние 7 дней",
       "tr": "Son 7 gün",
       "xloc": [
         "default.handlebars->39->2704"
@@ -34164,6 +34240,7 @@
       "ja": "最終日",
       "nl": "Laaste dag",
       "pl": "Ostatni Dzień",
+      "ru": "Последний день",
       "tr": "Son gun",
       "xloc": [
         "default.handlebars->39->2703"
@@ -34233,6 +34310,7 @@
       "ja": "最終アクセス：{0}",
       "nl": "Laatste toegang: {0}",
       "pl": "Ostatni dostęp: {0}",
+      "ru": "Последний доступ: {0}",
       "tr": "Son erişim: {0}",
       "xloc": [
         "default.handlebars->39->2316"
@@ -34755,6 +34833,7 @@
       "ja": "{0}秒後にWeb-RDPセッションを終了しました。",
       "nl": "Web-RDP sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-RDP po {0} sekundach.",
+      "ru": "Покинул сеанс Web-RDP через {0} с.",
       "tr": "{0} saniye sonra Web-RDP oturumundan ayrıldı.",
       "xloc": [
         "default.handlebars->39->2254"
@@ -34773,6 +34852,7 @@
       "ja": "{0}秒後にWeb-SFTPセッションを終了しました。",
       "nl": "Web-SFTP sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-SFTP po {0} sekundach.",
+      "ru": "Покинул сеанс Web-SFTP через {0} с.",
       "tr": "{0} saniye sonra Web-SFTP oturumundan ayrıldı.",
       "xloc": [
         "default.handlebars->39->2253"
@@ -34791,6 +34871,7 @@
       "ja": "{0}秒後にWeb-SSHセッションを終了しました。",
       "nl": "Web-SSH sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-SSH po {0} sekundach.",
+      "ru": "Покинул сеанс Web-SSH через {0} с.",
       "tr": "{0} saniye sonra Web-SSH oturumundan ayrıldı.",
       "xloc": [
         "default.handlebars->39->2252"
@@ -34809,6 +34890,7 @@
       "ja": "{0}秒後にWeb-VNCセッションを終了しました。",
       "nl": "Web-VNC sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-VNC po {0} sekundach.",
+      "ru": "Покинул сеанс Web-VNC через {0} с.",
       "tr": "{0} saniye sonra Web-VNC oturumundan ayrıldı.",
       "xloc": [
         "default.handlebars->39->2255"
@@ -34882,6 +34964,7 @@
       "ja": "{0}秒後にデスクトップマルチプレックスセッションを終了しました。",
       "nl": "Verliet de desktop multiplex sessie na {0} seconde(n).",
       "pl": "Opuścił sesję multiplex pulpitu po {0} sekundach.",
+      "ru": "Покинул сеанс мультиплексного режима рабочего стола через {0} с.",
       "tr": "{0} saniye sonra masaüstü multipleks oturumundan ayrıldı.",
       "xloc": [
         "default.handlebars->39->2251"
@@ -34900,6 +34983,7 @@
       "ja": "長さ",
       "nl": "Duur",
       "pl": "Długość",
+      "ru": "Продолжительность",
       "tr": "Uzunluk",
       "xloc": [
         "default.handlebars->39->2718"
@@ -35663,7 +35747,7 @@
       "pl": "Powłoka Shell Linux/BSD/macOS",
       "pt": "Shell de comando Linux / BSD / macOS",
       "pt-br": "Shell de comando Linux / BSD / macOS",
-      "ru": "Командная оболочка Linux / BSD / macOS",
+      "ru": "Командная оболочка Linux/BSD/macOS",
       "sv": "Linux / BSD / macOS Command Shell",
       "tr": "Linux / BSD / macOS Komut Kabuğu",
       "zh-chs": "Linux / BSD / macOS命令外壳",
@@ -35689,7 +35773,7 @@
       "pl": "Instalator Binarny Linux/macOS",
       "pt": "Instalador binário Linux / macOS",
       "pt-br": "Instalador binário Linux / macOS",
-      "ru": "Двоичный установщик Linux / macOS",
+      "ru": "Бинарный установщик Linux/macOS",
       "sv": "Linux / macOS binär installationsprogram",
       "tr": "Linux / macOS İkili Yükleyici",
       "zh-chs": "Linux / macOS二进制安装程序",
@@ -35867,7 +35951,7 @@
       "pl": "Lokalny - {0}",
       "pt": "Local - {0}",
       "pt-br": "Local - {0}",
-      "ru": "Местный - {0}",
+      "ru": "Локальный - {0}",
       "sv": "Lokalt - {0}",
       "tr": "Yerel - {0}",
       "zh-chs": "本地 - {0}"
@@ -35914,7 +35998,7 @@
       "pl": "Port Lokalny",
       "pt": "Porto Local",
       "pt-br": "Porta Local",
-      "ru": "Местный порт",
+      "ru": "Локальный порт",
       "sv": "Lokal hamn",
       "tr": "Yerel Liman",
       "zh-chs": "本地端口"
@@ -36208,6 +36292,7 @@
       "ja": "ロックオン切断",
       "nl": "Vergrendelen bij verbreken",
       "pl": "Zablokuj na Odłącz",
+      "ru": "Заблокировать при отключении",
       "tr": "Bağlantıyı Keste Kilitle",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->6->3->d7deskAutoLockLabel",
@@ -36639,7 +36724,7 @@
       "pl": "Token logowania:",
       "pt": "Token de logon:",
       "pt-br": "Token de login:",
-      "ru": "Логин токен:",
+      "ru": "Токен входа:",
       "sv": "Inloggningstoken:",
       "tr": "Giriş anahtarı:",
       "zh-chs": "登入保安编码：",
@@ -37564,7 +37649,7 @@
       "pl": "Zarządzaj Grupami Użytkowników",
       "pt": "Gerenciar grupos de usuários",
       "pt-br": "Gerenciar grupos de usuários",
-      "ru": "Управление группами пользователя",
+      "ru": "Управление группами пользователей",
       "sv": "Hantera användargrupper",
       "tr": "Kullanıcı Gruplarını Yönetin",
       "zh-chs": "管理用户组",
@@ -37941,7 +38026,7 @@
       "pl": "Ustawienia Mapowania",
       "pt": "Configurações de mapeamento",
       "pt-br": "Configurações de mapeamento",
-      "ru": "Настройки отображения",
+      "ru": "Настройки переадресации",
       "sv": "Kartläggningsinställningar",
       "tr": "Eşleme Ayarları",
       "zh-chs": "映射设置"
@@ -37962,7 +38047,7 @@
       "pl": "Mapowanie",
       "pt": "Mapeamentos",
       "pt-br": "Mapeamentos",
-      "ru": "Сопоставления",
+      "ru": "Переадресации",
       "sv": "Kartläggningar",
       "tr": "Eşlemeler",
       "zh-chs": "映射"
@@ -38206,7 +38291,7 @@
       "pl": "Identyfikator sieci",
       "pt": "Identificador de malha",
       "pt-br": "Identificador Mesh",
-      "ru": "Идентификатор сетки",
+      "ru": "Идентификатор сети",
       "sv": "Mesh Identifier",
       "tr": "Mesh Tanımlayıcı",
       "zh-chs": "网格标识符",
@@ -38228,7 +38313,7 @@
       "pl": "Nazwa Sieci",
       "pt": "Nome da malha",
       "pt-br": "Nome Mesh",
-      "ru": "Имя сетки",
+      "ru": "Имя сети",
       "sv": "Masknamn",
       "tr": "Mesh Adı",
       "zh-chs": "网格名称",
@@ -38253,7 +38338,7 @@
       "pl": "Przekierowanie Sieci",
       "pt": "Mesh Relay",
       "pt-br": "Mesh Relay",
-      "ru": "Ретранслятор Mesh",
+      "ru": "Mesh Ретранслятор",
       "sv": "Mesh Relay",
       "tr": "Mesh Yayını",
       "zh-chs": "网格中继",
@@ -38712,7 +38797,7 @@
       "pl": "MeshCentral Router pozwala na mapowanie portów TCP i UDP na tym komputerze do dowolnego komputera w twoim koncie serwera MeshCentral. Zacznij od zalogowania się na swoje konto.",
       "pt": "O roteador MeshCentral permite o mapeamento das portas TCP e UDP neste computador para qualquer computador em sua conta do servidor MeshCentral. Comece fazendo login em sua conta.",
       "pt-br": "O MeshCentral Router permite o mapeamento das portas TCP e UDP neste computador para qualquer computador em sua conta do servidor MeshCentral. Comece fazendo login em sua conta.",
-      "ru": "Маршрутизатор MeshCentral позволяет сопоставить порты TCP и UDP на этом компьютере с любым компьютером в вашей учетной записи сервера MeshCentral. Начните с входа в свою учетную запись.",
+      "ru": "MeshCentral Router позволяет сопоставить порты TCP и UDP на этом компьютере с любым компьютером в вашей учетной записи сервера MeshCentral. Начните со входа в свою учетную запись.",
       "sv": "MeshCentral Router tillåter mappning av TCP- och UDP-portar på den här datorn till vilken dator som helst i ditt MeshCentral-serverkonto. Börja med att logga in på ditt konto.",
       "tr": "MeshCentral Router, bu bilgisayardaki TCP ve UDP bağlantı noktalarının MeshCentral sunucu hesabınızdaki herhangi bir bilgisayara eşlenmesine izin verir. Hesabınıza giriş yaparak başlayın.",
       "zh-chs": "MeshCentral 路由器允许将此计算机上的 TCP 和 UDP 端口映射到您的 MeshCentral 服务器帐户中的任何计算机。首先登录您的帐户。"
@@ -38755,6 +38840,7 @@
       "ja": "MeshCentral SSHのサポートには、NodeJS11以降が必要です。",
       "nl": "MeshCentral SSH ondersteuning vereist NodeJS 11 of hoger.",
       "pl": "Obsługa MeshCentral SSH wymaga NodeJS 11 lub nowszego.",
+      "ru": "Для поддержки MeshCentral SSH требуется NodeJS 11 или выше..",
       "tr": "MeshCentral SSH desteği, NodeJS 11 veya üstünü gerektirir.",
       "xloc": [
         "default.handlebars->39->80"
@@ -39128,7 +39214,7 @@
       "pl": "MeshCmd jest narzędziem wiersza poleceń, które wykonuje wiele różnych operacji. Plik akcji może być opcjonalnie pobrany i edytowany w celu dostarczenia informacji o serwerze i danych uwierzytelniających.",
       "pt": "MeshCmd é uma ferramenta de linha de comando que executa várias operações diferentes. Opcionalmente, o arquivo de ação pode ser baixado e editado para fornecer informações e credenciais do servidor.",
       "pt-br": "MeshCmd é uma ferramenta de linha de comando que executa muitas operações diferentes. O arquivo de ação pode, opcionalmente, ser baixado e editado para fornecer informações e credenciais do servidor.",
-      "ru": "MeshCmd это утилита с командной строкой, которая позволяет выполнить множество операций. Файл с командами может быть опционально скачан и отредактирован для указания информации о сервере и учетных данных.",
+      "ru": "MeshCmd это утилита командной строки, которая позволяет выполнить множество операций. Файл с командами может быть опционально скачан и отредактирован для указания информации о сервере и учетных данных.",
       "sv": "MeshCmd är ett kommandoradsverktyg som utför många olika operationer. Handlingsfilen kan valfritt laddas ner och redigeras för att tillhandahålla serverinformation och referenser.",
       "tr": "MeshCmd, birçok farklı işlemi gerçekleştiren bir komut satırı aracıdır. Eylem dosyası isteğe bağlı olarak indirilebilir ve sunucu bilgileri ve kimlik bilgileri sağlamak için düzenlenebilir.",
       "zh-chs": "MeshCmd是一个可以执行许多不同操作的命令行工具。可以选择下载和编辑操作档案以提供服务器信息和凭据。",
@@ -39249,7 +39335,7 @@
       "pl": "Okno Wiadomości",
       "pt": "Caixa de mensagem",
       "pt-br": "Caixa de mensagem",
-      "ru": "Окно сообщения",
+      "ru": "Уведомление в окне",
       "sv": "Meddelandebox",
       "tr": "Mesaj Kutusu",
       "zh-chs": "留言框",
@@ -39349,7 +39435,7 @@
       "pl": "Komunikator",
       "pt": "Mensageiro",
       "pt-br": "Messenger",
-      "ru": "Посланник",
+      "ru": "Мессенджер",
       "sv": "budbärare",
       "tr": "haberci",
       "zh-chs": "信使",
@@ -39448,6 +39534,7 @@
       "ja": "Let'sEncryptのメールアドレスがありません。",
       "nl": "Ontbrekend Let's Encrypt e-mailadres.",
       "pl": "Brak adresu e-mail Let's Encrypt.",
+      "ru": "Отсутствует адрес электронной почты Let's Encrypt.",
       "tr": "Let's Encrypt e-posta adresi eksik.",
       "xloc": [
         "default.handlebars->39->89"
@@ -39466,6 +39553,7 @@
       "ja": "WebDAVパラメーターがありません。",
       "nl": "Ontbrekende WebDAV parameters.",
       "pl": "Brak parametrów WebDAV.",
+      "ru": "Отсутствуют параметры WebDAV.",
       "tr": "WebDAV parametreleri eksik.",
       "xloc": [
         "default.handlebars->39->81"
@@ -39862,7 +39950,7 @@
       "pl": "Musi być uruchomiony jako użytkownik",
       "pt": "Deve ser executado como usuário",
       "pt-br": "Deve ser executado como usuário",
-      "ru": "Должен работать как пользователь",
+      "ru": "Запуск только от имени пользователя",
       "sv": "Måste köras som användare",
       "tr": "Kullanıcı olarak çalıştırılmalıdır",
       "zh-chs": "必须以用户身份运行",
@@ -39996,6 +40084,7 @@
       "ja": "マイレポート",
       "nl": "Mijn rapporten",
       "pl": "Moje Raporty",
+      "ru": "Мои отчеты",
       "tr": "Raporlarım",
       "xloc": [
         "default.handlebars->container->column_l->p60->p60title->1"
@@ -40571,7 +40660,7 @@
       "pl": "Sieć",
       "pt": "Trabalho em rede",
       "pt-br": "Networking",
-      "ru": "сетей",
+      "ru": "Сеть",
       "sv": "Nätverk",
       "tr": "Ağ oluşturma",
       "zh-chs": "网络",
@@ -40855,6 +40944,7 @@
       "ja": "新しいバージョン",
       "nl": "Nieuwe versie",
       "pl": "Nowa Wersja",
+      "ru": "Новая версия",
       "tr": "Yeni sürüm",
       "xloc": [
         "agent-translations.json"
@@ -41050,7 +41140,7 @@
       "pl": "Brak konsoli agenta",
       "pt": "Sem console de agente",
       "pt-br": "Sem Console do Agente",
-      "ru": "Нет консоли агента",
+      "ru": "Нет доступа к консоли агента",
       "sv": "Ingen agentkonsol",
       "tr": "Aracı Konsolu Yok",
       "zh-chs": "无座席控制台",
@@ -41310,7 +41400,7 @@
       "pl": "Brak Intel® AMT",
       "pt": "Nenhum Intel&reg; AMT",
       "pt-br": "Sem Intel&reg; AMT",
-      "ru": "Нет Intel&reg; AMT",
+      "ru": "Нет доступа к Intel&reg; AMT",
       "sv": "Ingen Intel&reg; AMT",
       "tr": "Intel&reg; AMT yok",
       "zh-chs": "没有英特尔&reg;AMT",
@@ -41481,6 +41571,7 @@
       "ja": "新しいデバイスはありません",
       "nl": "Geen nieuwe apparaten",
       "pl": "Brak Nowych Urządzeń",
+      "ru": "Запретить добавление новых устройств",
       "tr": "Yeni Cihaz Yok",
       "xloc": [
         "default.handlebars->39->2408"
@@ -41528,7 +41619,7 @@
       "pl": "Brak Mapowań Portów\n\nKliknij \"Dodaj\", aby rozpocząć.",
       "pt": "Sem mapeamentos de portas\r\n\r\nClique em \"Adicionar\" para começar.",
       "pt-br": "Sem mapeamentos de portas\r\n\r\nClique em \"Adicionar\" para começar.",
-      "ru": "Нет сопоставления портов\r\n\r\nНажмите «Добавить», чтобы начать.",
+      "ru": "Нет переадесаций портов\r\n\r\nНажмите «Добавить», чтобы начать.",
       "sv": "Inga portkartor\r\n\r\nKlicka på \"Lägg till\" för att komma igång.",
       "tr": "Bağlantı Noktası Eşleme Yok\r\n\r\nBaşlamak için \"Ekle\"yi tıklayın.",
       "zh-chs": "无端口映射\r\n\r\n单击“添加”开始。"
@@ -41547,6 +41638,7 @@
       "nl": "Geen externe opdrachten",
       "pl": "Brak zdalnego polecenia",
       "pt-br": "Sem Comando Remoto",
+      "ru": "Нет доступа к выполнению команд",
       "tr": "Uzaktan Komut Yok",
       "xloc": [
         "default.handlebars->39->2528",
@@ -41567,6 +41659,7 @@
       "nl": "geen afstandsbediening",
       "pl": "Brak pilota zdalnego sterowania",
       "pt-br": "Sem Controle Remoto",
+      "ru": "Нет доступа к удаленному управлению",
       "tr": "Uzaktan Kumanda Yok",
       "xloc": [
         "default.handlebars->39->2521",
@@ -41587,6 +41680,7 @@
       "nl": "Geen herstart/uitschakelen",
       "pl": "Brak resetowania/wyłączania",
       "pt-br": "Sem Resetar/Desligar",
+      "ru": "Нет доступа к перезагрузке/выключению",
       "tr": "Sıfırlama/Kapatma Yok",
       "xloc": [
         "default.handlebars->39->2530",
@@ -41744,7 +41838,7 @@
       "pl": "Brak narzędzi (MeshCmd/Router)",
       "pt": "Sem ferramentas (MeshCmd / Roteador)",
       "pt-br": "Sem ferramentas (MeshCmd / Roteador)",
-      "ru": "Нет инструментов (MeshCmd/Router)",
+      "ru": "Нет доступа к инструментам (MeshCmd/Router)",
       "sv": "Inga verktyg (MeshCmd / Router)",
       "tr": "Alet Yok (MeshCmd / Router)",
       "zh-chs": "没有工具（MeshCmd /路由器）",
@@ -41767,6 +41861,7 @@
       "nl": "Geen de-installatie",
       "pl": "Bez odinstalowywania",
       "pt-br": "Não desinstalar",
+      "ru": "Нет доступа к удалению",
       "tr": "Kaldırma Yok",
       "xloc": [
         "default.handlebars->39->2527",
@@ -41787,6 +41882,7 @@
       "nl": "Niet starten",
       "pl": "Bez budzenia",
       "pt-br": "Não acordar",
+      "ru": "Нет доступа к пробуждению",
       "tr": "Uyanmak yok",
       "xloc": [
         "default.handlebars->39->2529",
@@ -42286,7 +42382,7 @@
       "pl": "Brak zdefiniowanych skrótów klawiatury.",
       "pt": "Nenhum atalho de teclado definido",
       "pt-br": "Nenhum atalho de teclado definido",
-      "ru": "Сочетания клавиш не определены",
+      "ru": "Сочетания клавиш не заданны",
       "sv": "Inga kortkommandon definierade",
       "tr": "Tanımlanmış klavye kısayolu yok",
       "zh-chs": "未定义键盘快捷键",
@@ -42308,6 +42404,7 @@
       "ja": "キーボード文字列が定義されていません",
       "nl": "Geen toetsenbord strings gedefineerd",
       "pl": "Nie zdefiniowano ciągu klawiatury",
+      "ru": "Клавиатурные строки не заданны",
       "tr": "Tanımlanmış klavye dizesi yok",
       "xloc": [
         "default.handlebars->39->1219"
@@ -43587,7 +43684,7 @@
       "pl": "Nazwa w OS",
       "pt": "Nome do SO",
       "pt-br": "Nome do SO",
-      "ru": "настоящее имя",
+      "ru": "Имя из ОС",
       "sv": "OS-namn",
       "tr": "İşletim Sistemi Adı",
       "zh-chs": "操作系统名称",
@@ -43662,6 +43759,7 @@
       "ja": "オフ",
       "nl": "Uit",
       "pl": "Wyłącz",
+      "ru": "Выключено",
       "tr": "Kapalı",
       "xloc": [
         "default-mobile.handlebars->11->230",
@@ -43913,7 +44011,7 @@
       "pl": "Tylko pliki mniejsze niż 200k mogą być edytowane.",
       "pt": "Somente arquivos com menos de 200k podem ser editados.",
       "pt-br": "Somente arquivos com menos de 200k podem ser editados.",
-      "ru": "Редактировать файлы можно только размером менее 200КБ.",
+      "ru": "Редактировать можно только файлы размером менее 200КБ.",
       "sv": "Endast filer mindre än 200 000 kan redigeras.",
       "tr": "Yalnızca 200.000'den küçük dosyalar düzenlenebilir.",
       "zh-chs": "只能编辑小于200k的档案。",
@@ -44161,7 +44259,7 @@
       "pl": "Otwórz...",
       "pt": "Abrir...",
       "pt-br": "Abrir...",
-      "ru": "Открытым...",
+      "ru": "Открыть...",
       "sv": "Öppna...",
       "tr": "Açık...",
       "zh-chs": "打开..."
@@ -44180,6 +44278,7 @@
       "nl": "OpenBSD x86-64",
       "pl": "OpenBSD x86-64",
       "pt-br": "OpenBSD x86-64",
+      "ru": "OpenBSD x86-64",
       "tr": "OpenBSD x86-64",
       "xloc": [
         "default-mobile.handlebars->11->43",
@@ -44221,6 +44320,7 @@
       "nl": "OpenWRT x86-64",
       "pl": "OpenWRT x86-64",
       "pt-br": "OpenWRT x86-64",
+      "ru": "OpenWRT x86-64",
       "tr": "OpenWRT x86-64",
       "xloc": [
         "default-mobile.handlebars->11->42",
@@ -44661,7 +44761,7 @@
       "pl": "PUSH",
       "pt": "EMPURRE",
       "pt-br": "PUSH",
-      "ru": "ТОЛКАТЬ",
+      "ru": "PUSH",
       "sv": "SKJUTA PÅ",
       "tr": "İTMEK",
       "zh-chs": "推",
@@ -45467,7 +45567,7 @@
       "pl": "Szczytowy zestaw roboczy",
       "pt": "Conjunto de trabalho de pico",
       "pt-br": "Pico de Trabalhos",
-      "ru": "Пиковая рабочая установка",
+      "ru": "Пиковый рабочий набор",
       "sv": "Peak Working Set",
       "tr": "Tepe Çalışma Seti",
       "zh-chs": "峰值工作集",
@@ -45517,7 +45617,7 @@
       "pl": "Wykonaj aktywację trybu sterowania klienta Intel AMT (CCM) dla grupy \\\"{0}\\\", pobierając narzędzie MeshCMD i uruchamiając je w następujący sposób:",
       "pt": "Execute a ativação do modo de controle de cliente Intel AMT (CCM) para agrupar \\\"{0}\\\" baixando a ferramenta MeshCMD e executando-a assim:",
       "pt-br": "Realize a ativação do modo de controle de cliente Intel AMT (CCM) para o grupo \\\"{0}\\\" baixando a ferramenta MeshCMD e executando-a assim:",
-      "ru": "Выполнить активацию Intel AMT в режиме управления клиента (CCM) для группы \\\"{0}\\\",скачав инструмент MeshCMD и запустив его следующим образом:",
+      "ru": "Выполните активацию Intel AMT в режиме управления клиента (CCM) для группы \\\"{0}\\\",скачав инструмент MeshCMD и запустив его следующим образом:",
       "sv": "Utför Intel AMT client control mode (CCM) -aktivering till grupp \\\"{0}\\\" genom att ladda ner MeshCMD-verktyget och köra det så här:",
       "tr": "MeshCMD aracını indirip aşağıdaki gibi çalıştırarak \\\"{0}\\\" grubuna Intel AMT istemci kontrol modu (CCM) etkinleştirmesini gerçekleştirin:",
       "zh-chs": "通过下载MeshCMD工具并像下面这样运行，将“ {0} ”组以英特尔AMT客户端控制模式（CCM）激活：",
@@ -45561,7 +45661,7 @@
       "pl": "Wykonaj aktywację i konfigurację Intel® AMT.",
       "pt": "Execute a ativação e configuração do Intel&reg; AMT.",
       "pt-br": "Execute a ativação e configuração do Intel&reg; AMT.",
-      "ru": "Выполните активацию и настройку Intel&reg; AMT.",
+      "ru": "Выполнить активацию и настройку Intel&reg; AMT.",
       "sv": "Utför Intel&reg; AMT-aktivering och konfiguration.",
       "tr": "Intel&reg; AMT aktivasyonu ve yapılandırması gerçekleştirin.",
       "zh-chs": "执行英特尔&reg;AMT激活和配置。",
@@ -45587,7 +45687,7 @@
       "pl": "Wykonaj aktywację trybu kontroli administratora Intel® AMT (ACM) dla grupy \\\"{0}\\\", pobierając narzędzie MeshCMD i uruchamiając je w następujący sposób:",
       "pt": "Execute a ativação do modo de controle de administração Intel&reg; AMT (ACM) para agrupar \\\"{0}\\\" baixando a ferramenta MeshCMD e executando-a assim:",
       "pt-br": "Realize a ativação do modo de controle de administrador Intel&reg; AMT (ACM) para o grupo \\\"{0}\\\" baixando a ferramenta MeshCMD e executando-a assim:",
-      "ru": "Выполнить активацию Intel&reg; AMT в режиме управления администратора (ACM) для группы \\\"{0}\\\",скачав инструмент MeshCMD и запустив его следующим образом:",
+      "ru": "Выполните активацию Intel&reg; AMT в режиме управления администратора (ACM) для группы \\\"{0}\\\",скачав инструмент MeshCMD и запустив его следующим образом:",
       "sv": "Utför Intel&reg; AMT admin control mode (ACM) aktivering till grupp \\\"{0}\\\" genom att ladda ner MeshCMD-verktyget och köra det så här:",
       "tr": "MeshCMD aracını indirip aşağıdaki gibi çalıştırarak \\\"{0}\\\" grubuna Intel&reg; AMT yönetici kontrol modu (ACM) etkinleştirmesini gerçekleştirin:",
       "zh-chs": "通过下载MeshCMD工具并像下面这样运行，将“ {0} ”组以英特尔AMT管理员控制模式（ACM）激活：",
@@ -45609,7 +45709,7 @@
       "pl": "Wykonaj aktywację trybu kontroli administratora Intel® AMT (ACM).",
       "pt": "Execute a ativação do modo de controle de administrador Intel&reg; AMT (ACM).",
       "pt-br": "Execute a ativação do modo de controle de administrador Intel&reg; AMT (ACM).",
-      "ru": "Выполните активацию режима администрирования Intel&reg; AMT (ACM).",
+      "ru": "Выполнить активацию режима администрирования Intel&reg; AMT (ACM).",
       "sv": "Utför Intel&reg; AMT admin control mode (ACM) aktivering.",
       "tr": "Intel&reg; AMT yönetici kontrol modu (ACM) etkinleştirmesini gerçekleştirin.",
       "zh-chs": "执行英特尔&reg;AMT管理员控制模式（ACM）激活。",
@@ -45750,7 +45850,7 @@
       "pl": "Wykonaj zbiorcze powiadamianie do urządzeń",
       "pt": "Executar notificação de dispositivo em lote",
       "pt-br": "Executar notificação de dispositivo em lote",
-      "ru": "Выполнить пакетное уведомление устройства",
+      "ru": "Выполнить пакетное уведомление устройств",
       "sv": "Utför batchenhetsmeddelande",
       "tr": "Toplu cihaz bildirimi gerçekleştir",
       "zh-chs": "执行批量设备通知",
@@ -45775,7 +45875,7 @@
       "pl": "Wykonaj zbiorczą operację tagowania urządzenia",
       "pt": "Executar operação de tag de dispositivo em lote",
       "pt-br": "Executar operação de etiquetas nos dispositivo em lote ",
-      "ru": "Выполнение пакетной операции с тегами устройств",
+      "ru": "Выполнить пакетную операциию с тегами устройств",
       "sv": "Utför taggenhet för batchenhet",
       "tr": "Toplu cihaz etiketi işlemini gerçekleştirin",
       "zh-chs": "执行批量设备标签操作",
@@ -45826,6 +45926,7 @@
       "ja": "電源オフを実行しますか？",
       "nl": "Uitschakelen uitvoeren?",
       "pl": "Czy wykonać wyłączenie?",
+      "ru": "Выключить питание?",
       "tr": "Güç kapatılsın mı?",
       "xloc": [
         "default-mobile.handlebars->11->338",
@@ -45845,6 +45946,7 @@
       "ja": "電源を入れますか？",
       "nl": "Inschakelen uitvoeren?",
       "pl": "Czy wykonać uruchomienie?",
+      "ru": "Включить питание?",
       "tr": "Güç açık mı?",
       "xloc": [
         "default-mobile.handlebars->11->340",
@@ -45867,7 +45969,7 @@
       "pl": "Wykonaj akcje zasilania={0}, forced={1}",
       "pt": "Executando ação de energia = {0}, forçado = {1}",
       "pt-br": "Executando ação de energia = {0}, forçado = {1}",
-      "ru": "Выполнение силового воздействия = {0}, принудительное = {1}",
+      "ru": "Управление питанием устройства = {0}, принудительно = {1}",
       "sv": "Utför kraftåtgärd = {0}, tvingad = {1}",
       "tr": "Açma/kapatma işlemi = {0}, zorunlu = {1}",
       "zh-chs": "执行电源操作= {0}，强制执行= {1}",
@@ -46529,7 +46631,7 @@
       "pl": "Mapowanie Portu",
       "pt": "Mapeamento de portas",
       "pt-br": "Mapeamento de portas",
-      "ru": "Отображение портов",
+      "ru": "Переадресация порта",
       "sv": "Portmappning",
       "tr": "Liman Haritalama",
       "zh-chs": "端口映射"
@@ -46550,7 +46652,7 @@
       "pl": "Pomoc Mapowania Portu",
       "pt": "Ajuda para mapeamento de portas",
       "pt-br": "Ajuda para mapeamento de portas",
-      "ru": "Справка по отображению портов",
+      "ru": "Справка по переадресации портов",
       "sv": "Portmappning Hjälp",
       "tr": "Bağlantı Noktası Eşleme Yardımı",
       "zh-chs": "端口映射帮助"
@@ -46568,6 +46670,7 @@
       "ja": "ポート名同期",
       "nl": "Poort naam synchronisatie",
       "pl": "Synchronizacja Nazwy Portu",
+      "ru": "Синхронизация имени порта",
       "tr": "Bağlantı Noktası Adı Senkronizasyonu",
       "xloc": [
         "default.handlebars->39->1815"
@@ -46586,6 +46689,7 @@
       "ja": "ポート番号",
       "nl": "Poortnummer",
       "pl": "Numer Portu",
+      "ru": "Номер порта",
       "tr": "Port numarası",
       "xloc": [
         "default-mobile.handlebars->11->273",
@@ -46605,6 +46709,7 @@
       "ja": "ポートタイプ",
       "nl": "Poort type",
       "pl": "Typ Portu",
+      "ru": "Тип порта",
       "tr": "Bağlantı Noktası Türü",
       "xloc": [
         "default-mobile.handlebars->11->274",
@@ -46627,7 +46732,7 @@
       "pl": "Port {0} do portu {1}",
       "pt": "Porta {0} para porta {1}",
       "pt-br": "Porta {0} para porta {1}",
-      "ru": "Порт {0} в порт {1}",
+      "ru": "Порт {0} на порт {1}",
       "sv": "Porta {0} till port {1}",
       "tr": "{0} numaralı bağlantı noktasını {1} numaralı bağlantı noktasına",
       "zh-chs": "端口 {0} 到端口 {1}"
@@ -46648,7 +46753,7 @@
       "pl": "Port {0} do {1}:{2}",
       "pt": "Porta {0} para {1}: {2}",
       "pt-br": "Porta {0} para {1}: {2}",
-      "ru": "Порт {0} в {1}: {2}",
+      "ru": "Порт {0} на {1}: {2}",
       "sv": "Port {0} till {1}: {2}",
       "tr": "{0} bağlantı noktası {1}:{2}",
       "zh-chs": "端口 {0} 到 {1}：{2}"
@@ -46767,6 +46872,7 @@
       "ja": "電源操作",
       "nl": "Power Operation",
       "pl": "Operacja Zasilania",
+      "ru": "Работа с питанием",
       "tr": "Güç Çalışması",
       "xloc": [
         "default-mobile.handlebars->11->337",
@@ -46892,6 +46998,7 @@
       "ja": "電源スイッチを使用する準備が整いました。",
       "nl": "Aan/uit-schakelaar is klaar voor gebruik.",
       "pl": "Włącznik jest gotowy do użycia.",
+      "ru": "Выключатель питания готов к использованию.",
       "tr": "Güç anahtarı kullanıma hazırdır.",
       "xloc": [
         "default.handlebars->39->599"
@@ -47200,7 +47307,7 @@
       "pl": "Pasek Prywatności",
       "pt": "Barra de Privacidade",
       "pt-br": "Barra de Privacidade",
-      "ru": "Панель конфиденциальности",
+      "ru": "Панель-уведомление",
       "sv": "Sekretessfält",
       "tr": "Gizlilik Çubuğu",
       "zh-chs": "隐私栏",
@@ -47225,7 +47332,7 @@
       "pl": "Pasek prywatności",
       "pt": "Barra de privacidade",
       "pt-br": "Barra de privacidade",
-      "ru": "Панель конфиденциальности",
+      "ru": "Панель-уведомление",
       "sv": "Sekretessfält",
       "tr": "Gizlilik çubuğu",
       "zh-chs": "隐私栏",
@@ -47250,7 +47357,7 @@
       "pl": "PrivacyBarFormularz",
       "pt": "PrivacyBarForm",
       "pt-br": "PrivacyBarForm",
-      "ru": "Конфиденциальность",
+      "ru": "PrivacyBarForm",
       "sv": "PrivacyBarForm",
       "tr": "GizlilikBarFormu",
       "zh-chs": "隐私栏表格"
@@ -47417,7 +47524,7 @@
       "pl": "Przetwarzanie polecenia konsoli: \\\"{0}\\\"",
       "pt": "Processando o comando do console: \\\"{0}\\\"",
       "pt-br": "Processando o comando do console: \\\"{0}\\\"",
-      "ru": "Команда консоли обработки: \\\"{0}\\\"",
+      "ru": "Выполнение консольной команды: \\\"{0}\\\"",
       "sv": "Behandlingskonsolkommando: \\\"{0}\\\"",
       "tr": "Komut işleniyor: \\\"{0}\\\"",
       "zh-chs": "处理控制台命令：“{0}”",
@@ -47545,7 +47652,7 @@
       "pl": "Tryb Podłączenia",
       "pt": "Modo de provisionamento",
       "pt-br": "Modo de Provisionamento",
-      "ru": "Режим обеспечения",
+      "ru": "Режим инициализации",
       "sv": "Provisioning Mode",
       "tr": "Temel Hazırlık Modu",
       "zh-chs": "配置模式",
@@ -47567,7 +47674,7 @@
       "pl": "Stan Podłączenia",
       "pt": "Estado de provisionamento",
       "pt-br": "Estado de Provisionamento",
-      "ru": "Предоставление государства",
+      "ru": "Состояние инициализации",
       "sv": "Provisioning State",
       "tr": "Temel Hazırlık Durumu",
       "zh-chs": "配置状态",
@@ -47736,7 +47843,7 @@
       "pl": "Push",
       "pt": "Empurre",
       "pt-br": "Push",
-      "ru": "Толкать",
+      "ru": "Push",
       "sv": "Skjuta på",
       "tr": "İtmek",
       "zh-chs": "推",
@@ -48230,6 +48337,7 @@
       "ja": "ラリタンドミニオンKXIII",
       "nl": "Raritan Dominion KX III",
       "pl": "Raritan Dominion KX III",
+      "ru": "Raritan Dominion KX III",
       "tr": "Raritan Dominion KX III",
       "xloc": [
         "default.handlebars->39->1753"
@@ -48273,6 +48381,7 @@
       "ja": "生",
       "nl": "Raw",
       "pl": "Surowe",
+      "ru": "Raw",
       "tr": "Çiğ",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog4"
@@ -48522,6 +48631,7 @@
       "ja": "繰り返し",
       "nl": "Terugkerend",
       "pl": "Powtarzanie",
+      "ru": "Повторяющийся",
       "tr": "yinelenen",
       "xloc": [
         "default.handlebars->39->266",
@@ -48541,6 +48651,7 @@
       "ja": "毎日繰り返される",
       "nl": "Dagelijks terugkerend",
       "pl": "Powtarzanie codzienne",
+      "ru": "Ежедневно",
       "tr": "Günlük yinelenen",
       "xloc": [
         "default.handlebars->39->1047"
@@ -48559,6 +48670,7 @@
       "ja": "毎週繰り返される",
       "nl": "Wekelijks terugkerend",
       "pl": "Powtarzanie co tydzień",
+      "ru": "Еженедельно",
       "tr": "Haftalık yinelenen",
       "xloc": [
         "default.handlebars->39->1048"
@@ -48715,7 +48827,7 @@
       "pl": "Odśwież pulpit",
       "pt": "Atualize a área de trabalho",
       "pt-br": "Atualize a área de trabalho",
-      "ru": "Обновите рабочий стол",
+      "ru": "Обновить рабочий стол",
       "sv": "Uppdatera skrivbordet",
       "tr": "Masaüstünü yenileyin",
       "zh-chs": "刷新桌面",
@@ -48793,7 +48905,7 @@
       "pl": "Urządzenie Przekazujące",
       "pt": "Dispositivo de Relé",
       "pt-br": "Dispositivo de Retransmissão",
-      "ru": "Релейное устройство",
+      "ru": "Устройство-релей",
       "sv": "Reläenhet",
       "tr": "Röle Cihazı",
       "zh-chs": "中继装置"
@@ -48839,7 +48951,7 @@
       "pl": "Mapowanie Przekierowania",
       "pt": "Mapeamento de retransmissão",
       "pt-br": "Mapeamento de retransmissão",
-      "ru": "Отображение реле",
+      "ru": "Переадресация через ретранслятор",
       "sv": "Relämappning",
       "tr": "Röle Haritalama",
       "zh-chs": "中继映射"
@@ -48937,7 +49049,7 @@
       "pl": "Zapamiętaj ten certyfikat",
       "pt": "Lembre-se deste certificado",
       "pt-br": "Lembrar deste certificado",
-      "ru": "Запомни этот сертификат",
+      "ru": "Запомнить этот сертификат",
       "sv": "Kom ihåg detta certifikat",
       "tr": "Bu sertifikayı hatırla",
       "zh-chs": "记住这个证书"
@@ -48980,7 +49092,7 @@
       "pl": "Zapamiętaj to urządzenie na {0} dni.",
       "pt": "Lembre-se deste dispositivo por {0} dias.",
       "pt-br": "Lembrar deste dispositivo por {0} dias.",
-      "ru": "Запомните это устройство на {0} дней.",
+      "ru": "Запомнить это устройство на {0} дней.",
       "sv": "Kom ihåg den här enheten i {0} dagar.",
       "tr": "Bu cihazı {0} gün hatırla.",
       "zh-chs": "记住此设备{0}天。",
@@ -49008,7 +49120,7 @@
       "pl": "Zdalny",
       "pt": "Remoto",
       "pt-br": "Controle remoto",
-      "ru": "Удаленно",
+      "ru": "Удаленный",
       "sv": "Avlägsen",
       "tr": "Uzaktan kumanda",
       "zh-chs": "远程",
@@ -49288,7 +49400,7 @@
       "pl": "Pasek Połączenia z Pulpitem Zdalnym Aktywowany/Zaktualizowany",
       "pt": "Barra de conexão de área de trabalho remota ativada / atualizada",
       "pt-br": "Barra de conexão de área de trabalho remota ativada / atualizada",
-      "ru": "Панель подключения к удаленному рабочему столу активирована / обновлена",
+      "ru": "Панель-уведомление подключения к удаленному рабочему столу активирована/обновлена",
       "sv": "Anslutningsfält för fjärrskrivbord aktiverat / uppdaterat",
       "tr": "Uzak Masaüstü Bağlantı Çubuğu Etkinleştirildi / Güncellendi",
       "zh-chs": "远程桌面连接栏已激活/更新",
@@ -49314,7 +49426,7 @@
       "pl": "Pasek Połączenia z Pulpitem Zdalnym Nie działa lub Nieobsługiwany",
       "pt": "A barra de conexão da área de trabalho remota falhou ou não é compatível",
       "pt-br": "Falha na barra de conexão da área de trabalho remota ou não suportada",
-      "ru": "Панель подключения к удаленному рабочему столу не работает или не поддерживается",
+      "ru": "Панель-уведомление подключения к удаленному рабочему столу не работает или не поддерживается",
       "sv": "Anslutningsfältet för fjärrskrivbord misslyckades eller stöds inte",
       "tr": "Uzak Masaüstü Bağlantı Çubuğu Başarısız veya Desteklenmiyor",
       "zh-chs": "远程桌面连接栏失败或不受支持",
@@ -49339,7 +49451,7 @@
       "pl": "Pasek Połączenia z Pulpitem Zdalnym Nie działa lub Nieobsługiwany",
       "pt": "A barra de conexão da área de trabalho remota falhou ou não é compatível",
       "pt-br": "Falha na barra de conexão da área de trabalho remota ou não suportada",
-      "ru": "Панель подключения к удаленному рабочему столу не работает или не поддерживается",
+      "ru": "Панель-уведомление подключения к удаленному рабочему столу не работает или не поддерживается",
       "sv": "Anslutningsfältet för fjärrskrivbord misslyckades eller stöds inte",
       "tr": "Uzak Masaüstü Bağlantı Çubuğu Başarısız veya Desteklenmiyor",
       "zh-chs": "远程桌面连接栏失败或不受支持",
@@ -49573,7 +49685,7 @@
       "pl": "Zdalne Pliki...",
       "pt": "Arquivos remotos ...",
       "pt-br": "Arquivos remotos ...",
-      "ru": "Удаленные файлы ...",
+      "ru": "Управление файлами...",
       "sv": "Fjärrfiler ...",
       "tr": "Uzak Dosyalar...",
       "zh-chs": "远程文件..."
@@ -49950,7 +50062,7 @@
       "pl": "Zdalne wprowadzanie jest zablokowane",
       "pt": "A entrada remota está bloqueada",
       "pt-br": "A entrada remota está bloqueada",
-      "ru": "Удаленный вход заблокирован",
+      "ru": "Удаленный ввод заблокирован",
       "sv": "Fjärringången är låst",
       "tr": "Uzak giriş kilitli",
       "zh-chs": "远程输入被锁定",
@@ -49974,7 +50086,7 @@
       "pl": "Zdalne wprowadzanie jest odblokowane",
       "pt": "A entrada remota está desbloqueada",
       "pt-br": "A entrada remota está desbloqueada",
-      "ru": "Удаленный вход разблокирован",
+      "ru": "Удаленный ввод разблокирован",
       "sv": "Fjärringången är upplåst",
       "tr": "Uzaktan giriş kilidi açıldı",
       "zh-chs": "远程输入解锁",
@@ -50388,7 +50500,7 @@
       "pl": "Usuń urządzenie po rozłączeniu",
       "pt": "Remova o dispositivo ao desconectar",
       "pt-br": "Remover dispositivo ao desconectar",
-      "ru": "Удалить устройство при отключении",
+      "ru": "Удалять устройства при отключении",
       "sv": "Ta bort enheten vid frånkoppling",
       "tr": "Bağlantı kesildiğinde cihazı kaldır",
       "zh-chs": "断开连接后移除设备",
@@ -50736,6 +50848,7 @@
       "ja": "アカウントの表示名を削除しました。",
       "nl": "Weergavenaam account verwijderd.",
       "pl": "Usunięto nazwę wyświetlania konta.",
+      "ru": "Удалено отображаемое имя учетной записи.",
       "tr": "Hesabın görünen adı kaldırıldı.",
       "xloc": [
         "default.handlebars->39->2258"
@@ -51090,7 +51203,7 @@
       "pl": "Zmień z: \\\"{0}\\\" na \\\"{1}\\\"",
       "pt": "Renomear: \\\"{0}\\\" para \\\"{1}\\\"",
       "pt-br": "Renomear: \\\"{0}\\\" para \\\"{1}\\\"",
-      "ru": "Переименовать: \\\"{0}\\\" в \\\"{1}\\\"",
+      "ru": "Переименование: \\\"{0}\\\" в \\\"{1}\\\"",
       "sv": "Byt namn: \\\"{0}\\\" till \\\"{1} \\\"",
       "tr": "\\\"{0}\\\" adını \\\"{1}\\\" olarak yeniden adlandırın",
       "zh-chs": "重命名：“{0}”为“{1}”",
@@ -51162,6 +51275,7 @@
       "ja": "レポートは全体を返しませんでした。",
       "nl": "Rapport heeft geen vermeldingen geretourneerd.",
       "pl": "Raport zwrócił brak wpisów.",
+      "ru": "Отчет не вернул данных",
       "tr": "Rapor hiçbir bütün döndürmedi.",
       "xloc": [
         "default.handlebars->39->2721"
@@ -51202,6 +51316,7 @@
       "ja": "レポート",
       "nl": "Rapport",
       "pl": "Raporty",
+      "ru": "Отчеты",
       "tr": "Raporlar",
       "xloc": [
         "default.handlebars->container->topbar->1->1->EventsSubMenuSpan->EventsSubMenu->1->0->EventsReport"
@@ -51495,7 +51610,7 @@
       "pl": "Resetuj / Wyłącz",
       "pt": "Reiniciar / Desligar",
       "pt-br": "Reiniciar / Desligar",
-      "ru": "Сброс / выключение",
+      "ru": "Перезагрузка / Выключение",
       "sv": "Återställ / stäng av",
       "tr": "Sıfırla / Kapat",
       "zh-chs": "重置/关闭电源",
@@ -52151,7 +52266,7 @@
       "pl": "Wykonaj Komendy",
       "pt": "Executar comandos",
       "pt-br": "Executar comandos",
-      "ru": "Команды запуска",
+      "ru": "Выполнить команды",
       "sv": "Kör kommandon",
       "tr": "Komutları Çalıştır",
       "zh-chs": "运行命令",
@@ -52229,7 +52344,7 @@
       "pl": "Uruchom jako użytkownik, agent jeśli nie ma użytkownika",
       "pt": "Executar como usuário, agente se não houver usuário",
       "pt-br": "Executar como usuário, agente se nenhum usuário",
-      "ru": "Запуск от имени пользователя, агент, если нет пользователя",
+      "ru": "Запуск от имени пользователя, если нет пользователя, то от агента",
       "sv": "Kör som användare, agent om ingen användare",
       "tr": "Kullanıcı yoksa aracı olarak çalıştır",
       "zh-chs": "以用户身份运行，如果没有用户，则运行代理",
@@ -52280,7 +52395,7 @@
       "pl": "Wykonaj komendy na wybranych urządzeniach.",
       "pt": "Execute comandos em dispositivos selecionados.",
       "pt-br": "Execute comandos em dispositivos selecionados.",
-      "ru": "Запускать команды на выбранных устройствах.",
+      "ru": "Выполнить команды на выбранных устройствах.",
       "sv": "Kör kommandon på valda enheter.",
       "tr": "Seçili cihazlarda komutları çalıştırın.",
       "zh-chs": "在所选设备上运行命令。",
@@ -52306,7 +52421,7 @@
       "pl": "Wykonaj komendy na tym urządzeniu.",
       "pt": "Execute comandos neste dispositivo.",
       "pt-br": "Execute comandos neste dispositivo.",
-      "ru": "Запускайте команды на этом устройстве.",
+      "ru": "Выполнить команды на этом устройстве.",
       "sv": "Kör kommandon på den här enheten.",
       "tr": "Bu cihazda komutları çalıştırın.",
       "zh-chs": "在此设备上运行命令。",
@@ -52325,6 +52440,7 @@
       "ja": "ランニング",
       "nl": "lopende",
       "pl": "Uruchomiony",
+      "ru": "Запущен",
       "tr": "Koşma",
       "xloc": [
         "default.handlebars->39->1230",
@@ -52347,7 +52463,7 @@
       "pl": "Wykonywanie komend",
       "pt": "Execução de comandos",
       "pt-br": "Comandos em execução",
-      "ru": "Запуск команд",
+      "ru": "Выполнение команд",
       "sv": "Körkommandon",
       "tr": "Çalışan komutlar",
       "zh-chs": "运行命令",
@@ -52372,7 +52488,7 @@
       "pl": "Wykonywanie komend jako użytkownik",
       "pt": "Executar comandos como usuário",
       "pt-br": "Executar comandos como usuário",
-      "ru": "Запуск команд от имени пользователя",
+      "ru": "Выполнение команд от имени пользователя",
       "sv": "Kör kommandon som användare",
       "tr": "Kullanıcı olarak komut çalıştırma",
       "zh-chs": "以用户身份运行命令",
@@ -52493,7 +52609,7 @@
       "pl": "Zatrzymaj Agenta (S&)",
       "pt": "S & top agente",
       "pt-br": "Parar agente",
-      "ru": "S & главный агент",
+      "ru": "Остановить агент",
       "sv": "S & toppagent",
       "tr": "Durdurma Aracısı",
       "zh-chs": "停止代理 (&T)"
@@ -52642,6 +52758,7 @@
       "ja": "SMSゲートウェイは、LANモードでの使用が制限されています。",
       "nl": "SMS gateway heeft beperkte mogelijkheden in LAN modus.",
       "pl": "Bramka SMS ma ograniczone zastosowanie w trybie LAN.",
+      "ru": "SMS-шлюз имеет ограниченное применение в LAN режиме.",
       "tr": "SMS ağ geçidinin LAN modunda sınırlı kullanımı vardır.",
       "xloc": [
         "default.handlebars->39->98"
@@ -52758,6 +52875,7 @@
       "ja": "SMTPサーバーはLANモードでの使用が制限されています。",
       "nl": "SMTP server heeft beperkte mogelijkheden in LAN modus.",
       "pl": "Serwer SMTP ma ograniczone wykorzystanie w trybie LAN.",
+      "ru": "SMTP-сервер имеет ограниченное применение в LAN режиме.",
       "tr": "SMTP sunucusunun LAN modunda sınırlı kullanımı vardır.",
       "xloc": [
         "default.handlebars->39->97"
@@ -53309,7 +53427,7 @@
       "pl": "Skanowanie nie przyniosło rezultatów.",
       "pt": "A varredura não retornou resultados.",
       "pt-br": "A varredura não retornou resultados.",
-      "ru": "Сканирование результатов не дало.",
+      "ru": "Сканирование не дало результатов .",
       "sv": "Skanningen gav inga resultat.",
       "tr": "Tarama sonuç döndürmedi.",
       "zh-chs": "扫描未有任何结果。",
@@ -53509,6 +53627,7 @@
       "ja": "ひみつ",
       "nl": "Geheim",
       "pl": "Sekret",
+      "ru": "Ключ",
       "tr": "Gizli",
       "xloc": [
         "default.handlebars->39->192"
@@ -53643,7 +53762,7 @@
       "pl": "Ostrzeżenie Bezpieczeństwa",
       "pt": "Aviso de segurança",
       "pt-br": "Aviso de segurança",
-      "ru": "Предупреждение безопасности",
+      "ru": "Предупреждение системы безопасности",
       "sv": "Säkerhetsvarning",
       "tr": "Güvenlik uyarısı",
       "zh-chs": "安全警告",
@@ -53751,6 +53870,7 @@
       "ja": "日付と時刻を選択...",
       "nl": "Selecteer datum & Tijd...",
       "pl": "Wybierz Datę i Czas...",
+      "ru": "Выберите дату и время...",
       "tr": "Tarih ve Saati Seçin...",
       "xloc": [
         "default.handlebars->39->1051",
@@ -53805,7 +53925,7 @@
       "pl": "Wybierz urządzenie, które chcesz zarejestrować do uwierzytelniania za pomocą powiadomień push. Po wybraniu urządzenia zostanie wyświetlony monit o potwierdzenie.",
       "pt": "Selecione um dispositivo para registrar para autenticação de notificação push. Depois de selecionado, o dispositivo solicitará confirmação.",
       "pt-br": "Selecione um dispositivo para registrar para autenticação de notificação push. Depois de selecionado, o dispositivo solicitará confirmação.",
-      "ru": "Выберите устройство для регистрации для аутентификации с помощью push-уведомлений. После выбора устройство запросит подтверждение.",
+      "ru": "Выберите устройство которое будет использоваться для аутентификации с помощью push-уведомлений. После выбора устройство запросит подтверждение.",
       "sv": "Välj en enhet för att registrera dig för autentisering av push-meddelanden. När du väl har valt kommer enheten att be om bekräftelse.",
       "tr": "Anında iletme bildirimi kimlik doğrulaması için kaydedilecek bir cihaz seçin. Seçildikten sonra, cihaz onay isteyecektir.",
       "zh-chs": "选择要注册推送通知身份验证的设备。选择后，设备将提示确认。",
@@ -54534,6 +54654,7 @@
       "ja": "SendGridサーバーはLANモードでの使用が制限されています。",
       "nl": "SendGrid server heeft beperkte mogelijkeden LAN modus.",
       "pl": "Serwer SendGrid ma ograniczone zastosowanie w trybie LAN.",
+      "ru": "Сервер SendGrid имеет ограниченное применение в LAN режиме.",
       "tr": "SendGrid sunucusunun LAN modunda sınırlı kullanımı vardır.",
       "xloc": [
         "default.handlebars->39->96"
@@ -55231,7 +55352,7 @@
       "pl": "Wybór pliku serwera",
       "pt": "Seleção de arquivo do servidor",
       "pt-br": "Seleção de arquivo do servidor",
-      "ru": "Выбор серверного файла",
+      "ru": "Выбрать файл с сервера",
       "sv": "Val av serverfil",
       "tr": "Sunucu dosyası seçimi",
       "zh-chs": "服务器档案选择",
@@ -55636,6 +55757,7 @@
       "ja": "セッションタイムアウト。",
       "nl": "Sessie timeout.",
       "pl": "Przekroczony czas Sesji.",
+      "ru": "Тайм-аут сеанса.",
       "tr": "Oturum zaman aşımına uğradı.",
       "xloc": [
         "ssh.handlebars->3->20"
@@ -55706,6 +55828,7 @@
       "ja": "クリップボードを設定する",
       "nl": "Klembord instellen",
       "pl": "Ustaw schowek",
+      "ru": "Установить буфер",
       "tr": "Panoyu Ayarla",
       "xloc": [
         "default.handlebars->39->1223"
@@ -55848,7 +55971,7 @@
       "pl": "Plik Ustawień",
       "pt": "Arquivo de configurações",
       "pt-br": "Arquivo de configurações",
-      "ru": "Файл с настройками",
+      "ru": "Файл настроек",
       "sv": "Inställningsfil",
       "tr": "Ayarlar Dosyası",
       "zh-chs": "设定档案",
@@ -56100,6 +56223,7 @@
       "ja": "デバイスをゲストと共有する",
       "nl": "Deel het apparaat met een gast",
       "pl": "Współdziel to urządzenie z gościem",
+      "ru": "Поделиться устройством с гостем",
       "tr": "Cihazı bir misafirle paylaşın",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
@@ -56167,6 +56291,7 @@
       "ja": "デスクトップの共有：{0}",
       "nl": "Bureaublad delen met: {0}",
       "pl": "Współdzielenie pulpitu z: {0}",
+      "ru": "Доступ к рабочему столу предоставлен: {0}",
       "tr": "Masaüstünü şu kişilerle paylaşma: {0}",
       "xloc": [
         "coretranslations.json"
@@ -56214,7 +56339,7 @@
       "pl": "Link do udostępniania nie jest jeszcze ważny.",
       "pt": "O link de compartilhamento ainda não é válido.",
       "pt-br": "O link de compartilhamento ainda não é válido.",
-      "ru": "Ссылка для отправки еще не действительна.",
+      "ru": "Ссылка еще не действительна.",
       "sv": "Delningslänken är inte giltig ännu.",
       "tr": "Bağlantı paylaşımı henüz geçerli değil.",
       "zh-chs": "共享链接无效。",
@@ -56390,7 +56515,7 @@
       "pl": "Pokaż &Zdarzenia...",
       "pt": "Mostrar & eventos ...",
       "pt-br": "Mostrar & Eventos ...",
-      "ru": "Показать и события ...",
+      "ru": "Показать события...",
       "sv": "Visa &Händelser ...",
       "tr": "&Etkinlikleri Göster...",
       "zh-chs": "显示(&Events)..."
@@ -56411,7 +56536,7 @@
       "pl": "Pokaż Nazwy &Grup",
       "pt": "Mostrar nomes de grupos",
       "pt-br": "Mostrar nomes de grupos",
-      "ru": "Показать и названия групп",
+      "ru": "Показать имена групп",
       "sv": "Visa & gruppnamn",
       "tr": "&Grup Adlarını Göster",
       "zh-chs": "显示组名称(&G)"
@@ -56432,7 +56557,7 @@
       "pl": "Pokaż Urządzenia &Offline",
       "pt": "Mostrar dispositivos off-line",
       "pt-br": "Mostrar dispositivos off-line",
-      "ru": "Показать и автономные устройства",
+      "ru": "Показать отключенные устройства",
       "sv": "Visa & Offline-enheter",
       "tr": "&Çevrimdışı Cihazları Göster",
       "zh-chs": "显示离线设备 (&A)"
@@ -56476,6 +56601,7 @@
       "ja": "ゲスト名を表示",
       "nl": "Toon gasten naam",
       "pl": "Pokaż Nazwę Gościa",
+      "ru": "Показать имя гостя",
       "tr": "Misafir Adını Göster"
     },
     {
@@ -56591,6 +56717,7 @@
       "ja": "トラフィックを表示",
       "nl": "Toon verkeer",
       "pl": "Pokaż Ruch",
+      "ru": "Показать трафик",
       "tr": "Trafiği Göster",
       "xloc": [
         "default.handlebars->39->2710"
@@ -56712,7 +56839,7 @@
       "pl": "Pokaż nazwę systemu operacyjnego urządzeń",
       "pt": "Mostrar o nome do sistema operacional dos dispositivos",
       "pt-br": "Mostrar o nome do sistema operacional dos dispositivos",
-      "ru": "Фильтр по имени хоста, заданному в настройках ОС",
+      "ru": "Показывать имя устройства, заданное в настройках операционной системы",
       "sv": "Visa enhetsoperativsystemets namn",
       "tr": "Cihazların işletim sistemi adını göster",
       "zh-chs": "显示设备操作系统名称",
@@ -56737,7 +56864,7 @@
       "pl": "Pokazuj przez 1 minutę",
       "pt": "Mostrar por 1 minuto",
       "pt-br": "Mostrar por 1 minuto",
-      "ru": "Шоу за 1 минуту",
+      "ru": "Показывать 1 минуту",
       "sv": "Visa i 1 minut",
       "tr": "1 dakika göster",
       "zh-chs": "显示1分钟",
@@ -56763,7 +56890,7 @@
       "pl": "Pokazuj przez 10 sekund",
       "pt": "Mostrar por 10 segundos",
       "pt-br": "Mostrar por 10 segundos",
-      "ru": "Шоу за 10 секунд",
+      "ru": "Показывать 10 секунд",
       "sv": "Visa i 10 sekunder",
       "tr": "10 saniye göster",
       "zh-chs": "显示10秒",
@@ -56789,7 +56916,7 @@
       "pl": "Pokazuj przez 5 minut",
       "pt": "Mostrar por 5 minutos",
       "pt-br": "Mostrar por 5 minutos",
-      "ru": "Шоу за 5 минут",
+      "ru": "Показывать 5 минут",
       "sv": "Visa i 5 minuter",
       "tr": "5 dakika göster",
       "zh-chs": "显示5分钟",
@@ -56815,7 +56942,7 @@
       "pl": "Wyświetlaj komunikat do momentu wyłączenia przez użytkownika",
       "pt": "Mostrar mensagem até ser dispensada pelo usuário",
       "pt-br": "Mostrar mensagem até ser dispensada pelo usuário",
-      "ru": "Показывать сообщение, пока не будет отклонено пользователем",
+      "ru": "Показывать сообщение, пока оно не будет закрыто пользователем",
       "sv": "Visa meddelandet, tills det raderas av användaren",
       "tr": "Kullanıcı tarafından reddedilene kadar mesajı göster",
       "zh-chs": "显示消息，直到被用户拒绝",
@@ -56841,7 +56968,7 @@
       "pl": "Pokaż w zasobniku systemowym",
       "pt": "Mostrar na bandeja do sistema",
       "pt-br": "Mostrar na bandeja do sistema",
-      "ru": "Показать на панели задач",
+      "ru": "Показывать в трее",
       "sv": "Visa i systemfältet",
       "tr": "Sistem tepsisinde göster",
       "zh-chs": "在系统托盘上显示"
@@ -56887,7 +57014,7 @@
       "pl": "Zaloguj się używając Azure",
       "pt": "Entrar usando o Azure",
       "pt-br": "Entrar usando o Azure",
-      "ru": "Вход с помощью Azure",
+      "ru": "Войти с помощью Azure",
       "sv": "Logga in med Azure",
       "tr": "Azure kullanarak oturum açın",
       "zh-chs": "使用Azure登录",
@@ -56941,7 +57068,7 @@
       "pl": "Zaloguj się używając Google",
       "pt": "Faça login usando o Google",
       "pt-br": "Faça login usando o Google",
-      "ru": "Войти через Google",
+      "ru": "Войти с помощью Google",
       "sv": "Logga in med Google",
       "tr": "Google kullanarak oturum açın",
       "zh-chs": "使用Google登录",
@@ -57049,7 +57176,7 @@
       "pl": "Zaloguj się używając Twitter",
       "pt": "Faça login usando o Twitter",
       "pt-br": "Faça login usando o Twitter",
-      "ru": "Войти через Twitter",
+      "ru": "Войти с помощью Twitter",
       "sv": "Logga in med Twitter",
       "tr": "Twitter kullanarak oturum açın",
       "zh-chs": "使用Twitter登录",
@@ -58453,7 +58580,7 @@
       "pl": "Podglądane",
       "pt": "Estrelou",
       "pt-br": "Favoritos",
-      "ru": "Помечено",
+      "ru": "Звезда",
       "sv": "Medverkade",
       "tr": "İşaretli",
       "zh-chs": "已加星标",
@@ -58525,7 +58652,7 @@
       "pl": "Czas Uruchomienia",
       "pt": "Hora de início",
       "pt-br": "Hora de início",
-      "ru": "Начальное время",
+      "ru": "Время начала",
       "sv": "Starttid",
       "tr": "Başlangıç ​​saati",
       "zh-chs": "开始时间",
@@ -58631,7 +58758,7 @@
       "pl": "Uruchomienie sesji pulpitu \\\"{0}\\\" od {1} do {2}",
       "pt": "Sessão de desktop iniciada \\\"{0}\\\" de {1} a {2}",
       "pt-br": "Sessão de desktop iniciada \\\"{0}\\\" de {1} a {2}",
-      "ru": "Начат сеанс рабочего стола \\\"{0}\\\" с {1} до {2}",
+      "ru": "Начат сеанс рабочего стола \\\"{0}\\\" от {1} к {2}",
       "sv": "Startade skrivbordsession \\\"{0}\\\" från {1} till {2}",
       "tr": "{1} ile {2} arasında \\\"{0}\\\" masaüstü oturumu başlatıldı",
       "zh-chs": "从{1}到{2}开始了桌面会话“{0}”",
@@ -58656,7 +58783,7 @@
       "pl": "Uruchomiona sesja zarządzania plikami \\\"{0}\\\" od {1} do {2}",
       "pt": "Sessão de gerenciamento de arquivo iniciada \\\"{0}\\\" de {1} a {2}",
       "pt-br": "Sessão de gerenciamento de arquivo iniciada \\\"{0}\\\" de {1} a {2}",
-      "ru": "Начат сеанс управления файлами \\\"{0}\\\" с {1} до {2}",
+      "ru": "Начат сеанс управления файлами \\\"{0}\\\" от {1} к {2}",
       "sv": "Startade filhanteringssession \\\"{0}\\\" från {1} till {2}",
       "tr": "Dosya yönetimi oturumu \\\"{0}\\\" {1} ile {2} arasında başlatıldı",
       "zh-chs": "从{1}到{2}开始文件管理会话“{0}”",
@@ -58705,7 +58832,7 @@
       "pl": "Rozpoczęto sesję przekierowania \\\"{0}\\\" od {1} do {2}",
       "pt": "Sessão de retransmissão iniciada \\\"{0}\\\" de {1} para {2}",
       "pt-br": "Sessão de retransmissão iniciada \\\"{0}\\\" de {1} para {2}",
-      "ru": "Начат сеанс ретрансляции \\\"{0}\\\" с {1} до {2}",
+      "ru": "Начат сеанс ретрансляции \\\"{0}\\\" от {1} к {2}",
       "sv": "Startade reläsession \\\"{0}\\\" från {1} till {2}",
       "tr": "\\\"{0}\\\" geçiş oturumu {1} ile {2} arasında başlatıldı",
       "zh-chs": "从{1}到{2}开始中继会话“{0}”",
@@ -58780,7 +58907,7 @@
       "pl": "Uruchamianie dostępu do zdalnych plików z wysuwanym powiadomieniem",
       "pt": "Arquivos remotos iniciados com notificação do sistema",
       "pt-br": "Arquivos remotos iniciados com notificação do sistema",
-      "ru": "Запущены удаленные файлы с всплывающим уведомлением",
+      "ru": "Удаленное управление файлами запущено с всплывающим уведомлением",
       "sv": "Startade fjärrfiler med toastavisering",
       "tr": "Tost bildirimiyle birlikte uzak dosyalar başlatıldı",
       "zh-chs": "启动带有Toast通知的远程文件",
@@ -58805,7 +58932,7 @@
       "pl": "Uruchamianie dostępu do zdalnych plików bez powiadomienia",
       "pt": "Arquivos remotos iniciados sem notificação",
       "pt-br": "Arquivos remotos iniciados sem notificação",
-      "ru": "Запущены удаленные файлы без уведомления",
+      "ru": "Удаленное управление файлами запущено без уведомления",
       "sv": "Startade fjärrfiler utan avisering",
       "tr": "Uzak dosyalar bildirimde bulunmadan başlatıldı",
       "zh-chs": "已启动的远程文件，恕不另行通知",
@@ -58830,7 +58957,7 @@
       "pl": "Rozpoczęto sesję terminala \\\"{0}\\\" od {1} do {2}",
       "pt": "Sessão de terminal iniciada \\\"{0}\\\" de {1} a {2}",
       "pt-br": "Sessão de terminal iniciada \\\"{0}\\\" de {1} a {2}",
-      "ru": "Начат сеанс терминала \\\"{0}\\\" с {1} до {2}",
+      "ru": "Начат сеанс терминала \\\"{0}\\\" от {1} к {2}",
       "sv": "Startade terminalsession \\\"{0}\\\" från {1} till {2}",
       "tr": "{1} ile {2} arasında \\\"{0}\\\" terminal oturumu başlatıldı",
       "zh-chs": "从{1}到{2}开始了终端会话“{0}”",
@@ -58855,7 +58982,7 @@
       "pl": "Od teraz",
       "pt": "Começando agora",
       "pt-br": "Começando agora",
-      "ru": "Начиная сейчас",
+      "ru": "Прямо сейчас",
       "sv": "Från och med nu",
       "tr": "Şimdi başlıyor",
       "zh-chs": "现在开始",
@@ -58880,7 +59007,7 @@
       "pl": "Uruchamianie pulpitu zdalnego po zaakceptowaniu przez użytkownika lokalnego",
       "pt": "Iniciando a área de trabalho remota após a aceitação do usuário local",
       "pt-br": "Iniciando a área de trabalho remota após a aceitação do usuário local",
-      "ru": "Запуск удаленного рабочего стола после принятия локальным пользователем",
+      "ru": "Запуск удаленного рабочего стола после согласия локального пользователя",
       "sv": "Startar fjärrskrivbord efter att lokal användare har accepterat",
       "tr": "Yerel kullanıcı kabul ettikten sonra uzak masaüstünü başlatma",
       "zh-chs": "接受本地用户后启动远程桌面",
@@ -58905,7 +59032,7 @@
       "pl": "Uruchamianie dostępu do zdalnych plików po zaakceptowaniu przez użytkownika lokalnego",
       "pt": "Iniciando arquivos remotos após a aceitação do usuário local",
       "pt-br": "Iniciando arquivos remotos após a aceitação do usuário local",
-      "ru": "Запуск удаленных файлов после принятия локальным пользователем",
+      "ru": "Запуск удаленного управления файлами после согласия локального пользователя",
       "sv": "Starta fjärrfiler efter att lokal användare har accepterat",
       "tr": "Yerel kullanıcı kabul ettikten sonra uzak dosyaları başlatma",
       "zh-chs": "本地用户接受后启动远程文件",
@@ -59002,7 +59129,7 @@
       "pl": "Statystyki...",
       "pt": "Estatísticas...",
       "pt-br": "Estatísticas...",
-      "ru": "Статистика ...",
+      "ru": "Статистика...",
       "sv": "Statistik ...",
       "tr": "İstatistikler...",
       "zh-chs": "统计..."
@@ -59192,7 +59319,7 @@
       "pl": "Magazyn danych",
       "pt": "Armazenamento",
       "pt-br": "Armazenar",
-      "ru": "Место хранения",
+      "ru": "Хранилище",
       "sv": "Lagring",
       "tr": "Depolama",
       "zh-chs": "储存",
@@ -59596,6 +59723,7 @@
       "ja": "スイッチ",
       "nl": "Schakelaar",
       "pl": "Przełącz",
+      "ru": "Свитч",
       "tr": "Değiştirmek",
       "xloc": [
         "default-mobile.handlebars->11->247",
@@ -59643,6 +59771,7 @@
       "ja": "スイッチポートが接続されています",
       "nl": "Schakelpoort verbonden",
       "pl": "Przełącz połączony port",
+      "ru": "Порт свитча подключен",
       "tr": "Bağlantı noktasını değiştir",
       "xloc": [
         "default.handlebars->39->911",
@@ -59662,6 +59791,7 @@
       "ja": "スイッチポートを使用する準備が整いました。",
       "nl": "Schakelpoort is klaar voor gebruik..",
       "pl": "Przełącz port na gotowy do użycia.",
+      "ru": "Порт свитча готов к использованию.",
       "tr": "Anahtar portu kullanıma hazırdır.",
       "xloc": [
         "default.handlebars->39->358"
@@ -59705,6 +59835,7 @@
       "ja": "サーバーデバイス名をポート名に同期する",
       "nl": "Synchroniseer de naam van de server met de poortnaam",
       "pl": "Synchronizuj nazwę urządzenia serwera na nazwę portu",
+      "ru": "Синхронизировать имя устройства сервера с именем порта",
       "tr": "Sunucu cihaz adını bağlantı noktası adıyla senkronize et",
       "xloc": [
         "default.handlebars->39->1948"
@@ -59892,7 +60023,7 @@
       "pl": "TCP przekierowanie",
       "pt": "Retransmissão TCP",
       "pt-br": "Retransmissão TCP",
-      "ru": "Реле TCP",
+      "ru": "TCP релей",
       "sv": "TCP-relä",
       "tr": "TCP rölesi",
       "zh-chs": "TCP中继"
@@ -60127,7 +60258,7 @@
       "pl": "Tagowane",
       "pt": "Marcado",
       "pt-br": "Etiquetado",
-      "ru": "Помечено",
+      "ru": "Есть теги",
       "sv": "Taggade",
       "tr": "Etiketli",
       "zh-chs": "已标记",
@@ -60184,7 +60315,7 @@
       "pl": "Zapamiętaj tę nazwę użytkownika i hasło, hasło nie może być pokazane ponownie.",
       "pt": "Anote este nome de usuário e senha, a senha não pode ser exibida novamente.",
       "pt-br": "Anote este nome de usuário e senha, a senha não pode ser exibida novamente.",
-      "ru": "Обратите внимание на это имя пользователя и пароль, пароль не может быть показан снова.",
+      "ru": "Сохраните это имя пользователя и пароль, пароль не может быть показан снова.",
       "sv": "Notera detta användarnamn och lösenord, lösenordet kan inte visas igen.",
       "tr": "Bu kullanıcı adı ve şifreyi not alın, şifre tekrar gösterilemez.",
       "zh-chs": "记下这个用户名和密码，密码不能再次显示。",
@@ -60373,7 +60504,7 @@
       "pl": "Powiadomienia Terminala",
       "pt": "Notificação - terminal",
       "pt-br": "Notificação de Terminal",
-      "ru": "Терминал уведомление",
+      "ru": "Терминал: уведомить",
       "sv": "Terminalavisering",
       "tr": "Komut Satırı Bildirimi",
       "zh-chs": "终端通知",
@@ -60401,7 +60532,7 @@
       "pl": "Zapytanie o Terminal",
       "pt": "Prompt do terminal",
       "pt-br": "Prompt de Terminal",
-      "ru": "Запрос терминала",
+      "ru": "Терминал: запросить",
       "sv": "Terminalprompt",
       "tr": "Komut Satırı",
       "zh-chs": "终端提示",
@@ -60584,6 +60715,7 @@
       "ja": "デバイスの電源がオフになっています",
       "nl": "Het apparaat is uitgeschakeld",
       "pl": "To urządzenie jest wyłączone",
+      "ru": "Устройство выключено",
       "tr": "Cihaz kapalı",
       "xloc": [
         "default-mobile.handlebars->11->246",
@@ -60629,6 +60761,7 @@
       "ja": "次のデバイスは接続状態を変更しました。",
       "nl": "De volgende apparaten hebben hun verbindingsstatus gewijzigd.",
       "pl": "Przedstawione urządzenia zmieniły stan połączenia.",
+      "ru": "Следующие устройства изменили свое состояние подключения.",
       "tr": "Aşağıdaki cihazlar bağlantı durumlarını değiştirdi.",
       "xloc": [
         "device-notify.html->2->3->1",
@@ -60651,7 +60784,7 @@
       "pl": "Graficzna wersja tego instalatora nie może być uruchomiona na tym systemie.",
       "pt": "A versão gráfica deste instalador não pode ser executada neste sistema",
       "pt-br": "A versão gráfica deste instalador não pode ser executada neste sistema",
-      "ru": "Графическая версия этого установщика не может работать в этой системе",
+      "ru": "Графическая версия этого установщика не может быть запущена в этой системе.",
       "sv": "Den grafiska versionen av detta installationsprogram kan inte köras på detta system",
       "tr": "Bu yükleyicinin grafik versiyonu bu sistemde çalıştırılamaz",
       "zh-chs": "此安装程序的图形版本无法在此系统上运行",
@@ -60670,6 +60803,7 @@
       "ja": "このインストーラーのグラフィカルバージョンは、このシステムでは実行できません",
       "nl": "De grafische versie van dit installatieprogramma kan niet op dit systeem draaien",
       "pl": "Graficzna wersja tego instalatora nie może być uruchomiona w tym systemie",
+      "ru": "Графическая версия этого установщика не может быть запущена в этой системе.",
       "tr": "Bu yükleyicinin grafik sürümü bu sistemde çalışamaz",
       "xloc": [
         "agent-translations.json"
@@ -60691,7 +60825,7 @@
       "pl": "Graficzna wersja tego instalatora nie może być uruchomiona w tym systemie.",
       "pt": "A versão gráfica deste instalador não pode ser executada neste sistema",
       "pt-br": "A versão gráfica deste instalador não pode ser executada neste sistema",
-      "ru": "Графическая версия этого установщика не может работать в этой системе.",
+      "ru": "Графическая версия этого установщика не может быть запущена в этой системе.",
       "sv": "Den grafiska versionen av detta installationsprogram kan inte köras på detta system",
       "tr": "Bu yükleyicinin grafik versiyonu bu sistemde çalışamaz",
       "zh-chs": "此安装程序Canot的图形版本在此系统上运行",
@@ -60985,7 +61119,7 @@
       "pl": "Jest to plik wykonywalny na systemach operacyjnych z graficznym interfejsem użytkownika. Musisz wykonać komendę 'chmod +x meshagent' i uruchomić ten plik.",
       "pt": "Este é um executável em sistemas operacionais com interfaces gráficas de usuário. Você precisa 'chmod + x meshagent' e executar este arquivo.",
       "pt-br": "Este é um executável em sistemas operacionais com interfaces gráficas de usuário. Você precisa 'chmod + x meshagent' e executar este arquivo.",
-      "ru": "Это исполняемый файл в ОС с графическим пользовательским интерфейсом. Вам нужно «chmod + x meshagent» и запустить этот файл.",
+      "ru": "Это исполняемый файл для ОС с графическим пользовательским интерфейсом. Вам нужно выполнить «chmod + x meshagent» и запустить этот файл.",
       "sv": "Detta är en körbar på operativsystem med grafiska användargränssnitt. Du måste 'chmod + x meshagent' och köra den här filen.",
       "tr": "Bu, grafik kullanıcı arayüzlerine sahip işletim sistemlerinde çalıştırılabilir bir dosyadır. 'chmod + x meshagent' yapmanız ve bu dosyayı çalıştırmanız gerekir.",
       "zh-chs": "这是OS图形用户界面上的可执行档案。您需要'chmod + x meshagent'并运行此档案。",
@@ -61032,7 +61166,7 @@
       "pl": "To jest sesja udostępniania gości",
       "pt": "Esta é uma sessão de compartilhamento de convidados",
       "pt-br": "Esta é uma sessão de compartilhamento de convidados",
-      "ru": "Это гостевой сеанс обмена",
+      "ru": "Это гостевой сеанс общего доступа",
       "sv": "Detta är en gästdelningssession",
       "tr": "Bu bir misafir paylaşım oturumu",
       "zh-chs": "这是嘉宾分享环节",
@@ -61059,7 +61193,7 @@
       "pl": "Jest to portal do zdalnego zarządzania i pomocy technicznej dla komputerów.",
       "pt": "Este é um portal para gerenciamento e suporte remotos de computadores.",
       "pt-br": "Este é um portal para gerenciamento e suporte remoto de computador.",
-      "ru": "Это портал для удаленного управления и поддержки компьютера.",
+      "ru": "Это портал для удаленного управления и поддержки компьютеров.",
       "sv": "Detta är en portal för datorns fjärrhantering och support.",
       "tr": "Bu, bilgisayarın uzaktan yönetimi ve desteği için bir portaldır.",
       "zh-chs": "这是计算机远程管理和支持的入口网站。",
@@ -61352,7 +61486,7 @@
       "pl": "Nie spowoduje to usunięcia urządzeń z serwera, ale urządzenia nie będą mogły łączyć się z serwerem. Utracony zostanie cały zdalny dostęp do urządzeń. Aby to polecenie zadziałało, urządzenia muszą być podłączone.",
       "pt": "Isso não removerá os dispositivos do servidor, mas os dispositivos não poderão mais se conectar ao servidor. Todo o acesso remoto aos dispositivos será perdido. Os dispositivos devem estar conectados para que este comando funcione.",
       "pt-br": "Isso não removerá os dispositivos do servidor, mas os dispositivos não poderão mais se conectar ao servidor. Todo o acesso remoto aos dispositivos será perdido. Os dispositivos devem estar conectados para que este comando funcione.",
-      "ru": "Это не приведет к удалению устройств с сервера, но они больше не смогут подключаться к серверу. Весь удаленный доступ к устройствам будет потерян. Устройства должны быть подключены, чтобы эта команда работала.",
+      "ru": "Это не приведет к удалению устройств с сервера, но они больше не смогут подключаться к серверу. Удаленный доступ к устройствам будет потерян. Чтобы эта команда сработала, устройства должны быть подключены, ",
       "sv": "Detta tar inte bort enheterna från servern, men enheterna kan inte längre ansluta till servern. All fjärråtkomst till enheterna förloras. Enheterna måste vara anslutna för att detta kommando ska fungera.",
       "tr": "Bu, cihazları sunucudan kaldırmaz, ancak cihazlar artık sunucuya bağlanamaz. Cihazlara tüm uzaktan erişim kaybedilecektir. Bu komutun çalışması için cihazların bağlı olması gerekir.",
       "zh-chs": "这不会从服务器上删除该设备，但是该设备将不再能够连接到服务器。该设备的所有远程访问都将丢失。该设备必须连线，此命令才能起作用。",
@@ -61377,7 +61511,7 @@
       "pl": "Nie spowoduje to usunięcia urządzenia z serwera, ale urządzenie nie będzie mogło łączyć się z serwerem. Utracony zostanie cały zdalny dostęp do urządzenia. Aby to polecenie zadziałało, urządzenie musi być podłączone.",
       "pt": "Isso não removerá este dispositivo do servidor, mas o dispositivo não poderá mais se conectar ao servidor. Todo o acesso remoto ao dispositivo será perdido. O dispositivo deve estar conectado para que este comando funcione.",
       "pt-br": "Isso não removerá este dispositivo do servidor, mas o dispositivo não será mais capaz de se conectar ao servidor. Todo o acesso remoto ao dispositivo será perdido. O dispositivo deve estar conectado para que este comando funcione.",
-      "ru": "Это не приведет к удалению этого устройства с сервера, но оно больше не сможет подключаться к серверу. Весь удаленный доступ к устройству будет потерян. Для работы этой команды устройство должно быть подключено.",
+      "ru": "Это не приведет к удалению этого устройства с сервера, но оно больше не сможет подключаться к серверу. Удаленный доступ к устройству будет потерян. Чтобы эта команда сработала, устройство должно быть подключено, ",
       "sv": "Detta tar inte bort den här enheten från servern, men enheten kan inte längre ansluta till servern. All fjärråtkomst till enheten går förlorad. Enheten måste vara ansluten för att detta kommando ska fungera.",
       "tr": "Bu, bu cihazı sunucudan kaldırmayacak, ancak cihaz artık sunucuya bağlanamayacaktır. Cihaza tüm uzaktan erişim kaybedilecek. Bu komutun çalışması için cihazın bağlanması gerekir.",
       "zh-chs": "这不会从服务器上删除该设备，但是该设备将不再能够连接到服务器。该设备的所有远程访问都将丢失。该设备必须连线，此命令才能起作用。",
@@ -61561,7 +61695,7 @@
       "pl": "Tytuł",
       "pt": "Título",
       "pt-br": "Título",
-      "ru": "заглавие",
+      "ru": "Заголовок",
       "sv": "Titel",
       "tr": "Başlık",
       "zh-chs": "标题",
@@ -61948,6 +62082,7 @@
       "ja": "退会するには、",
       "nl": "Uitschrijven,",
       "pl": "By się wypisać.",
+      "ru": "Чтобы отписаться,",
       "tr": "Abonelikten çıkmak,",
       "xloc": [
         "device-notify.html->2->9->1"
@@ -61966,6 +62101,7 @@
       "ja": "登録を解除するには、次のメッセージが表示されてから1時間以内に次のリンクを読み込みます：[[[SERVERURL]]] [[[[UNSUBSCRIBELINK]]]",
       "nl": "Om je af te melden, open je deze link binnen 1 uur nadat je dit bericht hebt ontvangen: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "pl": "By się wypisać, załaduj ten link w ciągu 1 godziny od otrzymania wiadomości: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
+      "ru": "Чтобы отказаться от подписки, откройте эту ссылку в течение 1 часа после получения этого сообщения: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "tr": "Aboneliğinizi iptal etmek için, bu mesajı aldıktan sonraki 1 saat içinde bu bağlantıyı yükleyin: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]",
       "xloc": [
         "device-notify.txt"
@@ -61987,7 +62123,7 @@
       "pl": "Wysuwane Powiadomienie",
       "pt": "Notificação de brinde",
       "pt-br": "Notificação de brinde",
-      "ru": "Уведомление о тосте",
+      "ru": "Уведомление в трее (тост)",
       "sv": "Toastmeddelande",
       "tr": "Tost Bildirimi",
       "zh-chs": "吐司通知",
@@ -62038,7 +62174,7 @@
       "pl": "Przełącznik Gwiazdy.",
       "pt": "Alternar estrela",
       "pt-br": "Alternar Favorito",
-      "ru": "Переключить звезду",
+      "ru": "Доб/удал звезду",
       "sv": "Växla stjärna",
       "tr": "İşaretle",
       "zh-chs": "切换星",
@@ -62090,7 +62226,7 @@
       "pl": "Przełączanie trybu ostrości, gdy aktywny tylko region wokół myszy jest aktualizowany",
       "pt": "Alternar modo de foco, quando ativo, apenas a região ao redor do mouse é atualizada",
       "pt-br": "Alternar o modo de foco, quando ativo, apenas a região ao redor do mouse é atualizada",
-      "ru": "Переключить режим фокусировки, когда активно обновление только области вокруг мыши",
+      "ru": "Вкл/Выкл режим фокусировки, когда включен обновляется только область вокруг мыши",
       "sv": "Växla fokusläge, när det är aktivt, uppdateras endast regionen runt musen",
       "tr": "Odak modunu değiştir, aktif olduğunda sadece farenin etrafındaki bölge güncellenir",
       "zh-chs": "切换焦点模式，现用中仅更新鼠标周围的区域",
@@ -62196,7 +62332,7 @@
       "pl": "Przełączanie tła pulpitu zdalnego",
       "pt": "Alternar plano de fundo da área de trabalho remota",
       "pt-br": "Alternar plano de fundo da área de trabalho remota",
-      "ru": "Переключить фон удаленного рабочего стола",
+      "ru": "Вкл/Выкл фон удаленного рабочего стола",
       "sv": "Växla fjärrskrivbordsbakgrund",
       "tr": "Uzak masaüstü arka planını değiştir",
       "zh-chs": "切换远程桌面背景",
@@ -62830,6 +62966,7 @@
       "ja": "消す",
       "nl": "Uitschakelen",
       "pl": "Wyłącz",
+      "ru": "Выключить",
       "tr": "Kapat",
       "xloc": [
         "default-mobile.handlebars->11->324",
@@ -62851,6 +62988,7 @@
       "ja": "消す。",
       "nl": "Uitschakelen",
       "pl": "Wyłącz.",
+      "ru": "Выключить.",
       "tr": "Kapat.",
       "xloc": [
         "default.handlebars->39->2262"
@@ -62869,6 +63007,7 @@
       "ja": "オンにする",
       "nl": "Inschakelen",
       "pl": "Włącz",
+      "ru": "Включить",
       "tr": "Aç",
       "xloc": [
         "default-mobile.handlebars->11->326",
@@ -62890,6 +63029,7 @@
       "ja": "オンにする。",
       "nl": "Inschakelen.",
       "pl": "Włącz.",
+      "ru": "Включить.",
       "tr": "Aç.",
       "xloc": [
         "default.handlebars->39->2261"
@@ -62957,7 +63097,7 @@
       "pl": "Wpisz",
       "pt": "Tipo",
       "pt-br": "Digite",
-      "ru": "Удаленный ввод",
+      "ru": "Тип",
       "sv": "Typ",
       "tr": "Yazı",
       "zh-chs": "类型",
@@ -63089,7 +63229,7 @@
       "pl": "Przekierowanie UDP",
       "pt": "Retransmissão UDP",
       "pt-br": "Retransmissão UDP",
-      "ru": "UDP реле",
+      "ru": "UDP релей",
       "sv": "UDP-relä",
       "tr": "UDP rölesi",
       "zh-chs": "UDP中继"
@@ -63499,6 +63639,7 @@
       "ja": "CloudFlareの信頼できるプロキシIPv6アドレスリストを読み込めません。",
       "nl": "Kan CloudFlare vertrouwde proxy IPv6 adreslijst niet laden.",
       "pl": "Nie można załadować listy adresów IPv6 zaufanego serwera proxy CloudFlare.",
+      "ru": "Не удалось загрузить список IPv6 адресов доверенных прокси-серверов CloudFlare.",
       "tr": "CloudFlare güvenilir proxy IPv6 adres listesi yüklenemiyor.",
       "xloc": [
         "default.handlebars->39->95"
@@ -63517,6 +63658,7 @@
       "ja": "デフォルトドメインのIntelAMTTLSルート証明書を読み込めません。",
       "nl": "Kan Intel AMT TLS rootcertificaat voor standaarddomein niet laden.",
       "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny domyślnej.",
+      "ru": "Не удалось загрузить корневой сертификат Intel AMT TLS для домена по умолчанию.",
       "tr": "Varsayılan etki alanı için Intel AMT TLS kök sertifikası yüklenemiyor.",
       "xloc": [
         "default.handlebars->39->84"
@@ -63535,6 +63677,7 @@
       "ja": "ドメイン{0}のIntelAMTTLSルート証明書を読み込めません。",
       "nl": "Kan Intel AMT TLS rootcertificaat voor domein {0} niet laden.",
       "pl": "Nie można załadować certyfikatu głównego Intel AMT TLS dla domeny {0}.",
+      "ru": "Не удалось загрузить корневой сертификат Intel AMT TLS для домена {0}.",
       "tr": "{0} alanı için Intel AMT TLS kök sertifikası yüklenemiyor.",
       "xloc": [
         "default.handlebars->39->85"
@@ -63676,6 +63819,7 @@
       "ja": "Let'sEncryptモジュールをセットアップできません。",
       "nl": "Kan de Let's Encrypt module niet instellen.",
       "pl": "Nie można skonfigurować modułu Let's Encrypt.",
+      "ru": "Не удалось настроить модуль Let's Encrypt.",
       "tr": "Let's Encrypt modülü kurulamıyor.",
       "xloc": [
         "default.handlebars->39->92"
@@ -64030,6 +64174,7 @@
       "ja": "不明なユーザー",
       "nl": "Onbekende gebruiker",
       "pl": "Nieznany Użytkownik",
+      "ru": "Неизвестный пользователь",
       "tr": "Bilinmeyen kullanıcı",
       "xloc": [
         "default.handlebars->39->2738",
@@ -64157,7 +64302,7 @@
       "pl": "Odblokuj konto",
       "pt": "Desbloquear a conta",
       "pt-br": "Desbloquear a conta",
-      "ru": "Разблокировать аккаунт",
+      "ru": "Разблокировать учетную запись",
       "sv": "Lås upp konto",
       "tr": "Hesabın kilidini aç",
       "zh-chs": "解锁帐户",
@@ -64203,6 +64348,7 @@
       "ja": "認識されない構成オプション\\\"{0}\\\"。",
       "nl": "Niet herkende configuratie instelling \\\"{0}\\\".",
       "pl": "Nierozpoznana opcja konfiguracji \\\"{0}\\\".",
+      "ru": "Неизвестный параметр конфигурации \\\"{0}\\\".",
       "tr": "Tanınmayan yapılandırma seçeneği \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->82"
@@ -64830,7 +64976,7 @@
       "pl": "Stosowanie",
       "pt": "Uso",
       "pt-br": "Uso",
-      "ru": "использование",
+      "ru": "Использование",
       "sv": "Användande",
       "tr": "kullanım",
       "zh-chs": "用法",
@@ -64930,7 +65076,7 @@
       "pl": "Użyj do aktywacji sieci LAN w trybie bare-metal.",
       "pt": "Use para ativação de LAN bare-metal.",
       "pt-br": "Use para ativação de LAN bare-metal.",
-      "ru": "Используется для активации LAN без операционной системы.",
+      "ru": "Используется для LAN активации без операционной системы.",
       "sv": "Används för att aktivera bare-metall LAN-aktivering.",
       "tr": "Çıplak metal LAN aktivasyonu için kullanın.",
       "zh-chs": "用于裸机 LAN 激活。",
@@ -65166,7 +65312,7 @@
       "pl": "Użytkownicy Autoryzowani",
       "pt": "Autorizações de usuário",
       "pt-br": "Autorizações de usuário",
-      "ru": "Полномочия пользователя",
+      "ru": "Права пользователей",
       "sv": "Användarbehörigheter",
       "tr": "Kullanıcı Yetkileri",
       "zh-chs": "用户授权",
@@ -65602,6 +65748,7 @@
       "ja": "ユーザートラフィックの使用",
       "nl": "Gebruik van gebruikersverkeer",
       "pl": "Wykorzystanie Pasma przez Użytkownika",
+      "ru": "Расход трафика пользователями",
       "tr": "Kullanıcı Trafiği Kullanımı",
       "xloc": [
         "default.handlebars->39->2695"
@@ -65899,6 +66046,7 @@
       "ja": "ユーザー通知が変更されました",
       "nl": "Gebruikersmeldingen gewijzigd",
       "pl": "Powiadomienia użytkownika zmieniono",
+      "ru": "Уведомления пользователей изменены",
       "tr": "Kullanıcı bildirimleri değişti",
       "xloc": [
         "default.handlebars->39->2259"
@@ -66014,7 +66162,7 @@
       "pl": "Nazwa użytkownika Hasło",
       "pt": "Usuário senha",
       "pt-br": "Usuario Contraseña",
-      "ru": "Имя пользователя Пароль",
+      "ru": "Имя пользователя и пароль",
       "sv": "Användarnamn Lösenord",
       "tr": "Kullanıcı adı Şifre",
       "zh-chs": "用户名密码",
@@ -66303,7 +66451,7 @@
       "pl": "Poprawnie zalogowano",
       "pt": "Login válido",
       "pt-br": "Login válido",
-      "ru": "Действительный логин",
+      "ru": "Удачный вход",
       "sv": "Giltig inloggning",
       "tr": "Geçerli giriş",
       "zh-chs": "有效登录",
@@ -66378,7 +66526,7 @@
       "pl": "Okres Działania",
       "pt": "Validade",
       "pt-br": "Validade",
-      "ru": "Срок действия",
+      "ru": "Начнет действовать",
       "sv": "Giltighet",
       "tr": "Geçerlilik",
       "zh-chs": "有效期",
@@ -66403,7 +66551,7 @@
       "pl": "Wartość",
       "pt": "Valor",
       "pt-br": "Valor",
-      "ru": "Ценить",
+      "ru": "Строка",
       "sv": "Värde",
       "tr": "Değer",
       "zh-chs": "价值",
@@ -66531,7 +66679,7 @@
       "pl": "Zweryfikowany e-mail {0} dla konta użytkownika {1}.",
       "pt": "E-mail verificado {0} para conta de usuário {1}.",
       "pt-br": "E-mail verificado {0} para conta de usuário {1}.",
-      "ru": "Подтвержденный адрес электронной почты {0} для учетной записи пользователя {1}.",
+      "ru": "Подтвержден адрес электронной почты {0} для учетной записи пользователя {1}.",
       "sv": "Verifierad e-post {0} för användarkonto {1}.",
       "tr": "{1} kullanıcı hesabı için {0} doğrulanmış e-posta.",
       "zh-chs": "用户帐户{1}的已验证电邮{0}。",
@@ -66584,7 +66732,7 @@
       "pl": "Zweryfikowany numer telefonu użytkownika {0}",
       "pt": "Número de telefone verificado do usuário {0}",
       "pt-br": "Número de telefone verificado do usuário {0}",
-      "ru": "Подтвержденный номер телефона пользователя {0}",
+      "ru": "Подтвержден номер телефона пользователя {0}",
       "sv": "Verifierat telefonnummer för användare {0}",
       "tr": "{0} kullanıcısının doğrulanmış telefon numarası",
       "zh-chs": "用户{0}的已验证电话号码",
@@ -66841,7 +66989,7 @@
       "pl": "Pokaż Wszystkie Zdarzenia",
       "pt": "Ver todos os eventos",
       "pt-br": "Ver todos os eventos",
-      "ru": "Просмотреть все события",
+      "ru": "Просмотр всех событий",
       "sv": "Visa alla händelser",
       "tr": "Tüm Olayları Görüntüle",
       "zh-chs": "查看所有事件",
@@ -67297,7 +67445,7 @@
       "pl": "Wybudź",
       "pt": "Despertar",
       "pt-br": "Despertar",
-      "ru": "Услуга",
+      "ru": "Разбудить",
       "sv": "Väck",
       "tr": "Uyandır",
       "zh-chs": "唤醒",
@@ -67479,6 +67627,7 @@
       "ja": "Webページの通知",
       "nl": "Webpagina meldingen",
       "pl": "Powiadomienia Strony Web",
+      "ru": "Веб Push-уведомления",
       "tr": "Web Sayfası Bildirimleri",
       "xloc": [
         "default.handlebars->39->2053",
@@ -67498,6 +67647,7 @@
       "ja": "Web電源スイッチ7",
       "nl": "Web Power Switch 7",
       "pl": "Przełącznik Zasilania Web 7",
+      "ru": "Web Power Switch 7",
       "tr": "Web Güç Anahtarı 7",
       "xloc": [
         "default.handlebars->39->1754"
@@ -67643,6 +67793,7 @@
       "ja": "Web-SFTP",
       "nl": "Web-SFTP",
       "pl": "Web-SFTP",
+      "ru": "Web-SFTP",
       "tr": "Web-SFTP",
       "xloc": [
         "default.handlebars->39->2731"
@@ -67761,6 +67912,7 @@
       "ja": "WebSocket圧縮が無効になっているため、この機能はNodeJSv11.11からv12.15およびv13.2で機能しなくなります。",
       "nl": "WebSocket compressie is uitgeschakeld, deze functie werkt niet meer in NodeJS v11.11 tot v12.15 en v13.2",
       "pl": "Kompresja WebSocket jest wyłączona, ta funkcja nie działa w NodeJS v11.11 do v12.15 i v13.2",
+      "ru": "Сжатие WebSocket отключено, эта функция не работает в NodeJS v11..с 11 по 12 версию.15 и v13.2",
       "tr": "WebSocket sıkıştırması devre dışı, bu özellik NodeJS v11.11'den v12.15'e ve v13.2'de bozuk",
       "xloc": [
         "default.handlebars->39->83"
@@ -67802,6 +67954,7 @@
       "it": "settimanalmente",
       "ja": "毎週",
       "nl": "Wekelijks",
+      "ru": "Еженедельно",
       "tr": "Haftalık",
       "xloc": [
         "default.handlebars->39->269"
@@ -67925,7 +68078,7 @@
       "pl": "Po włączeniu tej opcji, przy każdym logowaniu, będziesz miał możliwość otrzymania tokena logowania na swoje konto e-mail w celu zwiększenia bezpieczeństwa.",
       "pt": "Quando ativado, em cada login, você terá a opção de receber um token de login na sua conta de email para aumentar a segurança.",
       "pt-br": "Quando ativado, em cada login, você terá a opção de receber um token de login para sua conta de e-mail para aumentar a segurança.",
-      "ru": "При включении при каждом входе в систему вам будет предоставлена возможность получать токен для входа в свою учетную запись электронной почты для обеспечения дополнительной безопасности.",
+      "ru": "Когда этот параметр включен, при каждом входе в систему вам будет предоставлена возможность получать токен для входа в свою учетную запись на электронную почту для обеспечения дополнительной безопасности.",
       "sv": "När det är aktiverat får du vid varje inloggning möjlighet att få en inloggningstoken till ditt e-postkonto för ökad säkerhet.",
       "tr": "Etkinleştirildiğinde, her girişte, ek güvenlik için e-posta hesabınıza bir giriş anahtarı alma seçeneği verilecektir.",
       "zh-chs": "启用后，每次登录时，您都可以选择向电邮帐户接收登录保安编码，以提高安全性。",
@@ -69062,7 +69215,7 @@
       "pl": "Xhosa",
       "pt": "Xhosa",
       "pt-br": "Xhosa",
-      "ru": "Кос",
+      "ru": "Xhosa",
       "sv": "Xhosa",
       "tr": "Xhosa",
       "zh-chs": "科萨",
@@ -69285,7 +69438,7 @@
       "pl": "Zip",
       "pt": "Fecho eclair",
       "pt-br": "Zip",
-      "ru": "Почтовый индекс",
+      "ru": "Сжать",
       "sv": "Zip",
       "tr": "Zip",
       "zh-chs": "Zip",
@@ -69511,6 +69664,7 @@
       "ja": "[[[CONNECTIONS]]]",
       "nl": "[[[CONNECTIONS]]]",
       "pl": "[[[CONNECTIONS]]]",
+      "ru": "[[[CONNECTIONS]]]",
       "tr": "[[[CONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->5->3->0"
@@ -69529,6 +69683,7 @@
       "ja": "[[[DISCONNECTIONS]]]",
       "nl": "[[[DISCONNECTIONS]]]",
       "pl": "[[[DISCONNECTIONS]]]",
+      "ru": "[[[DISCONNECTIONS]]]",
       "tr": "[[[DISCONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->7->3->0"
@@ -69679,6 +69834,7 @@
       "ja": "[[[SERVERNAME]]]-デバイス通知",
       "nl": "[[[SERVERNAME]]] - Apparaatmelding",
       "pl": "[[[SERVERNAME]]] - Powiadomienia Urządzenia",
+      "ru": "[[[SERVERNAME]]] - Уведомление устройства",
       "tr": "[[[SERVERNAME]]] - Cihaz Bildirimi",
       "xloc": [
         "device-notify.html->0",
@@ -70294,7 +70450,7 @@
       "pl": "dane:obraz/png;base64,",
       "pt": "dados: imagem / png; base64,",
       "pt-br": "dados: imagem / png; base64,",
-      "ru": "данные: изображение / png; base64,",
+      "ru": "data:image/png;base64,",
       "sv": "data: image / png; base64,",
       "tr": "veri: resim / png; base64,",
       "zh-chs": "data：image / png; base64，",
@@ -70420,7 +70576,7 @@
       "pl": "krawędź",
       "pt": "borda",
       "pt-br": "edg",
-      "ru": "край",
+      "ru": "edg",
       "sv": "kant",
       "tr": "kenar",
       "zh-chs": "边缘",
@@ -70444,7 +70600,7 @@
       "pl": "krawędź",
       "pt": "borda",
       "pt-br": "borda",
-      "ru": "край",
+      "ru": "edge",
       "sv": "kant",
       "tr": "köşe",
       "zh-chs": "边缘",
@@ -70567,7 +70723,7 @@
       "pl": "firefox",
       "pt": "Raposa de fogo",
       "pt-br": "Firefox",
-      "ru": "Fire Fox",
+      "ru": "firefox",
       "sv": "firefox",
       "tr": "firefox",
       "zh-chs": "火狐",
@@ -70618,7 +70774,7 @@
       "pl": "g:",
       "pt": "g:",
       "pt-br": "g:",
-      "ru": "г:",
+      "ru": "g:",
       "sv": "g:",
       "tr": "g:",
       "zh-chs": "G：",
@@ -70883,7 +71039,7 @@
       "pl": "id, nazwa, rname, host, ikona, adres IP, osdesc, stan, nazwa grupy, conn, pwr",
       "pt": "id, nome, rname, host, ícone, ip, osdesc, estado, nome do grupo, conn, pwr",
       "pt-br": "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr",
-      "ru": "идентификатор, имя, имя, хост, значок, ip, osdesc, состояние, имя группы, conn, pwr",
+      "ru": "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr",
       "sv": "id, namn, rname, host, icon, ip, osdesc, state, groupname, conn, pwr",
       "tr": "id, ad, rname, ana bilgisayar, simge, ip, osdesc, durum, grup adı, bağl, pwr",
       "zh-chs": "id, name, rname, host, icon, ip, osdesc, state, gruppenname, conn, pwr",
@@ -71074,7 +71230,7 @@
       "pl": "k max, puste jako domyślne",
       "pt": "k max, em branco para o padrão",
       "pt-br": "k max, em branco para o padrão",
-      "ru": "k max, пусто по умолчанию",
+      "ru": "k макс, пусто - по умолчанию",
       "sv": "k max, tom för standard",
       "tr": "k max, varsayılan için boş",
       "zh-chs": "k max，默认为空白",
@@ -71528,7 +71684,7 @@
       "pl": "opera",
       "pt": "ópera",
       "pt-br": "ópera",
-      "ru": "опера",
+      "ru": "opera",
       "sv": "opera",
       "tr": "opera",
       "zh-chs": "歌剧",
@@ -71552,7 +71708,7 @@
       "pl": "opr",
       "pt": "opr",
       "pt-br": "opr",
-      "ru": "опр",
+      "ru": "opr",
       "sv": "opr",
       "tr": "operasyon",
       "zh-chs": "操作",
@@ -71651,7 +71807,7 @@
       "pl": "safari",
       "pt": "safári",
       "pt-br": "safári",
-      "ru": "сафари",
+      "ru": "safari",
       "sv": "safari",
       "tr": "safari",
       "zh-chs": "苹果浏览器",
@@ -71775,7 +71931,7 @@
       "pl": "tag:",
       "pt": "tag:",
       "pt-br": "Etiqueta:",
-      "ru": "тег:",
+      "ru": "tag:",
       "sv": "märka:",
       "tr": "etiket:",
       "zh-chs": "标签：",
@@ -71901,7 +72057,7 @@
       "pl": "trójząb",
       "pt": "tridente",
       "pt-br": "tridente",
-      "ru": "трезубец",
+      "ru": "trident",
       "sv": "treudd",
       "tr": "trident",
       "zh-chs": "三叉戟",
@@ -72055,7 +72211,7 @@
       "pl": "utc, czas, typ, czynność, użytkownik, urządzenie, wiadomość",
       "pt": "utc, hora, tipo, ação, usuário, dispositivo, mensagem",
       "pt-br": "utc, hora, tipo, ação, usuário, dispositivo, mensagem",
-      "ru": "utc, время, тип, действие, пользователь, устройство, сообщение",
+      "ru": "utc, time, type, action, user, device, message",
       "sv": "utc, tid, typ, åtgärd, användare, enhet, meddelande",
       "tr": "utc, saat, tür, işlem, kullanıcı, cihaz, mesaj",
       "zh-chs": "utc，时间，类型，指令，用户，设备，消息",
@@ -72076,7 +72232,8 @@
       "nl": "v",
       "pl": "v",
       "pt": "v",
-      "pt-br": "v"
+      "pt-br": "v",
+      "ru": "v"
     },
     {
       "cs": "v0.8.0",
@@ -72113,6 +72270,7 @@
       "ja": "このメッセージを受け取ってから1時間以内。",
       "nl": "binnen 1 uur na ontvangst van dit bericht.",
       "pl": "w ciągu 1 godziny od otrzymania wiadomości.",
+      "ru": "в течение 1 часа после получения этого сообщения.",
       "tr": "Bu mesajı aldıktan sonra 1 saat içinde.",
       "xloc": [
         "device-notify.html->2->9->1"
@@ -72789,6 +72947,7 @@
       "ja": "{0}分",
       "nl": "{0} minuut",
       "pl": "{0} minuta",
+      "ru": "{0} минута",
       "tr": "{0} dakika",
       "xloc": [
         "default.handlebars->39->261"
@@ -72807,6 +72966,7 @@
       "ja": "{0}分",
       "nl": "{0} minuten",
       "pl": "{0} minut",
+      "ru": "{0} минут",
       "tr": "{0} dakika",
       "xloc": [
         "default.handlebars->39->263"
@@ -73017,6 +73177,7 @@
       "ja": "{0}リモートデスクトップアクセスを要求しています。アクセス許可？",
       "nl": "{0} verzoekt om toegang tot extern bureaublad.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do pulpitu. Przyznać dostęp?",
+      "ru": "{0} запрашивает удаленный доступ к рабочему столу. Разрешить доступ?",
       "tr": "{0} uzak masaüstü erişimi istiyor. Erişim izni veriyor musunuz?",
       "xloc": [
         "coretranslations.json"
@@ -73035,6 +73196,7 @@
       "ja": "{0}リモートファイルアクセスを要求しています。アクセス許可？",
       "nl": "{0} verzoekt om externe bestandstoegang.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do plików. Przyznać dostęp?",
+      "ru": "{0} запрашивает удаленный доступ к файлам. Разрешить доступ?",
       "tr": "{0} uzak dosya Erişimi istiyor. Erişim izni veriyor musunuz?",
       "xloc": [
         "coretranslations.json"
@@ -73053,6 +73215,7 @@
       "ja": "{0}リモート端末アクセスを要求しています。アクセス許可？",
       "nl": "{0} verzoekt om toegang tot externe terminal.Toegang verlenen?",
       "pl": "{0} prosi o zdalny dostęp do terminala. Przyznać dostęp?",
+      "ru": "{0} запрашивает удаленный доступ к терминалу. Разрешить доступ?",
       "tr": "{0} uzak terminal erişimi istiyor. Erişim izni veriyor musunuz?",
       "xloc": [
         "coretranslations.json"
@@ -73324,6 +73487,7 @@
       "ja": "{0}はリモートデスクトップセッションを開始しました。",
       "nl": "{0} heeft een extern bureaubladsessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do pulpitu.",
+      "ru": "{0} начал сеанс удаленного рабочего стола.",
       "tr": "{0} bir uzak masaüstü oturumu başlattı.",
       "xloc": [
         "coretranslations.json"
@@ -73342,6 +73506,7 @@
       "ja": "{0}がリモートファイルセッションを開始しました。",
       "nl": "{0} heeft een externe bestandssessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do plików.",
+      "ru": "{0} начал удаленный файловый сеанс.",
       "tr": "{0} bir uzak dosya oturumu başlattı.",
       "xloc": [
         "coretranslations.json"
@@ -73360,6 +73525,7 @@
       "ja": "{0}がリモートターミナルセッションを開始しました。",
       "nl": "{0} heeft een externe terminalsessie gestart.",
       "pl": "{0} rozpoczął sesję dostępu do terminala.",
+      "ru": "{0} начал сеанс удаленного терминала.",
       "tr": "{0} bir uzak terminal oturumu başlattı.",
       "xloc": [
         "coretranslations.json"
@@ -73501,6 +73667,7 @@
       "ja": "{0}、{1}は{2}分",
       "nl": "{0}, {1} voor {2} minuut",
       "pl": "{0}, {1} dla {2} minuty",
+      "ru": "{0}, {1} на {2} мин.",
       "tr": "{0}, {1} için {2} dakika",
       "xloc": [
         "default.handlebars->39->1875",
@@ -73520,6 +73687,7 @@
       "ja": "{0}、{1}は{2}分",
       "nl": "{0}, {1} voor {2} minuten",
       "pl": "{0}, {1} dla {2} minut",
+      "ru": "{0}, {1} на {2} мин.",
       "tr": "{0}, {1} için {2} dakika",
       "xloc": [
         "default.handlebars->39->1876",
