@@ -334,6 +334,7 @@
         "x-frame-options": "SAMEORIGIN"
       },
       "_agentConfig": [ "webSocketMaskOverride=1", "coreDumpEnabled=1" ],
+      "_assistantConfig": [ "disableUpdate=1" ],
       "_sessionRecording": {
         "_onlySelectedUsers": true,
         "_onlySelectedUserGroups": true,
