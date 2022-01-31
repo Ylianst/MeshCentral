@@ -734,7 +734,8 @@
             "required": [ "id", "secret" ]
           },
           "httpHeaders": { "type": "object", "additionalProperties": { "type": "string" } },
-          "agentConfig": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+          "agentConfig": { "type": "array", "uniqueItems": true, "items": { "type": "string" }, "default": null, "description": "Key and values to add to the MeshAgent .msh file" },
+          "assistantConfig": { "type": "array", "uniqueItems": true, "items": { "type": "string" }, "default": null, "description": "Key and values to add to the MeshCentral Assistant .msh file" },
           "clipboardGet": { "type": "boolean", "default": true, "description": "When false, users can't set the clipboard of a remove device." },
           "clipboardSet": { "type": "boolean", "default": true, "description": "When false, users can't get the clipboard of a remove device." },
           "localSessionRecording": { "type": "boolean", "default": true, "description": "When false, removes the local recording feature on remote desktop." },
