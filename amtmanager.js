@@ -108,7 +108,7 @@ module.exports.CreateAmtManager = function (parent) {
     function addAmtDevice(dev) {
         var devices = obj.amtDevices[dev.nodeid];
         if (devices == null) { obj.amtDevices[dev.nodeid] = [dev]; return true; }
-        if (devices.indexOf(dev) >= 0) { return false; } // This device is already in the list
+        if (devices.indexOf(dev) >= 0) return false; // This device is already in the list
         devices.push(dev); // Add the device to the list
         return true;
     }
@@ -725,7 +725,10 @@ module.exports.CreateAmtManager = function (parent) {
             if ((typeof dev.aquired.state == 'number') && (dev.aquired.state != device.intelamt.state)) { change = 1; log = 1; device.intelamt.state = dev.aquired.state; changes.push('AMT state'); }
 
             // Intel AMT Warning Flags: 1 = Unknown credentials, 2 = Realm Mismatch, 4 = TLS Cert Mismatch, 8 = Trying credentials
-            if ((typeof dev.aquired.warn == 'number')) { if ((dev.aquired.warn == 0) && (device.intelamt.warn != null)) { delete device.intelamt.warn; change = 1; } else if (dev.aquired.warn != device.intelamt.warn) { device.intelamt.warn = dev.aquired.warn; change = 1; } }
+            if ((typeof dev.aquired.warn == 'number')) {
+                if ((dev.aquired.warn == 0) && (device.intelamt.warn != null)) { delete device.intelamt.warn; change = 1; }
+                else if ((dev.aquired.warn != 0) && (dev.aquired.warn != device.intelamt.warn)) { device.intelamt.warn = dev.aquired.warn; change = 1; }
+            }
 
             // Update Intel AMT flags if needed
             // dev.aquired.controlMode // 1 = CCM, 2 = ACM
