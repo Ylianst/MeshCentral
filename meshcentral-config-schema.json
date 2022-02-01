@@ -360,9 +360,9 @@
             "type": "object",
             "properties": {
               "name": { "type": "string", "description": "Name of the alternative messaging service, for example: \"Jitsi\" " },
-              "url": { "type": "string", "description": "URL to the alternative messaging services, for example: \"https://meet.jit.si/myserver-{0}\"" }
+              "url": { "type": "string", "description": "URL to the alternative messaging services, for example: \"https://meet.jit.si/myserver-{0}\"" },
+              "localurl": { "type": "string", "description": "If specified, this is the URL that is used on the administrator side, for example: \"https://meet.jit.si/myserver-{0}\"" }
             },
-            "additionalProperties": false,
             "required": [ "name", "url" ]
           },
           "deviceMeshRouterLinks": {
