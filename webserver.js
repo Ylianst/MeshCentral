@@ -4059,7 +4059,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Subscribe to all events we are allowed to receive
     obj.subscribe = function (userid, target) {
         const user = obj.users[userid];
-        const subscriptions = [userid, 'server-global'];
+        const subscriptions = [userid, 'server-allusers'];
         if (user.siteadmin != null) {
             // Allow full site administrators of users with all events rights to see all events.
             if ((user.siteadmin == 0xFFFFFFFF) || ((user.siteadmin & 2048) != 0)) { subscriptions.push('*'); }

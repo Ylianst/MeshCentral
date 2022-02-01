@@ -548,6 +548,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             if (parent.parent.webpush != null) { serverinfo.vapidpublickey = parent.parent.webpush.vapidPublicKey; } // Web push public key
             if (parent.parent.amtProvisioningServer != null) { serverinfo.amtProvServerMeshId = parent.parent.amtProvisioningServer.meshid; } // Device group that allows for bare-metal Intel AMT activation
             if ((typeof domain.autoremoveinactivedevices == 'number') && (domain.autoremoveinactivedevices > 0)) { serverinfo.autoremoveinactivedevices = domain.autoremoveinactivedevices; } // Default number of days before inactive devices are removed
+            if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) { serverinfo.lock2factor = true; } // Indicate 2FA change are not allowed
 
             // Build the mobile agent URL, this is used to connect mobile devices
             var agentServerName = parent.getWebServerName(domain);
@@ -3146,6 +3147,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpemail':
                 {
+                    // Do not allow this command if 2FA's are locked
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -3173,6 +3177,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-request':
                 {
+                    // Do not allow this command if 2FA's are locked
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -3198,6 +3205,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-setup':
                 {
+                    // Do not allow this command if 2FA's are locked
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -3234,6 +3244,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-clear':
                 {
+                    // Do not allow this command if 2FA's are locked
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -3262,6 +3275,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-getpasswords':
                 {
+                    // Do not allow this command if 2FA's are locked
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -3310,6 +3326,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-get':
                 {
+                    // Do not allow this command if 2FA's are locked
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -3326,6 +3345,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-remove':
                 {
+                    // Do not allow this command if 2FA's are locked
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -3353,6 +3375,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-yubikey-add':
                 {
+                    // Do not allow this command if 2FA's are locked
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -3411,6 +3436,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpdev-clear':
                 {
+                    // Do not allow this command if 2FA's are locked
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -3431,6 +3459,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpdev-set':
                 {
+                    // Do not allow this command if 2FA's are locked
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -3460,6 +3491,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'webauthn-startregister':
                 {
+                    // Do not allow this command if 2FA's are locked
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -3477,6 +3511,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'webauthn-endregister':
                 {
+                    // Do not allow this command if 2FA's are locked
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -4775,6 +4812,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     };
 
     const serverUserCommands = {
+        '2falock': [serverUserCommand2faLock, "Shows and changes the 2FA lock state"],
         'acceleratorsstats': [serverUserCommandAcceleratorsStats, "Show data on work being offloaded to other CPU's"],
         'agentissues': [serverUserCommandAgentIssues, ""],
         'agentstats': [serverUserCommandAgentStats, ""],
@@ -6384,6 +6422,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             cmdData.result = 'Server watchdog active.\r\n';
             if (parent.parent.watchdogmaxtime != null) { cmdData.result += 'Largest timeout was ' + parent.parent.watchdogmax + 'ms on ' + parent.parent.watchdogmaxtime + '\r\n'; }
             for (var i in parent.parent.watchdogtable) { cmdData.result += parent.parent.watchdogtable[i] + '\r\n'; }
+        }
+    }
+
+    function serverUserCommand2faLock(cmdData) {
+        var arg = null;
+        if (cmdData.cmdargs['_'].length > 0) { arg = cmdData.cmdargs['_'][0]; }
+        if (domain.passwordrequirements == null) { domain.passwordrequirements = {}; }
+        if (arg == 'set') {
+            // TODO: Change 2FA lock for peer servers
+            domain.passwordrequirements.lock2factor = true;
+            cmdData.result = "2FA lock is set";
+            parent.parent.DispatchEvent(['server-allusers'], obj, { action: 'serverinfochange', lock2factor: true, nolog: 1, domain: domain.id });
+        } else if (arg == 'clear') {
+            // TODO: Change 2FA lock for peer servers
+            delete domain.passwordrequirements.lock2factor;
+            cmdData.result = "2FA lock is cleared";
+            parent.parent.DispatchEvent(['server-allusers'], obj, { action: 'serverinfochange', lock2factor: false, nolog: 1, domain: domain.id });
+        } else {
+            cmdData.result = (domain.passwordrequirements.lock2factor == true) ? "2FA lock is set" : "2FA lock is cleared";
+            cmdData.result += ", use '2falock [set/clear]' to change the lock state."
         }
     }
 
