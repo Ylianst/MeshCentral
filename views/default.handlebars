@@ -2756,8 +2756,13 @@
                     }
                     x += '</div>';
                     x += '<div><input type=button value="' + "Close" + '" onclick=setDialogMode(0) style=float:right></input>';
-                    if ((features & 0x00020000) != 0) { x += '<input id=d2addkey3 type=button value="' + "Add Key" + '" onclick="account_addhkey(3);"></input>'; }
-                    if ((features & 0x00004000) != 0) { x += '<input id=d2addkey2 type=button value="' + "Add YubiKey&reg; OTP" + '" onclick="account_addhkey(2);"></input>'; }
+                    var hkeycount = (typeof userinfo.otphkeys == 'number') ? userinfo.otphkeys : 0;
+                    if ((typeof serverinfo.maxfidokeys != 'number') || (serverinfo.maxfidokeys > hkeycount)) { // Check if we we reached maximum hardware keys
+                        if ((features & 0x00020000) != 0) { x += '<input id=d2addkey3 type=button value="' + "Add Key" + '" onclick="account_addhkey(3);"></input>'; }
+                        if ((features & 0x00004000) != 0) { x += '<input id=d2addkey2 type=button value="' + "Add YubiKey&reg; OTP" + '" onclick="account_addhkey(2);"></input>'; }
+                    } else {
+                        x += "Maximum keys reached.";
+                    }
                     x += '</div><br />';
                     setDialogMode(2, "Manage Security Keys", 8, null, x, 'otpauth-hardware-manage');
                     if (u2fSupported() == false) { QE('d2addkey1', false); }

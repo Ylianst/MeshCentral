@@ -548,7 +548,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             if (parent.parent.webpush != null) { serverinfo.vapidpublickey = parent.parent.webpush.vapidPublicKey; } // Web push public key
             if (parent.parent.amtProvisioningServer != null) { serverinfo.amtProvServerMeshId = parent.parent.amtProvisioningServer.meshid; } // Device group that allows for bare-metal Intel AMT activation
             if ((typeof domain.autoremoveinactivedevices == 'number') && (domain.autoremoveinactivedevices > 0)) { serverinfo.autoremoveinactivedevices = domain.autoremoveinactivedevices; } // Default number of days before inactive devices are removed
-            if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) { serverinfo.lock2factor = true; } // Indicate 2FA change are not allowed
+            if (domain.passwordrequirements) {
+                if (domain.passwordrequirements.lock2factor == true) { serverinfo.lock2factor = true; } // Indicate 2FA change are not allowed
+                if (typeof domain.passwordrequirements.maxfidokeys == 'number') { serverinfo.maxfidokeys = domain.passwordrequirements.maxfidokeys; }
+            }
 
             // Build the mobile agent URL, this is used to connect mobile devices
             var agentServerName = parent.getWebServerName(domain);
@@ -3375,8 +3378,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-yubikey-add':
                 {
-                    // Do not allow this command if 2FA's are locked
-                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+                    // Do not allow this command if 2FA's are locked or max keys reached
+                    if (domain.passwordrequirements) {
+                        if (domain.passwordrequirements.lock2factor == true) return;
+                        if ((typeof domain.passwordrequirements.maxfidokeys == 'number') && (user.otphkeys) && (user.otphkeys.length >= domain.passwordrequirements.maxfidokeys)) return;
+                    }
 
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
@@ -3491,8 +3497,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'webauthn-startregister':
                 {
-                    // Do not allow this command if 2FA's are locked
-                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+                    // Do not allow this command if 2FA's are locked or max keys reached
+                    if (domain.passwordrequirements) {
+                        if (domain.passwordrequirements.lock2factor == true) return;
+                        if ((typeof domain.passwordrequirements.maxfidokeys == 'number') && (user.otphkeys) && (user.otphkeys.length >= domain.passwordrequirements.maxfidokeys)) return;
+                    }
 
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
@@ -3511,8 +3520,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'webauthn-endregister':
                 {
-                    // Do not allow this command if 2FA's are locked
-                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+                    // Do not allow this command if 2FA's are locked or max keys reached
+                    if (domain.passwordrequirements) {
+                        if (domain.passwordrequirements.lock2factor == true) return;
+                        if ((typeof domain.passwordrequirements.maxfidokeys == 'number') && (user.otphkeys) && (user.otphkeys.length >= domain.passwordrequirements.maxfidokeys)) return;
+                    }
 
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
