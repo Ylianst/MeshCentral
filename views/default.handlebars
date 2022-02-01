@@ -2027,9 +2027,9 @@
             // Update account actions
             QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0) && (accountSettingsLocked == false)); // Hide Account Security if in single user mode or domain authentication, 2 factor auth not supported.
             QV('p2AccountActions', !accountSettingsLocked)
-            QV('managePhoneNumber1', (features & 0x02000000) && (features & 0x04000000));
-            QV('managePhoneNumber2', (features & 0x02000000) && !(features & 0x04000000));
-            QV('manageEmail2FA', features & 0x00800000);
+            QV('managePhoneNumber1', (features & 0x02000000) && (features & 0x04000000) && (serverinfo.lock2factor != true));
+            QV('managePhoneNumber2', (features & 0x02000000) && !(features & 0x04000000) && (serverinfo.lock2factor != true));
+            QV('manageEmail2FA', (features & 0x00800000) && (serverinfo.lock2factor != true));
             QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null) && (userinfo._id.split('/')[2].startsWith('~') == false)); // Hide Account Actions if in single user mode or domain authentication
             //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
             QV('accountCreateLoginTokenSpan', features2 & 0x00000080);
@@ -2126,15 +2126,16 @@
             var accountSettingsLocked = ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 1024) != 0));
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
             QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true) && (accountSettingsLocked == false));
-            QV('manageOtp', authFactorCount > 0);
+            QV('manageOtp', (serverinfo.lock2factor != true) && (authFactorCount > 0));
             QV('authPhoneNumberCheck', (userinfo.phone != null));
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
-            QV('manageAuthApp', (userinfo.otpsecret == 1) || ((features2 & 0x00020000) == 0));
+            QV('manageAuthApp', (serverinfo.lock2factor != true) && ((userinfo.otpsecret == 1) || ((features2 & 0x00020000) == 0))); 
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authPushAuthDevCheck', (userinfo.otpdev > 0) && ((features2 & 0x40) != 0));
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
-            QV('managePushAuthDev', (features2 & 0x40) && (authFactorCount > 0));
+            QV('managePushAuthDev', (serverinfo.lock2factor != true) && (features2 & 0x40) && (authFactorCount > 0));
+            QV('manageHardwareOtp', (serverinfo.lock2factor != true));
             mainUpdate(4 + 128 + 4096);
 
             // Check if none or at least 2 factors are enabled.
@@ -2838,6 +2839,10 @@
                     if (message.event.noact) break; // Take no action on this event
 
                     switch (message.event.action) {
+                        case 'serverinfochange': {
+                            if (message.event.lock2factor != null) { serverinfo.lock2factor = message.event.lock2factor; updateSelf(); updateSiteAdmin(); }
+                            break;
+                        }
                         case 'deviceShareUpdate': {
                             if (message.event.nodeid != deviceSharesReq) break;
                             deviceSharesNode = message.event.nodeid;
