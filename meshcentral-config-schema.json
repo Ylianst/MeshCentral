@@ -608,6 +608,7 @@
             "additionalProperties": false,
             "description": "Information passed to the AMT manager module that impacts all Intel AMT device managed within this domain.",
             "properties": {
+              "TlsConnections": { "type": "boolean", "default": true, "description": "When set to false, MeshCentral will use TLS to connect to Intel AMT, this is not recommanded." },
               "TlsAcmActivation": { "type": "boolean", "default": false, "description": "When set to false, MeshCentral will not attempt a TLS ACM activation on Intel AMT v14+" },
               "AdminAccounts": {
                 "description": "List of username and passwords to try when connecting to Intel AMT.",
