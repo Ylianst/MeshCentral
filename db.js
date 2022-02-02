@@ -680,6 +680,7 @@ module.exports.CreateDB = function (parent, func) {
         // Postgres SQL
         var connectinArgs = parent.args.postgres;
         var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
+        delete connectinArgs.database;
         obj.databaseType = 6;
         const pgtools = require('pgtools');
         pgtools.createdb(connectinArgs, dbname, function (err, res) {
