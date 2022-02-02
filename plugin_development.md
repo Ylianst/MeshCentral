@@ -59,7 +59,7 @@ These are separated into the following categories depending on the type of funct
 - Mesh Agent (Node), to introduce functionality to each agent
 
 ### Web UI Hooks
-`onDeviceRefeshEnd`: called when a device is selected in the MeshCentral web interface
+`onDeviceRefreshEnd`: called when a device is selected in the MeshCentral web interface
 `registerPluginTab`: callable when a device is selected in the MeshCentral web interface to register a new tab for plugin data, if required. Accepts an object, or function that returns an object, with the following properties: { tabId: "yourShortNameHere", tabTitle: "Your Display Name"}. A tab and div with the associated ID and title will be created for your use
 `onDesktopDisconnect`: called when a remote desktop session is disconnected
 `onWebUIStartupEnd`: called when the page has loaded for the first time after a login / refresh
