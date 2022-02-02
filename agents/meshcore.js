@@ -2662,7 +2662,7 @@ function onTunnelData(data) {
                     if (this.httprequest.consent && (this.httprequest.consent & 4)) {
                         // User Notifications is required
                         MeshServerLogEx(42, null, "Started remote files with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                        var notifyMessage = currentTranslation['fileNotify'].replace('{0}', this.ws.httprequest.realname);
+                        var notifyMessage = currentTranslation['fileNotify'].replace('{0}', this.httprequest.realname);
                         var notifyTitle = "MeshCentral";
                         if (this.httprequest.soptions != null) {
                             if (this.httprequest.soptions.notifyTitle != null) { notifyTitle = this.httprequest.soptions.notifyTitle; }
