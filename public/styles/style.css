@@ -116,6 +116,12 @@ body {
     grid-template-rows: repeat(auto-fit, minmax(100px, 1fr)) !important;
 }
 
+.AgentInviteMasthead {
+    background:url(logo.png) 0px 0px;
+    background-color:#036;
+    background-repeat:no-repeat;height:66px;width:100%;overflow:hidden;
+}
+
 #masthead {
     width: auto;
     margin: 0;
