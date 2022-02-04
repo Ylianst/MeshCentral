@@ -1560,6 +1560,17 @@ function CreateMeshCentralServer(config, args) {
             if (translations['zh-chs']) { translations['zh-hans'] = translations['zh-chs']; delete translations['zh-chs']; }
             if (translations['zh-cht']) { translations['zh-hant'] = translations['zh-cht']; delete translations['zh-cht']; }
             obj.agentTranslations = JSON.stringify(translations);
+
+            // If there is domain customizations to the agent strings, do this here.
+            for (var i in obj.config.domains) {
+                var domainTranslations = translations;
+                if ((typeof obj.config.domains[i].agentcustomization == 'object') && (typeof obj.config.domains[i].agentcustomization.installtext == 'string')) {
+                    domainTranslations = Object.assign({}, domainTranslations); // Shallow clone
+                    for (var j in domainTranslations) { delete domainTranslations[j].description; }
+                    domainTranslations.en.description = obj.config.domains[i].agentcustomization.installtext;
+                }
+                obj.config.domains[i].agentTranslations = domainTranslations;
+            }
         } catch (ex) { }
 
         // Load the list of mesh agents and install scripts
