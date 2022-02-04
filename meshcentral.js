@@ -1559,7 +1559,6 @@ function CreateMeshCentralServer(config, args) {
             var translations = JSON.parse(obj.fs.readFileSync(translationpath).toString());
             if (translations['zh-chs']) { translations['zh-hans'] = translations['zh-chs']; delete translations['zh-chs']; }
             if (translations['zh-cht']) { translations['zh-hant'] = translations['zh-cht']; delete translations['zh-cht']; }
-            obj.agentTranslations = JSON.stringify(translations);
 
             // If there is domain customizations to the agent strings, do this here.
             for (var i in obj.config.domains) {
@@ -1569,7 +1568,7 @@ function CreateMeshCentralServer(config, args) {
                     for (var j in domainTranslations) { delete domainTranslations[j].description; }
                     domainTranslations.en.description = obj.config.domains[i].agentcustomization.installtext;
                 }
-                obj.config.domains[i].agentTranslations = domainTranslations;
+                obj.config.domains[i].agentTranslations = JSON.stringify(domainTranslations);
             }
         } catch (ex) { }
 
