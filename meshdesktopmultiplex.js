@@ -58,10 +58,11 @@ MNG_ENCAPSULATE_AGENT_COMMAND = 70,
 MNG_KVM_DISPLAY_INFO = 82
 */
 
-function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
+function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
     var obj = {};
-    obj.nodeid = nodeid;
-    obj.parent = parent;
+    obj.id = id;                        // Unique identifier for this session
+    obj.nodeid = nodeid;                // Remote device nodeid for this session
+    obj.parent = parent;                // Parent web server instance
     obj.agent = null;                   // Reference to the connection object that is the agent.
     obj.viewers = [];                   // Array of references to all viewers.
     obj.viewersOverflowCount = 0;       // Number of viewers currently in overflow state.
@@ -180,7 +181,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
                 // Log joining the multiplex session
                 if (obj.startTime != null) {
-                    var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user ? peer.user._id : null, username: peer.user.name, msgid: 4, msg: "Joined desktop multiplex session", protocol: 2 };
+                    var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user ? peer.user._id : null, username: peer.user.name, msgid: 143, msgArgs: [obj.id], msg: "Joined desktop multiplex session \"" + obj.id + "\"", protocol: 2 };
                     parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id, obj.meshid], obj, event);
                 }
 
@@ -208,7 +209,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
         // Log multiplex session start
         if ((obj.agent != null) && (obj.viewers.length > 0) && (obj.startTime == null)) {
-            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, msgid: 6, msg: "Started desktop multiplex session", protocol: 2 };
+            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, msgid: 145, msgArgs: [obj.id], msg: "Started desktop multiplex session \"" + obj.id + "\"", protocol: 2 };
             if (obj.viewers[0].user != null) { event.userid = obj.viewers[0].user._id; event.username = obj.viewers[0].user.name; }
             const targets = ['*', obj.nodeid, obj.meshid];
             if (obj.viewers[0].user != null) { targets.push(obj.viewers[0].user._id); }
@@ -288,7 +289,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
                 //var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 5, msg: "Left the desktop multiplex session", protocol: 2 };
                 const sessionSeconds = Math.floor((Date.now() - peer.startTime) / 1000);
-                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, msgid: 122, msgArgs: [sessionSeconds], msg: "Left the desktop multiplex session after " + sessionSeconds + " second(s).", protocol: 2, bytesin: inTraffc, bytesout: outTraffc };
+                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, msgid: 144, msgArgs: [obj.id, sessionSeconds], msg: "Left the desktop multiplex session \"" + obj.id + "\" after " + sessionSeconds + " second(s).", protocol: 2, bytesin: inTraffc, bytesout: outTraffc };
                 if (peer.user != null) { event.userid = peer.user._id; event.username = peer.user.name; }
                 if (peer.guestName) { event.guestname = peer.guestName; }
                 const targets = ['*', obj.nodeid, obj.meshid];
@@ -342,7 +343,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
                 // Add a event entry about this recording
                 var basefile = parent.parent.path.basename(filename);
-                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: obj.nodeid, msgid: 7, msgArgs: [obj.sessionLength], msg: "Finished recording session" + (obj.sessionLength ? (', ' + obj.sessionLength + ' second(s)') : ''), filename: basefile, size: obj.recordingFileSize, protocol: 2, icon: obj.icon, name: obj.name, meshid: obj.meshid, userids: obj.userIds, multiplex: true };
+                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: obj.nodeid, msgid: 146, msgArgs: [obj.id, obj.sessionLength], msg: "Finished recording session \"" + obj.id + "\", " + obj.sessionLength + " second(s)", filename: basefile, size: obj.recordingFileSize, protocol: 2, icon: obj.icon, name: obj.name, meshid: obj.meshid, userids: obj.userIds, multiplex: true };
                 var mesh = parent.meshes[obj.meshid];
                 if (mesh != null) { event.meshname = mesh.name; }
                 if (obj.sessionStart) { event.startTime = obj.sessionStart; event.lengthTime = obj.sessionLength; }
@@ -354,7 +355,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
         // Log end of multiplex session
         if (obj.startTime != null) {
-            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, msgid: 8, msgArgs: [Math.floor((Date.now() - obj.startTime) / 1000)], msg: "Closed desktop multiplex session" + ', ' + Math.floor((Date.now() - obj.startTime) / 1000) + ' second(s)', protocol: 2 };
+            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, msgid: 147, msgArgs: [obj.id, Math.floor((Date.now() - obj.startTime) / 1000)], msg: "Closed desktop multiplex session \"" + obj.id + "\", " + Math.floor((Date.now() - obj.startTime) / 1000) + ' second(s)', protocol: 2 };
             parent.parent.DispatchEvent(['*', obj.nodeid, obj.meshid], obj, event);
             obj.startTime = null;
         }
@@ -1203,7 +1204,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
         if (obj.deskMultiplexor == null) {
             parent.desktoprelays[obj.nodeid] = 1; // Indicate that the creating of the desktop multiplexor is pending.
             parent.parent.debug('relay', 'DesktopRelay: Creating new desktop multiplexor');
-            CreateDesktopMultiplexor(parent, domain, obj.nodeid, function (deskMultiplexor) {
+            CreateDesktopMultiplexor(parent, domain, obj.nodeid, obj.id, function (deskMultiplexor) {
                 if (deskMultiplexor != null) {
                     // Desktop multiplexor was created, use it.
                     obj.deskMultiplexor = deskMultiplexor;
