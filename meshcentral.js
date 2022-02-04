@@ -17,7 +17,7 @@
 const common = require('./common.js');
 
 // If app metrics is available
-if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ url: '/', title: 'MeshCentral', port: 88, host: '127.0.0.1' }); } catch (e) { } }
+if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ url: '/', title: 'MeshCentral', port: 88, host: '127.0.0.1' }); } catch (ex) { } }
 
 function CreateMeshCentralServer(config, args) {
     var obj = {};
@@ -76,7 +76,7 @@ function CreateMeshCentralServer(config, args) {
 
     // Server version
     obj.currentVer = null;
-    function getCurrentVersion() { try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } return obj.currentVer; } // Fetch server version
+    function getCurrentVersion() { try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (ex) { } return obj.currentVer; } // Fetch server version
     getCurrentVersion();
 
     // Setup the default configuration and files paths
@@ -118,8 +118,8 @@ function CreateMeshCentralServer(config, args) {
     if (obj.config.settings && (typeof obj.config.settings.filespath == 'string')) { obj.filespath = obj.config.settings.filespath; }
 
     // Create data and files folders if needed
-    try { obj.fs.mkdirSync(obj.datapath); } catch (e) { }
-    try { obj.fs.mkdirSync(obj.filespath); } catch (e) { }
+    try { obj.fs.mkdirSync(obj.datapath); } catch (ex) { }
+    try { obj.fs.mkdirSync(obj.filespath); } catch (ex) { }
 
     // Windows Specific Code, setup service and event log
     obj.service = null;
@@ -134,10 +134,10 @@ function CreateMeshCentralServer(config, args) {
     // Start the Meshcentral server
     obj.Start = function () {
         var i;
-        try { require('./pass').hash('test', function () { }, 0); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
+        try { require('./pass').hash('test', function () { }, 0); } catch (ex) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass', 'indexmcrec', 'mpsdebug'];
+        var validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass', 'indexmcrec', 'mpsdebug', 'dumpcores'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -173,7 +173,7 @@ function CreateMeshCentralServer(config, args) {
         // Fix a NeDB database
         if (obj.args.dbfix) {
             var lines = null, badJsonCount = 0, feildNames = [], fixedDb = [];
-            try { lines = obj.fs.readFileSync(obj.getConfigFilePath(obj.args.dbfix), { encoding: 'utf8' }).split('\n'); } catch (e) { console.log('Invalid file: ' + obj.args.dbfix + ': ' + e); process.exit(); }
+            try { lines = obj.fs.readFileSync(obj.getConfigFilePath(obj.args.dbfix), { encoding: 'utf8' }).split('\n'); } catch (ex) { console.log('Invalid file: ' + obj.args.dbfix + ': ' + ex); process.exit(); }
             for (var i = 0; i < lines.length; i++) {
                 var x = null;
                 try { x = JSON.parse(lines[i]); } catch (ex) { badJsonCount++; }
@@ -189,6 +189,9 @@ function CreateMeshCentralServer(config, args) {
 
         // Perform a password hash
         if (obj.args.hashpassword) { require('./pass').hash(obj.args.hashpassword, function (err, salt, hash, tag) { console.log(salt + ',' + hash); process.exit(); }); return; }
+
+        // Dump to mesh cores
+        if (obj.args.dumpcores) { obj.updateMeshCore(function () { console.log('Done.'); }, true); return; }
 
         // Perform web site translations into different languages
         if (obj.args.translate) {
@@ -381,10 +384,10 @@ function CreateMeshCentralServer(config, args) {
                 svc.on('alreadyinstalled', function () { console.log('MeshCentral service already installed.'); process.exit(); });
                 svc.on('invalidinstallation', function () { console.log('Invalid MeshCentral service installation.'); process.exit(); });
 
-                if (obj.args.xinstall == true) { try { svc.install(); } catch (e) { logException(e); } }
-                if (obj.args.stop == true || obj.args.restart == true) { try { svc.stop(); } catch (e) { logException(e); } }
-                if (obj.args.start == true) { try { svc.start(); } catch (e) { logException(e); } }
-                if (obj.args.xuninstall == true) { try { svc.uninstall(); } catch (e) { logException(e); } }
+                if (obj.args.xinstall == true) { try { svc.install(); } catch (ex) { logException(ex); } }
+                if (obj.args.stop == true || obj.args.restart == true) { try { svc.stop(); } catch (ex) { logException(ex); } }
+                if (obj.args.start == true) { try { svc.start(); } catch (ex) { logException(ex); } }
+                if (obj.args.xuninstall == true) { try { svc.uninstall(); } catch (ex) { logException(ex); } }
                 return;
             }
 
@@ -534,7 +537,7 @@ function CreateMeshCentralServer(config, args) {
             xxprocess.stderr.on('data', function (data) { });
             xxprocess.on('close', function (code) {
                 var latestVer = null;
-                if (code == 0) { try { latestVer = xxprocess.data.split(' ').join('').split('\r').join('').split('\n').join(''); } catch (e) { } }
+                if (code == 0) { try { latestVer = xxprocess.data.split(' ').join('').split('\r').join('').split('\n').join(''); } catch (ex) { } }
                 callback(getCurrentVersion(), latestVer);
             });
         } catch (ex) { callback(getCurrentVersion(), null, ex); } // If the system is running out of memory, an exception here can easily happen.
@@ -560,7 +563,7 @@ function CreateMeshCentralServer(config, args) {
                     try {
                         var lines = xxprocess.data.split('\r\n').join('\n').split('\n');
                         for (var i in lines) { var s = lines[i].split(': '); if ((s.length == 2) && (obj.args.npmtag == null) || (obj.args.npmtag == s[0])) { tags[s[0]] = s[1]; } }
-                    } catch (e) { }
+                    } catch (ex) { }
                 }
                 callback(tags);
             });
@@ -1045,10 +1048,10 @@ function CreateMeshCentralServer(config, args) {
                         // Import the entire database from a JSON file
                         if (obj.args.dbimport == true) { obj.args.dbimport = obj.getConfigFilePath('meshcentral.db.json'); }
                         var json = null, json2 = '', badCharCount = 0;
-                        try { json = obj.fs.readFileSync(obj.args.dbimport, { encoding: 'utf8' }); } catch (e) { console.log('Invalid JSON file: ' + obj.args.dbimport + ': ' + e); process.exit(); }
+                        try { json = obj.fs.readFileSync(obj.args.dbimport, { encoding: 'utf8' }); } catch (ex) { console.log('Invalid JSON file: ' + obj.args.dbimport + ': ' + ex); process.exit(); }
                         for (i = 0; i < json.length; i++) { if (json.charCodeAt(i) >= 32) { json2 += json[i]; } else { var tt = json.charCodeAt(i); if (tt != 10 && tt != 13) { badCharCount++; } } } // Remove all bad chars
                         if (badCharCount > 0) { console.log(badCharCount + ' invalid character(s) where removed.'); }
-                        try { json = JSON.parse(json2); } catch (e) { console.log('Invalid JSON format: ' + obj.args.dbimport + ': ' + e); process.exit(); }
+                        try { json = JSON.parse(json2); } catch (ex) { console.log('Invalid JSON format: ' + obj.args.dbimport + ': ' + e); process.exit(); }
                         if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); }
                         // Escape MongoDB invalid field chars
                         for (i in json) {
@@ -1086,10 +1089,10 @@ function CreateMeshCentralServer(config, args) {
                         // Import the entire database from a JSON file
                         if (obj.args.dbmerge == true) { obj.args.dbmerge = obj.getConfigFilePath('meshcentral.db.json'); }
                         var json = null, json2 = "", badCharCount = 0;
-                        try { json = obj.fs.readFileSync(obj.args.dbmerge, { encoding: 'utf8' }); } catch (e) { console.log('Invalid JSON file: ' + obj.args.dbmerge + ': ' + e); process.exit(); }
+                        try { json = obj.fs.readFileSync(obj.args.dbmerge, { encoding: 'utf8' }); } catch (ex) { console.log('Invalid JSON file: ' + obj.args.dbmerge + ': ' + ex); process.exit(); }
                         for (i = 0; i < json.length; i++) { if (json.charCodeAt(i) >= 32) { json2 += json[i]; } else { var tt = json.charCodeAt(i); if (tt != 10 && tt != 13) { badCharCount++; } } } // Remove all bad chars
                         if (badCharCount > 0) { console.log(badCharCount + ' invalid character(s) where removed.'); }
-                        try { json = JSON.parse(json2); } catch (e) { console.log('Invalid JSON format: ' + obj.args.dbmerge + ': ' + e); process.exit(); }
+                        try { json = JSON.parse(json2); } catch (ex) { console.log('Invalid JSON format: ' + obj.args.dbmerge + ': ' + ex); process.exit(); }
                         if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); }
 
                         // Get all users from current database
@@ -2428,7 +2431,7 @@ function CreateMeshCentralServer(config, args) {
     }
 
     // Update the default mesh core
-    obj.updateMeshCore = function (func) {
+    obj.updateMeshCore = function (func, dumpToFile) {
         // Figure out where meshcore.js is
         var meshcorePath = obj.datapath;
         if (obj.fs.existsSync(obj.path.join(meshcorePath, 'meshcore.js')) == false) {
@@ -2476,12 +2479,12 @@ function CreateMeshCentralServer(config, args) {
             }
         }
 
-        if (obj.args.minifycore !== false) { try { meshCore = obj.fs.readFileSync(obj.path.join(meshcorePath, 'meshcore.min.js')).toString(); } catch (e) { } } // Favor minified meshcore if present.
-        if (meshCore == null) { try { meshCore = obj.fs.readFileSync(obj.path.join(meshcorePath, 'meshcore.js')).toString(); } catch (e) { } } // Use non-minified meshcore.
+        if (obj.args.minifycore !== false) { try { meshCore = obj.fs.readFileSync(obj.path.join(meshcorePath, 'meshcore.min.js')).toString(); } catch (ex) { } } // Favor minified meshcore if present.
+        if (meshCore == null) { try { meshCore = obj.fs.readFileSync(obj.path.join(meshcorePath, 'meshcore.js')).toString(); } catch (ex) { } } // Use non-minified meshcore.
         if (meshCore != null) {
             var moduleDirPath = null;
-            if (obj.args.minifycore !== false) { try { moduleDirPath = obj.path.join(meshcorePath, 'modules_meshcore_min'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } } // Favor minified modules if present.
-            if (modulesDir == null) { try { moduleDirPath = obj.path.join(meshcorePath, 'modules_meshcore'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } } // Use non-minified mofules.
+            if (obj.args.minifycore !== false) { try { moduleDirPath = obj.path.join(meshcorePath, 'modules_meshcore_min'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (ex) { } } // Favor minified modules if present.
+            if (modulesDir == null) { try { moduleDirPath = obj.path.join(meshcorePath, 'modules_meshcore'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (ex) { } } // Use non-minified mofules.
             if (modulesDir != null) {
                 for (var i in modulesDir) {
                     if (modulesDir[i].toLowerCase().endsWith('.json')) {
@@ -2500,7 +2503,7 @@ function CreateMeshCentralServer(config, args) {
                         // We are adding a JS file to the meshcores
                         var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
                         if (moduleName.endsWith('.min')) { moduleName = moduleName.substring(0, moduleName.length - 4); } // Remove the ".min" for ".min.js" files.
-                        const moduleData = [ 'try { addModule("', moduleName, '", "', obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')), '"); addedModules.push("', moduleName, '"); } catch (e) { }\r\n' ];
+                        const moduleData = [ 'try { addModule("', moduleName, '", "', obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')), '"); addedModules.push("', moduleName, '"); } catch (ex) { }\r\n' ];
 
                         // Merge this module
                         // NOTE: "smbios" module makes some non-AI Linux segfault, only include for IA platforms.
@@ -2542,6 +2545,9 @@ function CreateMeshCentralServer(config, args) {
             // Add plugins to cores
             if (obj.pluginHandler) { obj.pluginHandler.addMeshCoreModules(modulesAdd); }
 
+            // If we need to dump modules to file, create a meshcores folder
+            if (dumpToFile) { try { obj.fs.mkdirSync('meshcores'); } catch (ex) { } }
+
             // Merge the cores and compute the hashes
             for (var i in modulesAdd) {
                 if ((i == 'windows-recovery') || (i == 'linux-recovery')) {
@@ -2557,9 +2563,11 @@ function CreateMeshCentralServer(config, args) {
                 obj.defaultMeshCoresHash[i] = obj.crypto.createHash('sha384').update(obj.defaultMeshCores[i]).digest('binary');
                 obj.debug('main', 'Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.');
 
-                // These lines will write all modules to files. Great for debugging.
-                //console.log('Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.'); // DEBUG, Print the core size
-                //obj.fs.writeFile("C:\\temp\\" + i + ".js", obj.defaultMeshCores[i].slice(4), function () { }); // DEBUG, Write the core to file
+                // Write all modules to files. Great for debugging.
+                if (dumpToFile) {
+                    console.log('Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes, saving to meshcores/' + i + '.js.'); // Print the core size and filename
+                    obj.fs.writeFile('meshcores/' + i + '.js', obj.defaultMeshCores[i].slice(4), function () { }); // Write the core to file
+                }
 
                 // Compress the mesh cores with DEFLATE
                 const callback = function MeshCoreDeflateCb(err, buffer) { if (err == null) { obj.defaultMeshCoresDeflate[MeshCoreDeflateCb.i] = buffer; } }
@@ -2585,10 +2593,10 @@ function CreateMeshCentralServer(config, args) {
         meshCmd = meshCmd.replace("'***Mesh*Cmd*Version***'", '\'' + getCurrentVersion() + '\'');
 
         // Figure out where the modules_meshcmd folder is.
-        if (obj.args.minifycore !== false) { try { moduleDirPath = obj.path.join(meshcmdPath, 'modules_meshcmd_min'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } } // Favor minified modules if present.
-        if (modulesDir == null) { try { moduleDirPath = obj.path.join(meshcmdPath, 'modules_meshcmd'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } } // Use non-minified mofules.
-        if (obj.args.minifycore !== false) { if (modulesDir == null) { try { moduleDirPath = obj.path.join(__dirname, 'agents', 'modules_meshcmd_min'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } } } // Favor minified modules if present.
-        if (modulesDir == null) { try { moduleDirPath = obj.path.join(__dirname, 'agents', 'modules_meshcmd'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } } // Use non-minified mofules.
+        if (obj.args.minifycore !== false) { try { moduleDirPath = obj.path.join(meshcmdPath, 'modules_meshcmd_min'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (ex) { } } // Favor minified modules if present.
+        if (modulesDir == null) { try { moduleDirPath = obj.path.join(meshcmdPath, 'modules_meshcmd'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (ex) { } } // Use non-minified mofules.
+        if (obj.args.minifycore !== false) { if (modulesDir == null) { try { moduleDirPath = obj.path.join(__dirname, 'agents', 'modules_meshcmd_min'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (ex) { } } } // Favor minified modules if present.
+        if (modulesDir == null) { try { moduleDirPath = obj.path.join(__dirname, 'agents', 'modules_meshcmd'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (ex) { } } // Use non-minified mofules.
 
         // Read all .js files in the meshcmd modules folder.
         if (modulesDir != null) {
@@ -2597,7 +2605,7 @@ function CreateMeshCentralServer(config, args) {
                     // Merge this module
                     var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
                     if (moduleName.endsWith('.min')) { moduleName = moduleName.substring(0, moduleName.length - 4); } // Remove the ".min" for ".min.js" files.
-                    moduleAdditions.push('try { addModule("', moduleName, '", "', obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')), '"); addedModules.push("', moduleName, '"); } catch (e) { }\r\n');
+                    moduleAdditions.push('try { addModule("', moduleName, '", "', obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')), '"); addedModules.push("', moduleName, '"); } catch (ex) { }\r\n');
                 }
             }
         }
@@ -2643,7 +2651,7 @@ function CreateMeshCentralServer(config, args) {
                     obj.meshToolsBinaries[this.toolname] = { hash: data.toString('hex'), hashx: this.hashx, path: this.toolpath, dlname: this.dlname, url: this.url };
                     obj.meshToolsBinaries[this.toolname].url = 'https://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?meshaction=' + this.dlname;
                     var stats = null;
-                    try { stats = obj.fs.statSync(this.toolpath); } catch (e) { }
+                    try { stats = obj.fs.statSync(this.toolpath); } catch (ex) { }
                     if (stats != null) { obj.meshToolsBinaries[this.toolname].size = stats.size; }
                 });
                 var options = { sourcePath: toolpath, targetStream: hashStream };
@@ -2670,7 +2678,7 @@ function CreateMeshCentralServer(config, args) {
                         obj.meshToolsBinaries[this.toolname].dlname = this.dlname;
                         obj.meshToolsBinaries[this.toolname].url = 'https://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?meshaction=' + this.dlname;
                         var stats = null;
-                        try { stats = obj.fs.statSync(this.agentpath); } catch (e) { }
+                        try { stats = obj.fs.statSync(this.agentpath); } catch (ex) { }
                         if (stats != null) { obj.meshToolsBinaries[this.toolname].size = stats.size; }
                     });
                     stream.toolname = toolname;
@@ -2678,7 +2686,7 @@ function CreateMeshCentralServer(config, args) {
                     stream.dlname = meshToolsList[toolname].dlname;
                     stream.hash = obj.crypto.createHash('sha384', stream);
                     stream.hashx = 0;
-                } catch (e) { }
+                } catch (ex) { }
             }
         }
     };
@@ -2712,7 +2720,7 @@ function CreateMeshCentralServer(config, args) {
                     obj.meshAgentInstallScripts[this.info.id].data = this.xdata;
                     obj.meshAgentInstallScripts[this.info.id].url = 'https://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?script=' + this.info.id;
                     var stats = null;
-                    try { stats = obj.fs.statSync(this.agentpath); } catch (e) { }
+                    try { stats = obj.fs.statSync(this.agentpath); } catch (ex) { }
                     if (stats != null) { obj.meshAgentInstallScripts[this.info.id].size = stats.size; }
 
                     // Place Unit line breaks on Linux scripts if not already present.
@@ -2721,7 +2729,7 @@ function CreateMeshCentralServer(config, args) {
                 stream.info = meshAgentsInstallScriptList[scriptid];
                 stream.agentpath = scriptpath;
                 stream.hash = obj.crypto.createHash('sha384', stream);
-            } catch (e) { }
+            } catch (ex) { }
         }
     };
     
@@ -2786,7 +2794,7 @@ function CreateMeshCentralServer(config, args) {
 
             // Fetch all the agent binary information
             var stats = null;
-            try { stats = obj.fs.statSync(agentpath); } catch (e) { }
+            try { stats = obj.fs.statSync(agentpath); } catch (ex) { }
             if ((stats != null)) {
                 // If file exists
                 archcount++;
@@ -2798,7 +2806,7 @@ function CreateMeshCentralServer(config, args) {
 
                 // If this is a windows binary, pull binary information
                 if (obj.meshAgentsArchitectureNumbers[archid].platform == 'win32') {
-                    try { obj.meshAgentBinaries[archid].pe = obj.exeHandler.parseWindowsExecutable(agentpath); } catch (e) { }
+                    try { obj.meshAgentBinaries[archid].pe = obj.exeHandler.parseWindowsExecutable(agentpath); } catch (ex) { }
                 }
 
                 // If agents must be stored in RAM or if this is a Windows 32/64 agent, load the agent in RAM.
@@ -3235,7 +3243,7 @@ function getConfig(createSampleConfig) {
         datapath = path.join(__dirname, '../meshcentral-data');
     }
     if (args.datapath) { datapath = args.datapath; }
-    try { fs.mkdirSync(datapath); } catch (e) { }
+    try { fs.mkdirSync(datapath); } catch (ex) { }
 
     // Read configuration file if present and change arguments.
     var config = {}, configFilePath = path.join(datapath, 'config.json');
@@ -3244,7 +3252,7 @@ function getConfig(createSampleConfig) {
     }
     if (fs.existsSync(configFilePath)) {
         // Load and validate the configuration file
-        try { config = require(configFilePath); } catch (e) { console.log('ERROR: Unable to parse ' + configFilePath + '.'); return null; }
+        try { config = require(configFilePath); } catch (ex) { console.log('ERROR: Unable to parse ' + configFilePath + '.'); return null; }
         if (config.domains == null) { config.domains = {}; }
         for (i in config.domains) { if ((i.split('/').length > 1) || (i.split(' ').length > 1)) { console.log("ERROR: Error in config.json, domain names can't have spaces or /."); return null; } }
     } else {
@@ -3292,7 +3300,7 @@ function InstallModules(modules, func) {
                     if (typeof dependencies[moduleName] != undefined) { moduleVersion = dependencies[moduleName]; }
                     require(moduleName);
                 }
-            } catch (e) {
+            } catch (ex) {
                 if (previouslyInstalledModules[modules[i]] !== true) { missingModules.push(moduleNameAndVersion); }
             }
         }
