@@ -1144,7 +1144,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             }
 
                             // Check if email address needs to be confirmed
-                            var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+                            const emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
                             if (emailcheck && (user.emailVerified !== true)) {
                                 parent.debug('web', 'Redirecting using ' + user.name + ' to email check login page');
                                 req.session.messageid = 3; // "Email verification required" message
@@ -1165,7 +1165,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Check if email address needs to be confirmed
-                var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+                const emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
                 if (emailcheck && (user.emailVerified !== true)) {
                     parent.debug('web', 'Redirecting using ' + user.name + ' to email check login page');
                     req.session.messageid = 3; // "Email verification required" message
@@ -1459,7 +1459,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
 
         // Check everything is ok
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
+        const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false));
+        if ((allowAccountReset === false) || (domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
             parent.debug('web', 'handleResetPasswordRequest: checks failed');
             delete req.session.u2f;
             delete req.session.loginmode;
@@ -1568,7 +1569,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function handleResetAccountRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
-        if ((domain.auth == 'sspi') || (domain.auth == 'ldap') || (obj.args.lanonly == true) || (obj.parent.certificates.CommonName == null) || (obj.parent.certificates.CommonName.indexOf('.') == -1)) { parent.debug('web', 'handleResetAccountRequest: check failed'); res.sendStatus(404); return; }
+        const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false));
+        if ((allowAccountReset === false) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (obj.args.lanonly == true) || (obj.parent.certificates.CommonName == null) || (obj.parent.certificates.CommonName.indexOf('.') == -1)) { parent.debug('web', 'handleResetAccountRequest: check failed'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
 
@@ -2903,7 +2905,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             delete req.session.messageid;
             delete req.session.passhint;
         }
-        var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+        const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false));
+        const emailcheck = (allowAccountReset && (domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
 
         // Check if we are allowed to create new users using the login screen
         var newAccountsAllowed = true;
@@ -6456,7 +6459,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 var user = obj.users[userid];
                                 if ((err == null) && (user)) {
                                     // Check if a 2nd factor is needed
-                                    var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+                                    const emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
 
                                     // See if we support two-factor trusted cookies
                                     var twoFactorCookieDays = 30;
@@ -6586,7 +6589,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Check if inner authentication is requested
             if (req.headers['x-meshauth'] === '*') { func(ws, req, domain, null); return; }
 
-            var emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+            const emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
 
             // A web socket session can be authenticated in many ways (Default user, session, user/pass and cookie). Check authentication here.
             if ((req.query.user != null) && (req.query.pass != null)) {
