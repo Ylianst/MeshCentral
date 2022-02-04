@@ -13341,11 +13341,11 @@
             1: "Account login",
             2: "Account logout",
             3: "Changed language from {1} to {2}",
-            4: "Joined desktop multiplex session",
-            5: "Left the desktop multiplex session",
-            6: "Started desktop multiplex session",
-            7: "Finished recording session, {0} second(s)",
-            8: "Closed desktop multiplex session, {0} second(s)",
+            4: "Joined desktop multiplex session", // No longer in use, replaced with 143
+            5: "Left the desktop multiplex session", // No longer in use, replaced with 144
+            6: "Started desktop multiplex session", // No longer in use, replaced with 145
+            7: "Finished recording session, {0} second(s)", // No longer in use, replaced with 146
+            8: "Closed desktop multiplex session, {0} second(s)", // No longer in use, replaced with 147
             9: "Ended relay session \"{0}\" from {1} to {2}, {3} second(s)",
             10: "Ended terminal session \"{0}\" from {1} to {2}, {3} second(s)",
             11: "Ended desktop session \"{0}\" from {1} to {2}, {3} second(s)",
@@ -13459,7 +13459,7 @@
             119: "This agent is using insecure tunnels, consider updating.",
             120: "Started local relay session \"{0}\", protocol {1} to {2}",
             121: "Ended local relay session \"{0}\", protocol {1} to {2}, {3} second(s)",
-            122: "Left the desktop multiplex session after {0} second(s).",
+            122: "Left the desktop multiplex session after {0} second(s).", // No longer in use, replaced with 144
             123: "Left Web-SSH session after {0} second(s).",
             124: "Left Web-SFTP session after {0} second(s).",
             125: "Left Web-RDP session after {0} second(s).",
@@ -13479,7 +13479,12 @@
             139: "Added device share {0} recurring weekly.",
             140: "Changed device {0} from group {1}: {2}",
             141: "Intel(r) AMT policy change",
-            142: "Device group {0} was changed: {1}"
+            142: "Device group {0} was changed: {1}",
+            143: "Joined desktop multiplex session \"{0}\"",
+            144: "Left the desktop multiplex session \"{0}\" after {0} second(s).",
+            145: "Started desktop multiplex session \"{0}\"",
+            146: "Finished recording session \"{0}\", {0} second(s)",
+            147: "Closed desktop multiplex session \"{0}\", {0} second(s)"
         };
 
         var eventsShortMessageId = {
