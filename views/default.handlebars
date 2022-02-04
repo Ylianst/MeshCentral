@@ -7411,8 +7411,8 @@
             var url = serverinfo.altmessenging[i].url.split('{0}').join(currentNode._id.split('/').join('-'));
             var localurl = url;
             if (typeof serverinfo.altmessenging[i].localurl == 'string') { localurl = serverinfo.altmessenging[i].localurl.split('{0}').join(currentNode._id.split('/').join('-')); }
-            meshserver.send({ action: 'msg', type: 'openUrl', nodeid: currentNode._id, url: url });
-            safeNewWindow(localurl, 'altmessenger:' + currentNode._id, 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=400,height=560');
+            if (url != '') { meshserver.send({ action: 'msg', type: 'openUrl', nodeid: currentNode._id, url: url }); }
+            if (localurl != '') { safeNewWindow(localurl, 'altmessenger:' + currentNode._id, 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=400,height=560'); }
         }
 
         function deviceToggleBackground() {
