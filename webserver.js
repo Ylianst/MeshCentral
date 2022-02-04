@@ -7440,6 +7440,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var mobile = isMobileBrowser(req), minify = (domain.minify == true), p;
         if (req.query.mobile == '1') { mobile = true; } else if (req.query.mobile == '0') { mobile = false; }
         if (req.query.minify == '1') { minify = true; } else if (req.query.minify == '0') { minify = false; }
+        if ((domain != null) && (domain.mobilesite === false)) { mobile = false; }
         if (mobile) {
             if ((domain != null) && (domain.webviewspath != null)) { // If the domain has a web views path, use that first
                 if (minify) {
