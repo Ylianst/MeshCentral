@@ -91,6 +91,8 @@
     "elevation": "Zum Installieren/Deinstallieren dieser Software sind erhöhte Berechtigungen erforderlich.",
     "graphicalerror": "Die grafische Version dieses Installationsprogramms kann auf diesem System nicht ausgeführt werden",
     "description": "Klicken Sie auf die Schaltflächen unten, um diese Fernverwaltungssoftware zu installieren oder zu deinstallieren. Nach der Installation wird diese Software im Hintergrund ausgeführt, sodass dieser Computer von einem entfernten Administrator verwaltet und gesteuert werden kann."
+    "connectionDetailsButton": "Verbindungsinformationen...", 
+    "connectionDetailsTitle": "Verbindungsinformationen"
   },
   "es": {
     "agent": "Agente",
