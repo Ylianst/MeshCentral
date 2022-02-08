@@ -727,7 +727,7 @@
                                         <div style="margin-top:5px"><span id="changeEmailId" style="display:none"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></span></div>
                                         <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span></div>
                                         <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
-                                        <div style="margin-top:5px"><a onclick="toggleNightMode()" style="cursor:pointer">Set dark mode</a></div>
+                                        <div style="margin-top:5px" id="setDarkModeLink"><a onclick="toggleNightMode()" style="cursor:pointer">Set dark mode</a></div>
                                         <div style="margin-top:5px"><a onclick="showNotes(false)" style="cursor:pointer">Personal notes</a></div>
                                     </div>
                                 <br style=clear:both />
@@ -1308,6 +1308,9 @@
 
             // Session Refresh Timer
             if (sessionTime >= 10) { sessionRefreshTimer = setTimeout(refreshCookieSession, Math.round((sessionTime * 60000) * 0.8)); }
+
+            // Hide night mode button if needed
+            QV('setDarkModeLink', (features2 & 0x00300000) == 0);
 
             // Set the user's desktop shortcut keys
             deskKeyboardShortcuts = [];
@@ -2209,6 +2212,8 @@
             // Set night mode
             var nNightMode = getstore('nightMode', '0')
             nightMode = false;
+            if ((features2 & 0x00100000) != 0) { nNightMode = '1'; }
+            if ((features2 & 0x00200000) != 0) { nNightMode = '2'; }
             if (nNightMode == '1') { nightMode = true; }
             else if ((nNightMode == '0') && (window.matchMedia)) { nightMode = window.matchMedia('(prefers-color-scheme: dark)').matches }
             if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; QS('body')['color'] = 'lightgray'; } else { QC('body').remove('night'); QS('body')['background-color'] = '#FFF'; QS('body')['color'] = 'black'; }

@@ -301,6 +301,7 @@
           "rootRedirect": { "type": "string", "default": null, "description": "Redirects HTTP root requests to this URL. When in use, direct users to /login to see the normal login page." },
           "mobileSite": { "type": "boolean", "default": true, "description": "When set to false, this setting will disable the mobile site." },
           "unknownUserRootRedirect": { "type": "string", "default": null, "description": "Redirects HTTP root requests to this URL only where user is not already logged in. When in use, direct users to /login to see the normal login page." },
+          "nightMode": { "type": "integer", "default": 0, "description": "0 = User selects day/night mode, 1 = Always night mode, 2 = Always day mode" },
           "userQuota": { "type": "integer" },
           "meshQuota": { "type": "integer" },
           "loginKey": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": null, "description": "Requires that users add the value ?key=xxx in the URL in order to see the web site." },
