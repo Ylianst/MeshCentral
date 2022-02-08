@@ -2887,6 +2887,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((domain.passwordrequirements) && (domain.passwordrequirements.otp2factor == false)) { features2 += 0x00020000; } // Indicates support for OTP 2FA is disabled
         if ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.backupcode2factor === false)) { features2 += 0x00040000; } // Indicates 2FA backup codes are disabled
         if ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.single2factorwarning === false)) { features2 += 0x00080000; } // Indicates no warning if a single 2FA is in use
+        if (domain.nightmode === 1) { features2 += 0x00100000; } // Always night mode
+        if (domain.nightmode === 2) { features2 += 0x00200000; } // Always day mode
         return { features: features, features2: features2 };
     }
 

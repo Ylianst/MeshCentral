@@ -1645,6 +1645,9 @@
             // Fix links
             if (urlargs.key) { Q('p6backuplink').href += '?key=' + urlargs.key; }
 
+            // Hide night mode button if needed
+            QV('uiViewButton4', (features2 & 0x00300000) == 0);            
+
             // Fix HTML words that in english have two or more meanings
             Q('DeskType').value = multiTranslate("[KeyboardTyping]|Type");
         }
@@ -1923,6 +1926,8 @@
             // Set night mode
             var nNightMode = getstore('nightMode', '0')
             nightMode = false;
+            if ((features2 & 0x00100000) != 0) { nNightMode = '1'; }
+            if ((features2 & 0x00200000) != 0) { nNightMode = '2'; }
             if (nNightMode == '1') { nightMode = true; }
             else if ((nNightMode == '0') && (window.matchMedia)) { nightMode = window.matchMedia('(prefers-color-scheme: dark)').matches }
             if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; } else { QC('body').remove('night'); QS('body')['background-color'] = '#d3d9d6'; }
