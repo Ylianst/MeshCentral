@@ -5265,7 +5265,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Perform email invitation
                         if ((command.emailInvitation == true) && (command.emailVerified == true) && command.email && domain.mailserver) {
-                            domain.mailserver.sendAccountInviteMail(newuserdomain, (user.realname ? user.realname : user.name), newusername, command.email.toLowerCase(), command.pass, parent.getLanguageCodes(req));
+                            domain.mailserver.sendAccountInviteMail(newuserdomain, (user.realname ? user.realname : user.name), newusername, command.email.toLowerCase(), command.pass, parent.getLanguageCodes(req), req.query.key);
                         }
 
                         // Log in the auth log
@@ -5504,7 +5504,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' changed email from ' + oldemail + ' to ' + user.email); }
 
                     // Send the verification email
-                    if (domain.mailserver != null) { domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req)); }
+                    if (domain.mailserver != null) { domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req), req.query.key); }
                 }
             });
         }
@@ -6100,7 +6100,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         if ((domain.mailserver != null) && (obj.user.email.toLowerCase() == command.email)) {
             // Send the verification email
-            domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req));
+            domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req), req.query.key);
         }
     }
 
