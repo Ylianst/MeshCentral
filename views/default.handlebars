@@ -2116,7 +2116,7 @@
             if (userinfo.otphkeys > 0) { authFactorCount += userinfo.otphkeys; } // FIDO hardware factor
             if ((features & 0x00800000) && (userinfo.otpekey == 1)) { authFactorCount++; } // EMail factor
             if ((features & 0x02000000) && (features & 0x04000000) && (userinfo.phone != null)) { authFactorCount++; } // SMS factor
-            if ((authFactorCount > 0) && (userinfo.otpkeys > 0)) { authFactorCount++; } // Backup keys
+            if ((authFactorCount > 0) && (userinfo.otpkeys > 0) && ((features & 0x40000) == 0)) { authFactorCount++; } // Backup keys
             return authFactorCount;
         }
 
@@ -2126,7 +2126,7 @@
             var accountSettingsLocked = ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 1024) != 0));
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
             QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true) && (accountSettingsLocked == false));
-            QV('manageOtp', (serverinfo.lock2factor != true) && (authFactorCount > 0));
+            QV('manageOtp', (serverinfo.lock2factor != true) && (authFactorCount > 0) && ((features2 & 0x40000) == 0));
             QV('authPhoneNumberCheck', (userinfo.phone != null));
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
@@ -2139,7 +2139,7 @@
             mainUpdate(4 + 128 + 4096);
 
             // Check if none or at least 2 factors are enabled.
-            if ((backupCodesWarningDone == false) && (authFactorCount == 1)) {
+            if ((backupCodesWarningDone == false) && (authFactorCount == 1) && ((features2 & 0x80000) == 0)) {
                 addNotification({ text: "Please add two-factor backup codes. If the current factor is lost, there is no way to recover this account.", title: "Two factor authentication", tag: 'backupcodes' });
                 backupCodesWarningDone = true;
             }

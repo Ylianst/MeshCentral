@@ -443,6 +443,8 @@
               "sms2factor": { "type": "boolean", "default": true, "description": "Set to false to disable SMS 2FA." },
               "push2factor": { "type": "boolean", "default": true, "description": "Set to false to disable push notification 2FA." },
               "otp2factor": { "type": "boolean", "default": true, "description": "Set to false to disable one-time-password 2FA." },
+              "backupcode2factor": { "type": "boolean", "default": true, "description": "Set to false to disable 2FA backup codes." },
+              "single2factorWarning": { "type": "boolean", "default": true, "description": "Set to false to disable single 2FA warning." },
               "lock2factor": { "type": "boolean", "default": false, "description": "When set to true, prevents any changes to 2FA." },
               "force2factor": { "type": "boolean", "default": false, "description": "Requires that all accounts setup 2FA." },
               "skip2factor": { "type": "string", "description": "IP addresses where 2FA login is skipped, for example: 127.0.0.1,192.168.2.0/24" },
