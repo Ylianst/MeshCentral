@@ -2885,6 +2885,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.devicesearchbarserverandclientname) { features2 += 0x00008000; } // Search bar will find both server name and client name
         if (domain.ipkvm) { features2 += 0x00010000; } // Indicates support for IP KVM device groups
         if ((domain.passwordrequirements) && (domain.passwordrequirements.otp2factor == false)) { features2 += 0x00020000; } // Indicates support for OTP 2FA is disabled
+        if ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.backupcode2factor === false)) { features2 += 0x00040000; } // Indicates 2FA backup codes are disabled
+        if ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.single2factorwarning === false)) { features2 += 0x00080000; } // Indicates no warning if a single 2FA is in use
         return { features: features, features2: features2 };
     }
 
