@@ -3177,30 +3177,43 @@ function openUserDesktopUrl(url) {
                 var uid = require('user-sessions').consoleUid();
                 var user = require('user-sessions').getUsername(uid);
                 var domain = require('user-sessions').getDomain(uid);
-                var taskoptions = { env: { _target: process.env['windir'] + '\\system32\\cmd.exe', _args: '/C START ' + url.split('&').join('^&'), _user: '"' + domain + '\\' + user + '"' } };
-                for (var c1e in process.env) {
-                    taskoptions.env[c1e] = process.env[c1e];
-                }
-                var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], taskoptions);
-                child.stderr.on('data', function (c) { });
-                child.stdout.on('data', function (c) { });
-                child.stdin.write('SCHTASKS /CREATE /F /TN MeshChatTask /SC ONCE /ST 00:00 ');
-                if (user) { child.stdin.write('/RU $env:_user '); }
-                child.stdin.write('/TR "$env:_target $env:_args"\r\n');
-                child.stdin.write('$ts = New-Object -ComObject Schedule.service\r\n');
-                child.stdin.write('$ts.connect()\r\n');
-                child.stdin.write('$tsfolder = $ts.getfolder("\\")\r\n');
-                child.stdin.write('$task = $tsfolder.GetTask("MeshChatTask")\r\n');
-                child.stdin.write('$taskdef = $task.Definition\r\n');
-                child.stdin.write('$taskdef.Settings.StopIfGoingOnBatteries = $false\r\n');
-                child.stdin.write('$taskdef.Settings.DisallowStartIfOnBatteries = $false\r\n');
-                child.stdin.write('$taskdef.Actions.Item(1).Path = $env:_target\r\n');
-                child.stdin.write('$taskdef.Actions.Item(1).Arguments = $env:_args\r\n');
-                child.stdin.write('$tsfolder.RegisterTaskDefinition($task.Name, $taskdef, 4, $null, $null, $null)\r\n');
+                var task = { name: 'MeshChatTask', user: user, domain: domain, execPath: process.env['windir'] + '\\system32\\cmd.exe', arguments: ['/C START ' + url.split('&').join('^&')] };
 
-                child.stdin.write('SCHTASKS /RUN /TN MeshChatTask\r\n');
-                child.stdin.write('SCHTASKS /DELETE /F /TN MeshChatTask\r\nexit\r\n');
-                child.waitExit();
+                try
+                {
+                    require('win-tasks').addTask(task);
+                    require('win-tasks').getTask({ name: 'MeshChatTask' }).run();
+                    require('win-tasks').deleteTask('MeshChatTask');
+                    return (true);
+                }
+                catch(zz)
+                {
+                    var taskoptions = { env: { _target: process.env['windir'] + '\\system32\\cmd.exe', _args: '/C START ' + url.split('&').join('^&'), _user: '"' + domain + '\\' + user + '"' } };
+                    for (var c1e in process.env)
+                    {
+                        taskoptions.env[c1e] = process.env[c1e];
+                    }
+                    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], taskoptions);
+                    child.stderr.on('data', function (c) { });
+                    child.stdout.on('data', function (c) { });
+                    child.stdin.write('SCHTASKS /CREATE /F /TN MeshChatTask /SC ONCE /ST 00:00 ');
+                    if (user) { child.stdin.write('/RU $env:_user '); }
+                    child.stdin.write('/TR "$env:_target $env:_args"\r\n');
+                    child.stdin.write('$ts = New-Object -ComObject Schedule.service\r\n');
+                    child.stdin.write('$ts.connect()\r\n');
+                    child.stdin.write('$tsfolder = $ts.getfolder("\\")\r\n');
+                    child.stdin.write('$task = $tsfolder.GetTask("MeshChatTask")\r\n');
+                    child.stdin.write('$taskdef = $task.Definition\r\n');
+                    child.stdin.write('$taskdef.Settings.StopIfGoingOnBatteries = $false\r\n');
+                    child.stdin.write('$taskdef.Settings.DisallowStartIfOnBatteries = $false\r\n');
+                    child.stdin.write('$taskdef.Actions.Item(1).Path = $env:_target\r\n');
+                    child.stdin.write('$taskdef.Actions.Item(1).Arguments = $env:_args\r\n');
+                    child.stdin.write('$tsfolder.RegisterTaskDefinition($task.Name, $taskdef, 4, $null, $null, $null)\r\n');
+
+                    child.stdin.write('SCHTASKS /RUN /TN MeshChatTask\r\n');
+                    child.stdin.write('SCHTASKS /DELETE /F /TN MeshChatTask\r\nexit\r\n');
+                    child.waitExit();
+                }
                 break;
             case 'linux':
                 child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', url], { uid: require('user-sessions').consoleUid() });

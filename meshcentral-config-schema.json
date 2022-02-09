@@ -299,7 +299,9 @@
           "titlePicture": { "type": "string", "default": null, "description": "Web site .png logo file that is 450x66 in size placed in meshcentral-data that is used on the top of many pages." },
           "loginPicture": { "type": "string", "default": null, "description": "Web site .png logo file placed in meshcentral-data that used on the login page when sitestyle is 2." },
           "rootRedirect": { "type": "string", "default": null, "description": "Redirects HTTP root requests to this URL. When in use, direct users to /login to see the normal login page." },
+          "mobileSite": { "type": "boolean", "default": true, "description": "When set to false, this setting will disable the mobile site." },
           "unknownUserRootRedirect": { "type": "string", "default": null, "description": "Redirects HTTP root requests to this URL only where user is not already logged in. When in use, direct users to /login to see the normal login page." },
+          "nightMode": { "type": "integer", "default": 0, "description": "0 = User selects day/night mode, 1 = Always night mode, 2 = Always day mode" },
           "userQuota": { "type": "integer" },
           "meshQuota": { "type": "integer" },
           "loginKey": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": null, "description": "Requires that users add the value ?key=xxx in the URL in order to see the web site." },
@@ -442,6 +444,8 @@
               "sms2factor": { "type": "boolean", "default": true, "description": "Set to false to disable SMS 2FA." },
               "push2factor": { "type": "boolean", "default": true, "description": "Set to false to disable push notification 2FA." },
               "otp2factor": { "type": "boolean", "default": true, "description": "Set to false to disable one-time-password 2FA." },
+              "backupcode2factor": { "type": "boolean", "default": true, "description": "Set to false to disable 2FA backup codes." },
+              "single2factorWarning": { "type": "boolean", "default": true, "description": "Set to false to disable single 2FA warning." },
               "lock2factor": { "type": "boolean", "default": false, "description": "When set to true, prevents any changes to 2FA." },
               "force2factor": { "type": "boolean", "default": false, "description": "Requires that all accounts setup 2FA." },
               "skip2factor": { "type": "string", "description": "IP addresses where 2FA login is skipped, for example: 127.0.0.1,192.168.2.0/24" },
@@ -450,7 +454,8 @@
               "loginTokens": { "type": "boolean", "default": true, "description": "Allows users to create alternative username/passwords for their account." },
               "twoFactorTimeout": { "type": "integer", "default": 300, "description": "Maximum about of time the to wait for a 2FA token on the login page in seconds." },
               "autofido2fa": { "type": "boolean", "default": false, "description": "If true and user account has FIDO key setup, 2FA login screen will automatically request FIDO 2FA." },
-              "maxfidokeys": { "type": "integer", "default": null, "description": "Maximum number of FIDO/YubikeyOTP hardware 2FA keys that can be setup in a user account." }
+              "maxfidokeys": { "type": "integer", "default": null, "description": "Maximum number of FIDO/YubikeyOTP hardware 2FA keys that can be setup in a user account." },
+              "allowaccountreset": { "type": "boolean", "default": true, "description": "If set to false, the account reset option on the login screen will not be available to users." }
             }
           },
           "twoFactorCookieDurationDays": { "type": "integer", "default": 30, "description": "Number of days that a user is allowed to remember this device for when completing 2FA. Set this to 0 to remove this option." },
@@ -510,6 +515,7 @@
               "description": { "type": "string", "default": "Mesh Agent background service", "description": "The description of the agent as displayed to the user." },
               "companyName": { "type": "string", "default": "Mesh Agent", "description": "This will be used as the path to install the agent, by default this is 'Mesh Agent' in Windows and 'meshagent' in other OS's." },
               "serviceName": { "type": "string", "default": "Mesh Agent", "description": "The name of the background service, by default this is 'Mesh Agent' in Windows and 'meshagent' in other OS's but should be set to an all lower case, no space string." },
+              "installText": { "type": "string", "default": null, "description": "Text string to show in the agent installation dialog box." },
               "image": { "type": "string", "default": null, "description": "The filename of a image file in .png format located in meshcentral-data to display in the MeshCentral Agent installation dialog, image should be square and from 64x64 to 200x200." },
               "fileName": { "type": "string", "default": "meshagent", "description": "The agent filename." }
             }

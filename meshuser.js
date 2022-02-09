@@ -3183,6 +3183,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Do not allow this command if 2FA's are locked
                     if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
 
+                    // Do not allow this command if backup codes are not allowed
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.backupcode2factor == false)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -3210,6 +3213,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Do not allow this command if 2FA's are locked
                     if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
+                    // Do not allow this command if backup codes are not allowed
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.backupcode2factor == false)) return;
 
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
@@ -3250,6 +3256,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Do not allow this command if 2FA's are locked
                     if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
 
+                    // Do not allow this command if backup codes are not allowed
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.backupcode2factor == false)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
@@ -3280,6 +3289,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Do not allow this command if 2FA's are locked
                     if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
+                    // Do not allow this command if backup codes are not allowed
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.backupcode2factor == false)) return;
 
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
@@ -4571,7 +4583,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (type == 'csv') {
                             try {
                                 // Create the CSV file
-                                output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,avdetails,cpu,osbuild,biosDate,biosVendor,biosVersion,boardName,boardVendor,boardVersion,productUuid,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses,lastConnectTime,lastConnectAddr\r\n';
+                                output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,avdetails,cpu,osbuild,biosDate,biosVendor,biosVersion,boardName,boardVendor,boardVersion,productUuid,totalMemory,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses,lastConnectTime,lastConnectAddr\r\n';
                                 for (var i = 0; i < results.length; i++) {
                                     const nodeinfo = results[i];
 
@@ -4613,6 +4625,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.board_version)) { output += csvClean(nodeinfo.sys.hardware.identifiers.board_version); }
                                         output += ',';
                                         if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.product_uuid)) { output += csvClean(nodeinfo.sys.hardware.identifiers.product_uuid); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.windows.memory) {
+                                            var totalMemory = 0;
+                                            for (var j in nodeinfo.sys.hardware.windows.memory) {
+                                                if (nodeinfo.sys.hardware.windows.memory[j].Capacity) {
+                                                    if (typeof nodeinfo.sys.hardware.windows.memory[j].Capacity == 'number') { totalMemory += nodeinfo.sys.hardware.windows.memory[j].Capacity; }
+                                                    if (typeof nodeinfo.sys.hardware.windows.memory[j].Capacity == 'string') { totalMemory += parseInt(nodeinfo.sys.hardware.windows.memory[j].Capacity); }
+                                                }
+                                            }
+                                            output += csvClean('' + totalMemory);
+                                        }
                                     } else if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.mobile)) {
                                         // Mobile
                                         output += ',';
@@ -4628,6 +4651,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         output += ',';
                                         output += ',';
                                         if (nodeinfo.sys.hardware.mobile && (nodeinfo.sys.hardware.mobile.id)) { output += csvClean(nodeinfo.sys.hardware.mobile.id); }
+                                        output += ',';
                                     } else if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.windows) && (nodeinfo.sys.hardware.linux)) {
                                         // Linux
                                         output += ',';
@@ -4646,8 +4670,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.board_version)) { output += csvClean(nodeinfo.sys.hardware.linux.board_version); }
                                         output += ',';
                                         if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.product_uuid)) { output += csvClean(nodeinfo.sys.hardware.linux.product_uuid); }
+                                        output += ',';
                                     } else {
-                                        output += ',,,,,,,,,';
+                                        output += ',,,,,,,,,,';
                                     }
 
                                     // Agent information
@@ -5265,7 +5290,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Perform email invitation
                         if ((command.emailInvitation == true) && (command.emailVerified == true) && command.email && domain.mailserver) {
-                            domain.mailserver.sendAccountInviteMail(newuserdomain, (user.realname ? user.realname : user.name), newusername, command.email.toLowerCase(), command.pass, parent.getLanguageCodes(req));
+                            domain.mailserver.sendAccountInviteMail(newuserdomain, (user.realname ? user.realname : user.name), newusername, command.email.toLowerCase(), command.pass, parent.getLanguageCodes(req), req.query.key);
                         }
 
                         // Log in the auth log
@@ -5504,7 +5529,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' changed email from ' + oldemail + ' to ' + user.email); }
 
                     // Send the verification email
-                    if (domain.mailserver != null) { domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req)); }
+                    if (domain.mailserver != null) { domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req), req.query.key); }
                 }
             });
         }
@@ -6100,7 +6125,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         if ((domain.mailserver != null) && (obj.user.email.toLowerCase() == command.email)) {
             // Send the verification email
-            domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req));
+            domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req), req.query.key);
         }
     }
 

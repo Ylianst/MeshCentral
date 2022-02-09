@@ -1645,6 +1645,9 @@
             // Fix links
             if (urlargs.key) { Q('p6backuplink').href += '?key=' + urlargs.key; }
 
+            // Hide night mode button if needed
+            QV('uiViewButton4', (features2 & 0x00300000) == 0);            
+
             // Fix HTML words that in english have two or more meanings
             Q('DeskType').value = multiTranslate("[KeyboardTyping]|Type");
         }
@@ -1923,6 +1926,8 @@
             // Set night mode
             var nNightMode = getstore('nightMode', '0')
             nightMode = false;
+            if ((features2 & 0x00100000) != 0) { nNightMode = '1'; }
+            if ((features2 & 0x00200000) != 0) { nNightMode = '2'; }
             if (nNightMode == '1') { nightMode = true; }
             else if ((nNightMode == '0') && (window.matchMedia)) { nightMode = window.matchMedia('(prefers-color-scheme: dark)').matches }
             if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; } else { QC('body').remove('night'); QS('body')['background-color'] = '#d3d9d6'; }
@@ -2116,7 +2121,7 @@
             if (userinfo.otphkeys > 0) { authFactorCount += userinfo.otphkeys; } // FIDO hardware factor
             if ((features & 0x00800000) && (userinfo.otpekey == 1)) { authFactorCount++; } // EMail factor
             if ((features & 0x02000000) && (features & 0x04000000) && (userinfo.phone != null)) { authFactorCount++; } // SMS factor
-            if ((authFactorCount > 0) && (userinfo.otpkeys > 0)) { authFactorCount++; } // Backup keys
+            if ((authFactorCount > 0) && (userinfo.otpkeys > 0) && ((features & 0x40000) == 0)) { authFactorCount++; } // Backup keys
             return authFactorCount;
         }
 
@@ -2126,7 +2131,7 @@
             var accountSettingsLocked = ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 1024) != 0));
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
             QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true) && (accountSettingsLocked == false));
-            QV('manageOtp', (serverinfo.lock2factor != true) && (authFactorCount > 0));
+            QV('manageOtp', (serverinfo.lock2factor != true) && (authFactorCount > 0) && ((features2 & 0x40000) == 0));
             QV('authPhoneNumberCheck', (userinfo.phone != null));
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
@@ -2139,7 +2144,7 @@
             mainUpdate(4 + 128 + 4096);
 
             // Check if none or at least 2 factors are enabled.
-            if ((backupCodesWarningDone == false) && (authFactorCount == 1)) {
+            if ((backupCodesWarningDone == false) && (authFactorCount == 1) && ((features2 & 0x80000) == 0)) {
                 addNotification({ text: "Please add two-factor backup codes. If the current factor is lost, there is no way to recover this account.", title: "Two factor authentication", tag: 'backupcodes' });
                 backupCodesWarningDone = true;
             }
@@ -7411,8 +7416,8 @@
             var url = serverinfo.altmessenging[i].url.split('{0}').join(currentNode._id.split('/').join('-'));
             var localurl = url;
             if (typeof serverinfo.altmessenging[i].localurl == 'string') { localurl = serverinfo.altmessenging[i].localurl.split('{0}').join(currentNode._id.split('/').join('-')); }
-            meshserver.send({ action: 'msg', type: 'openUrl', nodeid: currentNode._id, url: url });
-            safeNewWindow(localurl, 'altmessenger:' + currentNode._id, 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=400,height=560');
+            if (url != '') { meshserver.send({ action: 'msg', type: 'openUrl', nodeid: currentNode._id, url: url }); }
+            if (localurl != '') { safeNewWindow(localurl, 'altmessenger:' + currentNode._id, 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=400,height=560'); }
         }
 
         function deviceToggleBackground() {
@@ -13341,11 +13346,11 @@
             1: "Account login",
             2: "Account logout",
             3: "Changed language from {1} to {2}",
-            4: "Joined desktop multiplex session",
-            5: "Left the desktop multiplex session",
-            6: "Started desktop multiplex session",
-            7: "Finished recording session, {0} second(s)",
-            8: "Closed desktop multiplex session, {0} second(s)",
+            4: "Joined desktop multiplex session", // No longer in use, replaced with 143
+            5: "Left the desktop multiplex session", // No longer in use, replaced with 144
+            6: "Started desktop multiplex session", // No longer in use, replaced with 145
+            7: "Finished recording session, {0} second(s)", // No longer in use, replaced with 146
+            8: "Closed desktop multiplex session, {0} second(s)", // No longer in use, replaced with 147
             9: "Ended relay session \"{0}\" from {1} to {2}, {3} second(s)",
             10: "Ended terminal session \"{0}\" from {1} to {2}, {3} second(s)",
             11: "Ended desktop session \"{0}\" from {1} to {2}, {3} second(s)",
@@ -13459,7 +13464,7 @@
             119: "This agent is using insecure tunnels, consider updating.",
             120: "Started local relay session \"{0}\", protocol {1} to {2}",
             121: "Ended local relay session \"{0}\", protocol {1} to {2}, {3} second(s)",
-            122: "Left the desktop multiplex session after {0} second(s).",
+            122: "Left the desktop multiplex session after {0} second(s).", // No longer in use, replaced with 144
             123: "Left Web-SSH session after {0} second(s).",
             124: "Left Web-SFTP session after {0} second(s).",
             125: "Left Web-RDP session after {0} second(s).",
@@ -13479,7 +13484,12 @@
             139: "Added device share {0} recurring weekly.",
             140: "Changed device {0} from group {1}: {2}",
             141: "Intel(r) AMT policy change",
-            142: "Device group {0} was changed: {1}"
+            142: "Device group {0} was changed: {1}",
+            143: "Joined desktop multiplex session \"{0}\"",
+            144: "Left the desktop multiplex session \"{0}\" after {1} second(s).",
+            145: "Started desktop multiplex session \"{0}\"",
+            146: "Finished recording session \"{0}\", {1} second(s)",
+            147: "Closed desktop multiplex session \"{0}\", {1} second(s)"
         };
 
         var eventsShortMessageId = {
