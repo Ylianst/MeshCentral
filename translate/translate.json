@@ -27728,7 +27728,7 @@
     {
       "cs": "Získejte schránku",
       "da": "Hent Udklipsholder",
-      "de": "Holen Sie sich die Zwischenablage",
+      "de": "Zwischenablage holen",
       "en": "Get Clipboard",
       "es": "Obtener portapapeles",
       "fi": "Hanki leikepöytä",
@@ -55848,7 +55848,7 @@
     {
       "cs": "Nastavit schránku",
       "da": "Indstil udklipsholder",
-      "de": "Zwischenablage festlegen",
+      "de": "Zwischenablage setzen",
       "en": "Set Clipboard",
       "es": "Asignar portapapeles",
       "fi": "Aseta leikepöytä",
