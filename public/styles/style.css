@@ -3217,3 +3217,12 @@ a {
 .night .thermalSensor {
     color: #000;
 }
+
+.desktopButtons {
+    padding-top: 2px;
+}
+
+    .night .desktopButtons {
+        filter: invert(60%);
+        -webkit-filter: invert(60%);
+    }
