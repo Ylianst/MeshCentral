@@ -4,7 +4,7 @@
     "agentVersion": "New Version",
     "group": "Device Group",
     "url": "Server URL",
-    "meshName": "Mesh Name",
+    "meshName": "Group Name",
     "meshId": "Group Identifier",
     "serverId": "Server Identifier",
     "setup": "Setup",
