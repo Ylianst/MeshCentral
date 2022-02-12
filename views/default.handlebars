@@ -2121,7 +2121,7 @@
             if (userinfo.otphkeys > 0) { authFactorCount += userinfo.otphkeys; } // FIDO hardware factor
             if ((features & 0x00800000) && (userinfo.otpekey == 1)) { authFactorCount++; } // EMail factor
             if ((features & 0x02000000) && (features & 0x04000000) && (userinfo.phone != null)) { authFactorCount++; } // SMS factor
-            if ((authFactorCount > 0) && (userinfo.otpkeys > 0) && ((features & 0x40000) == 0)) { authFactorCount++; } // Backup keys
+            if ((authFactorCount > 0) && (userinfo.otpkeys > 0) && ((features2 & 0x40000) == 0)) { authFactorCount++; } // Backup keys
             return authFactorCount;
         }
 
