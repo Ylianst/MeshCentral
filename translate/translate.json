@@ -28213,6 +28213,12 @@
       ]
     },
     {
+      "en": "Group Name",
+      "xloc": [
+        "agent-translations.json"
+      ]
+    },
+    {
       "cs": "Skupina vytvořená",
       "da": "Gruppér efter",
       "de": "Gruppiere nach",
@@ -38347,10 +38353,7 @@
       "sv": "Masknamn",
       "tr": "Mesh Adı",
       "zh-chs": "网格名称",
-      "zh-cht": "網格名稱",
-      "xloc": [
-        "agent-translations.json"
-      ]
+      "zh-cht": "網格名稱"
     },
     {
       "cs": "Mesh předávání (relay)",
@@ -55906,7 +55909,7 @@
       "tr": "Karanlık modu ayarla",
       "zh-chs": "设置深色模式",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->11->0"
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->setDarkModeLink->0"
       ]
     },
     {
