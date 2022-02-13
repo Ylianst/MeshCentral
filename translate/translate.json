@@ -956,6 +956,7 @@
     },
     {
       "en": ", 16 grays",
+      "nl": ", 16 grijstinten",
       "ru": ", 16 оттенков серого",
       "xloc": [
         "player.handlebars->3->35"
@@ -963,6 +964,7 @@
     },
     {
       "en": ", 256 grays",
+      "nl": ", 256 grijstinten",
       "ru": ", 256 оттенков серого",
       "xloc": [
         "player.handlebars->3->36"
@@ -1776,6 +1778,7 @@
     },
     {
       "en": "1 byte-per-pixel",
+      "nl": "1 byte per pixel",
       "ru": "1 байт на пиксель",
       "xloc": [
         "player.handlebars->3->34"
@@ -2630,6 +2633,7 @@
     },
     {
       "en": "2 byte-per-pixel",
+      "nl": "2 byte per pixel",
       "ru": "2 байта на пиксель",
       "xloc": [
         "player.handlebars->3->33"
@@ -13711,6 +13715,7 @@
     },
     {
       "en": "Closed desktop multiplex session \\\"{0}\\\", {1} second(s)",
+      "nl": "Gesloten desktop multiplexsessie \\\"{0}\\\", {1} seconde(n)",
       "xloc": [
         "default.handlebars->39->2277"
       ]
@@ -23774,6 +23779,7 @@
     },
     {
       "en": "Encoding Quality",
+      "nl": "Coderingskwaliteit",
       "ru": "Качество кодирования",
       "xloc": [
         "player.handlebars->3->37"
@@ -26115,6 +26121,7 @@
     },
     {
       "en": "Finished recording session \\\"{0}\\\", {1} second(s)",
+      "nl": "Beëindigde opnamesessie \\\"{0}\\\", {1} seconde(n)",
       "xloc": [
         "default.handlebars->39->2276"
       ]
@@ -28214,6 +28221,7 @@
     },
     {
       "en": "Group Name",
+      "nl": "Groepsnaam",
       "xloc": [
         "agent-translations.json"
       ]
@@ -33317,6 +33325,7 @@
     },
     {
       "en": "Joined desktop multiplex session \\\"{0}\\\"",
+      "nl": "Deelgenomen aan desktop multiplex-sessie \\\"{0}\\\"",
       "xloc": [
         "default.handlebars->39->2273"
       ]
@@ -34977,6 +34986,7 @@
     },
     {
       "en": "Left the desktop multiplex session \\\"{0}\\\" after {1} second(s).",
+      "nl": "Verliet de desktop multiplexsessie \\\"{0}\\\" na {1} seconde(n).",
       "xloc": [
         "default.handlebars->39->2274"
       ]
@@ -38134,6 +38144,7 @@
     },
     {
       "en": "Maximum keys reached.",
+      "nl": "Maximum aantal sleutels bereikt.",
       "xloc": [
         "default.handlebars->39->217"
       ]
@@ -58777,6 +58788,7 @@
     },
     {
       "en": "Started desktop multiplex session \\\"{0}\\\"",
+      "nl": "Startte een Desktop multiplexsessie \\\"{0}\\\"",
       "xloc": [
         "default.handlebars->39->2275"
       ]
