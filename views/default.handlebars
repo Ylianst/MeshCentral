@@ -17216,6 +17216,12 @@
             }
         }
 
+        // Quick fix for #3362 - Request Confirmation if MeshCentral-Browser-Tab is closed. - Maybe needs an option per User or Config.JSON-Setting
+        window.addEventListener('beforeunload', function (e) {
+            e.preventDefault();
+            e.returnValue = '';
+        });
+    
     </script>
 </body>
 </html>
