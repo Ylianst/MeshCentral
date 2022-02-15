@@ -13,7 +13,6 @@
 /*jshint strict: false */
 /*jshint esversion: 6 */
 "use strict";
-require('promise');
 
 /*
 Existing plugins:
