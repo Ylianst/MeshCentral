@@ -7504,6 +7504,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         xargs.min = minify ? '-min' : '';
         xargs.titlehtml = domain.titlehtml;
         xargs.title = (domain.title != null) ? domain.title : 'MeshCentral';
+        if (domain.agentinviteimagepreview == null) {
+            xargs.agentInviteImagePreview = 'images/winagent.png';
+        } else {
+            xargs.agentInviteImagePreview = domain.agentinviteimagepreview;
+        }
         if (
             ((page == 'login2') && (domain.loginpicture == null) && (domain.titlehtml == null)) ||
             ((page != 'login2') && (domain.titlepicture == null) && (domain.titlehtml == null))
