@@ -311,7 +311,7 @@
     "agent": "Agent",
     "group": "Apparaat groep",
     "url": "Server URL",
-    "meshName": "Mesh naam",
+    "meshName": "Groepsnaam",
     "meshId": "Groepsidentificatie",
     "serverId": "Server identificatie",
     "setup": "Setup",
