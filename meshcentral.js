@@ -2176,7 +2176,8 @@ function CreateMeshCentralServer(config, args) {
         const meshSplit = meshid.split('/');
         if (meshSplit.length != 3) return;
         const domainId = meshSplit[1];
-        const mailserver = obj.config.domains[domainId].mailserver;;
+        if (obj.config.domains[domainId] == null) return;
+        const mailserver = obj.config.domains[domainId].mailserver;
         if (mailserver == null) return;
 
         // Get the device group for this device
