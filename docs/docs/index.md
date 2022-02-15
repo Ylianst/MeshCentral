@@ -1,13 +1,4 @@
-# MeshCentral2 Documentation
-
-## Table of Contents
-
-[About](install.md#About)
-Social Media
-[Documentation](install.md#Documentation)
-Video Tutorials
-[Feedback](install.md#Feedback)
-[License](install.md#License)
+# MeshCentral Documentation
 
 ## About
 
@@ -20,8 +11,11 @@ For more information, [visit MeshCentral.com](https://www.meshcentral.com/).
 ## Social Media
 
 [YouTube](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos)
+
 [Reddit](https://www.reddit.com/r/MeshCentral/)
+
 [Twitter](https://twitter.com/MeshCentral)
+
 [BlogSpot](https://meshcentral2.blogspot.com/)
 
 ## Documentation

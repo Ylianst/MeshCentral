@@ -25,6 +25,12 @@
 .md-nav__link[data-md-state=blur] {
     color: white;
 }
+.md-tabs {
+    background-color: #0b3e81;
+    color: white;
+}
+.md-tabs__list {
+}
 .md-typeset a {
     color: whitesmoke;
     text-decoration: underline;
@@ -60,4 +66,12 @@ a:link {
 }
 .html {
     background-color: #0b3e81;
+}
+.dlspan {
+    background-color:gray;
+    color:black;
+    font-size:16px;
+    padding:4px;
+    border-radius:4px;
+    box-shadow: 2px 2px 4px black;
 }
