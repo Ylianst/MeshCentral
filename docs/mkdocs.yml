@@ -1,6 +1,28 @@
 site_name: "MeshCentral2 Documentation"
 nav:
   - Home: index.md
+
+  - Install:
+    - install/index.md
+
+  - MeshCentral: 
+    - meshcentral/index.md
+
+  - Design and Architecture:
+    - design/index.md
+
+  - MeshCmd:
+    - meshcmd/index.md
+
+  - MeshCtrl:
+    - meshctrl/index.md
+
+  - Mesh Router:
+    - meshrouter/index.md
+
+  - Intel AMT:
+    - intelamt/index.md
+
 site_description: "A remote monitoring and management tool"
 site_author: " Ylianst"
 site_url: "https://git.meshcentral.com/"
@@ -21,6 +43,8 @@ theme:
   features:
 extra_css:
   - stylesheets/extra.css
+extra:
+  generator: false
 
 markdown_extensions:
   - pymdownx.keys
