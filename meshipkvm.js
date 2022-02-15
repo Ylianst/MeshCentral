@@ -223,9 +223,10 @@ function CreateIPKVMManager(parent) {
                 if (obj.managedPorts[nodeid] != null) {
                     // This port is no longer connected
                     parent.ClearConnectivityState(sender.meshid, nodeid, 1, null, null);
+                    const mesh = parent.webserver.meshes[sender.meshid];
 
                     // If the device group policy is set to auto-remove devices, remove it now
-                    if ((mesh.flags) && (mesh.flags & 1)) {                       // Auto-remove devices
+                    if ((mesh != null) && (mesh.flags) && (mesh.flags & 1)) {                       // Auto-remove devices
                         parent.db.Remove(nodeid);                                 // Remove node with that id
                         parent.db.Remove('nt' + nodeid);                          // Remove notes
                         parent.db.Remove('lc' + nodeid);                          // Remove last connect time

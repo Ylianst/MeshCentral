@@ -668,19 +668,19 @@
                             <span id="DeskTimer" title="Session time"></span>&nbsp;
                             <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onkeypress="return false" onkeydown="return false"></select>&nbsp;
                             <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />&nbsp;
-                            <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><img src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskNotifyButton title="Display a notification on the remote computer"><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskLockButton title="Lock the remote computer"><img src='images/icon-lock.png' onclick=deviceLockFunction() height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskOpenWebButton title="Open a web address on the remote computer"><img src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskBackgroundButton title="Toggle remote desktop background"><img src='images/icon-background.png' onclick=deviceToggleBackground(event) height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop"><img src='images/icon-camera.png' onclick=deskSaveImage() height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskRecordButton cmenu=deskPlayerContextMenu title="Record remote desktop session to file" style="display:none"><img id=DeskRecordButtonImage src='images/icon-film.png' onclick=deskRecordSession() height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskClipboardInButton title="Download remote clipboard to local clipboard" style="display:none"><img id=DeskClipboardInButtonImage src='images/icon-clipboard-in.png' onclick=deskClipboardInFunction() height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskClipboardOutButton title="Upload local clipboard to remote device"><img id=DeskClipboardOutButtonImage src='images/icon-clipboard-out.png' onclick=deskClipboardOutFunction() height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskRefreshButton title="Refresh the desktop"><img id=DeskRefreshButtonImage src='images/icon-refresh.png' onclick=deskRefreshFunction() height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskInputLockedButton title="Remote input is locked"><img id=DeskInputLockedButtonImage src='images/icon-keylock-red.png' onclick=deskInputLockFunction(0) height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskInputUnLockedButton title="Remote input is unlocked"><img id=DeskInputUnLockedButtonImage src='images/icon-keylock.png' onclick=deskInputLockFunction(1) height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskGuestShareButton title="Share the device with a guest"><img id=DeskInputUnLockedButtonImage src='images/icon-share2.png' onclick=showShareDevice() height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><img class="desktopButtons" src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskNotifyButton title="Display a notification on the remote computer"><img class="desktopButtons" src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskLockButton title="Lock the remote computer"><img src='images/icon-lock.png' class="desktopButtons" onclick=deviceLockFunction() height=16 width=16 /></span>
+                            <span id=DeskOpenWebButton title="Open a web address on the remote computer"><img class="desktopButtons" src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 /></span>
+                            <span id=DeskBackgroundButton title="Toggle remote desktop background"><img class="desktopButtons" src='images/icon-background.png' onclick=deviceToggleBackground(event) height=16 width=16 /></span>
+                            <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop"><img class="desktopButtons" src='images/icon-camera.png' onclick=deskSaveImage() height=16 width=16 /></span>
+                            <span id=DeskRecordButton cmenu=deskPlayerContextMenu title="Record remote desktop session to file" style="display:none"><img class="desktopButtons" id=DeskRecordButtonImage src='images/icon-film.png' onclick=deskRecordSession() height=16 width=16 /></span>
+                            <span id=DeskClipboardInButton title="Download remote clipboard to local clipboard" style="display:none"><img class="desktopButtons" id=DeskClipboardInButtonImage src='images/icon-clipboard-in.png' onclick=deskClipboardInFunction() height=16 width=16 /></span>
+                            <span id=DeskClipboardOutButton title="Upload local clipboard to remote device"><img class="desktopButtons" id=DeskClipboardOutButtonImage src='images/icon-clipboard-out.png' onclick=deskClipboardOutFunction() height=16 width=16 /></span>
+                            <span id=DeskRefreshButton title="Refresh the desktop"><img class="desktopButtons" id=DeskRefreshButtonImage src='images/icon-refresh.png' onclick=deskRefreshFunction() height=16 width=16 /></span>
+                            <span id=DeskInputLockedButton title="Remote input is locked"><img class="desktopButtons" id=DeskInputLockedButtonImage src='images/icon-keylock-red.png' onclick=deskInputLockFunction(0) height=16 width=16 /></span>
+                            <span id=DeskInputUnLockedButton title="Remote input is unlocked"><img class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-keylock.png' onclick=deskInputLockFunction(1) height=16 width=16 /></span>
+                            <span id=DeskGuestShareButton title="Share the device with a guest"><img class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-share2.png' onclick=showShareDevice() height=16 width=16 /></span>
                         </div>
                         <div>
                             <select id="deskkeys" cmenu=deskKeyShortcutContextMenu></select>
@@ -2121,7 +2121,7 @@
             if (userinfo.otphkeys > 0) { authFactorCount += userinfo.otphkeys; } // FIDO hardware factor
             if ((features & 0x00800000) && (userinfo.otpekey == 1)) { authFactorCount++; } // EMail factor
             if ((features & 0x02000000) && (features & 0x04000000) && (userinfo.phone != null)) { authFactorCount++; } // SMS factor
-            if ((authFactorCount > 0) && (userinfo.otpkeys > 0) && ((features & 0x40000) == 0)) { authFactorCount++; } // Backup keys
+            if ((authFactorCount > 0) && (userinfo.otpkeys > 0) && ((features2 & 0x40000) == 0)) { authFactorCount++; } // Backup keys
             return authFactorCount;
         }
 
@@ -17216,6 +17216,11 @@
             }
         }
 
+        // Request Confirmation if closing while a desktop, terminal session is active
+        window.addEventListener('beforeunload', function (e) {
+            if (((desktop != null) && (xxcurrentView == 11)) || ((terminal != null) && (xxcurrentView == 12))) { e.preventDefault(); e.returnValue = ''; }
+        });
+    
     </script>
 </body>
 </html>
