@@ -1076,6 +1076,8 @@ function handleServerCommand(data) {
                         break;
                     }
                     case 'messagebox': {
+                        sendConsoleText(JSON.stringify(data));
+
                         // Display a message box
                         if (data.title && data.msg)
                         {
@@ -1095,6 +1097,7 @@ function handleServerCommand(data) {
                                         ipr.title = data.title;
                                         ipr.message = data.msg;
                                         ipr.username = data.username;
+                                        if (data.realname && (data.realname != '')) { ipr.username = data.realname; }
                                         global._clientmessage = ipr.then(function (img)
                                         {
                                             this.messagebox = require('win-dialog').create(this.title, this.message, this.username, { timeout: 120000, b64Image: img.split(',').pop(), background: color_options.background, foreground: color_options.foreground }); 
