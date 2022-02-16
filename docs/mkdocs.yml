@@ -24,7 +24,7 @@ nav:
     - intelamt/index.md
 
 site_description: "A remote monitoring and management tool"
-site_author: " Ylianst"
+site_author: "Ylianst"
 site_url: "https://git.meshcentral.com/"
 
 # Repository
@@ -41,6 +41,10 @@ theme:
     primary: "white"
     accent: "indigo"
   features:
+    - navigation.tabs
+    - navigation.expand
+    - navigation.top
+    - toc.integrate
 extra_css:
   - stylesheets/extra.css
 extra:
