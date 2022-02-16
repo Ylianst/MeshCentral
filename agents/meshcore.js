@@ -1076,8 +1076,6 @@ function handleServerCommand(data) {
                         break;
                     }
                     case 'messagebox': {
-                        sendConsoleText(JSON.stringify(data));
-
                         // Display a message box
                         if (data.title && data.msg)
                         {
