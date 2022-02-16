@@ -5716,7 +5716,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (clientIpSplit.length == 2) { req.clientIp = clientIpSplit[0]; }
 
                 // Get server host
-                if (req.headers['x-forwarded-host']) { xforwardedhost = req.headers['x-forwarded-host']; }
+                if (req.headers['x-forwarded-host']) { xforwardedhost = req.headers['x-forwarded-host'].split(',')[0]; } // If multiple hosts are specified with a comma, take the first one.
             } else {
                 req.clientIp = ipex;
             }

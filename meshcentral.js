@@ -1623,8 +1623,7 @@ function CreateMeshCentralServer(config, args) {
                 }
 
                 // Setup and start the legacy swarm server
-                if ((obj.certificates.swarmserver != null) && (obj.args.swarmport !== 0)) {
-                    if (obj.args.swarmport == null) { obj.args.swarmport = 8080; }
+                if ((obj.certificates.swarmserver != null) && (obj.args.swarmport != null) && (obj.args.swarmport !== 0)) {
                     obj.swarmserver = require('./swarmserver.js').CreateSwarmServer(obj, obj.db, obj.args, obj.certificates);
                 }
 
