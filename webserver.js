@@ -4952,6 +4952,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
                         if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
                         if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
+                        if (domain.agentcustomization.foregroundcolor != null) { meshsettings += checkAgentColorString('fgcolor=', domain.agentcustomization.foregroundcolor); }
+                        if (domain.agentcustomization.backgroundcolor != null) { meshsettings += checkAgentColorString('bkcolor=', domain.agentcustomization.backgroundcolor); }
                     }
                     if (domain.agentTranslations != null) { meshsettings += 'translation=' + domain.agentTranslations + '\r\n'; } // Translation strings, not for MeshCentral Assistant
                 }
@@ -5324,6 +5326,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
             if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
             if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
+            if (domain.agentcustomization.foregroundcolor != null) { meshsettings += checkAgentColorString('fgcolor=', domain.agentcustomization.foregroundcolor); }
+            if (domain.agentcustomization.backgroundcolor != null) { meshsettings += checkAgentColorString('bkcolor=', domain.agentcustomization.backgroundcolor); }
         }
         if (domain.agentTranslations != null) { meshsettings += 'translation=' + domain.agentTranslations + '\r\n'; }
 
@@ -5425,6 +5429,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
             if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
             if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
+            if (domain.agentcustomization.foregroundcolor != null) { meshsettings += checkAgentColorString('fgcolor=', domain.agentcustomization.foregroundcolor); }
+            if (domain.agentcustomization.backgroundcolor != null) { meshsettings += checkAgentColorString('bkcolor=', domain.agentcustomization.backgroundcolor); }
         }
         if (domain.agentTranslations != null) { meshsettings += 'translation=' + domain.agentTranslations + '\r\n'; }
         return meshsettings;
@@ -8044,6 +8050,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var toRemove = [], t = Date.now() - (2 * 60 * 60 * 1000);
         for (var i in obj.destroyedSessions) { if (obj.destroyedSessions[i] < t) { toRemove.push(i); } }
         for (var i in toRemove) { delete obj.destroyedSessions[toRemove[i]]; }
+    }
+
+    // Check and/or convert the agent color value into a correct string or return empty string.
+    function checkAgentColorString(header, value) {
+        if ((typeof header !== 'string') || (typeof value !== 'string')) return '';
+        if (value.startsWith('#') && (value.length == 7)) {
+            // Convert color in hex format
+            value = parseInt(value.substring(1, 3), 16) + ',' + parseInt(value.substring(3, 5), 16) + ',' + parseInt(value.substring(5, 7), 16);
+        } else {
+            // Check color in decimal format
+            const valueSplit = value.split(',');
+            if (valueSplit.length != 3) return '';
+            const r = parseInt(valueSplit[0]), g = parseInt(valueSplit[1]), b = parseInt(valueSplit[2]);
+            if (isNaN(r) || (r < 0) || (r > 255) || isNaN(g) || (g < 0) || (g > 255) || isNaN(b) || (b < 0) || (b > 255)) return '';
+            value = r + ',' + g + ',' + b;
+        }
+        return header + value + '\r\n';
     }
 
     return obj;
