@@ -187,12 +187,12 @@
               "description": "Enabled automated upload of the server backups to a Google Drive account, once enabled you need to go in \"My Server\" tab as administrator to associate the account.",
               "properties": {
                 "folderName": {
-                  "type": "integer",
+                  "type": "string",
                   "default": "MeshCentral-Backups",
                   "description": "The name of the folder to create in the Google Drive account."
                 },
                 "maxFiles": {
-                  "type": "string",
+                  "type": "integer",
                   "default": null,
                   "description": "The maximum number of files to keep in the Google Drive folder, older files will be removed if needed."
                 }
@@ -215,12 +215,12 @@
                   "description": "WebDAV account password."
                 },
                 "folderName": {
-                  "type": "integer",
+                  "type": "string",
                   "default": "MeshCentral-Backups",
                   "description": "The name of the folder to create in the WebDAV account."
                 },
                 "maxFiles": {
-                  "type": "string",
+                  "type": "integer",
                   "default": null,
                   "description": "The maximum number of files to keep in the WebDAV folder, older files will be removed if needed."
                 }
