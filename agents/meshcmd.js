@@ -1699,17 +1699,9 @@ function setupMeiOsAdmin(func, state, tag) {
             var wsman = require('amt-wsman');
             var amt = require('amt');
 
-            settings.username = x.user;
-            settings.password = x.pass;
-            settings.tls = false;
-
             oswsstack = new wsman(transport, '127.0.0.1', 16992, x.user, x.pass, false);
             osamtstack = new amt(oswsstack);
             if (func) { func(state, tag); }
-
-            //var AllWsman = "CIM_SoftwareIdentity,IPS_SecIOService,IPS_ScreenSettingData,IPS_ProvisioningRecordLog,IPS_HostBasedSetupService,IPS_HostIPSettings,IPS_IPv6PortSettings".split(',');
-            //osamtstack.BatchEnum(null, AllWsman, startLmsWsmanResponse, null, true);
-            //*************************************
 
             // Setup KVM data channel if this is Intel AMT 12 or above
             amtMei.getVersion(function (x) {
