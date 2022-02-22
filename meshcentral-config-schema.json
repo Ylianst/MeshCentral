@@ -492,7 +492,9 @@
               "Title": { "type": "string" },
               "Desktop": { "type": "string" },
               "Terminal": { "type": "string" },
-              "Files": { "type": "string" }
+              "Files": { "type": "string" },
+              "consentTimeout": { "type": "integer", "default": 30, "description": "How long in seconds to show the user consent dialog box." },
+              "autoAcceptOnTimeout": { "type": "boolean", "default": false, "description": "If true, user consent is accepted after the timeout." }
             }
           },
           "notificationMessages": {
