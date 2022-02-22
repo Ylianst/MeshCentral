@@ -236,7 +236,9 @@
         "title": "MeshCentral",
         "desktop": "{0} requesting remote desktop access. Grant access?",
         "terminal": "{0} requesting remote terminal access. Grant access?",
-        "files": "{0} requesting remote files access. Grant access?"
+        "files": "{0} requesting remote files access. Grant access?",
+        "consentTimeout": 30,
+        "autoAcceptOnTimeout": false
       },
       "_notificationMessages": {
         "title": "MeshCentral",

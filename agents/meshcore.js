@@ -1025,18 +1025,15 @@ function handleServerCommand(data) {
                                 tunnel.realname = (data.realname ? data.realname : data.username) + (data.guestname ? (' - ' + data.guestname) : '');
                                 tunnel.guestname = data.guestname;
                                 tunnel.userid = data.userid;
-
-                                if (server_check_consentTimer(tunnel.userid)) {
-                                    sendConsoleText('Deleting Consent Requirement');
-                                    tunnel.consent = (tunnel.consent & -57);
-                                }
-
+                                if (server_check_consentTimer(tunnel.userid)) { tunnel.consent = (tunnel.consent & -57); } // Deleting Consent Requirement
                                 tunnel.desktopviewonly = data.desktopviewonly;
                                 tunnel.remoteaddr = data.remoteaddr;
                                 tunnel.state = 0;
                                 tunnel.url = xurl;
                                 tunnel.protocol = 0;
                                 tunnel.soptions = data.soptions;
+                                tunnel.consentTimeout = (tunnel.soptions && tunnel.soptions.consentTimeout) ? tunnel.soptions.consentTimeout : 30;
+                                tunnel.consentAutoAccept = (tunnel.soptions && (tunnel.soptions.consentAutoAccept === true));
                                 tunnel.tcpaddr = data.tcpaddr;
                                 tunnel.tcpport = data.tcpport;
                                 tunnel.udpaddr = data.udpaddr;
@@ -2068,28 +2065,25 @@ function onTunnelData(data) {
                     }
                     if (process.platform == 'win32') {
                         var enhanced = false;
-                        try {
-                            require('win-userconsent');
-                            enhanced = true;
-                        } catch (ex) { }
+                        try { require('win-userconsent'); enhanced = true; } catch (ex) { }
                         if (enhanced) {
                             var ipr = server_getUserImage(this.httprequest.userid);
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
+                            ipr.consentTimeout = this.httprequest.consentTimeout;
+                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept; // TODO: If true, consent timeout must accept.
                             ipr.username = this.httprequest.realname;
                             ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
                             this.httprequest.tpromise._consent = ipr.then(function (img) {
-                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: 30000, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
+                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
                                 this.__childPromise.close = this.consent.close.bind(this.consent);
                                 return (this.consent);
                             });
+                        } else {
+                            this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, this.consentTimeout);
                         }
-                        else {
-                            this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, 30);
-                        }
-                    }
-                    else {
-                        this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, 30);
+                    } else {
+                        this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, this.consentTimeout);
                     }
                     this.httprequest.tpromise._consent.retPromise = this.httprequest.tpromise;
                     this.httprequest.tpromise._consent.then(
@@ -2428,29 +2422,28 @@ function onTunnelData(data) {
                     var pr;
                     if (process.platform == 'win32') {
                         var enhanced = false;
-                        try {
-                            require('win-userconsent');
-                            enhanced = true;
-                        } catch (ex) { }
+                        try { require('win-userconsent'); enhanced = true; } catch (ex) { }
                         if (enhanced) {
                             var ipr = server_getUserImage(this.httprequest.userid);
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
+                            ipr.consentTimeout = this.httprequest.consentTimeout;
+                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept; // TODO: If true, consent timeout must accept.
                             ipr.tsid = tsid;
                             ipr.username = this.httprequest.realname;
                             ipr.translation = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
                             pr = ipr.then(function (img) {
-                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), uid: this.tsid, timeout: 30000, translations: this.translation, background: color_options.background, foreground: color_options.foreground });
+                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), uid: this.tsid, timeout: this.consentTimeout * 1000, translations: this.translation, background: color_options.background, foreground: color_options.foreground });
                                 this.__childPromise.close = this.consent.close.bind(this.consent);
                                 return (this.consent);
                             });
                         }
                         else {
-                            pr = require('message-box').create(consentTitle, consentMessage, 30, null, tsid);
+                            pr = require('message-box').create(consentTitle, consentMessage, this.consentTimeout, null, tsid);
                         }
                     }
                     else {
-                        pr = require('message-box').create(consentTitle, consentMessage, 30, null, tsid);
+                        pr = require('message-box').create(consentTitle, consentMessage, this.consentTimeout, null, tsid);
                     }
                     pr.ws = this;
                     this.pause();
@@ -2612,26 +2605,25 @@ function onTunnelData(data) {
                     var pr;
                     if (process.platform == 'win32') {
                         var enhanced = false;
-                        try {
-                            require('win-userconsent');
-                            enhanced = true;
-                        } catch (ex) { }
+                        try { require('win-userconsent'); enhanced = true; } catch (ex) { }
                         if (enhanced) {
                             var ipr = server_getUserImage(this.httprequest.userid);
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
+                            ipr.consentTimeout = this.httprequest.consentTimeout;
+                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept; // TODO: If true, consent timeout must accept.
                             ipr.username = this.httprequest.realname;
                             ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
                             pr = ipr.then(function (img) {
-                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: 30000, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
+                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
                                 this.__childPromise.close = this.consent.close.bind(this.consent);
                                 return (this.consent);
                             });
                         } else {
-                            pr = require('message-box').create(consentTitle, consentMessage, 30, null);
+                            pr = require('message-box').create(consentTitle, consentMessage, this.consentTimeout, null);
                         }
                     } else {
-                        pr = require('message-box').create(consentTitle, consentMessage, 30, null);
+                        pr = require('message-box').create(consentTitle, consentMessage, this.consentTimeout, null);
                     }
                     pr.ws = this;
                     this.pause();
