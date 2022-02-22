@@ -61,11 +61,12 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
             var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
             if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
             const sessionSeconds = Math.round((Date.now() - obj.startTime) / 1000);
-            var user = parent.users[obj.cookie.userid];
-            var username = (user != null) ? user.name : null;
-            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.cookie.userid, username: username, msgid: 125, msgArgs: [sessionSeconds], msg: "Left Web-RDP session after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBRDP, bytesin: inTraffc, bytesout: outTraffc };
+            const user = parent.users[obj.cookie.userid];
+            const username = (user != null) ? user.name : null;e
+            const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.cookie.userid, username: username, sessionid: obj.sessionid, msgid: 125, msgArgs: [sessionSeconds, obj.sessionid], msg: "Left Web-RDP session \"" + obj.sessionid + "\" after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBRDP, bytesin: inTraffc, bytesout: outTraffc };
             parent.parent.DispatchEvent(['*', obj.nodeid, obj.cookie.userid, obj.meshid], obj, event);
             delete obj.startTime;
+            delete obj.sessionid;
         }
 
         if (obj.wsClient) { obj.wsClient.close(); delete obj.wsClient; }
@@ -140,7 +141,16 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
             }).on('connect', function () {
                 send(['rdp-connect']);
                 if ((typeof obj.infos.options == 'object') && (obj.infos.options.savepass == true)) { saveRdpCredentials(); } // Save the credentials if needed
+                obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
                 obj.startTime = Date.now();
+
+                // Event session start
+                try {
+                    const user = parent.users[obj.cookie.userid];
+                    const username = (user != null) ? user.name : null;
+                    const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.cookie.userid, username: username, sessionid: obj.sessionid, msgid: 150, msgArgs: [obj.sessionid], msg: "Started Web-RDP session \"" + obj.sessionid + "\".", protocol: PROTOCOL_WEBRDP };
+                    parent.parent.DispatchEvent(['*', obj.nodeid, obj.cookie.userid, obj.meshid], obj, event);
+                } catch (ex) { console.log(ex); }
             }).on('bitmap', function (bitmap) {
                 try { ws.send(bitmap.data); } catch (ex) { } // Send the bitmap data as binary
                 delete bitmap.data;
@@ -287,11 +297,12 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
             var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
             if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
             const sessionSeconds = Math.round((Date.now() - obj.startTime) / 1000);
-            var user = parent.users[obj.cookie.userid];
-            var username = (user != null) ? user.name : null;
-            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.cookie.userid, username: username, msgid: 123, msgArgs: [sessionSeconds], msg: "Left Web-SSH session after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBSSH, bytesin: inTraffc, bytesout: outTraffc };
+            const user = parent.users[obj.cookie.userid];
+            const username = (user != null) ? user.name : null;
+            const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.cookie.userid, username: username, sessionid: obj.sessionid, msgid: 123, msgArgs: [sessionSeconds, obj.sessionid], msg: "Left Web-SSH session \"" + obj.sessionid + "\" after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBSSH, bytesin: inTraffc, bytesout: outTraffc };
             parent.parent.DispatchEvent(['*', obj.nodeid, obj.cookie.userid, obj.meshid], obj, event);
             delete obj.startTime;
+            delete obj.sessionid;
         }
 
         if (obj.sshShell) {
@@ -384,7 +395,16 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                     obj.sshClient.on('ready', function () { // Authentication was successful.
                         // If requested, save the credentials
                         if (obj.keep === true) saveSshCredentials();
+                        obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
                         obj.startTime = Date.now();
+
+                        // Event start of session
+                        try {
+                            const user = parent.users[obj.cookie.userid];
+                            const username = (user != null) ? user.name : null;
+                            const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 148, msgArgs: [obj.sessionid], msg: "Started Web-SSH session \"" + obj.sessionid + "\".", protocol: PROTOCOL_WEBSSH };
+                            parent.parent.DispatchEvent(['*', obj.nodeid, user._id, obj.meshid], obj, event);
+                        } catch (ex) { console.log(ex); }
 
                         obj.sshClient.shell(function (err, stream) { // Start a remote shell
                             if (err) { obj.close(); return; }
@@ -550,9 +570,10 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
             var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
             if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
             const sessionSeconds = Math.round((Date.now() - obj.startTime) / 1000);
-            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 123, msgArgs: [sessionSeconds], msg: "Left Web-SSH session after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBSSH, bytesin: inTraffc, bytesout: outTraffc };
+            const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 123, msgArgs: [sessionSeconds, obj.sessionid], msg: "Left Web-SSH session \"" + obj.sessionid + "\" after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBSSH, bytesin: inTraffc, bytesout: outTraffc };
             parent.parent.DispatchEvent(['*', obj.nodeid, user._id, obj.meshid], obj, event);
             delete obj.startTime;
+            delete obj.sessionid;
         }
 
         if (obj.sshShell) {
@@ -641,7 +662,16 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                     obj.sshClient.on('ready', function () { // Authentication was successful.
                         // If requested, save the credentials
                         if (obj.keep === true) saveSshCredentials();
+                        obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
                         obj.startTime = Date.now();
+
+                        try {
+                            // Event start of session
+                            const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 148, msgArgs: [obj.sessionid], msg: "Started Web-SSH session \"" + obj.sessionid + "\".", protocol: PROTOCOL_WEBSSH };
+                            parent.parent.DispatchEvent(['*', obj.nodeid, user._id, obj.meshid], obj, event);
+                        } catch (ex) {
+                            console.log(ex);
+                        }
 
                         obj.sshClient.shell(function (err, stream) { // Start a remote shell
                             if (err) { obj.close(); return; }
@@ -839,9 +869,10 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
             var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
             if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
             const sessionSeconds = Math.round((Date.now() - obj.startTime) / 1000);
-            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 124, msgArgs: [sessionSeconds], msg: "Left Web-SFTP session after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBSFTP, bytesin: inTraffc, bytesout: outTraffc };
+            const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, sessionid: obj.sessionid, msgid: 124, msgArgs: [sessionSeconds, obj.sessionid], msg: "Left Web-SFTP session \"" + obj.sessionid + "\" after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBSFTP, bytesin: inTraffc, bytesout: outTraffc };
             parent.parent.DispatchEvent(['*', obj.nodeid, user._id, obj.meshid], obj, event);
             delete obj.startTime;
+            delete obj.sessionid;
         }
 
         if (obj.sshClient) {
@@ -923,7 +954,14 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                     obj.sshClient.on('ready', function () { // Authentication was successful.
                         // If requested, save the credentials
                         if (obj.keep === true) saveSshCredentials();
+                        obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
                         obj.startTime = Date.now();
+
+                        // Event start of session
+                        try {
+                            const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 149, msgArgs: [obj.sessionid], msg: "Started Web-SFTP session \"" + obj.sessionid + "\".", protocol: PROTOCOL_WEBSFTP };
+                            parent.parent.DispatchEvent(['*', obj.nodeid, user._id, obj.meshid], obj, event);
+                        } catch (ex) { console.log(ex); }
 
                         obj.sshClient.sftp(function(err, sftp) {
                             if (err) { obj.close(); return; }
