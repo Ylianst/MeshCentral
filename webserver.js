@@ -4952,8 +4952,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
                         if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
                         if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
-                        if (domain.agentcustomization.foregroundcolor != null) { meshsettings += checkAgentColorString('fgcolor=', domain.agentcustomization.foregroundcolor); }
-                        if (domain.agentcustomization.backgroundcolor != null) { meshsettings += checkAgentColorString('bkcolor=', domain.agentcustomization.backgroundcolor); }
+                        if (domain.agentcustomization.foregroundcolor != null) { meshsettings += checkAgentColorString('foreground=', domain.agentcustomization.foregroundcolor); }
+                        if (domain.agentcustomization.backgroundcolor != null) { meshsettings += checkAgentColorString('background=', domain.agentcustomization.backgroundcolor); }
                     }
                     if (domain.agentTranslations != null) { meshsettings += 'translation=' + domain.agentTranslations + '\r\n'; } // Translation strings, not for MeshCentral Assistant
                 }
@@ -5326,8 +5326,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
             if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
             if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
-            if (domain.agentcustomization.foregroundcolor != null) { meshsettings += checkAgentColorString('fgcolor=', domain.agentcustomization.foregroundcolor); }
-            if (domain.agentcustomization.backgroundcolor != null) { meshsettings += checkAgentColorString('bkcolor=', domain.agentcustomization.backgroundcolor); }
+            if (domain.agentcustomization.foregroundcolor != null) { meshsettings += checkAgentColorString('foreground=', domain.agentcustomization.foregroundcolor); }
+            if (domain.agentcustomization.backgroundcolor != null) { meshsettings += checkAgentColorString('background=', domain.agentcustomization.backgroundcolor); }
         }
         if (domain.agentTranslations != null) { meshsettings += 'translation=' + domain.agentTranslations + '\r\n'; }
 
@@ -5429,8 +5429,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
             if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
             if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
-            if (domain.agentcustomization.foregroundcolor != null) { meshsettings += checkAgentColorString('fgcolor=', domain.agentcustomization.foregroundcolor); }
-            if (domain.agentcustomization.backgroundcolor != null) { meshsettings += checkAgentColorString('bkcolor=', domain.agentcustomization.backgroundcolor); }
+            if (domain.agentcustomization.foregroundcolor != null) { meshsettings += checkAgentColorString('foreground=', domain.agentcustomization.foregroundcolor); }
+            if (domain.agentcustomization.backgroundcolor != null) { meshsettings += checkAgentColorString('background=', domain.agentcustomization.backgroundcolor); }
         }
         if (domain.agentTranslations != null) { meshsettings += 'translation=' + domain.agentTranslations + '\r\n'; }
         return meshsettings;
