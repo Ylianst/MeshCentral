@@ -2071,11 +2071,11 @@ function onTunnelData(data) {
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
                             ipr.consentTimeout = this.httprequest.consentTimeout;
-                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept; // TODO: If true, consent timeout must accept.
+                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept; 
                             ipr.username = this.httprequest.realname;
                             ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
                             this.httprequest.tpromise._consent = ipr.then(function (img) {
-                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
+                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
                                 this.__childPromise.close = this.consent.close.bind(this.consent);
                                 return (this.consent);
                             });
@@ -2428,12 +2428,12 @@ function onTunnelData(data) {
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
                             ipr.consentTimeout = this.httprequest.consentTimeout;
-                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept; // TODO: If true, consent timeout must accept.
+                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept; 
                             ipr.tsid = tsid;
                             ipr.username = this.httprequest.realname;
                             ipr.translation = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
                             pr = ipr.then(function (img) {
-                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), uid: this.tsid, timeout: this.consentTimeout * 1000, translations: this.translation, background: color_options.background, foreground: color_options.foreground });
+                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), uid: this.tsid, timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translation, background: color_options.background, foreground: color_options.foreground });
                                 this.__childPromise.close = this.consent.close.bind(this.consent);
                                 return (this.consent);
                             });
@@ -2611,11 +2611,11 @@ function onTunnelData(data) {
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
                             ipr.consentTimeout = this.httprequest.consentTimeout;
-                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept; // TODO: If true, consent timeout must accept.
+                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept; 
                             ipr.username = this.httprequest.realname;
                             ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
                             pr = ipr.then(function (img) {
-                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
+                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
                                 this.__childPromise.close = this.consent.close.bind(this.consent);
                                 return (this.consent);
                             });
