@@ -884,6 +884,8 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         c.onmouseup = obj.mouseup;
         c.onmousedown = obj.mousedown;
         c.onmousemove = obj.mousemove;
+        //c.onmousewheel = obj.mousewheel;
+        c.onwheel = obj.mousewheel;
         //if (navigator.userAgent.match(/mozilla/i)) c.DOMMouseScroll = obj.xxDOMMouseScroll; else c.onmousewheel = obj.xxMouseWheel;
         _MouseInputGrab = true;
     }
@@ -894,6 +896,8 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         c.onmousemove = null;
         c.onmouseup = null;
         c.onmousedown = null;
+        //c.onmousewheel = null;
+        c.onwheel = null;
         //if (navigator.userAgent.match(/mozilla/i)) c.DOMMouseScroll = null; else c.onmousewheel = null;
         _MouseInputGrab = false;
     }
@@ -921,6 +925,18 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
 
     // RFB 'PointerEvent' and mouse handlers
     obj.mousedblclick = function (e) { }
+    obj.mousewheel = function (e) {
+        var v = 0;
+        if (typeof e.deltaY == 'number') { v = -1 * e.deltaY; }
+        else if (typeof e.detail == 'number') { v = -1 * e.detail; }
+        else if (typeof e.wheelDelta == 'number') { v = e.wheelDelta; }
+        if (v == 0) return;
+        var tmpmask = obj.buttonmask;
+        obj.buttonmask |= (1 << ((v > 0) ? 3 : 4));
+        obj.mousemove(e, 1);
+        obj.buttonmask = tmpmask;
+        return obj.mousemove(e, 1);
+    }
     obj.mousedown = function (e) { obj.buttonmask |= (1 << e.button); return obj.mousemove(e, 1); }
     obj.mouseup = function (e) { obj.buttonmask &= (0xFFFF - (1 << e.button)); return obj.mousemove(e, 1); }
     obj.mousemove = function (e, force) {
