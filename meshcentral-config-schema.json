@@ -152,7 +152,7 @@
           "required": [ "name", "info" ]
         },
         "tlsOffload": { "type": [ "boolean", "string" ], "default": false, "description": "When true, indicates that a TLS offloader is in front of the MeshCentral server. More typically, set this to the IP address of the reverse proxy or TLS offloader so that IP forwarding headers will be trusted. For example: \"127.0.0.1,192.168.1.100\"." },
-        "trustedProxy": { "type": "string" },
+        "trustedProxy": { "type": "string", "default": null, "description": "Trust forwarded headers from these IPs or domains.  Providing the magic string \"CloudFlare\" will cause the server to download the IP address list of trusted CloudFlare proxies directly from CloudFlare on each server start. For example: \"127.0.0.1,proxy.example.com,CloudFlare\"." },
         "mpsPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
         "mpsPortBind": { "type": "string" },
         "mpsAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
