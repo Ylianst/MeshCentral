@@ -1012,7 +1012,7 @@ function handleServerCommand(data) {
                                 woptions.checkServerIdentity.servertlshash = data.servertlshash;
 
                                 //sendConsoleText(JSON.stringify(woptions));
-                                //sendConsoleText('TUNNEL: ' + JSON.stringify(data));
+                                //sendConsoleText('TUNNEL: ' + JSON.stringify(data, null, 2));
                                 var tunnel = http.request(woptions);
                                 tunnel.upgrade = onTunnelUpgrade;
                                 tunnel.on('error', function (e) { sendConsoleText("ERROR: Unable to connect relay tunnel to: " + this.url + ", " + JSON.stringify(e)); });
@@ -1023,6 +1023,7 @@ function handleServerCommand(data) {
                                 tunnel.privacybartext = data.privacybartext ? data.privacybartext : currentTranslation['privacyBar'];
                                 tunnel.username = data.username + (data.guestname ? (' - ' + data.guestname) : '');
                                 tunnel.realname = (data.realname ? data.realname : data.username) + (data.guestname ? (' - ' + data.guestname) : '');
+                                tunnel.guestuserid = data.guestuserid;
                                 tunnel.guestname = data.guestname;
                                 tunnel.userid = data.userid;
                                 if (server_check_consentTimer(tunnel.userid)) { tunnel.consent = (tunnel.consent & -57); } // Deleting Consent Requirement
@@ -1828,7 +1829,7 @@ function onTunnelUpgrade(response, s, head) {
 // If the HTTP Request has a guest name, we need to form a userid that includes the guest name in hex.
 // This is so we can tell the server that a session is for a given userid/guest sharing pair.
 function getUserIdAndGuestNameFromHttpRequest(request) {
-    if (request.guestname == null) return request.userid; else return request.userid + '/guest:' + Buffer.from(request.guestname).toString('base64');
+    if (request.guestname == null) return request.userid; else return request.guestuserid + '/guest:' + Buffer.from(request.guestname).toString('base64');
 }
 
 // Called when UDP relay data is received // TODO****

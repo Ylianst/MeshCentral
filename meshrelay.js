@@ -971,7 +971,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 const rcookieData = { nodeid: node._id };
                 if (user != null) { rcookieData.ruserid = user._id; } else if (obj.nouser === true) { rcookieData.nouser = 1; }
                 const rcookie = parent.parent.encodeCookie(rcookieData, parent.parent.loginCookieEncryptionKey);
-                const command = { nodeid: node._id, action: 'msg', type: 'tunnel', value: '*/' + xdomain + 'meshrelay.ashx?p=' + obj.req.query.p + '&id=' + obj.id + '&rauth=' + rcookie + '&nodeid=' + node._id, soptions: {}, rights: cookie.r, guestname: cookie.gn, consent: cookie.cf, remoteaddr: cleanRemoteAddr(obj.req.clientIp) };
+                const command = { nodeid: node._id, action: 'msg', type: 'tunnel', value: '*/' + xdomain + 'meshrelay.ashx?p=' + obj.req.query.p + '&id=' + obj.id + '&rauth=' + rcookie + '&nodeid=' + node._id, soptions: {}, rights: cookie.r, guestuserid: user._id, guestname: cookie.gn, consent: cookie.cf, remoteaddr: cleanRemoteAddr(obj.req.clientIp) };
                 obj.guestname = cookie.gn;
 
                 // Limit what this relay connection can do
