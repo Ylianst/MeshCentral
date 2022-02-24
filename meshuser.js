@@ -2136,6 +2136,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     return;
                                 }
                                 mesh.invite = { codes: command.invite.codes, flags: command.invite.flags };
+                                if (typeof command.invite.ag == 'number') { mesh.invite.ag = command.invite.ag; }
                                 if (change != '') { change += ' and invite code changed'; } else { change += 'Device group "' + mesh.name + '" invite code changed'; }
                                 changesids.push(6);
                             }
@@ -3681,7 +3682,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
 
-                const inviteCookie = parent.parent.encodeCookie({ a: 4, mid: command.meshid, f: command.flags, expire: command.expire * 60 }, parent.parent.invitationLinkEncryptionKey);
+                const cookie = { a: 4, mid: command.meshid, f: command.flags, expire: command.expire * 60 };
+                if ((typeof command.agents == 'number') && (command.agents != 0)) { cookie.ag = command.agents; }
+                const inviteCookie = parent.parent.encodeCookie(cookie, parent.parent.invitationLinkEncryptionKey);
                 if (inviteCookie == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createInviteLink', responseid: command.responseid, result: 'Unable to generate invitation cookie' })); } catch (ex) { } } break; }
 
                 // Create the server url
