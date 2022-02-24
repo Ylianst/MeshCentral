@@ -4962,7 +4962,10 @@
             }
             x += '<div id=urlInviteDiv>' + format("Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \"{0}\" device group. The link is public and no account for this server is needed.", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("Link Expiration", '<select id=d2inviteExpire style=width:236px onchange=d2RequestInvitationLink()><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>');
+            x += addHtmlValue("Agents", '<select id=d2agentType style=width:236px onchange=d2ChangedInviteType()><option value=0>' + "All Available Agents" + '</option><option value=1>' + "Windows MeshAgent" + '</option><option value=2>' + "Linux MeshAgent" + '</option><option value=4>' + "MacOS MeshAgent" + '</option><option value=8>' + "MeshCentral Assistant" + '</option></select>');
+            x += '<div id=d2agentInstallTypeDiv>';
             x += addHtmlValue("Installation Type", '<select id=d2agentInviteType style=width:236px onchange=d2RequestInvitationLink()><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
+            x += '</div>';
             x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a href=# id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
             setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
             if (features & 64) { Q('d2InviteType').focus(); d2ChangedInviteType(); } else { Q('d2inviteExpire').focus(); validateAgentInvite(); }
@@ -4971,14 +4974,18 @@
         }
 
         function d2RequestInvitationLink() {
-            meshserver.send({ action: 'createInviteLink', meshid: xxdialogTag, expire: parseInt(Q('d2inviteExpire').value), flags: parseInt(Q('d2agentInviteType').value) });
+            meshserver.send({ action: 'createInviteLink', meshid: xxdialogTag, expire: parseInt(Q('d2inviteExpire').value), flags: parseInt(Q('d2agentInviteType').value), agents: parseInt(Q('d2agentType').value) });
         }
 
         function d2ChangedInviteType() {
-            QV('urlInviteDiv', Q('d2InviteType').value == 0);
-            QV('d2agentexpirediv', Q('agentInviteNameOs').value == 4);
-            QV('emailInviteDiv', Q('d2InviteType').value == 1);
+            if (features & 64) {
+                QV('urlInviteDiv', Q('d2InviteType').value == 0);
+                QV('d2agentexpirediv', Q('agentInviteNameOs').value == 4);
+                QV('emailInviteDiv', Q('d2InviteType').value == 1);
+            }
+            QV('d2agentInstallTypeDiv', parseInt(Q('d2agentType').value) < 2);
             validateAgentInvite();
+            d2RequestInvitationLink();
         }
 
         function d2CopyInviteToClip() { copyTextToClip(Q('agentInvitationLink').href); }
@@ -12758,11 +12765,15 @@
                 x += '<div style=width:100%;text-align:center><a rel="noreferrer noopener" target=_blank href="' + url + '">' + url + '</a></div><br />';
                 x += '<div style=margin-bottom:5px><label><input id=agentJoinCheck type=checkbox onclick=p20editmeshInviteCodeValidate() />' + "Enable Invite Codes" + '</label></div>';
                 x += addHtmlValue("Invite Codes", '<input id=agentInviteCode style=width:236px onkeyup=p20editmeshInviteCodeValidate() placeholder="code1, code2, code3" />');
+                x += addHtmlValue("Agents", '<select id=agentType style=width:236px onchange=p20editmeshInviteCodeValidate()><option value=0>' + "All Available Agents" + '</option><option value=1>' + "Windows MeshAgent" + '</option><option value=2>' + "Linux MeshAgent" + '</option><option value=4>' + "MacOS MeshAgent" + '</option><option value=8>' + "MeshCentral Assistant" + '</option></select>');
+                x += '<div id=d2agentInstallTypeDiv>';
                 x += addHtmlValue("Installation Type", '<select id=agentInviteType style=width:236px><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
+                x += '</div>';
                 setDialogMode(2, "Invite Codes", 3, p20editmeshInviteCodeEx, x);
                 if (currentMesh.invite != null) {
                     Q('agentJoinCheck').checked = true;
                     Q('agentInviteCode').value = currentMesh.invite.codes.join(', ');
+                    if (currentMesh.invite.ag) { Q('agentType').value = currentMesh.invite.ag; }
                     Q('agentInviteType').value = (currentMesh.invite.flags & 3);
                 }
                 p20editmeshInviteCodeValidate();
@@ -12780,15 +12791,17 @@
             var ok = true, codes = Q('agentInviteCode').value.split(',');
             for (var i in codes) { codes[i] = codes[i].trim(); if (codes[i] == '') { ok = false; } }
             QE('agentInviteCode', Q('agentJoinCheck').checked);
+            QE('agentType', Q('agentJoinCheck').checked);
             QE('agentInviteType', Q('agentJoinCheck').checked);
             QE('idx_dlgOkButton', (Q('agentJoinCheck').checked == false) || (ok));
+            QV('d2agentInstallTypeDiv', parseInt(Q('agentType').value) < 2);
         }
 
         function p20editmeshInviteCodeEx() {
             if (Q('agentJoinCheck').checked == true) {
                 var codes = Q('agentInviteCode').value.split(',');
                 for (var i in codes) { codes[i] = codes[i].trim(); }
-                meshserver.send({ action: 'editmesh', meshid: currentMesh._id, invite: { codes: codes, flags: parseInt(Q('agentInviteType').value) } });
+                meshserver.send({ action: 'editmesh', meshid: currentMesh._id, invite: { codes: codes, flags: parseInt(Q('agentInviteType').value), ag: parseInt(Q('agentType').value) } });
             } else {
                 meshserver.send({ action: 'editmesh', meshid: currentMesh._id, invite: '*' });
             }

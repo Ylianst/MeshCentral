@@ -1895,7 +1895,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         for (var i in obj.meshes) {
             if ((obj.meshes[i].domain == domain.id) && (obj.meshes[i].deleted == null) && (obj.meshes[i].invite != null) && (obj.meshes[i].invite.codes.indexOf(req.body.inviteCode) >= 0)) {
                 // Send invitation link, valid for 1 minute.
-                res.redirect(domain.url + 'agentinvite?c=' + parent.encodeCookie({ a: 4, mid: i, f: obj.meshes[i].invite.flags, expire: 1 }, parent.invitationLinkEncryptionKey) + (req.query.key ? ('&key=' + req.query.key) : '') + (req.query.hide ? ('&hide=' + req.query.hide) : ''));
+                res.redirect(domain.url + 'agentinvite?c=' + parent.encodeCookie({ a: 4, mid: i, f: obj.meshes[i].invite.flags, ag: obj.meshes[i].invite.ag, expire: 1 }, parent.invitationLinkEncryptionKey) + (req.query.key ? ('&key=' + req.query.key) : '') + (req.query.hide ? ('&hide=' + req.query.hide) : ''));
                 return;
             }
         }
@@ -2045,6 +2045,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (mesh == null) { res.sendStatus(404); return; }
             var installflags = cookie.f;
             if (typeof installflags != 'number') { installflags = 0; }
+            var showagents = cookie.ag;
+            if (typeof showagents != 'number') { showagents = 0; }
             parent.debug('web', 'handleAgentInviteRequest using cookie.');
 
             // Build the mobile agent URL, this is used to connect mobile devices
@@ -2057,7 +2059,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var magenturl = 'mc://' + agentServerName + ((agentHttpsPort != 443) ? (':' + agentHttpsPort) : '') + ((xdomain != '') ? ('/' + xdomain) : '') + ',' + obj.agentCertificateHashBase64 + ',' + mesh._id.split('/')[2];
 
             var meshcookie = parent.encodeCookie({ m: mesh._id.split('/')[2] }, parent.invitationLinkEncryptionKey);
-            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: meshcookie, serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: 1, servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags, magenturl: magenturl }, req, domain));
+            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: meshcookie, serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: 1, servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags, showagents: showagents, magenturl: magenturl }, req, domain));
         } else if (req.query.m != null) {
             // The MeshId is specified in the query string, use that
             var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.m.toLowerCase()];
@@ -2065,6 +2067,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var installflags = 0;
             if (req.query.f) { installflags = parseInt(req.query.f); }
             if (typeof installflags != 'number') { installflags = 0; }
+            var showagents = 0;
+            if (req.query.f) { showagents = parseInt(req.query.ag); }
+            if (typeof showagents != 'number') { showagents = 0; }
             parent.debug('web', 'handleAgentInviteRequest using meshid.');
 
             // Build the mobile agent URL, this is used to connect mobile devices
@@ -2077,7 +2082,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var magenturl = 'mc://' + agentServerName + ((agentHttpsPort != 443) ? (':' + agentHttpsPort) : '') + ((xdomain != '') ? ('/' + xdomain) : '') + ',' + obj.agentCertificateHashBase64 + ',' + mesh._id.split('/')[2];
 
             var meshcookie = parent.encodeCookie({ m: mesh._id.split('/')[2] }, parent.invitationLinkEncryptionKey);
-            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: meshcookie, serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: 1, servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags, magenturl: magenturl }, req, domain));
+            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: meshcookie, serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: 1, servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags, showagents: showagents, magenturl: magenturl }, req, domain));
         }
     }
 

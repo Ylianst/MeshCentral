@@ -85,7 +85,7 @@
                     <button id="tlinuxtab" class="tablinks" onclick="openTab(event, 'linuxtab')">Linux</button>
                     <button id="tmacostab" class="tablinks" onclick="openTab(event, 'macostab')">MacOS</button>
                     <button id="tandrotab" class="tablinks" onclick="openTab(event, 'androtab')">Android</button>
-                    <button id="tandrotab" class="tablinks" onclick="openTab(event, 'assistab')">Assistant</button>
+                    <button id="tassistab" class="tablinks" onclick="openTab(event, 'assistab')">Assistant</button>
                 </div>
 
                 <div id="wintab64" class="tabcontent" style="background-color:white;color:black">
@@ -180,6 +180,7 @@
         var serverHttps = '{{{serverhttps}}}';
         var serverNoProxy = '{{{servernoproxy}}}';
         var installFlags = '{{{installflags}}}';
+        var showAgents = parseInt('{{{showagents}}}'); // 0 = Show all agents, 1 = Windows only, 2 = Linux only, 4 = MacOS only, 8 = Assistant only, 16 = Android
         var magenturl = '{{{magenturl}}}';
         var groupName = decodeURIComponent('{{{meshname}}}');
         var urlargs = parseUriArgs();
@@ -215,8 +216,30 @@
                 document.title = "Agent Installation";
             }
 
+            // Setup visible tabs
+            var tabcount = 0, tabselect = null;
+            var tab1 = (showAgents == 0) || (showAgents & 1);
+            var tab2 = (showAgents == 0) || (showAgents & 1);
+            var tab3 = (showAgents == 0) || (showAgents & 2);
+            var tab4 = (showAgents == 0) || (showAgents & 4);
+            var tab5 = (showAgents == 0) || (showAgents & 16);
+            var tab6 = (showAgents == 0) || (showAgents & 8);
+            if (tab6) { tabcount++; tabselect = 'assistab'; }
+            if (tab5) { tabcount++; tabselect = 'androtab'; }
+            if (tab4) { tabcount++; tabselect = 'macostab'; }
+            if (tab3) { tabcount++; tabselect = 'linuxtab'; }
+            if (tab2) { tabcount++; tabselect = 'wintab32'; }
+            if (tab1) { tabcount++; tabselect = 'wintab64'; }
+            QV('twintab64', tab1 && (tabcount > 1));
+            QV('twintab32', tab2 && (tabcount > 1));
+            QV('tlinuxtab', tab3 && (tabcount > 1));
+            QV('tmacostab', tab4 && (tabcount > 1));
+            QV('tandrotab', tab5 && (tabcount > 1));
+            QV('tassistab', tab6 && (tabcount > 1));
+
             userInterfaceSelectMenu();
             setup();
+            openTab(null, tabselect);
         }
 
         // Create the QR code
