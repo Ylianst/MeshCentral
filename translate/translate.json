@@ -7937,6 +7937,7 @@
     },
     {
       "en": "All Available Agents",
+      "nl": "Alle beschikbare agents",
       "xloc": [
         "default.handlebars->39->2049",
         "default.handlebars->39->505"
@@ -28854,7 +28855,7 @@
       "it": "Richiesta di assistenza, utente: {0}, dettagli: {1}",
       "ja": "ヘルプリクエスト、ユーザー：{0}、詳細：{1}",
       "ko": "도움말 요청, 사용자 : {0}, 세부 정보 : {1}",
-      "nl": "Hulp verzoek van, user: {0}, details: {1}",
+      "nl": "Hulp verzoek van, gebruiker: {0}, details: {1}",
       "pl": "Prośba Pomocy, użytkownik: {0}, szczegóły: {1}",
       "pt": "Ajuda solicitada, usuário: {0}, detalhes: {1}",
       "pt-br": "Ajuda solicitada, usuário: {0}, detalhes: {1}",
@@ -28905,7 +28906,7 @@
       "it": "Aiuto richiesto da {0}: {1}",
       "ja": "{0}からリクエストされたヘルプ：{1}",
       "ko": "{0}에서 요청한 도움말 : {1}",
-      "nl": "Hulp verzoek van, user: {0}, details: {1}",
+      "nl": "Hulp verzoek van, gebruiker: {0}, details: {1}",
       "pl": "Prośba pomocy od {0}: {1}",
       "pt": "Ajuda solicitada a {0}: {1}",
       "pt-br": "Ajuda solicitada de {0}: {1}",
@@ -34864,6 +34865,7 @@
     },
     {
       "en": "Left Web-RDP session \\\"{1}\\\" after {0} second(s).",
+      "nl": "Verliet de desktop multiplex sessie na \\\"{1}\\\" {0} seconde(n).",
       "xloc": [
         "default.handlebars->39->2267"
       ]
@@ -34886,6 +34888,7 @@
     },
     {
       "en": "Left Web-SFTP session \\\"{1}\\\" after {0} second(s).",
+      "nl": "Verliet de web-SFTP sessie na \\\"{1}\\\" {0} seconde(n).",
       "xloc": [
         "default.handlebars->39->2266"
       ]
@@ -34908,6 +34911,7 @@
     },
     {
       "en": "Left Web-SSH session \\\"{1}\\\" after {0} second(s).",
+      "nl": "Verliet de web-SSH sessie na \\\"{1}\\\" {0} seconde(n).",
       "xloc": [
         "default.handlebars->39->2265"
       ]
@@ -35587,6 +35591,7 @@
     },
     {
       "en": "Linux MeshAgent",
+      "nl": "Linux MeshAgent",
       "xloc": [
         "default.handlebars->39->2051",
         "default.handlebars->39->507"
@@ -37394,6 +37399,7 @@
     },
     {
       "en": "MacOS MeshAgent",
+      "nl": "MacOS MeshAgent",
       "xloc": [
         "default.handlebars->39->2052",
         "default.handlebars->39->508"
@@ -58797,24 +58803,28 @@
     },
     {
       "en": "Started Web-RDP session \\\"{0}\\\".",
+      "nl": "Gestarte Web-RDP sessie \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2292"
       ]
     },
     {
       "en": "Started Web-SFTP session \\\"{0}\\\".",
+      "nl": "Gestarte Web-SFTP sessie \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2291"
       ]
     },
     {
       "en": "Started Web-SSH session \\\"{0}\\\".",
+      "nl": "Gestarte Web-SSH sessie \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2290"
       ]
     },
     {
       "en": "Started Web-VNC session \\\"{0}\\\".",
+      "nl": "Gestarte Web-VNC sessie \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2293"
       ]
@@ -68930,6 +68940,7 @@
     },
     {
       "en": "Windows MeshAgent",
+      "nl": "Windows MeshAgent",
       "xloc": [
         "default.handlebars->39->2050",
         "default.handlebars->39->506"
