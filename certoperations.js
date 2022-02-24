@@ -168,6 +168,7 @@ module.exports.CertificateOperations = function (parent) {
     obj.loadIntelAmtAcmCerts = function (amtacmactivation) {
         if (amtacmactivation == null) return;
         var acmCerts = [], acmmatch = [];
+        amtacmactivation.acmCertErrors = [];
         if (amtacmactivation.certs != null) {
             for (var j in amtacmactivation.certs) {
                 if (j.startsWith('_')) continue; // Skip any certificates that start with underscore as the name.
@@ -175,14 +176,21 @@ module.exports.CertificateOperations = function (parent) {
 
                 if ((typeof acmconfig.certpfx == 'string') && (typeof acmconfig.certpfxpass == 'string')) {
                     // P12 format, certpfx and certpfxpass
-                    try { r = obj.loadPfxCertificate(parent.common.joinPath(obj.parent.datapath, acmconfig.certpfx), acmconfig.certpfxpass); } catch (ex) { console.log(ex); }
-                    if ((r == null) || (r.certs == null) || (r.keys == null) || (r.certs.length < 2) || (r.keys.length != 1)) continue;
+                    const certFilePath = parent.common.joinPath(obj.parent.datapath, acmconfig.certpfx);
+                    try { r = obj.loadPfxCertificate(certFilePath, acmconfig.certpfxpass); } catch (ex) { console.log(ex); }
+                    if ((r == null) || (r.certs == null) || (r.keys == null)) { amtacmactivation.acmCertErrors.push("Unable to load certificate file: " + certFilePath + "."); continue; }
+                    if (r.certs.length < 2) { amtacmactivation.acmCertErrors.push("Certificate file contains less then 2 certificates: " + certFilePath + "."); continue; }
+                    if (r.keys.length != 1) { amtacmactivation.acmCertErrors.push("Certificate file must contain exactly one private key: " + certFilePath + "."); continue; }
                 } else if ((typeof acmconfig.certfiles == 'object') && (typeof acmconfig.keyfile == 'string')) {
                     // PEM format, certfiles and keyfile
                     r = { certs: [], keys: [] };
-                    for (var k in acmconfig.certfiles) { r.certs.push(obj.pki.certificateFromPem(obj.fs.readFileSync(parent.common.joinPath(obj.parent.datapath, acmconfig.certfiles[k])))); }
+                    for (var k in acmconfig.certfiles) {
+                        const certFilePath = parent.common.joinPath(obj.parent.datapath, acmconfig.certfiles[k]);
+                        try { r.certs.push(obj.pki.certificateFromPem(obj.fs.readFileSync(certFilePath))); } catch (ex) { amtacmactivation.acmCertErrors.push("Unable to load certificate file: " + certFilePath + "."); }
+                    }
                     r.keys.push(obj.pki.privateKeyFromPem(obj.fs.readFileSync(parent.common.joinPath(obj.parent.datapath, acmconfig.keyfile))));
-                    if ((r.certs.length < 2) || (r.keys.length != 1)) continue;
+                    if (r.certs.length < 2) { amtacmactivation.acmCertErrors.push("Certificate file contains less then 2 certificates: " + certFilePath + "."); continue; }
+                    if (r.keys.length != 1) { amtacmactivation.acmCertErrors.push("Certificate file must contain exactly one private key: " + certFilePath + "."); continue; }
                 }
 
                 // Reorder the certificates from leaf to root.
@@ -198,12 +206,12 @@ module.exports.CertificateOperations = function (parent) {
                         }
                     }
                 }
-                if (orderingError == true) continue;
+                if (orderingError == true) { amtacmactivation.acmCertErrors.push("Unable to order Intel AMT ACM activation certificates to create a full chain."); continue; }
                 r.certs = or;
 
                 // Check that the certificate and private key match
                 if ((compareArrays(r.certs[0].publicKey.n.data, r.keys[0].n.data) == false) || (compareArrays(r.certs[0].publicKey.e.data, r.keys[0].e.data) == false)) {
-                    parent.addServerWarning('Intel AMT activation certificate provided with a mismatching private key.');
+                    amtacmactivation.acmCertErrors.push("Intel AMT activation certificate provided with a mismatching private key.");
                     continue;
                 }
 
@@ -221,11 +229,11 @@ module.exports.CertificateOperations = function (parent) {
                 for (var k in r.certs[0].extensions) { if (r.certs[0].extensions[k]['2.16.840.1.113741.1.2.3'] == true) { validActivationCert = true; } }
                 var orgName = r.certs[0].subject.getField('OU');
                 if ((orgName != null) && (orgName.value == 'Intel(R) Client Setup Certificate')) { validActivationCert = true; }
-                if (validActivationCert == false) continue;
+                if (validActivationCert == false) { amtacmactivation.acmCertErrors.push("Intel AMT activation certificate must have usage OID \"2.16.840.1.113741.1.2.3\" or organization name \"Intel(R) Client Setup Certificate\"."); continue; }
 
                 // Compute the SHA256 and SHA1 hashes of the root certificate
                 for (var k in r.certs) {
-                    if (r.certs[k].subject.hash != r.certs[k].issuer.hash) continue;
+                    if (r.certs[k].subject.hash != r.certs[k].issuer.hash) { amtacmactivation.acmCertErrors.push("Invalid Intel AMT ACM certificate chain."); continue; }
                     const certdata = obj.forge.asn1.toDer(obj.pki.certificateToAsn1(r.certs[k])).data;
                     var md = obj.forge.md.sha256.create();
                     md.update(certdata);
@@ -234,11 +242,11 @@ module.exports.CertificateOperations = function (parent) {
                     md.update(certdata);
                     acmconfig.sha1 = Buffer.from(md.digest().getBytes(), 'binary').toString('hex');
                 }
-                if ((acmconfig.sha1 == null) || (acmconfig.sha256 == null)) continue;
+                if ((acmconfig.sha1 == null) || (acmconfig.sha256 == null)) { amtacmactivation.acmCertErrors.push("Unable to compute Intel AMT activation certificate SHA1 and SHA256 hashes."); continue; }
 
                 // Get the certificate common name
                 var certCommonName = r.certs[0].subject.getField('CN');
-                if (certCommonName == null) continue;
+                if (certCommonName == null) { amtacmactivation.acmCertErrors.push("Unable to get Intel AMT activation certificate common name."); continue; }
                 var certCommonNameSplit = certCommonName.value.split('.');
                 var topLevel = certCommonNameSplit[certCommonNameSplit.length - 1].toLowerCase();
                 var topLevelNum = TopLevelDomainExtendedSupport[topLevel];
