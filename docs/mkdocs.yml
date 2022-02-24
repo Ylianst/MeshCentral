@@ -27,6 +27,8 @@ site_description: "A remote monitoring and management tool"
 site_author: "Ylianst"
 site_url: "https://git.meshcentral.com/"
 
+dev_addr: "0.0.0.0:8006"
+
 # Repository
 repo_name: "Ylianst/MeshCentral"
 repo_url: "https://github.com/Ylianst/MeshCentral"
