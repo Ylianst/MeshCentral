@@ -1140,7 +1140,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 var maxCookieAge = domain.twofactorcookiedurationdays;
                                 if (typeof maxCookieAge != 'number') { maxCookieAge = 30; }
                                 const twoFactorCookie = obj.parent.encodeCookie({ userid: user._id, expire: maxCookieAge * 24 * 60 /*, ip: req.clientIp*/ }, obj.parent.loginCookieEncryptionKey);
-                                res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: 'strict', secure: true });
+                                res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: ((parent.config.settings.cookieipcheck === false) ? 'none' : 'strict'), secure: true });
                             }
 
                             // Check if email address needs to be confirmed
@@ -3024,7 +3024,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             var maxCookieAge = domain.twofactorcookiedurationdays;
                             if (typeof maxCookieAge != 'number') { maxCookieAge = 30; }
                             const twoFactorCookie = obj.parent.encodeCookie({ userid: cookie.u, expire: maxCookieAge * 24 * 60 /*, ip: req.clientIp*/ }, obj.parent.loginCookieEncryptionKey);
-                            res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: 'strict', secure: true });
+                            res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: ((parent.config.settings.cookieipcheck === false) ? 'none' : 'strict'), secure: true });
                         }
 
                         handleRootRequestEx(req, res, domain);
@@ -5629,7 +5629,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
             secure: (obj.args.tlsoffload == null) // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
         }
-        if (obj.args.sessionsamesite != null) { sessionOptions.sameSite = obj.args.sessionsamesite; } else { sessionOptions.sameSite = 'strict'; }
+        if (obj.args.sessionsamesite != null) { sessionOptions.sameSite = obj.args.sessionsamesite; } else { sessionOptions.sameSite = ((parent.config.settings.cookieipcheck === false) ? 'none' : 'strict'); }
         if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60 * 1000); }
         obj.app.use(obj.session(sessionOptions));
 
@@ -5763,7 +5763,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
 
             // Check the session if bound to the external IP address
-            if ((req.session.ip != null) && (req.clientIp != null) && (req.session.ip != req.clientIp)) { req.session = {}; }
+            if ((parent.config.settings.cookieipcheck !== false) && (req.session.ip != null) && (req.clientIp != null) && (req.session.ip != req.clientIp)) { req.session = {}; }
 
             // Extend the session time by forcing a change to the session every minute.
             if (req.session.userid != null) { req.session.t = Math.floor(Date.now() / 60e3); } else { delete req.session.t; }

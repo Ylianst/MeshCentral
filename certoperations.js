@@ -233,7 +233,7 @@ module.exports.CertificateOperations = function (parent) {
 
                 // Compute the SHA256 and SHA1 hashes of the root certificate
                 for (var k in r.certs) {
-                    if (r.certs[k].subject.hash != r.certs[k].issuer.hash) { amtacmactivation.acmCertErrors.push("Invalid Intel AMT ACM certificate chain."); continue; }
+                    if (r.certs[k].subject.hash != r.certs[k].issuer.hash) continue;
                     const certdata = obj.forge.asn1.toDer(obj.pki.certificateToAsn1(r.certs[k])).data;
                     var md = obj.forge.md.sha256.create();
                     md.update(certdata);
