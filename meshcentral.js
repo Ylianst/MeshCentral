@@ -1491,7 +1491,7 @@ function CreateMeshCentralServer(config, args) {
             // Load any Intel AMT ACM activation certificates
             if (obj.config.domains[i].amtacmactivation == null) { obj.config.domains[i].amtacmactivation = {}; }
             obj.certificateOperations.loadIntelAmtAcmCerts(obj.config.domains[i].amtacmactivation);
-
+            if (obj.config.domains[i].amtacmactivation.acmCertErrors != null) { for (var j in obj.config.domains[i].amtacmactivation.acmCertErrors) { obj.addServerWarning(obj.config.domains[i].amtacmactivation.acmCertErrors[j]); } }
             if (typeof obj.config.domains[i].certurl == 'string') {
                 obj.supportsProxyCertificatesRequest = true; // If a certurl is set, enable proxy cert requests
                 // Then, fix the URL and add 'https://' if needed
