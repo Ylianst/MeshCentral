@@ -4952,11 +4952,13 @@
                 x += '<div id=emailInviteDiv style=display:none>' + format("Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for the \"{0}\" device group.", EscapeHtml(mesh.name)) + '<br /><br />';
                 x += addHtmlValue("Name (optional)", '<input id=agentInviteName value="" style=width:230px maxlength=64 />');
                 x += addHtmlValue("Email", '<input id=agentInviteEmail style=width:230px placeholder="' + "example@email.com" + '" onkeyup=validateAgentInvite()></input>');
-                x += addHtmlValue("Operating System", '<select id=agentInviteNameOs onchange=d2ChangedInviteType() style=width:236px><option value=4>' + "Send installation link" + '</option><option value=0 selected>' + "Any supported" + '</option><option value=1>' + "Windows only" + '</option><option value=3>' + "Apple macOS only" + '</option><option value=2>' + "Linux only" + '</option></select>');
+                x += addHtmlValue("Operating System", '<select id=agentInviteNameOs onchange=d2ChangedInviteType() style=width:236px><option value=4>' + "Send installation link" + '</option><option value=0 selected>' + "Any supported" + '</option><option value=1>' + "Windows only" + '</option><option value=3>' + "Apple macOS only" + '</option><option value=2>' + "Linux only" + '</option><option value=5>' + "MeshCentral Assistant" + '</option></select>');
                 x += '<div id=d2agentexpirediv>';
                 x += addHtmlValue("Link Expiration", '<select id=agentInviteExpire style=width:236px><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>');
                 x += '</div>';
+                x += '<div id=d2agentInstallTypeDiv2>';
                 x += addHtmlValue("Installation Type", '<select id=agentInviteType style=width:236px><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
+                x += '</div>';
                 x += addHtmlValue("Message" + '<br />' + "(optional)", '<textarea id=agentInviteMessage value="" style=width:230px;height:100px;resize:none maxlength=1024 /></textarea>');
                 x += '</div>';
             }
@@ -4981,6 +4983,7 @@
             if (features & 64) {
                 QV('urlInviteDiv', Q('d2InviteType').value == 0);
                 QV('d2agentexpirediv', Q('agentInviteNameOs').value == 4);
+                QV('d2agentInstallTypeDiv2', Q('agentInviteNameOs').value < 2);
                 QV('emailInviteDiv', Q('d2InviteType').value == 1);
             }
             QV('d2agentInstallTypeDiv', parseInt(Q('d2agentType').value) < 2);
