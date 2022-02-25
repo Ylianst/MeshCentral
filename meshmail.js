@@ -330,6 +330,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
                 if (loginkey != null) { options.urlargs1 = '?key=' + loginkey; options.urlargs2 = '&key=' + loginkey; } else { options.urlargs1 = ''; options.urlargs2 = ''; }
                 options.windows = ((os == 0) || (os == 1)) ? 1 : 0;
                 options.linux = ((os == 0) || (os == 2)) ? 1 : 0;
+                options.assistant = ((os == 0) || (os == 5)) ? 1 : 0;
                 options.osx = ((os == 0) || (os == 3)) ? 1 : 0;
                 options.link = (os == 4) ? 1 : 0;
                 options.linkurl = createInviteLink(domain, meshid, flags, expirehours);
