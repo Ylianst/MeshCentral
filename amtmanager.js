@@ -489,7 +489,11 @@ module.exports.CreateAmtManager = function (parent) {
             dev.acctry = acctry2;
 
             // If we have passwords to try, try the first one now.
-            if (dev.acctry.length == 0) { removeAmtDevice(dev, 8); return; }
+            if (dev.acctry.length == 0) {
+                dev.consoleMsg("No admin login passwords to try, stopping now.");
+                removeAmtDevice(dev, 8);
+                return;
+            }
         }
 
         if ((dev.acctry == null) || (dev.acctry.length == 0)) { removeAmtDevice(dev, 9); return; } // No Intel AMT credentials to try
@@ -1021,6 +1025,31 @@ module.exports.CreateAmtManager = function (parent) {
         dev.amtstack.BatchEnum(null, ['AMT_PublicKeyCertificate', 'AMT_PublicPrivateKeyPair', 'AMT_TLSSettingData', 'AMT_TLSCredentialContext'], attemptTlsSyncEx);
     }
 
+    // Intel AMT is not always in a good spot to generate a key pair. This will retry at 10 second interval.
+    function generateKeyPairWithRetry(dev, func) {
+        if (isAmtDeviceValid(dev) == false) return;
+        if (dev.keyPairAttempts == null) { dev.keyPairAttempts = 1; } else { dev.keyPairAttempts++; }
+        dev.amtstack.AMT_PublicKeyManagementService_GenerateKeyPair(0, 2048, function (stack, name, responses, status) {
+            if (isAmtDeviceValid(dev) == false) { delete dev.keyPairAttempts; return; }
+            if ((status == 200) || (dev.keyPairAttempts > 19)) {
+                delete dev.keyPairAttempts;
+                func(stack, name, responses, status);
+            } else {
+                if ((responses.Body != null) && (responses.Body.ReturnValue != null) && (responses.Body.ReturnValueStr != null)) {
+                    dev.consoleMsg("Failed to generate a key pair (" + status + ", " + responses.Body.ReturnValue + ", \"" + responses.Body.ReturnValueStr + "\"), attempt " + dev.keyPairAttempts + ", trying again in 10 seconds...");
+                } else {
+                    dev.consoleMsg("Failed to generate a key pair (" + status + "), attempt " + dev.keyPairAttempts + ", trying again in 10 seconds...");
+                }
+
+                // Wait 10 seconds before attempting again
+                var f = function doManage() { generateKeyPairWithRetry(doManage.dev, doManage.func); }
+                f.dev = dev;
+                f.func = func;
+                setTimeout(f, 10000);
+            }
+        });
+    }
+
     function attemptTlsSyncEx(stack, name, responses, status) {
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
@@ -1050,7 +1079,7 @@ module.exports.CreateAmtManager = function (parent) {
         // This is a managed device and TLS is not enabled, turn it on.
         if (xxTlsCurrentCert == null) {
             // Start by generating a key pair
-            dev.amtstack.AMT_PublicKeyManagementService_GenerateKeyPair(0, 2048, function (stack, name, responses, status) {
+            generateKeyPairWithRetry(dev, function (stack, name, responses, status) {
                 const dev = stack.dev;
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
                 if (status != 200) { dev.consoleMsg("Failed to generate a key pair (" + status + ")."); removeAmtDevice(dev, 20); return; }
@@ -1145,7 +1174,7 @@ module.exports.CreateAmtManager = function (parent) {
 
                         if (dev.hbacmtls == 1) {
                             // If we are doing Host-based TLS ACM activation, you need to only enable the remote port with TLS.
-                            // If you enable on local port, the commit() will succeed but be ignored.
+                            // If you enable on local port, the commit will succeed but be ignored.
                             dev.consoleMsg("Enabling TLS on remote port...");
                             if (remoteNdx == 0) { dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[0], amtSwitchToTls, 0, 1, xxTlsSettings2[0]); }
                             else { dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[1], amtSwitchToTls, 0, 1, xxTlsSettings2[1]); }
@@ -1176,7 +1205,7 @@ module.exports.CreateAmtManager = function (parent) {
 
         // Check if all the calls are done & perform a commit
         if ((--dev.setTlsSecurityPendingCalls) == 0) {
-            dev.consoleMsg("Performing Commit()...");
+            dev.consoleMsg("Performing Commit...");
             dev.amtstack.AMT_SetupAndConfigurationService_CommitChanges(null, function (stack, name, responses, status) {
                 const dev = stack.dev;
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
