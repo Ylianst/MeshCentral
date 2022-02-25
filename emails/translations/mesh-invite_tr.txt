@@ -26,6 +26,12 @@ Linux için, aracıyı yüklemek için aşağıdakileri kesip bir terminale yap�
 ~wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] '[[[MESHIDHEX]]]'
 ~
 ~</area-linux>
+~<area-assistant>
+For MeshCentral Assistant on Windows, nagivate to the following link to complete the process:
+~
+~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
+~
+~</area-assistant>
 ~<area-link>
 Yazılımı kurmak için [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] adresine gidin ve talimatları takip edin.
 ~</area-link>
