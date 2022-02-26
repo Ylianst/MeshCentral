@@ -13300,6 +13300,7 @@
     },
     {
       "en": "Click here to download the MeshCentral Assistant for Windows.",
+      "nl": "Klik hier om de MeshCentral Assistant voor Windows te downloaden.",
       "xloc": [
         "mesh-invite.html->2->15->1->1"
       ]
@@ -26446,6 +26447,7 @@
     },
     {
       "en": "For MeshCentral Assistant on Windows, nagivate to the following link to complete the process:",
+      "nl": "Voor MeshCentral Assistant voor Windows navigeert u naar de volgende link om het proces te voltooien:",
       "xloc": [
         "mesh-invite.txt"
       ]
