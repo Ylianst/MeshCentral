@@ -957,7 +957,7 @@
     {
       "en": ", 16 grays",
       "nl": ", 16 grijstinten",
-	  "pl": ", 16 odcieni szarości",
+      "pl": ", 16 odcieni szarości",
       "ru": ", 16 оттенков серого",
       "xloc": [
         "player.handlebars->3->35"
@@ -966,7 +966,7 @@
     {
       "en": ", 256 grays",
       "nl": ", 256 grijstinten",
-	  "pl": ", 256 odcieni szarości",
+      "pl": ", 256 odcieni szarości",
       "ru": ", 256 оттенков серого",
       "xloc": [
         "player.handlebars->3->36"
@@ -1781,7 +1781,7 @@
     {
       "en": "1 byte-per-pixel",
       "nl": "1 byte per pixel",
-	  "pl": "1 bajt na piksel",
+      "pl": "1 bajt na piksel",
       "ru": "1 байт на пиксель",
       "xloc": [
         "player.handlebars->3->34"
@@ -2637,7 +2637,7 @@
     {
       "en": "2 byte-per-pixel",
       "nl": "2 byte per pixel",
-	  "pl": "2 bajty na piksel",
+      "pl": "2 bajty na piksel",
       "ru": "2 байта на пиксель",
       "xloc": [
         "player.handlebars->3->33"
@@ -7942,7 +7942,7 @@
     {
       "en": "All Available Agents",
       "nl": "Alle beschikbare agents",
-	  "pl": "Wszyscy Dostępni Agenci",
+      "pl": "Wszyscy Dostępni Agenci",
       "xloc": [
         "default.handlebars->39->2050",
         "default.handlebars->39->506"
@@ -11199,6 +11199,12 @@
       ]
     },
     {
+      "en": "CAPS",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->7->p11capslock"
+      ]
+    },
+    {
       "cs": "CCM",
       "da": "CCM",
       "de": "CCM",
@@ -13305,7 +13311,7 @@
     },
     {
       "en": "Click here to download the MeshCentral Assistant for Windows.",
-	  "pl": "Kliknij tutaj by pobrać Asystenta MeshCentral dla Windows.",
+      "pl": "Kliknij tutaj by pobrać Asystenta MeshCentral dla Windows.",
       "nl": "Klik hier om de MeshCentral Assistant voor Windows te downloaden.",
       "xloc": [
         "mesh-invite.html->2->15->1->1"
@@ -13739,7 +13745,7 @@
     {
       "en": "Closed desktop multiplex session \\\"{0}\\\", {1} second(s)",
       "nl": "Gesloten desktop multiplexsessie \\\"{0}\\\", {1} seconde(n)",
-	  "pl": "Zamknięta sesja pulpitu wielokrotnego \\\"{0}\\\", {1} sekund(a)",
+      "pl": "Zamknięta sesja pulpitu wielokrotnego \\\"{0}\\\", {1} sekund(a)",
       "xloc": [
         "default.handlebars->39->2290"
       ]
@@ -15587,7 +15593,7 @@
       "it": "Consenso",
       "ja": "同意",
       "nl": "Toestemming",
-	  "pl": "Zgoda",
+      "pl": "Zgoda",
       "ru": "Согласие",
       "tr": "Onay",
       "xloc": [
@@ -19792,7 +19798,7 @@
       "it": "Il gruppo di dispositivi {0} è stato modificato: {1}",
       "ja": "デバイスグループ{0}が変更されました：{1}",
       "nl": "Apparaatgroep {0} is gewijzigd: {1}",
-	  "pl": "Grupa urządzeń {0} została zmieniona: {1}",
+      "pl": "Grupa urządzeń {0} została zmieniona: {1}",
       "ru": "Группа устройств {0} изменена: {1}",
       "tr": "{0} cihaz grubu değiştirildi: {1}",
       "xloc": [
@@ -23806,7 +23812,7 @@
     {
       "en": "Encoding Quality",
       "nl": "Coderingskwaliteit",
-	  "pl": "Jakość Kodowania",
+      "pl": "Jakość Kodowania",
       "ru": "Качество кодирования",
       "xloc": [
         "player.handlebars->3->37"
@@ -26088,7 +26094,7 @@
       "it": "Filtro: utente:xxx o u:xxx ip:xxx gruppo:xxx o g:xxx tag:xxx o t: xxx atag:xxx o a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc: noupdate wsc:nofirewall wsc:qualsiasi",
       "ja": "フィルタ：user：xxxまたはu：xxx ip：xxx group：xxxまたはg：xxx tag：xxxまたはt：xxx atag：xxxまたはa：xxx os：xxx amt：xxx desc：xxx wsc：ok wsc：noav wsc： noupdate wsc：nofirewall wsc：any",
       "nl": "Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any",
-	  "pl": "Filtr: użytkownik:xxx lub u:xxx ip:xxx grupa:xxx lub g:xxx tag:xxx lub t: xxx atag:xxx lub a:xxx os:xxx amt:xxx opis:xxx wsc:ok wsc:brakav wsc:brakaktualizacji wsc:brakfirewalla wsc:każdy",
+      "pl": "Filtr: użytkownik:xxx lub u:xxx ip:xxx grupa:xxx lub g:xxx tag:xxx lub t: xxx atag:xxx lub a:xxx os:xxx amt:xxx opis:xxx wsc:ok wsc:brakav wsc:brakaktualizacji wsc:brakfirewalla wsc:każdy",
       "ru": "Фильтр: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any",
       "tr": "Filtre: user:xxx veya u:xxx ip:xxx group:xxx veya g:xxx etiketi:xxx veya t: xxx atag:xxx veya a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc: noupdate wsc:nofirewall wsc:herhangi biri",
       "xloc": [
@@ -26150,7 +26156,7 @@
     {
       "en": "Finished recording session \\\"{0}\\\", {1} second(s)",
       "nl": "Beëindigde opnamesessie \\\"{0}\\\", {1} seconde(n)",
-	  "pl": "Zakończono sesję nagrywania, \\\"{0}\\\", {1} sekund(a)",
+      "pl": "Zakończono sesję nagrywania, \\\"{0}\\\", {1} sekund(a)",
       "xloc": [
         "default.handlebars->39->2289"
       ]
@@ -26299,7 +26305,7 @@
       "it": "Bandiere",
       "ja": "フラグ",
       "nl": "vlaggen",
-	  "pl": "Flagi",
+      "pl": "Flagi",
       "ru": "Флаги",
       "tr": "Bayraklar",
       "xloc": [
@@ -26461,7 +26467,7 @@
     {
       "en": "For MeshCentral Assistant on Windows, nagivate to the following link to complete the process:",
       "nl": "Voor MeshCentral Assistant voor Windows navigeert u naar de volgende link om het proces te voltooien:",
-	  "pl": "W przypadku Asystenta MeshCentral w Windows, przejdź do tego linku aby zakończyć proces:",
+      "pl": "W przypadku Asystenta MeshCentral w Windows, przejdź do tego linku aby zakończyć proces:",
       "xloc": [
         "mesh-invite.txt"
       ]
@@ -28260,7 +28266,7 @@
     {
       "en": "Group Name",
       "nl": "Groepsnaam",
-	  "pl": "Nazwa Grupy",
+      "pl": "Nazwa Grupy",
       "xloc": [
         "agent-translations.json"
       ]
@@ -28302,7 +28308,7 @@
       "it": "Nome del gruppo",
       "ja": "グループ名",
       "nl": "Groepsnaam",
-	  "pl": "Nazwa grupy",
+      "pl": "Nazwa grupy",
       "ru": "Название группы",
       "tr": "Grup ismi",
       "xloc": [
@@ -31891,7 +31897,7 @@
       "it": "Modifica della politica Intel(r) AMT",
       "ja": "Intel（r）AMTポリシーの変更",
       "nl": "Intel(r) AMT-beleidswijziging",
-	  "pl": "Zmiana polityki Intel(r) AMT",
+      "pl": "Zmiana polityki Intel(r) AMT",
       "ru": "Изменение политик Intel(r) AMT",
       "tr": "Intel(r) AMT ilke değişikliği",
       "xloc": [
@@ -33084,7 +33090,7 @@
       "it": "Codice di invito",
       "ja": "招待コード",
       "nl": "Uitnodigingscode",
-	  "pl": "Kod zaproszenia",
+      "pl": "Kod zaproszenia",
       "ru": "Код приглашения",
       "tr": "Davet kodu",
       "xloc": [
@@ -33368,7 +33374,7 @@
     {
       "en": "Joined desktop multiplex session \\\"{0}\\\"",
       "nl": "Deelgenomen aan desktop multiplex-sessie \\\"{0}\\\"",
-	  "pl": "Dołączył do sesji multipleksu pulpitów \\\"{0}\\\"",
+      "pl": "Dołączył do sesji multipleksu pulpitów \\\"{0}\\\"",
       "xloc": [
         "default.handlebars->39->2286"
       ]
@@ -34899,7 +34905,7 @@
     {
       "en": "Left Web-RDP session \\\"{1}\\\" after {0} second(s).",
       "nl": "Verliet de desktop multiplex sessie na \\\"{1}\\\" {0} seconde(n).",
-	  "pl": "Opuścił sesję Web-RDP \\\"{1}\\\" po {0} sekundach(sekundzie).",
+      "pl": "Opuścił sesję Web-RDP \\\"{1}\\\" po {0} sekundach(sekundzie).",
       "xloc": [
         "default.handlebars->39->2268"
       ]
@@ -34923,7 +34929,7 @@
     {
       "en": "Left Web-SFTP session \\\"{1}\\\" after {0} second(s).",
       "nl": "Verliet de web-SFTP sessie na \\\"{1}\\\" {0} seconde(n).",
-	  "pl": "Opuścił sesję Web-SFTP \\\"{1}\\\" po {0} sekundach(sekundzie).",
+      "pl": "Opuścił sesję Web-SFTP \\\"{1}\\\" po {0} sekundach(sekundzie).",
       "xloc": [
         "default.handlebars->39->2267"
       ]
@@ -35044,7 +35050,7 @@
     {
       "en": "Left the desktop multiplex session \\\"{0}\\\" after {1} second(s).",
       "nl": "Verliet de desktop multiplexsessie \\\"{0}\\\" na {1} seconde(n).",
-	  "pl": "Opuścił sesję multiplex pulpitów \\\"{0}\\\" po {1} sekundach(sekundzie).",
+      "pl": "Opuścił sesję multiplex pulpitów \\\"{0}\\\" po {1} sekundach(sekundzie).",
       "xloc": [
         "default.handlebars->39->2287"
       ]
@@ -35628,7 +35634,7 @@
     {
       "en": "Linux MeshAgent",
       "nl": "Linux MeshAgent",
-	  "pl": "MeshAgent dla Linuksa",
+      "pl": "MeshAgent dla Linuksa",
       "xloc": [
         "default.handlebars->39->2052",
         "default.handlebars->39->508"
@@ -37437,7 +37443,7 @@
     {
       "en": "MacOS MeshAgent",
       "nl": "MacOS MeshAgent",
-	  "pl": "MeshAgent dla MacOS",
+      "pl": "MeshAgent dla MacOS",
       "xloc": [
         "default.handlebars->39->2053",
         "default.handlebars->39->509"
@@ -38221,7 +38227,7 @@
     {
       "en": "Maximum keys reached.",
       "nl": "Maximum aantal sleutels bereikt.",
-	  "pl": "Osiągnięto maximum klawiszy.",
+      "pl": "Osiągnięto maximum klawiszy.",
       "xloc": [
         "default.handlebars->39->217"
       ]
@@ -40517,6 +40523,12 @@
       "zh-cht": "不在運行",
       "xloc": [
         "agent-translations.json"
+      ]
+    },
+    {
+      "en": "NUM",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->7->p11numlock"
       ]
     },
     {
@@ -52764,6 +52776,12 @@
       ]
     },
     {
+      "en": "SCROLL",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->7->p11scrolllock"
+      ]
+    },
+    {
       "cs": "SMS",
       "da": "SMS",
       "de": "SMS",
@@ -58844,7 +58862,7 @@
     {
       "en": "Started Web-RDP session \\\"{0}\\\".",
       "nl": "Gestarte Web-RDP sessie \\\"{0}\\\".",
-	  "pl": "Uruchomiono sesję Web-RDP \\\"{0}\\\".",
+      "pl": "Uruchomiono sesję Web-RDP \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2293"
       ]
@@ -58852,7 +58870,7 @@
     {
       "en": "Started Web-SFTP session \\\"{0}\\\".",
       "nl": "Gestarte Web-SFTP sessie \\\"{0}\\\".",
-	  "pl": "Uruchomiono sesję Web-SFTP \\\"{0}\\\".",
+      "pl": "Uruchomiono sesję Web-SFTP \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2292"
       ]
@@ -58860,7 +58878,7 @@
     {
       "en": "Started Web-SSH session \\\"{0}\\\".",
       "nl": "Gestarte Web-SSH sessie \\\"{0}\\\".",
-	  "pl": "Uruchomiono sesję Web-SSH \\\"{0}\\\".",
+      "pl": "Uruchomiono sesję Web-SSH \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2291"
       ]
@@ -58868,7 +58886,7 @@
     {
       "en": "Started Web-VNC session \\\"{0}\\\".",
       "nl": "Gestarte Web-VNC sessie \\\"{0}\\\".",
-	  "pl": "Uruchomiono sesję Web-VNC \\\"{0}\\\".",
+      "pl": "Uruchomiono sesję Web-VNC \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2294"
       ]
@@ -58901,7 +58919,7 @@
     {
       "en": "Started desktop multiplex session \\\"{0}\\\"",
       "nl": "Startte een Desktop multiplexsessie \\\"{0}\\\"",
-	  "pl": "Uruchomienie sesji multiplex pulpitów \\\"{0}\\\"",
+      "pl": "Uruchomienie sesji multiplex pulpitów \\\"{0}\\\"",
       "xloc": [
         "default.handlebars->39->2288"
       ]
@@ -68118,7 +68136,7 @@
       "it": "settimanalmente",
       "ja": "毎週",
       "nl": "Wekelijks",
-	  "pl": "Tygodnowo",
+      "pl": "Tygodnowo",
       "ru": "Еженедельно",
       "tr": "Haftalık",
       "xloc": [
@@ -68987,7 +69005,7 @@
     {
       "en": "Windows MeshAgent",
       "nl": "Windows MeshAgent",
-	  "pl": "MeshAgent dla Windows",
+      "pl": "MeshAgent dla Windows",
       "xloc": [
         "default.handlebars->39->2051",
         "default.handlebars->39->507"
