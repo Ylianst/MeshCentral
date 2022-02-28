@@ -34,8 +34,9 @@ MNG_KVM_SET_DISPLAY = 12,
 MNG_KVM_FRAME_RATE_TIMER = 13,
 MNG_KVM_INIT_TOUCH = 14,
 MNG_KVM_TOUCH = 15,
-MNG_KVM_KEYSTATE = 16,
+MNG_KVM_CONNECTCOUNT = 16,
 MNG_KVM_MESSAGE = 17,
+MNG_KVM_KEYSTATE = 18,
 MNG_ECHO = 21,
 MNG_JUMBO = 27,
 MNG_GETDIR = 50,
@@ -790,14 +791,14 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
                 break;
             case 15: // KVM_TOUCH
                 break;
-            case 16: // MNG_KVM_KEYSTATE
-                // Store and send this to all viewers right away
-                obj.lastKeyState = data;
-                obj.sendToAllInputViewers(data);
-                break;
             case 17: // MNG_KVM_MESSAGE
                 // Send this to all viewers right away
                 obj.sendToAllViewers(data);
+                break;
+            case 18: // MNG_KVM_KEYSTATE
+                // Store and send this to all viewers right away
+                obj.lastKeyState = data;
+                obj.sendToAllInputViewers(data);
                 break;
             case 65: // Alert
                 // Send this to all viewers right away
