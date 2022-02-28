@@ -52,6 +52,10 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.onRemoteInputLockChanged = null;
     obj.RemoteInputLock = null;
 
+    // Remote keyboard state
+    obj.onKeyboardStateChanged = null;
+    obj.KeyboardState = 0; // 1 = NumLock, 2 = ScrollLock, 4 = CapsLock
+
     obj.ScreenWidth = 960;
     obj.ScreenHeight = 701;
     obj.width = 960;
@@ -260,6 +264,10 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 obj.TouchArray = {};
                 break;
             case 16: // MNG_KVM_KEYSTATE
+                if ((cmdsize != 5) || (obj.KeyboardState == view[4])) break;
+                obj.KeyboardState = view[4]; // 1 = NumLock, 2 = ScrollLock, 4 = CapsLock
+                if (obj.onKeyboardStateChanged) { obj.onKeyboardStateChanged(obj, obj.KeyboardState); }
+                console.log('MNG_KVM_KEYSTATE:' + ((obj.KeyboardState & 1) ? ' NumLock' : '') + ((obj.KeyboardState & 2) ? ' ScrollLock' : '') + ((obj.KeyboardState & 4) ? ' CapsLock' : ''));
                 break;
             case 17: // MNG_KVM_MESSAGE
                 var str = String.fromCharCode.apply(null, view.slice(4));

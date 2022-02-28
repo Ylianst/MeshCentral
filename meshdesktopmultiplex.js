@@ -34,7 +34,7 @@ MNG_KVM_SET_DISPLAY = 12,
 MNG_KVM_FRAME_RATE_TIMER = 13,
 MNG_KVM_INIT_TOUCH = 14,
 MNG_KVM_TOUCH = 15,
-MNG_KVM_CONNECTCOUNT = 16,
+MNG_KVM_KEYSTATE = 16,
 MNG_KVM_MESSAGE = 17,
 MNG_ECHO = 21,
 MNG_JUMBO = 27,
@@ -82,6 +82,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
     obj.lastData = null;                // Index in the images table of the last image in the table.
     obj.lastDisplayInfoData = null;     // Pointer to the last display information command from the agent (Number of displays).
     obj.lastDisplayLocationData = null; // Pointer to the last display location and size command from the agent.
+    obj.lastKeyState = null;            // Pointer to the last key state command from the agent.
     obj.desktopPaused = true;           // Current desktop pause state, it's true if all viewers are paused.
     obj.imageType = 1;                  // Current image type, 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP
     obj.imageCompression = 50;          // Current image compression, this is the highest value of all viewers.
@@ -178,7 +179,8 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
                 if (obj.lastDisplayInfoData != null) { obj.sendToViewer(peer, obj.lastDisplayInfoData); }
                 if (obj.lastDisplayLocationData != null) { obj.sendToViewer(peer, obj.lastDisplayLocationData); }
                 if (obj.lastConsoleMessage != null) { obj.sendToViewer(peer, obj.lastConsoleMessage); }
-
+                if (obj.lastKeyState != null) { obj.sendToViewer(peer, obj.lastKeyState); }
+                
                 // Log joining the multiplex session
                 if (obj.startTime != null) {
                     var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user ? peer.user._id : null, username: peer.user.name, msgid: 143, msgArgs: [obj.id], msg: "Joined desktop multiplex session \"" + obj.id + "\"", protocol: 2 };
@@ -788,7 +790,10 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
                 break;
             case 15: // KVM_TOUCH
                 break;
-            case 16: // MNG_KVM_CONNECTCOUNT
+            case 16: // MNG_KVM_KEYSTATE
+                // Store and send this to all viewers right away
+                obj.lastKeyState = data;
+                obj.sendToAllInputViewers(data);
                 break;
             case 17: // MNG_KVM_MESSAGE
                 // Send this to all viewers right away
