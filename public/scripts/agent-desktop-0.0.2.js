@@ -402,7 +402,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (!event) { event = window.event; }
 
         var extendedKey = false; // Test feature, add ?extkeys=1 to url to use.
-        if ((typeof event.code == 'string') && (event.code.startsWith('Arrow') || (extendedKeyTable.indexOf(event.code) >= 0))) { extendedKey = true; }
+        if ((urlargs.noextkeys != 1) && (typeof event.code == 'string') && (event.code.startsWith('Arrow') || (extendedKeyTable.indexOf(event.code) >= 0))) { extendedKey = true; }
 
         if ((extendedKey == false) && event.code && (event.code.startsWith('NumPad') == false) && (obj.localKeyMap == false)) {
             // Convert "event.code" into a scancode. This works the same regardless of the keyboard language.
