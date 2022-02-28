@@ -543,7 +543,7 @@
     "agent": "Agent",
     "group": "Grupa Urządzeń",
     "url": "URL Serwera",
-    "meshName": "Nazwa Sieci",
+    "meshName": "Nazwa Grupy",
     "meshId": "Identyfikator Grupy",
     "serverId": "Identyfikator Serwera",
     "setup": "Konfiguracja",

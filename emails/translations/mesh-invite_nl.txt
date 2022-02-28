@@ -27,7 +27,7 @@ Voor Linux, knip het volgende en plak dit in een terminal om de agent te install
 ~
 ~</area-linux>
 ~<area-assistant>
-For MeshCentral Assistant on Windows, nagivate to the following link to complete the process:
+Voor MeshCentral Assistant voor Windows navigeert u naar de volgende link om het proces te voltooien:
 ~
 ~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
 ~
