@@ -259,6 +259,8 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             case 15: // KVM_TOUCH
                 obj.TouchArray = {};
                 break;
+            case 16: // MNG_KVM_KEYSTATE
+                break;
             case 17: // MNG_KVM_MESSAGE
                 var str = String.fromCharCode.apply(null, view.slice(4));
                 console.log('Got KVM Message: ' + str);
