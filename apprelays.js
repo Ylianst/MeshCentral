@@ -62,7 +62,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
             if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
             const sessionSeconds = Math.round((Date.now() - obj.startTime) / 1000);
             const user = parent.users[obj.cookie.userid];
-            const username = (user != null) ? user.name : null;e
+            const username = (user != null) ? user.name : null;
             const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.cookie.userid, username: username, sessionid: obj.sessionid, msgid: 125, msgArgs: [sessionSeconds, obj.sessionid], msg: "Left Web-RDP session \"" + obj.sessionid + "\" after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBRDP, bytesin: inTraffc, bytesout: outTraffc };
             parent.parent.DispatchEvent(['*', obj.nodeid, obj.cookie.userid, obj.meshid], obj, event);
             delete obj.startTime;
