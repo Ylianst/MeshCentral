@@ -612,6 +612,17 @@
                     <div class="icon2"></div>
                     <div class="warningbox">Remote computer is not powered on, click here to issue a power command.</div>
                 </div>
+                <div style="position:absolute;right:16px;margin-top:-14px;font-size:x-small;color:black">
+                    <div id="p11capslock" style="display:none;margin-left:1px;border-radius:5px;background-color:lightgreen;padding:2px">
+                        CAPS
+                    </div>
+                    <div id="p11scrolllock" style="display:none;margin-left:1px;border-radius:5px;background-color:lightgreen;padding:2px">
+                        SCROLL
+                    </div>
+                    <div id="p11numlock" style="display:none;margin-left:1px;border-radius:5px;background-color:lightgreen;padding:2px">
+                        NUM
+                    </div>
+                </div>
                 <div id=deskarea0 cellpadding=0 cellspacing=0>
                     <div id=deskarea1 class="areaHead">
                         <div class="toright2">
@@ -3733,7 +3744,7 @@
 
         function ondockeypress(e) {
             setSessionActivity();
-            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q('DeskControl').checked) {
+            if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var meshrights = GetNodeRights(currentNode);
@@ -3744,14 +3755,14 @@
                 }
                 return desktop.m.handleKeys(e);
             }
-            if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3 && xterm == null) { return terminal.m.TermHandleKeys(e); }
+            if (!xxdialogMode && (xxcurrentView == 12) && terminal && (terminal.State == 3) && (xterm == null)) { return terminal.m.TermHandleKeys(e); }
             if (!xxdialogMode && ((xxcurrentView == 15) || (xxcurrentView == 115))) return agentConsoleHandleKeys(e);
             if (!xxdialogMode && xxcurrentView == 4) {
-                if (e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
+                if ((e.ctrlKey == true) || (e.altKey == true) || (e.metaKey == true)) return;
                 var processed = 0;
                 if (e.key) {
-                    if (e.key.length === 1 && userSearchFocus == 0) { Q('UserSearchInput').value = ((Q('UserSearchInput').value + e.key)); processed = 1; }
-                    if (e.keyCode == 8 && userSearchFocus == 0) { var x = Q('UserSearchInput').value; Q('UserSearchInput').value = x.substring(0, x.length - 1); processed = 1; }
+                    if ((e.key.length === 1) && (userSearchFocus == 0)) { Q('UserSearchInput').value = ((Q('UserSearchInput').value + e.key)); processed = 1; }
+                    if ((e.keyCode == 8) && (userSearchFocus == 0)) { var x = Q('UserSearchInput').value; Q('UserSearchInput').value = x.substring(0, x.length - 1); processed = 1; }
                     if (e.keyCode == 27) { Q('UserSearchInput').value = ''; processed = 1; }
                 } else {
                     if (e.charCode != 0 && userSearchFocus == 0) { Q('UserSearchInput').value = ((Q('UserSearchInput').value + String.fromCharCode(e.charCode))); processed = 1; }
@@ -3770,8 +3781,8 @@
             if (Q('viewselect').value < 4) {
                 var processed = 0;
                 if (e.key) {
-                    if (e.key.length === 1 && searchFocus == 0) { Q('KvmSearchInput').value = Q('SearchInput').value = ((Q('SearchInput').value + e.key)); processed = 1; }
-                    if (e.keyCode == 8 && searchFocus == 0) { var x = Q('SearchInput').value; Q('KvmSearchInput').value = Q('SearchInput').value = x.substring(0, x.length - 1); processed = 1; }
+                    if ((e.key.length === 1) && (searchFocus == 0)) { Q('KvmSearchInput').value = Q('SearchInput').value = ((Q('SearchInput').value + e.key)); processed = 1; }
+                    if ((e.keyCode == 8) && (searchFocus == 0)) { var x = Q('SearchInput').value; Q('KvmSearchInput').value = Q('SearchInput').value = x.substring(0, x.length - 1); processed = 1; }
                     if (e.keyCode == 27) { Q('KvmSearchInput').value = Q('SearchInput').value = ''; processed = 1; }
                 } else {
                     if (e.charCode != 0 && searchFocus == 0) { Q('KvmSearchInput').value = Q('SearchInput').value = ((Q('SearchInput').value + String.fromCharCode(e.charCode))); processed = 1; }
@@ -3780,7 +3791,7 @@
             }
             if (Q('viewselect').value == 4) {
                 if (e.key) {
-                    if (e.key.length === 1 && mapSearchFocus == 0) { Q('mapSearchLocation').value = ((Q('mapSearchLocation').value + e.key)); processed = 1; }
+                    if ((e.key.length === 1) && (mapSearchFocus == 0)) { Q('mapSearchLocation').value = ((Q('mapSearchLocation').value + e.key)); processed = 1; }
                     //if (e.keyCode == 8 && mapSearchFocus == 0) { var x = Q('mapSearchLocation').value; Q('mapSearchLocation').value = x.substring(0, x.length - 1); processed = 1; }
                     if (e.keyCode == 27) { Q('mapSearchLocation').value = ''; mapCloseSearchWindow(); processed = 1; }
                     if (e.keyCode == 13) { getSearchLocation(); }
@@ -3792,7 +3803,7 @@
 
         function ondockeydown(e) {
             setSessionActivity();
-            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q('DeskControl').checked) {
+            if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var meshrights = GetNodeRights(currentNode);
@@ -3803,30 +3814,30 @@
                 }
                 return desktop.m.handleKeyDown(e);
             }
-            if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3 && xterm == null) { terminal.m.TermHandleKeyDown(e); if ((e.keyCode >= 37) && (e.keyCode <= 40)) { haltEvent(e); } }
-            if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { haltEvent(e); return false; } // F5 Refresh on files
+            if (!xxdialogMode && (xxcurrentView == 12) && terminal && (terminal.State == 3) && xterm == null) { terminal.m.TermHandleKeyDown(e); if ((e.keyCode >= 37) && (e.keyCode <= 40)) { haltEvent(e); } }
+            if (!xxdialogMode && (xxcurrentView == 13) && (e.keyCode == 116) && (p13filetree != null)) { haltEvent(e); return false; } // F5 Refresh on files
             if (!xxdialogMode && ((xxcurrentView == 15) || (xxcurrentView == 115))) { return agentConsoleHandleKeys(e); }
-            if (!xxdialogMode && xxcurrentView == 4) {
-                if (e.keyCode === 8 && userSearchFocus == 0) { var x = Q('UserSearchInput').value; Q('UserSearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
+            if (!xxdialogMode && (xxcurrentView == 4)) {
+                if ((e.keyCode === 8) && (userSearchFocus == 0)) { var x = Q('UserSearchInput').value; Q('UserSearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
                 if (e.keyCode === 27) { Q('UserSearchInput').value = ''; processed = 1; }
                 if (processed > 0) { if (processed == 1) { mainUpdate(5); } return haltEvent(e); }
             }
-            if (xxdialogMode || xxcurrentView != 1 || e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
+            if (xxdialogMode || (xxcurrentView != 1) || (e.ctrlKey == true) || (e.altKey == true) || (e.metaKey == true)) return;
             var processed = 0;
             if (Q('viewselect').value < 4) {
-                if (e.keyCode === 8 && searchFocus == 0) { var x = Q('SearchInput').value; Q('KvmSearchInput').value = Q('SearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
+                if ((e.keyCode === 8) && (searchFocus == 0)) { var x = Q('SearchInput').value; Q('KvmSearchInput').value = Q('SearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
                 if (e.keyCode === 27) { Q('KvmSearchInput').value = Q('SearchInput').value = ''; processed = 1; }
                 if (processed > 0) { if (processed == 1) { mainUpdate(5); } return haltEvent(e); }
             }
             if (Q('viewselect').value == 4) {
-                if (e.keyCode === 8 && mapSearchFocus == 0) { var x = Q('mapSearchLocation').value; Q('mapSearchLocation').value = (x.substring(0, x.length - 1)); processed = 1; }
+                if ((e.keyCode === 8) && (mapSearchFocus == 0)) { var x = Q('mapSearchLocation').value; Q('mapSearchLocation').value = (x.substring(0, x.length - 1)); processed = 1; }
                 if (e.keyCode === 27) { Q('mapSearchLocation').value = ''; mapCloseSearchWindow(); processed = 1; }
             }
         }
 
         function ondockeyup(e) {
             setSessionActivity();
-            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q('DeskControl').checked) {
+            if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var meshrights = GetNodeRights(currentNode);
@@ -3837,14 +3848,14 @@
                 }
                 return desktop.m.handleKeyUp(e);
             }
-            if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3 && xterm == null) { return terminal.m.TermHandleKeyUp(e); }
-            if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { p13folderup(9999); haltEvent(e); return false; } // F5 Refresh on files
-            if (!xxdialogMode && xxcurrentView == 4) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
-            if (xxdialogMode && e.keyCode == 27) { dialogclose(0); }
+            if (!xxdialogMode && (xxcurrentView == 12) && terminal && (terminal.State == 3) && xterm == null) { return terminal.m.TermHandleKeyUp(e); }
+            if (!xxdialogMode && (xxcurrentView == 13) && (e.keyCode == 116) && (p13filetree != null)) { p13folderup(9999); haltEvent(e); return false; } // F5 Refresh on files
+            if (!xxdialogMode && (xxcurrentView == 4)) { if (((e.keyCode === 8) && (searchFocus == 0)) || e.keyCode === 27) { return haltEvent(e); } }
+            if (xxdialogMode && (e.keyCode == 27)) { dialogclose(0); }
             if ((e.shiftKey == true) && (e.keyCode == 27)) { dialogclose(0); Q('KvmSearchInput').value = Q('SearchInput').value = ''; mainUpdate(5); if (desktop != null) { connectDesktop(); } if (terminal != null) { connectTerminal(); } if (files != null) { connectFiles(); } go(1); return; } // Shift-ESC: Reset the web page
-            if (xxdialogMode || xxcurrentView != 0 || e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
-            if (Q('viewselect').value < 4) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
-            if (Q('viewselect').value == 4) { if ((e.keyCode === 8 && mapSearchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
+            if (xxdialogMode || xxcurrentView != 0 || e.ctrlKey == true || (e.altKey == true) || (e.metaKey == true)) return;
+            if (Q('viewselect').value < 4) { if (((e.keyCode === 8) && (searchFocus == 0)) || (e.keyCode === 27)) { return haltEvent(e); } }
+            if (Q('viewselect').value == 4) { if (((e.keyCode === 8) && (mapSearchFocus == 0)) || (e.keyCode === 27)) { return haltEvent(e); } }
         }
 
         //function ondocfocus() { }
@@ -4237,6 +4248,7 @@
                                 desktop.shortid = shortid;
                                 desktop.onStateChanged = onMultiDesktopStateChange;
                                 desktop.m.onRemoteInputLockChanged = null;
+                                desktop.m.onKeyboardStateChanged = null;
                                 multiDesktop[id] = desktop;
                                 desktop = desktopNode = currentNode = null;
                                 // Setup a replacement desktop
@@ -8174,6 +8186,11 @@
                     QV('DeskInputLockedButton', desktop.m.RemoteInputLock === 1);
                     QV('DeskInputUnLockedButton', desktop.m.RemoteInputLock === 0);
                     desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
+                    desktop.m.onKeyboardStateChanged = function(obj, state) {
+                        QS('p11numlock').display = ((state & 1) ? 'inline-block' : 'none');
+                        QS('p11scrolllock').display = ((state & 2) ? 'inline-block' : 'none');
+                        QS('p11capslock').display = ((state & 4) ? 'inline-block' : 'none');
+                    }
                     desktopNode = currentNode;
                     onDesktopStateChange(desktop, desktop.State);
                     delete multiDesktop[currentNode._id];
@@ -8252,7 +8269,13 @@
             QV('d7deskAutoClipboardLabel', (navigator.clipboard.readText != null) && ((features2 & 0x1000) == 0));
             QV('DeskClipboardInButton', online && inputAllowed && ((features2 & 0x0800) == 0) && (navigator.clipboard != null) && (navigator.clipboard.writeText != null) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
 
-            if (deskState != 3) { QV('DeskInputLockedButton', false); QV('DeskInputUnLockedButton', false); }
+            if (deskState != 3) {
+                QV('DeskInputLockedButton', false);
+                QV('DeskInputUnLockedButton', false);
+                QV('p11numlock', false);
+                QV('p11scrolllock', false);
+                QV('p11capslock', false);
+            }
 
             // Display this only if we have Chat & Notify permissions
             QV('DeskSaveImageButton', (deskState == 3) && (Q('Desk')['toBlob'] != null) && ((features2 & 0x400) == 0));
@@ -8393,6 +8416,11 @@
                     desktop.onStateChanged = onDesktopStateChange;
                     if ((features2 & 0x2000) != 0) desktop.m.stopInput = true;
                     desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
+                    desktop.m.onKeyboardStateChanged = function(obj, state) {
+                        QS('p11numlock').display = ((state & 1) ? 'inline-block' : 'none');
+                        QS('p11scrolllock').display = ((state & 2) ? 'inline-block' : 'none');
+                        QS('p11capslock').display = ((state & 4) ? 'inline-block' : 'none');
+                    }
                     desktop.onConsoleMessageChange = function () {
                         if (desktop.consoleMessage) {
                             Q('p11DeskConsoleMsg').innerHTML += formatAgentConsoleMessage(desktop.consoleMessage, desktop.consoleMessageId, desktop.consoleMessageArgs);

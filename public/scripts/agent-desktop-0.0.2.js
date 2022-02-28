@@ -263,16 +263,16 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             case 15: // KVM_TOUCH
                 obj.TouchArray = {};
                 break;
-            case 16: // MNG_KVM_KEYSTATE
-                if ((cmdsize != 5) || (obj.KeyboardState == view[4])) break;
-                obj.KeyboardState = view[4]; // 1 = NumLock, 2 = ScrollLock, 4 = CapsLock
-                if (obj.onKeyboardStateChanged) { obj.onKeyboardStateChanged(obj, obj.KeyboardState); }
-                console.log('MNG_KVM_KEYSTATE:' + ((obj.KeyboardState & 1) ? ' NumLock' : '') + ((obj.KeyboardState & 2) ? ' ScrollLock' : '') + ((obj.KeyboardState & 4) ? ' CapsLock' : ''));
-                break;
             case 17: // MNG_KVM_MESSAGE
                 var str = String.fromCharCode.apply(null, view.slice(4));
                 console.log('Got KVM Message: ' + str);
                 if (obj.onMessage != null) obj.onMessage(str, obj);
+                break;
+            case 18: // MNG_KVM_KEYSTATE
+                if ((cmdsize != 5) || (obj.KeyboardState == view[4])) break;
+                obj.KeyboardState = view[4]; // 1 = NumLock, 2 = ScrollLock, 4 = CapsLock
+                if (obj.onKeyboardStateChanged) { obj.onKeyboardStateChanged(obj, obj.KeyboardState); }
+                console.log('MNG_KVM_KEYSTATE:' + ((obj.KeyboardState & 1) ? ' NumLock' : '') + ((obj.KeyboardState & 2) ? ' ScrollLock' : '') + ((obj.KeyboardState & 4) ? ' CapsLock' : ''));
                 break;
             case 65: // Alert
                 var str = String.fromCharCode.apply(null, view.slice(4));
@@ -401,7 +401,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (action == null) return;
         if (!event) { event = window.event; }
 
-        var extendedKey = false;
+        var extendedKey = false; // Test feature, add ?extkeys=1 to url to use.
         if ((typeof event.code == 'string') && (event.code.startsWith('Arrow') || (extendedKeyTable.indexOf(event.code) >= 0))) { extendedKey = true; }
 
         if ((extendedKey == false) && event.code && (event.code.startsWith('NumPad') == false) && (obj.localKeyMap == false)) {
@@ -580,13 +580,17 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.xxMouseWheel = function (e) { if (obj.State == 3) { obj.SendMouseMsg(obj.KeyAction.SCROLL, e); return false; } return true; }
     obj.xxKeyUp = function (e) {
         if ((e.key != 'Dead') && (obj.State == 3)) {
-            if ((typeof e.key == 'string') && (e.key.length == 1) && (e.ctrlKey != true) && (e.altKey != true) && ((obj.remoteKeyMap == false) || (obj.debugmode > 0)) && (e.key.charCodeAt(0) < 42) && (e.key.charCodeAt(0) > 47)) { obj.SendKeyUnicode(obj.KeyAction.UP, e.key.charCodeAt(0)); } else { obj.SendKeyMsg(obj.KeyAction.UP, e); }
+            if ((typeof e.key == 'string') && (e.key.length == 1) && (e.ctrlKey != true) && (e.altKey != true) && ((obj.remoteKeyMap == false) || (obj.debugmode > 0))) {
+                obj.SendKeyUnicode(obj.KeyAction.UP, e.key.charCodeAt(0));
+            } else {
+                obj.SendKeyMsg(obj.KeyAction.UP, e);
+            }
         }
         if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false;
     }
     obj.xxKeyDown = function (e) {
         if ((e.key != 'Dead') && (obj.State == 3)) {
-            if (!((typeof e.key == 'string') && (e.key.length == 1) && (e.ctrlKey != true) && (e.altKey != true) && ((obj.remoteKeyMap == false) || (obj.debugmode > 0)) && (e.key.charCodeAt(0) < 42) && (e.key.charCodeAt(0) > 47))) {
+            if (!((typeof e.key == 'string') && (e.key.length == 1) && (e.ctrlKey != true) && (e.altKey != true) && ((obj.remoteKeyMap == false) || (obj.debugmode > 0)))) {
                 obj.SendKeyMsg(obj.KeyAction.DOWN, e);
                 if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false;
             }
@@ -594,7 +598,9 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
     obj.xxKeyPress = function (e) {
         if ((e.key != 'Dead') && (obj.State == 3)) {
-            if ((typeof e.key == 'string') && (e.key.length == 1) && (e.ctrlKey != true) && (e.altKey != true) && ((obj.remoteKeyMap == false) || (obj.debugmode > 0)) && (e.key.charCodeAt(0) < 42) && (e.key.charCodeAt(0) > 47)) { obj.SendKeyUnicode(obj.KeyAction.DOWN, e.key.charCodeAt(0)); } //else { obj.SendKeyMsg(obj.KeyAction.DOWN, e); }
+            if ((typeof e.key == 'string') && (e.key.length == 1) && (e.ctrlKey != true) && (e.altKey != true) && ((obj.remoteKeyMap == false) || (obj.debugmode > 0))) {
+                obj.SendKeyUnicode(obj.KeyAction.DOWN, e.key.charCodeAt(0));
+            } // else { obj.SendKeyMsg(obj.KeyAction.DOWN, e); }
         }
         if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false;
     }
