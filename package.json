@@ -36,8 +36,6 @@
     "sample-config-advanced.json"
   ],
   "dependencies": {
-    "@yetzt/nedb": "^1.8.0",
-    "archiver": "^4.0.2",
     "body-parser": "^1.19.0",
     "cbor": "~5.2.0",
     "compression": "^1.7.4",
@@ -45,25 +43,13 @@
     "express": "^4.17.0",
     "express-handlebars": "^5.3.5",
     "express-ws": "^4.0.0",
-    "html-minifier": "^4.0.0",
-    "image-size": "^1.0.1",
     "ipcheck": "^0.1.0",
-    "jsdom": "^19.0.0",
-    "loadavg-windows": "^1.1.1",
-    "minify-js": "^0.0.4",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
+    "@yetzt/nedb": "^1.8.0",
     "node-forge": "^1.0.0",
-    "node-rdpjs-2": "^0.3.5",
-    "node-windows": "^0.1.4",
-    "otplib": "^10.2.3",
-    "pg": "^8.7.1",
-    "pgtools": "^0.3.2",
-    "ssh2": "^1.6.0",
-    "web-push": "^3.4.5",
     "ws": "^5.2.3",
-    "yauzl": "^2.10.0",
-    "yubikeyotp": "^0.2.0"
+    "yauzl": "^2.10.0"
   },
   "engines": {
     "node": ">=10.0.0"
