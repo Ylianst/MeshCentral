@@ -848,6 +848,15 @@ NoMeshesPanel img {
 .NotifyIconSmall7 { width:24px; height:24px; background: url(../images/notify24.png) -144px 0px; }
 .NotifyIconSmall8 { width:24px; height:24px; background: url(../images/notify24.png) -168px 0px; }
 .NotifyIconSmall9 { width:24px; height:24px; background: url(../images/notify24.png) -192px 0px; }
+.NotifyIconTiny1 { width:16px; height:16px; background: url(../images/notify16.png) 0px 0px; }
+.NotifyIconTiny2 { width:16px; height:16px; background: url(../images/notify16.png) -16px 0px; }
+.NotifyIconTiny3 { width:16px; height:16px; background: url(../images/notify16.png) -32px 0px; }
+.NotifyIconTiny4 { width:16px; height:16px; background: url(../images/notify16.png) -48px 0px; }
+.NotifyIconTiny5 { width:16px; height:16px; background: url(../images/notify16.png) -64px 0px; }
+.NotifyIconTiny6 { width:16px; height:16px; background: url(../images/notify16.png) -80px 0px; }
+.NotifyIconTiny7 { width:16px; height:16px; background: url(../images/notify16.png) -96px 0px; }
+.NotifyIconTiny8 { width:16px; height:16px; background: url(../images/notify16.png) -112px 0px; }
+.NotifyIconTiny9 { width:16px; height:16px; background: url(../images/notify16.png) -128px 0px; }
 
 .deviceBatteryLarge {
     position:absolute;
