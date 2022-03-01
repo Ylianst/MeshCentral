@@ -5739,28 +5739,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Skip the rest is this is an agent connection
             if ((req.url.indexOf('/meshrelay.ashx/.websocket') >= 0) || (req.url.indexOf('/agent.ashx/.websocket') >= 0) || (req.url.indexOf('/localrelay.ashx/.websocket') >= 0)) { next(); return; }
 
-            // If this domain has configured headers, use them.
-            // Example headers: { 'Strict-Transport-Security': 'max-age=360000;includeSubDomains' };
-            //                  { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src http: ws: data: 'self';script-src http: 'unsafe-inline';style-src http: 'unsafe-inline'" };
+            // Setup security headers
+            const geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
+            var selfurl = ' wss://' + req.headers.host;
+            if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { selfurl += ' wss://' + xforwardedhost; }
+            const extraScriptSrc = (parent.config.settings.extrascriptsrc != null) ? (' ' + parent.config.settings.extrascriptsrc) : '';
+            const headers = {
+                'Referrer-Policy': 'no-referrer',
+                'X-XSS-Protection': '1; mode=block',
+                'X-Content-Type-Options': 'nosniff',
+                'Permissions-Policy': 'interest-cohort=()', // Remove Google's FLoC Network
+                'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'" + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' mcrouter:; media-src 'self'; form-action 'self'"
+            };
+            if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
+            if ((parent.config.settings.stricttransportsecurity === true) || ((parent.config.settings.stricttransportsecurity !== false) && (obj.isTrustedCert(domain)))) { if (typeof parent.config.settings.stricttransportsecurity == 'string') { headers['Strict-Transport-Security'] = parent.config.settings.stricttransportsecurity; } else { headers['Strict-Transport-Security'] = 'max-age=63072000'; } }
+
+            // If this domain has configured headers, add them. If a header is set to null, remove it.
             if ((domain != null) && (domain.httpheaders != null) && (typeof domain.httpheaders == 'object')) {
-                res.set(domain.httpheaders);
-            } else {
-                // Use default security headers
-                const geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
-                var selfurl = ' wss://' + req.headers.host;
-                if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { selfurl += ' wss://' + xforwardedhost; }
-                const extraScriptSrc = (parent.config.settings.extrascriptsrc != null) ? (' ' + parent.config.settings.extrascriptsrc) : '';
-                const headers = {
-                    'Referrer-Policy': 'no-referrer',
-                    'X-XSS-Protection': '1; mode=block',
-                    'X-Content-Type-Options': 'nosniff',
-                    'Permissions-Policy': 'interest-cohort=()', // Remove Google's FLoC Network
-                    'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'" + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' mcrouter:; media-src 'self'; form-action 'self'"
-                };
-                if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
-                if ((parent.config.settings.stricttransportsecurity === true) || ((parent.config.settings.stricttransportsecurity !== false) && (obj.isTrustedCert(domain)))) { if (typeof parent.config.settings.stricttransportsecurity == 'string') { headers['Strict-Transport-Security'] = parent.config.settings.stricttransportsecurity; } else { headers['Strict-Transport-Security'] = 'max-age=63072000'; } }
-                res.set(headers);
+                for (var i in domain.httpheaders) { if (domain.httpheaders === null) { delete headers[i]; } else { headers[i] = domain.httpheaders[i]; } }
             }
+            res.set(headers);
 
             // Check the session if bound to the external IP address
             if ((parent.config.settings.cookieipcheck !== false) && (req.session.ip != null) && (req.clientIp != null) && (req.session.ip != req.clientIp)) { req.session = {}; }
