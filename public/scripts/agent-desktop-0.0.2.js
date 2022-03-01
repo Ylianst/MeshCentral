@@ -46,6 +46,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.ScalingLevel = 1024;
     obj.FrameRateTimer = 100;
     obj.SwapMouse = false;
+    obj.UseExtendedKeyFlag = true;
     obj.FirstDraw = false;
 
     // Remote user mouse and keyboard lock
@@ -402,7 +403,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (!event) { event = window.event; }
 
         var extendedKey = false; // Test feature, add ?extkeys=1 to url to use.
-        if ((urlargs.noextkeys != 1) && (typeof event.code == 'string') && (event.code.startsWith('Arrow') || (extendedKeyTable.indexOf(event.code) >= 0))) { extendedKey = true; }
+        if ((obj.UseExtendedKeyFlag || (urlargs.extkeys == 1)) && (typeof event.code == 'string') && (event.code.startsWith('Arrow') || (extendedKeyTable.indexOf(event.code) >= 0))) { extendedKey = true; }
 
         if ((extendedKey == false) && event.code && (event.code.startsWith('NumPad') == false) && (obj.localKeyMap == false)) {
             // Convert "event.code" into a scancode. This works the same regardless of the keyboard language.

@@ -4742,6 +4742,7 @@
                 } else if (contype == 1) {
                     // Setup the Mesh Agent remote desktop
                     desk = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('kvmid_' + shortid), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                    desk.m.UseExtendedKeyFlag = (node.agent.id < 5); // Only use extended keys on Windows agents for now
                     desk.m.mouseCursorActive(xxcurrentView == 11);
                     desk.shortid = shortid;
                     desk.attemptWebRTC = attemptWebRTC;
@@ -8405,6 +8406,7 @@
                 } else if ((contype == null) || (contype == 1) || ((contype == 3) && (currentNode.agent.id > 4))) {
                     // Setup the Mesh Agent remote desktop
                     desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                    desktop.m.UseExtendedKeyFlag = (desktopNode.agent.id < 5); // Only use extended keys on Windows agents for now
                     desktop.m.mouseCursorActive(xxcurrentView == 11);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
