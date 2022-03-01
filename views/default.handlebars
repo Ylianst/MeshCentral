@@ -15623,7 +15623,7 @@
             if (xxdialogMode) return;
             var y = '', x = '', settings = JSON.parse(getstore('_ReportSettings', '{}'));
 
-            var options = { 1 : "Remote Sessions", 2 : "User Traffic Usage" }
+            var options = { 1 : "Remote Sessions", 2 : "User Traffic Usage", 3 : "User Logins" }
             for (var i in options) { y += '<option value=' + i + ((settings.type == i)?' selected':'') + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Type", '<select id=d2reportType style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
 
@@ -15632,6 +15632,13 @@
             var options = { 1 : "User", 2: "Device", 3: "Day" }
             for (var i in options) { y += '<option value=' + i + ((settings.groupBy == i)?' selected':'') + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Group by", '<select id=d2groupBy style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+            x += '</div>';
+
+            x += '<div id=d2GroupByDiv2 style=display:none>';
+            y = '';
+            var options = { 1 : "User", 3: "Day" }
+            for (var i in options) { y += '<option value=' + i + ((settings.groupBy2 == i)?' selected':'') + '>' + options[i] + '</option>'; }
+            x += addHtmlValue("Group by", '<select id=d2groupBy2 style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
             x += '</div>';
 
             x += '<div id=d2DeviceGroupDiv style=display:none>';
@@ -15667,6 +15674,7 @@
         function generateReportDialogValidate() {
             QV('d2timeRangeDiv', Q('d2timeRange').value == 0);
             QV('d2GroupByDiv', Q('d2reportType').value == 1);
+            QV('d2GroupByDiv2', Q('d2reportType').value == 3);
             QV('d2DeviceGroupDiv', Q('d2reportType').value == 1);
             QV('d2showTrafficDiv', Q('d2reportType').value == 1);
         }
@@ -15685,12 +15693,14 @@
             try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (ex) {}
             var devGroup = decodeURIComponent(Q('d2groupId').value);
             if (devGroup == 0) { devGroup = null; }
-            putstore('_ReportSettings', JSON.stringify({ type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), timeRange: parseInt(Q('d2timeRange').value), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked }));
-            meshserver.send({ action: 'report', type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), start: start, end: end, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked });
+            putstore('_ReportSettings', JSON.stringify({ type: parseInt(Q('d2reportType').value), groupBy: parseInt(Q('d2groupBy').value), groupBy2: parseInt(Q('d2groupBy2').value), timeRange: parseInt(Q('d2timeRange').value), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked }));
+            var groupBy = parseInt(Q('d2groupBy').value);
+            if (Q('d2reportType').value == 3) { groupBy = parseInt(Q('d2groupBy2').value); }
+            meshserver.send({ action: 'report', type: parseInt(Q('d2reportType').value), groupBy: groupBy, start: start, end: end, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), devGroup: devGroup, showTraffic: Q('d2showTraffic').checked });
         }
 
         function renderReport(r) {
-            var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", devgroup: "Device Group", guest: "Guest", length: "Length", bytesin: "Bytes In", bytesout: "Bytes Out" }
+            var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", devgroup: "Device Group", guest: "Guest", length: "Length", bytesin: "Bytes In", bytesout: "Bytes Out", os: "Operating System", ip: "IP Address", browser: "Browser", msg: "Message" }
             var x = '<table style=width:100%>', firstItem;
             var sumByCol = null; // Indicate by what colum we sum by
             var sumByValues = []; // Indicate by what values we sum by
@@ -15843,6 +15853,12 @@
                 } else {
                     return '<i>' + "Unknown User" + '</i>';
                 }
+            }
+            if (f == 'msg') {
+                if (v == 107) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny1"></div>' + "Succesful login";
+                if (v == 108) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny2"></div>' + "Incorrect 2nd factor";
+                if (v == 109) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny4"></div>' + "Locked account";
+                if (v == 110) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny3"></div>' + "Invalid login attempt";
             }
             return EscapeHtml(v);
         }

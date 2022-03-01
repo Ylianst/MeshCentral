@@ -5914,18 +5914,27 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverCommandReport(command) {
-        if (common.validateInt(command.type, 1, 2) == false) return; // Validate type
+        if (common.validateInt(command.type, 1, 3) == false) return; // Validate type
         if (common.validateInt(command.groupBy, 1, 3) == false) return; // Validate groupBy: 1 = User, 2 = Device, 3 = Day
         if ((typeof command.start != 'number') || (typeof command.end != 'number') || (command.start >= command.end)) return; // Validate start and end time
         const manageAllDeviceGroups = ((user.siteadmin == 0xFFFFFFFF) && (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0));
         if ((command.devGroup != null) && (manageAllDeviceGroups == false) && ((user.links == null) || (user.links[command.devGroup] == null))) return; // Asking for a device group that is not allowed
 
         const msgIdFilter = [5, 10, 11, 12, 122, 123, 124, 125, 126];
-
-        if (command.type == 1)
-            remoteSessionReport(command, manageAllDeviceGroups, msgIdFilter);
-        if (command.type == 2)
-            trafficUsageReport(command, msgIdFilter);
+        switch (command.type) {
+            case 1: {
+                remoteSessionReport(command, manageAllDeviceGroups, msgIdFilter);
+                break;
+            }
+            case 2: {
+                trafficUsageReport(command, msgIdFilter);
+                break;
+            }
+            case 3: {
+                userLoginReport(command, msgIdFilter);
+                break;
+            }   
+        }
     }
 
     function serverCommandServerClearErrorLog(command) {
@@ -6939,7 +6948,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 // Fetch or create the user entry
                 var userEntry = userEntries[docs[i].userid];
-                if (userEntry == null) { userEntry = { userid: docs[i].userid, length: 0, bytesin: 0, bytesout: 0}; }
+                if (userEntry == null) { userEntry = { userid: docs[i].userid, length: 0, bytesin: 0, bytesout: 0 }; }
                 if (docs[i].bytesin) { userEntry.bytesin += docs[i].bytesin; }
                 if (docs[i].bytesout) { userEntry.bytesout += docs[i].bytesout; }
 
@@ -6958,6 +6967,62 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
         });
     }
+
+
+    function userLoginReport(command) {
+        // If we are not user administrator on this site, only search for events with our own user id.
+        var ids = [user._id]; // If we are nto user administrator, only count our own traffic.
+        if ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0) { ids = ['*']; } // If user administrator, count traffic of all users.
+
+        var showInvalidLoginAttempts = true;
+
+        // Get the events in the time range
+        // MySQL or MariaDB query will ignore the MsgID filter.
+        var msgIdFilter = [107];
+        if (showInvalidLoginAttempts) { msgIdFilter = [107, 108, 109, 110]; } // Includes invalid login attempts
+
+        db.GetEventsTimeRange(ids, domain.id, msgIdFilter, new Date(command.start * 1000), new Date(command.end * 1000), function (err, docs) {
+            if (err != null) return;
+
+            // Columns
+            var data = { groups: {} };
+            if (command.groupBy == 1) {
+                data.groupFormat = 'user';
+                data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'ip', title: "ip" }, { id: 'browser', title: "browser" }, { id: 'os', title: "os" }];
+            } else if (command.groupBy == 3) {
+                data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: 'userid', title: "user", format: 'user' }, { id: 'ip', title: "ip" }, { id: 'browser', title: "browser" }, { id: 'os', title: "os" }];
+            }
+            if (showInvalidLoginAttempts) { data.columns.push({ id: 'msg', title: "msg", format: 'msg' }); }
+
+            // Add all log entries
+            var entries = [];
+            for (var i in docs) {
+                // If MySQL or MariaDB query, we can't filter on MsgID, so we have to do it here.
+                if (msgIdFilter.indexOf(docs[i].msgid) < 0) continue;
+
+                if (command.groupBy == 1) { // Add entry per user
+                    if (data.groups[docs[i].userid] == null) { data.groups[docs[i].userid] = { entries: [] }; }
+                    const entry = { time: docs[i].time.valueOf(), ip: docs[i].msgArgs[0], browser: docs[i].msgArgs[1], os: docs[i].msgArgs[2] };
+                    if (showInvalidLoginAttempts) { entry.msg = docs[i].msgid }
+                    data.groups[docs[i].userid].entries.push(entry);
+                } else if (command.groupBy == 3) { // Add entry per day
+                    var day;
+                    if ((typeof command.l == 'string') && (typeof command.tz == 'string')) {
+                        day = new Date(docs[i].time).toLocaleDateString(command.l, { timeZone: command.tz });
+                    } else {
+                        day = docs[i].time; // TODO
+                    }
+                    if (data.groups[day] == null) { data.groups[day] = { entries: [] }; }
+                    const entry = { time: docs[i].time.valueOf(), userid: docs[i].userid, ip: docs[i].msgArgs[0], browser: docs[i].msgArgs[1], os: docs[i].msgArgs[2] };
+                    if (showInvalidLoginAttempts) { entry.msg = docs[i].msgid }
+                    data.groups[day].entries.push(entry);
+                }
+            }
+
+            try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
+        });
+    }
+
 
     // Return detailed information about an array of nodeid's
     function getDeviceDetailedInfo(nodeids, type, func) {
