@@ -15891,6 +15891,12 @@
                     return "Unknown User";
                 }
             }
+            if (f == 'msg') {
+                if (v == 107) return "Succesful login";
+                if (v == 108) return "Incorrect 2nd factor";
+                if (v == 109) return "Locked account";
+                if (v == 110) return "Invalid login attempt";
+            }
             return '' + v;
         }
 
