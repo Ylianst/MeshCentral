@@ -676,9 +676,8 @@
                     <div id=deskarea4 class="areaFoot">
                         <div class="toright2">
                             <span id="DeskLatency" title="Desktop Session Latency"></span>
-                            <span id="DeskTimer" title="Session time"></span>&nbsp;
-                            <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onkeypress="return false" onkeydown="return false"></select>&nbsp;
-                            <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />&nbsp;
+                            <span id="DeskTimer" title="Session time"></span>
+                            <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
                             <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><img class="desktopButtons" src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskNotifyButton title="Display a notification on the remote computer"><img class="desktopButtons" src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskLockButton title="Lock the remote computer"><img src='images/icon-lock.png' class="desktopButtons" onclick=deviceLockFunction() height=16 width=16 /></span>
@@ -692,7 +691,9 @@
                             <span id=DeskInputLockedButton title="Remote input is locked"><img class="desktopButtons" id=DeskInputLockedButtonImage src='images/icon-keylock-red.png' onclick=deskInputLockFunction(0) height=16 width=16 /></span>
                             <span id=DeskInputUnLockedButton title="Remote input is unlocked"><img class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-keylock.png' onclick=deskInputLockFunction(1) height=16 width=16 /></span>
                             <span id=DeskGuestShareButton title="Share the device with a guest"><img class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-share2.png' onclick=showShareDevice() height=16 width=16 /></span>
+
                         </div>
+                        <div class="toright2"><span id=DeskMonitorSelectionSpan></span></div>
                         <div>
                             <select id="deskkeys" cmenu=deskKeyShortcutContextMenu></select>
                             <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
@@ -8551,7 +8552,7 @@
                     desktop.Stop();
                     desktopNode = desktop = null;
                     QV('DeskFocus', false);
-                    QV('termdisplays', false);
+                    QV('DeskMonitorSelectionSpan', false);
                     QV('deskRecordIcon', false);
                     QV('DeskInputLockedButton', false);
                     QV('DeskInputUnLockedButton', false);
@@ -9313,20 +9314,20 @@
             var displayCount = 0, displaySelector = '';
             for (var i in displays) {
                 displayCount++;
-                var str = displays[i];
-                if (str == 'All Displays') { str = "All Displays"; } // Language translation
+                var str = displays[i], allDisplays = 1;
+                if (str == 'All Displays') { str = "All Displays"; allDisplays = 2; } // Language translation
                 if (str.startsWith('Display ')) { str = format("Display {0}", str.substring(8)); } // Language translation
-                displaySelector += '<option' + ((selDisplay == i) ? ' selected' : '') + ' value=' + i + '>' + str + '</option>';
+                displaySelector += '<img id=DeskMonitorSelectionX' + i + ' class="' + ((selDisplay == i) ? '' : ' gray') + '" src=\'images/icon-monitor' + allDisplays + '.png\' title="' + EscapeHtml(str) + '" onclick=deskSetDisplay(' + i + ') height=16 width=16 style=padding-top:2px;margin-left:2px />';
                 if ((deskPreferedStickyDisplay == i) && (selDisplay != deskPreferedStickyDisplay)) { desktop.m.SetDisplay(i); }
                 deskPreferedStickyDisplay = -1;
             }
-            QH('termdisplays', displaySelector);
-            QV('termdisplays', displayCount > 1);
+            QH('DeskMonitorSelectionSpan', displaySelector);
+            QV('DeskMonitorSelectionSpan', displayCount > 1);
         }
 
         function deskGetDisplayNumbers(e) { desktop.m.GetDisplayNumbers(); }
         var deskPreferedStickyDisplay = -1;
-        function deskSetDisplay(e) { desktop.m.SetDisplay(deskPreferedStickyDisplay = parseInt(Q('termdisplays').value)); Q('termdisplays').blur(); }
+        function deskSetDisplay(v) { desktop.m.SetDisplay(deskPreferedStickyDisplay = parseInt(v)); }
 
         // Double click detection. This is important for macOS.
         var dblClickDetectArgs = { t:0, x:0, y:0 };

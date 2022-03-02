@@ -2654,7 +2654,7 @@ a {
     -ms-grid-row: 4;
 }
 
-#DeskChatButton, #DeskNotifyButton, #DeskOpenWebButton, #DeskBackgroundButton, #DeskSaveImageButton, #DeskRecordButton, #DeskClipboardInButton, #DeskClipboardOutButton, #DeskRefreshButton, #DeskLockButton, #DeskInputLockedButton, #DeskInputUnLockedButton, #DeskGuestShareButton {
+#DeskChatButton, #DeskNotifyButton, #DeskOpenWebButton, #DeskBackgroundButton, #DeskSaveImageButton, #DeskRecordButton, #DeskClipboardInButton, #DeskClipboardOutButton, #DeskRefreshButton, #DeskLockButton, #DeskInputLockedButton, #DeskInputUnLockedButton, #DeskGuestShareButton, #DeskMonitorSelectionSpan {
     float: right;
     margin-top: 1px;
     margin-right: 4px;
