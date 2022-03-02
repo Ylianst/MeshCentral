@@ -344,6 +344,7 @@
         "_filepath": "C:\\temp",
         "_index": true,
         "_maxRecordings": 10,
+        "_maxRecordingDays": 15,
         "_maxRecordingSizeMegabytes": 3,
         "__protocols__": "Is an array: 1 = Terminal, 2 = Desktop, 5 = Files, 100 = Intel AMT WSMAN, 101 = Intel AMT Redirection, 200 = Messenger",
         "protocols": [ 1, 2, 101 ]
