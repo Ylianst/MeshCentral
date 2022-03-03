@@ -46846,7 +46846,7 @@
     },
     {
       "cs": "Číslo portu",
-      "da": "Port Nummer",
+      "da": "Portnummer",
       "de": "Port-Nummer",
       "en": "Port Number",
       "es": "Número de puerto",
@@ -49246,7 +49246,7 @@
     },
     {
       "cs": "Zapamatujte si toto zařízení po dobu {0} dnů.",
-      "da": "Husk denne enhed i {0} dage.",
+      "da": "Kom ihåg den här enheten i {0} dagar.",
       "de": "Erinnern Sie sich an dieses Gerät für {0} Tage.",
       "en": "Remember this device for {0} days.",
       "es": "Recuerdar este dispositivo por {0} días.",
