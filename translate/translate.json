@@ -13712,7 +13712,7 @@
       "zh-chs": "剪贴板",
       "zh-cht": "剪貼板",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->5",
         "sharing.handlebars->p11->deskarea0->deskarea4->3"
       ]
     },
@@ -22444,7 +22444,7 @@
       "zh-chs": "ESC",
       "zh-cht": "ESC",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->5",
         "default.handlebars->container->column_l->p12->termTable->1->1->4->1->3",
         "sharing.handlebars->p12->9->3"
       ]
@@ -30487,7 +30487,7 @@
       "zh-cht": "輸入",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3->11->DeskControlSpan",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->11->DeskControlSpan",
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->5->11->DeskControlSpan",
         "sharing.handlebars->p11->deskarea0->deskarea4->3->9->DeskControlSpan"
       ]
     },
@@ -54358,7 +54358,7 @@
       "zh-chs": "发送",
       "zh-cht": "發送",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->5",
         "default.handlebars->container->column_l->p12->termTable->1->1->4->1->1->specialKeyDropDown",
         "messenger.handlebars->xbottom->1->1->0->3",
         "sharing.handlebars->p11->deskarea0->deskarea4->3",
@@ -62503,7 +62503,7 @@
       "zh-chs": "切换鼠标和键盘输入",
       "zh-cht": "切換鼠標和鍵盤輸入",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->11",
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->5->11",
         "sharing.handlebars->p11->deskarea0->deskarea4->3->9"
       ]
     },
@@ -63333,7 +63333,7 @@
         "default.handlebars->39->1906",
         "default.handlebars->39->2720",
         "default.handlebars->39->433",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->5",
         "sharing.handlebars->p11->deskarea0->deskarea4->3"
       ]
     },
