@@ -5931,7 +5931,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 3: {
-                userLoginReport(command, msgIdFilter);
+                userLoginReport(command);
                 break;
             }   
         }
@@ -6988,9 +6988,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var data = { groups: {} };
             if (command.groupBy == 1) {
                 data.groupFormat = 'user';
-                data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'ip', title: "ip" }, { id: 'browser', title: "browser" }, { id: 'os', title: "os" }];
+                data.columns = [{ id: 'time', title: "time", format: 'datetime' }, { id: 'ip', title: "ip" }, { id: 'browser', title: "browser" }, { id: 'os', title: "os" }, { id: 'twofactor', title: "twofactor", format: '2fa' }];
             } else if (command.groupBy == 3) {
-                data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: 'userid', title: "user", format: 'user' }, { id: 'ip', title: "ip" }, { id: 'browser', title: "browser" }, { id: 'os', title: "os" }];
+                data.columns = [{ id: 'time', title: "time", format: 'time' }, { id: 'userid', title: "user", format: 'user' }, { id: 'ip', title: "ip" }, { id: 'browser', title: "browser" }, { id: 'os', title: "os" }, { id: 'twofactor', title: "twofactor", format: '2fa' }];
             }
             if (showInvalidLoginAttempts) { data.columns.push({ id: 'msg', title: "msg", format: 'msg' }); }
 
@@ -7002,7 +7002,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 if (command.groupBy == 1) { // Add entry per user
                     if (data.groups[docs[i].userid] == null) { data.groups[docs[i].userid] = { entries: [] }; }
-                    const entry = { time: docs[i].time.valueOf(), ip: docs[i].msgArgs[0], browser: docs[i].msgArgs[1], os: docs[i].msgArgs[2] };
+                    const entry = { time: docs[i].time.valueOf(), ip: docs[i].msgArgs[0], browser: docs[i].msgArgs[1], os: docs[i].msgArgs[2], twofactor: docs[i].twoFactorType ? docs[i].twoFactorType : '' };
                     if (showInvalidLoginAttempts) { entry.msg = docs[i].msgid }
                     data.groups[docs[i].userid].entries.push(entry);
                 } else if (command.groupBy == 3) { // Add entry per day
@@ -7013,7 +7013,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         day = docs[i].time; // TODO
                     }
                     if (data.groups[day] == null) { data.groups[day] = { entries: [] }; }
-                    const entry = { time: docs[i].time.valueOf(), userid: docs[i].userid, ip: docs[i].msgArgs[0], browser: docs[i].msgArgs[1], os: docs[i].msgArgs[2] };
+                    const entry = { time: docs[i].time.valueOf(), userid: docs[i].userid, ip: docs[i].msgArgs[0], browser: docs[i].msgArgs[1], os: docs[i].msgArgs[2], twofactor: docs[i].twoFactorType ? docs[i].twoFactorType : '' };
                     if (showInvalidLoginAttempts) { entry.msg = docs[i].msgid }
                     data.groups[day].entries.push(entry);
                 }

@@ -15701,7 +15701,7 @@
         }
 
         function renderReport(r) {
-            var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", devgroup: "Device Group", guest: "Guest", length: "Length", bytesin: "Bytes In", bytesout: "Bytes Out", os: "Operating System", ip: "IP Address", browser: "Browser", msg: "Message" }
+            var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", devgroup: "Device Group", guest: "Guest", length: "Length", bytesin: "Bytes In", bytesout: "Bytes Out", os: "Operating System", ip: "IP Address", browser: "Browser", msg: "Message", twofactor: "2nd Factor" }
             var x = '<table style=width:100%>', firstItem;
             var sumByCol = null; // Indicate by what colum we sum by
             var sumByValues = []; // Indicate by what values we sum by
@@ -15860,6 +15860,18 @@
                 if (v == 108) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny2"></div>' + "Incorrect 2nd factor";
                 if (v == 109) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny4"></div>' + "Locked account";
                 if (v == 110) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny3"></div>' + "Invalid login attempt";
+            }
+            if (f == '2fa') {
+                if (v == '') { return "None"; }
+                if (v == 'backup') { return "Backup Codes"; }
+                if (v == 'fido') { return "FIDO key"; }
+                if (v == 'sms') { return "SMS message"; }
+                if (v == 'hwotp') { return "Hardware OTP"; }
+                if (v == 'push') { return "Push Notification"; }
+                if (v == 'otp') { return "One-Time Password"; }
+                if (v == 'cookie') { return "Remember Device"; }
+                if (v == 'tokenlogin') { return "Login Token"; }
+                if (v == 'ipaddr') { return "IP Address"; }
             }
             return EscapeHtml(v);
         }
