@@ -5800,7 +5800,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // If this domain has configured headers, add them. If a header is set to null, remove it.
             if ((domain != null) && (domain.httpheaders != null) && (typeof domain.httpheaders == 'object')) {
-                for (var i in domain.httpheaders) { if (domain.httpheaders === null) { delete headers[i]; } else { headers[i] = domain.httpheaders[i]; } }
+                for (var i in domain.httpheaders) { if (domain.httpheaders[i] === null) { delete headers[i]; } else { headers[i] = domain.httpheaders[i]; } }
             }
             res.set(headers);
 
