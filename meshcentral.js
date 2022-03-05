@@ -1572,9 +1572,12 @@ function CreateMeshCentralServer(config, args) {
             }
         } catch (ex) { }
 
+        // Load any domain specific agents
+        for (var i in obj.config.domains) { if (i != '') { obj.updateMeshAgentsTable(obj.config.domains[i], function () { }); } }
+
         // Load the list of mesh agents and install scripts
         if ((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true)) { for (i in obj.meshAgentsArchitectureNumbers) { obj.meshAgentsArchitectureNumbers[i].update = false; } }
-        obj.updateMeshAgentsTable(function () {
+        obj.updateMeshAgentsTable(null, function () {
             obj.updateMeshAgentInstallScripts();
 
             // Setup and start the web server
@@ -2791,16 +2794,26 @@ function CreateMeshCentralServer(config, args) {
     };
 
     // Update the list of available mesh agents
-    obj.updateMeshAgentsTable = function (func) {
+    obj.updateMeshAgentsTable = function (domain, func) {
+        // Setup the domain is specified
+        var objx = domain, suffix = '';
+        if (objx == null) { objx = obj; } else { suffix = '-' + domain.id; objx.meshAgentBinaries = {}; }
+        
         // Load agent information file. This includes the data & time of the agent.
         var agentInfo = [];
         try { agentInfo = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'hashagents.json'), 'utf8')); } catch (ex) { }
 
         var archcount = 0;
         for (var archid in obj.meshAgentsArchitectureNumbers) {
-            var agentpath = obj.path.join(__dirname, 'agents', obj.meshAgentsArchitectureNumbers[archid].localname);
-            var agentpath2 = obj.path.join(obj.datapath, 'agents', obj.meshAgentsArchitectureNumbers[archid].localname);
-            if (obj.fs.existsSync(agentpath2)) { agentpath = agentpath2; } // If the agent is present in "meshcentral-data/agents", use that one instead.
+            var agentpath;
+            if (domain == null) {
+                agentpath = obj.path.join(__dirname, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
+                var agentpath2 = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
+                if (obj.fs.existsSync(agentpath2)) { agentpath = agentpath2; } // If the agent is present in "meshcentral-data/agents", use that one instead.
+            } else {
+                var agentpath = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
+                if (!obj.fs.existsSync(agentpath)) continue; // If the agent is not present in "meshcentral-data/agents" skip.
+            }
 
             // Fetch all the agent binary information
             var stats = null;
@@ -2808,15 +2821,15 @@ function CreateMeshCentralServer(config, args) {
             if ((stats != null)) {
                 // If file exists
                 archcount++;
-                obj.meshAgentBinaries[archid] = Object.assign({}, obj.meshAgentsArchitectureNumbers[archid]);
-                obj.meshAgentBinaries[archid].path = agentpath;
-                obj.meshAgentBinaries[archid].url = 'http://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?id=' + archid;
-                obj.meshAgentBinaries[archid].size = stats.size;
-                if ((agentInfo[archid] != null) && (agentInfo[archid].mtime != null)) { obj.meshAgentBinaries[archid].mtime = new Date(agentInfo[archid].mtime); } // Set agent time if available
+                objx.meshAgentBinaries[archid] = Object.assign({}, obj.meshAgentsArchitectureNumbers[archid]);
+                objx.meshAgentBinaries[archid].path = agentpath;
+                objx.meshAgentBinaries[archid].url = 'http://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?id=' + archid;
+                objx.meshAgentBinaries[archid].size = stats.size;
+                if ((agentInfo[archid] != null) && (agentInfo[archid].mtime != null)) { objx.meshAgentBinaries[archid].mtime = new Date(agentInfo[archid].mtime); } // Set agent time if available
 
                 // If this is a windows binary, pull binary information
                 if (obj.meshAgentsArchitectureNumbers[archid].platform == 'win32') {
-                    try { obj.meshAgentBinaries[archid].pe = obj.exeHandler.parseWindowsExecutable(agentpath); } catch (ex) { }
+                    try { objx.meshAgentBinaries[archid].pe = obj.exeHandler.parseWindowsExecutable(agentpath); } catch (ex) { }
                 }
 
                 // If agents must be stored in RAM or if this is a Windows 32/64 agent, load the agent in RAM.
@@ -2824,7 +2837,7 @@ function CreateMeshCentralServer(config, args) {
                     if ((archid == 3) || (archid == 4)) {
                         // Load the agent with a random msh added to it.
                         var outStream = new require('stream').Duplex();
-                        outStream.meshAgentBinary = obj.meshAgentBinaries[archid];
+                        outStream.meshAgentBinary = objx.meshAgentBinaries[archid];
                         outStream.meshAgentBinary.randomMsh = Buffer.from(obj.crypto.randomBytes(64), 'binary').toString('base64');
                         outStream.bufferList = [];
                         outStream._write = function (chunk, encoding, callback) { this.bufferList.push(chunk); if (callback) callback(); }; // Append the chuck.
@@ -2883,11 +2896,11 @@ function CreateMeshCentralServer(config, args) {
                                 destinationStream: outStream,
                                 randomPolicy: true, // Indicates that the msh policy is random data.
                                 msh: outStream.meshAgentBinary.randomMsh,
-                                peinfo: obj.meshAgentBinaries[archid].pe
+                                peinfo: objx.meshAgentBinaries[archid].pe
                             });
                     } else {
                         // Load the agent as-is
-                        obj.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath);
+                        objx.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath);
 
                         // Compress the agent using ZIP
                         var archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
@@ -2910,14 +2923,14 @@ function CreateMeshCentralServer(config, args) {
                             //console.log('Packed', onZipData.x.size, onZipData.x.zsize);
                         }
                         const onZipError = function onZipError() { delete onZipData.x.zacc; }
-                        obj.meshAgentBinaries[archid].zacc = [];
-                        onZipData.x = obj.meshAgentBinaries[archid];
-                        onZipEnd.x = obj.meshAgentBinaries[archid];
-                        onZipError.x = obj.meshAgentBinaries[archid];
+                        objx.meshAgentBinaries[archid].zacc = [];
+                        onZipData.x = objx.meshAgentBinaries[archid];
+                        onZipEnd.x = objx.meshAgentBinaries[archid];
+                        onZipError.x = objx.meshAgentBinaries[archid];
                         archive.on('data', onZipData);
                         archive.on('end', onZipEnd);
                         archive.on('error', onZipError);
-                        archive.append(obj.meshAgentBinaries[archid].data, { name: 'meshagent' });
+                        archive.append(objx.meshAgentBinaries[archid].data, { name: 'meshagent' });
                         archive.finalize();
                     }
                 }
@@ -2926,24 +2939,24 @@ function CreateMeshCentralServer(config, args) {
                 var hashStream = obj.crypto.createHash('sha384');
                 hashStream.archid = archid;
                 hashStream.on('data', function (data) {
-                    obj.meshAgentBinaries[this.archid].hash = data.toString('binary');
-                    obj.meshAgentBinaries[this.archid].hashhex = data.toString('hex');
+                    objx.meshAgentBinaries[this.archid].hash = data.toString('binary');
+                    objx.meshAgentBinaries[this.archid].hashhex = data.toString('hex');
                     if ((--archcount == 0) && (func != null)) { func(); }
                 });
                 var options = { sourcePath: agentpath, targetStream: hashStream, platform: obj.meshAgentsArchitectureNumbers[archid].platform };
-                if (obj.meshAgentBinaries[archid].pe != null) { options.peinfo = obj.meshAgentBinaries[archid].pe; }
+                if (objx.meshAgentBinaries[archid].pe != null) { options.peinfo = objx.meshAgentBinaries[archid].pe; }
                 obj.exeHandler.hashExecutableFile(options);
 
                 // If we are not loading Windows binaries to RAM, compute the RAW file hash of the signed binaries here.
                 if ((obj.args.agentsinram === false) && ((archid == 3) || (archid == 4))) {
                     var hash = obj.crypto.createHash('sha384').update(obj.fs.readFileSync(agentpath));
-                    obj.meshAgentBinaries[archid].fileHash = hash.digest('binary');
-                    obj.meshAgentBinaries[archid].fileHashHex = Buffer.from(obj.meshAgentBinaries[archid].fileHash, 'binary').toString('hex');
+                    objx.meshAgentBinaries[archid].fileHash = hash.digest('binary');
+                    objx.meshAgentBinaries[archid].fileHashHex = Buffer.from(objx.meshAgentBinaries[archid].fileHash, 'binary').toString('hex');
                 }
             }
         }
-        if ((obj.meshAgentBinaries[3] == null) && (obj.meshAgentBinaries[10003] != null)) { obj.meshAgentBinaries[3] = obj.meshAgentBinaries[10003]; } // If only the unsigned windows binaries are present, use them.
-        if ((obj.meshAgentBinaries[4] == null) && (obj.meshAgentBinaries[10004] != null)) { obj.meshAgentBinaries[4] = obj.meshAgentBinaries[10004]; } // If only the unsigned windows binaries are present, use them.
+        if ((objx.meshAgentBinaries[3] == null) && (objx.meshAgentBinaries[10003] != null)) { objx.meshAgentBinaries[3] = objx.meshAgentBinaries[10003]; } // If only the unsigned windows binaries are present, use them.
+        if ((objx.meshAgentBinaries[4] == null) && (objx.meshAgentBinaries[10004] != null)) { objx.meshAgentBinaries[4] = objx.meshAgentBinaries[10004]; } // If only the unsigned windows binaries are present, use them.
     };
 
     // Generate a time limited user login token

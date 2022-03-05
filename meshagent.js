@@ -927,6 +927,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Not sure why, but in rare cases, obj.agentInfo is undefined here.
         if ((obj.agentInfo == null) || (typeof obj.agentInfo.capabilities != 'number')) { return; } // This is an odd case.
         obj.agentExeInfo = parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
+        if (domain.meshAgentBinaries && domain.meshAgentBinaries[obj.agentInfo.agentId]) { obj.agentExeInfo = domain.meshAgentBinaries[obj.agentInfo.agentId]; }
 
         // Check if this agent is reconnecting too often.
         if (disconnectCount > 4) {
@@ -2093,7 +2094,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // If the hash matches or is null, no update required.
         if ((agentExeInfo.hash == agentHash) || (agentHash == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) return 0;
         // If this is a macOS x86 or ARM agent type and it matched the universal binary, no update required.
-        if (((agentExeInfo.id == 16) || (agentExeInfo.id == 29)) && (parent.parent.meshAgentBinaries[10005].hash == agentHash)) return 0;
+        if ((agentExeInfo.id == 16) || (agentExeInfo.id == 29)) {
+            if (domain.meshAgentBinaries[10005]) {
+                if (domain.meshAgentBinaries[10005].hash == agentHash) return 0;
+            } else {
+                if (parent.parent.meshAgentBinaries[10005].hash == agentHash) return 0;
+            }
+        }
 
         // No match, update the agent.
         if (args.agentupdatesystem === 2) return 2; // If set, force a meshcore update.
