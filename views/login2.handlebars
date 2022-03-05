@@ -61,7 +61,7 @@
                 <img id="loginPicture" />
                 <div style="font-size:46px;font-family:Arial,Helvetica,sans-serif;font-weight:bold;padding-bottom:10px;color:#c8c8c8;text-shadow: 2px 2px 2px #000;">{{{title1}}}<sup style="font-size:20px"> {{{title2}}}</sup></div>
                 <div id=loginpanel style="display:none;box-shadow:1px 1px 4px #000">
-                    <form method=post>
+                    <form id=loginpanelform method=post>
                         <input type=hidden name=action value=login />
                         <div id=message1></div>
                         <div id="loginuserpassdiv" style="display:none">
@@ -83,7 +83,7 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <input id=loginButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" type=submit value="Log In" disabled="disabled" />
+                                        <input id=loginButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" onclick="submitButtonClicked('loginpanelform')" type=button value="Log In" disabled="disabled" />
                                     </td>
                                 </tr>
                             </table>
@@ -111,7 +111,7 @@
                     </form>
                 </div>
                 <div id=createpanel style="display:none;position:relative">
-                    <form method=post>
+                    <form id=createpanelform method=post>
                         <input type=hidden name=action value=createaccount />
                         <div id=message2></div>
                         <div>
@@ -145,7 +145,7 @@
                             </tr>
                             <tr>
                                 <td colspan=2>
-                                    <div style=float:right><input id=createButton type=submit value="Create Account" disabled="disabled" /></div>
+                                    <div style=float:right><input id=createButton type="button" onclick="submitButtonClicked('createpanelform')" value="Create Account" disabled="disabled" /></div>
                                     <div id=passWarning style="padding-top:6px"></div>
                                 </td>
                             </tr>
@@ -155,7 +155,7 @@
                     </form>
                 </div>
                 <div id=resetpanel style="display:none">
-                    <form method=post>
+                    <form id=resetpanelform method=post>
                         <input type=hidden name=action value=resetaccount />
                         <div id=message3></div>
                         <div>
@@ -169,7 +169,7 @@
                             </tr>
                             <tr>
                                 <td>
-                                    <input id=eresetButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" type=submit value="Reset Account" disabled="disabled" />
+                                    <input id=eresetButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" type="button" onclick="submitButtonClicked('resetpanelform')" value="Reset Account" disabled="disabled" />
                                 </td>
                             </tr>
                         </table>
@@ -178,7 +178,7 @@
                     </form>
                 </div>
                 <div id=tokenpanel style="display:none">
-                    <form method=post {{{autocomplete}}}=off>
+                    <form id=tokenpanelform method=post {{{autocomplete}}}=off>
                         <input type=hidden name=action value=tokenlogin />
                         <input type=hidden name=hwstate value="{{{hwstate}}}" />
                         <div id=message4></div>
@@ -192,7 +192,7 @@
                             <tr>
                                 <td>
                                     <div>
-                                        <input id=tokenOkButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" type=submit value="Log In" disabled="disabled" />
+                                        <input id=tokenOkButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" type="button" onclick="submitButtonClicked('tokenpanelform')" value="Log In" disabled="disabled" />
                                     </div>
                                 </td>
                             </tr>
@@ -218,7 +218,7 @@
                     </form>
                 </div>
                 <div id=resettokenpanel style="display:none">
-                    <form method=post>
+                    <form id=resettokenpanelform method=post>
                         <input type=hidden name=action value=resetaccount />
                         <div id=message5></div>
                         <table style="width:100%">
@@ -231,7 +231,7 @@
                             <tr>
                                 <td>
                                     <div>
-                                        <input id=resetTokenOkButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" type=submit value="Log In" disabled="disabled" />
+                                        <input id=resetTokenOkButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" type="button" onclick="submitButtonClicked('resetpanelform')" value="Log In" disabled="disabled" />
                                     </div>
                                 </td>
                             </tr>
@@ -252,7 +252,7 @@
                     </form>
                 </div>
                 <div id=resetpasswordpanel style="display:none;position:relative">
-                    <form method=post>
+                    <form id=resetpasswordpanelform method=post>
                         <input type=hidden name=action value=resetpassword />
                         <div id=message6></div>
                         <div id="rpasswordPolicyCallout" style="display:none"></div>
@@ -271,7 +271,7 @@
                             </tr>
                             <tr>
                                 <td colspan=2>
-                                    <div style=float:right><input id=resetPassButton type=submit value="Reset Password" disabled="disabled" /></div>
+                                    <div style=float:right><input id=resetPassButton type="button" onclick="submitButtonClicked('resetpasswordpanel')" value="Reset Password" disabled="disabled" /></div>
                                     <div id=rpassWarning style="padding-top:6px"></div>
                                 </td>
                             </tr>
@@ -281,7 +281,7 @@
                     </form>
                 </div>
                 <div id=checkemailpanel style="display:none;position:relative">
-                    <form method=post>
+                    <form id=checkemailpanelform method=post>
                         <input type=hidden name=action value=checkemail />
                         <div id=message7></div>
                         <table id="checkCheckOperations" style="width:100%;display:none">
@@ -295,7 +295,7 @@
                                     <div>
                                         <input id=changeEmailButton type=button value="Change Email Address" onclick="changeEmailAddress()" />
                                         <input id=checkEmailButton2 type=button value="Resend Confirmation Email" onclick="resentEmailConfirmation()" />
-                                        <input id=checkEmailButton type=submit style="display:none" />
+                                        <input id=checkEmailButton type="button" onclick="submitButtonClicked('checkemailpanelform')" style="display:none" />
                                         <input id=checkEmailVal name=email type="hidden" value="" />
                                     </div>
                                 </td>
@@ -306,7 +306,7 @@
                     </form>
                 </div>
                 <div id=waitpushpanel style="display:none">
-                    <form method=post>
+                    <form id=waitpushpanelform method=post>
                         <input type=hidden name=action value=pushlogin />
                         <div id=message8></div>
                         <table style="width:100%">
@@ -324,7 +324,7 @@
                         <hr /><a onclick="return xgo(1,event);" href="#" style=cursor:pointer>Back to login</a>
                         <input id=pushtokenformargs name="urlargs" type="hidden" value="" />
                         <input id=pushtokenInput name="hwstate" type="hidden" value="" />
-                        <input id=pushOkButton type=submit style="display:none" />
+                        <input id=pushOkButton onclick="submitButtonClicked('waitpushpanelform')" style="display:none" />
                     </form>
                 </div>
             </td>
@@ -383,6 +383,7 @@
         var authStrategies = '{{{authStrategies}}}'.split(',');
         var tokenTimeout = parseInt('{{{tokenTimeout}}}');
         var websocket = null;
+        var formSubmitted = false;
 
         function startup() {
             if (decodeURIComponent('{{{loginpicture}}}') == 'true') { Q('loginPicture').src = "loginlogo.png"; }
@@ -683,6 +684,10 @@
                 QV('checkCheckOperations', Q('unconfirmedEmail').innerHTML != '');
                 QH('checkEmailVal', passhint);
             }
+        }
+
+        function submitButtonClicked(v) {
+            if (!formSubmitted) { formSubmitted = true; document.getElementById(v).submit(); }
         }
 
         function validateLogin(box, e) {
