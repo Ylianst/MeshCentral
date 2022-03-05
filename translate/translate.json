@@ -11039,7 +11039,8 @@
     },
     {
       "en": "Browser",
-	  "pl": "Przeglądarka",
+      "nl": "Browser",
+	    "pl": "Przeglądarka",
       "xloc": [
         "default.handlebars->39->2750"
       ]
@@ -11207,7 +11208,8 @@
     },
     {
       "en": "CAPS",
-	  "pl": "CAPS",
+      "nl": "CAPS",
+      "pl": "CAPS",
       "xloc": [
         "default.handlebars->container->column_l->p11->7->p11capslock"
       ]
@@ -29389,6 +29391,7 @@
     },
     {
       "en": "IP Address",
+      "nl": "IP-adres",
       "pl": "Adres IP",
 	  "xloc": [
         "default.handlebars->39->2749"
@@ -30334,7 +30337,8 @@
     },
     {
       "en": "Incorrect 2nd factor",
-	  "pl": "Dwuskładnikowe logowanie nieprawidłowe",
+      "nl": "Incorrecte 2de factor",
+      "pl": "Dwuskładnikowe logowanie nieprawidłowe",
       "xloc": [
         "default.handlebars->39->2771",
         "default.handlebars->39->2780"
@@ -32751,7 +32755,8 @@
     },
     {
       "en": "Invalid login attempt",
-	  "pl": "Nieprawidłowa próba logowania",
+      "nl": "Invalid login attempt",
+      "pl": "Nieprawidłowa próba logowania",
       "xloc": [
         "default.handlebars->39->2773",
         "default.handlebars->39->2782"
@@ -34986,7 +34991,7 @@
     {
       "en": "Left Web-SSH session \\\"{1}\\\" after {0} second(s).",
       "nl": "Verliet de web-SSH sessie na \\\"{1}\\\" {0} seconde(n).",
-	  "pl": "Opuścił sesję Web-SSH \\\"{1}\\\" po {0} sekundach(sekundzie).",
+      "pl": "Opuścił sesję Web-SSH \\\"{1}\\\" po {0} sekundach(sekundzie).",
       "xloc": [
         "default.handlebars->39->2266"
       ]
@@ -40564,7 +40569,8 @@
     },
     {
       "en": "NUM",
-	  "pl": "NUM",
+      "nl": "NUM",
+      "pl": "NUM",
       "xloc": [
         "default.handlebars->container->column_l->p11->7->p11numlock"
       ]
@@ -52816,7 +52822,8 @@
     },
     {
       "en": "SCROLL",
-	  "pl": "SCROLL",
+      "nl": "SCROLL",
+      "pl": "SCROLL",
       "xloc": [
         "default.handlebars->container->column_l->p11->7->p11scrolllock"
       ]
@@ -59708,7 +59715,8 @@
     },
     {
       "en": "Succesful login",
-	  "pl": "Poprawne logowanie",
+      "nl": "Geslaagde inlog",
+      "pl": "Poprawne logowanie",
       "xloc": [
         "default.handlebars->39->2770",
         "default.handlebars->39->2779"
@@ -65793,7 +65801,8 @@
     },
     {
       "en": "User Logins",
-	  "pl": "Logowania Użytkownika",
+      "nl": "Gebruikersaanmeldingen",
+      "pl": "Logowania Użytkownika",
       "xloc": [
         "default.handlebars->39->2719"
       ]
