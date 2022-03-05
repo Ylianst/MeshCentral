@@ -4864,6 +4864,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Get the interactive install script, this only works for non-Windows agents
             var agentid = parseInt(req.query.meshinstall);
             var argentInfo = obj.parent.meshAgentBinaries[agentid];
+            if (domain.meshAgentBinaries && domain.meshAgentBinaries[agentid]) { argentInfo = domain.meshAgentBinaries[agentid]; }
             var scriptInfo = obj.parent.meshAgentInstallScripts[6];
             if ((argentInfo == null) || (scriptInfo == null) || (argentInfo.platform == 'win32')) { try { res.sendStatus(404); } catch (ex) { } return; }
 
@@ -4883,6 +4884,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else if (req.query.id != null) {
             // Send a specific mesh agent back
             var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
+            if (domain.meshAgentBinaries && domain.meshAgentBinaries[req.query.id]) { argentInfo = domain.meshAgentBinaries[req.query.id]; }
             if (argentInfo == null) { try { res.sendStatus(404); } catch (ex) { } return; }
 
             // Download PDB debug files, only allowed for administrator or accounts with agent dump access
@@ -4998,7 +5000,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
                 setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, argentInfo.rname);
                 if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
-                obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
+                if (domain.meshAgentBinaries && domain.meshAgentBinaries[req.query.id]) {
+                    obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: domain.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: domain.meshAgentBinaries[req.query.id].pe });
+                } else {
+                    obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
+                }
                 return;
             }
         } else if (req.query.script != null) {
@@ -5048,6 +5054,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // No signed agents, we are going to merge a new MeshCmd.
             if (((agentid == 3) || (agentid == 4)) && (obj.parent.meshAgentBinaries[agentid + 10000] != null)) { agentid += 10000; } // Avoid merging javascript to a signed mesh agent.
             var argentInfo = obj.parent.meshAgentBinaries[agentid];
+            if (domain.meshAgentBinaries && domain.meshAgentBinaries[agentid]) { argentInfo = domain.meshAgentBinaries[agentid]; }
             if ((argentInfo == null) || (obj.parent.defaultMeshCmd == null)) { try { res.sendStatus(404); } catch (ex) { } return; }
             setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : ''), null, 'meshcmd');
             res.statusCode = 200;
@@ -5216,6 +5223,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     var agentid = parseInt(fileSplit[0]);
                                     if ((isNaN(agentid) == false) && (obj.parent.meshAgentBinaries[agentid] != null)) {
                                         var agentinfo = obj.parent.meshAgentBinaries[agentid];
+                                        if (domain.meshAgentBinaries && domain.meshAgentBinaries[agentid]) { argentInfo = domain.meshAgentBinaries[agentid]; }
                                         var filestats = obj.fs.statSync(obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', file));
                                         coredumps.push({
                                             fileSplit: fileSplit,
@@ -5283,6 +5291,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             for (var agentid in obj.parent.meshAgentBinaries) {
                 if ((agentid >= 10000) && (agentid != 10005)) continue;
                 var agentinfo = obj.parent.meshAgentBinaries[agentid];
+                if (domain.meshAgentBinaries && domain.meshAgentBinaries[agentid]) { argentInfo = domain.meshAgentBinaries[agentid]; }
                 response += '<tr><td>' + agentinfo.id + '</td><td>' + agentinfo.desc.split(' ').join('&nbsp;') + '</td>';
                 response += '<td><a download href="' + originalUrl + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + req.query.key) : '') + '">' + agentinfo.rname + '</a>';
                 if ((user.siteadmin == 0xFFFFFFFF) || ((Array.isArray(obj.parent.config.settings.agentcoredumpusers)) && (obj.parent.config.settings.agentcoredumpusers.indexOf(user._id) >= 0))) {
@@ -5319,6 +5328,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Send a specific mesh agent back
         var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
+        if (domain.meshAgentBinaries && domain.meshAgentBinaries[req.query.id]) { argentInfo = domain.meshAgentBinaries[req.query.id]; }
         if ((argentInfo == null) || (req.query.meshid == null)) { res.sendStatus(404); return; }
 
         // Check if the meshid is a time limited, encrypted cookie
