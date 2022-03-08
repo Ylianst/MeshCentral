@@ -2954,6 +2954,7 @@
     },
     {
       "en": "2nd Factor",
+      "nl": "2e factor",
       "xloc": [
         "default.handlebars->39->2753"
       ]
@@ -3825,6 +3826,7 @@
     },
     {
       "en": "7 days",
+      "nl": "7 dagen",
       "xloc": [
         "default.handlebars->39->1720"
       ]
@@ -25419,6 +25421,7 @@
     },
     {
       "en": "FIDO key",
+      "nl": "FIDO sleutel",
       "xloc": [
         "default.handlebars->39->2778"
       ]
@@ -28778,6 +28781,7 @@
     },
     {
       "en": "Hardware OTP",
+      "nl": "Hardware OTP",
       "xloc": [
         "default.handlebars->39->2780"
       ]
@@ -36859,6 +36863,7 @@
     },
     {
       "en": "Login Token",
+      "nl": "Inlogtoken",
       "xloc": [
         "default.handlebars->39->2784"
       ]
@@ -44158,6 +44163,7 @@
     },
     {
       "en": "One-Time Password",
+      "nl": "Eenmalig wachtwoord",
       "xloc": [
         "default.handlebars->39->2782"
       ]
@@ -48098,6 +48104,7 @@
     },
     {
       "en": "Push Notification",
+      "nl": "Push Notificatie",
       "xloc": [
         "default.handlebars->39->2781"
       ]
@@ -49256,6 +49263,7 @@
     },
     {
       "en": "Remember Device",
+      "nl": "Onthoud apparaat",
       "xloc": [
         "default.handlebars->39->2783"
       ]
@@ -53056,6 +53064,7 @@
     },
     {
       "en": "SMS message",
+      "nl": "SMS bericht",
       "xloc": [
         "default.handlebars->39->2779"
       ]
