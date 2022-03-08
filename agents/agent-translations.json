@@ -160,7 +160,7 @@
     "agent": "Agent",
     "group": "Groupe d'appareils",
     "url": "URL du serveur",
-    "meshName": "Nom du maillage",
+    "meshName": "Nom du groupe",
     "meshId": "Identifiant de groupe",
     "serverId": "Identifiant du serveur",
     "setup": "Configuration",
