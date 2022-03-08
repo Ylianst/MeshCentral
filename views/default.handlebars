@@ -11412,7 +11412,7 @@
         function account_createLoginToken() {
             if (xxdialogMode) return false;
             var y = '', x = "Create a temporary username and password that can be used as alternative login to your account. This is useful for allowing tools or other services to access your account." + '<br /><br />';
-            var options = { 0 : "Unlimited", 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days" }
+            var options = { 0 : "Unlimited", 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days", 10080 : "7 days" }
             for (var i in options) { y += '<option value=' + i + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Token Name", '<input class=boxsize id=d2tokenName style=width:250px maxlength=100 type=text onchange=account_createLoginTokenValidate() onkeyup=account_createLoginTokenValidate() />');
             x += addHtmlValue("Expire Time", '<select class=boxsize id=d2tokenExpire style=width:250px>' + y + '</select>');
