@@ -959,6 +959,7 @@
       "nl": ", 16 grijstinten",
       "pl": ", 16 odcieni szarości",
       "ru": ", 16 оттенков серого",
+      "fr": ", 16 gris",
       "xloc": [
         "player.handlebars->3->35"
       ]
@@ -968,6 +969,7 @@
       "nl": ", 256 grijstinten",
       "pl": ", 256 odcieni szarości",
       "ru": ", 256 оттенков серого",
+      "fr": ", 256 gris",
       "xloc": [
         "player.handlebars->3->36"
       ]
@@ -1783,6 +1785,7 @@
       "nl": "1 byte per pixel",
       "pl": "1 bajt na piksel",
       "ru": "1 байт на пиксель",
+      "fr": "1 octect par pixel",
       "xloc": [
         "player.handlebars->3->34"
       ]
@@ -2639,6 +2642,7 @@
       "nl": "2 byte per pixel",
       "pl": "2 bajty na piksel",
       "ru": "2 байта на пиксель",
+      "fr": "2 octects par pixel",
       "xloc": [
         "player.handlebars->3->33"
       ]
@@ -7943,6 +7947,7 @@
       "en": "All Available Agents",
       "nl": "Alle beschikbare agents",
       "pl": "Wszyscy Dostępni Agenci",
+      "fr": "Tous les agents disponsibles",
       "xloc": [
         "default.handlebars->39->2050",
         "default.handlebars->39->506"
@@ -11040,7 +11045,8 @@
     {
       "en": "Browser",
       "nl": "Browser",
-	    "pl": "Przeglądarka",
+      "pl": "Przeglądarka",
+      "fr": "Navigateur",
       "xloc": [
         "default.handlebars->39->2750"
       ]
@@ -11210,6 +11216,7 @@
       "en": "CAPS",
       "nl": "CAPS",
       "pl": "CAPS",
+      "fr": "Majuscules",
       "xloc": [
         "default.handlebars->container->column_l->p11->7->p11capslock"
       ]
@@ -13323,6 +13330,7 @@
       "en": "Click here to download the MeshCentral Assistant for Windows.",
       "pl": "Kliknij tutaj by pobrać Asystenta MeshCentral dla Windows.",
       "nl": "Klik hier om de MeshCentral Assistant voor Windows te downloaden.",
+      "fr": "Cliquez ici pour télécharger l'assistant Meshcentral pour Windows.",
       "xloc": [
         "mesh-invite.html->2->15->1->1"
       ]
@@ -13756,6 +13764,7 @@
       "en": "Closed desktop multiplex session \\\"{0}\\\", {1} second(s)",
       "nl": "Gesloten desktop multiplexsessie \\\"{0}\\\", {1} seconde(n)",
       "pl": "Zamknięta sesja pulpitu wielokrotnego \\\"{0}\\\", {1} sekund(a)",
+      "fr": "Session de bureau multiplexée fermée \\\"{0}\\\", {1} seconde(s)",
       "xloc": [
         "default.handlebars->39->2290"
       ]
@@ -23825,6 +23834,7 @@
       "nl": "Coderingskwaliteit",
       "pl": "Jakość Kodowania",
       "ru": "Качество кодирования",
+      "fr": "Qualité d'encodage",
       "xloc": [
         "player.handlebars->3->37"
       ]
@@ -26168,6 +26178,7 @@
       "en": "Finished recording session \\\"{0}\\\", {1} second(s)",
       "nl": "Beëindigde opnamesessie \\\"{0}\\\", {1} seconde(n)",
       "pl": "Zakończono sesję nagrywania, \\\"{0}\\\", {1} sekund(a)",
+      "fr": "Fin de l'enregistrement de la session \\\"{0}\\\", {1} seconde(s)",
       "xloc": [
         "default.handlebars->39->2289"
       ]
@@ -26479,6 +26490,7 @@
       "en": "For MeshCentral Assistant on Windows, nagivate to the following link to complete the process:",
       "nl": "Voor MeshCentral Assistant voor Windows navigeert u naar de volgende link om het proces te voltooien:",
       "pl": "W przypadku Asystenta MeshCentral w Windows, przejdź do tego linku aby zakończyć proces:",
+      "fr": "Pour l'assistant MeshCentral sous Windows, cliquez sur le lien suivant pour compléter le processus :",
       "xloc": [
         "mesh-invite.txt"
       ]
@@ -28278,6 +28290,7 @@
       "en": "Group Name",
       "nl": "Groepsnaam",
       "pl": "Nazwa Grupy",
+      "fr": "Nom du groupe",
       "xloc": [
         "agent-translations.json"
       ]
@@ -29393,7 +29406,8 @@
       "en": "IP Address",
       "nl": "IP-adres",
       "pl": "Adres IP",
-	  "xloc": [
+      "fr": "Adresse IP",
+      "xloc": [
         "default.handlebars->39->2749"
       ]
     },
@@ -30339,6 +30353,7 @@
       "en": "Incorrect 2nd factor",
       "nl": "Incorrecte 2de factor",
       "pl": "Dwuskładnikowe logowanie nieprawidłowe",
+      "fr": "Deuxième facteur d'authentification incorrect",
       "xloc": [
         "default.handlebars->39->2771",
         "default.handlebars->39->2780"
@@ -32757,6 +32772,7 @@
       "en": "Invalid login attempt",
       "nl": "Invalid login attempt",
       "pl": "Nieprawidłowa próba logowania",
+      "fr": "Tentative de connexion invalide",
       "xloc": [
         "default.handlebars->39->2773",
         "default.handlebars->39->2782"
@@ -33413,6 +33429,7 @@
       "en": "Joined desktop multiplex session \\\"{0}\\\"",
       "nl": "Deelgenomen aan desktop multiplex-sessie \\\"{0}\\\"",
       "pl": "Dołączył do sesji multipleksu pulpitów \\\"{0}\\\"",
+      "fr": "Session de bureau multiplexée jointe \\\"{0}\\\"",
       "xloc": [
         "default.handlebars->39->2286"
       ]
@@ -34944,6 +34961,7 @@
       "en": "Left Web-RDP session \\\"{1}\\\" after {0} second(s).",
       "nl": "Verliet de desktop multiplex sessie na \\\"{1}\\\" {0} seconde(n).",
       "pl": "Opuścił sesję Web-RDP \\\"{1}\\\" po {0} sekundach(sekundzie).",
+      "fr": "Fin de la session Web-RDP \\\"{1}\\\" dans {0} seconde(s).",
       "xloc": [
         "default.handlebars->39->2268"
       ]
@@ -34968,6 +34986,7 @@
       "en": "Left Web-SFTP session \\\"{1}\\\" after {0} second(s).",
       "nl": "Verliet de web-SFTP sessie na \\\"{1}\\\" {0} seconde(n).",
       "pl": "Opuścił sesję Web-SFTP \\\"{1}\\\" po {0} sekundach(sekundzie).",
+      "fr": "Fin de la session Web-SFTP \\\"{1}\\\" dans {0} seconde(s).",
       "xloc": [
         "default.handlebars->39->2267"
       ]
@@ -34992,6 +35011,7 @@
       "en": "Left Web-SSH session \\\"{1}\\\" after {0} second(s).",
       "nl": "Verliet de web-SSH sessie na \\\"{1}\\\" {0} seconde(n).",
       "pl": "Opuścił sesję Web-SSH \\\"{1}\\\" po {0} sekundach(sekundzie).",
+      "fr": "Fin de la session Web-SSH \\\"{1}\\\" dans {0} seconde(s).",
       "xloc": [
         "default.handlebars->39->2266"
       ]
@@ -35090,6 +35110,7 @@
       "en": "Left the desktop multiplex session \\\"{0}\\\" after {1} second(s).",
       "nl": "Verliet de desktop multiplexsessie \\\"{0}\\\" na {1} seconde(n).",
       "pl": "Opuścił sesję multiplex pulpitów \\\"{0}\\\" po {1} sekundach(sekundzie).",
+      "fr": "Fin de la session de bureau multiplexée \\\"{1}\\\" dans {0} seconde(s).",
       "xloc": [
         "default.handlebars->39->2287"
       ]
@@ -35674,6 +35695,7 @@
       "en": "Linux MeshAgent",
       "nl": "Linux MeshAgent",
       "pl": "MeshAgent dla Linuksa",
+      "fr": "MeshAgent Linux",
       "xloc": [
         "default.handlebars->39->2052",
         "default.handlebars->39->508"
@@ -37485,6 +37507,7 @@
       "en": "MacOS MeshAgent",
       "nl": "MacOS MeshAgent",
       "pl": "MeshAgent dla MacOS",
+      "fr": "MeshAgent MacOs",
       "xloc": [
         "default.handlebars->39->2053",
         "default.handlebars->39->509"
@@ -38269,6 +38292,7 @@
       "en": "Maximum keys reached.",
       "nl": "Maximum aantal sleutels bereikt.",
       "pl": "Osiągnięto maximum klawiszy.",
+      "fr": "Nombre de clés maximum atteint.",
       "xloc": [
         "default.handlebars->39->217"
       ]
@@ -52824,6 +52848,7 @@
       "en": "SCROLL",
       "nl": "SCROLL",
       "pl": "SCROLL",
+      "fr": "Défilement",
       "xloc": [
         "default.handlebars->container->column_l->p11->7->p11scrolllock"
       ]
@@ -58910,6 +58935,7 @@
       "en": "Started Web-RDP session \\\"{0}\\\".",
       "nl": "Gestarte Web-RDP sessie \\\"{0}\\\".",
       "pl": "Uruchomiono sesję Web-RDP \\\"{0}\\\".",
+      "fr": "Démarrage de la session Web-RDP \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2293"
       ]
@@ -58918,6 +58944,7 @@
       "en": "Started Web-SFTP session \\\"{0}\\\".",
       "nl": "Gestarte Web-SFTP sessie \\\"{0}\\\".",
       "pl": "Uruchomiono sesję Web-SFTP \\\"{0}\\\".",
+      "fr": "Démarrage de la session Web-SFTP \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2292"
       ]
@@ -58926,6 +58953,7 @@
       "en": "Started Web-SSH session \\\"{0}\\\".",
       "nl": "Gestarte Web-SSH sessie \\\"{0}\\\".",
       "pl": "Uruchomiono sesję Web-SSH \\\"{0}\\\".",
+      "fr": "Démarrage de la session Web-SSH \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2291"
       ]
@@ -58934,6 +58962,7 @@
       "en": "Started Web-VNC session \\\"{0}\\\".",
       "nl": "Gestarte Web-VNC sessie \\\"{0}\\\".",
       "pl": "Uruchomiono sesję Web-VNC \\\"{0}\\\".",
+      "fr": "Démarrage de la session Web-VNC \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2294"
       ]
@@ -58967,6 +58996,7 @@
       "en": "Started desktop multiplex session \\\"{0}\\\"",
       "nl": "Startte een Desktop multiplexsessie \\\"{0}\\\"",
       "pl": "Uruchomienie sesji multiplex pulpitów \\\"{0}\\\"",
+      "fr": "Démarrage de la session de bureau multiplexée \\\"{0}\\\"",
       "xloc": [
         "default.handlebars->39->2288"
       ]
@@ -59717,6 +59747,7 @@
       "en": "Succesful login",
       "nl": "Geslaagde inlog",
       "pl": "Poprawne logowanie",
+      "fr": "Connexion réussie",
       "xloc": [
         "default.handlebars->39->2770",
         "default.handlebars->39->2779"
@@ -65803,6 +65834,7 @@
       "en": "User Logins",
       "nl": "Gebruikersaanmeldingen",
       "pl": "Logowania Użytkownika",
+      "fr": "Connexions utilisateurs",
       "xloc": [
         "default.handlebars->39->2719"
       ]
@@ -69071,6 +69103,7 @@
       "en": "Windows MeshAgent",
       "nl": "Windows MeshAgent",
       "pl": "MeshAgent dla Windows",
+      "fr": "MeshAgent Windows",
       "xloc": [
         "default.handlebars->39->2051",
         "default.handlebars->39->507"
