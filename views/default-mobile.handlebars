@@ -1298,11 +1298,6 @@
             if (t != null) { desktopsettings = JSON.parse(t); }
             applyDesktopSettings();
 
-            // Arrange the user interface
-            QV('manageEmail2FA', (features & 0x00800000) && (serverinfo.lock2factor != true));
-            QV('managePhoneNumber1', (features & 0x02000000) && (features & 0x04000000) && (serverinfo.lock2factor != true));
-            QV('managePhoneNumber2', (features & 0x02000000) && !(features & 0x04000000) && (serverinfo.lock2factor != true));
-
             //attemptWebRTC = false; // For now, default WebRTC off unless we set it in the URL.
             if (args.webrtc != null) { attemptWebRTC = (args.webrtc == 1); }
 
@@ -1422,6 +1417,12 @@
                             addNotification({ text: format("Certificate expires in {0} day(s)", days) });
                         }
                     }
+
+                    // Arrange the user interface
+                    QV('manageEmail2FA', (features & 0x00800000) && (serverinfo.lock2factor != true));
+                    QV('managePhoneNumber1', (features & 0x02000000) && (features & 0x04000000) && (serverinfo.lock2factor != true));
+                    QV('managePhoneNumber2', (features & 0x02000000) && !(features & 0x04000000) && (serverinfo.lock2factor != true));
+
                     break;
                 }
                 case 'authcookie': {
