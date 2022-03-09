@@ -2095,7 +2095,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if ((agentExeInfo.hash == agentHash) || (agentHash == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) return 0;
         // If this is a macOS x86 or ARM agent type and it matched the universal binary, no update required.
         if ((agentExeInfo.id == 16) || (agentExeInfo.id == 29)) {
-            if (domain.meshAgentBinaries[10005]) {
+            if (domain.meshAgentBinaries && domain.meshAgentBinaries[10005]) {
                 if (domain.meshAgentBinaries[10005].hash == agentHash) return 0;
             } else {
                 if (parent.parent.meshAgentBinaries[10005].hash == agentHash) return 0;
