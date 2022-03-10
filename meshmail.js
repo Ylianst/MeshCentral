@@ -30,7 +30,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
     const sortCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
     const constants = (obj.parent.crypto.constants ? obj.parent.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
-    function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
+    function EscapeHtml(x) { if (typeof x == 'string') return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
 
     // Setup where we read our configuration from
@@ -49,8 +49,19 @@ module.exports.CreateMeshMail = function (parent, domain) {
         if (obj.config.smtp.port != null) { options.port = obj.config.smtp.port; }
         if (obj.config.smtp.tlscertcheck === false) { options.tls.rejectUnauthorized = false; }
         if (obj.config.smtp.tlsstrict === true) { options.tls.secureProtocol = 'SSLv23_method'; options.tls.ciphers = 'RSA+AES:!aNULL:!MD5:!DSS'; options.tls.secureOptions = constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE; }
-        if ((obj.config.smtp.user != null) && (obj.config.smtp.pass != null)) { options.auth = { user: obj.config.smtp.user, pass: obj.config.smtp.pass }; }
+        if ((obj.config.smtp.auth != null) && (typeof obj.config.smtp.auth == 'object')) {
+            var user = obj.config.smtp.from;
+            if ((user == null) && (obj.config.smtp.user != null)) { user = obj.config.smtp.user; }
+            if ((obj.config.smtp.auth.user != null) && (typeof obj.config.smtp.auth.user == 'string')) { user = obj.config.smtp.auth.user; }
+            if (user.toLowerCase().endsWith('@gmail.com')) { options = { service: 'gmail', auth: { user: user } }; obj.config.smtp.host = 'gmail'; } else { options.auth = { user: user } }
+            if (obj.config.smtp.auth.type) { options.auth.type = obj.config.smtp.auth.type; }
+            if (obj.config.smtp.auth.clientid) { options.auth.clientId = obj.config.smtp.auth.clientid; options.auth.type = 'OAuth2'; }
+            if (obj.config.smtp.auth.clientsecret) { options.auth.clientSecret = obj.config.smtp.auth.clientsecret; }
+            if (obj.config.smtp.auth.refreshtoken) { options.auth.refreshToken = obj.config.smtp.auth.refreshtoken; }
+        }
+        else if ((obj.config.smtp.user != null) && (obj.config.smtp.pass != null)) { options.auth = { user: obj.config.smtp.user, pass: obj.config.smtp.pass }; }
         if (obj.config.smtp.verifyemail == true) { obj.verifyemail = true; }
+
         obj.smtpServer = nodemailer.createTransport(options);
     } else if (obj.config.sendmail != null) {
         // Setup Sendmail
@@ -464,7 +475,11 @@ module.exports.CreateMeshMail = function (parent, domain) {
         if (obj.smtpServer == null) return;
         obj.smtpServer.verify(function (err, info) {
             if (err == null) {
-                console.log('SMTP mail server ' + obj.config.smtp.host + ' working as expected.');
+                if (obj.config.smtp.host == 'gmail') {
+                    console.log('Gmail server with OAuth working as expected.');
+                } else {
+                    console.log('SMTP mail server ' + obj.config.smtp.host + ' working as expected.');
+                }
             } else {
                 // Remove all non-object types from error to avoid a JSON stringify error.
                 var err2 = {};
