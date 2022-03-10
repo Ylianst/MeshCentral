@@ -785,15 +785,39 @@
             "description": "Connects MeshCentral to a SMTP email server, allows MeshCentral to send email messages for 2FA or user notification.",
             "type": "object",
             "properties": {
-              "host": { "type": "string", "format": "hostname" },
-              "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
-              "from": { "type": "string", "format": "email", "description": "Email address used in the messages from field." },
+              "host": {
+                "type": "string",
+                "format": "hostname"
+              },
+              "port": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
+              },
+              "from": {
+                "type": "string",
+                "format": "email",
+                "description": "Email address used in the messages from field."
+              },
               "tls": { "type": "boolean" },
+              "auth": {
+                "type": "object",
+                "properties": {
+                  "clientId": { "type": "string" },
+                  "clientSecret": { "type": "string" },
+                  "refreshTfoken": { "type": "string" }
+                },
+                "required": [ "clientId", "clientSecret", "refreshToken" ]
+              },
               "tlscertcheck": { "type": "boolean" },
               "tlsstrict": { "type": "boolean" },
-              "verifyemail": { "type": "boolean", "default": true, "description": "When set to false, the email format and DNS MX record are not checked." }
+              "verifyemail": {
+                "type": "boolean",
+                "default": true,
+                "description": "When set to false, the email format and DNS MX record are not checked."
+              }
             },
-            "required": [ "host", "port", "from", "tls" ]
+            "required": [ "from" ]
           },
           "sendmail": {
             "title" : "Send email using the sendmail command",
