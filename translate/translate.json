@@ -74243,7 +74243,7 @@
       "pt-br": "↺",
       "ru": "↺",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1->5",
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1->7",
         "sharing.handlebars->p11->deskarea0->deskarea1->1->5"
       ]
     },
@@ -74264,7 +74264,7 @@
       "pt-br": "↻",
       "ru": "↻",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1->7",
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1->9",
         "sharing.handlebars->p11->deskarea0->deskarea1->1->7"
       ]
     },
@@ -74285,7 +74285,7 @@
       "pt-br": "⇲",
       "ru": "⇲",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1->3",
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1->5",
         "player.handlebars->p11->deskarea0->deskarea1->1->1",
         "sharing.handlebars->p11->deskarea0->deskarea1->1->3"
       ]
@@ -74411,7 +74411,7 @@
       "pt-br": "✖",
       "ru": "✖",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->idx_deskFullBtn2",
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1->idx_deskFullBtn2",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->idx_termFullBtn2",
         "default.handlebars->container->dialog->dialogHeader->id_dialogclose",
         "player.handlebars->p11->dialog->dialogHeader->id_dialogclose",
