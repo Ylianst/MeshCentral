@@ -185,7 +185,7 @@
                         <table style="width:100%">
                             <tr>
                                 <td>
-                                    <input id=tokenInput {{{autocomplete}}}="one-time-code" title="Token" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" placeholder="Token" type=text maxlength=50 name=token onchange=checkToken(event) onpaste=resetCheckToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) /><br />
+                                    <input id=tokenInput {{{autocomplete}}}="one-time-code" title="Token" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" placeholder="Token" type=text maxlength=50 name=token onchange=checkToken(event) onpaste=checkToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) /><br />
                                     <input id=hwtokenInput type=text name=hwtoken style="display:none" />
                                 </td>
                             </tr>
@@ -864,18 +864,22 @@
             return counts;
         }
 
-        function checkToken() {
+        function checkToken(e) {
             var t1 = Q('tokenInput').value;
             var t2 = t1.split(' ').join('');
             if (t1 != t2) { Q('tokenInput').value = t2; }
-            QE('tokenOkButton', (Q('tokenInput').value.length == 6) || (Q('tokenInput').value.length == 8) || (Q('tokenInput').value.length == 44));
+            var enabled = (Q('tokenInput').value.length == 6) || (Q('tokenInput').value.length == 8) || (Q('tokenInput').value.length == 44);
+            QE('tokenOkButton', enabled);
+            if (enabled && (e != null) && (e.keyCode == 13)) { submitButtonClicked('tokenpanelform'); }
         }
 
-        function resetCheckToken() {
+        function resetCheckToken(e) {
             var t1 = Q('resetTokenInput').value;
             var t2 = t1.split(' ').join('');
             if (t1 != t2) { Q('resetTokenInput').value = t2; }
-            QE('resetTokenOkButton', (Q('resetTokenInput').value.length == 6) || (Q('resetTokenInput').value.length == 8) || (Q('resetTokenInput').value.length == 44));
+            var enabled = (Q('resetTokenInput').value.length == 6) || (Q('resetTokenInput').value.length == 8) || (Q('resetTokenInput').value.length == 44);
+            QE('resetTokenOkButton', enabled);
+            if (enabled && (e != null) && (e.keyCode == 13)) { submitButtonClicked('resettokenpanelform'); }
         }
 
         function changeEmailAddress() {
