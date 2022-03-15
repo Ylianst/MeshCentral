@@ -1776,7 +1776,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else {
             // Check is email already exists
             obj.db.GetUserWithVerifiedEmail(domain.id, email, function (err, docs) {
-                if ((err != null) || (docs.length > 0)) {
+                if ((err != null) || (docs.length > 0 && docs.find(u => u._id === req.session.cuserid) < 0)) {
                     // Email already exitst
                     req.session.messageid = 102; // Existing account with this email address.
                 } else {
