@@ -2473,6 +2473,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     req.session.userid = userid;
                     setSessionRandom(req);
+
+                    // Notify account login using SSO
+                    var targets = ['*', 'server-users', user._id];
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    const ua = getUserAgentInfo(req);
+                    const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'sso' };
+                    obj.parent.DispatchEvent(targets, obj, loginEvent);
                 } else {
                     // New users not allowed
                     parent.debug('web', 'handleStrategyLogin: Can\'t create new accounts');
@@ -2489,7 +2496,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (userChange) {
                     obj.db.SetUser(user);
 
-                    // Event user creation
+                    // Event user change
                     var targets = ['*', 'server-users'];
                     var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Account changed', domain: domain.id };
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
@@ -2498,6 +2505,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 parent.debug('web', 'handleStrategyLogin: succesful login: ' + userid);
                 req.session.userid = userid;
                 setSessionRandom(req);
+
+                // Notify account login using SSO
+                var targets = ['*', 'server-users', user._id];
+                if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                const ua = getUserAgentInfo(req);
+                const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'sso' };
+                obj.parent.DispatchEvent(targets, obj, loginEvent);
             }
         }
         //res.redirect(domain.url); // This does not handle cookie correctly.
