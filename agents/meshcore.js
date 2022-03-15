@@ -3238,7 +3238,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 var fin = '', f = '', availcommands = 'translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
-                if (process.platform == 'win32') { availcommands += ',cs,safemode,wpfhwacceleration,uac'; }
+                if (process.platform == 'win32') { availcommands += ',cs,safemode,wpfhwacceleration,uac,volumes'; }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
                 if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
@@ -3257,6 +3257,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 response = JSON.stringify(coretranslations, null, 2);
                 break;
             }
+            case 'volumes':
+                response = JSON.stringify(require('win-volumes').getVolumes(), null, 1);
+                break;
             case 'dhcp': // This command is only supported on Linux, this is because Linux does not give us the DNS suffix for each network adapter independently so we have to ask the DHCP server.
                 {
                     try { require('linux-dhcp'); } catch (ex) { response = 'Unknown command "dhcp", type "help" for list of avaialble commands.'; break; }
