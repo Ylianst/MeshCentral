@@ -8403,7 +8403,7 @@
                     };
                     desktop.Start(desktopNode._id, 16994, '*', '*', 0);
                     desktop.contype = 2;
-                } else if ((contype == null) || (contype == 1) || ((contype == 3) && (currentNode.agent.id > 4) && (debugmode != null))) {
+                } else if ((contype == null) || (contype == 1) || ((contype == 3) && ((currentNode.agent.id > 4) && ((debugmode == null))))) {
                     // Setup the Mesh Agent remote desktop
                     desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                     desktop.m.UseExtendedKeyFlag = (desktopNode.agent.id < 5); // Only use extended keys on Windows agents for now
