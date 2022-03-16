@@ -2434,14 +2434,14 @@
                         if (nodes != null) { for (var i in nodes) { if (nodes[i]._id == message.nodeid) { index = i; break; } } }
                         if (index != -1) {
                             // Node was found, dispatch the message
-                            if ((message.type == 'cpuinfo') && (currentNode != null) && (currentNode._id == message.nodeid)) {
+                            if ((message.type === 'cpuinfo') && (currentNode != null) && (currentNode._id == message.nodeid)) {
                                 var now = (Date.now() / 1000), cpu = 0, memory = 0;
                                 if (typeof message.cpu.total == 'number') { cpu = message.cpu.total; }
                                 if (typeof message.memory.percentConsumed == 'number') { memory = message.memory.percentConsumed; }
                                 deviceDetailsStatsData.push([now, cpu, memory]);
                                 deviceDetailsStatsDraw(message);
-                            } else if (message.type == 'console') { p15consoleReceive(nodes[index], message.value, message.source); } // This is a console message.
-                            else if (message.type == 'notify') { // This is a notification message.
+                            } else if (message.type === 'console') { p15consoleReceive(nodes[index], message.value, message.source); } // This is a console message.
+                            else if (message.type === 'notify') { // This is a notification message.
                                 var n = getstore('notifications', 0);
                                 if (((n & 8) == 0) && (message.amtMessage != null)) { break; } // Intel AMT desktop & terminal messages should be ignored.
                                 var n = { text: message.value, title: message.title, icon: message.icon, titleid: message.titleid, msgid: message.msgid, args: message.args };
@@ -2450,40 +2450,40 @@
                                 if (message.tag != null) { n.tag = message.tag; }
                                 if (message.url != null) { n.url = message.url; }
                                 if (message.username != null) { n.username = message.username; }
-                                if (typeof message.maxtime == 'number') { n.maxtime = message.maxtime; }
+                                if (typeof message.maxtime === 'number') { n.maxtime = message.maxtime; }
                                 addNotification(n);
-                            } else if (message.type == 'ps') {
+                            } else if (message.type === 'ps') {
                                 showDeskToolsProcesses(message);
-                            } else if (message.type == 'services') {
+                            } else if (message.type === 'services') {
                                 showDeskToolsServices(message);
-                            } else if ((message.type == 'getclip') && (currentNode != null) && (currentNode._id == message.nodeid)) {
-                                if ((message.tag == 1) && (xxdialogTag == 'clipboard')) {
+                            } else if ((message.type === 'getclip') && (currentNode != null) && (currentNode._id == message.nodeid)) {
+                                if ((message.tag == 1) && (xxdialogTag === 'clipboard')) {
                                     Q('d2clipText').value = message.data; // Put remote clipboard data into dialog box
-                                } else if (message.tag == 2) {
+                                } else if (message.tag === 2) {
                                     if (navigator.clipboard != null) { navigator.clipboard.writeText(message.data).then(function() { }).catch(function(err) { console.log(err); }) } // Put remote clipboard data into our clipboard
                                 }
-                            } else if ((message.type == 'setclip') && (xxdialogTag == 'clipboard') && (currentNode != null) && (currentNode._id == message.nodeid)) {
+                            } else if ((message.type === 'setclip') && (xxdialogTag === 'clipboard') && (currentNode != null) && (currentNode._id == message.nodeid)) {
                                 // Display success/fail on the clipboard dialog box.
                                 QH('dlgClipStatus', message.success ? '<span style=color:green>' + "Success" + '</span>' : '<span style=color:red>' + "Failed" + '</span>')
                                 setTimeout(function () { try { QH('dlgClipStatus', ''); } catch (ex) { } }, 2000);
-                            } else if ((message.type == 'userSessions') && (currentNode != null) && (currentNode._id == message.nodeid) && (desktop == null)) {
+                            } else if ((message.type === 'userSessions') && (currentNode != null) && (currentNode._id === message.nodeid) && (desktop == null)) {
                                 // Got list of user sessions
                                 var userSessions = [];
-                                if (message.data != null) { for (var i in message.data) { if ((message.data[i].State == 'Active') || (message.data[i].StationName == 'Console') || (debugmode == 3)) { userSessions.push(message.data[i]); } } }
-                                if (userSessions.length == 0) { connectDesktop(null, 1, null, message.tag); } // No active sessions, do a normal connection.
-                                else if (userSessions.length == 1) { connectDesktop(null, 1, userSessions[0].SessionId, message.tag); } // One active session, connect to it
+                                if (message.data != null) { for (var i in message.data) { if ((message.data[i].State == 'Active') || (message.data[i].State == 'Connected') || (message.data[i].StationName == 'Console') || (debugmode == 3)) { userSessions.push(message.data[i]); } } }
+                                if (userSessions.length === 0) { connectDesktop(null, 1, null, message.tag); } // No active sessions, do a normal connection.
+                                else if (userSessions.length === 1) { connectDesktop(null, 1, userSessions[0].SessionId, message.tag); } // One active session, connect to it
                                 else {
                                     var x = '';
                                     for (var i in userSessions) {
-                                        x += '<div style="text-align:left;cursor:pointer;background-color:gray;margin:5px;padding:5px;border-radius:5px" onclick=connectDesktop(event,1,' + userSessions[i].SessionId + ',' + message.tag + ')>' + userSessions[i].State + ', ' + userSessions[i].StationName;
+                                        x += '<div style="text-align:left;cursor:pointer;background-color:gray;margin:5px;padding:5px;border-radius:5px" onclick=connectDesktop(event,1,' + userSessions[i].SessionId + ',' + message.tag + ')>' + userSessions[i].State + (userSessions[i].StationName ? (', ' + userSessions[i].StationName) : '');
                                         if (userSessions[i].Username) { if (userSessions[i].Domain) { x += ' - ' + userSessions[i].Domain + '/' + userSessions[i].Username; } else { x += ' - ' + userSessions[i].Username; } }
                                         x += '</div>';
                                     }
                                     QH('p11DeskSessionSelector', x);
                                     QV('p11DeskSessionSelector', true);
                                 }
-                            } else if (message.type == 'psinfo') {
-                                if (xxdialogTag == ('ps|' + message.nodeid + '|' + message.pid)) {
+                            } else if (message.type === 'psinfo') {
+                                if (xxdialogTag === ('ps|' + message.nodeid + '|' + message.pid)) {
                                     var x = '<div style=max-height:200px;overflow-y:auto>';
                                     //x += addHtmlValue4("Process ID", message.pid);
                                     if ((typeof message.value == 'object') && (Object.keys(message.value).length > 0)) {
@@ -2518,7 +2518,7 @@
                             }
                         }
                     } else {
-                        if (message.type == 'notify') { // This is a notification message.
+                        if (message.type === 'notify') { // This is a notification message.
                             var n = { text: message.value, title: message.title, icon: message.icon, titleid: message.titleid, msgid: message.msgid, args: message.args };
                             if (message.id != null) { n.id = message.id; }
                             if (message.tag != null) { n.tag = message.tag; }
@@ -9489,8 +9489,9 @@
                             x += addHtmlValue("Key File", '<input type=file id=dp2key style=width:230px maxlength=64 autocomplete=off onchange=sshAuthUpdate(event) />' + '<div id=d2badkey style=font-size:x-small>' + "Key file must be in OpenSSH format." + '</div>');
                             x += addHtmlValue("Key Password", '<input type=password id=dp2keypass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
                             x += '</div>';
-                            x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>');
+                            if ((features2 & 0x00400000) == 0) { x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>'); }
                             setDialogMode(2, "Authentication", 11, sshConnectEx, x, 'ssh');
+                            Q('dp2user').focus();
                             setTimeout(sshAuthUpdate, 50);
                             break;
                         }
@@ -9525,15 +9526,25 @@
                     reader.readAsText(Q('dp2key').files[0]);
                 }
             }
+
+            // When the enter key is pressed, move to the next field
+            if (e && (e.keyCode == 13) && (e.target) && (Q('dp2authmethod').value == 1)) {
+                if (e.target.id == 'dp2user') { Q('dp2pass').focus(); }
+                if (e.target.id == 'dp2pass') { dialogclose(1); }
+            }
         }
+
         function sshConnectEx(b) {
             if (b == 0) {
                 if (terminal != null) { connectTerminal(); } // Disconnect
             } else {
+                var keep = false;
+                if ((features2 & 0x00400000) == 0) { keep = Q('dp2keep').checked; }
+
                 if (Q('dp2authmethod').value == 1) {
-                    terminal.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, keep: Q('dp2keep').checked, cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight }));
+                    terminal.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, keep: keep, cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight }));
                 } else {
-                    var reader = new FileReader(), username = Q('dp2user').value, keypass = Q('dp2keypass').value, keep = Q('dp2keep').checked;
+                    var reader = new FileReader(), username = Q('dp2user').value, keypass = Q('dp2keypass').value;
                     reader.onload = function (e) { terminal.socket.send(JSON.stringify({ action: 'sshauth', username: username, keypass: keypass, key: e.target.result, keep: keep, cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight })); }
                     reader.readAsText(Q('dp2key').files[0]);
                 }
@@ -9881,8 +9892,9 @@
                     x += addHtmlValue("Key File", '<input type=file id=dp2key style=width:230px maxlength=64 autocomplete=off onchange=sshAuthUpdate(event) />');
                     x += addHtmlValue("Key Password", '<input type=password id=dp2keypass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
                     x += '</div>';
-                    x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>');
+                    if ((features2 & 0x00400000) == 0) { x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>'); }
                     setDialogMode(2, "Authentication", 11, p13sshConnectEx, x, 'ssh');
+                    Q('dp2user').focus();
                     setTimeout(sshAuthUpdate, 50);
                     return;
                 }
@@ -9938,10 +9950,12 @@
             if (b == 0) {
                 if (files != null) { connectFiles(); } // Disconnect
             } else {
+                var keep = false;
+                if ((features2 & 0x00400000) == 0) { keep =  Q('dp2keep').checked; }
                 if (Q('dp2authmethod').value == 1) {
-                    files.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, keep: Q('dp2keep').checked }));
+                    files.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, keep: keep }));
                 } else {
-                    var reader = new FileReader(), username = Q('dp2user').value, keypass = Q('dp2keypass').value, keep = Q('dp2keep').checked;
+                    var reader = new FileReader(), username = Q('dp2user').value, keypass = Q('dp2keypass').value;
                     reader.onload = function (e) { files.socket.send(JSON.stringify({ action: 'sshauth', username: username, keypass: keypass, key: e.target.result, keep: keep })); }
                     reader.readAsText(Q('dp2key').files[0]);
                 }

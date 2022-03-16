@@ -321,6 +321,7 @@
           "hide": { "type": "integer", "default": 0, "description": "Sum of: 1 = Hide header, 2 = Hide tab, 4 = Hide footer, 8 = Hide title, 16 = Hide left bar, 32 = Hide back buttons" },
           "footer": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is logged in." },
           "loginfooter": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is not logged in." },
+          "allowSavingDeviceCredentials": { "type": "boolean", "default": true, "description": "Allow users to save SSH, RDP, VNC device credentials on the server that can be used by any other user." },
           "guestDeviceSharing": {
             "type": [ "boolean", "object" ],
             "default": true,

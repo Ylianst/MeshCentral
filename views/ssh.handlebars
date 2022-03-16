@@ -75,6 +75,7 @@
         if (urlargs.key && (isAlphaNumeric(urlargs.key) == false)) { delete urlargs.key; }
         var cookie = '{{{cookie}}}';
         var domainurl = '{{{domainurl}}}';
+        var features = parseInt('{{{features}}}');
         var name = decodeURIComponent('{{{name}}}');
         if (name != '') { document.title = name + ' - ' + document.title; }
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected"];
@@ -146,10 +147,17 @@
                     reader.readAsText(Q('dp2key').files[0]);
                 }
             }
+
+            // When the enter key is pressed, move to the next field
+            if (e && (e.keyCode == 13) && (e.target) && (Q('dp2authmethod').value == 1)) {
+                if (e.target.id == 'dp2user') { Q('dp2pass').focus(); }
+                if (e.target.id == 'dp2pass') { dialogclose(1); }
+            }
         }
 
         function connectEx() {
-            var cmd = { action: 'connect', cols: term.cols, rows: term.rows, width: Q('terminal').offsetWidth, height: Q('terminal').offsetHeight, username: Q('dp2user').value, keep: Q('dp2keep').checked };
+            var cmd = { action: 'connect', cols: term.cols, rows: term.rows, width: Q('terminal').offsetWidth, height: Q('terminal').offsetHeight, username: Q('dp2user').value, keep: false };
+            if ((features & 1) == 0) { cmd.keep = Q('dp2keep').checked; }
 
             if (Q('dp2authmethod').value == 1) {
                 cmd.password = Q('dp2pass').value;
@@ -191,7 +199,7 @@
                             x += addHtmlValue("Key File", '<input type=file id=dp2key style=width:230px maxlength=64 autocomplete=off onchange=sshAuthUpdate(event) />' + '<div id=d2badkey style=font-size:x-small>' + "Key file must be in OpenSSH format." + '</div>');
                             x += addHtmlValue("Key Password", '<input type=password id=dp2keypass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
                             x += '</div>';
-                            x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>');
+                            if ((features & 1) == 0) { x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>'); }
                             setDialogMode(2, "Authentication", 3, connectEx, x);
                             Q('dp2user').value = user;
                             Q('dp2pass').value = pass;

@@ -1949,6 +1949,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             return;
         }
 
+        // Set features we want to send to this page
+        var features = 0;
+        if (domain.allowsavingdevicecredentials === false) { features |= 1; }
+
         if (req.query.ws != null) {
             // This is a query with a websocket relay cookie, check that the cookie is valid and use it.
             var rcookie = parent.decodeCookie(req.query.ws, parent.loginCookieEncryptionKey, 60); // Cookie with 1 hour timeout
@@ -1960,10 +1964,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     const node = nodes[0];
 
                     // Check if we have RDP credentials for this device
-                    var serverCredentials = ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string'));
+                    var serverCredentials = false;
+                    if (domain.allowsavingdevicecredentials !== false) {
+                        if (page == 'ssh') {
+                            serverCredentials = ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string'))
+                        } else {
+                            serverCredentials = ((typeof node.ssh == 'object') && (typeof node.ssh.u == 'string'))
+                        }
+                    }
 
                     // Render the page
-                    render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: req.query.ws, name: encodeURIComponent(req.query.name).replace(/'/g, '%27'), serverCredentials: serverCredentials }, req, domain));
+                    render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: req.query.ws, name: encodeURIComponent(req.query.name).replace(/'/g, '%27'), serverCredentials: serverCredentials, features: features }, req, domain));
                 });
                 return;
             }
@@ -2000,35 +2011,38 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // If there is no nodeid, exit now
-        if (req.query.node == null) { render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: '', name: '' }, req, domain)); return; }
+        if (req.query.node == null) { render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: '', name: '', features: features }, req, domain)); return; }
 
         // Fetch the node from the database
         obj.db.Get(req.query.node, function (err, nodes) {
             if ((err != null) || (nodes.length != 1)) { res.sendStatus(404); return; }
             const node = nodes[0];
 
-            // Check if we have RDP credentials for this device
-            var serverCredentials = ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string'));
-
             // Check access rights, must have remote control rights
             if ((obj.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { res.sendStatus(401); return; }
 
             // Figure out the target port
-            var port = 0;
+            var port = 0, serverCredentials = false;
             if (page == 'ssh') {
                 // SSH port
                 port = 22;
                 if (typeof node.sshport == 'number') { port = node.sshport; }
+
+                // Check if we have SSH credentials for this device
+                if (domain.allowsavingdevicecredentials !== false) { serverCredentials = ((typeof node.ssh == 'object') && (typeof node.ssh.u == 'string')); }
             } else {
                 // RDP port
                 port = 3389;
                 if (typeof node.rdpport == 'number') { port = node.rdpport; }
+
+                // Check if we have RDP credentials for this device
+                if (domain.allowsavingdevicecredentials !== false) { serverCredentials = ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')); }
             }
             if (req.query.port != null) { var qport = 0; try { qport = parseInt(req.query.port); } catch (ex) { } if ((typeof qport == 'number') && (qport > 0) && (qport < 65536)) { port = qport; } }
 
             // Generate a cookie and respond
             var cookie = parent.encodeCookie({ userid: user._id, domainid: user.domain, nodeid: node._id, tcpport: port }, parent.loginCookieEncryptionKey);
-            render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: cookie, name: encodeURIComponent(node.name).replace(/'/g, '%27'), serverCredentials: serverCredentials }, req, domain));
+            render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: cookie, name: encodeURIComponent(node.name).replace(/'/g, '%27'), serverCredentials: serverCredentials, features: features }, req, domain));
         });
     }
     
@@ -2942,6 +2956,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.single2factorwarning === false)) { features2 += 0x00080000; } // Indicates no warning if a single 2FA is in use
         if (domain.nightmode === 1) { features2 += 0x00100000; } // Always night mode
         if (domain.nightmode === 2) { features2 += 0x00200000; } // Always day mode
+        if (domain.allowsavingdevicecredentials == false) { features2 += 0x00400000; } // Do not allow device credentials to be saved on the server
         return { features: features, features2: features2 };
     }
 
