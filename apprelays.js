@@ -168,6 +168,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
 
     // Save SSH credentials into device
     function saveRdpCredentials() {
+        if (domain.allowsavingdevicecredentials == false) return;
         parent.parent.db.Get(obj.nodeid, function (err, nodes) {
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
@@ -214,7 +215,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                         // Check if we need to load server stored credentials
                         if ((typeof obj.infos.options == 'object') && (obj.infos.options.useServerCreds == true)) {
                             // Check if RDP credentials exist
-                            if ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) {
+                            if ((domain.allowsavingdevicecredentials === false) && (typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) {
                                 obj.infos.domain = node.rdp.d;
                                 obj.infos.username = node.rdp.u;
                                 obj.infos.password = node.rdp.p;
@@ -340,6 +341,7 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
 
     // Save SSH credentials into device
     function saveSshCredentials() {
+        if (domain.allowsavingdevicecredentials == false) return;
         parent.parent.db.Get(obj.cookie.nodeid, function (err, nodes) {
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
@@ -471,7 +473,7 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                             parent.parent.db.Get(obj.cookie.nodeid, function (err, nodes) {
                                 if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
                                 const node = nodes[0];
-                                if ((node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || ((typeof node.ssh.p != 'string') && (typeof node.ssh.k != 'string'))) {
+                                if ((domain.allowsavingdevicecredentials === false) || (node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || ((typeof node.ssh.p != 'string') && (typeof node.ssh.k != 'string'))) {
                                     // Send a request for SSH authentication
                                     try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
                                 } else {
@@ -611,6 +613,7 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
 
     // Save SSH credentials into device
     function saveSshCredentials() {
+        if (domain.allowsavingdevicecredentials == false) return;
         parent.parent.db.Get(obj.nodeid, function (err, nodes) {
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
@@ -811,7 +814,7 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
 
-            if ((node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || ((typeof node.ssh.p != 'string') && (typeof node.ssh.k != 'string'))) {
+            if ((domain.allowsavingdevicecredentials === false) || (node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || ((typeof node.ssh.p != 'string') && (typeof node.ssh.k != 'string'))) {
                 // Send a request for SSH authentication
                 try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
             } else {
@@ -903,6 +906,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
 
     // Save SSH credentials into device
     function saveSshCredentials() {
+        if (domain.allowsavingdevicecredentials == false) return;
         parent.parent.db.Get(obj.nodeid, function (err, nodes) {
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
@@ -1283,7 +1287,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
 
-            if ((node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || ((typeof node.ssh.p != 'string') && (typeof node.ssh.k != 'string'))) {
+            if ((domain.allowsavingdevicecredentials === false) || (node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || ((typeof node.ssh.p != 'string') && (typeof node.ssh.k != 'string'))) {
                 // Send a request for SSH authentication
                 try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
             } else {

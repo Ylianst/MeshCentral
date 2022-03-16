@@ -83,6 +83,7 @@
         var serverCredentials = (decodeURIComponent('{{{serverCredentials}}}') == 'true');
         var name = decodeURIComponent('{{{name}}}');
         if (name != '') { document.title = name + ' - ' + document.title; }
+        var features = parseInt('{{{features}}}');
 
         function load() {
             if (name != '') { QH('computerName', EscapeHtml(name)); }
@@ -159,7 +160,7 @@
             QV('rowdomain', newCreds);
             QV('rowusername', newCreds);
             QV('rowpassword', newCreds);
-            QV('rowremember', newCreds);
+            QV('rowremember', newCreds && ((features & 1) == 0));
             if (newCreds) Q('inputUsername').focus();
         }
 
