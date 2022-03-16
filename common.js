@@ -171,7 +171,28 @@ module.exports.validateEmail = function (email, minlen, maxlen) { if (module.exp
 module.exports.validateUsername = function (username, minlen, maxlen) { return (module.exports.validateString(username, minlen, maxlen) && (username.indexOf(' ') == -1) && (username.indexOf('"') == -1) && (username.indexOf(',') == -1)); };
 module.exports.isAlphaNumeric = function (str) { return (str.match(/^[A-Za-z0-9]+$/) != null); };
 module.exports.validateAlphaNumericArray = function (array, minlen, maxlen) { if (((array != null) && Array.isArray(array)) == false) return false; for (var i in array) { if ((typeof array[i] != 'string') || (module.exports.isAlphaNumeric(array[i]) == false) || ((minlen != null) && (array[i].length < minlen)) || ((maxlen != null) && (array[i].length > maxlen)) ) return false; } return true; };
+module.exports.getEmailDomain = function(email) {
+    if (!module.exports.validateEmail(email, 1, 1024)) {
+        return '';
+    }
+    const i = email.indexOf('@');
+    return email.substring(i + 1).toLowerCase();
+}
 
+module.exports.validateEmailDomain = function(email, allowedDomains) {
+    // Check if this request is for an allows email domain
+    if ((allowedDomains != null) && Array.isArray(allowedDomains)) {
+        const emaildomain = module.exports.getEmailDomain(email);
+        if (emaildomain === '') {
+            return false;
+        }
+        var emailok = false;
+        for (var i in allowedDomains) { if (emaildomain == allowedDomains[i].toLowerCase()) { emailok = true; } }
+        return emailok;
+    }
+
+    return true;
+}
 // Check password requirements
 module.exports.checkPasswordRequirements = function(password, requirements) {
     if ((requirements == null) || (requirements == '') || (typeof requirements != 'object')) return true;
