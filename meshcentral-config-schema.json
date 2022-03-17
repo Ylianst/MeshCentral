@@ -129,6 +129,9 @@
           },
           "required": [ "email" ]
         },
+        "RunOnServerStarted": { "type": "boolean", "default": null, "description": "Execute this when the server startup is completed. The first parameter will be the server version." },
+        "RunOnServerUpdated": { "type": "boolean", "default": null, "description": "Execute this when the server has been updated. The first parameter will be the server version." },
+        "RunOnServerError": { "type": "boolean", "default": null, "description": "Execute this when the server has to restart due to an error. The first parameter will be the server version." },
         "publicPushNotifications": { "type": "boolean", "default": false, "description": "When true, this server uses MeshCentral.com a push notification relay for Android notifications. Push notifications work even if the Android app is not open." },
         "desktopMultiplex": { "type": "boolean", "default": false, "description": "When true, enabled a server modules that efficiently splits a remote desktop stream to multiple browsers. Also allows slow browsers to not slow down the session for fast ones, this comes at the cost of extra server memory and processing for all remote desktop sessions." },
         "ipBlockedUserRedirect" : { "type": "string", "default": null, "description": "If set, a user from a banned IP address will be redirected to this URL." },

@@ -471,6 +471,15 @@ function CreateMeshCentralServer(config, args) {
                 xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
                 xxprocess.on('close', function (code) {
                     if (code == 0) { console.log('Update completed...'); }
+
+                    // Run the server updated script if present
+                    if (typeof obj.config.settings.runonserverupdated == 'string') {
+                        const child_process = require('child_process');
+                        var parentpath = __dirname;
+                        if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
+                        child_process.exec(obj.config.settings.runonserverupdated + ' ' + getCurrentVersion(), { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) { });
+                    }
+
                     if (obj.args.cleannpmcacheonupdate === true) {
                         // Perform NPM cache clean
                         console.log('Cleaning NPM cache...');
@@ -487,6 +496,14 @@ function CreateMeshCentralServer(config, args) {
                     console.log(error);
                     console.log('ERROR: MeshCentral failed with critical error, check mesherrors.txt. Restarting in 5 seconds...');
                     setTimeout(function () { obj.launchChildServer(startArgs); }, 5000);
+
+                    // Run the server error script if present
+                    if (typeof obj.config.settings.runonservererror == 'string') {
+                        const child_process = require('child_process');
+                        var parentpath = __dirname;
+                        if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
+                        child_process.exec(obj.config.settings.runonservererror + ' ' + getCurrentVersion(), { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) { });
+                    }
                 }
             }
         });
@@ -1856,6 +1873,14 @@ function CreateMeshCentralServer(config, args) {
         var ipKvmSupport = false;
         for (var i in obj.config.domains) { if (obj.config.domains[i].ipkvm == true) { ipKvmSupport = true; } }
         if (ipKvmSupport) { obj.ipKvmManager = require('./meshipkvm').CreateIPKVMManager(obj); }
+
+        // Run the server start script if present
+        if (typeof obj.config.settings.runonserverstarted == 'string') {
+            const child_process = require('child_process');
+            var parentpath = __dirname;
+            if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
+            child_process.exec(obj.config.settings.runonserverstarted + ' ' + getCurrentVersion(), { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) { });
+        }
     }
 
     // Refresh any certificate hashs from the reverse proxy
@@ -3334,7 +3359,7 @@ function InstallModules(modules, func) {
 // Check if a module is present and install it if missing
 function InstallModule(modulename, func, tag1, tag2) {
     console.log('Installing ' + modulename + '...');
-    var child_process = require('child_process');
+    const child_process = require('child_process');
     var parentpath = __dirname;
 
     // Get the working directory
