@@ -1837,7 +1837,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                         render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 4, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') }, req, domain));
                                     } else {
                                         obj.db.GetUserWithVerifiedEmail(domain.id, user.email, function (err, docs) {
-                                            if (docs.length > 0) {
+                                            if ((docs.length > 0) && (docs.find(function (u) { return (u._id === user._id); }) < 0)) {
                                                 parent.debug('web', 'handleCheckMailRequest: email already in use.');
                                                 render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 5, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27') }, req, domain));
                                             } else {

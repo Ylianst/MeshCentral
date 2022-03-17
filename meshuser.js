@@ -5186,7 +5186,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (command.randomPassword === true) { command.pass = getRandomPassword(); }
 
         // Add a new user account
-        var err = null, errid = 0, newusername, newuserid, newuserdomain;
+        var err = null, errid = 0, args = null, newusername, newuserid, newuserdomain;
         try {
             if ((user.siteadmin & MESHRIGHT_MANAGEUSERS) == 0) { err = "Permission denied"; errid = 1; }
             else if (common.validateUsername(command.username, 1, 256) == false) { err = "Invalid username"; errid = 2; } // Username is between 1 and 64 characters, no spaces
@@ -5195,6 +5195,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             else if ((command.randomPassword !== true) && (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false)) { err = "Invalid password"; errid = 3; } // Password does not meet requirements
             else if ((command.email != null) && (common.validateEmail(command.email, 1, 1024) == false)) { err = "Invalid email"; errid = 4; } // Check if this is a valid email address
             else if ((obj.crossDomain === true) && (command.domain != null) && ((typeof command.domain != 'string') || (parent.parent.config.domains[command.domain] == null))) { err = "Invalid domain"; errid = 5; } // Check if this is a valid domain
+            else if ((domain.newaccountemaildomains != null) && Array.isArray(domain.newaccountemaildomains) && !common.validateEmailDomain(command.email, domain.newaccountemaildomains)) { err = "Email domain is not allowed. Only (" + domain.newaccountemaildomains.join(', ') + ") are allowed."; errid=30; args = [common.getEmailDomain(command.email), domain.newaccountemaildomains.join(', ')]; }
             else {
                 newuserdomain = domain;
                 if ((obj.crossDomain === true) && (command.domain != null)) { newuserdomain = parent.parent.config.domains[command.domain]; }
@@ -5215,7 +5216,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 obj.send({ action: 'adduser', responseid: command.responseid, result: err, msgid: errid });
             } else {
                 // Send error back, user not found.
-                displayNotificationMessage(err, "New Account", 'ServerNotify', 1, errid);
+                displayNotificationMessage(err, "New Account", 'ServerNotify', 1, errid, args);
             }
             return;
         }
