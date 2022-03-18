@@ -64,36 +64,86 @@ module.exports.CreateAmtManager = function (parent) {
         }
 
         // Check WIFI profiles
-        //var wifiAuthMethod = { 1: "Other", 2: "Open", 3: "Shared Key", 4: "WPA PSK", 5: "WPA 802.1x", 6: "WPA2 PSK", 7: "WPA2 802.1x", 32768: "WPA3 802.1x" };
+        //var wifiAuthMethod = { 1: "Other", 2: "Open", 3: "Shared Key", 4: "WPA PSK", 5: "WPA 802.1x", 6: "WPA2 PSK", 7: "WPA2 802.1x", 32768: "WPA3 SAE IEEE 802.1x", 32769: "WPA3 OWE IEEE 802.1x" };
         //var wifiEncMethod = { 1: "Other", 2: "WEP", 3: "TKIP", 4: "CCMP", 5: "None" }
         if (Array.isArray(domain.amtmanager.wifiprofiles) == true) {
             var goodWifiProfiles = [];
             for (var i = 0; i < domain.amtmanager.wifiprofiles.length; i++) {
                 var wifiProfile = domain.amtmanager.wifiprofiles[i];
-                if ((typeof wifiProfile.ssid == 'string') && (wifiProfile.ssid != '') && (typeof wifiProfile.password == 'string') && (wifiProfile.password != '')) {
+                if ((typeof wifiProfile.ssid == 'string') && (wifiProfile.ssid != '') && (((typeof wifiProfile.password == 'string') && (wifiProfile.password != '')) || ((typeof wifiProfile['802.1x'] == 'object') && (wifiProfile['802.1x'] != null)))) {
                     if ((wifiProfile.name == null) || (wifiProfile.name == '')) { wifiProfile.name = wifiProfile.ssid; }
-                    if (typeof wifiProfile.authentication == 'string') {
-                        // Authentication
-                        if (typeof wifiProfile.authentication == 'string') { wifiProfile.authentication = wifiProfile.authentication.toLowerCase(); }
-                        if (wifiProfile.authentication == 'wpa-psk') { wifiProfile.authentication = 4; }
-                        if (wifiProfile.authentication == 'wpa2-psk') { wifiProfile.authentication = 6; }
-                        if (typeof wifiProfile.authentication != 'number') { wifiProfile.authentication = 6; } // Default to WPA2-PSK
 
-                        // Encyption
-                        if (typeof wifiProfile.encryption == 'string') { wifiProfile.encryption = wifiProfile.encryption.toLowerCase(); }
-                        if ((wifiProfile.encryption == 'ccmp-aes') || (wifiProfile.encryption == 'ccmp')) { wifiProfile.encryption = 4; }
-                        if ((wifiProfile.encryption == 'tkip-rc4') || (wifiProfile.encryption == 'tkip')) { wifiProfile.encryption = 3; }
-                        if (typeof wifiProfile.encryption != 'number') { wifiProfile.encryption = 4; } // Default to CCMP-AES
+                    // Authentication
+                    if (typeof wifiProfile.authentication == 'string') { wifiProfile.authentication = wifiProfile.authentication.toLowerCase(); }
+                    if (wifiProfile.authentication == 'wpa-psk') { wifiProfile.authentication = 4; }
+                    if (wifiProfile.authentication == 'wpa2-psk') { wifiProfile.authentication = 6; }
+                    if (wifiProfile.authentication == 'wpa-8021x') { wifiProfile.authentication = 5; }
+                    if (wifiProfile.authentication == 'wpa2-802.1x') { wifiProfile.authentication = 7; }
+                    if (wifiProfile.authentication == 'wpa3-sae-802.1x') { wifiProfile.authentication = 32768; }
+                    if (wifiProfile.authentication == 'wpa3-owe-802.1x') { wifiProfile.authentication = 32769; }
+                    if (typeof wifiProfile.authentication != 'number') {
+                        if (wifiProfile['802.1x']) { wifiProfile.authentication = 7; } // Default to WPA2-802.1x
+                        else { wifiProfile.authentication = 6; } // Default to WPA2-PSK
+                    } 
 
-                        // Type
-                        wifiProfile.type = 3; // Infrastructure
+                    // Encyption
+                    if (typeof wifiProfile.encryption == 'string') { wifiProfile.encryption = wifiProfile.encryption.toLowerCase(); }
+                    if ((wifiProfile.encryption == 'ccmp-aes') || (wifiProfile.encryption == 'ccmp')) { wifiProfile.encryption = 4; }
+                    if ((wifiProfile.encryption == 'tkip-rc4') || (wifiProfile.encryption == 'tkip')) { wifiProfile.encryption = 3; }
+                    if (typeof wifiProfile.encryption != 'number') { wifiProfile.encryption = 4; } // Default to CCMP-AES
+
+                    // Type
+                    wifiProfile.type = 3; // Infrastructure
+
+                    // Check authentication
+                    if ([4, 6].indexOf(wifiProfile.authentication) >= 0) {
+                        // Password authentication
+                        if ((typeof wifiProfile.password != 'string') || (wifiProfile.password.length < 8) || (wifiProfile.password.length > 63)) continue;
+                    } else if ([5, 7, 32768, 32769].indexOf(wifiProfile.authentication) >= 0) {
+                        // 802.1x authentication
+                        if ((wifiProfile['802.1x'] == null) && (typeof wifiProfile['802.1x'] != 'object')) continue;
+                        const netAuthStrings = ['eap-tls', 'eap-ttls/mschapv2', 'peapv0/eap-mschapv2', 'peapv1/eap-gtc', 'eap-fast/mschapv2', 'eap-fast/gtc', 'eap-md5', 'eap-psk', 'eap-sim', 'eap-aka', 'eap-fast/tls'];
+
+                        if (typeof wifiProfile['802.1x'].servercertificatename != 'string') {
+                            delete wifiProfile['802.1x'].servercertificatenamecomparison;
+                            const serverCertCompareStrings = ['', '', 'fullname', 'domainsuffix'];
+                            if (typeof wifiProfile['802.1x'].servercertificatenamecomparison == 'string') {
+                                wifiProfile['802.1x'].servercertificatenamecomparison = serverCertCompareStrings.indexOf(wifiProfile['802.1x'].servercertificatenamecomparison.toLowerCase());
+                                if (wifiProfile['802.1x'].servercertificatenamecomparison == -1) { wifiProfile['802.1x'].servercertificatenamecomparison = 2; } // Default to full name compare
+                            }
+                        }
+
+                        if (typeof wifiProfile['802.1x'].authenticationprotocol == 'string') {
+                            wifiProfile['802.1x'].authenticationprotocol = netAuthStrings.indexOf(wifiProfile['802.1x'].authenticationprotocol.toLowerCase());
+                            if (wifiProfile['802.1x'].authenticationprotocol == -1) continue;
+                        }
                     }
+
                     goodWifiProfiles.push(wifiProfile);
                 }
             }
             domain.amtmanager.wifiprofiles = goodWifiProfiles;
         } else {
             delete domain.amtmanager.wifiprofiles;
+        }
+
+        // Check 802.1x wired profile if present
+        if ((domain.amtmanager['802.1x'] != null) && (typeof domain.amtmanager['802.1x'] == 'object')) {
+            const netAuthStrings = ['eap-tls', 'eap-ttls/mschapv2', 'peapv0/eap-mschapv2', 'peapv1/eap-gtc', 'eap-fast/mschapv2', 'eap-fast/gtc', 'eap-md5', 'eap-psk', 'eap-sim', 'eap-aka', 'eap-fast/tls'];
+
+            if (typeof domain.amtmanager['802.1x'].servercertificatename != 'string') {
+                delete domain.amtmanager['802.1x'].servercertificatenamecomparison;
+                const serverCertCompareStrings = ['', '', 'fullname', 'domainsuffix'];
+                if (typeof domain.amtmanager['802.1x'].servercertificatenamecomparison == 'string') {
+                    domain.amtmanager['802.1x'].servercertificatenamecomparison = serverCertCompareStrings.indexOf(domain.amtmanager['802.1x'].servercertificatenamecomparison.toLowerCase());
+                    if (domain.amtmanager['802.1x'].servercertificatenamecomparison == -1) { domain.amtmanager['802.1x'].servercertificatenamecomparison = 2; } // Default to full name compare
+                }
+            }
+
+            if (typeof domain.amtmanager['802.1x'].authenticationprotocol == 'string') {
+                domain.amtmanager['802.1x'].authenticationprotocol = netAuthStrings.indexOf(domain.amtmanager['802.1x'].authenticationprotocol.toLowerCase());
+                if (domain.amtmanager['802.1x'].authenticationprotocol == -1) { delete domain.amtmanager['802.1x']; }
+            }
         }
     }
 

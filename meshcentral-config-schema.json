@@ -682,7 +682,7 @@
                 "items": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [ "ssid", "password" ],
+                  "required": [ "ssid" ],
                   "properties": {
                     "name": {
                       "description": "WIFI profile name, if not specified the SSID is used.",
@@ -695,7 +695,7 @@
                     "authentication": {
                       "description": "WIFI authentication.",
                       "type": "string",
-                      "enum": [ "wpa2-psk", "wpa-psk" ],
+                      "enum": [ "wpa-psk", "wpa2-psk", "wpa-8021x", "wpa2-802.1x", "wpa3-sae-802.1x", "wpa3-owe-802.1x" ],
                       "default": "wpa2-psk"
                     },
                     "encryption": {
@@ -709,7 +709,150 @@
                       "type": "string",
                       "minLength": 8,
                       "maxLength": 63
+                    },
+                    "802.1x": {
+                      "description": "802.1x settings for this WIFI profile. Only required if the WIFI authentication type has 802.1x",
+                      "default": null,
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [ "authenticationProtocol" ],
+                      "properties": {
+                        "authenticationProtocol": {
+                          "description": "Identifies the authentication protocol used to authenticate the access requestor to the AAA server.",
+                          "type": [ "integer", "string" ],
+                          "enum": [ "EAP-TLS", "EAP-TTLS/MSCHAPv2", "PEAPv0/EAP-MSCHAPv2", "PEAPv1/EAP-GTC", "EAP-FAST/MSCHAPv2", "EAP-FAST/GTC", "EAP-MD5", "EAP-PSK", "EAP-SIM", "EAP-AKA", "EAP-FAST/TLS", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+                        },
+                        "serverCertificateNameComparison": {
+                          "type": [ "integer", "string" ],
+                          "default": "FullName",
+                          "description": "Determines the comparison algorithm used between the ServerCertificateName value and the subject name field of the certificate presented by the AAA server.",
+                          "enum": [ "FullName", "DomainSuffix", 2, 3 ]
+                        },
+                        "serverCertificateName": {
+                          "type": "string",
+                          "default": null,
+                          "description": "The name compared against the subject name field in the certificate provided by the AAA server.",
+                          "maxLength": 80
+                        },
+                        "availableInS0": {
+                          "type": "boolean",
+                          "default": true,
+                          "description": "Indicates the activity setting of the 802.1X module in H0 state"
+                        },
+                        "protectedAccessCredentialHex": {
+                          "type": "string",
+                          "default": null,
+                          "description": "A credential used by the supplicant and AAA server to establish a mutually authenticated encrypted tunnel for confidential user authentication.",
+                          "maxLength": 64
+                        },
+                        "pacPassword": {
+                          "type": "string",
+                          "default": null,
+                          "description": "Optional password to extract the PAC (Protected Access Credential) information from the PAC data.",
+                          "maxLength": 256
+                        },
+                        "domain": {
+                          "type": "string",
+                          "default": null,
+                          "description": "The domain within which Username is unique.",
+                          "maxLength": 128
+                        },
+                        "username": {
+                          "type": "string",
+                          "default": null,
+                          "description": "Within the domain specified by Domain, Identifies the user that is requesting access to the network.",
+                          "maxLength": 128
+                        },
+                        "password": {
+                          "type": "string",
+                          "default": null,
+                          "description": "The password associated with the user identified by Username and Domain.",
+                          "maxLength": 32
+                        },
+                        "roamingIdentity": {
+                          "type": "string",
+                          "default": null,
+                          "description": "A string presented to the authentication server in 802.1x protocol exchange",
+                          "maxLength": 80
+                        },
+                        "pxeTimeoutInSeconds": {
+                          "type": "integer",
+                          "default": 120,
+                          "description": "Timeout in seconds, in which the Intel(R) AMT will hold an authenticated 802.1X session."
+                        }
+                      }
                     }
+                  }
+                }
+              },
+              "802.1x": {
+                "description": "802.1x settings for the Intel AMT Wired interface. If set to false, any existing 802.1x wired profile will be removed from Intel AMT.",
+                "default": null,
+                "type": [ "object", "boolean" ],
+                "additionalProperties": false,
+                "required": [ "authenticationProtocol" ],
+                "properties": {
+                  "authenticationProtocol": {
+                    "description": "Identifies the authentication protocol used to authenticate the access requestor to the AAA server.",
+                    "type": [ "integer", "string" ],
+                    "enum": [ "EAP-TLS", "EAP-TTLS/MSCHAPv2", "PEAPv0/EAP-MSCHAPv2", "PEAPv1/EAP-GTC", "EAP-FAST/MSCHAPv2", "EAP-FAST/GTC", "EAP-MD5", "EAP-PSK", "EAP-SIM", "EAP-AKA", "EAP-FAST/TLS", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+                  },
+                  "serverCertificateNameComparison": {
+                    "type": [ "integer", "string" ],
+                    "description": "Determines the comparison algorithm used between the ServerCertificateName value and the subject name field of the certificate presented by the AAA server.",
+                    "enum": [ "FullName", "DomainSuffix", 2, 3 ]
+                  },
+                  "serverCertificateName": {
+                    "type": "string",
+                    "default": null,
+                    "description": "The name compared against the subject name field in the certificate provided by the AAA server.",
+                    "maxLength": 80
+                  },
+                  "availableInS0": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Indicates the activity setting of the 802.1X module in H0 state"
+                  },
+                  "protectedAccessCredentialHex": {
+                    "type": "string",
+                    "default": null,
+                    "description": "A credential used by the supplicant and AAA server to establish a mutually authenticated encrypted tunnel for confidential user authentication.",
+                    "maxLength": 64
+                  },
+                  "pacPassword": {
+                    "type": "string",
+                    "default": null,
+                    "description": "Optional password to extract the PAC (Protected Access Credential) information from the PAC data.",
+                    "maxLength": 256
+                  },
+                  "domain": {
+                    "type": "string",
+                    "default": null,
+                    "description": "The domain within which Username is unique.",
+                    "maxLength": 128
+                  },
+                  "username": {
+                    "type": "string",
+                    "default": null,
+                    "description": "Within the domain specified by Domain, Identifies the user that is requesting access to the network.",
+                    "maxLength": 128
+                  },
+                  "password": {
+                    "type": "string",
+                    "default": null,
+                    "description": "The password associated with the user identified by Username and Domain.",
+                    "maxLength": 32
+                  },
+                  "roamingIdentity": {
+                    "type": "string",
+                    "default": null,
+                    "description": "A string presented to the authentication server in 802.1x protocol exchange",
+                    "maxLength": 80
+                  },
+                  "pxeTimeoutInSeconds": {
+                    "type": "integer",
+                    "default": 120,
+                    "description": "Timeout in seconds, in which the Intel(R) AMT will hold an authenticated 802.1X session."
                   }
                 }
               }
