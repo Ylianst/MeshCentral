@@ -1297,7 +1297,7 @@ module.exports.CreateAmtManager = function (parent) {
         // Get the current list of WIFI profiles and wireless interface state
         dev.taskCount = 1;
         dev.taskCompleted = func;
-        dev.amtstack.BatchEnum(null, ['CIM_WiFiEndpointSettings', '*CIM_WiFiPort', '*AMT_WiFiPortConfigurationService'], function (stack, name, responses, status) {
+        dev.amtstack.BatchEnum(null, ['CIM_WiFiEndpointSettings', '*CIM_WiFiPort', '*AMT_WiFiPortConfigurationService', 'CIM_IEEE8021xSettings'], function (stack, name, responses, status) {
             const dev = stack.dev;
             if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
             if (status != 200) { devTaskCompleted(dev); return; } // We can't get wireless settings, ignore and carry on.
@@ -1307,6 +1307,7 @@ module.exports.CreateAmtManager = function (parent) {
                 // The server and device WIFI profiles, find profiles to add and remove
                 const sevProfiles = parent.config.domains[dev.domainid].amtmanager.wifiprofiles;
                 const devProfiles = responses['CIM_WiFiEndpointSettings'].responses;
+                const netAuthProfiles = responses['CIM_IEEE8021xSettings'].responses;
                 var profilesToAdd = [], profilesToRemove = [];
 
                 // Look at the WIFI profiles in the device
@@ -1320,13 +1321,38 @@ module.exports.CreateAmtManager = function (parent) {
                             (devProfile.AuthenticationMethod == sevProfile.authentication) &&
                             (devProfile.EncryptionMethod == sevProfile.encryption) &&
                             (devProfile.BSSType == sevProfile.type)
-                        ) { match = true; devProfile.match = true; }
+                        ) {
+                            if (([5, 7, 32768, 32769].indexOf(sevProfile.authentication)) >= 0) {
+                                // This is a 802.1x profile, do some extra matching.
+                                // Start by finding the 802.1x profile for this WIFI profile
+                                var netAuthProfile = null, netAuthMatch = false;
+                                for (var k in netAuthProfiles) { if (netAuthProfiles[k].ElementName == devProfile.ElementName) { netAuthProfile = netAuthProfiles[k]; } }
+                                if (netAuthProfile != null) {
+                                    netAuthMatch = true;
+                                    if (sevProfile['802.1x'].authenticationprotocol != netAuthProfile['AuthenticationProtocol']) { console.log('Y1'); netAuthMatch = false; }
+                                    if (sevProfile['802.1x'].roamingidentity != netAuthProfile['RoamingIdentity']) { console.log('Y3'); netAuthMatch = false; }
+                                    if (sevProfile['802.1x'].servercertificatename != netAuthProfile['ServerCertificateName']) { console.log('Y4'); netAuthMatch = false; }
+                                    if (sevProfile['802.1x'].servercertificatenamecomparison != netAuthProfile['ServerCertificateNameComparison']) { console.log('Y5'); netAuthMatch = false; }
+                                    if (sevProfile['802.1x'].username != netAuthProfile['Username']) { console.log('Y6'); netAuthMatch = false; }
+                                    if (sevProfile['802.1x'].domain != netAuthProfile['Domain']) { console.log('Y7'); netAuthMatch = false; }
+                                }
+                                if (netAuthMatch == true) {
+                                    // The 802.1x profile seems to match what we want
+                                    match = true;
+                                    devProfile.match = true;
+                                }
+                            } else {
+                                // Not a 802.1x profile, match now.
+                                match = true;
+                                devProfile.match = true;
+                            }
+                        }
                     }
                     if (match == false) { profilesToAdd.push(sevProfile); }
                 }
                 for (var j in devProfiles) {
                     var devProfile = devProfiles[j];
-                    if (devProfile.match !== true) { profilesToRemove.push(devProfile); }
+                    if ((devProfile.match !== true) && (devProfile.InstanceID != null)) { profilesToRemove.push(devProfile); }
                 }
 
                 // Compute what priorities are allowed
@@ -1360,10 +1386,29 @@ module.exports.CreateAmtManager = function (parent) {
                         EncryptionMethod: profileToAdd.encryption,
                         SSID: profileToAdd.ssid,
                         Priority: nextPriority,
-                        PSKPassPhrase: profileToAdd.password
+                    }
+                    var netAuthProfile, netAuthSettingsClientCert, netAuthSettingsServerCaCert;
+                    if (([4, 6].indexOf(profileToAdd.authentication)) >= 0) { wifiepsettinginput['PSKPassPhrase'] = profileToAdd.password; }
+                    if (([5, 7, 32768, 32769].indexOf(profileToAdd.authentication)) >= 0) {
+                        netAuthProfile = {
+                            '__parameterType': 'instance',
+                            '__namespace': dev.amtstack.CompleteName('CIM_IEEE8021xSettings'),
+                            'ElementName': '8021x-' + profileToAdd.name,
+                            'InstanceID': '8021x-' + profileToAdd.name,
+                            'ActiveInS0': (profileToAdd['802.1x'].availableins0 !== false),
+                            'AuthenticationProtocol': profileToAdd['802.1x'].authenticationprotocol
+                        };
+                        if (profileToAdd['802.1x'].roamingidentity) { netAuthProfile['RoamingIdentity'] = profileToAdd['802.1x'].roamingidentity; }
+                        if (profileToAdd['802.1x'].servercertificatename) { netAuthProfile['ServerCertificateName'] = profileToAdd['802.1x'].servercertificatename; netAuthProfile['ServerCertificateNameComparison'] = profileToAdd['802.1x'].servercertificatenamecomparison; }
+                        if (profileToAdd['802.1x'].username) { netAuthProfile['Username'] = profileToAdd['802.1x'].username; }
+                        if (profileToAdd['802.1x'].password) { netAuthProfile['Password'] = profileToAdd['802.1x'].password; }
+                        if (profileToAdd['802.1x'].domain) { netAuthProfile['Domain'] = profileToAdd['802.1x'].domain; }
+                        if (profileToAdd['802.1x'].authenticationprotocol > 3) { netAuthProfile['ProtectedAccessCredential'] = profileToAdd['802.1x'].protectedaccesscredentialhex; netAuthProfile['PACPassword'] = profileToAdd['802.1x'].pacpassword; }
+                        //if (parseInt(Q('idx_d12clientcert').value) >= 0) { netAuthSettingsClientCert = '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">' + xxCertificates[parseInt(Q('idx_d12clientcert').value)]['InstanceID'] + '</Selector></SelectorSet></ReferenceParameters>'; }
+                        //if (parseInt(Q('idx_d12servercert').value) >= 0) { netAuthSettingsServerCaCert = '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">' + xxCertificates[parseInt(Q('idx_d12servercert').value)]['InstanceID'] + '</Selector></SelectorSet></ReferenceParameters>'; }
                     }
                     prioritiesInUse.push(nextPriority); // Occupy the priority slot and add the WIFI profile.
-                    dev.amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, null, null, null, function (stack, name, responses, status) { });
+                    dev.amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, netAuthProfile, netAuthSettingsClientCert, netAuthSettingsServerCaCert, function (stack, name, responses, status) { });
                 }
             }
 
