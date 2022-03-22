@@ -678,31 +678,34 @@ module.exports.CreateAmtManager = function (parent) {
                 attemptTlsSync(dev, function (dev) {
                     // If we need to switch to TLS, do it now.
                     if (dev.switchToTls == 1) { delete dev.switchToTls; attemptInitialContact(dev); return; }
-                    // Check Intel AMT WIFI state
-                    attemptWifiSync(dev, function (dev) {
-                        // Check Intel AMT root certificate state
-                        attemptRootCertSync(dev, function (dev) {
-                            // Check Intel AMT CIRA settings
-                            attemptCiraSync(dev, function (dev) {
-                                // Check Intel AMT settings
-                                attemptSettingsSync(dev, function (dev) {
-                                    // See if we need to get hardware inventory
-                                    attemptFetchHardwareInventory(dev, function (dev) {
-                                        dev.consoleMsg('Done.');
+                    // Check Intel AMT 802.1x state
+                    attempt8021xSync(dev, function (dev) {
+                        // Check Intel AMT WIFI state
+                        attemptWifiSync(dev, function (dev) {
+                            // Check Intel AMT root certificate state
+                            attemptRootCertSync(dev, function (dev) {
+                                // Check Intel AMT CIRA settings
+                                attemptCiraSync(dev, function (dev) {
+                                    // Check Intel AMT settings
+                                    attemptSettingsSync(dev, function (dev) {
+                                        // See if we need to get hardware inventory
+                                        attemptFetchHardwareInventory(dev, function (dev) {
+                                            dev.consoleMsg('Done.');
 
-                                        // Remove from task limiter if needed
-                                        if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
+                                            // Remove from task limiter if needed
+                                            if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
 
-                                        if (dev.connType != 2) {
-                                            // Start power polling if not connected to LMS
-                                            var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
-                                            ppfunc.dev = dev;
-                                            dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
-                                            fetchPowerState(dev);
-                                        } else {
-                                            // For LMS connections, close now.
-                                            dev.controlMsg({ action: 'close' });
-                                        }
+                                            if (dev.connType != 2) {
+                                                // Start power polling if not connected to LMS
+                                                var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
+                                                ppfunc.dev = dev;
+                                                dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
+                                                fetchPowerState(dev);
+                                            } else {
+                                                // For LMS connections, close now.
+                                                dev.controlMsg({ action: 'close' });
+                                            }
+                                        });
                                     });
                                 });
                             });
@@ -1282,6 +1285,87 @@ module.exports.CreateAmtManager = function (parent) {
 
 
     //
+    // Intel AMT 802.1x wired
+    //
+
+    // This method will sync the 802.1x wired profile from the device and the server
+    function attempt8021xSync(dev, func) {
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (dev.policy.amtPolicy == 0) { func(dev); return; } // If there is no Intel AMT policy, skip this operation.
+        if (dev.connType != 2) { func(dev); return; } // Only configure 802.1x over a CIRA-LMS link.
+        if (parent.config.domains[dev.domainid].amtmanager['802.1x'] == null) { func(dev); return; } // No 802.1x policy, leave device as-is.
+
+        // Get the current 802.1x profilee
+        dev.taskCount = 1;
+        dev.taskCompleted = func;
+        dev.amtstack.BatchEnum(null, ['*AMT_8021XProfile'], function (stack, name, responses, status) {
+            const dev = stack.dev;
+            if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+            if (status != 200) { devTaskCompleted(dev); return; } // We can't get the 802.1x settings, maybe no wired interface, ignore and carry on.
+            var devNetAuthProfile = responses['AMT_8021XProfile'].response;
+            var srvNetAuthProfile = parent.config.domains[dev.domainid].amtmanager['802.1x'];
+            var match = true;
+            if ((srvNetAuthProfile === false) && (devNetAuthProfile != null)) {
+                // Remove the 802.1x profile
+                match = false;
+            } else if ((srvNetAuthProfile != null) && (devNetAuthProfile == null)) {
+                // Device has no 802.1x, add it
+                match = false;
+            } else if ((typeof srvNetAuthProfile == 'object') && (devNetAuthProfile != null)) {
+                // Check if the existing 802.1x profile look good
+                if (devNetAuthProfile.AuthenticationProtocol != srvNetAuthProfile.authenticationprotocol) { match = false; }
+                if (devNetAuthProfile.RoamingIdentity != srvNetAuthProfile.roamingidentity) { match = false; }
+                if (devNetAuthProfile.ServerCertificateName != srvNetAuthProfile.servercertificatename) { match = false; }
+                if (devNetAuthProfile.ServerCertificateNameComparison != srvNetAuthProfile.servercertificatenamecomparison) { match = false; }
+                if (devNetAuthProfile.Username != srvNetAuthProfile.username) { match = false; }
+                if (devNetAuthProfile.Domain != srvNetAuthProfile.domain) { match = false; }
+                if (devNetAuthProfile.ActiveInS0 != srvNetAuthProfile.availableins0) { match = false; }
+            }
+
+            // If there is a mismatch, set the new 802.1x profile
+            if (match == false) {
+                var netAuthProfile = Clone(devNetAuthProfile);
+                netAuthProfile['Enabled'] = ((srvNetAuthProfile != null) && (typeof srvNetAuthProfile == 'object'));
+                if (netAuthProfile['Enabled']) {
+                    netAuthProfile['ActiveInS0'] = (srvNetAuthProfile.availableInS0 !== false);
+                    netAuthProfile['AuthenticationProtocol'] = srvNetAuthProfile.authenticationprotocol;
+                    if (srvNetAuthProfile.roamingidentity && (srvNetAuthProfile.roamingidentity != '')) { netAuthProfile['RoamingIdentity'] = srvNetAuthProfile.roamingidentity; } else { delete netAuthProfile['RoamingIdentity']; }
+                    if (srvNetAuthProfile.servercertificatename && (srvNetAuthProfile.servercertificatename != '')) {
+                        netAuthProfile['ServerCertificateName'] = srvNetAuthProfile.servercertificatename;
+                        netAuthProfile['ServerCertificateNameComparison'] = srvNetAuthProfile.servercertificatenamecomparison;
+                    } else {
+                        delete netAuthProfile['ServerCertificateName'];
+                        delete netAuthProfile['ServerCertificateNameComparison'];
+                    }
+                    if (srvNetAuthProfile.username && (srvNetAuthProfile.username != '')) { netAuthProfile['Username'] = srvNetAuthProfile.username; } else { delete netAuthProfile['Username']; }
+                    if (srvNetAuthProfile.password && (srvNetAuthProfile.password != '')) { netAuthProfile['Password'] = srvNetAuthProfile.password; } else { delete netAuthProfile['Password']; }
+                    if (srvNetAuthProfile.domain && (srvNetAuthProfile.domain != '')) { netAuthProfile['Domain'] = srvNetAuthProfile.domain; } else { delete netAuthProfile['Domain']; }
+                    if (srvNetAuthProfile.authenticationprotocol > 3) {
+                        netAuthProfile['ProtectedAccessCredential'] = srvNetAuthProfile.protectedaccesscredentialhex;
+                        netAuthProfile['PACPassword'] = srvNetAuthProfile.pacpassword;
+                    } else {
+                        delete netAuthProfile['ProtectedAccessCredential'];
+                        delete netAuthProfile['PACPassword'];
+                    }
+                    //if (parseInt(Q('idx_d27clientcert').value) >= 0) { netAuthProfile['ClientCertificate'] = '<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>' + amtstack.CompleteName('AMT_PublicKeyCertificate') + '</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + xxCertificates[parseInt(Q('idx_d27clientcert').value)]['InstanceID'] + '</w:Selector></w:SelectorSet></a:ReferenceParameters>'; } else { delete sc['ClientCertificate']; }
+                    //if (parseInt(Q('idx_d27servercert').value) >= 0) { netAuthProfile['ServerCertificateIssuer'] = '<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>' + amtstack.CompleteName('AMT_PublicKeyCertificate') + '</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + xxCertificates[parseInt(Q('idx_d27servercert').value)]['InstanceID'] + '</w:Selector></w:SelectorSet></a:ReferenceParameters>'; } else { delete sc['ServerCertificateIssuer']; }
+                    netAuthProfile['PxeTimeout'] = (typeof srvNetAuthProfile.pxetimeoutinseconds == 'number') ? srvNetAuthProfile.pxetimeoutinseconds : 120;
+                }
+                dev.amtstack.Put('AMT_8021XProfile', netAuthProfile, function (stack, name, responses, status) {
+                    const dev = stack.dev;
+                    if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                    if (status == 200) { dev.consoleMsg("802.1x wired profile set."); }
+                    devTaskCompleted(dev);
+                });
+            } else {
+                // Nothing to do
+                devTaskCompleted(dev);
+            }
+        });
+    }
+
+
+    //
     // Intel AMT WIFI
     //
 
@@ -1329,12 +1413,12 @@ module.exports.CreateAmtManager = function (parent) {
                                 for (var k in netAuthProfiles) { if (netAuthProfiles[k].ElementName == devProfile.ElementName) { netAuthProfile = netAuthProfiles[k]; } }
                                 if (netAuthProfile != null) {
                                     netAuthMatch = true;
-                                    if (sevProfile['802.1x'].authenticationprotocol != netAuthProfile['AuthenticationProtocol']) { console.log('Y1'); netAuthMatch = false; }
-                                    if (sevProfile['802.1x'].roamingidentity != netAuthProfile['RoamingIdentity']) { console.log('Y3'); netAuthMatch = false; }
-                                    if (sevProfile['802.1x'].servercertificatename != netAuthProfile['ServerCertificateName']) { console.log('Y4'); netAuthMatch = false; }
-                                    if (sevProfile['802.1x'].servercertificatenamecomparison != netAuthProfile['ServerCertificateNameComparison']) { console.log('Y5'); netAuthMatch = false; }
-                                    if (sevProfile['802.1x'].username != netAuthProfile['Username']) { console.log('Y6'); netAuthMatch = false; }
-                                    if (sevProfile['802.1x'].domain != netAuthProfile['Domain']) { console.log('Y7'); netAuthMatch = false; }
+                                    if (sevProfile['802.1x'].authenticationprotocol != netAuthProfile['AuthenticationProtocol']) { netAuthMatch = false; }
+                                    if (sevProfile['802.1x'].roamingidentity != netAuthProfile['RoamingIdentity']) { netAuthMatch = false; }
+                                    if (sevProfile['802.1x'].servercertificatename != netAuthProfile['ServerCertificateName']) { netAuthMatch = false; }
+                                    if (sevProfile['802.1x'].servercertificatenamecomparison != netAuthProfile['ServerCertificateNameComparison']) { netAuthMatch = false; }
+                                    if (sevProfile['802.1x'].username != netAuthProfile['Username']) { netAuthMatch = false; }
+                                    if (sevProfile['802.1x'].domain != netAuthProfile['Domain']) { netAuthMatch = false; }
                                 }
                                 if (netAuthMatch == true) {
                                     // The 802.1x profile seems to match what we want
