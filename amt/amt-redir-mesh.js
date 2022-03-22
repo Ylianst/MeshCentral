@@ -363,6 +363,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                                 // Good Digest Auth (With cnonce and all)
                                 obj.xxSend(String.fromCharCode(0x13, 0x00, 0x00, 0x00, 0x04) + webserver.common.IntToStrX(obj.amtuser.length + obj.authuri.length + 8) + String.fromCharCode(obj.amtuser.length) + obj.amtuser + String.fromCharCode(0x00, 0x00) + String.fromCharCode(obj.authuri.length) + obj.authuri + String.fromCharCode(0x00, 0x00, 0x00, 0x00));
                             }
+                            /*
                             else if (authData.indexOf(3) >= 0) {
                                 // Bad Digest Auth (Not sure why this is supported, cnonce is not used!)
                                 obj.xxSend(String.fromCharCode(0x13, 0x00, 0x00, 0x00, 0x03) + webserver.common.IntToStrX(obj.amtuser.length + obj.authuri.length + 7) + String.fromCharCode(obj.amtuser.length) + obj.amtuser + String.fromCharCode(0x00, 0x00) + String.fromCharCode(obj.authuri.length) + obj.authuri + String.fromCharCode(0x00, 0x00, 0x00));
@@ -371,6 +372,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                                 // Basic Auth (Probably a good idea to not support this unless this is an old version of Intel AMT)
                                 obj.xxSend(String.fromCharCode(0x13, 0x00, 0x00, 0x00, 0x01) + webserver.common.IntToStrX(obj.amtuser.length + obj.amtpass.length + 2) + String.fromCharCode(obj.amtuser.length) + obj.amtuser + String.fromCharCode(obj.amtpass.length) + obj.amtpass);
                             }
+                            */
                             else obj.Stop();
                         /*
                         }
