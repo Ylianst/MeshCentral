@@ -1275,6 +1275,17 @@ function CreateMeshCentralServer(config, args) {
                 } else {
                     delete obj.config.domains[i].passwordrequirements.skip2factor;
                 }
+                // Fix the list of users to add "user/domain/" if needed
+                if (Array.isArray(obj.config.domains[i].passwordrequirements.logintokens)) {
+                    var newValues = [];
+                    for (var j in obj.config.domains[i].passwordrequirements.logintokens) {
+                        var splitVal = obj.config.domains[i].passwordrequirements.logintokens[j].split('/');;
+                        if (splitVal.length == 1) { newValues.push('user/' + i + '/' + splitVal[0]); }
+                        if (splitVal.length == 2) { newValues.push('user/' + splitVal[0] + '/' + splitVal[1]); }
+                        if (splitVal.length == 3) { newValues.push(splitVal[0] + '/' + splitVal[1] + '/' + splitVal[2]); }
+                    }
+                    obj.config.domains[i].passwordrequirements.logintokens = newValues;
+                }
             }
             if ((obj.config.domains[i].auth == 'ldap') && (typeof obj.config.domains[i].ldapoptions != 'object')) {
                 if (i == '') { console.log("ERROR: Default domain is LDAP, but is missing LDAPOptions."); } else { console.log("ERROR: Domain '" + i + "' is LDAP, but is missing LDAPOptions."); }

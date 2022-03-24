@@ -4521,7 +4521,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var err = null;
 
                 if (req.session.loginToken != null) { err = "Access denied"; } // Do not allow this command when logged in using a login token
-                else if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.logintokens == false)) { err = "Not supported"; } // Login tokens are not supported on this server
+                else if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.logintokens === false)) { err = "Not supported"; } // Login tokens are not supported on this server
+                else if ((typeof domain.passwordrequirements == 'object') && Array.isArray(domain.passwordrequirements.logintokens) && (domain.passwordrequirements.logintokens.indexOf(user._id) < 0)) { err = "Not supported"; } // Login tokens are not supported by this user
                 else if (common.validateString(command.name, 1, 100) == false) { err = "Invalid name"; } // Check name
                 else if ((typeof command.expire != 'number') || (command.expire < 0)) { err = "Invalid expire value"; } // Check expire
 
