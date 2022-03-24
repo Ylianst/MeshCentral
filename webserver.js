@@ -7724,12 +7724,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (user && user.llang) { delete user.llang; obj.db.SetUser(user); } // Clear user 'last language' used if needed. Since English is the default, remove "last language".
                         break;
                     }
-                    if (fileOptions[acceptLanguages[i]] != null) {
+
+                    // See if a language (like "fr-ca") or short-language (like "fr") matches an available translation file.
+                    var foundLanguage = null;
+                    if (fileOptions[acceptLanguages[i]] != null) { foundLanguage = acceptLanguages[i]; } else {
+                        const ptr = acceptLanguages[i].indexOf('-');
+                        if (ptr >= 0) {
+                            const shortAcceptedLanguage = acceptLanguages[i].substring(0, ptr);
+                            if (fileOptions[shortAcceptedLanguage] != null) { foundLanguage = shortAcceptedLanguage; }
+                        }
+                    }
+
+                    // If a language is found, render it.
+                    if (foundLanguage != null) {
                         // Found a match. If the file no longer exists, default to English.
-                        obj.fs.exists(fileOptions[acceptLanguages[i]] + '.handlebars', function (exists) {
-                            if (exists) { args.lang = acceptLanguages[i]; res.render(fileOptions[acceptLanguages[i]], args); } else { args.lang = 'en'; res.render(filename, args); }
+                        obj.fs.exists(fileOptions[foundLanguage] + '.handlebars', function (exists) {
+                            if (exists) { args.lang = foundLanguage; res.render(fileOptions[foundLanguage], args); } else { args.lang = 'en'; res.render(filename, args); }
                         });
-                        if (user && (user.llang != acceptLanguages[i])) { user.llang = acceptLanguages[i]; obj.db.SetUser(user); }  // Set user 'last language' used if needed.
+                        if (user && (user.llang != foundLanguage)) { user.llang = foundLanguage; obj.db.SetUser(user); }  // Set user 'last language' used if needed.
                         return;
                     }
                 }
