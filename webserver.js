@@ -1105,8 +1105,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                         // Get the HTTPS port
                         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port if specified
-                        if (obj.args.agentport != null) { httpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
-                        if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
 
                         // Get the agent connection server name
                         var serverName = obj.getWebServerName(domain);

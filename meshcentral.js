@@ -3486,8 +3486,8 @@ function mainStart() {
             if (config.domains[i].sendgrid != null) { sendgrid = true; }
             if (config.domains[i].yubikey != null) { yubikey = true; }
             if (config.domains[i].auth == 'ldap') { ldap = true; }
-            if (config.domains[i].mstsc === true) { mstsc = true; }
-            if (config.domains[i].ssh === true) { if (nodeVersion < 11) { config.domains[i].ssh = false; } ssh = true; }
+            if (config.domains[i].mstsc == true) { mstsc = true; }
+            if (config.domains[i].ssh == true) { if (nodeVersion < 11) { config.domains[i].ssh = false; } else { ssh = true; } }
             if ((typeof config.domains[i].authstrategies == 'object')) {
                 if (passport == null) { passport = ['passport']; }
                 if ((typeof config.domains[i].authstrategies.twitter == 'object') && (typeof config.domains[i].authstrategies.twitter.clientid == 'string') && (typeof config.domains[i].authstrategies.twitter.clientsecret == 'string') && (passport.indexOf('passport-twitter') == -1)) { passport.push('passport-twitter'); }
