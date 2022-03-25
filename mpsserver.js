@@ -584,14 +584,18 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 if (len < 13) return 0;
                 userAuthRequestCount++;
                 var usernameLen = common.ReadInt(data, 1);
+                if ((usernameLen > 2048) || (len < (5 + usernameLen))) return -1;
                 var username = data.substring(5, 5 + usernameLen);
                 var serviceNameLen = common.ReadInt(data, 5 + usernameLen);
+                if ((serviceNameLen > 2048) || (len < (9 + usernameLen + serviceNameLen))) return -1;
                 var serviceName = data.substring(9 + usernameLen, 9 + usernameLen + serviceNameLen);
                 var methodNameLen = common.ReadInt(data, 9 + usernameLen + serviceNameLen);
+                if ((methodNameLen > 2048) || (len < (13 + usernameLen + serviceNameLen + methodNameLen))) return -1;
                 var methodName = data.substring(13 + usernameLen + serviceNameLen, 13 + usernameLen + serviceNameLen + methodNameLen);
                 var passwordLen = 0, password = null;
                 if (methodName == 'password') {
                     passwordLen = common.ReadInt(data, 14 + usernameLen + serviceNameLen + methodNameLen);
+                    if ((passwordLen > 2048) || (len < (18 + usernameLen + serviceNameLen + methodNameLen + passwordLen))) return -1;
                     password = data.substring(18 + usernameLen + serviceNameLen + methodNameLen, 18 + usernameLen + serviceNameLen + methodNameLen + passwordLen);
                 }
                 //console.log('MPS:USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
@@ -874,6 +878,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             case APFProtocol.SERVICE_REQUEST: {
                 if (len < 5) return 0;
                 var xserviceNameLen = common.ReadInt(data, 1);
+                if (xserviceNameLen > 2048) return -1;
                 if (len < 5 + xserviceNameLen) return 0;
                 var xserviceName = data.substring(5, 5 + xserviceNameLen);
                 parent.debug('mpscmd', '--> SERVICE_REQUEST', xserviceName);
@@ -884,6 +889,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             case APFProtocol.GLOBAL_REQUEST: {
                 if (len < 14) return 0;
                 var requestLen = common.ReadInt(data, 1);
+                if (requestLen > 2048) return -1;
                 if (len < 14 + requestLen) return 0;
                 var request = data.substring(5, 5 + requestLen);
                 //var wantResponse = data.charCodeAt(5 + requestLen);
@@ -935,6 +941,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             case APFProtocol.CHANNEL_OPEN: {
                 if (len < 33) return 0;
                 var ChannelTypeLength = common.ReadInt(data, 1);
+                if (ChannelTypeLength > 2048) return -1;
                 if (len < (33 + ChannelTypeLength)) return 0;
 
                 // Decode channel identifiers and window size
@@ -944,12 +951,14 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                 // Decode the target
                 var TargetLen = common.ReadInt(data, 17 + ChannelTypeLength);
+                if (TargetLen > 2048) return -1;
                 if (len < (33 + ChannelTypeLength + TargetLen)) return 0;
                 var Target = data.substring(21 + ChannelTypeLength, 21 + ChannelTypeLength + TargetLen);
                 var TargetPort = common.ReadInt(data, 21 + ChannelTypeLength + TargetLen);
 
                 // Decode the source
                 var SourceLen = common.ReadInt(data, 25 + ChannelTypeLength + TargetLen);
+                if (SourceLen > 2048) return -1;
                 if (len < (33 + ChannelTypeLength + TargetLen + SourceLen)) return 0;
                 var Source = data.substring(29 + ChannelTypeLength + TargetLen, 29 + ChannelTypeLength + TargetLen + SourceLen);
                 var SourcePort = common.ReadInt(data, 29 + ChannelTypeLength + TargetLen + SourceLen);
@@ -1076,6 +1085,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     if (len < 9) return 0;
                     var RecipientChannel = common.ReadInt(data, 1);
                     var LengthOfData = common.ReadInt(data, 5);
+                    if (SourceLen > 1048576) return -1;
                     if (len < (9 + LengthOfData)) return 0;
                     parent.debug('mpscmddata', '--> CHANNEL_DATA', RecipientChannel, LengthOfData);
                     var cirachannel = socket.tag.channels[RecipientChannel];
@@ -1103,6 +1113,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 {
                     if (len < 5) return 0;
                     var jsondatalen = common.ReadInt(data, 1);
+                    if (jsondatalen > 1048576) return -1;
                     if (len < (5 + jsondatalen)) return 0;
                     var jsondata = null, jsondatastr = data.substring(5, 5 + jsondatalen);
                     try { jsondata = JSON.parse(jsondatastr); } catch (ex) { }
