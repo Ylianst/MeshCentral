@@ -2605,8 +2605,8 @@
                         if (!message.tags.latest) { message.tags.latest = "Unknown"; }
                         x += addHtmlValue2("Current Version", '<b>' + EscapeHtml(message.tags.current) + '</b>');
                         x += '<hr />';
-                        x += addHtmlValue2('<label><input id=d2updateCheck1 type=checkbox onclick=server_showVersionDlgUpdate()' + (((message.tags.stable == "Unknown") || (message.tags.current == message.tags.stable))?' disabled':'') + ' /> ' + "Stable Version" + '</label>', '<b>' + EscapeHtml(message.tags.stable) + '</b>');
-                        x += addHtmlValue2('<label><input id=d2updateCheck2 type=checkbox onclick=server_showVersionDlgUpdate()' + (((message.tags.latest == "Unknown") || (message.tags.current == message.tags.latest))?' disabled':'') + ' /> ' + "Latest Version" + '</label>', '<b>' + EscapeHtml(message.tags.latest) + '</b>');
+                        x += addHtmlValue2('<label><input id=d2updateCheck1 type=checkbox onclick=server_showVersionDlgUpdate()' + (((message.tags.stable == "Unknown") || (message.tags.current == message.tags.stable) || ((features & 2048) == 0))?' disabled':'') + ' /> ' + "Stable Version" + '</label>', '<b>' + EscapeHtml(message.tags.stable) + '</b>');
+                        x += addHtmlValue2('<label><input id=d2updateCheck2 type=checkbox onclick=server_showVersionDlgUpdate()' + (((message.tags.latest == "Unknown") || (message.tags.current == message.tags.latest) || ((features & 2048) == 0))?' disabled':'') + ' /> ' + "Latest Version" + '</label>', '<b>' + EscapeHtml(message.tags.latest) + '</b>');
                         x += '</div>';
                         if (((message.tags.current == message.tags.latest) && (message.tags.current == message.tags.stable)) || ((features & 2048) == 0)) {
                             setDialogMode(2, "MeshCentral Version", 1, null, x);
