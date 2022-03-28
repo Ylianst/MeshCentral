@@ -1699,7 +1699,7 @@ function serverConnect() {
     ws.on('error', function (err) {
         if (err.code == 'ENOTFOUND') { console.log('Unable to resolve ' + url); }
         else if (err.code == 'ECONNREFUSED') { console.log('Unable to connect to ' + url); }
-        else { console.log(err); }
+        else { console.log('Unable to connect to ' + url); }
         process.exit();
     });
 
