@@ -14074,7 +14074,7 @@
         }
 
         function p4downloadUserInfoCSV() {
-            var csv = "id, name, email, creation, lastlogin, groups, authfactors" + '\r\n';
+            var csv = "id, name, email, creation, lastlogin, groups, authfactors, siteadmin, useradmin, locked" + '\r\n';
             for (var i in users) {
                 var multiFactor = false, factors = [];
                 if ((users[i].otpsecret > 0) || (users[i].otphkeys > 0)) {
@@ -14083,7 +14083,11 @@
                     if (users[i].otphkeys > 0) { factors.push('SecurityKey'); }
                     if (users[i].otpkeys > 0) { factors.push('BackupCodes'); }
                 }
-                csv += '"' + users[i]._id + '","' + users[i].name + '","' + (users[i].email ? users[i].email : '') + '","' + (users[i].creation ? new Date(users[i].creation * 1000) : '') + '","' + (users[i].login ? new Date(users[i].login * 1000) : '') + '","' + (users[i].groups ? users[i].groups.join(',') : '') + '","' + (multiFactor ? factors.join(',') : '') + '"\r\n';
+                csv += '"' + users[i]._id + '","' + users[i].name + '","' + (users[i].email ? users[i].email : '') + '","' + (users[i].creation ? new Date(users[i].creation * 1000) : '') + '","' + (users[i].login ? new Date(users[i].login * 1000) : '') + '","' + (users[i].groups ? users[i].groups.join(',') : '') + '","' + ((multiFactor ? factors.join(',') : '') + '"');
+                csv += ',' + ((users[i].siteadmin == 0xFFFFFFFF) ? '1' : '0'); // site admin
+                csv += ',' + (((users[i].siteadmin & 2) != 0) ? '1' : '0'); // user admin
+                csv += ',' + (((users[i].siteadmin & 32) != 0) ? '1' : '0'); // locked
+                csv += '\r\n';
             }
             saveAs(stringToUtf8Blob(csv), "userlist.csv");
             return false;
