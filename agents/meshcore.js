@@ -46,6 +46,18 @@ var MESHRIGHT_CHATNOTIFY = 16384;
 var MESHRIGHT_UNINSTALL = 32768;
 var MESHRIGHT_NODESKTOP = 65536;
 
+
+function bcdOK()
+{
+    if (process.platform != 'win32') { return (false); }
+    if(require('os').arch() == 'x64')
+    {
+        return (require('_GenericMarshal').PointerSize == 8);
+    }
+    return (true);
+}
+
+
 try {
     Object.defineProperty(Array.prototype, 'findIndex', {
         value: function (func) {
@@ -108,6 +120,32 @@ function getCoreTranslation() {
     return (ret);
 }
 var currentTranslation = getCoreTranslation();
+
+try
+{
+    require('kvm-helper');
+}
+catch (e)
+{
+    var j =
+        {
+            users: function ()
+            {
+                var r = {};
+                require('user-sessions').Current(function (c) { r = c; });
+                if (process.platform != 'win32')
+                {
+                    for (var i in r)
+                    {
+                        r[i].SessionId = r[i].uid;
+                    }
+                }
+                return (r);
+            }
+        };
+    addModuleObject('kvm-helper', j);
+}
+
 
 function lockDesktop(uid) {
     switch (process.platform) {
@@ -1294,12 +1332,7 @@ function handleServerCommand(data) {
                         break;
                     }
                     case 'userSessions': {
-                        // Send back current user sessions list, this is Windows only.
-                        //sendConsoleText('userSessions: ' + JSON.stringify(data));
-                        if (process.platform != 'win32') break;
-                        var p = require('user-sessions').enumerateUsers();
-                        p.sessionid = data.sessionid;
-                        p.then(function (u) { mesh.SendCommand({ action: 'msg', type: 'userSessions', sessionid: data.sessionid, data: u, tag: data.tag }); });
+                        mesh.SendCommand({ action: 'msg', type: 'userSessions', sessionid: data.sessionid, data: require('kvm-helper').users(), tag: data.tag });
                         break;
                     }
                     case 'cpuinfo':
@@ -3238,7 +3271,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 var fin = '', f = '', availcommands = 'translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
-                if (process.platform == 'win32') { availcommands += ',cs,safemode,wpfhwacceleration,uac,volumes'; }
+                if (process.platform == 'win32')
+                {
+                    availcommands += ',cs,wpfhwacceleration,uac,volumes';
+                    if (bcdOK()) { availcommands += ',safemode'; }
+                }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
                 if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
@@ -3759,9 +3796,17 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'safemode':
-                if (process.platform != 'win32') {
+                if (process.platform != 'win32')
+                {
                     response = 'safemode only supported on Windows Platforms'
-                } else {
+                }
+                else
+                {
+                    if (!bcdOK())
+                    {
+                        response = 'safemode not supported on 64 bit Windows from a 32 bit process'
+                        break;
+                    }
                     if (args['_'].length != 1) {
                         response = 'Proper usage: safemode (ON|OFF|STATUS)'; // Display usage
                     }
@@ -3883,6 +3928,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 require('user-sessions').enumerateUsers().then(function (u) { for (var i in u) { sendConsoleText(u[i]); } });
                 break;
             }
+            case 'kvmusers':
+                response = JSON.stringify(require('kvm-helper').users(), null, 1);
+                break;
             case 'toast': {
                 if (args['_'].length < 1) { response = 'Proper usage: toast "message"'; } else {
                     if (require('MeshAgent')._tsid == null) {
