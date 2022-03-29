@@ -2955,6 +2955,7 @@
     {
       "en": "2nd Factor",
       "nl": "2e factor",
+	  "pl": "dwuetapowe",
       "xloc": [
         "default.handlebars->39->2753"
       ]
@@ -3827,7 +3828,8 @@
     {
       "en": "7 days",
       "nl": "7 dagen",
-      "xloc": [
+      "pl": "7 dni",
+	  "xloc": [
         "default.handlebars->39->1720"
       ]
     },
@@ -23343,6 +23345,7 @@
     },
     {
       "en": "Email domain \\\"{0}\\\" is not allowed. Only ({1}) are allowed",
+	  "pl": "Domena email \\\"{0}\\\" jest niedozwolona. Tylko ({1}) jest dopuszczona",
       "xloc": [
         "default-mobile.handlebars->11->730",
         "default.handlebars->39->2836"
@@ -25429,6 +25432,7 @@
     {
       "en": "FIDO key",
       "nl": "FIDO sleutel",
+	  "pl": "Klucz FIDO",
       "xloc": [
         "default.handlebars->39->2778"
       ]
@@ -28789,6 +28793,7 @@
     {
       "en": "Hardware OTP",
       "nl": "Hardware OTP",
+	  "pl": "Sprzętowe OTP",
       "xloc": [
         "default.handlebars->39->2780"
       ]
@@ -36871,6 +36876,7 @@
     {
       "en": "Login Token",
       "nl": "Inlogtoken",
+	  "pl": "Token Logowania",
       "xloc": [
         "default.handlebars->39->2784"
       ]
@@ -44171,6 +44177,7 @@
     {
       "en": "One-Time Password",
       "nl": "Eenmalig wachtwoord",
+	  "pl": "Hasło Jednorazowe",
       "xloc": [
         "default.handlebars->39->2782"
       ]
@@ -48112,6 +48119,7 @@
     {
       "en": "Push Notification",
       "nl": "Push Notificatie",
+	  "pl": "Powiadomianie Push",
       "xloc": [
         "default.handlebars->39->2781"
       ]
@@ -49271,6 +49279,7 @@
     {
       "en": "Remember Device",
       "nl": "Onthoud apparaat",
+	  "pl": "Pamiętaj Urządzenie",
       "xloc": [
         "default.handlebars->39->2783"
       ]
@@ -53072,6 +53081,7 @@
     {
       "en": "SMS message",
       "nl": "SMS bericht",
+	  "pl": "Wiadomość SMS",
       "xloc": [
         "default.handlebars->39->2779"
       ]
@@ -57605,6 +57615,7 @@
     },
     {
       "en": "Single Sign-on",
+	  "pl": "Pojedyncze Logowanie",
       "xloc": [
         "default.handlebars->39->2786"
       ]
