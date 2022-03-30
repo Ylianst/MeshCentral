@@ -574,7 +574,7 @@
     "agent": "Agente",
     "group": "Grupo de Dispositivos",
     "url": "URL do servidor",
-    "meshName": "Nome Mesh",
+    "meshName": "Nome do grupo",
     "meshId": "Identificador de Grupo",
     "serverId": "Identificador de Servidor",
     "setup": "Configurar",
@@ -595,6 +595,10 @@
       "Executando",
       "NÃO EXECUTANDO"
     ],
-    "statusDescription": "Status atual do agente"
+    "statusDescription": "Status atual do agente",
+    "agentVersion": "Nova Versão",
+    "elevation": "Permissões Elevadas são necessárias para instalar/desinstalar este software",
+    "graphicalerror": "A versão gráfica do instalador não pode ser executada neste sistema",
+    "description": "Clique nos botões abaixo para instalar ou desinstalar  este software de gerenciamento remoto. Quando instalado, este software é executado em segundo plano permitindo que este computador seja gerenciado e controlado por um administrador remoto"
   }
 }
