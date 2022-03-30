@@ -7158,6 +7158,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return rights;
     }
 
+
+    // Return the node and rights for a array of nodeids
+    obj.GetNodesWithRights = function (domain, user, nodeids, func) {
+        var rc = nodeids.length, r = {};
+        for (var i in nodeids) {
+            obj.GetNodeWithRights(domain, user, nodeids[i], function (node, rights, visible) {
+                if ((node != null) && (visible == true)) { r[node._id] = { node: node, rights: rights }; if (--rc == 0) { func(r); } }
+            });
+        }
+    }
+
+
     // Return the node and rights for a given nodeid
     obj.GetNodeWithRights = function (domain, user, nodeid, func) {
         // Perform user pre-validation
