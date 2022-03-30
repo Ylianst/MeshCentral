@@ -189,6 +189,14 @@
   },
   "pt-br": {
     "allow": "Permitir",
-    "deny": "Negar"
+    "deny": "Negar",
+    "autoAllowForFive": "Aceitar todas conexões pelos próximos 5 minutos",
+    "terminalConsent": "{0} está solicitando acesso ao terminal. Permitir?",
+    "desktopConsent": "{0} está solicitando acesso a área de trabalho remota. Permitir?",
+    "fileConsent": "{0} está solicitando acesso aos arquivos. Permitir?",
+    "terminalNotify": "{0} iniciou uma sessão de terminal.",
+    "desktopNotify": "{0} iniciou uma sessão de área de trabalho remota.",
+    "fileNotify": "{0} {0} iniciou uma sessão de arquivos.",
+    "privacyBar": "Compartilhando área de trabalho com: {0}"
   }
 }
