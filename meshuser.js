@@ -4244,7 +4244,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'uicustomevent': {
-                // Event the change
+                // Event the custom UI action
                 var message = { etype: 'user', userid: user._id, username: user.name, action: 'uicustomevent', domain: domain.id, uisection: command.section, element: command.element  };
                 if (command.selectedDevices != null) { message.selectedDevices = command.selectedDevices; }
                 if (command.src != null) { message.src = command.src; }
