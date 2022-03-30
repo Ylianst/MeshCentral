@@ -10597,8 +10597,12 @@
             if (xevent) {
                 var x = '<div style=overflow-y:auto;max-height:300px>';
                 for (var i in xevent) {
-                    if ((i == 'h') || (i == '_id') || (i == 'ids') || (i == 'domain') || (xevent[i] == null) || (typeof xevent[i] == 'object')) continue;
-                    x += addHtmlValue3(EscapeHtml(i), EscapeHtml(xevent[i]));
+                    if ((i == 'h') || (i == '_id') || (i == 'ids') || (i == 'domain') || (xevent[i] == null)) continue;
+                    if (typeof xevent[i] == 'object') {
+                        x += addHtmlValue3(EscapeHtml(i), EscapeHtml(JSON.stringify(xevent[i])));
+                    } else {
+                        x += addHtmlValue3(EscapeHtml(i), EscapeHtml(xevent[i]));
+                    }
                 }
                 x += '</div>';
                 setDialogMode(2, "Event Details", 9, null, x);

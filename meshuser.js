@@ -4244,13 +4244,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'uicustomevent': {
-                // Event the custom UI action
-                var message = { etype: 'user', userid: user._id, username: user.name, action: 'uicustomevent', domain: domain.id, uisection: command.section, element: command.element  };
-                if (command.selectedDevices != null) { message.selectedDevices = command.selectedDevices; }
-                if (command.src != null) { message.src = command.src; }
-                if (command.values != null) { message.values = command.values; }
-                if (typeof command.logmsg == 'string') { message.msg = command.logmsg; } else { message.nolog = 1; }
-                parent.parent.DispatchEvent(['*', user._id], obj, message);
+                if ((command.src != null) && (Array.isArray(command.src.selectedDevices))) {
+                    // Contains a list of nodeid's, check that we have permissions for them.
+                    parent.GetNodesWithRights(domain, user, command.src.selectedDevices, function (nodes) {
+                        var nodeids = [];
+                        for (var i in nodes) { nodeids.push(i); }
+                        if (nodeids.length == 0) return;
+
+                        // Event the custom UI action
+                        var message = { etype: 'user', userid: user._id, username: user.name, action: 'uicustomevent', domain: domain.id, uisection: command.section, element: command.element };
+                        if (nodeids.length == 1) { message.nodeid = nodeids[0]; }
+                        if (command.selectedDevices != null) { message.selectedDevices = command.selectedDevices; }
+                        if (command.src != null) { message.src = command.src; }
+                        if (command.values != null) { message.values = command.values; }
+                        if (typeof command.logmsg == 'string') { message.msg = command.logmsg; } else { message.nolog = 1; }
+                        parent.parent.DispatchEvent(['*', user._id], obj, message);
+                    });
+                } else {
+                    // Event the custom UI action
+                    var message = { etype: 'user', userid: user._id, username: user.name, action: 'uicustomevent', domain: domain.id, uisection: command.section, element: command.element };
+                    if (command.selectedDevices != null) { message.selectedDevices = command.selectedDevices; }
+                    if (command.src != null) { message.src = command.src; }
+                    if (command.values != null) { message.values = command.values; }
+                    if (typeof command.logmsg == 'string') { message.msg = command.logmsg; } else { message.nolog = 1; }
+                    parent.parent.DispatchEvent(['*', user._id], obj, message);
+                }
                 break;
             }
             case 'serverBackup': {
