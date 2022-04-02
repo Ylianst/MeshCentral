@@ -417,6 +417,7 @@ module.exports.CreateAmtManager = function (parent) {
                 var devices = obj.amtDevices[event.nodeid], devFound = null;
                 if (devices != null) { for (var i in devices) { if (devices[i].netAuthSatReqId == event.reqid) { devFound = devices[i]; } } }
                 if (devFound == null) return; // Unable to find a device for this 802.1x profile
+                const netAuthSatReqId = devFound.netAuthSatReqId;
                 delete devFound.netAuthSatReqId;
                 if (devFound.netAuthSatReqTimer != null) { clearTimeout(devFound.netAuthSatReqTimer); delete devFound.netAuthSatReqTimer; }
                 if ((event.response == null) || (typeof event.response != 'object') || (typeof event.response.authProtocol != 'number')) {
@@ -432,12 +433,14 @@ module.exports.CreateAmtManager = function (parent) {
                     devFound.netAuthCredentials[event.response.authProtocol] = event.response;
                     devFound.consoleMsg("Setting MeshCentral Satellite 802.1x profile...");
 
-                    // Set the 802.1x wired profile in the device
-                    var devNetAuthProfile = devFound.netAuthSatReqDev;
-                    var srvNetAuthProfile = devFound.netAuthSatReqSrv;
-                    delete devFound.netAuthSatReqDev;
-                    delete devFound.netAuthSatReqSrv;
-                    attempt8021xSyncEx(devFound, devNetAuthProfile, srvNetAuthProfile);
+                    if (netAuthSatReqId.startsWith("wired-")) {
+                        // Set the 802.1x wired profile in the device
+                        var devNetAuthProfile = devFound.netAuthSatReqDev;
+                        var srvNetAuthProfile = devFound.netAuthSatReqSrv;
+                        delete devFound.netAuthSatReqDev;
+                        delete devFound.netAuthSatReqSrv;
+                        attempt8021xSyncEx(devFound, devNetAuthProfile, srvNetAuthProfile);
+                    }
                 }
                 break;
             }
