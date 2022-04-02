@@ -82,6 +82,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const PROTOCOL_WEBSFTP              = 203;
     const PROTOCOL_WEBVNC               = 204;
 
+    // MeshCentral Satellite
+    const SATELLITE_PRESENT = 1;     // This session is a MeshCentral Salellite session
+    const SATELLITE_802_1x = 2;      // This session supports 802.1x profile checking and creation
+
     // Events
     /*
     var eventsMessageId = {
@@ -423,6 +427,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 event = common.Clone(event);
                                 for (var i in event.deviceShares) { if (event.deviceShares[i].userid != user._id) { delete event.deviceShares[i].url; } }
                             }
+
+                            // This is a MeshCentral Satellite message
+                            if (event.action == 'satellite') { if ((obj.satelliteFlags & event.satelliteFlags) != 0) { try { ws.send(JSON.stringify(event)); } catch (ex) { } return; } }
 
                             // Because of the device group "Show Self Events Only", we need to do more checks here.
                             if (id.startsWith('mesh/')) {
@@ -4806,12 +4813,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     const splitxuser = command.xuserid.split('/');
                     var xusername = splitxuser[2];
                     if (command.guestname != null) { xusername += '/' + command.guestname; }
-                    var event = { etype: 'user', userid: user._id, username: user.name, nodeid: command.nodeid, xuserid: command.xuserid, action: 'endsession', msgid: 134, msgArgs: [xusername], msg: 'Forcibly disconnected desktop session of user ' + xusername, domain: domain.id };
+                    const event = { etype: 'user', userid: user._id, username: user.name, nodeid: command.nodeid, xuserid: command.xuserid, action: 'endsession', msgid: 134, msgArgs: [xusername], msg: 'Forcibly disconnected desktop session of user ' + xusername, domain: domain.id };
                     if (command.guestname != null) { event.guestname = command.guestname; }
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
                 });
 
+                break;
+            }
+            case 'satellite': {
+                // Command indicates this is a MeshCentral Satellite session and what featues it supports
+                if ((command.setFlags != null) && (typeof command.setFlags == 'number')) { obj.satelliteFlags = command.setFlags; }
+                if ((command.reqid != null) && (command.response != null) && (typeof command.satelliteFlags == 'number')) {
+                    const event = { action: 'satelliteResponse', reqid: command.reqid, response: command.response, satelliteFlags: command.satelliteFlags, nolog: 1 }
+                    if (typeof command.nodeid == 'string') { event.nodeid = command.nodeid; }
+                    parent.parent.DispatchEvent([ '*' ], obj, event);
+                }
                 break;
             }
             default: {
