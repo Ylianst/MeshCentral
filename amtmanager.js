@@ -66,6 +66,32 @@ module.exports.CreateAmtManager = function (parent) {
             delete domain.amtmanager.environmentdetection;
         }
 
+        // Check 802.1x wired profile if present
+        if ((domain.amtmanager['802.1x'] != null) && (typeof domain.amtmanager['802.1x'] == 'object')) {
+            if (domain.amtmanager['802.1x'].satellitecredentials != null) {
+                if (typeof domain.amtmanager['802.1x'].satellitecredentials != 'string') { delete domain.amtmanager['802.1x']; } else {
+                    const userSplit = domain.amtmanager['802.1x'].satellitecredentials.split('/');
+                    if (userSplit.length > 3) { delete domain.amtmanager['802.1x']; }
+                    else if (userSplit.length == 2) { domain.amtmanager['802.1x'].satellitecredentials = 'user/' + domain.id + '/' + userSplit[1]; }
+                    else if (userSplit.length == 1) { domain.amtmanager['802.1x'].satellitecredentials = 'user/' + domain.id + '/' + userSplit[0]; }
+                }
+            }
+
+            if ((domain.amtmanager['802.1x'].satellitecredentials != null) && (typeof domain.amtmanager['802.1x'].servercertificatename != 'string')) {
+                delete domain.amtmanager['802.1x'].servercertificatenamecomparison;
+                const serverCertCompareStrings = ['', '', 'fullname', 'domainsuffix'];
+                if (typeof domain.amtmanager['802.1x'].servercertificatenamecomparison == 'string') {
+                    domain.amtmanager['802.1x'].servercertificatenamecomparison = serverCertCompareStrings.indexOf(domain.amtmanager['802.1x'].servercertificatenamecomparison.toLowerCase());
+                    if (domain.amtmanager['802.1x'].servercertificatenamecomparison == -1) { domain.amtmanager['802.1x'].servercertificatenamecomparison = 2; } // Default to full name compare
+                }
+            }
+
+            if ((domain.amtmanager['802.1x'].satellitecredentials != null) && (typeof domain.amtmanager['802.1x'].authenticationprotocol == 'string')) {
+                domain.amtmanager['802.1x'].authenticationprotocol = netAuthStrings.indexOf(domain.amtmanager['802.1x'].authenticationprotocol.toLowerCase());
+                if (domain.amtmanager['802.1x'].authenticationprotocol == -1) { delete domain.amtmanager['802.1x']; }
+            }
+        }
+
         // Check WIFI profiles
         //var wifiAuthMethod = { 1: "Other", 2: "Open", 3: "Shared Key", 4: "WPA PSK", 5: "WPA 802.1x", 6: "WPA2 PSK", 7: "WPA2 802.1x", 32768: "WPA3 SAE IEEE 802.1x", 32769: "WPA3 OWE IEEE 802.1x" };
         //var wifiEncMethod = { 1: "Other", 2: "WEP", 3: "TKIP", 4: "CCMP", 5: "None" }
@@ -73,7 +99,7 @@ module.exports.CreateAmtManager = function (parent) {
             var goodWifiProfiles = [];
             for (var i = 0; i < domain.amtmanager.wifiprofiles.length; i++) {
                 var wifiProfile = domain.amtmanager.wifiprofiles[i];
-                if ((typeof wifiProfile.ssid == 'string') && (wifiProfile.ssid != '') && (((typeof wifiProfile.password == 'string') && (wifiProfile.password != '')) || ((typeof wifiProfile['802.1x'] == 'object') && (wifiProfile['802.1x'] != null)))) {
+                if ((typeof wifiProfile.ssid == 'string') && (wifiProfile.ssid != '')) {
                     if ((wifiProfile.name == null) || (wifiProfile.name == '')) { wifiProfile.name = wifiProfile.ssid; }
 
                     // Authentication
@@ -104,29 +130,7 @@ module.exports.CreateAmtManager = function (parent) {
                         if ((typeof wifiProfile.password != 'string') || (wifiProfile.password.length < 8) || (wifiProfile.password.length > 63)) continue;
                     } else if ([5, 7, 32768, 32769].indexOf(wifiProfile.authentication) >= 0) {
                         // 802.1x authentication
-                        if ((wifiProfile['802.1x'] == null) && (typeof wifiProfile['802.1x'] != 'object')) continue;
-
-                        if (wifiProfile['802.1x'].satellitecredentials != null) {
-                            if (typeof wifiProfile['802.1x'].satellitecredentials != 'string') continue;
-                            const userSplit = wifiProfile['802.1x'].satellitecredentials.split('/');
-                            if (userSplit.length > 3) continue;
-                            if (userSplit.length == 2) { wifiProfile['802.1x'].satellitecredentials = 'user/' + domain.id + '/' + userSplit[1]; }
-                            else if (userSplit.length == 1) { wifiProfile['802.1x'].satellitecredentials = 'user/' + domain.id + '/' + userSplit[0]; }
-                        }
-
-                        if (typeof wifiProfile['802.1x'].servercertificatename != 'string') {
-                            delete wifiProfile['802.1x'].servercertificatenamecomparison;
-                            const serverCertCompareStrings = ['', '', 'fullname', 'domainsuffix'];
-                            if (typeof wifiProfile['802.1x'].servercertificatenamecomparison == 'string') {
-                                wifiProfile['802.1x'].servercertificatenamecomparison = serverCertCompareStrings.indexOf(wifiProfile['802.1x'].servercertificatenamecomparison.toLowerCase());
-                                if (wifiProfile['802.1x'].servercertificatenamecomparison == -1) { wifiProfile['802.1x'].servercertificatenamecomparison = 2; } // Default to full name compare
-                            }
-                        }
-
-                        if (typeof wifiProfile['802.1x'].authenticationprotocol == 'string') {
-                            wifiProfile['802.1x'].authenticationprotocol = netAuthStrings.indexOf(wifiProfile['802.1x'].authenticationprotocol.toLowerCase());
-                            if (wifiProfile['802.1x'].authenticationprotocol == -1) continue;
-                        }
+                        if (domain.amtmanager['802.1x'] == null) continue;
                     }
 
                     goodWifiProfiles.push(wifiProfile);
@@ -135,32 +139,6 @@ module.exports.CreateAmtManager = function (parent) {
             domain.amtmanager.wifiprofiles = goodWifiProfiles;
         } else {
             delete domain.amtmanager.wifiprofiles;
-        }
-
-        // Check 802.1x wired profile if present
-        if ((domain.amtmanager['802.1x'] != null) && (typeof domain.amtmanager['802.1x'] == 'object')) {
-            if (domain.amtmanager['802.1x'].satellitecredentials != null) {
-                if (typeof domain.amtmanager['802.1x'].satellitecredentials != 'string') { delete domain.amtmanager['802.1x']; } else {
-                    const userSplit = domain.amtmanager['802.1x'].satellitecredentials.split('/');
-                    if (userSplit.length > 3) { delete domain.amtmanager['802.1x']; }
-                    else if (userSplit.length == 2) { domain.amtmanager['802.1x'].satellitecredentials = 'user/' + domain.id + '/' + userSplit[1]; }
-                    else if (userSplit.length == 1) { domain.amtmanager['802.1x'].satellitecredentials = 'user/' + domain.id + '/' + userSplit[0]; }
-                }
-            }
-
-            if ((domain.amtmanager['802.1x'].satellitecredentials != null) && (typeof domain.amtmanager['802.1x'].servercertificatename != 'string')) {
-                delete domain.amtmanager['802.1x'].servercertificatenamecomparison;
-                const serverCertCompareStrings = ['', '', 'fullname', 'domainsuffix'];
-                if (typeof domain.amtmanager['802.1x'].servercertificatenamecomparison == 'string') {
-                    domain.amtmanager['802.1x'].servercertificatenamecomparison = serverCertCompareStrings.indexOf(domain.amtmanager['802.1x'].servercertificatenamecomparison.toLowerCase());
-                    if (domain.amtmanager['802.1x'].servercertificatenamecomparison == -1) { domain.amtmanager['802.1x'].servercertificatenamecomparison = 2; } // Default to full name compare
-                }
-            }
-
-            if ((domain.amtmanager['802.1x'].satellitecredentials != null) && (typeof domain.amtmanager['802.1x'].authenticationprotocol == 'string')) {
-                domain.amtmanager['802.1x'].authenticationprotocol = netAuthStrings.indexOf(domain.amtmanager['802.1x'].authenticationprotocol.toLowerCase());
-                if (domain.amtmanager['802.1x'].authenticationprotocol == -1) { delete domain.amtmanager['802.1x']; }
-            }
         }
     }
 
@@ -417,30 +395,23 @@ module.exports.CreateAmtManager = function (parent) {
                 var devices = obj.amtDevices[event.nodeid], devFound = null;
                 if (devices != null) { for (var i in devices) { if (devices[i].netAuthSatReqId == event.reqid) { devFound = devices[i]; } } }
                 if (devFound == null) return; // Unable to find a device for this 802.1x profile
-                const netAuthSatReqId = devFound.netAuthSatReqId;
                 delete devFound.netAuthSatReqId;
                 if (devFound.netAuthSatReqTimer != null) { clearTimeout(devFound.netAuthSatReqTimer); delete devFound.netAuthSatReqTimer; }
                 if ((event.response == null) || (typeof event.response != 'object') || (typeof event.response.authProtocol != 'number')) {
                     // Unable to create a 802.1x profile
                     if (isAmtDeviceValid(devFound) == false) return; // Device no longer exists, ignore this request.
-                    delete devFound.netAuthSatReqDev;
-                    delete devFound.netAuthSatReqSrv;
+                    delete devFound.netAuthSatReqData;
                     devFound.consoleMsg("MeshCentral Satellite could not create a 802.1x profile for this device.");
                     devTaskCompleted(devFound);
                 } else {
                     // We got a new 802.1x profile
-                    if (devFound.netAuthCredentials == null) { devFound.netAuthCredentials = {}; }
-                    devFound.netAuthCredentials[event.response.authProtocol] = event.response;
+                    devFound.netAuthCredentials = event.response;
                     devFound.consoleMsg("Setting MeshCentral Satellite 802.1x profile...");
 
-                    if (netAuthSatReqId.startsWith("wired-")) {
-                        // Set the 802.1x wired profile in the device
-                        var devNetAuthProfile = devFound.netAuthSatReqDev;
-                        var srvNetAuthProfile = devFound.netAuthSatReqSrv;
-                        delete devFound.netAuthSatReqDev;
-                        delete devFound.netAuthSatReqSrv;
-                        attempt8021xSyncEx(devFound, devNetAuthProfile, srvNetAuthProfile);
-                    }
+                    // Set the 802.1x wired profile in the device
+                    var netAuthSatReqData = devFound.netAuthSatReqData;
+                    delete devFound.netAuthSatReqData;
+                    attempt8021xSyncEx(devFound, netAuthSatReqData);
                 }
                 break;
             }
@@ -727,34 +698,31 @@ module.exports.CreateAmtManager = function (parent) {
                 attemptTlsSync(dev, function (dev) {
                     // If we need to switch to TLS, do it now.
                     if (dev.switchToTls == 1) { delete dev.switchToTls; attemptInitialContact(dev); return; }
-                    // Check Intel AMT 802.1x state
-                    attempt8021xSync(dev, function (dev) {
-                        // Check Intel AMT WIFI state
-                        attemptWifiSync(dev, function (dev) {
-                            // Check Intel AMT root certificate state
-                            attemptRootCertSync(dev, function (dev) {
-                                // Check Intel AMT CIRA settings
-                                attemptCiraSync(dev, function (dev) {
-                                    // Check Intel AMT settings
-                                    attemptSettingsSync(dev, function (dev) {
-                                        // See if we need to get hardware inventory
-                                        attemptFetchHardwareInventory(dev, function (dev) {
-                                            dev.consoleMsg('Done.');
+                    // Check Intel AMT 802.1x wired state and Intel AMT WIFI state (must be done both at once).
+                    attemptWifiSync(dev, function (dev) {
+                        // Check Intel AMT root certificate state
+                        attemptRootCertSync(dev, function (dev) {
+                            // Check Intel AMT CIRA settings
+                            attemptCiraSync(dev, function (dev) {
+                                // Check Intel AMT settings
+                                attemptSettingsSync(dev, function (dev) {
+                                    // See if we need to get hardware inventory
+                                    attemptFetchHardwareInventory(dev, function (dev) {
+                                        dev.consoleMsg('Done.');
 
-                                            // Remove from task limiter if needed
-                                            if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
+                                        // Remove from task limiter if needed
+                                        if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
 
-                                            if (dev.connType != 2) {
-                                                // Start power polling if not connected to LMS
-                                                var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
-                                                ppfunc.dev = dev;
-                                                dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
-                                                fetchPowerState(dev);
-                                            } else {
-                                                // For LMS connections, close now.
-                                                dev.controlMsg({ action: 'close' });
-                                            }
-                                        });
+                                        if (dev.connType != 2) {
+                                            // Start power polling if not connected to LMS
+                                            var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
+                                            ppfunc.dev = dev;
+                                            dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
+                                            fetchPowerState(dev);
+                                        } else {
+                                            // For LMS connections, close now.
+                                            dev.controlMsg({ action: 'close' });
+                                        }
                                     });
                                 });
                             });
@@ -1334,55 +1302,147 @@ module.exports.CreateAmtManager = function (parent) {
 
 
     //
-    // Intel AMT 802.1x wired
+    // Intel AMT WIFI
     //
 
-    // This method will sync the 802.1x wired profile from the device and the server
-    function attempt8021xSync(dev, func) {
+    // This method will sync the WIFI profiles from the device and the server, but does not care about profile priority.
+    // We also sync wired 802.1x at the same time since we only allow a single 802.1x profile per device shared between wired and wireless
+    // We may want to work on an alternate version that does do priority if requested.
+    function attemptWifiSync(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
         if (dev.policy.amtPolicy == 0) { func(dev); return; } // If there is no Intel AMT policy, skip this operation.
-        if (dev.connType != 2) { func(dev); return; } // Only configure 802.1x over a CIRA-LMS link.
-        if (parent.config.domains[dev.domainid].amtmanager['802.1x'] == null) { func(dev); return; } // No 802.1x policy, leave device as-is.
+        if (dev.connType != 2) { func(dev); return; } // Only configure wireless over a CIRA-LMS link
+        //if (parent.config.domains[dev.domainid].amtmanager.wifiprofiles == null) { func(dev); return; } // No server WIFI profiles set, skip this.
+        //if ((dev.mpsConnection.tag.meiState == null) || (dev.mpsConnection.tag.meiState.net1 == null)) { func(dev); return; } // No WIFI on this device, skip this.
 
-        // Get the current 802.1x profilee
+        // Get the current list of WIFI profiles, wireless interface state and wired 802.1x profile
         dev.taskCount = 1;
         dev.taskCompleted = func;
-        dev.amtstack.BatchEnum(null, ['*AMT_8021XProfile'], function (stack, name, responses, status) {
+
+        const objQuery = ['CIM_WiFiEndpointSettings', '*CIM_WiFiPort', '*AMT_WiFiPortConfigurationService', 'CIM_IEEE8021xSettings'];
+        if (parent.config.domains[dev.domainid].amtmanager['802.1x'] != null) { objQuery.push('*AMT_8021XProfile'); }
+        dev.amtstack.BatchEnum(null, objQuery, function (stack, name, responses, status) {
             const dev = stack.dev;
             if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-            if (status != 200) { devTaskCompleted(dev); return; } // We can't get the 802.1x settings, maybe no wired interface, ignore and carry on.
+            if (status != 200) { devTaskCompleted(dev); return; } // We can't get wireless settings, ignore and carry on.
+            const domain = parent.config.domains[dev.domainid];
+
+            // Check if wired 802.1x needs updating
+            var newNetAuthProfileRequested = false;
             var devNetAuthProfile = responses['AMT_8021XProfile'].response;
-            var srvNetAuthProfile = parent.config.domains[dev.domainid].amtmanager['802.1x'];
-            var match = true;
+            var srvNetAuthProfile = domain.amtmanager['802.1x'];
+            var wiredMatch = 0;
             if ((srvNetAuthProfile === false) && (devNetAuthProfile != null)) {
                 // Remove the 802.1x profile
-                match = false;
+                wiredMatch = 1;
             } else if ((srvNetAuthProfile != null) && (devNetAuthProfile == null)) {
                 // Device has no 802.1x, add it
-                match = false;
+                wiredMatch = 2;
             } else if ((typeof srvNetAuthProfile == 'object') && (devNetAuthProfile != null)) {
                 // Check if the existing 802.1x profile look good
-                if (devNetAuthProfile.AuthenticationProtocol != srvNetAuthProfile.authenticationprotocol) { match = false; }
-                if (devNetAuthProfile.ServerCertificateName != srvNetAuthProfile.servercertificatename) { match = false; }
-                if (devNetAuthProfile.ServerCertificateNameComparison != srvNetAuthProfile.servercertificatenamecomparison) { match = false; }
-                if (devNetAuthProfile.ActiveInS0 != srvNetAuthProfile.availableins0) { match = false; }
+                if (devNetAuthProfile.AuthenticationProtocol != srvNetAuthProfile.authenticationprotocol) { wiredMatch = 2; }
+                if (devNetAuthProfile.ServerCertificateName != srvNetAuthProfile.servercertificatename) { wiredMatch = 2; }
+                if (devNetAuthProfile.ServerCertificateNameComparison != srvNetAuthProfile.servercertificatenamecomparison) { wiredMatch = 2; }
+                if (devNetAuthProfile.ActiveInS0 != srvNetAuthProfile.availableins0) { wiredMatch = 2; }
                 if (typeof srvNetAuthProfile.satellitecredentials != 'string') {
                     // Credentials for this profile are in the config file
-                    if (devNetAuthProfile.RoamingIdentity != srvNetAuthProfile.roamingidentity) { match = false; }
-                    if (devNetAuthProfile.Username != srvNetAuthProfile.username) { match = false; }
-                    if (devNetAuthProfile.Domain != srvNetAuthProfile.domain) { match = false; }
+                    if (devNetAuthProfile.RoamingIdentity != srvNetAuthProfile.roamingidentity) { wiredMatch = 2; }
+                    if (devNetAuthProfile.Username != srvNetAuthProfile.username) { wiredMatch = 2; }
+                    if (devNetAuthProfile.Domain != srvNetAuthProfile.domain) { wiredMatch = 2; }
                 }
             }
+            if (wiredMatch == 2) { newNetAuthProfileRequested = true; }
 
-            // If there is a mismatch, set the new 802.1x profile
-            if (match == false) {
-                if ((typeof srvNetAuthProfile.satellitecredentials == 'string') && ((dev.netAuthCredentials == null) || (dev.netAuthCredentials[srvNetAuthProfile.authenticationprotocol] == null))) {
-                    // Credentials for this profile are provided using MeshCentral Satellite
+            // If we have server WIFI profiles to sync, do this now.
+            if (parent.config.domains[dev.domainid].amtmanager.wifiprofiles != null) {
+                // The server and device WIFI profiles, find profiles to add and remove
+                const sevProfiles = parent.config.domains[dev.domainid].amtmanager.wifiprofiles;
+                const devProfiles = responses['CIM_WiFiEndpointSettings'].responses;
+                const netAuthProfiles = responses['CIM_IEEE8021xSettings'].responses;
+                var profilesToAdd = [], profilesToRemove = [];
+                var profilesToAdd2 = [], profilesToRemove2 = [];
+
+                // Look at the WIFI profiles in the device
+                for (var i in sevProfiles) {
+                    var sevProfile = sevProfiles[i], wirelessMatch = false;
+                    for (var j in devProfiles) {
+                        var devProfile = devProfiles[j];
+                        if (
+                            (devProfile.ElementName == sevProfile.name) &&
+                            (devProfile.SSID == sevProfile.ssid) &&
+                            (devProfile.AuthenticationMethod == sevProfile.authentication) &&
+                            (devProfile.EncryptionMethod == sevProfile.encryption) &&
+                            (devProfile.BSSType == sevProfile.type)
+                        ) {
+                            if (([5, 7, 32768, 32769].indexOf(sevProfile.authentication)) >= 0) {
+                                // This is a 802.1x profile, do some extra matching.
+                                // Start by finding the 802.1x profile for this WIFI profile
+                                var netAuthProfile = null, netAuthMatch = false;
+                                for (var k in netAuthProfiles) { if (netAuthProfiles[k].ElementName == devProfile.ElementName) { netAuthProfile = netAuthProfiles[k]; } }
+                                if (netAuthProfile != null) {
+                                    netAuthMatch = true;
+                                    if (srvNetAuthProfile.authenticationprotocol != netAuthProfile['AuthenticationProtocol']) { netAuthMatch = false; }
+                                    if (srvNetAuthProfile.roamingidentity != netAuthProfile['RoamingIdentity']) { netAuthMatch = false; }
+                                    if (srvNetAuthProfile.servercertificatename != netAuthProfile['ServerCertificateName']) { netAuthMatch = false; }
+                                    if (srvNetAuthProfile.servercertificatenamecomparison != netAuthProfile['ServerCertificateNameComparison']) { netAuthMatch = false; }
+                                    if (typeof srvNetAuthProfile.satellitecredentials != 'string') {
+                                        // Credentials for this profile are in the config file
+                                        if (srvNetAuthProfile.username != netAuthProfile['Username']) { netAuthMatch = false; }
+                                        if (srvNetAuthProfile.domain != netAuthProfile['Domain']) { netAuthMatch = false; }
+                                    }
+                                }
+                                if (netAuthMatch == true) {
+                                    // The 802.1x profile seems to match what we want, keep it.
+                                    wirelessMatch = true;
+                                    devProfile.match = true;
+                                }
+                            } else {
+                                // Not a 802.1x profile, looks fine, keep it.
+                                wirelessMatch = true;
+                                devProfile.match = true;
+                            }
+                        }
+                    }
+                    if (wirelessMatch == false) { profilesToAdd.push(sevProfile); } // Add non-matching profile
+                    if ((wirelessMatch == false) || (([5, 7, 32768, 32769].indexOf(sevProfile.authentication)) >= 0)) { profilesToAdd2.push(sevProfile); } // Add non-matching profile or 802.1x profile
+                }
+                for (var j in devProfiles) {
+                    var devProfile = devProfiles[j];
+                    if (devProfile.InstanceID != null) {
+                        if (devProfile.match !== true) { profilesToRemove.push(devProfile); } // Missing profile to remove
+                        if ((devProfile.match !== true) || (([5, 7, 32768, 32769].indexOf(devProfile.AuthenticationMethod)) >= 0)) { profilesToRemove2.push(devProfile); } // Missing profile to remove or 802.1x profile
+                    }
+                }
+
+                // Compute what priorities are allowed
+                var prioritiesInUse = [];
+                for (var j in devProfiles) { if (devProfiles[j].match == true) { prioritiesInUse.push(devProfiles[j].Priority); } }
+
+                // Check if any other WIFI profiles require a 802.1x request to MeshCentral Satellite
+                if (dev.netAuthCredentials == null) {
+                    for (var i in profilesToAdd) { if (([5, 7, 32768, 32769].indexOf(profilesToAdd[i].authentication)) >= 0) { newNetAuthProfileRequested = true; } }
+                }
+
+                // If we need to request a new 802.1x profile, remove all existing 802.1x WIFI profiles and re-add later.
+                if (newNetAuthProfileRequested) {
+                    profilesToAdd = profilesToAdd2; // Just use the second list we built for this purpose.
+                    profilesToRemove = profilesToRemove2;
+                }
+
+                // Notify of WIFI profile changes
+                if ((profilesToAdd.length > 0) || (profilesToRemove.length > 0)) { dev.consoleMsg("Changing WIFI profiles, adding " + profilesToAdd.length + ", removing " + profilesToRemove.length + "."); }
+
+                // Remove any extra WIFI profiles
+                for (var i in profilesToRemove) {
+                    dev.amtstack.Delete('CIM_WiFiEndpointSettings', { InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + profilesToRemove[i].ElementName }, function (stack, name, responses, status) { }, 0, 1);
+                }
+
+                if (newNetAuthProfileRequested) {
+                    // Credentials for this 802.1x profile are provided using MeshCentral Satellite
                     // Send a message to Satellite requesting a 802.1x profile for this device
                     dev.consoleMsg("Requesting 802.1x credentials for " + netAuthStrings[srvNetAuthProfile.authenticationprotocol] + " from MeshCentral Satellite...");
-                    dev.netAuthSatReqId = 'wired-' + Buffer.from(parent.crypto.randomBytes(16), 'binary').toString('base64'); // Generate a crypto-secure request id.
-                    dev.netAuthSatReqDev = devNetAuthProfile;
-                    dev.netAuthSatReqSrv = srvNetAuthProfile;
+                    dev.netAuthSatReqId = Buffer.from(parent.crypto.randomBytes(16), 'binary').toString('base64'); // Generate a crypto-secure request id.
+                    dev.netAuthSatReqData = { domain: domain, devNetAuthProfile: devNetAuthProfile, srvNetAuthProfile: srvNetAuthProfile, profilesToAdd: profilesToAdd, prioritiesInUse: prioritiesInUse, responses: responses }
                     parent.DispatchEvent([srvNetAuthProfile.satellitecredentials], obj, { action: 'satellite', satelliteFlags: 2, nodeid: dev.nodeid, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: srvNetAuthProfile.authenticationprotocol, devname: dev.name });
 
                     // Set a response timeout
@@ -1390,8 +1450,7 @@ module.exports.CreateAmtManager = function (parent) {
                         if (isAmtDeviceValid(netAuthTimeout.dev) == false) return; // Device no longer exists, ignore this request.
                         if (dev.netAuthSatReqId != null) {
                             delete netAuthTimeout.dev.netAuthSatReqId;
-                            delete netAuthTimeout.dev.netAuthSatReqDev;
-                            delete netAuthTimeout.dev.netAuthSatReqSrv;
+                            delete netAuthTimeout.dev.netAuthSatReqData;
                             netAuthTimeout.dev.consoleMsg("MeshCentral Satellite did not respond in time, 802.1x profile will not be set.");
                             devTaskCompleted(netAuthTimeout.dev);
                         }
@@ -1400,18 +1459,22 @@ module.exports.CreateAmtManager = function (parent) {
                     dev.netAuthSatReqTimer = setTimeout(netAuthTimeoutFunc, 10000);
                     return;
                 } else {
-                    // Set the 802.1x wired profile in the device
-                    attempt8021xSyncEx(dev, devNetAuthProfile, srvNetAuthProfile);
+                    // No need to call MeshCentral Satellite for a 802.1x profile, so configure everything now.
+                    attemptWifiSyncEx(dev, { domain: domain, devNetAuthProfile: devNetAuthProfile, srvNetAuthProfile: srvNetAuthProfile, profilesToAdd: profilesToAdd, prioritiesInUse: prioritiesInUse, responses: responses });
                 }
-            } else {
-                // Nothing to do
-                devTaskCompleted(dev);
             }
         });
     }
 
     // Set the 802.1x wired profile
-    function attempt8021xSyncEx(dev, devNetAuthProfile, srvNetAuthProfile) {
+    function attempt8021xSyncEx(dev, devNetAuthData) {
+        // Unpack
+        const domain = devNetAuthData.domain;
+        const devNetAuthProfile = devNetAuthData.devNetAuthProfile;
+        const srvNetAuthProfile = devNetAuthData.srvNetAuthProfile;
+        const profilesToAdd = devNetAuthData.profilesToAdd;
+        const responses = devNetAuthData.responses;
+
         var netAuthProfile = Clone(devNetAuthProfile);
         netAuthProfile['Enabled'] = ((srvNetAuthProfile != null) && (typeof srvNetAuthProfile == 'object'));
         if (netAuthProfile['Enabled']) {
@@ -1440,8 +1503,8 @@ module.exports.CreateAmtManager = function (parent) {
             netAuthProfile['PxeTimeout'] = (typeof srvNetAuthProfile.pxetimeoutinseconds == 'number') ? srvNetAuthProfile.pxetimeoutinseconds : 120;
 
             // If we have a MeshCentral Satellite profile, use that
-            if ((dev.netAuthCredentials != null) && (dev.netAuthCredentials[srvNetAuthProfile.authenticationprotocol] != null)) {
-                const srvNetAuthProfile2 = dev.netAuthCredentials[srvNetAuthProfile.authenticationprotocol];
+            if (dev.netAuthCredentials != null) {
+                const srvNetAuthProfile2 = dev.netAuthCredentials;
                 if (srvNetAuthProfile2.username && (srvNetAuthProfile2.username != '')) { netAuthProfile['Username'] = srvNetAuthProfile2.username; }
                 if (srvNetAuthProfile2.password && (srvNetAuthProfile2.password != '')) { netAuthProfile['Password'] = srvNetAuthProfile2.password; }
                 if (srvNetAuthProfile2.domain && (srvNetAuthProfile2.domain != '')) { netAuthProfile['Domain'] = srvNetAuthProfile2.domain; }
@@ -1451,171 +1514,100 @@ module.exports.CreateAmtManager = function (parent) {
             const dev = stack.dev;
             if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
             if (status == 200) { dev.consoleMsg("802.1x wired profile set."); }
-            devTaskCompleted(dev);
+            attemptWifiSyncEx(dev, devNetAuthData);
         });
     }
 
-    //
-    // Intel AMT WIFI
-    //
+    function attemptWifiSyncEx(dev, devNetAuthData) {
+        // Unpack
+        var domain = devNetAuthData.domain;
+        var devNetAuthProfile = devNetAuthData.devNetAuthProfile;
+        var srvNetAuthProfile = devNetAuthData.srvNetAuthProfile;
+        var profilesToAdd = devNetAuthData.profilesToAdd;
+        var responses = devNetAuthData.responses;
+        var prioritiesInUse = devNetAuthData.prioritiesInUse;
 
-    // This method will sync the WIFI profiles from the device and the server, but does not care about profile priority.
-    // We may want to work on an alternate version that does do priority if requested.
-    function attemptWifiSync(dev, func) {
-        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        if (dev.policy.amtPolicy == 0) { func(dev); return; } // If there is no Intel AMT policy, skip this operation.
-        if (dev.connType != 2) { func(dev); return; } // Only configure wireless over a CIRA-LMS link
-        //if (parent.config.domains[dev.domainid].amtmanager.wifiprofiles == null) { func(dev); return; } // No server WIFI profiles set, skip this.
-        if ((dev.mpsConnection.tag.meiState == null) || (dev.mpsConnection.tag.meiState.net1 == null)) { func(dev); return; } // No WIFI on this device, skip this.
+        // Add missing WIFI profiles
+        var nextPriority = 0;
+        for (var i in profilesToAdd) {
+            while (prioritiesInUse.indexOf(nextPriority) >= 0) { nextPriority++; } // Figure out the next available priority slot.
+            var profileToAdd = profilesToAdd[i];
+            const wifiep = {
+                __parameterType: 'reference',
+                __resourceUri: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpoint',
+                Name: 'WiFi Endpoint 0'
+            };
+            const wifiepsettinginput = {
+                __parameterType: 'instance',
+                __namespace: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings',
+                ElementName: profileToAdd.name,
+                InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + profileToAdd.name,
+                AuthenticationMethod: profileToAdd.authentication,
+                EncryptionMethod: profileToAdd.encryption,
+                SSID: profileToAdd.ssid,
+                Priority: nextPriority,
+            }
+            var netAuthProfile, netAuthSettingsClientCert, netAuthSettingsServerCaCert;
+            if (([4, 6].indexOf(profileToAdd.authentication)) >= 0) { wifiepsettinginput['PSKPassPhrase'] = profileToAdd.password; }
+            if (([5, 7, 32768, 32769].indexOf(profileToAdd.authentication)) >= 0) {
+                netAuthProfile = {
+                    '__parameterType': 'instance',
+                    '__namespace': dev.amtstack.CompleteName('CIM_IEEE8021xSettings'),
+                    'ElementName': '8021x-' + profileToAdd.name,
+                    'InstanceID': '8021x-' + profileToAdd.name,
+                    'ActiveInS0': (domain.amtmanager['802.1x'].availableins0 !== false),
+                    'AuthenticationProtocol': domain.amtmanager['802.1x'].authenticationprotocol
+                };
+                if (domain.amtmanager['802.1x'].roamingidentity) { netAuthProfile['RoamingIdentity'] = domain.amtmanager['802.1x'].roamingidentity; }
+                if (domain.amtmanager['802.1x'].servercertificatename) { netAuthProfile['ServerCertificateName'] = domain.amtmanager['802.1x'].servercertificatename; netAuthProfile['ServerCertificateNameComparison'] = profileToAdd['802.1x'].servercertificatenamecomparison; }
+                if (domain.amtmanager['802.1x'].username) { netAuthProfile['Username'] = domain.amtmanager['802.1x'].username; }
+                if (domain.amtmanager['802.1x'].password) { netAuthProfile['Password'] = domain.amtmanager['802.1x'].password; }
+                if (domain.amtmanager['802.1x'].domain) { netAuthProfile['Domain'] = domain.amtmanager['802.1x'].domain; }
+                if (domain.amtmanager['802.1x'].authenticationprotocol > 3) { domain.amtmanager['ProtectedAccessCredential'] = profileToAdd['802.1x'].protectedaccesscredentialhex; netAuthProfile['PACPassword'] = profileToAdd['802.1x'].pacpassword; }
+                //if (parseInt(Q('idx_d12clientcert').value) >= 0) { netAuthSettingsClientCert = '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">' + xxCertificates[parseInt(Q('idx_d12clientcert').value)]['InstanceID'] + '</Selector></SelectorSet></ReferenceParameters>'; }
+                //if (parseInt(Q('idx_d12servercert').value) >= 0) { netAuthSettingsServerCaCert = '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">' + xxCertificates[parseInt(Q('idx_d12servercert').value)]['InstanceID'] + '</Selector></SelectorSet></ReferenceParameters>'; }
 
-        // Get the current list of WIFI profiles and wireless interface state
-        dev.taskCount = 1;
-        dev.taskCompleted = func;
-        dev.amtstack.BatchEnum(null, ['CIM_WiFiEndpointSettings', '*CIM_WiFiPort', '*AMT_WiFiPortConfigurationService', 'CIM_IEEE8021xSettings'], function (stack, name, responses, status) {
-            const dev = stack.dev;
-            if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-            if (status != 200) { devTaskCompleted(dev); return; } // We can't get wireless settings, ignore and carry on.
-
-            // If we have server WIFI profiles to sync, do this now.
-            if (parent.config.domains[dev.domainid].amtmanager.wifiprofiles != null) {
-                // The server and device WIFI profiles, find profiles to add and remove
-                const sevProfiles = parent.config.domains[dev.domainid].amtmanager.wifiprofiles;
-                const devProfiles = responses['CIM_WiFiEndpointSettings'].responses;
-                const netAuthProfiles = responses['CIM_IEEE8021xSettings'].responses;
-                var profilesToAdd = [], profilesToRemove = [];
-
-                // Look at the WIFI profiles in the device
-                for (var i in sevProfiles) {
-                    var sevProfile = sevProfiles[i], match = false;
-                    for (var j in devProfiles) {
-                        var devProfile = devProfiles[j];
-                        if (
-                            (devProfile.ElementName == sevProfile.name) &&
-                            (devProfile.SSID == sevProfile.ssid) &&
-                            (devProfile.AuthenticationMethod == sevProfile.authentication) &&
-                            (devProfile.EncryptionMethod == sevProfile.encryption) &&
-                            (devProfile.BSSType == sevProfile.type)
-                        ) {
-                            if (([5, 7, 32768, 32769].indexOf(sevProfile.authentication)) >= 0) {
-                                // This is a 802.1x profile, do some extra matching.
-                                // Start by finding the 802.1x profile for this WIFI profile
-                                var netAuthProfile = null, netAuthMatch = false;
-                                for (var k in netAuthProfiles) { if (netAuthProfiles[k].ElementName == devProfile.ElementName) { netAuthProfile = netAuthProfiles[k]; } }
-                                if (netAuthProfile != null) {
-                                    netAuthMatch = true;
-                                    if (sevProfile['802.1x'].authenticationprotocol != netAuthProfile['AuthenticationProtocol']) { netAuthMatch = false; }
-                                    if (sevProfile['802.1x'].roamingidentity != netAuthProfile['RoamingIdentity']) { netAuthMatch = false; }
-                                    if (sevProfile['802.1x'].servercertificatename != netAuthProfile['ServerCertificateName']) { netAuthMatch = false; }
-                                    if (sevProfile['802.1x'].servercertificatenamecomparison != netAuthProfile['ServerCertificateNameComparison']) { netAuthMatch = false; }
-                                    if (sevProfile['802.1x'].username != netAuthProfile['Username']) { netAuthMatch = false; }
-                                    if (sevProfile['802.1x'].domain != netAuthProfile['Domain']) { netAuthMatch = false; }
-                                }
-                                if (netAuthMatch == true) {
-                                    // The 802.1x profile seems to match what we want
-                                    match = true;
-                                    devProfile.match = true;
-                                }
-                            } else {
-                                // Not a 802.1x profile, match now.
-                                match = true;
-                                devProfile.match = true;
-                            }
-                        }
-                    }
-                    if (match == false) { profilesToAdd.push(sevProfile); }
-                }
-                for (var j in devProfiles) {
-                    var devProfile = devProfiles[j];
-                    if ((devProfile.match !== true) && (devProfile.InstanceID != null)) { profilesToRemove.push(devProfile); }
-                }
-
-                // Compute what priorities are allowed
-                var prioritiesInUse = [];
-                for (var j in devProfiles) { if (devProfiles[j].match == true) { prioritiesInUse.push(devProfiles[j].Priority); } }
-
-                // Notify of WIFI profile changes
-                if ((profilesToAdd.length > 0) || (profilesToRemove.length > 0)) { dev.consoleMsg("Changing WIFI profiles, adding " + profilesToAdd.length + ", removing " + profilesToRemove.length + "."); }
-
-                // Remove any extra WIFI profiles
-                for (var i in profilesToRemove) {
-                    dev.amtstack.Delete('CIM_WiFiEndpointSettings', { InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + profilesToRemove[i].ElementName }, function (stack, name, responses, status) { }, 0, 1);
-                }
-
-                // Add missing WIFI profiles
-                var nextPriority = 0;
-                for (var i in profilesToAdd) {
-                    while (prioritiesInUse.indexOf(nextPriority) >= 0) { nextPriority++; } // Figure out the next available priority slot.
-                    var profileToAdd = profilesToAdd[i];
-                    const wifiep = {
-                        __parameterType: 'reference',
-                        __resourceUri: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpoint',
-                        Name: 'WiFi Endpoint 0'
-                    };
-                    const wifiepsettinginput = {
-                        __parameterType: 'instance',
-                        __namespace: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings',
-                        ElementName: profileToAdd.name,
-                        InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + profileToAdd.name,
-                        AuthenticationMethod: profileToAdd.authentication,
-                        EncryptionMethod: profileToAdd.encryption,
-                        SSID: profileToAdd.ssid,
-                        Priority: nextPriority,
-                    }
-                    var netAuthProfile, netAuthSettingsClientCert, netAuthSettingsServerCaCert;
-                    if (([4, 6].indexOf(profileToAdd.authentication)) >= 0) { wifiepsettinginput['PSKPassPhrase'] = profileToAdd.password; }
-                    if (([5, 7, 32768, 32769].indexOf(profileToAdd.authentication)) >= 0) {
-                        netAuthProfile = {
-                            '__parameterType': 'instance',
-                            '__namespace': dev.amtstack.CompleteName('CIM_IEEE8021xSettings'),
-                            'ElementName': '8021x-' + profileToAdd.name,
-                            'InstanceID': '8021x-' + profileToAdd.name,
-                            'ActiveInS0': (profileToAdd['802.1x'].availableins0 !== false),
-                            'AuthenticationProtocol': profileToAdd['802.1x'].authenticationprotocol
-                        };
-                        if (profileToAdd['802.1x'].roamingidentity) { netAuthProfile['RoamingIdentity'] = profileToAdd['802.1x'].roamingidentity; }
-                        if (profileToAdd['802.1x'].servercertificatename) { netAuthProfile['ServerCertificateName'] = profileToAdd['802.1x'].servercertificatename; netAuthProfile['ServerCertificateNameComparison'] = profileToAdd['802.1x'].servercertificatenamecomparison; }
-                        if (profileToAdd['802.1x'].username) { netAuthProfile['Username'] = profileToAdd['802.1x'].username; }
-                        if (profileToAdd['802.1x'].password) { netAuthProfile['Password'] = profileToAdd['802.1x'].password; }
-                        if (profileToAdd['802.1x'].domain) { netAuthProfile['Domain'] = profileToAdd['802.1x'].domain; }
-                        if (profileToAdd['802.1x'].authenticationprotocol > 3) { netAuthProfile['ProtectedAccessCredential'] = profileToAdd['802.1x'].protectedaccesscredentialhex; netAuthProfile['PACPassword'] = profileToAdd['802.1x'].pacpassword; }
-                        //if (parseInt(Q('idx_d12clientcert').value) >= 0) { netAuthSettingsClientCert = '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">' + xxCertificates[parseInt(Q('idx_d12clientcert').value)]['InstanceID'] + '</Selector></SelectorSet></ReferenceParameters>'; }
-                        //if (parseInt(Q('idx_d12servercert').value) >= 0) { netAuthSettingsServerCaCert = '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">' + xxCertificates[parseInt(Q('idx_d12servercert').value)]['InstanceID'] + '</Selector></SelectorSet></ReferenceParameters>'; }
-                    }
-                    prioritiesInUse.push(nextPriority); // Occupy the priority slot and add the WIFI profile.
-                    dev.amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, netAuthProfile, netAuthSettingsClientCert, netAuthSettingsServerCaCert, function (stack, name, responses, status) { });
+                // If we have credentials from MeshCentral Satelite, use that
+                if (dev.netAuthCredentials != null) {
+                    const srvNetAuthProfile2 = dev.netAuthCredentials;
+                    if (srvNetAuthProfile2.username && (srvNetAuthProfile2.username != '')) { netAuthProfile['Username'] = srvNetAuthProfile2.username; }
+                    if (srvNetAuthProfile2.password && (srvNetAuthProfile2.password != '')) { netAuthProfile['Password'] = srvNetAuthProfile2.password; }
+                    if (srvNetAuthProfile2.domain && (srvNetAuthProfile2.domain != '')) { netAuthProfile['Domain'] = srvNetAuthProfile2.domain; }
                 }
             }
+            prioritiesInUse.push(nextPriority); // Occupy the priority slot and add the WIFI profile.
+            dev.amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, netAuthProfile, netAuthSettingsClientCert, netAuthSettingsServerCaCert, function (stack, name, responses, status) { });
+        }
 
-            // Check if local WIFI profile sync is enabled, if not, enabled it.
-            if ((responses['AMT_WiFiPortConfigurationService'] != null) && (responses['AMT_WiFiPortConfigurationService'].response != null) && (responses['AMT_WiFiPortConfigurationService'].response['localProfileSynchronizationEnabled'] == 0)) {
-                responses['AMT_WiFiPortConfigurationService'].response['localProfileSynchronizationEnabled'] = 1;
-                dev.amtstack.Put('AMT_WiFiPortConfigurationService', responses['AMT_WiFiPortConfigurationService'].response, function (stack, name, response, status) {
-                    if (status != 200) { dev.consoleMsg("Unable to enable local WIFI profile sync."); } else { dev.consoleMsg("Enabled local WIFI profile sync."); }
+        // Check if local WIFI profile sync is enabled, if not, enabled it.
+        if ((responses['AMT_WiFiPortConfigurationService'] != null) && (responses['AMT_WiFiPortConfigurationService'].response != null) && (responses['AMT_WiFiPortConfigurationService'].response['localProfileSynchronizationEnabled'] == 0)) {
+            responses['AMT_WiFiPortConfigurationService'].response['localProfileSynchronizationEnabled'] = 1;
+            dev.amtstack.Put('AMT_WiFiPortConfigurationService', responses['AMT_WiFiPortConfigurationService'].response, function (stack, name, response, status) {
+                if (status != 200) { dev.consoleMsg("Unable to enable local WIFI profile sync."); } else { dev.consoleMsg("Enabled local WIFI profile sync."); }
+            });
+        }
+
+        // Change the WIFI state if needed. Right now, we always enable it.
+        // WifiState = { 3: "Disabled", 32768: "Enabled in S0", 32769: "Enabled in S0, Sx/AC" };
+        var wifiState = 32769; // For now, always enable WIFI
+        if (responses['CIM_WiFiPort'].responses.Body.EnabledState != 32769) {
+            if (wifiState == 3) {
+                dev.amtstack.CIM_WiFiPort_RequestStateChange(wifiState, null, function (stack, name, responses, status) {
+                    const dev = stack.dev;
+                    if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                    if (status == 200) { dev.consoleMsg("Disabled WIFI."); }
+                });
+            } else {
+                dev.amtstack.CIM_WiFiPort_RequestStateChange(wifiState, null, function (stack, name, responses, status) {
+                    const dev = stack.dev;
+                    if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                    if (status == 200) { dev.consoleMsg("Enabled WIFI."); }
                 });
             }
+        }
 
-            // Change the WIFI state if needed. Right now, we always enable it.
-            // WifiState = { 3: "Disabled", 32768: "Enabled in S0", 32769: "Enabled in S0, Sx/AC" };
-            var wifiState = 32769; // For now, always enable WIFI
-            if (responses['CIM_WiFiPort'].responses.Body.EnabledState != 32769) {
-                if (wifiState == 3) {
-                    dev.amtstack.CIM_WiFiPort_RequestStateChange(wifiState, null, function (stack, name, responses, status) {
-                        const dev = stack.dev;
-                        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-                        if (status == 200) { dev.consoleMsg("Disabled WIFI."); }
-                    });
-                } else {
-                    dev.amtstack.CIM_WiFiPort_RequestStateChange(wifiState, null, function (stack, name, responses, status) {
-                        const dev = stack.dev;
-                        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-                        if (status == 200) { dev.consoleMsg("Enabled WIFI."); }
-                    });
-                }
-            }
-
-            // Done
-            devTaskCompleted(dev);
-        });
+        // Done
+        devTaskCompleted(dev);
     }
 
 
