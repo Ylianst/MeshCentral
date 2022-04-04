@@ -295,10 +295,10 @@ function run(argv) {
             console.log('  --pass [password]      The Intel AMT login password.');
             console.log('\r\nOptional arguments:\r\n');
             console.log('  --reset, --poweron, --poweroff, --powercycle, --sleep, --hibernate');
-            console.log('  --user [username]            The Intel AMT login username, admin is default.');
-            console.log('  --tls                        Specifies that TLS must be used.');
-            console.log('  --bootdevice [pxe|hdd|cd]    Specifies the boot device to use after reset, poweron or powercycle.');
-            console.log('  --bootindex [number]         Specifies the index of boot device to use.');
+            console.log('  --user [username]                                    The Intel AMT login username, admin is default.');
+            console.log('  --tls                                                Specifies that TLS must be used.');
+            console.log('  --bootdevice [pxe|hdd|cd|ider-floppy|ider-cdrom]     Specifies the boot device to use after reset, poweron or powercycle.');
+            console.log('  --bootindex [number]                                 Specifies the index of boot device to use.');
         } else if (action == 'amtnetwork') {
             console.log('AmtNetwork is used to get/set Intel AMT network interface configuration. Example usage:\r\n\r\n  meshcmd amtnetwork --host 1.2.3.4 --user admin --pass mypassword --dhcp');
             console.log('\r\nRequired arguments:\r\n');
@@ -842,13 +842,20 @@ function run(argv) {
         //if (settings.poweraction == 0) { console.log('No power action, specify --poweron, --sleep, --powercycle, --poweroff, --hibernate, --reset.'); exit(1); return; }
         // Accepted option for boot device are: pxe, hdd, cd 
         var bootdevices = ['pxe','hdd','cd'];       
+        var ider_bootdevices = ['ider-floppy', 'ider-cdrom']
         if (args.bootdevice) {
             if (bootdevices.indexOf(args.bootdevice.toLowerCase())>=0) {
                 settings.bootdevice = args.bootdevice
                 // Set bootindex to 0 by default, unless overriden
                 settings.bootindex = 0
+                settings.ider_bootindex = 0 
+                settings.ider_boot = false;
+            } else if (ider_bootdevices.indexOf(args.bootdevice.toLowerCase())>=0) {
+                settings.bootindex = 0
+                settings.ider_bootindex = ider_bootdevices.indexOf(args.bootdevice.toLowerCase());
+                settings.ider_boot = true;
             } else {
-                console.log('Supported boot devices are pxe, hdd, cd'); exit(1); return; 
+                console.log('Supported boot devices are pxe, hdd, cd, ider-floppy, ider-cdrom'); exit(1); return; 
             }
         }
         // boot index for cd and hdd
@@ -2945,7 +2952,7 @@ function performAmtPowerAction() {
     amtstack = new amt(wsstack);
     if (settings.poweraction != 0) {
         // Check if there is bootdevice and the command is either poweron, powercycle or reset
-        if (settings.bootdevice && [2,5,10].indexOf(settings.poweraction)>=0) {
+        if ((settings.bootdevice || settings.ider_boot) && [2,5,10].indexOf(settings.poweraction)>=0) {
             // Change boot order
             amtstack.Get('AMT_BootSettingData', powerActionResponse1, 0, 1);
         } else {
@@ -2972,14 +2979,14 @@ function powerActionResponse1(stack, name, response, status) {
     }
     r['FirmwareVerbosity'] = 0;
     r['ForcedProgressEvents'] = false;
-    r['IDERBootDevice'] = 0;
+    r['IDERBootDevice'] = settings.ider_bootindex;
     r['LockKeyboard'] = false;
     r['LockPowerButton'] = false;
     r['LockResetButton'] = false;
     r['LockSleepButton'] = false;
     r['ReflashBIOS'] = false;
-    r['UseIDER'] = false;
-    r['UseSOL'] = false;//
+    r['UseIDER'] = settings.ider_boot;
+    r['UseSOL'] = settings.ider_boot
     r['UseSafeMode'] = false;
     r['UserPasswordBypass'] = false;
     if (r['SecureErase'] != null) {
@@ -3014,7 +3021,7 @@ function powerActionResponse3(stack, name, response, status) {
     if (status != 200) { console.log('SetBootConfigRole failed.'); exit(1); return; }
     var bootsources = { 'pxe' : 'Force PXE Boot', 'hdd' : 'Force Hard-drive Boot', 'cd' : 'Force CD/DVD Boot'};
     var cbparam='<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_BootSourceSetting</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">Intel(r) AMT: ' + bootsources[settings.bootdevice] + '</Selector></SelectorSet></ReferenceParameters>';
-    if (!settings.bootdevice) { cbparam=null;}
+    if (!(settings.bootdevice in bootsources)) { cbparam=null;}
     amtstack.CIM_BootConfigSetting_ChangeBootOrder(cbparam, function(st, nm, resp, sts) {
         if (resp.Body['ReturnValue'] != 0) { console.log('(2) Change Boot Order returns '+ resp.Body.ReturnValueStr); exit(1); return; }
         amtstack.RequestPowerStateChange(settings.poweraction, performAmtPowerActionEx);
