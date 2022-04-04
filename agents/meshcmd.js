@@ -2302,7 +2302,10 @@ function performIder() {
         ider.m.cdrom = scdrom;
         ider.m.iderStart = 1; // OnReboot = 0, Graceful = 1, Now = 2
         ider.m.debug = (settings.debuglevel > 0);
-        if (settings.timeout > 0) { ider.m.sectorStats = iderSectorStats; }
+        if (settings.timeout > 0) {
+            ider.m.sectorStats = iderSectorStats;
+            ider.m.rx_timeout = settings.timeout;
+        }
         //ider.digestRealmMatch = wsstack.comm.digestRealm;
         //ider.tlsv1only = amtstack.wsman.comm.tlsv1only;
         ider.Start(settings.hostname, (settings.tls == true) ? 16995 : 16994, settings.username ? 'admin' : settings.username, settings.password, settings.tls);
