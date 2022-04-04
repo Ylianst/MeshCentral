@@ -2960,11 +2960,8 @@
     {
       "en": "2nd Factor",
       "nl": "2e factor",
-<<<<<<< HEAD
       "pt-br": "2ª Etapa",
-=======
-	  "pl": "dwuetapowe",
->>>>>>> 4f525012abd58479672d151bc0ab06c6a5645257
+      "pl": "dwuetapowe",
       "xloc": [
         "default.handlebars->39->2754"
       ]
@@ -3837,13 +3834,9 @@
     {
       "en": "7 days",
       "nl": "7 dagen",
-<<<<<<< HEAD
       "pt-br": "7 dias",
-      "xloc": [
-=======
       "pl": "7 dni",
-	  "xloc": [
->>>>>>> 4f525012abd58479672d151bc0ab06c6a5645257
+      "xloc": [
         "default.handlebars->39->1720"
       ]
     },
@@ -23394,11 +23387,8 @@
     },
     {
       "en": "Email domain \\\"{0}\\\" is not allowed. Only ({1}) are allowed",
-<<<<<<< HEAD
       "pt-br": "O domínio de e-mail \\\"{0}\\\" não é permitido. Somente ({1}) são permitidos",
-=======
-	  "pl": "Domena email \\\"{0}\\\" jest niedozwolona. Tylko ({1}) jest dopuszczona",
->>>>>>> 4f525012abd58479672d151bc0ab06c6a5645257
+      "pl": "Domena email \\\"{0}\\\" jest niedozwolona. Tylko ({1}) jest dopuszczona",
       "xloc": [
         "default-mobile.handlebars->11->730",
         "default.handlebars->39->2837"
@@ -25488,11 +25478,8 @@
     {
       "en": "FIDO key",
       "nl": "FIDO sleutel",
-<<<<<<< HEAD
       "pt-br": "Chave FIDO",
-=======
-	  "pl": "Klucz FIDO",
->>>>>>> 4f525012abd58479672d151bc0ab06c6a5645257
+      "pl": "Klucz FIDO",
       "xloc": [
         "default.handlebars->39->2779"
       ]
@@ -28867,7 +28854,7 @@
     {
       "en": "Hardware OTP",
       "nl": "Hardware OTP",
-	  "pl": "Sprzętowe OTP",
+      "pl": "Sprzętowe OTP",
       "xloc": [
         "default.handlebars->39->2781"
       ]
@@ -36988,11 +36975,8 @@
     {
       "en": "Login Token",
       "nl": "Inlogtoken",
-<<<<<<< HEAD
       "pt-br": "Token de Login",
-=======
-	  "pl": "Token Logowania",
->>>>>>> 4f525012abd58479672d151bc0ab06c6a5645257
+      "pl": "Token Logowania",
       "xloc": [
         "default.handlebars->39->2785"
       ]
@@ -44302,11 +44286,8 @@
     {
       "en": "One-Time Password",
       "nl": "Eenmalig wachtwoord",
-<<<<<<< HEAD
       "pt-br": "One-Time Password (Senha de único acesso)",
-=======
-	  "pl": "Hasło Jednorazowe",
->>>>>>> 4f525012abd58479672d151bc0ab06c6a5645257
+      "pl": "Hasło Jednorazowe",
       "xloc": [
         "default.handlebars->39->2783"
       ]
@@ -48255,11 +48236,8 @@
     {
       "en": "Push Notification",
       "nl": "Push Notificatie",
-<<<<<<< HEAD
       "pt-br": "Notificação de Push",
-=======
-	  "pl": "Powiadomianie Push",
->>>>>>> 4f525012abd58479672d151bc0ab06c6a5645257
+      "pl": "Powiadomianie Push",
       "xloc": [
         "default.handlebars->39->2782"
       ]
@@ -49422,11 +49400,8 @@
     {
       "en": "Remember Device",
       "nl": "Onthoud apparaat",
-<<<<<<< HEAD
       "pt-br": "Lembrar dispositivo",
-=======
-	  "pl": "Pamiętaj Urządzenie",
->>>>>>> 4f525012abd58479672d151bc0ab06c6a5645257
+      "pl": "Pamiętaj Urządzenie",
       "xloc": [
         "default.handlebars->39->2784"
       ]
@@ -53233,11 +53208,8 @@
     {
       "en": "SMS message",
       "nl": "SMS bericht",
-<<<<<<< HEAD
       "pt-br": "Mensagem SMS",
-=======
-	  "pl": "Wiadomość SMS",
->>>>>>> 4f525012abd58479672d151bc0ab06c6a5645257
+      "pl": "Wiadomość SMS",
       "xloc": [
         "default.handlebars->39->2780"
       ]
@@ -57781,11 +57753,8 @@
     },
     {
       "en": "Single Sign-on",
-<<<<<<< HEAD
       "pt-br": "Single Sign-on (Login único)",
-=======
-	  "pl": "Pojedyncze Logowanie",
->>>>>>> 4f525012abd58479672d151bc0ab06c6a5645257
+      "pl": "Pojedyncze Logowanie",
       "xloc": [
         "default.handlebars->39->2787"
       ]
@@ -74652,7 +74621,7 @@
       "ru": "✖",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1->idx_deskFullBtn2",
-        "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->idx_termFullBtn2",
+        "default.handlebars->container->column_l->p12->termTable->1->1->0->1->1->idx_termFullBtn2",
         "default.handlebars->container->dialog->dialogHeader->id_dialogclose",
         "player.handlebars->p11->dialog->dialogHeader->id_dialogclose",
         "sharing.handlebars->dialog->dialogHeader->id_dialogclose",
