@@ -153,6 +153,7 @@ function run(argv) {
     if ((typeof args.scan) == 'string') { settings.scan = args.scan; }
     if ((typeof args.token) == 'string') { settings.token = args.token; }
     if ((typeof args.timeout) == 'string') { settings.timeout = parseInt(args.timeout); }
+    if ((typeof args.iderstart) == 'string') { settings.iderstart = args.iderstart; }
     if ((typeof args.uuidoutput) == 'string' || args.uuidoutput) { settings.uuidoutput = args.uuidoutput; }
     if ((typeof args.desc) == 'string') { settings.desc = args.desc; }
     if ((typeof args.dnssuffix) == 'string') { settings.dnssuffix = args.dnssuffix; }
@@ -357,13 +358,14 @@ function run(argv) {
         } else if (action == 'amtider') {
             console.log('AmtIDER will mount a local disk images to a remote Intel AMT computer. Example usage:\r\n\r\n  meshcmd amtider --host 1.2.3.4 --user admin --pass mypassword --tls --floppy disk.img --cdrom disk.iso');
             console.log('\r\nPossible arguments:\r\n');
-            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT.');
-            console.log('  --user [username]      The Intel AMT login username, admin is default.');
-            console.log('  --pass [password]      The Intel AMT login password.');
-            console.log('  --tls                  Specifies that TLS must be used.');
-            console.log('  --floppy [file]        Specifies .img file to be mounted as a flppy disk.');
-            console.log('  --cdrom [file]         Specifies .img file to be mounted as a CDROM disk.');
-            console.log('  --timeout [seconds]    Optional, disconnect after number of seconds without disk read.');
+            console.log('  --host [hostname]                      The IP address or DNS name of Intel AMT.');
+            console.log('  --user [username]                      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]                      The Intel AMT login password.');
+            console.log('  --tls                                  Specifies that TLS must be used.');
+            console.log('  --floppy [file]                        Specifies .img file to be mounted as a flppy disk.');
+            console.log('  --cdrom [file]                         Specifies .img file to be mounted as a CDROM disk.');
+            console.log('  --timeout [seconds]                    Optional, disconnect after number of seconds without disk read.');
+            console.log('  --iderstart [onreboot|graceful|now]    Optional, when to start the IDER session.');
         } else if (action == 'amtscan') {
             console.log('AmtSCAN will look for Intel AMT device on the network. Example usage:\r\n\r\n  meshcmd amtscan --scan 192.168.1.0/24');
             console.log('\r\Required arguments:\r\n');
@@ -862,7 +864,6 @@ function run(argv) {
         if (args.bootindex && args.bootindex >=0) {
             settings.bootindex = args.bootindex;
         }
-
         performAmtPowerAction();
     } else {
         console.log('Invalid "action" specified.'); exit(1); return;
@@ -2291,6 +2292,8 @@ iderIdleTimer = null;
 function performIder() {
     if ((settings.floppy != null) && fs.existsSync(settings.floppy) == false) { console.log("Unable to floppy image file: " + settings.floppy); exit(); return; }
     if ((settings.cdrom != null) && fs.existsSync(settings.cdrom) == false) { console.log("Unable to CDROM image file: " + settings.cdrom); exit(); return; }
+    var iderStarts = ['onreboot', 'graceful', 'now'];
+    if ((settings.iderstart != null) && iderStarts.indexOf(settings.iderstart) < 0) { console.log("Unknown iderstart option: " + settings.iderstart); exit(); return; }
     try {
         var sfloppy = null, scdrom = null;
         if (settings.floppy) { try { if (sfloppy = fs.statSync(settings.floppy)) { sfloppy.file = fs.openSync(settings.floppy, 'rbN'); } } catch (ex) { console.log(ex); exit(1); return; } }
@@ -2300,7 +2303,11 @@ function performIder() {
         ider.onStateChanged = onIderStateChange;
         ider.m.floppy = sfloppy;
         ider.m.cdrom = scdrom;
-        ider.m.iderStart = 1; // OnReboot = 0, Graceful = 1, Now = 2
+        if (settings.iderstart) {
+            ider.m.iderStart = iderStarts.indexOf(settings.iderstart);
+        } else {
+            ider.m.iderStart = 1; // OnReboot = 0, Graceful = 1, Now = 2
+        }
         ider.m.debug = (settings.debuglevel > 0);
         if (settings.timeout > 0) {
             ider.m.sectorStats = iderSectorStats;
