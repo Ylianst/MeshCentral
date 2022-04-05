@@ -208,6 +208,13 @@ module.exports.CreateAmtManager = function (parent) {
 
         // Remove all Intel AMT management sessions for this nodeid
         delete obj.amtDevices[nodeid];
+
+        // If a 802.1x profile is active with MeshCentral Satellite, notify Satellite of the removal
+        if (domain.amtmanager['802.1x'] != null) {
+            var reqId = Buffer.from(parent.crypto.randomBytes(16), 'binary').toString('base64'); // Generate a crypto-secure request id.
+            parent.DispatchEvent([domain.amtmanager['802.1x'].satellitecredentials], obj, { action: 'satellite', satelliteFlags: 2, nodeid: nodeid, icon: 0, domain: nodeid.split('/')[1], nolog: 1, reqid: reqId, authProtocol: -1 });
+        }
+
         return true;
     }
 
@@ -356,6 +363,7 @@ module.exports.CreateAmtManager = function (parent) {
                     for (var i in devices) {
                         var dev = devices[i];
                         dev.name = event.node.name;
+                        dev.icon = event.node.icon;
 
                         // If there are any changes, apply them.
                         if (event.node.intelamt != null) {
@@ -456,6 +464,7 @@ module.exports.CreateAmtManager = function (parent) {
 
             // Setup the monitored device
             dev.name = node.name;
+            dev.icon = node.icon;
             dev.meshid = node.meshid;
             dev.intelamt = node.intelamt;
 
@@ -1452,7 +1461,7 @@ module.exports.CreateAmtManager = function (parent) {
                     dev.consoleMsg("Requesting 802.1x credentials for " + netAuthStrings[srvNetAuthProfile.authenticationprotocol] + " from MeshCentral Satellite...");
                     dev.netAuthSatReqId = Buffer.from(parent.crypto.randomBytes(16), 'binary').toString('base64'); // Generate a crypto-secure request id.
                     dev.netAuthSatReqData = { domain: domain, wiredConfig: wiredConfig, wirelessConfig: wirelessConfig, devNetAuthProfile: devNetAuthProfile, srvNetAuthProfile: srvNetAuthProfile, profilesToAdd: profilesToAdd, prioritiesInUse: prioritiesInUse, responses: responses }
-                    parent.DispatchEvent([srvNetAuthProfile.satellitecredentials], obj, { action: 'satellite', satelliteFlags: 2, nodeid: dev.nodeid, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: srvNetAuthProfile.authenticationprotocol, devname: dev.name });
+                    parent.DispatchEvent([srvNetAuthProfile.satellitecredentials], obj, { action: 'satellite', satelliteFlags: 2, nodeid: dev.nodeid, icon: dev.icon, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: srvNetAuthProfile.authenticationprotocol, devname: dev.name });
 
                     // Set a response timeout
                     const netAuthTimeoutFunc = function netAuthTimeout() {
