@@ -71564,7 +71564,7 @@
       "ja": "id、名前、電子メール、作成、lastlogin、グループ、authfactors",
       "ko": "아이디, 이름, 이메일, 생성, 마지막 로그인, 그룹, 인증앱",
       "nl": "id, naam, e-mail, aanmaken, laatste inlog, groepen, authenticatiefactors",
-      "pl": "id, nazwa, e-mail, tworzenie, ostatnie logowanie, grupy, autorzy",
+      "pl": "id, nazwa, e-mail, tworzenie, ostatnie logowanie, grupy, opcje autentykacji",
       "pt": "id, nome, email, criação, último login, grupos, fatores de autenticação",
       "pt-br": "id, name, email, creation, lastlogin, groups, authfactors",
       "ru": "id, name, email, creation, lastlogin, groups, authfactors",
@@ -71576,6 +71576,7 @@
     {
       "en": "id, name, email, creation, lastlogin, groups, authfactors, siteadmin, useradmin, locked",
       "nl": "id, naam, email, aangemaakt, laaste login, groeps, authfactors, siteadmin, useradmin, geblokkeerd",
+	  "pl": "id, nazwa, e-mail, tworzenie, ostatnie logowanie, grupy, opcje autentykacji, administrator, uużytkownik, blokada",
       "xloc": [
         "default.handlebars->39->2394"
       ]
