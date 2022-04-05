@@ -23387,6 +23387,7 @@
     },
     {
       "en": "Email domain \\\"{0}\\\" is not allowed. Only ({1}) are allowed",
+      "nl": "Email domein \\\"{0}\\\" is niet toegestaan. Alleen ({1}) is toegestaan",
       "pt-br": "O domínio de e-mail \\\"{0}\\\" não é permitido. Somente ({1}) são permitidos",
       "pl": "Domena email \\\"{0}\\\" jest niedozwolona. Tylko ({1}) jest dopuszczona",
       "xloc": [
@@ -57753,6 +57754,7 @@
     },
     {
       "en": "Single Sign-on",
+      "nl": "Eenmalig inloggen",
       "pt-br": "Single Sign-on (Login único)",
       "pl": "Pojedyncze Logowanie",
       "xloc": [
@@ -71573,6 +71575,7 @@
     },
     {
       "en": "id, name, email, creation, lastlogin, groups, authfactors, siteadmin, useradmin, locked",
+      "nl": "id, naam, email, aangemaakt, laaste login, groeps, authfactors, siteadmin, useradmin, geblokkeerd",
       "xloc": [
         "default.handlebars->39->2394"
       ]
