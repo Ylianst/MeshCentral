@@ -4824,10 +4824,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'satellite': {
                 // Command indicates this is a MeshCentral Satellite session and what featues it supports
                 if ((command.setFlags != null) && (typeof command.setFlags == 'number')) { obj.satelliteFlags = command.setFlags; }
-                if ((command.reqid != null) && (command.response != null) && (typeof command.satelliteFlags == 'number')) {
-                    const event = { action: 'satelliteResponse', reqid: command.reqid, response: command.response, satelliteFlags: command.satelliteFlags, nolog: 1 }
+                if ((command.reqid != null) && (typeof command.satelliteFlags == 'number')) {
+                    const event = { action: 'satelliteResponse', subaction: command.subaction, reqid: command.reqid, response: command.response, satelliteFlags: command.satelliteFlags, nolog: 1 }
                     if (typeof command.nodeid == 'string') { event.nodeid = command.nodeid; }
-                    parent.parent.DispatchEvent([ '*' ], obj, event);
+                    parent.parent.DispatchEvent(['*'], obj, event);
                 }
                 break;
             }
