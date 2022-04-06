@@ -422,43 +422,45 @@ module.exports.CreateAmtManager = function (parent) {
                         // The 802.1x profile request is done, set it in Intel AMT.
                         if (devFound.netAuthSatReqTimer != null) { clearTimeout(devFound.netAuthSatReqTimer); delete devFound.netAuthSatReqTimer; }
 
-                        if ((event.response == null) || (typeof event.response != 'object') || (typeof event.response.action != 'string')) {
+                        if ((event.response == null) || (typeof event.response != 'object')) {
                             // Unable to create a 802.1x profile
                             delete devFound.netAuthSatReqId;
                             if (isAmtDeviceValid(devFound) == false) return; // Device no longer exists, ignore this request.
                             delete devFound.netAuthSatReqData;
                             devFound.consoleMsg("MeshCentral Satellite could not create a 802.1x profile for this device.");
                             devTaskCompleted(devFound);
+                            return;
                         }
 
-                        delete devFound.netAuthSatReqId;
-                        if (typeof event.response.authProtocol != 'number') break;
+                        if (typeof event.response.authProtocol != 'number') { delete devFound.netAuthSatReqId; break; }
 
                         // We got a new 802.1x profile
                         devFound.netAuthCredentials = event.response;
+                        console.log('devFound.netAuthCredentials', devFound.netAuthCredentials);
                         if (devFound.netAuthCredentials.certificate) {
                             // The new 802.1x profile includes a new certificate, add it now before adding the 802.1x profiles
                             // devFound.netAuthCredentials.certificate must be in DER encoded format
                             devFound.consoleMsg("Setting up new 802.1x certificate...");
-                            devFound.amtstack.AMT_PublicKeyManagementService_AddCertificate(devFound.netAuthCredentials.certificate, function (stack, name, response, status) {
-                                if (status != 200) {
-                                    devFound.consoleMsg("Unable to set 802.1x certificate.");
-                                } else {
 
+                            const f = function AddCertificateResponse(stack, name, response, status) {
+                                if ((status != 200) || (response.Body['ReturnValue'] != 0)) {
+                                    AddCertificateResponse.dev.consoleMsg("Unable to set 802.1x certificate.");
+                                } else {
                                     console.log('AddCertificate - TODO', response);
                                     // TODO: Keep the certificate reference since we need it to add 802.1x profiles
 
                                     // Set the 802.1x wired profile in the device
-                                    devFound.consoleMsg("Setting MeshCentral Satellite 802.1x profile...");
-                                    var netAuthSatReqData = devFound.netAuthSatReqData;
-                                    delete devFound.netAuthSatReqData;
-                                    attempt8021xSyncEx(devFound, netAuthSatReqData);
+                                    AddCertificateResponse.dev.consoleMsg("Setting MeshCentral Satellite 802.1x profile...");
+                                    const netAuthSatReqData = AddCertificateResponse.dev.netAuthSatReqData;
+                                    attempt8021xSyncEx(AddCertificateResponse.dev, netAuthSatReqData);
                                 }
-                            });
+                            }
+                            f.dev = devFound;
+                            devFound.amtstack.AMT_PublicKeyManagementService_AddCertificate(devFound.netAuthCredentials.certificate, f);
                         } else {
                             // No 802.1x certificate, set the 802.1x wired profile in the device
                             devFound.consoleMsg("Setting MeshCentral Satellite 802.1x profile...");
-                            var netAuthSatReqData = devFound.netAuthSatReqData;
+                            const netAuthSatReqData = devFound.netAuthSatReqData;
                             delete devFound.netAuthSatReqData;
                             attempt8021xSyncEx(devFound, netAuthSatReqData);
                         }
@@ -1721,23 +1723,19 @@ module.exports.CreateAmtManager = function (parent) {
 
     // 802.1x request to process a Certificate Signing Request, we ask Intel AMT to sign the request
     function attempt8021xCRSRequest(dev, event) {
-        console.log('attempt8021xCRSRequest', event);
-
-        var keyPair = '<a:EndpointReference><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + event.keyInstanceId + '</w:Selector></w:SelectorSet></a:ReferenceParameters></a:EndpointReference>'; // keyPair EPR Reference
-        var signingAlgorithm = 1; // SHA-256 RSA, highest allowed value.
-        var nullSignedCertificateRequest = null; // DEREncodedRequest
-
+        if ((event.response == null) || (event.response.keyInstanceId == null)) return;
+        var keyPair = '<a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + event.response.keyInstanceId + '</w:Selector></w:SelectorSet></a:ReferenceParameters>'; // keyPair EPR Reference
+        var signingAlgorithm = 1; // 0 = SHA1-RSA, 1 = SHA256-RSA
+        var nullSignedCertificateRequest = event.response.csr; // DEREncodedRequest
         dev.amtstack.AMT_PublicKeyManagementService_GeneratePKCS10RequestEx(keyPair, signingAlgorithm, nullSignedCertificateRequest, function (stack, name, response, status) {
-            if (status != 200) {
+            if ((status != 200) || (response.Body['ReturnValue'] != 0)) {
                 // Failed to get the generated key pair
                 dev.consoleMsg("Failed to sign the certificate request.");
             } else {
-                console.log('GeneratePKCS10RequestEx', status, response);
-
                 // We got a signed certificate request, return that to the server
                 dev.consoleMsg("Generated a signed certificate request.");
                 var domain = parent.config.domains[dev.domainid];
-                parent.DispatchEvent([domain.amtmanager['802.1x'].satellitecredentials], obj, { action: 'satellite', subaction: '802.1x-CSR-Response', satelliteFlags: 2, nodeid: dev.nodeid, icon: dev.icon, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: domain.amtmanager['802.1x'].authenticationprotocol, devname: dev.name, osname: dev.rname });
+                parent.DispatchEvent([domain.amtmanager['802.1x'].satellitecredentials], obj, { action: 'satellite', subaction: '802.1x-CSR-Response', satelliteFlags: 2, nodeid: dev.nodeid, icon: dev.icon, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: domain.amtmanager['802.1x'].authenticationprotocol, devname: dev.name, osname: dev.rname, signedcsr: response.Body['SignedCertificateRequest'] });
             }
         });
     }
