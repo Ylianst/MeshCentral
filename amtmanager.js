@@ -77,8 +77,9 @@ module.exports.CreateAmtManager = function (parent) {
                 }
             }
 
-            if ((domain.amtmanager['802.1x'].satellitecredentials != null) && (typeof domain.amtmanager['802.1x'].servercertificatename != 'string')) {
+            if (typeof domain.amtmanager['802.1x'].servercertificatename != 'string') {
                 delete domain.amtmanager['802.1x'].servercertificatenamecomparison;
+            } else {
                 const serverCertCompareStrings = ['', '', 'fullname', 'domainsuffix'];
                 if (typeof domain.amtmanager['802.1x'].servercertificatenamecomparison == 'string') {
                     domain.amtmanager['802.1x'].servercertificatenamecomparison = serverCertCompareStrings.indexOf(domain.amtmanager['802.1x'].servercertificatenamecomparison.toLowerCase());
@@ -86,7 +87,7 @@ module.exports.CreateAmtManager = function (parent) {
                 }
             }
 
-            if ((domain.amtmanager['802.1x'].satellitecredentials != null) && (typeof domain.amtmanager['802.1x'].authenticationprotocol == 'string')) {
+            if (typeof domain.amtmanager['802.1x'].authenticationprotocol == 'string') {
                 domain.amtmanager['802.1x'].authenticationprotocol = netAuthStrings.indexOf(domain.amtmanager['802.1x'].authenticationprotocol.toLowerCase());
                 if (domain.amtmanager['802.1x'].authenticationprotocol == -1) { delete domain.amtmanager['802.1x']; }
             }
@@ -136,6 +137,7 @@ module.exports.CreateAmtManager = function (parent) {
                     goodWifiProfiles.push(wifiProfile);
                 }
             }
+
             domain.amtmanager.wifiprofiles = goodWifiProfiles;
         } else {
             delete domain.amtmanager.wifiprofiles;
@@ -1502,7 +1504,7 @@ module.exports.CreateAmtManager = function (parent) {
                     }
                 }
 
-                if (newNetAuthProfileRequested) {
+                if (newNetAuthProfileRequested && (typeof srvNetAuthProfile.satellitecredentials == 'string')) {
                     // Credentials for this 802.1x profile are provided using MeshCentral Satellite
                     // Send a message to Satellite requesting a 802.1x profile for this device
                     dev.consoleMsg("Requesting 802.1x credentials for " + netAuthStrings[srvNetAuthProfile.authenticationprotocol] + " from MeshCentral Satellite...");
@@ -1525,7 +1527,7 @@ module.exports.CreateAmtManager = function (parent) {
                     return;
                 } else {
                     // No need to call MeshCentral Satellite for a 802.1x profile, so configure everything now.
-                    attemptWifiSyncEx(dev, { domain: domain, wiredConfig: wiredConfig, wirelessConfig: wirelessConfig, devNetAuthProfile: devNetAuthProfile, srvNetAuthProfile: srvNetAuthProfile, profilesToAdd: profilesToAdd, prioritiesInUse: prioritiesInUse, responses: responses });
+                    attempt8021xSyncEx(dev, { domain: domain, wiredConfig: wiredConfig, wirelessConfig: wirelessConfig, devNetAuthProfile: devNetAuthProfile, srvNetAuthProfile: srvNetAuthProfile, profilesToAdd: profilesToAdd, prioritiesInUse: prioritiesInUse, responses: responses });
                 }
             }
         });
