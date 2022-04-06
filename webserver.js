@@ -783,6 +783,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (u.startsWith('~github:') && (domain.authstrategies.github != null) && (typeof domain.authstrategies.github.logouturl == 'string')) { res.redirect(domain.authstrategies.github.logouturl); return; }
             if (u.startsWith('~reddit:') && (domain.authstrategies.reddit != null) && (typeof domain.authstrategies.reddit.logouturl == 'string')) { res.redirect(domain.authstrategies.reddit.logouturl); return; }
             if (u.startsWith('~azure:') && (domain.authstrategies.azure != null) && (typeof domain.authstrategies.azure.logouturl == 'string')) { res.redirect(domain.authstrategies.azure.logouturl); return; }
+            if (u.startsWith('~oidc:') && (domain.authstrategies.oidc != null) && (typeof domain.authstrategies.oidc.logouturl == 'string')) { res.redirect(domain.authstrategies.oidc.logouturl); return; }
             if (u.startsWith('~jumpcloud:') && (domain.authstrategies.jumpcloud != null) && (typeof domain.authstrategies.jumpcloud.logouturl == 'string')) { res.redirect(domain.authstrategies.jumpcloud.logouturl); return; }
             if (u.startsWith('~saml:') && (domain.authstrategies.saml != null) && (typeof domain.authstrategies.saml.logouturl == 'string')) { res.redirect(domain.authstrategies.saml.logouturl); return; }
             if (u.startsWith('~intel:') && (domain.authstrategies.intel != null) && (typeof domain.authstrategies.intel.logouturl == 'string')) { res.redirect(domain.authstrategies.intel.logouturl); return; }
@@ -3008,6 +3009,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (typeof domain.authstrategies.github == 'object') { authStrategies.push('github'); }
             if (typeof domain.authstrategies.reddit == 'object') { authStrategies.push('reddit'); }
             if (typeof domain.authstrategies.azure == 'object') { authStrategies.push('azure'); }
+            if (typeof domain.authstrategies.oidc == 'object') { authStrategies.push('oidc'); }
             if (typeof domain.authstrategies.intel == 'object') { authStrategies.push('intel'); }
             if (typeof domain.authstrategies.jumpcloud == 'object') { authStrategies.push('jumpcloud'); }
             if (typeof domain.authstrategies.saml == 'object') { authStrategies.push('saml'); }
@@ -6238,6 +6240,82 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                     }, handleStrategyLogin);
                 }
+
+
+                // passport-openidconnect example code
+/*                 var OpenIDConnectStrategy = require('passport-openidconnect');
+
+                passport.use(new OpenIDConnectStrategy({
+                    issuer: 'https://server.example.com',
+                    authorizationURL: 'https://server.example.com/authorize',
+                    tokenURL: 'https://server.example.com/token',
+                    userInfoURL: 'https://server.example.com/userinfo',
+                    clientID: process.env['CLIENT_ID'],
+                    clientSecret: process.env['CLIENT_SECRET'],
+                    callbackURL: 'https://client.example.org/cb'
+              
+                ));    */
+                // Generic OpenID Connect
+                if ((typeof domain.authstrategies.oidc == 'object') && (typeof domain.authstrategies.oidc.clientid == 'string') && (typeof domain.authstrategies.oidc.clientsecret == 'string') && (typeof domain.authstrategies.oidc.issuer == 'string')) {
+                    var options = { 
+                        authorizationURL: domain.authstrategies.oidc.authorizationurl, 
+                        callbackURL: domain.authstrategies.oidc.callbackurl,
+                        clientID: domain.authstrategies.oidc.clientid, 
+                        clientSecret: domain.authstrategies.oidc.clientsecret,
+                        issuer: domain.authstrategies.oidc.issuer, 
+                        tokenURL: domain.authstrategies.oidc.tokenurl, 
+                        userInfoURL: domain.authstrategies.oidc.userinfourl, 
+                        scope: [ 'openid email profile' ],
+                        state: true
+                    };
+                    const OIDCStrategy = require('passport-openidconnect');
+                    if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; } else { options.callbackURL = url + 'oidc-callback'; }
+                    parent.debug('web', 'Adding Generic OIDC SSO with options: ' + JSON.stringify(options));
+                    passport.use('oidc-' + domain.id, new OIDCStrategy(options,
+                        function (accessToken, refreshtoken, params, profile, done) {
+                            var userex = null;
+                            try { userex = require('jwt-simple').decode(params.id_token, "", true); } catch (ex) { }
+                            parent.debug('web', 'OpenID Connect profile: ' + JSON.stringify(userex));
+                            var user = null;
+                            if (userex != null) {
+                                var user = { sid: '~oidc:' + userex.unique_name, name: userex.name, strategy: 'oidc' };
+                                if (typeof userex.email == 'string') { user.email = userex.email; }
+                            }
+                            return done(null, user);
+                        }
+                    ));
+/*                     passport.use('oidc-' + domain.id, new OIDCStrategy.Strategy(options,
+                        function (authorization_code, refresh_token, profile, cb) {
+                            parent.debug('web', 'OIDC profile: ' + JSON.stringify(profile));
+                            var user = { sid: '~oidc:' + profile.id, name: profile.displayName, strategy: 'oidc' };
+                            if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
+                            return cb(null, user);
+                        }
+                    )); */
+                    obj.app.get(url + 'auth-oidc', function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('oidc-' + domain.id, { scope: 'openid email profile', state: obj.parent.encodeCookie({ 'p': 'azure' }, obj.parent.loginCookieEncryptionKey) })(req, res, next);
+                    });
+                    obj.app.get(url + 'oidc-callback', function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        if ((Object.keys(req.session).length == 0) && (req.query.nmr == null)) {
+                            // This is an empty session likely due to the 302 redirection, redirect again (this is a bit of a hack).
+                            var url = req.url;
+                            if (url.indexOf('?') >= 0) { url += '&nmr=1'; } else { url += '?nmr=1'; } // Add this to the URL to prevent redirect loop.
+                            res.set('Content-Type', 'text/html');
+                            res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
+                        } else {
+                            if (req.query.state != null) {
+                                var c = obj.parent.decodeCookie(req.query.state, obj.parent.loginCookieEncryptionKey, 10); // 10 minute timeout
+                                if ((c != null) && (c.p == 'oidc')) { domain.passport.authenticate('oidc-' + domain.id, { failureRedirect: '/' })(req, res, next); return; }
+                            }
+                            next();
+                        }
+                    }, handleStrategyLogin);
+                }
+
 
                 // Generic SAML
                 if (typeof domain.authstrategies.saml == 'object') {
