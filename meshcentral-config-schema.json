@@ -1069,6 +1069,21 @@
                   "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
                 },
                 "required": [ "entityid", "idpurl", "cert" ]
+              },
+              "oidc": {
+                "type": "object",
+                "properties": {
+                  "url": { "type": "string", "format": "uri" },
+                  "authorizationURL": { "type": "string", "format": "uri" },
+                  "tokenURL": { "type": "string", "format": "uri" },
+                  "userInfoURL": { "type": "string", "format": "uri" },
+                  "logouturl": { "type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."},
+                  "newAccounts": { "type": "boolean", "default": true },
+                  "clientid": { "type": "string" },
+                  "clientsecret": { "type": "string" },
+                  "callbackURL": { "type": "string", "format": "uri" }
+                },
+                "required": [ "url", "authorizationURL", "tokenURL", "userInfoURL", "logouturl", "clientid", "clientsecret", "callbackURL" ]
               }
             }
           }
