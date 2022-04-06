@@ -250,21 +250,21 @@
         "files": "{0} started a remote files session."
       },
       "_agentCustomization": {
-        "displayName": "Compagny® Product™",
-        "description": "Compagny® Product™ agent for remote monitoring, management and assistance.",
+        "displayName": "Compagnyï¿½ Productï¿½",
+        "description": "Compagnyï¿½ Productï¿½ agent for remote monitoring, management and assistance.",
         "companyName": "Compagny",
         "serviceName": "compagnyagent",
         "image": "agent-logo.png",
         "fileName": "compagnyagent"
       },
       "_assistantCustomization": {
-        "title": "Compagny® Product™",
+        "title": "Compagnyï¿½ Productï¿½",
         "image": "assistant-logo.png",
         "fileName": "compagny"
       },
       "_androidCustomization": {
-        "title": "Compagny® Product™",
-        "subtitle": "Product Subtitle™",
+        "title": "Compagnyï¿½ Productï¿½",
+        "subtitle": "Product Subtitleï¿½",
         "image": "assistant-logo.png"
       },
       "_userAllowedIP": "127.0.0.1,192.168.1.0/24",
@@ -407,6 +407,17 @@
           "entityid": "meshcentral",
           "idpurl": "https://server/saml2",
           "cert": "saml.pem"
+        },
+        "oidc": {
+          "url": "https://server/openidconnect-callback",
+          "authorizationURL": "https://server/api/oidc/authorization",
+          "tokenURL": "https://server/api/oidc/token",
+          "userInfoURL": "https://server/api/oidc/userinfo",
+          "logouturl": "https://server/logout",
+          "newAccounts": true,
+          "clientid": "00000000-0000-0000-0000-000000000000",
+          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "callbackURL": "https://server/oidc-callback"
         }
       }
     },
