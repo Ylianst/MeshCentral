@@ -153,6 +153,7 @@ function run(argv) {
     if ((typeof args.scan) == 'string') { settings.scan = args.scan; }
     if ((typeof args.token) == 'string') { settings.token = args.token; }
     if ((typeof args.timeout) == 'string') { settings.timeout = parseInt(args.timeout); }
+    if ((typeof args.iderstart) == 'string') { settings.iderstart = args.iderstart; }
     if ((typeof args.uuidoutput) == 'string' || args.uuidoutput) { settings.uuidoutput = args.uuidoutput; }
     if ((typeof args.desc) == 'string') { settings.desc = args.desc; }
     if ((typeof args.dnssuffix) == 'string') { settings.dnssuffix = args.dnssuffix; }
@@ -295,10 +296,10 @@ function run(argv) {
             console.log('  --pass [password]      The Intel AMT login password.');
             console.log('\r\nOptional arguments:\r\n');
             console.log('  --reset, --poweron, --poweroff, --powercycle, --sleep, --hibernate');
-            console.log('  --user [username]            The Intel AMT login username, admin is default.');
-            console.log('  --tls                        Specifies that TLS must be used.');
-            console.log('  --bootdevice [pxe|hdd|cd]    Specifies the boot device to use after reset, poweron or powercycle.');
-            console.log('  --bootindex [number]         Specifies the index of boot device to use.');
+            console.log('  --user [username]                                    The Intel AMT login username, admin is default.');
+            console.log('  --tls                                                Specifies that TLS must be used.');
+            console.log('  --bootdevice [pxe|hdd|cd|ider-floppy|ider-cdrom]     Specifies the boot device to use after reset, poweron or powercycle.');
+            console.log('  --bootindex [number]                                 Specifies the index of boot device to use.');
         } else if (action == 'amtnetwork') {
             console.log('AmtNetwork is used to get/set Intel AMT network interface configuration. Example usage:\r\n\r\n  meshcmd amtnetwork --host 1.2.3.4 --user admin --pass mypassword --dhcp');
             console.log('\r\nRequired arguments:\r\n');
@@ -357,13 +358,14 @@ function run(argv) {
         } else if (action == 'amtider') {
             console.log('AmtIDER will mount a local disk images to a remote Intel AMT computer. Example usage:\r\n\r\n  meshcmd amtider --host 1.2.3.4 --user admin --pass mypassword --tls --floppy disk.img --cdrom disk.iso');
             console.log('\r\nPossible arguments:\r\n');
-            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT.');
-            console.log('  --user [username]      The Intel AMT login username, admin is default.');
-            console.log('  --pass [password]      The Intel AMT login password.');
-            console.log('  --tls                  Specifies that TLS must be used.');
-            console.log('  --floppy [file]        Specifies .img file to be mounted as a flppy disk.');
-            console.log('  --cdrom [file]         Specifies .img file to be mounted as a CDROM disk.');
-            console.log('  --timeout [seconds]    Optional, disconnect after number of seconds without disk read.');
+            console.log('  --host [hostname]                      The IP address or DNS name of Intel AMT.');
+            console.log('  --user [username]                      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]                      The Intel AMT login password.');
+            console.log('  --tls                                  Specifies that TLS must be used.');
+            console.log('  --floppy [file]                        Specifies .img file to be mounted as a flppy disk.');
+            console.log('  --cdrom [file]                         Specifies .img file to be mounted as a CDROM disk.');
+            console.log('  --timeout [seconds]                    Optional, disconnect after number of seconds without disk read.');
+            console.log('  --iderstart [onreboot|graceful|now]    Optional, when to start the IDER session.');
         } else if (action == 'amtscan') {
             console.log('AmtSCAN will look for Intel AMT device on the network. Example usage:\r\n\r\n  meshcmd amtscan --scan 192.168.1.0/24');
             console.log('\r\Required arguments:\r\n');
@@ -842,20 +844,26 @@ function run(argv) {
         //if (settings.poweraction == 0) { console.log('No power action, specify --poweron, --sleep, --powercycle, --poweroff, --hibernate, --reset.'); exit(1); return; }
         // Accepted option for boot device are: pxe, hdd, cd 
         var bootdevices = ['pxe','hdd','cd'];       
+        var ider_bootdevices = ['ider-floppy', 'ider-cdrom']
         if (args.bootdevice) {
             if (bootdevices.indexOf(args.bootdevice.toLowerCase())>=0) {
                 settings.bootdevice = args.bootdevice
                 // Set bootindex to 0 by default, unless overriden
                 settings.bootindex = 0
+                settings.ider_bootindex = 0 
+                settings.ider_boot = false;
+            } else if (ider_bootdevices.indexOf(args.bootdevice.toLowerCase())>=0) {
+                settings.bootindex = 0
+                settings.ider_bootindex = ider_bootdevices.indexOf(args.bootdevice.toLowerCase());
+                settings.ider_boot = true;
             } else {
-                console.log('Supported boot devices are pxe, hdd, cd'); exit(1); return; 
+                console.log('Supported boot devices are pxe, hdd, cd, ider-floppy, ider-cdrom'); exit(1); return; 
             }
         }
         // boot index for cd and hdd
         if (args.bootindex && args.bootindex >=0) {
             settings.bootindex = args.bootindex;
         }
-
         performAmtPowerAction();
     } else {
         console.log('Invalid "action" specified.'); exit(1); return;
@@ -2284,6 +2292,8 @@ iderIdleTimer = null;
 function performIder() {
     if ((settings.floppy != null) && fs.existsSync(settings.floppy) == false) { console.log("Unable to floppy image file: " + settings.floppy); exit(); return; }
     if ((settings.cdrom != null) && fs.existsSync(settings.cdrom) == false) { console.log("Unable to CDROM image file: " + settings.cdrom); exit(); return; }
+    var iderStarts = ['onreboot', 'graceful', 'now'];
+    if ((settings.iderstart != null) && iderStarts.indexOf(settings.iderstart) < 0) { console.log("Unknown iderstart option: " + settings.iderstart); exit(); return; }
     try {
         var sfloppy = null, scdrom = null;
         if (settings.floppy) { try { if (sfloppy = fs.statSync(settings.floppy)) { sfloppy.file = fs.openSync(settings.floppy, 'rbN'); } } catch (ex) { console.log(ex); exit(1); return; } }
@@ -2293,9 +2303,16 @@ function performIder() {
         ider.onStateChanged = onIderStateChange;
         ider.m.floppy = sfloppy;
         ider.m.cdrom = scdrom;
-        ider.m.iderStart = 1; // OnReboot = 0, Graceful = 1, Now = 2
+        if (settings.iderstart) {
+            ider.m.iderStart = iderStarts.indexOf(settings.iderstart);
+        } else {
+            ider.m.iderStart = 1; // OnReboot = 0, Graceful = 1, Now = 2
+        }
         ider.m.debug = (settings.debuglevel > 0);
-        if (settings.timeout > 0) { ider.m.sectorStats = iderSectorStats; }
+        if (settings.timeout > 0) {
+            ider.m.sectorStats = iderSectorStats;
+            ider.m.rx_timeout = settings.timeout;
+        }
         //ider.digestRealmMatch = wsstack.comm.digestRealm;
         //ider.tlsv1only = amtstack.wsman.comm.tlsv1only;
         ider.Start(settings.hostname, (settings.tls == true) ? 16995 : 16994, settings.username ? 'admin' : settings.username, settings.password, settings.tls);
@@ -2945,7 +2962,7 @@ function performAmtPowerAction() {
     amtstack = new amt(wsstack);
     if (settings.poweraction != 0) {
         // Check if there is bootdevice and the command is either poweron, powercycle or reset
-        if (settings.bootdevice && [2,5,10].indexOf(settings.poweraction)>=0) {
+        if ((settings.bootdevice || settings.ider_boot) && [2,5,10].indexOf(settings.poweraction)>=0) {
             // Change boot order
             amtstack.Get('AMT_BootSettingData', powerActionResponse1, 0, 1);
         } else {
@@ -2972,14 +2989,14 @@ function powerActionResponse1(stack, name, response, status) {
     }
     r['FirmwareVerbosity'] = 0;
     r['ForcedProgressEvents'] = false;
-    r['IDERBootDevice'] = 0;
+    r['IDERBootDevice'] = settings.ider_bootindex;
     r['LockKeyboard'] = false;
     r['LockPowerButton'] = false;
     r['LockResetButton'] = false;
     r['LockSleepButton'] = false;
     r['ReflashBIOS'] = false;
-    r['UseIDER'] = false;
-    r['UseSOL'] = false;//
+    r['UseIDER'] = settings.ider_boot;
+    r['UseSOL'] = settings.ider_boot
     r['UseSafeMode'] = false;
     r['UserPasswordBypass'] = false;
     if (r['SecureErase'] != null) {
@@ -3014,9 +3031,9 @@ function powerActionResponse3(stack, name, response, status) {
     if (status != 200) { console.log('SetBootConfigRole failed.'); exit(1); return; }
     var bootsources = { 'pxe' : 'Force PXE Boot', 'hdd' : 'Force Hard-drive Boot', 'cd' : 'Force CD/DVD Boot'};
     var cbparam='<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_BootSourceSetting</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">Intel(r) AMT: ' + bootsources[settings.bootdevice] + '</Selector></SelectorSet></ReferenceParameters>';
-    if (!settings.bootdevice) { cbparam=null;}
+    if (!(settings.bootdevice in bootsources)) { cbparam=null;}
     amtstack.CIM_BootConfigSetting_ChangeBootOrder(cbparam, function(st, nm, resp, sts) {
-        if (resp.Body['ReturnValue'] != 0) { console.log('(2) Change Boot Order returns '+ response.Body.ReturnValueStr); exit(1); return; }
+        if (resp.Body['ReturnValue'] != 0) { console.log('(2) Change Boot Order returns '+ resp.Body.ReturnValueStr); exit(1); return; }
         amtstack.RequestPowerStateChange(settings.poweraction, performAmtPowerActionEx);
     });
 }
