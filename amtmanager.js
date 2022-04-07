@@ -1709,6 +1709,7 @@ module.exports.CreateAmtManager = function (parent) {
         const wiredConfig = devNetAuthData.wiredConfig;
         const wirelessConfig = devNetAuthData.wirelessConfig;
 
+        var taskCounter = 0;
         if (wirelessConfig) {
             // Add missing WIFI profiles
             var nextPriority = 1;
@@ -1748,7 +1749,6 @@ module.exports.CreateAmtManager = function (parent) {
                     if (domain.amtmanager['802.1x'].domain) { netAuthProfile['Domain'] = domain.amtmanager['802.1x'].domain; }
                     if (domain.amtmanager['802.1x'].authenticationprotocol > 3) { domain.amtmanager['ProtectedAccessCredential'] = profileToAdd['802.1x'].protectedaccesscredentialhex; netAuthProfile['PACPassword'] = profileToAdd['802.1x'].pacpassword; }
 
-                    /*
                     // Setup Client Certificate
                     if (devNetAuthData.certInstanceId) {
                         netAuthSettingsClientCert = '<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>' + dev.amtstack.CompleteName('AMT_PublicKeyCertificate') + '</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + devNetAuthData.certInstanceId + '</w:Selector></w:SelectorSet></a:ReferenceParameters>';
@@ -1756,16 +1756,6 @@ module.exports.CreateAmtManager = function (parent) {
                     // Setup Server Certificate
                     if (devNetAuthData.rootCertInstanceId) {
                         netAuthSettingsServerCaCert = '<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>' + dev.amtstack.CompleteName('AMT_PublicKeyCertificate') + '</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + devNetAuthData.rootCertInstanceId + '</w:Selector></w:SelectorSet></a:ReferenceParameters>';
-                    }
-                    */
-
-                    // Setup Client Certificate
-                    if (devNetAuthData.certInstanceId) {
-                        netAuthSettingsClientCert = '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">' + devNetAuthData.certInstanceId + '</Selector></SelectorSet></ReferenceParameters>';
-                    }
-                    // Setup Server Certificate
-                    if (devNetAuthData.rootCertInstanceId) {
-                        netAuthSettingsServerCaCert = '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">' + devNetAuthData.rootCertInstanceId + '</Selector></SelectorSet></ReferenceParameters>';
                     }
 
                     // If we have credentials from MeshCentral Satelite, use that
@@ -1777,25 +1767,20 @@ module.exports.CreateAmtManager = function (parent) {
                     }
                 }
                 prioritiesInUse.push(nextPriority); // Occupy the priority slot and add the WIFI profile.
-                console.log('AddWiFiSettings1');
 
+                taskCounter++;
                 dev.amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, netAuthProfile, netAuthSettingsClientCert, netAuthSettingsServerCaCert, function (stack, name, response, status) {
                     if (status != 200) { dev.consoleMsg("Unable to set WIFI profile."); }
-                    console.log('AddWiFiSettings2', status, response);
+                    if (--taskCounter == 0) { attemptWifiSyncEx2(dev, devNetAuthData); } // All done, complete WIFI configuration
                 });
             }
-
-            // Complete WIFI configuration
-            attemptWifiSyncEx2(dev, devNetAuthData);
-        } else {
-            // Done
-            devTaskCompleted(dev);
         }
+
+        if (taskCounter == 0) { attemptWifiSyncEx2(dev, devNetAuthData); } // All done, complete WIFI configuration
     }
 
     function attemptWifiSyncEx2(dev, devNetAuthData) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-
         const responses = devNetAuthData.responses;
 
         // Check if local WIFI profile sync is enabled, if not, enabled it.
@@ -1824,8 +1809,6 @@ module.exports.CreateAmtManager = function (parent) {
                 });
             }
         }
-
-        console.log('ALL GOOD');
 
         // Done
         devTaskCompleted(dev);

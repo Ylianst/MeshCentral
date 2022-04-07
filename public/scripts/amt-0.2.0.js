@@ -896,20 +896,24 @@ function instanceToXml(instanceName, inInstance) {
 	var startTag = hasNamespace ? '<q:' : '<';
 	var endTag = hasNamespace ? '</q:' : '</';
 	var namespaceDef = hasNamespace ? (' xmlns:q="' + inInstance['__namespace'] + '"' ): '';
-	var result = '<r:' + instanceName + namespaceDef + '>';
-	for(var prop in inInstance) {
-		if (!inInstance.hasOwnProperty(prop) || prop.indexOf('__') === 0) continue;
-		
-		if (typeof inInstance[prop] === 'function' || Array.isArray(inInstance[prop]) ) continue;
-		
-		if (typeof inInstance[prop] === 'object') {
-			//result += startTag + prop +'>' + instanceToXml('prop', inInstance[prop]) + endTag + prop +'>';
-			console.error('only convert one level down...');
-		}
-		else {
-			result += startTag + prop +'>' + inInstance[prop].toString() + endTag + prop +'>';
-		}
-	}
+    var result = '<r:' + instanceName + namespaceDef + '>';
+    if (typeof inInstance == 'string') {
+        result += inInstance;
+    } else {
+        for (var prop in inInstance) {
+            if (!inInstance.hasOwnProperty(prop) || prop.indexOf('__') === 0) continue;
+
+            if (typeof inInstance[prop] === 'function' || Array.isArray(inInstance[prop])) continue;
+
+            if (typeof inInstance[prop] === 'object') {
+                //result += startTag + prop +'>' + instanceToXml('prop', inInstance[prop]) + endTag + prop +'>';
+                console.error('only convert one level down...');
+            }
+            else {
+                result += startTag + prop + '>' + inInstance[prop].toString() + endTag + prop + '>';
+            }
+        }
+    }
 	result += '</r:' + instanceName + '>';
 	return result;
 }

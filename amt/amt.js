@@ -269,8 +269,7 @@ function AmtStackCreateService(wsmanStack) {
     obj.AMT_MessageLog_GetRecords = function (IterationIdentifier, MaxReadRecords, callback_func, tag) { obj.Exec("AMT_MessageLog", "GetRecords", { "IterationIdentifier": IterationIdentifier, "MaxReadRecords": MaxReadRecords }, callback_func, tag); }
     obj.AMT_MessageLog_GetRecord = function (IterationIdentifier, PositionToNext, callback_func) { obj.Exec("AMT_MessageLog", "GetRecord", { "IterationIdentifier": IterationIdentifier, "PositionToNext": PositionToNext }, callback_func); }
     obj.AMT_MessageLog_PositionAtRecord = function (IterationIdentifier, MoveAbsolute, RecordNumber, callback_func) { obj.Exec("AMT_MessageLog", "PositionAtRecord", { "IterationIdentifier": IterationIdentifier, "MoveAbsolute": MoveAbsolute, "RecordNumber": RecordNumber }, callback_func); }
-    obj.AMT_MessageLog_PositionToFirstRecord = function (callback_func, tag) { 
-        obj.Exec("AMT_MessageLog", "PositionToFirstRecord", {}, callback_func, tag); }
+    obj.AMT_MessageLog_PositionToFirstRecord = function (callback_func, tag) { obj.Exec("AMT_MessageLog", "PositionToFirstRecord", {}, callback_func, tag); }
     obj.AMT_MessageLog_FreezeLog = function (Freeze, callback_func) { obj.Exec("AMT_MessageLog", "FreezeLog", { "Freeze": Freeze }, callback_func); }
     obj.AMT_PublicKeyManagementService_AddCRL = function (Url, SerialNumbers, callback_func) { obj.Exec("AMT_PublicKeyManagementService", "AddCRL", { "Url": Url, "SerialNumbers": SerialNumbers }, callback_func); }
     obj.AMT_PublicKeyManagementService_ResetCRLList = function (_method_dummy, callback_func) { obj.Exec("AMT_PublicKeyManagementService", "ResetCRLList", { "_method_dummy": _method_dummy }, callback_func); }
@@ -304,10 +303,7 @@ function AmtStackCreateService(wsmanStack) {
     obj.AMT_TimeSynchronizationService_SetHighAccuracyTimeSynch = function (Ta0, Tm1, Tm2, callback_func, tag) { obj.Exec("AMT_TimeSynchronizationService", "SetHighAccuracyTimeSynch", { "Ta0": Ta0, "Tm1": Tm1, "Tm2": Tm2 }, callback_func, tag); }
     obj.AMT_UserInitiatedConnectionService_RequestStateChange = function (RequestedState, TimeoutPeriod, callback_func) { obj.Exec("AMT_UserInitiatedConnectionService", "RequestStateChange", { "RequestedState": RequestedState, "TimeoutPeriod": TimeoutPeriod }, callback_func); }
     obj.AMT_WebUIService_RequestStateChange = function (RequestedState, TimeoutPeriod, callback_func, tag) { obj.Exec("AMT_WebUIService", "RequestStateChange", { "RequestedState": RequestedState, "TimeoutPeriod": TimeoutPeriod }, callback_func, tag); }
-    obj.AMT_WiFiPortConfigurationService_AddWiFiSettings = function (WiFiEndpoint, WiFiEndpointSettingsInput, IEEE8021xSettingsInput, ClientCredential, CACredential, callback_func) {
-        console.log(JSON.stringify({ "WiFiEndpoint": WiFiEndpoint, "WiFiEndpointSettingsInput": WiFiEndpointSettingsInput, "IEEE8021xSettingsInput": IEEE8021xSettingsInput, "ClientCredential": ClientCredential, "CACredential": CACredential }, null, 2));
-        obj.ExecWithXml("AMT_WiFiPortConfigurationService", "AddWiFiSettings", { "WiFiEndpoint": WiFiEndpoint, "WiFiEndpointSettingsInput": WiFiEndpointSettingsInput, "IEEE8021xSettingsInput": IEEE8021xSettingsInput, "ClientCredential": ClientCredential, "CACredential": CACredential }, callback_func);
-    }
+    obj.AMT_WiFiPortConfigurationService_AddWiFiSettings = function (WiFiEndpoint, WiFiEndpointSettingsInput, IEEE8021xSettingsInput, ClientCredential, CACredential, callback_func) { obj.ExecWithXml("AMT_WiFiPortConfigurationService", "AddWiFiSettings", { "WiFiEndpoint": WiFiEndpoint, "WiFiEndpointSettingsInput": WiFiEndpointSettingsInput, "IEEE8021xSettingsInput": IEEE8021xSettingsInput, "ClientCredential": ClientCredential, "CACredential": CACredential }, callback_func); }
     obj.AMT_WiFiPortConfigurationService_UpdateWiFiSettings = function (WiFiEndpointSettings, WiFiEndpointSettingsInput, IEEE8021xSettingsInput, ClientCredential, CACredential, callback_func) { obj.ExecWithXml("AMT_WiFiPortConfigurationService", "UpdateWiFiSettings", { "WiFiEndpointSettings": WiFiEndpointSettings, "WiFiEndpointSettingsInput": WiFiEndpointSettingsInput, "IEEE8021xSettingsInput": IEEE8021xSettingsInput, "ClientCredential": ClientCredential, "CACredential": CACredential }, callback_func); }
     obj.AMT_WiFiPortConfigurationService_DeleteAllITProfiles = function (_method_dummy, callback_func) { obj.Exec("AMT_WiFiPortConfigurationService", "DeleteAllITProfiles", { "_method_dummy": _method_dummy }, callback_func); }
     obj.AMT_WiFiPortConfigurationService_DeleteAllUserProfiles = function (_method_dummy, callback_func) { obj.Exec("AMT_WiFiPortConfigurationService", "DeleteAllUserProfiles", { "_method_dummy": _method_dummy }, callback_func); }
@@ -995,17 +991,21 @@ function AmtStackCreateService(wsmanStack) {
         var endTag = hasNamespace ? '</q:' : '</';
         var namespaceDef = hasNamespace ? (' xmlns:q="' + inInstance['__namespace'] + '"') : '';
         var result = '<r:' + instanceName + namespaceDef + '>';
-        for (var prop in inInstance) {
-            if (!inInstance.hasOwnProperty(prop) || prop.indexOf('__') === 0) continue;
+        if (typeof inInstance == 'string') {
+            result += inInstance;
+        } else {
+            for (var prop in inInstance) {
+                if (!inInstance.hasOwnProperty(prop) || prop.indexOf('__') === 0) continue;
 
-            if (typeof inInstance[prop] === 'function' || Array.isArray(inInstance[prop])) continue;
+                if (typeof inInstance[prop] === 'function' || Array.isArray(inInstance[prop])) continue;
 
-            if (typeof inInstance[prop] === 'object') {
-                //result += startTag + prop +'>' + instanceToXml('prop', inInstance[prop]) + endTag + prop +'>';
-                console.error('only convert one level down...');
-            }
-            else {
-                result += startTag + prop + '>' + inInstance[prop].toString() + endTag + prop + '>';
+                if (typeof inInstance[prop] === 'object') {
+                    //result += startTag + prop +'>' + instanceToXml('prop', inInstance[prop]) + endTag + prop +'>';
+                    console.error('only convert one level down...');
+                }
+                else {
+                    result += startTag + prop + '>' + inInstance[prop].toString() + endTag + prop + '>';
+                }
             }
         }
         result += '</r:' + instanceName + '>';
