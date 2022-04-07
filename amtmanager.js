@@ -131,7 +131,7 @@ module.exports.CreateAmtManager = function (parent) {
                         if ((typeof wifiProfile.password != 'string') || (wifiProfile.password.length < 8) || (wifiProfile.password.length > 63)) continue;
                     } else if ([5, 7, 32768, 32769].indexOf(wifiProfile.authentication) >= 0) {
                         // 802.1x authentication
-                        if (domain.amtmanager['802.1x'] == null) continue;
+                        if ((domain.amtmanager['802.1x'] == null) || (typeof domain.amtmanager['802.1x'] != 'object')) continue;
                     }
 
                     goodWifiProfiles.push(wifiProfile);
@@ -1336,7 +1336,7 @@ module.exports.CreateAmtManager = function (parent) {
 
 
     //
-    // Intel AMT WIFI
+    // Intel AMT WIFI & Wired 802.1x
     //
 
     // Check which key pair matches the public key in the certificate
@@ -1379,7 +1379,7 @@ module.exports.CreateAmtManager = function (parent) {
             if ((responses['AMT_PublicKeyCertificate'].status != 200) || (responses['AMT_PublicKeyCertificate'].status != 200)) { devTaskCompleted(dev); return; } // We can't get the certificate list, fail and carry on.
 
             // See if we need to perform wired or wireless 802.1x configuration
-            const wiredConfig = ((parent.config.domains[dev.domainid].amtmanager['802.1x'] != null) && (responses['AMT_8021XProfile'].status == 200));
+            var wiredConfig = ((parent.config.domains[dev.domainid].amtmanager['802.1x'] != null) && (responses['AMT_8021XProfile'].status == 200));
             const wirelessConfig = ((responses['CIM_WiFiEndpointSettings'].status == 200) && (responses['AMT_WiFiPortConfigurationService'].status == 200) && (responses['CIM_WiFiPort'].status == 200) && (responses['CIM_IEEE8021xSettings'].status == 200));
             if (!wiredConfig && !wirelessConfig) { devTaskCompleted(dev); return; } // We can't get wired or wireless settings, ignore and carry on.
 
@@ -1519,6 +1519,10 @@ module.exports.CreateAmtManager = function (parent) {
                     }
                 }
 
+                // Figure out is there are no changes to 802.1x wired configuration
+                if ((wiredMatch == 0) && (newNetAuthProfileRequested == false)) { wiredConfig = false; }
+
+                // See if we need to ask MeshCentral Satellite for a new 802.1x profile
                 if (newNetAuthProfileRequested && (typeof srvNetAuthProfile.satellitecredentials == 'string')) {
                     // Credentials for this 802.1x profile are provided using MeshCentral Satellite
                     // Send a message to Satellite requesting a 802.1x profile for this device
@@ -1638,7 +1642,7 @@ module.exports.CreateAmtManager = function (parent) {
             var netAuthProfile = Clone(devNetAuthProfile);
             netAuthProfile['Enabled'] = ((srvNetAuthProfile != null) && (typeof srvNetAuthProfile == 'object'));
             if (netAuthProfile['Enabled']) {
-                netAuthProfile['ActiveInS0'] = (srvNetAuthProfile.availableInS0 !== false);
+                netAuthProfile['ActiveInS0'] = (srvNetAuthProfile.availableins0 !== false);
                 netAuthProfile['AuthenticationProtocol'] = srvNetAuthProfile.authenticationprotocol;
                 if (srvNetAuthProfile.roamingidentity && (srvNetAuthProfile.roamingidentity != '')) { netAuthProfile['RoamingIdentity'] = srvNetAuthProfile.roamingidentity; } else { delete netAuthProfile['RoamingIdentity']; }
                 if (srvNetAuthProfile.servercertificatename && (srvNetAuthProfile.servercertificatename != '')) {
