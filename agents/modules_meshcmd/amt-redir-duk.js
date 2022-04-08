@@ -175,8 +175,8 @@ module.exports = function CreateAmtRedirect(module) {
                         var digest = hex_md5(hex_md5(obj.user + ":" + realm + ":" + obj.pass) + ":" + nonce + ":" + extra + hex_md5("POST:" + obj.authuri));
                         var totallen = obj.user.length + realm.length + nonce.length + obj.authuri.length + cnonce.length + snc.length + digest.length + 7;
                         if (authType == 4) totallen += (qop.length + 1);
-                        var buf = Buffer.concat([Buffer.from([0x13, 0x00, 0x00, 0x00, authType]), new Buffer([totallen & 0xFF, (totallen >> 8) & 0xFF, 0x00, 0x00]), new Buffer([obj.user.length]), new Buffer(obj.user), new Buffer([realm.length]), new Buffer(realm), new Buffer([nonce.length]), new Buffer(nonce), new Buffer([obj.authuri.length]), new Buffer(obj.authuri), new Buffer([cnonce.length]), new Buffer(cnonce), new Buffer([snc.length]), new Buffer(snc), new Buffer([digest.length]), new Buffer(digest)]);
-                        if (authType == 4) buf = Buffer.concat([buf, Buffer.from([qop.length]), new Buffer(qop) ]);
+                        var buf = Buffer.concat([new Buffer([0x13, 0x00, 0x00, 0x00, authType]), new Buffer([totallen & 0xFF, (totallen >> 8) & 0xFF, 0x00, 0x00]), new Buffer([obj.user.length]), new Buffer(obj.user), new Buffer([realm.length]), new Buffer(realm), new Buffer([nonce.length]), new Buffer(nonce), new Buffer([obj.authuri.length]), new Buffer(obj.authuri), new Buffer([cnonce.length]), new Buffer(cnonce), new Buffer([snc.length]), new Buffer(snc), new Buffer([digest.length]), new Buffer(digest)]);
+                        if (authType == 4) buf = Buffer.concat([buf, new Buffer([qop.length]), new Buffer(qop) ]);
                         obj.xxSend(buf);
                     }
                     else if (status == 0) { // Success
@@ -194,7 +194,7 @@ module.exports = function CreateAmtRedirect(module) {
                         }
                         if (obj.protocol == 2) {
                             // Remote Desktop: Send traffic directly...
-                            obj.xxSend(Buffer.from([0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
+                            obj.xxSend(new Buffer([0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
                         }
                         if (obj.protocol == 3) {
                             // Remote IDER: Send traffic directly...
@@ -264,7 +264,7 @@ module.exports = function CreateAmtRedirect(module) {
     obj.xxRandomValueHex = function (len) {
         var t = [], l = Math.floor(len / 2);
         for (var i = 0; i < l; i++) { t.push(obj.tls.generateRandomInteger("0", "255")); }
-        return Buffer.from(t).toString('hex');
+        return new Buffer(t).toString('hex');
     }
 
     obj.xxOnSocketClosed = function () {
@@ -291,9 +291,9 @@ module.exports = function CreateAmtRedirect(module) {
         if (obj.amtkeepalivetimer != null) { clearInterval(obj.amtkeepalivetimer); obj.amtkeepalivetimer = null; }
     }
 
-    obj.RedirectStartSol = Buffer.from([0x10, 0x00, 0x00, 0x00, 0x53, 0x4F, 0x4C, 0x20]);
-    obj.RedirectStartKvm = Buffer.from([0x10, 0x01, 0x00, 0x00, 0x4b, 0x56, 0x4d, 0x52]);
-    obj.RedirectStartIder = Buffer.from([0x10, 0x00, 0x00, 0x00, 0x49, 0x44, 0x45, 0x52]);
+    obj.RedirectStartSol = new Buffer([0x10, 0x00, 0x00, 0x00, 0x53, 0x4F, 0x4C, 0x20]);
+    obj.RedirectStartKvm = new Buffer([0x10, 0x01, 0x00, 0x00, 0x4b, 0x56, 0x4d, 0x52]);
+    obj.RedirectStartIder = new Buffer([0x10, 0x00, 0x00, 0x00, 0x49, 0x44, 0x45, 0x52]);
 
     return obj;
 }
