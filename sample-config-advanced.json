@@ -138,7 +138,7 @@
     "footer": "Default page footer",
     "newAccounts": false
   },
-  "_domains": {
+  "domains": {
     "": {
       "_siteStyle": 2,
       "title": "MyServer",
@@ -409,15 +409,15 @@
           "cert": "saml.pem"
         },
         "oidc": {
-          "url": "https://server/openidconnect-callback",
-          "authorizationURL": "https://server/api/oidc/authorization",
-          "tokenURL": "https://server/api/oidc/token",
-          "userInfoURL": "https://server/api/oidc/userinfo",
-          "logouturl": "https://server/logout",
-          "newAccounts": true,
+          "authorizationURL": "https://sso.server.com/api/oidc/authorization",
+          "callbackURL": "https://mesh.server.com/oidc-callback",
           "clientid": "00000000-0000-0000-0000-000000000000",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-          "callbackURL": "https://server/oidc-callback"
+          "issuer": "https://sso.server.com",
+          "tokenURL": "https://sso.server.com/api/oidc/token",
+          "userInfoURL": "https://sso.server.com/api/oidc/userinfo",
+          "logoutURL": "https://sso.server.com/logout",
+          "newAccounts": true
         }
       }
     },
