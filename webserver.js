@@ -6255,7 +6255,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         responseMode: 'form_post' ,
                         state: true
                     };
-                    const OIDCStrategy = require('passport-openidconnect');
+                    const OIDCStrategy = require('passport-generic-oidc');
                     if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; } else { options.callbackURL = url + 'oidc-callback'; }
                     parent.debug('web', 'Adding Generic OIDC SSO with options: ' + JSON.stringify(options));
                     passport.use('openidconnect', new OIDCStrategy.Strategy(options,
