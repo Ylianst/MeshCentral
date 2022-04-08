@@ -138,7 +138,7 @@
     "footer": "Default page footer",
     "newAccounts": false
   },
-  "_domains": {
+  "domains": {
     "": {
       "_siteStyle": 2,
       "title": "MyServer",
@@ -250,21 +250,21 @@
         "files": "{0} started a remote files session."
       },
       "_agentCustomization": {
-        "displayName": "Compagny® Product™",
-        "description": "Compagny® Product™ agent for remote monitoring, management and assistance.",
-        "companyName": "Compagny",
-        "serviceName": "compagnyagent",
+        "displayName": "CompanyÂ® Productâ„¢",
+        "description": "CompanyÂ® Productâ„¢ agent for remote monitoring, management and assistance.",
+        "companyName": "CompanyÂ®",
+        "serviceName": "companyagent",
         "image": "agent-logo.png",
         "fileName": "compagnyagent"
       },
       "_assistantCustomization": {
-        "title": "Compagny® Product™",
+        "title": "CompanyÂ® Productâ„¢",
         "image": "assistant-logo.png",
         "fileName": "compagny"
       },
       "_androidCustomization": {
-        "title": "Compagny® Product™",
-        "subtitle": "Product Subtitle™",
+        "title": "CompanyÂ® Productâ„¢",
+        "subtitle": "Product Subtitleâ„¢",
         "image": "assistant-logo.png"
       },
       "_userAllowedIP": "127.0.0.1,192.168.1.0/24",
@@ -407,6 +407,17 @@
           "entityid": "meshcentral",
           "idpurl": "https://server/saml2",
           "cert": "saml.pem"
+        },
+        "oidc": {
+          "authorizationURL": "https://sso.server.com/api/oidc/authorization",
+          "callbackURL": "https://mesh.server.com/oidc-callback",
+          "clientid": "00000000-0000-0000-0000-000000000000",
+          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "issuer": "https://sso.server.com",
+          "tokenURL": "https://sso.server.com/api/oidc/token",
+          "userInfoURL": "https://sso.server.com/api/oidc/userinfo",
+          "logoutURL": "https://sso.server.com/logout",
+          "newAccounts": true
         }
       }
     },

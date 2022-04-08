@@ -1069,6 +1069,21 @@
                   "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
                 },
                 "required": [ "entityid", "idpurl", "cert" ]
+              },
+              "oidc": {
+                "type": "object",
+                "properties": {
+                  "authorizationURL": { "type": "string", "format": "uri", "description": "If set, this will be used as the authorization URL. (If set tokenURL and userInfoURL need set also)" },
+                  "callbackURL": { "type": "string", "format": "uri", "description": "Required, this is the URL that your SSO provider sends auth approval to." },
+                  "clientid": { "type": "string" },
+                  "clientsecret": { "type": "string" },
+                  "issuer": { "type": "string", "format": "uri", "description": "Full URL of SSO portal" },
+                  "tokenURL": { "type": "string", "format": "uri", "description": "If set, this will be used as the token URL. (If set authorizationURL and userInfoURL need set also)" },
+                  "userInfoURL": { "type": "string", "format": "uri", "description": "If set, this will be used as the user info URL. (If set authorizationURL and tokenURL need set also)" },
+                  "logouturl": { "type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link." },
+                  "newAccounts": { "type": "boolean", "default": true }
+                },
+                "required": [ "issuer", "clientid", "clientsecret", "callbackURL" ]
               }
             }
           }

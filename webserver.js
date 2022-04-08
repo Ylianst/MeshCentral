@@ -783,6 +783,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (u.startsWith('~github:') && (domain.authstrategies.github != null) && (typeof domain.authstrategies.github.logouturl == 'string')) { res.redirect(domain.authstrategies.github.logouturl); return; }
             if (u.startsWith('~reddit:') && (domain.authstrategies.reddit != null) && (typeof domain.authstrategies.reddit.logouturl == 'string')) { res.redirect(domain.authstrategies.reddit.logouturl); return; }
             if (u.startsWith('~azure:') && (domain.authstrategies.azure != null) && (typeof domain.authstrategies.azure.logouturl == 'string')) { res.redirect(domain.authstrategies.azure.logouturl); return; }
+            if (u.startsWith('~oidc:') && (domain.authstrategies.oidc != null) && (typeof domain.authstrategies.oidc.logouturl == 'string')) { res.redirect(domain.authstrategies.oidc.logouturl); return; }
             if (u.startsWith('~jumpcloud:') && (domain.authstrategies.jumpcloud != null) && (typeof domain.authstrategies.jumpcloud.logouturl == 'string')) { res.redirect(domain.authstrategies.jumpcloud.logouturl); return; }
             if (u.startsWith('~saml:') && (domain.authstrategies.saml != null) && (typeof domain.authstrategies.saml.logouturl == 'string')) { res.redirect(domain.authstrategies.saml.logouturl); return; }
             if (u.startsWith('~intel:') && (domain.authstrategies.intel != null) && (typeof domain.authstrategies.intel.logouturl == 'string')) { res.redirect(domain.authstrategies.intel.logouturl); return; }
@@ -3008,6 +3009,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (typeof domain.authstrategies.github == 'object') { authStrategies.push('github'); }
             if (typeof domain.authstrategies.reddit == 'object') { authStrategies.push('reddit'); }
             if (typeof domain.authstrategies.azure == 'object') { authStrategies.push('azure'); }
+            if (typeof domain.authstrategies.oidc == 'object') { authStrategies.push('oidc'); }
             if (typeof domain.authstrategies.intel == 'object') { authStrategies.push('intel'); }
             if (typeof domain.authstrategies.jumpcloud == 'object') { authStrategies.push('jumpcloud'); }
             if (typeof domain.authstrategies.saml == 'object') { authStrategies.push('saml'); }
@@ -6238,6 +6240,35 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                     }, handleStrategyLogin);
                 }
+
+                // Generic OpenID Connect
+                if ((typeof domain.authstrategies.oidc == 'object') && (typeof domain.authstrategies.oidc.clientid == 'string') && (typeof domain.authstrategies.oidc.clientsecret == 'string') && (typeof domain.authstrategies.oidc.issuer == 'string')) {
+                    var options = { 
+                        authorizationURL: domain.authstrategies.oidc.authorizationurl, 
+                        callbackURL: domain.authstrategies.oidc.callbackurl,
+                        clientID: domain.authstrategies.oidc.clientid, 
+                        clientSecret: domain.authstrategies.oidc.clientsecret,
+                        issuer: domain.authstrategies.oidc.issuer, 
+                        tokenURL: domain.authstrategies.oidc.tokenurl, 
+                        userInfoURL: domain.authstrategies.oidc.userinfourl, 
+                        scope: [ 'openid profile email' ],
+                        responseMode: 'form_post' ,
+                        state: true
+                    };
+                    const OIDCStrategy = require('@mstrhakr/passport-generic-oidc');
+                    if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; } else { options.callbackURL = url + 'oidc-callback'; }
+                    parent.debug('web', 'Adding Generic OIDC SSO with options: ' + JSON.stringify(options));
+                    passport.use('openidconnect', new OIDCStrategy.Strategy(options,
+                        function verify( iss, sub, profile, cb ) {
+                            var user = { sid: '~oidc:' + profile.id, name: profile.displayName, email: profile.email, strategy: 'oidc' };
+                            parent.debug('AUTH', 'OIDC: Configured user: ' + JSON.stringify(user));
+                            return cb(null, user);
+                        }
+                    ));
+                    obj.app.get(url + 'auth-oidc', domain.passport.authenticate('openidconnect'));
+                    obj.app.get(url + 'oidc-callback', domain.passport.authenticate('openidconnect', { failureRedirect: '/login?failed-auth-attempt', failureFlash: true }), handleStrategyLogin);
+                }
+
 
                 // Generic SAML
                 if (typeof domain.authstrategies.saml == 'object') {
