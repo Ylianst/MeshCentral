@@ -2253,7 +2253,7 @@
             var emailU2Fenabled = ((userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             setDialogMode(2, "Email Authentication", 1, function () {
                 if (emailU2Fenabled != Q('email2facheck').checked) { meshserver.send({ action: 'otpemail', enabled: Q('email2facheck').checked }); }
-            }, "When enabled, on each login, you will be given the option to receive a login token to you email account for added security." + '<br /><br /><label><input id=email2facheck type=checkbox ' + (emailU2Fenabled ? 'checked' : '') + '/>' + "Enable email two-factor authenticaiton." + '</label>');
+            }, "When enabled, on each login, you will be given the option to receive a login token to you email account for added security." + '<br /><br /><label><input id=email2facheck type=checkbox ' + (emailU2Fenabled ? 'checked' : '') + '/>' + "Enable email two-factor authentication." + '</label>');
         }
 
         function account_manageAuthApp() {
