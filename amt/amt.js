@@ -269,8 +269,7 @@ function AmtStackCreateService(wsmanStack) {
     obj.AMT_MessageLog_GetRecords = function (IterationIdentifier, MaxReadRecords, callback_func, tag) { obj.Exec("AMT_MessageLog", "GetRecords", { "IterationIdentifier": IterationIdentifier, "MaxReadRecords": MaxReadRecords }, callback_func, tag); }
     obj.AMT_MessageLog_GetRecord = function (IterationIdentifier, PositionToNext, callback_func) { obj.Exec("AMT_MessageLog", "GetRecord", { "IterationIdentifier": IterationIdentifier, "PositionToNext": PositionToNext }, callback_func); }
     obj.AMT_MessageLog_PositionAtRecord = function (IterationIdentifier, MoveAbsolute, RecordNumber, callback_func) { obj.Exec("AMT_MessageLog", "PositionAtRecord", { "IterationIdentifier": IterationIdentifier, "MoveAbsolute": MoveAbsolute, "RecordNumber": RecordNumber }, callback_func); }
-    obj.AMT_MessageLog_PositionToFirstRecord = function (callback_func, tag) { 
-        obj.Exec("AMT_MessageLog", "PositionToFirstRecord", {}, callback_func, tag); }
+    obj.AMT_MessageLog_PositionToFirstRecord = function (callback_func, tag) { obj.Exec("AMT_MessageLog", "PositionToFirstRecord", {}, callback_func, tag); }
     obj.AMT_MessageLog_FreezeLog = function (Freeze, callback_func) { obj.Exec("AMT_MessageLog", "FreezeLog", { "Freeze": Freeze }, callback_func); }
     obj.AMT_PublicKeyManagementService_AddCRL = function (Url, SerialNumbers, callback_func) { obj.Exec("AMT_PublicKeyManagementService", "AddCRL", { "Url": Url, "SerialNumbers": SerialNumbers }, callback_func); }
     obj.AMT_PublicKeyManagementService_ResetCRLList = function (_method_dummy, callback_func) { obj.Exec("AMT_PublicKeyManagementService", "ResetCRLList", { "_method_dummy": _method_dummy }, callback_func); }
@@ -992,17 +991,21 @@ function AmtStackCreateService(wsmanStack) {
         var endTag = hasNamespace ? '</q:' : '</';
         var namespaceDef = hasNamespace ? (' xmlns:q="' + inInstance['__namespace'] + '"') : '';
         var result = '<r:' + instanceName + namespaceDef + '>';
-        for (var prop in inInstance) {
-            if (!inInstance.hasOwnProperty(prop) || prop.indexOf('__') === 0) continue;
+        if (typeof inInstance == 'string') {
+            result += inInstance;
+        } else {
+            for (var prop in inInstance) {
+                if (!inInstance.hasOwnProperty(prop) || prop.indexOf('__') === 0) continue;
 
-            if (typeof inInstance[prop] === 'function' || Array.isArray(inInstance[prop])) continue;
+                if (typeof inInstance[prop] === 'function' || Array.isArray(inInstance[prop])) continue;
 
-            if (typeof inInstance[prop] === 'object') {
-                //result += startTag + prop +'>' + instanceToXml('prop', inInstance[prop]) + endTag + prop +'>';
-                console.error('only convert one level down...');
-            }
-            else {
-                result += startTag + prop + '>' + inInstance[prop].toString() + endTag + prop + '>';
+                if (typeof inInstance[prop] === 'object') {
+                    //result += startTag + prop +'>' + instanceToXml('prop', inInstance[prop]) + endTag + prop +'>';
+                    console.error('only convert one level down...');
+                }
+                else {
+                    result += startTag + prop + '>' + inInstance[prop].toString() + endTag + prop + '>';
+                }
             }
         }
         result += '</r:' + instanceName + '>';
