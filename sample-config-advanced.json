@@ -250,21 +250,21 @@
         "files": "{0} started a remote files session."
       },
       "_agentCustomization": {
-        "displayName": "Compagny� Product�",
-        "description": "Compagny� Product� agent for remote monitoring, management and assistance.",
-        "companyName": "Compagny",
-        "serviceName": "compagnyagent",
+        "displayName": "Company® Product™",
+        "description": "Company® Product™ agent for remote monitoring, management and assistance.",
+        "companyName": "Company®",
+        "serviceName": "companyagent",
         "image": "agent-logo.png",
         "fileName": "compagnyagent"
       },
       "_assistantCustomization": {
-        "title": "Compagny� Product�",
+        "title": "Company® Product™",
         "image": "assistant-logo.png",
         "fileName": "compagny"
       },
       "_androidCustomization": {
-        "title": "Compagny� Product�",
-        "subtitle": "Product Subtitle�",
+        "title": "Company® Product™",
+        "subtitle": "Product Subtitle™",
         "image": "assistant-logo.png"
       },
       "_userAllowedIP": "127.0.0.1,192.168.1.0/24",
