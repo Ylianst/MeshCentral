@@ -1073,7 +1073,7 @@
               "oidc": {
                 "type": "object",
                 "properties": {
-                  "url": { "type": "string", "format": "uri" },
+                  "issuer": { "type": "string", "format": "uri" },
                   "authorizationURL": { "type": "string", "format": "uri" },
                   "tokenURL": { "type": "string", "format": "uri" },
                   "userInfoURL": { "type": "string", "format": "uri" },
