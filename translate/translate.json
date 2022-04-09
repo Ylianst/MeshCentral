@@ -57570,6 +57570,14 @@
       ]
     },
     {
+      "en": "Sign-in using OpenID Connect",
+      "xloc": [
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-oidc",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-oidc",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->loginpanelform->authStrategies->auth-oidc"
+      ]
+    },
+    {
       "cs": "Přihlaste se pomocí Redditu",
       "da": "Log ind med Reddit",
       "de": "Melden Sie sich mit Reddit an",
@@ -71576,7 +71584,7 @@
     {
       "en": "id, name, email, creation, lastlogin, groups, authfactors, siteadmin, useradmin, locked",
       "nl": "id, naam, email, aangemaakt, laaste login, groeps, authfactors, siteadmin, useradmin, geblokkeerd",
-	  "pl": "id, nazwa, e-mail, tworzenie, ostatnie logowanie, grupy, opcje autentykacji, administrator, uużytkownik, blokada",
+      "pl": "id, nazwa, e-mail, tworzenie, ostatnie logowanie, grupy, opcje autentykacji, administrator, uużytkownik, blokada",
       "xloc": [
         "default.handlebars->39->2394"
       ]

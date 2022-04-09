@@ -1407,6 +1407,7 @@ module.exports.CreateAmtManager = function (parent) {
             var newNetAuthProfileRequested = false;
             var srvNetAuthProfile = domain.amtmanager['802.1x'];
             var devNetAuthProfile = null;
+            var netAuthClientCertInstanceId = null;
 
             if (wiredConfig) {
                 var wiredMatch = 0;
@@ -1429,6 +1430,8 @@ module.exports.CreateAmtManager = function (parent) {
                         if (devNetAuthProfile.Username != srvNetAuthProfile.username) { wiredMatch = 2; }
                         if (devNetAuthProfile.Domain != srvNetAuthProfile.domain) { wiredMatch = 2; }
                     }
+                    // If the existing 802.1x profile has a certificate, remember the client certificate instance id for later checking
+                    if (devNetAuthProfile.ClientCertificate) { netAuthClientCertInstanceId = devNetAuthProfile.ClientCertificate.ReferenceParameters.SelectorSet.Selector.Value; }
                 }
                 if (wiredMatch == 2) { newNetAuthProfileRequested = true; }
             }
@@ -1472,6 +1475,9 @@ module.exports.CreateAmtManager = function (parent) {
                                             if (srvNetAuthProfile.domain != netAuthProfile['Domain']) { netAuthMatch = false; }
                                         }
                                     }
+
+                                    // TODO: If the existing 802.1x profile has a certificate, remember the client certificate instance id for later checking
+
                                     if (netAuthMatch == true) {
                                         // The 802.1x profile seems to match what we want, keep it.
                                         wirelessMatch = true;
@@ -1519,6 +1525,23 @@ module.exports.CreateAmtManager = function (parent) {
                     }
                 }
 
+                // Check the 802.1x client certificate expiration time
+                // TODO: We are only getting the client cert from the wired 802.1x profile, need to get it for wireless too.
+                var netAuthClientCert = null;
+                if (netAuthClientCertInstanceId != null) {
+                    netAuthClientCert = getInstance(responses['AMT_PublicKeyCertificate'].responses, netAuthClientCertInstanceId);
+                    if (netAuthClientCert) {
+                        var cert = null;
+                        try { cert = obj.parent.certificateOperations.forge.pki.certificateFromAsn1(obj.parent.certificateOperations.forge.asn1.fromDer(obj.parent.certificateOperations.forge.util.decode64(netAuthClientCert.X509Certificate))); } catch (ex) { }
+                        if (cert != null) {
+                            const certStart = new Date(cert.validity.notBefore).getTime();
+                            const certEnd = new Date(cert.validity.notAfter).getTime();
+                            const certMidPoint = certStart + ((certEnd - certStart) / 2);
+                            if (Date.now() > certMidPoint) { newNetAuthProfileRequested = true; } // Past mid-point or expired, request a new 802.1x certificate & profile
+                        }
+                    }
+                }
+
                 // Figure out is there are no changes to 802.1x wired configuration
                 if ((wiredMatch == 0) && (newNetAuthProfileRequested == false)) { wiredConfig = false; }
 
@@ -1529,7 +1552,9 @@ module.exports.CreateAmtManager = function (parent) {
                     dev.consoleMsg("Requesting 802.1x credentials for " + netAuthStrings[srvNetAuthProfile.authenticationprotocol] + " from MeshCentral Satellite...");
                     dev.netAuthSatReqId = Buffer.from(parent.crypto.randomBytes(16), 'binary').toString('base64'); // Generate a crypto-secure request id.
                     dev.netAuthSatReqData = { domain: domain, wiredConfig: wiredConfig, wirelessConfig: wirelessConfig, devNetAuthProfile: devNetAuthProfile, srvNetAuthProfile: srvNetAuthProfile, profilesToAdd: profilesToAdd, prioritiesInUse: prioritiesInUse, responses: responses, xxCertificates: xxCertificates, xxCertPrivateKeys: xxCertPrivateKeys }
-                    parent.DispatchEvent([srvNetAuthProfile.satellitecredentials], obj, { action: 'satellite', subaction: '802.1x-ProFile-Request', satelliteFlags: 2, nodeid: dev.nodeid, icon: dev.icon, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: srvNetAuthProfile.authenticationprotocol, devname: dev.name, osname: dev.rname });
+                    const request = { action: 'satellite', subaction: '802.1x-ProFile-Request', satelliteFlags: 2, nodeid: dev.nodeid, icon: dev.icon, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: srvNetAuthProfile.authenticationprotocol, devname: dev.name, osname: dev.rname };
+                    if (netAuthClientCert != null) { request.cert = netAuthClientCert.X509Certificate; request.certid = netAuthClientCertInstanceId; }
+                    parent.DispatchEvent([srvNetAuthProfile.satellitecredentials], obj, request);
 
                     // Set a response timeout
                     const netAuthTimeoutFunc = function netAuthTimeout() {
@@ -1621,6 +1646,7 @@ module.exports.CreateAmtManager = function (parent) {
             dev.consoleMsg("Setting MeshCentral Satellite 802.1x profile...");
             const netAuthSatReqData = dev.netAuthSatReqData;
             delete dev.netAuthSatReqData;
+            if (dev.netAuthCredentials.certid) { netAuthSatReqData.certInstanceId = dev.netAuthCredentials.certid; } // If we are reusing an existing certificate, set that now.
             attempt8021xSyncEx(dev, netAuthSatReqData);
         }
     }
