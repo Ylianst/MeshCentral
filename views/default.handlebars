@@ -2704,14 +2704,19 @@
                 }
                 case 'otpauth-request': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'otpauth-request')) {
-                        var secret = message.secret;
-                        if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
-                        else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                        QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />' + "Secret" + '<br /><tt id=d2optsecret secret="' + message.secret + '" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href="' + message.url + '" rel="noreferrer noopener" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
-                        new QRCode(Q('qrcode'), { text: message.url, width: 128, height: 128, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.H });
-                        QV('idx_dlgOkButton', true);
-                        QE('idx_dlgOkButton', false);
-                        Q('d2otpauthinput').focus();
+                        if (message.err != null) {
+                            var otpauthErrors = [ '', "2FA is locked", "Backup codes are locked", "Login token in use", "OTP 2FA not allowed", "Account is locked", "Unable to load OTPLIB" ];
+                            if ((message.err > 0) && (message.err < otpauthErrors.length)) { QH('d2optinfo', otpauthErrors[message.err]); } else { QH('d2optinfo', format("Error #{0}", message.err)); }
+                        } else {
+                            var secret = message.secret;
+                            if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
+                            else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
+                            QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />' + "Secret" + '<br /><tt id=d2optsecret secret="' + message.secret + '" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href="' + message.url + '" rel="noreferrer noopener" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
+                            new QRCode(Q('qrcode'), { text: message.url, width: 128, height: 128, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.H });
+                            QV('idx_dlgOkButton', true);
+                            QE('idx_dlgOkButton', false);
+                            Q('d2otpauthinput').focus();
+                        }
                     }
                     break;
                 }

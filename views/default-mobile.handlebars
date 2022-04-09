@@ -1604,13 +1604,18 @@
                 }
                 case 'otpauth-request': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'otpauth-request')) {
-                        var secret = message.secret;
-                        if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
-                        else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                        QH('d2optinfo', format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login.", message.url) + '<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret="' + message.secret + '" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
-                        QV('idx_dlgOkButton', true);
-                        QE('idx_dlgOkButton', false);
-                        Q('d2otpauthinput').focus();
+                        if (message.err != null) {
+                            var otpauthErrors = ['', "2FA is locked", "Backup codes are locked", "Login token in use", "OTP 2FA not allowed", "Account is locked", "Unable to load OTPLIB"];
+                            if ((message.err > 0) && (message.err < otpauthErrors.length)) { QH('d2optinfo', otpauthErrors[message.err]); } else { QH('d2optinfo', format("Error #{0}", message.err)); }
+                        } else {
+                            var secret = message.secret;
+                            if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
+                            else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
+                            QH('d2optinfo', format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login.", message.url) + '<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret="' + message.secret + '" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
+                            QV('idx_dlgOkButton', true);
+                            QE('idx_dlgOkButton', false);
+                            Q('d2otpauthinput').focus();
+                        }
                     }
                     break;
                 }
