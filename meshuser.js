@@ -3191,18 +3191,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otpauth-request':
                 {
                     // Do not allow this command if 2FA's are locked
-                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) { ws.send(JSON.stringify({ action: 'otpauth-request', err: 1 })); return; }
 
                     // Do not allow this command if backup codes are not allowed
-                    if ((domain.passwordrequirements) && (domain.passwordrequirements.backupcode2factor == false)) return;
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.backupcode2factor == false)) { ws.send(JSON.stringify({ action: 'otpauth-request', err: 2 })); return; }
 
                     // Do not allow this command when logged in using a login token
-                    if (req.session.loginToken != null) break;
+                    if (req.session.loginToken != null) { ws.send(JSON.stringify({ action: 'otpauth-request', err: 3 })); return; }
 
                     // Check of OTP 2FA is allowed
-                    if ((domain.passwordrequirements) && (domain.passwordrequirements.otp2factor == false)) break;
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.otp2factor == false)) { ws.send(JSON.stringify({ action: 'otpauth-request', err: 4 })); return; }
 
-                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) { ws.send(JSON.stringify({ action: 'otpauth-request', err: 5 })); return; } // If this account is settings locked, return here.
 
                     // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
@@ -3210,7 +3210,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Request a one time password to be setup
                         var otplib = null;
                         try { otplib = require('otplib'); } catch (ex) { }
-                        if (otplib == null) { break; }
+                        if (otplib == null) { ws.send(JSON.stringify({ action: 'otpauth-request', err: 6 })); return; }
                         const secret = otplib.authenticator.generateSecret(); // TODO: Check the random source of this value.
 
                         var domainName = parent.certificates.CommonName;
