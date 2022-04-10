@@ -775,6 +775,15 @@ function CreateMeshCentralServer(config, args) {
         if (typeof obj.args.trustedproxy == 'string') { obj.args.trustedproxy = obj.args.trustedproxy.split(' ').join('').split(','); }
         if (typeof obj.args.tlsoffload == 'string') { obj.args.tlsoffload = obj.args.tlsoffload.split(' ').join('').split(','); }
 
+        // Check the "cookieIpCheck" value
+        if (obj.args.cookieipcheck === false) { obj.args.cookieipcheck = 'none'; }
+        else if ((typeof obj.args.cookieipcheck != 'string') || (obj.args.cookieipcheck.toLowerCase() != 'strict')) { obj.args.cookieipcheck = 'lax'; }
+        else { obj.args.cookieipcheck = 'strict'; }
+
+        // Check the "cookieSameSite" value
+        if (typeof obj.args.cookiesamesite != 'string') { delete obj.args.cookiesamesite; }
+        else if (['none', 'lax', 'strict'].indexOf(obj.args.cookiesamesite.toLowerCase()) == -1) { delete obj.args.cookiesamesite; } else { obj.args.cookiesamesite = obj.args.cookiesamesite.toLowerCase(); }
+
         // Check if WebSocket compression is supported. It's known to be broken in NodeJS v11.11 to v12.15, and v13.2
         const verSplit = process.version.substring(1).split('.');
         var ver = parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100);
