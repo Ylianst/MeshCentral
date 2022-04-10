@@ -214,7 +214,7 @@ module.exports.CreateAmtManager = function (parent) {
         // If a 802.1x profile is active with MeshCentral Satellite, notify Satellite of the removal
         if (domain.amtmanager['802.1x'] != null) {
             var reqId = Buffer.from(parent.crypto.randomBytes(16), 'binary').toString('base64'); // Generate a crypto-secure request id.
-            parent.DispatchEvent([domain.amtmanager['802.1x'].satellitecredentials], obj, { action: 'satellite', subaction: '802.1x-Profile-Remove', satelliteFlags: 2, nodeid: nodeid, domain: nodeid.split('/')[1], nolog: 1 });
+            parent.DispatchEvent([domain.amtmanager['802.1x'].satellitecredentials], obj, { action: 'satellite', subaction: '802.1x-Profile-Remove', satelliteFlags: 2, nodeid: nodeid, domain: nodeid.split('/')[1], nolog: 1, ver: dev.intelamt.ver });
         }
 
         return true;
@@ -1552,7 +1552,7 @@ module.exports.CreateAmtManager = function (parent) {
                     dev.consoleMsg("Requesting 802.1x credentials for " + netAuthStrings[srvNetAuthProfile.authenticationprotocol] + " from MeshCentral Satellite...");
                     dev.netAuthSatReqId = Buffer.from(parent.crypto.randomBytes(16), 'binary').toString('base64'); // Generate a crypto-secure request id.
                     dev.netAuthSatReqData = { domain: domain, wiredConfig: wiredConfig, wirelessConfig: wirelessConfig, devNetAuthProfile: devNetAuthProfile, srvNetAuthProfile: srvNetAuthProfile, profilesToAdd: profilesToAdd, prioritiesInUse: prioritiesInUse, responses: responses, xxCertificates: xxCertificates, xxCertPrivateKeys: xxCertPrivateKeys }
-                    const request = { action: 'satellite', subaction: '802.1x-ProFile-Request', satelliteFlags: 2, nodeid: dev.nodeid, icon: dev.icon, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: srvNetAuthProfile.authenticationprotocol, devname: dev.name, osname: dev.rname };
+                    const request = { action: 'satellite', subaction: '802.1x-ProFile-Request', satelliteFlags: 2, nodeid: dev.nodeid, icon: dev.icon, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: srvNetAuthProfile.authenticationprotocol, devname: dev.name, osname: dev.rname, ver: dev.intelamt.ver };
                     if (netAuthClientCert != null) { request.cert = netAuthClientCert.X509Certificate; request.certid = netAuthClientCertInstanceId; }
                     parent.DispatchEvent([srvNetAuthProfile.satellitecredentials], obj, request);
 
@@ -1869,7 +1869,7 @@ module.exports.CreateAmtManager = function (parent) {
                         if (DERKey == null) { dev.consoleMsg("Failed to match the generated RSA key pair."); return; }
                         dev.consoleMsg("Generated a RSA key pair.");
                         var domain = parent.config.domains[dev.domainid];
-                        parent.DispatchEvent([domain.amtmanager['802.1x'].satellitecredentials], obj, { action: 'satellite', subaction: '802.1x-KeyPair-Response', satelliteFlags: 2, nodeid: dev.nodeid, icon: dev.icon, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: domain.amtmanager['802.1x'].authenticationprotocol, devname: dev.name, osname: dev.rname, DERKey: DERKey, keyInstanceId: keyInstanceId });
+                        parent.DispatchEvent([domain.amtmanager['802.1x'].satellitecredentials], obj, { action: 'satellite', subaction: '802.1x-KeyPair-Response', satelliteFlags: 2, nodeid: dev.nodeid, icon: dev.icon, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: domain.amtmanager['802.1x'].authenticationprotocol, devname: dev.name, osname: dev.rname, DERKey: DERKey, keyInstanceId: keyInstanceId, ver: dev.intelamt.ver });
                     }
                 }, response.Body['KeyPair']['ReferenceParameters']['SelectorSet']['Selector']['Value']);
             }
@@ -1892,7 +1892,7 @@ module.exports.CreateAmtManager = function (parent) {
                 // We got a signed certificate request, return that to the server
                 dev.consoleMsg("Generated a signed certificate request.");
                 var domain = parent.config.domains[dev.domainid];
-                parent.DispatchEvent([domain.amtmanager['802.1x'].satellitecredentials], obj, { action: 'satellite', subaction: '802.1x-CSR-Response', satelliteFlags: 2, nodeid: dev.nodeid, icon: dev.icon, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: domain.amtmanager['802.1x'].authenticationprotocol, devname: dev.name, osname: dev.rname, signedcsr: response.Body['SignedCertificateRequest'] });
+                parent.DispatchEvent([domain.amtmanager['802.1x'].satellitecredentials], obj, { action: 'satellite', subaction: '802.1x-CSR-Response', satelliteFlags: 2, nodeid: dev.nodeid, icon: dev.icon, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: domain.amtmanager['802.1x'].authenticationprotocol, devname: dev.name, osname: dev.rname, signedcsr: response.Body['SignedCertificateRequest'], ver: dev.intelamt.ver });
             }
         });
     }
