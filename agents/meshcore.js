@@ -4368,36 +4368,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'amtconfig': {
                 if (amt == null) { response = 'Intel AMT not detected.'; break; }
-                if (apftunnel != null) { response = 'Intel AMT server tunnel already active'; break; }
                 if (!obj.showamtevent) { obj.showamtevent = true; require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: 'Enabled live view of Intel AMT configuration events, \"amtevents off\" to disable.' }); }
-                amt.getMeiState(15, function (state) {
-                    if ((state == null) || (state.ProvisioningState == null)) { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: 'Intel AMT not ready for configuration.' }); } else {
-                        getAmtOsDnsSuffix(state, function () {
-                            var rx = '';
-                            var apfarg = {
-                                mpsurl: mesh.ServerUrl.replace('agent.ashx', 'apf.ashx'),
-                                mpsuser: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16).replace(/\+/g, '@').replace(/\//g, '$'),
-                                mpspass: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16).replace(/\+/g, '@').replace(/\//g, '$'),
-                                mpskeepalive: 60000,
-                                clientname: state.OsHostname,
-                                clientaddress: '127.0.0.1',
-                                clientuuid: state.UUID,
-                                conntype: 2, // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
-                                meiState: state // MEI state will be passed to MPS server
-                            };
-                            if ((state.UUID == null) || (state.UUID.length != 36)) {
-                                rx = "Unable to get Intel AMT UUID";
-                            } else {
-                                addAmtEvent('User LMS tunnel start.');
-                                apftunnel = require('amt-apfclient')({ debug: false }, apfarg);
-                                apftunnel.onJsonControl = handleApfJsonControl;
-                                apftunnel.onChannelClosed = function () { addAmtEvent('User LMS tunnel closed.'); apftunnel = null; }
-                                try { apftunnel.connect(); } catch (ex) { rx = JSON.stringify(ex); }
-                            }
-                            if (rx != '') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: rx }); }
-                        });
-                    }
-                });
+                if (apftunnel != null) { response = 'Intel AMT server tunnel already active'; break; }
+                require('MeshAgent').SendCommand({ action: 'amtconfig' }); // Request that the server give us a server authentication cookie to start the APF session.
                 break;
             }
             case 'apf': {

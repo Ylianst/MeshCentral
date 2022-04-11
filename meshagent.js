@@ -1732,6 +1732,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                     break;
                 }
+                case 'amtconfig': {
+                    // Sent by the agent when the agent needs a Intel AMT APF connection to the server
+                    const cookie = parent.parent.encodeCookie({ a: 'apf', n: obj.dbNodeKey, m: obj.dbMeshKey }, parent.parent.loginCookieEncryptionKey);
+                    try { obj.send(JSON.stringify({ action: 'amtconfig', user: '**MeshAgentApfTunnel**', pass: cookie })); } catch (ex) { }
+                    break;
+                }
                 case 'scriptTask': {
                     // TODO
                     break;
