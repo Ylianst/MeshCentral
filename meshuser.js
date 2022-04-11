@@ -429,7 +429,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
 
                             // This is a MeshCentral Satellite message
-                            if (event.action == 'satellite') { if ((obj.satelliteFlags & event.satelliteFlags) != 0) { try { ws.send(JSON.stringify(event)); } catch (ex) { } return; } }
+                            if (event.action == 'satellite') { if ((obj.ws.satelliteFlags & event.satelliteFlags) != 0) { try { ws.send(JSON.stringify(event)); } catch (ex) { } return; } }
 
                             // Because of the device group "Show Self Events Only", we need to do more checks here.
                             if (id.startsWith('mesh/')) {
@@ -4823,7 +4823,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'satellite': {
                 // Command indicates this is a MeshCentral Satellite session and what featues it supports
-                if ((command.setFlags != null) && (typeof command.setFlags == 'number')) { obj.satelliteFlags = command.setFlags; }
+                if ((command.setFlags != null) && (typeof command.setFlags == 'number')) { obj.ws.satelliteFlags = command.setFlags; }
                 if ((command.reqid != null) && (typeof command.satelliteFlags == 'number')) {
                     const event = { action: 'satelliteResponse', subaction: command.subaction, reqid: command.reqid, response: command.response, satelliteFlags: command.satelliteFlags, nolog: 1 }
                     if (typeof command.nodeid == 'string') { event.nodeid = command.nodeid; }
@@ -6690,7 +6690,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 userSessionCount++;
                 cmdData.result += (i + ', ' + parent.wssessions[i].length + ' session' + ((parent.wssessions[i].length > 1) ? 's' : '') + '.\r\n');
                 for (var j in parent.wssessions[i]) {
-                    cmdData.result += '    ' + parent.wssessions[i][j].clientIp + ' --> ' + parent.wssessions[i][j].sessionId + ((parent.wssessions[i][j].xclosed) ? (', CLOSED-' + parent.wssessions[i][j].xclosed):'') + '\r\n';
+                    var extras = "";
+                    if (parent.wssessions[i][j].satelliteFlags) { extras += ', Satellite'; }
+                    cmdData.result += '    ' + parent.wssessions[i][j].clientIp + ' --> ' + parent.wssessions[i][j].sessionId + extras + ((parent.wssessions[i][j].xclosed) ? (', CLOSED-' + parent.wssessions[i][j].xclosed):'') + '\r\n';
                 }
             }
         }
