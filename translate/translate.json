@@ -2014,7 +2014,7 @@
       "it": "1 nodo",
       "ja": "1ノード",
       "ko": "1기기",
-      "nl": "1 knooppunt",
+      "nl": "1 apparaat",
       "pl": "1 instanacja",
       "pt": "1 nó",
       "pt-br": "1 nó",
@@ -2959,6 +2959,7 @@
     },
     {
       "en": "2FA is locked",
+      "nl": "2FA is vergrendeld",
       "xloc": [
         "default-mobile.handlebars->11->60",
         "default.handlebars->39->191"
@@ -10667,6 +10668,7 @@
     },
     {
       "en": "Backup codes are locked",
+      "nl": "Backup codes zijn vergrendeld",
       "xloc": [
         "default-mobile.handlebars->11->61",
         "default.handlebars->39->192"
@@ -24781,6 +24783,7 @@
     },
     {
       "en": "Error #{0}",
+      "nl": "Foutmelding #{0}",
       "xloc": [
         "default-mobile.handlebars->11->66",
         "default.handlebars->39->197"
@@ -37060,6 +37063,7 @@
     },
     {
       "en": "Login token in use",
+      "nl": "Inlogtoken in gebruik",
       "xloc": [
         "default-mobile.handlebars->11->62",
         "default.handlebars->39->193"
@@ -40031,7 +40035,7 @@
       "it": "Modifica la posizione del nodo ",
       "ja": "ノードの場所を変更する",
       "ko": "기기 위치 수정",
-      "nl": "Wijzig knooppuntlocatie",
+      "nl": "Wijzig apparaatlocatie",
       "pl": "Modyfikacja lokalizacji node-a",
       "pt": "Modificar localização do nó",
       "pt-br": "Modificar a localização do nó",
@@ -44092,6 +44096,7 @@
     },
     {
       "en": "OTP 2FA not allowed",
+      "nl": "OTP 2FA niet toegestaan",
       "xloc": [
         "default-mobile.handlebars->11->63",
         "default.handlebars->39->194"
@@ -46634,7 +46639,7 @@
       "it": "Posiziona il nodo qui",
       "ja": "ここにノードを配置",
       "ko": "기기를 이 곳에 지정",
-      "nl": "Plaats hier een knooppunt",
+      "nl": "Plaats hier een apparaat",
       "pl": "Umieść instancję tutaj",
       "pt": "Coloque o nó aqui",
       "pt-br": "Coloque o nó aqui",
@@ -51035,7 +51040,7 @@
       "it": "Rimuovi la posizione del nodo",
       "ja": "ノードの場所を削除",
       "ko": "기기 위치 제거",
-      "nl": "Verwijder knooppuntlocatie",
+      "nl": "Verwijder apparaatlocatie",
       "pl": "Usuń lokalizację instancji",
       "pt": "Remover localização do nó",
       "pt-br": "Remover a localização do nó",
@@ -53737,7 +53742,7 @@
       "it": "Salva la posizione del nodo",
       "ja": "ノードの場所を保存",
       "ko": "기기 위치 저장",
-      "nl": "Knooppuntlocatie opslaan",
+      "nl": "apparaatlocatie opslaan",
       "pl": "Zapisz lokalizację instancji",
       "pt": "Salvar localização do nó",
       "pt-br": "Salvar localização do nó",
@@ -54461,7 +54466,7 @@
       "it": "Seleziona un nodo da posizionare",
       "ja": "配置するノードを選択します",
       "ko": "위치를 지정할 기기를 선택하십시오",
-      "nl": "Selecteer een knooppunt om te plaatsen",
+      "nl": "Selecteer een apparaat om te plaatsen",
       "pl": "Wybierz instancję do umieszczenia",
       "pt": "Selecione um nó para colocar",
       "pt-br": "Selecione um nó para colocar",
@@ -57608,6 +57613,7 @@
     },
     {
       "en": "Sign-in using OpenID Connect",
+      "nl": "Aanmelden met OpenID Connect",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-oidc",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-oidc",
@@ -64251,6 +64257,7 @@
     },
     {
       "en": "Unable to load OTPLIB",
+      "nl": "Kan OTPLIB niet laden",
       "xloc": [
         "default-mobile.handlebars->11->65",
         "default.handlebars->39->196"
