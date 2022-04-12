@@ -1,4 +1,4 @@
-site_name: "MeshCentral2 Documentation"
+site_name: "MeshCentral Documentation"
 nav:
   - Home: index.md
 
