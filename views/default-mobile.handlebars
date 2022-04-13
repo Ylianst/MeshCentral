@@ -1796,7 +1796,7 @@
 
                                 // This is a new mesh for us
                                 if (add) {
-                                    meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
+                                    meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links, relayid: message.event.relayid };
                                     meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
                                 }
                             } else {
@@ -1807,6 +1807,7 @@
                                 }
                                 meshes[message.event.meshid].desc = message.event.desc;
                                 meshes[message.event.meshid].links = message.event.links;
+                                if (message.event.relayid != null) { meshes[message.event.meshid].relayid = message.event.relayid; }
 
                                 // Check if we lost rights to this mesh in this change.
                                 if (IsMeshViewable(message.event.meshid) == false) {
@@ -6043,7 +6044,7 @@
             var meshrights = GetMeshRights(currentMesh);
             if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMT only, no agent";
             if (currentMesh.mtype == 2) meshtype = "Managed using a software agent";
-            if (currentMesh.mtype == 3) meshtype = "Local devices, no agent";
+            if (currentMesh.mtype == 3) { if (currentMesh.relayid == null) { meshtype = "Local devices, no agent"; } else { meshtype = "No agent devices relayed thru agent"; } }
             if (currentMesh.mtype == 4) { meshtype = "IP-KVM device"; if (currentMesh.kvm.model == 1) { meshtype += ', ' + 'Raritan KX III'; } }
 
             var x = '';
@@ -6051,6 +6052,14 @@
             x += addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '') ? EscapeHtml(currentMesh.desc) : ('<i>' + "None" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0));
             x += addHtmlValue("Type", meshtype);
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
+
+            // Display the relay device if applicable
+            if ((currentMesh.mtype == 3) && (currentMesh.relayid != null)) {
+                var relayName = '<i>' + "Unknown" + '</i>';
+                var relayNode = getNodeFromId(currentMesh.relayid);
+                if (relayNode != null) { relayName = EscapeHtml(relayNode.name); }
+                x += addHtmlValue("Relay Device", addLinkConditional(relayName, 'p20editmeshrelay()', (meshrights & 1) != 0));
+            }
 
             // Display IP-KVM information if needed
             if (currentMesh.mtype == 4) {
@@ -6143,6 +6152,29 @@
 
         function p20showDeleteMeshDialogEx(buttons, tag) {
             meshserver.send({ action: 'deletemesh', meshid: currentMesh._id, meshname: currentMesh.name });
+        }
+
+        function p20editmeshrelay() {
+            if (xxdialogMode) return;
+
+            // Look for all relay devices
+            var relayDevices = [];
+            if ((features & 2) == 0) { for (var i in nodes) { var node = nodes[i]; if ((node.mtype == 2) && (node.agent != null) && (GetNodeRights(node) == 0xFFFFFFFF)) { relayDevices.push(node); } } }
+            relayDevices.sort(nameSort);
+
+            if (relayDevices.length == 0) {
+                // Relay relay devices available
+                setDialogMode(2, "Edit Device Group", 1, null, "No relay devices available.");
+            } else {
+                var relayDevices2 = [];
+                for (var i in relayDevices) { relayDevices2.push('<option value="' + (relayDevices[i]._id + '"' + ((currentMesh.relayid == relayDevices[i]._id) ? ' selected' : '')) + '>' + EscapeHtml(relayDevices[i].name) + '</option>'); }
+                var x = addHtmlValue("Relay Device", '<div style=width:170px><select id=d2devrelay style=width:100%>' + relayDevices2.join('') + '</select></div>');
+                setDialogMode(2, "Edit Device Group", 3, p20editmeshrelayEx, x);
+            }
+        }
+
+        function p20editmeshrelayEx() {
+            meshserver.send({ action: 'editmesh', meshid: currentMesh._id, relayid: Q('d2devrelay').value });
         }
 
         function p20editmesh(focus) {
@@ -6712,6 +6744,7 @@
         // Generic Methods
         //
 
+        function nameSort(a, b) { var aa = a.name.toLowerCase(), bb = b.name.toLowerCase(); return sortCollator.compare(aa, bb); }
         function getNodeAmtVersion(node) { if ((node == null) || (node.intelamt == null) || (typeof node.intelamt.ver != 'string')) return 0; var verSplit = node.intelamt.ver.split('.'); if (verSplit.length < 2) return 0; return parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100); }
         function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); } } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }

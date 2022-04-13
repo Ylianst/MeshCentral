@@ -3045,7 +3045,7 @@
 
                                 // This is a new mesh for us
                                 if (add) {
-                                    meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
+                                    meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links, amt: message.event.amt, invite: message.event.invite, expireDevs: message.event.expireDevs, relayid: message.event.relayid };
                                     meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
                                 }
                             } else {
@@ -3061,6 +3061,7 @@
                                 if (message.event.amt) { meshes[message.event.meshid].amt = message.event.amt; }
                                 if (message.event.invite != null) { meshes[message.event.meshid].invite = message.event.invite; } else { delete meshes[message.event.meshid].invite; }
                                 if (message.event.expireDevs != null) { if (message.event.expireDevs > 0) { meshes[message.event.meshid].expireDevs = message.event.expireDevs; } else { delete meshes[message.event.meshid].expireDevs; } }
+                                if (message.event.relayid != null) { meshes[message.event.meshid].relayid = message.event.relayid; }
 
                                 // Check if we lost rights to this mesh in this change.
                                 if (IsMeshViewable(message.event.meshid) == false) {
@@ -11574,12 +11575,25 @@
             // Remind the user to add two factor authentication
             if ((features & 0x00040000) && (count2factoraAuths() == 0)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return false; }
 
+            // Look for all relay devices
+            var relayDevices = [];
+            if ((features & 2) == 0) { for (var i in nodes) { var node = nodes[i]; if ((node.mtype == 2) && (node.agent != null) && (GetNodeRights(node) == 0xFFFFFFFF)) { relayDevices.push(node); } } }
+
             // We are allowed, let's prompt to information
             var x = "Create a new device group using the options below." + '<br /><br />', localGroupType = '';
             x += addHtmlValue("Name", '<input id=dp2meshname style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
             if ((features & 1) == 0) { localGroupType += '<option value=3>' + "Local devices, no agent" + '</option>'; }
+            if (((features & 2) == 0) && (relayDevices.length > 0)) { localGroupType += '<option value=5>' + "No agent devices relayed thru agent" + '</option>'; }
             if (features2 & 0x10000) { localGroupType += '<option value=4>' + "IP-KVM / Power device" + '</option>'; }
             x += addHtmlValue("Type", '<div style=width:230px;margin:0;padding:0><select id=dp2meshtype style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) ><option value=2>' + "Manage using a software agent" + '</option><option value=1>' + "Intel&reg; AMT only, no agent" + '</option>' + localGroupType + '</select></div>');
+            if (relayDevices.length > 0) {
+                x += '<div id=d2devrelaydiv style=display:none>';
+                relayDevices.sort(nameSort);
+                var relayDevices2 = [];
+                for (var i in relayDevices) { relayDevices2.push('<option value="' + relayDevices[i]._id + '">' + EscapeHtml(relayDevices[i].name) + '</option>'); }
+                x += addHtmlValue("Relay Device", '<div style=width:230px;margin:0;padding:0><select id=d2devrelay style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) >' + relayDevices2.join('') + '</select></div>');
+                x += '</div>';
+            }
             x += addHtmlValue("Description", '<div style=width:230px;margin:0;padding:0><textarea id=dp2meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
             x += '<div id=d2ipkvm style=display:none><hr />';
             x += addHtmlValue("Model", '<div style=width:230px;margin:0;padding:0><select id=dp2ipkvmmodel style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) ><option value=1>' + "Raritan Dominion KX III" + '</option><option value=2>' + "Web Power Switch 7" + '</option></select></div>');
@@ -11599,9 +11613,8 @@
             if ((x == 2) && (e != null) && (e.key == "Enter")) { Q('dp2meshdesc').focus(); }
             var ok = (Q('dp2meshname').value.length > 0);
             QV('d2ipkvm', meshtype == 4);
-            if (meshtype == 4) {
-                if ((Q('dp2ipkvmhost').value.length == 0) && (Q('dp2ipkvmuser').value.length == 0) && (Q('dp2ipkvmpass').value.length == 0)) { ok = false; }
-            }
+            try { QV('d2devrelaydiv', meshtype == 5); } catch (ex) {}
+            if (meshtype == 4) { if ((Q('dp2ipkvmhost').value.length == 0) && (Q('dp2ipkvmuser').value.length == 0) && (Q('dp2ipkvmpass').value.length == 0)) { ok = false; } }
             QE('idx_dlgOkButton', ok);
         }
 
@@ -11613,6 +11626,10 @@
                 cmd.kvmhost = Q('dp2ipkvmhost').value;
                 cmd.kvmuser = Q('dp2ipkvmuser').value;
                 cmd.kvmpass = Q('dp2ipkvmpass').value;
+            }
+            if (meshtype == 5) {
+                cmd.meshtype = 3;
+                cmd.relayid = Q('d2devrelay').value;
             }
             meshserver.send(cmd);
         }
@@ -11829,7 +11846,7 @@
             var meshtype = format("Unknown #{0}", currentMesh.mtype);
             if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMT only, no agent";
             if (currentMesh.mtype == 2) meshtype = "Managed using a software agent";
-            if (currentMesh.mtype == 3) meshtype = "Local devices, no agent";
+            if (currentMesh.mtype == 3) { if (currentMesh.relayid == null) { meshtype = "Local devices, no agent"; } else { meshtype = "No agent devices relayed thru agent"; } }
             if (currentMesh.mtype == 4) { meshtype = "IP-KVM device"; if (currentMesh.kvm.model == 1) { meshtype += ', ' + 'Raritan KX III'; } }
 
             var x = '';
@@ -11839,6 +11856,14 @@
             // Display group type
             x += addHtmlValue("Type", meshtype);
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
+
+            // Display the relay device if applicable
+            if ((currentMesh.mtype == 3) && (currentMesh.relayid != null)) {
+                var relayName = '<i>' + "Unknown" + '</i>';
+                var relayNode = getNodeFromId(currentMesh.relayid);
+                if (relayNode != null) { relayName = EscapeHtml(relayNode.name); }
+                x += addHtmlValue("Relay Device", addLinkConditional(relayName, 'p20editmeshrelay()', (meshrights & 1) != 0));
+            }
 
             // Display IP-KVM information if needed
             if (currentMesh.mtype == 4) {
@@ -12228,6 +12253,29 @@
 
         function p20showDeleteMeshDialogEx(buttons, tag) {
             meshserver.send({ action: 'deletemesh', meshid: currentMesh._id, meshname: currentMesh.name });
+        }
+
+        function p20editmeshrelay() {
+            if (xxdialogMode) return;
+
+            // Look for all relay devices
+            var relayDevices = [];
+            if ((features & 2) == 0) { for (var i in nodes) { var node = nodes[i]; if ((node.mtype == 2) && (node.agent != null) && (GetNodeRights(node) == 0xFFFFFFFF)) { relayDevices.push(node); } } }
+            relayDevices.sort(nameSort);
+
+            if (relayDevices.length == 0) {
+                // Relay relay devices available
+                setDialogMode(2, "Edit Device Group", 1, null, "No relay devices available.");
+            } else {
+                var relayDevices2 = [];
+                for (var i in relayDevices) { relayDevices2.push('<option value="' + (relayDevices[i]._id + '"' + ((currentMesh.relayid == relayDevices[i]._id) ? ' selected' : '')) + '>' + EscapeHtml(relayDevices[i].name) + '</option>'); }
+                var x = addHtmlValue("Relay Device", '<div style=width:230px;margin:0;padding:0><select id=d2devrelay style=width:100%>' + relayDevices2.join('') + '</select></div>');
+                setDialogMode(2, "Edit Device Group", 3, p20editmeshrelayEx, x);
+            }
+        }
+
+        function p20editmeshrelayEx() {
+            meshserver.send({ action: 'editmesh', meshid: currentMesh._id, relayid: Q('d2devrelay').value });
         }
 
         function p20editmesh(focus) {
