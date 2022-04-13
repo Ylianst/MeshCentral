@@ -1955,6 +1955,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Add KVM information if needed
                         if (command.meshtype == 4) { mesh.kvm = { model: command.kvmmodel, host: command.kvmhost, user: command.kvmuser, pass: command.kvmpass }; }
 
+                        // If this is device group that requires a relay device, store that now
+                        if ((parent.args.lanonly != true) && (command.meshtype == 3) && (typeof command.relayid == 'string')) {
+                            // Check the relay id
+                            var relayIdSplit = command.relayid.split('/');
+                            if ((relayIdSplit[0] == 'node') && (relayIdSplit[1] == domain.id)) { mesh.relayid = command.relayid; }
+                        }
+
                         // Save the new device group
                         db.Set(mesh);
                         parent.meshes[meshid] = mesh;
@@ -2120,6 +2127,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((common.validateInt(command.consent) == true) && (command.consent != mesh.consent)) { if (change != '') change += ' and consent changed'; else change += 'Device group "' + mesh.name + '" consent changed'; changesids.push(4); mesh.consent = command.consent; }
                     if ((common.validateInt(command.expireDevs, 0, 2000) == true) && (command.expireDevs != mesh.expireDevs)) { if (change != '') change += ' and auto-remove changed'; else change += 'Device group "' + mesh.name + '" auto-remove changed'; changesids.push(5); if (command.expireDevs == 0) { delete mesh.expireDevs; } else { mesh.expireDevs = command.expireDevs; } }
 
+                    if ((typeof command.relayid == 'string') && (mesh.mtype == 3) && (mesh.relayid != null) && (command.relayid != mesh.relayid)) {
+                        var relayIdSplit = command.relayid.split('/');
+                        if ((relayIdSplit.length == 3) && (relayIdSplit[0] = 'node') && (relayIdSplit[1] == domain.id)) { if (change != '') { change += ' and device relay changed'; } else { change = 'Device relay changed'; } changesids.push(7); mesh.relayid = command.relayid; }
+                    }
+
                     // See if we need to change device group invitation codes
                     if (mesh.mtype == 2) {
                         if (command.invite === '*') {
@@ -2152,7 +2164,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     if (change != '') {
                         db.Set(mesh);
-                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, consent: mesh.consent, action: 'meshchange', links: mesh.links, msgid: 142, msgArgs: [ mesh.name, changesids ], msg: change, domain: domain.id, invite: mesh.invite, expireDevs: command.expireDevs };
+                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, consent: mesh.consent, action: 'meshchange', links: mesh.links, msgid: 142, msgArgs: [mesh.name, changesids], msg: change, domain: domain.id, invite: mesh.invite, expireDevs: command.expireDevs, relayid: mesh.relayid };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id]), obj, event);
                     }
