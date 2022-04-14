@@ -20,7 +20,7 @@ const common = require('./common.js');
 if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ url: '/', title: 'MeshCentral', port: 88, host: '127.0.0.1' }); } catch (ex) { } }
 
 function CreateMeshCentralServer(config, args) {
-    var obj = {};
+    const obj = {};
     obj.db = null;
     obj.webserver = null;
     obj.redirserver = null;
@@ -107,8 +107,8 @@ function CreateMeshCentralServer(config, args) {
     }
 
     // Clean up any temporary files
-    var removeTime = new Date(Date.now()).getTime() - (30 * 60 * 1000); // 30 minutes
-    var dir = obj.fs.readdir(obj.path.join(obj.filespath, 'tmp'), function (err, files) {
+    const removeTime = new Date(Date.now()).getTime() - (30 * 60 * 1000); // 30 minutes
+    const dir = obj.fs.readdir(obj.path.join(obj.filespath, 'tmp'), function (err, files) {
         if (err != null) return;
         for (var i in files) { try { const filepath = obj.path.join(obj.filespath, 'tmp', files[i]); if (obj.fs.statSync(filepath).mtime.getTime() < removeTime) { obj.fs.unlink(filepath, function () { }); } } catch (ex) { } }
     });
@@ -125,9 +125,9 @@ function CreateMeshCentralServer(config, args) {
     obj.service = null;
     obj.servicelog = null;
     if (obj.platform == 'win32') {
-        var nodewindows = require('node-windows');
+        const nodewindows = require('node-windows');
         obj.service = nodewindows.Service;
-        var eventlogger = nodewindows.EventLogger;
+        const eventlogger = nodewindows.EventLogger;
         obj.servicelog = new eventlogger('MeshCentral');
     }
 
@@ -137,7 +137,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }, 0); } catch (ex) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass', 'indexmcrec', 'mpsdebug', 'dumpcores'];
+        const validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass', 'indexmcrec', 'mpsdebug', 'dumpcores'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -208,7 +208,7 @@ function CreateMeshCentralServer(config, args) {
             // Perform translation operations
             var didSomething = false;
             process.chdir(obj.path.join(__dirname, 'translate'));
-            var translateEngine = require('./translate/translate.js')
+            const translateEngine = require('./translate/translate.js')
             if (customTranslation == true) {
                 // Translate all of the default files using custom translation file
                 translateEngine.startEx(['', '', 'minifyall']);
@@ -271,7 +271,8 @@ function CreateMeshCentralServer(config, args) {
             if (obj.args.install == true) {
                 // Install MeshCentral in Systemd
                 console.log('Installing MeshCentral as background Service...');
-                var userinfo = require('os').userInfo(), systemdConf = null;
+                var systemdConf = null;
+                const userinfo = require('os').userInfo();
                 if (require('fs').existsSync('/etc/systemd/system')) { systemdConf = '/etc/systemd/system/meshcentral.service'; }
                 else if (require('fs').existsSync('/lib/systemd/system')) { systemdConf = '/lib/systemd/system/meshcentral.service'; }
                 else if (require('fs').existsSync('/usr/lib/systemd/system')) { systemdConf = '/usr/lib/systemd/system/meshcentral.service'; }
@@ -279,8 +280,8 @@ function CreateMeshCentralServer(config, args) {
                 console.log('Writing config file...');
                 require('child_process').exec('which node', {}, function (error, stdout, stderr) {
                     if ((error != null) || (stdout.indexOf('\n') == -1)) { console.log('ERROR: Unable to get node location: ' + error); process.exit(); return; }
-                    var nodePath = stdout.substring(0, stdout.indexOf('\n'));
-                    var config = '[Unit]\nDescription=MeshCentral Server\n\n[Service]\nType=simple\nLimitNOFILE=1000000\nExecStart=' + nodePath + ' ' + __dirname + '/meshcentral\nWorkingDirectory=' + userinfo.homedir + '\nEnvironment=NODE_ENV=production\nUser=' + userinfo.username + '\nGroup=' + userinfo.username + '\nRestart=always\n# Restart service after 10 seconds if node service crashes\nRestartSec=10\n# Set port permissions capability\nAmbientCapabilities=cap_net_bind_service\n\n[Install]\nWantedBy=multi-user.target\n';
+                    const nodePath = stdout.substring(0, stdout.indexOf('\n'));
+                    const config = '[Unit]\nDescription=MeshCentral Server\n\n[Service]\nType=simple\nLimitNOFILE=1000000\nExecStart=' + nodePath + ' ' + __dirname + '/meshcentral\nWorkingDirectory=' + userinfo.homedir + '\nEnvironment=NODE_ENV=production\nUser=' + userinfo.username + '\nGroup=' + userinfo.username + '\nRestart=always\n# Restart service after 10 seconds if node service crashes\nRestartSec=10\n# Set port permissions capability\nAmbientCapabilities=cap_net_bind_service\n\n[Install]\nWantedBy=multi-user.target\n';
                     require('child_process').exec('echo \"' + config + '\" | sudo tee ' + systemdConf, {}, function (error, stdout, stderr) {
                         if ((error != null) && (error != '')) { console.log('ERROR: Unable to write config file: ' + error); process.exit(); return; }
                         console.log('Enabling service...');
@@ -363,7 +364,7 @@ function CreateMeshCentralServer(config, args) {
             // Build MeshCentral parent path and Windows Service path
             var mcpath = __dirname;
             if (mcpath.endsWith('\\node_modules\\meshcentral') || mcpath.endsWith('/node_modules/meshcentral')) { mcpath = require('path').join(mcpath, '..', '..'); }
-            var servicepath = obj.path.join(mcpath, 'WinService');
+            const servicepath = obj.path.join(mcpath, 'WinService');
 
             // Check if we need to install, start, stop, remove ourself as a background service
             if (((obj.args.xinstall == true) || (obj.args.xuninstall == true) || (obj.args.start == true) || (obj.args.stop == true) || (obj.args.restart == true))) {
@@ -376,7 +377,7 @@ function CreateMeshCentralServer(config, args) {
                 else if (obj.fs.existsSync(obj.path.join(__dirname, 'winservice.js'))) { serviceFilePath = obj.path.join(__dirname, 'winservice.js'); }
                 if (serviceFilePath == null) { console.log('Unable to find winservice.js'); return; }
 
-                var svc = new obj.service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: servicepath, env: env, wait: 2, grow: 0.5 });
+                const svc = new obj.service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: servicepath, env: env, wait: 2, grow: 0.5 });
                 svc.on('install', function () { console.log('MeshCentral service installed.'); svc.start(); });
                 svc.on('uninstall', function () { console.log('MeshCentral service uninstalled.'); process.exit(); });
                 svc.on('start', function () { console.log('MeshCentral service started.'); process.exit(); });
@@ -432,10 +433,10 @@ function CreateMeshCentralServer(config, args) {
             if (obj.args.vault) { obj.StartVault(); } else { obj.StartEx(); }
         } else {
             // if "--launch" is not specified, launch the server as a child process.
-            var startArgs = [];
+            const startArgs = [];
             for (i in process.argv) {
                 if (i > 0) {
-                    var arg = process.argv[i];
+                    const arg = process.argv[i];
                     if ((arg.length > 0) && ((arg.indexOf(' ') >= 0) || (arg.indexOf('&') >= 0))) { startArgs.push(arg); } else { startArgs.push(arg); }
                 }
             }
@@ -446,7 +447,7 @@ function CreateMeshCentralServer(config, args) {
 
     // Launch MeshCentral as a child server and monitor it.
     obj.launchChildServer = function (startArgs) {
-        var child_process = require('child_process');
+        const child_process = require('child_process');
         try { if (process.traceDeprecation === true) { startArgs.unshift('--trace-deprecation'); } } catch (ex) { }
         childProcess = child_process.execFile(process.argv[0], startArgs, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) {
             if (childProcess.xrestart == 1) {
@@ -459,12 +460,12 @@ function CreateMeshCentralServer(config, args) {
                 var version = '';
                 if (typeof obj.args.selfupdate == 'string') { version = '@' + obj.args.selfupdate; }
                 else if (typeof obj.args.specificupdate == 'string') { version = '@' + obj.args.specificupdate; delete obj.args.specificupdate; }
-                var child_process = require('child_process');
-                var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
-                var npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
-                var env = Object.assign({}, process.env); // Shallow clone
+                const child_process = require('child_process');
+                const npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
+                const npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
+                const env = Object.assign({}, process.env); // Shallow clone
                 if (typeof obj.args.npmproxy == 'string') { env['HTTP_PROXY'] = env['HTTPS_PROXY'] = env['http_proxy'] = env['https_proxy'] = obj.args.npmproxy; }
-                var xxprocess = child_process.exec(npmpath + ' install meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) {
+                const xxprocess = child_process.exec(npmpath + ' install meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) {
                     if ((error != null) && (error != '')) { console.log('Update failed: ' + error); }
                  });
                 xxprocess.data = '';
@@ -484,7 +485,7 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.args.cleannpmcacheonupdate === true) {
                         // Perform NPM cache clean
                         console.log('Cleaning NPM cache...');
-                        var xxxprocess = child_process.exec(npmpath + ' cache clean --force', { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
+                        const xxxprocess = child_process.exec(npmpath + ' cache clean --force', { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
                         xxxprocess.on('close', function (code) { setTimeout(function () { obj.launchChildServer(startArgs); }, 1000); });
                     } else {
                         // Run the updated server
@@ -544,12 +545,12 @@ function CreateMeshCentralServer(config, args) {
         if (callback == null) return;
         try {
             if (typeof obj.args.selfupdate == 'string') { callback(getCurrentVersion(), obj.args.selfupdate); return; } // If we are targetting a specific version, return that one as current.
-            var child_process = require('child_process');
-            var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
-            var npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
-            var env = Object.assign({}, process.env); // Shallow clone
+            const child_process = require('child_process');
+            const npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
+            const npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
+            const env = Object.assign({}, process.env); // Shallow clone
             if (typeof obj.args.npmproxy == 'string') { env['HTTP_PROXY'] = env['HTTPS_PROXY'] = env['http_proxy'] = env['https_proxy'] = obj.args.npmproxy; }
-            var xxprocess = child_process.exec(npmpath + npmproxy + ' view meshcentral dist-tags.latest', { maxBuffer: 512000, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
+            const xxprocess = child_process.exec(npmpath + npmproxy + ' view meshcentral dist-tags.latest', { maxBuffer: 512000, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
             xxprocess.data = '';
             xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
             xxprocess.stderr.on('data', function (data) { });
@@ -566,12 +567,12 @@ function CreateMeshCentralServer(config, args) {
         if (callback == null) return;
         try {
             if (typeof obj.args.selfupdate == 'string') { callback({ current: getCurrentVersion(), latest: obj.args.selfupdate }); return; } // If we are targetting a specific version, return that one as current.
-            var child_process = require('child_process');
-            var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
-            var npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
-            var env = Object.assign({}, process.env); // Shallow clone
+            const child_process = require('child_process');
+            const npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
+            const npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
+            const env = Object.assign({}, process.env); // Shallow clone
             if (typeof obj.args.npmproxy == 'string') { env['HTTP_PROXY'] = env['HTTPS_PROXY'] = env['http_proxy'] = env['https_proxy'] = obj.args.npmproxy; }
-            var xxprocess = child_process.exec(npmpath + npmproxy + ' dist-tag ls meshcentral', { maxBuffer: 512000, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
+            const xxprocess = child_process.exec(npmpath + npmproxy + ' dist-tag ls meshcentral', { maxBuffer: 512000, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
             xxprocess.data = '';
             xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
             xxprocess.stderr.on('data', function (data) { });
@@ -591,12 +592,12 @@ function CreateMeshCentralServer(config, args) {
     // Use NPM to get list of versions
     obj.getServerVersions = function (callback) {
         try {
-            var child_process = require('child_process');
-            var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
-            var npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
-            var env = Object.assign({}, process.env); // Shallow clone
+            const child_process = require('child_process');
+            const npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
+            const npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
+            const env = Object.assign({}, process.env); // Shallow clone
             if (typeof obj.args.npmproxy == 'string') { env['HTTP_PROXY'] = env['HTTPS_PROXY'] = env['http_proxy'] = env['https_proxy'] = obj.args.npmproxy; }
-            var xxprocess = child_process.exec(npmpath + npmproxy + ' view meshcentral versions --json', { maxBuffer: 512000, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
+            const xxprocess = child_process.exec(npmpath + npmproxy + ' view meshcentral versions --json', { maxBuffer: 512000, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
             xxprocess.data = '';
             xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
             xxprocess.stderr.on('data', function (data) { });
@@ -638,9 +639,9 @@ function CreateMeshCentralServer(config, args) {
             if (obj.args.vault.name == null) { obj.args.vault.name = 'meshcentral'; }
 
             // Get new instance of the client
-            var vault = require("node-vault")({ endpoint: obj.args.vault.endpoint, token: obj.args.vault.token });
+            const vault = require("node-vault")({ endpoint: obj.args.vault.endpoint, token: obj.args.vault.token });
             vault.unseal({ key: obj.args.vault.unsealkey })
-                .then(() => {
+                .then(function() {
                     if (obj.args.vaultdeleteconfigfiles) {
                         vault.delete('secret/data/' + obj.args.vault.name)
                             .then(function (r) { console.log('Done.'); process.exit(); })
@@ -787,7 +788,7 @@ function CreateMeshCentralServer(config, args) {
 
         // Check if WebSocket compression is supported. It's known to be broken in NodeJS v11.11 to v12.15, and v13.2
         const verSplit = process.version.substring(1).split('.');
-        var ver = parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100);
+        const ver = parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100);
         if (((ver >= 11.11) && (ver <= 12.15)) || (ver == 13.2)) {
             if ((obj.args.wscompression === true) || (obj.args.agentwscompression === true)) { addServerWarning('WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2', 4); }
             obj.args.wscompression = obj.args.agentwscompression = false;
@@ -832,7 +833,7 @@ function CreateMeshCentralServer(config, args) {
                             if (err != null) { console.log("Database error: " + err); process.exit(); return; }
                             if ((docs != null) && (docs.length != 0)) { console.log('User already exists.'); process.exit(); return; }
                             if ((domainid != '') && ((config.domains == null) || (config.domains[domainid] == null))) { console.log("Invalid domain."); process.exit(); return; }
-                            var user = { _id: userid, type: 'user', name: (typeof obj.args.name == 'string') ? obj.args.name : (userid.split('/')[2]), domain: domainid, creation: Math.floor(Date.now() / 1000), links: {} };
+                            const user = { _id: userid, type: 'user', name: (typeof obj.args.name == 'string') ? obj.args.name : (userid.split('/')[2]), domain: domainid, creation: Math.floor(Date.now() / 1000), links: {} };
                             if (typeof obj.args.email == 'string') { user.email = obj.args.email; user.emailVerified = true; }
                             if (obj.args.hashpass) {
                                 // Create an account using a pre-hashed password. Use --hashpassword to pre-hash a password.
@@ -856,7 +857,7 @@ function CreateMeshCentralServer(config, args) {
                         obj.db.Get(userid, function (err, docs) {
                             if (err != null) { console.log("Database error: " + err); process.exit(); return; }
                             if ((docs == null) || (docs.length == 0)) { console.log("Unknown userid, usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
-                            var user = docs[0]; if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { user.siteadmin -= 32; } // Unlock the account.
+                            const user = docs[0]; if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { user.siteadmin -= 32; } // Unlock the account.
                             delete user.phone; delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; delete user.otpdev; delete user.otpsms; // Disable 2FA
                             if (obj.args.hashpass) {
                                 // Reset an account using a pre-hashed password. Use --hashpassword to pre-hash a password.
@@ -897,7 +898,7 @@ function CreateMeshCentralServer(config, args) {
                                 process.exit(0);
                             } else {
                                 // Load all users
-                                var allusers = {}, removeCount = 0;
+                                const allusers = {}, removeCount = 0;
                                 obj.db.GetAllType('user', function (err, docs) {
                                     obj.common.unEscapeAllLinksFieldName(docs);
                                     for (i in docs) { allusers[docs[i]._id] = docs[i]; }
@@ -907,7 +908,7 @@ function CreateMeshCentralServer(config, args) {
                                 for (var i in docs) {
                                     if ((docs[i] != null) && (docs[i].agent != null) && (docs[i].agent.id == 23)) {
                                         // Remove this test node
-                                        var node = docs[i];
+                                        const node = docs[i];
 
                                         // Delete this node including network interface information, events and timeline
                                         removeCount++;
@@ -973,7 +974,7 @@ function CreateMeshCentralServer(config, args) {
                         obj.db.getConfigFile(obj.args.dbshowconfigfile, function (err, docs) {
                             if (err == null) {
                                 if (docs.length == 0) { console.log("File not found."); } else {
-                                    var data = obj.db.decryptData(obj.args.configkey, docs[0].data);
+                                    const data = obj.db.decryptData(obj.args.configkey, docs[0].data);
                                     if (data == null) { console.log("Invalid config key."); } else { console.log(data); }
                                 }
                             } else { console.log("Unable to read from database."); }
@@ -1037,7 +1038,7 @@ function CreateMeshCentralServer(config, args) {
                                             if (binary == null) {
                                                 console.log("Invalid config key.");
                                             } else {
-                                                var fullFileName = obj.path.join(obj.args.dbpullconfigfiles, file);
+                                                const fullFileName = obj.path.join(obj.args.dbpullconfigfiles, file);
                                                 try { obj.fs.writeFileSync(fullFileName, binary); } catch (ex) { console.log('Unable to write to ' + fullFileName); process.exit(); return; }
                                                 console.log('Pulling ' + file + ', ' + binary.length + ' bytes.');
                                             }
@@ -1082,7 +1083,7 @@ function CreateMeshCentralServer(config, args) {
                         if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); }
                         // Escape MongoDB invalid field chars
                         for (i in json) {
-                            var doc = json[i];
+                            const doc = json[i];
                             for (var j in doc) { if (j.indexOf('.') >= 0) { console.log("Invalid field name (" + j + ") in document: " + json[i]); return; } }
                             //if ((json[i].type == 'ifinfo') && (json[i].netif2 != null)) { for (var j in json[i].netif2) { var esc = obj.common.escapeFieldName(j); if (esc !== j) { json[i].netif2[esc] = json[i].netif2[j]; delete json[i].netif2[j]; } } }
                             //if ((json[i].type == 'mesh') && (json[i].links != null)) { for (var j in json[i].links) { var esc = obj.common.escapeFieldName(j); if (esc !== j) { json[i].links[esc] = json[i].links[j]; delete json[i].links[j]; } } }
@@ -1124,19 +1125,19 @@ function CreateMeshCentralServer(config, args) {
 
                         // Get all users from current database
                         obj.db.GetAllType('user', function (err, docs) {
-                            var users = {}, usersCount = 0;
+                            const users = {}, usersCount = 0;
                             for (var i in docs) { users[docs[i]._id] = docs[i]; usersCount++; }
 
                             // Fetch all meshes from the database
                             obj.db.GetAllType('mesh', function (err, docs) {
                                 obj.common.unEscapeAllLinksFieldName(docs);
-                                var meshes = {}, meshesCount = 0;
+                                const meshes = {}, meshesCount = 0;
                                 for (var i in docs) { meshes[docs[i]._id] = docs[i]; meshesCount++; }
                                 console.log('Loaded ' + usersCount + ' users and ' + meshesCount + ' meshes.');
                                 // Look at each object in the import file
-                                var objectToAdd = [];
+                                const objectToAdd = [];
                                 for (var i in json) {
-                                    var newobj = json[i];
+                                    const newobj = json[i];
                                     if (newobj.type == 'user') {
                                         // Check if the user already exists
                                         var existingUser = users[newobj._id];
@@ -1246,7 +1247,7 @@ function CreateMeshCentralServer(config, args) {
         if (process.ppid) { obj.updateServerState('server-parent-pid', process.ppid); }
 
         // Read environment variables. For a subset of arguments, we allow them to be read from environment variables.
-        var xenv = ['user', 'port', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'exactport', 'debug'];
+        const xenv = ['user', 'port', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'exactport', 'debug'];
         for (i in xenv) { if ((obj.args[xenv[i]] == null) && (process.env['mesh' + xenv[i]])) { obj.args[xenv[i]] = obj.common.toNumber(process.env['mesh' + xenv[i]]); } }
 
         // Validate the domains, this is used for multi-hosting
@@ -1435,9 +1436,9 @@ function CreateMeshCentralServer(config, args) {
                 if (obj.args.getwspass.length == 64) {
                     obj.crypto.randomBytes(6, function (err, buf) {
                         while (obj.dbconfig.amtWsEventSecret == null) { process.nextTick(); }
-                        var username = buf.toString('hex');
-                        var nodeid = obj.args.getwspass;
-                        var pass = obj.crypto.createHash('sha384').update(username.toLowerCase() + ':' + nodeid + ':' + obj.dbconfig.amtWsEventSecret).digest('base64').substring(0, 12).split('/').join('x').split('\\').join('x');
+                        const username = buf.toString('hex');
+                        const nodeid = obj.args.getwspass;
+                        const pass = obj.crypto.createHash('sha384').update(username.toLowerCase() + ':' + nodeid + ':' + obj.dbconfig.amtWsEventSecret).digest('base64').substring(0, 12).split('/').join('x').split('\\').join('x');
                         console.log("--- Intel(r) AMT WSMAN eventing credentials ---");
                         console.log("Username: " + username);
                         console.log("Password: " + pass);
@@ -1490,7 +1491,7 @@ function CreateMeshCentralServer(config, args) {
                 else if (obj.config.letsencrypt.email.split('@').length != 2) { leok = false; addServerWarning("Invalid Let's Encrypt email address.", 10); }
                 else if (obj.config.letsencrypt.email.trim() !== obj.config.letsencrypt.email) { leok = false; addServerWarning("Invalid Let's Encrypt email address.", 10); }
                 else {
-                    var le = require('./letsencrypt.js');
+                    const le = require('./letsencrypt.js');
                     try { obj.letsencrypt = le.CreateLetsEncrypt(obj); } catch (ex) { console.log(ex); }
                     if (obj.letsencrypt == null) { addServerWarning("Unable to setup Let's Encrypt module.", 13); leok = false; }
                 }
@@ -1545,7 +1546,7 @@ function CreateMeshCentralServer(config, args) {
             obj.certificateOperations.loadTextFile('https://www.cloudflare.com/ips-v4', null, function (url, data, tag) {
                 if (data != null) {
                     if (Array.isArray(obj.args.trustedproxy) == false) { obj.args.trustedproxy = []; }
-                    var ipranges = data.split('\n');
+                    const ipranges = data.split('\n');
                     for (var i in ipranges) { if (ipranges[i] != '') { obj.args.trustedproxy.push(ipranges[i]); } }
                     obj.certificateOperations.loadTextFile('https://www.cloudflare.com/ips-v6', null, function (url, data, tag) {
                         if (data != null) {
@@ -1575,8 +1576,8 @@ function CreateMeshCentralServer(config, args) {
         if (obj.certificates.CommonName.indexOf('.') == -1) { /*console.log('Server name not configured, running in LAN-only mode.');*/ obj.args.lanonly = true; }
 
         // Write server version and run mode
-        var productionMode = (process.env.NODE_ENV && (process.env.NODE_ENV == 'production'));
-        var runmode = (obj.args.lanonly ? 2 : (obj.args.wanonly ? 1 : 0));
+        const productionMode = (process.env.NODE_ENV && (process.env.NODE_ENV == 'production'));
+        const runmode = (obj.args.lanonly ? 2 : (obj.args.wanonly ? 1 : 0));
         console.log("MeshCentral v" + getCurrentVersion() + ', ' + (["Hybrid (LAN + WAN) mode", "WAN mode", "LAN mode"][runmode]) + (productionMode ? ", Production mode." : '.'));
 
         // Check that no sub-domains have the same DNS as the parent
@@ -1592,7 +1593,7 @@ function CreateMeshCentralServer(config, args) {
         // Load MeshAgent translation strings
         try {
             var translationpath = obj.path.join(__dirname, 'agents', 'agent-translations.json');
-            var translationpath2 = obj.path.join(obj.datapath, 'agents', 'agent-translations.json');
+            const translationpath2 = obj.path.join(obj.datapath, 'agents', 'agent-translations.json');
             if (obj.fs.existsSync(translationpath2)) { translationpath = translationpath2; } // If the agent is present in "meshcentral-data/agents", use that one instead.
             var translations = JSON.parse(obj.fs.readFileSync(translationpath).toString());
             if (translations['zh-chs']) { translations['zh-hans'] = translations['zh-chs']; delete translations['zh-chs']; }
@@ -1792,7 +1793,7 @@ function CreateMeshCentralServer(config, args) {
                     else if ((Math.floor(obj.serverStatsCounter / 4) % 2) == 1) { hours = 24; } // Another half of the event get removed after 24 hours.
                     else if ((Math.floor(obj.serverStatsCounter / 8) % 2) == 1) { hours = 48; } // Another half of the event get removed after 48 hours.
                     else if ((Math.floor(obj.serverStatsCounter / 16) % 2) == 1) { hours = 72; } // Another half of the event get removed after 72 hours.
-                    var expire = new Date();
+                    const expire = new Date();
                     expire.setTime(expire.getTime() + (60 * 60 * 1000 * hours));
 
                     // Get traffic data
@@ -1866,7 +1867,7 @@ function CreateMeshCentralServer(config, args) {
                     obj.watchdogmaxtime = null;
                     obj.watchdogtable = [];
                     obj.watchdog = setInterval(function () {
-                        var now = Date.now(), delta = now - obj.watchdogtime - config.settings.watchdog.interval;
+                        const now = Date.now(), delta = now - obj.watchdogtime - config.settings.watchdog.interval;
                         if (delta > obj.watchdogmax) { obj.watchdogmax = delta; obj.watchdogmaxtime = new Date().toLocaleString(); }
                         if (delta > config.settings.watchdog.timeout) {
                             const msg = obj.common.format("Watchdog timer timeout, {0}ms.", delta);
@@ -1926,14 +1927,14 @@ function CreateMeshCentralServer(config, args) {
                     obj.pendingProxyCertificatesRequests--;
                     if (cert != null) {
                         // Hash the entire cert
-                        var hash = obj.crypto.createHash('sha384').update(Buffer.from(cert, 'binary')).digest('hex');
+                        const hash = obj.crypto.createHash('sha384').update(Buffer.from(cert, 'binary')).digest('hex');
                         if (xdomain.certhash != hash) { // The certificate has changed.
                             xdomain.certkeyhash = hash;
                             xdomain.certhash = hash;
 
                             try {
                                 // Decode a RSA certificate and hash the public key, if this is not RSA, skip this.
-                                var forgeCert = obj.certificateOperations.forge.pki.certificateFromAsn1(obj.certificateOperations.forge.asn1.fromDer(cert));
+                                const forgeCert = obj.certificateOperations.forge.pki.certificateFromAsn1(obj.certificateOperations.forge.asn1.fromDer(cert));
                                 xdomain.certkeyhash = obj.certificateOperations.forge.pki.getPublicKeyFingerprint(forgeCert.publicKey, { md: obj.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
                                 obj.webserver.webCertificateExpire[xdomain.id] = Date.parse(forgeCert.validity.notAfter); // Update certificate expire time
                                 //console.log('V1: ' + xdomain.certkeyhash);
@@ -1968,8 +1969,8 @@ function CreateMeshCentralServer(config, args) {
         obj.db.maintenance();
 
         // Clean up any temporary files
-        var removeTime = new Date(Date.now()).getTime() - (30 * 60 * 1000); // 30 minutes
-        var dir = obj.fs.readdir(obj.path.join(obj.filespath, 'tmp'), function (err, files) {
+        const removeTime = new Date(Date.now()).getTime() - (30 * 60 * 1000); // 30 minutes
+        const dir = obj.fs.readdir(obj.path.join(obj.filespath, 'tmp'), function (err, files) {
             if (err != null) return;
             for (var i in files) { try { const filepath = obj.path.join(obj.filespath, 'tmp', files[i]); if (obj.fs.statSync(filepath).mtime.getTime() < removeTime) { obj.fs.unlink(filepath, function () { }); } } catch (ex) { } }
         });
@@ -1998,9 +1999,10 @@ function CreateMeshCentralServer(config, args) {
         if (obj.config.settings.autobackup && (typeof obj.config.settings.autobackup.backupintervalhours == 'number')) {
             obj.db.Get('LastAutoBackupTime', function (err, docs) {
                 if (err != null) return;
-                var lastBackup = 0, now = new Date().getTime();
+                var lastBackup = 0;
+                const now = new Date().getTime();
                 if (docs.length == 1) { lastBackup = docs[0].value; }
-                var delta = now - lastBackup;
+                const delta = now - lastBackup;
                 if (delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) {
                     // A new auto-backup is required.
                     obj.db.Set({ _id: 'LastAutoBackupTime', value: now }); // Save the current time in the database
@@ -2024,7 +2026,7 @@ function CreateMeshCentralServer(config, args) {
                 obj.debug('main', obj.common.format("Server stopped, updating settings: {0}", restoreFile));
                 console.log("Updating settings folder...");
 
-                var yauzl = require('yauzl');
+                const yauzl = require('yauzl');
                 yauzl.open(restoreFile, { lazyEntries: true }, function (err, zipfile) {
                     if (err) throw err;
                     zipfile.readEntry();
@@ -2039,7 +2041,7 @@ function CreateMeshCentralServer(config, args) {
                             zipfile.openReadStream(entry, function (err, readStream) {
                                 if (err) throw err;
                                 readStream.on('end', function () { zipfile.readEntry(); });
-                                var directory = obj.path.dirname(entry.fileName);
+                                const directory = obj.path.dirname(entry.fileName);
                                 if (directory != '.') {
                                     directory = obj.getConfigFilePath(directory)
                                     if (obj.fs.existsSync(directory) == false) { obj.fs.mkdirSync(directory); }
@@ -2234,7 +2236,7 @@ function CreateMeshCentralServer(config, args) {
 
         // Get the list of users that have visibility to this device
         // This includes users that are part of user groups
-        var users = [];
+        const users = [];
         for (var i in mesh.links) {
             if (i.startsWith('user/') && (users.indexOf(i) < 0)) { users.push(i); }
             if (i.startsWith('ugrp/')) {
@@ -2316,7 +2318,7 @@ function CreateMeshCentralServer(config, args) {
                 eventConnectChange = 1;
 
                 // Set new power state in database
-                var record = { time: new Date(connectTime), nodeid: nodeid, power: powerState };
+                const record = { time: new Date(connectTime), nodeid: nodeid, power: powerState };
                 if (oldPowerState != null) { record.oldPower = oldPowerState; }
                 obj.db.storePowerEvent(record, obj.multiServer);
             }
@@ -2340,7 +2342,7 @@ function CreateMeshCentralServer(config, args) {
             if (serverid == null) { serverid = obj.serverId; }
             if (obj.peerConnectivityByNode[serverid] == null) return; // Guard against unknown serverid's
             var eventConnectChange = 0;
-            var state = obj.peerConnectivityByNode[serverid][nodeid];
+            const state = obj.peerConnectivityByNode[serverid][nodeid];
             if (state) {
                 // Change the connection in the node and mesh state lists
                 if ((state.connectivity & connectType) == 0) { state.connectivity |= connectType; eventConnectChange = 1; }
@@ -2396,7 +2398,7 @@ function CreateMeshCentralServer(config, args) {
             var eventConnectChange = 0;
 
             // Remove the agent connection from the nodes connection list
-            var state = obj.connectivityByNode[nodeid];
+            const state = obj.connectivityByNode[nodeid];
             if (state == null) return;
 
             if ((state.connectivity & connectType) != 0) {
@@ -2413,7 +2415,8 @@ function CreateMeshCentralServer(config, args) {
             }
 
             // Clear node power state
-            var oldPowerState = state.powerState, powerState = 0;
+            var powerState = 0;
+            const oldPowerState = state.powerState;
             if (connectType == 1) { state.agentPower = 0; } else if (connectType == 2) { state.ciraPower = 0; } else if (connectType == 4) { state.amtPower = 0; }
             if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
             if ((state.powerState == null) || (state.powerState != powerState)) {
@@ -2437,7 +2440,7 @@ function CreateMeshCentralServer(config, args) {
             // Remove the agent connection from the nodes connection list
             if (serverid == null) { serverid = obj.serverId; }
             if (obj.peerConnectivityByNode[serverid] == null) return; // Guard against unknown serverid's
-            var state = obj.peerConnectivityByNode[serverid][nodeid];
+            const state = obj.peerConnectivityByNode[serverid][nodeid];
             if (state == null) return;
 
             // If existing state exist, remove this connection
@@ -2687,7 +2690,7 @@ function CreateMeshCentralServer(config, args) {
     };
 
     // List of possible mesh agent install scripts
-    var meshToolsList = {
+    const meshToolsList = {
         'MeshCentralRouter': { localname: 'MeshCentralRouter.exe', dlname: 'winrouter' },
         'MeshCentralAssistant': { localname: 'MeshCentralAssistant.exe', dlname: 'winassistant', winhash: true }
         //'MeshCentralRouterMacOS': { localname: 'MeshCentralRouter.dmg', dlname: 'MeshCentralRouter.dmg' }
@@ -2698,7 +2701,7 @@ function CreateMeshCentralServer(config, args) {
         for (var toolname in meshToolsList) {
             if (meshToolsList[toolname].winhash === true) {
                 var toolpath = obj.path.join(__dirname, 'agents', meshToolsList[toolname].localname);
-                var toolpath2 = obj.path.join(obj.datapath, 'agents', meshToolsList[toolname].localname);
+                const toolpath2 = obj.path.join(obj.datapath, 'agents', meshToolsList[toolname].localname);
                 if (obj.fs.existsSync(toolpath2)) { toolpath = toolpath2; } // If the tool is present in "meshcentral-data/agents", use that one instead.
 
                 var hashStream = obj.crypto.createHash('sha384');
@@ -2713,11 +2716,11 @@ function CreateMeshCentralServer(config, args) {
                     try { stats = obj.fs.statSync(this.toolpath); } catch (ex) { }
                     if (stats != null) { obj.meshToolsBinaries[this.toolname].size = stats.size; }
                 });
-                var options = { sourcePath: toolpath, targetStream: hashStream };
+                const options = { sourcePath: toolpath, targetStream: hashStream };
                 obj.exeHandler.hashExecutableFile(options);
             } else {
                 var toolpath = obj.path.join(__dirname, 'agents', meshToolsList[toolname].localname);
-                var toolpath2 = obj.path.join(obj.datapath, 'agents', meshToolsList[toolname].localname);
+                const toolpath2 = obj.path.join(obj.datapath, 'agents', meshToolsList[toolname].localname);
                 if (obj.fs.existsSync(toolpath2)) { toolpath = toolpath2; } // If the tool is present in "meshcentral-data/agents", use that one instead.
 
                 var stream = null;
@@ -2751,7 +2754,7 @@ function CreateMeshCentralServer(config, args) {
     };
 
     // List of possible mesh agent install scripts
-    var meshAgentsInstallScriptList = {
+    const meshAgentsInstallScriptList = {
         1: { id: 1, localname: 'meshinstall-linux.sh', rname: 'meshinstall.sh', linux: true },
         2: { id: 2, localname: 'meshinstall-initd.sh', rname: 'meshagent', linux: true },
         5: { id: 5, localname: 'meshinstall-bsd-rcd.sh', rname: 'meshagent', linux: true },
@@ -2846,7 +2849,7 @@ function CreateMeshCentralServer(config, args) {
         if (objx == null) { objx = obj; } else { suffix = '-' + domain.id; objx.meshAgentBinaries = {}; }
         
         // Load agent information file. This includes the data & time of the agent.
-        var agentInfo = [];
+        const agentInfo = [];
         try { agentInfo = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'hashagents.json'), 'utf8')); } catch (ex) { }
 
         var archcount = 0;
@@ -2882,7 +2885,7 @@ function CreateMeshCentralServer(config, args) {
                 if ((obj.args.agentsinram === true) || (((archid == 3) || (archid == 4)) && (obj.args.agentsinram !== false))) {
                     if ((archid == 3) || (archid == 4)) {
                         // Load the agent with a random msh added to it.
-                        var outStream = new require('stream').Duplex();
+                        const outStream = new require('stream').Duplex();
                         outStream.meshAgentBinary = objx.meshAgentBinaries[archid];
                         outStream.meshAgentBinary.randomMsh = Buffer.from(obj.crypto.randomBytes(64), 'binary').toString('base64');
                         outStream.bufferList = [];
@@ -2895,20 +2898,20 @@ function CreateMeshCentralServer(config, args) {
                             delete this.bufferList;
 
                             // Hash the uncompressed binary
-                            var hash = obj.crypto.createHash('sha384').update(this.meshAgentBinary.data);
+                            const hash = obj.crypto.createHash('sha384').update(this.meshAgentBinary.data);
                             this.meshAgentBinary.fileHash = hash.digest('binary');
                             this.meshAgentBinary.fileHashHex = Buffer.from(this.meshAgentBinary.fileHash, 'binary').toString('hex');
 
                             // Compress the agent using ZIP
-                            var archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
+                            const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
                             const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
                             const onZipEnd = function onZipEnd() {
                                 // Concat all the buffer for create compressed zip agent
-                                var concatData = Buffer.concat(onZipData.x.zacc);
+                                const concatData = Buffer.concat(onZipData.x.zacc);
                                 delete onZipData.x.zacc;
 
                                 // Hash the compressed binary
-                                var hash = obj.crypto.createHash('sha384').update(concatData);
+                                const hash = obj.crypto.createHash('sha384').update(concatData);
                                 onZipData.x.zhash = hash.digest('binary');
                                 onZipData.x.zhashhex = Buffer.from(onZipData.x.zhash, 'binary').toString('hex');
 
@@ -2949,16 +2952,16 @@ function CreateMeshCentralServer(config, args) {
                         objx.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath);
 
                         // Compress the agent using ZIP
-                        var archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
+                        const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
 
                         const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
                         const onZipEnd = function onZipEnd() {
                             // Concat all the buffer for create compressed zip agent
-                            var concatData = Buffer.concat(onZipData.x.zacc);
+                            const concatData = Buffer.concat(onZipData.x.zacc);
                             delete onZipData.x.zacc;
 
                             // Hash the compressed binary
-                            var hash = obj.crypto.createHash('sha384').update(concatData);
+                            const hash = obj.crypto.createHash('sha384').update(concatData);
                             onZipData.x.zhash = hash.digest('binary');
                             onZipData.x.zhashhex = Buffer.from(onZipData.x.zhash, 'binary').toString('hex');
 
@@ -2982,20 +2985,20 @@ function CreateMeshCentralServer(config, args) {
                 }
 
                 // Hash the binary
-                var hashStream = obj.crypto.createHash('sha384');
+                const hashStream = obj.crypto.createHash('sha384');
                 hashStream.archid = archid;
                 hashStream.on('data', function (data) {
                     objx.meshAgentBinaries[this.archid].hash = data.toString('binary');
                     objx.meshAgentBinaries[this.archid].hashhex = data.toString('hex');
                     if ((--archcount == 0) && (func != null)) { func(); }
                 });
-                var options = { sourcePath: agentpath, targetStream: hashStream, platform: obj.meshAgentsArchitectureNumbers[archid].platform };
+                const options = { sourcePath: agentpath, targetStream: hashStream, platform: obj.meshAgentsArchitectureNumbers[archid].platform };
                 if (objx.meshAgentBinaries[archid].pe != null) { options.peinfo = objx.meshAgentBinaries[archid].pe; }
                 obj.exeHandler.hashExecutableFile(options);
 
                 // If we are not loading Windows binaries to RAM, compute the RAW file hash of the signed binaries here.
                 if ((obj.args.agentsinram === false) && ((archid == 3) || (archid == 4))) {
-                    var hash = obj.crypto.createHash('sha384').update(obj.fs.readFileSync(agentpath));
+                    const hash = obj.crypto.createHash('sha384').update(obj.fs.readFileSync(agentpath));
                     objx.meshAgentBinaries[archid].fileHash = hash.digest('binary');
                     objx.meshAgentBinaries[archid].fileHashHex = Buffer.from(objx.meshAgentBinaries[archid].fileHash, 'binary').toString('hex');
                 }
@@ -3008,7 +3011,7 @@ function CreateMeshCentralServer(config, args) {
     // Generate a time limited user login token
     obj.getLoginToken = function (userid, func) {
         if ((userid == null) || (typeof userid != 'string')) { func('Invalid userid.'); return; }
-        var x = userid.split('/');
+        const x = userid.split('/');
         if (x == null || x.length != 3 || x[0] != 'user') { func('Invalid userid.'); return; }
         obj.db.Get(userid, function (err, docs) {
             if (err != null || docs == null || docs.length == 0) {
@@ -3047,13 +3050,13 @@ function CreateMeshCentralServer(config, args) {
 
     // Load the list of Intel AMT UUID and passwords from "amtactivation.log"
     obj.loadAmtActivationLogPasswords = function (func) {
-        var amtlogfilename = obj.path.join(obj.datapath, 'amtactivation.log');
+        const amtlogfilename = obj.path.join(obj.datapath, 'amtactivation.log');
         obj.fs.readFile(amtlogfilename, 'utf8', function (err, data) {
-            var amtPasswords = {}; // UUID --> [Passwords]
+            const amtPasswords = {}; // UUID --> [Passwords]
             if ((err == null) && (data != null)) {
                 const lines = data.split('\n');
                 for (var i in lines) {
-                    var line = lines[i];
+                    const line = lines[i];
                     if (line.startsWith('{')) {
                         var j = null;
                         try { j = JSON.parse(line); } catch (ex) { }
@@ -3091,7 +3094,7 @@ function CreateMeshCentralServer(config, args) {
             o.time = Math.floor(Date.now() / 1000); // Add the cookie creation time
             const iv = Buffer.from(obj.crypto.randomBytes(12), 'binary'), cipher = obj.crypto.createCipheriv('aes-256-gcm', key.slice(0, 32), iv);
             const crypted = Buffer.concat([cipher.update(JSON.stringify(o), 'utf8'), cipher.final()]);
-            var r = Buffer.concat([iv, cipher.getAuthTag(), crypted]).toString(obj.args.cookieencoding ? obj.args.cookieencoding : 'base64').replace(/\+/g, '@').replace(/\//g, '$');
+            const r = Buffer.concat([iv, cipher.getAuthTag(), crypted]).toString(obj.args.cookieencoding ? obj.args.cookieencoding : 'base64').replace(/\+/g, '@').replace(/\//g, '$');
             obj.debug('cookie', 'Encoded AESGCM cookie: ' + JSON.stringify(o));
             return r;
         } catch (ex) { obj.debug('cookie', 'ERR: Failed to encode AESGCM cookie due to exception: ' + ex); return null; }
@@ -3100,7 +3103,7 @@ function CreateMeshCentralServer(config, args) {
     // Decode a cookie back into an object using a key using AES256-GCM or AES128-CBC/HMAC-SHA384. Return null if it's not a valid cookie. (key must be 32 bytes or more)
     obj.decodeCookie = function (cookie, key, timeout) {
         if (cookie == null) return null;
-        var r = obj.decodeCookieAESGCM(cookie, key, timeout);
+        const r = obj.decodeCookieAESGCM(cookie, key, timeout);
         if (r == null) { r = obj.decodeCookieAESSHA(cookie, key, timeout); }
         if ((r == null) && (obj.args.cookieencoding == null) && (cookie.length != 64) && ((cookie == cookie.toLowerCase()) || (cookie == cookie.toUpperCase()))) {
             obj.debug('cookie', 'Upper/Lowercase cookie, try "CookieEncoding":"hex" in settings section of config.json.');
@@ -3215,9 +3218,9 @@ function CreateMeshCentralServer(config, args) {
         if ((obj.debugRemoteSources != null) && ((obj.debugRemoteSources == '*') || (obj.debugRemoteSources.indexOf(source) >= 0))) {
             var sendcount = 0;
             for (var sessionid in obj.webserver.wssessions2) {
-                var ws = obj.webserver.wssessions2[sessionid];
+                const ws = obj.webserver.wssessions2[sessionid];
                 if ((ws != null) && (ws.userid != null)) {
-                    var user = obj.webserver.users[ws.userid];
+                    const user = obj.webserver.users[ws.userid];
                     if ((user != null) && (user.siteadmin == 4294967295)) {
                         try { ws.send(JSON.stringify({ action: 'trace', source: source, args: args, time: Date.now() })); sendcount++; } catch (ex) { }
                     }
@@ -3228,7 +3231,7 @@ function CreateMeshCentralServer(config, args) {
     };
 
     // Update server state. Writes a server state file.
-    var meshServerState = {};
+    const meshServerState = {};
     obj.updateServerState = function (name, val) {
         //console.log('updateServerState', name, val);
         try {
@@ -3251,7 +3254,7 @@ function CreateMeshCentralServer(config, args) {
         var lines = null;
         try { lines = obj.fs.readFileSync(obj.path.join(obj.datapath, arg.substring(5))).toString().split('\r\n').join('\r').split('\r'); } catch (ex) { }
         if (lines == null) return null;
-        var validLines = [];
+        const validLines = [];
         for (var i in lines) { if ((lines[i].length > 0) && (((lines[i].charAt(0) > '0') && (lines[i].charAt(0) < '9')) || (lines[i].charAt(0) == ':'))) validLines.push(lines[i]); }
         return validLines;
     }
@@ -3270,8 +3273,8 @@ function CreateMeshCentralServer(config, args) {
         if (obj.syslogauth != null) { try { obj.syslogauth.log(obj.syslogauth.LOG_INFO, msg); } catch (ex) { } }
         if (obj.authlogfile != null) { // Write authlog to file
             try {
-                var d = new Date(), month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
-                var msg = month + ' ' + d.getDate() + ' ' + obj.common.zeroPad(d.getHours(), 2) + ':' + obj.common.zeroPad(d.getMinutes(), 2) + ':' + d.getSeconds() + ' meshcentral ' + server + '[' + process.pid + ']: ' + msg + ((obj.platform == 'win32') ? '\r\n' : '\n');
+                const d = new Date(), month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
+                const msg = month + ' ' + d.getDate() + ' ' + obj.common.zeroPad(d.getHours(), 2) + ':' + obj.common.zeroPad(d.getMinutes(), 2) + ':' + d.getSeconds() + ' meshcentral ' + server + '[' + process.pid + ']: ' + msg + ((obj.platform == 'win32') ? '\r\n' : '\n');
                 obj.fs.write(obj.authlogfile, msg, function (err, written, string) { });
             } catch (ex) { }
         }
@@ -3292,7 +3295,7 @@ function CreateMeshCentralServer(config, args) {
 
 // Resolve a list of names, call back with list of failed resolves.
 function checkResolveAll(names, func) {
-    var dns = require('dns'), state = { func: func, count: names.length, err: null };
+    const dns = require('dns'), state = { func: func, count: names.length, err: null };
     for (var i in names) {
         dns.resolve(names[i], function (err, records) {
             if (err != null) { if (this.state.err == null) { this.state.err = [this.name]; } else { this.state.err.push(this.name); } }
@@ -3304,8 +3307,8 @@ function checkResolveAll(names, func) {
 // Return the server configuration
 function getConfig(createSampleConfig) {
     // Figure out the datapath location
-    var i, fs = require('fs'), path = require('path'), datapath = null;
-    var args = require('minimist')(process.argv.slice(2));
+    var i, datapath = null;
+    const fs = require('fs'), path = require('path'), args = require('minimist')(process.argv.slice(2));
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) {
         datapath = path.join(__dirname, '../../meshcentral-data');
     } else {
@@ -3327,7 +3330,7 @@ function getConfig(createSampleConfig) {
     } else {
         if (createSampleConfig === true) {
             // Copy the "sample-config.json" to give users a starting point
-            var sampleConfigPath = path.join(__dirname, 'sample-config.json');
+            const sampleConfigPath = path.join(__dirname, 'sample-config.json');
             if (fs.existsSync(sampleConfigPath)) { fs.createReadStream(sampleConfigPath).pipe(fs.createWriteStream(configFilePath)); }
         }
     }
@@ -3349,16 +3352,16 @@ function getConfig(createSampleConfig) {
 
 // Check if a list of modules are present and install any missing ones
 function InstallModules(modules, func) {
-    var missingModules = [];
+    const missingModules = [];
     if (modules.length > 0) {
-        var dependencies = require('./package.json').dependencies;
+        const dependencies = require('./package.json').dependencies;
         for (var i in modules) {
             // Modules may contain a version tag (foobar@1.0.0), remove it so the module can be found using require
-            var moduleNameAndVersion = modules[i];
-            var moduleInfo = moduleNameAndVersion.split('@', 2);
+            const moduleNameAndVersion = modules[i];
+            const moduleInfo = moduleNameAndVersion.split('@', 2);
             var moduleName = moduleInfo[0];
             var moduleVersion = moduleInfo[1];
-            if (moduleName == '') { moduleName = moduleNameAndVersion; moduleVersion = undefined; } // If the module name starts with @, don't use @ as a version seperator.
+            if (moduleName == '') { moduleName = moduleNameAndVersion; moduleVersion = null; } // If the module name starts with @, don't use @ as a version seperator.
             try {
                 // Does the module need a specific version?
                 if (moduleVersion) {
@@ -3366,7 +3369,7 @@ function InstallModules(modules, func) {
                 } else {
                     // For all other modules, do the check here.
                     // Is the module in package.json? Install exact version.
-                    if (typeof dependencies[moduleName] != undefined) { moduleVersion = dependencies[moduleName]; }
+                    if (typeof dependencies[moduleName] != null) { moduleVersion = dependencies[moduleName]; }
                     require(moduleName);
                 }
             } catch (ex) {
@@ -3404,7 +3407,7 @@ function InstallModule(modulename, func, tag1, tag2) {
 process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); meshserver = null; } console.log('Server Ctrl-C exit...'); process.exit(); });
 
 // Add a server warning, warnings will be shown to the administrator on the web application
-var serverWarnings = [];
+const serverWarnings = [];
 function addServerWarning(msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
 
 /*
@@ -3447,7 +3450,7 @@ function mainStart() {
     // Check for any missing modules.
     InstallModules(['minimist'], function () {
         // Parse inbound arguments
-        var args = require('minimist')(process.argv.slice(2));
+        const args = require('minimist')(process.argv.slice(2));
 
         // Setup the NPM path
         if (args.npmpath == null) {
