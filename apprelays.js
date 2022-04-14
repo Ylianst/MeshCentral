@@ -105,7 +105,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 var protocol = (args.tlsoffload) ? 'ws' : 'wss';
                 var domainadd = '';
                 if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-                var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((obj.cookie.lc == 1) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=10&auth=' + obj.infos.ip;  // Protocol 10 is Web-RDP
+                var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=10&auth=' + obj.infos.ip;  // Protocol 10 is Web-RDP
                 parent.parent.debug('relay', 'RDP: Connection websocket to ' + url);
                 obj.wsClient = new WebSocket(url, options);
                 obj.wsClient.on('open', function () { parent.parent.debug('relay', 'RDP: Relay websocket open'); });
@@ -210,7 +210,20 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                     parent.parent.db.Get(obj.nodeid, function (err, nodes) {
                         if ((err != null) || (nodes == null) || (nodes.length != 1)) { obj.close(); return; }
                         const node = nodes[0];
-                        obj.meshid = node.meshid;
+                        obj.mtype = node.mtype; // Store the device group type
+                        obj.meshid = node.meshid; // Store the MeshID
+
+                        // Check if we need to relay thru a different agent
+                        // TODO: Check if we have rights to the relayid device
+                        var mesh = parent.meshes[obj.meshid];
+                        if (mesh && mesh.relayid) {
+                            obj.relaynodeid = mesh.relayid;
+                            obj.tcpaddr = node.host;
+
+                            // Re-encode a cookie with a device relay
+                            const cookieContent = { userid: obj.cookie.userid, domainid: obj.cookie.domainid, nodeid: mesh.relayid, tcpaddr: node.host, tcpport: obj.cookie.tcpport };
+                            obj.infos.ip = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
+                        }
 
                         // Check if we need to load server stored credentials
                         if ((typeof obj.infos.options == 'object') && (obj.infos.options.useServerCreds == true)) {
@@ -382,7 +395,7 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
             if (args.tlsoffload) { protocol = 'ws'; }
             var domainadd = '';
             if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((obj.cookie.lc == 1) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=11&auth=' + req.query.auth; // Protocol 11 is Web-SSH
+            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=11&auth=' + obj.xcookie; // Protocol 11 is Web-SSH
             parent.parent.debug('relay', 'SSH: Connection websocket to ' + url);
             obj.wsClient = new WebSocket(url, options);
             obj.wsClient.on('open', function () { parent.parent.debug('relay', 'SSH: Relay websocket open'); });
@@ -533,6 +546,21 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
         const node = nodes[0];
         obj.nodeid = node._id; // Store the NodeID
         obj.meshid = node.meshid; // Store the MeshID
+        obj.mtype = node.mtype; // Store the device group type
+
+        // Check if we need to relay thru a different agent
+        // TODO: Check if we have rights to the relayid device
+        var mesh = parent.meshes[obj.meshid];
+        if (mesh && mesh.relayid) {
+            obj.relaynodeid = mesh.relayid;
+            obj.tcpaddr = node.host;
+
+            // Re-encode a cookie with a device relay
+            const cookieContent = { userid: obj.cookie.userid, domainid: obj.cookie.domainid, nodeid: mesh.relayid, tcpaddr: node.host, tcpport: obj.cookie.tcpport };
+            obj.xcookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
+        } else {
+            obj.xcookie = req.query.auth;
+        }
     });
 
     return obj;
@@ -650,7 +678,7 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
             if (args.tlsoffload) { protocol = 'ws'; }
             var domainadd = '';
             if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((obj.mtype == 3) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=11&auth=' + authCookie // Protocol 11 is Web-SSH
+            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=11&auth=' + authCookie // Protocol 11 is Web-SSH
             parent.parent.debug('relay', 'SSH: Connection websocket to ' + url);
             obj.wsClient = new WebSocket(url, options);
             obj.wsClient.on('open', function () { parent.parent.debug('relay', 'SSH: Relay websocket open'); });
@@ -753,7 +781,12 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
 
                         // Create a mesh relay authentication cookie
                         var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
-                        if (obj.mtype == 3) { cookieContent.lc = 1; } // This is a local device
+                        if (obj.relaynodeid) {
+                            cookieContent.nodeid = obj.relaynodeid;
+                            cookieContent.tcpaddr = obj.tcpaddr;
+                        } else {
+                            if (obj.mtype == 3) { cookieContent.lc = 1; } // This is a local device
+                        }
                         startRelayConnection(parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey));
                         break;
                     }
@@ -766,7 +799,12 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
 
                         // Create a mesh relay authentication cookie
                         var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
-                        if (obj.mtype == 3) { cookieContent.lc = 1; } // This is a local device
+                        if (obj.relaynodeid) {
+                            cookieContent.nodeid = obj.relaynodeid;
+                            cookieContent.tcpaddr = obj.tcpaddr;
+                        } else {
+                            if (obj.mtype == 3) { cookieContent.lc = 1; } // This is a local device
+                        }
                         startRelayConnection(parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey));
                         break;
                     }
@@ -805,6 +843,11 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
         // Check the SSH port
         obj.tcpport = 22;
         if (typeof node.sshport == 'number') { obj.tcpport = node.sshport; }
+
+        // Check if we need to relay thru a different agent
+        // TODO: Check if we have rights to the relayid device
+        var mesh = parent.meshes[obj.meshid];
+        if (mesh && mesh.relayid) { obj.relaynodeid = mesh.relayid; obj.tcpaddr = node.host; }
 
         // We are all set, start receiving data
         ws._socket.resume();
@@ -943,7 +986,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
             if (args.tlsoffload) { protocol = 'ws'; }
             var domainadd = '';
             if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + ((obj.mtype == 3) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=13&auth=' + authCookie // Protocol 13 is Web-SSH-Files
+            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=13&auth=' + authCookie // Protocol 13 is Web-SSH-Files
             parent.parent.debug('relay', 'SSH: Connection websocket to ' + url);
             obj.wsClient = new WebSocket(url, options);
             obj.wsClient.on('open', function () { parent.parent.debug('relay', 'SSH: Relay websocket open'); });
@@ -1221,7 +1264,12 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
 
                         // Create a mesh relay authentication cookie
                         var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
-                        if (obj.mtype == 3) { cookieContent.lc = 1; } // This is a local device
+                        if (obj.relaynodeid) {
+                            cookieContent.nodeid = obj.relaynodeid;
+                            cookieContent.tcpaddr = obj.tcpaddr;
+                        } else {
+                            if (obj.mtype == 3) { cookieContent.lc = 1; } // This is a local device
+                        }
                         startRelayConnection(parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey));
                         break;
                     }
@@ -1279,6 +1327,11 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
         obj.tcpport = 22;
         if (typeof node.sshport == 'number') { obj.tcpport = node.sshport; }
 
+        // Check if we need to relay thru a different agent
+        // TODO: Check if we have rights to the relayid device
+        var mesh = parent.meshes[obj.meshid];
+        if (mesh && mesh.relayid) { obj.relaynodeid = mesh.relayid; obj.tcpaddr = node.host; }
+
         // We are all set, start receiving data
         ws._socket.resume();
 
@@ -1302,7 +1355,12 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
 
                 // Create a mesh relay authentication cookie
                 var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
-                if (obj.mtype == 3) { cookieContent.lc = 1; } // This is a local device
+                if (obj.relaynodeid) {
+                    cookieContent.nodeid = obj.relaynodeid;
+                    cookieContent.tcpaddr = obj.tcpaddr;
+                } else {
+                    if (obj.mtype == 3) { cookieContent.lc = 1; } // This is a local device
+                }
                 startRelayConnection(parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey));
             }
         });
