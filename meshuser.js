@@ -1922,7 +1922,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if (common.validateString(command.meshname, 1, 128) == false) { err = 'Invalid group name'; } // Meshname is between 1 and 128 characters
                         else if ((command.desc != null) && (common.validateString(command.desc, 0, 1024) == false)) { err = 'Invalid group description'; } // Mesh description is between 0 and 1024 characters
                         else if ((command.meshtype < 1) || (command.meshtype > 4)) { err = 'Invalid group type'; } // Device group types are 1 = AMT, 2 = Agent, 3 = Local
-                        else if ((parent.args.wanonly == true) && (command.meshtype == 3)) { err = 'Invalid group type'; } // Local device group type is not allowed in WAN mode
+                        else if ((command.meshtype == 3) && (parent.args.wanonly == true) && (typeof command.relayid != 'string')) { err = 'Invalid group type'; } // Local device group type wihtout relay is not allowed in WAN mode
+                        else if ((command.meshtype == 3) && (parent.args.lanonly == true) && (typeof command.relayid == 'string')) { err = 'Invalid group type'; } // Local device group type with relay is not allowed in WAN mode
                         else if ((domain.ipkvm == null) && (command.meshtype == 4)) { err = 'Invalid group type'; } // IP KVM device group type is not allowed unless enabled
                         if ((err == null) && (command.meshtype == 4)) {
                             if ((command.kvmmodel < 1) || (command.kvmmodel > 2)) { err = 'Invalid KVM model'; }
