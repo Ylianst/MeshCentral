@@ -42,7 +42,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
     const Net = require('net');
     const WebSocket = require('ws');
 
-    var obj = {};
+    const obj = {};
     obj.ws = ws;
     obj.tcpServerPort = 0;
     obj.relayActive = false;
@@ -86,7 +86,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
     // Start the looppback server
     function startTcpServer() {
         obj.tcpServer = new Net.Server();
-        obj.tcpServer.listen(0, '127.0.0.1', function () { obj.tcpServerPort = obj.tcpServer.address().port; startRdp(obj.tcpServerPort); });
+        obj.tcpServer.listen(0, 'localhost', function () { obj.tcpServerPort = obj.tcpServer.address().port; startRdp(obj.tcpServerPort); });
         obj.tcpServer.on('connection', function (socket) {
             if (obj.relaySocket != null) {
                 socket.close();
@@ -100,12 +100,11 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 obj.relaySocket.on('error', function (err) { obj.close(); });
 
                 // Setup the correct URL with domain and use TLS only if needed.
-                var options = { rejectUnauthorized: false };
-                if (domain.dns != null) { options.servername = domain.dns; }
-                var protocol = (args.tlsoffload) ? 'ws' : 'wss';
+                const options = { rejectUnauthorized: false };
+                const protocol = (args.tlsoffload) ? 'ws' : 'wss';
                 var domainadd = '';
                 if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-                var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=10&auth=' + obj.infos.ip;  // Protocol 10 is Web-RDP
+                const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=10&auth=' + obj.infos.ip;  // Protocol 10 is Web-RDP
                 parent.parent.debug('relay', 'RDP: Connection websocket to ' + url);
                 obj.wsClient = new WebSocket(url, options);
                 obj.wsClient.on('open', function () { parent.parent.debug('relay', 'RDP: Relay websocket open'); });
@@ -159,7 +158,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 send(['rdp-close']);
             }).on('error', function (err) {
                 send(['rdp-error', err]);
-            }).connect('127.0.0.1', obj.tcpServerPort);
+            }).connect('localhost', obj.tcpServerPort);
         } catch (ex) {
             console.log('startRdpException', ex);
             obj.close();
@@ -184,7 +183,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
             // Event node change if needed
             if (changed) {
                 // Event the node change
-                var event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: obj.cookie.userid, node: parent.CloneSafeNode(node), msg: "Changed RDP credentials" };
+                const event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: obj.cookie.userid, node: parent.CloneSafeNode(node), msg: "Changed RDP credentials" };
                 if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                 parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
             }
@@ -208,14 +207,14 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
 
                     // Get node
                     parent.parent.db.Get(obj.nodeid, function (err, nodes) {
+                        if (obj.ws == null) return; // obj has been cleaned up, just exit.
                         if ((err != null) || (nodes == null) || (nodes.length != 1)) { obj.close(); return; }
                         const node = nodes[0];
                         obj.mtype = node.mtype; // Store the device group type
                         obj.meshid = node.meshid; // Store the MeshID
 
                         // Check if we need to relay thru a different agent
-                        // TODO: Check if we have rights to the relayid device
-                        var mesh = parent.meshes[obj.meshid];
+                        const mesh = parent.meshes[obj.meshid];
                         if (mesh && mesh.relayid) {
                             obj.relaynodeid = mesh.relayid;
                             obj.tcpaddr = node.host;
@@ -225,24 +224,30 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                             obj.infos.ip = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
                         }
 
-                        // Check if we need to load server stored credentials
-                        if ((typeof obj.infos.options == 'object') && (obj.infos.options.useServerCreds == true)) {
-                            // Check if RDP credentials exist
-                            if ((domain.allowsavingdevicecredentials === false) && (typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) {
-                                obj.infos.domain = node.rdp.d;
-                                obj.infos.username = node.rdp.u;
-                                obj.infos.password = node.rdp.p;
-                                startTcpServer();
+                        // Check if we have rights to the relayid device, does nothing if a relay is not used
+                        checkRelayRights(parent, domain, obj.userid, obj.relaynodeid, function (allowed) {
+                            if (obj.ws == null) return; // obj has been cleaned up, just exit.
+                            if (allowed !== true) { parent.parent.debug('relay', 'RDP: Attempt to use un-authorized relay'); obj.close(); return; }
+
+                            // Check if we need to load server stored credentials
+                            if ((typeof obj.infos.options == 'object') && (obj.infos.options.useServerCreds == true)) {
+                                // Check if RDP credentials exist
+                                if ((domain.allowsavingdevicecredentials === false) && (typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) {
+                                    obj.infos.domain = node.rdp.d;
+                                    obj.infos.username = node.rdp.u;
+                                    obj.infos.password = node.rdp.p;
+                                    startTcpServer();
+                                } else {
+                                    // No server credentials.
+                                    obj.infos.domain = '';
+                                    obj.infos.username = '';
+                                    obj.infos.password = '';
+                                    startTcpServer();
+                                }
                             } else {
-                                // No server credentials.
-                                obj.infos.domain = '';
-                                obj.infos.username = '';
-                                obj.infos.password = '';
                                 startTcpServer();
                             }
-                        } else {
-                            startTcpServer();
-                        }
+                        });
                     });
                     break;
                 }
@@ -285,7 +290,7 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
 
     // SerialTunnel object is used to embed SSH within another connection.
     function SerialTunnel(options) {
-        var obj = new require('stream').Duplex(options);
+        const obj = new require('stream').Duplex(options);
         obj.forwardwrite = null;
         obj.updateBuffer = function (chunk) { this.push(chunk); };
         obj._write = function (chunk, encoding, callback) { if (obj.forwardwrite != null) { obj.forwardwrite(chunk); } if (callback) callback(); }; // Pass data written to forward
@@ -297,8 +302,6 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
     const obj = {};
     obj.ws = ws;
     obj.relayActive = false;
-
-    parent.parent.debug('relay', 'SSH: Request for SSH relay (' + req.clientIp + ')');
 
     // Disconnect
     obj.close = function (arg) {
@@ -374,28 +377,22 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
             // Event node change if needed
             if (changed) {
                 // Event the node change
-                var event = { etype: 'node', action: 'changenode', nodeid: obj.cookie.nodeid, domain: domain.id, userid: obj.cookie.userid, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
+                const event = { etype: 'node', action: 'changenode', nodeid: obj.cookie.nodeid, domain: domain.id, userid: obj.cookie.userid, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
                 if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                 parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.cookie.nodeid]), obj, event);
             }
         });
     }
 
-    // Decode the authentication cookie
-    obj.cookie = parent.parent.decodeCookie(req.query.auth, parent.parent.loginCookieEncryptionKey);
-    if (obj.cookie == null) { obj.ws.send(JSON.stringify({ action: 'sessionerror' })); obj.close(); return; }
-
     // Start the looppback server
     function startRelayConnection() {
         try {
             // Setup the correct URL with domain and use TLS only if needed.
-            var options = { rejectUnauthorized: false };
-            if (domain.dns != null) { options.servername = domain.dns; }
-            var protocol = 'wss';
-            if (args.tlsoffload) { protocol = 'ws'; }
+            const options = { rejectUnauthorized: false };
+            const protocol = (args.tlsoffload) ? 'ws' : 'wss';
             var domainadd = '';
             if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=11&auth=' + obj.xcookie; // Protocol 11 is Web-SSH
+            const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=11&auth=' + obj.xcookie; // Protocol 11 is Web-SSH
             parent.parent.debug('relay', 'SSH: Connection websocket to ' + url);
             obj.wsClient = new WebSocket(url, options);
             obj.wsClient.on('open', function () { parent.parent.debug('relay', 'SSH: Relay websocket open'); });
@@ -440,7 +437,7 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                     obj.ser.forwardwrite = function (data) { if ((data.length > 0) && (obj.wsClient != null)) { try { obj.wsClient.send(data); } catch (ex) { } } };
 
                     // Connect the SSH module to the serial tunnel
-                    var connectionOptions = { sock: obj.ser }
+                    const connectionOptions = { sock: obj.ser }
                     if (typeof obj.username == 'string') { connectionOptions.username = obj.username; }
                     if (typeof obj.password == 'string') { connectionOptions.password = obj.password; }
                     if (typeof obj.privateKey == 'string') { connectionOptions.privateKey = obj.privateKey; }
@@ -540,8 +537,15 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
     // If the web socket is closed
     ws.on('close', function (req) { parent.parent.debug('relay', 'SSH: Browser websocket closed'); obj.close(); });
 
+    parent.parent.debug('relay', 'SSH: Request for SSH relay (' + req.clientIp + ')');
+
+    // Decode the authentication cookie
+    obj.cookie = parent.parent.decodeCookie(req.query.auth, parent.parent.loginCookieEncryptionKey);
+    if (obj.cookie == null) { obj.ws.send(JSON.stringify({ action: 'sessionerror' })); obj.close(); return; }
+
     // Get the meshid for this device
     parent.parent.db.Get(obj.cookie.nodeid, function (err, nodes) {
+        if (obj.cookie == null) return; // obj has been cleaned up, just exit.
         if ((err != null) || (nodes == null) || (nodes.length != 1)) { parent.parent.debug('relay', 'SSH: Invalid device'); obj.close(); }
         const node = nodes[0];
         obj.nodeid = node._id; // Store the NodeID
@@ -549,15 +553,20 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
         obj.mtype = node.mtype; // Store the device group type
 
         // Check if we need to relay thru a different agent
-        // TODO: Check if we have rights to the relayid device
-        var mesh = parent.meshes[obj.meshid];
+        const mesh = parent.meshes[obj.meshid];
         if (mesh && mesh.relayid) {
             obj.relaynodeid = mesh.relayid;
             obj.tcpaddr = node.host;
 
-            // Re-encode a cookie with a device relay
-            const cookieContent = { userid: obj.cookie.userid, domainid: obj.cookie.domainid, nodeid: mesh.relayid, tcpaddr: node.host, tcpport: obj.cookie.tcpport };
-            obj.xcookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
+            // Check if we have rights to the relayid device, does nothing if a relay is not used
+            checkRelayRights(parent, domain, obj.cookie.userid, obj.relaynodeid, function (allowed) {
+                if (obj.cookie == null) return; // obj has been cleaned up, just exit.
+                if (allowed !== true) { parent.parent.debug('relay', 'SSH: Attempt to use un-authorized relay'); obj.close(); return; }
+
+                // Re-encode a cookie with a device relay
+                const cookieContent = { userid: obj.cookie.userid, domainid: obj.cookie.domainid, nodeid: mesh.relayid, tcpaddr: node.host, tcpport: obj.cookie.tcpport };
+                obj.xcookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
+            });
         } else {
             obj.xcookie = req.query.auth;
         }
@@ -574,7 +583,7 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
 
     // SerialTunnel object is used to embed SSH within another connection.
     function SerialTunnel(options) {
-        var obj = new require('stream').Duplex(options);
+        const obj = new require('stream').Duplex(options);
         obj.forwardwrite = null;
         obj.updateBuffer = function (chunk) { this.push(chunk); };
         obj._write = function (chunk, encoding, callback) { if (obj.forwardwrite != null) { obj.forwardwrite(chunk); } if (callback) callback(); }; // Pass data written to forward
@@ -633,7 +642,6 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
 
         obj.relayActive = false;
         delete obj.termSize;
-        delete obj.cookie;
         delete obj.nodeid;
         delete obj.meshid;
         delete obj.ws;
@@ -661,7 +669,7 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
             // Event node change if needed
             if (changed) {
                 // Event the node change
-                var event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: user._id, username: user.name, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
+                const event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: user._id, username: user.name, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
                 if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                 parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
             }
@@ -672,13 +680,11 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
     function startRelayConnection(authCookie) {
         try {
             // Setup the correct URL with domain and use TLS only if needed.
-            var options = { rejectUnauthorized: false };
-            if (domain.dns != null) { options.servername = domain.dns; }
-            var protocol = 'wss';
-            if (args.tlsoffload) { protocol = 'ws'; }
+            const options = { rejectUnauthorized: false };
+            const protocol = (args.tlsoffload) ? 'ws' : 'wss';
             var domainadd = '';
             if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=11&auth=' + authCookie // Protocol 11 is Web-SSH
+            const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=11&auth=' + authCookie // Protocol 11 is Web-SSH
             parent.parent.debug('relay', 'SSH: Connection websocket to ' + url);
             obj.wsClient = new WebSocket(url, options);
             obj.wsClient.on('open', function () { parent.parent.debug('relay', 'SSH: Relay websocket open'); });
@@ -725,7 +731,7 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                     obj.ser.forwardwrite = function (data) { if ((data.length > 0) && (obj.wsClient != null)) { try { obj.wsClient.send(data); } catch (ex) { } } };
 
                     // Connect the SSH module to the serial tunnel
-                    var connectionOptions = { sock: obj.ser }
+                    const connectionOptions = { sock: obj.ser }
                     if (typeof obj.username == 'string') { connectionOptions.username = obj.username; }
                     if (typeof obj.password == 'string') { connectionOptions.password = obj.password; }
                     if (typeof obj.privateKey == 'string') { connectionOptions.privateKey = obj.privateKey; }
@@ -780,7 +786,7 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                         obj.privateKeyPass = msg.keypass;
 
                         // Create a mesh relay authentication cookie
-                        var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
+                        const cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
                         if (obj.relaynodeid) {
                             cookieContent.nodeid = obj.relaynodeid;
                             cookieContent.tcpaddr = obj.tcpaddr;
@@ -798,7 +804,7 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                         if ((obj.username == null) || ((obj.password == null) && (obj.privateKey == null))) return;
 
                         // Create a mesh relay authentication cookie
-                        var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
+                        const cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
                         if (obj.relaynodeid) {
                             cookieContent.nodeid = obj.relaynodeid;
                             cookieContent.tcpaddr = obj.tcpaddr;
@@ -833,6 +839,8 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
     // Check that we have a user and nodeid
     if ((user == null) || (req.query.nodeid == null)) { obj.close(); return; } // Invalid nodeid
     parent.GetNodeWithRights(domain, user, req.query.nodeid, function (node, rights, visible) {
+        if (obj.ws == null) return; // obj has been cleaned up, just exit.
+
         // Check permissions
         if ((rights & 8) == 0) { obj.close(); return; } // No MESHRIGHT_REMOTECONTROL rights
         if ((rights != 0xFFFFFFFF) && (rights & 0x00000200)) { obj.close(); return; } // MESHRIGHT_NOTERMINAL is set
@@ -845,18 +853,18 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
         if (typeof node.sshport == 'number') { obj.tcpport = node.sshport; }
 
         // Check if we need to relay thru a different agent
-        // TODO: Check if we have rights to the relayid device
-        var mesh = parent.meshes[obj.meshid];
+        const mesh = parent.meshes[obj.meshid];
         if (mesh && mesh.relayid) { obj.relaynodeid = mesh.relayid; obj.tcpaddr = node.host; }
 
-        // We are all set, start receiving data
-        ws._socket.resume();
+        // Check if we have rights to the relayid device, does nothing if a relay is not used
+        checkRelayRights(parent, domain, user, obj.relaynodeid, function (allowed) {
+            if (obj.ws == null) return; // obj has been cleaned up, just exit.
+            if (allowed !== true) { parent.parent.debug('relay', 'SSH: Attempt to use un-authorized relay'); obj.close(); return; }
 
-        // Check if we have SSH credentials for this device
-        parent.parent.db.Get(obj.nodeid, function (err, nodes) {
-            if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
-            const node = nodes[0];
+            // We are all set, start receiving data
+            ws._socket.resume();
 
+            // Check if we have SSH credentials for this device
             if ((domain.allowsavingdevicecredentials === false) || (node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || ((typeof node.ssh.p != 'string') && (typeof node.ssh.k != 'string'))) {
                 // Send a request for SSH authentication
                 try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
@@ -887,7 +895,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
 
     // SerialTunnel object is used to embed SSH within another connection.
     function SerialTunnel(options) {
-        var obj = new require('stream').Duplex(options);
+        const obj = new require('stream').Duplex(options);
         obj.forwardwrite = null;
         obj.updateBuffer = function (chunk) { this.push(chunk); };
         obj._write = function (chunk, encoding, callback) { if (obj.forwardwrite != null) { obj.forwardwrite(chunk); } if (callback) callback(); }; // Pass data written to forward
@@ -940,7 +948,6 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
         obj.ws.removeAllListeners();
 
         obj.relayActive = false;
-        delete obj.cookie;
         delete obj.sftp;
         delete obj.nodeid;
         delete obj.meshid;
@@ -969,7 +976,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
             // Event node change if needed
             if (changed) {
                 // Event the node change
-                var event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: user._id, username: user.name, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
+                const event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: user._id, username: user.name, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
                 if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                 parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
             }
@@ -980,13 +987,11 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
     function startRelayConnection(authCookie) {
         try {
             // Setup the correct URL with domain and use TLS only if needed.
-            var options = { rejectUnauthorized: false };
-            if (domain.dns != null) { options.servername = domain.dns; }
-            var protocol = 'wss';
-            if (args.tlsoffload) { protocol = 'ws'; }
+            const options = { rejectUnauthorized: false };
+            const protocol = (args.tlsoffload) ? 'ws' : 'wss';
             var domainadd = '';
             if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-            var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=13&auth=' + authCookie // Protocol 13 is Web-SSH-Files
+            const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=13&auth=' + authCookie // Protocol 13 is Web-SSH-Files
             parent.parent.debug('relay', 'SSH: Connection websocket to ' + url);
             obj.wsClient = new WebSocket(url, options);
             obj.wsClient.on('open', function () { parent.parent.debug('relay', 'SSH: Relay websocket open'); });
@@ -1027,7 +1032,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                     obj.ser.forwardwrite = function (data) { if ((data.length > 0) && (obj.wsClient != null)) { try { obj.wsClient.send(data); } catch (ex) { } } };
 
                     // Connect the SSH module to the serial tunnel
-                    var connectionOptions = { sock: obj.ser }
+                    const connectionOptions = { sock: obj.ser }
                     if (typeof obj.username == 'string') { connectionOptions.username = obj.username; }
                     if (typeof obj.password == 'string') { connectionOptions.password = obj.password; }
                     if (typeof obj.privateKey == 'string') { connectionOptions.privateKey = obj.privateKey; }
@@ -1068,7 +1073,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                 if (msg[0] == 123) {
                     msg = msg.toString();
                 } else if ((obj.sftp != null) && (obj.uploadHandle != null)) {
-                    var off = (msg[0] == 0) ? 1 : 0;
+                    const off = (msg[0] == 0) ? 1 : 0;
                     obj.sftp.write(obj.uploadHandle, msg, off, msg.length - off, obj.uploadPosition, function (err) {
                         if (err != null) {
                             obj.sftp.close(obj.uploadHandle, function () { });
@@ -1097,9 +1102,9 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         if (requestedPath.startsWith('/') == false) { requestedPath = '/' + requestedPath; }
                         obj.sftp.readdir(requestedPath, function(err, list) {
                             if (err) { console.log(err); obj.close(); }
-                            var r = { path: requestedPath, reqid: msg.reqid, dir: [] };
+                            const r = { path: requestedPath, reqid: msg.reqid, dir: [] };
                             for (var i in list) {
-                                var file = list[i];
+                                const file = list[i];
                                 if (file.longname[0] == 'd') { r.dir.push({ t: 2, n: file.filename, d: new Date(file.attrs.mtime * 1000).toISOString() }); }
                                 else { r.dir.push({ t: 3, n: file.filename, d: new Date(file.attrs.mtime * 1000).toISOString(), s: file.attrs.size }); }
                             }
@@ -1114,7 +1119,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         obj.sftp.mkdir(requestedPath, function (err) { });
 
                         // Event the file delete
-                        var targets = ['*', 'server-users'];
+                        const targets = ['*', 'server-users'];
                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                         parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 44, msgArgs: [requestedPath], msg: 'Create folder: \"' + requestedPath + '\"', domain: domain.id });
                         break;
@@ -1129,7 +1134,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                             if (msg.rec === true) { obj.sftp.rmdir(ul + '/', function (err) { }); }
 
                             // Event the file delete
-                            var targets = ['*', 'server-users'];
+                            const targets = ['*', 'server-users'];
                             if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                             parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 45, msgArgs: [ul], msg: 'Delete: \"' + ul + '\"', domain: domain.id });
                         }
@@ -1145,7 +1150,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         obj.sftp.rename(oldpath, newpath, function (err) { });
 
                         // Event the file rename
-                        var targets = ['*', 'server-users'];
+                        const targets = ['*', 'server-users'];
                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                         parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 48, msgArgs: [oldpath, msg.newname], msg: 'Rename: \"' + oldpath + '\" to \"' + msg.newname + '\"', domain: domain.id });
                         break;
@@ -1166,7 +1171,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                                 try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: obj.uploadReqid }))) } catch (ex) { }
 
                                 // Event the file upload
-                                var targets = ['*', 'server-users'];
+                                const targets = ['*', 'server-users'];
                                 if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                                 parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 105, msgArgs: [obj.uploadFullpath, obj.uploadSize], msg: 'Upload: ' + obj.uploadFullpath + ', Size: ' + obj.uploadSize, domain: domain.id });
                             }
@@ -1218,7 +1223,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                                         try { obj.ws.send(JSON.stringify({ action: 'download', sub: 'start', id: obj.downloadId })) } catch (ex) { }
 
                                         // Event the file download
-                                        var targets = ['*', 'server-users'];
+                                        const targets = ['*', 'server-users'];
                                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                                         parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 49, msgArgs: [obj.downloadFullpath], msg: 'Download: ' + obj.downloadFullpath, domain: domain.id });
                                     }
@@ -1263,7 +1268,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         obj.privateKeyPass = msg.keypass;
 
                         // Create a mesh relay authentication cookie
-                        var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
+                        const cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
                         if (obj.relaynodeid) {
                             cookieContent.nodeid = obj.relaynodeid;
                             cookieContent.tcpaddr = obj.tcpaddr;
@@ -1316,6 +1321,8 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
     // Check that we have a user and nodeid
     if ((user == null) || (req.query.nodeid == null)) { obj.close(); return; } // Invalid nodeid
     parent.GetNodeWithRights(domain, user, req.query.nodeid, function (node, rights, visible) {
+        if (obj.ws == null) return; // obj has been cleaned up, just exit.
+
         // Check permissions
         if ((rights & 8) == 0) { obj.close(); return; } // No MESHRIGHT_REMOTECONTROL rights
         if ((rights != 0xFFFFFFFF) && (rights & 0x00000200)) { obj.close(); return; } // MESHRIGHT_NOTERMINAL is set
@@ -1328,18 +1335,18 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
         if (typeof node.sshport == 'number') { obj.tcpport = node.sshport; }
 
         // Check if we need to relay thru a different agent
-        // TODO: Check if we have rights to the relayid device
-        var mesh = parent.meshes[obj.meshid];
+        const mesh = parent.meshes[obj.meshid];
         if (mesh && mesh.relayid) { obj.relaynodeid = mesh.relayid; obj.tcpaddr = node.host; }
 
-        // We are all set, start receiving data
-        ws._socket.resume();
+        // Check if we have rights to the relayid device, does nothing if a relay is not used
+        checkRelayRights(parent, domain, user, obj.relaynodeid, function (allowed) {
+            if (obj.ws == null) return; // obj has been cleaned up, just exit.
+            if (allowed !== true) { parent.parent.debug('relay', 'SSH: Attempt to use un-authorized relay'); obj.close(); return; }
 
-        // Check if we have SSH credentials for this device
-        parent.parent.db.Get(obj.nodeid, function (err, nodes) {
-            if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
-            const node = nodes[0];
+            // We are all set, start receiving data
+            ws._socket.resume();
 
+            // Check if we have SSH credentials for this device
             if ((domain.allowsavingdevicecredentials === false) || (node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || ((typeof node.ssh.p != 'string') && (typeof node.ssh.k != 'string'))) {
                 // Send a request for SSH authentication
                 try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
@@ -1354,7 +1361,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                 }
 
                 // Create a mesh relay authentication cookie
-                var cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
+                const cookieContent = { userid: user._id, domainid: user.domain, nodeid: obj.nodeid, tcpport: obj.tcpport };
                 if (obj.relaynodeid) {
                     cookieContent.nodeid = obj.relaynodeid;
                     cookieContent.tcpaddr = obj.tcpaddr;
@@ -1364,8 +1371,16 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                 startRelayConnection(parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey));
             }
         });
-
     });
 
     return obj;
 };
+
+
+// Check that the user has full rights on a relay device before allowing it.
+function checkRelayRights(parent, domain, user, relayNodeId, func) {
+    if (relayNodeId == null) { func(true); return; } // No relay, do nothing.
+    parent.GetNodeWithRights(domain, user, relayNodeId, function (node, rights, visible) {
+        func((node != null) && (rights == 0xFFFFFFFF));
+    });
+}
