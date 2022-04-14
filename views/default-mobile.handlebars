@@ -3376,7 +3376,7 @@
                 if (node.rname != null) { x += addDeviceAttribute('<span>' + "Name" + '</span>', '<span>' + EscapeHtml(node.rname) + '</span>'); }
 
                 // Attribute: Host
-                if (((features & 1) == 0) && (node.mtype != 4)) { // If not WAN-only, local hostname is in use
+                if ((((features & 1) == 0) && (node.mtype != 4)) || (node.mtype == 3)) { // If not WAN-only, local hostname is in use
                     if ((meshrights & 4) != 0) {
                         if (node.host) {
                             x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + EscapeHtml(node.host) + '</span>');
