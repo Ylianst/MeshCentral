@@ -2325,7 +2325,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'addlocaldevice':
                 {
-                    if (args.wanonly == true) return; // This is a WAN-only server, local Intel AMT computers can't be added
                     if (common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
                     if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                     if (common.validateString(command.devicename, 1, 256) == false) break; // Check device name

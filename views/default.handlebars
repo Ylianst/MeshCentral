@@ -3988,7 +3988,7 @@
                             var extra = '';
                             if (view == 2) { r += '<tr><td colspan=' + colcount + '>'; }
                             if (meshes[node.meshid] && (meshes[node.meshid].mtype == 1)) { extra = '<span class=devHeaderx>' + ", Intel&reg; AMT only" + '</span>'; }
-                            if (meshes[node.meshid] && (meshes[node.meshid].mtype == 3)) { extra = '<span class=devHeaderx>' + ", Local Devices" + '</span>'; }
+                            if (meshes[node.meshid] && (meshes[node.meshid].mtype == 3)) { if (meshes[node.meshid].relayid) { extra = '<span class=devHeaderx>' + ", Relayed Devices" + '</span>'; } else { extra = '<span class=devHeaderx>' + ", Local Devices" + '</span>'; } }
                             if ((view == 1) && (current != null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                             if (view == 2) { r += '<div>'; }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span style=float:right>';
@@ -4791,7 +4791,7 @@
                 r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new computer to this device group by installing the mesh agent." + '" onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "Add Agent" + '</a>';
                 if ((features & 2) == 0) { r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Invite someone to install the mesh agent on this device group." + '" onclick=\'return inviteAgentToMesh("' + mesh._id + '")\'>' + "Invite" + '</a>'; }
             }
-            if ((mesh.mtype == 3) && ((features & 1) == 0)) { // Local device group & if not WAN-Only
+            if (mesh.mtype == 3) { // Local device group
                 r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add device located on the local network." + '" onclick=\'return addLocalDeviceToMesh("' + mesh._id + '")\'>' + "Add Device" + '</a>';
             }
             //if (mesh.amt && (mesh.amt.type > 2)) { // ACM activation or Full Automatic
