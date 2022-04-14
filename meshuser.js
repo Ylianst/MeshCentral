@@ -6677,6 +6677,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try { info.memoryUsage = process.memoryUsage(); } catch (ex) { }
         try { info.warnings = parent.parent.getServerWarnings(); } catch (ex) { }
         try { info.allDevGroupManagers = parent.parent.config.settings.managealldevicegroups; } catch (ex) { }
+        try { if (process.traceDeprecation == true) { info.traceDeprecation = true; } } catch (ex) { }
         cmdData.result = JSON.stringify(info, null, 4);
     }
 
