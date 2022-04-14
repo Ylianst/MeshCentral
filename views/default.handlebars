@@ -6757,7 +6757,7 @@
                 if ((node.rname != null) && (node.name != node.rname)) { x += addDeviceAttribute('<span title="' + "The name of this computer as set in the operating system" + '">' + "OS Name" + '</span>', '<span title="' + "The name of this computer as set in the operating system" + '">' + EscapeHtml(node.rname) + '</span>'); }
 
                 // Attribute: Host
-                if (((features & 1) == 0) && (node.mtype != 4)) { // If not WAN-only, local hostname is in use
+                if ((((features & 1) == 0) && (node.mtype != 4)) || (node.mtype == 3)) { // If not WAN-only, local hostname is in use
                     x += addDeviceAttribute("Hostname", addLinkConditional('<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + (node.host?EscapeHtml(node.host):('<i>' + "None" + '</i>')) + '</span>', 'showEditNodeValueDialog(1)', meshrights & 4));
                 }
 
