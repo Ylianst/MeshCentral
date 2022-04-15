@@ -2073,6 +2073,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     parent.parent.RemoveEventDispatchId(command.meshid); // Remove all subscriptions to this mesh
 
+                    // Notify the devices that they have changed relay roles
+                    if (mesh.relayid != null) {
+                        // Get the node and the rights for this node
+                        parent.GetNodeWithRights(domain, user, mesh.relayid, function (node, rights, visible) {
+                            if (node == null) return;
+                            var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'No longer a relay for ' + mesh.name + '.', msgid: 152, msgArgs: [mesh.name], node: parent.CloneSafeNode(node) };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+                            parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
+                        });
+                    }
+
                     // Mark the mesh as deleted
                     mesh.deleted = new Date(); // Mark the time this mesh was deleted, we can expire it at some point.
                     db.Set(mesh); // We don't really delete meshes because if a device connects to is again, we will un-delete it.
@@ -2128,9 +2139,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((common.validateInt(command.consent) == true) && (command.consent != mesh.consent)) { if (change != '') change += ' and consent changed'; else change += 'Device group "' + mesh.name + '" consent changed'; changesids.push(4); mesh.consent = command.consent; }
                     if ((common.validateInt(command.expireDevs, 0, 2000) == true) && (command.expireDevs != mesh.expireDevs)) { if (change != '') change += ' and auto-remove changed'; else change += 'Device group "' + mesh.name + '" auto-remove changed'; changesids.push(5); if (command.expireDevs == 0) { delete mesh.expireDevs; } else { mesh.expireDevs = command.expireDevs; } }
 
+                    var oldRelayNodeId = null, newRelayNodeId = null;
                     if ((typeof command.relayid == 'string') && (mesh.mtype == 3) && (mesh.relayid != null) && (command.relayid != mesh.relayid)) {
                         var relayIdSplit = command.relayid.split('/');
-                        if ((relayIdSplit.length == 3) && (relayIdSplit[0] = 'node') && (relayIdSplit[1] == domain.id)) { if (change != '') { change += ' and device relay changed'; } else { change = 'Device relay changed'; } changesids.push(7); mesh.relayid = command.relayid; }
+                        if ((relayIdSplit.length == 3) && (relayIdSplit[0] = 'node') && (relayIdSplit[1] == domain.id)) {
+                            if (change != '') { change += ' and device relay changed'; } else { change = 'Device relay changed'; }
+                            changesids.push(7);
+                            oldRelayNodeId = mesh.relayid;
+                            newRelayNodeId = mesh.relayid = command.relayid;
+                        }
                     }
 
                     // See if we need to change device group invitation codes
@@ -2168,6 +2185,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, consent: mesh.consent, action: 'meshchange', links: mesh.links, msgid: 142, msgArgs: [mesh.name, changesids], msg: change, domain: domain.id, invite: mesh.invite, expireDevs: command.expireDevs, relayid: mesh.relayid };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id]), obj, event);
+                    }
+
+                    // Notify the devices that they have changed relay roles
+                    if (oldRelayNodeId != null) {
+                        // Get the node and the rights for this node
+                        parent.GetNodeWithRights(domain, user, oldRelayNodeId, function (node, rights, visible) {
+                            if (node == null) return;
+                            var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'No longer a relay for ' + mesh.name + '.', msgid: 152, msgArgs: [mesh.name], node: parent.CloneSafeNode(node) };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+                            parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
+                        });
+                    }
+                    if (newRelayNodeId != null) {
+                        // Get the node and the rights for this node
+                        parent.GetNodeWithRights(domain, user, newRelayNodeId, function (node, rights, visible) {
+                            if (node == null) return;
+                            var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'Is a relay for ' + mesh.name + '.', msgid: 153, msgArgs: [mesh.name], node: parent.CloneSafeNode(node) };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+                            parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
+                        });
                     }
 
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'editmesh', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
