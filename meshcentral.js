@@ -3103,7 +3103,7 @@ function CreateMeshCentralServer(config, args) {
     // Decode a cookie back into an object using a key using AES256-GCM or AES128-CBC/HMAC-SHA384. Return null if it's not a valid cookie. (key must be 32 bytes or more)
     obj.decodeCookie = function (cookie, key, timeout) {
         if (cookie == null) return null;
-        const r = obj.decodeCookieAESGCM(cookie, key, timeout);
+        var r = obj.decodeCookieAESGCM(cookie, key, timeout);
         if (r == null) { r = obj.decodeCookieAESSHA(cookie, key, timeout); }
         if ((r == null) && (obj.args.cookieencoding == null) && (cookie.length != 64) && ((cookie == cookie.toLowerCase()) || (cookie == cookie.toUpperCase()))) {
             obj.debug('cookie', 'Upper/Lowercase cookie, try "CookieEncoding":"hex" in settings section of config.json.');
