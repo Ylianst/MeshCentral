@@ -1989,6 +1989,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' created device group ' + mesh.name); }
 
                         try { ws.send(JSON.stringify({ action: 'createmesh', responseid: command.responseid, result: 'ok', meshid: meshid, links: links })); } catch (ex) { }
+
+                        // If needed, event that a device is now a device group relay
+                        if (mesh.relayid != null) {
+                            // Get the node and the rights for this node
+                            parent.GetNodeWithRights(domain, user, mesh.relayid, function (node, rights, visible) {
+                                if (node == null) return;
+                                var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'Is a relay for ' + mesh.name + '.', msgid: 153, msgArgs: [mesh.name], node: parent.CloneSafeNode(node) };
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+                                parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
+                            });
+                        }
                     });
                     break;
                 }
@@ -2202,6 +2213,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.GetNodeWithRights(domain, user, newRelayNodeId, function (node, rights, visible) {
                             if (node == null) return;
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'Is a relay for ' + mesh.name + '.', msgid: 153, msgArgs: [mesh.name], node: parent.CloneSafeNode(node) };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+                            parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
+                        });
+                    } else if ((mesh.relayid != null) && (changesids.indexOf(1) >= 0)) {
+                        // Notify of node name change, get the node and the rights for this node, we just want to trigger a device update.
+                        parent.GetNodeWithRights(domain, user, mesh.relayid, function (node, rights, visible) {
+                            if (node == null) return;
+                            var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, node: parent.CloneSafeNode(node), nolog: 1 };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                             parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
                         });
