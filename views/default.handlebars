@@ -6957,6 +6957,11 @@
                     x += addDeviceAttribute("Credentials", y.join(', '));
                 }
 
+                // Relay for
+                var relayFor = [];
+                for (var i in meshes) { if (meshes[i].relayid == node._id) { relayFor.push('<a href=# onclick=gotoMesh("' + meshes[i]._id + '") style=cursor:pointer>' + EscapeHtml(meshes[i].name) + '</a>'); } }
+                if (relayFor.length > 0) { x += addDeviceAttribute('<span title="' + "Device groups this device is a relay for" + '">' + "Relay for" + '</span>', relayFor.join(", ")); }
+
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
                 if (((meshrights & (4 + 8 + 64)) != 0) && (node.mtype < 3) && ((node.agent == null) || (node.agent.id != 34))) { x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
@@ -13613,7 +13618,9 @@
             148: "Started Web-SSH session \"{0}\".",
             149: "Started Web-SFTP session \"{0}\".",
             150: "Started Web-RDP session \"{0}\".",
-            151: "Started Web-VNC session \"{0}\"." // Not in use yet
+            151: "Started Web-VNC session \"{0}\".", // Not in use yet
+            152: "No longer a relay for \"{0}\".",
+            153: "Is a relay for \"{0}\".",
         };
 
         var eventsShortMessageId = {
