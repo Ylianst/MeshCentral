@@ -1353,6 +1353,7 @@
         var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Power off", "Present"];
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
         var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit (glibc/2.24 NOKVM)", "Alpine Linux x86 64 Bit (MUSL)", "Assistant (Windows)", "Armada370 - ARM32/HF (libc/2.26)", "OpenWRT x86-64", "OpenBSD x86-64", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)"];
+        var agentsStrNoAgent = ['', '', '', '', "Windows", '', "Linux", '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', "Apple"];
         var sort = 0;
         var searchFocus = 0;
         var mapSearchFocus = 0;
@@ -13041,13 +13042,13 @@
                 }
             }
 
-            var agentsData = [], agentsLabels = [], powerData = [], powerLabels = [];
-            for (var i in agentTypes) { agentsData.push(agentTypes[i]); agentsLabels.push(agentsStr[i]); }
+            var agentsData = [], agentsLabels = [], powerData = [], powerLabels = [], xagentsStr = (currentMesh.mtype == 3) ? agentsStrNoAgent : agentsStr;
+            for (var i in agentTypes) { agentsData.push(agentTypes[i]); agentsLabels.push(xagentsStr[i]); }
             for (var i in powerStates) { powerData.push(powerStates[i]); powerLabels.push(powerStatetable[i]); }
             window.meshPowerChart.config.data.datasets[0].data = powerData;
             window.meshPowerChart.config.data.labels = powerLabels;
             window.meshPowerChart.update();
-            if (currentMesh.mtype == 2) {
+            if (currentMesh.mtype >= 2) {
                 window.meshOsChart.config.data.datasets[0].data = agentsData;
                 window.meshOsChart.config.data.labels = agentsLabels;
                 window.meshOsChart.update();
@@ -13068,10 +13069,10 @@
                 x += '</tbody></table>';
             }
 
-            if ((agentsData.length > 0) && (currentMesh.mtype == 2)) {
+            if ((agentsData.length > 0) && (currentMesh.mtype >= 2)) {
                 count = 0;
                 var xagentTypes = [];
-                for (var i in agentTypes) { xagentTypes.push([agentsStr[i], agentTypes[i]]); }
+                for (var i in agentTypes) { xagentTypes.push([xagentsStr[i], agentTypes[i]]); }
                 xagentTypes.sort(function(a, b){ return -(a[1]-b[1]) });
                 x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col colspan=2 style=text-align:left;width:430px>' + "Agent Types" + '</th></tr>';
                 for (var i in xagentTypes) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td style=text-align:right;width:60px>' + xagentTypes[i][1] + '<td> ' + xagentTypes[i][0] + '</tr>'; }
@@ -13111,9 +13112,9 @@
             QH('p21info', x);
 
             // Only show the OS chart if the mesh is agent type.
-            var graphsCount = ((showPower)?1:0) + (((currentMesh.mtype == 2) && showAgents)?1:0) + ((showConn)?1:0) + ((showSecurity)?1:0);
+            var graphsCount = ((showPower)?1:0) + (((currentMesh.mtype >= 2) && showAgents)?1:0) + ((showConn)?1:0) + ((showSecurity)?1:0);
             QS('meshPowerChartDiv')['display'] = (showPower)?'inline-block':'none';
-            QS('meshOsChartDiv')['display'] = ((currentMesh.mtype == 2) && showAgents)?'inline-block':'none';
+            QS('meshOsChartDiv')['display'] = ((currentMesh.mtype >= 2) && showAgents)?'inline-block':'none';
             QS('meshConnChartDiv')['display'] = (showConn)?'inline-block':'none';
             QS('meshSecurityChartDiv')['display'] = (showSecurity)?'inline-block':'none';
             QS('meshPowerChartDiv')['width'] = (graphsCount > 3)?'23%':'31%';
