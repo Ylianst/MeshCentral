@@ -1926,8 +1926,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if (common.validateString(command.meshname, 1, 128) == false) { err = 'Invalid group name'; } // Meshname is between 1 and 128 characters
                         else if ((command.desc != null) && (common.validateString(command.desc, 0, 1024) == false)) { err = 'Invalid group description'; } // Mesh description is between 0 and 1024 characters
                         else if ((command.meshtype < 1) || (command.meshtype > 4)) { err = 'Invalid group type'; } // Device group types are 1 = AMT, 2 = Agent, 3 = Local
-                        else if ((command.meshtype == 3) && (parent.args.wanonly == true) && (typeof command.relayid != 'string')) { err = 'Invalid group type'; } // Local device group type wihtout relay is not allowed in WAN mode
-                        else if ((command.meshtype == 3) && (parent.args.lanonly == true) && (typeof command.relayid == 'string')) { err = 'Invalid group type'; } // Local device group type with relay is not allowed in WAN mode
+                        else if (((command.meshtype == 3) || (command.meshtype == 4)) && (parent.args.wanonly == true) && (typeof command.relayid != 'string')) { err = 'Invalid group type'; } // Local device group type wihtout relay is not allowed in WAN mode
+                        else if (((command.meshtype == 3) || (command.meshtype == 4)) && (parent.args.lanonly == true) && (typeof command.relayid == 'string')) { err = 'Invalid group type'; } // Local device group type with relay is not allowed in WAN mode
                         else if ((domain.ipkvm == null) && (command.meshtype == 4)) { err = 'Invalid group type'; } // IP KVM device group type is not allowed unless enabled
                         if ((err == null) && (command.meshtype == 4)) {
                             if ((command.kvmmodel < 1) || (command.kvmmodel > 2)) { err = 'Invalid KVM model'; }
@@ -1961,7 +1961,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.meshtype == 4) { mesh.kvm = { model: command.kvmmodel, host: command.kvmhost, user: command.kvmuser, pass: command.kvmpass }; }
 
                         // If this is device group that requires a relay device, store that now
-                        if ((parent.args.lanonly != true) && (command.meshtype == 3) && (typeof command.relayid == 'string')) {
+                        if ((parent.args.lanonly != true) && ((command.meshtype == 3) || (command.meshtype == 4)) && (typeof command.relayid == 'string')) {
                             // Check the relay id
                             var relayIdSplit = command.relayid.split('/');
                             if ((relayIdSplit[0] == 'node') && (relayIdSplit[1] == domain.id)) { mesh.relayid = command.relayid; }
@@ -2155,7 +2155,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((common.validateInt(command.expireDevs, 0, 2000) == true) && (command.expireDevs != mesh.expireDevs)) { if (change != '') change += ' and auto-remove changed'; else change += 'Device group "' + mesh.name + '" auto-remove changed'; changesids.push(5); if (command.expireDevs == 0) { delete mesh.expireDevs; } else { mesh.expireDevs = command.expireDevs; } }
 
                     var oldRelayNodeId = null, newRelayNodeId = null;
-                    if ((typeof command.relayid == 'string') && (mesh.mtype == 3) && (mesh.relayid != null) && (command.relayid != mesh.relayid)) {
+                    if ((typeof command.relayid == 'string') && ((mesh.mtype == 3) || (mesh.mtype == 4)) && (mesh.relayid != null) && (command.relayid != mesh.relayid)) {
                         var relayIdSplit = command.relayid.split('/');
                         if ((relayIdSplit.length == 3) && (relayIdSplit[0] = 'node') && (relayIdSplit[1] == domain.id)) {
                             if (change != '') { change += ' and device relay changed'; } else { change = 'Device relay changed'; }
