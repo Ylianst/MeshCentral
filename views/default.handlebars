@@ -5803,8 +5803,8 @@
                     QV('cxfiles', (node.mtype != 4) && ((node.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (rights & 8) && fileAccess);
                     QV('cxevents', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (rights & 8));
                     QV('cxdetails', node.mtype < 3);
-                    QV('cxwebrdp', ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0) && ((features & 0x20000000) == 0)));
-                    QV('cxwebvnc', ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0) && ((features & 0x40000000) == 0)));
+                    QV('cxwebvnc', ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0) && ((features & 0x20000000) == 0)));
+                    QV('cxwebrdp', ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0) && ((features & 0x40000000) == 0)));
                     QV('cxwebssh', ((features2 & 0x200) && (((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0)));
                     QV('cxconsole', (consoleRights && (node.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (rights & 8));
 
