@@ -1166,6 +1166,7 @@
     },
     {
       "en": ", Relayed Devices",
+	  "pl": ", Urządzenia Przekierowane",
       "xloc": [
         "default.handlebars->39->327"
       ]
@@ -2966,6 +2967,7 @@
     {
       "en": "2FA is locked",
       "nl": "2FA is vergrendeld",
+	  "pl": "2FA jest zablokowane",
       "xloc": [
         "default-mobile.handlebars->11->60",
         "default.handlebars->39->191"
@@ -10675,6 +10677,7 @@
     {
       "en": "Backup codes are locked",
       "nl": "Backup codes zijn vergrendeld",
+	  "pl": "Kody zapasowe są zablokowane",
       "xloc": [
         "default-mobile.handlebars->11->61",
         "default.handlebars->39->192"
@@ -24794,6 +24797,7 @@
     {
       "en": "Error #{0}",
       "nl": "Foutmelding #{0}",
+	  "pl": "Błąd #{0}",
       "xloc": [
         "default-mobile.handlebars->11->66",
         "default.handlebars->39->197"
@@ -37074,6 +37078,7 @@
     {
       "en": "Login token in use",
       "nl": "Inlogtoken in gebruik",
+	  "pl": "Używany token logowania",
       "xloc": [
         "default-mobile.handlebars->11->62",
         "default.handlebars->39->193"
@@ -42345,6 +42350,7 @@
     },
     {
       "en": "No agent devices relayed thru agent",
+	  "pl": "Brak przekierowanych urządzeń przez agenta",
       "xloc": [
         "default-mobile.handlebars->11->626",
         "default.handlebars->39->1764",
@@ -43027,6 +43033,7 @@
     },
     {
       "en": "No relay devices available.",
+	  "pl": "Brak urządzeń do przekierowań.",
       "xloc": [
         "default-mobile.handlebars->11->648",
         "default.handlebars->39->1954"
@@ -44122,6 +44129,7 @@
     {
       "en": "OTP 2FA not allowed",
       "nl": "OTP 2FA niet toegestaan",
+	  "pl": "OTP 2FA niedozwolone",
       "xloc": [
         "default-mobile.handlebars->11->63",
         "default.handlebars->39->194"
@@ -49363,7 +49371,7 @@
       "ja": "リレー装置",
       "ko": "릴레이 장치",
       "nl": "Doorstuur apparaat",
-      "pl": "Urządzenie Przekazujące",
+      "pl": "Przekieruj Urządzenie",
       "pt": "Dispositivo de Relé",
       "pt-br": "Dispositivo de Retransmissão",
       "ru": "Устройство-релей",
@@ -49452,6 +49460,7 @@
     },
     {
       "en": "Relay device",
+	  "en": "Przekieruj urządzenie",
       "xloc": [
         "default.handlebars->39->2320"
       ]
@@ -57652,6 +57661,7 @@
     {
       "en": "Sign-in using OpenID Connect",
       "nl": "Aanmelden met OpenID Connect",
+	  "pl": "Zaloguj używając OpenID Connect",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-oidc",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-oidc",
@@ -64296,6 +64306,7 @@
     {
       "en": "Unable to load OTPLIB",
       "nl": "Kan OTPLIB niet laden",
+	  "pl": "Nie mogę załadować OTPLIB",
       "xloc": [
         "default-mobile.handlebars->11->65",
         "default.handlebars->39->196"
