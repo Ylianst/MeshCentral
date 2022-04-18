@@ -1288,7 +1288,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if ((command.flags == 0) && (chguser.flags != null)) { delete chguser.flags; change = 1; } else { if (command.flags !== chguser.flags) { chguser.flags = command.flags; change = 1; } }
                         }
                         if ((command.removeRights != null) && (typeof command.removeRights == 'number')) {
-                            if ((command.removeRights == 0) && (chguser.removeRights != null)) { delete chguser.removeRights; change = 1; } else { if (command.removeRights !== chguser.removeRights) { chguser.removeRights = command.removeRights; change = 1; } } 
+                            if (command.removeRights == 0) {
+                                if (chguser.removeRights != null) { delete chguser.removeRights; change = 1; }
+                            } else {
+                                if (command.removeRights !== chguser.removeRights) { chguser.removeRights = command.removeRights; change = 1; }
+                            } 
                         }
 
                         // Site admins can change any server rights, user managers can only change AccountLock, NoMeshCmd and NoNewGroups
