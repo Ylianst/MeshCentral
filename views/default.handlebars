@@ -11591,8 +11591,11 @@
             var x = "Create a new device group using the options below." + '<br /><br />', localGroupType = '';
             x += addHtmlValue("Name", '<input id=dp2meshname style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
             if ((features & 1) == 0) { localGroupType += '<option value=3>' + "Local devices, no agent" + '</option>'; }
-            if (((features & 2) == 0) && (relayDevices.length > 0)) { localGroupType += '<option value=5>' + "No agent devices relayed thru agent" + '</option>'; }
-            if (features2 & 0x10000) { localGroupType += '<option value=4>' + "IP-KVM / Power device" + '</option>'; }
+            if (((features & 2) == 0) && (relayDevices.length > 0)) { localGroupType += '<option value=103>' + "No agent devices relayed thru agent" + '</option>'; }
+            if (features2 & 0x10000) {
+                if ((features & 1) == 0) { localGroupType += '<option value=4>' + "IP-KVM / Power device" + '</option>'; }
+                if (((features & 2) == 0) && (relayDevices.length > 0)) { localGroupType += '<option value=104>' + "IP-KVM / Power device relayed thru agent" + '</option>'; }
+            }
             x += addHtmlValue("Type", '<div style=width:230px;margin:0;padding:0><select id=dp2meshtype style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) ><option value=2>' + "Manage using a software agent" + '</option><option value=1>' + "Intel&reg; AMT only, no agent" + '</option>' + localGroupType + '</select></div>');
             if (relayDevices.length > 0) {
                 x += '<div id=d2devrelaydiv style=display:none>';
@@ -11620,8 +11623,8 @@
             if ((x == 1) && (e != null) && (e.key == "Enter") && (Q('dp2meshname').value.length > 0)) { Q('dp2meshtype').focus(); }
             if ((x == 2) && (e != null) && (e.key == "Enter")) { Q('dp2meshdesc').focus(); }
             var ok = (Q('dp2meshname').value.length > 0);
-            QV('d2ipkvm', meshtype == 4);
-            try { QV('d2devrelaydiv', meshtype == 5); } catch (ex) {}
+            QV('d2ipkvm', (meshtype == 4) || (meshtype == 104));
+            try { QV('d2devrelaydiv', meshtype > 100); } catch (ex) {}
             if (meshtype == 4) { if ((Q('dp2ipkvmhost').value.length == 0) && (Q('dp2ipkvmuser').value.length == 0) && (Q('dp2ipkvmpass').value.length == 0)) { ok = false; } }
             QE('idx_dlgOkButton', ok);
         }
@@ -11629,14 +11632,14 @@
         function account_createMeshEx(button, tag) {
             var meshtype = parseInt(Q('dp2meshtype').value);
             var cmd = { action: 'createmesh', meshname: Q('dp2meshname').value, meshtype: meshtype, desc: Q('dp2meshdesc').value };
-            if (meshtype == 4) {
+            if ((meshtype == 4) || (meshtype == 104)) {
                 cmd.kvmmodel = parseInt(Q('dp2ipkvmmodel').value);
                 cmd.kvmhost = Q('dp2ipkvmhost').value;
                 cmd.kvmuser = Q('dp2ipkvmuser').value;
                 cmd.kvmpass = Q('dp2ipkvmpass').value;
             }
-            if (meshtype == 5) {
-                cmd.meshtype = 3;
+            if (meshtype > 100) {
+                cmd.meshtype = (meshtype - 100);
                 cmd.relayid = Q('d2devrelay').value;
             }
             meshserver.send(cmd);
@@ -11855,7 +11858,7 @@
             if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMT only, no agent";
             if (currentMesh.mtype == 2) meshtype = "Managed using a software agent";
             if (currentMesh.mtype == 3) { if (currentMesh.relayid == null) { meshtype = "Local devices, no agent"; } else { meshtype = "No agent devices relayed thru agent"; } }
-            if (currentMesh.mtype == 4) { meshtype = "IP-KVM device"; if (currentMesh.kvm.model == 1) { meshtype += ', ' + 'Raritan KX III'; } }
+            if (currentMesh.mtype == 4) { if (currentMesh.relayid == null) { meshtype = "IP-KVM device"; } else { meshtype = "IP-KVM device relayed thru agent"; } if (currentMesh.kvm.model == 1) { meshtype += ', ' + 'Raritan KX III'; } }
 
             var x = '';
             if ((args.hide & 8) != 0) { x += addHtmlValue("Name", mname); } // If title bar is hidden, display the mesh name here
@@ -11866,7 +11869,7 @@
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
             // Display the relay device if applicable
-            if ((currentMesh.mtype == 3) && (currentMesh.relayid != null)) {
+            if (((currentMesh.mtype == 3) || (currentMesh.mtype == 4)) && (currentMesh.relayid != null)) {
                 var relayName = '<i>' + "Unknown" + '</i>';
                 var relayNode = getNodeFromId(currentMesh.relayid);
                 if (relayNode != null) { relayName = EscapeHtml(relayNode.name); }
