@@ -1005,9 +1005,9 @@ function CreateMiniRouter(parent, nodeid, targetHost, targetPort) {
             socket.on('end', function () { close(this); });
             socket.on('error', function (err) { close(this); });
 
-            // Encode the device relay cookie. Note that there si no userid in this cookie.
+            // Encode the device relay cookie. Note that there is no userid in this cookie.
             const domainid = obj.nodeid.split('/')[1];
-            const cookie = parent.parent.encodeCookie({ domainid: domainid, nodeid: obj.nodeid, tcpaddr: obj.targetHost, tcpport: obj.targetPort }, parent.parent.loginCookieEncryptionKey);
+            const cookie = parent.parent.encodeCookie({ nouser: 1, domainid: domainid, nodeid: obj.nodeid, tcpaddr: obj.targetHost, tcpport: obj.targetPort }, parent.parent.loginCookieEncryptionKey);
             const domain = parent.parent.config.domains[domainid];
 
             // Setup the correct URL with domain and use TLS only if needed.
