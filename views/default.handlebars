@@ -1465,6 +1465,7 @@
             delete urlargs.pass;
             delete urlargs.viewmode;
             delete urlargs.gotonode;
+            delete urlargs.gotodevicename;
             delete urlargs.gotomesh;
             delete urlargs.gotouser;
             delete urlargs.gotougrp;
@@ -3657,6 +3658,10 @@
                 if (getNodeFromId('node/' + domain + '/' + args.gotonode) == null) return; // This node is not loaded yet
                 gotoDevice('node/' + domain + '/' + args.gotonode, xviewmode);
                 goBackStack.push(1);
+            } else if (args.gotodevicename != null) {
+                var foundNode = null;
+                if (nodes != null) { for (var i in nodes) { if (nodes[i].name == args.gotodevicename) { foundNode =  nodes[i]._id; } } }
+                if (foundNode) { gotoDevice(foundNode, xviewmode); goBackStack.push(1); }
             } else if (args.gotomesh != null) {
                 if (meshes['mesh/' + domain + '/' + args.gotomesh] == null) return; // This device group is not loaded yet
                 gotoMesh('mesh/' + domain + '/' + args.gotomesh);
