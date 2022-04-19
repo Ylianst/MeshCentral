@@ -1205,6 +1205,7 @@
         delete urlargs.pass;
         delete urlargs.viewmode;
         delete urlargs.gotonode;
+        delete urlargs.gotodevicename;
         delete urlargs.gotomesh;
         delete urlargs.panel;
 
@@ -2091,6 +2092,10 @@
                 if (getNodeFromId('node/' + domain + '/' + args.gotonode) == null) return; // This node is not loaded yet
                 if (args.panel) { currentDevicePanel = parseInt(args.panel); }
                 gotoDevice('node/' + domain + '/' + args.gotonode, xviewmode);
+            } else if (args.gotodevicename != null) {
+                var foundNode = null;
+                if (nodes != null) { for (var i in nodes) { if (nodes[i].name == args.gotodevicename) { foundNode = nodes[i]._id; } } }
+                if (foundNode) { gotoDevice(foundNode, xviewmode); go(xviewmode); }
             } else if (args.gotomesh != null) {
                 if (meshes['mesh/' + domain + '/' + args.gotomesh] == null) return; // This device group is not loaded yet
                 gotoMesh('mesh/' + domain + '/' + args.gotomesh);
