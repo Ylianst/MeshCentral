@@ -141,7 +141,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
     // Disconnect this agent
     obj.close = function (arg) {
         if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Soft disconnect (' + obj.req.clientIp + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug('relay', 'Relay: Hard disconnect (' + obj.req.clientIp + ')'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 2) || (req.query.hd == 1)) { try { ws._socket._parent.end(); parent.parent.debug('relay', 'Relay: Hard disconnect (' + obj.req.clientIp + ')'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
 
         // Aggressive cleanup
         delete obj.id;

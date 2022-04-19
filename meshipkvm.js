@@ -37,7 +37,7 @@ function CreateIPKVMManager(parent) {
     const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
     // Subscribe for mesh creation events
-    parent.AddEventDispatch(['server-createmesh', 'server-deletemesh', 'devport-operation'], obj);
+    parent.AddEventDispatch(['server-createmesh', 'server-deletemesh', 'server-editmesh', 'devport-operation'], obj);
     obj.HandleEvent = function (source, event, ids, id) {
         if ((event == null) || (event.mtype != 4)) return;
         if (event.action == 'createmesh') {
@@ -46,6 +46,9 @@ function CreateIPKVMManager(parent) {
         } else if (event.action == 'deletemesh') {
             // Stop managing this device group
             stopManagement(event.meshid);
+        } else if ((event.action == 'meshchange') && (event.relayid != null)) {
+            // See if the relayid changed
+            changeManagementRelayId(event.meshid, event.relayid);
         } else if ((event.action == 'turnon') || (event.action == 'turnoff')) {
             // Perform power operation
             const manager = obj.managedGroups[event.meshid];
@@ -73,8 +76,7 @@ function CreateIPKVMManager(parent) {
             manager.onStateChanged = onStateChanged;
             manager.onPortsChanged = onPortsChanged;
             manager.start();
-        }
-        else if (mesh.kvm.model == 2) { // WebPowerSwitch 7
+        } else if (mesh.kvm.model == 2) { // WebPowerSwitch 7
             const manager = CreateWebPowerSwitch(obj, host, port, mesh.kvm.user, mesh.kvm.pass);
             manager.meshid = mesh._id;
             manager.relayid = mesh.relayid;
@@ -101,6 +103,12 @@ function CreateIPKVMManager(parent) {
             delete obj.managedGroups[meshid];
             manager.stop();
         }
+    }
+
+    // Change the relayid of a managed device if needed
+    function changeManagementRelayId(meshid, relayid) {
+        const manager = obj.managedGroups[meshid];
+        if ((manager != null) && (manager.relayid != null) && (manager.relayid != relayid)) { manager.updateRelayId(relayid); }
     }
 
     // Called when a KVM device changes state
@@ -342,7 +350,12 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
     obj.start = function () {
         if (obj.started) return;
         obj.started = true;
-        if (obj.state == 0) connect();
+        if (obj.relayid) {
+            obj.router = CreateMiniRouter(parent, obj.relayid, hostname, port);
+            obj.router.start(function () { connect(); });
+        } else {
+            connect();
+        }
     }
 
     obj.stop = function () {
@@ -350,6 +363,13 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
         obj.started = false;
         if (retryTimer != null) { clearTimeout(retryTimer); retryTimer = null; }
         setState(0);
+        if (obj.router) { obj.router.stop(); delete obj.router; }
+    }
+
+    // If the relay device has changed, update our router
+    obj.updateRelayId = function (relayid) {
+        obj.relayid = relayid;
+        if (obj.router != null) { obj.router.nodeid = relayid; }
     }
 
     function setState(newState) {
@@ -421,6 +441,7 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
 
     function fetchInitialInformation() {
         obj.fetch('/webs_cron.asp?_portsstatushash=&_devicesstatushash=&webs_job=sidebarupdates', null, null, function (server, tag, data) {
+            data = data.toString();
             const parsed = parseJsScript(data);
             for (var i in parsed['updateSidebarPanel']) {
                 if (parsed['updateSidebarPanel'][i][0] == "cron_device") {
@@ -558,8 +579,8 @@ function CreateRaritanKX3Manager(parent, hostname, port, username, password) {
 
         var data = [];
         const options = {
-            hostname: hostname,
-            port: port,
+            hostname: obj.router ? 'localhost' : hostname,
+            port: obj.router ? obj.router.tcpServerPort : port,
             rejectUnauthorized: false,
             checkServerIdentity: onCheckServerIdentity,
             path: url,
@@ -795,6 +816,12 @@ function CreateWebPowerSwitch(parent, hostname, port, username, password) {
         if (obj.router) { obj.router.stop(); delete obj.router; }
     }
 
+    // If the relay device has changed, update our router
+    obj.updateRelayId = function (relayid) {
+        obj.relayid = relayid;
+        if (obj.router != null) { obj.router.nodeid = relayid; }
+    }
+
     function setState(newState) {
         if (obj.state == newState) return;
         obj.state = newState;
@@ -860,7 +887,6 @@ function CreateWebPowerSwitch(parent, hostname, port, username, password) {
     }
 
     obj.fetch = function (url, method, data, tag, func) {
-        //console.log('fetch', url, method, data, tag);
         if (obj.state == 0) return;
         if (typeof data == 'string') { data = Buffer.from(data); }
 
@@ -972,10 +998,12 @@ function CreateMiniRouter(parent, nodeid, targetHost, targetPort) {
     function closeTcpSocket(tcpSocket) {
         if (tcpSockets[tcpSocket]) {
             delete tcpSockets[tcpSocket];
-            try { tcpSocket.close(); } catch (ex) { }
-            if (tcpSocket.relaySocket) { try { tcpSocket.relaySocket.close(); } catch (ex) { } }
-            delete tcpSocket.relaySocket.tcpSocket;
-            delete tcpSocket.relaySocket;
+            try { tcpSocket.end(); } catch (ex) { console.log(ex); }
+            if (tcpSocket.relaySocket) { try { tcpSocket.relaySocket.close(); } catch (ex) { console.log(ex); } }
+            if (tcpSocket) {
+                delete tcpSocket.relaySocket.tcpSocket;
+                delete tcpSocket.relaySocket;
+            }
         }
     }
 
@@ -991,19 +1019,19 @@ function CreateMiniRouter(parent, nodeid, targetHost, targetPort) {
         obj.tcpServer.listen(0, 'localhost', function () {
             obj.tcpServerPort = obj.tcpServer.address().port;
             parent.parent.debug('relay', 'MiniRouter: Request for relay ' + obj.targetHost + ':' + obj.targetPort + ' started on port ' + obj.tcpServerPort);
-            onReadyFunc(obj.tcpServerPort);
+            onReadyFunc(obj.tcpServerPort, obj);
         });
         obj.tcpServer.on('connection', function (socket) {
             tcpSockets[socket] = 1;
             socket.pause();
             socket.on('data', function (chunk) { // Make sure to handle flow control.
-                console.log('<-- ' + chunk);
                 const f = function sendDone() { sendDone.tcpSocket.resume(); }
                 f.tcpSocket = this;
                 if (this.relaySocket && this.relaySocket.active) { this.pause(); this.relaySocket.send(chunk, f); }
             });
-            socket.on('end', function () { close(this); });
-            socket.on('error', function (err) { close(this); });
+            socket.on('end', function () { closeTcpSocket(this); });
+            socket.on('close', function () { closeTcpSocket(this); });
+            socket.on('error', function (err) { closeTcpSocket(this); });
 
             // Encode the device relay cookie. Note that there is no userid in this cookie.
             const domainid = obj.nodeid.split('/')[1];
@@ -1015,13 +1043,12 @@ function CreateMiniRouter(parent, nodeid, targetHost, targetPort) {
             const protocol = (parent.parent.args.tlsoffload) ? 'ws' : 'wss';
             var domainadd = '';
             if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-            const url = protocol + '://localhost:' + parent.parent.args.port + '/' + domainadd + 'meshrelay.ashx?noping=1&auth=' + cookie;  // TODO: &p=10, Protocol 10 is Web-RDP, Specify TCP routing protocol?
+            const url = protocol + '://localhost:' + parent.parent.args.port + '/' + domainadd + 'meshrelay.ashx?noping=1&hd=1&auth=' + cookie;  // TODO: &p=10, Protocol 10 is Web-RDP, Specify TCP routing protocol?
             parent.parent.debug('relay', 'MiniRouter: Connection websocket to ' + url);
             socket.relaySocket = new WebSocket(url, options);
             socket.relaySocket.tcpSocket = socket;
             socket.relaySocket.on('open', function () { parent.parent.debug('relay', 'MiniRouter: Relay websocket open'); });
             socket.relaySocket.on('message', function (data) { // Make sure to handle flow control.
-                console.log('--> ' + data);
                 if (!this.active) {
                     if (data == 'c') {
                         // Relay Web socket is connected, start data relay
@@ -1029,7 +1056,6 @@ function CreateMiniRouter(parent, nodeid, targetHost, targetPort) {
                         this.tcpSocket.resume();
                     } else {
                         // Could not connect web socket, close it
-                        console.log('ERR', data);
                         closeWebSocket(this);
                     }
                 } else {
@@ -1040,7 +1066,7 @@ function CreateMiniRouter(parent, nodeid, targetHost, targetPort) {
                     this.tcpSocket.write(data, f);
                 }
             });
-            socket.relaySocket.on('close', function () { parent.parent.debug('relay', 'MiniRouter: Relay websocket closed'); closeWebSocket(this); });
+            socket.relaySocket.on('close', function (reasonCode, description) { parent.parent.debug('relay', 'MiniRouter: Relay websocket closed'); closeWebSocket(this); });
             socket.relaySocket.on('error', function (err) { parent.parent.debug('relay', 'MiniRouter: Relay websocket error: ' + err); closeWebSocket(this); });
         });
     }
