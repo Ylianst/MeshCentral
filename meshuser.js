@@ -2199,7 +2199,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.Set(mesh);
                         var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, consent: mesh.consent, action: 'meshchange', links: mesh.links, msgid: 142, msgArgs: [mesh.name, changesids], msg: change, domain: domain.id, invite: mesh.invite, expireDevs: command.expireDevs, relayid: mesh.relayid };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id]), obj, event);
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id, 'server-editmesh']), obj, event);
                     }
 
                     // Notify the devices that they have changed relay roles
