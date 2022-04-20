@@ -1167,6 +1167,7 @@
     },
     {
       "en": ", Relayed Devices",
+      "nl": ", Doorgestuurde apparaten",
       "pl": ", Urządzenia Przekierowane",
       "xloc": [
         "default.handlebars->39->330"
@@ -8734,6 +8735,7 @@
     },
     {
       "en": "Apple",
+      "nl": "Apple",
       "xloc": [
         "default.handlebars->39->57"
       ]
@@ -19910,6 +19912,7 @@
     },
     {
       "en": "Device groups this device is a relay for",
+      "nl": "Apparaatgroepen waarvoor dit apparaat een relay is",
       "xloc": [
         "default.handlebars->39->883"
       ]
@@ -29701,6 +29704,7 @@
     },
     {
       "en": "IP-KVM / Power device relayed thru agent",
+      "nl": "IP-KVM / Power-apparaat doorgestuurd via agent",
       "xloc": [
         "default.handlebars->39->1772"
       ]
@@ -29728,6 +29732,7 @@
     },
     {
       "en": "IP-KVM device relayed thru agent",
+      "nl": "IP-KVM-apparaat doorgestuurd via agent",
       "xloc": [
         "default-mobile.handlebars->11->628",
         "default.handlebars->39->1832"
@@ -33445,6 +33450,7 @@
     },
     {
       "en": "Is a relay for \\\"{0}\\\".",
+      "nl": "Is een relay voor \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2323"
       ]
@@ -42383,6 +42389,7 @@
     },
     {
       "en": "No agent devices relayed thru agent",
+      "nl": "Geen apparaten doorgestuurd via agent",
       "pl": "Brak przekierowanych urządzeń przez agenta",
       "xloc": [
         "default-mobile.handlebars->11->626",
@@ -42941,6 +42948,7 @@
     },
     {
       "en": "No longer a relay for \\\"{0}\\\".",
+      "nl": "Niet langer een relay voor \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2322"
       ]
@@ -43072,6 +43080,7 @@
     },
     {
       "en": "No relay devices available.",
+      "nl": "Geen relay apparaten beschikbaar.",
       "pl": "Brak urządzeń do przekierowań.",
       "xloc": [
         "default-mobile.handlebars->11->649",
@@ -48181,9 +48190,6 @@
       ]
     },
     {
-      "en": "Przekieruj urządzenie"
-    },
-    {
       "cs": "Klient PuTTY SSH",
       "da": "PuTTY SSH-klient",
       "de": "PuTTY SSH-Client",
@@ -49502,12 +49508,14 @@
     },
     {
       "en": "Relay device",
+      "nl": "Doorstuur apparaat",
       "xloc": [
         "default.handlebars->39->2330"
       ]
     },
     {
       "en": "Relay for",
+      "nl": "Relay voor",
       "xloc": [
         "default.handlebars->39->884"
       ]
