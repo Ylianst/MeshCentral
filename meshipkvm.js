@@ -1000,10 +1000,8 @@ function CreateMiniRouter(parent, nodeid, targetHost, targetPort) {
             delete tcpSockets[tcpSocket];
             try { tcpSocket.end(); } catch (ex) { console.log(ex); }
             if (tcpSocket.relaySocket) { try { tcpSocket.relaySocket.close(); } catch (ex) { console.log(ex); } }
-            if (tcpSocket) {
-                delete tcpSocket.relaySocket.tcpSocket;
-                delete tcpSocket.relaySocket;
-            }
+            try { delete tcpSocket.relaySocket.tcpSocket; } catch (ex) { }
+            try { delete tcpSocket.relaySocket; } catch (ex) { }
         }
     }
 
