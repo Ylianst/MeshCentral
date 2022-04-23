@@ -36,6 +36,7 @@ const PROTOCOL_WEBVNC = 204;
 
 
 // Construct a MSTSC Relay object, called upon connection
+// This implementation does not have TLS support
 // This is a bit of a hack as we are going to run the RDP connection thru a loopback connection.
 // If the "node-rdpjs-2" module supported passing a socket, we would do something different.
 module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
@@ -280,7 +281,6 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
 
     return obj;
 };
-
 
 
 // Construct a SSH Relay object, called upon connection
