@@ -116,6 +116,21 @@ function compute_response_v2(response_key_nt, response_key_lm, server_challenge,
 function kx_key_v2(session_base_key, _lm_challenge_response, _server_challenge) { return session_base_key; }
 function rc4k(key, data) { return crypto.createCipheriv('rc4', key, null).update(data); }
 
+function mac(rc4_handle, signing_key, seq_num, data) {
+    const buf = Buffer.alloc(4);
+    buf.writeInt32LE(seq_num, 0);
+    var signature = hmacmd5(signing_key, Buffer.concat([buf, data]));
+    return message_signature_ex(rc4_handle.update(signature.slice(0, 8)), seq_num);
+}
+
+function message_signature_ex(check_sum, seq_num) {
+    const buf = Buffer.alloc(16);
+    buf.writeInt32LE(1, 0); // Version
+    if (check_sum) { check_sum.copy(buf, 4, 0, 8); } // check_sum
+    if (seq_num) { buf.writeInt32LE(seq_num, 12); } // seq_num
+    return buf;
+}
+
 /// Compute a signature of all data exchange during NTLMv2 handshake
 function mic(exported_session_key, negotiate_message, challenge_message, authenticate_message) { return hmacmd5(exported_session_key, Buffer.concat([negotiate_message, challenge_message, authenticate_message])); }
 
@@ -136,6 +151,66 @@ function seal_key(exported_session_key, is_client) {
         return md5(Buffer.concat([exported_session_key, Buffer.from("session key to client-to-server sealing key magic constant\0")]));
     } else {
         return md5(Buffer.concat([exported_session_key, Buffer.from("session key to server-to-client sealing key magic constant\0")]));
+    }
+}
+
+/// We are now able to build a security interface
+/// that will be used by the CSSP manager to cipherring message (private keys)
+/// To detect MITM attack
+function build_security_interface(ntlm) {
+    const obj = {};
+    if (ntlm) {
+        obj.signing_key = sign_key(ntlm.exported_session_key, true);
+        obj.verify_key = sign_key(ntlm.exported_session_key, false);
+        const client_sealing_key = seal_key(ntlm.exported_session_key, true);
+        const server_sealing_key = seal_key(ntlm.exported_session_key, false);
+        obj.encrypt = crypto.createCipheriv('rc4', client_sealing_key, null);
+        obj.decrypt = crypto.createCipheriv('rc4', server_sealing_key, null);
+    }
+    obj.seq_num = 0;
+
+    obj.gss_wrapex = function (data) {
+        const encrypted_data = obj.encrypt.update(data);
+        const signature = mac(obj.encrypt, obj.signing_key, obj.seq_num, data);
+        obj.seq_num++;
+        return Buffer.concat([ signature, encrypted_data ] );
+    }
+
+    obj.gss_unwrapex = function(data) {
+        const version = data.readInt32LE(0);
+        const checksum = data.slice(4, 12);
+        const seqnum = data.readInt32LE(12);
+        const payload = data.slice(16);
+        const plaintext_payload = obj.decrypt.update(payload);
+        const plaintext_checksum = obj.decrypt.update(checksum);
+        const seqnumbuf = Buffer.alloc(4);
+        seqnumbuf.writeInt32LE(seqnum, 0);
+        const computed_checksum = hmacmd5(obj.verify_key, Buffer.concat([ seqnumbuf, plaintext_payload ])).slice(0, 8);
+        if (!plaintext_checksum.equals(computed_checksum)) { console.log("Invalid checksum on NTLMv2"); }
+        return plaintext_payload.toString();
+    }
+
+    return obj;
+}
+
+function Create_Ntlm() {
+    return {
+        /// Microsoft Domain for Active Directory
+        domain: "", //String,
+        /// Username
+        user: "", //String,
+        /// Password
+        password: "", // String,
+        /// Key generated from NTLM hash
+        response_key_nt: null, // Buffer
+        /// Key generated from NTLM hash
+        response_key_lm: null, // Buffer
+        /// Keep trace of each messages to compute a final hash
+        negotiate_message: null, // Buffer
+        /// Key use to ciphering messages
+        exported_session_key: crypto.randomBytes(16), // Buffer
+        /// True if session use unicode
+        is_unicode: false // Boolean
     }
 }
 
@@ -175,7 +250,7 @@ function authenticate_message(lm_challenge_response, nt_challenge_response, doma
     return [buf, payload];
 }
 
-function read_challenge_message(derBuffer, user, pass, domain, negotiate_message) {
+function read_challenge_message(ntlm, derBuffer) {
     const headerSignature = derBuffer.slice(0, 8);
     if (headerSignature.toString('hex') != '4e544c4d53535000') { console.log('BAD SIGNATURE'); }
     const messageType = derBuffer.readInt32LE(8);
@@ -195,8 +270,8 @@ function read_challenge_message(derBuffer, user, pass, domain, negotiate_message
     const timestamp = targetInfo[7];
     if (timestamp == null) { console.log('NO TIMESTAMP'); }
     const clientChallenge = crypto.randomBytes(8);
-    const response_key_nt = ntowfv2(pass, user, domain); // Password, Username, Domain
-    const response_key_lm = lmowfv2(pass, user, domain); // Password, Username, Domain
+    const response_key_nt = ntowfv2(ntlm.password, ntlm.user, ntlm.domain); // Password, Username, Domain
+    const response_key_lm = lmowfv2(ntlm.password, ntlm.user, ntlm.domain); // Password, Username, Domain
 
     var resp = compute_response_v2(response_key_nt, response_key_lm, serverChallenge, clientChallenge, timestamp, targetName);
     const nt_challenge_response = resp[0];
@@ -204,18 +279,17 @@ function read_challenge_message(derBuffer, user, pass, domain, negotiate_message
     const session_base_key = resp[2];
 
     const key_exchange_key = kx_key_v2(session_base_key, lm_challenge_response, serverChallenge);
-    const exported_session_key = crypto.randomBytes(16);
-    const encrypted_random_session_key = rc4k(key_exchange_key, exported_session_key);
+    const encrypted_random_session_key = rc4k(key_exchange_key, ntlm.exported_session_key);
 
-    const is_unicode = ((negotiateFlags & 1) != 0)
+    ntlm.is_unicode = ((negotiateFlags & 1) != 0)
     var xdomain = null;
     var xuser = null;
-    if (is_unicode) {
-        xdomain = toUnicode(domain);
-        xuser = toUnicode(user);
+    if (ntlm.is_unicode) {
+        xdomain = toUnicode(ntlm.domain);
+        xuser = toUnicode(ntlm.user);
     } else {
-        xdomain = Buffer.from(domain, 'utf8');
-        xuser = Buffer.from(domain, 'utf8');
+        xdomain = Buffer.from(ntlm.domain, 'utf8');
+        xuser = Buffer.from(ntlm.user, 'utf8');
     }
 
     const auth_message_compute = authenticate_message(lm_challenge_response, nt_challenge_response, xdomain, xuser, zeroBuffer(0), encrypted_random_session_key, negotiateFlags);
@@ -223,7 +297,7 @@ function read_challenge_message(derBuffer, user, pass, domain, negotiate_message
     // Write a tmp message to compute MIC and then include it into final message
     const tmp_final_auth_message = Buffer.concat([auth_message_compute[0], zeroBuffer(16), auth_message_compute[1]]);
 
-    const signature = mic(exported_session_key, negotiate_message, derBuffer, tmp_final_auth_message);
+    const signature = mic(ntlm.exported_session_key, ntlm.negotiate_message, derBuffer, tmp_final_auth_message);
     return Buffer.concat([auth_message_compute[0], signature, auth_message_compute[1]]);
 }
 
@@ -236,13 +310,19 @@ const asn1 = forge.asn1;
 const pki = forge.pki;
 const entireBuffer = Buffer.from('3081b2a003020106a181aa3081a73081a4a081a104819e4e544c4d53535000020000000e000e003800000035828a62f2290572b3cac375000000000000000058005800460000000a00614a0000000f430045004e005400520041004c0002000e00430045004e005400520041004c0001000e00430045004e005400520041004c0004000e00430065006e007400720061006c0003000e00430065006e007400720061006c0007000800afbc2c2a9256d80100000000', 'hex').toString('binary');
 
+const ntml = Create_Ntlm();
+ntml.domain = "";
+ntml.user = "default";
+ntml.password = "";
+ntml.negotiate_message = Buffer.from('4e544c4d53535000010000003582086000000000000000000000000000000000', 'hex');
+
 // We have a full ASN1 data block, decode it now
 const der = asn1.fromDer(entireBuffer.toString('binary'));
 const derNum = der.value[0].value[0].value.charCodeAt(0);
 const derBuffer = Buffer.from(der.value[1].value[0].value[0].value[0].value[0].value, 'binary');
-const negotiate_message = Buffer.from('4e544c4d53535000010000003582086000000000000000000000000000000000', 'hex');
-const client_challenge = read_challenge_message(derBuffer, "default", "", "", negotiate_message);
+const client_challenge = read_challenge_message(ntml, derBuffer);
 
 console.log('client_challenge', client_challenge.toString('hex'));
 
+const NTLMv2SecurityInterface = build_security_interface(ntml);
 
