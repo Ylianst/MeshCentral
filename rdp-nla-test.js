@@ -1,47 +1,7 @@
-/*
-YST: create_negotiate_message: 4e544c4d53535000010000003582086000000000000000000000000000000000
-WRITE: negotiate_message 302fa003020102a12830263024a02204204e544c4d53535000010000003582086000000000000000000000000000000000
-READ: read_ts_server_challenge 3081b2a003020106a181aa3081a73081a4a081a104819e4e544c4d53535000020000000e000e003800000035828a62f2290572b3cac375000000000000000058005800460000000a00614a0000000f430045004e005400520041004c0002000e00430045004e005400520041004c0001000e00430045004e005400520041004c0004000e00430065006e007400720061006c0003000e00430065006e007400720061006c0007000800afbc2c2a9256d80100000000
-YST: read_challenge_message1: 4e544c4d53535000020000000e000e003800000035828a62f2290572b3cac375000000000000000058005800460000000a00614a0000000f430045004e005400520041004c0002000e00430045004e005400520041004c0001000e00430045004e005400520041004c0004000e00430065006e007400720061006c0003000e00430065006e007400720061006c0007000800afbc2c2a9256d80100000000
-YST: target_name: 02000e00430045004e005400520041004c0001000e00430045004e005400520041004c0004000e00430065006e007400720061006c0003000e00430065006e007400720061006c0007000800afbc2c2a9256d80100000000
-YST: timestamp: afbc2c2a9256d801
-YST: client_challenge: f8d1e2057b9c7169
-YST: nt_challenge_response: 32e87ea049485920fca6695ae9daee820101000000000000afbc2c2a9256d801f8d1e2057b9c71690000000002000e00430045004e005400520041004c0001000e00430045004e005400520041004c0004000e00430065006e007400720061006c0003000e00430065006e007400720061006c0007000800afbc2c2a9256d80100000000
-YST: lm_challenge_response: 2b0f863797a00d4446a1c9f49de124a5f8d1e2057b9c7169
-YST: session_base_key: 52f86f741e92e2e9d8013c1afcecfa13
-YST: key_exchange_key: 52f86f741e92e2e9d8013c1afcecfa13
-YST: encrypted_random_session_key: d9b2353a7f7ba9569ece01e96686cdef
-YST: self.is_unicode: true
-YST: domain:
-YST: user: 640065006600610075006c007400
-YST: tmp_final_auth_message: 4e544c4d53535000030000001800180058000000840084007000000000000000f40000000e000e00f40000000000000002010000100010000201000035828a62060072170000000f000000000000000000000000000000002b0f863797a00d4446a1c9f49de124a5f8d1e2057b9c716932e87ea049485920fca6695ae9daee820101000000000000afbc2c2a9256d801f8d1e2057b9c71690000000002000e00430045004e005400520041004c0001000e00430045004e005400520041004c0004000e00430065006e007400720061006c0003000e00430065006e007400720061006c0007000800afbc2c2a9256d80100000000640065006600610075006c007400d9b2353a7f7ba9569ece01e96686cdef
-YST: signature: 4cbff4ee21ce4114c7657d7aa427ca3f
-YST: read_challenge_message2: 4e544c4d53535000030000001800180058000000840084007000000000000000f40000000e000e00f40000000000000002010000100010000201000035828a62060072170000000f4cbff4ee21ce4114c7657d7aa427ca3f2b0f863797a00d4446a1c9f49de124a5f8d1e2057b9c716932e87ea049485920fca6695ae9daee820101000000000000afbc2c2a9256d801f8d1e2057b9c71690000000002000e00430045004e005400520041004c0001000e00430045004e005400520041004c0004000e00430065006e007400720061006c0003000e00430065006e007400720061006c0007000800afbc2c2a9256d80100000000640065006600610075006c007400d9b2353a7f7ba9569ece01e96686cdef
-WRITE challenge: 30820251a003020102a18201223082011e3082011aa0820116048201124e544c4d53535000030000001800180058000000840084007000000000000000f40000000e000e00f40000000000000002010000100010000201000035828a62060072170000000f4cbff4ee21ce4114c7657d7aa427ca3f2b0f863797a00d4446a1c9f49de124a5f8d1e2057b9c716932e87ea049485920fca6695ae9daee820101000000000000afbc2c2a9256d801f8d1e2057b9c71690000000002000e00430045004e005400520041004c0001000e00430045004e005400520041004c0004000e00430065006e007400720061006c0003000e00430065006e007400720061006c0007000800afbc2c2a9256d80100000000640065006600610075006c007400d9b2353a7f7ba9569ece01e96686cdefa38201220482011e0100000095fb7df84ffcd81d00000000a0588a3354258442e2997c79a4005e91ac49759b3c362228f42aefa5daad071a8eb905d7bc16611df35a50c0c577acf4543609e3ade8ff8289d371d8baed9eb2bd738de6c208f6a9885f1b0ee8aee2b26be87aa189bb41989c79716d938eb68e2f1e4bdc74c25e995c438aa5e5e30c2784214f4763c6737417edac43371f65f22aab68619f022b2f46b4cb9d00d0befe6d7e83d0d2c4ae69b544b1e90b1d5198459722eff903e8550864a46c552d75c83fb8ca8491b573fcd59d17cdc34e2505995fa6922554fdf03016161b430e476875a3752907087e993388f56675957a75b42b062f1f66ef8597a69deb466337396747ec8e46c573344b24fc8fba9305207eb10462ce355299063bab4cf105
-READ: read_ts_validate 3081b2a003020106a181aa3081a73081a4a081a104819e4e544c4d53535000020000000e000e003800000035828a62f2290572b3cac375000000000000000058005800460000000a00614a0000000f430045004e005400520041004c0002000e00430045004e005400520041004c0001000e00430045004e005400520041004c0004000e00430065006e007400720061006c0003000e00430065006e007400720061006c0007000800afbc2c2a9256d80100000000
-WRITE credentials: 302fa003020102a12830263024a02204204e544c4d53535000010000003582086000000000000000000000000000000000
-*/
-
-/*
-        "Signature" => Check::new(b"NTLMSSP\x00".to_vec()),
-        "MessageType" => Check::new(U32::LE(2)),
-        "TargetNameLen" => U16::LE(0),
-        "TargetNameLenMax" => U16::LE(0),
-        "TargetNameBufferOffset" => U32::LE(0),
-        "NegotiateFlags" => DynOption::new(U32::LE(0), |node| {
-            if node.inner() & (Negotiate::NtlmsspNegociateVersion as u32) == 0 {
-                return MessageOption::SkipField("Version".to_string())
-            }
-            return MessageOption::None
-        }),
-        "ServerChallenge" => vec![0; 8],
-        "Reserved" => vec![0; 8],
-        "TargetInfoLen" => U16::LE(0),
-        "TargetInfoMaxLen" => U16::LE(0),
-        "TargetInfoBufferOffset" => U32::LE(0),
-        "Version" => version(),
-        "Payload" => Vec::<u8>::new()
-*/
+const crypto = require('crypto');
+const forge = require('node-forge');
+const asn1 = forge.asn1;
+const pki = forge.pki;
 
 const NegotiateFlags = {
     NtlmsspNegociate56: 0x80000000,
@@ -96,30 +56,68 @@ function decodeTargetInfo(targetInfoBuf) {
 }
 
 function bufToArr(b) { var r = []; for (var i = 0; i < b.length; i++) { r.push(b.readUInt8(i)); } return r; } // For unit testing
+function compareArray(a, b) { if (a.length != b.length) return false; for (var i = 0; i < a.length; i++) { if (a[i] != b[i]) return false; } return true; } // For unit testing
 function toUnicode(str) { return Buffer.from(str, 'ucs2'); }
 function md4(str) { return crypto.createHash('md4').update(str).digest(); }
 function md5(str) { return crypto.createHash('md5').update(str).digest(); }
-function hmacmd5(key, data) { return crypto.createHmac('md5', key).update(data).digest(); }
-function ntowfv2(password, user, domain) { return hmacmd5(md4(toUnicode(password)), toUnicode(user.toUpperCase() + domain)); }
+function hmac_md5(key, data) { return crypto.createHmac('md5', key).update(data).digest(); }
+function ntowfv2(password, user, domain) { return hmac_md5(md4(toUnicode(password)), toUnicode(user.toUpperCase() + domain)); }
 function lmowfv2(password, user, domain) { return ntowfv2(password, user, domain); }
 function zeroBuffer(len) { return Buffer.alloc(len); }
 function compute_response_v2(response_key_nt, response_key_lm, server_challenge, client_challenge, time, server_name) {
     const response_version = Buffer.from('01', 'hex');
     const hi_response_version = Buffer.from('01', 'hex');
     const temp = Buffer.concat([response_version, hi_response_version, zeroBuffer(6), time, client_challenge, zeroBuffer(4), server_name]);
-    const nt_proof_str = hmacmd5(response_key_nt, Buffer.concat([server_challenge, temp]));
+    const nt_proof_str = hmac_md5(response_key_nt, Buffer.concat([server_challenge, temp]));
     const nt_challenge_response = Buffer.concat([nt_proof_str, temp]);
-    const lm_challenge_response = Buffer.concat([hmacmd5(response_key_lm, Buffer.concat([server_challenge, client_challenge])), client_challenge]);
-    const session_base_key = hmacmd5(response_key_nt, nt_proof_str);
+    const lm_challenge_response = Buffer.concat([hmac_md5(response_key_lm, Buffer.concat([server_challenge, client_challenge])), client_challenge]);
+    const session_base_key = hmac_md5(response_key_nt, nt_proof_str);
     return [nt_challenge_response, lm_challenge_response, session_base_key];
 }
 function kx_key_v2(session_base_key, _lm_challenge_response, _server_challenge) { return session_base_key; }
 function rc4k(key, data) { return crypto.createCipheriv('rc4', key, null).update(data); }
 
+function create_negotiate_message() {
+    return negotiate_message(
+        NegotiateFlags.NtlmsspNegociateKeyExch |
+        NegotiateFlags.NtlmsspNegociate128 |
+        NegotiateFlags.NtlmsspNegociateExtendedSessionSecurity |
+        NegotiateFlags.NtlmsspNegociateAlwaysSign |
+        NegotiateFlags.NtlmsspNegociateNTLM |
+        NegotiateFlags.NtlmsspNegociateSeal |
+        NegotiateFlags.NtlmsspNegociateSign |
+        NegotiateFlags.NtlmsspRequestTarget |
+        NegotiateFlags.NtlmsspNegociateUnicode, Buffer.alloc(0), Buffer.alloc(0)
+    );
+}
+
+function negotiate_message(flags, domain, workstation) {
+    const offset = ((flags & NegotiateFlags.NtlmsspNegociateVersion) == 0) ? 32 : 40;
+    const buf = Buffer.alloc(offset);
+    buf.write('4e544c4d53535000', 0, 8, 'hex'); // Signature (NTLMSP\0)
+    buf.writeInt32LE(1, 8); // MessageType (1)
+    buf.writeInt32LE(flags, 12); // Flags
+    buf.writeInt16LE(domain.length, 16); // DomainNameLen
+    buf.writeInt16LE(domain.length, 18); // DomainNameMaxLen
+    if (domain.length > 0) { buf.writeInt32LE(offset, 20); } // DomainNameBufferOffset
+    buf.writeInt16LE(workstation.length, 24); // WorkstationLen
+    buf.writeInt16LE(workstation.length, 26); // WorkstationMaxLen
+    if (workstation.length > 0) { buf.writeInt32LE(offset + domain.length, 28); } // WorkstationBufferOffset
+    if ((flags & NegotiateFlags.NtlmsspNegociateVersion) != 0) {
+        buf.writeUInt8(MajorVersion.WindowsMajorVersion6, 32); // ProductMajorVersion
+        buf.writeUInt8(MinorVersion.WindowsMinorVersion0, 33); // ProductMinorVersion
+        buf.writeInt16LE(6002, 34); // ProductBuild
+        //buf.writeInt16LE(0, 36); // Reserved
+        //buf.writeUInt8(0, 38); // Reserved
+        buf.writeUInt8(NTLMRevision.NtlmSspRevisionW2K3, 39); // NTLMRevisionCurrent
+    }
+    return Buffer.concat([buf, domain, workstation]);
+}
+
 function mac(rc4_handle, signing_key, seq_num, data) {
     const buf = Buffer.alloc(4);
     buf.writeInt32LE(seq_num, 0);
-    var signature = hmacmd5(signing_key, Buffer.concat([buf, data]));
+    var signature = hmac_md5(signing_key, Buffer.concat([buf, data]));
     return message_signature_ex(rc4_handle.update(signature.slice(0, 8)), seq_num);
 }
 
@@ -132,7 +130,7 @@ function message_signature_ex(check_sum, seq_num) {
 }
 
 /// Compute a signature of all data exchange during NTLMv2 handshake
-function mic(exported_session_key, negotiate_message, challenge_message, authenticate_message) { return hmacmd5(exported_session_key, Buffer.concat([negotiate_message, challenge_message, authenticate_message])); }
+function mic(exported_session_key, negotiate_message, challenge_message, authenticate_message) { return hmac_md5(exported_session_key, Buffer.concat([negotiate_message, challenge_message, authenticate_message])); }
 
 /// NTLMv2 security interface generate a sign key
 /// By using MD5 of the session key + a static member (sentense)
@@ -185,7 +183,7 @@ function build_security_interface(ntlm) {
         const plaintext_checksum = obj.decrypt.update(checksum);
         const seqnumbuf = Buffer.alloc(4);
         seqnumbuf.writeInt32LE(seqnum, 0);
-        const computed_checksum = hmacmd5(obj.verify_key, Buffer.concat([ seqnumbuf, plaintext_payload ])).slice(0, 8);
+        const computed_checksum = hmac_md5(obj.verify_key, Buffer.concat([ seqnumbuf, plaintext_payload ])).slice(0, 8);
         if (!plaintext_checksum.equals(computed_checksum)) { console.log("Invalid checksum on NTLMv2"); }
         return plaintext_payload.toString();
     }
@@ -222,19 +220,19 @@ function authenticate_message(lm_challenge_response, nt_challenge_response, doma
     buf.writeInt32LE(3, 8); // MessageType
     buf.writeInt16LE(lm_challenge_response.length, 12); // LmChallengeResponseLen
     buf.writeInt16LE(lm_challenge_response.length, 14); // LmChallengeResponseMaxLen
-    buf.writeInt32LE(offset, 16); // LmChallengeResponseBufferOffset
+    if (lm_challenge_response.length > 0) { buf.writeInt32LE(offset, 16); } // LmChallengeResponseBufferOffset
     buf.writeInt16LE(nt_challenge_response.length, 20); // NtChallengeResponseLen
     buf.writeInt16LE(nt_challenge_response.length, 22); // NtChallengeResponseMaxLen
-    buf.writeInt32LE(offset + lm_challenge_response.length, 24); // NtChallengeResponseBufferOffset
+    if (nt_challenge_response.length > 0) { buf.writeInt32LE(offset + lm_challenge_response.length, 24); } // NtChallengeResponseBufferOffset
     buf.writeInt16LE(domain.length, 28); // DomainNameLen
     buf.writeInt16LE(domain.length, 30); // DomainNameMaxLen
-    buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length, 32); // DomainNameBufferOffset
+    if (domain.length > 0) { buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length, 32); } // DomainNameBufferOffset
     buf.writeInt16LE(user.length, 36); // UserNameLen
     buf.writeInt16LE(user.length, 38); // UserNameMaxLen
-    buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length + domain.length, 40); // UserNameBufferOffset
+    if (user.length > 0) { buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length + domain.length, 40); } // UserNameBufferOffset
     buf.writeInt16LE(workstation.length, 44); // WorkstationLen
     buf.writeInt16LE(workstation.length, 46); // WorkstationMaxLen
-    buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length + domain.length + user.length, 48); // WorkstationBufferOffset
+    if (workstation.length > 0) { buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length + domain.length + user.length, 48); } // WorkstationBufferOffset
     buf.writeInt16LE(encrypted_random_session_key.length, 52); // EncryptedRandomSessionLen
     buf.writeInt16LE(encrypted_random_session_key.length, 54); // EncryptedRandomSessionMaxLen
     buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length + domain.length + user.length + workstation.length, 56); // EncryptedRandomSessionBufferOffset
@@ -302,12 +300,9 @@ function read_challenge_message(ntlm, derBuffer) {
 }
 
 
-
+/*
 // Create create_ts_request
-const crypto = require('crypto');
-const forge = require('node-forge');
-const asn1 = forge.asn1;
-const pki = forge.pki;
+
 const entireBuffer = Buffer.from('3081b2a003020106a181aa3081a73081a4a081a104819e4e544c4d53535000020000000e000e003800000035828a62f2290572b3cac375000000000000000058005800460000000a00614a0000000f430045004e005400520041004c0002000e00430045004e005400520041004c0001000e00430045004e005400520041004c0004000e00430065006e007400720061006c0003000e00430065006e007400720061006c0007000800afbc2c2a9256d80100000000', 'hex').toString('binary');
 
 const ntml = Create_Ntlm();
@@ -325,4 +320,76 @@ const client_challenge = read_challenge_message(ntml, derBuffer);
 console.log('client_challenge', client_challenge.toString('hex'));
 
 const NTLMv2SecurityInterface = build_security_interface(ntml);
+*/
 
+
+function unitTest() {
+    console.log('--- Starting RDP NLA Unit Tests');
+
+    // Test format of the first client message
+    var r = create_negotiate_message();
+    console.log(compareArray(bufToArr(r), [78, 84, 76, 77, 83, 83, 80, 0, 1, 0, 0, 0, 53, 130, 8, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) ? "negotiate_message passed." : "negotiate_message failed.");
+
+    // Test of MD4 hash function
+    r = md4(Buffer.from("foo"));
+    console.log(compareArray(bufToArr(r), [0x0a, 0xc6, 0x70, 0x0c, 0x49, 0x1d, 0x70, 0xfb, 0x86, 0x50, 0x94, 0x0b, 0x1c, 0xa1, 0xe4, 0xb2]) ? "RC4 passed." : "RC4 failed.");
+
+    // Test of the unicode function
+    r = toUnicode("foo");
+    console.log(compareArray(bufToArr(r), [0x66, 0x00, 0x6f, 0x00, 0x6f, 0x00]) ? "Unicode passed." : "Unicode failed.");
+
+    // Test HMAC_MD5 function
+    r = hmac_md5(Buffer.from("foo"), Buffer.from("bar"));
+    console.log(compareArray(bufToArr(r), [0x0c, 0x7a, 0x25, 0x02, 0x81, 0x31, 0x5a, 0xb8, 0x63, 0x54, 0x9f, 0x66, 0xcd, 0x8a, 0x3a, 0x53]) ? "HMAC_MD5 passed." : "HMAC_MD5 failed.");
+
+    // Test NTOWFv2 function
+    r = ntowfv2("foo", "user", "domain");
+    console.log(compareArray(bufToArr(r), [0x6e, 0x53, 0xb9, 0x0, 0x97, 0x8c, 0x87, 0x1f, 0x91, 0xde, 0x6, 0x44, 0x9d, 0x8b, 0x8b, 0x81]) ? "NTOWFv2 passed." : "NTOWFv2 failed.");
+
+    // Test LMOWFv2 function
+    r = ntowfv2("foo", "user", "domain");
+    console.log(compareArray(bufToArr(r), ntowfv2("foo", "user", "domain")) ? "LMOWFv2 passed." : "LMOWFv2 failed.");
+
+    // Test compute response v2 function
+    r = compute_response_v2(Buffer.from("a"), Buffer.from("b"), Buffer.from("c"), Buffer.from("d"), Buffer.from("e"), Buffer.from("f"));
+    console.log(compareArray(bufToArr(r[0]), [0xb4, 0x23, 0x84, 0xf, 0x6e, 0x83, 0xc1, 0x5a, 0x45, 0x4f, 0x4c, 0x92, 0x7a, 0xf2, 0xc3, 0x3e, 0x1, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x65, 0x64, 0x0, 0x0, 0x0, 0x0, 0x66]) ? "responsev2 1 passed." : "responsev2 1 failed.");
+    console.log(compareArray(bufToArr(r[1]), [0x56, 0xba, 0xff, 0x2d, 0x98, 0xbe, 0xcd, 0xa5, 0x6d, 0xe6, 0x17, 0x89, 0xe1, 0xed, 0xca, 0xae, 0x64]) ? "responsev2 2 passed." : "responsev2 2 failed.");
+    console.log(compareArray(bufToArr(r[2]), [0x40, 0x3b, 0x33, 0xe5, 0x24, 0x34, 0x3c, 0xc3, 0x24, 0xa0, 0x4d, 0x77, 0x75, 0x34, 0xa4, 0xd0]) ? "responsev2 3 passed." : "responsev2 3 failed.");
+
+    // Test of rc4k function
+    r = rc4k(Buffer.from("foo"), Buffer.from("bar"));
+    console.log(compareArray(bufToArr(r), [201, 67, 159]) ? "rc4k passed." : "rc4k failed.");
+
+    // Test of sign_key function
+    r = sign_key(Buffer.from("foo"), true);
+    console.log(compareArray(bufToArr(r), [253, 238, 149, 155, 221, 78, 43, 179, 82, 61, 111, 132, 168, 68, 222, 15]) ? "sign_key 1 passed." : "sign_key 1 failed.");
+    r = sign_key(Buffer.from("foo"), false);
+    console.log(compareArray(bufToArr(r), [90, 201, 12, 225, 140, 156, 151, 61, 156, 56, 31, 254, 10, 223, 252, 74]) ? "sign_key 2 passed." : "sign_key 2 failed.");
+
+    // Test of seal_key function
+    r = seal_key(Buffer.from("foo"), true);
+    console.log(compareArray(bufToArr(r), [20, 213, 185, 176, 168, 142, 134, 244, 36, 249, 89, 247, 180, 36, 162, 101]) ? "seal_key 1 passed." : "seal_key 1 failed.");
+    r = seal_key(Buffer.from("foo"), false);
+    console.log(compareArray(bufToArr(r), [64, 125, 160, 17, 144, 165, 62, 226, 22, 125, 128, 31, 103, 141, 55, 40]) ? "seal_key 2 passed." : "seal_key 2 failed.");
+
+    // Test signature function
+    var rc4 = crypto.createCipheriv('rc4', Buffer.from("foo"), null);
+    r = mac(rc4, Buffer.from("bar"), 0, Buffer.from("data"));
+    console.log(compareArray(bufToArr(r), [1, 0, 0, 0, 77, 211, 144, 84, 51, 242, 202, 176, 0, 0, 0, 0]) ? "Signature passed." : "Signature failed.");
+
+    // Test challenge message
+    r = authenticate_message(Buffer.from("foo"), Buffer.from("foo"), Buffer.from("domain"), Buffer.from("user"), Buffer.from("workstation"), Buffer.from("foo"), 0);
+    var buf = Buffer.concat([r[0], Buffer.alloc(16), r[1]]);
+    console.log(compareArray(bufToArr(buf), [78, 84, 76, 77, 83, 83, 80, 0, 3, 0, 0, 0, 3, 0, 3, 0, 80, 0, 0, 0, 3, 0, 3, 0, 83, 0, 0, 0, 6, 0, 6, 0, 86, 0, 0, 0, 4, 0, 4, 0, 92, 0, 0, 0, 11, 0, 11, 0, 96, 0, 0, 0, 3, 0, 3, 0, 107, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 102, 111, 111, 102, 111, 111, 100, 111, 109, 97, 105, 110, 117, 115, 101, 114, 119, 111, 114, 107, 115, 116, 97, 116, 105, 111, 110, 102, 111, 111]) ? "Challenge message passed." : "Challenge message failed.");
+
+    // Test RC4
+    rc4 = crypto.createCipheriv('rc4', Buffer.from("foo"), null);
+    r = rc4.update(Buffer.from("bar"));
+    console.log(compareArray(bufToArr(r), [201, 67, 159]) ? "RC4 1 passed." : "RC4 1 failed.");
+    r = rc4.update(Buffer.from("bar"));
+    console.log(compareArray(bufToArr(r), [75, 169, 19]) ? "RC4 2 passed." : "RC4  failed.");
+
+    console.log('--- RDP NLA Unit Tests Completed');
+}
+
+unitTest();
