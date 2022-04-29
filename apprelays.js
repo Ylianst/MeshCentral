@@ -129,8 +129,9 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
     function startRdp(port) {
         parent.parent.debug('relay', 'RDP: Starting RDP client on loopback port ' + port);
         try {
-            rdpClient = require('node-rdpjs-2').createClient({
-                logLevel: 'ERROR',
+            //rdpClient = require('node-rdpjs-2').createClient({
+            rdpClient = require('./rdp').createClient({
+                logLevel: 'NONE', // 'ERROR',
                 domain: obj.infos.domain,
                 userName: obj.infos.username,
                 password: obj.infos.password,

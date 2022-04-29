@@ -3478,13 +3478,16 @@ function mainStart() {
         const verSplit = process.version.substring(1).split('.');
         var nodeVersion = parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100);
 
+        // Check if RDP support if present
+        var mstsc = true;
+        try { require('./rdp') } catch (ex) { mstsc = false; }
+
         // Check if Windows SSPI, LDAP, Passport and YubiKey OTP will be used
         var sspi = false;
         var ldap = false;
         var passport = null;
         var allsspi = true;
         var yubikey = false;
-        var mstsc = false;
         var ssh = false;
         var sessionRecording = false;
         var domainCount = 0;
@@ -3499,7 +3502,7 @@ function mainStart() {
             if (config.domains[i].sendgrid != null) { sendgrid = true; }
             if (config.domains[i].yubikey != null) { yubikey = true; }
             if (config.domains[i].auth == 'ldap') { ldap = true; }
-            if (config.domains[i].mstsc == true) { mstsc = true; }
+            if (mstsc == false) { config.domains[i].mstsc = false; }
             if (config.domains[i].ssh == true) { if (nodeVersion < 11) { config.domains[i].ssh = false; } ssh = true; }
             if ((typeof config.domains[i].authstrategies == 'object')) {
                 if (passport == null) { passport = ['passport']; }
@@ -3519,7 +3522,6 @@ function mainStart() {
         var modules = ['ws@5.2.3', 'cbor@5.2.0', '@yetzt/nedb', 'https', 'yauzl', 'ipcheck', 'express', 'archiver@4.0.2', 'multiparty', 'node-forge', 'express-ws@4.0.0', 'compression', 'body-parser', 'cookie-session@1.4.0', 'express-handlebars'];
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.4'); modules.push('loadavg-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
-        if (mstsc == true) { modules.push('node-rdpjs-2'); }
         if (ssh == true) { if (nodeVersion < 11) { addServerWarning('MeshCentral SSH support requires NodeJS 11 or higher.', 1); } else { modules.push('ssh2'); } }
         if (passport != null) { modules.push(...passport); }
         if (sessionRecording == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.

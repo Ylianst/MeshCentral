@@ -1,7 +1,222 @@
+const inherits = require('util').inherits;
+const type = require('../core').type;
+const events = require('events');
 const crypto = require('crypto');
 const forge = require('node-forge');
 const asn1 = forge.asn1;
 const pki = forge.pki;
+
+/**
+ * NLA layer of rdp stack
+ */
+function NLA(transport, nlaCompletedFunc, domain, user, password) {
+    // Get NTLM ready
+    const ntlm = Create_Ntlm();
+    ntlm.domain = domain;
+    ntlm.completedFunc = nlaCompletedFunc;
+    ntlm.user = user;
+    ntlm.password = password;
+    ntlm.response_key_nt = ntowfv2(ntlm.password, ntlm.user, ntlm.domain);
+    ntlm.response_key_lm = lmowfv2(ntlm.password, ntlm.user, ntlm.domain);
+    this.ntlm = ntlm;
+    this.state = 1;
+
+    // Get transport ready
+	this.transport = transport;
+	// Wait 2 bytes
+	this.transport.expect(2);
+	// Next state is receive header
+	var self = this;
+
+	this.oldDataListeners = this.transport.listeners('data');
+	this.oldCloseListeners = this.transport.listeners('close');
+	this.oldErrorListeners = this.transport.listeners('error');
+
+    // Unhook the previous transport handler
+	this.transport.removeAllListeners('data');
+	this.transport.removeAllListeners('close');
+	this.transport.removeAllListeners('error');
+
+    // Hook this module as the transport handler
+    this.transport.once('data', function (s) {
+        self.recvHeader(s);
+    }).on('close', function () {
+        self.emit('close');
+    }).on('error', function (err) {
+        self.emit('close'); // Errors occur when NLA authentication fails, for now, just close.
+        //self.emit('error', err);
+    });
+}
+
+/**
+ * inherit from a packet layer
+ */
+inherits(NLA, events.EventEmitter);
+
+/**
+ * Receive correct packet as expected
+ * @param s {type.Stream}
+ */
+NLA.prototype.recvHeader = function (s) {
+    //console.log('NLA - recvHeader', s);
+    var self = this;
+    var derType = new type.UInt8().read(s).value;
+    var derLen = new type.UInt8().read(s).value;
+    self.buffers = [ s.buffer ];
+
+    if (derLen < 128) {
+        // wait for the entire data block
+        this.transport.expect(derLen);
+        this.transport.once('data', function (s) { self.recvData(s); });
+    } else {
+        // wait for the header size
+        this.transport.expect(derLen - 128);
+        this.transport.once('data', function (s) { self.recvHeaderSize(s); });
+    }
+
+    //console.log('NLA - DER', derType, derLen);
+};
+
+/**
+ * Receive correct packet as expected
+ * @param s {type.Stream}
+ */
+NLA.prototype.recvHeaderSize = function (s) {
+    //console.log('NLA - recvHeaderSize', s.buffer.length);
+    var self = this;
+    self.buffers.push(s.buffer);
+    if (s.buffer.length == 1) {
+        // wait for the entire data block
+        var derLen = s.buffer.readUInt8(0);
+        this.transport.expect(derLen);
+        this.transport.once('data', function (s) { self.recvData(s); });
+    } else if (s.buffer.length == 2) {
+        // wait for the entire data block
+        var derLen = s.buffer.readUInt16BE(0);
+        this.transport.expect(derLen);
+        this.transport.once('data', function (s) { self.recvData(s); });
+    }
+}
+
+/**
+ * Receive correct packet as expected
+ * @param s {type.Stream}
+ */
+NLA.prototype.recvData = function (s) {
+    //console.log('NLA - recvData', s.buffer.length);
+    var self = this;
+    self.buffers.push(s.buffer);
+    var entireBuffer = Buffer.concat(self.buffers);
+    //console.log('entireBuffer', entireBuffer.toString('hex'));
+
+    // We have a full ASN1 data block, decode it now
+    const der = asn1.fromDer(entireBuffer.toString('binary'));
+    const derNum = der.value[0].value[0].value.charCodeAt(0);
+    //console.log('NLA - Number', derNum);
+
+    if (derNum == 6) {
+        if (this.state == 1) {
+            const derBuffer = Buffer.from(der.value[1].value[0].value[0].value[0].value[0].value, 'binary');
+            const client_challenge = read_challenge_message(this.ntlm, derBuffer);
+            self.security_interface = build_security_interface(this.ntlm);
+            const peer_cert = this.transport.secureSocket.getPeerCertificate();
+            const challenge = create_ts_authenticate(client_challenge, self.security_interface.gss_wrapex(peer_cert.pubkey.slice(24)));
+            this.ntlm.publicKeyDer = peer_cert.pubkey.slice(24);
+            this.send(challenge);
+            this.state = 2;
+        } else if (this.state == 2) {
+            const derBuffer = Buffer.from(der.value[1].value[0].value, 'binary');
+            const publicKeyDer = self.security_interface.gss_unwrapex(derBuffer);
+
+            // Check that the public key is identical except the first byte which is the DER encoding type.
+            if (!this.ntlm.publicKeyDer.slice(1).equals(publicKeyDer.slice(1))) { console.log('RDP man-in-the-middle detected.'); close(); return; }
+            delete this.ntlm.publicKeyDer; // Clean this up, we don't need it anymore.
+
+            var xdomain, xuser, xpassword;
+            if (this.ntlm.is_unicode) {
+                xdomain = toUnicode(this.ntlm.domain);
+                xuser = toUnicode(this.ntlm.user);
+                xpassword = toUnicode(this.ntlm.password);
+            } else {
+                xdomain = Buffer.from(this.ntlm.domain, 'utf8');
+                xuser = Buffer.from(this.ntlm.user, 'utf8');
+                xpassword = Buffer.from(this.ntlm.password, 'utf8');
+            }
+
+            const credentials = create_ts_authinfo(self.security_interface.gss_wrapex(create_ts_credentials(xdomain, xuser, xpassword)));
+            this.send(credentials);
+
+            // Rehook the previous transport handler
+            this.transport.removeAllListeners('data');
+            this.transport.removeAllListeners('close');
+            this.transport.removeAllListeners('error');
+
+            for (var i in this.oldDataListeners) { this.transport.once('data', this.oldDataListeners[i]); }
+            for (var i in this.oldCloseListeners) { this.transport.on('close', this.oldCloseListeners[i]); }
+            for (var i in this.oldErrorListeners) { this.transport.on('error', this.oldErrorListeners[i]); }
+
+            // Done!
+            this.transport.expect(2);
+            this.state = 3;
+            this.ntlm.completedFunc();
+            return;
+        }
+    }
+
+    // Receive next block of data
+    this.transport.expect(2);
+    this.transport.once('data', function (s) { self.recvHeader(s); });
+}
+
+
+/**
+ * Send message throught NLA layer
+ * @param message {type.*}
+ */
+NLA.prototype.send = function (message) {
+    this.transport.sendBuffer(message);
+};
+
+/**
+ * close stack
+ */
+NLA.prototype.close = function() {
+	this.transport.close();
+};
+
+
+NLA.prototype.sendNegotiateMessage = function () {
+    // Create create_ts_request
+    this.ntlm.negotiate_message = create_negotiate_message();
+    const asn1obj =
+        asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+            asn1.create(asn1.Class.CONTEXT_SPECIFIC, 0, true, [
+                asn1.create(asn1.Class.UNIVERSAL, asn1.Type.INTEGER, false, asn1.integerToDer(2)),
+            ]),
+            asn1.create(asn1.Class.CONTEXT_SPECIFIC, 1, true, [
+                asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                    asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                        asn1.create(asn1.Class.CONTEXT_SPECIFIC, 0, true, [
+                            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, this.ntlm.negotiate_message.toString('binary'))
+                        ])
+                    ])
+                ])
+            ])
+        ]);
+
+    // Serialize an ASN.1 object to DER format
+    this.send(Buffer.from(asn1.toDer(asn1obj).data, 'binary'));
+}
+
+/**
+ * Module exports
+ */
+module.exports = NLA;
+
+
+
+
+
 
 const NegotiateFlags = {
     NtlmsspNegociate56: 0x80000000,
@@ -171,10 +386,10 @@ function build_security_interface(ntlm) {
         const encrypted_data = obj.encrypt.update(data);
         const signature = mac(obj.encrypt, obj.signing_key, obj.seq_num, data);
         obj.seq_num++;
-        return Buffer.concat([ signature, encrypted_data ] );
+        return Buffer.concat([signature, encrypted_data]);
     }
 
-    obj.gss_unwrapex = function(data) {
+    obj.gss_unwrapex = function (data) {
         const version = data.readInt32LE(0);
         const checksum = data.slice(4, 12);
         const seqnum = data.readInt32LE(12);
@@ -183,9 +398,9 @@ function build_security_interface(ntlm) {
         const plaintext_checksum = obj.decrypt.update(checksum);
         const seqnumbuf = Buffer.alloc(4);
         seqnumbuf.writeInt32LE(seqnum, 0);
-        const computed_checksum = hmac_md5(obj.verify_key, Buffer.concat([ seqnumbuf, plaintext_payload ])).slice(0, 8);
+        const computed_checksum = hmac_md5(obj.verify_key, Buffer.concat([seqnumbuf, plaintext_payload])).slice(0, 8);
         if (!plaintext_checksum.equals(computed_checksum)) { console.log("Invalid checksum on NTLMv2"); }
-        return plaintext_payload.toString();
+        return plaintext_payload;
     }
 
     return obj;
@@ -220,19 +435,19 @@ function authenticate_message(lm_challenge_response, nt_challenge_response, doma
     buf.writeInt32LE(3, 8); // MessageType
     buf.writeInt16LE(lm_challenge_response.length, 12); // LmChallengeResponseLen
     buf.writeInt16LE(lm_challenge_response.length, 14); // LmChallengeResponseMaxLen
-    if (lm_challenge_response.length > 0) { buf.writeInt32LE(offset, 16); } // LmChallengeResponseBufferOffset
+    buf.writeInt32LE(offset, 16); // LmChallengeResponseBufferOffset
     buf.writeInt16LE(nt_challenge_response.length, 20); // NtChallengeResponseLen
     buf.writeInt16LE(nt_challenge_response.length, 22); // NtChallengeResponseMaxLen
-    if (nt_challenge_response.length > 0) { buf.writeInt32LE(offset + lm_challenge_response.length, 24); } // NtChallengeResponseBufferOffset
+    buf.writeInt32LE(offset + lm_challenge_response.length, 24); // NtChallengeResponseBufferOffset
     buf.writeInt16LE(domain.length, 28); // DomainNameLen
     buf.writeInt16LE(domain.length, 30); // DomainNameMaxLen
-    if (domain.length > 0) { buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length, 32); } // DomainNameBufferOffset
+    buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length, 32); // DomainNameBufferOffset
     buf.writeInt16LE(user.length, 36); // UserNameLen
     buf.writeInt16LE(user.length, 38); // UserNameMaxLen
-    if (user.length > 0) { buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length + domain.length, 40); } // UserNameBufferOffset
+    buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length + domain.length, 40); // UserNameBufferOffset
     buf.writeInt16LE(workstation.length, 44); // WorkstationLen
     buf.writeInt16LE(workstation.length, 46); // WorkstationMaxLen
-    if (workstation.length > 0) { buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length + domain.length + user.length, 48); } // WorkstationBufferOffset
+    buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length + domain.length + user.length, 48); // WorkstationBufferOffset
     buf.writeInt16LE(encrypted_random_session_key.length, 52); // EncryptedRandomSessionLen
     buf.writeInt16LE(encrypted_random_session_key.length, 54); // EncryptedRandomSessionMaxLen
     buf.writeInt32LE(offset + lm_challenge_response.length + nt_challenge_response.length + domain.length + user.length + workstation.length, 56); // EncryptedRandomSessionBufferOffset
@@ -248,7 +463,81 @@ function authenticate_message(lm_challenge_response, nt_challenge_response, doma
     return [buf, payload];
 }
 
+function create_ts_authinfo(auth_info) {
+    asn1obj =
+    asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+        asn1.create(asn1.Class.CONTEXT_SPECIFIC, 0, true, [
+            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.INTEGER, false, asn1.integerToDer(2)),
+        ]),
+        asn1.create(asn1.Class.CONTEXT_SPECIFIC, 2, true, [
+            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, auth_info.toString('binary'))
+        ])
+    ]);
+    return Buffer.from(asn1.toDer(asn1obj).data, 'binary');
+}
+
+function create_ts_credentials(domain, user, password) {
+    var asn1obj =
+    asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+        asn1.create(asn1.Class.CONTEXT_SPECIFIC, 0, true, [
+            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, domain.toString('binary'))
+        ]),
+        asn1.create(asn1.Class.CONTEXT_SPECIFIC, 1, true, [
+            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, user.toString('binary'))
+        ]),
+        asn1.create(asn1.Class.CONTEXT_SPECIFIC, 2, true, [
+            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, password.toString('binary'))
+        ])
+    ]);
+    const ts_password_cred_encoded = asn1.toDer(asn1obj).data;
+    asn1obj =
+    asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+        asn1.create(asn1.Class.CONTEXT_SPECIFIC, 0, true, [
+            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.INTEGER, false, asn1.integerToDer(1)),
+        ]),
+        asn1.create(asn1.Class.CONTEXT_SPECIFIC, 1, true, [
+            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, ts_password_cred_encoded)
+        ])
+    ]);
+    return Buffer.from(asn1.toDer(asn1obj).data, 'binary');
+}
+
+function create_ts_authenticate(nego, pub_key_auth) {
+    // Create create_ts_request
+    const asn1obj =
+        asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+            asn1.create(asn1.Class.CONTEXT_SPECIFIC, 0, true, [
+                asn1.create(asn1.Class.UNIVERSAL, asn1.Type.INTEGER, false, asn1.integerToDer(2)),
+            ]),
+            asn1.create(asn1.Class.CONTEXT_SPECIFIC, 1, true, [
+                asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                    asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                        asn1.create(asn1.Class.CONTEXT_SPECIFIC, 0, true, [
+                            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, nego.toString('binary'))
+                        ])
+                    ])
+                ])
+            ]),
+            asn1.create(asn1.Class.CONTEXT_SPECIFIC, 3, true, [
+                asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, pub_key_auth.toString('binary'))
+            ]),
+        ]);
+
+    // Serialize an ASN.1 object to DER format
+    return Buffer.from(asn1.toDer(asn1obj).data, 'binary');
+}
+
 function read_challenge_message(ntlm, derBuffer) {
+
+    //console.log('ntlm.negotiate_message', ntlm.negotiate_message.toString('hex'));
+    //ntlm.negotiate_message = Buffer.from('4e544c4d53535000010000003582086000000000000000000000000000000000', 'hex');
+
+    // ********
+    //ntlm.exported_session_key = Buffer.from('9a1ed052e932834a311daf90c2750219', 'hex'); // *************************
+    //derBuffer = Buffer.from('4e544c4d53535000020000000e000e003800000035828a6259312ef59a4517dd000000000000000058005800460000000a00614a0000000f430045004e005400520041004c0002000e00430045004e005400520041004c0001000e00430045004e005400520041004c0004000e00430065006e007400720061006c0003000e00430065006e007400720061006c00070008007b7b3bee9e5ad80100000000', 'hex');
+
+    //console.log("YST: read_challenge_message1: ", derBuffer.toString('hex'));
+
     const headerSignature = derBuffer.slice(0, 8);
     if (headerSignature.toString('hex') != '4e544c4d53535000') { console.log('BAD SIGNATURE'); }
     const messageType = derBuffer.readInt32LE(8);
@@ -264,22 +553,40 @@ function read_challenge_message(ntlm, derBuffer) {
     const targetInfoLenMax = derBuffer.readInt16LE(42);
     const targetInfoBufferOffset = derBuffer.readInt32LE(44);
     const targetName = derBuffer.slice(targetNameBufferOffset, targetNameBufferOffset + targetNameLen);
+    const targetInfoBuf = derBuffer.slice(targetInfoBufferOffset, targetInfoBufferOffset + targetInfoLen);
     const targetInfo = decodeTargetInfo(derBuffer.slice(targetInfoBufferOffset, targetInfoBufferOffset + targetInfoLen));
     const timestamp = targetInfo[7];
+    //const timestamp = Buffer.from('7b7b3bee9e5ad801', 'hex'); // **************
     if (timestamp == null) { console.log('NO TIMESTAMP'); }
     const clientChallenge = crypto.randomBytes(8);
+    //const clientChallenge = Buffer.from('10aac9679ef64e66', 'hex'); // *****************************
     const response_key_nt = ntowfv2(ntlm.password, ntlm.user, ntlm.domain); // Password, Username, Domain
     const response_key_lm = lmowfv2(ntlm.password, ntlm.user, ntlm.domain); // Password, Username, Domain
 
-    var resp = compute_response_v2(response_key_nt, response_key_lm, serverChallenge, clientChallenge, timestamp, targetName);
+    //console.log("YST: target_name:", targetInfoBuf.toString('hex'));
+    //console.log("YST: timestamp:", timestamp.toString('hex'));
+    //console.log('YST: client_challenge:', clientChallenge.toString('hex'));
+    //console.log("YST: response_key_nt:", response_key_nt.toString('hex'));
+    //console.log("YST: response_key_lm:", response_key_lm.toString('hex'));
+
+    var resp = compute_response_v2(response_key_nt, response_key_lm, serverChallenge, clientChallenge, timestamp, targetInfoBuf);
     const nt_challenge_response = resp[0];
     const lm_challenge_response = resp[1];
     const session_base_key = resp[2];
 
+    //console.log('YST: nt_challenge_response:', nt_challenge_response.toString('hex'));
+    //console.log('YST: lm_challenge_response:', lm_challenge_response.toString('hex'));
+    //console.log("YST: session_base_key:", session_base_key.toString('hex'));
+
     const key_exchange_key = kx_key_v2(session_base_key, lm_challenge_response, serverChallenge);
     const encrypted_random_session_key = rc4k(key_exchange_key, ntlm.exported_session_key);
 
+    //console.log("YST: key_exchange_key:", key_exchange_key.toString('hex'));
+    //console.log("YST: self.exported_session_key:", ntlm.exported_session_key.toString('hex'));
+    //console.log("YST: encrypted_random_session_key:", encrypted_random_session_key.toString('hex'));
+
     ntlm.is_unicode = ((negotiateFlags & 1) != 0)
+    //console.log("YST: self.is_unicode: {}", ntlm.is_unicode);
     var xdomain = null;
     var xuser = null;
     if (ntlm.is_unicode) {
@@ -290,37 +597,26 @@ function read_challenge_message(ntlm, derBuffer) {
         xuser = Buffer.from(ntlm.user, 'utf8');
     }
 
+    //console.log("YST: domain:", xdomain.toString('hex'));
+    //console.log("YST: user:", xuser.toString('hex'));
+
     const auth_message_compute = authenticate_message(lm_challenge_response, nt_challenge_response, xdomain, xuser, zeroBuffer(0), encrypted_random_session_key, negotiateFlags);
 
     // Write a tmp message to compute MIC and then include it into final message
     const tmp_final_auth_message = Buffer.concat([auth_message_compute[0], zeroBuffer(16), auth_message_compute[1]]);
 
+    //console.log("YST: tmp_final_auth_message: {}", tmp_final_auth_message.toString('hex'));
+
     const signature = mic(ntlm.exported_session_key, ntlm.negotiate_message, derBuffer, tmp_final_auth_message);
-    return Buffer.concat([auth_message_compute[0], signature, auth_message_compute[1]]);
+
+    //console.log("YST: signature: {}", signature.toString('hex'));
+
+    const r = Buffer.concat([auth_message_compute[0], signature, auth_message_compute[1]]);
+
+    //console.log("YST: read_challenge_message2: {}", r.toString('hex'));
+
+    return r;
 }
-
-
-/*
-// Create create_ts_request
-
-const entireBuffer = Buffer.from('3081b2a003020106a181aa3081a73081a4a081a104819e4e544c4d53535000020000000e000e003800000035828a62f2290572b3cac375000000000000000058005800460000000a00614a0000000f430045004e005400520041004c0002000e00430045004e005400520041004c0001000e00430045004e005400520041004c0004000e00430065006e007400720061006c0003000e00430065006e007400720061006c0007000800afbc2c2a9256d80100000000', 'hex').toString('binary');
-
-const ntml = Create_Ntlm();
-ntml.domain = "";
-ntml.user = "default";
-ntml.password = "";
-ntml.negotiate_message = Buffer.from('4e544c4d53535000010000003582086000000000000000000000000000000000', 'hex');
-
-// We have a full ASN1 data block, decode it now
-const der = asn1.fromDer(entireBuffer.toString('binary'));
-const derNum = der.value[0].value[0].value.charCodeAt(0);
-const derBuffer = Buffer.from(der.value[1].value[0].value[0].value[0].value[0].value, 'binary');
-const client_challenge = read_challenge_message(ntml, derBuffer);
-
-console.log('client_challenge', client_challenge.toString('hex'));
-
-const NTLMv2SecurityInterface = build_security_interface(ntml);
-*/
 
 
 function unitTest() {
@@ -387,9 +683,19 @@ function unitTest() {
     r = rc4.update(Buffer.from("bar"));
     console.log(compareArray(bufToArr(r), [201, 67, 159]) ? "RC4 1 passed." : "RC4 1 failed.");
     r = rc4.update(Buffer.from("bar"));
-    console.log(compareArray(bufToArr(r), [75, 169, 19]) ? "RC4 2 passed." : "RC4  failed.");
+    console.log(compareArray(bufToArr(r), [75, 169, 19]) ? "RC4 2 passed." : "RC4 2 failed.");
+
+    // Test create_ts_authenticate
+    r = create_ts_authenticate(Buffer.from("000102", 'hex'), Buffer.from("000102", 'hex'));
+    console.log(compareArray(bufToArr(r), [48, 25, 160, 3, 2, 1, 2, 161, 11, 48, 9, 48, 7, 160, 5, 4, 3, 0, 1, 2, 163, 5, 4, 3, 0, 1, 2]) ? "create_ts_authenticate passed." : "create_ts_authenticate failed.");
+
+    // Test test_create_ts_credentials
+    r = create_ts_credentials(Buffer.from("domain"), Buffer.from("user"), Buffer.from("password"));
+    console.log(compareArray(bufToArr(r), [48, 41, 160, 3, 2, 1, 1, 161, 34, 4, 32, 48, 30, 160, 8, 4, 6, 100, 111, 109, 97, 105, 110, 161, 6, 4, 4, 117, 115, 101, 114, 162, 10, 4, 8, 112, 97, 115, 115, 119, 111, 114, 100]) ? "test_create_ts_credentials passed." : "test_create_ts_credentials failed.");
+    
+    // Test create_ts_authinfo
+    r = create_ts_authinfo(Buffer.from("foo"));
+    console.log(compareArray(bufToArr(r), [48, 12, 160, 3, 2, 1, 2, 162, 5, 4, 3, 102, 111, 111]) ? "create_ts_authinfo passed." : "create_ts_authinfo failed.");
 
     console.log('--- RDP NLA Unit Tests Completed');
 }
-
-unitTest();
