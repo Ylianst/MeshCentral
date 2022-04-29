@@ -2931,7 +2931,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.sessionrecording != null) { features += 0x08000000; } // Server recordings enabled
         if (domain.urlswitching === false) { features += 0x10000000; } // Disables the URL switching feature
         if (domain.novnc === false) { features += 0x20000000; } // Disables noVNC
-        if (domain.mstsc !== true) { features += 0x40000000; } // Disables MSTSC.js
+        if (domain.mstsc === false) { features += 0x40000000; } // Disables MSTSC.js
         if (obj.isTrustedCert(domain) == false) { features += 0x80000000; } // Indicate we are not using a trusted certificate
         if (obj.parent.amtManager != null) { features2 += 0x00000001; } // Indicates that the Intel AMT manager is active
         if (obj.parent.firebase != null) { features2 += 0x00000002; } // Indicates the server supports Firebase push messaging
