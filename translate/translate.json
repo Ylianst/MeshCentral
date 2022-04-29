@@ -8736,7 +8736,7 @@
     {
       "en": "Apple",
       "nl": "Apple",
-	  "pl": "Apple",
+      "pl": "Apple",
       "xloc": [
         "default.handlebars->39->57"
       ]
@@ -19914,7 +19914,7 @@
     {
       "en": "Device groups this device is a relay for",
       "nl": "Apparaatgroepen waarvoor dit apparaat een relay is",
-	  "pl": "Grupy urządzeń to urządzenie jest bramką dla",
+      "pl": "Grupy urządzeń to urządzenie jest bramką dla",
       "xloc": [
         "default.handlebars->39->883"
       ]
@@ -29707,7 +29707,7 @@
     {
       "en": "IP-KVM / Power device relayed thru agent",
       "nl": "IP-KVM / Power-apparaat doorgestuurd via agent",
-	  "pl": "IP-KVM / Urządzenie zasilające przekierowane przez agenta",
+      "pl": "IP-KVM / Urządzenie zasilające przekierowane przez agenta",
       "xloc": [
         "default.handlebars->39->1772"
       ]
@@ -29736,7 +29736,7 @@
     {
       "en": "IP-KVM device relayed thru agent",
       "nl": "IP-KVM-apparaat doorgestuurd via agent",
-	  "pl": "Urządzenie IP-KVM przekierowane przzez agenta",
+      "pl": "Urządzenie IP-KVM przekierowane przzez agenta",
       "xloc": [
         "default-mobile.handlebars->11->628",
         "default.handlebars->39->1832"
@@ -33455,7 +33455,7 @@
     {
       "en": "Is a relay for \\\"{0}\\\".",
       "nl": "Is een relay voor \\\"{0}\\\".",
-	  "pl": "Jest bramką dla \\\"{0}\\\".",
+      "pl": "Jest bramką dla \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2323"
       ]
@@ -42954,7 +42954,7 @@
     {
       "en": "No longer a relay for \\\"{0}\\\".",
       "nl": "Niet langer een relay voor \\\"{0}\\\".",
-	  "pl": "Nie jest już bramką dla \\\"{0}\\\".",
+      "pl": "Nie jest już bramką dla \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->39->2322"
       ]
@@ -49515,7 +49515,7 @@
     {
       "en": "Relay device",
       "nl": "Doorstuur apparaat",
-	  "pl": "Bramka przekierowująca",
+      "pl": "Bramka przekierowująca",
       "xloc": [
         "default.handlebars->39->2330"
       ]
@@ -49523,7 +49523,7 @@
     {
       "en": "Relay for",
       "nl": "Relay voor",
-	  "pl": "Przekierowuje dla",
+      "pl": "Przekierowuje dla",
       "xloc": [
         "default.handlebars->39->884"
       ]
