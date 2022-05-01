@@ -1481,7 +1481,7 @@
             if (!args.locale) { var x = getstore('loctag', 0); if ((x != null) && (x != '*')) { args.locale = x; } }
             debugmode = args.debug;
 
-            //attemptWebRTC = true; // For now, default WebRTC off unless we set it in the URL.
+            attemptWebRTC = false; // For now, default WebRTC off unless we set it in the URL.
             if (args.webrtc != null) { attemptWebRTC = (args.webrtc == 1); }
 
             QV('p13AutoConnect', debugmode); // Files
