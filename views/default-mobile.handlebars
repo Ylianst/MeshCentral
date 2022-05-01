@@ -1299,7 +1299,7 @@
             if (t != null) { desktopsettings = JSON.parse(t); }
             applyDesktopSettings();
 
-            //attemptWebRTC = false; // For now, default WebRTC off unless we set it in the URL.
+            attemptWebRTC = false; // For now, default WebRTC off unless we set it in the URL.
             if (args.webrtc != null) { attemptWebRTC = (args.webrtc == 1); }
 
             // Session Refresh Timer
