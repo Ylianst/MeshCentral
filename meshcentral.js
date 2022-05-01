@@ -3481,7 +3481,6 @@ function mainStart() {
         // Check if RDP support if present
         var mstsc = true;
         try { require('./rdp') } catch (ex) { mstsc = false; }
-        console.log('mstsc', mstsc);
 
         // Check if Windows SSPI, LDAP, Passport and YubiKey OTP will be used
         var sspi = false;
