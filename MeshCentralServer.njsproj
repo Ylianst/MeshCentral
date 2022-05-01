@@ -211,6 +211,8 @@
     <Compile Include="rdp\protocol\x224.js" />
     <Compile Include="rdp\security\index.js" />
     <Compile Include="rdp\security\jsbn.js" />
+    <Compile Include="rdp\security\md4.js" />
+    <Compile Include="rdp\security\rc4.js" />
     <Compile Include="rdp\security\rsa.js" />
     <Compile Include="rdp\security\x509.js" />
     <Compile Include="swarmserver.js" />

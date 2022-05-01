@@ -273,7 +273,13 @@ function decodeTargetInfo(targetInfoBuf) {
 function bufToArr(b) { var r = []; for (var i = 0; i < b.length; i++) { r.push(b.readUInt8(i)); } return r; } // For unit testing
 function compareArray(a, b) { if (a.length != b.length) return false; for (var i = 0; i < a.length; i++) { if (a[i] != b[i]) return false; } return true; } // For unit testing
 function toUnicode(str) { return Buffer.from(str, 'ucs2'); }
-function md4(str) { return crypto.createHash('md4').update(str).digest(); }
+function md4(buffer) {
+    try {
+        return crypto.createHash('md4').update(buffer).digest(); // Built in NodeJS MD4, this does not work starting with NodeJS v17
+    } catch (ex) {
+        return Buffer.from(require('../security/md4').array(buffer.toString('binary'))); // This is the alternative if NodeJS does not support MD4
+    }
+}
 function md5(str) { return crypto.createHash('md5').update(str).digest(); }
 function hmac_md5(key, data) { return crypto.createHmac('md5', key).update(data).digest(); }
 function ntowfv2(password, user, domain) { return hmac_md5(md4(toUnicode(password)), toUnicode(user.toUpperCase() + domain)); }
@@ -290,7 +296,20 @@ function compute_response_v2(response_key_nt, response_key_lm, server_challenge,
     return [nt_challenge_response, lm_challenge_response, session_base_key];
 }
 function kx_key_v2(session_base_key, _lm_challenge_response, _server_challenge) { return session_base_key; }
-function rc4k(key, data) { return crypto.createCipheriv('rc4', key, null).update(data); }
+function rc4k(key, data) { return createRC4(key).update(data); }
+
+function createRC4(key) {
+    const obj = {};
+    try {
+        obj.n = crypto.createCipheriv('rc4', key, null); // Built in NodeJS RC4, this does not work starting with NodeJS v17
+        obj.update = function(x) { return obj.n.update(x); }
+    } catch (ex) {
+        const RC4 = require('../security/rc4'); // This is the alternative if NodeJS does not support RC4
+        obj.r = new RC4(key.toString('binary'));
+        obj.update = function (x) { return Buffer.from(obj.r.encrypt(x.toString('binary')), 'hex'); }
+    }
+    return obj;
+}
 
 function create_negotiate_message() {
     return negotiate_message(
@@ -377,8 +396,8 @@ function build_security_interface(ntlm) {
         obj.verify_key = sign_key(ntlm.exported_session_key, false);
         const client_sealing_key = seal_key(ntlm.exported_session_key, true);
         const server_sealing_key = seal_key(ntlm.exported_session_key, false);
-        obj.encrypt = crypto.createCipheriv('rc4', client_sealing_key, null);
-        obj.decrypt = crypto.createCipheriv('rc4', server_sealing_key, null);
+        obj.encrypt = createRC4(client_sealing_key);
+        obj.decrypt = createRC4(server_sealing_key);
     }
     obj.seq_num = 0;
 
@@ -618,7 +637,6 @@ function read_challenge_message(ntlm, derBuffer) {
     return r;
 }
 
-
 function unitTest() {
     console.log('--- Starting RDP NLA Unit Tests');
 
@@ -669,7 +687,7 @@ function unitTest() {
     console.log(compareArray(bufToArr(r), [64, 125, 160, 17, 144, 165, 62, 226, 22, 125, 128, 31, 103, 141, 55, 40]) ? "seal_key 2 passed." : "seal_key 2 failed.");
 
     // Test signature function
-    var rc4 = crypto.createCipheriv('rc4', Buffer.from("foo"), null);
+    var rc4 = createRC4(Buffer.from("foo"));
     r = mac(rc4, Buffer.from("bar"), 0, Buffer.from("data"));
     console.log(compareArray(bufToArr(r), [1, 0, 0, 0, 77, 211, 144, 84, 51, 242, 202, 176, 0, 0, 0, 0]) ? "Signature passed." : "Signature failed.");
 
@@ -679,7 +697,7 @@ function unitTest() {
     console.log(compareArray(bufToArr(buf), [78, 84, 76, 77, 83, 83, 80, 0, 3, 0, 0, 0, 3, 0, 3, 0, 80, 0, 0, 0, 3, 0, 3, 0, 83, 0, 0, 0, 6, 0, 6, 0, 86, 0, 0, 0, 4, 0, 4, 0, 92, 0, 0, 0, 11, 0, 11, 0, 96, 0, 0, 0, 3, 0, 3, 0, 107, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 102, 111, 111, 102, 111, 111, 100, 111, 109, 97, 105, 110, 117, 115, 101, 114, 119, 111, 114, 107, 115, 116, 97, 116, 105, 111, 110, 102, 111, 111]) ? "Challenge message passed." : "Challenge message failed.");
 
     // Test RC4
-    rc4 = crypto.createCipheriv('rc4', Buffer.from("foo"), null);
+    rc4 = createRC4(Buffer.from("foo"));
     r = rc4.update(Buffer.from("bar"));
     console.log(compareArray(bufToArr(r), [201, 67, 159]) ? "RC4 1 passed." : "RC4 1 failed.");
     r = rc4.update(Buffer.from("bar"));
