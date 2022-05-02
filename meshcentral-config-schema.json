@@ -39,22 +39,65 @@
           "type": "object",
           "description": "Add this section to connect MeshCentral to a MySQL database instance.",
           "properties": {
-            "host": { "type": "string", "description": "MySQL hostname" },
-            "port": { "type": "number", "description": "MySQL port number" },
-            "user": { "type": "string", "description": "MySQL username" },
-            "password": { "type": "string", "description": "MySQL password" },
-            "database": { "type": "string", "default": "meshcentral", "description": "Name of MySQL database used" },
-            "awsrds": { "type": "boolean", "default": false, "description": "Set true to resolve LOCK TABLE permissions on AWS RDS." },
-            "ssl": { 
+            "host": {
+              "type": "string",
+              "description": "MySQL hostname"
+            },
+            "port": {
+              "type": "number",
+              "description": "MySQL port number"
+            },
+            "user": {
+              "type": "string",
+              "description": "MySQL username"
+            },
+            "password": {
+              "type": "string",
+              "description": "MySQL password"
+            },
+            "database": {
+              "type": "string",
+              "default": "meshcentral",
+              "description": "Name of MySQL database used"
+            },
+            "awsrds": {
+              "type": "boolean",
+              "default": false,
+              "description": "Set true to resolve LOCK TABLE permissions on AWS RDS."
+            },
+            "ssl": {
               "type": "object",
               "description": "SSL Options. Set to true (boolean) for default options.",
               "properties": {
-                "caCertPath": { "type": "string", "description": "Absolute path to the CA certificate. Required for self-signed certificates" },
-                "clientCertPath": { "type": "string", "description": "Absolute path to the client certificate. Required for two-way SSL Authentication" },
-                "clientKeyPath": { "type": "string", "description": "Absolute path to the client key. Required for two-way SSL Authentication" },
-                "dontCheckServerIdentity": { "type": "boolean", "description": "Set true to not check the server hostname during verification" }
+                "caCertPath": {
+                  "type": "string",
+                  "description": "Absolute path to the CA certificate. Required for self-signed certificates"
+                },
+                "clientCertPath": {
+                  "type": "string",
+                  "description": "Absolute path to the client certificate. Required for two-way SSL Authentication"
+                },
+                "clientKeyPath": {
+                  "type": "string",
+                  "description": "Absolute path to the client key. Required for two-way SSL Authentication"
+                },
+                "dontCheckServerIdentity": {
+                  "type": "boolean",
+                  "description": "Set true to not check the server hostname during verification"
+                }
               }
             }
+          }
+        },
+        "postgres": {
+          "type": "object",
+          "description": "Add this section to connect MeshCentral to a PostgreSQL database instance.",
+          "properties": {
+            "host": { "type": "string", "description": "PostgreSQL hostname" },
+            "user": { "type": "string", "description": "PostgreSQL username" },
+            "port": { "type": "number", "description": "PostgreSQL port number" },
+            "password": { "type": "string", "description": "PostgreSQL password" },
+            "database": { "type": "string", "default": "meshcentral", "description": "Name of PostgreSQL database used" }
           }
         },
         "WANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral WAN features are enabled and agents will connect to the server using a well known DNS name." },
