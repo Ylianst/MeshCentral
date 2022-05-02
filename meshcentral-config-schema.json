@@ -39,52 +39,20 @@
           "type": "object",
           "description": "Add this section to connect MeshCentral to a MySQL database instance.",
           "properties": {
-            "host": {
-              "type": "string",
-              "description": "MySQL hostname"
-            },
-            "port": {
-              "type": "number",
-              "description": "MySQL port number"
-            },
-            "user": {
-              "type": "string",
-              "description": "MySQL username"
-            },
-            "password": {
-              "type": "string",
-              "description": "MySQL password"
-            },
-            "database": {
-              "type": "string",
-              "default": "meshcentral",
-              "description": "Name of MySQL database used"
-            },
-            "awsrds": {
-              "type": "boolean",
-              "default": false,
-              "description": "Set true to resolve LOCK TABLE permissions on AWS RDS."
-            },
+            "host": { "type": "string", "description": "MySQL hostname" },
+            "port": { "type": "number", "description": "MySQL port number" },
+            "user": { "type": "string", "description": "MySQL username" },
+            "password": { "type": "string", "description": "MySQL password" },
+            "database": { "type": "string", "default": "meshcentral", "description": "Name of MySQL database used" },
+            "awsrds": { "type": "boolean", "default": false, "description": "Set true to resolve LOCK TABLE permissions on AWS RDS." },
             "ssl": {
               "type": "object",
               "description": "SSL Options. Set to true (boolean) for default options.",
               "properties": {
-                "caCertPath": {
-                  "type": "string",
-                  "description": "Absolute path to the CA certificate. Required for self-signed certificates"
-                },
-                "clientCertPath": {
-                  "type": "string",
-                  "description": "Absolute path to the client certificate. Required for two-way SSL Authentication"
-                },
-                "clientKeyPath": {
-                  "type": "string",
-                  "description": "Absolute path to the client key. Required for two-way SSL Authentication"
-                },
-                "dontCheckServerIdentity": {
-                  "type": "boolean",
-                  "description": "Set true to not check the server hostname during verification"
-                }
+                "caCertPath": { "type": "string", "description": "Absolute path to the CA certificate. Required for self-signed certificates" },
+                "clientCertPath": { "type": "string", "description": "Absolute path to the client certificate. Required for two-way SSL Authentication" },
+                "clientKeyPath": { "type": "string", "description": "Absolute path to the client key. Required for two-way SSL Authentication" },
+                "dontCheckServerIdentity": { "type": "boolean", "description": "Set true to not check the server hostname during verification" }
               }
             }
           }
