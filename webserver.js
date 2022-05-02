@@ -1966,9 +1966,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     var serverCredentials = false;
                     if (domain.allowsavingdevicecredentials !== false) {
                         if (page == 'ssh') {
-                            serverCredentials = ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string'))
-                        } else {
                             serverCredentials = ((typeof node.ssh == 'object') && (typeof node.ssh.u == 'string'))
+                        } else {
+                            serverCredentials = ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string'))
                         }
                     }
 
