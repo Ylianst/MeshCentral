@@ -244,6 +244,7 @@ function run(argv) {
             console.log('Starts MicroLMS on this computer, allowing local access to Intel AMT on TCP ports 16992 and 16993 when applicable. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. These certificates hashes are used by Intel AMT when performing activation into ACM mode. Example usage:\r\n\r\n  meshcmd microlms');
             console.log('\r\nPossible arguments:\r\n');
             console.log('  --noconsole            MeshCommander for LMS will no be available on port 16994.');
+            console.log('  --bindany              Bind to all network interfaces.');
             console.log('\r\nRun as a background service:\r\n');
             console.log('  microlms install/uninstall/start/stop.');
         } else if (action == 'amtccm') {
@@ -1586,7 +1587,7 @@ function startLms(func, lmscommander, tag) {
     amtMei.on('error', function (e) { console.log('startLms() error: ' + e); exit(1); return; });
     //console.log("PTHI Connected.");
 
-    try { amtLms = new lme_heci({ debug: settings.lmsdebug }); } catch (ex) { if (func != null) { func(0, tag); } return; }
+    try { amtLms = new lme_heci({ debug: settings.lmsdebug, bindany: settings.bindany  }); } catch (ex) { if (func != null) { func(0, tag); } return; }
     amtLms.promise = ret;
     amtLms.on('error', function (e) {
         //console.log('LME connection failed', e);
@@ -1631,7 +1632,7 @@ function startLms(func, lmscommander, tag) {
         }
 
     });
-    return (ret);
+    return ret;
 }
 
 function startMeshCommanderLms() {

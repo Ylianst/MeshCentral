@@ -118,6 +118,7 @@ var CreateRDPDesktop = function (canvasid) {
     obj.m.mousemove = function (e) {
         if (!obj.socket || (obj.State != 3)) return;
         var m = getMousePosition(e);
+        if ((m.x < 0) || (m.y < 0) || (m.x > obj.ScreenWidth) || (m.y > obj.ScreenHeight)) return;
         obj.mouseNagleData = ['mouse', m.x, m.y, 0, false];
         if (obj.mouseNagleTimer == null) { obj.mouseNagleTimer = setTimeout(function () { obj.socket.send(JSON.stringify(obj.mouseNagleData)); obj.mouseNagleTimer = null; }, 50); }
         e.preventDefault();
@@ -125,16 +126,18 @@ var CreateRDPDesktop = function (canvasid) {
     }
     obj.m.mouseup = function (e) {
         if (!obj.socket || (obj.State != 3)) return;
-        if (obj.mouseNagleTimer != null) { clearTimeout(obj.mouseNagleTimer); obj.mouseNagleTimer = null; }
         var m = getMousePosition(e);
+        if ((m.x < 0) || (m.y < 0) || (m.x > obj.ScreenWidth) || (m.y > obj.ScreenHeight)) return;
+        if (obj.mouseNagleTimer != null) { clearTimeout(obj.mouseNagleTimer); obj.mouseNagleTimer = null; }
         obj.socket.send(JSON.stringify(['mouse', m.x, m.y, mouseButtonMap(e.button), false]));
         e.preventDefault();
         return false;
     }
     obj.m.mousedown = function (e) {
         if (!obj.socket || (obj.State != 3)) return;
-        if (obj.mouseNagleTimer != null) { clearTimeout(obj.mouseNagleTimer); obj.mouseNagleTimer = null; }
         var m = getMousePosition(e);
+        if ((m.x < 0) || (m.y < 0) || (m.x > obj.ScreenWidth) || (m.y > obj.ScreenHeight)) return;
+        if (obj.mouseNagleTimer != null) { clearTimeout(obj.mouseNagleTimer); obj.mouseNagleTimer = null; }
         obj.socket.send(JSON.stringify(['mouse', m.x, m.y, mouseButtonMap(e.button), true]));
         e.preventDefault();
         return false;
