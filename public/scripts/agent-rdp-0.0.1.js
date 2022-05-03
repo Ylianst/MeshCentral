@@ -88,6 +88,7 @@ var CreateRDPDesktop = function (canvasid) {
     }
 
     obj.Stop = function () {
+        obj.Canvas.fillRect(0, 0, obj.ScreenWidth, obj.ScreenHeight);
         if (obj.socket) { obj.socket.close(); }
     }
     

@@ -227,8 +227,12 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                             obj.relaynodeid = mesh.relayid;
                             obj.tcpaddr = node.host;
 
+                            // Get the TCP port to use
+                            var tcpport = 3389;
+                            if ((obj.cookie != null) && (obj.cookie.tcpport != null)) { tcpport = obj.cookie.tcpport; } else { if (node.rdpport) { tcpport = node.rdpport } }
+
                             // Re-encode a cookie with a device relay
-                            const cookieContent = { userid: obj.userid, domainid: domain.id, nodeid: mesh.relayid, tcpaddr: node.host, tcpport: obj.cookie.tcpport };
+                            const cookieContent = { userid: obj.userid, domainid: domain.id, nodeid: mesh.relayid, tcpaddr: node.host, tcpport: tcpport };
                             obj.infos.ip = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
                         } else if (obj.infos.ip.startsWith('node/')) {
                             // Encode a cookie with a device relay
