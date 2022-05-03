@@ -145,7 +145,7 @@ Type.prototype.read = function(s) {
 		
 		if(oldValue !== this.value) {
 			log.error('constant value mismatch ' + oldValue + ' != ' + this.value);
-            throw new error.ProtocolError("NODE_RDP_CORE_TYPE_CONSTANT_VALUE_MISMATCH", oldValue, this.value);
+            throw new error.ProtocolError("NODE_RDP_CORE_TYPE_CONSTANT_VALUE_MISMATCH, OLD:" + oldValue + ", NEW:" + this.value);
 		}
 	}
 	else {
