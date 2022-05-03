@@ -138,7 +138,13 @@
 			});
 			
 			return this;
-		},
+        },
+        /**
+		 * disconnect
+		 */
+        disconnect: function () {
+            if (this.socket) { this.socket.close(); }
+        },
 		/**
 		 * connect
 		 * @param ip {string} ip target for rdp

@@ -560,7 +560,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.onResize = function () {
         if (obj.ScreenWidth == 0 || obj.ScreenHeight == 0) return;
-        if (obj.Canvas.canvas.width == obj.ScreenWidth && obj.Canvas.canvas.height == obj.ScreenHeight) return;
+        if ((obj.Canvas.canvas.width == obj.ScreenWidth) && (obj.Canvas.canvas.height == obj.ScreenHeight)) return;
         if (obj.FirstDraw) {
             obj.Canvas.canvas.width = obj.ScreenWidth;
             obj.Canvas.canvas.height = obj.ScreenHeight;

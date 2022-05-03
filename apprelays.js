@@ -62,10 +62,10 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
             var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
             if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
             const sessionSeconds = Math.round((Date.now() - obj.startTime) / 1000);
-            const user = parent.users[obj.cookie.userid];
+            const user = parent.users[obj.userid];
             const username = (user != null) ? user.name : null;
-            const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.cookie.userid, username: username, sessionid: obj.sessionid, msgid: 125, msgArgs: [sessionSeconds, obj.sessionid], msg: "Left Web-RDP session \"" + obj.sessionid + "\" after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBRDP, bytesin: inTraffc, bytesout: outTraffc };
-            parent.parent.DispatchEvent(['*', obj.nodeid, obj.cookie.userid, obj.meshid], obj, event);
+            const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.userid, username: username, sessionid: obj.sessionid, msgid: 125, msgArgs: [sessionSeconds, obj.sessionid], msg: "Left Web-RDP session \"" + obj.sessionid + "\" after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBRDP, bytesin: inTraffc, bytesout: outTraffc };
+            parent.parent.DispatchEvent(['*', obj.nodeid, obj.userid, obj.meshid], obj, event);
             delete obj.startTime;
             delete obj.sessionid;
         }
@@ -129,8 +129,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
     function startRdp(port) {
         parent.parent.debug('relay', 'RDP: Starting RDP client on loopback port ' + port);
         try {
-            //rdpClient = require('node-rdpjs-2').createClient({
-            rdpClient = require('./rdp').createClient({
+            const args = {
                 logLevel: 'NONE', // 'ERROR',
                 domain: obj.infos.domain,
                 userName: obj.infos.username,
@@ -139,7 +138,8 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 autoLogin: true,
                 screen: obj.infos.screen,
                 locale: obj.infos.locale
-            }).on('connect', function () {
+            };
+            rdpClient = require('./rdp').createClient(args).on('connect', function () {
                 send(['rdp-connect']);
                 if ((typeof obj.infos.options == 'object') && (obj.infos.options.savepass == true)) { saveRdpCredentials(); } // Save the credentials if needed
                 obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
@@ -147,10 +147,10 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
 
                 // Event session start
                 try {
-                    const user = parent.users[obj.cookie.userid];
+                    const user = parent.users[obj.userid];
                     const username = (user != null) ? user.name : null;
-                    const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.cookie.userid, username: username, sessionid: obj.sessionid, msgid: 150, msgArgs: [obj.sessionid], msg: "Started Web-RDP session \"" + obj.sessionid + "\".", protocol: PROTOCOL_WEBRDP };
-                    parent.parent.DispatchEvent(['*', obj.nodeid, obj.cookie.userid, obj.meshid], obj, event);
+                    const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.userid, username: username, sessionid: obj.sessionid, msgid: 150, msgArgs: [obj.sessionid], msg: "Started Web-RDP session \"" + obj.sessionid + "\".", protocol: PROTOCOL_WEBRDP };
+                    parent.parent.DispatchEvent(['*', obj.nodeid, obj.userid, obj.meshid], obj, event);
                 } catch (ex) { console.log(ex); }
             }).on('bitmap', function (bitmap) {
                 try { ws.send(bitmap.data); } catch (ex) { } // Send the bitmap data as binary
@@ -201,11 +201,17 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 case 'infos': {
                     obj.infos = msg[1];
 
-                    // Decode the authentication cookie
-                    obj.cookie = parent.parent.decodeCookie(obj.infos.ip, parent.parent.loginCookieEncryptionKey);
-                    if ((obj.cookie == null) || (typeof obj.cookie.nodeid != 'string') || (typeof obj.cookie.userid != 'string')) { obj.close(); return; }
-                    obj.nodeid = obj.cookie.nodeid;
-                    obj.userid = obj.cookie.userid;
+                    if (obj.infos.ip.startsWith('node/')) {
+                        // Use the user session
+                        obj.nodeid = obj.infos.ip;
+                        obj.userid = req.session.userid;
+                    } else {
+                        // Decode the authentication cookie
+                        obj.cookie = parent.parent.decodeCookie(obj.infos.ip, parent.parent.loginCookieEncryptionKey);
+                        if ((obj.cookie == null) || (typeof obj.cookie.nodeid != 'string') || (typeof obj.cookie.userid != 'string')) { obj.close(); return; }
+                        obj.nodeid = obj.cookie.nodeid;
+                        obj.userid = obj.cookie.userid;
+                    }
 
                     // Get node
                     parent.parent.db.Get(obj.nodeid, function (err, nodes) {
@@ -222,7 +228,11 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                             obj.tcpaddr = node.host;
 
                             // Re-encode a cookie with a device relay
-                            const cookieContent = { userid: obj.cookie.userid, domainid: obj.cookie.domainid, nodeid: mesh.relayid, tcpaddr: node.host, tcpport: obj.cookie.tcpport };
+                            const cookieContent = { userid: obj.userid, domainid: domain.id, nodeid: mesh.relayid, tcpaddr: node.host, tcpport: obj.cookie.tcpport };
+                            obj.infos.ip = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
+                        } else if (obj.infos.ip.startsWith('node/')) {
+                            // Encode a cookie with a device relay
+                            const cookieContent = { userid: obj.userid, domainid: domain.id, nodeid: obj.nodeid, tcpport: node.rdpport ? node.rdpport : 3389 };
                             obj.infos.ip = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
                         }
 
@@ -234,7 +244,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                             // Check if we need to load server stored credentials
                             if ((typeof obj.infos.options == 'object') && (obj.infos.options.useServerCreds == true)) {
                                 // Check if RDP credentials exist
-                                if ((domain.allowsavingdevicecredentials === false) && (typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) {
+                                if ((domain.allowsavingdevicecredentials !== false) && (typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) {
                                     obj.infos.domain = node.rdp.d;
                                     obj.infos.username = node.rdp.u;
                                     obj.infos.password = node.rdp.p;
