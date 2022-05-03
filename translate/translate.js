@@ -81,6 +81,7 @@ var minifyMeshCentralSourceFiles = [
     "../views/mstsc.handlebars",
     "../views/ssh.handlebars",
     "../public/scripts/agent-desktop-0.0.2.js",
+    "../public/scripts/agent-rdp-0.0.1.js",
     "../public/scripts/agent-redir-rtc-0.1.0.js",
     "../public/scripts/agent-redir-ws-0.1.1.js",
     "../public/scripts/amt-0.2.0.js",

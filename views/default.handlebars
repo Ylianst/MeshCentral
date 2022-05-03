@@ -29,10 +29,16 @@
     <script type="text/javascript" src="scripts/agent-redir-ws-0.1.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/agent-rdp-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
     <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/flatpickr.js"></script>
+    <script type="text/javascript" src="mstsc/mstsc.js"></script>
+    <script type="text/javascript" src="mstsc/keyboard.js"></script>
+    <script type="text/javascript" src="mstsc/rle.js"></script>
+    <script type="text/javascript" src="mstsc/client.js"></script>
+    <script type="text/javascript" src="mstsc/canvas.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/u2f-api{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/charts{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
@@ -82,9 +88,10 @@
         <div class="cmtext" onclick="cmtermaction(100,event)">Login Shell</div>
     </div>
     <div id="deskConnectContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div class="cmtext" onclick="cmdeskaction(1,event)">Ask Consent + Bar</div>
-        <div class="cmtext" onclick="cmdeskaction(2,event)">Ask Consent</div>
-        <div class="cmtext" onclick="cmdeskaction(3,event)">Privacy Bar</div>
+        <div id="deskConnectContextMenu1" class="cmtext" onclick="cmdeskaction(1,event)">Ask Consent + Bar</div>
+        <div id="deskConnectContextMenu2" class="cmtext" onclick="cmdeskaction(2,event)">Ask Consent</div>
+        <div id="deskConnectContextMenu3" class="cmtext" onclick="cmdeskaction(3,event)">Privacy Bar</div>
+        <div id="deskConnectContextMenu4" class="cmtext" onclick="cmdeskaction(4,event)">RDP</div>
     </div>
     <div id="deskDisconnectContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmdeskaction(10,event)">Disconnect and Lock</div>
@@ -5771,6 +5778,10 @@
                     // Desktop connect button context menu
                     if ((currentNode == null) || (currentNode.agent == null)) return true;
                     contextelement = elem;
+                    QV('deskConnectContextMenu1', currentNode.mtype == 2); // Ask Consent + Bar
+                    QV('deskConnectContextMenu2', currentNode.mtype == 2); // Ask Consent
+                    QV('deskConnectContextMenu3', currentNode.mtype == 2); // Privacy Bar
+                    QV('deskConnectContextMenu4', (currentNode.agent.id == 3) || (currentNode.agent.id == 4)); // RDP
                     showContextMenuDiv(document.getElementById('deskConnectContextMenu'), event.pageX, event.pageY);
                     break;
                 }
@@ -5916,6 +5927,7 @@
             if (action == 1) { connectDesktop(null, 3, null, 0x0008 + 0x0040); } // Consent Prompt + Privacy bar
             if (action == 2) { connectDesktop(null, 3, null, 0x0008); } // Consent Prompt
             if (action == 3) { connectDesktop(null, 3, null, 0x0040); } // Privacy bar
+            if (action == 4) { askRdpCredentials(); } // RDP
             if (action == 10) { if (desktop != null) { desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"autolock","value":true}'); connectDesktop(); } } // Disconnect and lock
             if (action == 11) { if (desktop != null) { desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"autolock","value":false}'); connectDesktop(); } } // Disconnect without lock
         }
@@ -8273,15 +8285,16 @@
             var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
-            QE('DeskClip', deskState == 3);
+            QE('DeskClip', (deskState == 3) && (desktop.contype != 4));
             QV('DeskClip', (inputAllowed) && (currentNode.agent) && ((features2 & 0x1800) != 0x1800) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
-            QE('DeskESC', deskState == 3);
+            QE('DeskESC', (deskState == 3) && (desktop.contype != 4));
             QV('DeskESC', browserfullscreen && inputAllowed);
-            QE('DeskType', deskState == 3);
+            QE('DeskType', (deskState == 3) && (desktop.contype != 4));
             QV('DeskType', inputAllowed);
-            QE('DeskWD', deskState == 3);
+            QE('DeskWD', (deskState == 3) && (desktop.contype != 4));
             QV('DeskWD', inputAllowed);
             QV('deskkeys', inputAllowed);
+            QE('deskkeys', (desktop != null) && (desktop.contype != 4));
             QV('DeskTimer', deskState == 3);
 
             // Enable browser clipboard read if supported
@@ -8467,6 +8480,14 @@
                 } else if (contype == 3) {
                     // Ask for user sessions
                     meshserver.send({ action: 'msg', type: 'userSessions', nodeid: currentNode._id, tag: consent });
+                } else if (contype == 4) {
+                    // Setup RDP remote desktop
+                    desktop = CreateRDPDesktop('Desk');
+                    desktop.onStateChanged = onDesktopStateChange;
+                    desktop.m.onScreenSizeChange = mdeskAdjust;
+                    if (desktopsettings.swapmouse) { desktop.m.SwapMouse = desktopsettings.swapmouse; }
+                    desktop.Start(desktopNode._id, currentNode.rdpport ? currentNode.rdpport : 3389, tsid);
+                    desktop.contype = 4;
                 }
             } else {
                 // Disconnect and clean up the remote desktop
@@ -8474,6 +8495,37 @@
                 webRtcDesktopReset();
                 desktopNode = desktop = null;
                 if (pluginHandler != null) { pluginHandler.callHook('onDesktopDisconnect'); }
+            }
+        }
+
+        function askRdpCredentials() {
+            if (xxdialogMode) return;
+            var x = '<div>';
+            if (currentNode.rdp == 1) {
+                x += addHtmlValue("Credentials", '<select id=d2mode style=width:230px onchange=askRdpCredentialsValidate()><option value=1>' + "Use server credentials" + '</option><option value=2>' + "Use new credentials" + '</option></select>');
+                x += '<div id=d2cred style=display:none>';
+            } else {
+                x += '<div id=d2cred>';
+            }
+            x += addHtmlValue("Domain", '<input type=text id=d2domain style=width:230px maxlength=128 />');
+            x += addHtmlValue("Username", '<input type=text id=d2user style=width:230px onKeyUp=askRdpCredentialsValidate() maxlength=128 />');
+            x += addHtmlValue("Password", '<input type=password id=d2pass style=width:230px maxlength=128 autocomplete=off />');
+            x += addHtmlValue("", '<label><input type="checkbox" id=d2savecred>' + "Remember credentials" + '</label>');
+            x + '</div></div>';
+            setDialogMode(2, "RDP Credentials", 3, askRdpCredentialsEx, x);
+        }
+
+        function askRdpCredentialsValidate() {
+            var ok = true;
+            if (currentNode.rdp == 1) { QV('d2cred', Q('d2mode').value == 2); if (Q('d2mode').value == 1) { QE('idx_dlgOkButton', true); return; } }
+            QE('idx_dlgOkButton', Q('d2user').value != '');
+        }
+
+        function askRdpCredentialsEx() {
+            if ((currentNode.rdp == 1) && (Q('d2mode').value == 1)) {
+                connectDesktop(null, 4, { servercred: true });
+            } else {
+                connectDesktop(null, 4, { domain: Q('d2domain').value, username: Q('d2user').value, password: Q('d2pass').value, savecred: Q('d2savecred').checked });
             }
         }
 
@@ -8559,15 +8611,17 @@
             if ((xstate == 3) && (xdesktop.contype == 2)) { xstate++; }
             var str = StatusStrs[xstate];
             if ((desktop != null) && (desktop.webRtcActive == true)) { str += ", WebRTC"; }
+            if ((desktop != null) && (xstate == 3) && (desktop.contype == 4)) { str += ", RDP"; }
             //if (desktop.m.stopInput == true) { str += ', Loopback'; }
             QH('deskstatus', str);
             switch (state) {
                 case 0:
-                    // Stop recording
-                    if (desktop.m.recordedData != null) { deskRecordSession(); }
-
-                    // Disconnect and clean up the remote desktop
-                    desktop.Stop();
+                    if (desktop != null) {
+                        // Stop recording
+                        if (desktop.m.recordedData != null) { deskRecordSession(); }
+                        // Disconnect and clean up the remote desktop
+                        desktop.Stop();
+                    }
                     desktopNode = desktop = null;
                     QV('DeskFocus', false);
                     QV('DeskMonitorSelectionSpan', false);
