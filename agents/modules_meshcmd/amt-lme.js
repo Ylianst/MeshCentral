@@ -17,6 +17,7 @@ limitations under the License.
 var MemoryStream = require('MemoryStream');
 var lme_id = 0;             // Our next channel identifier
 var lme_port_offset = 0;    // Debug: Set this to "-100" to bind to 16892 & 16893 and IN_ADDRANY. This is for LMS debugging.
+var lme_bindany = false;    // If true, bind to all network interfaces, not just loopback.
 var xmlParser = null;
 try { xmlParser = require('amt-xml'); } catch (ex) { }
 
@@ -123,7 +124,10 @@ function lme_heci(options) {
         if (name == 'connect' && this._LME._connected == true) { func.call(this); }
         if (name == 'error' && this._LME._error !=null) { func.call(this, this._LME._error); }
     });
-    if ((options != null) && (options.debug == true)) { lme_port_offset = -100; } // LMS debug mode
+    if (options != null) {
+        if (options.debug == true) { lme_port_offset = -100; } // LMS debug mode
+        if (options.bindany == true) { lme_bindany = true; } // Bind to all ports
+    }
 
     var heci = require('heci');
     this.INITIAL_RXWINDOW_SIZE = 4096;
@@ -189,7 +193,11 @@ function lme_heci(options) {
                                     this[name][port].descriptorMetadata = 'amt-lme (port: ' + port + ')';
                                     this[name][port].HECI = this;
                                     if (lme_port_offset == 0) {
-                                        this[name][port].listen({ port: port, host: '127.0.0.1' }); // Normal mode
+                                        if (lme_bindany) {
+                                            this[name][port].listen({ port: port }); // Bind all mode
+                                        } else {
+                                            this[name][port].listen({ port: port, host: '127.0.0.1' }); // Normal mode
+                                        }
                                     } else {
                                         this[name][port].listen({ port: (port + lme_port_offset) }); // Debug mode
                                     }

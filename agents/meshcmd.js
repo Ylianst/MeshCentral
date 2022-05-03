@@ -157,6 +157,7 @@ function run(argv) {
     if ((typeof args.uuidoutput) == 'string' || args.uuidoutput) { settings.uuidoutput = args.uuidoutput; }
     if ((typeof args.desc) == 'string') { settings.desc = args.desc; }
     if ((typeof args.dnssuffix) == 'string') { settings.dnssuffix = args.dnssuffix; }
+    if (args.bindany) { settings.bindany = true; }
     if (args.emailtoken) { settings.emailtoken = true; }
     if (args.smstoken) { settings.smstoken = true; }
     if (args.debug === true) { settings.debuglevel = 1; }
