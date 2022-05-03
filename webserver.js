@@ -6028,8 +6028,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 });
             }
 
-            // Setup MSTSC.js if needed
-            if (domain.mstsc === true) {
+            // Setup RDP unless indicated as disabled
+            if (domain.mstsc !== false) {
                 obj.app.get(url + 'mstsc.html', function (req, res) { handleMSTSCRequest(req, res, 'mstsc'); });
                 obj.app.ws(url + 'mstscrelay.ashx', function (ws, req) {
                     const domain = getDomain(req);
