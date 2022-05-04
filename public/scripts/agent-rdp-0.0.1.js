@@ -27,7 +27,13 @@ var CreateRDPDesktop = function (canvasid) {
         obj.nodeid = nodeid;
         obj.port = port;
         obj.credentials = credentials;
-        var options = { savepass: credentials.savecred, useServerCreds: credentials.servercred };
+        var options = { savepass: credentials.savecred, useServerCreds: credentials.servercred, width: credentials.width, height: credentials.height, flags: credentials.flags };
+        if (credentials.width && credentials.height) {
+            options.width = obj.ScreenWidth = obj.width = credentials.width;
+            options.height = obj.ScreenHeight = obj.height = credentials.height;
+            delete credentials.width;
+            delete credentials.height;
+        }
         obj.render = new Mstsc.Canvas.create(obj.canvas);
         obj.socket = new WebSocket('wss://' + window.location.host + '/mstscrelay.ashx'); // TODO: Support domains
         obj.socket.binaryType = 'arraybuffer';
