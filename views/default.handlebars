@@ -703,7 +703,6 @@
                             <span id=DeskInputLockedButton title="Remote input is locked"><img class="desktopButtons" id=DeskInputLockedButtonImage src='images/icon-keylock-red.png' onclick=deskInputLockFunction(0) height=16 width=16 /></span>
                             <span id=DeskInputUnLockedButton title="Remote input is unlocked"><img class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-keylock.png' onclick=deskInputLockFunction(1) height=16 width=16 /></span>
                             <span id=DeskGuestShareButton title="Share the device with a guest"><img class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-share2.png' onclick=showShareDevice() height=16 width=16 /></span>
-
                         </div>
                         <div class="toright2"><span id=DeskMonitorSelectionSpan></span></div>
                         <div>
@@ -1278,9 +1277,14 @@
                     <textarea id=d4editorarea autocomplete="off" style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
                 </div>
                 <div id=dialog7 style="">
-                    <div id="d7meshkvm">
-                        <h4>Agent Remote Desktop</h4>
-                        <div>
+                    <div class="dtab">
+                        <button id="td7meshkvm" class="tablinks" onclick="changeDesktopSettingsTab(event, 'd7meshkvm')">Agent</button>
+                        <button id="td7rdpkvm" class="tablinks" onclick="changeDesktopSettingsTab(event, 'd7rdpkvm')">RDP</button>
+                        <button id="td7amtkvm" class="tablinks" onclick="changeDesktopSettingsTab(event, 'd7amtkvm')">Intel&reg; AMT</button>
+                    </div>
+                    <div id="d7meshkvm" class="tabcontent">
+                        <!--<h4>Agent Remote Desktop</h4>-->
+                        <div style="margin-top:8px">
                             <div>Quality</div>
                             <select id="d7bitmapquality" dir="rtl"></select>
                         </div>
@@ -1316,9 +1320,9 @@
                             </div>
                         </div>
                     </div>
-                    <div id="d7amtkvm">
-                        <h4>Intel&reg; AMT Hardware KVM</h4>
-                        <div>
+                    <div id="d7amtkvm" class="tabcontent">
+                        <!--<h4>Intel&reg; AMT Hardware KVM</h4>-->
+                        <div style="margin-top:8px">
                             <div>Image Encoding</div>
                             <select id="d7desktopmode">
                                 <option value="1">RLE8, Fastest</option>
@@ -1333,6 +1337,37 @@
                                 <label style="display:block"><input type="checkbox" id="d7showfocus" />Show Focus Tool</label>
                                 <label style="display:block"><input type="checkbox" id="d7showcursor" />Show Local Mouse Cursor</label>
                                 <label style="display:block"><input type="checkbox" id="d7localKeyMap" />Local Keyboard Map</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="d7rdpkvm" class="tabcontent">
+                        <!--<h4>Remote Desktop Protocol</h4>-->
+                        <div style="margin-top:8px">
+                            <div>Display Size</div>
+                            <select id="d7rdpsize">
+                                <option value="1">Browser Size</option>
+                                <option value="2">Screen Size</option>
+                                <option value="3">Canvas Size</option>
+                                <option value="4">640x480</option>
+                                <option value="5">1024×768</option>
+                                <option value="6">1280×800</option>
+                                <option value="7">1440×900</option>
+                                <option value="8">1600×900</option>
+                                <option value="9">1680×1050</option>
+                                <option value="10">1920×1080</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div>Optimizations</div>
+                            <div id="d7rdpflags" style="display:block">
+                                <label style="display:block"><input type="checkbox" id="d7rdp1" />Disable Wallpaper</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp2" />Disable Full Window Drag</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp3" />Disable Menu Animations</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp4" />Disable Theming</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp6" />Disable Cursor Chadow</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp7" />Disable Cursor Settings</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font Smooting</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop Composision</label>
                             </div>
                         </div>
                     </div>
@@ -4726,8 +4761,9 @@
         function onDeviceSearchChanged(e) { if (e != null) { if (e.target.id == 'SearchInput') { Q('KvmSearchInput').value = Q('SearchInput').value; } else { Q('SearchInput').value = Q('KvmSearchInput').value; } } mainUpdate(5); }
 
         function showMultiDesktopSettings() {
-            QV('d7amtkvm', false);
-            QV('d7meshkvm', true);
+            QV('td7amtkvm', false);
+            QV('td7meshkvm', true);
+            QV('td7rdpkvm', false);
             QV('d7desktopOtherSettings', false);
             d7bitmapquality.value = multidesktopsettings.quality;
             d7bitmapscaling.value = multidesktopsettings.scaling;
@@ -5928,7 +5964,6 @@
             if (action == 1) { connectDesktop(null, 3, null, 0x0008 + 0x0040); } // Consent Prompt + Privacy bar
             if (action == 2) { connectDesktop(null, 3, null, 0x0008); } // Consent Prompt
             if (action == 3) { connectDesktop(null, 3, null, 0x0040); } // Privacy bar
-            if (action == 4) { askRdpCredentials(); } // RDP
             if (action == 10) { if (desktop != null) { desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"autolock","value":true}'); connectDesktop(); } } // Disconnect and lock
             if (action == 11) { if (desktop != null) { desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"autolock","value":false}'); connectDesktop(); } } // Disconnect without lock
         }
@@ -8277,8 +8312,9 @@
                 );
             }
             // Show the right settings
-            QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (currentNode.agent == null))) && ((deskState == 0) || (desktop.contype == 2)));
-            QV('d7meshkvm', (webRtcDesktop) || ((currentNode.agent != null) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1))));
+            QV('td7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (currentNode.agent == null))) && ((deskState == 0) || (desktop.contype == 2)));
+            QV('td7meshkvm', (webRtcDesktop) || ((currentNode.agent != null) && (currentNode.agent.caps & 1) && ((deskState == 0) || (desktop.contype == 1))));
+            QV('td7rdpkvm', ((currentNode.agent != null) && ((currentNode.agent.id == 3) || (currentNode.agent.id == 4)) && ((deskState == 0) || (desktop.contype == 4))));
 
             // Enable buttons
             var inputAllowed = ((features2 & 0x2000) == 0) && ((currentNode.agent == null) || (currentNode.agent.id != 14)) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
@@ -8694,7 +8730,29 @@
             if (xxdialogMode) return;
             applyDesktopSettings();
             updateDesktopButtons();
+
+            if (QS('td7meshkvm').display != 'none') { changeDesktopSettingsTab(null, 'd7meshkvm'); }
+            else if (QS('td7rdpkvm').display != 'none') { changeDesktopSettingsTab(null, 'd7rdpkvm'); }
+            else if (QS('td7amtkvm').display != 'none') { changeDesktopSettingsTab(null, 'd7amtkvm'); }
+
             setDialogMode(7, "Remote Desktop Settings", 3, showDesktopSettingsChanged);
+        }
+
+        function changeDesktopSettingsTab(evt, tabname) {
+            // Declare all variables
+            var i, tabcontent, tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName('tabcontent');
+            for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = 'none'; }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName('tablinks');
+            for (i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(' active', ''); }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(tabname).style.display = 'block';
+            if (evt != null) { evt.currentTarget.className += ' active'; } else { document.getElementById('t' + tabname).className += ' active'; }
         }
 
         function showDesktopSettingsChanged() {
@@ -8709,6 +8767,11 @@
             desktopsettings.autoclipboard = d7deskAutoClipboard.checked;
             desktopsettings.autolock = d7deskAutoLock.checked;
             desktopsettings.localkeymap = d7localKeyMap.checked;
+            desktopsettings.rdpsize = parseInt(d7rdpsize.value);
+            desktopsettings.rdpflags = d7rdpsize.value;
+            var rdpflags = 0;
+            for (var i = 1; i < 10; i++) { if ((i != 5) && (Q('d7rdp' + i).checked)) { rdpflags |= (1 << (i - 1)); } }
+            desktopsettings.rdpflags = rdpflags;
             localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
             updateDesktopButtons();
@@ -8745,6 +8808,9 @@
             if (desktopsettings.autolock != null) { d7deskAutoLock.checked = desktopsettings.autolock; }
             if (desktopsettings.localkeymap) { d7localKeyMap.checked = desktopsettings.localkeymap; }
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
+            if (desktopsettings.rdpsize != null) { d7rdpsize.value = desktopsettings.rdpsize; }
+            if (desktopsettings.rdpflags == null) { desktopsettings.rdpflags = 0x2F; }
+            for (var i = 1; i < 10; i++) { if (i != 5) { Q('d7rdp' + i).checked = ((desktopsettings.rdpflags & (1 << (i - 1))) != 0); } }
         }
 
         // Enter browser fullscreen
