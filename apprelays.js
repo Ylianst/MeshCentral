@@ -114,7 +114,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                         obj.relayActive = true; obj.relaySocket.resume();
                     } else {
                         obj.wsClient._socket.pause();
-                        try { obj.relaySocket.write(data, function () { obj.wsClient._socket.resume(); }); } catch (ex) { obj.close(); }
+                        try { obj.relaySocket.write(data, function () { try { obj.wsClient._socket.resume(); } catch (ex) { } }); } catch (ex) { obj.close(); }
                     }
                 });
                 obj.wsClient.on('close', function () { parent.parent.debug('relay', 'RDP: Relay websocket closed'); obj.close(); });
@@ -186,7 +186,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
             // Event node change if needed
             if (changed) {
                 // Event the node change
-                const event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: obj.cookie.userid, node: parent.CloneSafeNode(node), msg: "Changed RDP credentials" };
+                const event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: obj.userid, node: parent.CloneSafeNode(node), msg: "Changed RDP credentials" };
                 if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                 parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
             }
