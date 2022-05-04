@@ -8588,7 +8588,7 @@
             if ((currentNode.rdp == 1) && (Q('d2mode').value == 1)) {
                 connectDesktop(null, 4, { servercred: true, width: width, height: height, flags: (desktopsettings.rdpflags != null) ? desktopsettings.rdpflags : 0x2F });
             } else {
-                savecred = false;
+                var savecred = false;
                 if ((features2 & 0x00400000) == 0) { savecred = Q('d2savecred').checked; }
                 connectDesktop(null, 4, { domain: Q('d2domain').value, username: Q('d2user').value, password: Q('d2pass').value, savecred: savecred, width: width, height: height, flags: (desktopsettings.rdpflags != null) ? desktopsettings.rdpflags : 0x2F });
             }
