@@ -108,15 +108,19 @@ function RdpClient(config) {
 	if(config.alternateShell) {
 		this.sec.infos.obj.alternateShell.value = Buffer.from(config.alternateShell + '\x00', 'ucs2');
 	}
-	
-	if (config.enablePerf) {
-		this.sec.infos.obj.extendedInfo.obj.performanceFlags.value = 
-				pdu.sec.PerfFlag.PERF_DISABLE_WALLPAPER 
-			| 	pdu.sec.PerfFlag.PERF_DISABLE_MENUANIMATIONS 
-			| 	pdu.sec.PerfFlag.PERF_DISABLE_CURSOR_SHADOW 
-			| 	pdu.sec.PerfFlag.PERF_DISABLE_THEMING 
-			| 	pdu.sec.PerfFlag.PERF_DISABLE_FULLWINDOWDRAG;
-	}
+
+    if (config.perfFlags != null) {
+        this.sec.infos.obj.extendedInfo.obj.performanceFlags.value = config.perfFlags;
+    } else {
+        if (config.enablePerf) {
+            this.sec.infos.obj.extendedInfo.obj.performanceFlags.value =
+                pdu.sec.PerfFlag.PERF_DISABLE_WALLPAPER
+                | pdu.sec.PerfFlag.PERF_DISABLE_MENUANIMATIONS
+                | pdu.sec.PerfFlag.PERF_DISABLE_CURSOR_SHADOW
+                | pdu.sec.PerfFlag.PERF_DISABLE_THEMING
+                | pdu.sec.PerfFlag.PERF_DISABLE_FULLWINDOWDRAG;
+        }
+    }
 	
 	if (config.autoLogin) {
 		this.sec.infos.obj.flag.value |= pdu.sec.InfoFlag.INFO_AUTOLOGON;

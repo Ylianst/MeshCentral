@@ -114,7 +114,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                         obj.relayActive = true; obj.relaySocket.resume();
                     } else {
                         obj.wsClient._socket.pause();
-                        obj.relaySocket.write(data, function () { obj.wsClient._socket.resume(); });
+                        try { obj.relaySocket.write(data, function () { obj.wsClient._socket.resume(); }); } catch (ex) { obj.close(); }
                     }
                 });
                 obj.wsClient.on('close', function () { parent.parent.debug('relay', 'RDP: Relay websocket closed'); obj.close(); });
@@ -137,8 +137,9 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 enablePerf: true,
                 autoLogin: true,
                 screen: obj.infos.screen,
-                locale: obj.infos.locale
+                locale: obj.infos.locale,
             };
+            if (obj.infos.options && (obj.infos.options.flags != null)) { args.perfFlags = obj.infos.options.flags; delete obj.infos.options.flags; }
             rdpClient = require('./rdp').createClient(args).on('connect', function () {
                 send(['rdp-connect']);
                 if ((typeof obj.infos.options == 'object') && (obj.infos.options.savepass == true)) { saveRdpCredentials(); } // Save the credentials if needed

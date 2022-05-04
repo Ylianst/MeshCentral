@@ -689,7 +689,7 @@
                         <div class="toright2">
                             <span id="DeskLatency" title="Desktop Session Latency"></span>
                             <span id="DeskTimer" title="Session time"></span>
-                            <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
+                            <input id=DeskToolsButton type=button value=Tools style="margin-right:4px" title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
                             <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><img class="desktopButtons" src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskNotifyButton title="Display a notification on the remote computer"><img class="desktopButtons" src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskLockButton title="Lock the remote computer"><img src='images/icon-lock.png' class="desktopButtons" onclick=deviceLockFunction() height=16 width=16 /></span>
@@ -1345,16 +1345,16 @@
                         <div style="margin-top:8px">
                             <div>Display Size</div>
                             <select id="d7rdpsize">
-                                <option value="1">Browser Size</option>
-                                <option value="2">Screen Size</option>
-                                <option value="3">Canvas Size</option>
-                                <option value="4">640x480</option>
-                                <option value="5">1024×768</option>
-                                <option value="6">1280×800</option>
-                                <option value="7">1440×900</option>
-                                <option value="8">1600×900</option>
-                                <option value="9">1680×1050</option>
-                                <option value="10">1920×1080</option>
+                                <option value="canvas">Canvas Size</option>
+                                <option value="browser">Browser Size</option>
+                                <option value="screen">Screen Size</option>
+                                <option value="640x480">640×480</option>
+                                <option value="1024x768">1024×768</option>
+                                <option value="1280x800">1280×800</option>
+                                <option value="1440x900">1440×900</option>
+                                <option value="1600x900">1600×900</option>
+                                <option value="1680x1050">1680×1050</option>
+                                <option value="1920x1080">1920×1080</option>
                             </select>
                         </div>
                         <div>
@@ -1364,10 +1364,11 @@
                                 <label style="display:block"><input type="checkbox" id="d7rdp2" />Disable Full Window Drag</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdp3" />Disable Menu Animations</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdp4" />Disable Theming</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp6" />Disable Cursor Chadow</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp6" />Disable Cursor Shadow</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdp7" />Disable Cursor Settings</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font Smooting</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop Composision</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdpsmb" />Swap Mouse Buttons</label>
                             </div>
                         </div>
                     </div>
@@ -8524,7 +8525,7 @@
                     desktop = CreateRDPDesktop('Desk');
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.onScreenSizeChange = mdeskAdjust;
-                    if (desktopsettings.swapmouse) { desktop.m.SwapMouse = desktopsettings.swapmouse; }
+                    if (desktopsettings.rdpsmb) { desktop.m.SwapMouse = desktopsettings.rdpsmb; }
                     desktop.Start(desktopNode._id, currentNode.rdpport ? currentNode.rdpport : 3389, tsid);
                     desktop.contype = 4;
                 }
@@ -8561,12 +8562,34 @@
         }
 
         function askRdpCredentialsEx() {
+            var width = null, height = null;
+            if (desktopsettings.rdpsize) {
+                if (desktopsettings.rdpsize == 'browser') {
+                    width = window.innerWidth;
+                    height = window.innerHeight;
+                } else if (desktopsettings.rdpsize == 'screen') {
+                    width = window.screen.width;
+                    height = window.screen.height;
+                } else if (desktopsettings.rdpsize == 'canvas') {
+                    width = Q('DeskParent').offsetWidth;
+                    height = Q('DeskParent').offsetHeight;
+                } else {
+                    var i = desktopsettings.rdpsize.indexOf('x');
+                    if (i >= 1) {
+                        width = parseInt(desktopsettings.rdpsize.substring(0, i));
+                        height = parseInt(desktopsettings.rdpsize.substring(i + 1));
+                    }
+                }
+            } else {
+                width = Q('DeskParent').offsetWidth;
+                height = Q('DeskParent').offsetHeight;
+            }
             if ((currentNode.rdp == 1) && (Q('d2mode').value == 1)) {
-                connectDesktop(null, 4, { servercred: true });
+                connectDesktop(null, 4, { servercred: true, width: width, height: height, flags: (desktopsettings.rdpflags != null) ? desktopsettings.rdpflags : 0x2F });
             } else {
                 savecred = false;
                 if ((features2 & 0x00400000) == 0) { savecred = Q('d2savecred').checked; }
-                connectDesktop(null, 4, { domain: Q('d2domain').value, username: Q('d2user').value, password: Q('d2pass').value, savecred: savecred });
+                connectDesktop(null, 4, { domain: Q('d2domain').value, username: Q('d2user').value, password: Q('d2pass').value, savecred: savecred, width: width, height: height, flags: (desktopsettings.rdpflags != null) ? desktopsettings.rdpflags : 0x2F });
             }
         }
 
@@ -8731,9 +8754,15 @@
             applyDesktopSettings();
             updateDesktopButtons();
 
-            if (QS('td7meshkvm').display != 'none') { changeDesktopSettingsTab(null, 'd7meshkvm'); }
-            else if (QS('td7rdpkvm').display != 'none') { changeDesktopSettingsTab(null, 'd7rdpkvm'); }
-            else if (QS('td7amtkvm').display != 'none') { changeDesktopSettingsTab(null, 'd7amtkvm'); }
+            var tabSelected = false; // See if a visible tab is currently selected
+            if ((QS('td7meshkvm').display != 'none') && (Q('td7meshkvm').className.indexOf('active') > 0)) { tabSelected = true; }
+            else if ((QS('td7rdpkvm').display != 'none') && (Q('td7rdpkvm').className.indexOf('active') > 0)) { tabSelected = true; }
+            else if ((QS('td7amtkvm').display != 'none') && (Q('td7amtkvm').className.indexOf('active') > 0)) { tabSelected = true; }
+            if (tabSelected == false) { // if not, select the first visible one
+                if (QS('td7meshkvm').display != 'none') { changeDesktopSettingsTab(null, 'd7meshkvm'); }
+                else if (QS('td7rdpkvm').display != 'none') { changeDesktopSettingsTab(null, 'd7rdpkvm'); }
+                else if (QS('td7amtkvm').display != 'none') { changeDesktopSettingsTab(null, 'd7amtkvm'); }
+            }
 
             setDialogMode(7, "Remote Desktop Settings", 3, showDesktopSettingsChanged);
         }
@@ -8767,8 +8796,8 @@
             desktopsettings.autoclipboard = d7deskAutoClipboard.checked;
             desktopsettings.autolock = d7deskAutoLock.checked;
             desktopsettings.localkeymap = d7localKeyMap.checked;
-            desktopsettings.rdpsize = parseInt(d7rdpsize.value);
-            desktopsettings.rdpflags = d7rdpsize.value;
+            desktopsettings.rdpsize = d7rdpsize.value;
+            desktopsettings.rdpsmb = d7rdpsmb.checked;
             var rdpflags = 0;
             for (var i = 1; i < 10; i++) { if ((i != 5) && (Q('d7rdp' + i).checked)) { rdpflags |= (1 << (i - 1)); } }
             desktopsettings.rdpflags = rdpflags;
@@ -8810,6 +8839,7 @@
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
             if (desktopsettings.rdpsize != null) { d7rdpsize.value = desktopsettings.rdpsize; }
             if (desktopsettings.rdpflags == null) { desktopsettings.rdpflags = 0x2F; }
+            if (desktopsettings.rdpsmb != null) { d7rdpsmb.checked = desktopsettings.rdpsmb; }
             for (var i = 1; i < 10; i++) { if (i != 5) { Q('d7rdp' + i).checked = ((desktopsettings.rdpflags & (1 << (i - 1))) != 0); } }
         }
 
