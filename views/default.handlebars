@@ -688,8 +688,9 @@
                     <div id=deskarea4 class="areaFoot">
                         <div class="toright2">
                             <span id="DeskLatency" title="Desktop Session Latency"></span>
-                            <span id="DeskTimer" title="Session time"></span>
-                            <input id=DeskToolsButton type=button value=Tools style="margin-right:4px" title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
+                            <span id="DeskTimer" style="line-height:22px" title="Session time"></span>
+                            <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
+                            <span>&nbsp</span>
                             <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><img class="desktopButtons" src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskNotifyButton title="Display a notification on the remote computer"><img class="desktopButtons" src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskLockButton title="Lock the remote computer"><img src='images/icon-lock.png' class="desktopButtons" onclick=deviceLockFunction() height=16 width=16 /></span>
@@ -1358,7 +1359,7 @@
                             </select>
                         </div>
                         <div>
-                            <div>Optimizations</div>
+                            <div>Options</div>
                             <div id="d7rdpflags" style="display:block">
                                 <label style="display:block"><input type="checkbox" id="d7rdp1" />Disable Wallpaper</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdp2" />Disable Full Window Drag</label>
