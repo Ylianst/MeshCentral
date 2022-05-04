@@ -608,7 +608,7 @@ body {
 }
 
 
-#d7bitmapquality, #d7bitmapquality, #d7bitmapscaling, #d7framelimiter, #d7desktopmode {
+#d7bitmapquality, #d7bitmapquality, #d7bitmapscaling, #d7framelimiter, #d7desktopmode, #d7rdpsize {
     float: right;
     width: 200px;
     height: 20px;
@@ -619,16 +619,16 @@ body {
     border-bottom: 1px solid gray;
 }
 
-#d7meshkvm div, #d7amtkvm div, #d3upload, #d3localmode {
+#d7meshkvm div, #d7amtkvm div, #d7rdpkvm div, #d3upload, #d3localmode {
     margin: 3px 0 3px 0;
     display: flex;
     justify-content: space-between;
 }
 
-#d7otherset {
+#d7otherset, #d7rdpflags {
     border: 1px solid #666;
-    width: 200px;
-    height: 60px;
+    width: 230px;
+    height: 100px;
     overflow-y: scroll;
     background-color: white;
 }
@@ -3235,3 +3235,35 @@ a {
         filter: invert(60%);
         -webkit-filter: invert(60%);
     }
+
+
+.dtab {
+    overflow: hidden;
+    border-bottom: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+.dtab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    transition: 0.3s;
+}
+
+.dtab button:hover {
+    background-color: #ddd;
+}
+
+.dtab button.active {
+    background-color: #ccc;
+}
+
+.dtabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}

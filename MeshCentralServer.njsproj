@@ -180,6 +180,7 @@
     <Compile Include="public\novnc\vendor\pako\lib\zlib\trees.js" />
     <Compile Include="public\novnc\vendor\pako\lib\zlib\zstream.js" />
     <Compile Include="public\novnc\vendor\promise.js" />
+    <Compile Include="public\scripts\agent-rdp-0.0.1.js" />
     <Compile Include="public\scripts\agent-redir-rtc-0.1.0.js" />
     <Compile Include="public\serviceworker.js" />
     <Compile Include="rdp\asn1\ber.js" />
