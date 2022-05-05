@@ -1104,6 +1104,7 @@
     },
     {
       "en": ", RDP",
+      "nl": ", RDP",
       "xloc": [
         "default.handlebars->39->1212"
       ]
@@ -2507,12 +2508,40 @@
     },
     {
       "en": "1024x768",
+      "nl": "1024×768",
+      "cs": "1024×768",
+      "da": "1024×768",
+      "es": "1024×768",
+      "fi": "1024×768",
+      "fr": "1024×768",
+      "hi": "1024×768",
+      "it": "1024×768",
+      "pl": "1024×768",
+      "pt": "1024×768",
+      "pt-br": "1024×768",
+      "ru": "1024×768",
+      "sv": "1024×768",
+      "tr": "1024×768",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
     },
     {
       "en": "1024×768",
+      "nl": "1024×768",
+      "cs": "1024×768",
+      "da": "1024×768",
+      "es": "1024×768",
+      "fi": "1024×768",
+      "fr": "1024×768",
+      "hi": "1024×768",
+      "it": "1024×768",
+      "pl": "1024×768",
+      "pt": "1024×768",
+      "pt-br": "1024×768",
+      "ru": "1024×768",
+      "sv": "1024×768",
+      "tr": "1024×768",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->9"
       ]
@@ -2618,24 +2647,81 @@
     },
     {
       "en": "1280x800",
+      "nl": "1280x800",
+      "cs": "1280x800",
+      "da": "1280x800",
+      "es": "1280x800",
+      "fi": "1280x800",
+      "fr": "1280x800",
+      "hi": "1280x800",
+      "it": "1280x800",
+      "pl": "1280x800",
+      "pt": "1280x800",
+      "pt-br": "1280x800",
+      "ru": "1280x800",
+      "sv": "1280x800",
+      "tr": "1280x800",
+
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
     },
     {
       "en": "1280×800",
+      "nl": "1280x800",
+      "cs": "1280x800",
+      "da": "1280x800",
+      "es": "1280x800",
+      "fi": "1280x800",
+      "fr": "1280x800",
+      "hi": "1280x800",
+      "it": "1280x800",
+      "pl": "1280x800",
+      "pt": "1280x800",
+      "pt-br": "1280x800",
+      "ru": "1280x800",
+      "sv": "1280x800",
+      "tr": "1280x800",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->11"
       ]
     },
     {
       "en": "1440x900",
+      "nl": "1440x900",
+      "cs": "1440x900",
+      "da": "1440x900",
+      "es": "1440x900",
+      "fi": "1440x900",
+      "fr": "1440x900",
+      "hi": "1440x900",
+      "it": "1440x900",
+      "pl": "1440x900",
+      "pt": "1440x900",
+      "pt-br": "1440x900",
+      "ru": "1440x900",
+      "sv": "1440x900",
+      "tr": "1440x900",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
     },
     {
       "en": "1440×900",
+      "nl": "1440x900",
+      "cs": "1440x900",
+      "da": "1440x900",
+      "es": "1440x900",
+      "fi": "1440x900",
+      "fr": "1440x900",
+      "hi": "1440x900",
+      "it": "1440x900",
+      "pl": "1440x900",
+      "pt": "1440x900",
+      "pt-br": "1440x900",
+      "ru": "1440x900",
+      "sv": "1440x900",
+      "tr": "1440x900",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->13"
       ]
@@ -2694,36 +2780,120 @@
     },
     {
       "en": "1600x900",
+      "nl": "1600x900",
+      "cs": "1600x900",
+      "da": "1600x900",
+      "es": "1600x900",
+      "fi": "1600x900",
+      "fr": "1600x900",
+      "hi": "1600x900",
+      "it": "1600x900",
+      "pl": "1600x900",
+      "pt": "1600x900",
+      "pt-br": "1600x900",
+      "ru": "1600x900",
+      "sv": "1600x900",
+      "tr": "1600x900",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
     },
     {
       "en": "1600×900",
+      "nl": "1600x900",
+      "cs": "1600x900",
+      "da": "1600x900",
+      "es": "1600x900",
+      "fi": "1600x900",
+      "fr": "1600x900",
+      "hi": "1600x900",
+      "it": "1600x900",
+      "pl": "1600x900",
+      "pt": "1600x900",
+      "pt-br": "1600x900",
+      "ru": "1600x900",
+      "sv": "1600x900",
+      "tr": "1600x900",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->15"
       ]
     },
     {
       "en": "1680x1050",
+      "nl": "1680x1050",
+      "cs": "1680x1050",
+      "da": "1680x1050",
+      "es": "1680x1050",
+      "fi": "1680x1050",
+      "fr": "1680x1050",
+      "hi": "1680x1050",
+      "it": "1680x1050",
+      "pl": "1680x1050",
+      "pt": "1680x1050",
+      "pt-br": "1680x1050",
+      "ru": "1680x1050",
+      "sv": "1680x1050",
+      "tr": "1680x1050",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
     },
     {
       "en": "1680×1050",
+      "nl": "1680x1050",
+      "cs": "1680x1050",
+      "da": "1680x1050",
+      "es": "1680x1050",
+      "fi": "1680x1050",
+      "fr": "1680x1050",
+      "hi": "1680x1050",
+      "it": "1680x1050",
+      "pl": "1680x1050",
+      "pt": "1680x1050",
+      "pt-br": "1680x1050",
+      "ru": "1680x1050",
+      "sv": "1680x1050",
+      "tr": "1680x1050",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->17"
       ]
     },
     {
       "en": "1920x1080",
+      "nl": "1920x1080",
+      "cs": "1920x1080",
+      "da": "1920x1080",
+      "es": "1920x1080",
+      "fi": "1920x1080",
+      "fr": "1920x1080",
+      "hi": "1920x1080",
+      "it": "1920x1080",
+      "pl": "1920x1080",
+      "pt": "1920x1080",
+      "pt-br": "1920x1080",
+      "ru": "1920x1080",
+      "sv": "1920x1080",
+      "tr": "1920x1080",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
     },
     {
       "en": "1920×1080",
+      "nl": "1920x1080",
+      "cs": "1920x1080",
+      "da": "1920x1080",
+      "es": "1920x1080",
+      "fi": "1920x1080",
+      "fr": "1920x1080",
+      "hi": "1920x1080",
+      "it": "1920x1080",
+      "pl": "1920x1080",
+      "pt": "1920x1080",
+      "pt-br": "1920x1080",
+      "ru": "1920x1080",
+      "sv": "1920x1080",
+      "tr": "1920x1080",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->19"
       ]
@@ -3809,12 +3979,40 @@
     },
     {
       "en": "640x480",
+      "nl": "640x480",
+      "cs": "640x480",
+      "da": "640x480",
+      "es": "640x480",
+      "fi": "640x480",
+      "fr": "640x480",
+      "hi": "640x480",
+      "it": "640x480",
+      "pl": "640x480",
+      "pt": "640x480",
+      "pt-br": "640x480",
+      "ru": "640x480",
+      "sv": "640x480",
+      "tr": "640x480",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
     },
     {
       "en": "640×480",
+      "nl": "640x480",
+      "cs": "640x480",
+      "da": "640x480",
+      "es": "640x480",
+      "fi": "640x480",
+      "fr": "640x480",
+      "hi": "640x480",
+      "it": "640x480",
+      "pl": "640x480",
+      "pt": "640x480",
+      "pt-br": "640x480",
+      "ru": "640x480",
+      "sv": "640x480",
+      "tr": "640x480",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->7"
       ]
@@ -11215,6 +11413,7 @@
     },
     {
       "en": "Browser Size",
+      "nl": "Browser grootte",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->3"
       ]
@@ -11924,6 +12123,7 @@
     },
     {
       "en": "Canvas Size",
+      "nl": "Canvas grootte",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->1"
       ]
@@ -15359,12 +15559,14 @@
     },
     {
       "en": "Connect using MeshAgent remote desktop",
+      "nl": "Verbinding maken via MeshAgent extern bureaublad",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1span"
       ]
     },
     {
       "en": "Connect using RDP",
+      "nl": "Verbinding maken via RDP",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1rspan"
       ]
@@ -20659,36 +20861,42 @@
     },
     {
       "en": "Disable Cursor Settings",
+      "nl": "Cursorinstellingen uitschakelen",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->11"
       ]
     },
     {
       "en": "Disable Cursor Shadow",
+      "nl": "Cursorschaduw uitschakelen",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->9"
       ]
     },
     {
       "en": "Disable Full Window Drag",
+      "nl": "Volledig venster slepen uitschakelen",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->3"
       ]
     },
     {
       "en": "Disable Menu Animations",
+      "nl": "Menu animaties uitschakelen",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->5"
       ]
     },
     {
       "en": "Disable Theming",
+      "nl": "Thema's uitschakelen",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->7"
       ]
     },
     {
       "en": "Disable Wallpaper",
+      "nl": "Achtergrond uitschakelen",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->1"
       ]
@@ -20971,6 +21179,7 @@
     },
     {
       "en": "Display Size",
+      "nl": "Scherm grootte",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->1"
       ]
@@ -23930,12 +24139,14 @@
     },
     {
       "en": "Enable Desktop Composision",
+      "nl": "Bureaubladsamenstelling inschakelen",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->15"
       ]
     },
     {
       "en": "Enable Font Smooting",
+      "nl": "Lettertype vloeiend maken inschakelen",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->13"
       ]
@@ -45089,6 +45300,7 @@
     },
     {
       "en": "Options",
+      "nl": "Opties",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->1"
       ]
@@ -48777,6 +48989,7 @@
     },
     {
       "en": "RDP Connect",
+      "nl": "RDP verbinden",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1rspan"
       ]
@@ -48808,6 +49021,7 @@
     },
     {
       "en": "RDP Credentials",
+      "nl": "RDP inloggegevens",
       "xloc": [
         "default.handlebars->39->1205"
       ]
@@ -54283,6 +54497,7 @@
     },
     {
       "en": "Screen Size",
+      "nl": "Scherm grootte",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->5"
       ]
@@ -71133,6 +71348,7 @@
     },
     {
       "en": "browser",
+      "nl": "browser",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
@@ -71190,6 +71406,7 @@
     },
     {
       "en": "canvas",
+      "nl": "Canvas",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
@@ -72763,6 +72980,7 @@
     },
     {
       "en": "screen",
+      "nl": "scherm",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
