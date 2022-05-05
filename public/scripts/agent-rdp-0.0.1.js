@@ -83,6 +83,8 @@ var CreateRDPDesktop = function (canvasid) {
                         obj.Stop();
                         break;
                     }
+                    case 'ping': { obj.socket.send('["pong"]'); break; }
+                    case 'pong': { break; }
                 }
             } else {
                 // This is binary bitmap data, store it.
