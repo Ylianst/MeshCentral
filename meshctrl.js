@@ -2526,6 +2526,8 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
     if (lastconnect != null) { node.lastconnect = lastconnect.time; node.lastaddr = lastconnect.addr; }
     if (args.raw) { console.log(JSON.stringify(sysinfo, ' ', 2)); return; }
 
+    console.log(node);
+
     // General
     var output = {}, outputCount = 0;
     if (node.name) { output["Server Name"] = node.name; outputCount++; }
@@ -2587,6 +2589,9 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
             } else {
                 output["Last agent address"] = splitip[0]; outputCount++; // IPv4
             }
+        }
+        if ((node.agent != null) && (node.agent.tag != null)) {
+            output["Tag"] = node.agent.tag; outputCount++;
         }
         if (outputCount > 0) { info["Mesh Agent"] = output; }
     }
