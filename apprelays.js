@@ -116,7 +116,16 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                             obj.relaySocket.resume();
                         }
                     } else {
-                        if (typeof data == 'string') return; // Only process binary data, this will include ping/ping
+                        if (typeof data == 'string') {
+                            // Forward any ping/pong commands to the browser
+                            var cmd = null;
+                            try { cmd = JSON.parse(data); } catch (ex) { }
+                            if ((cmd != null) && (cmd.ctrlChannel == '102938')) {
+                                if (cmd.type == 'ping') { send(['ping']); }
+                                else if (cmd.type == 'pong') { send(['pong']); }
+                            }
+                            return;
+                        }
                         obj.wsClient._socket.pause();
                         try {
                             obj.relaySocket.write(data, function () {
@@ -280,6 +289,8 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 case 'wheel': { if (rdpClient) { rdpClient.sendWheelEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
                 case 'scancode': { if (rdpClient) { rdpClient.sendKeyEventScancode(msg[1], msg[2]); } break; }
                 case 'unicode': { if (rdpClient) { rdpClient.sendKeyEventUnicode(msg[1], msg[2]); } break; }
+                case 'ping': { try { obj.wsClient.send('{"ctrlChannel":102938,"type":"ping"}'); } catch (ex) { } break; }
+                case 'pong': { try { obj.wsClient.send('{"ctrlChannel":102938,"type":"pong"}'); } catch (ex) { } break; }
                 case 'disconnect': { obj.close(); break; }
             }
         } catch (ex) {
@@ -416,70 +427,74 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
             const protocol = (args.tlsoffload) ? 'ws' : 'wss';
             var domainadd = '';
             if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-            const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=11&auth=' + obj.xcookie; // Protocol 11 is Web-SSH
+            const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?p=11&auth=' + obj.xcookie; // Protocol 11 is Web-SSH
             parent.parent.debug('relay', 'SSH: Connection websocket to ' + url);
             obj.wsClient = new WebSocket(url, options);
             obj.wsClient.on('open', function () { parent.parent.debug('relay', 'SSH: Relay websocket open'); });
             obj.wsClient.on('message', function (data) { // Make sure to handle flow control.
-                if ((obj.relayActive == false) && (data == 'c')) {
-                    obj.relayActive = true;
+                if (obj.relayActive == false) {
+                    if ((data == 'c') || (data == 'cr')) {
+                        obj.relayActive = true;
 
-                    // Create a serial tunnel && SSH module
-                    obj.ser = new SerialTunnel();
-                    const Client = require('ssh2').Client;
-                    obj.sshClient = new Client();
-                    obj.sshClient.on('ready', function () { // Authentication was successful.
-                        // If requested, save the credentials
-                        if (obj.keep === true) saveSshCredentials();
-                        obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
-                        obj.startTime = Date.now();
+                        // Create a serial tunnel && SSH module
+                        obj.ser = new SerialTunnel();
+                        const Client = require('ssh2').Client;
+                        obj.sshClient = new Client();
+                        obj.sshClient.on('ready', function () { // Authentication was successful.
+                            // If requested, save the credentials
+                            if (obj.keep === true) saveSshCredentials();
+                            obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
+                            obj.startTime = Date.now();
 
-                        // Event start of session
-                        try {
-                            const user = parent.users[obj.cookie.userid];
-                            const username = (user != null) ? user.name : null;
-                            const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 148, msgArgs: [obj.sessionid], msg: "Started Web-SSH session \"" + obj.sessionid + "\".", protocol: PROTOCOL_WEBSSH };
-                            parent.parent.DispatchEvent(['*', obj.nodeid, user._id, obj.meshid], obj, event);
-                        } catch (ex) { console.log(ex); }
+                            // Event start of session
+                            try {
+                                const user = parent.users[obj.cookie.userid];
+                                const username = (user != null) ? user.name : null;
+                                const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 148, msgArgs: [obj.sessionid], msg: "Started Web-SSH session \"" + obj.sessionid + "\".", protocol: PROTOCOL_WEBSSH };
+                                parent.parent.DispatchEvent(['*', obj.nodeid, user._id, obj.meshid], obj, event);
+                            } catch (ex) { console.log(ex); }
 
-                        obj.sshClient.shell(function (err, stream) { // Start a remote shell
-                            if (err) { obj.close(); return; }
-                            obj.sshShell = stream;
-                            obj.sshShell.setWindow(obj.termSize.rows, obj.termSize.cols, obj.termSize.height, obj.termSize.width);
-                            obj.sshShell.on('close', function () { obj.close(); });
-                            obj.sshShell.on('data', function (data) { obj.ws.send('~' + data.toString()); });
+                            obj.sshClient.shell(function (err, stream) { // Start a remote shell
+                                if (err) { obj.close(); return; }
+                                obj.sshShell = stream;
+                                obj.sshShell.setWindow(obj.termSize.rows, obj.termSize.cols, obj.termSize.height, obj.termSize.width);
+                                obj.sshShell.on('close', function () { obj.close(); });
+                                obj.sshShell.on('data', function (data) { obj.ws.send('~' + data.toString()); });
+                            });
+                            obj.ws.send(JSON.stringify({ action: 'connected' }));
                         });
-                        obj.ws.send(JSON.stringify({ action: 'connected' }));
-                    });
-                    obj.sshClient.on('error', function (err) {
-                        if (err.level == 'client-authentication') { try { obj.ws.send(JSON.stringify({ action: 'autherror' })); } catch (ex) { } }
-                        if (err.level == 'client-timeout') { try { obj.ws.send(JSON.stringify({ action: 'sessiontimeout' })); } catch (ex) { } }
-                        obj.close();
-                    });
+                        obj.sshClient.on('error', function (err) {
+                            if (err.level == 'client-authentication') { try { obj.ws.send(JSON.stringify({ action: 'autherror' })); } catch (ex) { } }
+                            if (err.level == 'client-timeout') { try { obj.ws.send(JSON.stringify({ action: 'sessiontimeout' })); } catch (ex) { } }
+                            obj.close();
+                        });
 
-                    // Setup the serial tunnel, SSH ---> Relay WS
-                    obj.ser.forwardwrite = function (data) { if ((data.length > 0) && (obj.wsClient != null)) { try { obj.wsClient.send(data); } catch (ex) { } } };
+                        // Setup the serial tunnel, SSH ---> Relay WS
+                        obj.ser.forwardwrite = function (data) { if ((data.length > 0) && (obj.wsClient != null)) { try { obj.wsClient.send(data); } catch (ex) { } } };
 
-                    // Connect the SSH module to the serial tunnel
-                    const connectionOptions = { sock: obj.ser }
-                    if (typeof obj.username == 'string') { connectionOptions.username = obj.username; }
-                    if (typeof obj.password == 'string') { connectionOptions.password = obj.password; }
-                    if (typeof obj.privateKey == 'string') { connectionOptions.privateKey = obj.privateKey; }
-                    if (typeof obj.privateKeyPass == 'string') { connectionOptions.passphrase = obj.privateKeyPass; }
-                    try {
-                        obj.sshClient.connect(connectionOptions);
-                    } catch (ex) {
-                        // Exception, this is generally because we did not provide proper credentials. Ask again.
-                        obj.relayActive = false;
-                        delete obj.sshClient;
-                        delete obj.ser.forwardwrite;
-                        obj.close();
-                        return;
+                        // Connect the SSH module to the serial tunnel
+                        const connectionOptions = { sock: obj.ser }
+                        if (typeof obj.username == 'string') { connectionOptions.username = obj.username; }
+                        if (typeof obj.password == 'string') { connectionOptions.password = obj.password; }
+                        if (typeof obj.privateKey == 'string') { connectionOptions.privateKey = obj.privateKey; }
+                        if (typeof obj.privateKeyPass == 'string') { connectionOptions.passphrase = obj.privateKeyPass; }
+                        try {
+                            obj.sshClient.connect(connectionOptions);
+                        } catch (ex) {
+                            // Exception, this is generally because we did not provide proper credentials. Ask again.
+                            obj.relayActive = false;
+                            delete obj.sshClient;
+                            delete obj.ser.forwardwrite;
+                            obj.close();
+                            return;
+                        }
+
+                        // We are all set, start receiving data
+                        ws._socket.resume();
                     }
-
-                    // We are all set, start receiving data
-                    ws._socket.resume();
                 } else {
+                    if (typeof data == 'string') return; // Only process binary data, this will include ping/ping
+
                     // Relay WS --> SSH
                     if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                 }
@@ -708,71 +723,75 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
             const protocol = (args.tlsoffload) ? 'ws' : 'wss';
             var domainadd = '';
             if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-            const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=11&auth=' + authCookie // Protocol 11 is Web-SSH
+            const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?p=11&auth=' + authCookie // Protocol 11 is Web-SSH
             parent.parent.debug('relay', 'SSH: Connection websocket to ' + url);
             obj.wsClient = new WebSocket(url, options);
             obj.wsClient.on('open', function () { parent.parent.debug('relay', 'SSH: Relay websocket open'); });
             obj.wsClient.on('message', function (data) { // Make sure to handle flow control.
-                if ((obj.relayActive == false) && (data == 'c')) {
-                    obj.relayActive = true;
+                if (obj.relayActive == false) {
+                    if ((data == 'c') || (data == 'cr')) {
+                        obj.relayActive = true;
 
-                    // Create a serial tunnel && SSH module
-                    obj.ser = new SerialTunnel();
-                    const Client = require('ssh2').Client;
-                    obj.sshClient = new Client();
-                    obj.sshClient.on('ready', function () { // Authentication was successful.
-                        // If requested, save the credentials
-                        if (obj.keep === true) saveSshCredentials();
-                        obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
-                        obj.startTime = Date.now();
+                        // Create a serial tunnel && SSH module
+                        obj.ser = new SerialTunnel();
+                        const Client = require('ssh2').Client;
+                        obj.sshClient = new Client();
+                        obj.sshClient.on('ready', function () { // Authentication was successful.
+                            // If requested, save the credentials
+                            if (obj.keep === true) saveSshCredentials();
+                            obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
+                            obj.startTime = Date.now();
 
-                        try {
-                            // Event start of session
-                            const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 148, msgArgs: [obj.sessionid], msg: "Started Web-SSH session \"" + obj.sessionid + "\".", protocol: PROTOCOL_WEBSSH };
-                            parent.parent.DispatchEvent(['*', obj.nodeid, user._id, obj.meshid], obj, event);
-                        } catch (ex) {
-                            console.log(ex);
-                        }
+                            try {
+                                // Event start of session
+                                const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 148, msgArgs: [obj.sessionid], msg: "Started Web-SSH session \"" + obj.sessionid + "\".", protocol: PROTOCOL_WEBSSH };
+                                parent.parent.DispatchEvent(['*', obj.nodeid, user._id, obj.meshid], obj, event);
+                            } catch (ex) {
+                                console.log(ex);
+                            }
 
-                        obj.sshClient.shell(function (err, stream) { // Start a remote shell
-                            if (err) { obj.close(); return; }
-                            obj.sshShell = stream;
-                            obj.sshShell.setWindow(obj.termSize.rows, obj.termSize.cols, obj.termSize.height, obj.termSize.width);
-                            obj.sshShell.on('close', function () { obj.close(); });
-                            obj.sshShell.on('data', function (data) { obj.ws.send('~' + data.toString()); });
+                            obj.sshClient.shell(function (err, stream) { // Start a remote shell
+                                if (err) { obj.close(); return; }
+                                obj.sshShell = stream;
+                                obj.sshShell.setWindow(obj.termSize.rows, obj.termSize.cols, obj.termSize.height, obj.termSize.width);
+                                obj.sshShell.on('close', function () { obj.close(); });
+                                obj.sshShell.on('data', function (data) { obj.ws.send('~' + data.toString()); });
+                            });
+
+                            obj.connected = true;
+                            obj.ws.send('c');
+                        });
+                        obj.sshClient.on('error', function (err) {
+                            if (err.level == 'client-authentication') { try { obj.ws.send(JSON.stringify({ action: 'autherror' })); } catch (ex) { } }
+                            if (err.level == 'client-timeout') { try { obj.ws.send(JSON.stringify({ action: 'sessiontimeout' })); } catch (ex) { } }
+                            obj.close();
                         });
 
-                        obj.connected = true;
-                        obj.ws.send('c');
-                    });
-                    obj.sshClient.on('error', function (err) {
-                        if (err.level == 'client-authentication') { try { obj.ws.send(JSON.stringify({ action: 'autherror' })); } catch (ex) { } }
-                        if (err.level == 'client-timeout') { try { obj.ws.send(JSON.stringify({ action: 'sessiontimeout' })); } catch (ex) { } }
-                        obj.close();
-                    });
+                        // Setup the serial tunnel, SSH ---> Relay WS
+                        obj.ser.forwardwrite = function (data) { if ((data.length > 0) && (obj.wsClient != null)) { try { obj.wsClient.send(data); } catch (ex) { } } };
 
-                    // Setup the serial tunnel, SSH ---> Relay WS
-                    obj.ser.forwardwrite = function (data) { if ((data.length > 0) && (obj.wsClient != null)) { try { obj.wsClient.send(data); } catch (ex) { } } };
+                        // Connect the SSH module to the serial tunnel
+                        const connectionOptions = { sock: obj.ser }
+                        if (typeof obj.username == 'string') { connectionOptions.username = obj.username; }
+                        if (typeof obj.password == 'string') { connectionOptions.password = obj.password; }
+                        if (typeof obj.privateKey == 'string') { connectionOptions.privateKey = obj.privateKey; }
+                        if (typeof obj.privateKeyPass == 'string') { connectionOptions.passphrase = obj.privateKeyPass; }
+                        try {
+                            obj.sshClient.connect(connectionOptions);
+                        } catch (ex) {
+                            // Exception, this is generally because we did not provide proper credentials. Ask again.
+                            obj.relayActive = false;
+                            delete obj.sshClient;
+                            delete obj.ser.forwardwrite;
+                            try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
+                        }
 
-                    // Connect the SSH module to the serial tunnel
-                    const connectionOptions = { sock: obj.ser }
-                    if (typeof obj.username == 'string') { connectionOptions.username = obj.username; }
-                    if (typeof obj.password == 'string') { connectionOptions.password = obj.password; }
-                    if (typeof obj.privateKey == 'string') { connectionOptions.privateKey = obj.privateKey; }
-                    if (typeof obj.privateKeyPass == 'string') { connectionOptions.passphrase = obj.privateKeyPass; }
-                    try {
-                        obj.sshClient.connect(connectionOptions);
-                    } catch (ex) {
-                        // Exception, this is generally because we did not provide proper credentials. Ask again.
-                        obj.relayActive = false;
-                        delete obj.sshClient;
-                        delete obj.ser.forwardwrite;
-                        try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
+                        // We are all set, start receiving data
+                        ws._socket.resume();
                     }
-
-                    // We are all set, start receiving data
-                    ws._socket.resume();
                 } else {
+                    if (typeof data == 'string') return; // Only process binary data, this will include ping/ping
+
                     // Relay WS --> SSH
                     if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                 }
@@ -1015,65 +1034,69 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
             const protocol = (args.tlsoffload) ? 'ws' : 'wss';
             var domainadd = '';
             if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-            const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=13&auth=' + authCookie // Protocol 13 is Web-SSH-Files
+            const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?p=13&auth=' + authCookie // Protocol 13 is Web-SSH-Files
             parent.parent.debug('relay', 'SSH: Connection websocket to ' + url);
             obj.wsClient = new WebSocket(url, options);
             obj.wsClient.on('open', function () { parent.parent.debug('relay', 'SSH: Relay websocket open'); });
             obj.wsClient.on('message', function (data) { // Make sure to handle flow control.
-                if ((obj.relayActive == false) && (data == 'c')) {
-                    obj.relayActive = true;
+                if (obj.relayActive == false) {
+                    if ((data == 'c') || (data == 'cr')) {
+                        obj.relayActive = true;
 
-                    // Create a serial tunnel && SSH module
-                    obj.ser = new SerialTunnel();
-                    const Client = require('ssh2').Client;
-                    obj.sshClient = new Client();
-                    obj.sshClient.on('ready', function () { // Authentication was successful.
-                        // If requested, save the credentials
-                        if (obj.keep === true) saveSshCredentials();
-                        obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
-                        obj.startTime = Date.now();
+                        // Create a serial tunnel && SSH module
+                        obj.ser = new SerialTunnel();
+                        const Client = require('ssh2').Client;
+                        obj.sshClient = new Client();
+                        obj.sshClient.on('ready', function () { // Authentication was successful.
+                            // If requested, save the credentials
+                            if (obj.keep === true) saveSshCredentials();
+                            obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
+                            obj.startTime = Date.now();
 
-                        // Event start of session
-                        try {
-                            const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 149, msgArgs: [obj.sessionid], msg: "Started Web-SFTP session \"" + obj.sessionid + "\".", protocol: PROTOCOL_WEBSFTP };
-                            parent.parent.DispatchEvent(['*', obj.nodeid, user._id, obj.meshid], obj, event);
-                        } catch (ex) { console.log(ex); }
+                            // Event start of session
+                            try {
+                                const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 149, msgArgs: [obj.sessionid], msg: "Started Web-SFTP session \"" + obj.sessionid + "\".", protocol: PROTOCOL_WEBSFTP };
+                                parent.parent.DispatchEvent(['*', obj.nodeid, user._id, obj.meshid], obj, event);
+                            } catch (ex) { console.log(ex); }
 
-                        obj.sshClient.sftp(function(err, sftp) {
-                            if (err) { obj.close(); return; }
-                            obj.connected = true;
-                            obj.sftp = sftp;
-                            obj.ws.send('c');
+                            obj.sshClient.sftp(function (err, sftp) {
+                                if (err) { obj.close(); return; }
+                                obj.connected = true;
+                                obj.sftp = sftp;
+                                obj.ws.send('c');
+                            });
                         });
-                    });
-                    obj.sshClient.on('error', function (err) {
-                        if (err.level == 'client-authentication') { try { obj.ws.send(JSON.stringify({ action: 'autherror' })); } catch (ex) { } }
-                        if (err.level == 'client-timeout') { try { obj.ws.send(JSON.stringify({ action: 'sessiontimeout' })); } catch (ex) { } }
-                        obj.close();
-                    });
+                        obj.sshClient.on('error', function (err) {
+                            if (err.level == 'client-authentication') { try { obj.ws.send(JSON.stringify({ action: 'autherror' })); } catch (ex) { } }
+                            if (err.level == 'client-timeout') { try { obj.ws.send(JSON.stringify({ action: 'sessiontimeout' })); } catch (ex) { } }
+                            obj.close();
+                        });
 
-                    // Setup the serial tunnel, SSH ---> Relay WS
-                    obj.ser.forwardwrite = function (data) { if ((data.length > 0) && (obj.wsClient != null)) { try { obj.wsClient.send(data); } catch (ex) { } } };
+                        // Setup the serial tunnel, SSH ---> Relay WS
+                        obj.ser.forwardwrite = function (data) { if ((data.length > 0) && (obj.wsClient != null)) { try { obj.wsClient.send(data); } catch (ex) { } } };
 
-                    // Connect the SSH module to the serial tunnel
-                    const connectionOptions = { sock: obj.ser }
-                    if (typeof obj.username == 'string') { connectionOptions.username = obj.username; }
-                    if (typeof obj.password == 'string') { connectionOptions.password = obj.password; }
-                    if (typeof obj.privateKey == 'string') { connectionOptions.privateKey = obj.privateKey; }
-                    if (typeof obj.privateKeyPass == 'string') { connectionOptions.passphrase = obj.privateKeyPass; }
-                    try {
-                        obj.sshClient.connect(connectionOptions);
-                    } catch (ex) {
-                        // Exception, this is generally because we did not provide proper credentials. Ask again.
-                        obj.relayActive = false;
-                        delete obj.sshClient;
-                        delete obj.ser.forwardwrite;
-                        try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
+                        // Connect the SSH module to the serial tunnel
+                        const connectionOptions = { sock: obj.ser }
+                        if (typeof obj.username == 'string') { connectionOptions.username = obj.username; }
+                        if (typeof obj.password == 'string') { connectionOptions.password = obj.password; }
+                        if (typeof obj.privateKey == 'string') { connectionOptions.privateKey = obj.privateKey; }
+                        if (typeof obj.privateKeyPass == 'string') { connectionOptions.passphrase = obj.privateKeyPass; }
+                        try {
+                            obj.sshClient.connect(connectionOptions);
+                        } catch (ex) {
+                            // Exception, this is generally because we did not provide proper credentials. Ask again.
+                            obj.relayActive = false;
+                            delete obj.sshClient;
+                            delete obj.ser.forwardwrite;
+                            try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
+                        }
+
+                        // We are all set, start receiving data
+                        ws._socket.resume();
                     }
-
-                    // We are all set, start receiving data
-                    ws._socket.resume();
                 } else {
+                    if (typeof data == 'string') return; // Only process binary data, this will include ping/ping
+
                     // Relay WS --> SSH
                     if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                 }
