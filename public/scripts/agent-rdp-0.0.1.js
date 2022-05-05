@@ -161,6 +161,17 @@ var CreateRDPDesktop = function (canvasid) {
         e.preventDefault();
         return false;
     }
+    obj.m.mousewheel = function (e) {
+        if (!obj.socket || (obj.State != 3)) return;
+        var m = getMousePosition(e);
+        if ((m.x < 0) || (m.y < 0) || (m.x > obj.ScreenWidth) || (m.y > obj.ScreenHeight)) return;
+        if (obj.mouseNagleTimer != null) { clearTimeout(obj.mouseNagleTimer); obj.mouseNagleTimer = null; }
+        var delta = 0;
+        if (e.detail) { delta = (e.detail * 120); } else if (e.wheelDelta) { delta = (e.wheelDelta * 3); }
+        if (delta != 0) { obj.socket.send(JSON.stringify(['wheel', m.x, m.y, delta, false, false])); }
+        e.preventDefault();
+        return false;
+    }
     obj.m.mousedblclick = function () { }
     obj.m.handleKeyPress = function () { }
     obj.m.setRotation = function () { }
