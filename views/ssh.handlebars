@@ -186,7 +186,10 @@
             socket.onmessage = function (data) {
                 if (typeof data.data != 'string') return;
                 if (data.data[0] == '{') {
-                    var json = JSON.parse(data.data);
+                    var json = null;
+                    try { json = JSON.parse(data.data); } catch (ex) { }
+                    if ((json == null) || (typeof json != 'object')) return;
+                    if ((json.ctrlChannel == 102938) && (json.type == 'ping')) { socket.send('{"ctrlChannel":"102938","type":"pong"}'); return; }
                     switch (json.action) {
                         case 'connected': { state = 3; updateState(); term.focus(); break; }
                         case 'sshauth': {

@@ -212,9 +212,11 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
 
     // When data is received from the web socket
     // RDP default port is 3389
-    ws.on('message', function (msg) {
+    ws.on('message', function (data) {
         try {
-            msg = JSON.parse(msg);
+            var msg = null;
+            try { msg = JSON.parse(data); } catch (ex) { }
+            if ((msg == null) || (typeof msg != 'object')) return;
             switch (msg[0]) {
                 case 'infos': {
                     obj.infos = msg[1];
@@ -493,7 +495,13 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                         ws._socket.resume();
                     }
                 } else {
-                    if (typeof data == 'string') return; // Only process binary data, this will include ping/ping
+                    if (typeof data == 'string') {
+                        // Forward any ping/pong commands to the browser
+                        var cmd = null;
+                        try { cmd = JSON.parse(data); } catch (ex) { }
+                        if ((cmd != null) && (cmd.ctrlChannel == '102938') && ((cmd.type == 'ping') || (cmd.type == 'pong'))) { obj.ws.send(data); }
+                        return;
+                    }
 
                     // Relay WS --> SSH
                     if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
@@ -508,12 +516,15 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
 
     // When data is received from the web socket
     // SSH default port is 22
-    ws.on('message', function (msg) {
+    ws.on('message', function (data) {
         try {
-            if (typeof msg != 'string') return;
-            if (msg[0] == '{') {
+            if (typeof data != 'string') return;
+            if (data[0] == '{') {
                 // Control data
-                msg = JSON.parse(msg);
+                var msg = null;
+                try { msg = JSON.parse(data); } catch (ex) { }
+                if ((msg == null) || (typeof msg != 'object')) return;
+                if ((msg.ctrlChannel == '102938') && ((msg.type == 'ping') || (msg.type == 'pong'))) { try { obj.wsClient.send(data); } catch (ex) { } return; }
                 if (typeof msg.action != 'string') return;
                 switch (msg.action) {
                     case 'connect': {
@@ -563,9 +574,9 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                         break;
                     }
                 }
-            } else if (msg[0] == '~') {
+            } else if (data[0] == '~') {
                 // Terminal data
-                if (obj.sshShell != null) { obj.sshShell.write(msg.substring(1)); }
+                if (obj.sshShell != null) { obj.sshShell.write(data.substring(1)); }
             }
         } catch (ex) { obj.close(); }
     });
@@ -790,7 +801,13 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                         ws._socket.resume();
                     }
                 } else {
-                    if (typeof data == 'string') return; // Only process binary data, this will include ping/ping
+                    if (typeof data == 'string') {
+                        // Forward any ping/pong commands to the browser
+                        var cmd = null;
+                        try { cmd = JSON.parse(data); } catch (ex) { }
+                        if ((cmd != null) && (cmd.ctrlChannel == '102938') && ((cmd.type == 'ping') || (cmd.type == 'pong'))) { try { obj.ws.send(data); } catch (ex) { console.log(ex); } }
+                        return;
+                    }
 
                     // Relay WS --> SSH
                     if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
@@ -808,13 +825,15 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
 
     // When data is received from the web socket
     // SSH default port is 22
-    ws.on('message', function (msg) {
+    ws.on('message', function (data) {
         try {
-            if (typeof msg != 'string') return;
-            if (msg[0] == '{') {
+            if (typeof data != 'string') return;
+            if (data[0] == '{') {
                 // Control data
-                msg = JSON.parse(msg);
-                if (typeof msg.action != 'string') return;
+                var msg = null;
+                try { msg = JSON.parse(data); } catch (ex) { }
+                if ((msg == null) || (typeof msg != 'object')) return;
+                if ((msg.ctrlChannel == '102938') && ((msg.type == 'ping') || (msg.type == 'pong'))) { try { obj.wsClient.send(data); } catch (ex) { } return; }
                 switch (msg.action) {
                     case 'sshauth': {
                         // Verify inputs
@@ -866,9 +885,9 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                         break;
                     }
                 }
-            } else if (msg[0] == '~') {
+            } else if (data[0] == '~') {
                 // Terminal data
-                if (obj.sshShell != null) { obj.sshShell.write(msg.substring(1)); }
+                if (obj.sshShell != null) { obj.sshShell.write(data.substring(1)); }
             }
         } catch (ex) { obj.close(); }
     });
@@ -1095,7 +1114,13 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         ws._socket.resume();
                     }
                 } else {
-                    if (typeof data == 'string') return; // Only process binary data, this will include ping/ping
+                    if (typeof data == 'string') {
+                        // Forward any ping/pong commands to the browser
+                        var cmd = null;
+                        try { cmd = JSON.parse(data); } catch (ex) { }
+                        if ((cmd != null) && (cmd.ctrlChannel == '102938') && ((cmd.type == 'ping') || (cmd.type == 'pong'))) { obj.ws.send(data); }
+                        return;
+                    }
 
                     // Relay WS --> SSH
                     if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
@@ -1113,15 +1138,15 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
 
     // When data is received from the web socket
     // SSH default port is 22
-    ws.on('message', function (msg) {
+    ws.on('message', function (data) {
         //if ((obj.firstMessage === true) && (msg != 5)) { obj.close(); return; } else { delete obj.firstMessage; }
         try {
-            if (typeof msg != 'string') {
-                if (msg[0] == 123) {
-                    msg = msg.toString();
+            if (typeof data != 'string') {
+                if (data[0] == 123) {
+                    data = data.toString();
                 } else if ((obj.sftp != null) && (obj.uploadHandle != null)) {
-                    const off = (msg[0] == 0) ? 1 : 0;
-                    obj.sftp.write(obj.uploadHandle, msg, off, msg.length - off, obj.uploadPosition, function (err) {
+                    const off = (data[0] == 0) ? 1 : 0;
+                    obj.sftp.write(obj.uploadHandle, data, off, data.length - off, obj.uploadPosition, function (err) {
                         if (err != null) {
                             obj.sftp.close(obj.uploadHandle, function () { });
                             try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'uploaddone', reqid: obj.uploadReqid }))) } catch (ex) { }
@@ -1134,13 +1159,16 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                             try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'uploadack', reqid: obj.uploadReqid }))) } catch (ex) { }
                         }
                     });
-                    obj.uploadPosition += (msg.length - off);
+                    obj.uploadPosition += (data.length - off);
                     return;
                 }
             }
-            if (msg[0] == '{') {
+            if (data[0] == '{') {
                 // Control data
-                msg = JSON.parse(msg);
+                var msg = null;
+                try { msg = JSON.parse(data); } catch (ex) { }
+                if ((msg == null) || (typeof msg != 'object')) return;
+                if ((msg.ctrlChannel == '102938') && ((msg.type == 'ping') || (msg.type == 'pong'))) { try { obj.wsClient.send(data); } catch (ex) { } return; }
                 if (typeof msg.action != 'string') return;
                 switch (msg.action) {
                     case 'ls': {
