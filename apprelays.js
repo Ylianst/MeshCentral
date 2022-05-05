@@ -73,8 +73,8 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
         if (obj.wsClient) { obj.wsClient.close(); delete obj.wsClient; }
         if (obj.tcpServer) { obj.tcpServer.close(); delete obj.tcpServer; }
         if (rdpClient) { rdpClient.close(); rdpClient = null; }
-        if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { ws._socket._parent.end(); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (ex) { console.log(ex); } } // Soft close, close the websocket
+        if (arg == 2) { try { ws._socket._parent.end(); } catch (ex) { console.log(ex); } } // Hard close, close the TCP socket
         obj.ws.removeAllListeners();
         obj.relayActive = false;
 
@@ -105,16 +105,24 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 const protocol = (args.tlsoffload) ? 'ws' : 'wss';
                 var domainadd = '';
                 if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-                const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?noping=1&p=10&auth=' + obj.infos.ip;  // Protocol 10 is Web-RDP
+                const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?p=10&auth=' + obj.infos.ip;  // Protocol 10 is Web-RDP
                 parent.parent.debug('relay', 'RDP: Connection websocket to ' + url);
                 obj.wsClient = new WebSocket(url, options);
                 obj.wsClient.on('open', function () { parent.parent.debug('relay', 'RDP: Relay websocket open'); });
                 obj.wsClient.on('message', function (data) { // Make sure to handle flow control.
-                    if ((obj.relayActive == false) && (data == 'c')) {
-                        obj.relayActive = true; obj.relaySocket.resume();
+                    if (obj.relayActive == false) {
+                        if ((data == 'c') || (data == 'cr')) {
+                            obj.relayActive = true;
+                            obj.relaySocket.resume();
+                        }
                     } else {
+                        if (typeof data == 'string') return; // Only process binary data, this will include ping/ping
                         obj.wsClient._socket.pause();
-                        try { obj.relaySocket.write(data, function () { try { obj.wsClient._socket.resume(); } catch (ex) { } }); } catch (ex) { obj.close(); }
+                        try {
+                            obj.relaySocket.write(data, function () {
+                                try { obj.wsClient._socket.resume(); } catch (ex) { console.log(ex); }
+                            });
+                        } catch (ex) { console.log(ex); obj.close(); }
                     }
                 });
                 obj.wsClient.on('close', function () { parent.parent.debug('relay', 'RDP: Relay websocket closed'); obj.close(); });
