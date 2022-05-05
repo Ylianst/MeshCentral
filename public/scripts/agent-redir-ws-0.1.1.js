@@ -109,6 +109,8 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
             } else if (controlMsg.type == 'webrtc2') {
                 // TODO: Resume/Start sending data over WebRTC
             }
+        } else if (controlMsg.type == 'ping') { // if we get a ping, respond with a pong.
+            obj.sendCtrlMsg('{"ctrlChannel":"102938","type":"pong"}');
         }
     }
 
