@@ -8289,7 +8289,7 @@
             // Show the right buttons
             QV('disconnectbutton1span', (deskState != 0));
             QV('connectbutton1span', (deskState == 0) && ((rights & 8) || (rights & 256)) && (currentNode.agent != null) && (currentNode.agent.caps & 1));
-            QV('connectbutton1rspan', ((features & 0x40000000) == 0) && (deskState == 0) && (rights & 8) && (currentNode.agent != null) && ((currentNode.agent.id == 4) || (currentNode.agent.id == 5)));
+            QV('connectbutton1rspan', ((features & 0x40000000) == 0) && (deskState == 0) && (rights & 8) && (currentNode.agent != null) && ((currentNode.agent.id == 3) || (currentNode.agent.id == 4)));
             if (mtype == 1) {
                 QV('connectbutton1hspan',
                     (deskState == 0) &&
