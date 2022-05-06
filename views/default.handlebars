@@ -8330,7 +8330,7 @@
             QV('DeskClip', (inputAllowed) && (currentNode.agent) && ((features2 & 0x1800) != 0x1800) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
             QE('DeskESC', (deskState == 3) && (desktop.contype != 4));
             QV('DeskESC', browserfullscreen && inputAllowed);
-            QE('DeskType', (deskState == 3) && (desktop.contype != 4));
+            QE('DeskType', (deskState == 3)); //  && (desktop.contype != 4)
             QV('DeskType', inputAllowed);
             QE('DeskWD', (deskState == 3) && (desktop.contype != 4));
             QV('DeskWD', inputAllowed);
@@ -9260,6 +9260,9 @@
                     if (desktop) { desktop.m.sendkey(key[0], key[1]); }
                     if ((desktop == null) || (AmtDeskTypeContent.length == 0)) { clearInterval(AmtDeskTypeTimer); AmtDeskTypeContent = null; }
                 }, 10);
+            } else if (desktop.contype == 4) {
+                // RDP
+                desktop.m.SendStringUnicode(txt);
             } else {
                 // MeshAgent
                 if (desktopsettings.remotekeymap !== true) {

@@ -291,6 +291,21 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 case 'wheel': { if (rdpClient) { rdpClient.sendWheelEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
                 case 'scancode': { if (rdpClient) { rdpClient.sendKeyEventScancode(msg[1], msg[2]); } break; }
                 case 'unicode': { if (rdpClient) { rdpClient.sendKeyEventUnicode(msg[1], msg[2]); } break; }
+                case 'utype': {
+                    if (!rdpClient) return;
+                    obj.utype = msg[1];
+                    if (obj.utypetimer == null) {
+                        obj.utypetimer = setInterval(function () {
+                            if ((obj.utype == null) || (obj.utype.length == 0)) { clearInterval(obj.utypetimer); obj.utypetimer = null; return; }
+                            var c = obj.utype.charCodeAt(0);
+                            obj.utype = obj.utype.substring(1);
+                            if (c == 13) return;
+                            if (c == 10) { rdpClient.sendKeyEventScancode(28, true); rdpClient.sendKeyEventScancode(28, false); }
+                            else { rdpClient.sendKeyEventUnicode(c, true); rdpClient.sendKeyEventUnicode(c, false); }
+                        }, 5);
+                    }
+                    break;
+                }
                 case 'ping': { try { obj.wsClient.send('{"ctrlChannel":102938,"type":"ping"}'); } catch (ex) { } break; }
                 case 'pong': { try { obj.wsClient.send('{"ctrlChannel":102938,"type":"pong"}'); } catch (ex) { } break; }
                 case 'disconnect': { obj.close(); break; }
