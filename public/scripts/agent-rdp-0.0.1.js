@@ -174,9 +174,13 @@ var CreateRDPDesktop = function (canvasid) {
         e.preventDefault();
         return false;
     }
+    obj.m.SendStringUnicode = function (txt) {
+        if (!obj.socket || (obj.State != 3)) return;
+        obj.socket.send(JSON.stringify(['utype', txt]));
+    }
     obj.m.mousedblclick = function () { }
     obj.m.handleKeyPress = function () { }
     obj.m.setRotation = function () { }
-    
+
     return obj;
 }
