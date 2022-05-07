@@ -34,6 +34,29 @@ const PROTOCOL_WEBSSH = 202;
 const PROTOCOL_WEBSFTP = 203;
 const PROTOCOL_WEBVNC = 204;
 
+// Mesh Rights
+const MESHRIGHT_EDITMESH = 0x00000001; // 1
+const MESHRIGHT_MANAGEUSERS = 0x00000002; // 2
+const MESHRIGHT_MANAGECOMPUTERS = 0x00000004; // 4
+const MESHRIGHT_REMOTECONTROL = 0x00000008; // 8
+const MESHRIGHT_AGENTCONSOLE = 0x00000010; // 16
+const MESHRIGHT_SERVERFILES = 0x00000020; // 32
+const MESHRIGHT_WAKEDEVICE = 0x00000040; // 64
+const MESHRIGHT_SETNOTES = 0x00000080; // 128
+const MESHRIGHT_REMOTEVIEWONLY = 0x00000100; // 256
+const MESHRIGHT_NOTERMINAL = 0x00000200; // 512
+const MESHRIGHT_NOFILES = 0x00000400; // 1024
+const MESHRIGHT_NOAMT = 0x00000800; // 2048
+const MESHRIGHT_DESKLIMITEDINPUT = 0x00001000; // 4096
+const MESHRIGHT_LIMITEVENTS = 0x00002000; // 8192
+const MESHRIGHT_CHATNOTIFY = 0x00004000; // 16384
+const MESHRIGHT_UNINSTALL = 0x00008000; // 32768
+const MESHRIGHT_NODESKTOP = 0x00010000; // 65536
+const MESHRIGHT_REMOTECOMMAND = 0x00020000; // 131072
+const MESHRIGHT_RESETOFF = 0x00040000; // 262144
+const MESHRIGHT_GUESTSHARING = 0x00080000; // 524288
+const MESHRIGHT_DEVICEDETAILS = 0x00100000; // 1048576
+const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
 // Construct a MSTSC Relay object, called upon connection
 // This implementation does not have TLS support
@@ -233,11 +256,12 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                         obj.userid = obj.cookie.userid;
                     }
 
-                    // Get node
-                    parent.parent.db.Get(obj.nodeid, function (err, nodes) {
+                    // Get node and rights
+                    parent.GetNodeWithRights(domain, obj.userid, obj.nodeid, function (node, rights, visible) {
                         if (obj.ws == null) return; // obj has been cleaned up, just exit.
-                        if ((err != null) || (nodes == null) || (nodes.length != 1)) { obj.close(); return; }
-                        const node = nodes[0];
+                        if ((node == null) || (visible == false) || ((rights & MESHRIGHT_REMOTECONTROL) == 0)) { obj.close(); return; }
+                        if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_REMOTEVIEWONLY) != 0)) { obj.viewonly = true; }
+                        if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_DESKLIMITEDINPUT) != 0)) { obj.limitedinput = true; }
                         obj.mtype = node.mtype; // Store the device group type
                         obj.meshid = node.meshid; // Store the MeshID
 
@@ -287,10 +311,21 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                     });
                     break;
                 }
-                case 'mouse': { if (rdpClient) { rdpClient.sendPointerEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
-                case 'wheel': { if (rdpClient) { rdpClient.sendWheelEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
-                case 'scancode': { if (rdpClient) { rdpClient.sendKeyEventScancode(msg[1], msg[2]); } break; }
-                case 'unicode': { if (rdpClient) { rdpClient.sendKeyEventUnicode(msg[1], msg[2]); } break; }
+                case 'mouse': { if (rdpClient && (obj.viewonly != true)) { rdpClient.sendPointerEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
+                case 'wheel': { if (rdpClient && (obj.viewonly != true)) { rdpClient.sendWheelEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
+                case 'scancode': {
+                    if (obj.limitedinput == true) { // Limit keyboard input
+                        var ok = false, k = msg[1];
+                        if ((k >= 2) && (k <= 11)) { ok = true; } // Number keys 1 to 0
+                        if ((k >= 16) && (k <= 25)) { ok = true; } // First keyboard row
+                        if ((k >= 30) && (k <= 38)) { ok = true; } // Second keyboard row
+                        if ((k >= 44) && (k <= 50)) { ok = true; } // Third keyboard row
+                        if ((k == 14) || (k == 28)) { ok = true; } // Enter and backspace
+                        if (ok == false) return;
+                    }
+                    if (rdpClient && (obj.viewonly != true)) { rdpClient.sendKeyEventScancode(msg[1], msg[2]); } break;
+                }
+                case 'unicode': { if (rdpClient && (obj.viewonly != true)) { rdpClient.sendKeyEventUnicode(msg[1], msg[2]); } break; }
                 case 'utype': {
                     if (!rdpClient) return;
                     obj.utype = msg[1];

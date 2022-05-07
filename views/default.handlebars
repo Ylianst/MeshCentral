@@ -8330,12 +8330,12 @@
             QV('DeskClip', (inputAllowed) && (currentNode.agent) && ((features2 & 0x1800) != 0x1800) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
             QE('DeskESC', (deskState == 3) && (desktop.contype != 4));
             QV('DeskESC', browserfullscreen && inputAllowed);
-            QE('DeskType', (deskState == 3)); //  && (desktop.contype != 4)
+            QE('DeskType', deskState == 3);
             QV('DeskType', inputAllowed);
-            QE('DeskWD', (deskState == 3) && (desktop.contype != 4));
+            QE('DeskWD', deskState == 3);
             QV('DeskWD', inputAllowed);
             QV('deskkeys', inputAllowed);
-            QE('deskkeys', (desktop != null) && (desktop.contype != 4));
+            QE('deskkeys', desktop != null);
             QV('DeskTimer', deskState == 3);
 
             // Enable browser clipboard read if supported

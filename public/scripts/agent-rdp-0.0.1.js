@@ -7,7 +7,7 @@
 // Construct a RDP remote desktop object
 var CreateRDPDesktop = function (canvasid) {
     var obj = {}
-    obj.m = {};
+    obj.m = { KeyAction: { "NONE": 0, "DOWN": 1, "UP": 2, "SCROLL": 3, "EXUP": 4, "EXDOWN": 5, "DBLCLICK": 6 } };
     obj.State = 0;
     obj.canvas = Q(canvasid);
     obj.CanvasId = canvasid;
@@ -153,12 +153,14 @@ var CreateRDPDesktop = function (canvasid) {
     }
     obj.m.handleKeyUp = function (e) {
         if (!obj.socket || (obj.State != 3)) return;
+        console.log('handleKeyUp', Mstsc.scancode(e));
         obj.socket.send(JSON.stringify(['scancode', Mstsc.scancode(e), false]));
         e.preventDefault();
         return false;
     }
     obj.m.handleKeyDown = function (e) {
         if (!obj.socket || (obj.State != 3)) return;
+        console.log('handleKeyDown', Mstsc.scancode(e));
         obj.socket.send(JSON.stringify(['scancode', Mstsc.scancode(e), true]));
         e.preventDefault();
         return false;
@@ -177,6 +179,31 @@ var CreateRDPDesktop = function (canvasid) {
     obj.m.SendStringUnicode = function (txt) {
         if (!obj.socket || (obj.State != 3)) return;
         obj.socket.send(JSON.stringify(['utype', txt]));
+    }
+    obj.m.SendKeyMsgKC = function (action, kc, extendedKey) {
+        if (obj.State != 3) return;
+
+        console.log('SendKeyMsgKC', action);
+
+        /*
+        if (typeof action == 'object') { for (var i in action) { obj.m.SendKeyMsgKC(action[i][0], action[i][1], action[i][2]); } }
+        else {
+            console.log(action, kc, extendedKey);
+            obj.socket.send(JSON.stringify(['scancode', kc, (action == 1)]));
+
+            if (action == 1) { // Key Down
+                if (obj.pressedKeys.indexOf(kc) == -1) { obj.pressedKeys.unshift(kc); } // Add key press to start of array
+            } else if (action == 2) { // Key Up
+                var i = obj.pressedKeys.indexOf(kc);
+                if (i != -1) { obj.pressedKeys.splice(i, 1); } // Remove the key press from the pressed array
+            }
+            if (obj.debugmode > 0) { console.log('Sending Key ' + kc + ', action ' + action); }
+
+            var up = (action - 1);
+            if (extendedKey) { if (up == 1) { up = 3; } else { up = 4; } }
+            obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, up, kc));
+        }
+        */
     }
     obj.m.mousedblclick = function () { }
     obj.m.handleKeyPress = function () { }
