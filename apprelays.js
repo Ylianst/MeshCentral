@@ -179,7 +179,11 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 screen: obj.infos.screen,
                 locale: obj.infos.locale,
             };
-            if (obj.infos.options && (obj.infos.options.flags != null)) { args.perfFlags = obj.infos.options.flags; delete obj.infos.options.flags; }
+            if (obj.infos.options) {
+                if (obj.infos.options.flags != null) { args.perfFlags = obj.infos.options.flags; delete obj.infos.options.flags; }
+                if ((obj.infos.options.workingDir != null) && (obj.infos.options.workingDir != '')) { args.workingDir = obj.infos.options.workingDir; }
+                if ((obj.infos.options.alternateShell != null) && (obj.infos.options.alternateShell != '')) { args.alternateShell = obj.infos.options.alternateShell; }
+            }
             rdpClient = require('./rdp').createClient(args).on('connect', function () {
                 send(['rdp-connect']);
                 if ((typeof obj.infos.options == 'object') && (obj.infos.options.savepass == true)) { saveRdpCredentials(); } // Save the credentials if needed

@@ -27,7 +27,7 @@ var CreateRDPDesktop = function (canvasid) {
         obj.nodeid = nodeid;
         obj.port = port;
         obj.credentials = credentials;
-        var options = { savepass: credentials.savecred, useServerCreds: credentials.servercred, width: credentials.width, height: credentials.height, flags: credentials.flags };
+        var options = { savepass: credentials.savecred, useServerCreds: credentials.servercred, width: credentials.width, height: credentials.height, flags: credentials.flags, workingDir: credentials.workdir, alternateShell: credentials.altshell };
         if (credentials.width && credentials.height) {
             options.width = obj.ScreenWidth = obj.width = credentials.width;
             options.height = obj.ScreenHeight = obj.height = credentials.height;
