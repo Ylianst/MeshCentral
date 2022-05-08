@@ -1380,8 +1380,8 @@
                 <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)" />
                 <div><input id="idx_dlgDeleteButton" type="button" value="Delete" style="display:none" onclick="dialogclose(2)" /></div>
                 <div id="idx_dlgMoreButtons">
-                    <a href=# id=morexxx1 style=cursor:pointer;color:gray;text-decoration:none title="Toggle advanced options" onclick=MoreToggle(true)>&#x25BC;</a>
-                    <a href=# id=morexxx2 style=cursor:pointer;color:gray;text-decoration:none title="Toggle advanced options" onclick=MoreToggle(false)>&#x25B2;</a>
+                    <a href=# id=idx_dlgMoreButtons1 style=cursor:pointer;color:gray;text-decoration:none title="Toggle advanced options" onclick=MoreToggle(true)>&#x25BC;</a>
+                    <a href=# id=idx_dlgMoreButtons2 style=cursor:pointer;color:gray;text-decoration:none title="Toggle advanced options" onclick=MoreToggle(false)>&#x25B2;</a>
                 </div>
             </div>
         </div>
@@ -8561,7 +8561,7 @@
             x += addHtmlValue("Alt Shell", '<input type=text id=d2altshell style=width:230px maxlength=2048 />');
             x += addHtmlValue("Working Dir", '<input type=text id=d2workdir style=width:230px maxlength=2048 />');
             x += MoreEnd();
-            setDialogMode(2, "RDP Credentials", 3, askRdpCredentialsEx, x);
+            setDialogMode(2, "RDP Credentials", 19, askRdpCredentialsEx, x);
         }
 
         function askRdpCredentialsValidate() {
@@ -16865,7 +16865,6 @@
 
             // Reset dialog size
             QS('dialog').width = QS('dialog').top = QS('dialog').left = QS('dialog').right = QS('dialog').bottom = null;
-            MoreToggle(false);
 
             QE('idx_dlgOkButton', true);
             QV('idx_dlgOkButton', b & 1);
@@ -16874,11 +16873,12 @@
             QV('id_dialogclose', (b & 2) || (b & 8));
             QV('idx_dlgDeleteButton', b & 4);
             QV('idx_dlgButtonBar', b & 7);
+            QV('idx_dlgMoreButtons', b & 16);
             if (y) QH('id_dialogtitle', y);
             for (var i = 1; i < 24; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
             QV('dialog', x);
             if (c) { if (x == 2) { QH('id_dialogOptions', c); } else { QH('id_dialogMessage', c); } }
-            QV('idx_dlgMoreButtons', (Q('morexxx3') != null));
+            MoreToggle(false);
         }
 
         function dialogclose(x) {
@@ -17480,9 +17480,9 @@
         function AddButton(v, f) { return '<input type=button value="' + v + '" onclick="' + f + '" style=margin:4px>'; }
         function AddButton2(v, f) { return '<input type=button value="' + v + '" onclick="' + f + '">'; }
         function AddRefreshButton(f) { return '<input type=button name=refreshbtn value=Refresh onclick="refreshButtons(false);' + f + '" style=margin:4px ' + (refreshButtonsState==false?'disabled':'') + '>'; }
-        function MoreStart() { return '<div id=morexxx3 style=display:none><hr>'; };
+        function MoreStart() { return '<div id=idx_dlgMoreButtons3 style=display:none><hr>'; };
         function MoreEnd() { return '</div>'; };
-        function MoreToggle(v) { QV("morexxx1",!v); QV("morexxx2",v); QV("morexxx3",v); }
+        function MoreToggle(v) { QV('idx_dlgMoreButtons1',!v); QV('idx_dlgMoreButtons2',v); QV('idx_dlgMoreButtons3',v); }
         function getSelectedOptions(sel) { var opts = [], opt; for (var i = 0, len = sel.options.length; i < len; i++) { opt = sel.options[i]; if (opt.selected) { opts.push(opt.value); } } return opts; }
         function getInstance(x, y) { for (var i in x) { if (x[i]['InstanceID'] == y) return x[i]; } return null; }
         function getItem(x, y, z) { for (var i in x) { if (x[i][y] == z) return x[i]; } return null; }
