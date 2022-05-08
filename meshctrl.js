@@ -2526,8 +2526,6 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
     if (lastconnect != null) { node.lastconnect = lastconnect.time; node.lastaddr = lastconnect.addr; }
     if (args.raw) { console.log(JSON.stringify(sysinfo, ' ', 2)); return; }
 
-    console.log(node);
-
     // General
     var output = {}, outputCount = 0;
     if (node.name) { output["Server Name"] = node.name; outputCount++; }
