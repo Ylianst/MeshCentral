@@ -1379,6 +1379,10 @@
                 <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)" />
                 <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)" />
                 <div><input id="idx_dlgDeleteButton" type="button" value="Delete" style="display:none" onclick="dialogclose(2)" /></div>
+                <div id="idx_dlgMoreButtons">
+                    <a href=# id=morexxx1 style=cursor:pointer;color:gray;text-decoration:none title="Toggle advanced options" onclick=MoreToggle(true)>&#x25BC;</a>
+                    <a href=# id=morexxx2 style=cursor:pointer;color:gray;text-decoration:none title="Toggle advanced options" onclick=MoreToggle(false)>&#x25B2;</a>
+                </div>
             </div>
         </div>
         <iframe name="fileUploadFrame" style="display:none"></iframe>
@@ -8552,7 +8556,11 @@
             x += addHtmlValue("Username", '<input type=text id=d2user style=width:230px onKeyUp=askRdpCredentialsValidate() maxlength=128 />');
             x += addHtmlValue("Password", '<input type=password id=d2pass style=width:230px maxlength=128 autocomplete=off />');
             if ((features2 & 0x00400000) == 0) { x += addHtmlValue("", '<label><input type="checkbox" id=d2savecred>' + "Remember credentials" + '</label>'); }
-            x + '</div></div>';
+            x += '</div>';
+            x += MoreStart();
+            x += addHtmlValue("Alt Shell", '<input type=text id=d2altshell style=width:230px maxlength=2048 />');
+            x += addHtmlValue("Working Dir", '<input type=text id=d2workdir style=width:230px maxlength=2048 />');
+            x += MoreEnd();
             setDialogMode(2, "RDP Credentials", 3, askRdpCredentialsEx, x);
         }
 
@@ -8586,11 +8594,11 @@
                 height = Q('DeskParent').offsetHeight;
             }
             if ((currentNode.rdp == 1) && (Q('d2mode').value == 1)) {
-                connectDesktop(null, 4, { servercred: true, width: width, height: height, flags: (desktopsettings.rdpflags != null) ? desktopsettings.rdpflags : 0x2F });
+                connectDesktop(null, 4, { servercred: true, width: width, height: height, flags: (desktopsettings.rdpflags != null) ? desktopsettings.rdpflags : 0x2F, altshell: Q('d2altshell').value, workdir: Q('d2workdir').value });
             } else {
                 var savecred = false;
                 if ((features2 & 0x00400000) == 0) { savecred = Q('d2savecred').checked; }
-                connectDesktop(null, 4, { domain: Q('d2domain').value, username: Q('d2user').value, password: Q('d2pass').value, savecred: savecred, width: width, height: height, flags: (desktopsettings.rdpflags != null) ? desktopsettings.rdpflags : 0x2F });
+                connectDesktop(null, 4, { domain: Q('d2domain').value, username: Q('d2user').value, password: Q('d2pass').value, savecred: savecred, width: width, height: height, flags: (desktopsettings.rdpflags != null) ? desktopsettings.rdpflags : 0x2F, altshell: Q('d2altshell').value, workdir: Q('d2workdir').value });
             }
         }
 
@@ -16857,6 +16865,7 @@
 
             // Reset dialog size
             QS('dialog').width = QS('dialog').top = QS('dialog').left = QS('dialog').right = QS('dialog').bottom = null;
+            MoreToggle(false);
 
             QE('idx_dlgOkButton', true);
             QV('idx_dlgOkButton', b & 1);
@@ -16869,6 +16878,7 @@
             for (var i = 1; i < 24; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
             QV('dialog', x);
             if (c) { if (x == 2) { QH('id_dialogOptions', c); } else { QH('id_dialogMessage', c); } }
+            QV('idx_dlgMoreButtons', (Q('morexxx3') != null));
         }
 
         function dialogclose(x) {
@@ -17470,8 +17480,9 @@
         function AddButton(v, f) { return '<input type=button value="' + v + '" onclick="' + f + '" style=margin:4px>'; }
         function AddButton2(v, f) { return '<input type=button value="' + v + '" onclick="' + f + '">'; }
         function AddRefreshButton(f) { return '<input type=button name=refreshbtn value=Refresh onclick="refreshButtons(false);' + f + '" style=margin:4px ' + (refreshButtonsState==false?'disabled':'') + '>'; }
-        function MoreStart() { return '<a href=# style=cursor:pointer;color:blue id=morexxx1 onclick=QV("morexxx1",false);QV("morexxx2",true)>&#x25BC; ' + "More" + '</a><div id=morexxx2 style=display:none><br><hr>'; };
-        function MoreEnd() { return '<a href=# style=cursor:pointer;color:blue onclick=QV("morexxx2",false);QV("morexxx1",true)>&#x25B2; ' + "Less" + '</a></div>'; };
+        function MoreStart() { return '<div id=morexxx3 style=display:none><hr>'; };
+        function MoreEnd() { return '</div>'; };
+        function MoreToggle(v) { QV("morexxx1",!v); QV("morexxx2",v); QV("morexxx3",v); }
         function getSelectedOptions(sel) { var opts = [], opt; for (var i = 0, len = sel.options.length; i < len; i++) { opt = sel.options[i]; if (opt.selected) { opts.push(opt.value); } } return opts; }
         function getInstance(x, y) { for (var i in x) { if (x[i]['InstanceID'] == y) return x[i]; } return null; }
         function getItem(x, y, z) { for (var i in x) { if (x[i][y] == z) return x[i]; } return null; }
