@@ -182,32 +182,85 @@ var CreateRDPDesktop = function (canvasid) {
     }
     obj.m.SendKeyMsgKC = function (action, kc, extendedKey) {
         if (obj.State != 3) return;
-
-        console.log('SendKeyMsgKC', action);
-
-        /*
         if (typeof action == 'object') { for (var i in action) { obj.m.SendKeyMsgKC(action[i][0], action[i][1], action[i][2]); } }
         else {
-            console.log(action, kc, extendedKey);
-            obj.socket.send(JSON.stringify(['scancode', kc, (action == 1)]));
-
-            if (action == 1) { // Key Down
-                if (obj.pressedKeys.indexOf(kc) == -1) { obj.pressedKeys.unshift(kc); } // Add key press to start of array
-            } else if (action == 2) { // Key Up
-                var i = obj.pressedKeys.indexOf(kc);
-                if (i != -1) { obj.pressedKeys.splice(i, 1); } // Remove the key press from the pressed array
+            var scan = shortcutToScan[kc];
+            //console.log(action, kc, extendedKey, scan);
+            if (scan != null) {
+                //console.log('SEND', ['scancode', scan, ((action & 1) != 0)]);
+                obj.socket.send(JSON.stringify(['scancode', scan, ((action & 1) != 0)]));
             }
-            if (obj.debugmode > 0) { console.log('Sending Key ' + kc + ', action ' + action); }
-
-            var up = (action - 1);
-            if (extendedKey) { if (up == 1) { up = 3; } else { up = 4; } }
-            obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, up, kc));
         }
-        */
     }
     obj.m.mousedblclick = function () { }
     obj.m.handleKeyPress = function () { }
     obj.m.setRotation = function () { }
+    obj.m.sendcad = function () { // Ctrl-Alt-Del
+        obj.socket.send(JSON.stringify(['scancode', 29, true])); // CTRL
+        obj.socket.send(JSON.stringify(['scancode', 56, true])); // ALT
+        obj.socket.send(JSON.stringify(['scancode', 57427, true])); // DEL
+        obj.socket.send(JSON.stringify(['scancode', 57427, false]));
+        obj.socket.send(JSON.stringify(['scancode', 56, false]));
+        obj.socket.send(JSON.stringify(['scancode', 29, false]));
+    }
+
+    var shortcutToScan = {
+        9: 15, // Tab
+        16: 42, // Shift
+        17: 29, // Ctrl
+        18: 56, // Alt
+        27: 1, // ESC
+        33: 57417, // Page Up
+        34: 57425, // Page Down
+        35: 57423, // End
+        36: 57415, // Home
+        37: 57419, // Left
+        38: 57416, // Up
+        39: 57421, // Right
+        40: 57424, // Down
+        44: 57399, // Print Screen
+        45: 57426, // Insert
+        46: 57427, // Del
+        65: 30, // A
+        66: 48, // B
+        67: 46, // C
+        68: 32, // D
+        69: 18, // E
+        70: 33, // F
+        71: 34, // G
+        72: 35, // H
+        73: 23, // I
+        74: 36, // J
+        75: 37, // K
+        76: 38, // L
+        77: 50, // M
+        78: 49, // N
+        79: 24, // O
+        80: 25, // P
+        81: 16, // Q
+        82: 19, // R
+        83: 31, // S
+        84: 20, // T
+        85: 22, // U
+        86: 47, // V
+        87: 17, // W
+        88: 45, // X
+        89: 21, // Y
+        90: 44, // Z
+        91: 57435, // Windows left
+        112: 59, // F1
+        113: 60, // F2
+        114: 61, // F3
+        115: 62, // F4
+        116: 63, // F5
+        117: 64, // F6
+        118: 65, // F7
+        119: 66, // F8
+        120: 67, // F9
+        121: 68, // F10
+        122: 87, // F11
+        123: 88 // F12
+    }
 
     return obj;
 }
