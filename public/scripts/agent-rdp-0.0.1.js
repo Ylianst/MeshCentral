@@ -185,11 +185,7 @@ var CreateRDPDesktop = function (canvasid) {
         if (typeof action == 'object') { for (var i in action) { obj.m.SendKeyMsgKC(action[i][0], action[i][1], action[i][2]); } }
         else {
             var scan = shortcutToScan[kc];
-            //console.log(action, kc, extendedKey, scan);
-            if (scan != null) {
-                //console.log('SEND', ['scancode', scan, ((action & 1) != 0)]);
-                obj.socket.send(JSON.stringify(['scancode', scan, ((action & 1) != 0)]));
-            }
+            if (scan != null) { obj.socket.send(JSON.stringify(['scancode', scan, ((action & 1) != 0)])); }
         }
     }
     obj.m.mousedblclick = function () { }
