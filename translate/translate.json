@@ -1105,6 +1105,7 @@
     {
       "en": ", RDP",
       "nl": ", RDP",
+	  "pl": ", RDP",
       "xloc": [
         "default.handlebars->39->1214"
       ]
@@ -8543,6 +8544,7 @@
     },
     {
       "en": "Alt Shell",
+	  "pl": "Alternatywna Powłoka",
       "xloc": [
         "default.handlebars->39->1205"
       ]
@@ -11419,6 +11421,7 @@
     {
       "en": "Browser Size",
       "nl": "Browser grootte",
+	  "pl": "Rozmiar Przeglądarki",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->3"
       ]
@@ -12129,6 +12132,7 @@
     {
       "en": "Canvas Size",
       "nl": "Canvas grootte",
+	  "pl": "Rozmiar Zakrycia",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->1"
       ]
@@ -15565,6 +15569,7 @@
     {
       "en": "Connect using MeshAgent remote desktop",
       "nl": "Verbinding maken via MeshAgent extern bureaublad",
+	  "pl": "Połącz używając zdalnego pulpitu MeshAgent",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1span"
       ]
@@ -15572,6 +15577,7 @@
     {
       "en": "Connect using RDP",
       "nl": "Verbinding maken via RDP",
+	  "pl": "Połącz używając RDP",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1rspan"
       ]
@@ -20867,6 +20873,7 @@
     {
       "en": "Disable Cursor Settings",
       "nl": "Cursorinstellingen uitschakelen",
+	  "pl": "Wyłączenie Ustawień Kursora",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->11"
       ]
@@ -20874,6 +20881,7 @@
     {
       "en": "Disable Cursor Shadow",
       "nl": "Cursorschaduw uitschakelen",
+	  "pl": "Wyłączenie Cienia Kursora",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->9"
       ]
@@ -20881,6 +20889,7 @@
     {
       "en": "Disable Full Window Drag",
       "nl": "Volledig venster slepen uitschakelen",
+	  "pl": "Wyłączenie Przenoszenie Całego Okna",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->3"
       ]
@@ -20888,6 +20897,7 @@
     {
       "en": "Disable Menu Animations",
       "nl": "Menu animaties uitschakelen",
+	  "pl": "Wyłączenie Animacji Menu",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->5"
       ]
@@ -20895,6 +20905,7 @@
     {
       "en": "Disable Theming",
       "nl": "Thema's uitschakelen",
+	  "pl": "Wyłączenie Tematów Wizualnych",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->7"
       ]
@@ -20902,6 +20913,7 @@
     {
       "en": "Disable Wallpaper",
       "nl": "Achtergrond uitschakelen",
+	  "pl": "Wyłączenie Tapety",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->1"
       ]
@@ -21185,6 +21197,7 @@
     {
       "en": "Display Size",
       "nl": "Scherm grootte",
+	  "pl": "Rozmiar Wyświetlacza",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->1"
       ]
@@ -24145,6 +24158,7 @@
     {
       "en": "Enable Desktop Composision",
       "nl": "Bureaubladsamenstelling inschakelen",
+	  "pl": "Włącz Kompozycje Pulpitu",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->15"
       ]
@@ -24152,6 +24166,7 @@
     {
       "en": "Enable Font Smooting",
       "nl": "Lettertype vloeiend maken inschakelen",
+	  "pl": "Włącz Rozmycie Czcionek",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->13"
       ]
@@ -45300,6 +45315,7 @@
     {
       "en": "Options",
       "nl": "Opties",
+	  "pl": "Opcje",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->1"
       ]
@@ -48989,6 +49005,7 @@
     {
       "en": "RDP Connect",
       "nl": "RDP verbinden",
+	  "pl": "Połącz za pomocą RDP",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1rspan"
       ]
@@ -49021,6 +49038,7 @@
     {
       "en": "RDP Credentials",
       "nl": "RDP inloggegevens",
+	  "pl": "Poświadczenia RDP",
       "xloc": [
         "default.handlebars->39->1207"
       ]
@@ -54497,6 +54515,7 @@
     {
       "en": "Screen Size",
       "nl": "Scherm grootte",
+	  "pl": "Rozmiar Ekranu",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->5"
       ]
@@ -63300,6 +63319,7 @@
     },
     {
       "en": "Toggle advanced options",
+	  "pl": "Przełącz ustawienia zaawansowane",
       "xloc": [
         "default.handlebars->container->dialog->idx_dlgButtonBar->idx_dlgMoreButtons",
         "default.handlebars->container->dialog->idx_dlgButtonBar->idx_dlgMoreButtons"
@@ -70148,6 +70168,7 @@
     },
     {
       "en": "Working Dir",
+	  "pl": "Folder Roboczy",
       "xloc": [
         "default.handlebars->39->1206"
       ]
@@ -71361,6 +71382,7 @@
     {
       "en": "browser",
       "nl": "browser",
+	  "pl": "przeglądarka",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
@@ -71419,6 +71441,7 @@
     {
       "en": "canvas",
       "nl": "Canvas",
+	  "pl": "zakrycie",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
@@ -73011,6 +73034,7 @@
     {
       "en": "screen",
       "nl": "scherm",
+	  "pl": "ekran",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
@@ -75162,12 +75186,14 @@
     },
     {
       "en": "▲",
+	  "pl": "▲",
       "xloc": [
         "default.handlebars->container->dialog->idx_dlgButtonBar->idx_dlgMoreButtons->morexxx2"
       ]
     },
     {
       "en": "▼",
+	  "pl": "▼",
       "xloc": [
         "default.handlebars->container->dialog->idx_dlgButtonBar->idx_dlgMoreButtons->morexxx1"
       ]
