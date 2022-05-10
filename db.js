@@ -504,9 +504,10 @@ module.exports.CreateDB = function (parent, func) {
             if (data[i] == null) continue;
             if (data[i].type == 'user') {
                 data[i] = performPartialRecordDecrypt(data[i]);
-            } else if ((data[i].type == 'node') && (data[i].intelamt != null)) {
-                data[i].intelamt = performPartialRecordDecrypt(data[i].intelamt);
-            } else if ((data[i].type == 'mesh') && (data[i].amt != null)) {
+            } else if (data[i].type == 'node') {
+                data[i] = performPartialRecordDecrypt(data[i]);
+                if (data[i].intelamt) { data[i].intelamt = performPartialRecordDecrypt(data[i].intelamt); }
+            } else if ((data[i].type == 'mesh') && (data[i].amt)) {
                 data[i].amt = performPartialRecordDecrypt(data[i].amt);
             }
         }
@@ -517,7 +518,12 @@ module.exports.CreateDB = function (parent, func) {
     function performTypedRecordEncrypt(data) {
         if (obj.dbRecordsEncryptKey == null) return data;
         if (data.type == 'user') { return performPartialRecordEncrypt(Clone(data), ['otpkeys', 'otphkeys', 'otpsecret', 'salt', 'hash', 'oldpasswords']); }
-        else if ((data.type == 'node') && (data.intelamt != null)) { var xdata = Clone(data); xdata.intelamt = performPartialRecordEncrypt(xdata.intelamt, ['user', 'pass', 'mpspass']); return xdata; }
+        else if ((data.type == 'node') && (data.ssh || data.rdp || data.intelamt)) {
+            var xdata = Clone(data);
+            if (data.ssh || data.rdp) { xdata = performPartialRecordEncrypt(xdata, ['ssh', 'rdp']); }
+            if (data.intelamt) { xdata.intelamt = performPartialRecordEncrypt(xdata.intelamt, ['user', 'pass', 'mpspass']); }
+            return xdata;
+        }
         else if ((data.type == 'mesh') && (data.amt != null)) { var xdata = Clone(data); xdata.amt = performPartialRecordEncrypt(xdata.amt, ['password']); return xdata; }
         return data;
     }
@@ -526,7 +532,14 @@ module.exports.CreateDB = function (parent, func) {
     function performPartialRecordEncrypt(plainobj, encryptNames) {
         if (typeof plainobj != 'object') return plainobj;
         var enc = {}, enclen = 0;
-        for (var i in encryptNames) { if (plainobj[encryptNames[i]] != null) { enclen++; enc[encryptNames[i]] = plainobj[encryptNames[i]]; delete plainobj[encryptNames[i]]; } }
+        for (var i in encryptNames) {
+            if (plainobj[encryptNames[i]] != null) {
+                console.log('ENCRYPT', encryptNames[i]);
+                enclen++;
+                enc[encryptNames[i]] = plainobj[encryptNames[i]];
+                delete plainobj[encryptNames[i]];
+            }
+        }
         if (enclen > 0) { plainobj._CRYPT = performRecordEncrypt(enc); } else { delete plainobj._CRYPT; }
         return plainobj;
     }
