@@ -944,14 +944,21 @@
             "description": "Connects MeshCentral to a SMTP email server, allows MeshCentral to send email messages for 2FA or user notification.",
             "type": "object",
             "properties": {
+              "name": {
+                "type": "string",
+                "format": "hostname",
+                "description": "Optional hostname of the client, this defaults to the hostname of the machine. This is useful for SMTP relays."
+              },
               "host": {
                 "type": "string",
-                "format": "hostname"
+                "format": "hostname",
+                "description": "Hostname of the SMTP server."
               },
               "port": {
                 "type": "integer",
                 "minimum": 1,
-                "maximum": 65535
+                "maximum": 65535,
+                "description": "SMTP server port number."
               },
               "from": {
                 "type": "string",
