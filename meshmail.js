@@ -44,7 +44,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
     } else if (obj.config.smtp != null) {
         // Setup SMTP mail server
         const nodemailer = require('nodemailer');
-        var options = { host: obj.config.smtp.host, secure: (obj.config.smtp.tls == true), tls: {} };
+        var options = { name: obj.config.smtp.name, host: obj.config.smtp.host, secure: (obj.config.smtp.tls == true), tls: {} };
         //var options = { host: obj.config.smtp.host, secure: (obj.config.smtp.tls == true), tls: { secureProtocol: 'SSLv23_method', ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false } };
         if (obj.config.smtp.port != null) { options.port = obj.config.smtp.port; }
         if (obj.config.smtp.tlscertcheck === false) { options.tls.rejectUnauthorized = false; }
