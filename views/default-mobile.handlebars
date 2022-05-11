@@ -5121,25 +5121,7 @@
 
             // Process any SSH actions
             switch (data.action) {
-                case 'sshauth': {
-                    sshTunnelAuthDialog(data, p13sshConnectEx);
-                    /*
-                    var x = '';
-                    x += addHtmlValue("Authentication", '<select id=dp2authmethod style=width:150px onchange=sshAuthUpdate(event)><option value=1 selected>' + "Username & Password" + '</option><option value=2>' + "Username and Key" + '</option></select>')
-                    x += addHtmlValue("Username", '<input id=dp2user style=width:150px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
-                    x += '<div id=d2passauth>';
-                    x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:150px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
-                    x += '</div><div id=d2keyauth style=display:none>';
-                    x += addHtmlValue("Key File", '<input type=file id=dp2key style=width:150px maxlength=64 autocomplete=off onchange=sshAuthUpdate(event) />');
-                    x += addHtmlValue("Key Password", '<input type=password id=dp2keypass style=width:150px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
-                    x += '</div>';
-                    x += '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>';
-                    x += '<div id=d2keyauth2 style=font-size:x-small><br />' + "Key file must be in OpenSSH format." + '</div>';
-                    setDialogMode(2, "Authentication", 11, p13sshConnectEx, x, 'ssh');
-                    setTimeout(sshAuthUpdate, 50);
-                    */
-                    break;
-                }
+                case 'sshauth': { sshTunnelAuthDialog(data, p13sshConnectEx); break; }
                 case 'autherror': { p13setConsoleMsg("Authentication Error", 5000); return; }
                 case 'connectionerror': { p13setConsoleMsg("Connection Error", 5000); return; }
                 case 'sessionerror': { p13setConsoleMsg("Session expired", 5000); return; }
