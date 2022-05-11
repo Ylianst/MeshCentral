@@ -121,7 +121,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     // Send data through the websocket
-    obj.send = function (object) { try { ws.send(JSON.stringify(object)); } catch(e) {} }
+    obj.send = function (object) { try { ws.send(JSON.stringify(object)); } catch(ex) {} }
 
     // Clean a IPv6 address that encodes a IPv4 address
     function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }
@@ -138,8 +138,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     obj.close = function (arg) {
         obj.ws.xclosed = 1; // This is for testing. Will be displayed when running "usersessions" server console command.
 
-        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); parent.parent.debug('user', 'Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { obj.ws._socket._parent.end(); parent.parent.debug('user', 'Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); parent.parent.debug('user', 'Soft disconnect'); } catch (ex) { console.log(ex); } } // Soft close, close the websocket
+        if (arg == 2) { try { obj.ws._socket._parent.end(); parent.parent.debug('user', 'Hard disconnect'); } catch (ex) { console.log(ex); } } // Hard close, close the TCP socket
 
         obj.ws.xclosed = 2; // DEBUG
 
@@ -626,7 +626,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             ws._socket.resume();
             if (parent.parent.pluginHandler != null) parent.parent.pluginHandler.callHook('hook_userLoggedIn', user);
         });
-    } catch (e) { console.log(e); }
+    } catch (ex) { console.log(ex); }
 
     // Process incoming web socket data from the browser
     function processWebSocketData(msg) {
@@ -4273,7 +4273,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         try { ws.send(JSON.stringify({ action: 'pluginError', msg: err })); } catch (er) { }
                     }); 
                     
-                } catch(e) { console.log('Cannot add plugin: ' + e); }
+                } catch(ex) { console.log('Cannot add plugin: ' + e); }
                 break;
             }
             case 'installplugin': {
@@ -4327,7 +4327,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 } else {
                     try {
                         parent.parent.pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
-                    } catch (e) { console.log('Error loading plugin handler (' + e + ')'); }
+                    } catch (ex) { console.log('Error loading plugin handler (' + e + ')'); }
                 }
                 break;
             }
@@ -6743,10 +6743,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try { info.uptime = process.uptime(); } catch (ex) { }
         try { info.cpuUsage = process.cpuUsage(); } catch (ex) { }
         try { info.memoryUsage = process.memoryUsage(); } catch (ex) { }
-        try {
-            info.warnings = parent.parent.getServerWarnings();
-            console.log(info.warnings);
-        } catch (ex) { console.log(ex); }
+        try { info.warnings = parent.parent.getServerWarnings(); } catch (ex) { console.log(ex); }
         try { info.allDevGroupManagers = parent.parent.config.settings.managealldevicegroups; } catch (ex) { }
         try { if (process.traceDeprecation == true) { info.traceDeprecation = true; } } catch (ex) { }
         cmdData.result = JSON.stringify(info, null, 4);
