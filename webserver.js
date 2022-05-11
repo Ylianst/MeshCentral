@@ -1271,7 +1271,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         const targets = ['*', 'server-users', user._id];
         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
         const ua = getUserAgentInfo(req);
-        const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login from ' + req.clientIp + ', ' + ua.browserStr + ', ' + ua.osStr, domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'] };
+        const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login from ' + req.clientIp + ', ' + ua.browserStr + ', ' + ua.osStr, domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], rport: req.connection.remotePort };
         if (loginOptions != null) {
             if ((loginOptions.tokenName != null) && (loginOptions.tokenUser != null)) { loginEvent.tokenName = loginOptions.tokenName; loginEvent.tokenUser = loginOptions.tokenUser; } // If a login token was used, add it to the event.
             if (loginOptions.twoFactorType != null) { loginEvent.twoFactorType = loginOptions.twoFactorType; }
