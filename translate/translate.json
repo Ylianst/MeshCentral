@@ -8544,6 +8544,7 @@
     },
     {
       "en": "Alt Shell",
+      "nl": "Alt Shell",
       "pl": "Alternatywna Powłoka",
       "xloc": [
         "default.handlebars->39->1207"
@@ -50005,6 +50006,7 @@
     },
     {
       "en": "Remember password",
+      "nl": "Onthoud wachtwoord",
       "xloc": [
         "default-mobile.handlebars->11->461",
         "default.handlebars->39->1307",
@@ -50084,6 +50086,7 @@
     },
     {
       "en": "Remember user & key",
+      "nl": "Onthoud gebruikeruser & sleutel",
       "xloc": [
         "default-mobile.handlebars->11->460",
         "default.handlebars->39->1306",
@@ -54037,6 +54040,7 @@
     },
     {
       "en": "SSH-User+Key",
+      "nl": "SSH-gebruiker+sleutel",
       "xloc": [
         "default-mobile.handlebars->11->324",
         "default-mobile.handlebars->11->328",
@@ -54046,6 +54050,7 @@
     },
     {
       "en": "SSH-User+Key+Pass",
+      "nl": "SSH-gebruiker+sleutel+wachtwoord",
       "xloc": [
         "default-mobile.handlebars->11->323",
         "default-mobile.handlebars->11->327",
@@ -54055,6 +54060,7 @@
     },
     {
       "en": "SSH-User+Pass",
+      "nl": "SSH-gebruiker+wachtwoord",
       "xloc": [
         "default-mobile.handlebars->11->322",
         "default-mobile.handlebars->11->326",
@@ -60494,6 +60500,7 @@
     },
     {
       "en": "Stored Key",
+      "nl": "Opgeslagen sleutel",
       "xloc": [
         "default-mobile.handlebars->11->448",
         "default.handlebars->39->1294",
@@ -63353,6 +63360,7 @@
     },
     {
       "en": "Toggle advanced options",
+      "nl": "geavanceerde opties inschakelen",
       "pl": "Przełącz ustawienia zaawansowane",
       "xloc": [
         "default.handlebars->container->dialog->idx_dlgButtonBar->idx_dlgMoreButtons",
@@ -70202,6 +70210,7 @@
     },
     {
       "en": "Working Dir",
+      "nl": "Werkmap",
       "pl": "Folder Roboczy",
       "xloc": [
         "default.handlebars->39->1208"
@@ -72787,12 +72796,15 @@
     },
     {
       "en": "morexxx1"
+      "nl": "morexxx1"
     },
     {
       "en": "morexxx2"
+      "nl": "morexxx2"
     },
     {
       "en": "morexxx3"
+      "nl": "morexxx3"
     },
     {
       "cs": "přesunout",
@@ -75212,6 +75224,18 @@
     {
       "en": "▲",
       "pl": "▲",
+      "es": "▲",
+      "fi": "▲",
+      "fr": "▲",
+      "it": "▲",
+      "ja": "▲",
+      "nl": "▲",
+      "cs": "▲",
+      "da": "▲",
+      "de": "▲",
+      "pt": "▲",
+      "pt-br": "▲",
+      "ru": "▲",
       "xloc": [
         "default.handlebars->container->dialog->idx_dlgButtonBar->idx_dlgMoreButtons->idx_dlgMoreButtons2"
       ]
@@ -75219,6 +75243,18 @@
     {
       "en": "▼",
       "pl": "▼",
+      "es": "▼",
+      "fi": "▼",
+      "fr": "▼",
+      "it": "▼",
+      "ja": "▼",
+      "nl": "▼",
+      "cs": "▼",
+      "de": "▼",
+      "da": "▼",
+      "pt": "▼",
+      "pt-br": "▼",
+      "ru": "▼",
       "xloc": [
         "default.handlebars->container->dialog->idx_dlgButtonBar->idx_dlgMoreButtons->idx_dlgMoreButtons1"
       ]
