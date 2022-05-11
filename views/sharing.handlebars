@@ -288,7 +288,7 @@
         var agentPresent = true;
         var intelAmtPresent = false;
         var deskAspectRatio = 0;
-        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 100, localkeymap: false };
+        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 100, localkeymap: false, remotekeymap: false };
         var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
@@ -1049,24 +1049,30 @@
                 }, 10);
             } else {
                 // MeshAgent
-                for (var i in txt) {
-                    var a = txt.charCodeAt(i), b = ltxt.charCodeAt(i);
-                    if (((a >= 65) && (a <= 90)) || ((a >= 97) && (a <= 122))) {
-                        if ((a == b) && (shift == false)) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
-                        if ((a != b) && (shift == true)) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // LShift up
-                    } else if ((a >= 48) && (a <= 57)) {
-                        if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
-                    } else if (DeskTypeTranslate[a]) {
-                        if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
-                        b = DeskTypeTranslate[a];
-                    } else if (DeskTypeShiftTranslate[a]) {
-                        if (shift == false) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
-                        b = DeskTypeShiftTranslate[a];
+                if (desktopsettings.remotekeymap !== true) {
+                    // New unicode typing
+                    desktop.m.SendStringUnicode(txt);
+                } else {
+                    // Old scan code typing. This is for non-unicode system.
+                    for (var i in txt) {
+                        var a = txt.charCodeAt(i), b = ltxt.charCodeAt(i);
+                        if (((a >= 65) && (a <= 90)) || ((a >= 97) && (a <= 122))) {
+                            if ((a == b) && (shift == false)) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
+                            if ((a != b) && (shift == true)) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // LShift up
+                        } else if ((a >= 48) && (a <= 57)) {
+                            if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
+                        } else if (DeskTypeTranslate[a]) {
+                            if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
+                            b = DeskTypeTranslate[a];
+                        } else if (DeskTypeShiftTranslate[a]) {
+                            if (shift == false) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
+                            b = DeskTypeShiftTranslate[a];
+                        }
+                        x.push([desktop.m.KeyAction.DOWN, b], [desktop.m.KeyAction.UP, b]);
                     }
-                    x.push([desktop.m.KeyAction.DOWN, b], [desktop.m.KeyAction.UP, b]);
+                    if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
+                    desktop.m.SendKeyMsgKC(x);
                 }
-                if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
-                desktop.m.SendKeyMsgKC(x);
             }
         }
 
