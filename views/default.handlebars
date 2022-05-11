@@ -7007,10 +7007,10 @@
                 if ((node.ssh != null) || (node.rdp != null)) {
                     var y = [];
                     if ((meshrights & 4) != 0) {
-                        if (node.ssh != null) { y.push('<span onclick=showClearSshDialog(3) style=cursor:pointer>' + ((node.ssh == 2)?"SSH-Key":"SSH") + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>'); }
+                        if (node.ssh != null) { y.push('<span onclick=showClearSshDialog(3) style=cursor:pointer>' + ((node.ssh == 1)?"SSH-User+Pass":((node.ssh == 2)?"SSH-User+Key+Pass":"SSH-User+Key")) + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>'); }
                         if (node.rdp != null) { y.push('<span onclick=showClearRdpDialog(3) style=cursor:pointer>' + "RDP" + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>'); }
                     } else {
-                        if (node.ssh != null) { y.push(((node.ssh == 2)?"SSH-Key":"SSH")); }
+                        if (node.ssh != null) { y.push(((node.ssh == 1)?"SSH-User+Pass":((node.ssh == 2)?"SSH-User+Key+Pass":"SSH-User+Key"))); }
                         if (node.rdp != null) { y.push("RDP"); }
                     }
                     x += addDeviceAttribute("Credentials", y.join(', '));
@@ -9660,25 +9660,45 @@
 
         function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
 
+        function sshTunnelAuthDialog(j, func) {
+            var x = '';
+            if (j.askkeypass) {
+                x += addHtmlValue("Authentication", '<select id=dp2authmethod style=width:230px onchange=sshAuthUpdate(event)><option value=3 selected>' + "Stored Key" + '</option><option value=1>' + "Username & Password" + '</option><option value=2>' + "Username and Key" + '</option></select>');
+            } else {
+                x += addHtmlValue("Authentication", '<select id=dp2authmethod style=width:230px onchange=sshAuthUpdate(event)><option value=1 selected>' + "Username & Password" + '</option><option value=2>' + "Username and Key" + '</option></select>');
+            }
+            x += '<div id=d2userauth style=display:none>';
+            x += addHtmlValue("Username", '<input id=dp2user style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
+            x += '</div>';
+            x += '<div id=d2passauth style=display:none>';
+            x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
+            if ((features2 & 0x00400000) == 0) { x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>'); }
+            x += '</div><div id=d2keyauth style=display:none>';
+            x += addHtmlValue("Key File", '<input type=file id=dp2key style=width:230px maxlength=64 autocomplete=off onchange=sshAuthUpdate(event) />' + '<div id=d2badkey style=font-size:x-small>' + "Key file must be in OpenSSH format." + '</div>');
+            x += addHtmlValue("Key Password", '<input type=password id=dp2keypass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
+            if ((features2 & 0x00400000) == 0) {
+                x += addHtmlValue('', '<label><input id=dp2keep1 type=checkbox onchange=sshAuthUpdate(event)>' + "Remember user & key" + '</label>');
+                x += addHtmlValue('', '<label><input id=dp2keep2 type=checkbox>' + "Remember password" + '</label>');
+            }
+            x += '</div>';
+            if (j.askkeypass) {
+                x += '<div id=d2keyauth2 style=display:none>';
+                x += addHtmlValue("Password", '<input type=password id=dp2keypass2 style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
+                x += '</div>';
+            }
+            setDialogMode(2, "Authentication", 11, func, x, 'ssh');
+            Q('dp2user').focus();
+            sshAuthUpdate();
+            setTimeout(sshAuthUpdate, 50);
+        }
+
         function sshTunnelUpdate(data) {
             if (typeof data == 'string') {
                 if (data[0] == '{') {
                     var j = JSON.parse(data);
                     switch (j.action) {
                         case 'sshauth': {
-                            var x = '';
-                            x += addHtmlValue("Authentication", '<select id=dp2authmethod style=width:230px onchange=sshAuthUpdate(event)><option value=1 selected>' + "Username & Password" + '</option><option value=2>' + "Username and Key" + '</option></select>')
-                            x += addHtmlValue("Username", '<input id=dp2user style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
-                            x += '<div id=d2passauth>';
-                            x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
-                            x += '</div><div id=d2keyauth style=display:none>';
-                            x += addHtmlValue("Key File", '<input type=file id=dp2key style=width:230px maxlength=64 autocomplete=off onchange=sshAuthUpdate(event) />' + '<div id=d2badkey style=font-size:x-small>' + "Key file must be in OpenSSH format." + '</div>');
-                            x += addHtmlValue("Key Password", '<input type=password id=dp2keypass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
-                            x += '</div>';
-                            if ((features2 & 0x00400000) == 0) { x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>'); }
-                            setDialogMode(2, "Authentication", 11, sshConnectEx, x, 'ssh');
-                            Q('dp2user').focus();
-                            setTimeout(sshAuthUpdate, 50);
+                            sshTunnelAuthDialog(j, sshConnectEx);
                             break;
                         }
                         case 'sshautoauth': {
@@ -9695,12 +9715,17 @@
         }
 
         function sshAuthUpdate(e) {
+            QV('d2userauth', Q('dp2authmethod').value != 3);
             QV('d2passauth', Q('dp2authmethod').value == 1);
             QV('d2keyauth', Q('dp2authmethod').value == 2);
+            QV('d2keyauth2', Q('dp2authmethod').value == 3);
             if (Q('dp2authmethod').value == 1) {
                 QE('idx_dlgOkButton', (Q('dp2user').value.length > 0) && (Q('dp2pass').value.length > 0));
+            } else if (Q('dp2authmethod').value == 3) {
+                QE('idx_dlgOkButton', Q('dp2keypass2').value.length > 0);
             } else {
                 QE('idx_dlgOkButton', false);
+                if ((features2 & 0x00400000) == 0) { QE('dp2keep2', Q('dp2keep1').checked); }
                 var ok = (Q('dp2user').value.length > 0) && (Q('dp2key').files != null) && (Q('dp2key').files.length == 1) && (Q('dp2key').files[0].size < 8000);
                 if (ok == true) {
                     var reader = new FileReader();
@@ -9724,12 +9749,14 @@
             if (b == 0) {
                 if (terminal != null) { connectTerminal(); } // Disconnect
             } else {
-                var keep = false;
-                if ((features2 & 0x00400000) == 0) { keep = Q('dp2keep').checked; }
-
+                var keep = 0;
                 if (Q('dp2authmethod').value == 1) {
+                    if ((features2 & 0x00400000) == 0) { keep = (Q('dp2keep').checked ? 1 : 0); }
                     terminal.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, keep: keep, cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight }));
+                } else if (Q('dp2authmethod').value == 3) {
+                    terminal.socket.send(JSON.stringify({ action: 'sshkeyauth', keypass: Q('dp2keypass2').value, cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight }));
                 } else {
+                    if ((features2 & 0x00400000) == 0) { keep = (Q('dp2keep1').checked ? 1 : 0); if (keep == 1) { keep += (Q('dp2keep2').checked ? 1 : 0); } } // Keep: 1 = user & key, 2 = User, key and password
                     var reader = new FileReader(), username = Q('dp2user').value, keypass = Q('dp2keypass').value;
                     reader.onload = function (e) { terminal.socket.send(JSON.stringify({ action: 'sshauth', username: username, keypass: keypass, key: e.target.result, keep: keep, cols: xterm.cols, rows: xterm.rows, width: Q('termarea3xdiv').offsetWidth, height: Q('termarea3xdiv').offsetHeight })); }
                     reader.readAsText(Q('dp2key').files[0]);
@@ -10068,22 +10095,7 @@
 
             // Process any SSH actions
             switch (data.action) {
-                case 'sshauth': {
-                    var x = '';
-                    x += addHtmlValue("Authentication", '<select id=dp2authmethod style=width:230px onchange=sshAuthUpdate(event)><option value=1 selected>' + "Username & Password" + '</option><option value=2>' + "Username and Key" + '</option></select>')
-                    x += addHtmlValue("Username", '<input id=dp2user style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
-                    x += '<div id=d2passauth>';
-                    x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
-                    x += '</div><div id=d2keyauth style=display:none>';
-                    x += addHtmlValue("Key File", '<input type=file id=dp2key style=width:230px maxlength=64 autocomplete=off onchange=sshAuthUpdate(event) />');
-                    x += addHtmlValue("Key Password", '<input type=password id=dp2keypass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
-                    x += '</div>';
-                    if ((features2 & 0x00400000) == 0) { x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>'); }
-                    setDialogMode(2, "Authentication", 11, p13sshConnectEx, x, 'ssh');
-                    Q('dp2user').focus();
-                    setTimeout(sshAuthUpdate, 50);
-                    return;
-                }
+                case 'sshauth': { sshTunnelAuthDialog(data, p13sshConnectEx); return; }
                 case 'autherror': { p13setConsoleMsg("Authentication Error", 5000); return; }
                 case 'connectionerror': { p13setConsoleMsg("Connection Error", 5000); return; }
                 case 'sessionerror': { p13setConsoleMsg("Session expired", 5000); return; }
@@ -10136,11 +10148,14 @@
             if (b == 0) {
                 if (files != null) { connectFiles(); } // Disconnect
             } else {
-                var keep = false;
-                if ((features2 & 0x00400000) == 0) { keep =  Q('dp2keep').checked; }
+                var keep = 0;
                 if (Q('dp2authmethod').value == 1) {
+                    if ((features2 & 0x00400000) == 0) { keep = (Q('dp2keep').checked ? 1 : 0); }
                     files.socket.send(JSON.stringify({ action: 'sshauth', username: Q('dp2user').value, password: Q('dp2pass').value, keep: keep }));
+                } else if (Q('dp2authmethod').value == 3) {
+                    files.socket.send(JSON.stringify({ action: 'sshkeyauth', keypass: Q('dp2keypass2').value }));
                 } else {
+                    if ((features2 & 0x00400000) == 0) { keep = (Q('dp2keep1').checked ? 1 : 0); if (keep == 1) { keep += (Q('dp2keep2').checked ? 1 : 0); } } // Keep: 1 = user & key, 2 = User, key and password
                     var reader = new FileReader(), username = Q('dp2user').value, keypass = Q('dp2keypass').value;
                     reader.onload = function (e) { files.socket.send(JSON.stringify({ action: 'sshauth', username: username, keypass: keypass, key: e.target.result, keep: keep })); }
                     reader.readAsText(Q('dp2key').files[0]);
