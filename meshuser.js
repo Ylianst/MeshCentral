@@ -729,7 +729,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (docs[i].pmt != null) { docs[i].pmt = 1; }
 
                             // Remove SSH credentials if present
-                            if (docs[i].ssh != null) { docs[i].ssh = (docs[i].ssh.k) ? 2 : 1; }
+                            if (docs[i].ssh != null) {
+                                if (docs[i].ssh.u) {
+                                    if (docs[i].ssh.k && docs[i].ssh.kp) { docs[i].ssh = 2; } // Username, key and password
+                                    else if (docs[i].ssh.k) { docs[i].ssh = 3; } // Username and key. No password.
+                                    else if (docs[i].ssh.p) { docs[i].ssh = 1; } // Username and password
+                                    else { delete docs[i].ssh; }
+                                } else {
+                                    delete docs[i].ssh;
+                                }
+                            }
 
                             // Remove RDP credentials if present
                             if (docs[i].rdp != null) { docs[i].rdp = 1; }

@@ -80,7 +80,7 @@
         var urlargs = parseUriArgs();
         if (urlargs.key && (isAlphaNumeric(urlargs.key) == false)) { delete urlargs.key; }
         var cookie = '{{{cookie}}}';
-        var serverCredentials = (decodeURIComponent('{{{serverCredentials}}}') == 'true');
+        var serverCredentials = parseInt('{{{serverCredentials}}}');
         var name = decodeURIComponent('{{{name}}}');
         if (name != '') { document.title = name + ' - ' + document.title; }
         var features = parseInt('{{{features}}}');
@@ -97,7 +97,7 @@
                 QE('connectButton', false);
             }
 
-            if (serverCredentials == true) {
+            if (serverCredentials == 1) {
                 QV('dropdowndomain', true);
                 Q('d3coreMode').value = 1;
             } else {

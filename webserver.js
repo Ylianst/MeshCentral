@@ -1962,13 +1962,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if ((err != null) || (nodes.length != 1)) { res.sendStatus(404); return; }
                     const node = nodes[0];
 
-                    // Check if we have RDP credentials for this device
-                    var serverCredentials = false;
+                    // Check if we have SSH/RDP credentials for this device
+                    var serverCredentials = 0;
                     if (domain.allowsavingdevicecredentials !== false) {
                         if (page == 'ssh') {
-                            serverCredentials = ((typeof node.ssh == 'object') && (typeof node.ssh.u == 'string'))
+                            if ((typeof node.ssh == 'object') && (typeof node.ssh.u == 'string') && (typeof node.ssh.p == 'string')) { serverCredentials = 1; } // Username and password
+                            else if ((typeof node.ssh == 'object') && (typeof node.ssh.k == 'string') && (typeof node.ssh.kp == 'string')) { serverCredentials = 2; } // Username, key and password
+                            else if ((typeof node.ssh == 'object') && (typeof node.ssh.k == 'string')) { serverCredentials = 3; } // Username and key. No password.
                         } else {
-                            serverCredentials = ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string'))
+                            if ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) { serverCredentials = 1; } // Username and password
                         }
                     }
 
@@ -2028,14 +2030,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (typeof node.sshport == 'number') { port = node.sshport; }
 
                 // Check if we have SSH credentials for this device
-                if (domain.allowsavingdevicecredentials !== false) { serverCredentials = ((typeof node.ssh == 'object') && (typeof node.ssh.u == 'string')); }
+                if (domain.allowsavingdevicecredentials !== false) {
+                    if ((typeof node.ssh == 'object') && (typeof node.ssh.u == 'string') && (typeof node.ssh.p == 'string')) { serverCredentials = 1; } // Username and password
+                    else if ((typeof node.ssh == 'object') && (typeof node.ssh.k == 'string') && (typeof node.ssh.kp == 'string')) { serverCredentials = 2; } // Username, key and password
+                    else if ((typeof node.ssh == 'object') && (typeof node.ssh.k == 'string')) { serverCredentials = 3; } // Username and key. No password.
+                }
             } else {
                 // RDP port
                 port = 3389;
                 if (typeof node.rdpport == 'number') { port = node.rdpport; }
 
                 // Check if we have RDP credentials for this device
-                if (domain.allowsavingdevicecredentials !== false) { serverCredentials = ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')); }
+                if (domain.allowsavingdevicecredentials !== false) {
+                    if ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) { serverCredentials = 1; } // Username and password
+                }
             }
             if (req.query.port != null) { var qport = 0; try { qport = parseInt(req.query.port); } catch (ex) { } if ((typeof qport == 'number') && (qport > 0) && (qport < 65536)) { port = qport; } }
 
@@ -7513,7 +7521,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((r.pmt != null) || (r.ssh != null) || (r.rdp != null) || ((r.intelamt != null) && ((r.intelamt.pass != null) || (r.intelamt.mpspass != null)))) {
             r = Object.assign({}, r); // Shallow clone
             if (r.pmt != null) { r.pmt = 1; }
-            if (r.ssh != null) { r.ssh = (r.ssh.k != null) ? 2 : 1; }
+            if (r.ssh && r.ssh.u) {
+                if (r.ssh.p) { r.ssh = 1; } // Username and password
+                else if (r.ssh.k && r.ssh.kp) { r.ssh = 2; } // Username, key and password
+                else if (r.ssh.k) { r.ssh = 3; } // Username and key. No password.
+            }
             if (r.rdp != null) { r.rdp = 1; }
             if ((r.intelamt != null) && ((r.intelamt.pass != null) || (r.intelamt.mpspass != null))) {
                 r.intelamt = Object.assign({}, r.intelamt); // Shallow clone
