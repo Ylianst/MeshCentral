@@ -1126,10 +1126,10 @@ function serverConnect() {
     // Cookie authentication
     var ckey = null, loginCookie = null;
     if (args.loginkey != null) {
-        // User key passed in a argument hex
+        // User key passed in as argument hex
         if (args.loginkey.length != 160) { loginCookie = args.loginkey; }
         ckey = Buffer.from(args.loginkey, 'hex');
-        if (ckey != 80) { ckey = null; loginCookie = args.loginkey; }
+        if (ckey.length != 80) { ckey = null; loginCookie = args.loginkey; }
     } else if (args.loginkeyfile != null) {
         // Load key from hex file
         var fs = require('fs');
