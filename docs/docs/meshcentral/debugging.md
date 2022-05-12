@@ -1,4 +1,10 @@
-Youtube video about  websockets: https://youtu.be/3vI4URd3VzU
+## Websockets Video
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/3vI4URd3VzU" frameborder="0" allowfullscreen></iframe>
+</div>
+
+## Enabling trace in your browser Dev Tools
 
 `Trace=1` as a parameter in chrome dev tools for debugging
 
@@ -26,7 +32,7 @@ If you want to change node to meshcentral in journalctl, add this to /etc/system
 SyslogIdentifier=meshcentral
 ```
 
-## Logging it all
+## Server: Logging it all
 
 To log everything that's possible, prepare the log directory.
 
@@ -89,6 +95,8 @@ obj.fs.writeSync(obj.xxLogFile, new Date().toLocaleTimeString() + ' - ' + source
 
 `log.txt` will now log everything in the Trace tab, but not formatted as nice.
 
+## Restricting server to specific IP(s)
+
 When doing debugging on my development server, I use this line in the settings section to block all agent connections except the agent I want:
 
 ```
@@ -97,9 +105,10 @@ When doing debugging on my development server, I use this line in the settings s
 
 Of course, this is just for debugging.
 
-
 ## Finding system ID types
 
-<https://serverurl/meshagents>
+<https://serverurl/meshagents> aka trying figure out what this is
+
+![ID](images/determine-id.png)
 
 ## General server statistics related
