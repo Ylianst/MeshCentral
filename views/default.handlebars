@@ -2722,6 +2722,7 @@
                         if (message.localport) { url += '&localport=' + message.localport; }
                         if (message.ip != null) { url += ('&remoteip=' + message.ip); }
                         url += ('&appid=' + message.protocol + '&autoexit=1'); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP, 6 = MCRDesktop, 7 = MCRFiles
+                        console.log(url);
                         downloadFile(url, '');
                     } else if (message.tag == 'novnc') {
                         var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + (message.localRelay?'local':'mesh') + 'relay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
@@ -4561,7 +4562,7 @@
                 if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
                     if ((serverinfo.devicemeshrouterlinks != null) && (Array.isArray(serverinfo.devicemeshrouterlinks.extralinks))) {
                         for (var i in serverinfo.devicemeshrouterlinks.extralinks) {
-                            var r = serverinfo.devicemeshrouterlinks.extralinks[i], p = 0;
+                            var r = serverinfo.devicemeshrouterlinks.extralinks[i], p = '\"' + r.protocol + '\"';
                             if (doesDeviceMatchFilterTags(node, r.filter)) {
                                 if (typeof r.protocol == 'number') { p = r.protocol; } else if (r.protocol == 'http') { p = 1; } else if (r.protocol == 'https') { p = 2; } else if (r.protocol == 'rdp') { p = 3; } else if (r.protocol == 'ssh') { p = 4; } else if (r.protocol == 'scp') { p = 5; } else if (r.protocol == 'mcrdesktop') { p = 6; } else if (r.protocol == 'mcrfiles') { p = 7; }
                                 x += '<a href=# onclick=p10MCRouter("' + node._id + '",' + p + ',' + r.port + (r.ip?(',\"' + r.ip + '\"'):',null') + ',' + (r.localport?r.localport:0) + ')>' + r.name + '</a>&nbsp;';
@@ -7114,7 +7115,7 @@
                         if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
                             if ((serverinfo.devicemeshrouterlinks != null) && (Array.isArray(serverinfo.devicemeshrouterlinks.extralinks))) {
                                 for (var i in serverinfo.devicemeshrouterlinks.extralinks) {
-                                    var r = serverinfo.devicemeshrouterlinks.extralinks[i], p = 0;
+                                    var r = serverinfo.devicemeshrouterlinks.extralinks[i], p = '\"' + r.protocol + '\"';;
                                     if (doesDeviceMatchFilterTags(node, r.filter)) {
                                         if (typeof r.protocol == 'number') { p = r.protocol; } else if (r.protocol == 'http') { p = 1; } else if (r.protocol == 'https') { p = 2; } else if (r.protocol == 'rdp') { p = 3; } else if (r.protocol == 'ssh') { p = 4; } else if (r.protocol == 'scp') { p = 5; } else if (r.protocol == 'mcrdesktop') { p = 6; } else if (r.protocol == 'mcrfiles') { p = 7; }
                                         if (((p == 6) || (p == 7)) && (node.mtype != 2)) continue; // If this is not an agent device, don't show MeshCentral Router desktop/file links.
