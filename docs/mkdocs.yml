@@ -6,7 +6,10 @@ nav:
     - install/index.md
 
   - MeshCentral: 
-    - meshcentral/index.md
+      - 'Index': 'meshcentral/index.md'
+      - 'Tokens': 'meshcentral/tokens.md'
+      - 'Assistant': 'meshcentral/assistant.md'
+      - 'Debugging': 'meshcentral/debugging.md'
 
   - Design and Architecture:
     - design/index.md
@@ -27,7 +30,7 @@ site_description: "A remote monitoring and management tool"
 site_author: "Ylianst"
 site_url: "https://git.meshcentral.com/"
 
-dev_addr: "0.0.0.0:8006"
+dev_addr: "0.0.0.0:8010"
 
 # Repository
 repo_name: "Ylianst/MeshCentral"
@@ -46,6 +49,7 @@ theme:
     - navigation.tabs
     - navigation.expand
     - navigation.top
+    - navigation.instant
     - toc.integrate
 extra_css:
   - stylesheets/extra.css
