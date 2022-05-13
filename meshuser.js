@@ -1611,7 +1611,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var err = null;
                     try {
                         // Change the current user's notification flags for a meshid
-                        if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check the meshid
+                        if (common.validateString(command.meshid, 8, 134) == false) { err = 'Invalid group identifier'; } // Check the meshid
                         else if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                         if (common.validateInt(command.notify) == false) { err = 'Invalid notification flags'; }
                         if (parent.IsMeshViewable(user, command.meshid) == false) err = 'Access denied';
@@ -2033,7 +2033,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Validate input
                     try {
-                        if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check the meshid
+                        if (common.validateString(command.meshid, 8, 134) == false) { err = 'Invalid group identifier'; } // Check the meshid
                         else if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                     } catch (ex) { err = 'Validation exception: ' + ex; }
 
@@ -2139,7 +2139,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Validate input
                     try {
-                        if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check the meshid
+                        if (common.validateString(command.meshid, 8, 134) == false) { err = 'Invalid group identifier'; } // Check the meshid
                         else if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                         if (err == null) {
                             mesh = parent.meshes[command.meshid];
@@ -2257,8 +2257,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     try {
-                        if (common.validateString(command.userid, 1, 1024) == false) { err = "Invalid userid"; } // Check userid
-                        if (common.validateString(command.meshid, 1, 1024) == false) { err = "Invalid groupid"; } // Check meshid
+                        if (common.validateString(command.userid, 8, 1024) == false) { err = "Invalid userid"; } // Check userid
+                        if (common.validateString(command.meshid, 8, 134) == false) { err = "Invalid groupid"; } // Check meshid
                         if (command.userid.indexOf('/') == -1) { command.userid = 'user/' + domain.id + '/' + command.userid; }
                         if (command.userid == obj.user._id) { err = "Can't remove self"; } // Can't add of modify self
                         if ((command.userid.split('/').length != 3) || ((obj.crossDomain !== true) && (command.userid.split('/')[1] != domain.id))) { err = "Invalid userid"; } // Invalid domain, operation only valid for current domain
@@ -2343,7 +2343,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'meshamtpolicy':
                 {
                     // Change a mesh Intel AMT policy
-                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
+                    if (common.validateString(command.meshid, 8, 134) == false) break; // Check the meshid
                     if (common.validateObject(command.amtpolicy) == false) break; // Check the amtpolicy
                     if (common.validateInt(command.amtpolicy.type, 0, 4) == false) break; // Check the amtpolicy.type
                     if (command.amtpolicy.type === 2) {
@@ -2394,7 +2394,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'addlocaldevice':
                 {
-                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
+                    if (common.validateString(command.meshid, 8, 134) == false) break; // Check meshid
                     if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                     if (common.validateString(command.devicename, 1, 256) == false) break; // Check device name
                     if (common.validateString(command.hostname, 1, 256) == false) break; // Check hostname
@@ -2426,7 +2426,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'addamtdevice':
                 {
                     if (args.wanonly == true) return; // This is a WAN-only server, local Intel AMT computers can't be added
-                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
+                    if (common.validateString(command.meshid, 8, 134) == false) break; // Check meshid
                     if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                     if (common.validateString(command.devicename, 1, 256) == false) break; // Check device name
                     if (common.validateString(command.hostname, 1, 256) == false) break; // Check hostname
@@ -2497,7 +2497,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Perform input validation
                     try {
                         if (common.validateStrArray(command.nodeids, 1, 256) == false) { err = "Invalid nodeids"; } // Check nodeids
-                        if (common.validateString(command.meshid, 1, 1024) == false) { err = "Invalid groupid"; } // Check meshid
+                        if (common.validateString(command.meshid, 8, 134) == false) { err = "Invalid groupid"; } // Check meshid
                         else {
                             if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                             mesh = parent.meshes[command.meshid];
@@ -3138,7 +3138,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     try {
                         if ((domain.mailserver == null) || (args.lanonly == true)) { err = 'Unsupported feature'; } // This operation requires the email server
                         else if ((parent.parent.certificates.CommonName == null) || (parent.parent.certificates.CommonName.indexOf('.') == -1)) { err = 'Unsupported feature'; } // Server name must be configured
-                        else if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check meshid
+                        else if (common.validateString(command.meshid, 8, 134) == false) { err = 'Invalid group identifier'; } // Check meshid
                         else {
                             if (command.meshid.split('/').length == 1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                             if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = 'Invalid group identifier'; } // Invalid domain, operation only valid for current domain
@@ -3751,10 +3751,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                 }
 
-                if (common.validateString(command.meshid, 8, 128) == false) { err = 'Invalid group id'; } // Check the meshid
+                if (common.validateString(command.meshid, 8, 134) == false) { err = 'Invalid group id'; } // Check the meshid (Max length of a meshid is 134 bytes).
                 else if (common.validateInt(command.expire, 0, 99999) == false) { err = 'Invalid expire time'; } // Check the expire time in hours
                 else if (common.validateInt(command.flags, 0, 256) == false) { err = 'Invalid flags'; } // Check the flags
-                else if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check meshid
                 else {
                     if (command.meshid.split('/').length == 1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                     var smesh = command.meshid.split('/');
@@ -3766,6 +3765,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 // Handle any errors
                 if (err != null) {
+                    console.log(err, command.meshid);
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createInviteLink', responseid: command.responseid, result: err })); } catch (ex) { } }
                     break;
                 }
@@ -3790,7 +3790,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var err = null;
 
                 // Argument validation
-                if (common.validateString(command.meshid, 8, 128) == false) { err = 'Invalid device group id'; } // Check the meshid
+                if (common.validateString(command.meshid, 8, 134) == false) { err = 'Invalid device group id'; } // Check the meshid
                 else if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                 else if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
                 else {
@@ -5179,7 +5179,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     
         var selfMeshRights = 0;
         try {
-            if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid groupid'; } // Check the meshid
+            if (common.validateString(command.meshid, 8, 134) == false) { err = 'Invalid groupid'; } // Check the meshid
             else if (common.validateInt(command.meshadmin) == false) { err = 'Invalid group rights'; } // Mesh rights must be an integer
             else if ((common.validateStrArray(command.usernames, 1, 64) == false) && (common.validateStrArray(command.userids, 1, 128) == false)) { err = 'Invalid usernames'; } // Username is between 1 and 64 characters
             else {
