@@ -57,6 +57,16 @@ and from the server to the MeshAgent. The server and the agent do have access th
 recommended to use port mappings to tunnel data that is also encrypted for that end-to-end
 encryption is assured.
 
+## Custom Apps
+
+_Starting v1.0.21_
+
+![1](images/custom_apps1.png)
+
+![2](images/custom_apps2.png)
+
+![3](images/custom_apps3.png)
+
 ## Command Line Arguments
 
 MeshCentral router can be run with command line arguments to make it quicker and easier to
