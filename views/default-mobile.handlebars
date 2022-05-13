@@ -951,7 +951,9 @@
                                     </div>
                                     <div style="margin-left:2px">
                                         <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) onkeypress="return false" onkeydown="return false" type="button" style="display:none">
-                                        <input id=p13Connect value="Connect" onclick=connectFiles(event) onkeypress="return false" onkeydown="return false" type="button">
+                                        <input id=p13Connect value="Connect" onclick=connectFiles(event,1) onkeypress="return false" onkeydown="return false" type="button" />
+                                        <input id=p13Connects value="SFTP Connect" onclick=connectFiles(event,2) onkeypress="return false" onkeydown="return false" type="button" />
+                                        <input id=p13Disconnect value="Disconnect" onclick=connectFiles(event) onkeypress="return false" onkeydown="return false" type="button" />
                                         <span class=textOverGray id=p13Status>Disconnected</span>
                                     </div>
                                 </td>
@@ -5028,15 +5030,24 @@
             filesNode = currentNode;
             var online = ((filesNode.conn & 1) != 0) || (filesNode.mtype == 3); // If Agent (1) connected, enable Terminal
             QE('p13Connect', online);
+            QE('p13Connects', online);
+            QV('p13Connect', (files == null) && (filesNode.mtype == 2));
+            QV('p13Connects', (files == null) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4));
+            QV('p13Disconnect', files != null);
             if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
             p13setActions();
         }
 
         function onFilesStateChange(xfiles, state) {
             setSessionActivity();
-            p13Connect.value = (state == 0) ? "Connect" : "Disconnect";
+            QV('p13Connect', (state == 0) && (filesNode.mtype == 2));
+            QV('p13Connects', (state == 0) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4));
+            QV('p13Disconnect', state != 0);
             var str = StatusStrs[state];
-            if (files.webRtcActive == true) { str += ", WebRTC"; }
+            if (state == 3) {
+                if (files.contype == 2) { str += ", SFTP"; }
+                if (files.webRtcActive == true) { str += ", WebRTC"; }
+            }
             Q('p13Status').textContent = str;
             switch (state) {
                 case 0:
@@ -5080,12 +5091,13 @@
         var autoConnectFilesTimer = null;
         function autoConnectFiles(e) { if (autoConnectFilesTimer == null) { autoConnectFilesTimer = setInterval(connectFiles, 100); } else { clearInterval(autoConnectFilesTimer); autoConnectFilesTimer = null; } }
 
-        function connectFiles(e) {
+        function connectFiles(e, contype) {
             p13clearConsoleMsg();
             if (!files) {
                 // Setup a mesh agent files
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
-                if (filesNode.mtype == 3) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
+                if (contype == 2) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
+                files.contype = contype;
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
@@ -5304,7 +5316,8 @@
                 QE('p13CopyButton', advancedFeatures && (cc > 0) && (cc == sfc) && (currentNode.mtype != 3) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13PasteButton', advancedFeatures && (currentNode.mtype != 3) && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
             }
-            if (filesNode.mtype != 3) {
+            var filesState = ((files != null) && (files.state != 0));
+            if (((filesState == true) && (files.contype != 2)) || (filesNode.agent.id == 3) || (filesNode.agent.id == 4)) {
                 QH('filesCustomUpperRight', '');
             } else {
                 QH('filesCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (filesNode.sshport ? filesNode.sshport : 22)) + '</a>');

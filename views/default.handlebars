@@ -9988,7 +9988,7 @@
             var online = ((filesNode.conn & 1) != 0) || (filesNode.mtype == 3); // If Agent (1) connected, enable Terminal
             QE('p13Connect', online);
             QE('p13Connects', online);
-            QV('p13Connect', files == null);
+            QV('p13Connect', (files == null) && (filesNode.mtype == 2));
             QV('p13Connects', (files == null) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4));
             QV('p13Disconnect', files != null);
             if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
@@ -9996,10 +9996,9 @@
         }
 
         function onFilesStateChange(xfiles, state) {
-            QV('p13Connect', state == 0);
-            QV('p13Connects', state == 0);
+            QV('p13Connect', (state == 0) && (files == null) && (filesNode.mtype == 2));
+            QV('p13Connects', (state == 0) && (files == null) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4));
             QV('p13Disconnect', state != 0);
-            //p13Connect.value = (state == 0) ? "Connect" : "Disconnect";
             var str = StatusStrs[state];
             if (state == 3) {
                 if (files.contype == 2) { str += ", SFTP"; }
