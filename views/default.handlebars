@@ -7566,7 +7566,7 @@
             if ((navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
                 try {
                     navigator.clipboard.readText().then(function(text) {
-                        meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text });
+                        if (desktop.m.setClipboard) { desktop.m.setClipboard(text); } else { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }
                     }).catch(function(err) { console.log(err); });
                 } catch (ex) { console.log(ex); }
             }
@@ -8332,7 +8332,8 @@
             var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
-            QE('DeskClip', (deskState == 3) && (desktop.contype != 4));
+            QE('DeskClip', deskState == 3);
+            //QE('DeskClip', (deskState == 3) && (desktop.contype != 4));
             QV('DeskClip', (inputAllowed) && (currentNode.agent) && ((features2 & 0x1800) != 0x1800) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
             QE('DeskESC', (deskState == 3) && (desktop.contype != 4));
             QV('DeskESC', browserfullscreen && inputAllowed);
@@ -8737,7 +8738,7 @@
                     try {
                         navigator.clipboard.readText().then(function(text) {
                             if ((text != null) && (deskLastClipboardSent != text)) {
-                                meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text });
+                                if (desktop.m.setClipboard) { desktop.m.setClipboard(text); } else { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }
                                 deskLastClipboardSent = text;
                             }
                         }).catch(function(err) { });
@@ -9323,8 +9324,12 @@
 
         function showDeskClipSet() {
             if (desktop == null || desktop.State != 3) return;
-            meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: Q('d2clipText').value });
-            QV('linuxClipWarn', currentNode && currentNode.agent && (currentNode.agent.id > 4) && (currentNode.agent.id != 21) && (currentNode.agent.id != 22) && (currentNode.agent.id != 34));
+            if (desktop.m.setClipboard) {
+                desktop.m.setClipboard(Q('d2clipText').value);
+            } else {
+                meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: Q('d2clipText').value });
+                QV('linuxClipWarn', currentNode && currentNode.agent && (currentNode.agent.id > 4) && (currentNode.agent.id != 21) && (currentNode.agent.id != 22) && (currentNode.agent.id != 34));
+            }
         }
 
         // Send CTRL-ALT-DEL

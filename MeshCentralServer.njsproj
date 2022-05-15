@@ -198,6 +198,7 @@
     <Compile Include="rdp\protocol\index.js" />
     <Compile Include="rdp\protocol\nla.js" />
     <Compile Include="rdp\protocol\pdu\caps.js" />
+    <Compile Include="rdp\protocol\pdu\cliprdr.js" />
     <Compile Include="rdp\protocol\pdu\data.js" />
     <Compile Include="rdp\protocol\pdu\global.js" />
     <Compile Include="rdp\protocol\pdu\index.js" />

@@ -83,6 +83,10 @@ var CreateRDPDesktop = function (canvasid) {
                         obj.Stop();
                         break;
                     }
+                    case 'rdp-clipboard': {
+                        console.log('clipboard', msg[1]);
+                        break;
+                    }
                     case 'ping': { obj.socket.send('["pong"]'); break; }
                     case 'pong': { break; }
                 }
@@ -99,7 +103,15 @@ var CreateRDPDesktop = function (canvasid) {
         obj.Canvas.fillRect(0, 0, obj.ScreenWidth, obj.ScreenHeight);
         if (obj.socket) { obj.socket.close(); }
     }
-    
+
+    obj.m.setClipboard = function (content) {
+        console.log('s1');
+        if (obj.socket) {
+            console.log('s2', content);
+            obj.socket.send(JSON.stringify(['clipboard', content]));
+        }
+    }
+
     function changeState(newstate) {
         if (obj.State == newstate) return;
         obj.State = newstate;
@@ -153,14 +165,14 @@ var CreateRDPDesktop = function (canvasid) {
     }
     obj.m.handleKeyUp = function (e) {
         if (!obj.socket || (obj.State != 3)) return;
-        console.log('handleKeyUp', Mstsc.scancode(e));
+        //console.log('handleKeyUp', Mstsc.scancode(e));
         obj.socket.send(JSON.stringify(['scancode', Mstsc.scancode(e), false]));
         e.preventDefault();
         return false;
     }
     obj.m.handleKeyDown = function (e) {
         if (!obj.socket || (obj.State != 3)) return;
-        console.log('handleKeyDown', Mstsc.scancode(e));
+        //console.log('handleKeyDown', Mstsc.scancode(e));
         obj.socket.send(JSON.stringify(['scancode', Mstsc.scancode(e), true]));
         e.preventDefault();
         return false;
