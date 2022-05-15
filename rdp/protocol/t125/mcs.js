@@ -25,6 +25,7 @@ var error = require('../../core').error;
 var gcc = require('./gcc');
 var per = require('./per');
 var asn1 = require('../../asn1');
+var cliprdr = require('../pdu/cliprdr');
 
 var Message = {
 	MCS_TYPE_CONNECT_INITIAL : 0x65,
@@ -43,9 +44,32 @@ var DomainMCSPDU = {
 };
 
 var Channel = {
-    MCS_GLOBAL_CHANNEL : 1003,
-    MCS_USERCHANNEL_BASE : 1001
+    MCS_GLOBAL_CHANNEL: 1003,
+    MCS_USERCHANNEL_BASE: 1001,
+    MCS_CLIPRDR_CHANNEL: 1005
 };
+
+/**
+ * Channel Definde
+ */
+const RdpdrChannelDef = new type.Component({
+    name: new type.BinaryString(Buffer.from('rdpdr' + '\x00\x00\x00', 'binary'), { readLength: new type.CallableValue(8) }),
+    options: new type.UInt32Le(0x80800000)
+});
+
+const RdpsndChannelDef = new type.Component({
+    name: new type.BinaryString(Buffer.from('rdpsnd' + '\x00\x00', 'binary'), { readLength: new type.CallableValue(8) }),
+    options: new type.UInt32Le(0xc0000000)
+});
+
+const CliprdrChannelDef = new type.Component({
+    name: new type.BinaryString(Buffer.from('cliprdr' + '\x00', 'binary'), { readLength: new type.CallableValue(8) }),
+    // CHANNEL_OPTION_INITIALIZED |
+    // CHANNEL_OPTION_ENCRYPT_RDP |
+    // CHANNEL_OPTION_COMPRESS_RDP |
+    // CHANNEL_OPTION_SHOW_PROTOCOL
+    options: new type.UInt32Le(0xc0a00000)
+});
 
 /**
  * @see http://www.itu.int/rec/T-REC-T.125-199802-I/en page 25
@@ -126,7 +150,10 @@ function MCS(transport, recvOpCode, sendOpCode) {
 	this.transport = transport;
 	this.recvOpCode = recvOpCode;
 	this.sendOpCode = sendOpCode;
-	this.channels = [{id : Channel.MCS_GLOBAL_CHANNEL, name : 'global'}];
+    this.channels = [
+        { id: Channel.MCS_GLOBAL_CHANNEL, name: 'global' },
+        { id: Channel.MCS_CLIPRDR_CHANNEL, name: 'cliprdr' }
+    ];
 	this.channels.find = function(callback) {
 		for(var i in this) {
 			if(callback(this[i])) return this[i];
@@ -207,8 +234,9 @@ function Client(transport) {
 	this.channelsConnected = 0;
 	
 	// init gcc information
-	this.clientCoreData = gcc.clientCoreData();
-	this.clientNetworkData = gcc.clientNetworkData(new type.Component([]));
+    this.clientCoreData = gcc.clientCoreData();
+    // cliprdr channel
+    this.clientNetworkData = gcc.clientNetworkData(new type.Component([RdpdrChannelDef, CliprdrChannelDef, RdpsndChannelDef]));
 	this.clientSecurityData = gcc.clientSecurityData();
 	
 	// must be readed from protocol
@@ -317,7 +345,8 @@ Client.prototype.recvChannelJoinConfirm = function(s) {
     
     var channelId = per.readInteger16(s);
 
-    if ((confirm !== 0) && (channelId === Channel.MCS_GLOBAL_CHANNEL || channelId === this.userId)) {
+    //if ((confirm !== 0) && (channelId === Channel.MCS_GLOBAL_CHANNEL || channelId === this.userId)) {
+    if ((confirm !== 0) && (channelId === Channel.MCS_CLIPRDR_CHANNEL || channelId === Channel.MCS_GLOBAL_CHANNEL || channelId === this.userId)) {
     	throw new error.UnexpectedFatalError('NODE_RDP_PROTOCOL_T125_MCS_SERVER_MUST_CONFIRM_STATIC_CHANNEL');
     }
     

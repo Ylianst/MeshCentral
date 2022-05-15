@@ -743,7 +743,7 @@
                                     <div id="terminalCustomUiButtons" style="float:left"></div>
                                 </div>
                                 <div>
-                                    <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none" /><span id="connectbutton2span" style="margin-right:4px"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span><span id="connectbutton2hspan" style="margin-right:4px"><input type="button" id="connectbutton2h" value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span><span id="disconnectbutton2span" style="margin-right:4px"><input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
+                                    <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none" /><span id="connectbutton2span" style="margin-right:4px"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span><span id="connectbutton2sspan" style="margin-right:4px"><input type="button" id="connectbutton2s" cmenu=sshPortContextMenu value="SSH Connect" onclick=connectTerminal(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span><span id="connectbutton2hspan" style="margin-right:4px"><input type="button" id="connectbutton2h" value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span><span id="disconnectbutton2span" style="margin-right:4px"><input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
                                     <span id="termstatus" style="line-height:22px">Disconnected</span><span id="termtitle"></span>
                                 </div>
                             </td>
@@ -801,7 +801,9 @@
                             </div>
                             <div>
                                 <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) type="button" style="display:none" />
-                                <input id=p13Connect value="Connect" onclick=connectFiles(event) type="button" />
+                                <input id=p13Connect value="Connect" onclick=connectFiles(event,1) type="button" />
+                                <input id=p13Connects value="SFTP Connect" cmenu=sshPortContextMenu onclick=connectFiles(event,2) type="button" />
+                                <input id=p13Disconnect value="Disconnect" onclick=connectFiles(event) type="button" />
                                 <span id=p13Status>Disconnected</span>
                             </div>
                         </td>
@@ -2722,7 +2724,6 @@
                         if (message.localport) { url += '&localport=' + message.localport; }
                         if (message.ip != null) { url += ('&remoteip=' + message.ip); }
                         url += ('&appid=' + message.protocol + '&autoexit=1'); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP, 6 = MCRDesktop, 7 = MCRFiles
-                        console.log(url);
                         downloadFile(url, '');
                     } else if (message.tag == 'novnc') {
                         var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + (message.localRelay?'local':'mesh') + 'relay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
@@ -7565,7 +7566,7 @@
             if ((navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
                 try {
                     navigator.clipboard.readText().then(function(text) {
-                        meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text });
+                        if (desktop.m.setClipboard) { desktop.m.setClipboard(text); } else { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }
                     }).catch(function(err) { console.log(err); });
                 } catch (ex) { console.log(ex); }
             }
@@ -8331,7 +8332,8 @@
             var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
-            QE('DeskClip', (deskState == 3) && (desktop.contype != 4));
+            QE('DeskClip', deskState == 3);
+            //QE('DeskClip', (deskState == 3) && (desktop.contype != 4));
             QV('DeskClip', (inputAllowed) && (currentNode.agent) && ((features2 & 0x1800) != 0x1800) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
             QE('DeskESC', (deskState == 3) && (desktop.contype != 4));
             QV('DeskESC', browserfullscreen && inputAllowed);
@@ -8736,7 +8738,7 @@
                     try {
                         navigator.clipboard.readText().then(function(text) {
                             if ((text != null) && (deskLastClipboardSent != text)) {
-                                meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text });
+                                if (desktop.m.setClipboard) { desktop.m.setClipboard(text); } else { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }
                                 deskLastClipboardSent = text;
                             }
                         }).catch(function(err) { });
@@ -9322,8 +9324,12 @@
 
         function showDeskClipSet() {
             if (desktop == null || desktop.State != 3) return;
-            meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: Q('d2clipText').value });
-            QV('linuxClipWarn', currentNode && currentNode.agent && (currentNode.agent.id > 4) && (currentNode.agent.id != 21) && (currentNode.agent.id != 22) && (currentNode.agent.id != 34));
+            if (desktop.m.setClipboard) {
+                desktop.m.setClipboard(Q('d2clipText').value);
+            } else {
+                meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: Q('d2clipText').value });
+                QV('linuxClipWarn', currentNode && currentNode.agent && (currentNode.agent.id > 4) && (currentNode.agent.id != 21) && (currentNode.agent.id != 22) && (currentNode.agent.id != 34));
+            }
         }
 
         // Send CTRL-ALT-DEL
@@ -9557,7 +9563,8 @@
 
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
-            QV('connectbutton2span', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2));
+            QV('connectbutton2span', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.mtype != 3));
+            QV('connectbutton2sspan', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.agent.id != 3) && (terminalNode.agent.id != 4));
             if (terminalNode.mtype == 1) {
                 QV('connectbutton2hspan', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
                 QV('terminalSizeDropDown', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
@@ -9568,7 +9575,7 @@
 
             // Enable action button if mesh type is not "local devices"
             QV('termActionsBtn', terminalNode.mtype != 3);
-            if (terminalNode.mtype != 3) {
+            if (((termState == true) && (terminal.contype != 3)) || (terminalNode.agent.id == 3) || (terminalNode.agent.id == 4)) {
                 QH('terminalCustomUpperRight', '');
             } else {
                 QH('terminalCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (terminalNode.sshport?terminalNode.sshport:22)) + '</a>');
@@ -9577,6 +9584,7 @@
             // Enable buttons
             var online = ((terminalNode.conn & 1) != 0) || (terminalNode.mtype == 3); // If Agent (1) connected, enable Terminal
             QE('connectbutton2', online);
+            QE('connectbutton2s', online);
             var hwonline = ((terminalNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton2h', hwonline);
 
@@ -9612,7 +9620,10 @@
             var xstate = state;
             if ((xstate == 3) && (xterminal.contype == 2)) { xstate++; }
             var str = StatusStrs[xstate];
-            if (terminal.webRtcActive == true) { str += ", WebRTC"; }
+            if (xstate == 3) {
+                if (terminal.contype == 3) { str += ", SSH"; }
+                if (terminal.webRtcActive == true) { str += ", WebRTC"; }
+            }
             QH('termstatus', str);
             switch (state) {
                 case 0:
@@ -9777,6 +9788,7 @@
             }
         }
 
+        // contype: 1 = Agent, 2 = AMT, 3 = SSH
         function connectTerminal(e, contype, options) {
             p12clearConsoleMsg();
             if (!terminal) {
@@ -9853,8 +9865,8 @@
                         });
 
                         // Setup a terminal tunnel to the agent
-                        terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel((currentNode.mtype == 3)? sshTunnelUpdate : tunnelUpdate, termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
-                        if (currentNode.mtype == 3) { terminal.urlname = 'sshterminalrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
+                        terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel((contype == 3)? sshTunnelUpdate : tunnelUpdate, termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                        if (contype == 3) { terminal.urlname = 'sshterminalrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
                         terminal.debugmode = debugmode;
                         terminal.m.debugmode = debugmode;
                         terminal.options = termoptions;
@@ -9862,7 +9874,7 @@
                         if (termoptions.requireLogin) { terminal.options.requireLogin = true; }
                         terminal.Start(terminalNode._id);
                         terminal.onStateChanged = onTerminalStateChange;
-                        terminal.contype = 1;
+                        terminal.contype = contype;
                         terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
                         terminal.onConsoleMessageChange = function () { p12setConsoleMsg(terminal.consoleMessage ? formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs) : null, terminal.consoleMessageTimeout); }
                     } else {
@@ -9880,7 +9892,7 @@
                         terminal.onStateChanged = onTerminalStateChange;
                         terminal.onConsoleMessageChange = function () { p12setConsoleMsg(terminal.consoleMessage ? formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs) : null, terminal.consoleMessageTimeout); }
                         terminal.Start(terminalNode._id);
-                        terminal.contype = 1;
+                        terminal.contype = contype;
                         terminal.m.terminalEmulation = 0;
                         terminal.m.fxEmulation = 0;
                         Q('id_ttypebutton').value = terminalEmulations[0];
@@ -9980,14 +9992,23 @@
             filesNode = currentNode;
             var online = ((filesNode.conn & 1) != 0) || (filesNode.mtype == 3); // If Agent (1) connected, enable Terminal
             QE('p13Connect', online);
+            QE('p13Connects', online);
+            QV('p13Connect', (files == null) && (filesNode.mtype == 2));
+            QV('p13Connects', (files == null) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4));
+            QV('p13Disconnect', files != null);
             if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
             p13setActions();
         }
 
         function onFilesStateChange(xfiles, state) {
-            p13Connect.value = (state == 0) ? "Connect" : "Disconnect";
+            QV('p13Connect', (state == 0) && (files == null) && (filesNode.mtype == 2));
+            QV('p13Connects', (state == 0) && (files == null) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4));
+            QV('p13Disconnect', state != 0);
             var str = StatusStrs[state];
-            if (files.webRtcActive == true) { str += ", WebRTC"; }
+            if (state == 3) {
+                if (files.contype == 2) { str += ", SFTP"; }
+                if (files.webRtcActive == true) { str += ", WebRTC"; }
+            }
             Q('p13Status').textContent = str;
             switch (state) {
                 case 0:
@@ -10033,12 +10054,14 @@
         var autoConnectFilesTimer = null;
         function autoConnectFiles(e) { if (autoConnectFilesTimer == null) { autoConnectFilesTimer = setInterval(connectFiles, 100); } else { clearInterval(autoConnectFilesTimer); autoConnectFilesTimer = null; } }
 
-        function connectFiles(e) {
+        // 1 = Agent, 2 = SFTP
+        function connectFiles(e, contype) {
             p13clearConsoleMsg();
             if (!files) {
                 // Setup a mesh agent files
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
-                if (filesNode.mtype == 3) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
+                if (contype == 2) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
+                files.contype = contype;
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
@@ -10340,7 +10363,8 @@
                 QE('p13ZipButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
             }
-            if (filesNode.mtype != 3) {
+            var filesState = ((files != null) && (files.state != 0));
+            if (((filesState == true) && (files.contype != 2)) || (filesNode.agent.id == 3) || (filesNode.agent.id == 4)) {
                 QH('filesCustomUpperRight', '');
             } else {
                 QH('filesCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (filesNode.sshport?filesNode.sshport:22)) + '</a>');

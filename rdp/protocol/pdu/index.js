@@ -21,10 +21,12 @@ var lic = require('./lic');
 var sec = require('./sec');
 var global = require('./global');
 var data = require('./data');
+var cliprdr = require('./cliprdr');
 
 module.exports = {
-	lic : lic,
-	sec : sec,
-	global : global,
-	data : data
+	lic: lic,
+	sec: sec,
+	global: global,
+    data: data,
+    cliprdr: cliprdr
 };

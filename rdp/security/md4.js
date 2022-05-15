@@ -121,7 +121,7 @@
       } else if (message.length === undefined) {
         return method(message);
       }
-      return crypto.createHash('md4').update(new Buffer(message)).digest('hex');
+      return crypto.createHash('md4').update(Buffer.from(message)).digest('hex');
     };
     return nodeMethod;
   };

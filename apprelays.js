@@ -152,7 +152,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                         obj.wsClient._socket.pause();
                         try {
                             obj.relaySocket.write(data, function () {
-                                try { obj.wsClient._socket.resume(); } catch (ex) { console.log(ex); }
+                                if (obj.wsClient && obj.wsClient._socket) { try { obj.wsClient._socket.resume(); } catch (ex) { console.log(ex); } }
                             });
                         } catch (ex) { console.log(ex); obj.close(); }
                     }
@@ -201,6 +201,10 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 try { ws.send(bitmap.data); } catch (ex) { } // Send the bitmap data as binary
                 delete bitmap.data;
                 send(['rdp-bitmap', bitmap]); // Send the bitmap metadata seperately, without bitmap data.
+            }).on('clipboard', function (content) {
+                // Clipboard data changed
+                console.log('RDP clipboard recv', content);
+                send(['rdp-clipboard', content]);
             }).on('close', function () {
                 send(['rdp-close']);
             }).on('error', function (err) {
@@ -317,6 +321,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 }
                 case 'mouse': { if (rdpClient && (obj.viewonly != true)) { rdpClient.sendPointerEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
                 case 'wheel': { if (rdpClient && (obj.viewonly != true)) { rdpClient.sendWheelEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
+                case 'clipboard': { rdpClient.setClipboardData(msg[1]); break; }
                 case 'scancode': {
                     if (obj.limitedinput == true) { // Limit keyboard input
                         var ok = false, k = msg[1];
