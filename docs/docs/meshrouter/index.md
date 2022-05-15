@@ -1,12 +1,22 @@
 # MeshCentral Router
 
-[MeshCentral Router Guide](https://meshcentral.com/info/docs/MeshCentral2RouterUserGuide.pdf)
+![](images/Aspose.Words.954ea56c-626b-416a-8b2a-efde10ebd3a9.002.png)
+
+[MeshCentral Router Guide as .pdf](https://meshcentral.com/info/docs/MeshCentral2RouterUserGuide.pdf)
 
 ## Video Walkthru
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/BubeVRmbCRM" frameborder="0" allowfullscreen></iframe>
 </div>
+
+## Abstract
+
+This document takes a look at MeshCentral Router, a Windows application that performs TCP and UDP port mapping from a local machine to any remote computer thru a MeshCentral servers. This document should allow the user to Internet relay traffic thru NAT routers and firewalls. 
+
+## Introduction
+
+MeshCentral is a remote management web site that connects users to remote computers over a local network or the internet. In addition to remote management features, MeshCentral is capable of relaying TCP and UDP traffic thru the server and thru mesh agents installed on remote computers. This feature can be useful to, for example, perform a remote desktop session using RDP or route custom traffic that would otherwise be difficult to route. 
 
 ## Downloading
 
@@ -147,6 +157,10 @@ The “tray” switch will place MeshCentral Router on the Windows system tray i
 normal application bar.
 
 ## Conclusion
+
+MeshCentral Router is a free, open source tool for routing TCP and UDP traffic over the internet. It’s a powerful as it allows for any traffic to go thru NAT routers and firewalls while being encrypted using TLS. 
+
+## License
 
 MeshCentral, MeshCentral Router and this document are all opens source and licensed using
 Apache 2.0, the full license can be found at <https://www.apache.org/licenses/LICENSE-2.0>.
