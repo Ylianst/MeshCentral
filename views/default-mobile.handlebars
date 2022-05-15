@@ -919,7 +919,8 @@
                                         <div id="terminalCustomUpperRight" style="float:left;margin-right:6px"></div>
                                     </div>
                                     <div>
-                                        <span id="connectbutton2span" style="margin-left:3px"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" style="height:28px" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                                        <span id="connectbutton2span" style="margin-left:3px"><input type="button" id="connectbutton2" value="Connect" style="height:28px" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                                        <span id="connectbutton2sspan" style="margin-right:4px"><input type="button" id="connectbutton2s" value="SSH Connect" style="height:28px" onclick=connectTerminal(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                                         <span id="disconnectbutton2span" style="margin-left:3px"><input type="button" id="disconnectbutton2" value="Disconnect" style="height:28px" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
                                         <span id="termstatus" style="line-height:22px">Disconnected</span><span id="termtitle"></span>
                                     </div>
@@ -951,7 +952,9 @@
                                     </div>
                                     <div style="margin-left:2px">
                                         <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) onkeypress="return false" onkeydown="return false" type="button" style="display:none">
-                                        <input id=p13Connect value="Connect" onclick=connectFiles(event) onkeypress="return false" onkeydown="return false" type="button">
+                                        <input id=p13Connect value="Connect" onclick=connectFiles(event,1) onkeypress="return false" onkeydown="return false" type="button" />
+                                        <input id=p13Connects value="SFTP Connect" onclick=connectFiles(event,2) onkeypress="return false" onkeydown="return false" type="button" />
+                                        <input id=p13Disconnect value="Disconnect" onclick=connectFiles(event) onkeypress="return false" onkeydown="return false" type="button" />
                                         <span class=textOverGray id=p13Status>Disconnected</span>
                                     </div>
                                 </td>
@@ -4683,15 +4686,17 @@
 
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
-            QV('connectbutton2span', (termState == false) && (currentNode.agent != null) && (currentNode.agent.caps & 2));
+            QV('connectbutton2span', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.mtype != 3));
+            QV('connectbutton2sspan', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.agent.id != 3) && (terminalNode.agent.id != 4));
 
             // Enable buttons
             var online = ((terminalNode.conn & 1) != 0) || (terminalNode.mtype == 3); // If Agent (1) connected, enable Terminal
             QE('connectbutton2', online);
+            QE('connectbutton2s', online);
 
             // Enable action button if mesh type is not "local devices"
             QV('termActionsBtn', terminalNode.mtype != 3);
-            if (terminalNode.mtype != 3) {
+            if (((termState == true) && (terminal.contype != 3)) || (terminalNode.agent.id == 3) || (terminalNode.agent.id == 4)) {
                 QH('terminalCustomUpperRight', '');
             } else {
                 QH('terminalCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (terminalNode.sshport ? terminalNode.sshport : 22)) + '</a>');
@@ -4975,8 +4980,8 @@
                 document.getElementsByClassName('xterm-viewport')[0].style.overflow = 'hidden';
 
                 // Setup a terminal tunnel to the agent
-                terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel((currentNode.mtype == 3) ? sshTunnelUpdate : tunnelUpdate, termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
-                if (currentNode.mtype == 3) { terminal.urlname = 'sshterminalrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
+                terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel((contype == 3) ? sshTunnelUpdate : tunnelUpdate, termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                if (contype == 3) { terminal.urlname = 'sshterminalrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
                 terminal.debugmode = debugmode;
                 terminal.m.debugmode = debugmode;
                 terminal.options = termoptions;
@@ -4984,7 +4989,7 @@
                 if (termoptions.requireLogin) { terminal.options.requireLogin = true; }
                 terminal.Start(terminalNode._id);
                 terminal.onStateChanged = onTerminalStateChange;
-                terminal.contype = 1;
+                terminal.contype = contype;
                 terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
                 terminal.onConsoleMessageChange = function () { p12setConsoleMsg(terminal.consoleMessage ? formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs) : null, terminal.consoleMessageTimeout); }
             } else {
@@ -5028,15 +5033,24 @@
             filesNode = currentNode;
             var online = ((filesNode.conn & 1) != 0) || (filesNode.mtype == 3); // If Agent (1) connected, enable Terminal
             QE('p13Connect', online);
+            QE('p13Connects', online);
+            QV('p13Connect', (files == null) && (filesNode.mtype == 2));
+            QV('p13Connects', (files == null) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4));
+            QV('p13Disconnect', files != null);
             if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
             p13setActions();
         }
 
         function onFilesStateChange(xfiles, state) {
             setSessionActivity();
-            p13Connect.value = (state == 0) ? "Connect" : "Disconnect";
+            QV('p13Connect', (state == 0) && (filesNode.mtype == 2));
+            QV('p13Connects', (state == 0) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4));
+            QV('p13Disconnect', state != 0);
             var str = StatusStrs[state];
-            if (files.webRtcActive == true) { str += ", WebRTC"; }
+            if (state == 3) {
+                if (files.contype == 2) { str += ", SFTP"; }
+                if (files.webRtcActive == true) { str += ", WebRTC"; }
+            }
             Q('p13Status').textContent = str;
             switch (state) {
                 case 0:
@@ -5080,12 +5094,13 @@
         var autoConnectFilesTimer = null;
         function autoConnectFiles(e) { if (autoConnectFilesTimer == null) { autoConnectFilesTimer = setInterval(connectFiles, 100); } else { clearInterval(autoConnectFilesTimer); autoConnectFilesTimer = null; } }
 
-        function connectFiles(e) {
+        function connectFiles(e, contype) {
             p13clearConsoleMsg();
             if (!files) {
                 // Setup a mesh agent files
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
-                if (filesNode.mtype == 3) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
+                if (contype == 2) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
+                files.contype = contype;
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
@@ -5304,7 +5319,8 @@
                 QE('p13CopyButton', advancedFeatures && (cc > 0) && (cc == sfc) && (currentNode.mtype != 3) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13PasteButton', advancedFeatures && (currentNode.mtype != 3) && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
             }
-            if (filesNode.mtype != 3) {
+            var filesState = ((files != null) && (files.state != 0));
+            if (((filesState == true) && (files.contype != 2)) || (filesNode.agent.id == 3) || (filesNode.agent.id == 4)) {
                 QH('filesCustomUpperRight', '');
             } else {
                 QH('filesCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (filesNode.sshport ? filesNode.sshport : 22)) + '</a>');

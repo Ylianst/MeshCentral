@@ -87,6 +87,7 @@ function RdpClient(config) {
     this.x224 = new x224.Client(this.tpkt, config);
     this.mcs = new t125.mcs.Client(this.x224);
     this.sec = new pdu.sec.Client(this.mcs, this.tpkt);
+    this.cliprdr = new pdu.cliprdr.Client(this.mcs);
     this.global = new pdu.global.Client(this.sec, this.sec);
 
     // config log level
@@ -145,6 +146,9 @@ function RdpClient(config) {
             this.mcs.clientCoreData.obj.kbdLayout.value = t125.gcc.KeyboardLayout.US;
     }
 
+    this.cliprdr.on('clipboard', (content) => {
+        this.emit('clipboard', content)
+    });
 
     //bind all events
     var self = this;
@@ -326,6 +330,14 @@ RdpClient.prototype.sendWheelEvent = function (x, y, step, isNegative, isHorizon
     event.obj.yPos.value = y;
 
     this.global.sendInputEvents([event]);
+}
+
+/**
+ * Clipboard event
+ * @param data {String} content for clipboard
+ */
+RdpClient.prototype.setClipboardData = function (content) {
+    this.cliprdr.setClipboardData(content);
 }
 
 function createClient(config) {
