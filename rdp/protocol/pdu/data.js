@@ -1040,6 +1040,36 @@ function pdu(userId, pduMessage, opt) {
 	return new type.Component(self, opt);
 }
 
+
+const ClipPDUMsgType = {
+    CB_MONITOR_READY: 0x0001,
+    CB_FORMAT_LIST: 0x0002,
+    CB_FORMAT_LIST_RESPONSE: 0x0003,
+    CB_FORMAT_DATA_REQUEST: 0x0004,
+    CB_FORMAT_DATA_RESPONSE: 0x0005,
+    CB_TEMP_DIRECTORY: 0x0006,
+    CB_CLIP_CAPS: 0x0007,
+    CB_FILECONTENTS_REQUEST: 0x0008
+}
+
+/**
+ * @returns {type.Component}
+ */
+function clipPDU() {
+    const self = {
+        header: new type.Factory(function (s) {
+            self.header = new type.Component({
+                msgType: new type.UInt16Le().read(s),
+                msgFlags: new type.UInt16Le().read(s),
+                dataLen: new type.UInt32Le().read(s)
+            })
+        })
+
+    }
+    return new type.Component(self);
+}
+
+
 /**
  * @see http://msdn.microsoft.com/en-us/library/dd306368.aspx
  * @param opt {object} type option
@@ -1147,5 +1177,7 @@ module.exports = {
 		updateDataPDU : updateDataPDU,
 		dataPDU : dataPDU,
 		fastPathBitmapUpdateDataPDU : fastPathBitmapUpdateDataPDU,
-		fastPathUpdatePDU : fastPathUpdatePDU
+        fastPathUpdatePDU: fastPathUpdatePDU,
+        clipPDU: clipPDU,
+        ClipPDUMsgType: ClipPDUMsgType
 };
