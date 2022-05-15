@@ -2,7 +2,7 @@
 
 ![](images/Aspose.Words.954ea56c-626b-416a-8b2a-efde10ebd3a9.002.png)
 
-[MeshCentral Router Guide as .pdf](https://meshcentral.com/info/docs/MeshCentral2RouterUserGuide.pdf)
+MeshCentral Router Guide [as .pdf](https://meshcentral.com/info/docs/MeshCentral2RouterUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral%20Router%20User%20Guide%20v0.0.2.odt?raw=true)
 
 ## Video Walkthru
 
