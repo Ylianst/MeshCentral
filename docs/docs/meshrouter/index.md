@@ -156,6 +156,19 @@ bound to the loopback interface so that only local application can use the port 
 The “tray” switch will place MeshCentral Router on the Windows system tray instead of the
 normal application bar.
 
+## MeshCentral Router with SAML or OAuth
+
+You can't use the MeshCentral Router (MCR) login dialog box to login to a server that uses SAML or OAuth. However, you can still use MCR
+
+1. Download MCR and run it. 
+2. In the first dialog box, there will be an "Install..." button to setup MeshCentral router with the "mcrouter://" protocol in your system registry. 
+3. Once done, close MCR.
+4. Now log into the web UI of your MeshCentral server. Go in the bottom of the "My Devices" tab, hit the "Router" link and hit "Launch MeshCentral Router".
+5. This will launch the router and connect directly to your server using a login cookie.
+
+!!!note
+    The only drawback is you will have to manually load mappings saved in an .mcrouter file. When not using SAML, you can click on the .mcrouter file to load the mappings and MCR at the same time. 
+
 ## Conclusion
 
 MeshCentral Router is a free, open source tool for routing TCP and UDP traffic over the internet. It’s a powerful as it allows for any traffic to go thru NAT routers and firewalls while being encrypted using TLS. 
