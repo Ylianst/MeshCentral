@@ -1371,6 +1371,7 @@
                                 <label style="display:block"><input type="checkbox" id="d7rdp7" />Disable Cursor Settings</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font Smooting</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop Composision</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdpclip" />Automatic Clipboard</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdpsmb" />Swap Mouse Buttons</label>
                             </div>
                         </div>
@@ -7559,7 +7560,12 @@
 
         function deskClipboardInFunction() {
             if (desktop == null || desktop.State != 3) return;
-            meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 2 });
+            if (desktop.m.getClipboard) {
+                var text = desktop.m.getClipboard();
+                if ((text != null) && (navigator.clipboard != null)) { navigator.clipboard.writeText(text).then(function() { }).catch(function(err) { console.log(err); }) } // Put remote clipboard data into our clipboard
+            } else {
+                meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 2 });
+            }
         }
 
         // Called to lock or unlock remote desktop user input
@@ -8339,7 +8345,6 @@
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QE('DeskClip', deskState == 3);
-            //QE('DeskClip', (deskState == 3) && (desktop.contype != 4));
             QV('DeskClip', (inputAllowed) && (currentNode.agent) && ((features2 & 0x1800) != 0x1800) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
             QE('DeskESC', (deskState == 3) && (desktop.contype != 4));
             QV('DeskESC', browserfullscreen && inputAllowed);
@@ -8352,10 +8357,10 @@
             QV('DeskTimer', deskState == 3);
 
             // Enable browser clipboard read if supported
-            QV('DeskClipboardOutButton', online && inputAllowed && ((desktop == null) || (desktop.contype != 4)) && ((features2 & 0x1000) == 0) && (navigator.clipboard != null) && (navigator.clipboard.readText != null) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
+            var autoclipboard = ((desktop) && (desktop.contype == 4)) ? desktopsettings.rdpautoclipboard : desktopsettings.autoclipboard;
+            QV('DeskClipboardOutButton', online && inputAllowed && (desktop != null) && ((features2 & 0x1000) == 0) && (navigator.clipboard != null) && (navigator.clipboard.readText != null) && ((autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
             QV('d7deskAutoClipboardLabel', (navigator.clipboard.readText != null) && ((features2 & 0x1000) == 0));
-            QV('DeskClipboardInButton', online && inputAllowed && ((desktop == null) || (desktop.contype != 4)) && ((features2 & 0x0800) == 0) && (navigator.clipboard != null) && (navigator.clipboard.writeText != null) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
-
+            QV('DeskClipboardInButton', online && inputAllowed && (desktop != null) && ((features2 & 0x0800) == 0) && (navigator.clipboard != null) && (navigator.clipboard.writeText != null) && ((autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
             if (deskState != 3) {
                 QV('DeskInputLockedButton', false);
                 QV('DeskInputUnLockedButton', false);
@@ -8539,6 +8544,7 @@
                     desktop = CreateRDPDesktop('Desk');
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.onScreenSizeChange = mdeskAdjust;
+                    desktop.m.onClipboardChanged = function(text) { if ((text != null) && (desktopsettings.rdpautoclipboard) && (navigator.clipboard != null)) { navigator.clipboard.writeText(text).then(function() { }).catch(function(err) { console.log(err); }) } } // Put remote clipboard data into our clipboard
                     if (desktopsettings.rdpsmb) { desktop.m.SwapMouse = desktopsettings.rdpsmb; }
                     desktop.Start(desktopNode._id, currentNode.rdpport ? currentNode.rdpport : 3389, tsid);
                     desktop.contype = 4;
@@ -8740,11 +8746,13 @@
                 if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms, ', desktop.latency.current); }
                 seconds = Math.floor((new Date() - desktop.startTime) / 1000);
                 QH('DeskTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
-                if ((desktopsettings.autoclipboard === true) && (navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
+                // Auto-clipboard
+                if ((((desktop.contype != 4) && (desktopsettings.autoclipboard === true)) || ((desktop.contype == 4) && (desktopsettings.rdpautoclipboard === true))) && (navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
                     try {
                         navigator.clipboard.readText().then(function(text) {
+                            if (desktop == null) return;
                             if ((text != null) && (deskLastClipboardSent != text)) {
-                                if (desktop.m.setClipboard) { desktop.m.setClipboard(text); } else { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }
+                                if (desktop.m.setClipboard) { desktop.m.setClipboard(text); } else { console.log('s3'); meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }
                                 deskLastClipboardSent = text;
                             }
                         }).catch(function(err) { });
@@ -8816,6 +8824,7 @@
             desktopsettings.localkeymap = d7localKeyMap.checked;
             desktopsettings.rdpsize = d7rdpsize.value;
             desktopsettings.rdpsmb = d7rdpsmb.checked;
+            desktopsettings.rdpautoclipboard = d7rdpclip.checked;
             var rdpflags = 0;
             for (var i = 1; i < 10; i++) { if ((i != 5) && (Q('d7rdp' + i).checked)) { rdpflags |= (1 << (i - 1)); } }
             desktopsettings.rdpflags = rdpflags;
@@ -8858,6 +8867,7 @@
             if (desktopsettings.rdpsize != null) { d7rdpsize.value = desktopsettings.rdpsize; }
             if (desktopsettings.rdpflags == null) { desktopsettings.rdpflags = 0x2F; }
             if (desktopsettings.rdpsmb != null) { d7rdpsmb.checked = desktopsettings.rdpsmb; }
+            if (desktopsettings.rdpautoclipboard != null) { d7rdpclip.checked = desktopsettings.rdpautoclipboard; }
             for (var i = 1; i < 10; i++) { if (i != 5) { Q('d7rdp' + i).checked = ((desktopsettings.rdpflags & (1 << (i - 1))) != 0); } }
         }
 
