@@ -15,6 +15,7 @@ var CreateRDPDesktop = function (canvasid) {
     obj.Canvas = obj.CanvasId.getContext('2d');
     obj.ScreenWidth = obj.width = 1280;
     obj.ScreenHeight = obj.height = 1024;
+    obj.m.onClipboardChanged = null;
 
     function mouseButtonMap(button) {
         // Swap mouse buttons if needed
@@ -83,10 +84,7 @@ var CreateRDPDesktop = function (canvasid) {
                         obj.Stop();
                         break;
                     }
-                    case 'rdp-clipboard': {
-                        console.log('clipboard', msg[1]);
-                        break;
-                    }
+                    case 'rdp-clipboard': { obj.lastClipboardContent = msg[1]; if (obj.m.onClipboardChanged) { obj.m.onClipboardChanged(msg[1]); } break; }
                     case 'ping': { obj.socket.send('["pong"]'); break; }
                     case 'pong': { break; }
                 }
@@ -105,6 +103,7 @@ var CreateRDPDesktop = function (canvasid) {
     }
 
     obj.m.setClipboard = function (content) { if (obj.socket) { obj.socket.send(JSON.stringify(['clipboard', content])); } }
+    obj.m.getClipboard = function () { return obj.lastClipboardContent; }
 
     function changeState(newstate) {
         if (obj.State == newstate) return;

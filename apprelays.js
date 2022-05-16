@@ -203,7 +203,6 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 send(['rdp-bitmap', bitmap]); // Send the bitmap metadata seperately, without bitmap data.
             }).on('clipboard', function (content) {
                 // Clipboard data changed
-                console.log('RDP clipboard recv', content);
                 send(['rdp-clipboard', content]);
             }).on('close', function () {
                 send(['rdp-close']);
