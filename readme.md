@@ -29,6 +29,8 @@ The [Installation Guide](https://info.meshcentral.com/downloads/MeshCentral2/Mes
 
 The [Design and Architecture Guide](https://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2DesignArchitecture.pdf) is a short document that includes information on the design overview, dependencies, source code descriptions of each file, certificates, TLS security, the agent to server handshake, browser to agent relay and WebRTC and the messenger service.
 
+[New Searchable Documentation](https://ylianst.github.io/MeshCentral/meshcmd/)  (incomplete - still integrating pdfs)
+
 ## Video Tutorials
 You can watch many tutorial videos on the [MeshCentral YouTube Channel](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos). Two videos to get started involve installation and basic usages.
 
