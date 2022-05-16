@@ -3178,6 +3178,9 @@
                             // Web page update
                             mainUpdate(1 | 2 | 4 | 16);
 
+                            // If we are looking at the device group for this device, update that.
+                            if ((xxcurrentView == 20) && (currentMesh != null) && (currentMesh._id == node.meshid)) { mainUpdate(4096); }
+
                             break;
                         }
                         case 'removenode': {
@@ -3194,6 +3197,9 @@
 
                                 // Web page update
                                 mainUpdate(4 | 16);
+
+                                // If we are looking at the device group for this device, update that.
+                                if ((xxcurrentView == 20) && (currentMesh != null) && (currentMesh._id == node.meshid)) { mainUpdate(4096); }
                             }
                             break;
                         }
@@ -12211,6 +12217,9 @@
             if ((currentMesh.mtype == 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) {
                 x += '<a href=# onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new computer to this device group by installing the mesh agent." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Agent" + '</a>';
                 x += '<a href=# onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Invite someone to install the mesh agent on this device group." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Invite" + '</a>';
+            }
+            if ((currentMesh.mtype == 3) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) {
+                x += '<a href=# onclick=\'return addLocalDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add device located on the local network." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>';
             }
             if (currentMesh.amt && (currentMesh.amt.type > 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { // ACM activation or Full Automatic
                 x += '<a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "ACM" + '</a>';
