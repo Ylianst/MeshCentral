@@ -179,7 +179,7 @@
     "status": [
       "PAS INSTALLÉ",
       "FONCTIONNEMENT",
-      "NE PAS COURRIR"
+      "PAS EN FONCTIONNEMENT"
     ],
     "statusDescription": "Statut actuel de l'agent",
     "agentVersion": "Nouvelle version",
