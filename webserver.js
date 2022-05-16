@@ -5843,7 +5843,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 'X-Content-Type-Options': 'nosniff',
                 'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'" + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' mcrouter:; media-src 'self'; form-action 'self'"
             };
-            if (req.headers['user-agent'].indexOf('Chrome') >= 0) { headers['Permissions-Policy'] = 'interest-cohort=()'; } // Remove Google's FLoC Network, only send this if Chrome browser
+            if (req.headers['user-agent'] && (req.headers['user-agent'].indexOf('Chrome') >= 0)) { headers['Permissions-Policy'] = 'interest-cohort=()'; } // Remove Google's FLoC Network, only send this if Chrome browser
             if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
             if ((parent.config.settings.stricttransportsecurity === true) || ((parent.config.settings.stricttransportsecurity !== false) && (obj.isTrustedCert(domain)))) { if (typeof parent.config.settings.stricttransportsecurity == 'string') { headers['Strict-Transport-Security'] = parent.config.settings.stricttransportsecurity; } else { headers['Strict-Transport-Security'] = 'max-age=63072000'; } }
 
