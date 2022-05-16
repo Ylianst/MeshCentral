@@ -104,13 +104,7 @@ var CreateRDPDesktop = function (canvasid) {
         if (obj.socket) { obj.socket.close(); }
     }
 
-    obj.m.setClipboard = function (content) {
-        console.log('s1');
-        if (obj.socket) {
-            console.log('s2', content);
-            obj.socket.send(JSON.stringify(['clipboard', content]));
-        }
-    }
+    obj.m.setClipboard = function (content) { if (obj.socket) { obj.socket.send(JSON.stringify(['clipboard', content])); } }
 
     function changeState(newstate) {
         if (obj.State == newstate) return;
