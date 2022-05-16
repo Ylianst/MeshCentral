@@ -2723,6 +2723,7 @@
                         if (message.tcpport != null) { url += ('&protocol=1&remoteport=' + message.tcpport); }
                         if (message.localRelay) { url += '&local=1'; }
                         if (message.localport) { url += '&localport=' + message.localport; }
+                        if (message.name != null) { url += ('&name=' + encodeURIComponentEx(message.name)); }
                         if (message.ip != null) { url += ('&remoteip=' + message.ip); }
                         url += ('&appid=' + message.protocol + '&autoexit=1'); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP, 6 = MCRDesktop, 7 = MCRFiles
                         console.log(url);
@@ -8012,29 +8013,33 @@
 
         function p10MCRouter(nodeid, protocol, port, addr, localport) {
             var node = getNodeFromId(nodeid);
+            var mesh = meshes[node.meshid];
             if ((protocol == 3) && (port == null)) { if (node.rdpport != null) { port = node.rdpport; } else { port = 3389; } } // Adjust RDP port if needed
-            if (node.mtype == 3) { var mesh = meshes[node.meshid]; if (mesh.relayid) { nodeid = mesh.relayid; addr = node.host; } } // Setup device replay if needed
-            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, ip: addr, tag: 'MCRouter', protocol: protocol, localport: localport }); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP, 6 = MCRDesktop, 7 = MCRFiles
+            if (node.mtype == 3) { if (mesh && mesh.relayid) { nodeid = mesh.relayid; addr = node.host; } } // Setup device replay if needed
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, ip: addr, tag: 'MCRouter', protocol: protocol, localport: localport, name: mesh ? mesh.name : null }); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP, 6 = MCRDesktop, 7 = MCRFiles
             return false;
         }
 
         function p10rfb(nodeid, port) {
             var node = getNodeFromId(nodeid), addr = null;
+            var mesh = meshes[node.meshid];
             if (port == null) { if (node.rfbport != null) { port = node.rfbport; } else { port = 5900; } }
-            if (node.mtype == 3) { var mesh = meshes[node.meshid]; if (mesh.relayid) { nodeid = mesh.relayid; addr = node.host; } } // Setup device replay if needed
-            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tcpaddr: addr, tag: 'novnc' });
+            if (node.mtype == 3) { if (mesh && mesh.relayid) { nodeid = mesh.relayid; addr = node.host; } } // Setup device relay if needed
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tcpaddr: addr, tag: 'novnc', name: mesh ? mesh.name : null });
         }
 
         function p10mstsc(nodeid, port) {
             var node = getNodeFromId(nodeid);
+            var mesh = meshes[node.meshid];
             if (port == null) { if (node.rdpport != null) { port = node.rdpport; } else { port = 3389; } } // Adjust RDP port if needed
-            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'mstsc' });
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'mstsc', name: mesh ? mesh.name : null });
         }
 
         function p10ssh(nodeid, port) {
             var node = getNodeFromId(nodeid);
+            var mesh = meshes[node.meshid];
             if (port == null) { if (node.sshport != null) { port = node.sshport; } else { port = 22; } }
-            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'ssh' });
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'ssh', name: mesh ? mesh.name : null });
         }
 
         // Show current location
