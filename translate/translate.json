@@ -1183,7 +1183,8 @@
     },
     {
       "en": ", SFTP",
-	  "pl": ", SFTP",
+      "nl": ", SFTP",
+      "pl": ", SFTP",
       "xloc": [
         "default-mobile.handlebars->11->468",
         "default.handlebars->39->1328"
@@ -1191,7 +1192,8 @@
     },
     {
       "en": ", SSH",
-	  "pl": ", SSH",
+      "nl": ", SSH",
+      "pl": ", SSH",
       "xloc": [
         "default.handlebars->39->1296"
       ]
@@ -27395,7 +27397,7 @@
       "ja": "フレームレート",
       "ko": "프레임 속도",
       "nl": "Frameverhouding",
-	  "pl": "Prędkość odświeżania",
+      "pl": "Prędkość odświeżania",
       "pt": "Taxa de quadros",
       "pt-br": "Taxa de quadros",
       "ru": "Частота кадров",
@@ -36865,14 +36867,16 @@
     },
     {
       "en": "Local network connection thru a relay agent.",
-	  "pl": "Lokalne połączenie sieciowe za pośrednictwem przekierowania agenta.",
+      "nl": "Lokale netwerkverbinding via een relay-agent.",
+      "pl": "Lokalne połączenie sieciowe za pośrednictwem przekierowania agenta.",
       "xloc": [
         "default.handlebars->39->384"
       ]
     },
     {
       "en": "Local network connection.",
-	  "pl": "Lokalne połączenie sieciowe.",
+      "nl": "Lokale netwerkverbinding.",
+      "pl": "Lokalne połączenie sieciowe.",
       "xloc": [
         "default.handlebars->39->386"
       ]
@@ -50038,7 +50042,7 @@
     },
     {
       "en": "Remember password",
-	  "pl": "Zapamiętaj hasło",
+      "pl": "Zapamiętaj hasło",
       "nl": "Onthoud wachtwoord",
       "xloc": [
         "default-mobile.handlebars->11->461",
@@ -50120,7 +50124,7 @@
     {
       "en": "Remember user & key",
       "nl": "Onthoud gebruikeruser & sleutel",
-	  "pl": "Zapamiętaj użytkownika i klucz",
+      "pl": "Zapamiętaj użytkownika i klucz",
       "xloc": [
         "default-mobile.handlebars->11->460",
         "default.handlebars->39->1311",
@@ -53677,7 +53681,8 @@
     },
     {
       "en": "SFTP Connect",
-	  "pl": "Połącz z SFTP",
+      "nl": "SFTP verbinding",
+      "pl": "Połącz z SFTP",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->0->1->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->0->1->3"
@@ -53963,7 +53968,8 @@
     },
     {
       "en": "SSH Connect",
-	  "pl": "Połącz z SSH",
+      "nl": "SSH verbinding",
+      "pl": "Połącz z SSH",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10terminal->termTable->termarea1->1->3->connectbutton2sspan",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->connectbutton2sspan"
@@ -54091,7 +54097,7 @@
     {
       "en": "SSH-User+Key",
       "nl": "SSH-gebruiker+sleutel",
-	  "pl": "SSH-Uużytkownik+Klucz",
+      "pl": "SSH-Uużytkownik+Klucz",
       "xloc": [
         "default-mobile.handlebars->11->324",
         "default-mobile.handlebars->11->328",
@@ -54102,7 +54108,7 @@
     {
       "en": "SSH-User+Key+Pass",
       "nl": "SSH-gebruiker+sleutel+wachtwoord",
-	  "pl": "SSH-Uużytkownik+Klucz+Hasło",
+      "pl": "SSH-Uużytkownik+Klucz+Hasło",
       "xloc": [
         "default-mobile.handlebars->11->323",
         "default-mobile.handlebars->11->327",
@@ -54113,7 +54119,7 @@
     {
       "en": "SSH-User+Pass",
       "nl": "SSH-gebruiker+wachtwoord",
-	  "pl": "SSH-Uużytkownik+Hasło",
+      "pl": "SSH-Uużytkownik+Hasło",
       "xloc": [
         "default-mobile.handlebars->11->322",
         "default-mobile.handlebars->11->326",
@@ -60554,7 +60560,7 @@
     {
       "en": "Stored Key",
       "nl": "Opgeslagen sleutel",
-	  "pl": "Przechowywany Klucz",
+      "pl": "Przechowywany Klucz",
       "xloc": [
         "default-mobile.handlebars->11->448",
         "default.handlebars->39->1299",
