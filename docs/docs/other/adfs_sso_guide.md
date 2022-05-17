@@ -13,7 +13,7 @@ The guide was built to deal specifically with adding mesh as a Relying Party. Iâ
 
 As with anything SSO, you need 2 pieces â€“ the IDP setup (in this case ADFS) and the SP setup (in this case Mesh).
 
-### Mesh Setup:
+### Mesh Setup
 
 Add the following to your mesh config file in the domains part:
 
