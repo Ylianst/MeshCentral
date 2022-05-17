@@ -80,20 +80,7 @@ You'll then have 3 files:
 -rw-rw-r-- 1 tactical tactical    381 Feb  2 12:02 mesherrors.txt
 ```
 
-And to make it truly log everything, change the following in meshcentral.js around line 3530.
-
-Old:
-```
-obj.fs.writeSync(obj.xxLogFile, new Date().toLocaleTimeString() + ' - ' + source + ': ' + Array.prototype.slice.call(...args).join('') + '\r\n');
-```
-
-New:
-
-```
-obj.fs.writeSync(obj.xxLogFile, new Date().toLocaleTimeString() + ' - ' + source + ': ' + args.join(' ') + '\r\n');
-```
-
-`log.txt` will now log everything in the Trace tab, but not formatted as nice.
+`log.txt` will now log everything in the Trace tab
 
 ## Restricting server to specific IP(s)
 
