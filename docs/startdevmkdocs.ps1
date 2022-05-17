@@ -14,3 +14,6 @@ pip install mkdocs-material #only 1st time
 #Run mkdocs and look at changes as you make them
 mkdocs serve
 start http://localhost:8010 #Opens Browser
+
+#Stop python
+deactivate
