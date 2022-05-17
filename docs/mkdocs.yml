@@ -26,6 +26,9 @@ nav:
   - Intel AMT:
     - intelamt/index.md
 
+  - Other:
+    - other/adfs_sso_guide.md
+
 site_description: "A remote monitoring and management tool"
 site_author: "Ylianst"
 site_url: "https://git.meshcentral.com/"
