@@ -13105,10 +13105,10 @@
             var url;
             if (serverinfo.https == true) {
                 var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
-                url = 'https://' + servername + portStr + domainUrl + 'invite';
+                url = 'https://' + servername + portStr + domainUrl + 'invite' + ((urlargs.key)?('?key=' + urlargs.key):'');
             } else {
                 var portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port);
-                url = 'http://' + servername + portStr + domainUrl + 'invite';
+                url = 'http://' + servername + portStr + domainUrl + 'invite' + ((urlargs.key)?('?key=' + urlargs.key):'');
             }
 
             if (meshrights & 1) {
