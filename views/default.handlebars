@@ -4505,6 +4505,14 @@
                     if ((node.conn & 8) != 0) { states.push('<span title="' + "Mesh agent is reachable using another agent as relay." + '">' + "Relay" + '</span>'); }
                     if ((node.conn & 16) != 0) { states.push('<span title="' + "MQTT connection to the device is active." + '">' + "MQTT" + '</span>'); }
                 }
+                if (node.mtype == 3) {
+                    var mesh = meshes[node.meshid];
+                    if (mesh && mesh.relayid) {
+                        states.push('<span title="' + "Local network connection thru a relay agent." + '">' + "Relay" + '</span>');
+                    } else {
+                        states.push('<span title="' + "Local network connection." + '">' + "Local" + '</span>');
+                    }
+                }
 
                 if (node.desc && (deviceViewSettings.devsCols.indexOf('desc') >= 0)) { name = '<div style=float:right>' + EscapeHtml(node.desc) + '</div><div>' + name + '</div>'; }
 
@@ -4523,12 +4531,19 @@
                 if (!Array.isArray(deviceViewSettings.devsCols)) { deviceViewSettings.devsCols = ['user','ip','conn']; }
 
                 // Display configured columns
-                if (deviceViewSettings.devsCols.indexOf('agtype') >= 0) { r += '<td style=text-align:center;font-size:x-small;padding-left:4px;padding-right:4px title="' + EscapeHtml((node.agent && node.agent.id && (node.agent.id <= agentsStr.length))?agentsStr[node.agent.id]:'') + '">' + EscapeHtml((node.agent && node.agent.id && (node.agent.id <= agentsStr.length))?agentsStr[node.agent.id]:'').replace(',', '<br />'); } // Agent type
+                if (deviceViewSettings.devsCols.indexOf('agtype') >= 0) { r += '<td style=text-align:center;font-size:x-small;padding-left:4px;padding-right:4px title="' + EscapeHtml(((node.mtype != 3) && node.agent && node.agent.id && (node.agent.id <= agentsStr.length))?agentsStr[node.agent.id]:'') + '">' + EscapeHtml(((node.mtype != 3) && node.agent && node.agent.id && (node.agent.id <= agentsStr.length))?agentsStr[node.agent.id]:'').replace(',', '<br />'); } // Agent type
                 if (deviceViewSettings.devsCols.indexOf('agver') >= 0) { r += '<td style=text-align:center;font-size:x-small;padding-left:4px;padding-right:4px title="' + EscapeHtml((node.agent && node.agent.core)?node.agent.core:'') + '">' + EscapeHtml((node.agent && node.agent.core)?node.agent.core:'').replace(',', '<br />'); } // Agent core
-                if (deviceViewSettings.devsCols.indexOf('os') >= 0) { r += '<td style=text-align:center;font-size:x-small title="' + EscapeHtml(node.osdesc?node.osdesc:'') + '">' + EscapeHtml(node.osdesc?node.osdesc:''); } // Operating System
+                if (deviceViewSettings.devsCols.indexOf('os') >= 0) { // Operating System
+                    if (node.mtype == 3) {
+                        var osstr = ''; if (node.agent.id == 4) { osstr = 'Windows'; } if (node.agent.id == 6) { osstr = 'Linux'; } if (node.agent.id == 29) { osstr = 'MacOS'; }
+                        r += '<td style=text-align:center;font-size:x-small title="' + EscapeHtml(osstr) + '">' + EscapeHtml(osstr);
+                    } else {
+                        r += '<td style=text-align:center;font-size:x-small title="' + EscapeHtml(node.osdesc?node.osdesc:'') + '">' + EscapeHtml(node.osdesc?node.osdesc:'');
+                    }
+                }
                 if (deviceViewSettings.devsCols.indexOf('links') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + getShortRouterLinks(node); } // Links
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
-                if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { r += '<td style=text-align:center>' + (node.ip != null ? node.ip : ''); } // IP address
+                if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { var ip = ''; if (node.mtype == 3) { ip = node.host; } else if (node.ip) { ip = node.ip; } r += '<td style=text-align:center>' + ip; } // IP address
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
                 if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { r += '<td style=text-align:center;font-size:x-small>'; if (node.conn > 0) { r += "Connected"; } else if (node.lastconnect != null) { r += printDateTime(new Date(node.lastconnect)); } }
 
@@ -4549,7 +4564,7 @@
             var x = '', meshrights = GetNodeRights(node);
 
             // RDP link, show this link only of the remote machine is Windows.
-            if (((node.conn & 1) != 0) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
+            if ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
                 if ((node.agent.id > 0) && (node.agent.id < 5)) {
                     if (navigator.platform.toLowerCase() == 'win32') {
                         if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false)) {
@@ -4574,6 +4589,7 @@
                         for (var i in serverinfo.devicemeshrouterlinks.extralinks) {
                             var r = serverinfo.devicemeshrouterlinks.extralinks[i], p = '\"' + r.protocol + '\"';
                             if (doesDeviceMatchFilterTags(node, r.filter)) {
+                                if ((node.mtype == 3) && ((r.protocol == 'mcrdesktop') || (r.protocol == 'mcrfiles'))) continue;
                                 if (typeof r.protocol == 'number') { p = r.protocol; } else if (r.protocol == 'http') { p = 1; } else if (r.protocol == 'https') { p = 2; } else if (r.protocol == 'rdp') { p = 3; } else if (r.protocol == 'ssh') { p = 4; } else if (r.protocol == 'scp') { p = 5; } else if (r.protocol == 'mcrdesktop') { p = 6; } else if (r.protocol == 'mcrfiles') { p = 7; }
                                 x += '<a href=# onclick=p10MCRouter("' + node._id + '",' + p + ',' + r.port + (r.ip?(',\"' + r.ip + '\"'):',null') + ',' + (r.localport?r.localport:0) + ')>' + r.name + '</a>&nbsp;';
                             }
