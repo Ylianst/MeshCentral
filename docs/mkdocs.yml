@@ -4,6 +4,7 @@ nav:
 
   - Install:
     - install/index.md
+    - install/install2.md
 
   - MeshCentral: 
       - 'Index': 'meshcentral/index.md'
@@ -28,6 +29,7 @@ nav:
 
   - Other:
     - other/adfs_sso_guide.md
+    - other/meshcentral_satellite.md
 
 site_description: "A remote monitoring and management tool"
 site_author: "Ylianst"
