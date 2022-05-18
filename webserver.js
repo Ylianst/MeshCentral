@@ -5115,21 +5115,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Download tools using a cookie
                 if (c.download == req.query.meshaction) {
                     if (req.query.meshaction == 'winrouter') {
-                        var p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe');
+                        var p = null;
+                        if (obj.meshToolsBinaries['MeshCentralRouter']) { p = obj.meshToolsBinaries['MeshCentralRouter'].path; }
+                        if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe'); }
                         if (obj.fs.existsSync(p)) {
                             setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.exe', null, 'MeshCentralRouter.exe');
                             try { res.sendFile(p); } catch (ex) { }
                         } else { try { res.sendStatus(404); } catch (ex) { } }
                         return;
                     } else if (req.query.meshaction == 'winassistant') {
-                        var p = obj.path.join(__dirname, 'agents', 'MeshCentralAssistant.exe');
+                        var p = null;
+                        if (obj.meshToolsBinaries['MeshCentralAssistant']) { p = obj.meshToolsBinaries['MeshCentralAssistant'].path; }
+                        if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralAssistant.exe'); }
                         if (obj.fs.existsSync(p)) {
                             setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralAssistant.exe', null, 'MeshCentralAssistant.exe');
                             try { res.sendFile(p); } catch (ex) { }
                         } else { try { res.sendStatus(404); } catch (ex) { } }
                         return;
                     } else if (req.query.meshaction == 'macrouter') {
-                        var p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.dmg');
+                        var p = null;
+                        if (obj.meshToolsBinaries['MeshCentralRouterMacOS']) { p = obj.meshToolsBinaries['MeshCentralRouterMacOS'].path; }
+                        if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.dmg'); }
                         if (obj.fs.existsSync(p)) {
                             setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.dmg', null, 'MeshCentralRouter.dmg');
                             try { res.sendFile(p); } catch (ex) { }
@@ -5190,21 +5196,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 res.send(JSON.stringify(meshaction, null, ' '));
                 return;
             } else if (req.query.meshaction == 'winrouter') {
-                var p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe');
+                var p = null;
+                if (parent.meshToolsBinaries['MeshCentralRouter']) { p = parent.meshToolsBinaries['MeshCentralRouter'].path; }
+                if ((p == null) || !obj.fs.existsSync(p)) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe'); }
                 if (obj.fs.existsSync(p)) {
                     setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.exe', null, 'MeshCentralRouter.exe');
                     try { res.sendFile(p); } catch (ex) { }
                 } else { try { res.sendStatus(404); } catch (ex) { } }
                 return;
             } else if (req.query.meshaction == 'winassistant') {
-                var p = obj.path.join(__dirname, 'agents', 'MeshCentralAssistant.exe');
+                var p = null;
+                if (parent.meshToolsBinaries['MeshCentralAssistant']) { p = parent.meshToolsBinaries['MeshCentralAssistant'].path; }
+                if ((p == null) || !obj.fs.existsSync(p)) { p = obj.path.join(__dirname, 'agents', 'MeshCentralAssistant.exe'); }
                 if (obj.fs.existsSync(p)) {
                     setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralAssistant.exe', null, 'MeshCentralAssistant.exe');
                     try { res.sendFile(p); } catch (ex) { }
                 } else { try { res.sendStatus(404); } catch (ex) { } }
                 return;
             } else if (req.query.meshaction == 'macrouter') {
-                var p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.dmg');
+                var p = null;
+                if (parent.meshToolsBinaries['MeshCentralRouterMacOS']) { p = parent.meshToolsBinaries['MeshCentralRouterMacOS'].path; }
+                if ((p == null) || !obj.fs.existsSync(p)) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.dmg'); }
                 if (obj.fs.existsSync(p)) {
                     setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.dmg', null, 'MeshCentralRouter.dmg');
                     try { res.sendFile(p); } catch (ex) { }
@@ -5829,9 +5841,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 'Referrer-Policy': 'no-referrer',
                 'X-XSS-Protection': '1; mode=block',
                 'X-Content-Type-Options': 'nosniff',
-                'Permissions-Policy': 'interest-cohort=()', // Remove Google's FLoC Network
                 'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'" + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' mcrouter:; media-src 'self'; form-action 'self'"
             };
+            if (req.headers['user-agent'] && (req.headers['user-agent'].indexOf('Chrome') >= 0)) { headers['Permissions-Policy'] = 'interest-cohort=()'; } // Remove Google's FLoC Network, only send this if Chrome browser
             if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
             if ((parent.config.settings.stricttransportsecurity === true) || ((parent.config.settings.stricttransportsecurity !== false) && (obj.isTrustedCert(domain)))) { if (typeof parent.config.settings.stricttransportsecurity == 'string') { headers['Strict-Transport-Security'] = parent.config.settings.stricttransportsecurity; } else { headers['Strict-Transport-Security'] = 'max-age=63072000'; } }
 
@@ -7521,12 +7533,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((r.pmt != null) || (r.ssh != null) || (r.rdp != null) || ((r.intelamt != null) && ((r.intelamt.pass != null) || (r.intelamt.mpspass != null)))) {
             r = Object.assign({}, r); // Shallow clone
             if (r.pmt != null) { r.pmt = 1; }
-            if (r.ssh && r.ssh.u) {
-                if (r.ssh.p) { r.ssh = 1; } // Username and password
-                else if (r.ssh.k && r.ssh.kp) { r.ssh = 2; } // Username, key and password
-                else if (r.ssh.k) { r.ssh = 3; } // Username and key. No password.
+            if (r.ssh != null) {
+                var n = {};
+                for (var i in r.ssh) {
+                    if (i.startsWith('user/')) {
+                        if (r.ssh[i].p) { n[i] = 1; } // Username and password
+                        else if (r.ssh[i].k && r.ssh[i].kp) { n[i] = 2; } // Username, key and password
+                        else if (r.ssh[i].k) { n[i] = 3; } // Username and key. No password.
+                    }
+                }
+                r.ssh = n;
             }
-            if (r.rdp != null) { r.rdp = 1; }
+            if (r.rdp != null) { var n = {}; for (var i in r.rdp) { if (i.startsWith('user/')) { n[i] = 1; } } r.rdp = n; }
             if ((r.intelamt != null) && ((r.intelamt.pass != null) || (r.intelamt.mpspass != null))) {
                 r.intelamt = Object.assign({}, r.intelamt); // Shallow clone
                 if (r.intelamt.pass != null) { r.intelamt.pass = 1; }; // Remove the Intel AMT administrator password from the node

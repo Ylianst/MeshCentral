@@ -203,7 +203,7 @@ MeshCentral makes heavy use of Transport Layer Security (TLS) and datagram-TLS (
 
 Probably the most important TLS configuration is for the MeshCentral server ports 443 and 4433. These two ports are exposed to the Internet and so, should be setup as securely as possible. 
 
-### MeshCentral HTTPS port 443** 
+### MeshCentral HTTPS port 443
 
 The HTTPS port on the MeshCentral server will only support TLS 1.2 and above, and makes use of only 6 cypher suites: 
 
