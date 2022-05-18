@@ -423,9 +423,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if (event == 'updatefiles') { updateUserFiles(user, ws, domain); }
                         else {
                             // If updating guest device shares, if we are updating a user that is not creator of the share, remove the URL.
-                            if ((event.action == 'deviceShareUpdate') && (Array.isArray(event.deviceShares))) {
+                            if (((event.action == 'deviceShareUpdate') && (Array.isArray(event.deviceShares))) || ((event.action == 'changenode') && (event.node != null) && ((event.node.rdp != null) || (event.node.ssh != null)))) {
                                 event = common.Clone(event);
-                                for (var i in event.deviceShares) { if (event.deviceShares[i].userid != user._id) { delete event.deviceShares[i].url; } }
+                                if ((event.action == 'deviceShareUpdate') && (Array.isArray(event.deviceShares))) {
+                                    for (var i in event.deviceShares) { if (event.deviceShares[i].userid != user._id) { delete event.deviceShares[i].url; } }
+                                }
+                                if ((event.action == 'changenode') && (event.node != null) && ((event.node.rdp != null) || (event.node.ssh != null))) {
+                                    // Clean up RDP & SSH credentials
+                                    if ((event.node.rdp != null) && (typeof event.node.rdp[user._id] == 'number')) { event.node.rdp = event.node.rdp[user._id]; } else { delete event.node.rdp; }
+                                    if ((event.node.ssh != null) && (typeof event.node.ssh[user._id] == 'number')) { event.node.ssh = event.node.ssh[user._id]; } else { delete event.node.ssh; }
+                                }
                             }
 
                             // This is a MeshCentral Satellite message
@@ -730,18 +737,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Remove SSH credentials if present
                             if (docs[i].ssh != null) {
-                                if (docs[i].ssh.u) {
-                                    if (docs[i].ssh.k && docs[i].ssh.kp) { docs[i].ssh = 2; } // Username, key and password
-                                    else if (docs[i].ssh.k) { docs[i].ssh = 3; } // Username and key. No password.
-                                    else if (docs[i].ssh.p) { docs[i].ssh = 1; } // Username and password
+                                if ((docs[i].ssh[obj.user._id] != null) && (docs[i].ssh[obj.user._id].u)) {
+                                    if (docs[i].ssh.k && docs[i].ssh[obj.user._id].kp) { docs[i].ssh = 2; } // Username, key and password
+                                    else if (docs[i].ssh[obj.user._id].k) { docs[i].ssh = 3; } // Username and key. No password.
+                                    else if (docs[i].ssh[obj.user._id].p) { docs[i].ssh = 1; } // Username and password
                                     else { delete docs[i].ssh; }
                                 } else {
                                     delete docs[i].ssh;
                                 }
                             }
 
-                            // Remove RDP credentials if present
-                            if (docs[i].rdp != null) { docs[i].rdp = 1; }
+                            // Remove RDP credentials if present, only set to 1 if our userid has RDP credentials
+                            if ((docs[i].rdp != null) && (docs[i].rdp[obj.user._id] != null)) { docs[i].rdp = 1; } else { delete docs[i].rdp; }
 
                             // Remove Intel AMT credential if present
                             if (docs[i].intelamt != null) {
@@ -3014,12 +3021,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
 
                         if ((typeof command.ssh == 'number') && (command.ssh == 0)) {
-                            if (node.ssh != null) { delete node.ssh; change = 1; changes.push('ssh'); } // Delete the SSH cendentials
+                            if ((node.ssh != null) && (node.ssh[user._id] != null)) { delete node.ssh[user._id]; change = 1; changes.push('ssh'); } // Delete the SSH cendentials
                         }
 
                         if ((typeof command.rdp == 'number') && (command.rdp == 0)) {
-                            if (node.rdp != null) { delete node.rdp; change = 1; changes.push('rdp'); } // Delete the RDP cendentials
+                            if ((node.rdp != null) && (node.rdp[user._id] != null)) { delete node.rdp[user._id]; change = 1; changes.push('rdp'); } // Delete the RDP cendentials
                         }
+
+                        // Clean up any legacy RDP and SSH credentials
+                        if (node.rdp != null) { delete node.rdp.d; delete node.rdp.u; delete node.rdp.p; }
+                        if (node.ssh != null) { delete node.ssh.u; delete node.ssh.p; delete node.ssh.k; delete node.ssh.kp; }
 
                         if (domain.geolocation && command.userloc && ((node.userloc == null) || (command.userloc[0] != node.userloc[0]) || (command.userloc[1] != node.userloc[1]))) {
                             change = 1;

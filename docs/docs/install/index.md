@@ -1,4 +1,6 @@
-# Installation
+# Quick Start Guide
+
+## Installation
 
 Getting started is easy. If you don't have it already, install NodeJS. Then, create an empty folder and do this:
 
@@ -17,7 +19,7 @@ By default, MeshCentral will use NeDB as this is the built-in database. For more
 
 You can run the MeshCentral Server with --help to get options for background installation.
 
-# Configuration
+## Configuration
 
 Once you get MeshCentral installed, the first user account that is created will be the server administrator. So, don't delay and navigate to the login page and create a new account. You can then start using your server right away. A lot of the fun with MeshCentral is the 100's of configuration options that are available in the config.json file. You can put your own branding on the web pages, setup a STMP email server, SMS services and much more.
 

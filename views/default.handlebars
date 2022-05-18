@@ -1371,6 +1371,7 @@
                                 <label style="display:block"><input type="checkbox" id="d7rdp7" />Disable Cursor Settings</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font Smooting</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop Composision</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdpclip" />Automatic Clipboard</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdpsmb" />Swap Mouse Buttons</label>
                             </div>
                         </div>
@@ -2722,8 +2723,10 @@
                         if (message.tcpport != null) { url += ('&protocol=1&remoteport=' + message.tcpport); }
                         if (message.localRelay) { url += '&local=1'; }
                         if (message.localport) { url += '&localport=' + message.localport; }
+                        if (message.name != null) { url += ('&name=' + encodeURIComponentEx(message.name)); }
                         if (message.ip != null) { url += ('&remoteip=' + message.ip); }
                         url += ('&appid=' + message.protocol + '&autoexit=1'); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP, 6 = MCRDesktop, 7 = MCRFiles
+                        console.log(url);
                         downloadFile(url, '');
                     } else if (message.tag == 'novnc') {
                         var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + (message.localRelay?'local':'mesh') + 'relay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
@@ -3178,6 +3181,9 @@
                             // Web page update
                             mainUpdate(1 | 2 | 4 | 16);
 
+                            // If we are looking at the device group for this device, update that.
+                            if ((xxcurrentView == 20) && (currentMesh != null) && (currentMesh._id == node.meshid)) { mainUpdate(4096); }
+
                             break;
                         }
                         case 'removenode': {
@@ -3194,6 +3200,9 @@
 
                                 // Web page update
                                 mainUpdate(4 | 16);
+
+                                // If we are looking at the device group for this device, update that.
+                                if ((xxcurrentView == 20) && (currentMesh != null) && (currentMesh._id == node.meshid)) { mainUpdate(4096); }
                             }
                             break;
                         }
@@ -4496,6 +4505,14 @@
                     if ((node.conn & 8) != 0) { states.push('<span title="' + "Mesh agent is reachable using another agent as relay." + '">' + "Relay" + '</span>'); }
                     if ((node.conn & 16) != 0) { states.push('<span title="' + "MQTT connection to the device is active." + '">' + "MQTT" + '</span>'); }
                 }
+                if (node.mtype == 3) {
+                    var mesh = meshes[node.meshid];
+                    if (mesh && mesh.relayid) {
+                        states.push('<span title="' + "Local network connection thru a relay agent." + '">' + "Relay" + '</span>');
+                    } else {
+                        states.push('<span title="' + "Local network connection." + '">' + "Local" + '</span>');
+                    }
+                }
 
                 if (node.desc && (deviceViewSettings.devsCols.indexOf('desc') >= 0)) { name = '<div style=float:right>' + EscapeHtml(node.desc) + '</div><div>' + name + '</div>'; }
 
@@ -4514,12 +4531,19 @@
                 if (!Array.isArray(deviceViewSettings.devsCols)) { deviceViewSettings.devsCols = ['user','ip','conn']; }
 
                 // Display configured columns
-                if (deviceViewSettings.devsCols.indexOf('agtype') >= 0) { r += '<td style=text-align:center;font-size:x-small;padding-left:4px;padding-right:4px title="' + EscapeHtml((node.agent && node.agent.id && (node.agent.id <= agentsStr.length))?agentsStr[node.agent.id]:'') + '">' + EscapeHtml((node.agent && node.agent.id && (node.agent.id <= agentsStr.length))?agentsStr[node.agent.id]:'').replace(',', '<br />'); } // Agent type
+                if (deviceViewSettings.devsCols.indexOf('agtype') >= 0) { r += '<td style=text-align:center;font-size:x-small;padding-left:4px;padding-right:4px title="' + EscapeHtml(((node.mtype != 3) && node.agent && node.agent.id && (node.agent.id <= agentsStr.length))?agentsStr[node.agent.id]:'') + '">' + EscapeHtml(((node.mtype != 3) && node.agent && node.agent.id && (node.agent.id <= agentsStr.length))?agentsStr[node.agent.id]:'').replace(',', '<br />'); } // Agent type
                 if (deviceViewSettings.devsCols.indexOf('agver') >= 0) { r += '<td style=text-align:center;font-size:x-small;padding-left:4px;padding-right:4px title="' + EscapeHtml((node.agent && node.agent.core)?node.agent.core:'') + '">' + EscapeHtml((node.agent && node.agent.core)?node.agent.core:'').replace(',', '<br />'); } // Agent core
-                if (deviceViewSettings.devsCols.indexOf('os') >= 0) { r += '<td style=text-align:center;font-size:x-small title="' + EscapeHtml(node.osdesc?node.osdesc:'') + '">' + EscapeHtml(node.osdesc?node.osdesc:''); } // Operating System
+                if (deviceViewSettings.devsCols.indexOf('os') >= 0) { // Operating System
+                    if (node.mtype == 3) {
+                        var osstr = ''; if (node.agent.id == 4) { osstr = 'Windows'; } if (node.agent.id == 6) { osstr = 'Linux'; } if (node.agent.id == 29) { osstr = 'MacOS'; }
+                        r += '<td style=text-align:center;font-size:x-small title="' + EscapeHtml(osstr) + '">' + EscapeHtml(osstr);
+                    } else {
+                        r += '<td style=text-align:center;font-size:x-small title="' + EscapeHtml(node.osdesc?node.osdesc:'') + '">' + EscapeHtml(node.osdesc?node.osdesc:'');
+                    }
+                }
                 if (deviceViewSettings.devsCols.indexOf('links') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + getShortRouterLinks(node); } // Links
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
-                if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { r += '<td style=text-align:center>' + (node.ip != null ? node.ip : ''); } // IP address
+                if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { var ip = ''; if (node.mtype == 3) { ip = node.host; } else if (node.ip) { ip = node.ip; } r += '<td style=text-align:center>' + ip; } // IP address
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
                 if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { r += '<td style=text-align:center;font-size:x-small>'; if (node.conn > 0) { r += "Connected"; } else if (node.lastconnect != null) { r += printDateTime(new Date(node.lastconnect)); } }
 
@@ -4540,7 +4564,7 @@
             var x = '', meshrights = GetNodeRights(node);
 
             // RDP link, show this link only of the remote machine is Windows.
-            if (((node.conn & 1) != 0) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
+            if ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
                 if ((node.agent.id > 0) && (node.agent.id < 5)) {
                     if (navigator.platform.toLowerCase() == 'win32') {
                         if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false)) {
@@ -4565,6 +4589,7 @@
                         for (var i in serverinfo.devicemeshrouterlinks.extralinks) {
                             var r = serverinfo.devicemeshrouterlinks.extralinks[i], p = '\"' + r.protocol + '\"';
                             if (doesDeviceMatchFilterTags(node, r.filter)) {
+                                if ((node.mtype == 3) && ((r.protocol == 'mcrdesktop') || (r.protocol == 'mcrfiles'))) continue;
                                 if (typeof r.protocol == 'number') { p = r.protocol; } else if (r.protocol == 'http') { p = 1; } else if (r.protocol == 'https') { p = 2; } else if (r.protocol == 'rdp') { p = 3; } else if (r.protocol == 'ssh') { p = 4; } else if (r.protocol == 'scp') { p = 5; } else if (r.protocol == 'mcrdesktop') { p = 6; } else if (r.protocol == 'mcrfiles') { p = 7; }
                                 x += '<a href=# onclick=p10MCRouter("' + node._id + '",' + p + ',' + r.port + (r.ip?(',\"' + r.ip + '\"'):',null') + ',' + (r.localport?r.localport:0) + ')>' + r.name + '</a>&nbsp;';
                             }
@@ -5107,7 +5132,7 @@
             if (serverinfo.https == true) { portStr = (serverinfo.port == 443)?'':(':' + serverinfo.port); } else { portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port); }
 
             // Add Linux/macOS binary installer option
-            var binaryInstallAgentsOrder = [ 6, 5, 10005, 25, 26, 28, 30, 32, 37, 47, 40, 41 ];
+            var binaryInstallAgentsOrder = [ 6, 5, 10005, 25, 26, 28, 30, 32, 37, 40, 41 ];
             var binaryInstallAgents = { 5 : 'Linux x86-32', 6 : 'Linux x86-64', 10005 : 'Apple OSX Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)' };
             for (var i in binaryInstallAgentsOrder) { moreoptions += '<option value=' + binaryInstallAgentsOrder[i] + '>' + binaryInstallAgents[binaryInstallAgentsOrder[i]] + '</option>' }
             x += '<div id=aginsSysTypeDiv>';
@@ -7553,7 +7578,12 @@
 
         function deskClipboardInFunction() {
             if (desktop == null || desktop.State != 3) return;
-            meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 2 });
+            if (desktop.m.getClipboard) {
+                var text = desktop.m.getClipboard();
+                if ((text != null) && (navigator.clipboard != null)) { navigator.clipboard.writeText(text).then(function() { }).catch(function(err) { console.log(err); }) } // Put remote clipboard data into our clipboard
+            } else {
+                meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 2 });
+            }
         }
 
         // Called to lock or unlock remote desktop user input
@@ -7999,29 +8029,33 @@
 
         function p10MCRouter(nodeid, protocol, port, addr, localport) {
             var node = getNodeFromId(nodeid);
+            var mesh = meshes[node.meshid];
             if ((protocol == 3) && (port == null)) { if (node.rdpport != null) { port = node.rdpport; } else { port = 3389; } } // Adjust RDP port if needed
-            if (node.mtype == 3) { var mesh = meshes[node.meshid]; if (mesh.relayid) { nodeid = mesh.relayid; addr = node.host; } } // Setup device replay if needed
-            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, ip: addr, tag: 'MCRouter', protocol: protocol, localport: localport }); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP, 6 = MCRDesktop, 7 = MCRFiles
+            if (node.mtype == 3) { if (mesh && mesh.relayid) { nodeid = mesh.relayid; addr = node.host; } } // Setup device replay if needed
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, ip: addr, tag: 'MCRouter', protocol: protocol, localport: localport, name: mesh ? mesh.name : null }); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP, 6 = MCRDesktop, 7 = MCRFiles
             return false;
         }
 
         function p10rfb(nodeid, port) {
             var node = getNodeFromId(nodeid), addr = null;
+            var mesh = meshes[node.meshid];
             if (port == null) { if (node.rfbport != null) { port = node.rfbport; } else { port = 5900; } }
-            if (node.mtype == 3) { var mesh = meshes[node.meshid]; if (mesh.relayid) { nodeid = mesh.relayid; addr = node.host; } } // Setup device replay if needed
-            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tcpaddr: addr, tag: 'novnc' });
+            if (node.mtype == 3) { if (mesh && mesh.relayid) { nodeid = mesh.relayid; addr = node.host; } } // Setup device relay if needed
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tcpaddr: addr, tag: 'novnc', name: mesh ? mesh.name : null });
         }
 
         function p10mstsc(nodeid, port) {
             var node = getNodeFromId(nodeid);
+            var mesh = meshes[node.meshid];
             if (port == null) { if (node.rdpport != null) { port = node.rdpport; } else { port = 3389; } } // Adjust RDP port if needed
-            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'mstsc' });
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'mstsc', name: mesh ? mesh.name : null });
         }
 
         function p10ssh(nodeid, port) {
             var node = getNodeFromId(nodeid);
+            var mesh = meshes[node.meshid];
             if (port == null) { if (node.sshport != null) { port = node.sshport; } else { port = 22; } }
-            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'ssh' });
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'ssh', name: mesh ? mesh.name : null });
         }
 
         // Show current location
@@ -8333,7 +8367,6 @@
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QE('DeskClip', deskState == 3);
-            //QE('DeskClip', (deskState == 3) && (desktop.contype != 4));
             QV('DeskClip', (inputAllowed) && (currentNode.agent) && ((features2 & 0x1800) != 0x1800) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
             QE('DeskESC', (deskState == 3) && (desktop.contype != 4));
             QV('DeskESC', browserfullscreen && inputAllowed);
@@ -8346,10 +8379,10 @@
             QV('DeskTimer', deskState == 3);
 
             // Enable browser clipboard read if supported
-            QV('DeskClipboardOutButton', online && inputAllowed && ((desktop == null) || (desktop.contype != 4)) && ((features2 & 0x1000) == 0) && (navigator.clipboard != null) && (navigator.clipboard.readText != null) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
+            var autoclipboard = ((desktop) && (desktop.contype == 4)) ? desktopsettings.rdpautoclipboard : desktopsettings.autoclipboard;
+            QV('DeskClipboardOutButton', online && inputAllowed && (desktop != null) && ((features2 & 0x1000) == 0) && (navigator.clipboard != null) && (navigator.clipboard.readText != null) && ((autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
             QV('d7deskAutoClipboardLabel', (navigator.clipboard.readText != null) && ((features2 & 0x1000) == 0));
-            QV('DeskClipboardInButton', online && inputAllowed && ((desktop == null) || (desktop.contype != 4)) && ((features2 & 0x0800) == 0) && (navigator.clipboard != null) && (navigator.clipboard.writeText != null) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
-
+            QV('DeskClipboardInButton', online && inputAllowed && (desktop != null) && ((features2 & 0x0800) == 0) && (navigator.clipboard != null) && (navigator.clipboard.writeText != null) && ((autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
             if (deskState != 3) {
                 QV('DeskInputLockedButton', false);
                 QV('DeskInputUnLockedButton', false);
@@ -8533,6 +8566,7 @@
                     desktop = CreateRDPDesktop('Desk');
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.onScreenSizeChange = mdeskAdjust;
+                    desktop.m.onClipboardChanged = function(text) { if ((text != null) && (desktopsettings.rdpautoclipboard) && (navigator.clipboard != null)) { navigator.clipboard.writeText(text).then(function() { }).catch(function(err) { console.log(err); }) } } // Put remote clipboard data into our clipboard
                     if (desktopsettings.rdpsmb) { desktop.m.SwapMouse = desktopsettings.rdpsmb; }
                     desktop.Start(desktopNode._id, currentNode.rdpport ? currentNode.rdpport : 3389, tsid);
                     desktop.contype = 4;
@@ -8734,11 +8768,13 @@
                 if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms, ', desktop.latency.current); }
                 seconds = Math.floor((new Date() - desktop.startTime) / 1000);
                 QH('DeskTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
-                if ((desktopsettings.autoclipboard === true) && (navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
+                // Auto-clipboard
+                if ((((desktop.contype != 4) && (desktopsettings.autoclipboard === true)) || ((desktop.contype == 4) && (desktopsettings.rdpautoclipboard === true))) && (navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
                     try {
                         navigator.clipboard.readText().then(function(text) {
+                            if (desktop == null) return;
                             if ((text != null) && (deskLastClipboardSent != text)) {
-                                if (desktop.m.setClipboard) { desktop.m.setClipboard(text); } else { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }
+                                if (desktop.m.setClipboard) { desktop.m.setClipboard(text); } else { console.log('s3'); meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }
                                 deskLastClipboardSent = text;
                             }
                         }).catch(function(err) { });
@@ -8810,6 +8846,7 @@
             desktopsettings.localkeymap = d7localKeyMap.checked;
             desktopsettings.rdpsize = d7rdpsize.value;
             desktopsettings.rdpsmb = d7rdpsmb.checked;
+            desktopsettings.rdpautoclipboard = d7rdpclip.checked;
             var rdpflags = 0;
             for (var i = 1; i < 10; i++) { if ((i != 5) && (Q('d7rdp' + i).checked)) { rdpflags |= (1 << (i - 1)); } }
             desktopsettings.rdpflags = rdpflags;
@@ -8852,6 +8889,7 @@
             if (desktopsettings.rdpsize != null) { d7rdpsize.value = desktopsettings.rdpsize; }
             if (desktopsettings.rdpflags == null) { desktopsettings.rdpflags = 0x2F; }
             if (desktopsettings.rdpsmb != null) { d7rdpsmb.checked = desktopsettings.rdpsmb; }
+            if (desktopsettings.rdpautoclipboard != null) { d7rdpclip.checked = desktopsettings.rdpautoclipboard; }
             for (var i = 1; i < 10; i++) { if (i != 5) { Q('d7rdp' + i).checked = ((desktopsettings.rdpflags & (1 << (i - 1))) != 0); } }
         }
 
@@ -12212,6 +12250,9 @@
                 x += '<a href=# onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new computer to this device group by installing the mesh agent." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Agent" + '</a>';
                 x += '<a href=# onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Invite someone to install the mesh agent on this device group." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Invite" + '</a>';
             }
+            if ((currentMesh.mtype == 3) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) {
+                x += '<a href=# onclick=\'return addLocalDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add device located on the local network." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>';
+            }
             if (currentMesh.amt && (currentMesh.amt.type > 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { // ACM activation or Full Automatic
                 x += '<a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "ACM" + '</a>';
             }
@@ -13080,10 +13121,10 @@
             var url;
             if (serverinfo.https == true) {
                 var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
-                url = 'https://' + servername + portStr + domainUrl + 'invite';
+                url = 'https://' + servername + portStr + domainUrl + 'invite' + ((urlargs.key)?('?key=' + urlargs.key):'');
             } else {
                 var portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port);
-                url = 'http://' + servername + portStr + domainUrl + 'invite';
+                url = 'http://' + servername + portStr + domainUrl + 'invite' + ((urlargs.key)?('?key=' + urlargs.key):'');
             }
 
             if (meshrights & 1) {

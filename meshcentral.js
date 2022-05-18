@@ -778,7 +778,7 @@ function CreateMeshCentralServer(config, args) {
         if (typeof obj.args.tlsoffload == 'string') { obj.args.tlsoffload = obj.args.tlsoffload.split(' ').join('').split(','); }
 
         // Check the "cookieIpCheck" value
-        if (obj.args.cookieipcheck === false) { obj.args.cookieipcheck = 'none'; }
+        if ((obj.args.cookieipcheck === false) || (obj.args.cookieipcheck == 'none')) { obj.args.cookieipcheck = 'none'; }
         else if ((typeof obj.args.cookieipcheck != 'string') || (obj.args.cookieipcheck.toLowerCase() != 'strict')) { obj.args.cookieipcheck = 'lax'; }
         else { obj.args.cookieipcheck = 'strict'; }
 
