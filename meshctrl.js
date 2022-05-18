@@ -2187,8 +2187,18 @@ function serverConnect() {
                     console.log(data.result);
                     process.exit();
                 } else {
-                    ws.send(JSON.stringify({ action: 'loginTokens', responseid: 'meshctrl' }));
+                    if (args.json) {
+                        console.log(data);
+                    } else {
+                        console.log("New login token created.");
+                        if (data.name) { console.log("Token name: " + data.name); }
+                        if (data.created) { console.log("Created: " + new Date(data.created).toLocaleString()); }
+                        if (data.expire) { console.log("Expire: " + new Date(data.expire).toLocaleString()); }
+                        if (data.tokenUser) { console.log("Username: " + data.tokenUser); }
+                        if (data.tokenPass) { console.log("Password: " + data.tokenPass); }
+                    }
                 }
+                process.exit();
                 break;
             }
             case 'loginTokens': {
