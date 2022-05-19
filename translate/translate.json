@@ -1183,6 +1183,8 @@
     },
     {
       "en": ", SFTP",
+      "nl": ", SFTP",
+      "pl": ", SFTP",
       "xloc": [
         "default-mobile.handlebars->11->468",
         "default.handlebars->39->1328"
@@ -1190,6 +1192,8 @@
     },
     {
       "en": ", SSH",
+      "nl": ", SSH",
+      "pl": ", SSH",
       "xloc": [
         "default.handlebars->39->1296"
       ]
@@ -11437,7 +11441,7 @@
     {
       "en": "Browser Size",
       "nl": "Browser grootte",
-      "pl": "Rozmiar Przeglądarki",
+      "pl": "Jak Okna Przeglądarki",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->3"
       ]
@@ -12148,7 +12152,7 @@
     {
       "en": "Canvas Size",
       "nl": "Canvas grootte",
-      "pl": "Rozmiar Zakrycia",
+      "pl": "Okno Robocze",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->1"
       ]
@@ -20887,7 +20891,7 @@
     {
       "en": "Disable Cursor Settings",
       "nl": "Cursorinstellingen uitschakelen",
-      "pl": "Wyłączenie Ustawień Kursora",
+      "pl": "Wyłącz Ustawienia Kursora",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->11"
       ]
@@ -20895,7 +20899,7 @@
     {
       "en": "Disable Cursor Shadow",
       "nl": "Cursorschaduw uitschakelen",
-      "pl": "Wyłączenie Cienia Kursora",
+      "pl": "Wyłącz Cień Kursora",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->9"
       ]
@@ -20903,7 +20907,7 @@
     {
       "en": "Disable Full Window Drag",
       "nl": "Volledig venster slepen uitschakelen",
-      "pl": "Wyłączenie Przenoszenie Całego Okna",
+      "pl": "Wyłącz Przeciąganie Okna z Podglądem",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->3"
       ]
@@ -20911,7 +20915,7 @@
     {
       "en": "Disable Menu Animations",
       "nl": "Menu animaties uitschakelen",
-      "pl": "Wyłączenie Animacji Menu",
+      "pl": "Wyłącz Animację Menu",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->5"
       ]
@@ -20919,7 +20923,7 @@
     {
       "en": "Disable Theming",
       "nl": "Thema's uitschakelen",
-      "pl": "Wyłączenie Tematów Wizualnych",
+      "pl": "Wyłącz Temat Wizualny",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->7"
       ]
@@ -20927,7 +20931,7 @@
     {
       "en": "Disable Wallpaper",
       "nl": "Achtergrond uitschakelen",
-      "pl": "Wyłączenie Tapety",
+      "pl": "Wyłącz Tapetę Pulpitu",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->1"
       ]
@@ -21211,7 +21215,7 @@
     {
       "en": "Display Size",
       "nl": "Scherm grootte",
-      "pl": "Rozmiar Wyświetlacza",
+      "pl": "Rozdzielczość Wyświetlacza",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->1"
       ]
@@ -26265,7 +26269,7 @@
       "ja": "速い",
       "ko": "빠른",
       "nl": "Snel",
-      "pl": "Szybko",
+      "pl": "Duża",
       "pt": "Rápido",
       "pt-br": "Rápido",
       "ru": "Быстро",
@@ -27393,7 +27397,7 @@
       "ja": "フレームレート",
       "ko": "프레임 속도",
       "nl": "Frameverhouding",
-      "pl": "Liczba klatek na sekundę",
+      "pl": "Prędkość odświeżania",
       "pt": "Taxa de quadros",
       "pt-br": "Taxa de quadros",
       "ru": "Частота кадров",
@@ -36863,12 +36867,16 @@
     },
     {
       "en": "Local network connection thru a relay agent.",
+      "nl": "Lokale netwerkverbinding via een relay-agent.",
+      "pl": "Lokalne połączenie sieciowe za pośrednictwem przekierowania agenta.",
       "xloc": [
         "default.handlebars->39->384"
       ]
     },
     {
       "en": "Local network connection.",
+      "nl": "Lokale netwerkverbinding.",
+      "pl": "Lokalne połączenie sieciowe.",
       "xloc": [
         "default.handlebars->39->386"
       ]
@@ -37110,7 +37118,7 @@
       "it": "Blocca su Disconnessione",
       "ja": "ロックオン切断",
       "nl": "Vergrendelen bij verbreken",
-      "pl": "Zablokuj na Odłącz",
+      "pl": "Zablokuj po Odłączeniu",
       "pt-br": "Bloquear ao Desconectar",
       "ru": "Заблокировать при отключении",
       "tr": "Bağlantıyı Keste Kilitle",
@@ -39003,7 +39011,7 @@
       "ja": "中",
       "ko": "중간",
       "nl": "Gemiddeld",
-      "pl": "Średnio",
+      "pl": "Średnia",
       "pt": "Médio",
       "pt-br": "Médio",
       "ru": "Средний",
@@ -49028,7 +49036,7 @@
     {
       "en": "RDP Connect",
       "nl": "RDP verbinden",
-      "pl": "Połącz za pomocą RDP",
+      "pl": "Połącz (protokół RDP)",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1rspan"
       ]
@@ -50034,6 +50042,7 @@
     },
     {
       "en": "Remember password",
+      "pl": "Zapamiętaj hasło",
       "nl": "Onthoud wachtwoord",
       "xloc": [
         "default-mobile.handlebars->11->461",
@@ -50115,6 +50124,7 @@
     {
       "en": "Remember user & key",
       "nl": "Onthoud gebruikeruser & sleutel",
+      "pl": "Zapamiętaj użytkownika i klucz",
       "xloc": [
         "default-mobile.handlebars->11->460",
         "default.handlebars->39->1311",
@@ -53671,6 +53681,8 @@
     },
     {
       "en": "SFTP Connect",
+      "nl": "SFTP verbinding",
+      "pl": "Połącz z SFTP",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->0->1->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->0->1->3"
@@ -53956,6 +53968,8 @@
     },
     {
       "en": "SSH Connect",
+      "nl": "SSH verbinding",
+      "pl": "Połącz z SSH",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10terminal->termTable->termarea1->1->3->connectbutton2sspan",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->connectbutton2sspan"
@@ -54083,6 +54097,7 @@
     {
       "en": "SSH-User+Key",
       "nl": "SSH-gebruiker+sleutel",
+      "pl": "SSH-Uużytkownik+Klucz",
       "xloc": [
         "default-mobile.handlebars->11->324",
         "default-mobile.handlebars->11->328",
@@ -54093,6 +54108,7 @@
     {
       "en": "SSH-User+Key+Pass",
       "nl": "SSH-gebruiker+sleutel+wachtwoord",
+      "pl": "SSH-Uużytkownik+Klucz+Hasło",
       "xloc": [
         "default-mobile.handlebars->11->323",
         "default-mobile.handlebars->11->327",
@@ -54103,6 +54119,7 @@
     {
       "en": "SSH-User+Pass",
       "nl": "SSH-gebruiker+wachtwoord",
+      "pl": "SSH-Uużytkownik+Hasło",
       "xloc": [
         "default-mobile.handlebars->11->322",
         "default-mobile.handlebars->11->326",
@@ -54589,7 +54606,7 @@
     {
       "en": "Screen Size",
       "nl": "Scherm grootte",
-      "pl": "Rozmiar Ekranu",
+      "pl": "Jak Całego Ekranu",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->5"
       ]
@@ -58727,7 +58744,7 @@
       "ja": "スロー",
       "ko": "느린",
       "nl": "Traag",
-      "pl": "Powoli",
+      "pl": "Mała",
       "pt": "Lento",
       "pt-br": "Lento",
       "ru": "Медленно",
@@ -60543,6 +60560,7 @@
     {
       "en": "Stored Key",
       "nl": "Opgeslagen sleutel",
+      "pl": "Przechowywany Klucz",
       "xloc": [
         "default-mobile.handlebars->11->448",
         "default.handlebars->39->1299",
@@ -60803,7 +60821,7 @@
       "ja": "マウスボタンを交換する",
       "ko": "마우스 버튼 교체",
       "nl": "Wissel muisknoppen",
-      "pl": "Zamień Przyciski Myszy",
+      "pl": "Zamień Strony Przycisków Myszy",
       "pt": "Botões de troca do mouse",
       "pt-br": "Trocar botões do mouse",
       "ru": "Поменять местами кнопки мыши",
@@ -68120,7 +68138,7 @@
       "ja": "非常に遅い",
       "ko": "아주 느린",
       "nl": "Erg traag",
-      "pl": "Bardzo powoli",
+      "pl": "Bardzo mała",
       "pt": "Muito devagar",
       "pt-br": "Muito lento",
       "ru": "Очень медленно",

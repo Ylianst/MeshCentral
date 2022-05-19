@@ -7533,12 +7533,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((r.pmt != null) || (r.ssh != null) || (r.rdp != null) || ((r.intelamt != null) && ((r.intelamt.pass != null) || (r.intelamt.mpspass != null)))) {
             r = Object.assign({}, r); // Shallow clone
             if (r.pmt != null) { r.pmt = 1; }
-            if (r.ssh && r.ssh.u) {
-                if (r.ssh.p) { r.ssh = 1; } // Username and password
-                else if (r.ssh.k && r.ssh.kp) { r.ssh = 2; } // Username, key and password
-                else if (r.ssh.k) { r.ssh = 3; } // Username and key. No password.
+            if (r.ssh != null) {
+                var n = {};
+                for (var i in r.ssh) {
+                    if (i.startsWith('user/')) {
+                        if (r.ssh[i].p) { n[i] = 1; } // Username and password
+                        else if (r.ssh[i].k && r.ssh[i].kp) { n[i] = 2; } // Username, key and password
+                        else if (r.ssh[i].k) { n[i] = 3; } // Username and key. No password.
+                    }
+                }
+                r.ssh = n;
             }
-            if (r.rdp != null) { r.rdp = 1; }
+            if (r.rdp != null) { var n = {}; for (var i in r.rdp) { if (i.startsWith('user/')) { n[i] = 1; } } r.rdp = n; }
             if ((r.intelamt != null) && ((r.intelamt.pass != null) || (r.intelamt.mpspass != null))) {
                 r.intelamt = Object.assign({}, r.intelamt); // Shallow clone
                 if (r.intelamt.pass != null) { r.intelamt.pass = 1; }; // Remove the Intel AMT administrator password from the node
