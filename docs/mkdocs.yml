@@ -6,8 +6,8 @@ nav:
     - install/index.md
     - install/install2.md
 
-  - MeshCentral: 
-      - 'Index': 'meshcentral/index.md'
+  - MeshCentral2: 
+      - 'MeshCentral2 Guide': 'meshcentral/index.md'
       - 'Tokens': 'meshcentral/tokens.md'
       - 'Assistant': 'meshcentral/assistant.md'
       - 'Debugging': 'meshcentral/debugging.md'
