@@ -561,6 +561,7 @@
             }
           },
           "ipBlockedUserRedirect" : { "type": "string", "default": null, "description": "If set, a user from a banned IP address will be redirected to this URL." },
+          "userRequiredHttpHeader": { "type": "object", "default": null, "description": "When set, requires that a browser request have set HTTP header to allow user login. Example: \"{ \"Sec-Fetch-Dest\": \"iframe\" }\"" },
           "userAllowedIP": { "type": [ "string", "array" ], "default": null, "description": "When set, only users from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\"" },
           "userBlockedIP": { "type": [ "string", "array" ], "default": null, "description": "When set, users from these denied IP address ranges will not be able to connect to the server. Example: \"192.168.2.100,192.168.1.0/24\"" },
           "agentAllowedIP": { "type": [ "string", "array" ], "default": null, "description": "When set, only agents from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\"" },

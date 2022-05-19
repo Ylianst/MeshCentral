@@ -764,6 +764,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.auth == 'sspi') { parent.debug('web', 'handleLogoutRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
+        // If a HTTP header is required, check new UserRequiredHttpHeader
+        if (domain.userrequiredhttpheader && (typeof domain.userrequiredhttpheader == 'object')) { var ok = false; for (var i in req.headers) { if (domain.userrequiredhttpheader[i.toLowerCase()] == req.headers[i]) { ok = true; } } if (ok == false) { res.sendStatus(404); return; } }
+
         res.set({ 'Cache-Control': 'no-store' });
         // Destroy the user's session to log them out will be re-created next request
         var userid = req.session.userid;
@@ -2547,6 +2550,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if (!obj.args) { parent.debug('web', 'handleRootRequest: no obj.args.'); res.sendStatus(500); return; }
 
+        // If a HTTP header is required, check new UserRequiredHttpHeader
+        if (domain.userrequiredhttpheader && (typeof domain.userrequiredhttpheader == 'object')) { var ok = false; for (var i in req.headers) { if (domain.userrequiredhttpheader[i.toLowerCase()] == req.headers[i]) { ok = true; } } if (ok == false) { res.sendStatus(404); return; } }
+
         // If the session is expired, clear it.
         if ((req.session != null) && (typeof req.session.expire == 'number') && ((req.session.expire - Date.now()) <= 0)) { for (var i in req.session) { delete req.session[i]; } }
 
@@ -3073,6 +3079,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.end("Not Found"); return; } // Check 3FA URL key
         parent.debug('web', 'handleRootPostRequest, action: ' + req.body.action);
+
+        // If a HTTP header is required, check new UserRequiredHttpHeader
+        if (domain.userrequiredhttpheader && (typeof domain.userrequiredhttpheader == 'object')) { var ok = false; for (var i in req.headers) { if (domain.userrequiredhttpheader[i.toLowerCase()] == req.headers[i]) { ok = true; } } if (ok == false) { res.sendStatus(404); return; } }
 
         switch (req.body.action) {
             case 'login': { handleLoginRequest(req, res, true); break; }
