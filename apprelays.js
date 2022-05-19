@@ -215,28 +215,33 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
         }
     }
 
-    // Save SSH credentials into device
+    // Save RDP credentials into database
     function saveRdpCredentials() {
         if (domain.allowsavingdevicecredentials == false) return;
         parent.parent.db.Get(obj.nodeid, function (err, nodes) {
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
-            const changed = (node.rdp == null);
+            if (node.rdp == null) { node.rdp = {}; }
 
-            // Check if credentials are the same
-            if ((typeof node.rdp == 'object') && (node.rdp.d == obj.infos.domain) && (node.rdp.u == obj.infos.username) && (node.rdp.p == obj.infos.password)) return;
+            // Check if credentials are already set
+            if ((typeof node.rdp[obj.userid] == 'object') && (node.rdp[obj.userid].d == obj.infos.domain) && (node.rdp[obj.userid].u == obj.infos.username) && (node.rdp[obj.userid].p == obj.infos.password)) return;
+
+            // Clear up any existing credentials or credentials for users that don't exist anymore
+            for (var i in node.rdp) { if (!i.startsWith('user/') || (parent.users[i] == null)) { delete node.rdp[i]; } }
+
+            // Clear legacy credentials
+            delete node.rdp.d;
+            delete node.rdp.u;
+            delete node.rdp.p;
 
             // Save the credentials
-            node.rdp = { d: obj.infos.domain, u: obj.infos.username, p: obj.infos.password };
+            node.rdp[obj.userid] = { d: obj.infos.domain, u: obj.infos.username, p: obj.infos.password };
             parent.parent.db.Set(node);
 
-            // Event node change if needed
-            if (changed) {
-                // Event the node change
-                const event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: obj.userid, node: parent.CloneSafeNode(node), msg: "Changed RDP credentials" };
-                if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
-            }
+            // Event the node change
+            const event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: obj.userid, node: parent.CloneSafeNode(node), msg: "Changed RDP credentials" };
+            if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
         });
     }
 
@@ -299,10 +304,10 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                             // Check if we need to load server stored credentials
                             if ((typeof obj.infos.options == 'object') && (obj.infos.options.useServerCreds == true)) {
                                 // Check if RDP credentials exist
-                                if ((domain.allowsavingdevicecredentials !== false) && (typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) {
-                                    obj.infos.domain = node.rdp.d;
-                                    obj.infos.username = node.rdp.u;
-                                    obj.infos.password = node.rdp.p;
+                                if ((domain.allowsavingdevicecredentials !== false) && (typeof node.rdp == 'object') && (typeof node.rdp[obj.userid] == 'object') && (typeof node.rdp[obj.userid].d == 'string') && (typeof node.rdp[obj.userid].u == 'string') && (typeof node.rdp[obj.userid].p == 'string')) {
+                                    obj.infos.domain = node.rdp[obj.userid].d;
+                                    obj.infos.username = node.rdp[obj.userid].u;
+                                    obj.infos.password = node.rdp[obj.userid].p;
                                     startTcpServer();
                                 } else {
                                     // No server credentials.
@@ -382,7 +387,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
 module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
     const Net = require('net');
     const WebSocket = require('ws');
-
+    
     // SerialTunnel object is used to embed SSH within another connection.
     function SerialTunnel(options) {
         const obj = new require('stream').Duplex(options);
@@ -447,36 +452,43 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
         delete obj.cookie;
         delete obj.nodeid;
         delete obj.meshid;
+        delete obj.userid;
         delete obj.ws;
     };
 
-    // Save SSH credentials into device
+    // Save SSH credentials into database
     function saveSshCredentials(keep) {
         if (((keep != 1) && (keep != 2)) || (domain.allowsavingdevicecredentials == false)) return;
         parent.parent.db.Get(obj.nodeid, function (err, nodes) {
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
-            const changed = (node.ssh == null);
+            if (node.ssh == null) { node.ssh = {}; }
 
             // Check if credentials are the same
-            //if ((typeof node.ssh == 'object') && (node.ssh.u == obj.username) && (node.ssh.p == obj.password)) return; // TODO
+            //if ((typeof node.ssh[obj.userid] == 'object') && (node.ssh[obj.userid].u == obj.username) && (node.ssh[obj.userid].p == obj.password)) return; // TODO
+
+            // Clear up any existing credentials or credentials for users that don't exist anymore
+            for (var i in node.ssh) { if (!i.startsWith('user/') || (parent.users[i] == null)) { delete node.ssh[i]; } }
+
+            // Clear legacy credentials
+            delete node.ssh.u;
+            delete node.ssh.p;
+            delete node.ssh.k;
+            delete node.ssh.kp;
 
             // Save the credentials
             if (obj.password != null) {
-                node.ssh = { u: obj.username, p: obj.password };
+                node.ssh[obj.userid] = { u: obj.username, p: obj.password };
             } else if (obj.privateKey != null) {
-                node.ssh = { u: obj.username, k: obj.privateKey };
-                if (keep == 2) { node.ssh.kp = obj.privateKeyPass; }
+                node.ssh[obj.userid] = { u: obj.username, k: obj.privateKey };
+                if (keep == 2) { node.ssh[obj.userid].kp = obj.privateKeyPass; }
             } else return;
             parent.parent.db.Set(node);
 
-            // Event node change if needed
-            if (changed) {
-                // Event the node change
-                const event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: obj.userid, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
-                if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
-            }
+            // Event the node change
+            const event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: obj.userid, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
+            if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
         });
     }
 
@@ -592,24 +604,24 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                             parent.parent.db.Get(obj.cookie.nodeid, function (err, nodes) {
                                 if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
                                 const node = nodes[0];
-                                if ((domain.allowsavingdevicecredentials === false) || (node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || ((typeof node.ssh.p != 'string') && (typeof node.ssh.k != 'string'))) {
+                                if ((domain.allowsavingdevicecredentials === false) || (node.ssh == null) || (typeof node.ssh != 'object') || (node.ssh[user._id] == null) || (typeof node.ssh[user._id].u != 'string') || ((typeof node.ssh[user._id].p != 'string') && (typeof node.ssh[user._id].k != 'string'))) {
                                     // Send a request for SSH authentication
                                     try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
-                                } else if ((domain.allowsavingdevicecredentials !== false) && (node.ssh != null) && (typeof node.ssh.k == 'string') && (node.ssh.kp == null)) {
+                                } else if ((domain.allowsavingdevicecredentials !== false) && (node.ssh != null) && (typeof node.ssh[user._id].k == 'string') && (node.ssh[user._id].kp == null)) {
                                     // Send a request for SSH authentication with option for only the private key password
-                                    obj.username = node.ssh.u;
-                                    obj.privateKey = node.ssh.k;
+                                    obj.username = node.ssh[user._id].u;
+                                    obj.privateKey = node.ssh[user._id].k;
                                     try { ws.send(JSON.stringify({ action: 'sshauth', askkeypass: true })) } catch (ex) { }
                                 } else {
                                     // Use our existing credentials
                                     obj.termSize = msg;
                                     delete obj.keep;
-                                    obj.username = node.ssh.u;
-                                    if (typeof node.ssh.p == 'string') {
-                                        obj.password = node.ssh.p;
-                                    } else if (typeof node.ssh.k == 'string') {
-                                        obj.privateKey = node.ssh.k;
-                                        obj.privateKeyPass = node.ssh.kp;
+                                    obj.username = node.ssh[user._id].u;
+                                    if (typeof node.ssh[user._id].p == 'string') {
+                                        obj.password = node.ssh[user._id].p;
+                                    } else if (typeof node.ssh[user._id].k == 'string') {
+                                        obj.privateKey = node.ssh[user._id].k;
+                                        obj.privateKeyPass = node.ssh[user._id].kp;
                                     }
                                     startRelayConnection();
                                 }
@@ -786,29 +798,36 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
         parent.parent.db.Get(obj.nodeid, function (err, nodes) {
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
-            const changed = (node.ssh == null);
+            if (node.ssh == null) { node.ssh = {}; }
 
             // Check if credentials are the same
             //if ((typeof node.ssh == 'object') && (node.ssh.u == obj.username) && (node.ssh.p == obj.password)) return; // TODO
 
+            // Clear up any existing credentials or credentials for users that don't exist anymore
+            for (var i in node.ssh) { if (!i.startsWith('user/') || (parent.users[i] == null)) { delete node.ssh[i]; } }
+
+            // Clear legacy credentials
+            delete node.ssh.u;
+            delete node.ssh.p;
+            delete node.ssh.k;
+            delete node.ssh.kp;
+
             // Save the credentials
             if (obj.password != null) {
-                node.ssh = { u: obj.username, p: obj.password };
+                node.ssh[user._id] = { u: obj.username, p: obj.password };
             } else if (obj.privateKey != null) {
-                node.ssh = { u: obj.username, k: obj.privateKey };
-                if (keep == 2) { node.ssh.kp = obj.privateKeyPass; }
+                node.ssh[user._id] = { u: obj.username, k: obj.privateKey };
+                if (keep == 2) { node.ssh[user._id].kp = obj.privateKeyPass; }
             } else return;
             parent.parent.db.Set(node);
 
-            // Event node change if needed
-            if (changed) {
-                // Event the node change
-                const event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: user._id, username: user.name, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
-                if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
-            }
+            // Event the node change
+            const event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: user._id, username: user.name, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
+            if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
         });
     }
+
 
     // Start the looppback server
     function startRelayConnection(authCookie) {
@@ -1032,22 +1051,22 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
             ws._socket.resume();
 
             // Check if we have SSH credentials for this device
-            if ((domain.allowsavingdevicecredentials === false) || (node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || ((typeof node.ssh.p != 'string') && (typeof node.ssh.k != 'string'))) {
+            if ((domain.allowsavingdevicecredentials === false) || (node.ssh == null) || (typeof node.ssh != 'object') || (node.ssh[user._id] == null) || (typeof node.ssh[user._id].u != 'string') || ((typeof node.ssh[user._id].p != 'string') && (typeof node.ssh[user._id].k != 'string'))) {
                 // Send a request for SSH authentication
                 try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
-            } else if ((typeof node.ssh.k == 'string') && (typeof node.ssh.kp != 'string')) {
+            } else if ((typeof node.ssh[user._id].k == 'string') && (typeof node.ssh[user._id].kp != 'string')) {
                 // Send a request for SSH authentication with option for only the private key password
-                obj.username = node.ssh.u;
-                obj.privateKey = node.ssh.k;
+                obj.username = node.ssh[user._id].u;
+                obj.privateKey = node.ssh[user._id].k;
                 try { ws.send(JSON.stringify({ action: 'sshauth', askkeypass: true })) } catch (ex) { }
             } else {
                 // Use our existing credentials
-                obj.username = node.ssh.u;
-                if (typeof node.ssh.p == 'string') {
-                    obj.password = node.ssh.p;
-                } else if (typeof node.ssh.k == 'string') {
-                    obj.privateKey = node.ssh.k;
-                    obj.privateKeyPass = node.ssh.kp;
+                obj.username = node.ssh[user._id].u;
+                if (typeof node.ssh[user._id].p == 'string') {
+                    obj.password = node.ssh[user._id].p;
+                } else if (typeof node.ssh[user._id].k == 'string') {
+                    obj.privateKey = node.ssh[user._id].k;
+                    obj.privateKeyPass = node.ssh[user._id].kp;
                 }
                 try { ws.send(JSON.stringify({ action: 'sshautoauth' })) } catch (ex) { }
             }
@@ -1132,29 +1151,36 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
         parent.parent.db.Get(obj.nodeid, function (err, nodes) {
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
-            const changed = (node.ssh == null);
+            if (node.rdp == null) { node.rdp = {}; }
 
             // Check if credentials are the same
-            //if ((typeof node.ssh == 'object') && (node.ssh.u == obj.username) && (node.ssh.p == obj.password)) return; // TODO
+            //if ((typeof node.ssh[obj.userid] == 'object') && (node.ssh[obj.userid].u == obj.username) && (node.ssh[obj.userid].p == obj.password)) return; // TODO
+
+            // Clear up any existing credentials or credentials for users that don't exist anymore
+            for (var i in node.ssh) { if (!i.startsWith('user/') || (parent.users[i] == null)) { delete node.ssh[i]; } }
+
+            // Clear legacy credentials
+            delete node.ssh.u;
+            delete node.ssh.p;
+            delete node.ssh.k;
+            delete node.ssh.kp;
 
             // Save the credentials
             if (obj.password != null) {
-                node.ssh = { u: obj.username, p: obj.password };
+                node.ssh[user._id] = { u: obj.username, p: obj.password };
             } else if (obj.privateKey != null) {
-                node.ssh = { u: obj.username, k: obj.privateKey };
-                if (keep == 2) { node.ssh.kp = obj.privateKeyPass; }
+                node.ssh[user._id] = { u: obj.username, k: obj.privateKey };
+                if (keep == 2) { node.ssh[user._id].kp = obj.privateKeyPass; }
             } else return;
             parent.parent.db.Set(node);
 
-            // Event node change if needed
-            if (changed) {
-                // Event the node change
-                const event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: user._id, username: user.name, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
-                if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
-            }
+            // Event the node change
+            const event = { etype: 'node', action: 'changenode', nodeid: obj.nodeid, domain: domain.id, userid: user._id, username: user.name, node: parent.CloneSafeNode(node), msg: "Changed SSH credentials" };
+            if (parent.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.nodeid]), obj, event);
         });
     }
+
 
     // Start the looppback server
     function startRelayConnection(authCookie) {
@@ -1554,22 +1580,22 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
             ws._socket.resume();
 
             // Check if we have SSH credentials for this device
-            if ((domain.allowsavingdevicecredentials === false) || (node.ssh == null) || (typeof node.ssh != 'object') || (typeof node.ssh.u != 'string') || ((typeof node.ssh.p != 'string') && (typeof node.ssh.k != 'string'))) {
+            if ((domain.allowsavingdevicecredentials === false) || (node.ssh == null) || (typeof node.ssh != 'object') || (node.ssh[user._id] == null) || (typeof node.ssh[user._id].u != 'string') || ((typeof node.ssh[user._id].p != 'string') && (typeof node.ssh[user._id].k != 'string'))) {
                 // Send a request for SSH authentication
                 try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
-            } else if ((typeof node.ssh.k == 'string') && (typeof node.ssh.kp != 'string')) {
+            } else if ((typeof node.ssh[user._id].k == 'string') && (typeof node.ssh[user._id].kp != 'string')) {
                 // Send a request for SSH authentication with option for only the private key password
-                obj.username = node.ssh.u;
-                obj.privateKey = node.ssh.k;
+                obj.username = node.ssh[user._id].u;
+                obj.privateKey = node.ssh[user._id].k;
                 try { ws.send(JSON.stringify({ action: 'sshauth', askkeypass: true })) } catch (ex) { }
             } else {
                 // Use our existing credentials
-                obj.username = node.ssh.u;
-                if (typeof node.ssh.p == 'string') {
-                    obj.password = node.ssh.p;
-                } else if (typeof node.ssh.k == 'string') {
-                    obj.privateKey = node.ssh.k;
-                    obj.privateKeyPass = node.ssh.kp;
+                obj.username = node.ssh[user._id].u;
+                if (typeof node.ssh[user._id].p == 'string') {
+                    obj.password = node.ssh[user._id].p;
+                } else if (typeof node.ssh[user._id].k == 'string') {
+                    obj.privateKey = node.ssh[user._id].k;
+                    obj.privateKeyPass = node.ssh[user._id].kp;
                 }
 
                 // Create a mesh relay authentication cookie
