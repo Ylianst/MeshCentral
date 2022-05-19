@@ -56,6 +56,9 @@
     color: white;
     text-shadow: 4px 4px 8px black;
 }
+.md-typeset table {
+    color: black;
+}
 .md-main {
     color: white !important;
     background-color: #113962;
