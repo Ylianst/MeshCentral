@@ -1,5 +1,7 @@
 ## Websockets Video
 
+Make sure you understand how MeshCentral works with your browser using chrome developer tools.
+
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/3vI4URd3VzU" frameborder="0" allowfullscreen></iframe>
 </div>
@@ -97,5 +99,3 @@ Of course, this is just for debugging.
 <https://serverurl/meshagents> aka trying figure out what this is
 
 ![ID](images/determine-id.png)
-
-## General server statistics related
