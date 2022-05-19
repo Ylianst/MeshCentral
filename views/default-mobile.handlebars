@@ -2525,9 +2525,7 @@
             for (var i in filetreexx) {
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
-                shortname = name;
                 if (name.length > 40) { shortname = EscapeHtml(name.substring(0, 40)) + "..."; } else { shortname = EscapeHtml(name); }
-                name = EscapeHtml(name);
 
                 // Figure out the date
                 //var fdatestr = '';
@@ -2540,7 +2538,7 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + name + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + '</span><span><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p5folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + EscapeHtml(name) + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + '</span><span><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p5folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     var publiclink = '';
@@ -5214,9 +5212,7 @@
             for (var i in filetreexx) {
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
-                shortname = name;
-                if (name.length > 70) { shortname = EscapeHtml(name.substring(0, 70)) + "..."; } else { shortname = EscapeHtml(name); }
-                name = EscapeHtml(name);
+                if (name.length > 40) { shortname = EscapeHtml(name.substring(0, 70)) + "..."; } else { shortname = EscapeHtml(name); }
 
                 // Figure out the size
                 var fsize = '';
