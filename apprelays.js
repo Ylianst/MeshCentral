@@ -604,24 +604,24 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                             parent.parent.db.Get(obj.cookie.nodeid, function (err, nodes) {
                                 if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
                                 const node = nodes[0];
-                                if ((domain.allowsavingdevicecredentials === false) || (node.ssh == null) || (typeof node.ssh != 'object') || (node.ssh[user._id] == null) || (typeof node.ssh[user._id].u != 'string') || ((typeof node.ssh[user._id].p != 'string') && (typeof node.ssh[user._id].k != 'string'))) {
+                                if ((domain.allowsavingdevicecredentials === false) || (node.ssh == null) || (typeof node.ssh != 'object') || (node.ssh[obj.userid] == null) || (typeof node.ssh[obj.userid].u != 'string') || ((typeof node.ssh[obj.userid].p != 'string') && (typeof node.ssh[obj.userid].k != 'string'))) {
                                     // Send a request for SSH authentication
                                     try { ws.send(JSON.stringify({ action: 'sshauth' })) } catch (ex) { }
-                                } else if ((domain.allowsavingdevicecredentials !== false) && (node.ssh != null) && (typeof node.ssh[user._id].k == 'string') && (node.ssh[user._id].kp == null)) {
+                                } else if ((domain.allowsavingdevicecredentials !== false) && (node.ssh != null) && (typeof node.ssh[obj.userid].k == 'string') && (node.ssh[obj.userid].kp == null)) {
                                     // Send a request for SSH authentication with option for only the private key password
-                                    obj.username = node.ssh[user._id].u;
-                                    obj.privateKey = node.ssh[user._id].k;
+                                    obj.username = node.ssh[obj.userid].u;
+                                    obj.privateKey = node.ssh[obj.userid].k;
                                     try { ws.send(JSON.stringify({ action: 'sshauth', askkeypass: true })) } catch (ex) { }
                                 } else {
                                     // Use our existing credentials
                                     obj.termSize = msg;
                                     delete obj.keep;
-                                    obj.username = node.ssh[user._id].u;
-                                    if (typeof node.ssh[user._id].p == 'string') {
-                                        obj.password = node.ssh[user._id].p;
-                                    } else if (typeof node.ssh[user._id].k == 'string') {
-                                        obj.privateKey = node.ssh[user._id].k;
-                                        obj.privateKeyPass = node.ssh[user._id].kp;
+                                    obj.username = node.ssh[obj.userid].u;
+                                    if (typeof node.ssh[obj.userid].p == 'string') {
+                                        obj.password = node.ssh[obj.userid].p;
+                                    } else if (typeof node.ssh[obj.userid].k == 'string') {
+                                        obj.privateKey = node.ssh[obj.userid].k;
+                                        obj.privateKeyPass = node.ssh[obj.userid].kp;
                                     }
                                     startRelayConnection();
                                 }
@@ -686,7 +686,8 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
 
     // Decode the authentication cookie
     obj.cookie = parent.parent.decodeCookie(req.query.auth, parent.parent.loginCookieEncryptionKey);
-    if (obj.cookie == null) { obj.ws.send(JSON.stringify({ action: 'sessionerror' })); obj.close(); return; }
+    if ((obj.cookie == null) || (obj.cookie.userid == null) || (parent.users[obj.cookie.userid] == null)) { obj.ws.send(JSON.stringify({ action: 'sessionerror' })); obj.close(); return; }
+    obj.userid = obj.cookie.userid;
 
     // Get the meshid for this device
     parent.parent.db.Get(obj.cookie.nodeid, function (err, nodes) {

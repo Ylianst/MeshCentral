@@ -6842,7 +6842,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                 });
                 return;
-            } else if ((req.query.auth != null) && (req.query.auth != '')) {
+            }
+
+            if ((req.query.auth != null) && (req.query.auth != '')) {
                 // This is a encrypted cookie authentication
                 var cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.loginCookieEncryptionKey, 60); // Cookie with 1 hour timeout
                 if ((cookie == null) && (obj.parent.multiServer != null)) { cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.serverKey, 60); } // Try the server key
@@ -6853,20 +6855,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((cookie != null) && (cookie.userid != null) && (obj.users[cookie.userid]) && (cookie.domainid == domain.id) && (cookie.userid.split('/')[1] == domain.id)) {
                     // Valid cookie, we are authenticated. Cookie of format { userid: 'user//name', domain: '' }
                     func(ws, req, domain, obj.users[cookie.userid], cookie);
+                    return;
                 } else if ((cookie != null) && (cookie.a === 3) && (typeof cookie.u == 'string') && (obj.users[cookie.u]) && (cookie.u.split('/')[1] == domain.id)) {
                     // Valid cookie, we are authenticated. Cookie of format { u: 'user//name', a: 3 }
                     func(ws, req, domain, obj.users[cookie.u], cookie);
+                    return;
                 } else if ((cookie != null) && (cookie.nouser === 1)) {
                     // This is a valid cookie, but no user. This is used for agent self-sharing.
                     func(ws, req, domain, null, cookie);
-                } else {
+                    return;
+                } /*else {
                     // This is a bad cookie, keep going anyway, maybe we have a active session that will save us.
                     if ((cookie != null) && (cookie.domainid != domain.id)) { parent.debug('web', 'ERR: Invalid domain, got \"' + cookie.domainid + '\", expected \"' + domain.id + '\".'); }
                     parent.debug('web', 'ERR: Websocket bad cookie auth (Cookie:' + (cookie != null) + '): ' + req.query.auth);
                     try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2b' })); ws.close(); } catch (e) { }
+                    return;
                 }
-                return;
-            } else if (req.headers['x-meshauth'] != null) {
+                */
+            }
+
+            if (req.headers['x-meshauth'] != null) {
                 // This is authentication using a custom HTTP header
                 var s = req.headers['x-meshauth'].split(',');
                 for (var i in s) { s[i] = Buffer.from(s[i], 'base64').toString(); }
@@ -6954,13 +6962,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 return;
             }
 
-            //console.log(req.headers['x-meshauth']);
-
             if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
                 // A default user is active
                 func(ws, req, domain, obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]);
                 return;
-            } else if (req.session && (req.session.userid != null) && (req.session.userid.split('/')[1] == domain.id) && (obj.users[req.session.userid])) {
+            }
+
+            if (req.session && (req.session.userid != null) && (req.session.userid.split('/')[1] == domain.id) && (obj.users[req.session.userid])) {
                 // This user is logged in using the ExpressJS session
                 func(ws, req, domain, obj.users[req.session.userid]);
                 return;
