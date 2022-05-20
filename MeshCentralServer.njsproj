@@ -267,6 +267,7 @@
     <Content Include="agents\MeshService64.pdb" />
     <Content Include="agents\modules_meshcore\coretranslations.json" />
     <Content Include="CreateSourcePackage.bat" />
+    <Content Include="dependencies.txt" />
     <Content Include="emails\account-check.html" />
     <Content Include="emails\account-check.txt" />
     <Content Include="emails\account-invite.html" />
