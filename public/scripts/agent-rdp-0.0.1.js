@@ -16,6 +16,7 @@ var CreateRDPDesktop = function (canvasid) {
     obj.ScreenWidth = obj.width = 1280;
     obj.ScreenHeight = obj.height = 1024;
     obj.m.onClipboardChanged = null;
+    obj.onConsoleMessageChange = null;
 
     function mouseButtonMap(button) {
         // Swap mouse buttons if needed
@@ -79,8 +80,28 @@ var CreateRDPDesktop = function (canvasid) {
                         break;
                     }
                     case 'rdp-error': {
-                        var err = msg[1];
-                        console.log('[mstsc.js] error : ' + err.code + '(' + err.message + ')');
+                        obj.consoleMessageTimeout = 5; // Seconds
+                        obj.consoleMessage = msg[1];
+                        delete obj.consoleMessageArgs;
+                        if (msg.length > 2) { obj.consoleMessageArgs = [ msg[2] ]; }
+                        switch (msg[1]) {
+                            case 'NODE_RDP_PROTOCOL_X224_NEG_FAILURE':
+                                if (msg[2] == 1) { obj.consoleMessageId = 9; } // "SSL required by server";
+                                else if (msg[2] == 2) { obj.consoleMessageId = 10; } // "SSL not allowed by server";
+                                else if (msg[2] == 3) { obj.consoleMessageId = 11; } // "SSL certificate not on server";
+                                else if (msg[2] == 4) { obj.consoleMessageId = 12; } // "Inconsistent flags";
+                                else if (msg[2] == 5) { obj.consoleMessageId = 13; } // "Hybrid required by server";
+                                else if (msg[2] == 6) { obj.consoleMessageId = 14; } // "SSL with user auth required by server";
+                                else obj.consoleMessageId = 7; // "Protocol negotiation failed";
+                                break;
+                            case 'NODE_RDP_PROTOCOL_X224_NLA_NOT_SUPPORTED':
+                                obj.consoleMessageId = 8; // "NLA not supported";
+                                break;
+                            default:
+                                obj.consoleMessageId = null;
+                                break;
+                        }
+                        if (obj.onConsoleMessageChange) { obj.onConsoleMessageChange(); }
                         obj.Stop();
                         break;
                     }

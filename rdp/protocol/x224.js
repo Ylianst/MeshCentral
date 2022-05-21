@@ -218,8 +218,9 @@ Client.prototype.recvConnectionConfirm = function(s) {
 	var message = serverConnectionConfirm().read(s);
 
 	if (message.obj.protocolNeg.obj.type.value == NegotiationType.TYPE_RDP_NEG_FAILURE) {
-		throw new error.ProtocolError('NODE_RDP_PROTOCOL_X224_NEG_FAILURE',
-			'Failure code:' + message.obj.protocolNeg.obj.result.value + " (see https://msdn.microsoft.com/en-us/library/cc240507.aspx)");
+        this.emit('error', { err: 'NODE_RDP_PROTOCOL_X224_NEG_FAILURE', code: message.obj.protocolNeg.obj.result.value });
+        return;
+		//throw new error.ProtocolError('NODE_RDP_PROTOCOL_X224_NEG_FAILURE', 'Failure code:' + message.obj.protocolNeg.obj.result.value + " (see https://msdn.microsoft.com/en-us/library/cc240507.aspx)");
 	}
 
 	if (message.obj.protocolNeg.obj.type.value == NegotiationType.TYPE_RDP_NEG_RSP) {
@@ -227,7 +228,9 @@ Client.prototype.recvConnectionConfirm = function(s) {
 	}
 
     if ([Protocols.PROTOCOL_HYBRID_EX].indexOf(this.selectedProtocol) !== -1) {
-        throw new error.ProtocolError('NODE_RDP_PROTOCOL_X224_NLA_NOT_SUPPORTED');
+        this.emit('error', 'NODE_RDP_PROTOCOL_X224_NLA_NOT_SUPPORTED');
+        return;
+        //throw new error.ProtocolError('NODE_RDP_PROTOCOL_X224_NLA_NOT_SUPPORTED');
     }
 
 	if (this.selectedProtocol == Protocols.PROTOCOL_RDP) {

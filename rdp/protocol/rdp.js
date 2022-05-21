@@ -184,12 +184,7 @@ function RdpClient(config) {
         }
     }).on('error', function (err) {
         log.warn(err.code + '(' + err.message + ')\n' + err.stack);
-        if (err instanceof error.FatalError) {
-            throw err;
-        }
-        else {
-            self.emit('error', err);
-        }
+        if (err instanceof error.FatalError) { throw err; } else { self.emit('error', err); }
     });
 }
 
