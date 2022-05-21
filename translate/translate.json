@@ -29984,6 +29984,7 @@
     },
     {
       "en": "Hybrid required by server",
+      "nl": "Hybride vereist door de server",
       "xloc": [
         "default.handlebars->39->1208"
       ]
@@ -30963,6 +30964,7 @@
     },
     {
       "en": "Inconsistent flags",
+      "nl": "Inconsistente vlaggen",
       "xloc": [
         "default.handlebars->39->1207"
       ]
@@ -41230,6 +41232,7 @@
     },
     {
       "en": "NLA not supported",
+      "nl": "NLA niet ondersteund",
       "xloc": [
         "default.handlebars->39->1203"
       ]
@@ -48602,6 +48605,7 @@
     },
     {
       "en": "Protocol negotiation failed ({0})",
+      "nl": "Protocolonderhandeling mislukt ({0})",
       "xloc": [
         "default.handlebars->39->1202"
       ]
@@ -54153,24 +54157,28 @@
     },
     {
       "en": "SSL certificate not on server",
+      "nl": "SSL certificaat niet op de server",
       "xloc": [
         "default.handlebars->39->1206"
       ]
     },
     {
       "en": "SSL not allowed by server",
+      "nl": "SSL certificaat niet toegestaan door de server",
       "xloc": [
         "default.handlebars->39->1205"
       ]
     },
     {
       "en": "SSL required by server",
+      "nl": "SSL vereist door server",
       "xloc": [
         "default.handlebars->39->1204"
       ]
     },
     {
       "en": "SSL with user auth required by server",
+      "nl": "SSL met gebruikersverificatie vereist door de server",
       "xloc": [
         "default.handlebars->39->1209"
       ]
