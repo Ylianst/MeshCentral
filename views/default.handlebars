@@ -8414,7 +8414,7 @@
         function autoConnectDesktop(e) { if (autoConnectDesktopTimer == null) { autoConnectDesktopTimer = setInterval(function() { connectDesktop(null, 1) }, 1000); } else { clearInterval(autoConnectDesktopTimer); autoConnectDesktopTimer = null; } }
 
         // Used to translate incoming agent console messages
-        var agentConsoleMessages = [ '', "Waiting for user to grant access...", "Denied", "Failed to start remote terminal session, {0} ({1})", "Timeout", "Received invalid network data", "Unable to capture display" ];
+        var agentConsoleMessages = [ '', "Waiting for user to grant access...", "Denied", "Failed to start remote terminal session, {0} ({1})", "Timeout", "Received invalid network data", "Unable to capture display", "Protocol negotiation failed ({0})", "NLA not supported", "SSL required by server", "SSL not allowed by server", "SSL certificate not on server", "Inconsistent flags", "Hybrid required by server", "SSL with user auth required by server" ];
         function formatAgentConsoleMessage(msg, msgid, msgargs) {
             var r;
             if (msgargs == null) { msgargs = []; }
@@ -8569,6 +8569,16 @@
                     if (desktopsettings.rdpsmb) { desktop.m.SwapMouse = desktopsettings.rdpsmb; }
                     desktop.Start(desktopNode._id, currentNode.rdpport ? currentNode.rdpport : 3389, tsid);
                     desktop.contype = 4;
+                    desktop.onConsoleMessageChange = function () {
+                        if (desktop.consoleMessage) {
+                            Q('p11DeskConsoleMsg').innerHTML += formatAgentConsoleMessage(desktop.consoleMessage, desktop.consoleMessageId, desktop.consoleMessageArgs);
+                            QV('p11DeskConsoleMsg', true);
+                            if (p11DeskConsoleMsgTimer != null) { clearTimeout(p11DeskConsoleMsgTimer); }
+                            if (desktop.consoleMessageTimeout) { p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, desktop.consoleMessageTimeout * 1000); }
+                        } else {
+                            p11clearConsoleMsg();
+                        }
+                    }
                 }
             } else {
                 // Disconnect and clean up the remote desktop

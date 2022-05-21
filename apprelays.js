@@ -207,7 +207,8 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
             }).on('close', function () {
                 send(['rdp-close']);
             }).on('error', function (err) {
-                send(['rdp-error', err]);
+                if (typeof err == 'string') { send(['rdp-error', err]); }
+                if ((typeof err == 'object') && (err.err) && (err.code)) { send(['rdp-error', err.err, err.code]); }
             }).connect('localhost', obj.tcpServerPort);
         } catch (ex) {
             console.log('startRdpException', ex);
