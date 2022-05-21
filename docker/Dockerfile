@@ -1,12 +1,6 @@
 # Filename: Dockerfile
 
-FROM ubuntu:latest
-
-# Disable Prompt During Packages Installation
-ARG DEBIAN_FRONTEND=noninteractive
-
-#install dependencies
-RUN apt-get update && apt-get install -y nodejs npm nano
+FROM node:slim
 
 #Add non-root user, add installation directories and assign proper permissions
 RUN mkdir -p /opt/meshcentral
