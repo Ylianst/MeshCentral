@@ -80,10 +80,10 @@
         <div class="cmtext" onclick="cmtermaction(6,0,event)">Admin PowerShell</div>
         <div class="cmtext" onclick="cmtermaction(8,0,event)">User Shell</div>
         <div class="cmtext" onclick="cmtermaction(9,0,event)">User PowerShell</div>
-        <div class="cmtext" onclick="cmtermaction(1,0x10,event)">Ask Consent + Admin Shell</div>
-        <div class="cmtext" onclick="cmtermaction(6,0x10,event)">Ask Consent + Admin PowerShell</div>
-        <div class="cmtext" onclick="cmtermaction(8,0x10,event)">Ask Consent + User Shell</div>
-        <div class="cmtext" onclick="cmtermaction(9,0x10,event)">Ask Consent + User PowerShell</div>
+        <div class="cmtext" onclick="cmtermaction(1,0x10,event)">Ask Admin Shell</div>
+        <div class="cmtext" onclick="cmtermaction(6,0x10,event)">Ask Admin PowerShell</div>
+        <div class="cmtext" onclick="cmtermaction(8,0x10,event)">Ask User Shell</div>
+        <div class="cmtext" onclick="cmtermaction(9,0x10,event)">Ask User PowerShell</div>
     </div>
     <div id="termShellContextMenu2" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmtermaction(8,0,event)"><b>User Shell</b></div>
@@ -10124,7 +10124,6 @@
 
         // 1 = Agent, 2 = SFTP
         function connectFiles(e, contype, consent) {
-            console.log('connectFiles', contype, consent);
             p13clearConsoleMsg();
             if (!files) {
                 // Setup a mesh agent files
@@ -10145,7 +10144,6 @@
                     }
                 }
                 files.Start(filesNode._id);
-                console.log(files.options);
             } else {
                 //QH('Term', '');
                 files.Stop();
