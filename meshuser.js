@@ -7274,10 +7274,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function readFilesRec(path) {
         var r = {}, dir = fs.readdirSync(path);
         for (var i in dir) {
-            var f = { t: 3, d: 111 };
-            var stat = fs.statSync(path + '/' + dir[i]);
-            if ((stat.mode & 0x004000) == 0) { f.s = stat.size; f.d = stat.mtime.getTime(); } else { f.t = 2; f.f = readFilesRec(path + '/' + dir[i]); }
-            r[dir[i]] = f;
+            var f = { t: 3, d: 111 }, stat = null;
+            try { stat = fs.statSync(path + '/' + dir[i]); } catch (ex) { }
+            if (stat != null) {
+                if ((stat.mode & 0x004000) == 0) { f.s = stat.size; f.d = stat.mtime.getTime(); } else { f.t = 2; f.f = readFilesRec(path + '/' + dir[i]); }
+                r[dir[i]] = f;
+            }
         }
         return r;
     }
