@@ -501,16 +501,11 @@ module.exports.CreateDB = function (parent, func) {
     function performTypedRecordDecrypt(data) {
         if ((data == null) || (obj.dbRecordsDecryptKey == null) || (typeof data != 'object')) return data;
         for (var i in data) {
-            if (data[i] == null) continue;
-            if (data[i].type == 'user') {
-                data[i] = performPartialRecordDecrypt(data[i]);
-            } else if (data[i].type == 'node') {
-                data[i] = performPartialRecordDecrypt(data[i]);
-                if (data[i].intelamt) { data[i].intelamt = performPartialRecordDecrypt(data[i].intelamt); }
-            } else if ((data[i].type == 'mesh') && (data[i].amt || data[i].kvm)) {
-                data[i].amt = performPartialRecordDecrypt(data[i].amt);
-                data[i].kvm = performPartialRecordDecrypt(data[i].kvm);
-            }
+            if ((data[i] == null) || (typeof data[i] != 'object')) continue;
+            data[i] = performPartialRecordDecrypt(data[i]);
+            if ((data[i].intelamt != null) && (typeof data[i].intelamt == 'object') && (data[i].intelamt._CRYPT)) { data[i].intelamt = performPartialRecordDecrypt(data[i].intelamt); }
+            if ((data[i].amt != null) && (typeof data[i].amt == 'object') && (data[i].amt._CRYPT)) { data[i].amt = performPartialRecordDecrypt(data[i].amt); }
+            if ((data[i].kvm != null) && (typeof data[i].kvm == 'object') && (data[i].kvm._CRYPT)) { data[i].kvm = performPartialRecordDecrypt(data[i].kvm); }
         }
         return data;
     }
