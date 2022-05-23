@@ -72,20 +72,27 @@
         <div id="cxmmdesktop" class="cmtext" style="display:none" onclick="cmmeshaction(3,event)">Multi-Desktop</div>
         -->
     </div>
+    <div id="filesShellContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div class="cmtext" onclick="cmconnectfilesaction()">Ask Consent</div>
+    </div>
     <div id="termShellContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div class="cmtext" onclick="cmtermaction(1,event)"><b>Admin Shell</b></div>
-        <div class="cmtext" onclick="cmtermaction(6,event)">Admin PowerShell</div>
-        <div class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
-        <div class="cmtext" onclick="cmtermaction(9,event)">User PowerShell</div>
+        <div class="cmtext" onclick="cmtermaction(1,0,event)"><b>Admin Shell</b></div>
+        <div class="cmtext" onclick="cmtermaction(6,0,event)">Admin PowerShell</div>
+        <div class="cmtext" onclick="cmtermaction(8,0,event)">User Shell</div>
+        <div class="cmtext" onclick="cmtermaction(9,0,event)">User PowerShell</div>
+        <div class="cmtext" onclick="cmtermaction(1,0x10,event)">Ask Consent + Admin Shell</div>
+        <div class="cmtext" onclick="cmtermaction(6,0x10,event)">Ask Consent + Admin PowerShell</div>
+        <div class="cmtext" onclick="cmtermaction(8,0x10,event)">Ask Consent + User Shell</div>
+        <div class="cmtext" onclick="cmtermaction(9,0x10,event)">Ask Consent + User PowerShell</div>
     </div>
     <div id="termShellContextMenu2" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div class="cmtext" onclick="cmtermaction(8,event)"><b>User Shell</b></div>
-        <div class="cmtext" onclick="cmtermaction(9,event)">User PowerShell</div>
+        <div class="cmtext" onclick="cmtermaction(8,0,event)"><b>User Shell</b></div>
+        <div class="cmtext" onclick="cmtermaction(9,0,event)">User PowerShell</div>
     </div>
     <div id="termShellContextMenuLinux" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div class="cmtext" onclick="cmtermaction(1,event)"><b>Root Shell</b></div>
-        <div class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
-        <div class="cmtext" onclick="cmtermaction(100,event)">Login Shell</div>
+        <div class="cmtext" onclick="cmtermaction(1,0,event)"><b>Root Shell</b></div>
+        <div class="cmtext" onclick="cmtermaction(8,0,event)">User Shell</div>
+        <div class="cmtext" onclick="cmtermaction(100,0,event)">Login Shell</div>
     </div>
     <div id="deskConnectContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmdeskaction(1,event)">Ask Consent + Bar</div>
@@ -800,7 +807,7 @@
                             </div>
                             <div>
                                 <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) type="button" style="display:none" />
-                                <input id=p13Connect value="Connect" onclick=connectFiles(event,1) type="button" />
+                                <input id=p13Connect value="Connect" cmenu="filesConnectButton" onclick=connectFiles(event,1) type="button" />
                                 <input id=p13Connects value="SFTP Connect" cmenu=sshPortContextMenu onclick=connectFiles(event,2) type="button" />
                                 <input id=p13Disconnect value="Disconnect" onclick=connectFiles(event) type="button" />
                                 <span id=p13Status>Disconnected</span>
@@ -5833,6 +5840,13 @@
             var cmenu = elem.attributes.cmenu.value;
 
             switch (cmenu) {
+                case 'filesConnectButton': {
+                    // Files connect button context menu
+                    if ((currentNode == null) || (currentNode.agent == null)) return true;
+                    contextelement = elem;
+                    showContextMenuDiv(document.getElementById('filesShellContextMenu'), event.pageX, event.pageY);
+                    break;
+                }
                 case 'termConnectButton': {
                     // Terminal connect button context menu
                     if ((currentNode == null) || (currentNode.agent == null) || (currentNode.mtype == 3)) return true;
@@ -5984,11 +5998,15 @@
             p1updateInfo();
         }
 
-        function cmtermaction(action) {
+        function cmconnectfilesaction() {
+            connectFiles(null, 1, 0x0020);
+        }
+
+        function cmtermaction(action, consent) {
             if (action < 100) {
-                connectTerminal(null, 1, { protocol: action });
+                connectTerminal(null, 1, { protocol: action, consent: consent });
             } else if (action == 100) {
-                connectTerminal(null, 1, { protocol: 1, requireLogin: true });
+                connectTerminal(null, 1, { protocol: 1, requireLogin: true, consent: consent });
             }
         }
 
@@ -6119,6 +6137,7 @@
         function hideContextMenu() {
             QV('contextMenu', false);
             QV('meshContextMenu', false);
+            QV('filesShellContextMenu', false);
             QV('termShellContextMenu', false);
             QV('termShellContextMenu2', false);
             QV('termShellContextMenuLinux', false);
@@ -9864,6 +9883,7 @@
                     // Terminal setup
                     var termoptions = { protocol: ((options != null) && (typeof options.protocol == 'number'))?options.protocol:1 };
                     if (options && options.requireLogin) { termoptions.requireLogin = true; }
+                    if (options && options.consent) { termoptions.consent = options.consent; }
                     if ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) == -1) {
                         if (Q('termSizeList').value == 1) { termoptions.cols = 80; termoptions.rows = 25; termoptions.xterm = true; }
                         else if (Q('termSizeList').value == 2) { termoptions.cols = 100; termoptions.rows = 30; termoptions.xterm = true; }
@@ -9912,12 +9932,13 @@
                         });
 
                         // Setup a terminal tunnel to the agent
+                        termoptions.cols = xterm.cols;
+                        termoptions.rows = xterm.rows;
                         terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel((contype == 3)? sshTunnelUpdate : tunnelUpdate, termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                         if (contype == 3) { terminal.urlname = 'sshterminalrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
                         terminal.debugmode = debugmode;
                         terminal.m.debugmode = debugmode;
                         terminal.options = termoptions;
-                        terminal.options = { cols: xterm.cols, rows: xterm.rows };
                         if (termoptions.requireLogin) { terminal.options.requireLogin = true; }
                         terminal.Start(terminalNode._id);
                         terminal.onStateChanged = onTerminalStateChange;
@@ -10102,13 +10123,15 @@
         function autoConnectFiles(e) { if (autoConnectFilesTimer == null) { autoConnectFilesTimer = setInterval(connectFiles, 100); } else { clearInterval(autoConnectFilesTimer); autoConnectFilesTimer = null; } }
 
         // 1 = Agent, 2 = SFTP
-        function connectFiles(e, contype) {
+        function connectFiles(e, contype, consent) {
+            console.log('connectFiles', contype, consent);
             p13clearConsoleMsg();
             if (!files) {
                 // Setup a mesh agent files
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                 if (contype == 2) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
                 files.contype = contype;
+                files.options = { consent: consent }
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
@@ -10122,6 +10145,7 @@
                     }
                 }
                 files.Start(filesNode._id);
+                console.log(files.options);
             } else {
                 //QH('Term', '');
                 files.Stop();
