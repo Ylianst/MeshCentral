@@ -2881,18 +2881,15 @@
                     var publicKey = message.request;
                     message.request.challenge = Uint8Array.from(atob(message.request.challenge), function (c) { return c.charCodeAt(0) })
                     message.request.user.id = Uint8Array.from(atob(message.request.user.id), function (c) { return c.charCodeAt(0) })
-                    setTimeout(function() {
-                        navigator.credentials.create({ publicKey: publicKey })
-                            .then(function(newCredentialInfo) {
-                                // Public key credential
-                                var r = { rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.rawId))), response: { attestationObject: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.attestationObject))), clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.clientDataJSON))) }, type: newCredentialInfo.type };
-                                meshserver.send({ action: 'webauthn-endregister', response: r });
-                                setDialogMode(0);
-                            }, function(error) {
-                                // Error
-                                setDialogMode(2, "Add Security Key", 1, null, "ERROR: " + error);
-                            });
-                    }, 100);
+                    navigator.credentials.create({ publicKey: publicKey }).then(function(newCredentialInfo) {
+                        // Public key credential
+                        var r = { rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.rawId))), response: { attestationObject: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.attestationObject))), clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.clientDataJSON))) }, type: newCredentialInfo.type };
+                        meshserver.send({ action: 'webauthn-endregister', response: r });
+                        setDialogMode(0);
+                    }, function(error) {
+                        // Error
+                        setDialogMode(2, "Add Security Key", 1, null, "ERROR: " + error);
+                    });
                     break;
                 }
                 case 'verifyPhone': {
