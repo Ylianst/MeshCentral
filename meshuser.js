@@ -3628,6 +3628,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Send the registration request
                     var registrationOptions = parent.webauthn.generateRegistrationChallenge("Anonymous Service", { id: Buffer.from(user._id, 'binary').toString('base64'), name: user._id, displayName: user._id.split('/')[2] });
+                    //console.log('registrationOptions', registrationOptions);
                     obj.webAuthnReqistrationRequest = { action: 'webauthn-startregister', keyname: command.name, request: registrationOptions };
                     ws.send(JSON.stringify(obj.webAuthnReqistrationRequest));
                     break;
