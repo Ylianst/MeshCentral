@@ -324,7 +324,7 @@ nano ~/meshcentral-data/config.json
 
 Then, make the start of the file look like this:
 
-```
+```json
 {
   "settings": {
     "MongoDb": "mongodb://127.0.0.1:27017/meshcentral",
@@ -530,7 +530,7 @@ pico ~/meshcentral-data/config.json
 
 Then, make the start of the file look like this:
 
-```
+```json
 {
   "settings": {
     "LANonly": true,
@@ -754,7 +754,7 @@ pico ~/meshcentral-data/config.json
 
 Then, make the start of the file look like this:
 
-```
+```json
 {
   "settings": {
     "MongoDb": "mongodb://127.0.0.1:27017/meshcentral",
@@ -1072,7 +1072,7 @@ vi /usr/local/meshcentral/meshcentral-data/config.json
 
 In the settings section, set the following key value pairs:
 
-```
+```json
 {
 "settings": {
 "Cert": "meshcentral.example.com",

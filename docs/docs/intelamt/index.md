@@ -103,7 +103,7 @@ The leaf certificate will have the Intel AMT activation option and a specific do
 
 If you have a certificate chain in a .pfx or .p12 format, place that file in the “meshcentral-data” folder and add the “AmtAcmActivation” section in the domain section like so:
 
-```
+```json
 {
   "settings": {
     "Cert": "devbox.mesh.meshcentral.com",
@@ -126,7 +126,7 @@ If you have a certificate chain in a .pfx or .p12 format, place that file in the
 
 If you have the certificate chain in PEM format as a set of .crt files and a .key file, start by placing all of the certificate files in the “meshcentral-data” folder and setup the certificate chain like this:
 
-```
+```json
 {
   "settings": {
     "Cert": "devbox.mesh.meshcentral.com",
