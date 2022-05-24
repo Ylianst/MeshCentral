@@ -98,7 +98,7 @@ To get started, click on a device in MeshCentral and click on the “Router” l
 
 You can download MeshCmd is you have not done so already, but more importantly, download the action.txt file. The file is in text format and contain something like this: 
 
-```
+```json
 {
  "action": "route",
  "localPort": 1234,				 Change this
