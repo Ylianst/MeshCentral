@@ -715,7 +715,7 @@ Let’s get started by configuring MeshCentral with the following values in conf
 ```json
 {
   "settings": {
-    "Cert": "myservername.domain.com"
+    "Cert": "myservername.domain.com",
     "Port": 4430,
     "AliasPort": 443,
     "RedirPort": 800,
@@ -889,7 +889,7 @@ First we will start with the MeshCentral configuration, here is a minimal config
 ```json
 {
   "settings": {
-    "Cert": "myservername.domain.com"
+    "Cert": "myservername.domain.com",
     "Port": 4430,
     "AliasPort": 443,
     "RedirPort": 800,
@@ -1019,7 +1019,7 @@ On the MeshCentral side, we are not going to use port 80 and need the main HTTPS
 ```json
 {
   "settings": {
-    "Cert": "myservername.domain.com"
+    "Cert": "myservername.domain.com",
     "Port": 444,
     "AliasPort": 443,
     "RedirPort": 0,
@@ -1601,8 +1601,8 @@ In this annex, we present a complete sample config.json file. You would put this
       "UserQuota": 1048576,
       "MeshQuota": 248576,
       "NewAccounts": true,
-      "Footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>"
-"PasswordRequirements": { "min": 8, "max": 128, "upper": 1, "lower": 1, "numeric": 1, "nonalpha": 1 }
+      "Footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
+      "PasswordRequirements": { "min": 8, "max": 128, "upper": 1, "lower": 1, "numeric": 1, "nonalpha": 1 }
     },
     "customer1": {
       "Dns": "customer1.myserver.com",
