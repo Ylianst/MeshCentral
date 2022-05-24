@@ -2883,11 +2883,11 @@
                     message.request.user.id = Uint8Array.from(atob(message.request.user.id), function (c) { return c.charCodeAt(0) })
                     navigator.credentials.create({ publicKey: publicKey }).then(function(newCredentialInfo) {
                         // Public key credential
-                        var r = { rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.rawId))), response: { attestationObject: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.attestationObject))), clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.clientDataJSON))) }, type: newCredentialInfo.type };
-                        meshserver.send({ action: 'webauthn-endregister', response: r });
+                        meshserver.send({ action: 'webauthn-endregister', response: { rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.rawId))), response: { attestationObject: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.attestationObject))), clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.clientDataJSON))) }, type: newCredentialInfo.type } });
                         setDialogMode(0);
                     }, function(error) {
                         // Error
+                        console.log("ERROR: " + error);
                         setDialogMode(2, "Add Security Key", 1, null, "ERROR: " + error);
                     });
                     break;
