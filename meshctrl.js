@@ -839,6 +839,9 @@ if (args['_'].length == 0) {
                         console.log("  --reset                       - Attempt to remote the remote device.");
                         console.log("  --sleep                       - Attempt to place the remote device in low power mode.");
                         console.log("  --off                         - Attempt to power off the remote device.");
+                        console.log("  --amtoff                      - Attempt to power off the remote device using Intel AMT.");
+                        console.log("  --amton                       - Attempt to power on the remote device using Intel AMT.");
+                        console.log("  --amtreset                    - Attempt to reset the remote device using Intel AMT.");
                         break;
                     }
                     case 'devicesharing': {
@@ -1520,6 +1523,15 @@ function serverConnect() {
                 } else if (args.sleep) {
                     // Sleep operation
                     ws.send(JSON.stringify({ action: 'poweraction', nodeids: nodes, actiontype: 4, responseid: 'meshctrl' }));
+                } else if (args.amton) {
+                    // Intel AMT Power on operation
+                    ws.send(JSON.stringify({ action: 'poweraction', nodeids: nodes, actiontype: 302, responseid: 'meshctrl' }));
+                } else if (args.amtoff) {
+                    // Intel AMT Power off operation
+                    ws.send(JSON.stringify({ action: 'poweraction', nodeids: nodes, actiontype: 308, responseid: 'meshctrl' }));
+                } else if (args.amtreset) {
+                    // Intel AMT Power reset operation
+                    ws.send(JSON.stringify({ action: 'poweraction', nodeids: nodes, actiontype: 310, responseid: 'meshctrl' }));
                 } else {
                     console.log('No power operation specified.');
                     process.exit(1);

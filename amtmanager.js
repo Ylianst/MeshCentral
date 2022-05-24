@@ -955,6 +955,7 @@ module.exports.CreateAmtManager = function (parent) {
             // If not LMS, has a AMT stack present and is in connected state, perform power operation.
             if ((dev.connType != 2) && (dev.state == 1) && (dev.amtstack != null)) {
                 // Action: 2 = Power on, 8 = Power down, 10 = reset
+                parent.debug('amt', dev.name, "performPowerAction", action);
                 dev.powerAction = action;
                 try { dev.amtstack.RequestPowerStateChange(action, performPowerActionResponse); } catch (ex) { }
             }
