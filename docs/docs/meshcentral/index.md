@@ -2,7 +2,7 @@
 
 [MeshCentral2 Guide](https://meshcentral.com/info/docs/MeshCentral2UserGuide.pdf)
 
-MeshCmd Guide [as .pdf](https://meshcentral.com/info/docs/MeshCmdUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCmd User's Guide v0.0.3.odt?raw=true)
+MeshCmd Guide [as .pdf](https://meshcentral.com/info/docs/MeshCmdUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral User's Guide v0.2.9.odt?raw=true)
 
 ## Video Walkthru
 
@@ -478,7 +478,7 @@ MeshCentral makes use of HTTPS to authenticate and encrypt management traffic ov
 
 Before moving forward with this section, make sure your MeshCentral server is working correctly, has a domain name pointing to it and that the HTTP redirection server on port 80 is enabled and working. MeshCentral’s HTTP port 80 server will be used in the process to prove to Let’s Encrypt that we have control over the domain. At any point, you may try to use https://letsdebug.net/ to see if your domain is setup correctly and/or debug any issues. When ready, add the “letsencrypt” section to the config.json file like this:
 
-```
+```json
 {
   "settings": {
     "RedirPort": 80,
@@ -553,7 +553,7 @@ The password recovery flow when “Reset Account” is triggered at the login pa
 
 Both account verification and password recovery are triggered automatically once SMTP mail server configuration is included into the config.json file. Update the config.json with “smtp” section as shown below and restart the server. 
 
-```
+```json
 {
   "smtp": {
     "host": "smtp.server.com",
@@ -603,7 +603,7 @@ With login tokens feature, a token can be generated to be used for a short time 
 
 To enable this feature, configure config.json file to allow login tokens. 
 
-```
+```json
 {
   "settings": {
     "allowLoginToken": true,
@@ -712,10 +712,10 @@ In this example, we will:
 
 Let’s get started by configuring MeshCentral with the following values in config.json:
 
-```
+```json
 {
   "settings": {
-    "Cert": "myservername.domain.com"
+    "Cert": "myservername.domain.com",
     "Port": 4430,
     "AliasPort": 443,
     "RedirPort": 800,
@@ -886,10 +886,10 @@ In this example, we will:
 
 First we will start with the MeshCentral configuration, here is a minimal configuration that will work:
 
-```
+```json
 {
   "settings": {
-    "Cert": "myservername.domain.com"
+    "Cert": "myservername.domain.com",
     "Port": 4430,
     "AliasPort": 443,
     "RedirPort": 800,
@@ -1016,10 +1016,10 @@ backend meshcentral
 On the MeshCentral side, we are not going to use port 80 and need the main HTTPS port to not perform TLS and listen on port 444.
 
 
-```
+```json
 {
   "settings": {
-    "Cert": "myservername.domain.com"
+    "Cert": "myservername.domain.com",
     "Port": 444,
     "AliasPort": 443,
     "RedirPort": 0,
@@ -1182,7 +1182,7 @@ node node_modules/meshcentral --vault http://127.0.0.1:8200 --token s.cO4… --u
 
 MeshCentral will first read all of the files from Vault and get started. An alternative to this is to create a very small config.json file in “meshcentral-data” that contains only the Vault configuration like this:
 
-```
+```json
 {
   "settings": {
     "vault": {
@@ -1225,7 +1225,7 @@ The additional encryption does the affect database operations and can be used in
 
 Only some data fields are encrypted and the “_CRYPT” entry will only be present when one or more fields are present that need to be secured. To enable this feature, add the “DbRecordsEncryptKey” with a password string to the “settings” section of the config.json like this:
 
-```
+```json
 {
   "settings": {
     "Port": 4430,
@@ -1243,7 +1243,7 @@ node node_modules/meshcentral --recordencryptionrecode
 
 This command will re-write entries in the database that could require added security and force the application of record encryption. You can also specify a key for decryption only like this:
 
-```
+```json
 {
   "settings": {
     "Port": 4430,
@@ -1299,7 +1299,7 @@ Once the new application is created, go to the “Keys and tokens” tab. You wi
 
 Once done, your config.json should look a bit like this:
 
-```
+```json
 {
   "settings": {
     "Cert": "myserver.mydomain.com",
@@ -1330,7 +1330,7 @@ Note that if you do not allow new accounts, any new users that use Twitter crede
 
 The exact same process as shown in the previous section can be repeated for Google, GitHub and Reddit. In each case, you need to go to each respective credential provider and get a “ClientID” and “ClientSecret” for each service. You also need to register the correct callback URL for each service. Take a look at the config.json below and note the callback URL that will need to be registered for each service provider.
 
-```
+```json
 {
   "settings": {
     "Cert": "myserver.mydomain.com",
@@ -1391,7 +1391,7 @@ Next, we need to create a secret that will be shared between Azure and MeshCentr
 
 We then copy the resulting secret and this will be the 3rd and final value we need to get MeshCentral setup. Now, we take the application ID, tenant ID and secret and place these values in the MeshCentral config.json like so:
 
-```
+```json
 {
   "settings": {
     "Cert": "myserver.mydomain.com",
@@ -1458,7 +1458,7 @@ We are now almost done with JumpCloud. The last thing we need to do is download 
 
 Save the certificate as “jumpcloud-saml.pem” and place it in the “meshcentral-data” folder. You are now ready to configure MeshCentral. Edit the config.json and make it look like this:
 
-```
+```json
 {
   "settings": {
     "Cert": "myserver.mydomain.com",
@@ -1498,7 +1498,7 @@ In this section, we look at configuring SAML with a generic authentication provi
 
 A generic SAML setup will look like this:
 
-```
+```json
 {
   "settings": {
     "Cert": "myserver.mydomain.com",
@@ -1574,7 +1574,7 @@ MeshCentral and this document are both opens source and licensed using Apache 2.
 
 In this annex, we present a complete sample config.json file. You would put this file in the “meshcentral-data” folder that is created when MeshCentral is first run. The config.json is completely optional and the server will run with default values with it. All key names in this file are case insensitive.
 
-```
+```json
 {
   "settings": {
     "MongoDb": "mongodb://127.0.0.1:27017/meshcentral",
@@ -1601,8 +1601,8 @@ In this annex, we present a complete sample config.json file. You would put this
       "UserQuota": 1048576,
       "MeshQuota": 248576,
       "NewAccounts": true,
-      "Footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>"
-"PasswordRequirements": { "min": 8, "max": 128, "upper": 1, "lower": 1, "numeric": 1, "nonalpha": 1 }
+      "Footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
+      "PasswordRequirements": { "min": 8, "max": 128, "upper": 1, "lower": 1, "numeric": 1, "nonalpha": 1 }
     },
     "customer1": {
       "Dns": "customer1.myserver.com",
