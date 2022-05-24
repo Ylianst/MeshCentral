@@ -123,7 +123,7 @@ This technique needs some setup, but allows MeshCtrl to login as any account wit
 
 In this technique, we will get a special encryption key from the server and use this to generate a login token to the server. First, we must activate the login token feature of the server by setting “AllowLoginToken” to “true” in the “settings” section of config.json: 
 
-```
+```json
 {
   "settings": {
     "Port": 443,
@@ -199,7 +199,7 @@ node ./node_modules/meshcentral/meshctrl serverinfo –-loginkeyfile key.txt --u
 
 So, we add both the url to access the correct domain and the domain name explicitly. The domain name must be exactly the one that is used in the domain section of the config.json for of MeshCentral. For example, if the MeshCentral config.json file looks like this: 
 
-```
+```json
 {
   "settings": {
     "Cert": "myserver.com",
