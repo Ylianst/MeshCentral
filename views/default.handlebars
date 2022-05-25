@@ -9805,7 +9805,9 @@
                 if (ok == true) {
                     var reader = new FileReader();
                     reader.onload = function (e) {
-                        var validkey = ((e.target.result.indexOf('-----BEGIN OPENSSH PRIVATE KEY-----') >= 0) && (e.target.result.indexOf('-----END OPENSSH PRIVATE KEY-----') >= 0));
+                        var validkey =
+                            ((e.target.result.indexOf('-----BEGIN OPENSSH PRIVATE KEY-----') >= 0) && (e.target.result.indexOf('-----END OPENSSH PRIVATE KEY-----') >= 0)) ||
+                            ((e.target.result.indexOf('-----BEGIN RSA PRIVATE KEY-----') >= 0) && (e.target.result.indexOf('-----END RSA PRIVATE KEY-----') >= 0));
                         QE('idx_dlgOkButton', validkey);
                         QS('d2badkey')['color'] = validkey?'#000':'#F00';
                     }
