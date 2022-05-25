@@ -714,6 +714,10 @@ module.exports.CertificateOperations = function (parent) {
             extensions.push({ name: 'subjectAltName', altNames: altNames });
         }
 
+        if (extKeyUsage.codeSign === true) {
+            extensions = [{ name: 'basicConstraints', cA: false }, { name: 'keyUsage', keyCertSign: false, digitalSignature: true, nonRepudiation: false, keyEncipherment: false, dataEncipherment: false }, { name: 'extKeyUsage', codeSigning: true }, { name: "subjectKeyIdentifier" }];
+        }
+
         cert.setExtensions(extensions);
         cert.sign(rootcert.key, obj.forge.md.sha384.create());
 
@@ -780,7 +784,7 @@ module.exports.CertificateOperations = function (parent) {
         var certargs = args.cert;
         var mpscertargs = args.mpscert;
         var strongCertificate = (args.fastcert ? false : true);
-        var rcountmax = 4;
+        var rcountmax = 5;
         var caindex = 1;
         var caok = false;
         var calist = [];
@@ -845,6 +849,12 @@ module.exports.CertificateOperations = function (parent) {
         if (obj.fileExists("agentserver-cert-public.crt") && obj.fileExists("agentserver-cert-private.key")) {
             r.agent = { cert: obj.fileLoad("agentserver-cert-public.crt", 'utf8'), key: obj.decryptPrivateKey(obj.fileLoad("agentserver-cert-private.key", 'utf8')) };
             if (obj.checkCertificate(r.agent.cert, r.agent.key) == false) { delete r.agent; } else { rcount++; }
+        }
+
+        // If the code signing certificate already exist, load it
+        if (obj.fileExists("codesign-cert-public.crt") && obj.fileExists("codesign-cert-private.key")) {
+            r.codesign = { cert: obj.fileLoad("codesign-cert-public.crt", 'utf8'), key: obj.decryptPrivateKey(obj.fileLoad("codesign-cert-private.key", 'utf8')) };
+            if (obj.checkCertificate(r.codesign.cert, r.codesign.key) == false) { delete r.codesign; } else { rcount++; }
         }
 
         // If the swarm server certificate exist, load it (This is an optional certificate)
@@ -1045,6 +1055,22 @@ module.exports.CertificateOperations = function (parent) {
             agentCertAndKey = { cert: obj.pki.certificateFromPem(r.agent.cert), key: obj.pki.privateKeyFromPem(r.agent.key) };
             agentCertificate = r.agent.cert;
             agentPrivateKey = r.agent.key;
+        }
+
+        // If the code signing certificate does not exist, create one
+        var codesignCertAndKey, codesignCertificate, codesignPrivateKey;
+        if (r.codesign == null) {
+            console.log("Generating code signing certificate...");
+            codesignCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, true, commonName, country, organization, { codeSign: true }, strongCertificate);
+            codesignCertificate = obj.pki.certificateToPem(codesignCertAndKey.cert);
+            codesignPrivateKey = obj.pki.privateKeyToPem(codesignCertAndKey.key);
+            obj.fs.writeFileSync(parent.getConfigFilePath('codesign-cert-public.crt'), codesignCertificate);
+            obj.fs.writeFileSync(parent.getConfigFilePath('codesign-cert-private.key'), codesignPrivateKey);
+        } else {
+            // Keep the code signing certificate we have
+            codesignCertAndKey = { cert: obj.pki.certificateFromPem(r.codesign.cert), key: obj.pki.privateKeyFromPem(r.codesign.key) };
+            codesignCertificate = r.codesign.cert;
+            codesignPrivateKey = r.codesign.key;
         }
 
         // If the Intel AMT MPS certificate does not exist, create one
