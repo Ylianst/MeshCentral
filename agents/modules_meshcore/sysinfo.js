@@ -106,32 +106,39 @@ function windows_memUtilization()
     return (ret);
 }
 
-function linux_cpuUtilization()
-{
+var cpuLastIdle = [];
+var cpuLastSum = [];
+function linux_cpuUtilization() {
     var ret = { cpus: [] };
     var info = require('fs').readFileSync('/proc/stat');
     var lines = info.toString().split('\n');
     var columns;
     var x, y;
-    var sum, idle, utilization;
-    for (var i in lines)
-    {
+    var cpuNo = 0;
+    var currSum, currIdle, utilization;
+    for (var i in lines) {
         columns = lines[i].split(' ');
         if (!columns[0].startsWith('cpu')) { break; }
 
-        x = 0, sum = 0;
+        x = 0, currSum = 0;
         while (columns[++x] == '');
-        for (y = x; y < columns.length; ++y) { sum += parseInt(columns[y]); }
-        idle = parseInt(columns[3 + x]);
-        utilization = (100 - ((idle / sum) * 100)); //.toFixed(2);
-        if (!ret.total)
-        {
+        for (y = x; y < columns.length; ++y) { currSum += parseInt(columns[y]); }
+        currIdle = parseInt(columns[3 + x]);
+
+        var diffIdle = currIdle - cpuLastIdle[cpuNo];
+        var diffSum = currSum - cpuLastSum[cpuNo];
+
+        utilization = (100 - ((diffIdle / diffSum) * 100));
+
+        cpuLastSum[cpuNo] = currSum;
+        cpuLastIdle[cpuNo] = currIdle;
+
+        if (!ret.total) {
             ret.total = utilization;
-        }
-        else
-        {
+        } else {
             ret.cpus.push(utilization);
         }
+        ++cpuNo;
     }
 
     var p = new promise(function (res, rej) { this._res = res; this._rej = rej; });
