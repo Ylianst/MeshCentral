@@ -83,20 +83,15 @@ function createAuthenticodeHandler(path) {
         obj.header.siglen = buf.readUInt32LE(4);
         obj.header.signed = ((obj.header.sigpos != 0) && (obj.header.siglen != 0));
 
-        if (obj.header.signed)
-        {
+        if (obj.header.signed) {
             // Read signature block
-            // Check the last 8 bytes for padding (Quad-Aligned), and remove it
-            var pkcs7raw = readFileSlice(obj.header.sigpos + 8, obj.header.siglen - 8);
-            var i;
-            for (i = 0; i < 8 && pkcs7raw[pkcs7raw.length - 1 - i] == 0; ++i)
-            {
-            }
-            if (i > 0)
-            {
-                pkcs7raw = pkcs7raw.slice(0, pkcs7raw.length - i);
-            }
 
+            // Remove the padding if needed
+            var i, pkcs7raw = readFileSlice(obj.header.sigpos + 8, obj.header.siglen - 8);
+            var derlen = forge.asn1.getBerValueLength(forge.util.createBuffer(pkcs7raw.slice(1, 5))) + 4;
+            if (derlen != pkcs7raw.length) { pkcs7raw = pkcs7raw.slice(0, derlen); }
+
+            // Decode the signature block
             var pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(pkcs7raw));
 
             // To work around ForgeJS PKCS#7 limitation
@@ -161,8 +156,8 @@ function createAuthenticodeHandler(path) {
         cert.validity.notAfter = new Date();
         cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 3);
         var attrs = [
-             { name: 'commonName', value: 'example.org' },
-             { name: 'countryName', value: 'US' },
+            { name: 'commonName', value: 'example.org' },
+            { name: 'countryName', value: 'US' },
             { shortName: 'ST', value: 'California' },
             { name: 'localityName', value: 'Santa Clara' },
             { name: 'organizationName', value: 'Test' },
@@ -210,9 +205,9 @@ function createAuthenticodeHandler(path) {
         var p7signature = Buffer.from(forge.pkcs7.messageToPem(p7).split('-----BEGIN PKCS7-----')[1].split('-----END PKCS7-----')[0], 'base64');
         console.log('p7signature', p7signature.toString('base64'));
 
-        
+        // Quad Align the results, adding padding if necessary
         var len = this.filesize + p7signature.length;
-        var padding = (8 - ((len) % 8)) % 8;                // Quad Align the results, adding padding if necessary
+        var padding = (8 - ((len) % 8)) % 8;
 
         var addresstable = Buffer.alloc(8);
         addresstable.writeUInt32LE(this.filesize);
@@ -226,13 +221,15 @@ function createAuthenticodeHandler(path) {
         var bytesLeft = this.filesize;
         var tmp;
 
-        while ((this.filesize - written) > 0)
-        {
+        // TODO: This copies the entire file including the old signature block.
+        // Need to be fixed to only copy the file without the signature block
+        while ((this.filesize - written) > 0) {
             tmp = readFileSlice(written, (this.filesize - written) > 65535 ? 65535 : this.filesize - written);
             fs.writeSync(output, tmp);
             written += tmp.length;
         }
-         
+
+        // Write the signature block
         var win = Buffer.alloc(8);                              // WIN CERTIFICATE Structure
         win.writeUInt32LE(p7signature.length + padding + 8);    // DWORD length
         win.writeUInt16LE(512, 4);                              // WORD revision
