@@ -53,6 +53,7 @@ function createAuthenticodeHandler(path) {
         if (obj.fd != null) return;
 
         // Open the file descriptor
+        obj.path = path;
         obj.fd = fs.openSync(path);
         obj.stats = fs.fstatSync(obj.fd);
         obj.filesize = obj.stats.size;
@@ -82,10 +83,20 @@ function createAuthenticodeHandler(path) {
         obj.header.siglen = buf.readUInt32LE(4);
         obj.header.signed = ((obj.header.sigpos != 0) && (obj.header.siglen != 0));
 
-        if (obj.header.signed) {
+        if (obj.header.signed)
+        {
             // Read signature block
-            // TODO: The 3 bytes at the end may be padding we need to remove, not a contant.
-            var pkcs7raw = readFileSlice(obj.header.sigpos + 8, obj.header.siglen - 8 - 3);
+            // Check the last 8 bytes for padding (Quad-Aligned), and remove it
+            var pkcs7raw = readFileSlice(obj.header.sigpos + 8, obj.header.siglen - 8);
+            var i;
+            for (i = 0; i < 8 && pkcs7raw[pkcs7raw.length - 1 - i] == 0; ++i)
+            {
+            }
+            if (i > 0)
+            {
+                pkcs7raw = pkcs7raw.slice(0, pkcs7raw.length - i);
+            }
+
             var pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(pkcs7raw));
 
             // To work around ForgeJS PKCS#7 limitation
@@ -198,6 +209,40 @@ function createAuthenticodeHandler(path) {
         p7.sign();
         var p7signature = Buffer.from(forge.pkcs7.messageToPem(p7).split('-----BEGIN PKCS7-----')[1].split('-----END PKCS7-----')[0], 'base64');
         console.log('p7signature', p7signature.toString('base64'));
+
+        
+        var len = this.filesize + p7signature.length;
+        var padding = (8 - ((len) % 8)) % 8;                // Quad Align the results, adding padding if necessary
+
+        var addresstable = Buffer.alloc(8);
+        addresstable.writeUInt32LE(this.filesize);
+        addresstable.writeUInt32LE(8 + p7signature.length + padding, 4);
+
+        var b = this.path.split('.');
+        b[b.length - 2] += '-jsigned';
+
+        var output = fs.openSync(b.join('.'), 'w');
+        var written = 0;
+        var bytesLeft = this.filesize;
+        var tmp;
+
+        while ((this.filesize - written) > 0)
+        {
+            tmp = readFileSlice(written, (this.filesize - written) > 65535 ? 65535 : this.filesize - written);
+            fs.writeSync(output, tmp);
+            written += tmp.length;
+        }
+         
+        var win = Buffer.alloc(8);                              // WIN CERTIFICATE Structure
+        win.writeUInt32LE(p7signature.length + padding + 8);    // DWORD length
+        win.writeUInt16LE(512, 4);                              // WORD revision
+        win.writeUInt16LE(2, 6);                                // WORD type
+
+        fs.writeSync(output, win);
+        fs.writeSync(output, p7signature);
+        if (padding > 0) { fs.writeSync(output, Buffer.alloc(padding, 0)); }
+        fs.writeSync(output, addresstable, 0, addresstable.length, this.header.header_size + 152 + (this.header.pe32plus * 16));
+        fs.closeSync(output);
     }
 
     openFile();
@@ -241,6 +286,7 @@ function start() {
         if (exe.fileHashSigned != null) { console.log('fileHashSigned', exe.fileHashSigned.toString('hex')); }
         if (exe.fileHashActual != null) { console.log('fileHashActual', exe.fileHashActual.toString('hex')); }
         if (exe.signatureBlock) { console.log('Signature', exe.signatureBlock.toString('hex')); }
+        console.log('FileLen: ' + exe.filesize);
     }
 
     if (command == 'sign') {
