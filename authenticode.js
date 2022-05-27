@@ -94,32 +94,25 @@ function createAuthenticodeHandler(path) {
             var derlen = forge.asn1.getBerValueLength(forge.util.createBuffer(pkcs7raw.slice(1, 5))) + 4;
             if (derlen != pkcs7raw.length) { pkcs7raw = pkcs7raw.slice(0, derlen); }
 
-            //console.log('pkcs7raw', pkcs7raw.toString('base64'));
-
             // Decode the signature block
             var pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(pkcs7raw));
-
-            // To work around ForgeJS PKCS#7 limitation
-            // Switch content type from 1.3.6.1.4.1.311.2.1.4 to forge.pki.oids.data (1.2.840.113549.1.7.1)
-            // TODO: Find forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.4').data and switch it.
+            
+            // To work around ForgeJS PKCS#7 limitation, this may break PKCS7 verify if ForjeJS adds support for it in the future
+            // Switch content type from "1.3.6.1.4.1.311.2.1.4" to "1.2.840.113549.1.7.1"
             pkcs7der.value[1].value[0].value[2].value[0].value = forge.asn1.oidToDer(forge.pki.oids.data).data;
-
-            // Convert the ASN1 content data into binary and place back
-            var pkcs7content = forge.asn1.toDer(pkcs7der.value[1].value[0].value[2].value[1].value[0]).data;
-            pkcs7der.value[1].value[0].value[2].value[1].value[0] = { tagClass: 0, type: 4, constructed: false, composed: false, value: pkcs7content };
-
-            // DEBUG: Print out the new DER
-            //console.log(Buffer.from(forge.asn1.toDer(pkcs7der).data, 'binary').toString('base64'));
 
             // Decode the PKCS7 message
             var pkcs7 = p7.messageFromAsn1(pkcs7der);
-            var pkcs7content = forge.asn1.fromDer(pkcs7.rawCapture.content.value[0].value);
-            obj.rawSignedContent = pkcs7.rawCapture.content.value[0].value;
+            var pkcs7content = pkcs7.rawCapture.content.value[0];
 
-            //console.log('p7content', JSON.stringify(pkcs7content));
-
-            // DEBUG: Print out the content
-            //console.log(Buffer.from(pkcs7.rawCapture.content.value[0].value, 'binary').toString('hex'));
+            /*
+            // Verify a PKCS#7 signature
+            // Verify is not currently supported in node-forge, but if implemented in the future, this code could work.
+            var caStore = forge.pki.createCaStore();
+            for (var i in obj.certificates) { caStore.addCertificate(obj.certificates[i]); }
+            // Return is true if all signatures are valid and chain up to a provided CA
+            if (!pkcs7.verify(caStore)) { throw ('Executable file has an invalid signature.'); }
+            */
 
             // Set the certificate chain
             obj.certificates = pkcs7.certificates;
@@ -185,8 +178,13 @@ function createAuthenticodeHandler(path) {
     obj.sign = function (cert, key) {
         if ((cert == null) || (key == null)) { var c = obj.createSelfSignedCert(); cert = c.cert; key = c.key; }
         var fileHash = getHash('sha384');
+
+        // Create the signature block
         var p7 = forge.pkcs7.createSignedData();
-        p7.content = forge.asn1.toDer({ "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 6, "constructed": false, "composed": false, "value": forge.asn1.oidToDer("1.3.6.1.4.1.311.2.1.15").data }, { "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 3, "constructed": false, "composed": false, "value": "\u0000", "bitStringContents": "\u0000", "original": { "tagClass": 0, "type": 3, "constructed": false, "composed": false, "value": "\u0000" } }, { "tagClass": 128, "type": 0, "constructed": true, "composed": true, "value": [{ "tagClass": 128, "type": 2, "constructed": true, "composed": true, "value": [{ "tagClass": 128, "type": 0, "constructed": false, "composed": false, "value": "" }] }] }] }] }, { "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 6, "constructed": false, "composed": false, "value": forge.asn1.oidToDer(forge.pki.oids.sha384).data }, { "tagClass": 0, "type": 5, "constructed": false, "composed": false, "value": "" }] }, { "tagClass": 0, "type": 4, "constructed": false, "composed": false, "value": fileHash.toString('binary') }] }] });
+        var content = { "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 6, "constructed": false, "composed": false, "value": forge.asn1.oidToDer("1.3.6.1.4.1.311.2.1.15").data }, { "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 3, "constructed": false, "composed": false, "value": "\u0000", "bitStringContents": "\u0000", "original": { "tagClass": 0, "type": 3, "constructed": false, "composed": false, "value": "\u0000" } }, { "tagClass": 128, "type": 0, "constructed": true, "composed": true, "value": [{ "tagClass": 128, "type": 2, "constructed": true, "composed": true, "value": [{ "tagClass": 128, "type": 0, "constructed": false, "composed": false, "value": "" }] }] }] }] }, { "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 6, "constructed": false, "composed": false, "value": forge.asn1.oidToDer(forge.pki.oids.sha384).data }, { "tagClass": 0, "type": 5, "constructed": false, "composed": false, "value": "" }] }, { "tagClass": 0, "type": 4, "constructed": false, "composed": false, "value": fileHash.toString('binary') }] }] };
+        p7.contentInfo = forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.SEQUENCE, true, [forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.OID, false, forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.4').getBytes())]);
+        p7.contentInfo.value.push(forge.asn1.create(forge.asn1.Class.CONTEXT_SPECIFIC, 0, true, [content]));
+        p7.content = {}; // We set .contentInfo and have .content empty to bypass node-forge limitation on the type of content it can sign.
         p7.addCertificate(cert);
         p7.addSigner({
             key: key,
@@ -202,19 +200,6 @@ function createAuthenticodeHandler(path) {
         });
         p7.sign();
         var p7signature = Buffer.from(forge.pkcs7.messageToPem(p7).split('-----BEGIN PKCS7-----')[1].split('-----END PKCS7-----')[0], 'base64');
-
-        // Correct the signed data type
-        // Decode the signature block
-        var pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(p7signature.toString('binary')));
-
-        // To work around ForgeJS PKCS#7 limitation
-        // Switch content type from 1.2.840.113549.1.7.1 to forge.pki.oids.data (1.3.6.1.4.1.311.2.1.4)
-        pkcs7der.value[1].value[0].value[2].value[0].value = forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.4').data;
-
-        // Convert the ASN1 content data into binary and place back
-        var pkcs7content = forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(pkcs7der.value[1].value[0].value[2].value[1].value[0].value, 'binary').toString('binary')));
-        pkcs7der.value[1].value[0].value[2].value[1].value = [ pkcs7content ];
-        p7signature = Buffer.from(forge.asn1.toDer(pkcs7der).data, 'binary');
 
         // Create the output filename
         var outputFileName = this.path.split('.');
