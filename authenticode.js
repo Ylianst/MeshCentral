@@ -94,6 +94,8 @@ function createAuthenticodeHandler(path) {
             var derlen = forge.asn1.getBerValueLength(forge.util.createBuffer(pkcs7raw.slice(1, 5))) + 4;
             if (derlen != pkcs7raw.length) { pkcs7raw = pkcs7raw.slice(0, derlen); }
 
+            //console.log('pkcs7raw', Buffer.from(pkcs7raw, 'binary').toString('base64'));
+
             // Decode the signature block
             var pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(pkcs7raw));
             
@@ -113,6 +115,16 @@ function createAuthenticodeHandler(path) {
             // Return is true if all signatures are valid and chain up to a provided CA
             if (!pkcs7.verify(caStore)) { throw ('Executable file has an invalid signature.'); }
             */
+
+            // ucs2/ucs-2/utf16le/utf-16le
+            obj.signingAttribs = [];
+            for (var i in pkcs7.rawCapture.authenticatedAttributes) {
+                if (forge.asn1.derToOid(pkcs7.rawCapture.authenticatedAttributes[i].value[0].value) == obj.Oids.SPC_SP_OPUS_INFO_OBJID) {
+                    for (var j in pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value) {
+                        obj.signingAttribs.push(pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value[j].value[0].value);
+                    }
+                }
+            }
 
             // Set the certificate chain
             obj.certificates = pkcs7.certificates;
@@ -175,7 +187,7 @@ function createAuthenticodeHandler(path) {
     }
 
     // Sign the file using the certificate and key. If none is specified, generate a dummy one
-    obj.sign = function (cert, key) {
+    obj.sign = function (cert, key, desc, url) {
         if ((cert == null) || (key == null)) { var c = obj.createSelfSignedCert(); cert = c.cert; key = c.key; }
         var fileHash = getHash('sha384');
 
@@ -186,20 +198,29 @@ function createAuthenticodeHandler(path) {
         p7.contentInfo.value.push(forge.asn1.create(forge.asn1.Class.CONTEXT_SPECIFIC, 0, true, [content]));
         p7.content = {}; // We set .contentInfo and have .content empty to bypass node-forge limitation on the type of content it can sign.
         p7.addCertificate(cert);
+
+        // Build authenticated attributes
+        var authenticatedAttributes = [
+            { type: forge.pki.oids.contentType, value: forge.pki.oids.data },
+            { type: forge.pki.oids.messageDigest } // value will be auto-populated at signing time
+        ]
+        if ((desc != null) || (url != null)) {
+            var codeSigningAttributes = { "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [ ] };
+            if (desc != null) { codeSigningAttributes.value.push({ "tagClass": 128, "type": 0, "constructed": true, "composed": true, "value": [{ "tagClass": 128, "type": 0, "constructed": false, "composed": false, "value": Buffer.from(desc, 'ucs2').toString() }] }); }
+            if (url != null) { codeSigningAttributes.value.push({ "tagClass": 128, "type": 1, "constructed": true, "composed": true, "value": [{ "tagClass": 128, "type": 0, "constructed": false, "composed": false, "value": url }] }); }
+            authenticatedAttributes.push({ type: obj.Oids.SPC_SP_OPUS_INFO_OBJID, value: codeSigningAttributes });
+        }
+
+        // Add the signer and sign
         p7.addSigner({
             key: key,
             certificate: cert,
             digestAlgorithm: forge.pki.oids.sha384,
-            authenticatedAttributes:
-            [
-                { type: obj.Oids.SPC_INDIRECT_DATA_OBJID, },
-                { type: forge.pki.oids.contentType, value: forge.pki.oids.data },
-                { type: forge.pki.oids.messageDigest }, // value will be auto-populated at signing time
-                { type: forge.pki.oids.signingTime, value: new Date() } // value can also be auto-populated at signing time
-            ]
+            authenticatedAttributes: authenticatedAttributes
         });
         p7.sign();
         var p7signature = Buffer.from(forge.pkcs7.messageToPem(p7).split('-----BEGIN PKCS7-----')[1].split('-----END PKCS7-----')[0], 'base64');
+        //console.log('Signature', Buffer.from(p7signature, 'binary').toString('base64'));
 
         // Create the output filename
         var outputFileName = this.path.split('.');
@@ -291,6 +312,7 @@ function start() {
         console.log("Commands:");
         console.log("  info - Show information about an executable.");
         console.log("  sign - Sign an executable using a dummy certificate.");
+        console.log("       sign [exepath] (description) (url)");
         console.log("  unsign - Remove the signature from the executable.");
         return;
     }
@@ -316,14 +338,17 @@ function start() {
     var command = process.argv[2].toLowerCase();
     if (command == 'info') {
         console.log('Header', exe.header);
-        if (exe.fileHashAlgo != null) { console.log('fileHashMethod', exe.fileHashAlgo); }
-        if (exe.fileHashSigned != null) { console.log('fileHashSigned', exe.fileHashSigned.toString('hex')); }
-        if (exe.fileHashActual != null) { console.log('fileHashActual', exe.fileHashActual.toString('hex')); }
-        if (exe.signatureBlock) { console.log('Signature', exe.signatureBlock.toString('hex')); }
+        if (exe.fileHashAlgo != null) { console.log('fileHashMethod:', exe.fileHashAlgo); }
+        if (exe.fileHashSigned != null) { console.log('fileHashSigned:', exe.fileHashSigned.toString('hex')); }
+        if (exe.fileHashActual != null) { console.log('fileHashActual:', exe.fileHashActual.toString('hex')); }
+        if (exe.signingAttribs && exe.signingAttribs.length > 0) { console.log('Signature Attributes:'); for (var i in exe.signingAttribs) { console.log('  ' + exe.signingAttribs[i]); } }
         console.log('FileLen: ' + exe.filesize);
     }
     if (command == 'sign') {
-        console.log('Signing...'); exe.sign(); console.log('Done.');
+        var desc = null, url = null;
+        if (process.argv.length > 4) { desc = process.argv[4]; }
+        if (process.argv.length > 5) { url = process.argv[5]; }
+        console.log('Signing...'); exe.sign(null, null, desc, url); console.log('Done.');
     }
     if (command == 'unsign') {
         if (exe.header.signed) { console.log('Unsigning...'); exe.unsign(); console.log('Done.'); } else { console.log('Executable is not signed.'); }
