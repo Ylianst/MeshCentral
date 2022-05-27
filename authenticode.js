@@ -1,4 +1,4 @@
-/**
+﻿/**
 * @description Authenticode parsing
 * @author Bryan Roe & Ylian Saint-Hilaire
 * @copyright Intel Corporation 2018-2022
@@ -57,15 +57,15 @@ function createAuthenticodeHandler(path) {
         obj.fd = fs.openSync(path);
         obj.stats = fs.fstatSync(obj.fd);
         obj.filesize = obj.stats.size;
-        if (obj.filesize < 64) { throw ('File too short'); }
+        if (obj.filesize < 64) { throw ('File too short.'); }
 
         // Read the PE header size
         var buf = readFileSlice(60, 4);
         obj.header.header_size = buf.readUInt32LE(0);
 
         // Check file size and PE header
-        if (obj.filesize < (160 + obj.header.header_size)) { throw ('Invalid SizeOfHeaders'); }
-        if (readFileSlice(obj.header.header_size, 4).toString('hex') != '50450000') { throw ('Invalid PE File'); }
+        if (obj.filesize < (160 + obj.header.header_size)) { throw ('Invalid SizeOfHeaders.'); }
+        if (readFileSlice(obj.header.header_size, 4).toString('hex') != '50450000') { throw ('Invalid PE File.'); }
 
         // Check header magic data
         var magic = readFileSlice(obj.header.header_size + 24, 2).readUInt16LE(0);
@@ -85,6 +85,9 @@ function createAuthenticodeHandler(path) {
 
         if (obj.header.signed) {
             // Read signature block
+
+            // Check if the file size allows for the signature block
+            if (obj.filesize < (obj.header.sigpos + obj.header.siglen)) { throw ('Executable file too short to contain the signature block.'); }
 
             // Remove the padding if needed
             var i, pkcs7raw = readFileSlice(obj.header.sigpos + 8, obj.header.siglen - 8);
@@ -109,6 +112,11 @@ function createAuthenticodeHandler(path) {
             // Decode the PKCS7 message
             var pkcs7 = p7.messageFromAsn1(pkcs7der);
             var pkcs7content = forge.asn1.fromDer(pkcs7.rawCapture.content.value[0].value);
+
+            //console.log('p7content', JSON.stringify(pkcs7content));
+
+            // DEBUG: Print out the content
+            //console.log(Buffer.from(pkcs7.rawCapture.content.value[0].value, 'binary').toString('hex'));
 
             // Set the certificate chain
             obj.certificates = pkcs7.certificates;
@@ -175,7 +183,8 @@ function createAuthenticodeHandler(path) {
         if ((cert == null) || (key == null)) { var c = obj.createSelfSignedCert(); cert = c.cert; key = c.key; }
         var fileHash = getHash('sha384');
         var p7 = forge.pkcs7.createSignedData();
-        p7.content = forge.util.createBuffer(fileHash, 'utf8');
+        p7.content = forge.util.createBuffer(fileHash, 'utf8'); // DEBUG: NOT CORRRECT
+        //p7.content = { "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 6, "constructed": false, "composed": false, "value": forge.asn1.oidToDer("1.3.6.1.4.1.311.2.1.15") }, { "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 3, "constructed": false, "composed": false, "value": "\u0000", "bitStringContents": "\u0000", "original": { "tagClass": 0, "type": 3, "constructed": false, "composed": false, "value": "\u0000" } }, { "tagClass": 128, "type": 0, "constructed": true, "composed": true, "value": [{ "tagClass": 128, "type": 2, "constructed": true, "composed": true, "value": [{ "tagClass": 128, "type": 0, "constructed": false, "composed": false, "value": "" }] }] }] }] }, { "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 6, "constructed": false, "composed": false, "value": forge.asn1.oidToDer(forge.pki.oids.sha384).data }, { "tagClass": 0, "type": 5, "constructed": false, "composed": false, "value": "" }] }, { "tagClass": 0, "type": 4, "constructed": false, "composed": false, "value": fileHash.toString('binary') }] }] };
         p7.addCertificate(cert);
         p7.addSigner({
             key: key,
@@ -205,40 +214,82 @@ function createAuthenticodeHandler(path) {
         var p7signature = Buffer.from(forge.pkcs7.messageToPem(p7).split('-----BEGIN PKCS7-----')[1].split('-----END PKCS7-----')[0], 'base64');
         console.log('p7signature', p7signature.toString('base64'));
 
+        // Create the output filename
+        var outputFileName = this.path.split('.');
+        outputFileName[outputFileName.length - 2] += '-jsigned';
+        outputFileName = outputFileName.join('.');
+
+        // Open the file
+        var output = fs.openSync(outputFileName, 'w');
+        var tmp, written = 0;
+        var executableSize = obj.header.sigpos ? obj.header.sigpos : this.filesize;
+
+        // Compute pre-header length and copy that to the new file
+        var preHeaderLen = (obj.header.header_size + 152 + (obj.header.pe32plus * 16));
+        var tmp = readFileSlice(written, preHeaderLen);
+        fs.writeSync(output, tmp);
+        written += tmp.length;
+
         // Quad Align the results, adding padding if necessary
-        var len = this.filesize + p7signature.length;
+        var len = executableSize + p7signature.length;
         var padding = (8 - ((len) % 8)) % 8;
 
+        // Write the signature header
         var addresstable = Buffer.alloc(8);
-        addresstable.writeUInt32LE(this.filesize);
+        console.log('executableSize', executableSize);
+        console.log('signLength', p7signature.length, padding);
+        addresstable.writeUInt32LE(executableSize);
         addresstable.writeUInt32LE(8 + p7signature.length + padding, 4);
+        fs.writeSync(output, addresstable);
+        written += addresstable.length;
 
-        var b = this.path.split('.');
-        b[b.length - 2] += '-jsigned';
-
-        var output = fs.openSync(b.join('.'), 'w');
-        var written = 0;
-        var bytesLeft = this.filesize;
-        var tmp;
-
-        // TODO: This copies the entire file including the old signature block.
-        // Need to be fixed to only copy the file without the signature block
-        while ((this.filesize - written) > 0) {
-            tmp = readFileSlice(written, (this.filesize - written) > 65535 ? 65535 : this.filesize - written);
+        // Copy the rest of the file until the start of the signature block
+        while ((executableSize - written) > 0) {
+            tmp = readFileSlice(written, Math.min(executableSize - written, 65536));
             fs.writeSync(output, tmp);
             written += tmp.length;
         }
 
-        // Write the signature block
+        // Write the signature block header and signature
         var win = Buffer.alloc(8);                              // WIN CERTIFICATE Structure
         win.writeUInt32LE(p7signature.length + padding + 8);    // DWORD length
         win.writeUInt16LE(512, 4);                              // WORD revision
         win.writeUInt16LE(2, 6);                                // WORD type
-
         fs.writeSync(output, win);
         fs.writeSync(output, p7signature);
         if (padding > 0) { fs.writeSync(output, Buffer.alloc(padding, 0)); }
-        fs.writeSync(output, addresstable, 0, addresstable.length, this.header.header_size + 152 + (this.header.pe32plus * 16));
+
+        // Close the file
+        fs.closeSync(output);
+    }
+
+    // Save an executable without the signature
+    obj.unsign = function (cert, key) {
+        // Create the output filename
+        var outputFileName = this.path.split('.');
+        outputFileName[outputFileName.length - 2] += '-junsigned';
+        outputFileName = outputFileName.join('.');
+
+        // Open the file
+        var output = fs.openSync(outputFileName, 'w');
+        var written = 0, totalWrite = obj.header.sigpos;
+
+        // Compute pre-header length and copy that to the new file
+        var preHeaderLen = (obj.header.header_size + 152 + (obj.header.pe32plus * 16));
+        var tmp = readFileSlice(written, preHeaderLen);
+        fs.writeSync(output, tmp);
+        written += tmp.length;
+
+        // Write the new signature header
+        fs.writeSync(output, Buffer.alloc(8));
+        written += 8;
+
+        // Copy the rest of the file until the start of the signature block
+        while ((totalWrite - written) > 0) {
+            tmp = readFileSlice(written, Math.min(totalWrite - written, 65536));
+            fs.writeSync(output, tmp);
+            written += tmp.length;
+        }
         fs.closeSync(output);
     }
 
@@ -253,13 +304,14 @@ function start() {
         console.log("Usage:");
         console.log("  node authenticode.js [command] [exepath]");
         console.log("Commands:");
-        console.log("  info - Show information about this executable.");
-        console.log("  sign - Sign the executable using a dummy certificate.");
+        console.log("  info - Show information about an executable.");
+        console.log("  sign - Sign an executable using a dummy certificate.");
+        console.log("  unsign - Remove the signature from the executable.");
         return;
     }
 
     // Check that a valid command is passed in
-    if (['info', 'sign'].indexOf(process.argv[2].toLowerCase()) == -1) {
+    if (['info', 'sign', 'unsign'].indexOf(process.argv[2].toLowerCase()) == -1) {
         console.log("Invalid command: " + process.argv[2]);
         return;
     }
@@ -285,10 +337,11 @@ function start() {
         if (exe.signatureBlock) { console.log('Signature', exe.signatureBlock.toString('hex')); }
         console.log('FileLen: ' + exe.filesize);
     }
-
     if (command == 'sign') {
-        console.log('Signing...');
-        exe.sign();
+        console.log('Signing...'); exe.sign();
+    }
+    if (command == 'unsign') {
+        if (exe.header.signed) { console.log('Unsigning...'); exe.unsign(); } else { console.log('Executable is not signed.'); }
     }
 
     // Close the file
