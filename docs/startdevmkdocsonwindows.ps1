@@ -1,5 +1,6 @@
 # This is for running mkdocs locally on windows only. 
 # Make sure you change directory to your docs folder before starting this process
+# Use the "Run Selection" in VSCode to run the code blocks as-needed
 
 #Activate python
 python -m venv env
