@@ -230,23 +230,58 @@ In the next section, we start making use of MeshCtrl to do useful things on the 
 We can start doing useful operations with MeshCtrl. The current list of operations are: 
 
 ```
-ServerInfo                - Show server information.
-  UserInfo                  - Show user information.
-  ListUsers                 - List user accounts.
-  ListDevices               - List devices.
-  ListDeviceGroups          - List device groups.
-  ListUsersOfDeviceGroup    - List the users in a device group.
-  AddUser                   - Create a new user account.
-  RemoveUser                - Delete a user account.
-  AddDeviceGroup            - Create a new device group.
-  RemoveDeviceGroup         - Delete a device group.
-  AddUserToDeviceGroup      - Add a user to a device group.
-  RemoveUserFromDeviceGroup - Remove a user from a device group.
-  SendInviteEmail           - Send an agent install invitation email.
-  Broadcast                 - Display a message to all online users.
+edituser
+listusers
+listusersessions
+listdevicegroups
+listdevices
+listusersofdevicegroup
+listevents
+logintokens
+serverinfo
+userinfo
+adduser
+removeuser
+adddevicegroup
+removedevicegroup
+editdevicegroup
+broadcast
+showevents
+addusertodevicegroup
+removeuserfromdevicegroup
+addusertodevice
+removeuserfromdevice
+sendinviteemail
+generateinvitelink
+config
+movetodevicegroup
+deviceinfo
+editdevice
+addusergroup
+listusergroups
+removeusergroup
+runcommand
+shell
+upload
+download
+deviceopenurl
+devicemessage
+devicetoast
+addtousergroup
+removefromusergroup
+removeallusersfromusergroup
+devicesharing
+devicepower
+indexagenterrorlog
+agentdownload
 ```
 
 You can get this list by just running MeshCtrl without any argument and can get more information on each action by typing “meshctrl help [action]” 
+
+![example](images/amt_commands.png)
+
+!!!note
+    Note that when using Intel AMT only (no agent) you can do wake (on) and power off and reset from the group action. MeshCentral should automatically using Intel AMT to perform these actions when you select "Wake-up devices", "Power off devices" or "Reset devices".
 
 ### Gathering information
 
@@ -256,8 +291,8 @@ The following commands are really easy to use: serverinfo, userinfo, listusers, 
 node meshctrl.js listusers
 id, name, email
 ---------------
-"admin", "admin", "ylian.saint-hilaire@intel.com"
-"joe", "joe", "joe@intel.com"
+"admin", "admin", "username@domain.com"
+"joe", "joe", "joe@domain.com"
 "mytestuser", "MyTestUser", "a@a.com"
 "test.user", "test.user", "test.user@user.com"
 ```
