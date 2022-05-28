@@ -12,7 +12,7 @@ function createAuthenticodeHandler(path) {
     const crypto = require('crypto');
     const forge = require('node-forge');
     const pki = forge.pki;
-    const p7 = forge.pkcs7;
+    const p7 = require('./pkcs7-modified');
     obj.header = { path: path }
 
     // Read a file slice
@@ -116,12 +116,17 @@ function createAuthenticodeHandler(path) {
             if (!pkcs7.verify(caStore)) { throw ('Executable file has an invalid signature.'); }
             */
 
-            // ucs2/ucs-2/utf16le/utf-16le
+            // Get the signing attributes
             obj.signingAttribs = [];
             for (var i in pkcs7.rawCapture.authenticatedAttributes) {
                 if (forge.asn1.derToOid(pkcs7.rawCapture.authenticatedAttributes[i].value[0].value) == obj.Oids.SPC_SP_OPUS_INFO_OBJID) {
                     for (var j in pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value) {
-                        obj.signingAttribs.push(pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value[j].value[0].value);
+                        var v = pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value[j].value[0].value;
+                        if (v.startsWith('http://') || v.startsWith('https://') || ((v.length % 2) == 1)) { obj.signingAttribs.push(v); } else {
+                            var r = ""; // This string value is in UCS2 format, convert it to a normal string.
+                            for (var k = 0; k < v.length; k += 2) { r += String.fromCharCode((v.charCodeAt(k + 8) << 8) + v.charCodeAt(k + 1)); }
+                            obj.signingAttribs.push(r);
+                        }
                     }
                 }
             }
@@ -304,58 +309,85 @@ function createAuthenticodeHandler(path) {
 }
 
 function start() {
+    // Parse the arguments
+    const args = require('minimist')(process.argv.slice(2));
+
     // Show tool help
-    if (process.argv.length < 4) {
+    if (process.argv.length < 3) {
         console.log("MeshCentral Authenticode Tool.");
         console.log("Usage:");
-        console.log("  node authenticode.js [command] [exepath]");
+        console.log("  node authenticode.js [command] [options]");
         console.log("Commands:");
-        console.log("  info - Show information about an executable.");
-        console.log("  sign - Sign an executable using a dummy certificate.");
-        console.log("       sign [exepath] (description) (url)");
-        console.log("  unsign - Remove the signature from the executable.");
+        console.log("  info: Show information about an executable.");
+        console.log("          --json                   Optional, Show information in JSON format.");
+        console.log("  sign: Sign an executable.");
+        console.log("          --exe [file]             Executable to sign.");
+        console.log("          --out [file]             Optional resulting signed executable.");
+        console.log("          --cert [pemfile]         Certificate to sign the executable with.");
+        console.log("          --key [pemfile]          Private key to use to sign the executable.");
+        console.log("          --desc [description]     Optional description string to embbed into signature.");
+        console.log("          --url [url]              Optional URL to embbed into signature.");
+        console.log("  unsign: Remove the signature from the executable.");
+        console.log("          --exe [file]             Executable to un-sign.");
+        console.log("          --out [file]             Optional resulting executable with signature removed.");
+        console.log("  createcert: Create a self-signed certificate and key.");
+        console.log("          --cn [commonName]        Certificate common name.");
         return;
     }
 
     // Check that a valid command is passed in
-    if (['info', 'sign', 'unsign'].indexOf(process.argv[2].toLowerCase()) == -1) {
+    if (['info', 'sign', 'unsign', 'createcert'].indexOf(process.argv[2].toLowerCase()) == -1) {
         console.log("Invalid command: " + process.argv[2]);
+        console.log("Valid commands are: info, sign, unsign, createcert");
         return;
     }
 
-    // Check the file exists
-    var stats = null;
-    try { stats = require('fs').statSync(process.argv[3]); } catch (ex) { }
-    if (stats == null) {
-        console.log("Unable to open file: " + process.argv[3]);
-        return;
+    var exe = null;
+    if (args.exe) {
+        // Check the file exists and open the file
+        var stats = null;
+        try { stats = require('fs').statSync(args.exe); } catch (ex) { }
+        if (stats == null) { console.log("Unable to executable open file: " + args.exe); return; }
+        exe = createAuthenticodeHandler(args.exe);
     }
-
-    // Open the file
-    var exe = createAuthenticodeHandler(process.argv[3]);
 
     // Execute the command
     var command = process.argv[2].toLowerCase();
     if (command == 'info') {
-        console.log('Header', exe.header);
-        if (exe.fileHashAlgo != null) { console.log('fileHashMethod:', exe.fileHashAlgo); }
-        if (exe.fileHashSigned != null) { console.log('fileHashSigned:', exe.fileHashSigned.toString('hex')); }
-        if (exe.fileHashActual != null) { console.log('fileHashActual:', exe.fileHashActual.toString('hex')); }
-        if (exe.signingAttribs && exe.signingAttribs.length > 0) { console.log('Signature Attributes:'); for (var i in exe.signingAttribs) { console.log('  ' + exe.signingAttribs[i]); } }
-        console.log('FileLen: ' + exe.filesize);
+        if (exe == null) { console.log("Missing --exe [filename]"); return; }
+        if (args.json) {
+            var r = { header: exe.header, filesize: exe.filesize }
+            if (exe.fileHashAlgo != null) { r.hashMethod = exe.fileHashAlgo; }
+            if (exe.fileHashSigned != null) { r.hashSigned = exe.fileHashSigned.toString('hex'); }
+            if (exe.fileHashActual != null) { r.hashActual = exe.fileHashActual.toString('hex'); }
+            if (exe.signingAttribs && exe.signingAttribs.length > 0) { r.signAttributes = exe.signingAttribs; }
+            console.log(JSON.stringify(r, null, 2));
+        } else {
+            console.log('Header', exe.header);
+            if (exe.fileHashAlgo != null) { console.log('fileHashMethod:', exe.fileHashAlgo); }
+            if (exe.fileHashSigned != null) { console.log('fileHashSigned:', exe.fileHashSigned.toString('hex')); }
+            if (exe.fileHashActual != null) { console.log('fileHashActual:', exe.fileHashActual.toString('hex')); }
+            if (exe.signingAttribs && exe.signingAttribs.length > 0) { console.log('Signature Attributes:'); for (var i in exe.signingAttribs) { console.log('  ' + exe.signingAttribs[i]); } }
+            console.log('FileLen: ' + exe.filesize);
+        }
     }
     if (command == 'sign') {
+        if (exe == null) { console.log("Missing --exe [filename]"); return; }
         var desc = null, url = null;
         if (process.argv.length > 4) { desc = process.argv[4]; }
         if (process.argv.length > 5) { url = process.argv[5]; }
         console.log('Signing...'); exe.sign(null, null, desc, url); console.log('Done.');
     }
     if (command == 'unsign') {
+        if (exe == null) { console.log("Missing --exe [filename]"); return; }
         if (exe.header.signed) { console.log('Unsigning...'); exe.unsign(); console.log('Done.'); } else { console.log('Executable is not signed.'); }
+    }
+    if (command == 'createcert') {
+
     }
 
     // Close the file
-    exe.close();
+    if (exe != null) { exe.close(); }
 }
 
 start();
