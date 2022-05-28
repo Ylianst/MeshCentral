@@ -125,6 +125,7 @@
     <Compile Include="mpsserver.js" />
     <Compile Include="mqttbroker.js" />
     <Compile Include="apprelays.js" />
+    <Compile Include="pkcs7-modified.js" />
     <Compile Include="pluginHandler.js" />
     <Compile Include="public\mstsc\client.js" />
     <Compile Include="public\mstsc\js\keyboard.js" />

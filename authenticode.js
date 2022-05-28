@@ -1,18 +1,77 @@
 ﻿/**
 * @description Authenticode parsing
-* @author Bryan Roe & Ylian Saint-Hilaire
+* @author Ylian Saint-Hilaire & Bryan Roe
 * @copyright Intel Corporation 2018-2022
 * @license Apache-2.0
 * @version v0.0.1
 */
 
+const fs = require('fs');
+const crypto = require('crypto');
+const forge = require('node-forge');
+const pki = forge.pki;
+const p7 = require('./pkcs7-modified');
+
+// Generate a test self-signed certificate with code signing extension
+function createSelfSignedCert(args) {
+    var keys = pki.rsa.generateKeyPair(2048);
+    var cert = pki.createCertificate();
+    cert.publicKey = keys.publicKey;
+    cert.serialNumber = (typeof args.serial == 'string')?args.serial:'012345'; // Serial number must always have a single leading '0', otherwise toPEM/fromPEM will not work right.
+    cert.validity.notBefore = new Date();
+    cert.validity.notAfter = new Date();
+    cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10);
+    var attrs = [];
+    if (typeof args.cn == 'string') { attrs.push({ name: 'commonName', value: args.cn }); }
+    if (typeof args.country == 'string') { attrs.push({ name: 'countryName', value: args.country }); }
+    if (typeof args.state == 'string') { attrs.push({ name: 'ST', value: args.state }); }
+    if (typeof args.locality == 'string') { attrs.push({ name: 'localityName', value: args.locality }); }
+    if (typeof args.org == 'string') { attrs.push({ name: 'organizationName', value: args.org }); }
+    if (typeof args.orgunit == 'string') { attrs.push({ name: 'OU', value: args.orgunit }); }
+    cert.setSubject(attrs);
+    cert.setIssuer(attrs);
+    cert.setExtensions([{ name: 'basicConstraints', cA: false }, { name: 'keyUsage', keyCertSign: false, digitalSignature: true, nonRepudiation: false, keyEncipherment: false, dataEncipherment: false }, { name: 'extKeyUsage', codeSigning: true }, { name: "subjectKeyIdentifier" }]);
+    cert.sign(keys.privateKey, forge.md.sha384.create());
+    return { cert: cert, key: keys.privateKey, extraCerts: [] };
+}
+
+// Create the output filename if not already specified
+function createOutFile(args, filename) {
+    if (typeof args.out == 'string') return;
+    var outputFileName = filename.split('.');
+    outputFileName[outputFileName.length - 2] += '-out';
+    args.out = outputFileName.join('.');
+}
+
+// Load certificates and private key from PEM files
+function loadCertificates(args) {
+    var certs = [], keys = [], pemFileNames = args.pem;
+    if (pemFileNames == null) return;
+    if (typeof pemFileNames == 'string') { pemFileNames = [pemFileNames]; }
+    for (var i in pemFileNames) {
+        try {
+            // Read certificate
+            var pem = fs.readFileSync(pemFileNames[i]).toString();
+            var pemCerts = pem.split('-----BEGIN CERTIFICATE-----');
+            for (var j in pemCerts) {
+                var k = pemCerts[j].indexOf('-----END CERTIFICATE-----');
+                if (k >= 0) { certs.push(pki.certificateFromPem('-----BEGIN CERTIFICATE-----' + pemCerts[j].substring(0, k) + '-----END CERTIFICATE-----')); }
+            }
+            var PemKeys = pem.split('-----BEGIN RSA PRIVATE KEY-----');
+            for (var j in PemKeys) {
+                var k = PemKeys[j].indexOf('-----END RSA PRIVATE KEY-----');
+                if (k >= 0) { keys.push(pki.privateKeyFromPem('-----BEGIN RSA PRIVATE KEY-----' + PemKeys[j].substring(0, k) + '-----END RSA PRIVATE KEY-----')); }
+            }
+        } catch (ex) { }
+    }
+    if ((certs.length == 0) || (keys.length != 1)) return; // No certificates or private keys
+    var r = { cert: certs[0], key: keys[0], extraCerts: [] }
+    if (certs.length > 1) { for (var i = 1; i < certs.length; i++) { r.extraCerts.push(certs[i]); } }
+    return r;
+}
+
 function createAuthenticodeHandler(path) {
     const obj = {};
-    const fs = require('fs');
-    const crypto = require('crypto');
-    const forge = require('node-forge');
-    const pki = forge.pki;
-    const p7 = require('./pkcs7-modified');
     obj.header = { path: path }
 
     // Read a file slice
@@ -167,59 +226,36 @@ function createAuthenticodeHandler(path) {
         while (ptr < end) { const buf = readFileSlice(ptr, Math.min(65536, end - ptr)); hash.update(buf); ptr += buf.length; }
     }
 
-    // Generate a test self-signed certificate with code signing extension
-    obj.createSelfSignedCert = function () {
-        var keys = pki.rsa.generateKeyPair(2048);
-        var cert = pki.createCertificate();
-        cert.publicKey = keys.publicKey;
-        cert.serialNumber = '00000001';
-        cert.validity.notBefore = new Date();
-        cert.validity.notAfter = new Date();
-        cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 3);
-        var attrs = [
-            { name: 'commonName', value: 'example.org' },
-            { name: 'countryName', value: 'US' },
-            { shortName: 'ST', value: 'California' },
-            { name: 'localityName', value: 'Santa Clara' },
-            { name: 'organizationName', value: 'Test' },
-            { shortName: 'OU', value: 'Test' }
-        ];
-        cert.setSubject(attrs);
-        cert.setIssuer(attrs);
-        cert.setExtensions([{ name: 'basicConstraints', cA: false }, { name: 'keyUsage', keyCertSign: false, digitalSignature: true, nonRepudiation: false, keyEncipherment: false, dataEncipherment: false }, { name: 'extKeyUsage', codeSigning: true }, { name: "subjectKeyIdentifier" }]);
-        cert.sign(keys.privateKey, forge.md.sha384.create());
-        return { cert: cert, key: keys.privateKey };
-    }
-
     // Sign the file using the certificate and key. If none is specified, generate a dummy one
-    obj.sign = function (cert, key, desc, url) {
-        if ((cert == null) || (key == null)) { var c = obj.createSelfSignedCert(); cert = c.cert; key = c.key; }
+    obj.sign = function (cert, args) {
+        if (cert == null) { cert = createSelfSignedCert({ cn: 'Test' }); }
         var fileHash = getHash('sha384');
 
         // Create the signature block
         var p7 = forge.pkcs7.createSignedData();
-        var content = { "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 6, "constructed": false, "composed": false, "value": forge.asn1.oidToDer("1.3.6.1.4.1.311.2.1.15").data }, { "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 3, "constructed": false, "composed": false, "value": "\u0000", "bitStringContents": "\u0000", "original": { "tagClass": 0, "type": 3, "constructed": false, "composed": false, "value": "\u0000" } }, { "tagClass": 128, "type": 0, "constructed": true, "composed": true, "value": [{ "tagClass": 128, "type": 2, "constructed": true, "composed": true, "value": [{ "tagClass": 128, "type": 0, "constructed": false, "composed": false, "value": "" }] }] }] }] }, { "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [{ "tagClass": 0, "type": 6, "constructed": false, "composed": false, "value": forge.asn1.oidToDer(forge.pki.oids.sha384).data }, { "tagClass": 0, "type": 5, "constructed": false, "composed": false, "value": "" }] }, { "tagClass": 0, "type": 4, "constructed": false, "composed": false, "value": fileHash.toString('binary') }] }] };
+        var content = { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 6, 'constructed': false, 'composed': false, 'value': forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.15').data }, { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 3, 'constructed': false, 'composed': false, 'value': '\u0000', 'bitStringContents': '\u0000', 'original': { 'tagClass': 0, 'type': 3, 'constructed': false, 'composed': false, 'value': '\u0000' } }, { 'tagClass': 128, 'type': 0, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 2, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': '' }] }] }] }] }, { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 6, 'constructed': false, 'composed': false, 'value': forge.asn1.oidToDer(forge.pki.oids.sha384).data }, { 'tagClass': 0, 'type': 5, 'constructed': false, 'composed': false, 'value': '' }] }, { 'tagClass': 0, 'type': 4, 'constructed': false, 'composed': false, 'value': fileHash.toString('binary') }] }] };
         p7.contentInfo = forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.SEQUENCE, true, [forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.OID, false, forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.4').getBytes())]);
         p7.contentInfo.value.push(forge.asn1.create(forge.asn1.Class.CONTEXT_SPECIFIC, 0, true, [content]));
         p7.content = {}; // We set .contentInfo and have .content empty to bypass node-forge limitation on the type of content it can sign.
-        p7.addCertificate(cert);
+        p7.addCertificate(cert.cert);
+        if (cert.extraCerts) { for (var i = 0; i < cert.extraCerts.length; i++) { p7.addCertificate(cert.extraCerts[0]); } } // Add any extra certificates that form the cert chain
 
         // Build authenticated attributes
         var authenticatedAttributes = [
             { type: forge.pki.oids.contentType, value: forge.pki.oids.data },
-            { type: forge.pki.oids.messageDigest } // value will be auto-populated at signing time
+            { type: forge.pki.oids.messageDigest } // This value will populated at signing time by node-forge
         ]
-        if ((desc != null) || (url != null)) {
-            var codeSigningAttributes = { "tagClass": 0, "type": 16, "constructed": true, "composed": true, "value": [ ] };
-            if (desc != null) { codeSigningAttributes.value.push({ "tagClass": 128, "type": 0, "constructed": true, "composed": true, "value": [{ "tagClass": 128, "type": 0, "constructed": false, "composed": false, "value": Buffer.from(desc, 'ucs2').toString() }] }); }
-            if (url != null) { codeSigningAttributes.value.push({ "tagClass": 128, "type": 1, "constructed": true, "composed": true, "value": [{ "tagClass": 128, "type": 0, "constructed": false, "composed": false, "value": url }] }); }
+        if ((typeof args.desc == 'string') || (typeof args.url == 'string')) {
+            var codeSigningAttributes = { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [ ] };
+            if (args.desc != null) { codeSigningAttributes.value.push({ 'tagClass': 128, 'type': 0, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': Buffer.from(args.desc, 'ucs2').toString() }] }); }
+            if (args.url != null) { codeSigningAttributes.value.push({ 'tagClass': 128, 'type': 1, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': args.url }] }); }
             authenticatedAttributes.push({ type: obj.Oids.SPC_SP_OPUS_INFO_OBJID, value: codeSigningAttributes });
         }
 
         // Add the signer and sign
         p7.addSigner({
-            key: key,
-            certificate: cert,
+            key: cert.key,
+            certificate: cert.cert,
             digestAlgorithm: forge.pki.oids.sha384,
             authenticatedAttributes: authenticatedAttributes
         });
@@ -227,13 +263,8 @@ function createAuthenticodeHandler(path) {
         var p7signature = Buffer.from(forge.pkcs7.messageToPem(p7).split('-----BEGIN PKCS7-----')[1].split('-----END PKCS7-----')[0], 'base64');
         //console.log('Signature', Buffer.from(p7signature, 'binary').toString('base64'));
 
-        // Create the output filename
-        var outputFileName = this.path.split('.');
-        outputFileName[outputFileName.length - 2] += '-jsigned';
-        outputFileName = outputFileName.join('.');
-
-        // Open the file
-        var output = fs.openSync(outputFileName, 'w');
+        // Open the outut file
+        var output = fs.openSync(args.out, 'w');
         var tmp, written = 0;
         var executableSize = obj.header.sigpos ? obj.header.sigpos : this.filesize;
 
@@ -275,14 +306,9 @@ function createAuthenticodeHandler(path) {
     }
 
     // Save an executable without the signature
-    obj.unsign = function (cert, key) {
-        // Create the output filename
-        var outputFileName = this.path.split('.');
-        outputFileName[outputFileName.length - 2] += '-junsigned';
-        outputFileName = outputFileName.join('.');
-
+    obj.unsign = function (args) {
         // Open the file
-        var output = fs.openSync(outputFileName, 'w');
+        var output = fs.openSync(args.out, 'w');
         var written = 0, totalWrite = obj.header.sigpos;
 
         // Compute pre-header length and copy that to the new file
@@ -319,19 +345,28 @@ function start() {
         console.log("  node authenticode.js [command] [options]");
         console.log("Commands:");
         console.log("  info: Show information about an executable.");
-        console.log("          --json                   Optional, Show information in JSON format.");
+        console.log("          --json                   Show information in JSON format.");
         console.log("  sign: Sign an executable.");
-        console.log("          --exe [file]             Executable to sign.");
-        console.log("          --out [file]             Optional resulting signed executable.");
-        console.log("          --cert [pemfile]         Certificate to sign the executable with.");
-        console.log("          --key [pemfile]          Private key to use to sign the executable.");
-        console.log("          --desc [description]     Optional description string to embbed into signature.");
-        console.log("          --url [url]              Optional URL to embbed into signature.");
+        console.log("          --exe [file]             Required executable to sign.");
+        console.log("          --out [file]             Resulting signed executable.");
+        console.log("          --pem [pemfile]          Certificate & private key to sign the executable with.");
+        console.log("          --desc [description]     Description string to embbed into signature.");
+        console.log("          --url [url]              URL to embbed into signature.");
         console.log("  unsign: Remove the signature from the executable.");
-        console.log("          --exe [file]             Executable to un-sign.");
-        console.log("          --out [file]             Optional resulting executable with signature removed.");
-        console.log("  createcert: Create a self-signed certificate and key.");
-        console.log("          --cn [commonName]        Certificate common name.");
+        console.log("          --exe [file]             Required executable to un-sign.");
+        console.log("          --out [file]             Resulting executable with signature removed.");
+        console.log("  createcert: Create a code signging self-signed certificate and key.");
+        console.log("          --out [pemfile]          Required certificate file to create.");
+        console.log("          --cn [value]             Required certificate common name.");
+        console.log("          --country [value]        Certificate country name.");
+        console.log("          --state [value]          Certificate state name.");
+        console.log("          --locality [value]       Certificate locality name.");
+        console.log("          --org [value]            Certificate organization name.");
+        console.log("          --ou [value]             Certificate organization unit name.");
+        console.log("          --serial [value]         Certificate serial number.");
+        console.log("");
+        console.log("Note that certificate PEM files must first have the signing certificate,");
+        console.log("followed by all certificates that form the trust chain.");
         return;
     }
 
@@ -353,7 +388,7 @@ function start() {
 
     // Execute the command
     var command = process.argv[2].toLowerCase();
-    if (command == 'info') {
+    if (command == 'info') { // Get signature information about an executable
         if (exe == null) { console.log("Missing --exe [filename]"); return; }
         if (args.json) {
             var r = { header: exe.header, filesize: exe.filesize }
@@ -363,27 +398,35 @@ function start() {
             if (exe.signingAttribs && exe.signingAttribs.length > 0) { r.signAttributes = exe.signingAttribs; }
             console.log(JSON.stringify(r, null, 2));
         } else {
-            console.log('Header', exe.header);
-            if (exe.fileHashAlgo != null) { console.log('fileHashMethod:', exe.fileHashAlgo); }
-            if (exe.fileHashSigned != null) { console.log('fileHashSigned:', exe.fileHashSigned.toString('hex')); }
-            if (exe.fileHashActual != null) { console.log('fileHashActual:', exe.fileHashActual.toString('hex')); }
-            if (exe.signingAttribs && exe.signingAttribs.length > 0) { console.log('Signature Attributes:'); for (var i in exe.signingAttribs) { console.log('  ' + exe.signingAttribs[i]); } }
-            console.log('FileLen: ' + exe.filesize);
+            console.log("Header", exe.header);
+            if (exe.fileHashAlgo != null) { console.log("Hash Method:", exe.fileHashAlgo); }
+            if (exe.fileHashSigned != null) { console.log("Signed Hash:", exe.fileHashSigned.toString('hex')); }
+            if (exe.fileHashActual != null) { console.log("Actual Hash:", exe.fileHashActual.toString('hex')); }
+            if (exe.signingAttribs && exe.signingAttribs.length > 0) { console.log("Signature Attributes:"); for (var i in exe.signingAttribs) { console.log('  ' + exe.signingAttribs[i]); } }
+            console.log("File Length: " + exe.filesize);
         }
     }
-    if (command == 'sign') {
-        if (exe == null) { console.log("Missing --exe [filename]"); return; }
-        var desc = null, url = null;
-        if (process.argv.length > 4) { desc = process.argv[4]; }
-        if (process.argv.length > 5) { url = process.argv[5]; }
-        console.log('Signing...'); exe.sign(null, null, desc, url); console.log('Done.');
+    if (command == 'sign') { // Sign an executable
+        if (typeof args.exe != 'string') { console.log("Missing --exe [filename]"); return; }
+        createOutFile(args, args.exe);
+        const cert = loadCertificates(args);
+        if (cert == null) { console.log("Unable to load certificate and/or private key, generating text certificate."); }
+        console.log("Signing to " + args.out); exe.sign(cert, args); console.log("Done.");
     }
-    if (command == 'unsign') {
-        if (exe == null) { console.log("Missing --exe [filename]"); return; }
-        if (exe.header.signed) { console.log('Unsigning...'); exe.unsign(); console.log('Done.'); } else { console.log('Executable is not signed.'); }
+    if (command == 'unsign') { // Unsign an executable
+        if (typeof args.exe != 'string') { console.log("Missing --exe [filename]"); return; }
+        createOutFile(args, args.exe);
+        if (exe.header.signed) { console.log("Unsigning to " + args.out); exe.unsign(args); console.log("Done."); } else { console.log("Executable is not signed."); }
     }
-    if (command == 'createcert') {
-
+    if (command == 'createcert') { // Create a code signing certificate and private key
+        if (typeof args.out != 'string') { console.log("Missing --out [filename]"); return; }
+        if (typeof args.cn != 'string') { console.log("Missing --cn [name]"); return; }
+        if (typeof args.serial == 'string') { if (args.serial != parseInt(args.serial)) { console.log("Invalid serial number."); return; } else { args.serial = parseInt(args.serial); } }
+        if (typeof args.serial == 'number') { args.serial = '0' + args.serial; } // Serial number must be a integer string with a single leading '0'
+        const cert = createSelfSignedCert(args);
+        console.log("Writing to " + args.out);
+        fs.writeFileSync(args.out, pki.certificateToPem(cert.cert) + '\r\n' + pki.privateKeyToPem(cert.key));
+        console.log("Done.");
     }
 
     // Close the file
