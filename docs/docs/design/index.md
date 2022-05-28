@@ -339,7 +339,7 @@ The messenger web application will setup a separate WebRTC connection for audio/
 
 ## Additional Resources
 
-In addition to this document, there are a growing set of MeshCentral resources at: [https://www.meshcommander.com/meshcentral2.](https://www.meshcommander.com/meshcentral2) This includes an Installer’s documents, a User’s Guide and plenty of YouTube tutorial videos. For developers, it’s best to start on the MeshCentral GitHub repository at:[ https://github.com/Ylianst/MeshCentral.](https://github.com/Ylianst/MeshCentral) If any issues are found, it’s best to create a new issue in GitHub or mail[ ylian.saint-hilaire@intel.com.](mailto:ylian.saint-hilaire@intel.com)
+In addition to this document, there are a growing set of MeshCentral resources at: [https://www.meshcommander.com/meshcentral2.](https://www.meshcommander.com/meshcentral2) This includes an Installer’s documents, a User’s Guide and plenty of YouTube tutorial videos. For developers, it’s best to start on the MeshCentral GitHub repository at:[ https://github.com/Ylianst/MeshCentral](https://github.com/Ylianst/MeshCentral). If any issues are found, it’s best to create a new issue in GitHub or mail [ylianst@gmail.com](mailto:ylianst@gmail.com)
 
 ## Conclusion
 
