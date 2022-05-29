@@ -2896,7 +2896,7 @@ function CreateMeshCentralServer(config, args) {
             if ((stats == null)) continue; // If this agent does not exist, skip it.
 
             // Check if we need to sign this agent, if so, check if it's already been signed
-            if ((obj.meshAgentsArchitectureNumbers[archid].codesign === true) && (agentSignCertInfo != null)) {{
+            if ((obj.meshAgentsArchitectureNumbers[archid].codesign === true) && (agentSignCertInfo != null)) {
                 // Open the original agent with authenticode
                 var signeedagentpath = obj.path.join(serverSignedAgentsPath, obj.meshAgentsArchitectureNumbers[archid].localname);
                 const originalAgent = require('./authenticode.js').createAuthenticodeHandler(agentpath);
