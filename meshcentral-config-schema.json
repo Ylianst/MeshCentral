@@ -100,6 +100,7 @@
         "agentLogDump": { "type": "boolean", "default": false, "description": "Automatically downloads all agent error logs into meshcentral-data/agenterrorlogs.txt." },
         "agentCoreDump": { "type": "boolean", "default": false, "description": "Automatically activates and transfers any agent crash dump files to the server in meshcentral-data/coredumps." },
         "agentCoreDumpUsers": { "type": "array", "description": "List of non-administrator users that have access to mesh agent crash dumps." },
+        "agentSignLock": { "type": "boolean", "default": false, "description": "When code signing an agent using authenticode, lock the agent to only allow connection to this server. (This is in testing, the default value will change to true in the future)." },
         "ignoreAgentHashCheck": { "type": [ "boolean", "string" ], "default": false, "description": "When true, the agent no longer checked the TLS certificate of the server. This should be used for debugging only. You can also set this to a comma seperated list of IP addresses to ignore, for example: \"192.168.2.100,192.168.1.0/24\"." },
         "exactPorts": { "type": "boolean", "default": false },
         "allowLoginToken": { "type": "boolean", "default": false },

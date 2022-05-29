@@ -59,6 +59,7 @@
     "_userBlockedIP": "127.0.0.1,::1,192.168.0.100",
     "_agentAllowedIP": "192.168.0.100/24",
     "_agentBlockedIP": "127.0.0.1,::1",
+    "_agentSignLock": true,
     "_authLog": "c:\\temp\\auth.log",
     "_InterUserMessaging": [ "user//admin" ],
     "_manageAllDeviceGroups": [ "user//admin" ],
