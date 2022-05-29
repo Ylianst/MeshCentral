@@ -16,16 +16,32 @@
  * a separate file pkcs7asn1.js, since those are referenced from other
  * PKCS standards like PKCS #12.
  */
-var forge = require('./node_modules/node-forge/lib/forge');
-require('./node_modules/node-forge/lib/aes');
-require('./node_modules/node-forge/lib/asn1');
-require('./node_modules/node-forge/lib/des');
-require('./node_modules/node-forge/lib/oids');
-require('./node_modules/node-forge/lib/pem');
-require('./node_modules/node-forge/lib/pkcs7asn1');
-require('./node_modules/node-forge/lib/random');
-require('./node_modules/node-forge/lib/util');
-require('./node_modules/node-forge/lib/x509');
+var forge;
+try {
+    forge = require('../node-forge/lib/forge');
+    require('../node-forge/lib/aes');
+    require('../node-forge/lib/asn1');
+    require('../node-forge/lib/des');
+    require('../node-forge/lib/oids');
+    require('../node-forge/lib/pem');
+    require('../node-forge/lib/pkcs7asn1');
+    require('../node-forge/lib/random');
+    require('../node-forge/lib/util');
+    require('../node-forge/lib/x509'); f
+} catch (ex) { }
+
+if (forge == null) {
+    forge = require('./node_modules/node-forge/lib/forge');
+    require('./node_modules/node-forge/lib/aes');
+    require('./node_modules/node-forge/lib/asn1');
+    require('./node_modules/node-forge/lib/des');
+    require('./node_modules/node-forge/lib/oids');
+    require('./node_modules/node-forge/lib/pem');
+    require('./node_modules/node-forge/lib/pkcs7asn1');
+    require('./node_modules/node-forge/lib/random');
+    require('./node_modules/node-forge/lib/util');
+    require('./node_modules/node-forge/lib/x509');
+}
 
 // shortcut for ASN.1 API
 var asn1 = forge.asn1;
