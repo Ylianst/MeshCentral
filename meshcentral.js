@@ -2870,6 +2870,9 @@ function CreateMeshCentralServer(config, args) {
             var xdomain = (domain.dns == null) ? domain.id : '';
             if (xdomain != '') xdomain += '/';
             signUrl += '/' + xdomain;
+
+            // If requested, lock the agent to this server
+            if (obj.config.settings.agentsignlock) { signUrl += '?ServerID=' + obj.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert).toUpperCase(); }
         }
 
         // Load agent information file. This includes the data & time of the agent.
