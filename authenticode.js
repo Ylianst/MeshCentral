@@ -6,6 +6,13 @@
 * @version v0.0.1
 */
 
+/*jslint node: true */
+/*jshint node: true */
+/*jshint strict:false */
+/*jshint -W097 */
+/*jshint esversion: 6 */
+"use strict";
+
 const fs = require('fs');
 const crypto = require('crypto');
 const forge = require('node-forge');
@@ -109,29 +116,29 @@ function createAuthenticodeHandler(path) {
 
     // Open the file and read header information
     function openFile() {
-        if (obj.fd != null) return;
+        if (obj.fd != null) return true;
 
         // Open the file descriptor
         obj.path = path;
-        obj.fd = fs.openSync(path);
+        try { obj.fd = fs.openSync(path); } catch (ex) { return false; } // Unable to open file
         obj.stats = fs.fstatSync(obj.fd);
         obj.filesize = obj.stats.size;
-        if (obj.filesize < 64) { throw ('File too short.'); }
+        if (obj.filesize < 64) { obj.close(); return false; } // File too short.
 
         // Read the PE header size
         var buf = readFileSlice(60, 4);
         obj.header.header_size = buf.readUInt32LE(0);
 
         // Check file size and PE header
-        if (obj.filesize < (160 + obj.header.header_size)) { throw ('Invalid SizeOfHeaders.'); }
-        if (readFileSlice(obj.header.header_size, 4).toString('hex') != '50450000') { throw ('Invalid PE File.'); }
+        if (obj.filesize < (160 + obj.header.header_size)) { obj.close(); return false; } // Invalid SizeOfHeaders.
+        if (readFileSlice(obj.header.header_size, 4).toString('hex') != '50450000') { obj.close(); return false; } // Invalid PE File.
 
         // Check header magic data
         var magic = readFileSlice(obj.header.header_size + 24, 2).readUInt16LE(0);
         switch (magic) {
             case 0x20b: obj.header.pe32plus = 1; break;
             case 0x10b: obj.header.pe32plus = 0; break;
-            default: throw ('Invalid Magic in PE');
+            default: { obj.close(); return false; } // Invalid Magic in PE
         }
 
         // Read PE header information
@@ -146,7 +153,7 @@ function createAuthenticodeHandler(path) {
             // Read signature block
 
             // Check if the file size allows for the signature block
-            if (obj.filesize < (obj.header.sigpos + obj.header.siglen)) { throw ('Executable file too short to contain the signature block.'); }
+            if (obj.filesize < (obj.header.sigpos + obj.header.siglen)) { obj.close(); return false; } // Executable file too short to contain the signature block.
 
             // Remove the padding if needed
             var i, pkcs7raw = readFileSlice(obj.header.sigpos + 8, obj.header.siglen - 8);
@@ -207,12 +214,13 @@ function createAuthenticodeHandler(path) {
             obj.fileHashSigned = Buffer.from(pkcs7content.value[1].value[1].value, 'binary')
 
             // Compute the actual file hash
-            if (obj.fileHashAlgo != null) { obj.fileHashActual = getHash(obj.fileHashAlgo); }
+            if (obj.fileHashAlgo != null) { obj.fileHashActual = obj.getHash(obj.fileHashAlgo); }
         }
+        return true;
     }
 
     // Hash the file using the selected hashing system
-    function getHash(algo) {
+    obj.getHash = function(algo) {
         var hash = crypto.createHash(algo);
         runHash(hash, 0, obj.header.header_size + 88);
         runHash(hash, obj.header.header_size + 88 + 4, obj.header.header_size + 152 + (obj.header.pe32plus * 16));
@@ -229,7 +237,7 @@ function createAuthenticodeHandler(path) {
     // Sign the file using the certificate and key. If none is specified, generate a dummy one
     obj.sign = function (cert, args) {
         if (cert == null) { cert = createSelfSignedCert({ cn: 'Test' }); }
-        var fileHash = getHash('sha384');
+        var fileHash = obj.getHash('sha384');
 
         // Create the signature block
         var p7 = forge.pkcs7.createSignedData();
@@ -246,8 +254,12 @@ function createAuthenticodeHandler(path) {
             { type: forge.pki.oids.messageDigest } // This value will populated at signing time by node-forge
         ]
         if ((typeof args.desc == 'string') || (typeof args.url == 'string')) {
-            var codeSigningAttributes = { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [ ] };
-            if (args.desc != null) { codeSigningAttributes.value.push({ 'tagClass': 128, 'type': 0, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': Buffer.from(args.desc, 'ucs2').toString() }] }); }
+            var codeSigningAttributes = { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [] };
+            if (args.desc != null) { // Encode description as big-endian unicode.
+                var desc = "", ucs = Buffer.from(args.desc, 'ucs2').toString()
+                for (var k = 0; k < ucs.length; k += 2) { desc += String.fromCharCode(ucs.charCodeAt(k + 1), ucs.charCodeAt(k)); }
+                codeSigningAttributes.value.push({ 'tagClass': 128, 'type': 0, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': desc }] });
+            }
             if (args.url != null) { codeSigningAttributes.value.push({ 'tagClass': 128, 'type': 1, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': args.url }] }); }
             authenticatedAttributes.push({ type: obj.Oids.SPC_SP_OPUS_INFO_OBJID, value: codeSigningAttributes });
         }
@@ -330,8 +342,8 @@ function createAuthenticodeHandler(path) {
         fs.closeSync(output);
     }
 
-    openFile();
-    return obj;
+    // Return null if we could not open the file
+    return (openFile() ? obj : null);
 }
 
 function start() {
@@ -410,7 +422,7 @@ function start() {
         if (typeof args.exe != 'string') { console.log("Missing --exe [filename]"); return; }
         createOutFile(args, args.exe);
         const cert = loadCertificates(args);
-        if (cert == null) { console.log("Unable to load certificate and/or private key, generating text certificate."); }
+        if (cert == null) { console.log("Unable to load certificate and/or private key, generating test certificate."); }
         console.log("Signing to " + args.out); exe.sign(cert, args); console.log("Done.");
     }
     if (command == 'unsign') { // Unsign an executable
@@ -433,4 +445,8 @@ function start() {
     if (exe != null) { exe.close(); }
 }
 
-start();
+// If this is the main module, run the command line version
+if (require.main === module) { start(); }
+
+// Exports
+module.exports.createAuthenticodeHandler = createAuthenticodeHandler;

@@ -1613,11 +1613,11 @@ function CreateMeshCentralServer(config, args) {
         } catch (ex) { }
 
         // Load any domain specific agents
-        for (var i in obj.config.domains) { if (i != '') { obj.updateMeshAgentsTable(obj.config.domains[i], function () { }); } }
+        for (var i in obj.config.domains) { if ((i != '') && (obj.config.domains[i].share == null)) { obj.updateMeshAgentsTable(obj.config.domains[i], function () { }); } }
 
         // Load the list of mesh agents and install scripts
         if ((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true)) { for (i in obj.meshAgentsArchitectureNumbers) { obj.meshAgentsArchitectureNumbers[i].update = false; } }
-        obj.updateMeshAgentsTable(null, function () {
+        obj.updateMeshAgentsTable(obj.config.domains[''], function () {
             obj.updateMeshAgentInstallScripts();
 
             // Setup and start the web server
@@ -2801,8 +2801,8 @@ function CreateMeshCentralServer(config, args) {
         0: { id: 0, localname: 'Unknown', rname: 'meshconsole.exe', desc: 'Unknown agent', update: false, amt: true, platform: 'unknown', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
         1: { id: 1, localname: 'MeshConsole.exe', rname: 'meshconsole32.exe', desc: 'Windows x86-32 console', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny' },
         2: { id: 2, localname: 'MeshConsole64.exe', rname: 'meshconsole64.exe', desc: 'Windows x86-64 console', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny' },
-        3: { id: 3, localname: 'MeshService-signed.exe', rname: 'meshagent32.exe', desc: 'Windows x86-32 service', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny' },
-        4: { id: 4, localname: 'MeshService64-signed.exe', rname: 'meshagent64.exe', desc: 'Windows x86-64 service', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny' },
+        3: { id: 3, localname: 'MeshService.exe', rname: 'meshagent32.exe', desc: 'Windows x86-32 service', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny', codesign: true },
+        4: { id: 4, localname: 'MeshService64.exe', rname: 'meshagent64.exe', desc: 'Windows x86-64 service', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny', codesign: true },
         5: { id: 5, localname: 'meshagent_x86', rname: 'meshagent', desc: 'Linux x86-32', update: true, amt: true, platform: 'linux', core: 'linux-amt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
         6: { id: 6, localname: 'meshagent_x86-64', rname: 'meshagent', desc: 'Linux x86-64', update: true, amt: true, platform: 'linux', core: 'linux-amt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
         7: { id: 7, localname: 'meshagent_mips', rname: 'meshagent', desc: 'Linux MIPS', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
@@ -2837,8 +2837,6 @@ function CreateMeshCentralServer(config, args) {
         37: { id: 37, localname: 'meshagent_openbsd_x86-64', rname: 'meshagent', desc: 'OpenBSD x86-64', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // OpenBSD x86-64
         40: { id: 40, localname: 'meshagent_mipsel24kc', rname: 'meshagent', desc: 'Linux MIPSEL24KC (OpenWRT)', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // MIPS Router with OpenWRT
         41: { id: 41, localname: 'meshagent_aarch64-cortex-a53', rname: 'meshagent', desc: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // OpenWRT Routers
-        10003: { id: 3, localname: 'MeshService.exe', rname: 'meshagent.exe', desc: 'Win x86-32 service, unsigned', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Unsigned version of the Windows MeshAgent x86
-        10004: { id: 4, localname: 'MeshService64.exe', rname: 'meshagent.exe', desc: 'Win x86-64 service, unsigned', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Unsigned version of the Windows MeshAgent x64
         10005: { id: 10005, localname: 'meshagent_osx-universal-64', rname: 'meshagent', desc: 'Apple macOS Universal Binary', update: true, amt: false, platform: 'osx', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Apple Silicon + x86 universal binary
         10006: { id: 10006, localname: 'MeshCentralAssistant.exe', rname: 'MeshCentralAssistant.exe', desc: 'MeshCentral Assistant for Windows', update: false, amt: false, platform: 'win32' } // MeshCentral Assistant
     };
@@ -2847,8 +2845,28 @@ function CreateMeshCentralServer(config, args) {
     obj.updateMeshAgentsTable = function (domain, func) {
         // Setup the domain is specified
         var objx = domain, suffix = '';
-        if (objx == null) { objx = obj; } else { suffix = '-' + domain.id; objx.meshAgentBinaries = {}; }
-        
+        if (domain.id == '') { objx = obj; } else { suffix = '-' + domain.id; objx.meshAgentBinaries = {}; }
+
+        // Get agent code signature certificate ready with the full cert chain
+        var agentSignCertInfo = null;
+        if (obj.certificates.codesign) {
+            agentSignCertInfo = {
+                cert: obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.codesign.cert),
+                key: obj.certificateOperations.forge.pki.privateKeyFromPem(obj.certificates.codesign.key),
+                extraCerts: [obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.root.cert) ]
+            }
+        }
+
+        // Generate the agent signature description and URL
+        const serverSignedAgentsPath = obj.path.join(obj.datapath, 'signedagents' + suffix);
+        var signDesc = (domain.title ? domain.title : agentSignCertInfo.cert.subject.hash);
+        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+        var signUrl = 'https://' + ((domain.dns != null) ? domain.dns : obj.certificates.CommonName);
+        if (httpsPort != 443) { signUrl += ':' + httpsPort; }
+        var xdomain = (domain.dns == null) ? domain.id : '';
+        if (xdomain != '') xdomain += '/';
+        signUrl += '/' + xdomain;
+
         // Load agent information file. This includes the data & time of the agent.
         const agentInfo = [];
         try { agentInfo = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'hashagents.json'), 'utf8')); } catch (ex) { }
@@ -2856,105 +2874,88 @@ function CreateMeshCentralServer(config, args) {
         var archcount = 0;
         for (var archid in obj.meshAgentsArchitectureNumbers) {
             var agentpath;
-            if (domain == null) {
+            if (domain.id == '') {
+                // Load all agents when processing the default domain
                 agentpath = obj.path.join(__dirname, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
                 var agentpath2 = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
-                if (obj.fs.existsSync(agentpath2)) { agentpath = agentpath2; } // If the agent is present in "meshcentral-data/agents", use that one instead.
+                if (obj.fs.existsSync(agentpath2)) { agentpath = agentpath2; delete obj.meshAgentsArchitectureNumbers[archid].codesign; } // If the agent is present in "meshcentral-data/agents", use that one instead.
             } else {
+                // When processing an extra domain, only load agents that are specific to that domain
                 var agentpath = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
-                if (!obj.fs.existsSync(agentpath)) continue; // If the agent is not present in "meshcentral-data/agents" skip.
+                if (obj.fs.existsSync(agentpath)) { delete obj.meshAgentsArchitectureNumbers[archid].codesign; } else { continue; } // If the agent is not present in "meshcentral-data/agents" skip.
             }
 
-            // Fetch all the agent binary information
+            // Fetch agent binary information
             var stats = null;
             try { stats = obj.fs.statSync(agentpath); } catch (ex) { }
-            if ((stats != null)) {
-                // If file exists
-                archcount++;
-                objx.meshAgentBinaries[archid] = Object.assign({}, obj.meshAgentsArchitectureNumbers[archid]);
-                objx.meshAgentBinaries[archid].path = agentpath;
-                objx.meshAgentBinaries[archid].url = 'http://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?id=' + archid;
-                objx.meshAgentBinaries[archid].size = stats.size;
-                if ((agentInfo[archid] != null) && (agentInfo[archid].mtime != null)) { objx.meshAgentBinaries[archid].mtime = new Date(agentInfo[archid].mtime); } // Set agent time if available
+            if ((stats == null)) continue; // If this agent does not exist, skip it.
 
-                // If this is a windows binary, pull binary information
-                if (obj.meshAgentsArchitectureNumbers[archid].platform == 'win32') {
-                    try { objx.meshAgentBinaries[archid].pe = obj.exeHandler.parseWindowsExecutable(agentpath); } catch (ex) { }
+            // Check if we need to sign this agent, if so, check if it's already been signed
+            if (obj.meshAgentsArchitectureNumbers[archid].codesign === true) {
+                // Open the original agent with authenticode
+                var signeedagentpath = obj.path.join(serverSignedAgentsPath, obj.meshAgentsArchitectureNumbers[archid].localname);
+                const originalAgent = require('./authenticode.js').createAuthenticodeHandler(agentpath);
+                if (originalAgent != null) {
+                    // Check if the agent is already signed correctly
+                    const destinationAgent = require('./authenticode.js').createAuthenticodeHandler(signeedagentpath);
+                    var destinationAgentOk = (
+                        (destinationAgent != null) &&
+                        (destinationAgent.fileHashSigned != null) &&
+                        (Buffer.compare(destinationAgent.fileHashSigned, destinationAgent.fileHashActual) == 0) &&
+                        ((Buffer.compare(destinationAgent.fileHashSigned, originalAgent.getHash(destinationAgent.fileHashAlgo))) == 0) &&
+                        (destinationAgent.signingAttribs.indexOf(signUrl) >= 0) &&
+                        (destinationAgent.signingAttribs.indexOf(signDesc) >= 0)
+                    );
+                    if (destinationAgent != null) { destinationAgent.close(); }
+                    if (destinationAgentOk == false) {
+                        // If not signed correctly, sign it. First, create the server signed agent folder if needed
+                        try { obj.fs.mkdirSync(serverSignedAgentsPath); } catch (ex) { }
+                        console.log(obj.common.format('Code signing agent {0}...', obj.meshAgentsArchitectureNumbers[archid].localname));
+                        originalAgent.sign(agentSignCertInfo, { out: signeedagentpath, desc: signDesc, url: signUrl });
+                    }
+                    originalAgent.close();
+
+                    // Update agent path to signed agent
+                    agentpath = signeedagentpath;
                 }
+            }
 
-                // If agents must be stored in RAM or if this is a Windows 32/64 agent, load the agent in RAM.
-                if ((obj.args.agentsinram === true) || (((archid == 3) || (archid == 4)) && (obj.args.agentsinram !== false))) {
-                    if ((archid == 3) || (archid == 4)) {
-                        // Load the agent with a random msh added to it.
-                        const outStream = new require('stream').Duplex();
-                        outStream.meshAgentBinary = objx.meshAgentBinaries[archid];
-                        outStream.meshAgentBinary.randomMsh = Buffer.from(obj.crypto.randomBytes(64), 'binary').toString('base64');
-                        outStream.bufferList = [];
-                        outStream._write = function (chunk, encoding, callback) { this.bufferList.push(chunk); if (callback) callback(); }; // Append the chuck.
-                        outStream._read = function (size) { }; // Do nothing, this is not going to be called.
-                        outStream.on('finish', function () {
-                            // Merge all chunks
-                            this.meshAgentBinary.data = Buffer.concat(this.bufferList);
-                            this.meshAgentBinary.size = this.meshAgentBinary.data.length;
-                            delete this.bufferList;
+            // Setup agent information
+            archcount++;
+            objx.meshAgentBinaries[archid] = Object.assign({}, obj.meshAgentsArchitectureNumbers[archid]);
+            objx.meshAgentBinaries[archid].path = agentpath;
+            objx.meshAgentBinaries[archid].url = 'http://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?id=' + archid;
+            objx.meshAgentBinaries[archid].size = stats.size;
+            if ((agentInfo[archid] != null) && (agentInfo[archid].mtime != null)) { objx.meshAgentBinaries[archid].mtime = new Date(agentInfo[archid].mtime); } // Set agent time if available
 
-                            // Hash the uncompressed binary
-                            const hash = obj.crypto.createHash('sha384').update(this.meshAgentBinary.data);
-                            this.meshAgentBinary.fileHash = hash.digest('binary');
-                            this.meshAgentBinary.fileHashHex = Buffer.from(this.meshAgentBinary.fileHash, 'binary').toString('hex');
+            // If this is a windows binary, pull binary information
+            if (obj.meshAgentsArchitectureNumbers[archid].platform == 'win32') {
+                try { objx.meshAgentBinaries[archid].pe = obj.exeHandler.parseWindowsExecutable(agentpath); } catch (ex) { }
+            }
 
-                            // Compress the agent using ZIP
-                            const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
-                            const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
-                            const onZipEnd = function onZipEnd() {
-                                // Concat all the buffer for create compressed zip agent
-                                const concatData = Buffer.concat(onZipData.x.zacc);
-                                delete onZipData.x.zacc;
+            // If agents must be stored in RAM or if this is a Windows 32/64 agent, load the agent in RAM.
+            if ((obj.args.agentsinram === true) || (((archid == 3) || (archid == 4)) && (obj.args.agentsinram !== false))) {
+                if ((archid == 3) || (archid == 4)) {
+                    // Load the agent with a random msh added to it.
+                    const outStream = new require('stream').Duplex();
+                    outStream.meshAgentBinary = objx.meshAgentBinaries[archid];
+                    outStream.meshAgentBinary.randomMsh = agentSignCertInfo.cert.subject.hash;
+                    outStream.bufferList = [];
+                    outStream._write = function (chunk, encoding, callback) { this.bufferList.push(chunk); if (callback) callback(); }; // Append the chuck.
+                    outStream._read = function (size) { }; // Do nothing, this is not going to be called.
+                    outStream.on('finish', function () {
+                        // Merge all chunks
+                        this.meshAgentBinary.data = Buffer.concat(this.bufferList);
+                        this.meshAgentBinary.size = this.meshAgentBinary.data.length;
+                        delete this.bufferList;
 
-                                // Hash the compressed binary
-                                const hash = obj.crypto.createHash('sha384').update(concatData);
-                                onZipData.x.zhash = hash.digest('binary');
-                                onZipData.x.zhashhex = Buffer.from(onZipData.x.zhash, 'binary').toString('hex');
-
-                                // Set the agent
-                                onZipData.x.zdata = concatData;
-                                onZipData.x.zsize = concatData.length;
-                            }
-                            const onZipError = function onZipError() { delete onZipData.x.zacc; }
-                            this.meshAgentBinary.zacc = [];
-                            onZipData.x = this.meshAgentBinary;
-                            onZipEnd.x = this.meshAgentBinary;
-                            onZipError.x = this.meshAgentBinary;
-                            archive.on('data', onZipData);
-                            archive.on('end', onZipEnd);
-                            archive.on('error', onZipError);
-
-                            // Starting with NodeJS v16, passing in a buffer at archive.append() will result a compressed file with zero byte length. To fix this, we pass in the buffer as a stream.
-                            // archive.append(this.meshAgentBinary.data, { name: 'meshagent' }); // This is the version that does not work on NodeJS v16.
-                            const ReadableStream = require('stream').Readable;
-                            const zipInputStream = new ReadableStream();
-                            zipInputStream.push(this.meshAgentBinary.data);
-                            zipInputStream.push(null);
-                            archive.append(zipInputStream, { name: 'meshagent' });
-
-                            archive.finalize();
-                        })
-                        obj.exeHandler.streamExeWithMeshPolicy(
-                            {
-                                platform: 'win32',
-                                sourceFileName: agentpath,
-                                destinationStream: outStream,
-                                randomPolicy: true, // Indicates that the msh policy is random data.
-                                msh: outStream.meshAgentBinary.randomMsh,
-                                peinfo: objx.meshAgentBinaries[archid].pe
-                            });
-                    } else {
-                        // Load the agent as-is
-                        objx.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath);
+                        // Hash the uncompressed binary
+                        const hash = obj.crypto.createHash('sha384').update(this.meshAgentBinary.data);
+                        this.meshAgentBinary.fileHash = hash.digest('binary');
+                        this.meshAgentBinary.fileHashHex = Buffer.from(this.meshAgentBinary.fileHash, 'binary').toString('hex');
 
                         // Compress the agent using ZIP
                         const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
-
                         const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
                         const onZipEnd = function onZipEnd() {
                             // Concat all the buffer for create compressed zip agent
@@ -2969,44 +2970,91 @@ function CreateMeshCentralServer(config, args) {
                             // Set the agent
                             onZipData.x.zdata = concatData;
                             onZipData.x.zsize = concatData.length;
-
-                            //console.log('Packed', onZipData.x.size, onZipData.x.zsize);
                         }
                         const onZipError = function onZipError() { delete onZipData.x.zacc; }
-                        objx.meshAgentBinaries[archid].zacc = [];
-                        onZipData.x = objx.meshAgentBinaries[archid];
-                        onZipEnd.x = objx.meshAgentBinaries[archid];
-                        onZipError.x = objx.meshAgentBinaries[archid];
+                        this.meshAgentBinary.zacc = [];
+                        onZipData.x = this.meshAgentBinary;
+                        onZipEnd.x = this.meshAgentBinary;
+                        onZipError.x = this.meshAgentBinary;
                         archive.on('data', onZipData);
                         archive.on('end', onZipEnd);
                         archive.on('error', onZipError);
-                        archive.append(objx.meshAgentBinaries[archid].data, { name: 'meshagent' });
+
+                        // Starting with NodeJS v16, passing in a buffer at archive.append() will result a compressed file with zero byte length. To fix this, we pass in the buffer as a stream.
+                        // archive.append(this.meshAgentBinary.data, { name: 'meshagent' }); // This is the version that does not work on NodeJS v16.
+                        const ReadableStream = require('stream').Readable;
+                        const zipInputStream = new ReadableStream();
+                        zipInputStream.push(this.meshAgentBinary.data);
+                        zipInputStream.push(null);
+                        archive.append(zipInputStream, { name: 'meshagent' });
+
                         archive.finalize();
+                    })
+                    obj.exeHandler.streamExeWithMeshPolicy(
+                        {
+                            platform: 'win32',
+                            sourceFileName: agentpath,
+                            destinationStream: outStream,
+                            randomPolicy: true, // Indicates that the msh policy is random data.
+                            msh: outStream.meshAgentBinary.randomMsh,
+                            peinfo: objx.meshAgentBinaries[archid].pe
+                        });
+                } else {
+                    // Load the agent as-is
+                    objx.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath);
+
+                    // Compress the agent using ZIP
+                    const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
+
+                    const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
+                    const onZipEnd = function onZipEnd() {
+                        // Concat all the buffer for create compressed zip agent
+                        const concatData = Buffer.concat(onZipData.x.zacc);
+                        delete onZipData.x.zacc;
+
+                        // Hash the compressed binary
+                        const hash = obj.crypto.createHash('sha384').update(concatData);
+                        onZipData.x.zhash = hash.digest('binary');
+                        onZipData.x.zhashhex = Buffer.from(onZipData.x.zhash, 'binary').toString('hex');
+
+                        // Set the agent
+                        onZipData.x.zdata = concatData;
+                        onZipData.x.zsize = concatData.length;
+
+                        //console.log('Packed', onZipData.x.size, onZipData.x.zsize);
                     }
-                }
-
-                // Hash the binary
-                const hashStream = obj.crypto.createHash('sha384');
-                hashStream.archid = archid;
-                hashStream.on('data', function (data) {
-                    objx.meshAgentBinaries[this.archid].hash = data.toString('binary');
-                    objx.meshAgentBinaries[this.archid].hashhex = data.toString('hex');
-                    if ((--archcount == 0) && (func != null)) { func(); }
-                });
-                const options = { sourcePath: agentpath, targetStream: hashStream, platform: obj.meshAgentsArchitectureNumbers[archid].platform };
-                if (objx.meshAgentBinaries[archid].pe != null) { options.peinfo = objx.meshAgentBinaries[archid].pe; }
-                obj.exeHandler.hashExecutableFile(options);
-
-                // If we are not loading Windows binaries to RAM, compute the RAW file hash of the signed binaries here.
-                if ((obj.args.agentsinram === false) && ((archid == 3) || (archid == 4))) {
-                    const hash = obj.crypto.createHash('sha384').update(obj.fs.readFileSync(agentpath));
-                    objx.meshAgentBinaries[archid].fileHash = hash.digest('binary');
-                    objx.meshAgentBinaries[archid].fileHashHex = Buffer.from(objx.meshAgentBinaries[archid].fileHash, 'binary').toString('hex');
+                    const onZipError = function onZipError() { delete onZipData.x.zacc; }
+                    objx.meshAgentBinaries[archid].zacc = [];
+                    onZipData.x = objx.meshAgentBinaries[archid];
+                    onZipEnd.x = objx.meshAgentBinaries[archid];
+                    onZipError.x = objx.meshAgentBinaries[archid];
+                    archive.on('data', onZipData);
+                    archive.on('end', onZipEnd);
+                    archive.on('error', onZipError);
+                    archive.append(objx.meshAgentBinaries[archid].data, { name: 'meshagent' });
+                    archive.finalize();
                 }
             }
+
+            // Hash the binary
+            const hashStream = obj.crypto.createHash('sha384');
+            hashStream.archid = archid;
+            hashStream.on('data', function (data) {
+                objx.meshAgentBinaries[this.archid].hash = data.toString('binary');
+                objx.meshAgentBinaries[this.archid].hashhex = data.toString('hex');
+                if ((--archcount == 0) && (func != null)) { func(); }
+            });
+            const options = { sourcePath: agentpath, targetStream: hashStream, platform: obj.meshAgentsArchitectureNumbers[archid].platform };
+            if (objx.meshAgentBinaries[archid].pe != null) { options.peinfo = objx.meshAgentBinaries[archid].pe; }
+            obj.exeHandler.hashExecutableFile(options);
+
+            // If we are not loading Windows binaries to RAM, compute the RAW file hash of the signed binaries here.
+            if ((obj.args.agentsinram === false) && ((archid == 3) || (archid == 4))) {
+                const hash = obj.crypto.createHash('sha384').update(obj.fs.readFileSync(agentpath));
+                objx.meshAgentBinaries[archid].fileHash = hash.digest('binary');
+                objx.meshAgentBinaries[archid].fileHashHex = Buffer.from(objx.meshAgentBinaries[archid].fileHash, 'binary').toString('hex');
+            }
         }
-        if ((objx.meshAgentBinaries[3] == null) && (objx.meshAgentBinaries[10003] != null)) { objx.meshAgentBinaries[3] = objx.meshAgentBinaries[10003]; } // If only the unsigned windows binaries are present, use them.
-        if ((objx.meshAgentBinaries[4] == null) && (objx.meshAgentBinaries[10004] != null)) { objx.meshAgentBinaries[4] = objx.meshAgentBinaries[10004]; } // If only the unsigned windows binaries are present, use them.
     };
 
     // Generate a time limited user login token
