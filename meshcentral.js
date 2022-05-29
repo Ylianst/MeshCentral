@@ -2847,9 +2847,11 @@ function CreateMeshCentralServer(config, args) {
         var objx = domain, suffix = '';
         if (domain.id == '') { objx = obj; } else { suffix = '-' + domain.id; objx.meshAgentBinaries = {}; }
 
-        // Get agent code signature certificate ready with the full cert chain
-        var agentSignCertInfo = null;
-        if (obj.certificates.codesign) {
+        // Check if a custom agent signing certificate is available
+        var agentSignCertInfo = require('./authenticode.js').loadCertificates([ obj.path.join(obj.datapath, 'agentsigningcert.pem') ]);
+
+        // If not using a custom signing cert, get agent code signature certificate ready with the full cert chain
+        if ((agentSignCertInfo == null) && (obj.certificates.codesign != null)) {
             agentSignCertInfo = {
                 cert: obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.codesign.cert),
                 key: obj.certificateOperations.forge.pki.privateKeyFromPem(obj.certificates.codesign.key),
