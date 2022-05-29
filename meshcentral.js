@@ -2860,14 +2860,17 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Generate the agent signature description and URL
-        const serverSignedAgentsPath = obj.path.join(obj.datapath, 'signedagents' + suffix);
-        var signDesc = (domain.title ? domain.title : agentSignCertInfo.cert.subject.hash);
-        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-        var signUrl = 'https://' + ((domain.dns != null) ? domain.dns : obj.certificates.CommonName);
-        if (httpsPort != 443) { signUrl += ':' + httpsPort; }
-        var xdomain = (domain.dns == null) ? domain.id : '';
-        if (xdomain != '') xdomain += '/';
-        signUrl += '/' + xdomain;
+        var serverSignedAgentsPath, signDesc, signUrl;
+        if (agentSignCertInfo != null) {
+            serverSignedAgentsPath = obj.path.join(obj.datapath, 'signedagents' + suffix);
+            signDesc = (domain.title ? domain.title : agentSignCertInfo.cert.subject.hash);
+            var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+            signUrl = 'https://' + ((domain.dns != null) ? domain.dns : obj.certificates.CommonName);
+            if (httpsPort != 443) { signUrl += ':' + httpsPort; }
+            var xdomain = (domain.dns == null) ? domain.id : '';
+            if (xdomain != '') xdomain += '/';
+            signUrl += '/' + xdomain;
+        }
 
         // Load agent information file. This includes the data & time of the agent.
         const agentInfo = [];
@@ -2893,7 +2896,7 @@ function CreateMeshCentralServer(config, args) {
             if ((stats == null)) continue; // If this agent does not exist, skip it.
 
             // Check if we need to sign this agent, if so, check if it's already been signed
-            if (obj.meshAgentsArchitectureNumbers[archid].codesign === true) {
+            if ((obj.meshAgentsArchitectureNumbers[archid].codesign === true) && (agentSignCertInfo != null)) {{
                 // Open the original agent with authenticode
                 var signeedagentpath = obj.path.join(serverSignedAgentsPath, obj.meshAgentsArchitectureNumbers[archid].localname);
                 const originalAgent = require('./authenticode.js').createAuthenticodeHandler(agentpath);
