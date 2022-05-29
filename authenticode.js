@@ -51,8 +51,8 @@ function createOutFile(args, filename) {
 }
 
 // Load certificates and private key from PEM files
-function loadCertificates(args) {
-    var certs = [], keys = [], pemFileNames = args.pem;
+function loadCertificates(pemFileNames) {
+    var certs = [], keys = [];
     if (pemFileNames == null) return;
     if (typeof pemFileNames == 'string') { pemFileNames = [pemFileNames]; }
     for (var i in pemFileNames) {
@@ -421,7 +421,7 @@ function start() {
     if (command == 'sign') { // Sign an executable
         if (typeof args.exe != 'string') { console.log("Missing --exe [filename]"); return; }
         createOutFile(args, args.exe);
-        const cert = loadCertificates(args);
+        const cert = loadCertificates(args.pem);
         if (cert == null) { console.log("Unable to load certificate and/or private key, generating test certificate."); }
         console.log("Signing to " + args.out); exe.sign(cert, args); console.log("Done.");
     }
@@ -450,3 +450,4 @@ if (require.main === module) { start(); }
 
 // Exports
 module.exports.createAuthenticodeHandler = createAuthenticodeHandler;
+module.exports.loadCertificates = loadCertificates;
