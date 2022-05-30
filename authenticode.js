@@ -304,11 +304,22 @@ function createAuthenticodeHandler(path) {
         return r;
     }
 
+    // Trim a string at teh first null character
+    function stringUntilNull(str) {
+        if (str == null) return null;
+        const i = str.indexOf('\0');
+        if (i >= 0) return str.substring(0, i);
+        return str;
+    }
+
     // Decode the version information from the resource
     obj.getVersionInfo = function () {
         var r = {}, info = readVersionInfo(getVersionInfoData(), 0);
-        if (info == null) return null;
-        const strings = info.stringFile.stringTable.strings;
+        if ((info == null) || (info.stringFiles == null)) return null;
+        var StringFileInfo = null;
+        for (var i in info.stringFiles) { if (info.stringFiles[i].szKey == 'StringFileInfo') { StringFileInfo = info.stringFiles[i]; } }
+        if ((StringFileInfo == null) || (StringFileInfo.stringTable == null) || (StringFileInfo.stringTable.strings == null)) return null;
+        const strings = StringFileInfo.stringTable.strings;
         for (var i in strings) { r[strings[i].key] = strings[i].value; }
         return r;
     }
@@ -339,7 +350,7 @@ function createAuthenticodeHandler(path) {
         if (r.szKey != 'VS_VERSION_INFO') return null;
         //console.log('getVersionInfo', r.wLength, r.wValueLength, r.wType, r.szKey.toString());
         if (r.wValueLength == 52) { r.fixedFileInfo = readFixedFileInfoStruct(buf, ptr + 40); }
-        r.stringFile = readStringFileStruct(buf, ptr + 40 + r.wValueLength);
+        r.stringFiles = readStringFilesStruct(buf, ptr + 40 + r.wValueLength, r.wLength - 40 - r.wValueLength);
         return r;
     }
 
@@ -365,16 +376,23 @@ function createAuthenticodeHandler(path) {
     }
 
     // StringFileInfo structure: https://docs.microsoft.com/en-us/windows/win32/menurc/stringfileinfo
-    function readStringFileStruct(buf, ptr) {
-        const r = {};
-        r.wLength = buf.readUInt16LE(ptr);
-        r.wValueLength = buf.readUInt16LE(ptr + 2);
-        r.wType = buf.readUInt16LE(ptr + 4);
-        r.szKey = unicodeToString(buf.slice(ptr + 6, ptr + 34));
-        if (r.szKey != 'StringFileInfo') return null;
-        //console.log('readStringFileStruct', r.wLength, r.wValueLength, r.wType, r.szKey.toString());
-        r.stringTable = readStringTableStruct(buf, ptr + 36 + r.wValueLength);
-        return r;
+    function readStringFilesStruct(buf, ptr, len) {
+        var t = [], startPtr = ptr;
+        while (ptr < (startPtr + len)) {
+            const r = {};
+            r.wLength = buf.readUInt16LE(ptr);
+            if (r.wLength == 0) return t;
+            r.wValueLength = buf.readUInt16LE(ptr + 2);
+            r.wType = buf.readUInt16LE(ptr + 4); // 1 = Text, 2 = Binary
+            r.szKey = stringUntilNull(unicodeToString(buf.slice(ptr + 6, ptr + 6 + (r.wLength - 6)))); // String value
+            //console.log('readStringFileStruct', r.wLength, r.wValueLength, r.wType, r.szKey.toString());
+            if (r.szKey == 'StringFileInfo') { r.stringTable = readStringTableStruct(buf, ptr + 36 + r.wValueLength); }
+            if (r.szKey == 'VarFileInfo$') { r.varFileInfo = {}; } // TODO
+            t.push(r);
+            ptr += r.wLength;
+            ptr = padPointer(ptr);
+        }
+        return t;
     }
 
     // StringTable structure: https://docs.microsoft.com/en-us/windows/win32/menurc/stringtable
@@ -610,7 +628,7 @@ function start() {
             console.log(JSON.stringify(r, null, 2));
         } else {
             var versionInfo = exe.getVersionInfo();
-            if (versionInfo != null) { console.log("Version Information:"); for (var i in versionInfo) { console.log('  ' + i + ': \"' + versionInfo[i] + '\"'); } }
+            if (versionInfo != null) { console.log("Version Information:"); for (var i in versionInfo) { if (versionInfo[i] == null) { console.log('  ' + i + ': (Empty)'); } else { console.log('  ' + i + ': \"' + versionInfo[i] + '\"'); } } }
             console.log("Signature Information:");
             if (exe.fileHashAlgo != null) {
                 console.log("  Hash Method:", exe.fileHashAlgo);
