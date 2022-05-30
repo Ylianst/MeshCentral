@@ -125,29 +125,63 @@ function createAuthenticodeHandler(path) {
         obj.filesize = obj.stats.size;
         if (obj.filesize < 64) { obj.close(); return false; } // File too short.
 
-        // Read the PE header size
+        // Read the PE header pointer
         var buf = readFileSlice(60, 4);
-        obj.header.header_size = buf.readUInt32LE(0);
+        obj.header.PeHeaderLocation = buf.readUInt32LE(0); // The DOS header is 64 bytes long, the last 4 bytes are a pointer to the PE header.
+        obj.header.PeOptionalHeaderLocation = obj.header.PeHeaderLocation + 24; // The PE optional header is located just after the PE header which is 24 bytes long.
 
         // Check file size and PE header
-        if (obj.filesize < (160 + obj.header.header_size)) { obj.close(); return false; } // Invalid SizeOfHeaders.
-        if (readFileSlice(obj.header.header_size, 4).toString('hex') != '50450000') { obj.close(); return false; } // Invalid PE File.
+        if (obj.filesize < (160 + obj.header.PeHeaderLocation)) { obj.close(); return false; } // Invalid SizeOfHeaders.
+        if (readFileSlice(obj.header.PeHeaderLocation, 4).toString('hex') != '50450000') { obj.close(); return false; } // Invalid PE header, must start with "PE" (HEX: 50 45 00 00).
+
+        // Read the size of the optional header
+        obj.header.PeOptionalHeaderSize = readFileSlice(obj.header.PeHeaderLocation + 20, 2).readUInt16LE(0);
+
+        // The section headers are located after the optional PE header
+        obj.header.SectionHeadersPtr = obj.header.PeOptionalHeaderLocation + obj.header.PeOptionalHeaderSize;
 
         // Check header magic data
-        var magic = readFileSlice(obj.header.header_size + 24, 2).readUInt16LE(0);
+        var magic = readFileSlice(obj.header.PeOptionalHeaderLocation, 2).readUInt16LE(0);
         switch (magic) {
-            case 0x20b: obj.header.pe32plus = 1; break;
-            case 0x10b: obj.header.pe32plus = 0; break;
+            case 0x020B: obj.header.pe32plus = 1; break;
+            case 0x010B: obj.header.pe32plus = 0; break;
             default: { obj.close(); return false; } // Invalid Magic in PE
         }
 
-        // Read PE header information
-        obj.header.pe_checksum = readFileSlice(obj.header.header_size + 88, 4).readUInt32LE(0);
-        obj.header.numRVA = readFileSlice(obj.header.header_size + 116 + (obj.header.pe32plus * 16), 4).readUInt32LE(0);
-        buf = readFileSlice(obj.header.header_size + 152 + (obj.header.pe32plus * 16), 8);
+        // Read optional PE header information
+        obj.header.pe_checksum = readFileSlice(obj.header.PeOptionalHeaderLocation + 64, 4).readUInt32LE(0);
+        obj.header.numRVA = readFileSlice(obj.header.PeOptionalHeaderLocation + 92 + (obj.header.pe32plus * 16), 4).readUInt32LE(0);
+        buf = readFileSlice(obj.header.PeOptionalHeaderLocation + 128 + (obj.header.pe32plus * 16), 8);
         obj.header.sigpos = buf.readUInt32LE(0);
         obj.header.siglen = buf.readUInt32LE(4);
         obj.header.signed = ((obj.header.sigpos != 0) && (obj.header.siglen != 0));
+
+        // Read the sections
+        obj.header.sections = {};
+        for (var i = 0; i < 16; i++) {
+            var section = {};
+            buf = readFileSlice(obj.header.SectionHeadersPtr + (i * 40), 40);
+            if (buf[0] != 46) break; // Name of the section must start with a dot. If not, we are done reading sections.
+            var sectionName = buf.slice(0, 8).toString().trim('\0');
+            var j = sectionName.indexOf('\0');
+            if (j >= 0) { sectionName = sectionName.substring(0, j); } // Trim any trailing zeroes
+            section.virtualSize = buf.readUInt32LE(8);
+            section.virtualAddr = buf.readUInt32LE(12);
+            section.rawSize = buf.readUInt32LE(16);
+            section.rawAddr = buf.readUInt32LE(20);
+            section.relocAddr = buf.readUInt32LE(24);
+            section.lineNumbers = buf.readUInt32LE(28);
+            section.relocNumber = buf.readUInt16LE(32);
+            section.lineNumbersNumber = buf.readUInt16LE(34);
+            section.characteristics = buf.readUInt32LE(36);
+            obj.header.sections[sectionName] = section;
+        }
+
+        // If there is a .rsrc section, read the resource information and locations
+        if (obj.header.sections['.rsrc'] != null) {
+            var ptr = obj.header.sections['.rsrc'].rawAddr;
+            obj.resources = readResourceTable(ptr, 0); // Read all resources recursively
+        }
 
         if (obj.header.signed) {
             // Read signature block
@@ -164,7 +198,7 @@ function createAuthenticodeHandler(path) {
 
             // Decode the signature block
             var pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(pkcs7raw));
-            
+
             // To work around ForgeJS PKCS#7 limitation, this may break PKCS7 verify if ForjeJS adds support for it in the future
             // Switch content type from "1.3.6.1.4.1.311.2.1.4" to "1.2.840.113549.1.7.1"
             pkcs7der.value[1].value[0].value[2].value[0].value = forge.asn1.oidToDer(forge.pki.oids.data).data;
@@ -173,14 +207,12 @@ function createAuthenticodeHandler(path) {
             var pkcs7 = p7.messageFromAsn1(pkcs7der);
             var pkcs7content = pkcs7.rawCapture.content.value[0];
 
-            /*
             // Verify a PKCS#7 signature
             // Verify is not currently supported in node-forge, but if implemented in the future, this code could work.
-            var caStore = forge.pki.createCaStore();
-            for (var i in obj.certificates) { caStore.addCertificate(obj.certificates[i]); }
+            //var caStore = forge.pki.createCaStore();
+            //for (var i in obj.certificates) { caStore.addCertificate(obj.certificates[i]); }
             // Return is true if all signatures are valid and chain up to a provided CA
-            if (!pkcs7.verify(caStore)) { throw ('Executable file has an invalid signature.'); }
-            */
+            //if (!pkcs7.verify(caStore)) { throw ('Executable file has an invalid signature.'); }
 
             // Get the signing attributes
             obj.signingAttribs = [];
@@ -219,12 +251,174 @@ function createAuthenticodeHandler(path) {
         return true;
     }
 
+    // Read a resource table.
+    // ptr: The pointer to the start of the resource section
+    // offset: The offset start of the resource table to read
+    function readResourceTable(ptr, offset) {
+        var buf = readFileSlice(ptr + offset, 16);
+        var r = {};
+        r.characteristics = buf.readUInt32LE(0);
+        r.timeDateStamp = buf.readUInt32LE(4);
+        r.majorVersion = buf.readUInt16LE(8);
+        r.minorVersion = buf.readUInt16LE(10);
+        var numberOfNamedEntries = buf.readUInt16LE(12);
+        var numberofIdEntries = buf.readUInt16LE(14);
+        r.entries = [];
+        var totalResources = numberOfNamedEntries + numberofIdEntries;
+        for (var i = 0; i < totalResources; i++) {
+            buf = readFileSlice(ptr + offset + 16 + (i * 8), 8);
+            var resource = {};
+            resource.name = buf.readUInt32LE(0);
+            var offsetToData = buf.readUInt32LE(4);
+            if ((resource.name & 0x80000000) != 0) { resource.name = readLenPrefixUnicodeString(ptr + (resource.name - 0x80000000)); }
+            if ((offsetToData & 0x80000000) != 0) { resource.table = readResourceTable(ptr, offsetToData - 0x80000000); } else { resource.item = readResourceItem(ptr, offsetToData); }
+            r.entries.push(resource);
+        }
+        return r;
+    }
+
+    // Read a resource item
+    // ptr: The pointer to the start of the resource section
+    // offset: The offset start of the resource item to read
+    function readResourceItem(ptr, offset) {
+        var buf = readFileSlice(ptr + offset, 16), r = {};
+        r.offsetToData = buf.readUInt32LE(0);
+        r.size = buf.readUInt32LE(4);
+        r.codePage = buf.readUInt32LE(8);
+        r.reserved = buf.readUInt32LE(12);
+        return r;
+    }
+
+    // Read a unicode stting that starts with the string length as the first byte.
+    function readLenPrefixUnicodeString(ptr) {
+        var nameLen = readFileSlice(ptr, 1)[0];
+        var buf = readFileSlice(ptr + 1, nameLen * 2), name = '';
+        for (var i = 0; i < nameLen; i++) { name += String.fromCharCode(buf.readUInt16BE(i * 2)); }
+        return name;
+    }
+
+    // Convert a unicode buffer to a string
+    function unicodeToString(buf) {
+        var r = '';
+        for (var i = 0; i < (buf.length / 2) ; i++) { r += String.fromCharCode(buf.readUInt16LE(i * 2)); }
+        return r;
+    }
+
+    // Decode the version information from the resource
+    obj.getVersionInfo = function () {
+        var r = {}, info = readVersionInfo(getVersionInfoData(), 0);
+        if (info == null) return null;
+        const strings = info.stringFile.stringTable.strings;
+        for (var i in strings) { r[strings[i].key] = strings[i].value; }
+        return r;
+    }
+
+    // Return the version info data block
+    function getVersionInfoData() {
+        if (obj.resources == null) return null;
+        var ptr = obj.header.sections['.rsrc'].rawAddr;
+        for (var i = 0; i < obj.resources.entries.length; i++) {
+            if (obj.resources.entries[i].name == 16) {
+                const verInfo = obj.resources.entries[i].table.entries[0].table.entries[0].item;
+                const actualPtr = (verInfo.offsetToData - obj.header.sections['.rsrc'].virtualAddr) + ptr;
+                return readFileSlice(actualPtr, verInfo.size);
+            }
+        }
+        return null;
+    }
+
+    // VS_VERSIONINFO structure: https://docs.microsoft.com/en-us/windows/win32/menurc/vs-versioninfo
+    function readVersionInfo(buf, ptr) {
+        const r = {};
+        if (buf.length < 2) return null;
+        r.wLength = buf.readUInt16LE(ptr);
+        if (buf.length < r.wLength) return null;
+        r.wValueLength = buf.readUInt16LE(ptr + 2);
+        r.wType = buf.readUInt16LE(ptr + 4);
+        r.szKey = unicodeToString(buf.slice(ptr + 6, ptr + 36));
+        if (r.szKey != 'VS_VERSION_INFO') return null;
+        //console.log('getVersionInfo', r.wLength, r.wValueLength, r.wType, r.szKey.toString());
+        if (r.wValueLength == 52) { r.fixedFileInfo = readFixedFileInfoStruct(buf, ptr + 40); }
+        r.stringFile = readStringFileStruct(buf, ptr + 40 + r.wValueLength);
+        return r;
+    }
+
+    // VS_FIXEDFILEINFO structure: https://docs.microsoft.com/en-us/windows/win32/api/verrsrc/ns-verrsrc-vs_fixedfileinfo
+    function readFixedFileInfoStruct(buf, ptr) {
+        if (buf.length - ptr < 50) return null;
+        var r = {};
+        r.dwSignature = buf.readUInt32LE(ptr);
+        if (r.dwSignature != 0xFEEF04BD) return null;
+        r.dwStrucVersion = buf.readUInt32LE(ptr + 4);
+        r.dwFileVersionMS = buf.readUInt32LE(ptr + 8);
+        r.dwFileVersionLS = buf.readUInt32LE(ptr + 12);
+        r.dwProductVersionMS = buf.readUInt32LE(ptr + 16);
+        r.dwProductVersionLS = buf.readUInt32LE(ptr + 20);
+        r.dwFileFlagsMask = buf.readUInt32LE(ptr + 24);
+        r.dwFileFlags = buf.readUInt32LE(ptr + 28);
+        r.dwFileOS = buf.readUInt32LE(ptr + 32);
+        r.dwFileType = buf.readUInt32LE(ptr + 36);
+        r.dwFileSubtype = buf.readUInt32LE(ptr + 40);
+        r.dwFileDateMS = buf.readUInt32LE(ptr + 44);
+        r.dwFileDateLS = buf.readUInt32LE(ptr + 48);
+        return r;
+    }
+
+    // StringFileInfo structure: https://docs.microsoft.com/en-us/windows/win32/menurc/stringfileinfo
+    function readStringFileStruct(buf, ptr) {
+        const r = {};
+        r.wLength = buf.readUInt16LE(ptr);
+        r.wValueLength = buf.readUInt16LE(ptr + 2);
+        r.wType = buf.readUInt16LE(ptr + 4);
+        r.szKey = unicodeToString(buf.slice(ptr + 6, ptr + 34));
+        if (r.szKey != 'StringFileInfo') return null;
+        //console.log('readStringFileStruct', r.wLength, r.wValueLength, r.wType, r.szKey.toString());
+        r.stringTable = readStringTableStruct(buf, ptr + 36 + r.wValueLength);
+        return r;
+    }
+
+    // StringTable structure: https://docs.microsoft.com/en-us/windows/win32/menurc/stringtable
+    function readStringTableStruct(buf, ptr) {
+        const r = {};
+        r.wLength = buf.readUInt16LE(ptr);
+        r.wValueLength = buf.readUInt16LE(ptr + 2);
+        r.wType = buf.readUInt16LE(ptr + 4); // 1 = Text, 2 = Binary
+        r.szKey = unicodeToString(buf.slice(ptr + 6, ptr + 6 + 16)); // An 8-digit hexadecimal number stored as a Unicode string.
+        //console.log('readStringTableStruct', r.wLength, r.wValueLength, r.wType, r.szKey);
+        r.strings = readStringStructs(buf, ptr + 24 + r.wValueLength, r.wLength - 22);
+        return r;
+    }
+
+    // String structure: https://docs.microsoft.com/en-us/windows/win32/menurc/string-str
+    function readStringStructs(buf, ptr, len) {
+        var t = [], startPtr = ptr;
+        while (ptr < (startPtr + len)) {
+            const r = {};
+            r.wLength = buf.readUInt16LE(ptr);
+            if (r.wLength == 0) return t;
+            r.wValueLength = buf.readUInt16LE(ptr + 2);
+            r.wType = buf.readUInt16LE(ptr + 4); // 1 = Text, 2 = Binary
+            var szKey = unicodeToString(buf.slice(ptr + 6, ptr + 6 + (r.wLength - 6))); // String value
+            var splitStr = szKey.split('\0');
+            r.key = splitStr[0];
+            for (var i = 1; i < splitStr.length; i++) { if (splitStr[i] != '') { r.value = splitStr[i]; } }
+            //console.log('readStringStruct', r.wLength, r.wValueLength, r.wType, r.key, r.value);
+            t.push(r);
+            ptr += r.wLength;
+            ptr = padPointer(ptr);
+        }
+        return t;
+    }
+
+    // Return the next 4 byte aligned number
+    function padPointer(ptr) { return ptr + (ptr % 4); }
+
     // Hash the file using the selected hashing system
     obj.getHash = function(algo) {
         var hash = crypto.createHash(algo);
-        runHash(hash, 0, obj.header.header_size + 88);
-        runHash(hash, obj.header.header_size + 88 + 4, obj.header.header_size + 152 + (obj.header.pe32plus * 16));
-        runHash(hash, obj.header.header_size + 152 + (obj.header.pe32plus * 16) + 8, obj.header.sigpos > 0 ? obj.header.sigpos : obj.filesize);
+        runHash(hash, 0, obj.header.PeHeaderLocation + 88);
+        runHash(hash, obj.header.PeHeaderLocation + 88 + 4, obj.header.PeHeaderLocation + 152 + (obj.header.pe32plus * 16));
+        runHash(hash, obj.header.PeHeaderLocation + 152 + (obj.header.pe32plus * 16) + 8, obj.header.sigpos > 0 ? obj.header.sigpos : obj.filesize);
         return hash.digest();
     }
 
@@ -275,13 +469,13 @@ function createAuthenticodeHandler(path) {
         var p7signature = Buffer.from(forge.pkcs7.messageToPem(p7).split('-----BEGIN PKCS7-----')[1].split('-----END PKCS7-----')[0], 'base64');
         //console.log('Signature', Buffer.from(p7signature, 'binary').toString('base64'));
 
-        // Open the outut file
+        // Open the output file
         var output = fs.openSync(args.out, 'w');
         var tmp, written = 0;
         var executableSize = obj.header.sigpos ? obj.header.sigpos : this.filesize;
 
         // Compute pre-header length and copy that to the new file
-        var preHeaderLen = (obj.header.header_size + 152 + (obj.header.pe32plus * 16));
+        var preHeaderLen = (obj.header.PeHeaderLocation + 152 + (obj.header.pe32plus * 16));
         var tmp = readFileSlice(written, preHeaderLen);
         fs.writeSync(output, tmp);
         written += tmp.length;
@@ -324,7 +518,7 @@ function createAuthenticodeHandler(path) {
         var written = 0, totalWrite = obj.header.sigpos;
 
         // Compute pre-header length and copy that to the new file
-        var preHeaderLen = (obj.header.header_size + 152 + (obj.header.pe32plus * 16));
+        var preHeaderLen = (obj.header.PeHeaderLocation + 152 + (obj.header.pe32plus * 16));
         var tmp = readFileSlice(written, preHeaderLen);
         fs.writeSync(output, tmp);
         written += tmp.length;
@@ -357,6 +551,7 @@ function start() {
         console.log("  node authenticode.js [command] [options]");
         console.log("Commands:");
         console.log("  info: Show information about an executable.");
+        console.log("          --exe [file]             Required executable to view information.");
         console.log("          --json                   Show information in JSON format.");
         console.log("  sign: Sign an executable.");
         console.log("          --exe [file]             Required executable to sign.");
@@ -403,19 +598,28 @@ function start() {
     if (command == 'info') { // Get signature information about an executable
         if (exe == null) { console.log("Missing --exe [filename]"); return; }
         if (args.json) {
-            var r = { header: exe.header, filesize: exe.filesize }
-            if (exe.fileHashAlgo != null) { r.hashMethod = exe.fileHashAlgo; }
-            if (exe.fileHashSigned != null) { r.hashSigned = exe.fileHashSigned.toString('hex'); }
-            if (exe.fileHashActual != null) { r.hashActual = exe.fileHashActual.toString('hex'); }
-            if (exe.signingAttribs && exe.signingAttribs.length > 0) { r.signAttributes = exe.signingAttribs; }
+            var r = { }, versionInfo = exe.getVersionInfo();
+            if (versionInfo != null) { r.versionInfo = versionInfo; }
+            if (exe.fileHashAlgo != null) {
+                r.signture = {};
+                if (exe.fileHashAlgo != null) { r.signture.hashMethod = exe.fileHashAlgo; }
+                if (exe.fileHashSigned != null) { r.signture.hashSigned = exe.fileHashSigned.toString('hex'); }
+                if (exe.fileHashActual != null) { r.signture.hashActual = exe.fileHashActual.toString('hex'); }
+                if (exe.signingAttribs && exe.signingAttribs.length > 0) { r.signture.attributes = exe.signingAttribs; }
+            }
             console.log(JSON.stringify(r, null, 2));
         } else {
-            console.log("Header", exe.header);
-            if (exe.fileHashAlgo != null) { console.log("Hash Method:", exe.fileHashAlgo); }
-            if (exe.fileHashSigned != null) { console.log("Signed Hash:", exe.fileHashSigned.toString('hex')); }
-            if (exe.fileHashActual != null) { console.log("Actual Hash:", exe.fileHashActual.toString('hex')); }
+            var versionInfo = exe.getVersionInfo();
+            if (versionInfo != null) { console.log("Version Information:"); for (var i in versionInfo) { console.log('  ' + i + ': \"' + versionInfo[i] + '\"'); } }
+            console.log("Signature Information:");
+            if (exe.fileHashAlgo != null) {
+                console.log("  Hash Method:", exe.fileHashAlgo);
+                if (exe.fileHashSigned != null) { console.log("  Signed Hash:", exe.fileHashSigned.toString('hex')); }
+                if (exe.fileHashActual != null) { console.log("  Actual Hash:", exe.fileHashActual.toString('hex')); }
+            } else {
+                console.log("  This file is not signed.");
+            }
             if (exe.signingAttribs && exe.signingAttribs.length > 0) { console.log("Signature Attributes:"); for (var i in exe.signingAttribs) { console.log('  ' + exe.signingAttribs[i]); } }
-            console.log("File Length: " + exe.filesize);
         }
     }
     if (command == 'sign') { // Sign an executable
