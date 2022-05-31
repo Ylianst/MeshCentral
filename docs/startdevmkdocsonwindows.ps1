@@ -3,11 +3,12 @@
 # Use the "Run Selection" in VSCode to run the code blocks as-needed
 
 #Activate python
+cd docs
 python -m venv env
 .\env\Scripts\activate 
 
 #Install requirements first time only
-python -m pip install --upgrade pip #only 1st time
+python -m pip install --upgrade pip #only 1st time or use periodically to update pip modules
 pip install pytest #only 1st time
 pip install mkdocs #only 1st time
 pip install mkdocs-material #only 1st time
