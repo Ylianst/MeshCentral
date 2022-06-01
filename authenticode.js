@@ -224,6 +224,8 @@ function createAuthenticodeHandler(path) {
                         (pkcs7.rawCapture.authenticatedAttributes[i].value[0].value != null) &&
                         (pkcs7.rawCapture.authenticatedAttributes[i].value[1] != null) &&
                         (pkcs7.rawCapture.authenticatedAttributes[i].value[1].value != null) &&
+                        (pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0] != null) &&
+                        (pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value != null) &&
                         (forge.asn1.derToOid(pkcs7.rawCapture.authenticatedAttributes[i].value[0].value) == obj.Oids.SPC_SP_OPUS_INFO_OBJID)) {
                         for (var j in pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value) {
                             if (
