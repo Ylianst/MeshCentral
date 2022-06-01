@@ -505,7 +505,9 @@ function createAuthenticodeHandler(path) {
         //console.log('Signature', Buffer.from(p7signature, 'binary').toString('base64'));
 
         // Open the output file
-        var output = fs.openSync(args.out, 'w');
+        var output = null;
+        try { output = fs.openSync(args.out, 'w'); } catch (ex) { }
+        if (output == null) return false;
         var tmp, written = 0;
         var executableSize = obj.header.sigpos ? obj.header.sigpos : this.filesize;
 
@@ -544,6 +546,7 @@ function createAuthenticodeHandler(path) {
 
         // Close the file
         fs.closeSync(output);
+        return true;
     }
 
     // Save an executable without the signature
