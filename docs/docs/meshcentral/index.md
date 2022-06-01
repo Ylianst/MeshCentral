@@ -56,6 +56,8 @@ This is because by default MeshCentral is using a self-signed certificate that i
 
 - Click “Continue to this website (not recommended)”
 
+Note: You can also get to a device by specifying the device name in the URL by adding `?viewmode=10&gotodevicename=MyComputer` to the URL of the MeshCentral web page. The new `gotodevicename` will find a device with the specified name and navigate to that device’s page. This is perfect for integrating MeshCentral with other solutions but be aware that a computer name is not a unique identifier and so, `&gotonode=` is always the preferred way to access a device. This feature also works on the mobile web site.
+
 ### Create Account
 
 Create an account by clicking “Create One” and click “Create Account” once the text fields had been populated correctly.  
@@ -695,6 +697,30 @@ Server2:443 -> 4433 on MeshCentral
 ```
 
 The routing of IP and ports by the firewall shown on the picture must be configured separately from MeshCentral using separate software. Typically, routers or firewalls have the proper controls to configure this type of traffic routes.
+
+## Device Groups with Relay Agent
+
+MeshCentral supports the local device group allowing devices that do not have an agent to be managed thru MeshCentral with regular SSH, SFTP, RDP, VNC protocols. Until now, the MeshCentral server had to be in LAN or Hybrid modes to support his device group and the managed devices had to be on the same network as the MeshCentral server. Starting with v1.0.11, users can create a local device group specifying a MeshAgent as a relay. This makes it possible to manage agent-less devices from anywhere on the Internet even if the server is in WAN mode. Simply install a single device with a MeshAgent on a network and create a local device group with that device as the relay.
+
+![](images/2022-05-31-10-30-07.png)
+
+![](images/2022-05-31-10-30-42.png)
+
+Video Walkthru
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/TtW5-g6SeZQ" frameborder="0" allowfullscreen></iframe>
+</div>
+
+### Raritan and WebPowerSwitch with Relay
+
+In addition to local device groups, the IP-KVM/Power switch device group was also improved to support a MeshAgent as a relay. This is big news for Raritan IP-KVM switch owners as you can now monitor your IP-KVM ports and access them remotely from the Internet. The same can be done with WebPowerSwitch allowing full out-of-band remote access to devices from anywhere in the world.
+
+![](images/2022-05-31-10-30-50.png)
+
+![](images/2022-05-31-10-31-00.png)
+
+![](images/2022-05-31-10-32-46.png)
 
 ## NGINX Reverse-Proxy Setup
 
