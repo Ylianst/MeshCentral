@@ -217,13 +217,27 @@ function createAuthenticodeHandler(path) {
             // Get the signing attributes
             obj.signingAttribs = [];
             for (var i in pkcs7.rawCapture.authenticatedAttributes) {
-                if (forge.asn1.derToOid(pkcs7.rawCapture.authenticatedAttributes[i].value[0].value) == obj.Oids.SPC_SP_OPUS_INFO_OBJID) {
+                if (
+                    (pkcs7.rawCapture.authenticatedAttributes[i].value != null) &&
+                    (pkcs7.rawCapture.authenticatedAttributes[i].value[0] != null) &&
+                    (pkcs7.rawCapture.authenticatedAttributes[i].value[0].value != null) &&
+                    (pkcs7.rawCapture.authenticatedAttributes[i].value[1] != null) &&
+                    (pkcs7.rawCapture.authenticatedAttributes[i].value[1].value != null) &&
+                    (forge.asn1.derToOid(pkcs7.rawCapture.authenticatedAttributes[i].value[0].value) == obj.Oids.SPC_SP_OPUS_INFO_OBJID))
+                {
                     for (var j in pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value) {
-                        var v = pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value[j].value[0].value;
-                        if (v.startsWith('http://') || v.startsWith('https://') || ((v.length % 2) == 1)) { obj.signingAttribs.push(v); } else {
-                            var r = ""; // This string value is in UCS2 format, convert it to a normal string.
-                            for (var k = 0; k < v.length; k += 2) { r += String.fromCharCode((v.charCodeAt(k + 8) << 8) + v.charCodeAt(k + 1)); }
-                            obj.signingAttribs.push(r);
+                        if (
+                            (pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value[j] != null) &&
+                            (pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value[j].value != null) &&
+                            (pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value[j].value[0] != null) &&
+                            (pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value[j].value[0].value != null)
+                        ) {
+                            var v = pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value[j].value[0].value;
+                            if (v.startsWith('http://') || v.startsWith('https://') || ((v.length % 2) == 1)) { obj.signingAttribs.push(v); } else {
+                                var r = ""; // This string value is in UCS2 format, convert it to a normal string.
+                                for (var k = 0; k < v.length; k += 2) { r += String.fromCharCode((v.charCodeAt(k + 8) << 8) + v.charCodeAt(k + 1)); }
+                                obj.signingAttribs.push(r);
+                            }
                         }
                     }
                 }
