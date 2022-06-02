@@ -329,6 +329,72 @@ function createAuthenticodeHandler(path) {
         return str;
     }
 
+    var resourceDefaultNames = {
+        'bitmaps': 2,
+        'icon': 3,
+        'dialogs': 5,
+        'iconGroups': 14,
+        'versionInfo': 16,
+        'configurationFiles': 24
+    }
+
+    // Get icon information from resource
+    obj.getIconInfo = function () {
+        const r = {}, ptr = obj.header.sections['.rsrc'].rawAddr;
+
+        // Find and parse each icon
+        const icons = {}
+        for (var i = 0; i < obj.resources.entries.length; i++) {
+            if (obj.resources.entries[i].name == resourceDefaultNames.icon) {
+                for (var j = 0; j < obj.resources.entries[i].table.entries.length; j++) {
+                    const iconName = obj.resources.entries[i].table.entries[j].name;
+                    const offsetToData = obj.resources.entries[i].table.entries[j].table.entries[0].item.offsetToData;
+                    const size = obj.resources.entries[i].table.entries[j].table.entries[0].item.size;
+                    const actualPtr = (offsetToData - obj.header.sections['.rsrc'].virtualAddr) + ptr;
+                    icons[iconName] = readFileSlice(actualPtr, size);
+                }
+            }
+        }
+
+        // Find and parse each icon group
+        for (var i = 0; i < obj.resources.entries.length; i++) {
+            if (obj.resources.entries[i].name == resourceDefaultNames.iconGroups) {
+                for (var j = 0; j < obj.resources.entries[i].table.entries.length; j++) {
+                    const groupName = obj.resources.entries[i].table.entries[j].name;
+                    const offsetToData = obj.resources.entries[i].table.entries[j].table.entries[0].item.offsetToData;
+                    const size = obj.resources.entries[i].table.entries[j].table.entries[0].item.size;
+                    const actualPtr = (offsetToData - obj.header.sections['.rsrc'].virtualAddr) + ptr;
+                    const group = {};
+                    const groupData = readFileSlice(actualPtr, size);
+
+                    // Parse NEWHEADER structure: https://docs.microsoft.com/en-us/windows/win32/menurc/newheader
+                    group.resType = groupData.readUInt16LE(2);
+                    group.resCount = groupData.readUInt16LE(4);
+
+                    // Parse many RESDIR structure: https://docs.microsoft.com/en-us/windows/win32/menurc/resdir
+                    group.icons = {};
+                    for (var p = 6; p < size; p += 14) {
+                        var icon = {}
+                        icon.width = groupData[p];
+                        icon.height = groupData[p + 1];
+                        icon.colorCount = groupData[p + 2];
+                        icon.planes = groupData.readUInt16LE(p + 4);
+                        icon.bitCount = groupData.readUInt16LE(p + 6);
+                        icon.bytesInRes = groupData.readUInt32LE(p + 8);
+                        icon.iconCursorId = groupData.readUInt16LE(p + 12);
+                        icon.icon = icons[icon.iconCursorId];
+                        group.icons[icon.iconCursorId] = icon;
+                    }
+
+                    // Add an icon group
+                    r[groupName] = group;
+                }
+            }
+        }
+
+        return r;
+    }
+
     // Decode the version information from the resource
     obj.getVersionInfo = function () {
         var r = {}, info = readVersionInfo(getVersionInfoData(), 0);
@@ -344,9 +410,9 @@ function createAuthenticodeHandler(path) {
     // Return the version info data block
     function getVersionInfoData() {
         if (obj.resources == null) return null;
-        var ptr = obj.header.sections['.rsrc'].rawAddr;
+        const ptr = obj.header.sections['.rsrc'].rawAddr;
         for (var i = 0; i < obj.resources.entries.length; i++) {
-            if (obj.resources.entries[i].name == 16) {
+            if (obj.resources.entries[i].name == resourceDefaultNames.versionInfo) {
                 const verInfo = obj.resources.entries[i].table.entries[0].table.entries[0].item;
                 const actualPtr = (verInfo.offsetToData - obj.header.sections['.rsrc'].virtualAddr) + ptr;
                 return readFileSlice(actualPtr, verInfo.size);
@@ -433,10 +499,8 @@ function createAuthenticodeHandler(path) {
             if (r.wLength == 0) return t;
             r.wValueLength = buf.readUInt16LE(ptr + 2);
             r.wType = buf.readUInt16LE(ptr + 4); // 1 = Text, 2 = Binary
-            var szKey = unicodeToString(buf.slice(ptr + 6, ptr + 6 + (r.wLength - 6))); // String value
-            var splitStr = szKey.split('\0');
-            r.key = splitStr[0];
-            for (var i = 1; i < splitStr.length; i++) { if (splitStr[i] != '') { r.value = splitStr[i]; } }
+            r.key = unicodeToString(buf.slice(ptr + 6, ptr + (r.wLength - (r.wValueLength * 2)))); // Key
+            r.value = unicodeToString(buf.slice(ptr + r.wLength - (r.wValueLength * 2), ptr + r.wLength)); // Value
             //console.log('readStringStruct', r.wLength, r.wValueLength, r.wType, r.key, r.value);
             t.push(r);
             ptr += r.wLength;
@@ -466,11 +530,20 @@ function createAuthenticodeHandler(path) {
     // Sign the file using the certificate and key. If none is specified, generate a dummy one
     obj.sign = function (cert, args) {
         if (cert == null) { cert = createSelfSignedCert({ cn: 'Test' }); }
-        var fileHash = obj.getHash('sha384');
+
+        // Set the hash algorithm hash OID
+        var hashOid = null, fileHash = null;
+        if (args.hash == null) { args.hash = 'sha384'; }
+        if (args.hash == 'sha256') { hashOid = forge.pki.oids.sha256; fileHash = obj.getHash('sha256'); }
+        if (args.hash == 'sha384') { hashOid = forge.pki.oids.sha384; fileHash = obj.getHash('sha384'); }
+        if (args.hash == 'sha512') { hashOid = forge.pki.oids.sha512; fileHash = obj.getHash('sha512'); }
+        if (args.hash == 'sha224') { hashOid = forge.pki.oids.sha224; fileHash = obj.getHash('sha224'); }
+        if (args.hash == 'md5') { hashOid = forge.pki.oids.md5; fileHash = obj.getHash('md5'); }
+        if (hashOid == null) return false;
 
         // Create the signature block
         var p7 = forge.pkcs7.createSignedData();
-        var content = { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 6, 'constructed': false, 'composed': false, 'value': forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.15').data }, { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 3, 'constructed': false, 'composed': false, 'value': '\u0000', 'bitStringContents': '\u0000', 'original': { 'tagClass': 0, 'type': 3, 'constructed': false, 'composed': false, 'value': '\u0000' } }, { 'tagClass': 128, 'type': 0, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 2, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': '' }] }] }] }] }, { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 6, 'constructed': false, 'composed': false, 'value': forge.asn1.oidToDer(forge.pki.oids.sha384).data }, { 'tagClass': 0, 'type': 5, 'constructed': false, 'composed': false, 'value': '' }] }, { 'tagClass': 0, 'type': 4, 'constructed': false, 'composed': false, 'value': fileHash.toString('binary') }] }] };
+        var content = { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 6, 'constructed': false, 'composed': false, 'value': forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.15').data }, { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 3, 'constructed': false, 'composed': false, 'value': '\u0000', 'bitStringContents': '\u0000', 'original': { 'tagClass': 0, 'type': 3, 'constructed': false, 'composed': false, 'value': '\u0000' } }, { 'tagClass': 128, 'type': 0, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 2, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': '' }] }] }] }] }, { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 6, 'constructed': false, 'composed': false, 'value': forge.asn1.oidToDer(hashOid).data }, { 'tagClass': 0, 'type': 5, 'constructed': false, 'composed': false, 'value': '' }] }, { 'tagClass': 0, 'type': 4, 'constructed': false, 'composed': false, 'value': fileHash.toString('binary') }] }] };
         p7.contentInfo = forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.SEQUENCE, true, [forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.OID, false, forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.4').getBytes())]);
         p7.contentInfo.value.push(forge.asn1.create(forge.asn1.Class.CONTEXT_SPECIFIC, 0, true, [content]));
         p7.content = {}; // We set .contentInfo and have .content empty to bypass node-forge limitation on the type of content it can sign.
@@ -597,6 +670,7 @@ function start() {
         console.log("          --pem [pemfile]          Certificate & private key to sign the executable with.");
         console.log("          --desc [description]     Description string to embbed into signature.");
         console.log("          --url [url]              URL to embbed into signature.");
+        console.log("          --hash [method]          Default is SHA384, possible value: MD5, SHA224, SHA256, SHA384 or SHA512.");
         console.log("  unsign: Remove the signature from the executable.");
         console.log("          --exe [file]             Required executable to un-sign.");
         console.log("          --out [file]             Resulting executable with signature removed.");
@@ -616,7 +690,7 @@ function start() {
     }
 
     // Check that a valid command is passed in
-    if (['info', 'sign', 'unsign', 'createcert'].indexOf(process.argv[2].toLowerCase()) == -1) {
+    if (['info', 'sign', 'unsign', 'createcert', 'icons', 'saveicon'].indexOf(process.argv[2].toLowerCase()) == -1) {
         console.log("Invalid command: " + process.argv[2]);
         console.log("Valid commands are: info, sign, unsign, createcert");
         return;
@@ -636,7 +710,7 @@ function start() {
     if (command == 'info') { // Get signature information about an executable
         if (exe == null) { console.log("Missing --exe [filename]"); return; }
         if (args.json) {
-            var r = { }, versionInfo = exe.getVersionInfo();
+            var r = {}, versionInfo = exe.getVersionInfo();
             if (versionInfo != null) { r.versionInfo = versionInfo; }
             if (exe.fileHashAlgo != null) {
                 r.signture = {};
@@ -662,6 +736,8 @@ function start() {
     }
     if (command == 'sign') { // Sign an executable
         if (typeof args.exe != 'string') { console.log("Missing --exe [filename]"); return; }
+        if (typeof args.hash == 'string') { args.hash = args.hash.toLowerCase(); if (['md5', 'sha224', 'sha256', 'sha384', 'sha512'].indexOf(args.hash) == -1) { console.log("Invalid hash method, must be SHA256 or SHA384"); return; } }
+        if (args.hash == null) { args.hash = 'sha384'; }
         createOutFile(args, args.exe);
         const cert = loadCertificates(args.pem);
         if (cert == null) { console.log("Unable to load certificate and/or private key, generating test certificate."); }
@@ -680,6 +756,44 @@ function start() {
         const cert = createSelfSignedCert(args);
         console.log("Writing to " + args.out);
         fs.writeFileSync(args.out, pki.certificateToPem(cert.cert) + '\r\n' + pki.privateKeyToPem(cert.key));
+        console.log("Done.");
+    }
+    if (command == 'icons') { // Show icons in the executable
+        if (exe == null) { console.log("Missing --exe [filename]"); return; }
+        if (args.json) {
+            var r = {}, iconInfo = exe.getIconInfo();
+            if (iconInfo != null) { r.iconInfo = iconInfo; }
+            console.log(JSON.stringify(r, null, 2));
+        } else {
+            var iconInfo = exe.getIconInfo();
+            if (iconInfo != null) {
+                console.log("Icon Information:");
+                for (var i in iconInfo) { console.log('  Group ' + i + ':'); for (var j in iconInfo[i].icons) { console.log('    Icon ' + j + ': ' + ((iconInfo[i].icons[j].width == 0) ? 256 : iconInfo[i].icons[j].width) + 'x' + ((iconInfo[i].icons[j].height == 0) ? 256 : iconInfo[i].icons[j].height) + ', size: ' + iconInfo[i].icons[j].icon.length); } }
+            }
+        }
+    }
+    if (command == 'saveicon') { // Save an icon to file
+        if (typeof args.out != 'string') { console.log("Missing --out [filename]"); return; }
+        if (typeof args.icon != 'number') { console.log("Missing or incorrect --icon [number]"); return; }
+        const iconInfo = exe.getIconInfo();
+        var icon = null;
+        for (var i in iconInfo) { if (iconInfo[i].icons[args.icon]) { icon = iconInfo[i].icons[args.icon]; } }
+        if (icon == null) { console.log("Unknown icon: " + args.icon); return; }
+
+        // .ico header: https://en.wikipedia.org/wiki/ICO_(file_format)
+        var buf = Buffer.alloc(22);
+        buf.writeUInt16LE(1, 2); // 1 = Icon, 2 = Cursor
+        buf.writeUInt16LE(1, 4); // Icon Count, always 1 in our case
+        buf[6] = icon.width; // Width (0 = 256)
+        buf[7] = icon.height; // Height (0 = 256)
+        buf[8] = icon.colorCount; // Colors
+        buf.writeUInt16LE(icon.planes, 10); // Color planes
+        buf.writeUInt16LE(icon.bitCount, 12); // Bits per pixel
+        buf.writeUInt32LE(icon.icon.length, 14); // Size
+        buf.writeUInt32LE(22, 18); // Offset, always 22 in our case
+
+        console.log("Writing to " + args.out);
+        fs.writeFileSync(args.out, Buffer.concat([buf, icon.icon]));
         console.log("Done.");
     }
 
