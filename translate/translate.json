@@ -1106,6 +1106,7 @@
       "en": ", RDP",
       "nl": ", RDP",
       "pl": ", RDP",
+      "ru": ", RDP",
       "xloc": [
         "default.handlebars->41->1229"
       ]
@@ -1177,6 +1178,7 @@
       "en": ", Relayed Devices",
       "nl": ", Doorgestuurde apparaten",
       "pl": ", Urządzenia Przekierowane",
+      "ru": ", Ретранслируемые устройства",
       "xloc": [
         "default.handlebars->41->331"
       ]
@@ -1185,6 +1187,7 @@
       "en": ", SFTP",
       "nl": ", SFTP",
       "pl": ", SFTP",
+      "ru": ", SFTP",
       "xloc": [
         "default-mobile.handlebars->11->468",
         "default.handlebars->41->1337"
@@ -1194,6 +1197,7 @@
       "en": ", SSH",
       "nl": ", SSH",
       "pl": ", SSH",
+      "ru": ", SSH",
       "xloc": [
         "default.handlebars->41->1305"
       ]
@@ -3235,6 +3239,7 @@
       "en": "2FA is locked",
       "nl": "2FA is vergrendeld",
       "pl": "2FA jest zablokowane",
+      "ru": "2FA заблокирована",
       "xloc": [
         "default-mobile.handlebars->11->60",
         "default.handlebars->41->194"
@@ -3245,6 +3250,7 @@
       "nl": "2e factor",
       "pl": "dwuetapowe",
       "pt-br": "2ª Etapa",
+      "ru": "2-oй фактор",
       "xloc": [
         "default.handlebars->41->2808"
       ]
@@ -4159,6 +4165,7 @@
       "nl": "7 dagen",
       "pl": "7 dni",
       "pt-br": "7 dias",
+      "ru": "7 дней",
       "xloc": [
         "default.handlebars->41->1758"
       ]
@@ -7200,7 +7207,7 @@
       "pl": "PowerShell jako Admin",
       "pt": "Admin PowerShell",
       "pt-br": "Admin PowerShell",
-      "ru": "Admin PowerShell",
+      "ru": "PowerShell от Админа",
       "sv": "Admin PowerShell",
       "tr": "Yönetici PowerShell",
       "zh-chs": "管理员PowerShell",
@@ -7251,7 +7258,7 @@
       "pl": "Powłoka Admina",
       "pt": "Shell de administração",
       "pt-br": "Admin Shell",
-      "ru": "Admin Shell",
+      "ru": "Консоль от Админа",
       "sv": "Admin Shell",
       "tr": "Yönetici Komut Satırı",
       "zh-chs": "管理控制台",
@@ -8306,6 +8313,7 @@
       "nl": "Alle beschikbare agents",
       "pl": "Wszyscy Dostępni Agenci",
       "pt-br": "Todos agentes disponíveis",
+      "ru": "Все доступные агенты",
       "xloc": [
         "default.handlebars->41->2103",
         "default.handlebars->41->522"
@@ -8565,6 +8573,7 @@
       "en": "Alt Shell",
       "nl": "Alt Shell",
       "pl": "Alternatywna Powłoka",
+      "ru": "Альтернативная оболочка",
       "xloc": [
         "default.handlebars->41->1220"
       ]
@@ -9052,6 +9061,7 @@
       "en": "Apple",
       "nl": "Apple",
       "pl": "Apple",
+      "ru": "Apple",
       "xloc": [
         "default.handlebars->41->57"
       ]
@@ -9972,12 +9982,14 @@
     },
     {
       "en": "Ask Admin PowerShell",
+      "ru": "PowerShell от Админа, cпросить согласия",
       "xloc": [
         "default.handlebars->termShellContextMenu->11"
       ]
     },
     {
       "en": "Ask Admin Shell",
+      "ru": "Консоль от Админа, cпросить согласия",
       "xloc": [
         "default.handlebars->termShellContextMenu->9"
       ]
@@ -10035,12 +10047,14 @@
     },
     {
       "en": "Ask User PowerShell",
+      "ru": "PowerShell от Пользователя, cпросить согласия",
       "xloc": [
         "default.handlebars->termShellContextMenu->15"
       ]
     },
     {
       "en": "Ask User Shell",
+      "ru": "Консоль от Пользователя, cпросить согласия",
       "xloc": [
         "default.handlebars->termShellContextMenu->13"
       ]
@@ -11028,6 +11042,7 @@
       "en": "Backup codes are locked",
       "nl": "Backup codes zijn vergrendeld",
       "pl": "Kody zapasowe są zablokowane",
+      "ru": "Резервные коды заблокированы",
       "xloc": [
         "default-mobile.handlebars->11->61",
         "default.handlebars->41->195"
@@ -11459,6 +11474,7 @@
       "nl": "Browser",
       "pl": "Przeglądarka",
       "pt-br": "Navegador",
+      "ru": "Браузер",
       "xloc": [
         "default.handlebars->41->2806"
       ]
@@ -11467,6 +11483,7 @@
       "en": "Browser Size",
       "nl": "Browser grootte",
       "pl": "Jak Okna Przeglądarki",
+      "ru": "Размер браузера",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->3"
       ]
@@ -11639,6 +11656,7 @@
       "fr": "Majuscules",
       "nl": "CAPS",
       "pl": "CAPS",
+      "ru": "CAPS",
       "xloc": [
         "default.handlebars->container->column_l->p11->7->p11capslock"
       ]
@@ -12178,6 +12196,7 @@
       "en": "Canvas Size",
       "nl": "Canvas grootte",
       "pl": "Okno Robocze",
+      "ru": "Размер холста",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->1"
       ]
@@ -13765,6 +13784,7 @@
       "nl": "Klik hier om de MeshCentral Assistant voor Windows te downloaden.",
       "pl": "Kliknij tutaj by pobrać Asystenta MeshCentral dla Windows.",
       "pt-br": "Clique aqui para baixar o Mesh Central Assistant para Windows",
+      "ru": "Нажмите здесь, чтобы загрузить MeshCentral Assistant для Windows.",
       "xloc": [
         "mesh-invite.html->2->15->1->1"
       ]
@@ -14201,6 +14221,7 @@
       "nl": "Gesloten desktop multiplexsessie \\\"{0}\\\", {1} seconde(n)",
       "pl": "Zamknięta sesja pulpitu wielokrotnego \\\"{0}\\\", {1} sekund(a)",
       "pt-br": "Sessão \\\"{0}\\\" multiplex de área de trabalho fechada, {1} segundo(s)",
+      "ru": "Завершился сеанс мультиплексирования рабочего стола  \\\"{0}\\\", {1}  сек.",
       "xloc": [
         "default.handlebars->41->2343"
       ]
@@ -14221,7 +14242,7 @@
       "pl": "Zamknięta sesja pulpitu wielokrotnego, {0} sekund(y)",
       "pt": "Sessão multiplex de desktop fechada, {0} segundo(s)",
       "pt-br": "Sessão multiplex de área de trabalho fechada, {0} segundo (s)",
-      "ru": "Закрытый сеанс мультиплексирования настольных компьютеров, {0} сек.",
+      "ru": "Завершился сеанс мультиплексирования рабочего стола, {0} сек.",
       "sv": "Stängd multiplex session på skrivbordet, {0} sekund (er)",
       "tr": "Kapalı masaüstü multipleks oturumu, {0} saniye",
       "zh-chs": "封闭式桌面多路复用会话，{0}秒",
@@ -15552,7 +15573,7 @@
       "pl": "Podłączenie za pomocą Intel AMT sprzętowym KVM",
       "pt": "Conecte usando KVM de hardware Intel AMT",
       "pt-br": "Conecte usando KVM de hardware Intel AMT ",
-      "ru": "Подключение с помощью аппаратного KVM Intel AMT",
+      "ru": "Подключиться с помощью аппаратного KVM Intel AMT",
       "sv": "Anslut med Intel AMT hardware KVM",
       "tr": "Intel AMT donanımı KVM'yi kullanarak bağlanın",
       "zh-chs": "使用Intel AMT硬件KVM连接",
@@ -15577,7 +15598,7 @@
       "pl": "Podłączenie za pomocą Intel® AMT sprzętowym KVM",
       "pt": "Conectar-se usando o KVM de hardware Intel&reg; AMT",
       "pt-br": "Conecte-se usando KVM de hardware Intel&reg; AMT",
-      "ru": "Подключение с использованием аппаратного обеспечения Intel&reg; AMT KVM",
+      "ru": "Подключиться с использованием аппаратного обеспечения Intel&reg; AMT KVM",
       "sv": "Anslut med Intel&reg; AMT hårdvara KVM",
       "tr": "Intel&reg; AMT donanımı KVM'yi kullanarak bağlanın",
       "zh-chs": "使用Intel&reg; AMT硬件KVM连接",
@@ -15599,7 +15620,7 @@
       "pl": "Podłączenie za pomocą Intel® AMT sprzętowym KVM",
       "pt": "Conecte usando KVM de hardware Intel® AMT",
       "pt-br": "Conecte-se usando KVM de hardware Intel® AMT",
-      "ru": "Подключение с помощью аппаратного KVM Intel® AMT",
+      "ru": "Подключиться  с помощью аппаратного KVM Intel® AMT",
       "sv": "Anslut med Intel® AMT hårdvara KVM",
       "tr": "Intel® AMT donanımı KVM kullanarak bağlanın",
       "zh-chs": "使用英特尔®AMT硬件KVM连接",
@@ -15613,6 +15634,7 @@
       "en": "Connect using MeshAgent remote desktop",
       "nl": "Verbinding maken via MeshAgent extern bureaublad",
       "pl": "Połącz używając zdalnego pulpitu MeshAgent",
+      "ru": "Подключиться к удаленному рабочему столу с помощью MeshAgent",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1span"
       ]
@@ -15621,6 +15643,7 @@
       "en": "Connect using RDP",
       "nl": "Verbinding maken via RDP",
       "pl": "Połącz używając RDP",
+      "ru": "Подключиться используя RDP",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1rspan"
       ]
@@ -16039,7 +16062,7 @@
       "pl": "Łączność",
       "pt": "Conectividade",
       "pt-br": "Conectividade",
-      "ru": "Связь",
+      "ru": "Соединение",
       "sv": "Anslutning",
       "tr": "Bağlantı",
       "zh-chs": "连接性",
@@ -17345,7 +17368,7 @@
       "pl": "Poświadczenia",
       "pt": "Credenciais",
       "pt-br": "Credenciais",
-      "ru": "Полномочия",
+      "ru": "Учетные данные",
       "sv": "Referenser",
       "tr": "Kimlik bilgileri",
       "zh-chs": "证书",
@@ -19060,7 +19083,7 @@
       "pl": "Multiplex Pulpitów",
       "pt": "Multiplex de mesa",
       "pt-br": "Multiplex de mesa",
-      "ru": "Настольный мультиплекс",
+      "ru": "Мультиплексирование рабочего стола",
       "sv": "Desktop Multiplex",
       "tr": "Masaüstü Multiplex",
       "zh-chs": "桌面复用",
@@ -20286,6 +20309,7 @@
       "en": "Device groups this device is a relay for",
       "nl": "Apparaatgroepen waarvoor dit apparaat een relay is",
       "pl": "Grupy urządzeń to urządzenie jest bramką dla",
+      "ru": "Группы устройств, для которых это устройство является релеем",
       "xloc": [
         "default.handlebars->41->890"
       ]
@@ -20917,6 +20941,7 @@
       "en": "Disable Cursor Settings",
       "nl": "Cursorinstellingen uitschakelen",
       "pl": "Wyłącz Ustawienia Kursora",
+      "ru": "Отключить настройки курсора",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->11"
       ]
@@ -20925,6 +20950,7 @@
       "en": "Disable Cursor Shadow",
       "nl": "Cursorschaduw uitschakelen",
       "pl": "Wyłącz Cień Kursora",
+      "ru": "Отключить тень курсора",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->9"
       ]
@@ -20933,6 +20959,7 @@
       "en": "Disable Full Window Drag",
       "nl": "Volledig venster slepen uitschakelen",
       "pl": "Wyłącz Przeciąganie Okna z Podglądem",
+      "ru": "Отключить содежимое окна при перетаскивании",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->3"
       ]
@@ -20941,6 +20968,7 @@
       "en": "Disable Menu Animations",
       "nl": "Menu animaties uitschakelen",
       "pl": "Wyłącz Animację Menu",
+      "ru": "Отключить анимации меню",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->5"
       ]
@@ -20949,6 +20977,7 @@
       "en": "Disable Theming",
       "nl": "Thema's uitschakelen",
       "pl": "Wyłącz Temat Wizualny",
+      "ru": "Отключить тему",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->7"
       ]
@@ -20957,6 +20986,7 @@
       "en": "Disable Wallpaper",
       "nl": "Achtergrond uitschakelen",
       "pl": "Wyłącz Tapetę Pulpitu",
+      "ru": "Отключить обои",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->1"
       ]
@@ -21241,6 +21271,7 @@
       "en": "Display Size",
       "nl": "Scherm grootte",
       "pl": "Rozdzielczość Wyświetlacza",
+      "ru": "Размер дисплея",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->1"
       ]
@@ -23868,6 +23899,7 @@
       "nl": "Email domein \\\"{0}\\\" is niet toegestaan. Alleen ({1}) is toegestaan",
       "pl": "Domena email \\\"{0}\\\" jest niedozwolona. Tylko ({1}) jest dopuszczona",
       "pt-br": "O domínio de e-mail \\\"{0}\\\" não é permitido. Somente ({1}) são permitidos",
+      "ru": "Домен почты \\\"{0}\\\" не разрешен. Разрешены только ({1})",
       "xloc": [
         "default-mobile.handlebars->11->743",
         "default.handlebars->41->2891"
@@ -24203,6 +24235,7 @@
       "en": "Enable Desktop Composision",
       "nl": "Bureaubladsamenstelling inschakelen",
       "pl": "Włącz Kompozycje Pulpitu",
+      "ru": "Включить композицию рабочего стола",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->15"
       ]
@@ -24211,6 +24244,7 @@
       "en": "Enable Font Smooting",
       "nl": "Lettertype vloeiend maken inschakelen",
       "pl": "Włącz Rozmycie Czcionek",
+      "ru": "Включить сглаживание шрифтов",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->d7rdpflags->13"
       ]
@@ -24632,7 +24666,7 @@
       "pl": "Zakończenie sesji terminala \\\"{0}\\\" od {1} do {2}, {3} sekund(y)",
       "pt": "Sessão de terminal encerrada \\\"{0}\\\" de {1} a {2}, {3} segundo(s)",
       "pt-br": "Sessão de terminal encerrada \\\"{0}\\\" de {1} a {2}, {3} segundo (s)",
-      "ru": "Завершен сеанс терминала \\\"{0}\\\" с {1} до {2}, {3} сек.",
+      "ru": "Завершен сеанс терминала \\\"{0}\\\" от {1} к {2}, {3} сек.",
       "sv": "Avslutad terminalsession \\\"{0}\\\" från {1} till {2}, {3} sekund (er)",
       "tr": "{1} ile {2} arasında \\\"{0}\\\" terminal oturumu sona erdi, {3} saniye",
       "zh-chs": "从{1}到{2}，{3}秒结束了终端会话“{0}”",
@@ -25261,6 +25295,7 @@
       "en": "Error #{0}",
       "nl": "Foutmelding #{0}",
       "pl": "Błąd #{0}",
+      "ru": "Ошибка  #{0}",
       "xloc": [
         "default-mobile.handlebars->11->66",
         "default.handlebars->41->200"
@@ -25984,6 +26019,7 @@
       "nl": "FIDO sleutel",
       "pl": "Klucz FIDO",
       "pt-br": "Chave FIDO",
+      "ru": "ключ FIDO",
       "xloc": [
         "default.handlebars->41->2833"
       ]
@@ -26765,6 +26801,7 @@
       "nl": "Beëindigde opnamesessie \\\"{0}\\\", {1} seconde(n)",
       "pl": "Zakończono sesję nagrywania, \\\"{0}\\\", {1} sekund(a)",
       "pt-br": "Gravação de sessão \\\"{0}\\\" finalizada, {1} segundo(s)",
+      "ru": "Завершение сеанса записи \\\"{0}\\\", {1} сек.",
       "xloc": [
         "default.handlebars->41->2342"
       ]
@@ -27079,6 +27116,7 @@
       "nl": "Voor MeshCentral Assistant voor Windows navigeert u naar de volgende link om het proces te voltooien:",
       "pl": "W przypadku Asystenta MeshCentral w Windows, przejdź do tego linku aby zakończyć proces:",
       "pt-br": "Para o MeshCentral Assistant no Windows, abre o seguinte link para completar o processo:",
+      "ru": "Для MeshCentral Assistant под Windows перейдите по следующей ссылке, чтобы завершить процесс:",
       "xloc": [
         "mesh-invite.txt"
       ]
@@ -28887,6 +28925,7 @@
       "nl": "Groepsnaam",
       "pl": "Nazwa Grupy",
       "pt-br": "Nome do grupo",
+      "ru": "Имя Группы",
       "xloc": [
         "agent-translations.json"
       ]
@@ -28931,7 +28970,7 @@
       "nl": "Groepsnaam",
       "pl": "Nazwa grupy",
       "pt-br": "Nome do grupo",
-      "ru": "Название группы",
+      "ru": "Имя группы",
       "tr": "Grup ismi",
       "xloc": [
         "default.handlebars->41->2350"
@@ -29359,6 +29398,7 @@
       "en": "Hardware OTP",
       "nl": "Hardware OTP",
       "pl": "Sprzętowe OTP",
+      "ru": "Аппаратный OTP",
       "xloc": [
         "default.handlebars->41->2835"
       ]
@@ -30011,6 +30051,7 @@
     {
       "en": "Hybrid required by server",
       "nl": "Hybride vereist door de server",
+      "ru": "Cервер требует гибридный режим",
       "xloc": [
         "default.handlebars->41->1209"
       ]
@@ -30021,6 +30062,7 @@
       "nl": "IP-adres",
       "pl": "Adres IP",
       "pt-br": "Endereço IP",
+      "ru": "IP Адрес",
       "xloc": [
         "default.handlebars->41->2805",
         "default.handlebars->41->2840"
@@ -30160,6 +30202,7 @@
       "en": "IP-KVM / Power device relayed thru agent",
       "nl": "IP-KVM / Power-apparaat doorgestuurd via agent",
       "pl": "IP-KVM / Urządzenie zasilające przekierowane przez agenta",
+      "ru": "IP-KVM / Устройство питания, ретранслируемое через агента",
       "xloc": [
         "default.handlebars->41->1796"
       ]
@@ -30189,6 +30232,7 @@
       "en": "IP-KVM device relayed thru agent",
       "nl": "IP-KVM-apparaat doorgestuurd via agent",
       "pl": "Urządzenie IP-KVM przekierowane przzez agenta",
+      "ru": "Устройство IP-KVM ретранслируемое через агента",
       "xloc": [
         "default-mobile.handlebars->11->626",
         "default.handlebars->41->1856"
@@ -30991,6 +31035,7 @@
     {
       "en": "Inconsistent flags",
       "nl": "Inconsistente vlaggen",
+      "ru": "Несоответствие флагов",
       "xloc": [
         "default.handlebars->41->1208"
       ]
@@ -31001,6 +31046,7 @@
       "nl": "Incorrecte 2de factor",
       "pl": "Dwuskładnikowe logowanie nieprawidłowe",
       "pt-br": "2ª etapa incorreta",
+      "ru": "Неверный 2-й фактор",
       "xloc": [
         "default.handlebars->41->2828",
         "default.handlebars->41->2848"
@@ -33431,6 +33477,7 @@
       "nl": "Invalid login attempt",
       "pl": "Nieprawidłowa próba logowania",
       "pt-br": "Tentativa de login inválida",
+      "ru": "Неудачная попытка входа",
       "xloc": [
         "default.handlebars->41->2830",
         "default.handlebars->41->2850"
@@ -33915,6 +33962,7 @@
       "en": "Is a relay for \\\"{0}\\\".",
       "nl": "Is een relay voor \\\"{0}\\\".",
       "pl": "Jest bramką dla \\\"{0}\\\".",
+      "ru": "Установлен ретранслятором для \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->41->2349"
       ]
@@ -34098,6 +34146,7 @@
       "nl": "Deelgenomen aan desktop multiplex-sessie \\\"{0}\\\"",
       "pl": "Dołączył do sesji multipleksu pulpitów \\\"{0}\\\"",
       "pt-br": "Entrou na sessão \\\"{0}\\\" multiplex de área de trabalho",
+      "ru": "Присоединился к сеансу мультиплексированного рабочего стола \\\"{0}\\\"",
       "xloc": [
         "default.handlebars->41->2339"
       ]
@@ -35630,6 +35679,7 @@
       "nl": "Verliet de desktop multiplex sessie na \\\"{1}\\\" {0} seconde(n).",
       "pl": "Opuścił sesję Web-RDP \\\"{1}\\\" po {0} sekundach(sekundzie).",
       "pt-br": "Deixar a sessão WEB-RDP \\\"{1}\\\" depois de {0} segundo(s)",
+      "ru": "Завершен сеанс Web-RDP \\\"{1}\\\", {0} с.",
       "xloc": [
         "default.handlebars->41->2321"
       ]
@@ -35648,7 +35698,7 @@
       "nl": "Web-RDP sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-RDP po {0} sekundach.",
       "pt-br": "Deixar a sessão WEB-RDP depois de {0} segundo(s)",
-      "ru": "Покинул сеанс Web-RDP через {0} с.",
+      "ru": "Завершен сеанс Web-RDP, {0} с.",
       "tr": "{0} saniye sonra Web-RDP oturumundan ayrıldı."
     },
     {
@@ -35657,6 +35707,7 @@
       "nl": "Verliet de web-SFTP sessie na \\\"{1}\\\" {0} seconde(n).",
       "pl": "Opuścił sesję Web-SFTP \\\"{1}\\\" po {0} sekundach(sekundzie).",
       "pt-br": "Deixar a sessão WEB-SFTP \\\"{1}\\\" depois de {0} segundo(s)",
+      "ru": "Завершен сеанс Web-SFTP  \\\"{1}\\\", {0} с.",
       "xloc": [
         "default.handlebars->41->2320"
       ]
@@ -35675,7 +35726,7 @@
       "nl": "Web-SFTP sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-SFTP po {0} sekundach.",
       "pt-br": "Deixar a sessão WEB-SFTP depois de {0} segundo(s)",
-      "ru": "Покинул сеанс Web-SFTP через {0} с.",
+      "ru": "Завершен сеанс Web-SFTP, {0} с.",
       "tr": "{0} saniye sonra Web-SFTP oturumundan ayrıldı."
     },
     {
@@ -35684,6 +35735,7 @@
       "nl": "Verliet de web-SSH sessie na \\\"{1}\\\" {0} seconde(n).",
       "pl": "Opuścił sesję Web-SSH \\\"{1}\\\" po {0} sekundach(sekundzie).",
       "pt-br": "Deixar a sessão WEB-SSH \\\"{1}\\\" depois de {0} segundo(s)",
+      "ru": "Завершен сеанс Web-SSH \\\"{1}\\\", {0} с.",
       "xloc": [
         "default.handlebars->41->2319"
       ]
@@ -35702,7 +35754,7 @@
       "nl": "Web-SSH sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-SSH po {0} sekundach.",
       "pt-br": "Deixar a sessão WEB-SSH depois de {0} segundo(s)",
-      "ru": "Покинул сеанс Web-SSH через {0} с.",
+      "ru": "Завершен сеанс Web-SSH, {0} с.",
       "tr": "{0} saniye sonra Web-SSH oturumundan ayrıldı."
     },
     {
@@ -35719,7 +35771,7 @@
       "nl": "Web-VNC sessie verlaten na {0} seconde(n).",
       "pl": "Opuścił sesję Web-VNC po {0} sekundach.",
       "pt-br": "Deixar a sessão WEB-VNC depois de {0} segundo(s)",
-      "ru": "Покинул сеанс Web-VNC через {0} с.",
+      "ru": "Завершен сеанс Web-VNC, {0} с.",
       "tr": "{0} saniye sonra Web-VNC oturumundan ayrıldı.",
       "xloc": [
         "default.handlebars->41->2322"
@@ -35786,6 +35838,7 @@
       "nl": "Verliet de desktop multiplexsessie \\\"{0}\\\" na {1} seconde(n).",
       "pl": "Opuścił sesję multiplex pulpitów \\\"{0}\\\" po {1} sekundach(sekundzie).",
       "pt-br": "Deixar a sessão \\\"{0}\\\" de área de trabalho multiplex depois de {1} segundo(s)",
+      "ru": "Покинул сеанс мультиплексного режима рабочего стола \\\"{0}\\\" через {1} с.",
       "xloc": [
         "default.handlebars->41->2340"
       ]
@@ -36372,6 +36425,7 @@
       "nl": "Linux MeshAgent",
       "pl": "MeshAgent dla Linuksa",
       "pt-br": "MeshAgent Linux",
+      "ru": "MeshAgent для Linux",
       "xloc": [
         "default.handlebars->41->2105",
         "default.handlebars->41->524"
@@ -36909,6 +36963,7 @@
       "en": "Local network connection thru a relay agent.",
       "nl": "Lokale netwerkverbinding via een relay-agent.",
       "pl": "Lokalne połączenie sieciowe za pośrednictwem przekierowania agenta.",
+      "ru": "Подключение к локальной сети через агент ретрансляции.",
       "xloc": [
         "default.handlebars->41->385"
       ]
@@ -36917,6 +36972,7 @@
       "en": "Local network connection.",
       "nl": "Lokale netwerkverbinding.",
       "pl": "Lokalne połączenie sieciowe.",
+      "ru": "Локальное сетевое подключение.",
       "xloc": [
         "default.handlebars->41->387"
       ]
@@ -37530,6 +37586,7 @@
       "nl": "Inlogtoken",
       "pl": "Token Logowania",
       "pt-br": "Token de Login",
+      "ru": "Токен входа",
       "xloc": [
         "default.handlebars->41->2839"
       ]
@@ -37591,6 +37648,7 @@
       "en": "Login token in use",
       "nl": "Inlogtoken in gebruik",
       "pl": "Używany token logowania",
+      "ru": "Токен входа используется",
       "xloc": [
         "default-mobile.handlebars->11->62",
         "default.handlebars->41->196"
@@ -38221,6 +38279,7 @@
       "nl": "MacOS MeshAgent",
       "pl": "MeshAgent dla MacOS",
       "pt-br": "MeshAgent MacOS",
+      "ru": "MeshAgent для MacOS",
       "xloc": [
         "default.handlebars->41->2106",
         "default.handlebars->41->525"
@@ -39007,6 +39066,7 @@
       "nl": "Maximum aantal sleutels bereikt.",
       "pl": "Osiągnięto maximum klawiszy.",
       "pt-br": "Máximo de teclas atingido.",
+      "ru": "Достигнуто максимальное количество ключей.",
       "xloc": [
         "default.handlebars->41->227"
       ]
@@ -41259,6 +41319,7 @@
     {
       "en": "NLA not supported",
       "nl": "NLA niet ondersteund",
+      "ru": "NLA не поддерживается",
       "xloc": [
         "default.handlebars->41->1204"
       ]
@@ -41317,6 +41378,7 @@
       "en": "NUM",
       "nl": "NUM",
       "pl": "NUM",
+      "ru": "NUM",
       "xloc": [
         "default.handlebars->container->column_l->p11->7->p11numlock"
       ]
@@ -42868,6 +42930,7 @@
       "en": "No agent devices relayed thru agent",
       "nl": "Geen apparaten doorgestuurd via agent",
       "pl": "Brak przekierowanych urządzeń przez agenta",
+      "ru": "Устройства без агента, ретранслируемые через агент",
       "xloc": [
         "default-mobile.handlebars->11->624",
         "default.handlebars->41->1794",
@@ -43427,6 +43490,7 @@
       "en": "No longer a relay for \\\"{0}\\\".",
       "nl": "Niet langer een relay voor \\\"{0}\\\".",
       "pl": "Nie jest już bramką dla \\\"{0}\\\".",
+      "ru": "Больше не является ретранслятором для  \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->41->2348"
       ]
@@ -43560,6 +43624,7 @@
       "en": "No relay devices available.",
       "nl": "Geen relay apparaten beschikbaar.",
       "pl": "Brak urządzeń do przekierowań.",
+      "ru": "Нет доступных устройств-релеев.",
       "xloc": [
         "default-mobile.handlebars->11->647",
         "default.handlebars->41->1988"
@@ -44656,6 +44721,7 @@
       "en": "OTP 2FA not allowed",
       "nl": "OTP 2FA niet toegestaan",
       "pl": "OTP 2FA niedozwolone",
+      "ru": "Двухфакторная аутентификация одноразовым паролем не разрешена",
       "xloc": [
         "default-mobile.handlebars->11->63",
         "default.handlebars->41->197"
@@ -44890,6 +44956,7 @@
       "nl": "Eenmalig wachtwoord",
       "pl": "Hasło Jednorazowe",
       "pt-br": "One-Time Password (Senha de único acesso)",
+      "ru": "Одноразовый пароль",
       "xloc": [
         "default.handlebars->41->2837"
       ]
@@ -45393,6 +45460,7 @@
       "en": "Options",
       "nl": "Opties",
       "pl": "Opcje",
+      "ru": "Опции",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->1"
       ]
@@ -48632,6 +48700,7 @@
     {
       "en": "Protocol negotiation failed ({0})",
       "nl": "Protocolonderhandeling mislukt ({0})",
+      "ru": "Ошибка согласования протокола ({0})",
       "xloc": [
         "default.handlebars->41->1203"
       ]
@@ -48857,6 +48926,7 @@
       "nl": "Push Notificatie",
       "pl": "Powiadomianie Push",
       "pt-br": "Notificação de Push",
+      "ru": "Push уведомление",
       "xloc": [
         "default.handlebars->41->2836"
       ]
@@ -49091,6 +49161,7 @@
       "en": "RDP Connect",
       "nl": "RDP verbinden",
       "pl": "Połącz (protokół RDP)",
+      "ru": "Подключиться по RDP",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1rspan"
       ]
@@ -49124,6 +49195,7 @@
       "en": "RDP Credentials",
       "nl": "RDP inloggegevens",
       "pl": "Poświadczenia RDP",
+      "ru": "Учетные данные RDP",
       "xloc": [
         "default.handlebars->41->1222"
       ]
@@ -50023,6 +50095,7 @@
       "en": "Relay device",
       "nl": "Doorstuur apparaat",
       "pl": "Bramka przekierowująca",
+      "ru": "Устройство-ретранслятор",
       "xloc": [
         "default.handlebars->41->2356"
       ]
@@ -50031,6 +50104,7 @@
       "en": "Relay for",
       "nl": "Relay voor",
       "pl": "Przekierowuje dla",
+      "ru": "Ретранслятор для",
       "xloc": [
         "default.handlebars->41->891"
       ]
@@ -50062,6 +50136,7 @@
       "nl": "Onthoud apparaat",
       "pl": "Pamiętaj Urządzenie",
       "pt-br": "Lembrar dispositivo",
+      "ru": "Запомнить устройство",
       "xloc": [
         "default.handlebars->41->2838"
       ]
@@ -50096,8 +50171,9 @@
     },
     {
       "en": "Remember password",
-      "pl": "Zapamiętaj hasło",
       "nl": "Onthoud wachtwoord",
+      "pl": "Zapamiętaj hasło",
+      "ru": "Запомнить пароль",
       "xloc": [
         "default-mobile.handlebars->11->461",
         "default.handlebars->41->1321",
@@ -50179,6 +50255,7 @@
       "en": "Remember user & key",
       "nl": "Onthoud gebruikeruser & sleutel",
       "pl": "Zapamiętaj użytkownika i klucz",
+      "ru": "Запомнить пользователя и ключ",
       "xloc": [
         "default-mobile.handlebars->11->460",
         "default.handlebars->41->1320",
@@ -53205,7 +53282,7 @@
       "pl": "Root Shell",
       "pt": "Root Shell",
       "pt-br": "Root Shell",
-      "ru": "Root Shell",
+      "ru": "Консоль от Root",
       "sv": "Root Shell",
       "tr": "Kök Kabuk",
       "zh-chs": "Root Shell",
@@ -53729,6 +53806,7 @@
       "fr": "Défilement",
       "nl": "SCROLL",
       "pl": "SCROLL",
+      "ru": "SCROLL",
       "xloc": [
         "default.handlebars->container->column_l->p11->7->p11scrolllock"
       ]
@@ -53737,6 +53815,7 @@
       "en": "SFTP Connect",
       "nl": "SFTP verbinding",
       "pl": "Połącz z SFTP",
+      "ru": "Подключиться по SFTP",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->0->1->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->0->1->3"
@@ -53898,6 +53977,7 @@
       "nl": "SMS bericht",
       "pl": "Wiadomość SMS",
       "pt-br": "Mensagem SMS",
+      "ru": "SMS-сообщение",
       "xloc": [
         "default.handlebars->41->2834"
       ]
@@ -54024,6 +54104,7 @@
       "en": "SSH Connect",
       "nl": "SSH verbinding",
       "pl": "Połącz z SSH",
+      "ru": "Подключиться по SSH",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10terminal->termTable->termarea1->1->3->connectbutton2sspan",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->connectbutton2sspan"
@@ -54152,6 +54233,7 @@
       "en": "SSH-User+Key",
       "nl": "SSH-gebruiker+sleutel",
       "pl": "SSH-Uużytkownik+Klucz",
+      "ru": "SSH-Пользователь+Ключ",
       "xloc": [
         "default-mobile.handlebars->11->324",
         "default-mobile.handlebars->11->328",
@@ -54163,6 +54245,7 @@
       "en": "SSH-User+Key+Pass",
       "nl": "SSH-gebruiker+sleutel+wachtwoord",
       "pl": "SSH-Uużytkownik+Klucz+Hasło",
+      "ru": "SSH-Пользователь+Ключ+Пароль",
       "xloc": [
         "default-mobile.handlebars->11->323",
         "default-mobile.handlebars->11->327",
@@ -54174,6 +54257,7 @@
       "en": "SSH-User+Pass",
       "nl": "SSH-gebruiker+wachtwoord",
       "pl": "SSH-Uużytkownik+Hasło",
+      "ru": "SSH-Пользователь+Пароль",
       "xloc": [
         "default-mobile.handlebars->11->322",
         "default-mobile.handlebars->11->326",
@@ -54184,6 +54268,7 @@
     {
       "en": "SSL certificate not on server",
       "nl": "SSL certificaat niet op de server",
+      "ru": "SSL-сертификат не на сервере",
       "xloc": [
         "default.handlebars->41->1207"
       ]
@@ -54191,6 +54276,7 @@
     {
       "en": "SSL not allowed by server",
       "nl": "SSL certificaat niet toegestaan door de server",
+      "ru": "SSL не разрешен сервером",
       "xloc": [
         "default.handlebars->41->1206"
       ]
@@ -54198,6 +54284,7 @@
     {
       "en": "SSL required by server",
       "nl": "SSL vereist door server",
+      "ru": "SSL требуется сервером",
       "xloc": [
         "default.handlebars->41->1205"
       ]
@@ -54205,6 +54292,7 @@
     {
       "en": "SSL with user auth required by server",
       "nl": "SSL met gebruikersverificatie vereist door de server",
+      "ru": "SSL с аутентификацией пользователя, требуется сервером",
       "xloc": [
         "default.handlebars->41->1210"
       ]
@@ -54689,6 +54777,7 @@
       "en": "Screen Size",
       "nl": "Scherm grootte",
       "pl": "Jak Całego Ekranu",
+      "ru": "Размер экрана",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize->5"
       ]
@@ -58328,6 +58417,7 @@
       "en": "Sign-in using OpenID Connect",
       "nl": "Aanmelden met OpenID Connect",
       "pl": "Zaloguj używając OpenID Connect",
+      "ru": "Войти с помощью OpenID Connect",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-oidc",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-oidc",
@@ -58522,6 +58612,7 @@
       "nl": "Eenmalig inloggen",
       "pl": "Pojedyncze Logowanie",
       "pt-br": "Single Sign-on (Login único)",
+      "ru": "Единая точка входа",
       "xloc": [
         "default.handlebars->41->2841"
       ]
@@ -59933,6 +60024,7 @@
       "nl": "Gestarte Web-RDP sessie \\\"{0}\\\".",
       "pl": "Uruchomiono sesję Web-RDP \\\"{0}\\\".",
       "pt-br": "Sessão Web-RDP \\\"{0}\\\" iniciada.",
+      "ru": "Начат сеанс Web-RDP \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->41->2346"
       ]
@@ -59943,6 +60035,7 @@
       "nl": "Gestarte Web-SFTP sessie \\\"{0}\\\".",
       "pl": "Uruchomiono sesję Web-SFTP \\\"{0}\\\".",
       "pt-br": "Sessão Web-SFTP \\\"{0}\\\" iniciada",
+      "ru": "Начат сеанс Web-SFTP \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->41->2345"
       ]
@@ -59953,6 +60046,7 @@
       "nl": "Gestarte Web-SSH sessie \\\"{0}\\\".",
       "pl": "Uruchomiono sesję Web-SSH \\\"{0}\\\".",
       "pt-br": "Sessão Web-SSH \\\"{0}\\\" iniciada",
+      "ru": "Начат сеанс Web-SSH \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->41->2344"
       ]
@@ -59963,6 +60057,7 @@
       "nl": "Gestarte Web-VNC sessie \\\"{0}\\\".",
       "pl": "Uruchomiono sesję Web-VNC \\\"{0}\\\".",
       "pt-br": "Sessão Web-VNC \\\"{0}\\\" iniciada",
+      "ru": "Начат сеанс Web-VNC \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->41->2347"
       ]
@@ -59998,6 +60093,7 @@
       "nl": "Startte een Desktop multiplexsessie \\\"{0}\\\"",
       "pl": "Uruchomienie sesji multiplex pulpitów \\\"{0}\\\"",
       "pt-br": "Sessão de área de trabalho multiplex \\\"{0}\\\" iniciada",
+      "ru": "Начался сеанс мультиплексирования рабочего стола  \\\"{0}\\\"",
       "xloc": [
         "default.handlebars->41->2341"
       ]
@@ -60643,6 +60739,7 @@
       "en": "Stored Key",
       "nl": "Opgeslagen sleutel",
       "pl": "Przechowywany Klucz",
+      "ru": "Сохраненный ключ",
       "xloc": [
         "default-mobile.handlebars->11->448",
         "default.handlebars->41->1308",
@@ -60760,6 +60857,7 @@
       "nl": "Geslaagde inlog",
       "pl": "Poprawne logowanie",
       "pt-br": "Login realizado com sucesso",
+      "ru": "Успешный вход",
       "xloc": [
         "default.handlebars->41->2827",
         "default.handlebars->41->2847"
@@ -63504,6 +63602,7 @@
       "en": "Toggle advanced options",
       "nl": "geavanceerde opties inschakelen",
       "pl": "Przełącz ustawienia zaawansowane",
+      "ru": "Переключить дополнительные параметры",
       "xloc": [
         "default.handlebars->container->dialog->idx_dlgButtonBar->idx_dlgMoreButtons",
         "default.handlebars->container->dialog->idx_dlgButtonBar->idx_dlgMoreButtons"
@@ -64993,6 +65092,7 @@
       "en": "Unable to load OTPLIB",
       "nl": "Kan OTPLIB niet laden",
       "pl": "Nie mogę załadować OTPLIB",
+      "ru": "Не удалось загрузить OTPLIB",
       "xloc": [
         "default-mobile.handlebars->11->65",
         "default.handlebars->41->199"
@@ -66889,6 +66989,7 @@
       "nl": "Gebruikersaanmeldingen",
       "pl": "Logowania Użytkownika",
       "pt-br": "Logins de usuários",
+      "ru": "Входы пользователей",
       "xloc": [
         "default.handlebars->41->2775"
       ]
@@ -66979,7 +67080,7 @@
       "pl": "Użyj PowerShell",
       "pt": "Usuário PowerShell",
       "pt-br": "PowerShell do usuário",
-      "ru": "User PowerShell",
+      "ru": "PowerShell от Пользователя",
       "sv": "Användare PowerShell",
       "tr": "Kullanıcı PowerShell",
       "zh-chs": "用户PowerShell",
@@ -67055,7 +67156,7 @@
       "pl": "Powłoka Użytkownika",
       "pt": "Shell do Usuário",
       "pt-br": "Shell do usuário",
-      "ru": "User Shell",
+      "ru": "Консоль от Пользователя",
       "sv": "Användarskal",
       "tr": "Kullanıcı Kabuğu",
       "zh-chs": "用户Shell",
@@ -70166,6 +70267,7 @@
       "nl": "Windows MeshAgent",
       "pl": "MeshAgent dla Windows",
       "pt-br": "MeshAgent Windows",
+      "ru": "MeshAgent для Windows ",
       "xloc": [
         "default.handlebars->41->2104",
         "default.handlebars->41->523"
@@ -70354,6 +70456,7 @@
       "en": "Working Dir",
       "nl": "Werkmap",
       "pl": "Folder Roboczy",
+      "ru": "Рабочий каталог",
       "xloc": [
         "default.handlebars->41->1221"
       ]
@@ -71568,6 +71671,7 @@
       "en": "browser",
       "nl": "browser",
       "pl": "przeglądarka",
+      "ru": "browser",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
@@ -71627,6 +71731,7 @@
       "en": "canvas",
       "nl": "Canvas",
       "pl": "zakrycie",
+      "ru": "canvas",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
@@ -72401,6 +72506,7 @@
       "en": "id, name, email, creation, lastlogin, groups, authfactors, siteadmin, useradmin, locked",
       "nl": "id, naam, email, aangemaakt, laaste login, groeps, authfactors, siteadmin, useradmin, geblokkeerd",
       "pl": "id, nazwa, e-mail, tworzenie, ostatnie logowanie, grupy, opcje autentykacji, administrator, uużytkownik, blokada",
+      "ru": "id, name, email, creation, lastlogin, groups, authfactors, siteadmin, useradmin, locked",
       "xloc": [
         "default.handlebars->41->2448"
       ]
@@ -73202,6 +73308,7 @@
       "en": "screen",
       "nl": "scherm",
       "pl": "ekran",
+      "ru": "screen",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->3->d7rdpsize"
       ]
