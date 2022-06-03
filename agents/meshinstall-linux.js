@@ -60,6 +60,7 @@ else
         if (translation[lang.split('-')[0]] == null)
         {
             console.log('Language: ' + lang + ' is not translated.');
+            console.log('Try "-lang=en" to specify the language');
             process.exit();
         }
         else
