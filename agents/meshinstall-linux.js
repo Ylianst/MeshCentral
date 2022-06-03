@@ -45,7 +45,11 @@ var msh = {};
 var translation = JSON.parse(msh.translation);
 
 var lang = require('util-language').current;
-if (lang == null) { lang = 'en_us'; }
+if (lang == null) { lang = 'en'; }
+if (lang == "C"){
+    lang = 'en';
+    console.log("Langauge envronment variable was not set (process.env.LANG).  Defaulting to English ('en').\nSee the agent-translations.json file for a list of current languages that are implemented\nUsage: meshcentral -lang=en\n");    
+}
 if (process.argv.getParameter('lang', lang) == null)
 {
     console.log('\nCurrent Language: ' + lang + '\n');
@@ -60,7 +64,8 @@ else
         if (translation[lang.split('-')[0]] == null)
         {
             console.log('Language: ' + lang + ' is not translated.');
-            console.log("try: './meshcentral -lang=en_us'"
+            console.log("try: './meshcentral -lang=en' for English");
+            console.log("See the agent-translations.json file for a list of current languages that are implemented.")
             process.exit();
         }
         else
