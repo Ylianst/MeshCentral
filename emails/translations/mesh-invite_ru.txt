@@ -27,7 +27,7 @@
 ~
 ~</area-linux>
 ~<area-assistant>
-For MeshCentral Assistant on Windows, nagivate to the following link to complete the process:
+Для MeshCentral Assistant под Windows перейдите по следующей ссылке, чтобы завершить процесс:
 ~
 ~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
 ~
