@@ -4990,6 +4990,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'amtacm': [serverUserCommandAmtAcm, ""],
         'amtmanager': [serverUserCommandAmtManager, ""],
         'amtpasswords': [serverUserCommandAmtPasswords, ""],
+        'amtstats': [serverUserCommandAmtStats, ""],
         'args': [serverUserCommandArgs, ""],
         'autobackup': [serverUserCommandAutoBackup, ""],
         'backupconfig': [serverUserCommandBackupConfig, ""],
@@ -6718,6 +6719,43 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         } else {
             for (var i in parent.parent.amtPasswords) { cmdData.result += (i + ' - ' + parent.parent.amtPasswords[i].join(', ') + '\r\n'); }
         }
+    }
+
+    function serverUserCommandAmtStats(cmdData) {
+        parent.parent.db.GetAllType('node', function (err, docs) {
+            var r = '';
+            if (err != null) {
+                r = "Error occured.";
+            } else if ((docs == null) || (docs.length == 0)) {
+                r = "No devices in database"
+            } else {
+                var amtData = { total: 0, versions: {}, state: {} };
+                for (var i in docs) {
+                    const node = docs[i];
+                    if (node.intelamt != null) {
+                        amtData['total']++;
+                        if (node.intelamt.ver != null) { if (amtData.versions[node.intelamt.ver] == null) { amtData.versions[node.intelamt.ver] = 1; } else { amtData.versions[node.intelamt.ver]++; } }
+                        if (node.intelamt.state != null) { if (amtData.state[node.intelamt.state] == null) { amtData.state[node.intelamt.state] = 1; } else { amtData.state[node.intelamt.state]++; } }
+                    }
+                }
+                if (amtData.total == 0) {
+                    r = "No Intel AMT devices found"
+                } else {
+                    r = "Total Intel AMT devices: " + amtData['total'] + '\r\n';
+                    r += "Un-provisionned: " + amtData['state'][0] + '\r\n';
+                    r += "Provisionned: " + amtData['state'][2] + '\r\n';
+                    r += "Versions: " + '\r\n';
+
+                    // Sort the Intel AMT versions
+                    var amtVersions = [];
+                    for (var i in amtData.versions) { if (amtVersions.indexOf(i) == -1) { amtVersions.push(i); } }
+                    var collator = new Intl.Collator([], { numeric: true });
+                    amtVersions.sort((a, b) => collator.compare(a, b));
+                    for (var i in amtVersions) { r += '  ' + amtVersions[i] + ': ' + amtData.versions[amtVersions[i]] + '\r\n'; }
+                }
+            }
+            try { ws.send(JSON.stringify({ action: 'serverconsole', value: r, tag: cmdData.command.tag })); } catch (ex) { }
+        });
     }
 
     function serverUserCommandUpdateCheck(cmdData) {
