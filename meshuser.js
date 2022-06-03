@@ -6659,7 +6659,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverUserCommandDbStats(cmdData) {
-        parent.parent.db.getStats(function (stats) {
+        parent.parent.db.getDbStats(function (stats) {
             var r2 = '';
             for (var i in stats) { r2 += (i + ': ' + stats[i] + '\r\n'); }
             try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: cmdData.command.tag })); } catch (ex) { }
