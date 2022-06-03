@@ -2918,13 +2918,18 @@ function CreateMeshCentralServer(config, args) {
                     if (destinationAgentOk == false) {
                         // If not signed correctly, sign it. First, create the server signed agent folder if needed
                         try { obj.fs.mkdirSync(serverSignedAgentsPath); } catch (ex) { }
-                        console.log(obj.common.format('Code signing agent {0}...', obj.meshAgentsArchitectureNumbers[archid].localname));
-                        originalAgent.sign(agentSignCertInfo, { out: signeedagentpath, desc: signDesc, url: signUrl });
+                        if (originalAgent.sign(agentSignCertInfo, { out: signeedagentpath, desc: signDesc, url: signUrl }) == true) {
+                            // Agent was signed succesfuly
+                            agentpath = signeedagentpath;
+                            console.log(obj.common.format('Code signed agent {0}.', obj.meshAgentsArchitectureNumbers[archid].localname));
+                        } else {
+                            console.log(obj.common.format('Failed to sign agent {0}.', obj.meshAgentsArchitectureNumbers[archid].localname));
+                        }
+                    } else {
+                        // Signed agent is already ok, use it.
+                        agentpath = signeedagentpath;
                     }
                     originalAgent.close();
-
-                    // Update agent path to signed agent
-                    agentpath = signeedagentpath;
                 }
             }
 
