@@ -64,7 +64,7 @@ else
         if (translation[lang.split('-')[0]] == null)
         {
             console.log('Language: ' + lang + ' is not translated.');
-            console.log("try: './meshcentral -lang=en' for English");
+            console.log("try: './"+ process.execPath.split('/').pop() + " -lang=en' for English");
             console.log("See the agent-translations.json file for a list of current languages that are implemented.")
             process.exit();
         }
