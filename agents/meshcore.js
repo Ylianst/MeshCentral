@@ -56,6 +56,73 @@ function bcdOK()
     }
     return (true);
 }
+function getDomainInfo()
+{
+    var hostname = require('os').hostname();
+    var ret = { Name: hostname, Domain: "" };
+
+    switch (process.platform)
+    {
+        case 'win32':
+            try
+            {
+                ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Name', 'Domain'])[0];        
+            }
+            catch (x)
+            {
+            }
+            break;
+        case 'linux':
+            var hasrealm = false;
+
+            try
+            {
+                hasrealm = require('lib-finder').hasBinary('realm');
+            }
+            catch(x)
+            {
+            }
+            if (hasrealm)
+            {
+                var child = require('child_process').execFile('/bin/sh', ['sh']);
+                child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+                child.stdin.write("realm list | grep domain-name: | tr '\\n' '`' | ");
+                child.stdin.write("awk -F'`' '{ ");
+                child.stdin.write('        printf("[");');
+                child.stdin.write('        ST="";');
+                child.stdin.write('        for(i=1;i<NF;++i)');
+                child.stdin.write('        {');
+                child.stdin.write('            match($i,/domain-name: /);');
+                child.stdin.write('            printf("%s\\"%s\\"", ST, substr($i, RSTART+RLENGTH));');
+                child.stdin.write('            ST=",";');
+                child.stdin.write('        }');
+                child.stdin.write('        printf("]");');
+                child.stdin.write("     }'");
+                child.stdin.write('\nexit\n');
+                child.waitExit();
+                var names = [];
+                try
+                {
+                    names = JSON.parse(child.stdout.str);
+                }
+                catch(e)
+                {
+                }
+                while(names.length>0)
+                {
+                    if(hostname.endsWith('.' + names.peek()))
+                    {
+                        ret = { Name: hostname.substring(0, hostname.length - names.peek().length - 1), Domain: names.peek() };
+                        break;
+                    }
+                    names.pop();
+                }
+            }
+            break;
+    }
+    return (ret);
+}
+
 
 
 try {
@@ -3268,7 +3335,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help': { // Displays available commands
-                var fin = '', f = '', availcommands = 'translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task';
+                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32')
@@ -3290,6 +3357,59 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 response = "Available commands: \r\n" + fin + ".";
                 break;
             }
+            case 'domain':
+                response = getDomainInfo();
+                break;
+            case 'domaininfo':
+                {
+                    if(process.platform != 'win32')
+                    {
+                        response = 'Unknown command "cs", type "help" for list of avaialble commands.';
+                        break;
+                    }
+                    if(global._domainQuery != null)
+                    {
+                        response = "There is already an outstanding Domain Controller Query... Please try again later...";
+                        break;
+                    }
+
+                    sendConsoleText('Querying Domain Controller... This can take up to 60 seconds. Please wait...', sessionid);
+                    global._domainQuery = require('win-wmi').queryAsync('ROOT\\CIMV2', 'SELECT * FROM Win32_NTDomain');
+                    global._domainQuery.session = sessionid;
+                    global._domainQuery.then(function (v)
+                    {
+                        var results = [];
+                        if (Array.isArray(v))
+                        {
+                            var i;
+                            var r;
+                            for (i = 0; i < v.length; ++i)
+                            {
+                                r = {};
+                                if (v[i].DomainControllerAddress != null) { r.DomainControllerAddress = v[i].DomainControllerAddress.split('\\').pop(); }
+                                if (r.DomainControllerName != null) { r.DomainControllerName = v[i].DomainControllerName.split('\\').pop(); }
+                                r.DomainGuid = v[i].DomainGuid;
+                                r.DomainName = v[i].DomainName;
+                                if (r.DomainGuid != null)
+                                {
+                                    results.push(r);
+                                }
+                            }
+                        }
+                        if (results.length > 0)
+                        {
+                            sendConsoleText('Domain Controller Results:', this.session);
+                            sendConsoleText(JSON.stringify(results, null, 1), this.session);
+                            sendConsoleText('End of results...', this.session);
+                        }
+                        else
+                        {
+                            sendConsoleText('Domain Controller: No results returned. Is the domain controller reachable?', this.session);
+                        }
+                        global._domainQuery = null;
+                    });
+                    break;
+                }
             case 'translations': {
                 response = JSON.stringify(coretranslations, null, 2);
                 break;
