@@ -2,6 +2,7 @@
   "$schema": "http://info.meshcentral.com/downloads/meshcentral-config-schema.json",
   "settings": {
     "plugins":{"enabled": false},
+    "_mongoDb": null,
     "cert": "myserver.mydomain.com",
     "_WANonly": true,
     "_LANonly": true,
@@ -17,20 +18,20 @@
     "WebRTC": false
   },
   "domains": {
-	"": {
-	"_title": "MyServer",
-    "_title2": "Servername",
-    "minify": true,
-    "NewAccounts": true,
-    "localSessionRecording": false,
-	"_userNameIsEmail": true,
-    "_certUrl": "my.reverse.proxy"
-	}
+    "": {
+      "_title": "MyServer",
+      "_title2": "Servername",
+      "minify": true,
+      "NewAccounts": true,
+      "localSessionRecording": false,
+      "_userNameIsEmail": true,
+      "_certUrl": "my.reverse.proxy"
+    }
   },
   "_letsencrypt": {
     "__comment__": "Requires NodeJS 8.x or better, Go to https://letsdebug.net/ first before>",
     "_email": "myemail@mydomain.com",
     "_names": "myserver.mydomain.com",
-	"production": false
+    "production": false
   }
 }
