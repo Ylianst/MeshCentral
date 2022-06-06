@@ -40,8 +40,10 @@ RUN cd meshcentral/translate && node translate.js extractall
 
 EXPOSE 80 443
 
-#volumes
+# volumes
 VOLUME /opt/meshcentral/meshcentral-data
 VOLUME /opt/meshcentral/meshcentral-files
+VOLUME /opt/meshcentral/meshcentral-web
+VOLUME /opt/meshcentral/meshcentral-backup
 
 CMD ["bash", "/opt/meshcentral/startup.sh"]
