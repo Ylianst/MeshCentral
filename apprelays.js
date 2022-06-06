@@ -1153,7 +1153,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
         parent.parent.db.Get(obj.nodeid, function (err, nodes) {
             if ((err != null) || (nodes == null) || (nodes.length != 1)) return;
             const node = nodes[0];
-            if (node.rdp == null) { node.rdp = {}; }
+            if (node.ssh == null) { node.ssh = {}; }
 
             // Check if credentials are the same
             //if ((typeof node.ssh[obj.userid] == 'object') && (node.ssh[obj.userid].u == obj.username) && (node.ssh[obj.userid].p == obj.password)) return; // TODO
