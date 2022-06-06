@@ -8,7 +8,15 @@ RUN mkdir -p /opt/meshcentral
 # meshcentral installation
 WORKDIR /opt/meshcentral
 
+# add mongodb repository to apt
+RUN apt-get update && apt-get install -y gnupg2 wget
+RUN wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | apt-key add -
+RUN echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/5.0 main" | tee /etc/apt/sources.list.d/mongodb-org-5.0.list
 
+# install mongodb
+RUN apt-get update \
+    && apt-get install -y mongodb-org-tools \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /opt/meshcentral/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
