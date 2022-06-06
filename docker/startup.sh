@@ -8,12 +8,18 @@ export REVERSE_PROXY_TLS_PORT
 export IFRAME
 export ALLOW_NEW_ACCOUNTS
 export WEBRTC
+export MONGO_INITDB_ROOT_USERNAME
+export MONGO_INITDB_ROOT_PASSWORD
+export USE_MONGODB
 
 if [ -f "meshcentral-data/config.json" ]
     then
         node meshcentral/meshcentral 
     else
         cp config.json.template meshcentral-data/config.json
+        if [ $USE_MONGODB == true ]; then
+            sed -i "s/\"_mongoDb\": null/\"mongoDb\": \"mongodb:\/\/$MONGO_INITDB_ROOT_USERNAME:$MONGO_INITDB_ROOT_PASSWORD@mongodb:27017\"/" meshcentral-data/config.json
+        fi
         sed -i "s/\"cert\": \"myserver.mydomain.com\"/\"cert\": \"$HOSTNAME\"/" meshcentral-data/config.json
         sed -i "s/\"NewAccounts\": true/\"NewAccounts\": \"$ALLOW_NEW_ACCOUNTS\"/" meshcentral-data/config.json
         sed -i "s/\"enabled\": false/\"enabled\": \"$ALLOWPLUGINS\"/" meshcentral-data/config.json
