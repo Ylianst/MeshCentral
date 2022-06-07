@@ -1,6 +1,6 @@
-# Filename: Dockerfile
+FROM node:current-alpine
 
-FROM node:slim
+ARG INCLUDE_MONGODBTOOLS=""
 
 #Add non-root user, add installation directories and assign proper permissions
 RUN mkdir -p /opt/meshcentral
@@ -8,15 +8,8 @@ RUN mkdir -p /opt/meshcentral
 # meshcentral installation
 WORKDIR /opt/meshcentral
 
-# add mongodb repository to apt
-RUN apt-get update && apt-get install -y gnupg2 wget
-RUN wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | apt-key add -
-RUN echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/5.0 main" | tee /etc/apt/sources.list.d/mongodb-org-5.0.list
-
-# install mongodb
-RUN apt-get update \
-    && apt-get install -y mongodb-org-tools \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache bash
+RUN if [ "$INCLUDE_MONGODBTOOLS" == "yes" ] || [ "$INCLUDE_MONGODBTOOLS" == "YES" ]; then apk add --no-cache mongodb-tools; fi
 
 RUN mkdir /opt/meshcentral/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
@@ -38,7 +31,7 @@ RUN cd meshcentral/translate && node translate.js minifyall
 RUN cd meshcentral/translate && node translate.js translateall
 RUN cd meshcentral/translate && node translate.js extractall
 
-EXPOSE 80 443
+EXPOSE 80 443 4433
 
 # volumes
 VOLUME /opt/meshcentral/meshcentral-data

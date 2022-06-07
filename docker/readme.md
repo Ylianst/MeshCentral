@@ -7,6 +7,9 @@
 
 > docker build -f docker/Dockerfile --force-rm -t meshcentral .
 
+# alternative, if you want to include the mongodb-tools (mongodump, ...), you can add the 'INCLUDE_MONGODBTOOLS=yes' build argument
+> docker build -f docker/Dockerfile --force-rm --build-arg INCLUDE_MONGODBTOOLS=yes -t meshcentral .
+
 # (optional) cleanup after docker build:
 > cd ..
 > rm -rf MeshCentral/
