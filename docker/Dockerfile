@@ -1,5 +1,6 @@
 FROM node:current-alpine
 
+ARG INCLUDE_MONGODBTOOLS=""
 
 #Add non-root user, add installation directories and assign proper permissions
 RUN mkdir -p /opt/meshcentral
@@ -8,6 +9,7 @@ RUN mkdir -p /opt/meshcentral
 WORKDIR /opt/meshcentral
 
 RUN apk add --no-cache bash
+RUN if [ "$INCLUDE_MONGODBTOOLS" == "yes" ] || [ "$INCLUDE_MONGODBTOOLS" == "YES" ]; then apk add --no-cache mongodb-tools; fi
 
 RUN mkdir /opt/meshcentral/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
