@@ -8,6 +8,7 @@ nav:
 
   - MeshCentral2: 
       - 'MeshCentral2 Guide': 'meshcentral/index.md'
+      - 'All Configuration Options': 'meshcentral/config.md'
       - 'Tokens': 'meshcentral/tokens.md'
       - 'Assistant': 'meshcentral/assistant.md'
       - 'Debugging': 'meshcentral/debugging.md'
