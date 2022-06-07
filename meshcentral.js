@@ -2042,7 +2042,7 @@ function CreateMeshCentralServer(config, args) {
                             zipfile.openReadStream(entry, function (err, readStream) {
                                 if (err) throw err;
                                 readStream.on('end', function () { zipfile.readEntry(); });
-                                const directory = obj.path.dirname(entry.fileName);
+                                var directory = obj.path.dirname(entry.fileName);
                                 if (directory != '.') {
                                     directory = obj.getConfigFilePath(directory)
                                     if (obj.fs.existsSync(directory) == false) { obj.fs.mkdirSync(directory); }
