@@ -1,0 +1,9 @@
+.github/
+.vscode/
+docs/
+.gitignore
+.gitlab-ci.yml
+*.bat
+*.sln
+*.njsproj
+*.md
