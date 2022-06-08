@@ -7696,6 +7696,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         xargs.domainurl = domain.url;
         xargs.autocomplete = (domain.autocomplete === false)?'x':'autocomplete'; // This option allows autocomplete to be turned off on the login page.
         if (typeof domain.hide == 'number') { xargs.hide = domain.hide; }
+
+        // To mitigate any possible BREACH attack, we generate a random length string here.
+        xargs.randomlength = (args.webpagelengthrandomization !== false) ? parent.crypto.randomBytes(parent.crypto.randomInt(0, 256)).toString('base64') : '';
+
         return xargs;
     }
 

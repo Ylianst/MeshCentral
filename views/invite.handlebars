@@ -103,6 +103,7 @@
     </div>
     <script>
         'use strict';
+        var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
         var urlargs = parseUriArgs();
         if (urlargs.key && (isAlphaNumeric(urlargs.key) == false)) { delete urlargs.key; }
         var uiMode = parseInt(getstore('uiMode', 1));
