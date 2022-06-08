@@ -1,6 +1,4 @@
-FROM node:current-alpine
-
-ARG INCLUDE_MONGODBTOOLS=""
+FROM node:current-alpine AS base
 
 #Add non-root user, add installation directories and assign proper permissions
 RUN mkdir -p /opt/meshcentral
@@ -9,27 +7,46 @@ RUN mkdir -p /opt/meshcentral
 WORKDIR /opt/meshcentral
 
 RUN apk add --no-cache bash
-RUN if [ "$INCLUDE_MONGODBTOOLS" == "yes" ] || [ "$INCLUDE_MONGODBTOOLS" == "YES" ]; then apk add --no-cache mongodb-tools; fi
+
+
+FROM base AS builder
+
+ARG DISABLE_TRANSLATE=""
+ARG DISABLE_MINIFY=""
 
 RUN mkdir /opt/meshcentral/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
-COPY ./docker/config.json.template /opt/meshcentral/config.json.template
-COPY ./docker/startup.sh startup.sh
-RUN rm -rf ./docker
+
+# Extract all MeshCentral strings from web pages and generate the languages.json file. - first try throws Error: Cannot find module 'jsdom'
+RUN cd meshcentral/translate && node translate.js extractall; exit 0;
+RUN cd meshcentral/translate && node translate.js extractall
+
+# minify files
+RUN if [ "$DISABLE_MINIFY" != "yes" ] && [ "$DISABLE_MINIFY" != "YES" ]; then cd meshcentral/translate && node translate.js minifyall; fi
+
+# translate
+RUN if [ "$DISABLE_TRANSLATE" != "yes" ] && [ "$DISABLE_TRANSLATE" != "YES" ]; then cd meshcentral/translate && node translate.js translateall; fi
+
+
+FROM base
+
+ARG INCLUDE_MONGODBTOOLS=""
+RUN if [ "$INCLUDE_MONGODBTOOLS" == "yes" ] || [ "$INCLUDE_MONGODBTOOLS" == "YES" ]; then apk add --no-cache mongodb-tools; fi
+
+# copy files from builder-image
+COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+COPY --from=builder /opt/meshcentral/meshcentral/docker/startup.sh ./startup.sh
+COPY --from=builder /opt/meshcentral/meshcentral/docker/config.json.template /opt/meshcentral/config.json.template
+
+# cleanup
+RUN rm -rf /opt/meshcentral/meshcentral/docker
+RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
 # install dependencies from package.json
 RUN cd meshcentral && npm install
 
 # install dependencies for plugins
 RUN cd meshcentral && npm install nedb
-
-# minify files - first try throws Error: Cannot find module 'jsdom'
-RUN cd meshcentral/translate && node translate.js minifyall; exit 0
-RUN cd meshcentral/translate && node translate.js minifyall
-
-# translate
-RUN cd meshcentral/translate && node translate.js translateall
-RUN cd meshcentral/translate && node translate.js extractall
 
 EXPOSE 80 443 4433
 
