@@ -244,9 +244,6 @@ function createAuthenticodeHandler(path) {
         obj.header.siglen = obj.header.dataDirectories.certificateTable.size
         obj.header.signed = ((obj.header.sigpos != 0) && (obj.header.siglen != 0));
 
-        // Compute the checkSum value for this file
-        obj.header.peWindows.checkSumActual = getChecksum(readFileSlice(0, obj.filesize));
-
         // The section headers are located after the optional PE header
         obj.header.SectionHeadersPtr = obj.header.peOptionalHeaderLocation + obj.header.coff.sizeOfOptionalHeader;
 
@@ -271,6 +268,9 @@ function createAuthenticodeHandler(path) {
             section.characteristics = buf.readUInt32LE(36);
             obj.header.sections[sectionName] = section;
         }
+
+        // Compute the checkSum value for this file
+        obj.header.peWindows.checkSumActual = runChecksum();
 
         // If there is a .rsrc section, read the resource information and locations
         if (obj.header.sections['.rsrc'] != null) {
@@ -742,18 +742,85 @@ function createAuthenticodeHandler(path) {
         while (ptr < end) { const buf = readFileSlice(ptr, Math.min(65536, end - ptr)); hash.update(buf); ptr += buf.length; }
     }
 
-    // Compute the PE checksum of an entire file
-    function getChecksum(data) {
-        var checksum = 0, top = Math.pow(2, 32);
+    // Checksum the file loading 64k chunks
+    function runChecksum() {
+        var ptr = 0, c = createChecksum();
+        while (ptr < obj.filesize) { const buf = readFileSlice(ptr, Math.min(65536, obj.filesize - ptr)); c.update(buf); ptr += buf.length; }
+        return c.digest();
+    }
+
+    // Checksum the open file loading 64k chunks
+    function runChecksumOnFile(fd, filesize) {
+        var ptr = 0, c = createChecksum(), buf = Buffer.alloc(65536);
+        while (ptr < filesize) { var len = fs.readSync(fd, buf, 0, Math.min(65536, filesize - ptr), ptr); c.update(buf, len); ptr += len; }
+        return c.digest();
+    }
+
+    // Steaming checksum methods
+    // TODO: Works only with files padded to 4 byte.
+    function createChecksum() {
+        const obj = { checksum: 0, length: 0 };
+        obj.update = function (data, len) {
+            if (!len) { len = data.length; }
+            for (var i = 0; i < (len / 4) ; i++) {
+                if (((obj.length / 4) + i) == 54) continue; // Skip PE checksum location
+                const dword = data.readUInt32LE(i * 4);
+                var checksumlo = (obj.checksum > 4294967296) ? (obj.checksum - 4294967296) : obj.checksum;
+                var checksumhi = (obj.checksum > 4294967296) ? 1 : 0;
+                obj.checksum = checksumlo + dword + checksumhi;
+                if (obj.checksum > 4294967296) {
+                    checksumlo = (obj.checksum > 4294967296) ? (obj.checksum - 4294967296) : obj.checksum;
+                    checksumhi = (obj.checksum > 4294967296) ? 1 : 0;
+                    obj.checksum = checksumlo + checksumhi;
+                }
+            }
+            obj.length += len;
+        }
+        obj.digest = function () {
+            obj.checksum = (obj.checksum & 0xffff) + (obj.checksum >>> 16);
+            obj.checksum = (obj.checksum) + (obj.checksum >>> 16);
+            obj.checksum = obj.checksum & 0xffff;
+            obj.checksum += obj.length;
+            return obj.checksum;
+        }
+        return obj;
+    }
+
+    // Simple checksum method that works on a complete file at once
+    // TODO: Works only with files padded to 4 byte.
+    function updateChecksum(data) {
+        var checksum = 0;
         for (var i = 0; i < (data.length / 4) ; i++) {
             if (i == 54) continue; // Skip PE checksum location
             var dword = data.readUInt32LE(i * 4);
-            var checksumlo = (checksum > top) ? (checksum - top) : checksum;
-            var checksumhi = (checksum > top) ? 1 : 0;
+            var checksumlo = (checksum > 4294967296) ? (checksum - 4294967296) : checksum;
+            var checksumhi = (checksum > 4294967296) ? 1 : 0;
             checksum = checksumlo + dword + checksumhi;
-            if (checksum > top) {
-                checksumlo = (checksum > top) ? (checksum - top) : checksum;
-                checksumhi = (checksum > top) ? 1 : 0;
+            if (checksum > 4294967296) {
+                checksumlo = (checksum > 4294967296) ? (checksum - 4294967296) : checksum;
+                checksumhi = (checksum > 4294967296) ? 1 : 0;
+                checksum = checksumlo + checksumhi;
+            }
+        }
+        checksum = (checksum & 0xffff) + (checksum >>> 16);
+        checksum = (checksum) + (checksum >>> 16);
+        checksum = checksum & 0xffff;
+        checksum += data.length;
+        return checksum;
+    }
+
+    // Compute the PE checksum of an entire file
+    function getChecksum(data) {
+        var checksum = 0;
+        for (var i = 0; i < (data.length / 4) ; i++) {
+            if (i == 54) continue; // Skip PE checksum location
+            var dword = data.readUInt32LE(i * 4);
+            var checksumlo = (checksum > 4294967296) ? (checksum - 4294967296) : checksum;
+            var checksumhi = (checksum > 4294967296) ? 1 : 0;
+            checksum = checksumlo + dword + checksumhi;
+            if (checksum > 4294967296) {
+                checksumlo = (checksum > 4294967296) ? (checksum - 4294967296) : checksum;
+                checksumhi = (checksum > 4294967296) ? 1 : 0;
                 checksum = checksumlo + checksumhi;
             }
         }
@@ -816,7 +883,7 @@ function createAuthenticodeHandler(path) {
 
         // Open the output file
         var output = null;
-        try { output = fs.openSync(args.out, 'w'); } catch (ex) { }
+        try { output = fs.openSync(args.out, 'w+'); } catch (ex) { }
         if (output == null) return false;
         var tmp, written = 0;
         var executableSize = obj.header.sigpos ? obj.header.sigpos : this.filesize;
@@ -853,6 +920,12 @@ function createAuthenticodeHandler(path) {
         fs.writeSync(output, win);
         fs.writeSync(output, p7signature);
         if (padding > 0) { fs.writeSync(output, Buffer.alloc(padding, 0)); }
+        written += p7signature.length + padding + 8;
+
+        // Compute the checksum and write it in the PE header at position (54 * 4)
+        var tmp = Buffer.alloc(4);
+        tmp.writeUInt32LE(runChecksumOnFile(output, written));
+        fs.writeSync(output, tmp, 0, 4, 54 * 4);
 
         // Close the file
         fs.closeSync(output);
@@ -862,7 +935,7 @@ function createAuthenticodeHandler(path) {
     // Save an executable without the signature
     obj.unsign = function (args) {
         // Open the file
-        var output = fs.openSync(args.out, 'w');
+        var output = fs.openSync(args.out, 'w+');
         var written = 0, totalWrite = obj.header.sigpos;
 
         // Compute pre-header length and copy that to the new file
@@ -881,6 +954,12 @@ function createAuthenticodeHandler(path) {
             fs.writeSync(output, tmp);
             written += tmp.length;
         }
+
+        // Compute the checksum and write it in the PE header at position (54 * 4)
+        var tmp = Buffer.alloc(4);
+        tmp.writeUInt32LE(runChecksumOnFile(output, written));
+        fs.writeSync(output, tmp, 0, 4, 54 * 4);
+
         fs.closeSync(output);
     }
 
