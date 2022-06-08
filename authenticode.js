@@ -120,10 +120,10 @@ function createAuthenticodeHandler(path) {
 
         // Open the file descriptor
         obj.path = path;
-        try { obj.fd = fs.openSync(path); } catch (ex) { console.log('E1'); return false; } // Unable to open file
+        try { obj.fd = fs.openSync(path); } catch (ex) { return false; } // Unable to open file
         obj.stats = fs.fstatSync(obj.fd);
         obj.filesize = obj.stats.size;
-        if (obj.filesize < 64) { obj.close(); console.log('E2'); return false; } // File too short.
+        if (obj.filesize < 64) { obj.close(); return false; } // File too short.
 
         // Read the DOS header (64 bytes)
         var buf = readFileSlice(60, 4);
@@ -131,8 +131,8 @@ function createAuthenticodeHandler(path) {
         obj.header.peOptionalHeaderLocation = obj.header.peHeaderLocation + 24; // The PE optional header is located just after the PE header which is 24 bytes long.
 
         // Check file size and signature
-        if (obj.filesize < (160 + obj.header.peHeaderLocation)) { obj.close(); console.log('E3'); return false; } // Invalid SizeOfHeaders.
-        if (readFileSlice(obj.header.peHeaderLocation, 4).toString('hex') != '50450000') { obj.close(); console.log('E4'); return false; } // Invalid PE header, must start with "PE" (HEX: 50 45 00 00).
+        if (obj.filesize < (160 + obj.header.peHeaderLocation)) { obj.close(); return false; } // Invalid SizeOfHeaders.
+        if (readFileSlice(obj.header.peHeaderLocation, 4).toString('hex') != '50450000') { obj.close(); return false; } // Invalid PE header, must start with "PE" (HEX: 50 45 00 00).
 
         // Read the COFF header
         // https://docs.microsoft.com/en-us/windows/win32/debug/pe-format#coff-file-header-object-and-image
@@ -156,7 +156,7 @@ function createAuthenticodeHandler(path) {
         switch (obj.header.peStandard.magic) { // Check magic value
             case 0x020B: obj.header.pe32plus = 1; break;
             case 0x010B: obj.header.pe32plus = 0; break;
-            default: { obj.close(); console.log('E5'); return false; } // Invalid Magic in PE
+            default: { obj.close(); return false; } // Invalid Magic in PE
         }
         obj.header.peStandard.majorLinkerVersion = optinalHeader[2];
         obj.header.peStandard.minorLinkerVersion = optinalHeader[3];
@@ -244,6 +244,9 @@ function createAuthenticodeHandler(path) {
         obj.header.siglen = obj.header.dataDirectories.certificateTable.size
         obj.header.signed = ((obj.header.sigpos != 0) && (obj.header.siglen != 0));
 
+        // Compute the checkSum value for this file
+        obj.header.peWindows.checkSumActual = getChecksum(readFileSlice(0, obj.filesize));
+
         // The section headers are located after the optional PE header
         obj.header.SectionHeadersPtr = obj.header.peOptionalHeaderLocation + obj.header.coff.sizeOfOptionalHeader;
 
@@ -252,7 +255,7 @@ function createAuthenticodeHandler(path) {
         for (var i = 0; i < obj.header.coff.numberOfSections; i++) {
             var section = {};
             buf = readFileSlice(obj.header.SectionHeadersPtr + (i * 40), 40);
-            if (buf[0] != 46) { obj.close(); console.log('E6'); return false; }; // Name of the section must start with a dot. If not, something is wrong.
+            if (buf[0] != 46) { obj.close(); return false; }; // Name of the section must start with a dot. If not, something is wrong.
             var sectionName = buf.slice(0, 8).toString().trim('\0');
             var j = sectionName.indexOf('\0');
             if (j >= 0) { sectionName = sectionName.substring(0, j); } // Trim any trailing zeroes
@@ -271,16 +274,14 @@ function createAuthenticodeHandler(path) {
 
         // If there is a .rsrc section, read the resource information and locations
         if (obj.header.sections['.rsrc'] != null) {
-            const ptr = obj.header.sections['.rsrc'].rawAddr;
-            console.log('.rsrc section', ptr, obj.header.sections['.rsrc'].rawSize);
-            obj.resources = readResourceTable(ptr, 0); // Read all resources recursively
+            obj.resources = readResourceTable(obj.header.sections['.rsrc'].rawAddr, 0); // Read all resources recursively
         }
 
         if (obj.header.signed) {
             // Read signature block
 
             // Check if the file size allows for the signature block
-            if (obj.filesize < (obj.header.sigpos + obj.header.siglen)) { obj.close(); console.log('E7'); return false; } // Executable file too short to contain the signature block.
+            if (obj.filesize < (obj.header.sigpos + obj.header.siglen)) { obj.close(); return false; } // Executable file too short to contain the signature block.
 
             // Remove the padding if needed
             var i, pkcs7raw = readFileSlice(obj.header.sigpos + 8, obj.header.siglen - 8);
@@ -741,21 +742,24 @@ function createAuthenticodeHandler(path) {
         while (ptr < end) { const buf = readFileSlice(ptr, Math.min(65536, end - ptr)); hash.update(buf); ptr += buf.length; }
     }
 
-    // Compute the PE checksum of a file (this is not yet tested)
-    function getChecksum(data, PECheckSumLocation) {
+    // Compute the PE checksum of an entire file
+    function getChecksum(data) {
         var checksum = 0, top = Math.pow(2, 32);
-
-        for (var i = 0; i < (data.length / 4); i++) {
-            if (i == PECheckSumLocation / 4) continue;
+        for (var i = 0; i < (data.length / 4) ; i++) {
+            if (i == 54) continue; // Skip PE checksum location
             var dword = data.readUInt32LE(i * 4);
-            checksum = (checksum & 0xffffffff) + dword + (checksum >> 32);
-            if (checksum > top) { checksum = (checksum & 0xffffffff) + (checksum >> 32); }
+            var checksumlo = (checksum > top) ? (checksum - top) : checksum;
+            var checksumhi = (checksum > top) ? 1 : 0;
+            checksum = checksumlo + dword + checksumhi;
+            if (checksum > top) {
+                checksumlo = (checksum > top) ? (checksum - top) : checksum;
+                checksumhi = (checksum > top) ? 1 : 0;
+                checksum = checksumlo + checksumhi;
+            }
         }
-
-        checksum = (checksum & 0xffff) + (checksum >> 16);
-        checksum = (checksum) + (checksum >> 16);
+        checksum = (checksum & 0xffff) + (checksum >>> 16);
+        checksum = (checksum) + (checksum >>> 16);
         checksum = checksum & 0xffff;
-
         checksum += data.length;
         return checksum;
     }
@@ -1074,6 +1078,9 @@ function start() {
         } else {
             var versionInfo = exe.getVersionInfo();
             if (versionInfo != null) { console.log("Version Information:"); for (var i in versionInfo) { if (versionInfo[i] == null) { console.log('  ' + i + ': (Empty)'); } else { console.log('  ' + i + ': \"' + versionInfo[i] + '\"'); } } }
+            console.log("Checksum Information:");
+            console.log("  Header CheckSum: 0x" + exe.header.peWindows.checkSum.toString(16));
+            console.log("  Actual CheckSum: 0x" + exe.header.peWindows.checkSumActual.toString(16));
             console.log("Signature Information:");
             if (exe.fileHashAlgo != null) {
                 console.log("  Hash Method:", exe.fileHashAlgo);
@@ -1160,8 +1167,8 @@ function start() {
 
         // Parse the output file
         var exe2 = createAuthenticodeHandler(args.out);
-        if (exe2 == null) { console.log("XX Unable to parse executable file: " + args.out); return; }
-        console.log('XX Parse OK');
+        if (exe2 == null) { console.log("Unable to parse output executable file: " + args.out); return; }
+        console.log('Output executable parsed correctly.');
     }
 
     // Close the file
