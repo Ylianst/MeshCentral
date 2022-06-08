@@ -21,6 +21,13 @@
 > | --force-rm           | Always remove intermediate containers              |
 > | -t meshcentral       | Name and optionally a tag in the 'name:tag' format |
 
+### Optional build arguments
+> | Argument                | Description                                         |
+> | :---                    | :---                                                |
+> | INCLUDE_MONGOTOOLS=yes  | Includes mongodb-tools (mongodump, ...) in the image |
+> | DISABLE_MINIFY=yes      | Disables the minification of files                  |
+> | DISABLE_TRANSLATE=yes   | Disables the translation of files                   |
+
 # Create folder-structure and files
 
 ```
