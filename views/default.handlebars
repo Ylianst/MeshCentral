@@ -9628,7 +9628,7 @@
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
             QV('connectbutton2span', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.mtype != 3));
-            QV('connectbutton2sspan', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.agent.id != 3) && (terminalNode.agent.id != 4));
+            QV('connectbutton2sspan', (features2 & 0x00000200) && (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.agent.id != 3) && (terminalNode.agent.id != 4));
             if (terminalNode.mtype == 1) {
                 QV('connectbutton2hspan', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
                 QV('terminalSizeDropDown', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
