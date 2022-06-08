@@ -11,16 +11,21 @@ RUN apk add --no-cache bash
 
 FROM base AS builder
 
+ARG DISABLE_TRANSLATE=""
+ARG DISABLE_MINIFY=""
+
 RUN mkdir /opt/meshcentral/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
 
-# minify files - first try throws Error: Cannot find module 'jsdom'
-RUN cd meshcentral/translate && node translate.js minifyall; exit 0
-RUN cd meshcentral/translate && node translate.js minifyall
+# Extract all MeshCentral strings from web pages and generate the languages.json file. - first try throws Error: Cannot find module 'jsdom'
+RUN cd meshcentral/translate && node translate.js extractall; exit 0;
+RUN cd meshcentral/translate && node translate.js extractall
+
+# minify files
+RUN if [ "$DISABLE_MINIFY" != "yes" ] && [ "$DISABLE_MINIFY" != "YES" ]; then cd meshcentral/translate && node translate.js minifyall; fi
 
 # translate
-RUN cd meshcentral/translate && node translate.js translateall
-RUN cd meshcentral/translate && node translate.js extractall
+RUN if [ "$DISABLE_TRANSLATE" != "yes" ] && [ "$DISABLE_TRANSLATE" != "YES" ]; then cd meshcentral/translate && node translate.js translateall; fi
 
 
 FROM base
