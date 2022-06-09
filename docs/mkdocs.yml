@@ -57,7 +57,6 @@ theme:
     - navigation.expand
     - navigation.top
     - navigation.instant
-    - toc.integrate
 extra_css:
   - stylesheets/extra.css
 extra:
@@ -84,7 +83,7 @@ markdown_extensions:
   - pymdownx.mark
   - pymdownx.smartsymbols
   - codehilite:
-      guess_lang: false
+      guess_lang: true
   - toc:
       permalink: true
   - pymdownx.emoji:
