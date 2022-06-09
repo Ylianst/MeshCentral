@@ -627,7 +627,7 @@ function createAuthenticodeHandler(path) {
 
     // Decode the version information from the resource
     obj.getVersionInfo = function () {
-        console.log('READ', getVersionInfoData().toString('hex'));
+        //console.log('READ', getVersionInfoData().toString('hex'));
         var r = {}, info = readVersionInfo(getVersionInfoData(), 0);
         if ((info == null) || (info.stringFiles == null)) return null;
         var StringFileInfo = null;
@@ -661,6 +661,7 @@ function createAuthenticodeHandler(path) {
         //console.log('--WRITE BUF ARRAY START--');
         //for (var i in verInfoResBufArray) { console.log(verInfoResBufArray[i].toString('hex')); }
         //console.log('--WRITE BUF ARRAY END--');
+        //console.log('OUT', Buffer.concat(verInfoResBufArray).toString('hex'));
 
         // Set the new buffer as part of the resources
         for (var i = 0; i < obj.resources.entries.length; i++) {
@@ -724,8 +725,6 @@ function createAuthenticodeHandler(path) {
 
         if (info.stringFiles != null) { wLength += writeStringFileInfo(bufArray, info.stringFiles); }
 
-        console.log('@@@@@@Z', wLength, Buffer.concat(bufArray).length);
-
         buf.writeUInt16LE(Buffer.concat(bufArray).length, 0); // wLength
         buf.writeUInt16LE(wValueLength, 2); // wValueLength
         return wLength;
@@ -733,10 +732,10 @@ function createAuthenticodeHandler(path) {
 
     // StringFileInfo structure: https://docs.microsoft.com/en-us/windows/win32/menurc/stringfileinfo
     function writeStringFileInfo(bufArray, stringFiles) {
-        //console.log('writeStringFileInfo', stringFiles);
         var totalLen = 0;
         for (var i in stringFiles) {
             var l = 6 + (stringFiles[i].szKey.length * 2);
+            if (stringFiles[i].szKey == 'VarFileInfo') { l += 4; } // TODO: This is a hack, not sure what the correct code should be
             const buf2 = Buffer.alloc(padPointer(l));
             buf2.writeUInt16LE(1, 4); // wType
             stringToUnicode(stringFiles[i].szKey, buf2, 6);
@@ -756,8 +755,7 @@ function createAuthenticodeHandler(path) {
 
     // VarFileInfo structure: https://docs.microsoft.com/en-us/windows/win32/menurc/var-str
     function writeVarFileInfoStruct(bufArray, varFileInfo) {
-        console.log('*************writeVarFileInfoStruct', varFileInfo);
-        var l = 6 + (varFileInfo.szKey.length * 2);
+        var l = 8 + (varFileInfo.szKey.length * 2);
         const buf = Buffer.alloc(padPointer(l));
         buf.writeUInt16LE(0, 4); // wType
         stringToUnicode(varFileInfo.szKey, buf, 6);
@@ -769,11 +767,10 @@ function createAuthenticodeHandler(path) {
         if (varFileInfo.value) {
             bufArray.push(varFileInfo.value);
             wLength += varFileInfo.value.length;
+            wValueLength += varFileInfo.value.length;
         }
-        buf.writeUInt16LE(l + wLength, 0); // wLength
+        buf.writeUInt16LE(buf.length + wLength, 0); // wLength
         buf.writeUInt16LE(wValueLength, 2); // wValueLength
-
-        //console.log('WwriteVarFileInfoStruct', buf.toString('hex'));
         return buf.length + wLength;
     }
 
@@ -792,8 +789,6 @@ function createAuthenticodeHandler(path) {
         if (stringTable.strings) { wLength += writeStringStructs(bufArray, stringTable.strings); }
         buf.writeUInt16LE(l + wLength, 0); // wLength
         buf.writeUInt16LE(wValueLength, 2); // wValueLength
-
-        //console.log('WStringTableStruct', buf.toString('hex'));
         return buf.length + wLength;
     }
 
@@ -1166,9 +1161,8 @@ function createAuthenticodeHandler(path) {
     obj.writeExecutable = function (args) {
         // Get version information from the resource
         var versions = obj.getVersionInfo();
-        //versions['FileDescription'] = 'Mesh Agent Service';
+        versions['FileDescription'] = 'This is a test';
         obj.setVersionInfo(versions);
-        //var versions2 = obj.getVersionInfo();
         
         // Open the file
         var output = fs.openSync(args.out, 'w');
@@ -1185,11 +1179,13 @@ function createAuthenticodeHandler(path) {
         var newResSize = obj.header.sections['.rsrc'].rawSize; // Testing 102400
         var resDeltaSize = newResSize - oldResSize;
 
+        /*
         console.log('fileAlign', fileAlign);
         console.log('resPtr', resPtr);
         console.log('oldResSize', oldResSize);
         console.log('newResSize', newResSize);
         console.log('resDeltaSize', resDeltaSize);
+        */
 
         // Change PE optional header sizeOfInitializedData standard field
         fullHeader.writeUInt32LE(obj.header.peStandard.sizeOfInitializedData + resDeltaSize, obj.header.peOptionalHeaderLocation + 8);
@@ -1232,13 +1228,13 @@ function createAuthenticodeHandler(path) {
         }
 
         // Write the entire header to the destination file
-        console.log('Write header', fullHeader.length);
+        //console.log('Write header', fullHeader.length);
         fs.writeSync(output, fullHeader);
         written += fullHeader.length;
 
         // Write the entire executable until the start to the resource segment
         var totalWrite = resPtr;
-        console.log('Write until res', totalWrite);
+        //console.log('Write until res', totalWrite);
         while ((totalWrite - written) > 0) {
             tmp = readFileSlice(written, Math.min(totalWrite - written, 65536));
             fs.writeSync(output, tmp);
@@ -1250,28 +1246,9 @@ function createAuthenticodeHandler(path) {
         fs.writeSync(output, rsrcSection);
         written += rsrcSection.length;
 
-        /*
-        // Write the old resource segment (debug)
-        totalWrite = resPtr + oldResSize;
-        console.log('Write res', totalWrite);
-        while ((totalWrite - written) > 0) {
-            tmp = readFileSlice(written, Math.min(totalWrite - written, 65536));
-            fs.writeSync(output, tmp);
-            written += tmp.length;
-        }
-        */
-
-        /*
-        // Write a dummy 102400 bytes
-        tmp = Buffer.alloc(resDeltaSize);
-        console.log('Write dummy', resDeltaSize);
-        fs.writeSync(output, tmp);
-        written += tmp.length;
-        */
-
         // Write until the signature block
         totalWrite = obj.header.sigpos + resDeltaSize;
-        console.log('Write until signature', totalWrite);
+        //console.log('Write until signature', totalWrite);
         while ((totalWrite - written) > 0) {
             tmp = readFileSlice(written - resDeltaSize, Math.min(totalWrite - written, 65536));
             fs.writeSync(output, tmp);
