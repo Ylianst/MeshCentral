@@ -24,7 +24,7 @@
 ### Optional build arguments
 > | Argument                | Description                                         |
 > | :---                    | :---                                                |
-> | INCLUDE_MONGOTOOLS=yes  | Includes mongodb-tools (mongodump, ...) in the image |
+> | INCLUDE_MONGODBTOOLS=yes  | Includes mongodb-tools (mongodump, ...) in the image |
 > | DISABLE_MINIFY=yes      | Disables the minification of files                  |
 > | DISABLE_TRANSLATE=yes   | Disables the translation of files                   |
 
