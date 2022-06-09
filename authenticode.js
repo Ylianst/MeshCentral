@@ -120,7 +120,7 @@ function createAuthenticodeHandler(path) {
 
         // Open the file descriptor
         obj.path = path;
-        try { obj.fd = fs.openSync(path); } catch (ex) { return false; } // Unable to open file
+        try { obj.fd = fs.openSync(path, 'r'); } catch (ex) { return false; } // Unable to open file
         obj.stats = fs.fstatSync(obj.fd);
         obj.filesize = obj.stats.size;
         if (obj.filesize < 64) { obj.close(); return false; } // File too short.
