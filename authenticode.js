@@ -172,7 +172,7 @@ function createAuthenticodeHandler(path) {
         obj.header.peWindows = {}
         if (obj.header.pe32plus == 0) {
             // 32bit header
-            obj.header.peWindows.imageBase = optinalHeader.readUInt32LE(28);
+            //obj.header.peWindows.imageBase = optinalHeader.readUInt32LE(28);
             obj.header.peWindows.sectionAlignment = optinalHeader.readUInt32LE(32);
             obj.header.peWindows.fileAlignment = optinalHeader.readUInt32LE(36);
             obj.header.peWindows.majorOperatingSystemVersion = optinalHeader.readUInt16LE(40);
@@ -187,15 +187,15 @@ function createAuthenticodeHandler(path) {
             obj.header.peWindows.checkSum = optinalHeader.readUInt32LE(64);
             obj.header.peWindows.subsystem = optinalHeader.readUInt16LE(68);
             obj.header.peWindows.dllCharacteristics = optinalHeader.readUInt16LE(70);
-            obj.header.peWindows.sizeOfStackReserve = optinalHeader.readUInt32LE(72);
-            obj.header.peWindows.sizeOfStackCommit = optinalHeader.readUInt32LE(76);
-            obj.header.peWindows.sizeOfHeapReserve = optinalHeader.readUInt32LE(80);
-            obj.header.peWindows.sizeOfHeapCommit = optinalHeader.readUInt32LE(84);
+            //obj.header.peWindows.sizeOfStackReserve = optinalHeader.readUInt32LE(72);
+            //obj.header.peWindows.sizeOfStackCommit = optinalHeader.readUInt32LE(76);
+            //obj.header.peWindows.sizeOfHeapReserve = optinalHeader.readUInt32LE(80);
+            //obj.header.peWindows.sizeOfHeapCommit = optinalHeader.readUInt32LE(84);
             obj.header.peWindows.loaderFlags = optinalHeader.readUInt32LE(88);
             obj.header.peWindows.numberOfRvaAndSizes = optinalHeader.readUInt32LE(92);
         } else {
             // 64bit header
-            obj.header.peWindows.imageBase = optinalHeader.readBigUInt64LE(24);
+            //obj.header.peWindows.imageBase = optinalHeader.readBigUInt64LE(24); // TODO: readBigUInt64LE is not supported in older NodeJS versions
             obj.header.peWindows.sectionAlignment = optinalHeader.readUInt32LE(32);
             obj.header.peWindows.fileAlignment = optinalHeader.readUInt32LE(36);
             obj.header.peWindows.majorOperatingSystemVersion = optinalHeader.readUInt16LE(40);
@@ -210,10 +210,10 @@ function createAuthenticodeHandler(path) {
             obj.header.peWindows.checkSum = optinalHeader.readUInt32LE(64);
             obj.header.peWindows.subsystem = optinalHeader.readUInt16LE(68);
             obj.header.peWindows.dllCharacteristics = optinalHeader.readUInt16LE(70);
-            obj.header.peWindows.sizeOfStackReserve = optinalHeader.readBigUInt64LE(72);
-            obj.header.peWindows.sizeOfStackCommit = optinalHeader.readBigUInt64LE(80);
-            obj.header.peWindows.sizeOfHeapReserve = optinalHeader.readBigUInt64LE(88);
-            obj.header.peWindows.sizeOfHeapCommit = optinalHeader.readBigUInt64LE(96);
+            //obj.header.peWindows.sizeOfStackReserve = optinalHeader.readBigUInt64LE(72);
+            //obj.header.peWindows.sizeOfStackCommit = optinalHeader.readBigUInt64LE(80);
+            //obj.header.peWindows.sizeOfHeapReserve = optinalHeader.readBigUInt64LE(88);
+            //obj.header.peWindows.sizeOfHeapCommit = optinalHeader.readBigUInt64LE(96);
             obj.header.peWindows.loaderFlags = optinalHeader.readUInt32LE(104);
             obj.header.peWindows.numberOfRvaAndSizes = optinalHeader.readUInt32LE(108);
         }
