@@ -102,7 +102,7 @@
         "agentCoreDumpUsers": { "type": "array", "description": "List of non-administrator users that have access to mesh agent crash dumps." },
         "agentSignLock": { "type": "boolean", "default": false, "description": "When code signing an agent using authenticode, lock the agent to only allow connection to this server. (This is in testing, the default value will change to true in the future)." },
         "ignoreAgentHashCheck": { "type": [ "boolean", "string" ], "default": false, "description": "When true, the agent no longer checked the TLS certificate of the server. This should be used for debugging only. You can also set this to a comma seperated list of IP addresses to ignore, for example: \"192.168.2.100,192.168.1.0/24\"." },
-        "exactPorts": { "type": "boolean", "default": false },
+        "exactPorts": { "type": "boolean", "default": false, "description": "When set to true, MeshCentral will only grab the required TCP listening ports or fail. It will not try to use the next available port of it's busy." },
         "allowLoginToken": { "type": "boolean", "default": false },
         "StrictTransportSecurity": { "type": ["boolean", "string"], "default": null, "description": "Controls the Strict-Transport-Security header, default is 1 year. Set to false to remove, true to force enable, or string to set a custom value. If set to null, MeshCentral will enable if a trusted certificate is set." },
         "allowFraming": { "type": "boolean", "default": false, "description": "When enabled, the MeshCentral web site can be embedded within another website's iframe." },

@@ -909,7 +909,7 @@ function createAuthenticodeHandler(path) {
         const wType = buf.readUInt16LE(ptr + 4); // 1 = Text, 2 = Binary
         //console.log('RStringTableStruct', buf.slice(ptr, ptr + wLength).toString('hex'));
         r.szKey = unicodeToString(buf.slice(ptr + 6, ptr + 6 + 16)); // An 8-digit hexadecimal number stored as a Unicode string.
-        //console.log('readStringTableStruct', wLength, wValueLength, r.wType, r.szKey);
+        //console.log('readStringTableStruct', wLength, wValueLength, wType, r.szKey);
         r.strings = readStringStructs(buf, ptr + 24 + wValueLength, wLength - 22);
         return r;
     }
@@ -917,7 +917,7 @@ function createAuthenticodeHandler(path) {
     // String structure: https://docs.microsoft.com/en-us/windows/win32/menurc/string-str
     function readStringStructs(buf, ptr, len) {
         var t = [], startPtr = ptr;
-        while (ptr < (startPtr + len)) {
+        while ((ptr + 6) < (startPtr + len)) {
             const r = {};
             const wLength = buf.readUInt16LE(ptr);
             if (wLength == 0) return t;
@@ -953,10 +953,28 @@ function createAuthenticodeHandler(path) {
         return hash.digest();
     }
 
+    // Hash of an open file using the selected hashing system
+    obj.getHashOfFile = function (fd, algo, filesize) {
+        var hash = crypto.createHash(algo);
+        runHashOnFile(fd, hash, 0, obj.header.peHeaderLocation + 88);
+        runHashOnFile(fd, hash, obj.header.peHeaderLocation + 88 + 4, obj.header.peHeaderLocation + 152 + (obj.header.pe32plus * 16));
+        runHashOnFile(fd, hash, obj.header.peHeaderLocation + 152 + (obj.header.pe32plus * 16) + 8, obj.header.sigpos > 0 ? obj.header.sigpos : filesize);
+        return hash.digest();
+    }
+
     // Hash the file from start to end loading 64k chunks
     function runHash(hash, start, end) {
         var ptr = start;
         while (ptr < end) { const buf = readFileSlice(ptr, Math.min(65536, end - ptr)); hash.update(buf); ptr += buf.length; }
+    }
+
+    // Hash the open file loading 64k chunks
+    // TODO: Do chunks on this!!!
+    function runHashOnFile(fd, hash, start, end) {
+        var buf = Buffer.alloc(end - start);
+        var len = fs.readSync(fd, buf, 0, buf.length, start);
+        if (len != buf.length) { console.log('BAD runHashOnFile'); }
+        hash.update(buf);
     }
 
     // Checksum the file loading 64k chunks
@@ -1158,14 +1176,9 @@ function createAuthenticodeHandler(path) {
     }
 
     // Save the executable
-    obj.writeExecutable = function (args) {
-        // Get version information from the resource
-        var versions = obj.getVersionInfo();
-        versions['FileDescription'] = 'This is a test';
-        obj.setVersionInfo(versions);
-        
+    obj.writeExecutable = function (args, cert) {
         // Open the file
-        var output = fs.openSync(args.out, 'w');
+        var output = fs.openSync(args.out, 'w+');
         var tmp, written = 0;
 
         // Compute the size of the complete executable header up to after the sections header
@@ -1179,20 +1192,11 @@ function createAuthenticodeHandler(path) {
         var newResSize = obj.header.sections['.rsrc'].rawSize; // Testing 102400
         var resDeltaSize = newResSize - oldResSize;
 
-        /*
-        console.log('fileAlign', fileAlign);
-        console.log('resPtr', resPtr);
-        console.log('oldResSize', oldResSize);
-        console.log('newResSize', newResSize);
-        console.log('resDeltaSize', resDeltaSize);
-        */
-
         // Change PE optional header sizeOfInitializedData standard field
         fullHeader.writeUInt32LE(obj.header.peStandard.sizeOfInitializedData + resDeltaSize, obj.header.peOptionalHeaderLocation + 8);
         fullHeader.writeUInt32LE(obj.header.peWindows.sizeOfImage, obj.header.peOptionalHeaderLocation + 56); // TODO: resDeltaSize
 
-        // Update the checksum, set to zero since it's not used
-        // TODO: Take a look at computing this correctly in the future
+        // Update the checksum to zero
         fullHeader.writeUInt32LE(0, obj.header.peOptionalHeaderLocation + 64);
 
         // Make change to the data directories header to fix resource segment size and add/remove signature
@@ -1256,7 +1260,81 @@ function createAuthenticodeHandler(path) {
         }
 
         // Write the signature if needed
-        // TODO
+        if (cert != null) {
+            //if (cert == null) { cert = createSelfSignedCert({ cn: 'Test' }); }
+
+            // Set the hash algorithm hash OID
+            var hashOid = null, fileHash = null;
+            if (args.hash == null) { args.hash = 'sha384'; }
+            if (args.hash == 'sha256') { hashOid = forge.pki.oids.sha256; fileHash = obj.getHashOfFile(output, 'sha256', written); }
+            if (args.hash == 'sha384') { hashOid = forge.pki.oids.sha384; fileHash = obj.getHashOfFile(output, 'sha384', written); }
+            if (args.hash == 'sha512') { hashOid = forge.pki.oids.sha512; fileHash = obj.getHashOfFile(output, 'sha512', written); }
+            if (args.hash == 'sha224') { hashOid = forge.pki.oids.sha224; fileHash = obj.getHashOfFile(output, 'sha224', written); }
+            if (args.hash == 'md5') { hashOid = forge.pki.oids.md5; fileHash = obj.getHashOfFile(output, 'md5', written); }
+            if (hashOid == null) return false;
+
+            // Create the signature block
+            var p7 = forge.pkcs7.createSignedData();
+            var content = { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 6, 'constructed': false, 'composed': false, 'value': forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.15').data }, { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 3, 'constructed': false, 'composed': false, 'value': '\u0000', 'bitStringContents': '\u0000', 'original': { 'tagClass': 0, 'type': 3, 'constructed': false, 'composed': false, 'value': '\u0000' } }, { 'tagClass': 128, 'type': 0, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 2, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': '' }] }] }] }] }, { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 6, 'constructed': false, 'composed': false, 'value': forge.asn1.oidToDer(hashOid).data }, { 'tagClass': 0, 'type': 5, 'constructed': false, 'composed': false, 'value': '' }] }, { 'tagClass': 0, 'type': 4, 'constructed': false, 'composed': false, 'value': fileHash.toString('binary') }] }] };
+            p7.contentInfo = forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.SEQUENCE, true, [forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.OID, false, forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.4').getBytes())]);
+            p7.contentInfo.value.push(forge.asn1.create(forge.asn1.Class.CONTEXT_SPECIFIC, 0, true, [content]));
+            p7.content = {}; // We set .contentInfo and have .content empty to bypass node-forge limitation on the type of content it can sign.
+            p7.addCertificate(cert.cert);
+            if (cert.extraCerts) { for (var i = 0; i < cert.extraCerts.length; i++) { p7.addCertificate(cert.extraCerts[0]); } } // Add any extra certificates that form the cert chain
+
+            // Build authenticated attributes
+            var authenticatedAttributes = [
+                { type: forge.pki.oids.contentType, value: forge.pki.oids.data },
+                { type: forge.pki.oids.messageDigest } // This value will populated at signing time by node-forge
+            ]
+            if ((typeof args.desc == 'string') || (typeof args.url == 'string')) {
+                var codeSigningAttributes = { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [] };
+                if (args.desc != null) { // Encode description as big-endian unicode.
+                    var desc = "", ucs = Buffer.from(args.desc, 'ucs2').toString()
+                    for (var k = 0; k < ucs.length; k += 2) { desc += String.fromCharCode(ucs.charCodeAt(k + 1), ucs.charCodeAt(k)); }
+                    codeSigningAttributes.value.push({ 'tagClass': 128, 'type': 0, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': desc }] });
+                }
+                if (args.url != null) { codeSigningAttributes.value.push({ 'tagClass': 128, 'type': 1, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': args.url }] }); }
+                authenticatedAttributes.push({ type: obj.Oids.SPC_SP_OPUS_INFO_OBJID, value: codeSigningAttributes });
+            }
+
+            // Add the signer and sign
+            p7.addSigner({
+                key: cert.key,
+                certificate: cert.cert,
+                digestAlgorithm: forge.pki.oids.sha384,
+                authenticatedAttributes: authenticatedAttributes
+            });
+            p7.sign();
+            var p7signature = Buffer.from(forge.pkcs7.messageToPem(p7).split('-----BEGIN PKCS7-----')[1].split('-----END PKCS7-----')[0], 'base64');
+            //console.log('Signature', Buffer.from(p7signature, 'binary').toString('base64'));
+
+            // Quad Align the results, adding padding if necessary
+            var len = written + p7signature.length;
+            var padding = (8 - ((len) % 8)) % 8;
+
+            // Write the signature block header and signature
+            var win = Buffer.alloc(8);                              // WIN CERTIFICATE Structure
+            win.writeUInt32LE(p7signature.length + padding + 8);    // DWORD length
+            win.writeUInt16LE(512, 4);                              // WORD revision
+            win.writeUInt16LE(2, 6);                                // WORD type
+            fs.writeSync(output, win);
+            fs.writeSync(output, p7signature);
+            if (padding > 0) { fs.writeSync(output, Buffer.alloc(padding, 0)); }
+
+            // Write the signature header
+            var addresstable = Buffer.alloc(8);
+            addresstable.writeUInt32LE(written);
+            addresstable.writeUInt32LE(8 + p7signature.length + padding, 4);
+            var signatureHeaderLocation = (obj.header.peHeaderLocation + 152 + (obj.header.pe32plus * 16));
+            fs.writeSync(output, addresstable, 0, 8, signatureHeaderLocation);
+            written += (p7signature.length + padding + 8);          // Add the signature block to written counter
+
+            // Compute the checksum and write it in the PE header checksum location
+            var tmp = Buffer.alloc(4);
+            tmp.writeUInt32LE(runChecksumOnFile(output, written, ((obj.header.peOptionalHeaderLocation + 64) / 4)));
+            fs.writeSync(output, tmp, 0, 4, obj.header.peOptionalHeaderLocation + 64);
+        }
 
         // Close the file
         fs.closeSync(output);
@@ -1301,6 +1379,16 @@ function start() {
         console.log("");
         console.log("Note that certificate PEM files must first have the signing certificate,");
         console.log("followed by all certificates that form the trust chain.");
+        console.log("");
+        console.log("When doing sign/unsign, you can also change resource properties of the generated file.");
+        console.log("");
+        console.log("          --filedescription [value]");
+        console.log("          --fileversion [value]");
+        console.log("          --internalname [value]");
+        console.log("          --legalcopyright [value]");
+        console.log("          --originalfilename [value]");
+        console.log("          --productname [value]");
+        console.log("          --productversion [value]");
         return;
     }
 
@@ -1320,6 +1408,15 @@ function start() {
         exe = createAuthenticodeHandler(args.exe);
         if (exe == null) { console.log("Unable to parse executable file: " + args.exe); return; }
     }
+
+    // Parse the resources and make any required changes
+    var resChanges = false, versionStrings = exe.getVersionInfo();
+    var versionProperties = ['FileDescription', 'FileVersion', 'InternalName', 'LegalCopyright', 'OriginalFilename', 'ProductName', 'ProductVersion'];
+    for (var i in versionProperties) {
+        const prop = versionProperties[i], propl = prop.toLowerCase();
+        if (args[propl] && (args[propl] != versionStrings[prop])) { versionStrings[prop] = args[propl]; resChanges = true; }
+    }
+    if (resChanges == true) { exe.setVersionInfo(versionStrings); }
 
     // Execute the command
     var command = process.argv[2].toLowerCase();
@@ -1362,14 +1459,32 @@ function start() {
         if (typeof args.hash == 'string') { args.hash = args.hash.toLowerCase(); if (['md5', 'sha224', 'sha256', 'sha384', 'sha512'].indexOf(args.hash) == -1) { console.log("Invalid hash method, must be SHA256 or SHA384"); return; } }
         if (args.hash == null) { args.hash = 'sha384'; }
         createOutFile(args, args.exe);
-        const cert = loadCertificates(args.pem);
-        if (cert == null) { console.log("Unable to load certificate and/or private key, generating test certificate."); }
-        console.log("Signing to " + args.out); exe.sign(cert, args); console.log("Done.");
+        var cert = loadCertificates(args.pem);
+        if (cert == null) { console.log("Unable to load certificate and/or private key, generating test certificate."); cert = createSelfSignedCert({ cn: 'Test' }); }
+        if (resChanges == false) {
+            console.log("Signing to " + args.out);
+            exe.sign(cert, args); // Simple signing, copy most of the original file.
+        } else {
+            console.log("Changing resources and signing to " + args.out);
+            exe.writeExecutable(args, cert); // Signing with resources decoded and re-encoded.
+        }
+        console.log("Done.");
     }
     if (command == 'unsign') { // Unsign an executable
         if (typeof args.exe != 'string') { console.log("Missing --exe [filename]"); return; }
         createOutFile(args, args.exe);
-        if (exe.header.signed) { console.log("Unsigning to " + args.out); exe.unsign(args); console.log("Done."); } else { console.log("Executable is not signed."); }
+        if (resChanges == false) {
+            if (exe.header.signed) {
+                console.log("Unsigning to " + args.out);
+                exe.unsign(args); // Simple unsign,  copy most of the original file.
+                console.log("Done.");
+            } else {
+                console.log("Executable is not signed.");
+            }
+        } else {
+            console.log("Changing resources and unsigning to " + args.out);
+            exe.writeExecutable(args, null); // Unsigning with resources decoded and re-encoded.
+        }
     }
     if (command == 'createcert') { // Create a code signing certificate and private key
         if (typeof args.out != 'string') { console.log("Missing --out [filename]"); return; }
@@ -1418,18 +1533,6 @@ function start() {
         console.log("Writing to " + args.out);
         fs.writeFileSync(args.out, Buffer.concat([buf, icon.icon]));
         console.log("Done.");
-    }
-    if (command == 'test') { // Grow the resource segment by 100k
-        if (exe == null) { console.log("Missing --exe [filename]"); return; }
-        createOutFile(args, args.exe);
-        console.log("Writting to " + args.out);
-        exe.resourcesChanged = true; // Indicate the resources have changed
-        exe.writeExecutable(args);
-
-        // Parse the output file
-        var exe2 = createAuthenticodeHandler(args.out);
-        if (exe2 == null) { console.log("Unable to parse output executable file: " + args.out); return; }
-        console.log('Output executable parsed correctly.');
     }
 
     // Close the file
