@@ -17,7 +17,7 @@ if [ -f "meshcentral-data/config.json" ]
         node meshcentral/meshcentral 
     else
         cp config.json.template meshcentral-data/config.json
-        if [ $USE_MONGODB == true ]; then
+        if ! [ -z "$USE_MONGODB" ] && [ "$USE_MONGODB" == "true" ]; then
             sed -i "s/\"_mongoDb\": null/\"mongoDb\": \"mongodb:\/\/$MONGO_INITDB_ROOT_USERNAME:$MONGO_INITDB_ROOT_PASSWORD@mongodb:27017\"/" meshcentral-data/config.json
         fi
         sed -i "s/\"cert\": \"myserver.mydomain.com\"/\"cert\": \"$HOSTNAME\"/" meshcentral-data/config.json
