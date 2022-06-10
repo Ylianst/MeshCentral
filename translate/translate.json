@@ -9982,6 +9982,7 @@
     },
     {
       "en": "Ask Admin PowerShell",
+	  "pl": "PowerShell z Zapytaniem Administratora",
       "ru": "PowerShell от Админа, cпросить согласия",
       "xloc": [
         "default.handlebars->termShellContextMenu->11"
@@ -9989,6 +9990,7 @@
     },
     {
       "en": "Ask Admin Shell",
+	  "pl": "Terminal z Zapytaniem Administratora",
       "ru": "Консоль от Админа, cпросить согласия",
       "xloc": [
         "default.handlebars->termShellContextMenu->9"
@@ -10047,6 +10049,7 @@
     },
     {
       "en": "Ask User PowerShell",
+	  "pl": "PowerShell z Zapytaniem Użytkownika",
       "ru": "PowerShell от Пользователя, cпросить согласия",
       "xloc": [
         "default.handlebars->termShellContextMenu->15"
@@ -10054,6 +10057,7 @@
     },
     {
       "en": "Ask User Shell",
+	  "pl": "Terminal z Zapytaniem Użytkownika",
       "ru": "Консоль от Пользователя, cпросить согласия",
       "xloc": [
         "default.handlebars->termShellContextMenu->13"
@@ -17141,7 +17145,7 @@
       "ja": "一つ作る",
       "ko": "한 가지 만들기",
       "nl": "Creëer er een",
-      "pl": "Utwórz nowy",
+      "pl": "Utwórz nowe",
       "pt": "Crie um",
       "pt-br": "Crie um",
       "ru": "Создать",
@@ -30051,6 +30055,7 @@
     {
       "en": "Hybrid required by server",
       "nl": "Hybride vereist door de server",
+	  "pl": "Tryb Hybrydowy wymagany przez serwer",
       "ru": "Cервер требует гибридный режим",
       "xloc": [
         "default.handlebars->41->1209"
@@ -31035,6 +31040,7 @@
     {
       "en": "Inconsistent flags",
       "nl": "Inconsistente vlaggen",
+	  "pl": "Niespójne argumenty",
       "ru": "Несоответствие флагов",
       "xloc": [
         "default.handlebars->41->1208"
@@ -41319,6 +41325,7 @@
     {
       "en": "NLA not supported",
       "nl": "NLA niet ondersteund",
+	  "pl": "NLA nie obsługiwane",
       "ru": "NLA не поддерживается",
       "xloc": [
         "default.handlebars->41->1204"
@@ -48700,6 +48707,7 @@
     {
       "en": "Protocol negotiation failed ({0})",
       "nl": "Protocolonderhandeling mislukt ({0})",
+	  "pl": "Niepowodzenie negocjacji protokołu ({0})",
       "ru": "Ошибка согласования протокола ({0})",
       "xloc": [
         "default.handlebars->41->1203"
@@ -54268,6 +54276,7 @@
     {
       "en": "SSL certificate not on server",
       "nl": "SSL certificaat niet op de server",
+	  "pl": "Certyfikat SSL nie znajduje się na serwerze",
       "ru": "SSL-сертификат не на сервере",
       "xloc": [
         "default.handlebars->41->1207"
@@ -54276,6 +54285,7 @@
     {
       "en": "SSL not allowed by server",
       "nl": "SSL certificaat niet toegestaan door de server",
+	  "pl": "Certyfikat SSL niedozwolony na serwerze",
       "ru": "SSL не разрешен сервером",
       "xloc": [
         "default.handlebars->41->1206"
@@ -54284,6 +54294,7 @@
     {
       "en": "SSL required by server",
       "nl": "SSL vereist door server",
+	  "pl": "Certyfikat SSL wymagany przez serwer",
       "ru": "SSL требуется сервером",
       "xloc": [
         "default.handlebars->41->1205"
@@ -54292,6 +54303,7 @@
     {
       "en": "SSL with user auth required by server",
       "nl": "SSL met gebruikersverificatie vereist door de server",
+	  "pl": "Certyfikat SSL z autoryzacją użytkownika wymagane przez serwer",
       "ru": "SSL с аутентификацией пользователя, требуется сервером",
       "xloc": [
         "default.handlebars->41->1210"
