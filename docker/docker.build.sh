@@ -24,7 +24,8 @@ function runDockerBuild()
 	STARTTS=$(date +%s);
     ARGS=$@;
 
-    BUILD_CMD="docker build -f docker/Dockerfile --force-rm --no-cache ${ARGS} -t meshcentral .";
+    APP_VERSION=$(grep -o '"version":\s*"[^"]*"' ./package.json | cut -f4- -d\" | tr -d '"')
+    BUILD_CMD="docker build -f docker/Dockerfile --force-rm --no-cache ${ARGS} -t meshcentral:latest -t meshcentral:${APP_VERSION} .";
     appendOutput "Current build: ${BUILD_CMD}";
 
     if [ -z "${LOG_FILE}" ]; then ${BUILD_CMD}; else ${BUILD_CMD} &>> "${LOG_FILE}"; fi
