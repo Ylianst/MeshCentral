@@ -25,13 +25,15 @@ If applicable, add screenshots to help explain your problem.
 
 **Server Software (please complete the following information):**
  - OS: [e.g. iOS]
- - Version: [e.g. 22]
+ - Version: [e.g. 1.0.36]
+ - Node: [e.g. 18.3.0]
  - Browser: [e.g. Google Chrome]
 
 **Remote Device (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Current Core Version (if known): [**HINT**: Go into `console` Tab then type `info`]
+ - Device: [e.g. Laptop]
+ - OS: [e.g. Windows 10]
+ - Version: [e.g. 21H2]
+ - Current Core Version (if known): [**HINT**: Go to a device then `console` Tab then type `info`]
 
 **Additional context**
 Add any other context about the problem here.
