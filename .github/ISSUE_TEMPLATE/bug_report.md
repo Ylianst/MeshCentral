@@ -24,7 +24,8 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Server Software (please complete the following information):**
- - OS: [e.g. iOS]
+ - OS: [e.g. Ubuntu]
+ - Virtualization: [e.g. Docker]
  - Version: [e.g. 1.0.36]
  - Node: [e.g. 18.3.0]
  - Browser: [e.g. Google Chrome]
