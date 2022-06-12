@@ -111,6 +111,16 @@ Click on any computer and go into the “Desktop” and “Files” tabs to remo
 
 For advance users with console/command line interface experience, go into “Terminal” to perform scripting or quick tasks with CLI tools. 
 
+### Desktop Control
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/alknFiojQPM" frameborder="0" allowfullscreen></iframe>
+</div>
+
+Depending on how the agent is connected to the server, there are multiple methods to remote control. Mesh Agent, RDP, and AMT
+
+For RDP connections, if you have previously saved the credentials that is usable by all users on the system. If you want to remove those saved credentials that's under the `General Tab` > `Credentials`. Click pen to clear them.
+
 ## Server Certificate
 
 As seen in the previous chapter, MeshCentral is setup with a self-signed certificate by default and the web browser will issue a warning concerning the validity of the certificate. 
@@ -516,8 +526,6 @@ If you successfully setup a Let’s Encrypt certificate using the Let’s Encryp
     Please be patient with Let’s Encrypt certificate requests and make sure you correctly get a staging certificate before setting production to true.
 
 If Let’s Encrypt works for you, please consider donating to them as they provide a critical service to the Internet community.
-
-
 
 ## Server IP filtering
 
