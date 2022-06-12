@@ -26,6 +26,7 @@ If applicable, add screenshots to help explain your problem.
 **Server Software (please complete the following information):**
  - OS: [e.g. Ubuntu]
  - Virtualization: [e.g. Docker]
+ - Network: [e.g. LAN/WAN, reverse proxy, cloudflare, ssl offload, etc...]
  - Version: [e.g. 1.0.36]
  - Node: [e.g. 18.3.0]
  - Browser: [e.g. Google Chrome]
