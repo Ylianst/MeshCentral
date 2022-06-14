@@ -416,6 +416,12 @@ In this example, the CIRA setup script was run on a remote computer. After the s
 
 ## IDE Redirection
 
+## Video Walkthru
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/iG73j7Toz1c" frameborder="0" allowfullscreen></iframe>
+</div>
+
 MeshCmd has all the code needed to perform Intel AMT IDE Redirection from the command line. This allows disk images on the administrator’s computer to be remotely mounted to an Intel AMT computer. You need to start with a floppy disk .img file and/or an .iso CDROM file. 
 
 ![](images/2022-05-15-15-42-01.png)
