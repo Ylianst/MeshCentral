@@ -343,6 +343,9 @@ function createAuthenticodeHandler(path) {
             // Set the certificate chain
             obj.certificates = pkcs7.certificates;
 
+            // Set the signature
+            obj.signature = Buffer.from(pkcs7.rawCapture.signature, 'binary');
+
             // Get the file hashing algorithm
             var hashAlgoOid = forge.asn1.derToOid(pkcs7content.value[1].value[0].value[0].value);
             switch (hashAlgoOid) {
@@ -360,6 +363,60 @@ function createAuthenticodeHandler(path) {
             if (obj.fileHashAlgo != null) { obj.fileHashActual = obj.getHash(obj.fileHashAlgo); }
         }
         return true;
+    }
+
+    // Make a timestamp signature request
+    obj.timeStampRequest = function (url, func) {
+        // Create the timestamp request in DER format
+        const asn1 = forge.asn1;
+        const pkcs7dataOid = asn1.oidToDer('1.2.840.113549.1.7.1').data;
+        const microsoftCodeSigningOid = asn1.oidToDer('1.3.6.1.4.1.311.3.2.1').data;
+        const asn1obj =
+            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OID, false, microsoftCodeSigningOid),
+                asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                    asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OID, false, pkcs7dataOid),
+                    asn1.create(asn1.Class.CONTEXT_SPECIFIC, 0, true, [
+                        asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, obj.signature.toString('binary')) // Signature here
+                    ])
+                ])
+            ]);
+
+        // Serialize an ASN.1 object to DER format in Base64
+        const requestBody = Buffer.from(asn1.toDer(asn1obj).data, 'binary').toString('base64');
+
+        // Make an HTTP request
+        const http = require('http');
+        var options = {
+            method: 'POST',
+            headers: {
+                'accept': 'application/octet-stream',
+                'cache-control': 'no-cache',
+                'user-agent': 'Transport',
+                'content-type': 'application/octet-stream',
+                'content-length': Buffer.byteLength(requestBody)
+            }
+        };
+
+        console.log('options', options);
+        console.log('requestBody', requestBody);
+
+        // Debug
+        const sampleResponse = "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";
+        func(null, sampleResponse);
+        return;
+
+        // Set up the request
+        var responseAccumulator = '';
+        var req = http.request(url, options, function (res) {
+            res.setEncoding('utf8');
+            res.on('data', function (chunk) { responseAccumulator += chunk; });
+            res.on('end', function () { func(null, Buffer.from(responseAccumulator, 'base64').toString('base64')); });
+        });
+
+        // Post the data
+        req.write(requestBody);
+        req.end();
     }
 
     // Read a resource table.
@@ -566,6 +623,15 @@ function createAuthenticodeHandler(path) {
         'iconGroups': 14,
         'versionInfo': 16,
         'configurationFiles': 24
+    }
+
+    // Return the raw signature block buffer with padding removed
+    obj.getRawSignatureBlock = function () {
+        if ((obj.header.sigpos == 0) || (obj.header.siglen == 0)) return null;
+        var pkcs7raw = readFileSlice(obj.header.sigpos + 8, obj.header.siglen - 8);
+        var derlen = forge.asn1.getBerValueLength(forge.util.createBuffer(pkcs7raw.slice(1, 5))) + 4;
+        if (derlen != pkcs7raw.length) { pkcs7raw = pkcs7raw.slice(0, derlen); }
+        return pkcs7raw;
     }
 
     // Get icon information from resource
@@ -1393,9 +1459,9 @@ function start() {
     }
 
     // Check that a valid command is passed in
-    if (['info', 'sign', 'unsign', 'createcert', 'icons', 'saveicon', 'header', 'test'].indexOf(process.argv[2].toLowerCase()) == -1) {
+    if (['info', 'sign', 'unsign', 'createcert', 'icons', 'saveicon', 'header', 'timestamp', 'signblock'].indexOf(process.argv[2].toLowerCase()) == -1) {
         console.log("Invalid command: " + process.argv[2]);
-        console.log("Valid commands are: info, sign, unsign, createcert");
+        console.log("Valid commands are: info, sign, unsign, createcert, timestamp");
         return;
     }
 
@@ -1410,13 +1476,16 @@ function start() {
     }
 
     // Parse the resources and make any required changes
-    var resChanges = false, versionStrings = exe.getVersionInfo();
-    var versionProperties = ['FileDescription', 'FileVersion', 'InternalName', 'LegalCopyright', 'OriginalFilename', 'ProductName', 'ProductVersion'];
-    for (var i in versionProperties) {
-        const prop = versionProperties[i], propl = prop.toLowerCase();
-        if (args[propl] && (args[propl] != versionStrings[prop])) { versionStrings[prop] = args[propl]; resChanges = true; }
+    var resChanges = false, versionStrings = null;
+    if (exe != null) {
+        versionStrings = exe.getVersionInfo();
+        var versionProperties = ['FileDescription', 'FileVersion', 'InternalName', 'LegalCopyright', 'OriginalFilename', 'ProductName', 'ProductVersion'];
+        for (var i in versionProperties) {
+            const prop = versionProperties[i], propl = prop.toLowerCase();
+            if (args[propl] && (args[propl] != versionStrings[prop])) { versionStrings[prop] = args[propl]; resChanges = true; }
+        }
+        if (resChanges == true) { exe.setVersionInfo(versionStrings); }
     }
-    if (resChanges == true) { exe.setVersionInfo(versionStrings); }
 
     // Execute the command
     var command = process.argv[2].toLowerCase();
@@ -1511,6 +1580,7 @@ function start() {
         }
     }
     if (command == 'saveicon') { // Save an icon to file
+        if (exe == null) { console.log("Missing --exe [filename]"); return; }
         if (typeof args.out != 'string') { console.log("Missing --out [filename]"); return; }
         if (typeof args.icon != 'number') { console.log("Missing or incorrect --icon [number]"); return; }
         const iconInfo = exe.getIconInfo();
@@ -1534,6 +1604,18 @@ function start() {
         fs.writeFileSync(args.out, Buffer.concat([buf, icon.icon]));
         console.log("Done.");
     }
+    if (command == 'signblock') { // Display the raw signature block of the executable in hex
+        if (exe == null) { console.log("Missing --exe [filename]"); return; }
+        var buf = exe.getRawSignatureBlock();
+        if (buf == null) { console.log("Executable is not signed."); return } else { console.log(buf.toString('hex')); return }
+    }
+    if (command == 'timestamp') {
+        if (exe == null) { console.log("Missing --exe [filename]"); return; }
+        if (exe.signature == null) { console.log("Executable is not signed."); return; }
+        if (typeof args.url != 'string') { console.log("Missing --url [url]"); return; }
+        console.log("Requesting time signature...");
+        exe.timeStampRequest(args.url, function (err, response) { console.log("Done: RSP: " + response); })
+    }
 
     // Close the file
     if (exe != null) { exe.close(); }
@@ -1545,3 +1627,4 @@ if (require.main === module) { start(); }
 // Exports
 module.exports.createAuthenticodeHandler = createAuthenticodeHandler;
 module.exports.loadCertificates = loadCertificates;
+
