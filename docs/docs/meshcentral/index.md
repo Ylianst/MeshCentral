@@ -714,11 +714,18 @@ MeshCentral supports the local device group allowing devices that do not have an
 
 ![](images/2022-05-31-10-30-42.png)
 
+To enable SSH support, add this line to the domain section of your config.json:
+
+```json
+"ssh": true
+```
+
 Video Walkthru
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/TtW5-g6SeZQ" frameborder="0" allowfullscreen></iframe>
 </div>
+
 
 ### Raritan and WebPowerSwitch with Relay
 
@@ -1187,6 +1194,38 @@ mongorestore --archive=backup.archive
 ```
 
 This will re-import the database from the backup. You can then start MeshCentral again.
+
+### Backup to Google Drive
+
+```bash
+sudo systemctl stop meshcentral.service
+nano /opt/meshcentral/meshcentral-data/config.json
+```
+
+Remove underscored items
+
+![](images/2022-06-17-15-56-14.png)
+
+```bash
+sudo systemctl start meshcentral.service
+sudo systemctl status meshcentral.service
+```
+
+Log into your MC:
+
+![](images/2022-06-17-15-56-55.png)
+
+![](images/2022-06-17-15-57-03.png)
+
+Create desktop app
+
+![](images/2022-06-17-15-57-15.png)
+
+Enter the Client ID and Client Secret into MC
+
+![](images/2022-06-17-15-57-30.png)
+
+![](images/2022-06-17-15-57-52.png)
 
 ## HashiCorp Vault support
 
