@@ -2865,7 +2865,9 @@ function CreateMeshCentralServer(config, args) {
             serverSignedAgentsPath = obj.path.join(obj.datapath, 'signedagents' + suffix);
             signDesc = (domain.title ? domain.title : agentSignCertInfo.cert.subject.hash);
             var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-            signUrl = 'https://' + ((domain.dns != null) ? domain.dns : obj.certificates.CommonName);
+            var httpsHost = ((domain.dns != null) ? domain.dns : obj.certificates.CommonName);
+            if (obj.args.agentaliasdns != null) { httpsHost = obj.args.agentaliasdns; }
+            signUrl = 'https://' + httpsHost;
             if (httpsPort != 443) { signUrl += ':' + httpsPort; }
             var xdomain = (domain.dns == null) ? domain.id : '';
             if (xdomain != '') xdomain += '/';
