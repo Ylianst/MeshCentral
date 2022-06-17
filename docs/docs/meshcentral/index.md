@@ -714,11 +714,18 @@ MeshCentral supports the local device group allowing devices that do not have an
 
 ![](images/2022-05-31-10-30-42.png)
 
+To enable SSH support, add this line to the domain section of your config.json:
+
+```json
+"ssh": true
+```
+
 Video Walkthru
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/TtW5-g6SeZQ" frameborder="0" allowfullscreen></iframe>
 </div>
+
 
 ### Raritan and WebPowerSwitch with Relay
 
