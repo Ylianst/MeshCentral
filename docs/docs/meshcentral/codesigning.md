@@ -13,3 +13,6 @@ If you want to self-sign the mesh agent so you can whitelist the software in you
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/qMAestNgCwc" frameborder="0" allowfullscreen></iframe>
 </div>
+
+!!!note
+    If you generate your private key on windows with use `BEGIN PRIVATE KEY` and openssl needs `BEGIN RSA PRIVATE KEY` you can convert your private key to rsa private key using `openssl rsa -in server.key -out server_new.key`
