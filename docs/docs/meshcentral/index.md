@@ -1188,6 +1188,38 @@ mongorestore --archive=backup.archive
 
 This will re-import the database from the backup. You can then start MeshCentral again.
 
+### Backup to Google Drive
+
+```bash
+sudo systemctl stop meshcentral.service
+nano /opt/meshcentral/meshcentral-data/config.json
+```
+
+Remove underscored items
+
+![](images/2022-06-17-15-56-14.png)
+
+```bash
+sudo systemctl start meshcentral.service
+sudo systemctl status meshcentral.service
+```
+
+Log into your MC:
+
+![](images/2022-06-17-15-56-55.png)
+
+![](images/2022-06-17-15-57-03.png)
+
+Create desktop app
+
+![](images/2022-06-17-15-57-15.png)
+
+Enter the Client ID and Client Secret into MC
+
+![](images/2022-06-17-15-57-30.png)
+
+![](images/2022-06-17-15-57-52.png)
+
 ## HashiCorp Vault support
 
 MeshCentral has built-in support for HashiCorp Vault so that all configuration and certificates used by MeshCentral are retrieved from a Vault server. Vault is a secret store server and when used with MeshCentral, the MeshCentral server will not be storing any secrets locally. You can get started with Vault here: https://www.vaultproject.io/
