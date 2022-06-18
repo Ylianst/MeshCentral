@@ -491,6 +491,7 @@ function createAuthenticodeHandler(path) {
         });
 
         // Post the data
+        req.on('error', function (err) { func('' + err); });
         req.write(requestBody);
         req.end();
     }
@@ -1317,6 +1318,7 @@ function createAuthenticodeHandler(path) {
             });
 
             // Post the data
+            req.on('error', function (err) { func('' + err); });
             req.write(requestBody);
             req.end();
         }
@@ -1622,6 +1624,7 @@ function createAuthenticodeHandler(path) {
                 });
 
                 // Post the data
+                req.on('error', function (err) { func('' + err); });
                 req.write(requestBody);
                 req.end();
             }
