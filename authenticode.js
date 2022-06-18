@@ -486,7 +486,7 @@ function createAuthenticodeHandler(path) {
                 fs.closeSync(output);
 
                 // Indicate we are done
-                func(null);
+                func(null, written);
             });
         });
 
@@ -1372,7 +1372,7 @@ function createAuthenticodeHandler(path) {
 
         // Close the file
         fs.closeSync(output);
-        func(null);
+        func(null, written);
     }
 
     // Save an executable without the signature
@@ -1635,7 +1635,7 @@ function createAuthenticodeHandler(path) {
         fs.closeSync(output);
 
         // Indicate success
-        func(null);
+        func(null, written);
     }
 
     function writeExecutableEx(output, p7signature, written, func) {
@@ -1669,7 +1669,7 @@ function createAuthenticodeHandler(path) {
         fs.closeSync(output);
 
         // Indicate success
-        func(null);
+        func(null, written);
     }
 
     // Return null if we could not open the file
