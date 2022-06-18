@@ -3003,7 +3003,7 @@ function CreateMeshCentralServer(config, args) {
                     // Load the agent with a random msh added to it.
                     const outStream = new require('stream').Duplex();
                     outStream.meshAgentBinary = objx.meshAgentBinaries[archid];
-                    outStream.meshAgentBinary.randomMsh = agentSignCertInfo.cert.subject.hash;
+                    if (agentSignCertInfo) { outStream.meshAgentBinary.randomMsh = agentSignCertInfo.cert.subject.hash; } else { outStream.meshAgentBinary.randomMsh = obj.crypto.randomBytes(16).toString('hex'); }
                     outStream.bufferList = [];
                     outStream._write = function (chunk, encoding, callback) { this.bufferList.push(chunk); if (callback) callback(); }; // Append the chuck.
                     outStream._read = function (size) { }; // Do nothing, this is not going to be called.
