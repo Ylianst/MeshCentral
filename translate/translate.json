@@ -42579,7 +42579,7 @@
       "fi": "Ei uusia laiteryhmiä.",
       "fr": "Pas de nouveau groupe d'appareils",
       "hi": "कोई नया उपकरण समूह नहीं",
-      "it": "Nessun nuovo gruppo di dispositivi ",
+      "it": "Nessun nuovo gruppo di dispositivi",
       "ja": "新しいデバイスグループはありません",
       "ko": "새로운 장치 그룹이 없습니다.",
       "nl": "Geen nieuwe apparaatgroepen",
@@ -42624,7 +42624,7 @@
       "fi": "Ei politiikkaa",
       "fr": "Aucune restriction",
       "hi": "कोई नीति नहीं",
-      "it": "Nessuna politica ",
+      "it": "Nessuna politica",
       "ja": "ポリシーなし",
       "ko": "정책이 없습니다.",
       "nl": "Geen beleid",
@@ -70541,7 +70541,7 @@
       "nl": "Werkmap",
       "pl": "Folder Roboczy",
       "ru": "Рабочий каталог",
-      "fr": "Répertoire de travail\n",
+      "fr": "Répertoire de travail",
       "xloc": [
         "default.handlebars->41->1221"
       ]
