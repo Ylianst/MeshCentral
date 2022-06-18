@@ -288,12 +288,10 @@ function createAuthenticodeHandler(path) {
             var derlen = forge.asn1.getBerValueLength(forge.util.createBuffer(pkcs7raw.slice(1, 5))) + 4;
             if (derlen != pkcs7raw.length) { pkcs7raw = pkcs7raw.slice(0, derlen); }
 
-            //console.log('pkcs7raw', Buffer.from(pkcs7raw, 'binary').toString('base64'));
-
             // Decode the signature block
             var pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(pkcs7raw));
 
-            // To work around ForgeJS PKCS#7 limitation, this may break PKCS7 verify if ForjeJS adds support for it in the future
+            // To work around ForgeJS PKCS#7 limitation, this may break PKCS7 verify if ForgeJS adds support for it in the future
             // Switch content type from "1.3.6.1.4.1.311.2.1.4" to "1.2.840.113549.1.7.1"
             pkcs7der.value[1].value[0].value[2].value[0].value = forge.asn1.oidToDer(forge.pki.oids.data).data;
 
@@ -330,7 +328,7 @@ function createAuthenticodeHandler(path) {
                             ) {
                                 var v = pkcs7.rawCapture.authenticatedAttributes[i].value[1].value[0].value[j].value[0].value;
                                 if (v.startsWith('http://') || v.startsWith('https://') || ((v.length % 2) == 1)) { obj.signingAttribs.push(v); } else {
-                                    var r = ""; // This string value is in UCS2 format, convert it to a normal string.
+                                    var r = ''; // This string value is in UCS2 format, convert it to a normal string.
                                     for (var k = 0; k < v.length; k += 2) { r += String.fromCharCode((v.charCodeAt(k + 8) << 8) + v.charCodeAt(k + 1)); }
                                     obj.signingAttribs.push(r);
                                 }
@@ -366,7 +364,7 @@ function createAuthenticodeHandler(path) {
     }
 
     // Make a timestamp signature request
-    obj.timeStampRequest = function (url, func) {
+    obj.timeStampRequest = function (args, func) {
         // Create the timestamp request in DER format
         const asn1 = forge.asn1;
         const pkcs7dataOid = asn1.oidToDer('1.2.840.113549.1.7.1').data;
@@ -398,20 +396,90 @@ function createAuthenticodeHandler(path) {
             }
         };
 
-        console.log('options', options);
-        console.log('requestBody', requestBody);
-
-        // Debug
-        const sampleResponse = "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";
-        func(null, sampleResponse);
-        return;
-
         // Set up the request
         var responseAccumulator = '';
-        var req = http.request(url, options, function (res) {
+        var req = http.request(args.time, options, function (res) {
             res.setEncoding('utf8');
             res.on('data', function (chunk) { responseAccumulator += chunk; });
-            res.on('end', function () { func(null, Buffer.from(responseAccumulator, 'base64').toString('base64')); });
+            res.on('end', function () {
+                // Decode the timestamp signature block
+                const timepkcs7der = forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(responseAccumulator, 'base64').toString('binary')));
+
+                // Decode the executable signature block
+                const pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(obj.getRawSignatureBlock(), 'base64').toString('binary')));
+
+                // Get the ASN1 certificates used to sign the timestamp and add them to the certs in the PKCS7 of the executable
+                // TODO: We could look to see if the certificate is already present in the executable
+                const timeasn1Certs = timepkcs7der.value[1].value[0].value[3].value;
+                for (var i in timeasn1Certs) { pkcs7der.value[1].value[0].value[3].value.push(timeasn1Certs[i]); }
+
+                // Get the time signature and add it to the executables PKCS7
+                const timeasn1Signature = timepkcs7der.value[1].value[0].value[4];
+                const countersignatureOid = asn1.oidToDer('1.2.840.113549.1.9.6').data;
+                const asn1obj2 =
+                    asn1.create(asn1.Class.CONTEXT_SPECIFIC, 1, true, [
+                        asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OID, false, countersignatureOid),
+                            timeasn1Signature
+                        ])
+                    ]);
+                pkcs7der.value[1].value[0].value[4].value[0].value.push(asn1obj2);
+
+                // Re-encode the executable signature block
+                const p7signature = Buffer.from(forge.asn1.toDer(pkcs7der).data, 'binary');
+
+                // Open the output file
+                var output = null;
+                try { output = fs.openSync(args.out, 'w+'); } catch (ex) { }
+                if (output == null) return false;
+                var tmp, written = 0;
+                var executableSize = obj.header.sigpos ? obj.header.sigpos : this.filesize;
+
+                // Compute pre-header length and copy that to the new file
+                var preHeaderLen = (obj.header.peHeaderLocation + 152 + (obj.header.pe32plus * 16));
+                var tmp = readFileSlice(written, preHeaderLen);
+                fs.writeSync(output, tmp);
+                written += tmp.length;
+
+                // Quad Align the results, adding padding if necessary
+                var len = executableSize + p7signature.length;
+                var padding = (8 - ((len) % 8)) % 8;
+
+                // Write the signature header
+                var addresstable = Buffer.alloc(8);
+                addresstable.writeUInt32LE(executableSize);
+                addresstable.writeUInt32LE(8 + p7signature.length + padding, 4);
+                fs.writeSync(output, addresstable);
+                written += addresstable.length;
+
+                // Copy the rest of the file until the start of the signature block
+                while ((executableSize - written) > 0) {
+                    tmp = readFileSlice(written, Math.min(executableSize - written, 65536));
+                    fs.writeSync(output, tmp);
+                    written += tmp.length;
+                }
+
+                // Write the signature block header and signature
+                var win = Buffer.alloc(8);                              // WIN CERTIFICATE Structure
+                win.writeUInt32LE(p7signature.length + padding + 8);    // DWORD length
+                win.writeUInt16LE(512, 4);                              // WORD revision
+                win.writeUInt16LE(2, 6);                                // WORD type
+                fs.writeSync(output, win);
+                fs.writeSync(output, p7signature);
+                if (padding > 0) { fs.writeSync(output, Buffer.alloc(padding, 0)); }
+                written += (p7signature.length + padding + 8);
+
+                // Compute the checksum and write it in the PE header checksum location
+                var tmp = Buffer.alloc(4);
+                tmp.writeUInt32LE(runChecksumOnFile(output, written, ((obj.header.peOptionalHeaderLocation + 64) / 4)));
+                fs.writeSync(output, tmp, 0, 4, obj.header.peOptionalHeaderLocation + 64);
+
+                // Close the file
+                fs.closeSync(output);
+
+                // Indicate we are done
+                func(null);
+            });
         });
 
         // Post the data
@@ -1110,7 +1178,7 @@ function createAuthenticodeHandler(path) {
     }
 
     // Sign the file using the certificate and key. If none is specified, generate a dummy one
-    obj.sign = function (cert, args) {
+    obj.sign = function (cert, args, func) {
         if (cert == null) { cert = createSelfSignedCert({ cn: 'Test' }); }
 
         // Set the hash algorithm hash OID
@@ -1121,16 +1189,16 @@ function createAuthenticodeHandler(path) {
         if (args.hash == 'sha512') { hashOid = forge.pki.oids.sha512; fileHash = obj.getHash('sha512'); }
         if (args.hash == 'sha224') { hashOid = forge.pki.oids.sha224; fileHash = obj.getHash('sha224'); }
         if (args.hash == 'md5') { hashOid = forge.pki.oids.md5; fileHash = obj.getHash('md5'); }
-        if (hashOid == null) return false;
+        if (hashOid == null) { func(false); return; };
 
         // Create the signature block
-        var p7 = forge.pkcs7.createSignedData();
+        var xp7 = forge.pkcs7.createSignedData();
         var content = { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 6, 'constructed': false, 'composed': false, 'value': forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.15').data }, { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 3, 'constructed': false, 'composed': false, 'value': '\u0000', 'bitStringContents': '\u0000', 'original': { 'tagClass': 0, 'type': 3, 'constructed': false, 'composed': false, 'value': '\u0000' } }, { 'tagClass': 128, 'type': 0, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 2, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': '' }] }] }] }] }, { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 6, 'constructed': false, 'composed': false, 'value': forge.asn1.oidToDer(hashOid).data }, { 'tagClass': 0, 'type': 5, 'constructed': false, 'composed': false, 'value': '' }] }, { 'tagClass': 0, 'type': 4, 'constructed': false, 'composed': false, 'value': fileHash.toString('binary') }] }] };
-        p7.contentInfo = forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.SEQUENCE, true, [forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.OID, false, forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.4').getBytes())]);
-        p7.contentInfo.value.push(forge.asn1.create(forge.asn1.Class.CONTEXT_SPECIFIC, 0, true, [content]));
-        p7.content = {}; // We set .contentInfo and have .content empty to bypass node-forge limitation on the type of content it can sign.
-        p7.addCertificate(cert.cert);
-        if (cert.extraCerts) { for (var i = 0; i < cert.extraCerts.length; i++) { p7.addCertificate(cert.extraCerts[0]); } } // Add any extra certificates that form the cert chain
+        xp7.contentInfo = forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.SEQUENCE, true, [forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.OID, false, forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.4').getBytes())]);
+        xp7.contentInfo.value.push(forge.asn1.create(forge.asn1.Class.CONTEXT_SPECIFIC, 0, true, [content]));
+        xp7.content = {}; // We set .contentInfo and have .content empty to bypass node-forge limitation on the type of content it can sign.
+        xp7.addCertificate(cert.cert);
+        if (cert.extraCerts) { for (var i = 0; i < cert.extraCerts.length; i++) { xp7.addCertificate(cert.extraCerts[0]); } } // Add any extra certificates that form the cert chain
 
         // Build authenticated attributes
         var authenticatedAttributes = [
@@ -1149,22 +1217,109 @@ function createAuthenticodeHandler(path) {
         }
 
         // Add the signer and sign
-        p7.addSigner({
+        xp7.addSigner({
             key: cert.key,
             certificate: cert.cert,
             digestAlgorithm: forge.pki.oids.sha384,
             authenticatedAttributes: authenticatedAttributes
         });
-        p7.sign();
-        var p7signature = Buffer.from(forge.pkcs7.messageToPem(p7).split('-----BEGIN PKCS7-----')[1].split('-----END PKCS7-----')[0], 'base64');
-        //console.log('Signature', Buffer.from(p7signature, 'binary').toString('base64'));
+        xp7.sign();
+        var p7signature = Buffer.from(forge.pkcs7.messageToPem(xp7).split('-----BEGIN PKCS7-----')[1].split('-----END PKCS7-----')[0], 'base64');
 
+        if (args.time == null) {
+            // Sign the executable without timestamp
+            signEx(args, p7signature, obj.filesize, func);
+        } else {
+            // Decode the signature block
+            var pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(p7signature));
+
+            // To work around ForgeJS PKCS#7 limitation, this may break PKCS7 verify if ForgeJS adds support for it in the future
+            // Switch content type from "1.3.6.1.4.1.311.2.1.4" to "1.2.840.113549.1.7.1"
+            pkcs7der.value[1].value[0].value[2].value[0].value = forge.asn1.oidToDer(forge.pki.oids.data).data;
+
+            // Decode the PKCS7 message
+            var pkcs7 = p7.messageFromAsn1(pkcs7der);
+
+            // Create the timestamp request in DER format
+            const asn1 = forge.asn1;
+            const pkcs7dataOid = asn1.oidToDer('1.2.840.113549.1.7.1').data;
+            const microsoftCodeSigningOid = asn1.oidToDer('1.3.6.1.4.1.311.3.2.1').data;
+            const asn1obj =
+                asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                    asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OID, false, microsoftCodeSigningOid),
+                    asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                        asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OID, false, pkcs7dataOid),
+                        asn1.create(asn1.Class.CONTEXT_SPECIFIC, 0, true, [
+                            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, pkcs7.rawCapture.signature.toString('binary')) // Signature here
+                        ])
+                    ])
+                ]);
+
+            // Re-decode the PKCS7 from the executable, this time, no workaround needed
+            pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(p7signature));
+
+            // Serialize an ASN.1 object to DER format in Base64
+            const requestBody = Buffer.from(asn1.toDer(asn1obj).data, 'binary').toString('base64');
+
+            // Make an HTTP request
+            const http = require('http');
+            var options = {
+                method: 'POST',
+                headers: {
+                    'accept': 'application/octet-stream',
+                    'cache-control': 'no-cache',
+                    'user-agent': 'Transport',
+                    'content-type': 'application/octet-stream',
+                    'content-length': Buffer.byteLength(requestBody)
+                }
+            };
+
+            // Set up the request
+            var responseAccumulator = '';
+            var req = http.request(args.time, options, function (res) {
+                res.setEncoding('utf8');
+                res.on('data', function (chunk) { responseAccumulator += chunk; });
+                res.on('end', function () {
+                    // Decode the timestamp signature block
+                    const timepkcs7der = forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(responseAccumulator, 'base64').toString('binary')));
+
+                    // Get the ASN1 certificates used to sign the timestamp and add them to the certs in the PKCS7 of the executable
+                    // TODO: We could look to see if the certificate is already present in the executable
+                    const timeasn1Certs = timepkcs7der.value[1].value[0].value[3].value;
+                    for (var i in timeasn1Certs) { pkcs7der.value[1].value[0].value[3].value.push(timeasn1Certs[i]); }
+
+                    // Get the time signature and add it to the executables PKCS7
+                    const timeasn1Signature = timepkcs7der.value[1].value[0].value[4];
+                    const countersignatureOid = asn1.oidToDer('1.2.840.113549.1.9.6').data;
+                    const asn1obj2 =
+                        asn1.create(asn1.Class.CONTEXT_SPECIFIC, 1, true, [
+                            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                                asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OID, false, countersignatureOid),
+                                timeasn1Signature
+                            ])
+                        ]);
+                    pkcs7der.value[1].value[0].value[4].value[0].value.push(asn1obj2);
+
+                    // Re-encode the executable signature block
+                    const p7signature = Buffer.from(forge.asn1.toDer(pkcs7der).data, 'binary');
+
+                    // Write the file with the signature block
+                    signEx(args, p7signature, obj.filesize, func);
+                });
+            });
+
+            // Post the data
+            req.write(requestBody);
+            req.end();
+        }
+    }
+
+    function signEx(args, p7signature, filesize, func) {
         // Open the output file
         var output = null;
         try { output = fs.openSync(args.out, 'w+'); } catch (ex) { }
-        if (output == null) return false;
-        var tmp, written = 0;
-        var executableSize = obj.header.sigpos ? obj.header.sigpos : this.filesize;
+        if (output == null) { func(false); return; }
+        var tmp, written = 0, executableSize = obj.header.sigpos ? obj.header.sigpos : filesize;
 
         // Compute pre-header length and copy that to the new file
         var preHeaderLen = (obj.header.peHeaderLocation + 152 + (obj.header.pe32plus * 16));
@@ -1207,7 +1362,7 @@ function createAuthenticodeHandler(path) {
 
         // Close the file
         fs.closeSync(output);
-        return true;
+        func(null);
     }
 
     // Save an executable without the signature
@@ -1242,7 +1397,7 @@ function createAuthenticodeHandler(path) {
     }
 
     // Save the executable
-    obj.writeExecutable = function (args, cert) {
+    obj.writeExecutable = function (args, cert, func) {
         // Open the file
         var output = fs.openSync(args.out, 'w+');
         var tmp, written = 0;
@@ -1340,13 +1495,13 @@ function createAuthenticodeHandler(path) {
             if (hashOid == null) return false;
 
             // Create the signature block
-            var p7 = forge.pkcs7.createSignedData();
+            var xp7 = forge.pkcs7.createSignedData();
             var content = { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 6, 'constructed': false, 'composed': false, 'value': forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.15').data }, { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 3, 'constructed': false, 'composed': false, 'value': '\u0000', 'bitStringContents': '\u0000', 'original': { 'tagClass': 0, 'type': 3, 'constructed': false, 'composed': false, 'value': '\u0000' } }, { 'tagClass': 128, 'type': 0, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 2, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': '' }] }] }] }] }, { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 0, 'type': 6, 'constructed': false, 'composed': false, 'value': forge.asn1.oidToDer(hashOid).data }, { 'tagClass': 0, 'type': 5, 'constructed': false, 'composed': false, 'value': '' }] }, { 'tagClass': 0, 'type': 4, 'constructed': false, 'composed': false, 'value': fileHash.toString('binary') }] }] };
-            p7.contentInfo = forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.SEQUENCE, true, [forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.OID, false, forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.4').getBytes())]);
-            p7.contentInfo.value.push(forge.asn1.create(forge.asn1.Class.CONTEXT_SPECIFIC, 0, true, [content]));
-            p7.content = {}; // We set .contentInfo and have .content empty to bypass node-forge limitation on the type of content it can sign.
-            p7.addCertificate(cert.cert);
-            if (cert.extraCerts) { for (var i = 0; i < cert.extraCerts.length; i++) { p7.addCertificate(cert.extraCerts[0]); } } // Add any extra certificates that form the cert chain
+            xp7.contentInfo = forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.SEQUENCE, true, [forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.OID, false, forge.asn1.oidToDer('1.3.6.1.4.1.311.2.1.4').getBytes())]);
+            xp7.contentInfo.value.push(forge.asn1.create(forge.asn1.Class.CONTEXT_SPECIFIC, 0, true, [content]));
+            xp7.content = {}; // We set .contentInfo and have .content empty to bypass node-forge limitation on the type of content it can sign.
+            xp7.addCertificate(cert.cert);
+            if (cert.extraCerts) { for (var i = 0; i < cert.extraCerts.length; i++) { xp7.addCertificate(cert.extraCerts[0]); } } // Add any extra certificates that form the cert chain
 
             // Build authenticated attributes
             var authenticatedAttributes = [
@@ -1365,45 +1520,144 @@ function createAuthenticodeHandler(path) {
             }
 
             // Add the signer and sign
-            p7.addSigner({
+            xp7.addSigner({
                 key: cert.key,
                 certificate: cert.cert,
                 digestAlgorithm: forge.pki.oids.sha384,
                 authenticatedAttributes: authenticatedAttributes
             });
-            p7.sign();
-            var p7signature = Buffer.from(forge.pkcs7.messageToPem(p7).split('-----BEGIN PKCS7-----')[1].split('-----END PKCS7-----')[0], 'base64');
+            xp7.sign();
+            var p7signature = Buffer.from(forge.pkcs7.messageToPem(xp7).split('-----BEGIN PKCS7-----')[1].split('-----END PKCS7-----')[0], 'base64');
             //console.log('Signature', Buffer.from(p7signature, 'binary').toString('base64'));
 
-            // Quad Align the results, adding padding if necessary
-            var len = written + p7signature.length;
-            var padding = (8 - ((len) % 8)) % 8;
+            if (args.time == null) {
+                // Write the signature block to the output executable without time stamp
+                writeExecutableEx(output, p7signature, written, func);
+            } else {
+                // Decode the signature block
+                var pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(p7signature));
 
-            // Write the signature block header and signature
-            var win = Buffer.alloc(8);                              // WIN CERTIFICATE Structure
-            win.writeUInt32LE(p7signature.length + padding + 8);    // DWORD length
-            win.writeUInt16LE(512, 4);                              // WORD revision
-            win.writeUInt16LE(2, 6);                                // WORD type
-            fs.writeSync(output, win);
-            fs.writeSync(output, p7signature);
-            if (padding > 0) { fs.writeSync(output, Buffer.alloc(padding, 0)); }
+                // To work around ForgeJS PKCS#7 limitation, this may break PKCS7 verify if ForgeJS adds support for it in the future
+                // Switch content type from "1.3.6.1.4.1.311.2.1.4" to "1.2.840.113549.1.7.1"
+                pkcs7der.value[1].value[0].value[2].value[0].value = forge.asn1.oidToDer(forge.pki.oids.data).data;
 
-            // Write the signature header
-            var addresstable = Buffer.alloc(8);
-            addresstable.writeUInt32LE(written);
-            addresstable.writeUInt32LE(8 + p7signature.length + padding, 4);
-            var signatureHeaderLocation = (obj.header.peHeaderLocation + 152 + (obj.header.pe32plus * 16));
-            fs.writeSync(output, addresstable, 0, 8, signatureHeaderLocation);
-            written += (p7signature.length + padding + 8);          // Add the signature block to written counter
+                // Decode the PKCS7 message
+                var pkcs7 = p7.messageFromAsn1(pkcs7der);
 
-            // Compute the checksum and write it in the PE header checksum location
-            var tmp = Buffer.alloc(4);
-            tmp.writeUInt32LE(runChecksumOnFile(output, written, ((obj.header.peOptionalHeaderLocation + 64) / 4)));
-            fs.writeSync(output, tmp, 0, 4, obj.header.peOptionalHeaderLocation + 64);
+                // Create the timestamp request in DER format
+                const asn1 = forge.asn1;
+                const pkcs7dataOid = asn1.oidToDer('1.2.840.113549.1.7.1').data;
+                const microsoftCodeSigningOid = asn1.oidToDer('1.3.6.1.4.1.311.3.2.1').data;
+                const asn1obj =
+                    asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                        asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OID, false, microsoftCodeSigningOid),
+                        asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OID, false, pkcs7dataOid),
+                            asn1.create(asn1.Class.CONTEXT_SPECIFIC, 0, true, [
+                                asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, pkcs7.rawCapture.signature.toString('binary')) // Signature here
+                            ])
+                        ])
+                    ]);
+
+                // Re-decode the PKCS7 from the executable, this time, no workaround needed
+                pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(p7signature));
+
+                // Serialize an ASN.1 object to DER format in Base64
+                const requestBody = Buffer.from(asn1.toDer(asn1obj).data, 'binary').toString('base64');
+
+                // Make an HTTP request
+                const http = require('http');
+                var options = {
+                    method: 'POST',
+                    headers: {
+                        'accept': 'application/octet-stream',
+                        'cache-control': 'no-cache',
+                        'user-agent': 'Transport',
+                        'content-type': 'application/octet-stream',
+                        'content-length': Buffer.byteLength(requestBody)
+                    }
+                };
+
+                // Set up the request
+                var responseAccumulator = '';
+                var req = http.request(args.time, options, function (res) {
+                    res.setEncoding('utf8');
+                    res.on('data', function (chunk) { responseAccumulator += chunk; });
+                    res.on('end', function () {
+                        // Decode the timestamp signature block
+                        const timepkcs7der = forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(responseAccumulator, 'base64').toString('binary')));
+
+                        // Get the ASN1 certificates used to sign the timestamp and add them to the certs in the PKCS7 of the executable
+                        // TODO: We could look to see if the certificate is already present in the executable
+                        const timeasn1Certs = timepkcs7der.value[1].value[0].value[3].value;
+                        for (var i in timeasn1Certs) { pkcs7der.value[1].value[0].value[3].value.push(timeasn1Certs[i]); }
+
+                        // Get the time signature and add it to the executables PKCS7
+                        const timeasn1Signature = timepkcs7der.value[1].value[0].value[4];
+                        const countersignatureOid = asn1.oidToDer('1.2.840.113549.1.9.6').data;
+                        const asn1obj2 =
+                            asn1.create(asn1.Class.CONTEXT_SPECIFIC, 1, true, [
+                                asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                                    asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OID, false, countersignatureOid),
+                                    timeasn1Signature
+                                ])
+                            ]);
+                        pkcs7der.value[1].value[0].value[4].value[0].value.push(asn1obj2);
+
+                        // Re-encode the executable signature block
+                        const p7signature = Buffer.from(forge.asn1.toDer(pkcs7der).data, 'binary');
+
+                        // Write the file with the signature block
+                        writeExecutableEx(output, p7signature, written, func);
+                    });
+                });
+
+                // Post the data
+                req.write(requestBody);
+                req.end();
+            }
+            return;
         }
 
         // Close the file
         fs.closeSync(output);
+
+        // Indicate success
+        func(null);
+    }
+
+    function writeExecutableEx(output, p7signature, written, func) {
+        // Quad Align the results, adding padding if necessary
+        var len = written + p7signature.length;
+        var padding = (8 - ((len) % 8)) % 8;
+
+        // Write the signature block header and signature
+        var win = Buffer.alloc(8);                              // WIN CERTIFICATE Structure
+        win.writeUInt32LE(p7signature.length + padding + 8);    // DWORD length
+        win.writeUInt16LE(512, 4);                              // WORD revision
+        win.writeUInt16LE(2, 6);                                // WORD type
+        fs.writeSync(output, win);
+        fs.writeSync(output, p7signature);
+        if (padding > 0) { fs.writeSync(output, Buffer.alloc(padding, 0)); }
+
+        // Write the signature header
+        var addresstable = Buffer.alloc(8);
+        addresstable.writeUInt32LE(written);
+        addresstable.writeUInt32LE(8 + p7signature.length + padding, 4);
+        var signatureHeaderLocation = (obj.header.peHeaderLocation + 152 + (obj.header.pe32plus * 16));
+        fs.writeSync(output, addresstable, 0, 8, signatureHeaderLocation);
+        written += (p7signature.length + padding + 8);          // Add the signature block to written counter
+
+        // Compute the checksum and write it in the PE header checksum location
+        var tmp = Buffer.alloc(4);
+        tmp.writeUInt32LE(runChecksumOnFile(output, written, ((obj.header.peOptionalHeaderLocation + 64) / 4)));
+        fs.writeSync(output, tmp, 0, 4, obj.header.peOptionalHeaderLocation + 64);
+
+        // Close the file
+        fs.closeSync(output);
+
+        // Indicate success
+        func(null);
     }
 
     // Return null if we could not open the file
@@ -1430,6 +1684,7 @@ function start() {
         console.log("          --desc [description]     Description string to embbed into signature.");
         console.log("          --url [url]              URL to embbed into signature.");
         console.log("          --hash [method]          Default is SHA384, possible value: MD5, SHA224, SHA256, SHA384 or SHA512.");
+        console.log("          --time [url]             The time signing server URL.");
         console.log("  unsign: Remove the signature from the executable.");
         console.log("          --exe [file]             Required executable to un-sign.");
         console.log("          --out [file]             Resulting executable with signature removed.");
@@ -1442,6 +1697,10 @@ function start() {
         console.log("          --org [value]            Certificate organization name.");
         console.log("          --ou [value]             Certificate organization unit name.");
         console.log("          --serial [value]         Certificate serial number.");
+        console.log("  timestamp: Add a signed timestamp to an already signed executable.");
+        console.log("          --exe [file]             Required executable to sign.");
+        console.log("          --out [file]             Resulting signed executable.");
+        console.log("          --time [url]             The time signing server URL.");
         console.log("");
         console.log("Note that certificate PEM files must first have the signing certificate,");
         console.log("followed by all certificates that form the trust chain.");
@@ -1532,10 +1791,18 @@ function start() {
         if (cert == null) { console.log("Unable to load certificate and/or private key, generating test certificate."); cert = createSelfSignedCert({ cn: 'Test' }); }
         if (resChanges == false) {
             console.log("Signing to " + args.out);
-            exe.sign(cert, args); // Simple signing, copy most of the original file.
+            exe.sign(cert, args, function (err) { // Simple signing, copy most of the original file.
+                if (err == null) { console.log("Done."); } else { console.log(err); }
+                if (exe != null) { exe.close(); }
+            });
+            return;
         } else {
             console.log("Changing resources and signing to " + args.out);
-            exe.writeExecutable(args, cert); // Signing with resources decoded and re-encoded.
+            exe.writeExecutable(args, cert, function (err) { // Signing with resources decoded and re-encoded.
+                if (err == null) { console.log("Done."); } else { console.log(err); }
+                if (exe != null) { exe.close(); }
+            });
+            return;
         }
         console.log("Done.");
     }
@@ -1612,9 +1879,14 @@ function start() {
     if (command == 'timestamp') {
         if (exe == null) { console.log("Missing --exe [filename]"); return; }
         if (exe.signature == null) { console.log("Executable is not signed."); return; }
-        if (typeof args.url != 'string') { console.log("Missing --url [url]"); return; }
+        if (typeof args.time != 'string') { console.log("Missing --time [url]"); return; }
+        createOutFile(args, args.exe);
         console.log("Requesting time signature...");
-        exe.timeStampRequest(args.url, function (err, response) { console.log("Done: RSP: " + response); })
+        exe.timeStampRequest(args, function (err) {
+            if (err == null) { console.log("Done."); } else { console.log(err); }
+            if (exe != null) { exe.close(); }
+        })
+        return;
     }
 
     // Close the file
