@@ -413,6 +413,14 @@ function createAuthenticodeHandler(path) {
                 const timeasn1Certs = timepkcs7der.value[1].value[0].value[3].value;
                 for (var i in timeasn1Certs) { pkcs7der.value[1].value[0].value[3].value.push(timeasn1Certs[i]); }
 
+                // Remove any existing time stamp signatures
+                var newValues = [];
+                for (var i in pkcs7der.value[1].value[0].value[4].value[0].value) {
+                    const j = pkcs7der.value[1].value[0].value[4].value[0].value[i];
+                    if ((j.tagClass != 128) || (j.type != 1)) { newValues.push(j); } // If this is not a time stamp, add it to out new list.
+                }
+                pkcs7der.value[1].value[0].value[4].value[0].value = newValues; // Set the new list
+
                 // Get the time signature and add it to the executables PKCS7
                 const timeasn1Signature = timepkcs7der.value[1].value[0].value[4];
                 const countersignatureOid = asn1.oidToDer('1.2.840.113549.1.9.6').data;
@@ -1606,6 +1614,7 @@ function createAuthenticodeHandler(path) {
 
                         // Re-encode the executable signature block
                         const p7signature = Buffer.from(forge.asn1.toDer(pkcs7der).data, 'binary');
+                        console.log('r3');
 
                         // Write the file with the signature block
                         writeExecutableEx(output, p7signature, written, func);
