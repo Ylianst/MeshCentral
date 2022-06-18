@@ -2851,7 +2851,6 @@ function CreateMeshCentralServer(config, args) {
 
         // Check if a custom agent signing certificate is available
         var agentSignCertInfo = require('./authenticode.js').loadCertificates([obj.path.join(obj.datapath, 'agentsigningcert.pem')]);
-        if (agentSignCertInfo == null) { func(); return; } // No code signing certificate, nothing to do.
 
         // If not using a custom signing cert, get agent code signature certificate ready with the full cert chain
         if ((agentSignCertInfo == null) && (obj.certificates.codesign != null)) {
@@ -2861,6 +2860,7 @@ function CreateMeshCentralServer(config, args) {
                 extraCerts: [obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.root.cert)]
             }
         }
+        if (agentSignCertInfo == null) { func(); return; } // No code signing certificate, nothing to do.
 
         // Setup the domain is specified
         var objx = domain, suffix = '';
@@ -2954,6 +2954,15 @@ function CreateMeshCentralServer(config, args) {
     obj.updateMeshAgentsTable = function (domain, func) {
         // Check if a custom agent signing certificate is available
         var agentSignCertInfo = require('./authenticode.js').loadCertificates([obj.path.join(obj.datapath, 'agentsigningcert.pem')]);
+
+        // If not using a custom signing cert, get agent code signature certificate ready with the full cert chain
+        if ((agentSignCertInfo == null) && (obj.certificates.codesign != null)) {
+            agentSignCertInfo = {
+                cert: obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.codesign.cert),
+                key: obj.certificateOperations.forge.pki.privateKeyFromPem(obj.certificates.codesign.key),
+                extraCerts: [obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.root.cert)]
+            }
+        }
 
         // Setup the domain is specified
         var objx = domain, suffix = '';
