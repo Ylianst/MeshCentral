@@ -69,6 +69,11 @@ function loadCertificates(pemFileNames) {
                 var k = PemKeys[j].indexOf('-----END RSA PRIVATE KEY-----');
                 if (k >= 0) { keys.push(pki.privateKeyFromPem('-----BEGIN RSA PRIVATE KEY-----' + PemKeys[j].substring(0, k) + '-----END RSA PRIVATE KEY-----')); }
             }
+            PemKeys = pem.split('-----BEGIN PRIVATE KEY-----');
+            for (var j in PemKeys) {
+                var k = PemKeys[j].indexOf('-----END PRIVATE KEY-----');
+                if (k >= 0) { keys.push(pki.privateKeyFromPem('-----BEGIN PRIVATE KEY-----' + PemKeys[j].substring(0, k) + '-----END PRIVATE KEY-----')); }
+            }
         } catch (ex) { }
     }
     if ((certs.length == 0) || (keys.length != 1)) return; // No certificates or private keys
