@@ -198,6 +198,7 @@ var CreateRDPDesktop = function (canvasid) {
         if (obj.mouseNagleTimer != null) { clearTimeout(obj.mouseNagleTimer); obj.mouseNagleTimer = null; }
         var delta = 0;
         if (e.detail) { delta = (e.detail * 120); } else if (e.wheelDelta) { delta = (e.wheelDelta * 3); }
+        if (obj.m.ReverseMouseWheel) { delta = -1 * delta; } // Reverse the mouse wheel
         if (delta != 0) { obj.socket.send(JSON.stringify(['wheel', m.x, m.y, delta, false, false])); }
         e.preventDefault();
         return false;
