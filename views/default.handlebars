@@ -9649,7 +9649,7 @@
 
             // Enable action button if mesh type is not "local devices"
             QV('termActionsBtn', terminalNode.mtype != 3);
-            if (((termState == true) && (terminal.contype != 3)) || (terminalNode.agent.id == 3) || (terminalNode.agent.id == 4)) {
+            if (((termState == true) && (terminal.contype != 3)) || (terminalNode.agent == null) || (terminalNode.agent.id == 3) || (terminalNode.agent.id == 4)) {
                 QH('terminalCustomUpperRight', '');
             } else {
                 QH('terminalCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (terminalNode.sshport?terminalNode.sshport:22)) + '</a>');
@@ -10441,7 +10441,7 @@
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
             }
             var filesState = ((files != null) && (files.state != 0));
-            if (((filesState == true) && (files.contype != 2)) || (filesNode.agent.id == 3) || (filesNode.agent.id == 4)) {
+            if (((filesState == true) && (files.contype != 2)) || (filesNode.agent == null) || (filesNode.agent.id == 3) || (filesNode.agent.id == 4)) {
                 QH('filesCustomUpperRight', '');
             } else {
                 QH('filesCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (filesNode.sshport?filesNode.sshport:22)) + '</a>');
