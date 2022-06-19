@@ -1525,55 +1525,55 @@ module.exports.CreateAmtManager = function (parent) {
                         dev.amtstack.Delete('CIM_WiFiEndpointSettings', { InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + profilesToRemove[i].ElementName }, function (stack, name, responses, status) { }, 0, 1);
                     }
                 }
+            }
 
-                // Check the 802.1x client certificate expiration time
-                // TODO: We are only getting the client cert from the wired 802.1x profile, need to get it for wireless too.
-                var netAuthClientCert = null;
-                if (netAuthClientCertInstanceId != null) {
-                    netAuthClientCert = getInstance(responses['AMT_PublicKeyCertificate'].responses, netAuthClientCertInstanceId);
-                    if (netAuthClientCert) {
-                        var cert = null;
-                        try { cert = obj.parent.certificateOperations.forge.pki.certificateFromAsn1(obj.parent.certificateOperations.forge.asn1.fromDer(obj.parent.certificateOperations.forge.util.decode64(netAuthClientCert.X509Certificate))); } catch (ex) { }
-                        if (cert != null) {
-                            const certStart = new Date(cert.validity.notBefore).getTime();
-                            const certEnd = new Date(cert.validity.notAfter).getTime();
-                            const certMidPoint = certStart + ((certEnd - certStart) / 2);
-                            if (Date.now() > certMidPoint) { newNetAuthProfileRequested = true; } // Past mid-point or expired, request a new 802.1x certificate & profile
-                        }
+            // Check the 802.1x client certificate expiration time
+            // TODO: We are only getting the client cert from the wired 802.1x profile, need to get it for wireless too.
+            var netAuthClientCert = null;
+            if (netAuthClientCertInstanceId != null) {
+                netAuthClientCert = getInstance(responses['AMT_PublicKeyCertificate'].responses, netAuthClientCertInstanceId);
+                if (netAuthClientCert) {
+                    var cert = null;
+                    try { cert = obj.parent.certificateOperations.forge.pki.certificateFromAsn1(obj.parent.certificateOperations.forge.asn1.fromDer(obj.parent.certificateOperations.forge.util.decode64(netAuthClientCert.X509Certificate))); } catch (ex) { }
+                    if (cert != null) {
+                        const certStart = new Date(cert.validity.notBefore).getTime();
+                        const certEnd = new Date(cert.validity.notAfter).getTime();
+                        const certMidPoint = certStart + ((certEnd - certStart) / 2);
+                        if (Date.now() > certMidPoint) { newNetAuthProfileRequested = true; } // Past mid-point or expired, request a new 802.1x certificate & profile
                     }
                 }
+            }
 
-                // Figure out is there are no changes to 802.1x wired configuration
-                if ((wiredMatch == 0) && (newNetAuthProfileRequested == false)) { wiredConfig = false; }
+            // Figure out if there are no changes to 802.1x wired configuration
+            if ((wiredMatch == 0) && (newNetAuthProfileRequested == false)) { wiredConfig = false; }
 
-                // See if we need to ask MeshCentral Satellite for a new 802.1x profile
-                if (newNetAuthProfileRequested && (typeof srvNetAuthProfile.satellitecredentials == 'string')) {
-                    // Credentials for this 802.1x profile are provided using MeshCentral Satellite
-                    // Send a message to Satellite requesting a 802.1x profile for this device
-                    dev.consoleMsg("Requesting 802.1x credentials for " + netAuthStrings[srvNetAuthProfile.authenticationprotocol] + " from MeshCentral Satellite...");
-                    dev.netAuthSatReqId = Buffer.from(parent.crypto.randomBytes(16), 'binary').toString('base64'); // Generate a crypto-secure request id.
-                    dev.netAuthSatReqData = { domain: domain, wiredConfig: wiredConfig, wirelessConfig: wirelessConfig, devNetAuthProfile: devNetAuthProfile, srvNetAuthProfile: srvNetAuthProfile, profilesToAdd: profilesToAdd, prioritiesInUse: prioritiesInUse, responses: responses, xxCertificates: xxCertificates, xxCertPrivateKeys: xxCertPrivateKeys }
-                    const request = { action: 'satellite', subaction: '802.1x-ProFile-Request', satelliteFlags: 2, nodeid: dev.nodeid, icon: dev.icon, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: srvNetAuthProfile.authenticationprotocol, devname: dev.name, osname: dev.rname, ver: dev.intelamt.ver };
-                    if (netAuthClientCert != null) { request.cert = netAuthClientCert.X509Certificate; request.certid = netAuthClientCertInstanceId; }
-                    parent.DispatchEvent([srvNetAuthProfile.satellitecredentials], obj, request);
+            // See if we need to ask MeshCentral Satellite for a new 802.1x profile
+            if (newNetAuthProfileRequested && (typeof srvNetAuthProfile.satellitecredentials == 'string')) {
+                // Credentials for this 802.1x profile are provided using MeshCentral Satellite
+                // Send a message to Satellite requesting a 802.1x profile for this device
+                dev.consoleMsg("Requesting 802.1x credentials for " + netAuthStrings[srvNetAuthProfile.authenticationprotocol] + " from MeshCentral Satellite...");
+                dev.netAuthSatReqId = Buffer.from(parent.crypto.randomBytes(16), 'binary').toString('base64'); // Generate a crypto-secure request id.
+                dev.netAuthSatReqData = { domain: domain, wiredConfig: wiredConfig, wirelessConfig: wirelessConfig, devNetAuthProfile: devNetAuthProfile, srvNetAuthProfile: srvNetAuthProfile, profilesToAdd: profilesToAdd, prioritiesInUse: prioritiesInUse, responses: responses, xxCertificates: xxCertificates, xxCertPrivateKeys: xxCertPrivateKeys }
+                const request = { action: 'satellite', subaction: '802.1x-ProFile-Request', satelliteFlags: 2, nodeid: dev.nodeid, icon: dev.icon, domain: dev.nodeid.split('/')[1], nolog: 1, reqid: dev.netAuthSatReqId, authProtocol: srvNetAuthProfile.authenticationprotocol, devname: dev.name, osname: dev.rname, ver: dev.intelamt.ver };
+                if (netAuthClientCert != null) { request.cert = netAuthClientCert.X509Certificate; request.certid = netAuthClientCertInstanceId; }
+                parent.DispatchEvent([srvNetAuthProfile.satellitecredentials], obj, request);
 
-                    // Set a response timeout
-                    const netAuthTimeoutFunc = function netAuthTimeout() {
-                        if (isAmtDeviceValid(netAuthTimeout.dev) == false) return; // Device no longer exists, ignore this request.
-                        if (dev.netAuthSatReqId != null) {
-                            delete netAuthTimeout.dev.netAuthSatReqId;
-                            delete netAuthTimeout.dev.netAuthSatReqData;
-                            netAuthTimeout.dev.consoleMsg("MeshCentral Satellite did not respond in time, 802.1x profile will not be set.");
-                            devTaskCompleted(netAuthTimeout.dev);
-                        }
+                // Set a response timeout
+                const netAuthTimeoutFunc = function netAuthTimeout() {
+                    if (isAmtDeviceValid(netAuthTimeout.dev) == false) return; // Device no longer exists, ignore this request.
+                    if (dev.netAuthSatReqId != null) {
+                        delete netAuthTimeout.dev.netAuthSatReqId;
+                        delete netAuthTimeout.dev.netAuthSatReqData;
+                        netAuthTimeout.dev.consoleMsg("MeshCentral Satellite did not respond in time, 802.1x profile will not be set.");
+                        devTaskCompleted(netAuthTimeout.dev);
                     }
-                    netAuthTimeoutFunc.dev = dev;
-                    dev.netAuthSatReqTimer = setTimeout(netAuthTimeoutFunc, 20000);
-                    return;
-                } else {
-                    // No need to call MeshCentral Satellite for a 802.1x profile, so configure everything now.
-                    attempt8021xSyncEx(dev, { domain: domain, wiredConfig: wiredConfig, wirelessConfig: wirelessConfig, devNetAuthProfile: devNetAuthProfile, srvNetAuthProfile: srvNetAuthProfile, profilesToAdd: profilesToAdd, prioritiesInUse: prioritiesInUse, responses: responses, xxCertificates: xxCertificates, xxCertPrivateKeys: xxCertPrivateKeys });
                 }
+                netAuthTimeoutFunc.dev = dev;
+                dev.netAuthSatReqTimer = setTimeout(netAuthTimeoutFunc, 20000);
+                return;
+            } else {
+                // No need to call MeshCentral Satellite for a 802.1x profile, so configure everything now.
+                attempt8021xSyncEx(dev, { domain: domain, wiredConfig: wiredConfig, wirelessConfig: wirelessConfig, devNetAuthProfile: devNetAuthProfile, srvNetAuthProfile: srvNetAuthProfile, profilesToAdd: profilesToAdd, prioritiesInUse: prioritiesInUse, responses: responses, xxCertificates: xxCertificates, xxCertPrivateKeys: xxCertPrivateKeys });
             }
         });
     }
@@ -1813,31 +1813,34 @@ module.exports.CreateAmtManager = function (parent) {
     function attemptWifiSyncEx2(dev, devNetAuthData) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
         const responses = devNetAuthData.responses;
+        const wirelessConfig = devNetAuthData.wirelessConfig;
 
-        // Check if local WIFI profile sync is enabled, if not, enabled it.
-        if ((responses['AMT_WiFiPortConfigurationService'] != null) && (responses['AMT_WiFiPortConfigurationService'].response != null) && (responses['AMT_WiFiPortConfigurationService'].response['localProfileSynchronizationEnabled'] == 0)) {
-            responses['AMT_WiFiPortConfigurationService'].response['localProfileSynchronizationEnabled'] = 1;
-            dev.amtstack.Put('AMT_WiFiPortConfigurationService', responses['AMT_WiFiPortConfigurationService'].response, function (stack, name, response, status) {
-                if (status != 200) { dev.consoleMsg("Unable to enable local WIFI profile sync."); } else { dev.consoleMsg("Enabled local WIFI profile sync."); }
-            });
-        }
+        if (wirelessConfig) {
+            // Check if local WIFI profile sync is enabled, if not, enabled it.
+            if ((responses['AMT_WiFiPortConfigurationService'] != null) && (responses['AMT_WiFiPortConfigurationService'].response != null) && (responses['AMT_WiFiPortConfigurationService'].response['localProfileSynchronizationEnabled'] == 0)) {
+                responses['AMT_WiFiPortConfigurationService'].response['localProfileSynchronizationEnabled'] = 1;
+                dev.amtstack.Put('AMT_WiFiPortConfigurationService', responses['AMT_WiFiPortConfigurationService'].response, function (stack, name, response, status) {
+                    if (status != 200) { dev.consoleMsg("Unable to enable local WIFI profile sync."); } else { dev.consoleMsg("Enabled local WIFI profile sync."); }
+                });
+            }
 
-        // Change the WIFI state if needed. Right now, we always enable it.
-        // WifiState = { 3: "Disabled", 32768: "Enabled in S0", 32769: "Enabled in S0, Sx/AC" };
-        var wifiState = 32769; // For now, always enable WIFI
-        if (responses['CIM_WiFiPort'].responses.Body.EnabledState != 32769) {
-            if (wifiState == 3) {
-                dev.amtstack.CIM_WiFiPort_RequestStateChange(wifiState, null, function (stack, name, responses, status) {
-                    const dev = stack.dev;
-                    if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-                    if (status == 200) { dev.consoleMsg("Disabled WIFI."); }
-                });
-            } else {
-                dev.amtstack.CIM_WiFiPort_RequestStateChange(wifiState, null, function (stack, name, responses, status) {
-                    const dev = stack.dev;
-                    if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-                    if (status == 200) { dev.consoleMsg("Enabled WIFI."); }
-                });
+            // Change the WIFI state if needed. Right now, we always enable it.
+            // WifiState = { 3: "Disabled", 32768: "Enabled in S0", 32769: "Enabled in S0, Sx/AC" };
+            var wifiState = 32769; // For now, always enable WIFI
+            if (responses['CIM_WiFiPort'].responses.Body.EnabledState != 32769) {
+                if (wifiState == 3) {
+                    dev.amtstack.CIM_WiFiPort_RequestStateChange(wifiState, null, function (stack, name, responses, status) {
+                        const dev = stack.dev;
+                        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                        if (status == 200) { dev.consoleMsg("Disabled WIFI."); }
+                    });
+                } else {
+                    dev.amtstack.CIM_WiFiPort_RequestStateChange(wifiState, null, function (stack, name, responses, status) {
+                        const dev = stack.dev;
+                        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                        if (status == 200) { dev.consoleMsg("Enabled WIFI."); }
+                    });
+                }
             }
         }
 
