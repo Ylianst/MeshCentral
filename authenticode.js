@@ -1240,7 +1240,7 @@ function createAuthenticodeHandler(path) {
         if ((typeof args.desc == 'string') || (typeof args.url == 'string')) {
             var codeSigningAttributes = { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [] };
             if (args.desc != null) { // Encode description as big-endian unicode.
-                var desc = "", ucs = Buffer.from(args.desc, 'ucs2').toString()
+                var desc = '', ucs = Buffer.from(args.desc, 'ucs2').toString()
                 for (var k = 0; k < ucs.length; k += 2) { desc += String.fromCharCode(ucs.charCodeAt(k + 1), ucs.charCodeAt(k)); }
                 codeSigningAttributes.value.push({ 'tagClass': 128, 'type': 0, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': desc }] });
             }

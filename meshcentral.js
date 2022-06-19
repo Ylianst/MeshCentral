@@ -2867,22 +2867,19 @@ function CreateMeshCentralServer(config, args) {
         if (domain.id == '') { objx = obj; } else { suffix = '-' + domain.id; objx.meshAgentBinaries = {}; }
 
         // Generate the agent signature description and URL
-        var serverSignedAgentsPath, signDesc, signUrl;
-        if (agentSignCertInfo != null) {
-            serverSignedAgentsPath = obj.path.join(obj.datapath, 'signedagents' + suffix);
-            signDesc = (domain.title ? domain.title : agentSignCertInfo.cert.subject.hash);
-            var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-            var httpsHost = ((domain.dns != null) ? domain.dns : obj.certificates.CommonName);
-            if (obj.args.agentaliasdns != null) { httpsHost = obj.args.agentaliasdns; }
-            signUrl = 'https://' + httpsHost;
-            if (httpsPort != 443) { signUrl += ':' + httpsPort; }
-            var xdomain = (domain.dns == null) ? domain.id : '';
-            if (xdomain != '') xdomain += '/';
-            signUrl += '/' + xdomain;
+        const serverSignedAgentsPath = obj.path.join(obj.datapath, 'signedagents' + suffix);
+        const signDesc = (domain.title ? domain.title : agentSignCertInfo.cert.subject.hash);
+        const httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+        var httpsHost = ((domain.dns != null) ? domain.dns : obj.certificates.CommonName);
+        if (obj.args.agentaliasdns != null) { httpsHost = obj.args.agentaliasdns; }
+        var signUrl = 'https://' + httpsHost;
+        if (httpsPort != 443) { signUrl += ':' + httpsPort; }
+        var xdomain = (domain.dns == null) ? domain.id : '';
+        if (xdomain != '') xdomain += '/';
+        signUrl += '/' + xdomain;
 
-            // If requested, lock the agent to this server
-            if (obj.config.settings.agentsignlock) { signUrl += '?ServerID=' + obj.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert).toUpperCase(); }
-        }
+        // If requested, lock the agent to this server
+        if (obj.config.settings.agentsignlock) { signUrl += '?ServerID=' + obj.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert).toUpperCase(); }
 
         // Setup the time server
         var timeStampUrl = 'http://timestamp.comodoca.com/authenticode';
@@ -2930,7 +2927,8 @@ function CreateMeshCentralServer(config, args) {
                             // Agent was signed succesfuly
                             console.log(obj.common.format('Code signed agent {0}.', agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname));
                         } else {
-                            console.log(obj.common.format('Failed to sign agent {0}: ' + err, agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname));
+                            // Failed to sign agent
+                            addServerWarning('Failed to sign agent \"' + agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname + '\": ' + err, 22, [ agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname, err ]);
                         }
                         if (--pendingOperations === 0) { agentSignedFunc.func(); }
                     }
@@ -2939,6 +2937,7 @@ function CreateMeshCentralServer(config, args) {
                     xagentSignedFunc.objx = objx;
                     xagentSignedFunc.archid = archid;
                     xagentSignedFunc.signeedagentpath = signeedagentpath;
+                    obj.debug('main', "Code signing agent with arguments: " + JSON.stringify({ out: signeedagentpath, desc: signDesc, url: signUrl, time: timeStampUrl }));
                     originalAgent.sign(agentSignCertInfo, { out: signeedagentpath, desc: signDesc, url: signUrl, time: timeStampUrl }, xagentSignedFunc);
                 } else {
                     // Signed agent is already ok, use it.
