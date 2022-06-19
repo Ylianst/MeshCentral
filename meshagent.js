@@ -1889,7 +1889,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (!device.intelamt) { device.intelamt = {}; }
                     if ((command.intelamt.Versions != null) && (typeof command.intelamt.Versions == 'object')) {
                         if ((command.intelamt.Versions.AMT != null) && (typeof command.intelamt.Versions.AMT == 'string') && (command.intelamt.Versions.AMT.length < 12) && (device.intelamt.ver != command.intelamt.Versions.AMT)) { changes.push('AMT version'); device.intelamt.ver = command.intelamt.Versions.AMT; change = 1; log = 1; }
-                        if ((command.intelamt.Versions.Sku != null) && (typeof command.intelamt.Versions.Sku == 'string')) { var sku = parseInt(command.intelamt.Versions.Sku); if (device.intelamt.sku !== command.intelamt.sku) { device.intelamt.sku = sku; change = 1; log = 1; } }
+                        if ((command.intelamt.Versions.Sku != null) && (typeof command.intelamt.Versions.Sku == 'string')) {
+                            const sku = parseInt(command.intelamt.Versions.Sku);
+                            if (device.intelamt.sku !== sku) { device.intelamt.sku = sku; change = 1; log = 1; }
+                        }
                     }
                     if ((command.intelamt.ProvisioningState != null) && (typeof command.intelamt.ProvisioningState == 'number') && (device.intelamt.state != command.intelamt.ProvisioningState)) { changes.push('AMT state'); device.intelamt.state = command.intelamt.ProvisioningState; change = 1; log = 1; }
                     if ((command.intelamt.Flags != null) && (typeof command.intelamt.Flags == 'number') && (device.intelamt.flags != command.intelamt.Flags)) {
