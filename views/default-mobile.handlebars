@@ -4070,7 +4070,7 @@
             );
 
             // Show the right settings
-            QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (currentNode.agent == null))) && ((deskState == 0) || (desktop.contype == 2)));
+            QV('d7amtkvm', (currentNode.intelamt != null && ((typeof currentNode.intelamt.sku != 'number') || ((currentNode.intelamt.sku & 16) == 0)) && ((currentNode.intelamt.ver != null) || (currentNode.agent == null))) && ((deskState == 0) || (desktop.contype == 2)));
             QV('d7meshkvm', ((currentNode.agent != null) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1))));
 
             // Enable buttons
@@ -5831,7 +5831,13 @@
                 x += addDetailItem("Security", (node.intelamt.tls == 1) ? "Secured using TLS" : "TLS is not setup", s);
                 // Check that the Intel AMT user is setup and there is no warnings (1 = invalid credentials, 8 = trying)
                 x += addDetailItem("Admin Credentials", ((node.intelamt.user) == null || (node.intelamt.user == '') || ((node.intelamt.warn != null) && ((node.intelamt.warn & 9) != 0))) ? "Not Known" : "Known", s);
-                if (x != '') { sections.push({ name: "Intel&reg; Active Management Technology (Intel&reg; AMT)", html: x, img: 'amt' }); }
+                if (x != '') {
+                    if ((typeof node.intelamt.sku == 'number') && ((node.intelamt.sku & 16) != 0)) {
+                        sections.push({ name: "Intel&reg; Standard Manageability (Intel&reg; SM)", html: x, img: 'amt' });
+                    } else {
+                        sections.push({ name: "Intel&reg; Active Management Technology (Intel&reg; AMT)", html: x, img: 'amt' });
+                    }
+                }
             }
 
             if (hardware.identifiers) {
