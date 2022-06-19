@@ -484,7 +484,10 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                                 // We are under the limit, create the new device.
                                                 // Node is not in the database, add it. Credentials will be empty until added by the user.
                                                 var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: hostname, domain: domainid, intelamt: { user: (typeof socket.tag.meiState.amtuser == 'string') ? socket.tag.meiState.amtuser : '', pass: (typeof socket.tag.meiState.amtpass == 'string') ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
-                                                if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                                if (socket.tag.meiState != null) {
+                                                    if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                                    if ((typeof socket.tag.meiState.Versions == 'object') && (typeof socket.tag.meiState.Versions.Sku == 'string')) { device.intelamt.sku = parseInt(socket.tag.meiState.Versions.Sku); }
+                                                }
                                                 obj.db.Set(device);
 
                                                 // Event the new node
@@ -506,7 +509,10 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                         // Node is not in the database, add it. Credentials will be empty until added by the user.
                                         var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: hostname, domain: domainid, intelamt: { user: (typeof socket.tag.meiState.amtuser == 'string') ? socket.tag.meiState.amtuser : '', pass: (typeof socket.tag.meiState.amtpass == 'string') ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
-                                        if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                        if (socket.tag.meiState != null) {
+                                            if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                            if ((typeof socket.tag.meiState.Versions == 'object') && (typeof socket.tag.meiState.Versions.Sku == 'string')) { device.intelamt.sku = parseInt(socket.tag.meiState.Versions.Sku); }
+                                        }
                                         obj.db.Set(device);
 
                                         // Event the new node
@@ -707,7 +713,10 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                             // We are under the limit, create the new device.
                                             // Node is not in the database, add it. Credentials will be empty until added by the user.
                                             var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: hostname, domain: initialMesh.domain, intelamt: { user: (typeof socket.tag.meiState.amtuser == 'string') ? socket.tag.meiState.amtuser : '', pass: (typeof socket.tag.meiState.amtpass == 'string') ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
-                                            if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                            if (socket.tag.meiState != null) {
+                                                if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                                if ((typeof socket.tag.meiState.Versions == 'object') && (typeof socket.tag.meiState.Versions.Sku == 'string')) { device.intelamt.sku = parseInt(socket.tag.meiState.Versions.Sku); }
+                                            }
                                             obj.db.Set(device);
 
                                             // Event the new node
@@ -733,7 +742,10 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                     // Node is not in the database, add it. Credentials will be empty until added by the user.
                                     var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState && socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: hostname, domain: initialMesh.domain, intelamt: { user: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtuser == 'string')) ? socket.tag.meiState.amtuser : '', pass: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtpass == 'string')) ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
-                                    if ((socket.tag.meiState != null) && (typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                    if (socket.tag.meiState != null) {
+                                        if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                        if ((typeof socket.tag.meiState.Versions == 'object') && (typeof socket.tag.meiState.Versions.Sku == 'string')) { device.intelamt.sku = parseInt(socket.tag.meiState.Versions.Sku); }
+                                    }
                                     obj.db.Set(device);
 
                                     // Event the new node
@@ -793,7 +805,10 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                             // Node is not in the database, add it. Credentials will be empty until added by the user.
                                             var device = { type: 'node', mtype: 2, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: hostname, icon: (socket.tag.meiState && socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: hostname, domain: initialMesh.domain, intelamt: { user: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtuser == 'string')) ? socket.tag.meiState.amtuser : '', pass: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtpass == 'string')) ? socket.tag.meiState.amtpass : '', tls: 0, state: 2, agent: { id: 0, caps: 0 } } };
-                                            if ((socket.tag.meiState != null) && (typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                            if (socket.tag.meiState != null) {
+                                                if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                                if ((typeof socket.tag.meiState.Versions == 'object') && (typeof socket.tag.meiState.Versions.Sku == 'string')) { device.intelamt.sku = parseInt(socket.tag.meiState.Versions.Sku); }
+                                            }
                                             obj.db.Set(device);
 
                                             // Event the new node
@@ -827,9 +842,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                     // Node is not in the database, add it. Credentials will be empty until added by the user.
                                     var device = { type: 'node', mtype: 2, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: hostname, icon: (socket.tag.meiState && socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: hostname, domain: initialMesh.domain, agent: { ver: 0, id: 0, caps: 0 }, intelamt: { uuid: socket.tag.SystemId, user: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtuser == 'string')) ? socket.tag.meiState.amtuser : '', pass: ((socket.tag.meiState) && (typeof socket.tag.meiState.amtpass == 'string')) ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
-                                    if ((socket.tag.meiState != null) && (typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                    if (socket.tag.meiState != null) {
+                                        if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
+                                        if ((typeof socket.tag.meiState.Versions == 'object') && (typeof socket.tag.meiState.Versions.Sku == 'string')) { device.intelamt.sku = parseInt(socket.tag.meiState.Versions.Sku); }
+                                    }
                                     obj.db.Set(device);
-                                    console.log('ADDED', device);
 
                                     // Event the new node
                                     addedDeviceCount++;
