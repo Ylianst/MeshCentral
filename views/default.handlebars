@@ -1379,6 +1379,7 @@
                                 <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop Composision</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdpclip" />Automatic Clipboard</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdpsmb" />Swap Mouse Buttons</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdprmw" />Reverse Mouse Wheel</label>
                             </div>
                         </div>
                     </div>
@@ -8594,6 +8595,7 @@
                     desktop.m.onScreenSizeChange = mdeskAdjust;
                     desktop.m.onClipboardChanged = function(text) { if ((text != null) && (desktopsettings.rdpautoclipboard) && (navigator.clipboard != null)) { navigator.clipboard.writeText(text).then(function() { }).catch(function(err) { console.log(err); }) } } // Put remote clipboard data into our clipboard
                     if (desktopsettings.rdpsmb) { desktop.m.SwapMouse = desktopsettings.rdpsmb; }
+                    if (desktopsettings.rdprmw) { desktop.m.ReverseMouseWheel = desktopsettings.rdprmw; }
                     desktop.Start(desktopNode._id, currentNode.rdpport ? currentNode.rdpport : 3389, tsid);
                     desktop.contype = 4;
                     desktop.onConsoleMessageChange = function () {
@@ -8882,6 +8884,7 @@
             desktopsettings.localkeymap = d7localKeyMap.checked;
             desktopsettings.rdpsize = d7rdpsize.value;
             desktopsettings.rdpsmb = d7rdpsmb.checked;
+            desktopsettings.rdprmw = d7rdprmw.checked;
             desktopsettings.rdpautoclipboard = d7rdpclip.checked;
             var rdpflags = 0;
             for (var i = 1; i < 10; i++) { if ((i != 5) && (Q('d7rdp' + i).checked)) { rdpflags |= (1 << (i - 1)); } }
@@ -8901,6 +8904,10 @@
                 if (desktop.contype == 2) {
                     if (desktopsettings.showfocus == false) { desktop.m.focusmode = 0; deskFocusBtn.value = "All Focus"; }
                     if (desktop.State != 0) { desktop.Stop(); setTimeout(function () { connectDesktop(null, 2); }, 50); }
+                }
+                if (desktop.contype == 4) {
+                    desktop.m.SwapMouse = desktopsettings.rdpsmb;
+                    desktop.m.ReverseMouseWheel = desktopsettings.rdprmw;
                 }
             }
         }
@@ -8925,6 +8932,7 @@
             if (desktopsettings.rdpsize != null) { d7rdpsize.value = desktopsettings.rdpsize; }
             if (desktopsettings.rdpflags == null) { desktopsettings.rdpflags = 0x2F; }
             if (desktopsettings.rdpsmb != null) { d7rdpsmb.checked = desktopsettings.rdpsmb; }
+            if (desktopsettings.rdprmw != null) { d7rdprmw.checked = desktopsettings.rdprmw; }
             if (desktopsettings.rdpautoclipboard != null) { d7rdpclip.checked = desktopsettings.rdpautoclipboard; }
             for (var i = 1; i < 10; i++) { if (i != 5) { Q('d7rdp' + i).checked = ((desktopsettings.rdpflags & (1 << (i - 1))) != 0); } }
         }
