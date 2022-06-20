@@ -1240,7 +1240,7 @@ function createAuthenticodeHandler(path) {
         if ((typeof args.desc == 'string') || (typeof args.url == 'string')) {
             var codeSigningAttributes = { 'tagClass': 0, 'type': 16, 'constructed': true, 'composed': true, 'value': [] };
             if (args.desc != null) { // Encode description as big-endian unicode.
-                var desc = '', ucs = Buffer.from(args.desc, 'ucs2').toString()
+                var desc = "", ucs = Buffer.from(args.desc, 'ucs2').toString()
                 for (var k = 0; k < ucs.length; k += 2) { desc += String.fromCharCode(ucs.charCodeAt(k + 1), ucs.charCodeAt(k)); }
                 codeSigningAttributes.value.push({ 'tagClass': 128, 'type': 0, 'constructed': true, 'composed': true, 'value': [{ 'tagClass': 128, 'type': 0, 'constructed': false, 'composed': false, 'value': desc }] });
             }
@@ -1486,13 +1486,13 @@ function createAuthenticodeHandler(path) {
         }
 
         // Write the entire header to the destination file
-        //console.log('Write header', fullHeader.length);
+        //console.log('Write header', fullHeader.length, written);
         fs.writeSync(output, fullHeader);
         written += fullHeader.length;
 
         // Write the entire executable until the start to the resource segment
         var totalWrite = resPtr;
-        //console.log('Write until res', totalWrite);
+        //console.log('Write until res', totalWrite, written);
         while ((totalWrite - written) > 0) {
             tmp = readFileSlice(written, Math.min(totalWrite - written, 65536));
             fs.writeSync(output, tmp);
@@ -1503,15 +1503,24 @@ function createAuthenticodeHandler(path) {
         var rsrcSection = generateResourceSection(obj.resources);
         fs.writeSync(output, rsrcSection);
         written += rsrcSection.length;
+        //console.log('Write res', rsrcSection.length, written);
 
         // Write until the signature block
-        totalWrite = obj.header.sigpos + resDeltaSize;
-        //console.log('Write until signature', totalWrite);
+        if (obj.header.sigpos > 0) {
+            // Since the original file was signed, write from the end of the resources to the start of the signature block.
+            totalWrite = obj.header.sigpos + resDeltaSize;
+        } else {
+            // The original file was not signed, write from the end of the resources to the end of the file.
+            totalWrite = obj.filesize + resDeltaSize;
+        }
+
+        //console.log('Write until signature', totalWrite, written);
         while ((totalWrite - written) > 0) {
             tmp = readFileSlice(written - resDeltaSize, Math.min(totalWrite - written, 65536));
             fs.writeSync(output, tmp);
             written += tmp.length;
         }
+        //console.log('Write to signature', written);
 
         // Write the signature if needed
         if (cert != null) {
@@ -1829,14 +1838,16 @@ function start() {
                 if (err == null) { console.log("Done."); } else { console.log(err); }
                 if (exe != null) { exe.close(); }
             });
+            return;
         } else {
             console.log("Changing resources and signing to " + args.out);
             exe.writeExecutable(args, cert, function (err) { // Signing with resources decoded and re-encoded.
                 if (err == null) { console.log("Done."); } else { console.log(err); }
                 if (exe != null) { exe.close(); }
             });
+            return;
         }
-        return;
+        console.log("Done.");
     }
     if (command == 'unsign') { // Unsign an executable
         if (typeof args.exe != 'string') { console.log("Missing --exe [filename]"); return; }
