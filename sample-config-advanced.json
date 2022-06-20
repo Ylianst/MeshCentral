@@ -38,6 +38,7 @@
     "_agentCoreDump": true,
     "_agentCoreDumpUsers": "user1,user2",
     "_agentSignLock": true,
+    "_agentTimeStampServer": "http://timestamp.digicert.com",
     "_ignoreAgentHashCheck": true,
     "_exactPorts": true,
     "_allowLoginToken": true,
