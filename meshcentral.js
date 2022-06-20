@@ -2886,6 +2886,21 @@ function CreateMeshCentralServer(config, args) {
         if (args.agenttimestampserver === false) { timeStampUrl = null; }
         else if (typeof args.agenttimestampserver == 'string') { timeStampUrl = args.agenttimestampserver; }
 
+        // Setup agent signing arguments
+        const signingArguments = { desc: signDesc, url: signUrl, time: timeStampUrl };
+
+        // See if we have any resources we need to change in the agent
+        var resChanges = false;
+        if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object')) {
+            if (typeof domain.agentfileinfo.filedescription == 'string') { signingArguments.FileDescription = domain.agentfileinfo.filedescription; resChanges = true; }
+            if (typeof domain.agentfileinfo.fileversion == 'string') { signingArguments.FileVersion = domain.agentfileinfo.fileversion; resChanges = true; }
+            if (typeof domain.agentfileinfo.internalname == 'string') { signingArguments.InternalName = domain.agentfileinfo.internalname; resChanges = true; }
+            if (typeof domain.agentfileinfo.legalcopyright == 'string') { signingArguments.LegalCopyright = domain.agentfileinfo.legalcopyright; resChanges = true; }
+            if (typeof domain.agentfileinfo.originalfilename == 'string') { signingArguments.OriginalFilename = domain.agentfileinfo.originalfilename; resChanges = true; }
+            if (typeof domain.agentfileinfo.productname == 'string') { signingArguments.ProductName = domain.agentfileinfo.productname; resChanges = true; }
+            if (typeof domain.agentfileinfo.productversion == 'string') { signingArguments.ProductVersion = domain.agentfileinfo.productversion; resChanges = true; }
+        }
+
         // Setup the pending operations counter
         var pendingOperations = 1;
 
@@ -2905,7 +2920,7 @@ function CreateMeshCentralServer(config, args) {
             }
 
             // Open the original agent with authenticode
-            var signeedagentpath = obj.path.join(serverSignedAgentsPath, obj.meshAgentsArchitectureNumbers[archid].localname);
+            const signeedagentpath = obj.path.join(serverSignedAgentsPath, obj.meshAgentsArchitectureNumbers[archid].localname);
             const originalAgent = require('./authenticode.js').createAuthenticodeHandler(agentpath);
             if (originalAgent != null) {
                 // Check if the agent is already signed correctly
@@ -2937,8 +2952,18 @@ function CreateMeshCentralServer(config, args) {
                     xagentSignedFunc.objx = objx;
                     xagentSignedFunc.archid = archid;
                     xagentSignedFunc.signeedagentpath = signeedagentpath;
-                    obj.debug('main', "Code signing agent with arguments: " + JSON.stringify({ out: signeedagentpath, desc: signDesc, url: signUrl, time: timeStampUrl }));
-                    originalAgent.sign(agentSignCertInfo, { out: signeedagentpath, desc: signDesc, url: signUrl, time: timeStampUrl }, xagentSignedFunc);
+                    const xsigningArguments = Object.assign({}, signingArguments); // Shallow clone
+                    xsigningArguments.out = signeedagentpath;
+
+                    obj.debug('main', "Code signing agent with arguments: " + JSON.stringify(signingArguments));
+                    if (resChanges == false) {
+                        // Sign the agent the simple way, without changing any resources.
+                        originalAgent.sign(agentSignCertInfo, xsigningArguments, xagentSignedFunc);
+                    } else {
+                        // Change the agent resources and sign the agent, this is a much more involved process.
+                        // NOTE: This is experimental and could corupt the agent.
+                        originalAgent.writeExecutable(xsigningArguments, agentSignCertInfo, xagentSignedFunc);
+                    }
                 } else {
                     // Signed agent is already ok, use it.
                     originalAgent.close();
