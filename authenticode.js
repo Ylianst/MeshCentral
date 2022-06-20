@@ -1111,8 +1111,9 @@ function createAuthenticodeHandler(path) {
     //function padPointer(ptr) { return ptr + (ptr % 4); }
 
     // Hash the file using the selected hashing system
+    // This hash skips the executables CRC and code signing data and signing block
     obj.getHash = function(algo) {
-        var hash = crypto.createHash(algo);
+        const hash = crypto.createHash(algo);
         runHash(hash, 0, obj.header.peHeaderLocation + 88);
         runHash(hash, obj.header.peHeaderLocation + 88 + 4, obj.header.peHeaderLocation + 152 + (obj.header.pe32plus * 16));
         runHash(hash, obj.header.peHeaderLocation + 152 + (obj.header.pe32plus * 16) + 8, obj.header.sigpos > 0 ? obj.header.sigpos : obj.filesize);
@@ -1120,11 +1121,38 @@ function createAuthenticodeHandler(path) {
     }
 
     // Hash of an open file using the selected hashing system
-    obj.getHashOfFile = function (fd, algo, filesize) {
-        var hash = crypto.createHash(algo);
+    // This hash skips the executables CRC and code signing data and signing block
+    obj.getHashOfFile = function(fd, algo, filesize) {
+        const hash = crypto.createHash(algo);
         runHashOnFile(fd, hash, 0, obj.header.peHeaderLocation + 88);
         runHashOnFile(fd, hash, obj.header.peHeaderLocation + 88 + 4, obj.header.peHeaderLocation + 152 + (obj.header.pe32plus * 16));
         runHashOnFile(fd, hash, obj.header.peHeaderLocation + 152 + (obj.header.pe32plus * 16) + 8, obj.header.sigpos > 0 ? obj.header.sigpos : filesize);
+        return hash.digest();
+    }
+
+    // Hash the file using the selected hashing system skipping resource section
+    // This hash skips the executables CRC, sections table, resource section, code signing data and signing block
+    obj.getHashNoResources = function (algo) {
+        if (obj.header.sections['.rsrc'] == null) { return obj.getHash(algo); } // No resources in this executable, return a normal hash
+
+        // Get the sections table start and size
+        const sectionHeaderPtr = obj.header.SectionHeadersPtr;
+        const sectionHeaderSize = obj.header.coff.numberOfSections * 40;
+
+        // Get the resource section start and size
+        const resPtr = obj.header.sections['.rsrc'].rawAddr;
+        const resSize = obj.header.sections['.rsrc'].rawSize;
+
+        // Get the end-of-file location
+        const eof = obj.header.sigpos > 0 ? obj.header.sigpos : obj.filesize;
+
+        // Hash the remaining data
+        const hash = crypto.createHash(algo);
+        runHash(hash, 0, obj.header.peHeaderLocation + 88);
+        runHash(hash, obj.header.peHeaderLocation + 88 + 4, obj.header.peHeaderLocation + 152 + (obj.header.pe32plus * 16));
+        runHash(hash, obj.header.peHeaderLocation + 152 + (obj.header.pe32plus * 16) + 8, sectionHeaderPtr);
+        runHash(hash, sectionHeaderPtr + sectionHeaderSize, resPtr);
+        runHash(hash, resPtr + resSize, eof);
         return hash.digest();
     }
 
@@ -1137,8 +1165,8 @@ function createAuthenticodeHandler(path) {
     // Hash the open file loading 64k chunks
     // TODO: Do chunks on this!!!
     function runHashOnFile(fd, hash, start, end) {
-        var buf = Buffer.alloc(end - start);
-        var len = fs.readSync(fd, buf, 0, buf.length, start);
+        const buf = Buffer.alloc(end - start);
+        const len = fs.readSync(fd, buf, 0, buf.length, start);
         if (len != buf.length) { console.log('BAD runHashOnFile'); }
         hash.update(buf);
     }

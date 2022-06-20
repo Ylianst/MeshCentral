@@ -543,6 +543,20 @@
               "backgroundColor": { "type": "string", "default": null, "description": "Background color, valid values are RBG in format 0,0,0 to 255,255,255 or format #000000 to #FFFFFF." }
             }
           },
+          "agentFileInfo": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Use this section to set resource metadata of the Windows agents prior to signing. In Windows, you can right-click and select properties to view these values.",
+            "properties": {
+              "fileDescription": { "type": "string", "description": "Executable file description." },
+              "fileVersion": { "type": "string", "description": "Executable file version, generally in the form of 1.2.3.4." },
+              "internalName":  { "type": "string", "description": "Executable internal name." },
+              "legalCopyright":  { "type": "string", "description": "Executable legal copyright." },
+              "originalFilename":  { "type": "string", "description": "Executable original file name." },
+              "productName":  { "type": "string", "description": "Executable product name." },
+              "productCersion":  { "type": "string", "description": "Executable product version, generally in the form of 1.2.3.4." }
+            }
+          },
           "assistantCustomization": {
             "type": "object",
             "additionalProperties": false,

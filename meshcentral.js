@@ -2886,21 +2886,6 @@ function CreateMeshCentralServer(config, args) {
         if (args.agenttimestampserver === false) { timeStampUrl = null; }
         else if (typeof args.agenttimestampserver == 'string') { timeStampUrl = args.agenttimestampserver; }
 
-        // Setup agent signing arguments
-        const signingArguments = { desc: signDesc, url: signUrl, time: timeStampUrl };
-
-        // See if we have any resources we need to change in the agent
-        var resChanges = false;
-        if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object')) {
-            if (typeof domain.agentfileinfo.filedescription == 'string') { signingArguments.FileDescription = domain.agentfileinfo.filedescription; resChanges = true; }
-            if (typeof domain.agentfileinfo.fileversion == 'string') { signingArguments.FileVersion = domain.agentfileinfo.fileversion; resChanges = true; }
-            if (typeof domain.agentfileinfo.internalname == 'string') { signingArguments.InternalName = domain.agentfileinfo.internalname; resChanges = true; }
-            if (typeof domain.agentfileinfo.legalcopyright == 'string') { signingArguments.LegalCopyright = domain.agentfileinfo.legalcopyright; resChanges = true; }
-            if (typeof domain.agentfileinfo.originalfilename == 'string') { signingArguments.OriginalFilename = domain.agentfileinfo.originalfilename; resChanges = true; }
-            if (typeof domain.agentfileinfo.productname == 'string') { signingArguments.ProductName = domain.agentfileinfo.productname; resChanges = true; }
-            if (typeof domain.agentfileinfo.productversion == 'string') { signingArguments.ProductVersion = domain.agentfileinfo.productversion; resChanges = true; }
-        }
-
         // Setup the pending operations counter
         var pendingOperations = 1;
 
@@ -2929,11 +2914,33 @@ function CreateMeshCentralServer(config, args) {
                     (destinationAgent != null) &&
                     (destinationAgent.fileHashSigned != null) &&
                     (Buffer.compare(destinationAgent.fileHashSigned, destinationAgent.fileHashActual) == 0) &&
-                    ((Buffer.compare(destinationAgent.fileHashSigned, originalAgent.getHash(destinationAgent.fileHashAlgo))) == 0) &&
                     (destinationAgent.signingAttribs.indexOf(signUrl) >= 0) &&
                     (destinationAgent.signingAttribs.indexOf(signDesc) >= 0)
                 );
-                if (destinationAgent != null) { destinationAgent.close(); }
+
+                if (destinationAgent != null) {
+                    // If the agent is signed correctly, look to see if the resources in the destination agent are correct
+                    var orgVersionStrings = originalAgent.getVersionInfo();
+                    if (destinationAgentOk == true) {
+                        var versionStrings = destinationAgent.getVersionInfo();
+                        var versionProperties = ['FileDescription', 'FileVersion', 'InternalName', 'LegalCopyright', 'OriginalFilename', 'ProductName', 'ProductVersion'];
+                        for (var i in versionProperties) {
+                            const prop = versionProperties[i], propl = prop.toLowerCase();
+                            if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object') && (typeof domain.agentfileinfo[propl] == 'string')) {
+                                if (domain.agentfileinfo[propl] != versionStrings[prop]) { destinationAgentOk = false; } // If the resource we want is not the same as the destination executable, we need to re-sign the agent.
+                            } else {
+                                if (orgVersionStrings[prop] != versionStrings[prop]) { destinationAgentOk = false; } // if the resource of the orginal agent not the same as the destination executable, we need to re-sign the agent.
+                            }
+                        }
+                    }
+
+                    // If everything looks ok, runs a hash of the original and destination agent skipping the CRC, resource and signature blocks. If different, sign the agent again.
+                    if ((destinationAgentOk == true) && (originalAgent.getHashNoResources('sha384').compare(destinationAgent.getHashNoResources('sha384')) != 0)) { destinationAgentOk = false; }
+
+                    // We are done comparing the destination agent, close it.
+                    destinationAgent.close();
+                }
+
                 if (destinationAgentOk == false) {
                     // If not signed correctly, sign it. First, create the server signed agent folder if needed
                     try { obj.fs.mkdirSync(serverSignedAgentsPath); } catch (ex) { }
@@ -2952,17 +2959,28 @@ function CreateMeshCentralServer(config, args) {
                     xagentSignedFunc.objx = objx;
                     xagentSignedFunc.archid = archid;
                     xagentSignedFunc.signeedagentpath = signeedagentpath;
-                    const xsigningArguments = Object.assign({}, signingArguments); // Shallow clone
-                    xsigningArguments.out = signeedagentpath;
 
+                    // Parse the resources in the executable and make any required changes
+                    var resChanges = false, versionStrings = null;
+                    if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object')) {
+                        versionStrings = originalAgent.getVersionInfo();
+                        var versionProperties = ['FileDescription', 'FileVersion', 'InternalName', 'LegalCopyright', 'OriginalFilename', 'ProductName', 'ProductVersion'];
+                        for (var i in versionProperties) {
+                            const prop = versionProperties[i], propl = prop.toLowerCase();
+                            if (domain.agentfileinfo[propl] && (domain.agentfileinfo[propl] != versionStrings[prop])) { versionStrings[prop] = domain.agentfileinfo[propl]; resChanges = true; }
+                        }
+                        if (resChanges == true) { originalAgent.setVersionInfo(versionStrings); }
+                    }
+
+                    const signingArguments = { out: signeedagentpath, desc: signDesc, url: signUrl, time: timeStampUrl }; // Shallow clone
                     obj.debug('main', "Code signing agent with arguments: " + JSON.stringify(signingArguments));
                     if (resChanges == false) {
                         // Sign the agent the simple way, without changing any resources.
-                        originalAgent.sign(agentSignCertInfo, xsigningArguments, xagentSignedFunc);
+                        originalAgent.sign(agentSignCertInfo, signingArguments, xagentSignedFunc);
                     } else {
                         // Change the agent resources and sign the agent, this is a much more involved process.
                         // NOTE: This is experimental and could corupt the agent.
-                        originalAgent.writeExecutable(xsigningArguments, agentSignCertInfo, xagentSignedFunc);
+                        originalAgent.writeExecutable(signingArguments, agentSignCertInfo, xagentSignedFunc);
                     }
                 } else {
                     // Signed agent is already ok, use it.
