@@ -458,6 +458,34 @@ This first line will load many of the “meshcentral-data” files into the data
 
 Note that MeshCentral does not currently support placing a Let’s Encrypt certificate in the database. Generally, one would use a reverse proxy with Let’s Encrypt support and TLS offload in the reverse proxy and then run MeshCentral in state-less mode in a Docket container.
 
+## Commandline Options
+
+In general, doing `--option value` is the same as adding `"option": value` in the settings section of the config.json.
+
+Here are the most common options found by running `meshcentral --help`
+
+```
+Run as a background service
+   --install/uninstall               Install MeshCentral as a background service.
+   --start/stop/restart              Control MeshCentral background service.
+
+Run standalone, console application
+   --user [username]                 Always login as [username] if account exists.
+   --port [number]                   Web server port number.
+   --redirport [number]              Creates an additional HTTP server to redirect users to the HTTPS server.
+   --exactports                      Server must run with correct ports or exit.
+   --noagentupdate                   Server will not update mesh agent native binaries.
+   --nedbtodb                        Transfer all NeDB records into current database.
+   --listuserids                     Show a list of a user identifiers in the database.
+   --cert [name], (country), (org)   Create a web server certificate with [name] server name.
+                                     country and organization can optionally be set.
+
+Server recovery commands, use only when MeshCentral is offline.
+   --createaccount [userid]          Create a new user account.
+   --resetaccount [userid]           Unlock an account, disable 2FA and set a new account password.
+   --adminaccount [userid]           Promote account to site administrator.
+```
+
 ## TLS Offloading
 
 A good way for MeshCentral to handle a high traffic is to setup a TLS offload device at front of the server that takes care of doing all the TLS negotiation and encryption so that the server could offload this. There are many vendors who offer TLS or SSL offload as a software module (Nginx* or Apache*) so please contact your network administrator for the best solution that suits your setup. 
