@@ -287,7 +287,6 @@
         "fileName": "compagnyagent"
       },
       "_agentFileInfo": {
-        "__COMMENT__": "This section is experimental",
         "_filedescription": "sample_filedescription",
         "_fileversion": "0.1.2.3",
         "_internalname": "sample_internalname",
