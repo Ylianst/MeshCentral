@@ -1639,7 +1639,6 @@ function createAuthenticodeHandler(path) {
 
                         // Re-encode the executable signature block
                         const p7signature = Buffer.from(forge.asn1.toDer(pkcs7der).data, 'binary');
-                        console.log('r3');
 
                         // Write the file with the signature block
                         writeExecutableEx(output, p7signature, written, func);
@@ -1830,16 +1829,14 @@ function start() {
                 if (err == null) { console.log("Done."); } else { console.log(err); }
                 if (exe != null) { exe.close(); }
             });
-            return;
         } else {
             console.log("Changing resources and signing to " + args.out);
             exe.writeExecutable(args, cert, function (err) { // Signing with resources decoded and re-encoded.
                 if (err == null) { console.log("Done."); } else { console.log(err); }
                 if (exe != null) { exe.close(); }
             });
-            return;
         }
-        console.log("Done.");
+        return;
     }
     if (command == 'unsign') { // Unsign an executable
         if (typeof args.exe != 'string') { console.log("Missing --exe [filename]"); return; }
