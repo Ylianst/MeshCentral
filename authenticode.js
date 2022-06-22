@@ -426,10 +426,12 @@ function createAuthenticodeHandler(path) {
             res.on('data', function (chunk) { responseAccumulator += chunk; });
             res.on('end', function () {
                 // Decode the timestamp signature block
-                const timepkcs7der = forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(responseAccumulator, 'base64').toString('binary')));
+                var timepkcs7der = null;
+                try { timepkcs7der = forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(responseAccumulator, 'base64').toString('binary'))); } catch (ex) { func('' + ex); return; }
 
                 // Decode the executable signature block
-                const pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(obj.getRawSignatureBlock(), 'base64').toString('binary')));
+                var pkcs7der = null;
+                try { forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(obj.getRawSignatureBlock(), 'base64').toString('binary'))); } catch (ex) { func('' + ex); return; }
 
                 // Get the ASN1 certificates used to sign the timestamp and add them to the certs in the PKCS7 of the executable
                 // TODO: We could look to see if the certificate is already present in the executable
@@ -1291,7 +1293,8 @@ function createAuthenticodeHandler(path) {
             signEx(args, p7signature, obj.filesize, func);
         } else {
             // Decode the signature block
-            var pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(p7signature));
+            var pkcs7der = null;
+            try { forge.asn1.fromDer(forge.util.createBuffer(p7signature)); } catch (ex) { func('' + ex); return; }
 
             // To work around ForgeJS PKCS#7 limitation, this may break PKCS7 verify if ForgeJS adds support for it in the future
             // Switch content type from "1.3.6.1.4.1.311.2.1.4" to "1.2.840.113549.1.7.1"
@@ -1316,7 +1319,7 @@ function createAuthenticodeHandler(path) {
                 ]);
 
             // Re-decode the PKCS7 from the executable, this time, no workaround needed
-            pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(p7signature));
+            try { pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(p7signature)); } catch (ex) { func('' + ex); return; }
 
             // Serialize an ASN.1 object to DER format in Base64
             const requestBody = Buffer.from(asn1.toDer(asn1obj).data, 'binary').toString('base64');
@@ -1341,7 +1344,8 @@ function createAuthenticodeHandler(path) {
                 res.on('data', function (chunk) { responseAccumulator += chunk; });
                 res.on('end', function () {
                     // Decode the timestamp signature block
-                    const timepkcs7der = forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(responseAccumulator, 'base64').toString('binary')));
+                    const timepkcs7der = null;
+                    try { forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(responseAccumulator, 'base64').toString('binary'))); } catch (ex) { func('' + ex); return; }
 
                     // Get the ASN1 certificates used to sign the timestamp and add them to the certs in the PKCS7 of the executable
                     // TODO: We could look to see if the certificate is already present in the executable
@@ -1562,7 +1566,7 @@ function createAuthenticodeHandler(path) {
             if (args.hash == 'sha512') { hashOid = forge.pki.oids.sha512; fileHash = obj.getHashOfFile(output, 'sha512', written); }
             if (args.hash == 'sha224') { hashOid = forge.pki.oids.sha224; fileHash = obj.getHashOfFile(output, 'sha224', written); }
             if (args.hash == 'md5') { hashOid = forge.pki.oids.md5; fileHash = obj.getHashOfFile(output, 'md5', written); }
-            if (hashOid == null) return false;
+            if (hashOid == null) { func('Bad hash method OID'); return; }
 
             // Create the signature block
             var xp7 = forge.pkcs7.createSignedData();
@@ -1605,7 +1609,8 @@ function createAuthenticodeHandler(path) {
                 writeExecutableEx(output, p7signature, written, func);
             } else {
                 // Decode the signature block
-                var pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(p7signature));
+                var pkcs7der = null;
+                try { pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(p7signature)); } catch (ex) { func('' + ex); return; }
 
                 // To work around ForgeJS PKCS#7 limitation, this may break PKCS7 verify if ForgeJS adds support for it in the future
                 // Switch content type from "1.3.6.1.4.1.311.2.1.4" to "1.2.840.113549.1.7.1"
@@ -1630,7 +1635,7 @@ function createAuthenticodeHandler(path) {
                     ]);
 
                 // Re-decode the PKCS7 from the executable, this time, no workaround needed
-                pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(p7signature));
+                try { pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(p7signature)); } catch (ex) { func('' + ex); return; }
 
                 // Serialize an ASN.1 object to DER format in Base64
                 const requestBody = Buffer.from(asn1.toDer(asn1obj).data, 'binary').toString('base64');
