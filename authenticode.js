@@ -408,7 +408,12 @@ function createAuthenticodeHandler(path) {
 
         // Make an HTTP request
         const http = require('http');
-        var options = {
+        const timeServerUrl = new URL(args.time);
+        const options = {
+            protocol: timeServerUrl.protocol,
+            hostname: timeServerUrl.hostname,
+            path: timeServerUrl.pathname,
+            port: ((timeServerUrl.port == '') ? 80 : parseInt(timeServerUrl.port)),
             method: 'POST',
             headers: {
                 'accept': 'application/octet-stream',
@@ -421,7 +426,7 @@ function createAuthenticodeHandler(path) {
 
         // Set up the request
         var responseAccumulator = '';
-        var req = http.request(args.time, options, function (res) {
+        var req = http.request(options, function (res) {
             res.setEncoding('utf8');
             res.on('data', function (chunk) { responseAccumulator += chunk; });
             res.on('end', function () {
@@ -431,7 +436,7 @@ function createAuthenticodeHandler(path) {
 
                 // Decode the executable signature block
                 var pkcs7der = null;
-                try { forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(obj.getRawSignatureBlock(), 'base64').toString('binary'))); } catch (ex) { func('' + ex); return; }
+                try { pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(obj.getRawSignatureBlock(), 'base64').toString('binary'))); } catch (ex) { func('' + ex); return; }
 
                 // Get the ASN1 certificates used to sign the timestamp and add them to the certs in the PKCS7 of the executable
                 // TODO: We could look to see if the certificate is already present in the executable
@@ -1294,7 +1299,7 @@ function createAuthenticodeHandler(path) {
         } else {
             // Decode the signature block
             var pkcs7der = null;
-            try { forge.asn1.fromDer(forge.util.createBuffer(p7signature)); } catch (ex) { func('' + ex); return; }
+            try { pkcs7der = forge.asn1.fromDer(forge.util.createBuffer(p7signature)); } catch (ex) { func('' + ex); return; }
 
             // To work around ForgeJS PKCS#7 limitation, this may break PKCS7 verify if ForgeJS adds support for it in the future
             // Switch content type from "1.3.6.1.4.1.311.2.1.4" to "1.2.840.113549.1.7.1"
@@ -1326,7 +1331,12 @@ function createAuthenticodeHandler(path) {
 
             // Make an HTTP request
             const http = require('http');
-            var options = {
+            const timeServerUrl = new URL(args.time);
+            const options = {
+                protocol: timeServerUrl.protocol,
+                hostname: timeServerUrl.hostname,
+                path: timeServerUrl.pathname,
+                port: ((timeServerUrl.port == '') ? 80 : parseInt(timeServerUrl.port)),
                 method: 'POST',
                 headers: {
                     'accept': 'application/octet-stream',
@@ -1339,13 +1349,13 @@ function createAuthenticodeHandler(path) {
 
             // Set up the request
             var responseAccumulator = '';
-            var req = http.request(args.time, options, function (res) {
+            var req = http.request(options, function (res) {
                 res.setEncoding('utf8');
                 res.on('data', function (chunk) { responseAccumulator += chunk; });
                 res.on('end', function () {
                     // Decode the timestamp signature block
-                    const timepkcs7der = null;
-                    try { forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(responseAccumulator, 'base64').toString('binary'))); } catch (ex) { func('' + ex); return; }
+                    var timepkcs7der = null;
+                    try { timepkcs7der = forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(responseAccumulator, 'base64').toString('binary'))); } catch (ex) { func('' + ex); return; }
 
                     // Get the ASN1 certificates used to sign the timestamp and add them to the certs in the PKCS7 of the executable
                     // TODO: We could look to see if the certificate is already present in the executable
@@ -1642,7 +1652,12 @@ function createAuthenticodeHandler(path) {
 
                 // Make an HTTP request
                 const http = require('http');
-                var options = {
+                const timeServerUrl = new URL(args.time);
+                const options = {
+                    protocol: timeServerUrl.protocol,
+                    hostname: timeServerUrl.hostname,
+                    path: timeServerUrl.pathname,
+                    port: ((timeServerUrl.port == '') ? 80 : parseInt(timeServerUrl.port)),
                     method: 'POST',
                     headers: {
                         'accept': 'application/octet-stream',
@@ -1655,12 +1670,13 @@ function createAuthenticodeHandler(path) {
 
                 // Set up the request
                 var responseAccumulator = '';
-                var req = http.request(args.time, options, function (res) {
+                var req = http.request(options, function (res) {
                     res.setEncoding('utf8');
                     res.on('data', function (chunk) { responseAccumulator += chunk; });
                     res.on('end', function () {
                         // Decode the timestamp signature block
-                        const timepkcs7der = forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(responseAccumulator, 'base64').toString('binary')));
+                        var timepkcs7der = null;
+                        try { timepkcs7der = forge.asn1.fromDer(forge.util.createBuffer(Buffer.from(responseAccumulator, 'base64').toString('binary'))); } catch (ex) { func('' + ex); return; }
 
                         // Get the ASN1 certificates used to sign the timestamp and add them to the certs in the PKCS7 of the executable
                         // TODO: We could look to see if the certificate is already present in the executable

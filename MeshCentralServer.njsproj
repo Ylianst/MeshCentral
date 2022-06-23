@@ -261,10 +261,8 @@
     <Content Include="agents\MeshCommander-Small.gz" />
     <Content Include="agents\meshinstall-initd.sh" />
     <Content Include="agents\meshinstall-linux.sh" />
-    <Content Include="agents\MeshService-signed.exe" />
     <Content Include="agents\MeshService.exe" />
     <Content Include="agents\MeshService.pdb" />
-    <Content Include="agents\MeshService64-signed.exe" />
     <Content Include="agents\MeshService64.exe" />
     <Content Include="agents\MeshService64.pdb" />
     <Content Include="agents\modules_meshcore\coretranslations.json" />
