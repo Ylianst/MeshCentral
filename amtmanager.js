@@ -3013,17 +3013,20 @@ module.exports.CreateAmtManager = function (parent) {
 
     function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + '-' + g.substring(10, 12) + g.substring(8, 10) + '-' + g.substring(14, 16) + g.substring(12, 14) + '-' + g.substring(16, 20) + '-' + g.substring(20); }
 
+    // Base64 to string conversion utility functions
+    function atob(x) { return Buffer.from(x, 'base64').toString('binary'); }
+    function btoa(x) { return Buffer.from(x, 'binary').toString('base64'); }
+
     // Check which key pair matches the public key in the certificate
     function amtcert_linkCertPrivateKey(certs, keys) {
+        if ((keys == null) || (keys.length == 0)) return;
         for (var i in certs) {
             var cert = certs[i];
             try {
-                if (keys.length == 0) return;
-                var b = obj.parent.certificateOperations.forge.asn1.fromDer(cert.X509CertificateBin);
-                var a = obj.parent.certificateOperations.forge.pki.certificateFromAsn1(b).publicKey;
-                var publicKeyPEM = obj.parent.certificateOperations.forge.pki.publicKeyToPem(a).substring(28 + 32).replace(/(\r\n|\n|\r)/gm, "");
+                var publicKeyPEM = obj.parent.certificateOperations.forge.pki.publicKeyToPem(obj.parent.certificateOperations.forge.pki.certificateFromAsn1(obj.parent.certificateOperations.forge.asn1.fromDer(cert.X509CertificateBin)).publicKey).substring(28 + 32).replace(/(\r\n|\n|\r)/gm, "");
+                publicKeyPEM = publicKeyPEM.substring(0, publicKeyPEM.length - 24); // Remove the PEM footer
                 for (var j = 0; j < keys.length; j++) {
-                    if (publicKeyPEM === (keys[j]['DERKey'] + '-----END PUBLIC KEY-----')) {
+                    if ((publicKeyPEM === (keys[j]['DERKey'])) || (publicKeyPEM == btoa(atob(keys[j]['DERKey']).substring(24)))) { // Match directly or, new version of Intel AMT put the key type OID in the private key, skip that and match.
                         keys[j].XCert = cert; // Link the key pair to the certificate
                         cert.XPrivateKey = keys[j]; // Link the certificate to the key pair
                     }
