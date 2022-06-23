@@ -2867,8 +2867,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if ((command.actiontype == 400) && common.validateInt(command.time, 1, 30000)) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: node._id, value: 'flash ' + command.time }, MESHRIGHT_ADMIN, 0); }
                                 if ((command.actiontype == 401) && common.validateInt(command.time, 1, 30000)) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: node._id, value: 'vibrate ' + command.time }, MESHRIGHT_ADMIN, 0); }
                             } else {
-                                // Check we have the rights to delete this device
-                                if ((rights & MESHRIGHT_RESETOFF) == 0) return;                                
+                                // Check we have the rights to perform this operation
+                                if ((command.actiontype == 302) && ((rights & MESHRIGHT_WAKEDEVICE) == 0)) return; // This is a Intel AMT power on operation, check if we have WAKE rights
+                                if ((command.actiontype != 302) && ((rights & MESHRIGHT_RESETOFF) == 0)) return; // For all other operations, check that we have RESET/OFF rights
 
                                 // If this device is connected on MQTT, send a power action.
                                 if ((parent.parent.mqttbroker != null) && (command.actiontype >= 0) && (command.actiontype <= 4)) { parent.parent.mqttbroker.publish(node._id, 'powerAction', ['', '', 'poweroff', 'reset', 'sleep'][command.actiontype]); }
