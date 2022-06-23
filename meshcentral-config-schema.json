@@ -102,6 +102,7 @@
         "agentCoreDumpUsers": { "type": "array", "description": "List of non-administrator users that have access to mesh agent crash dumps." },
         "agentSignLock": { "type": "boolean", "default": false, "description": "When code signing an agent using authenticode, lock the agent to only allow connection to this server. (This is in testing, the default value will change to true in the future)." },
         "agentTimeStampServer": { "type": [ "boolean", "string" ], "default": "http://timestamp.comodoca.com/authenticode", "description": "The time stamping server to use when code signing Windows executables. When set to false, the executables are not time stamped." },
+        "agentTimeStampProxy": { "type": [ "boolean", "string" ], "description": "The HTTP proxy to use when contacting the time stamping server, if false, no proxy is used. By default, the npmproxy value is used." },
         "ignoreAgentHashCheck": { "type": [ "boolean", "string" ], "default": false, "description": "When true, the agent no longer checked the TLS certificate of the server. This should be used for debugging only. You can also set this to a comma seperated list of IP addresses to ignore, for example: \"192.168.2.100,192.168.1.0/24\"." },
         "exactPorts": { "type": "boolean", "default": false, "description": "When set to true, MeshCentral will only grab the required TCP listening ports or fail. It will not try to use the next available port of it's busy." },
         "allowLoginToken": { "type": "boolean", "default": false },
