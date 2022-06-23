@@ -1345,40 +1345,106 @@ function createAuthenticodeHandler(path) {
 
     // Make a HTTP request, use a proxy if needed
     function httpRequest(options, requestBody, func) {
-        // If needed, decode the URL
-        if (options.url) {
-            const timeServerUrl = new URL(options.url);
-            options.protocol = timeServerUrl.protocol;
-            options.hostname = timeServerUrl.hostname;
-            options.path = timeServerUrl.pathname;
-            options.port = ((timeServerUrl.port == '') ? 80 : parseInt(timeServerUrl.port));
+        // Decode the URL
+        const timeServerUrl = new URL(options.url);
+        options.protocol = timeServerUrl.protocol;
+        options.hostname = timeServerUrl.hostname;
+        options.path = timeServerUrl.pathname;
+        options.port = ((timeServerUrl.port == '') ? 80 : parseInt(timeServerUrl.port));
+
+        if (options.proxy == null) {
+            // No proxy needed
+
+            // Setup the options
             delete options.url;
+            options.method = 'POST';
+            options.headers = {
+                'accept': 'application/octet-stream',
+                'cache-control': 'no-cache',
+                'user-agent': 'Transport',
+                'content-type': 'application/octet-stream',
+                'content-length': Buffer.byteLength(requestBody)
+            };
+
+            // Set up the request
+            var responseAccumulator = '';
+            var req = require('http').request(options, function (res) {
+                res.setEncoding('utf8');
+                res.on('data', function (chunk) { responseAccumulator += chunk; });
+                res.on('end', function () { func(null, responseAccumulator); });
+            });
+
+            // Post the data
+            req.on('error', function (err) { func('' + err); });
+            req.write(requestBody);
+            req.end();
+        } else {
+            // We are using a proxy
+            // This is a fairly basic proxy implementation, should work most of the time.
+
+            // Setup the options and decode the proxy URL
+            var proxyOptions = { method: 'CONNECT' };
+            if (options.proxy) {
+                const proxyUrl = new URL(options.proxy);
+                proxyOptions.protocol = proxyUrl.protocol;
+                proxyOptions.hostname = proxyUrl.hostname;
+                proxyOptions.path = options.hostname + ':' + options.port;
+                proxyOptions.port = ((proxyUrl.port == '') ? 80 : parseInt(proxyUrl.port));
+            }
+
+            // Set up the proxy request
+            var responseAccumulator = '';
+            var req = require('http').request(proxyOptions);
+            req.on('error', function (err) { func('' + err); });
+            req.on('connect', function (res, socket, head) {
+                // Make a request over the HTTP tunnel
+                socket.write('POST ' + options.path + ' HTTP/1.1\r\n' +
+                    'host: ' + options.hostname + ':' + options.port + '\r\n' +
+                    'accept: application/octet-stream\r\n' +
+                    'cache-control: no-cache\r\n' +
+                    'user-agent: Transport\r\n' +
+                    'content-type: application/octet-stream\r\n' +
+                    'content-length: ' + Buffer.byteLength(requestBody) + '\r\n' +
+                    '\r\n' + requestBody);
+                socket.on('data', function (chunk) {
+                    responseAccumulator += chunk.toString();
+                    var responseData = parseHttpResponse(responseAccumulator);
+                    if (responseData != null) { try { socket.end(); } catch (ex) { console.log('ex', ex); } socket.xdone = true; func(null, responseData); }
+                });
+                socket.on('end', function () {
+                    if (socket.xdone == true) return;
+                    var responseData = parseHttpResponse(responseAccumulator);
+                    if (responseData != null) { func(null, responseData); } else { func("Unable to parse response."); }
+                });
+            });
+            req.end();
         }
-
-        // Setup the options
-        options.method = 'POST';
-        options.headers = {
-            'accept': 'application/octet-stream',
-            'cache-control': 'no-cache',
-            'user-agent': 'Transport',
-            'content-type': 'application/octet-stream',
-            'content-length': Buffer.byteLength(requestBody)
-        };
-
-        // Set up the request
-        var responseAccumulator = '';
-        var req = require('http').request(options, function (res) {
-            res.setEncoding('utf8');
-            res.on('data', function (chunk) { responseAccumulator += chunk; });
-            res.on('end', function () { func(null, responseAccumulator); });
-        });
-
-        // Post the data
-        req.on('error', function (err) { func('' + err); });
-        req.write(requestBody);
-        req.end();
     }
 
+    // Parse the HTTP response and return data if available
+    function parseHttpResponse(data) {
+        var dataSplit = data.split('\r\n\r\n');
+        if (dataSplit.length < 2) return null;
+
+        // Parse the HTTP header
+        var headerSplit = dataSplit[0].split('\r\n'), headers = {};
+        for (var i in headerSplit) {
+            if (i != 0) {
+                var x = headerSplit[i].indexOf(':');
+                headers[headerSplit[i].substring(0, x).toLowerCase()] = headerSplit[i].substring(x + 2);
+            }
+        }
+
+        // If there is a content-length in the header, keep accumulating data until we have the right length
+        if (headers['content-length'] != null) {
+            const contentLength = parseInt(headers['content-length']);
+            if (dataSplit[1].length < contentLength) return null; // Wait for more data
+            return dataSplit[1];
+        }
+        return dataSplit[1];
+    }
+
+    // Complete the signature of an executable
     function signEx(args, p7signature, filesize, func) {
         // Open the output file
         var output = null;
@@ -1653,26 +1719,28 @@ function createAuthenticodeHandler(path) {
 
                     // Get the ASN1 certificates used to sign the timestamp and add them to the certs in the PKCS7 of the executable
                     // TODO: We could look to see if the certificate is already present in the executable
-                    const timeasn1Certs = timepkcs7der.value[1].value[0].value[3].value;
-                    for (var i in timeasn1Certs) { pkcs7der.value[1].value[0].value[3].value.push(timeasn1Certs[i]); }
+                    try {
+                        var timeasn1Certs = timepkcs7der.value[1].value[0].value[3].value;
+                        for (var i in timeasn1Certs) { pkcs7der.value[1].value[0].value[3].value.push(timeasn1Certs[i]); }
 
-                    // Get the time signature and add it to the executables PKCS7
-                    const timeasn1Signature = timepkcs7der.value[1].value[0].value[4];
-                    const countersignatureOid = asn1.oidToDer('1.2.840.113549.1.9.6').data;
-                    const asn1obj2 =
-                        asn1.create(asn1.Class.CONTEXT_SPECIFIC, 1, true, [
-                            asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
-                                asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OID, false, countersignatureOid),
-                                timeasn1Signature
-                            ])
-                        ]);
-                    pkcs7der.value[1].value[0].value[4].value[0].value.push(asn1obj2);
+                        // Get the time signature and add it to the executables PKCS7
+                        const timeasn1Signature = timepkcs7der.value[1].value[0].value[4];
+                        const countersignatureOid = asn1.oidToDer('1.2.840.113549.1.9.6').data;
+                        const asn1obj2 =
+                            asn1.create(asn1.Class.CONTEXT_SPECIFIC, 1, true, [
+                                asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+                                    asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OID, false, countersignatureOid),
+                                    timeasn1Signature
+                                ])
+                            ]);
+                        pkcs7der.value[1].value[0].value[4].value[0].value.push(asn1obj2);
 
-                    // Re-encode the executable signature block
-                    const p7signature = Buffer.from(forge.asn1.toDer(pkcs7der).data, 'binary');
+                        // Re-encode the executable signature block
+                        const p7signature = Buffer.from(forge.asn1.toDer(pkcs7der).data, 'binary');
 
-                    // Write the file with the signature block
-                    writeExecutableEx(output, p7signature, written, func);
+                        // Write the file with the signature block
+                        writeExecutableEx(output, p7signature, written, func);
+                    } catch (ex) { func('' + ex); return; } // Something failed
                 });
             }
             return;
@@ -1744,6 +1812,7 @@ function start() {
         console.log("          --url [url]              URL to embbed into signature.");
         console.log("          --hash [method]          Default is SHA384, possible value: MD5, SHA224, SHA256, SHA384 or SHA512.");
         console.log("          --time [url]             The time signing server URL.");
+        console.log("          --proxy [url]            The HTTP proxy to use to contact the time signing server, must start with http://");
         console.log("  unsign: Remove the signature from the executable.");
         console.log("          --exe [file]             Required executable to un-sign.");
         console.log("          --out [file]             Resulting executable with signature removed.");
@@ -1760,6 +1829,7 @@ function start() {
         console.log("          --exe [file]             Required executable to sign.");
         console.log("          --out [file]             Resulting signed executable.");
         console.log("          --time [url]             The time signing server URL.");
+        console.log("          --proxy [url]            The HTTP proxy to use to contact the time signing server, must start with http://");
         console.log("");
         console.log("Note that certificate PEM files must first have the signing certificate,");
         console.log("followed by all certificates that form the trust chain.");

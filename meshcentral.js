@@ -2886,6 +2886,11 @@ function CreateMeshCentralServer(config, args) {
         if (args.agenttimestampserver === false) { timeStampUrl = null; }
         else if (typeof args.agenttimestampserver == 'string') { timeStampUrl = args.agenttimestampserver; }
 
+        // Setup the time server proxy
+        var timeStampProxy = null;
+        if (typeof args.agenttimestampproxy == 'string') { timeStampProxy = args.agenttimestampproxy; }
+        else if ((args.agenttimestampproxy !== false) && (typeof args.npmproxy == 'string')) { timeStampProxy = args.npmproxy; }
+
         // Setup the pending operations counter
         var pendingOperations = 1;
 
@@ -2972,7 +2977,7 @@ function CreateMeshCentralServer(config, args) {
                         if (resChanges == true) { originalAgent.setVersionInfo(versionStrings); }
                     }
 
-                    const signingArguments = { out: signeedagentpath, desc: signDesc, url: signUrl, time: timeStampUrl }; // Shallow clone
+                    const signingArguments = { out: signeedagentpath, desc: signDesc, url: signUrl, time: timeStampUrl, proxy: timeStampProxy }; // Shallow clone
                     obj.debug('main', "Code signing agent with arguments: " + JSON.stringify(signingArguments));
                     if (resChanges == false) {
                         // Sign the agent the simple way, without changing any resources.
