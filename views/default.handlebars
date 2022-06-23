@@ -5551,6 +5551,7 @@
             var op = Q('d2deviceop').value, title = Q('dp2notifyTitle').value, msg = Q('d2notifyMsg').value, chkNodeIds = getCheckedDevices();
             if (msg.length == 0) return;
             if (title == '') { title = decodeURIComponent('{{{extitle}}}'); }
+            if (title == '') { title = "MeshCentral"; }
             if (op == 1) { // MessageBox
                 for (var i = 0; i < chkNodeIds.length; i++) { meshserver.send({ action: 'msg', type: 'messagebox', nodeid: chkNodeIds[i], title: title, msg: msg }); }
             } else if (op == 2) { // Toast
@@ -7599,10 +7600,12 @@
         }
 
         function deviceMessageFunctionEx() {
+            var title = decodeURIComponent('{{{extitle}}}');
+            if (title == '') { title = "MeshCentral"; }
             if (currentNode.pmt == 1) {
-                meshserver.send({ action: 'pushmessage', nodeid: currentNode._id, title: decodeURIComponent('{{{extitle}}}'), msg: Q('d2devMessage').value });
+                meshserver.send({ action: 'pushmessage', nodeid: currentNode._id, title: title, msg: Q('d2devMessage').value });
             } else {
-                meshserver.send({ action: 'msg', type: 'messagebox', nodeid: currentNode._id, title: decodeURIComponent('{{{extitle}}}'), msg: Q('d2devMessage').value });
+                meshserver.send({ action: 'msg', type: 'messagebox', nodeid: currentNode._id, title: title, msg: Q('d2devMessage').value });
             }
         }
 

@@ -2913,7 +2913,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Perform input validation
                     try {
                         if (common.validateStrArray(command.nodeids, 1, 256) == false) { err = "Invalid nodeids"; } // Check nodeids
-                        else if (common.validateString(command.title, 1, 512) == false) { err = "Invalid title"; } // Check title
                         else if (common.validateString(command.msg, 1, 4096) == false) { err = "Invalid message"; } // Check message
                         else {
                             var nodeids = [];
@@ -2927,6 +2926,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'toast', responseid: command.responseid, result: err })); } catch (ex) { } }
                         break;
                     }
+
+                    // Check the title, if needed, use a default one
+                    if (common.validateString(command.title, 1, 512) == false) { delete command.title } // Check title
+                    if ((command.title == null) && (typeof domain.notificationmessages == 'object') && (typeof domain.notificationmessages.title == 'string')) { command.title = domain.notificationmessages.title; }
+                    if ((command.title == null) && (typeof domain.title == 'string')) { command.title = domain.title; }
+                    if (command.title == null) { command.title = "MeshCentral"; }
 
                     for (i in command.nodeids) {
                         // Get the node and the rights for this node
