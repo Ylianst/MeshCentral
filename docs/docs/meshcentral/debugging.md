@@ -99,3 +99,11 @@ Of course, this is just for debugging.
 <https://serverurl/meshagents> aka trying figure out what this is
 
 ![ID](images/determine-id.png)
+
+## Determine Agent capabilities
+
+On the server goto the agents console tab. Type:
+
+```
+info
+```
