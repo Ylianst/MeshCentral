@@ -18,6 +18,10 @@ var CreateRDPDesktop = function (canvasid) {
     obj.m.onClipboardChanged = null;
     obj.onConsoleMessageChange = null;
 
+    var xMouseCursorActive = true;
+    var xMouseCursorCurrent = 'default';
+    obj.mouseCursorActive = function (x) { if (xMouseCursorActive == x) return; xMouseCursorActive = x; obj.CanvasId.style.cursor = ((x == true) ? xMouseCursorCurrent : 'default'); }
+
     function mouseButtonMap(button) {
         // Swap mouse buttons if needed
         if (obj.m.SwapMouse === true) return [2, 0, 1, 0, 0][button];
@@ -73,6 +77,12 @@ var CreateRDPDesktop = function (canvasid) {
                         bitmap.data = obj.bitmapData; // Use the binary data that was sent earlier.
                         delete obj.bitmapData;
                         obj.render.update(bitmap);
+                        break;
+                    }
+                    case 'rdp-pointer': {
+                        var pointer = msg[1];
+                        xMouseCursorCurrent = pointer;
+                        if (xMouseCursorActive) { obj.CanvasId.style.cursor = pointer; }
                         break;
                     }
                     case 'rdp-close': {
