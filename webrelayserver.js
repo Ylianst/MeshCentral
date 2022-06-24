@@ -1,0 +1,94 @@
+/**
+* @description Meshcentral web relay server
+* @author Ylian Saint-Hilaire
+* @copyright Intel Corporation 2018-2022
+* @license Apache-2.0
+* @version v0.0.1
+*/
+
+/*jslint node: true */
+/*jshint node: true */
+/*jshint strict:false */
+/*jshint -W097 */
+/*jshint esversion: 6 */
+"use strict";
+
+// Construct a HTTP redirection web server object
+module.exports.CreateWebRelayServer = function (parent, db, args, certificates, func) {
+    var obj = {};
+    obj.parent = parent;
+    obj.db = db;
+    obj.express = require('express');
+    obj.expressWs = null;
+    obj.tlsServer = null;
+    obj.net = require('net');
+    obj.app = obj.express();
+    obj.webRelayServer = null;
+    obj.port = null;
+    const constants = (require('crypto').constants ? require('crypto').constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
+    var tlsSessionStore = {};         // Store TLS session information for quick resume.
+    var tlsSessionStoreCount = 0;     // Number of cached TLS session information in store.
+
+    // Add HTTP security headers to all responses
+    obj.app.use(function (req, res, next) {
+        parent.debug('webrequest', req.url + ' (RelayServer)');
+        res.removeHeader('X-Powered-By');
+        res.set({
+            'strict-transport-security': 'max-age=60000; includeSubDomains',
+            'Referrer-Policy': 'no-referrer',
+            'x-frame-options': 'SAMEORIGIN',
+            'X-XSS-Protection': '1; mode=block',
+            'X-Content-Type-Options': 'nosniff',
+            'Content-Security-Policy': "default-src 'none'; style-src 'self' 'unsafe-inline';"
+        });
+        return next();
+    });
+
+    // Start the server, only after users and meshes are loaded from the database.
+    if (args.tlsoffload) {
+        // Setup the HTTP server without TLS
+        obj.expressWs = require('express-ws')(obj.app, null, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
+    } else {
+        // Setup the HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
+        const tlsOptions = { cert: certificates.web.cert, key: certificates.web.key, ca: certificates.web.ca, rejectUnauthorized: true, ciphers: "HIGH:TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_8_SHA256:TLS_AES_128_CCM_SHA256:TLS_CHACHA20_POLY1305_SHA256", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 };
+        obj.tlsServer = require('https').createServer(tlsOptions, obj.app);
+        obj.tlsServer.on('secureConnection', function () { /*console.log('tlsServer secureConnection');*/ });
+        obj.tlsServer.on('error', function (err) { console.log('tlsServer error', err); });
+        obj.tlsServer.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
+        obj.tlsServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
+        obj.expressWs = require('express-ws')(obj.app, obj.tlsServer, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
+    }
+
+    // Find a free port starting with the specified one and going up.
+    function CheckListenPort(port, addr, func) {
+        var s = obj.net.createServer(function (socket) { });
+        obj.webRelayServer = s.listen(port, addr, function () { s.close(function () { if (func) { func(port, addr); } }); }).on("error", function (err) {
+            if (args.exactports) { console.error("ERROR: MeshCentral HTTP relay server port " + port + " not available."); process.exit(); }
+            else { if (port < 65535) { CheckListenPort(port + 1, addr, func); } else { if (func) { func(0); } } }
+        });
+    }
+
+    // Start the ExpressJS web server, if the port is busy try the next one.
+    function StartWebRelayServer(port, addr) {
+        if (port == 0 || port == 65535) { return; }
+        if (obj.tlsServer != null) {
+            if (args.lanonly == true) {
+                obj.tcpServer = obj.tlsServer.listen(port, addr, function () { console.log('MeshCentral HTTPS relay server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+            } else {
+                obj.tcpServer = obj.tlsServer.listen(port, addr, function () { console.log('MeshCentral HTTPS relay server running on ' + certificates.CommonName + ':' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+                obj.parent.updateServerState('servername', certificates.CommonName);
+            }
+            if (obj.parent.authlog) { obj.parent.authLog('https', 'Web relay server listening on ' + ((addr != null) ? addr : '0.0.0.0') + ' port ' + port + '.'); }
+            obj.parent.updateServerState('https-relay-port', port);
+            if (args.aliasport != null) { obj.parent.updateServerState('https-relay-aliasport', args.aliasport); }
+        } else {
+            obj.tcpServer = obj.app.listen(port, addr, function () { console.log('MeshCentral HTTP relay server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+            obj.parent.updateServerState('http-relay-port', port);
+            if (args.aliasport != null) { obj.parent.updateServerState('http-relay-aliasport', args.aliasport); }
+        }
+    }
+
+    CheckListenPort(args.relayport, args.relayportbind, StartWebRelayServer);
+
+    return obj;
+};
