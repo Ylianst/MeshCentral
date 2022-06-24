@@ -696,7 +696,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Request a list of all nodes
                     db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, function (err, docs) {
 
-                        //console.log(docs);
+                        //console.log(err, docs);
 
                         if (docs == null) { docs = []; }
                         parent.common.unEscapeAllLinksFieldName(docs);
