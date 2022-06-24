@@ -268,11 +268,16 @@ Client.prototype.recvServerFontMapPDU = function(s) {
  */
 Client.prototype.recvFastPath = function (secFlag, s) {
 	while (s.availableLength() > 0) {
-		var pdu = data.fastPathUpdatePDU().read(s);
+        var pdu = data.fastPathUpdatePDU().read(s);
 		switch (pdu.obj.updateHeader.value & 0xf) {
-		case data.FastPathUpdateType.FASTPATH_UPDATETYPE_BITMAP:
-			this.emit('bitmap', pdu.obj.updateData.obj.rectangles.obj);
-			break;
+            case data.FastPathUpdateType.FASTPATH_UPDATETYPE_BITMAP: {
+                this.emit('bitmap', pdu.obj.updateData.obj.rectangles.obj);
+                break;
+            }
+            case data.FastPathUpdateType.FASTPATH_UPDATETYPE_COLOR: {
+                this.emit('pointer', pdu.obj.updateData.obj.cursorId, pdu.obj.updateData.obj.cursorStr);
+                break;
+            }
 		default:
 		}
 	}

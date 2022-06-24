@@ -202,10 +202,16 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 delete bitmap.data;
                 send(['rdp-bitmap', bitmap]); // Send the bitmap metadata seperately, without bitmap data.
             }).on('clipboard', function (content) {
-                // Clipboard data changed
-                send(['rdp-clipboard', content]);
+                send(['rdp-clipboard', content]); // The clipboard data has changed
+            }).on('pointer', function (cursorId, cursorStr) {
+                if (cursorStr == null) { cursorStr = 'default'; }
+                if (obj.lastCursorStrSent != cursorStr) {
+                    obj.lastCursorStrSent = cursorStr;
+                    //console.log('pointer', cursorStr);
+                    send(['rdp-pointer', cursorStr]); // The mouse pointer has changed
+                }
             }).on('close', function () {
-                send(['rdp-close']);
+                send(['rdp-close']); // This RDP session has closed
             }).on('error', function (err) {
                 if (typeof err == 'string') { send(['rdp-error', err]); }
                 if ((typeof err == 'object') && (err.err) && (err.code)) { send(['rdp-error', err.err, err.code]); }
