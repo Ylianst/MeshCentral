@@ -1646,6 +1646,11 @@ function CreateMeshCentralServer(config, args) {
                     obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.certificates, obj.StartEx5);
                     if (obj.redirserver != null) { obj.redirserver.hookMainWebServer(obj.certificates); }
 
+                    // Start the HTTP relay web server if needed
+                    if ((obj.args.relayport != null) && (obj.args.relayport != 0)) {
+                        obj.webrelayserver = require('./webrelayserver.js').CreateWebRelayServer(obj, obj.db, obj.args, obj.certificates, function () { });
+                    }
+
                     // Update proxy certificates
                     if (obj.supportsProxyCertificatesRequest == true) { obj.updateProxyCertificates(true); }
 

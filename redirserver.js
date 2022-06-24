@@ -142,7 +142,7 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
             obj.parent.updateServerState('redirect-port', port);
             func(obj.port);
         }).on('error', function (err) {
-            if ((err.code == 'EACCES') && (port < 65535)) { StartRedirServer(port + 1); } else { console.log(err); func(obj.port); }
+            if ((err.code == 'EACCES') && (port < 65535)) { StartRedirServer(port + 1, addr); } else { console.log(err); func(obj.port); }
         });
     }
 
