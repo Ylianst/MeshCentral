@@ -1370,6 +1370,7 @@ module.exports.CreateDB = function (parent, func) {
                 if (id && (id != '')) {
                     sqlDbQuery('SELECT doc FROM main WHERE id = ? AND type = ? AND domain = ? AND extra IN (?)', [id, type, domain, meshes], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
                 } else {
+                    if ((meshes == null) || (meshes.length == 0)) { meshes = ''; }
                     if (extrasids == null) {
                         sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ? AND extra IN (?)', [type, domain, meshes], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
                     } else {
