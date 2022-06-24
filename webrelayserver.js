@@ -24,10 +24,34 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
     obj.net = require('net');
     obj.app = obj.express();
     obj.webRelayServer = null;
-    obj.port = null;
+    obj.port = 0;
+    obj.relayTunnels = {}             // RelayID --> Web Tunnel
     const constants = (require('crypto').constants ? require('crypto').constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
     var tlsSessionStore = {};         // Store TLS session information for quick resume.
     var tlsSessionStoreCount = 0;     // Number of cached TLS session information in store.
+
+    if (args.trustedproxy) {
+        // Reverse proxy should add the "X-Forwarded-*" headers
+        try {
+            obj.app.set('trust proxy', args.trustedproxy);
+        } catch (ex) {
+            // If there is an error, try to resolve the string
+            if ((args.trustedproxy.length == 1) && (typeof args.trustedproxy[0] == 'string')) {
+                require('dns').lookup(args.trustedproxy[0], function (err, address, family) { if (err == null) { obj.app.set('trust proxy', address); args.trustedproxy = [address]; } });
+            }
+        }
+    }
+    else if (typeof args.tlsoffload == 'object') {
+        // Reverse proxy should add the "X-Forwarded-*" headers
+        try {
+            obj.app.set('trust proxy', args.tlsoffload);
+        } catch (ex) {
+            // If there is an error, try to resolve the string
+            if ((Array.isArray(args.tlsoffload)) && (args.tlsoffload.length == 1) && (typeof args.tlsoffload[0] == 'string')) {
+                require('dns').lookup(args.tlsoffload[0], function (err, address, family) { if (err == null) { obj.app.set('trust proxy', address); args.tlsoffload = [address]; } });
+            }
+        }
+    }
 
     // Add HTTP security headers to all responses
     obj.app.use(function (req, res, next) {
@@ -41,7 +65,48 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
             'X-Content-Type-Options': 'nosniff',
             'Content-Security-Policy': "default-src 'none'; style-src 'self' 'unsafe-inline';"
         });
+
+        // Set the real IP address of the request
+        // If a trusted reverse-proxy is sending us the remote IP address, use it.
+        var ipex = '0.0.0.0', xforwardedhost = req.headers.host;
+        if (typeof req.connection.remoteAddress == 'string') { ipex = (req.connection.remoteAddress.startsWith('::ffff:')) ? req.connection.remoteAddress.substring(7) : req.connection.remoteAddress; }
+        if (
+            (args.trustedproxy === true) || (args.tlsoffload === true) ||
+            ((typeof args.trustedproxy == 'object') && (isIPMatch(ipex, args.trustedproxy))) ||
+            ((typeof args.tlsoffload == 'object') && (isIPMatch(ipex, args.tlsoffload)))
+        ) {
+            // Get client IP
+            if (req.headers['cf-connecting-ip']) { // Use CloudFlare IP address if present
+                req.clientIp = req.headers['cf-connecting-ip'].split(',')[0].trim();
+            } else if (req.headers['x-forwarded-for']) {
+                req.clientIp = req.headers['x-forwarded-for'].split(',')[0].trim();
+            } else if (req.headers['x-real-ip']) {
+                req.clientIp = req.headers['x-real-ip'].split(',')[0].trim();
+            } else {
+                req.clientIp = ipex;
+            }
+
+            // If there is a port number, remove it. This will only work for IPv4, but nice for people that have a bad reverse proxy config.
+            const clientIpSplit = req.clientIp.split(':');
+            if (clientIpSplit.length == 2) { req.clientIp = clientIpSplit[0]; }
+
+            // Get server host
+            if (req.headers['x-forwarded-host']) { xforwardedhost = req.headers['x-forwarded-host'].split(',')[0]; } // If multiple hosts are specified with a comma, take the first one.
+        } else {
+            req.clientIp = ipex;
+        }
+
         return next();
+    });
+
+    // This is the magic URL that will setup the relay session
+    obj.app.get('/control-redirect.ashx', function (req, res) {
+        res.set({ 'Cache-Control': 'no-store' });
+        parent.debug('web', 'webRelaySetup');
+
+        console.log('req.query', req.query);
+
+        res.redirect('/');
     });
 
     // Start the server, only after users and meshes are loaded from the database.
@@ -86,6 +151,7 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
             obj.parent.updateServerState('http-relay-port', port);
             if (args.aliasport != null) { obj.parent.updateServerState('http-relay-aliasport', args.aliasport); }
         }
+        obj.port = port;
     }
 
     CheckListenPort(args.relayport, args.relayportbind, StartWebRelayServer);

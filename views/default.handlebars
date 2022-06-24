@@ -1449,6 +1449,7 @@
         var features = parseInt('{{{features}}}');
         var features2 = parseInt('{{{features2}}}');
         var sessionTime = parseInt('{{{sessiontime}}}');
+        var webRelayPort = parseInt('{{{webRelayPort}}}');
         var sessionRefreshTimer = null;
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
@@ -2737,7 +2738,7 @@
                         if (message.name != null) { url += ('&name=' + encodeURIComponentEx(message.name)); }
                         if (message.ip != null) { url += ('&remoteip=' + message.ip); }
                         url += ('&appid=' + message.protocol + '&autoexit=1'); // Protocol: 0 = Custom, 1 = HTTP, 2 = HTTPS, 3 = RDP, 4 = PuTTY, 5 = WinSCP, 6 = MCRDesktop, 7 = MCRFiles
-                        console.log(url);
+                        //console.log(url);
                         downloadFile(url, '');
                     } else if (message.tag == 'novnc') {
                         var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + (message.localRelay?'local':'mesh') + 'relay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
@@ -4573,6 +4574,10 @@
 
             // RDP link, show this link only of the remote machine is Windows.
             if ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
+                if (webRelayPort != 0) {
+                    x += '<a href=# onclick=p10WebRouter("' + node._id + '",1,80)>' + "HTTP" + '</a>&nbsp;';
+                    //x += '<a href=# onclick=p10WebRouter("' + node._id + '",2,443)>' + "HTTPS" + '</a>&nbsp;';
+                }
                 if ((node.agent.id > 0) && (node.agent.id < 5)) {
                     if (navigator.platform.toLowerCase() == 'win32') {
                         if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false)) {
@@ -7141,6 +7146,10 @@
 
                     // RDP link, show this link only of the remote machine is Windows.
                     if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0)) {
+                        if (webRelayPort != 0) {
+                            x += '<a href=# onclick=p10WebRouter("' + node._id + '",1,80)>' + "HTTP" + '</a>&nbsp;';
+                            //x += '<a href=# onclick=p10WebRouter("' + node._id + '",2,443)>' + "HTTPS" + '</a>&nbsp;';
+                        }
                         if ((node.agent.id > 0) && (node.agent.id < 5)) {
                             if (navigator.platform.toLowerCase() == 'win32') {
                                 if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false)) {
@@ -8061,6 +8070,22 @@
 
         function p10showDeleteNodeDialogEx(buttons, nodeid) {
             meshserver.send({ action: 'removedevices', nodeids: [ nodeid ] });
+        }
+
+        function p10WebRouter(nodeid, protocol, port, addr) {
+            var relayid = null;
+            var node = getNodeFromId(nodeid);
+            if (node.mtype == 3) { // Setup device relay if needed
+                var mesh = meshes[node.meshid];
+                if (mesh && mesh.relayid) { relayid = mesh.relayid; addr = node.host; }
+            }
+            var servername = serverinfo.name;
+            if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+            var url = 'https://' + servername + ':' + webRelayPort + '/control-redirect.ashx?n=' + nodeid + '&p=' + port + '&appid=' + protocol; // Protocol: 1 = HTTP, 2 = HTTPS
+            if (addr != null) { url += '&addr=' + addr; }
+            if (relayid != null) { url += '&relayid=' + relayid; }
+            safeNewWindow(url, 'WebRelay');
+            return false;
         }
 
         function p10MCRouter(nodeid, protocol, port, addr, localport) {
