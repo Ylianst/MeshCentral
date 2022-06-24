@@ -19,7 +19,8 @@ Protocol numbers
 10 = RDP
 11 = SSH-TERM
 12 = VNC
-13 - SSH-FILES
+13 = SSH-FILES
+14 = Web-TCP
 */
 
 // Protocol Numbers
@@ -57,6 +58,146 @@ const MESHRIGHT_RESETOFF = 0x00040000; // 262144
 const MESHRIGHT_GUESTSHARING = 0x00080000; // 524288
 const MESHRIGHT_DEVICEDETAILS = 0x00100000; // 1048576
 const MESHRIGHT_ADMIN = 0xFFFFFFFF;
+
+
+// Construct a TCP relay object
+module.exports.CreateTcpRelay = function (parent, db, req, args, domain) {
+    const Net = require('net');
+    const WebSocket = require('ws');
+
+    const obj = {};
+    obj.relayActive = false;
+    obj.closed = false;
+
+    // Events
+    obj.ondata = null;
+    obj.onconnect = null;
+    obj.onclose = null;
+
+    // Disconnect
+    obj.close = function (arg) {
+        if (obj.closed == true) return;
+        obj.closed = true;
+
+        // Event the session ending
+        if ((obj.startTime) && (obj.meshid != null)) {
+            // Collect how many raw bytes where received and sent.
+            // We sum both the websocket and TCP client in this case.
+            var inTraffc = obj.ws._socket.bytesRead, outTraffc = obj.ws._socket.bytesWritten;
+            if (obj.wsClient != null) { inTraffc += obj.wsClient._socket.bytesRead; outTraffc += obj.wsClient._socket.bytesWritten; }
+            const sessionSeconds = Math.round((Date.now() - obj.startTime) / 1000);
+            const user = parent.users[obj.cookie.userid];
+            const username = (user != null) ? user.name : null;
+            const event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.cookie.userid, username: username, sessionid: obj.sessionid, msgid: 123, msgArgs: [sessionSeconds, obj.sessionid], msg: "Left Web-SSH session \"" + obj.sessionid + "\" after " + sessionSeconds + " second(s).", protocol: PROTOCOL_WEBSSH, bytesin: inTraffc, bytesout: outTraffc };
+            parent.parent.DispatchEvent(['*', obj.nodeid, obj.cookie.userid, obj.meshid], obj, event);
+            delete obj.startTime;
+            delete obj.sessionid;
+        }
+        if (obj.wsClient) {
+            obj.wsClient.removeAllListeners('open');
+            obj.wsClient.removeAllListeners('message');
+            obj.wsClient.removeAllListeners('close');
+            try { obj.wsClient.close(); } catch (ex) { console.log(ex); }
+            delete obj.wsClient;
+        }
+
+        if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (ex) { console.log(ex); } } // Soft close, close the websocket
+        if (arg == 2) { try { ws._socket._parent.end(); } catch (ex) { console.log(ex); } } // Hard close, close the TCP socket
+        obj.ws.removeAllListeners();
+
+        // Event disconnection
+        if (obj.onclose) { obj.onclose(); }
+
+        obj.relayActive = false;
+        delete obj.cookie;
+        delete obj.nodeid;
+        delete obj.meshid;
+        delete obj.userid;
+    };
+
+    // Start the looppback server
+    function startRelayConnection() {
+        try {
+            // Setup the correct URL with domain and use TLS only if needed.
+            const options = { rejectUnauthorized: false };
+            const protocol = (args.tlsoffload) ? 'ws' : 'wss';
+            var domainadd = '';
+            if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
+            const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?p=14&auth=' + obj.xcookie; // Protocol 14 is Web-TCP
+            parent.parent.debug('relay', 'TCP: Connection websocket to ' + url);
+            obj.wsClient = new WebSocket(url, options);
+            obj.wsClient.on('open', function () { parent.parent.debug('relay', 'TCP: Relay websocket open'); });
+            obj.wsClient.on('message', function (data) { // Make sure to handle flow control.
+                if (obj.relayActive == false) {
+                    if ((data == 'c') || (data == 'cr')) {
+                        obj.relayActive = true;
+                        if (obj.onconnect) { obj.onconnect(); } // Event connection
+                    }
+                } else {
+                    if (typeof data == 'string') {
+                        // Forward any ping/pong commands to the browser
+                        var cmd = null;
+                        try { cmd = JSON.parse(data); } catch (ex) { }
+                        if ((cmd != null) && (cmd.ctrlChannel == '102938') && (cmd.type == 'ping')) { cmd.type = 'pong'; obj.wsClient.send(JSON.stringify(cmd)); }
+                        return;
+                    }
+                    // Relay WS --> TCP, event data coming in
+                    if (obj.ondata) { obj.ondata(data); }
+                }
+            });
+            obj.wsClient.on('close', function () { parent.parent.debug('relay', 'TCP: Relay websocket closed'); obj.close(); });
+            obj.wsClient.on('error', function (err) { parent.parent.debug('relay', 'TCP: Relay websocket error: ' + err); obj.close(); });
+        } catch (ex) {
+            console.log(ex);
+        }
+    }
+
+    // Send data thru the relay tunnel
+    obj.send = function (data) {
+        if (obj.relayActive = - false) return false;
+        obj.wsClient.send(data);
+        return true;
+    }
+
+    parent.parent.debug('relay', 'TCP: Request for TCP relay (' + req.clientIp + ')');
+
+    // Decode the authentication cookie
+    obj.cookie = parent.parent.decodeCookie(req.query.auth, parent.parent.loginCookieEncryptionKey);
+    if ((obj.cookie == null) || (obj.cookie.userid == null) || (parent.users[obj.cookie.userid] == null)) { obj.ws.send(JSON.stringify({ action: 'sessionerror' })); obj.close(); return; }
+    obj.userid = obj.cookie.userid;
+
+    // Get the meshid for this device
+    parent.parent.db.Get(obj.cookie.nodeid, function (err, nodes) {
+        if (obj.cookie == null) return; // obj has been cleaned up, just exit.
+        if ((err != null) || (nodes == null) || (nodes.length != 1)) { parent.parent.debug('relay', 'TCP: Invalid device'); obj.close(); }
+        const node = nodes[0];
+        obj.nodeid = node._id; // Store the NodeID
+        obj.meshid = node.meshid; // Store the MeshID
+        obj.mtype = node.mtype; // Store the device group type
+
+        // Check if we need to relay thru a different agent
+        const mesh = parent.meshes[obj.meshid];
+        if (mesh && mesh.relayid) {
+            obj.relaynodeid = mesh.relayid;
+            obj.tcpaddr = node.host;
+
+            // Check if we have rights to the relayid device, does nothing if a relay is not used
+            checkRelayRights(parent, domain, obj.cookie.userid, obj.relaynodeid, function (allowed) {
+                if (obj.cookie == null) return; // obj has been cleaned up, just exit.
+                if (allowed !== true) { parent.parent.debug('relay', 'TCP: Attempt to use un-authorized relay'); obj.close(); return; }
+
+                // Re-encode a cookie with a device relay
+                const cookieContent = { userid: obj.cookie.userid, domainid: obj.cookie.domainid, nodeid: mesh.relayid, tcpaddr: node.host, tcpport: obj.cookie.tcpport };
+                obj.xcookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
+            });
+        } else {
+            obj.xcookie = req.query.auth;
+        }
+    });
+
+    return obj;
+};
+
 
 // Construct a MSTSC Relay object, called upon connection
 // This implementation does not have TLS support

@@ -2858,7 +2858,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     footer: (domain.footer == null) ? '' : domain.footer,
                     webstate: encodeURIComponent(webstate).replace(/'/g, '%27'),
                     amtscanoptions: amtscanoptions,
-                    pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports()
+                    pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports(),
+                    webRelayPort: ((parent.webrelayserver != null) ? parent.webrelayserver.port : 0)
                 }, dbGetFunc.req, domain), user);
             }
             xdbGetFunc.req = req;
@@ -5846,11 +5847,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var selfurl = ' wss://' + req.headers.host;
             if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { selfurl += ' wss://' + xforwardedhost; }
             const extraScriptSrc = (parent.config.settings.extrascriptsrc != null) ? (' ' + parent.config.settings.extrascriptsrc) : '';
+
+            // If the web relay port is enabled, allow the web page to redirect to it
+            var extraFrameSrc = '';
+            if ((parent.webrelayserver != null) && (parent.webrelayserver.port != 0)) {
+                extraFrameSrc = ' https://' + req.headers.host + ':' + parent.webrelayserver.port;
+                if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { extraFrameSrc += ' https://' + xforwardedhost + ':' + parent.webrelayserver.port; }
+            }
+
             const headers = {
                 'Referrer-Policy': 'no-referrer',
                 'X-XSS-Protection': '1; mode=block',
                 'X-Content-Type-Options': 'nosniff',
-                'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'" + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' mcrouter:; media-src 'self'; form-action 'self'"
+                'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'" + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' mcrouter:" + extraFrameSrc + "; media-src 'self'; form-action 'self'"
             };
             if (req.headers['user-agent'] && (req.headers['user-agent'].indexOf('Chrome') >= 0)) { headers['Permissions-Policy'] = 'interest-cohort=()'; } // Remove Google's FLoC Network, only send this if Chrome browser
             if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
