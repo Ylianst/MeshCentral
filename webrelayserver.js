@@ -116,8 +116,15 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
             } else {
                 if ((req.session.userid != null) && (req.session.rid != null)) {
                     var relayMultiTunnel = relayMultiTunnels[req.session.userid + '/' + req.session.rid];
-                    if (relayMultiTunnel != null) { relayMultiTunnel.handleRequest(req, res); return; }
+                    if (relayMultiTunnel != null) {
+                        // The multi-tunnel session is valid, use it
+                        relayMultiTunnel.handleRequest(req, res);
+                    } else {
+                        // No multi-tunnel session with this relay identifier, close the HTTP request.
+                        res.end();
+                    }
                 } else {
+                    // The user is not logged in or does not have a relay identifier, close the HTTP request.
                     res.end();
                 }
             }
@@ -136,15 +143,32 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
             const userid = req.session.userid;
             const domainid = userid.split('/')[1];
             const domain = parent.config.domains[domainid];
+            const nodeid = ((req.query.relayid != null) ? req.query.relayid : req.query.n);
+            const addr = (req.query.addr != null) ? req.query.addr : '127.0.0.1';
+            const port = parseInt(req.query.p);
 
-            // Create the multi-tunnel
-            const relayMultiTunnel = require('./apprelays.js').CreateMultiWebRelay(parent, db, req, args, domain, userid, ((req.query.relayid != null) ? req.query.relayid : req.query.n), (req.query.addr != null) ? req.query.addr : '127.0.0.1', parseInt(req.query.p));
-            relayMultiTunnel.onclose = function (multiTunnelId) { delete obj.relayTunnels[multiTunnelId]; }
-            relayMultiTunnel.multiTunnelId = nextMultiTunnelId++;
+            // Check to see if we already have a multi-relay session that matches exactly this device and port for this user
+            var relayMultiTunnel = null;
+            for (var i in relayMultiTunnels) {
+                const xrelayMultiTunnel = relayMultiTunnels[i];
+                if ((xrelayMultiTunnel.domain.id == domain.id) && (xrelayMultiTunnel.userid == userid) && (xrelayMultiTunnel.nodeid == nodeid) && (xrelayMultiTunnel.addr == addr) && (xrelayMultiTunnel.port == port)) {
+                    relayMultiTunnel = xrelayMultiTunnel; // We found an exact match
+                }
+            }
 
-            // Set the tunnel
-            relayMultiTunnels[userid + '/' + relayMultiTunnel.multiTunnelId] = relayMultiTunnel;
-            req.session.rid = relayMultiTunnel.multiTunnelId;
+            if (relayMultiTunnel != null) {
+                // Since we found a match, use it
+                req.session.rid = relayMultiTunnel.multiTunnelId;
+            } else {
+                // Create the multi-tunnel
+                relayMultiTunnel = require('./apprelays.js').CreateMultiWebRelay(parent, db, req, args, domain, userid, nodeid, addr, port);
+                relayMultiTunnel.onclose = function (multiTunnelId) { delete obj.relayTunnels[multiTunnelId]; }
+                relayMultiTunnel.multiTunnelId = nextMultiTunnelId++;
+
+                // Set the tunnel
+                relayMultiTunnels[userid + '/' + relayMultiTunnel.multiTunnelId] = relayMultiTunnel;
+                req.session.rid = relayMultiTunnel.multiTunnelId;
+            }
 
             // Redirect to root
             res.redirect('/');
