@@ -4576,7 +4576,7 @@
             if ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
                 if (webRelayPort != 0) {
                     x += '<a href=# onclick=p10WebRouter("' + node._id + '",1,80)>' + "HTTP" + '</a>&nbsp;';
-                    //x += '<a href=# onclick=p10WebRouter("' + node._id + '",2,443)>' + "HTTPS" + '</a>&nbsp;';
+                    x += '<a href=# onclick=p10WebRouter("' + node._id + '",2,443)>' + "HTTPS" + '</a>&nbsp;';
                 }
                 if ((node.agent.id > 0) && (node.agent.id < 5)) {
                     if (navigator.platform.toLowerCase() == 'win32') {
@@ -7148,7 +7148,7 @@
                     if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0)) {
                         if (webRelayPort != 0) {
                             x += '<a href=# onclick=p10WebRouter("' + node._id + '",1,80)>' + "HTTP" + '</a>&nbsp;';
-                            //x += '<a href=# onclick=p10WebRouter("' + node._id + '",2,443)>' + "HTTPS" + '</a>&nbsp;';
+                            x += '<a href=# onclick=p10WebRouter("' + node._id + '",2,443)>' + "HTTPS" + '</a>&nbsp;';
                         }
                         if ((node.agent.id > 0) && (node.agent.id < 5)) {
                             if (navigator.platform.toLowerCase() == 'win32') {
