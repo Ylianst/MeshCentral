@@ -555,7 +555,7 @@
               "legalCopyright":  { "type": "string", "description": "Executable legal copyright." },
               "originalFilename":  { "type": "string", "description": "Executable original file name." },
               "productName":  { "type": "string", "description": "Executable product name." },
-              "productCersion":  { "type": "string", "description": "Executable product version, generally in the form of 1.2.3.4." }
+              "productVersion":  { "type": "string", "description": "Executable product version, generally in the form of 1.2.3.4." }
             }
           },
           "assistantCustomization": {
