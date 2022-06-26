@@ -1188,7 +1188,7 @@
         }
 
         function applyDesktopSettings() {
-            var r = '', ops = (features & 512) ? [90, 70, 50, 40, 30, 20, 10, 5, 1] : [50, 40, 30, 20, 10, 5, 1];
+            var r = '', ops = (features & 512) ? [100, 90, 70, 50, 40, 30, 20, 10, 5, 1] : [50, 40, 30, 20, 10, 5, 1];
             for (var i in ops) { r += '<option value=' + ops[i] + '>' + ops[i] + '%</option>'; }
             QH('d7bitmapquality', r);
             d7desktopmode.value = desktopsettings.encoding;
