@@ -146,12 +146,13 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
             const nodeid = ((req.query.relayid != null) ? req.query.relayid : req.query.n);
             const addr = (req.query.addr != null) ? req.query.addr : '127.0.0.1';
             const port = parseInt(req.query.p);
+            const appid = parseInt(req.query.appid);
 
             // Check to see if we already have a multi-relay session that matches exactly this device and port for this user
             var relayMultiTunnel = null;
             for (var i in relayMultiTunnels) {
                 const xrelayMultiTunnel = relayMultiTunnels[i];
-                if ((xrelayMultiTunnel.domain.id == domain.id) && (xrelayMultiTunnel.userid == userid) && (xrelayMultiTunnel.nodeid == nodeid) && (xrelayMultiTunnel.addr == addr) && (xrelayMultiTunnel.port == port)) {
+                if ((xrelayMultiTunnel.domain.id == domain.id) && (xrelayMultiTunnel.userid == userid) && (xrelayMultiTunnel.nodeid == nodeid) && (xrelayMultiTunnel.addr == addr) && (xrelayMultiTunnel.port == port) && (xrelayMultiTunnel.appid == appid)) {
                     relayMultiTunnel = xrelayMultiTunnel; // We found an exact match
                 }
             }
@@ -161,7 +162,7 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
                 req.session.rid = relayMultiTunnel.multiTunnelId;
             } else {
                 // Create the multi-tunnel
-                relayMultiTunnel = require('./apprelays.js').CreateMultiWebRelay(parent, db, req, args, domain, userid, nodeid, addr, port);
+                relayMultiTunnel = require('./apprelays.js').CreateMultiWebRelay(parent, db, req, args, domain, userid, nodeid, addr, port, appid);
                 relayMultiTunnel.onclose = function (multiTunnelId) { delete obj.relayTunnels[multiTunnelId]; }
                 relayMultiTunnel.multiTunnelId = nextMultiTunnelId++;
 

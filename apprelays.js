@@ -13,7 +13,6 @@
 /*jshint esversion: 6 */
 "use strict";
 
-
 /*
 Protocol numbers
 10 = RDP
@@ -59,9 +58,18 @@ const MESHRIGHT_GUESTSHARING = 0x00080000; // 524288
 const MESHRIGHT_DEVICEDETAILS = 0x00100000; // 1048576
 const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
+// SerialTunnel object is used to embed TLS within another connection.
+function SerialTunnel(options) {
+    var obj = new require('stream').Duplex(options);
+    obj.forwardwrite = null;
+    obj.updateBuffer = function (chunk) { this.push(chunk); };
+    obj._write = function (chunk, encoding, callback) { if (obj.forwardwrite != null) { obj.forwardwrite(chunk); } else { console.err("Failed to fwd _write."); } if (callback) callback(); }; // Pass data written to forward
+    obj._read = function (size) { }; // Push nothing, anything to read should be pushed from updateBuffer()
+    return obj;
+}
 
 // Construct a Web relay object
-module.exports.CreateMultiWebRelay = function (parent, db, req, args, domain, userid, nodeid, addr, port) {
+module.exports.CreateMultiWebRelay = function (parent, db, req, args, domain, userid, nodeid, addr, port, appid) {
     const obj = {};
     obj.parent = parent;
     obj.lastOperation = Date.now();
@@ -70,6 +78,7 @@ module.exports.CreateMultiWebRelay = function (parent, db, req, args, domain, us
     obj.nodeid = nodeid;
     obj.addr = addr;
     obj.port = port;
+    obj.appid = appid;
     var pendingRequests = [];
     var nextTunnelId = 1;
     var tunnels = {};
@@ -83,7 +92,6 @@ module.exports.CreateMultiWebRelay = function (parent, db, req, args, domain, us
 
     // Handle new HTTP request
     obj.handleRequest = function (req, res) {
-        //console.log('handleRequest', req.url);
         pendingRequests.push([req, res]);
         handleNextRequest();
     }
@@ -96,7 +104,6 @@ module.exports.CreateMultiWebRelay = function (parent, db, req, args, domain, us
             count += (tunnels[i].isWebSocket ? 0 : 1);
             if ((tunnels[i].relayActive == true) && (tunnels[i].res == null)) {
                 // Found a free tunnel, use it
-                //console.log('handleNextRequest-found empty tunnel');
                 const x = pendingRequests.shift();
                 tunnels[i].processRequest(x[0], x[1]);
                 return;
@@ -106,12 +113,18 @@ module.exports.CreateMultiWebRelay = function (parent, db, req, args, domain, us
         if (count > 0) return;
 
         // Launch a new tunnel
-        //console.log('handleNextRequest-starting new tunnel');
         const tunnel = module.exports.CreateWebRelay(obj, db, args, domain);
-        tunnel.onclose = function (tunnelId) { delete tunnels[tunnelId]; }
+        tunnel.onclose = function (tunnelId) {
+            delete tunnels[tunnelId];
+            // Count how many non-websocket tunnels are active
+            var count = 0;
+            for (var i in tunnels) { count += (tunnels[i].isWebSocket ? 0 : 1); }
+            // If there are none, discard all pending HTTP requests
+            if (count == 0) { for (var i in pendingRequests) { const x = pendingRequests[i]; x[1].end(); pendingRequests = []; } }
+        }
         tunnel.onconnect = function (tunnelId) { if (pendingRequests.length > 0) { const x = pendingRequests.shift(); tunnels[tunnelId].processRequest(x[0], x[1]); } }
         tunnel.oncompleted = function (tunnelId) { if (pendingRequests.length > 0) { const x = pendingRequests.shift(); tunnels[tunnelId].processRequest(x[0], x[1]); } }
-        tunnel.connect(userid, nodeid, addr, port);
+        tunnel.connect(userid, nodeid, addr, port, appid);
         tunnel.tunnelId = nextTunnelId++;
         tunnels[tunnel.tunnelId] = tunnel;
     }
@@ -131,7 +144,6 @@ module.exports.CreateMultiWebRelay = function (parent, db, req, args, domain, us
 }
 
 
-
 // Construct a Web relay object
 module.exports.CreateWebRelay = function (parent, db, args, domain) {
     //const Net = require('net');
@@ -141,6 +153,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     obj.relayActive = false;
     obj.closed = false;
     obj.isWebSocket = false;
+    const constants = (require('crypto').constants ? require('crypto').constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Events
     obj.onclose = null;
@@ -151,8 +164,6 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     obj.processRequest = function (req, res) {
         if (obj.relayActive == false) { console.log("ERROR: Attempt to use an unconnected tunnel"); return false; }
 
-        //console.log('processRequest-start', req.method);
-
         // Construct the HTTP request
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
         request += 'host: ' + obj.addr + ':' + obj.port + '\r\n';
@@ -161,17 +172,14 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         if (parent.webCookie != null) { request += 'cookie: ' + parent.webCookie + '\r\n' } // If we have a sessin cookie, use it.
         request += '\r\n';
 
-        //console.log('request', request);
-
         if ((req.headers['transfer-encoding'] != null) || (req.headers['content-length'] != null)) {
             // Read the HTTP body and send the request to the device
             obj.requestBinary = [Buffer.from(request)];
             req.on('data', function (data) { obj.requestBinary.push(data); });
-            req.on('end', function () { obj.wsClient.send(Buffer.concat(obj.requestBinary)); delete obj.requestBinary; });
+            req.on('end', function () { send(Buffer.concat(obj.requestBinary)); delete obj.requestBinary; });
         } else {
             // Request has no body, send it now
-            obj.wsClient.send(Buffer.from(request));
-            //console.log('processRequest-sent-nobody');
+            send(Buffer.from(request));
         }
         obj.res = res;
     }
@@ -180,6 +188,11 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     obj.close = function (arg) {
         if (obj.closed == true) return;
         obj.closed = true;
+
+        if (obj.tls) {
+            try { obj.tls.end(); } catch (ex) { console.log(ex); }
+            delete obj.tls;
+        }
 
         /*
         // Event the session ending
@@ -215,10 +228,11 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     };
 
     // Start the looppback server
-    obj.connect = function (userid, nodeid, addr, port) {
+    obj.connect = function (userid, nodeid, addr, port, appid) {
         if (obj.relayActive || obj.closed) return;
         obj.addr = addr;
         obj.port = port;
+        obj.appid = appid;
 
         // Encode a cookie for the mesh relay
         const cookieContent = { userid: userid, domainid: domain.id, nodeid: nodeid, tcpport: port };
@@ -236,27 +250,59 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             obj.wsClient = new WebSocket(url, options);
             obj.wsClient.on('open', function () { parent.parent.debug('relay', 'TCP: Relay websocket open'); });
             obj.wsClient.on('message', function (data) { // Make sure to handle flow control.
-                if (obj.relayActive == false) {
+                if (obj.tls) {
+                    // WS --> TLS
+                    processRawHttpData(data);
+                } else if (obj.relayActive == false) {
                     if ((data == 'c') || (data == 'cr')) {
-                        obj.relayActive = true;
-                        if (obj.onconnect) { obj.onconnect(obj.tunnelId); } // Event connection
+                        if (appid == 2) {
+                            // TLS needs to be setup
+                            obj.ser = new SerialTunnel();
+                            obj.ser.forwardwrite = function (data) { if (data.length > 0) { try { obj.wsClient.send(data); } catch (ex) { } } }; // TLS ---> WS
+
+                            // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel
+                            const tlsoptions = { socket: obj.ser, rejectUnauthorized: false };
+                            obj.tls = require('tls').connect(tlsoptions, function () {
+                                parent.parent.debug('relay', "Web Relay Secure TLS Connection");
+                                obj.relayActive = true;
+                                if (obj.onconnect) { obj.onconnect(obj.tunnelId); } // Event connection
+                            });
+                            obj.tls.setEncoding('binary');
+                            obj.tls.on('error', function (err) { parent.parent.debug('relay', "Web Relay TLS Connection Error", err); obj.close(); });
+
+                            // Decrypted tunnel from TLS communcation to be forwarded to the browser
+                            obj.tls.on('data', function (data) { processHttpData(data); }); // TLS ---> Browser
+                        } else {
+                            // No TLS needed, tunnel is now active
+                            obj.relayActive = true;
+                            if (obj.onconnect) { obj.onconnect(obj.tunnelId); } // Event connection
+                        }
                     }
                 } else {
-                    if (typeof data == 'string') {
-                        // Forward any ping/pong commands to the browser
-                        var cmd = null;
-                        try { cmd = JSON.parse(data); } catch (ex) { }
-                        if ((cmd != null) && (cmd.ctrlChannel == '102938') && (cmd.type == 'ping')) { cmd.type = 'pong'; obj.wsClient.send(JSON.stringify(cmd)); }
-                        return;
-                    }
-                    // Relay WS --> TCP, event data coming in
-                    processHttpData(data.toString('binary'));
+                    processRawHttpData(data);
                 }
             });
             obj.wsClient.on('close', function () { parent.parent.debug('relay', 'TCP: Relay websocket closed'); obj.close(); });
             obj.wsClient.on('error', function (err) { parent.parent.debug('relay', 'TCP: Relay websocket error: ' + err); obj.close(); });
         } catch (ex) {
             console.log(ex);
+        }
+    }
+
+    function processRawHttpData(data) {
+        if (typeof data == 'string') {
+            // Forward any ping/pong commands to the browser
+            var cmd = null;
+            try { cmd = JSON.parse(data); } catch (ex) { }
+            if ((cmd != null) && (cmd.ctrlChannel == '102938') && (cmd.type == 'ping')) { cmd.type = 'pong'; obj.wsClient.send(JSON.stringify(cmd)); }
+            return;
+        }
+        if (obj.tls) {
+            // If TLS is in use, WS --> TLS
+            if (data.length > 0) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
+        } else {
+            // Relay WS --> TCP, event data coming in
+            processHttpData(data.toString('binary'));
         }
     }
 
@@ -335,12 +381,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         if (obj.oncompleted) { obj.oncompleted(obj.tunnelId); }
     }
 
-    // Send data thru the relay tunnel
-    function send(data) {
-        if (obj.relayActive = - false) return false;
-        obj.wsClient.send(data);
-        return true;
-    }
+    // Send data thru the relay tunnel. Written to use TLS if needed.
+    function send(data) { try { if (obj.tls) { obj.tls.write(data); } else { obj.wsClient.send(data); } } catch (ex) { } }
 
     parent.parent.debug('relay', 'TCP: Request for web relay');
     return obj;
