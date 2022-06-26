@@ -69,7 +69,7 @@ function SerialTunnel(options) {
 }
 
 // Construct a Web relay object
-module.exports.CreateMultiWebRelay = function (parent, db, req, args, domain, userid, nodeid, addr, port, appid) {
+module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, userid, nodeid, addr, port, appid) {
     const obj = {};
     obj.parent = parent;
     obj.lastOperation = Date.now();
@@ -89,6 +89,23 @@ module.exports.CreateMultiWebRelay = function (parent, db, req, args, domain, us
     // Events
     obj.closed = false;
     obj.onclose = null;
+
+    // Check if any tunnels need to be cleaned up
+    obj.checkTimeout = function () {
+        const limit = Date.now() - (1 * 60 * 1000); // This is is 5 minutes before current time
+
+        // Close any old non-websocket tunnels
+        const tunnelToRemove = [];
+        for (var i in tunnels) { if ((tunnels[i].lastOperation < limit) && (tunnels[i].isWebSocket !== true)) { tunnelToRemove.push(tunnels[i]); } }
+        for (var i in tunnelToRemove) { console.log('session-close-tunnel'); tunnelToRemove[i].close(); }
+
+        // Close this session if no longer used
+        if (obj.lastOperation < limit) {
+            var count = 0;
+            for (var i in tunnels) { count++; }
+            if (count == 0) { console.log('session-close-self'); close(); } // Time limit reached and no tunnels, clean up.
+        }
+    }
 
     // Handle new HTTP request
     obj.handleRequest = function (req, res) {
@@ -135,7 +152,7 @@ module.exports.CreateMultiWebRelay = function (parent, db, req, args, domain, us
         obj.closed = true;
         for (var i in tunnels) { tunnels[i].close(); }
         tunnels = null;
-        if (obj.onclose) { obj.onclose(obj.userid + '/' + obj.multiTunnelId); }
+        if (obj.onclose) { obj.onclose(obj.userid + '/' + obj.sessionId); }
         delete obj.userid;
         delete obj.lastOperation;
     }
@@ -150,6 +167,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     const WebSocket = require('ws')
 
     const obj = {};
+    obj.lastOperation = Date.now();
     obj.relayActive = false;
     obj.closed = false;
     obj.isWebSocket = false;
@@ -163,6 +181,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     // Process a HTTP request
     obj.processRequest = function (req, res) {
         if (obj.relayActive == false) { console.log("ERROR: Attempt to use an unconnected tunnel"); return false; }
+        parent.lastOperation = obj.lastOperation = Date.now();
 
         // Construct the HTTP request
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
@@ -265,6 +284,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                             obj.tls = require('tls').connect(tlsoptions, function () {
                                 parent.parent.debug('relay', "Web Relay Secure TLS Connection");
                                 obj.relayActive = true;
+                                parent.lastOperation = obj.lastOperation = Date.now(); // Update time of last opertion performed
                                 if (obj.onconnect) { obj.onconnect(obj.tunnelId); } // Event connection
                             });
                             obj.tls.setEncoding('binary');
@@ -275,6 +295,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                         } else {
                             // No TLS needed, tunnel is now active
                             obj.relayActive = true;
+                            parent.lastOperation = obj.lastOperation = Date.now(); // Update time of last opertion performed
                             if (obj.onconnect) { obj.onconnect(obj.tunnelId); } // Event connection
                         }
                     }
@@ -376,7 +397,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         obj.res.set('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;"); // Set an "allow all" policy, see if the can restrict this in the future
         obj.res.end(data, 'binary'); // Write the data
         delete obj.res;
-
+        parent.lastOperation = obj.lastOperation = Date.now(); // Update time of last opertion performed
+        
         // Event completion
         if (obj.oncompleted) { obj.oncompleted(obj.tunnelId); }
     }

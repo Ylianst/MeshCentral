@@ -26,8 +26,9 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
     obj.app = obj.express();
     obj.webRelayServer = null;
     obj.port = 0;
-    var nextMultiTunnelId = 1;
-    var relayMultiTunnels = {}        // RelayID --> Web Mutli-Tunnel
+    obj.cleanupTimer = null;
+    var nextSessionId = 1;
+    var relaySessions = {}            // RelayID --> Web Mutli-Tunnel
     const constants = (require('crypto').constants ? require('crypto').constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
     var tlsSessionStore = {};         // Store TLS session information for quick resume.
     var tlsSessionStoreCount = 0;     // Number of cached TLS session information in store.
@@ -115,10 +116,10 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
                 return next();
             } else {
                 if ((req.session.userid != null) && (req.session.rid != null)) {
-                    var relayMultiTunnel = relayMultiTunnels[req.session.userid + '/' + req.session.rid];
-                    if (relayMultiTunnel != null) {
+                    var relaySession = relaySessions[req.session.userid + '/' + req.session.rid];
+                    if (relaySession != null) {
                         // The multi-tunnel session is valid, use it
-                        relayMultiTunnel.handleRequest(req, res);
+                        relaySession.handleRequest(req, res);
                     } else {
                         // No multi-tunnel session with this relay identifier, close the HTTP request.
                         res.end();
@@ -149,26 +150,34 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
             const appid = parseInt(req.query.appid);
 
             // Check to see if we already have a multi-relay session that matches exactly this device and port for this user
-            var relayMultiTunnel = null;
-            for (var i in relayMultiTunnels) {
-                const xrelayMultiTunnel = relayMultiTunnels[i];
-                if ((xrelayMultiTunnel.domain.id == domain.id) && (xrelayMultiTunnel.userid == userid) && (xrelayMultiTunnel.nodeid == nodeid) && (xrelayMultiTunnel.addr == addr) && (xrelayMultiTunnel.port == port) && (xrelayMultiTunnel.appid == appid)) {
-                    relayMultiTunnel = xrelayMultiTunnel; // We found an exact match
+            var relaySession = null;
+            for (var i in relaySessions) {
+                const xrelaySession = relaySessions[i];
+                if ((xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
+                    relaySession = xrelaySession; // We found an exact match
                 }
             }
 
-            if (relayMultiTunnel != null) {
+            if (relaySession != null) {
                 // Since we found a match, use it
-                req.session.rid = relayMultiTunnel.multiTunnelId;
+                req.session.rid = relaySession.sessionId;
             } else {
-                // Create the multi-tunnel
-                relayMultiTunnel = require('./apprelays.js').CreateMultiWebRelay(parent, db, req, args, domain, userid, nodeid, addr, port, appid);
-                relayMultiTunnel.onclose = function (multiTunnelId) { delete obj.relayTunnels[multiTunnelId]; }
-                relayMultiTunnel.multiTunnelId = nextMultiTunnelId++;
+                // Create a web relay session
+                relaySession = require('./apprelays.js').CreateWebRelaySession(parent, db, req, args, domain, userid, nodeid, addr, port, appid);
+                relaySession.onclose = function (sessionId) {
+                    // Remove the relay session
+                    delete relaySessions[sessionId];
+                    // If there are not more relay sessions, clear the cleanup timer
+                    if ((Object.keys(relaySessions).length == 0) && (obj.cleanupTimer != null)) { clearInterval(obj.cleanupTimer); obj.cleanupTimer = null; }
+                }
+                relaySession.sessionId = nextSessionId++;
 
-                // Set the tunnel
-                relayMultiTunnels[userid + '/' + relayMultiTunnel.multiTunnelId] = relayMultiTunnel;
-                req.session.rid = relayMultiTunnel.multiTunnelId;
+                // Set the multi-tunnel session
+                relaySessions[userid + '/' + relaySession.sessionId] = relaySession;
+                req.session.rid = relaySession.sessionId;
+
+                // Setup the cleanup timer if needed
+                if (obj.cleanupTimer == null) { obj.cleanupTimer = setInterval(checkTimeout, 10000); }
             }
 
             // Redirect to root
@@ -189,6 +198,11 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
             obj.tlsServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
             obj.expressWs = require('express-ws')(obj.app, obj.tlsServer, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
         }
+    }
+
+    // Check that everything is cleaned up
+    function checkTimeout() {
+        for (var i in relaySessions) { relaySessions[i].checkTimeout(); }
     }
 
     // Find a free port starting with the specified one and going up.
