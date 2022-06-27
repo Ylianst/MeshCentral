@@ -197,11 +197,17 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         if (parent.webCookie != null) { request += 'cookie: ' + parent.webCookie + '\r\n' } // If we have a sessin cookie, use it.
         request += '\r\n';
 
-        if ((req.headers['transfer-encoding'] != null) || (req.headers['content-length'] != null)) {
+        if (req.headers['content-length'] != null) {
+            // Stream the HTTP request and body, this is a content-length HTTP request, just forward the body dataf
+            send(Buffer.from(request));
+            req.on('data', function (data) { send(data); }); // TODO: Flow control (Not sure how to do this in ExpressJS)
+            req.on('end', function () { });
+        } else if (req.headers['transfer-encoding'] != null) {
             // Read the HTTP body and send the request to the device
+            console.log('chunk stream start');
             obj.requestBinary = [Buffer.from(request)];
-            req.on('data', function (data) { obj.requestBinary.push(data); });
-            req.on('end', function () { send(Buffer.concat(obj.requestBinary)); delete obj.requestBinary; });
+            req.on('data', function (data) { console.log('chunk stream data'); obj.requestBinary.push(data); });
+            req.on('end', function () { console.log('chunk stream end');send(Buffer.concat(obj.requestBinary)); delete obj.requestBinary; });
         } else {
             // Request has no body, send it now
             send(Buffer.from(request));
@@ -332,84 +338,6 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             processHttpData(data.toString('binary'));
         }
     }
-
-    /*
-    // Process incoming HTTP data
-    obj.socketAccumulator = '';
-    obj.socketParseState = 0;
-    function processHttpData(data) {
-        obj.socketAccumulator += data;
-        while (true) {
-            //console.log('ACC(' + obj.socketAccumulator + '): ' + obj.socketAccumulator);
-            if (obj.socketParseState == 0) {
-                var headersize = obj.socketAccumulator.indexOf('\r\n\r\n');
-                if (headersize < 0) return;
-                //obj.Debug("Header: "+obj.socketAccumulator.substring(0, headersize)); // Display received HTTP header
-                obj.socketHeader = obj.socketAccumulator.substring(0, headersize).split('\r\n');
-                obj.socketAccumulator = obj.socketAccumulator.substring(headersize + 4);
-                obj.socketParseState = 1;
-                obj.socketData = '';
-                obj.socketXHeader = { Directive: obj.socketHeader[0].split(' ') };
-                for (var i in obj.socketHeader) {
-                    if (i != 0) {
-                        var x2 = obj.socketHeader[i].indexOf(':');
-                        obj.socketXHeader[obj.socketHeader[i].substring(0, x2).toLowerCase()] = obj.socketHeader[i].substring(x2 + 2);
-                    }
-                }
-            }
-            if (obj.socketParseState == 1) {
-                var csize = -1;
-                if ((obj.socketXHeader['connection'] != null) && (obj.socketXHeader['connection'].toLowerCase() == 'close') && ((obj.socketXHeader["transfer-encoding"] == null) || (obj.socketXHeader["transfer-encoding"].toLowerCase() != 'chunked'))) {
-                    // The body ends with a close, in this case, we will only process the header
-                    csize = 0;
-                } else if (obj.socketXHeader['content-length'] != null) {
-                    // The body length is specified by the content-length
-                    csize = parseInt(obj.socketXHeader['content-length']);
-                    if (obj.socketAccumulator.length < csize) return;
-                    var data = obj.socketAccumulator.substring(0, csize);
-                    obj.socketAccumulator = obj.socketAccumulator.substring(csize);
-                    obj.socketData = data;
-                    csize = 0;
-                } else {
-                    // The body is chunked
-                    var clen = obj.socketAccumulator.indexOf('\r\n');
-                    if (clen < 0) return; // Chunk length not found, exit now and get more data.
-                    // Chunk length if found, lets see if we can get the data.
-                    csize = parseInt(obj.socketAccumulator.substring(0, clen), 16);
-                    if (obj.socketAccumulator.length < clen + 2 + csize + 2) return;
-                    // We got a chunk with all of the data, handle the chunck now.
-                    var data = obj.socketAccumulator.substring(clen + 2, clen + 2 + csize);
-                    obj.socketAccumulator = obj.socketAccumulator.substring(clen + 2 + csize + 2);
-                    try { obj.socketData += data; } catch (ex) { console.log(ex, typeof data, data.length); }
-                }
-                if (csize == 0) {
-                    //obj.Debug("xxOnSocketData DONE: (" + obj.socketData.length + "): " + obj.socketData);
-                    processHttpResponse(obj.socketXHeader, obj.socketData);
-                    obj.socketParseState = 0;
-                    obj.socketHeader = null;
-                }
-            }
-        }
-    }
-
-    // This is a fully parsed HTTP response from the remote device
-    function processHttpResponse(header, data) {
-        //console.log('processHttpResponse', header);
-        obj.res.status(parseInt(header.Directive[1])); // Set the status
-        const blockHeaders = ['Directive' ]; // These are headers we do not forward
-        for (var i in header) {
-            if (i == 'set-cookie') { parent.webCookie = header[i]; } // Keep the cookie, don't forward it
-            else if (blockHeaders.indexOf(i) == -1) { obj.res.set(i, header[i]); } // Set the headers if not blocked
-        }
-        obj.res.set('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;"); // Set an "allow all" policy, see if the can restrict this in the future
-        obj.res.end(data, 'binary'); // Write the data
-        delete obj.res;
-        parent.lastOperation = obj.lastOperation = Date.now(); // Update time of last opertion performed
-        
-        // Event completion
-        if (obj.oncompleted) { obj.oncompleted(obj.tunnelId); }
-    }
-    */
 
     // Process incoming HTTP data
     obj.socketAccumulator = '';
