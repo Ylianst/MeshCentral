@@ -198,16 +198,16 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         request += '\r\n';
 
         if (req.headers['content-length'] != null) {
-            // Stream the HTTP request and body, this is a content-length HTTP request, just forward the body dataf
+            // Stream the HTTP request and body, this is a content-length HTTP request, just forward the body data
             send(Buffer.from(request));
             req.on('data', function (data) { send(data); }); // TODO: Flow control (Not sure how to do this in ExpressJS)
             req.on('end', function () { });
         } else if (req.headers['transfer-encoding'] != null) {
-            // Read the HTTP body and send the request to the device
-            console.log('chunk stream start');
-            obj.requestBinary = [Buffer.from(request)];
-            req.on('data', function (data) { console.log('chunk stream data'); obj.requestBinary.push(data); });
-            req.on('end', function () { console.log('chunk stream end');send(Buffer.concat(obj.requestBinary)); delete obj.requestBinary; });
+            // Stream the HTTP request and body, this is a chunked encoded HTTP request
+            // TODO: Flow control (Not sure how to do this in ExpressJS)
+            send(Buffer.from(request));
+            req.on('data', function (data) { send(Buffer.concat([Buffer.from(data.length.toString(16) + '\r\n', 'binary'), data, send(Buffer.from('\r\n', 'binary'))])); }); 
+            req.on('end', function () { send(Buffer.from('0\r\n\r\n', 'binary')); });
         } else {
             // Request has no body, send it now
             send(Buffer.from(request));
