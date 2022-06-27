@@ -9992,6 +9992,7 @@
     },
     {
       "en": "Ask Admin PowerShell",
+      "nl": "Vraag naar de PowerShell in beheersdersmodus",
       "pl": "PowerShell z Zapytaniem Administratora",
       "ru": "PowerShell от Админа, cпросить согласия",
       "fr": "Demander PowerShell en mode administrateur",
@@ -10001,6 +10002,7 @@
     },
     {
       "en": "Ask Admin Shell",
+      "nl": "Vraag naar de shell in beheersdersmodus",
       "pl": "Terminal z Zapytaniem Administratora",
       "ru": "Консоль от Админа, cпросить согласия",
       "fr": "Demander le shell en mode administrateur",
@@ -10061,6 +10063,7 @@
     },
     {
       "en": "Ask User PowerShell",
+      "nl": "Vraag naar de PowerShell in gebruikersmodus",
       "pl": "PowerShell z Zapytaniem Użytkownika",
       "ru": "PowerShell от Пользователя, cпросить согласия",
       "fr": "Demander PowerShell en mode utilisateur ",
@@ -10070,6 +10073,7 @@
     },
     {
       "en": "Ask User Shell",
+      "nl": "Vraag naar de shell in gebruikersmodus",
       "pl": "Terminal z Zapytaniem Użytkownika",
       "ru": "Консоль от Пользователя, cпросить согласия",
       "fr": "Demander le shell en mode utilisateur",
@@ -15671,7 +15675,8 @@
     },
     {
       "en": "Connect using hardware KVM",
-	  "pl": "Połącz za pomocą sprzętowego KVM",
+      "nl": "Verbinding maken via hardware KVM",
+      "pl": "Połącz za pomocą sprzętowego KVM",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1hspan"
       ]
@@ -26215,7 +26220,8 @@
     },
     {
       "en": "Failed to sign agent {0}: {1}",
-	  "pl": "Nieudane przypisanie agenta {0}: {1}",
+      "nl": "Kan de agent niet ondertekenen {0}: {1}",
+      "pl": "Nieudane przypisanie agenta {0}: {1}",
       "xloc": [
         "default.handlebars->41->104"
       ]
@@ -32684,7 +32690,8 @@
     },
     {
       "en": "Intel&reg; Standard Manageability (Intel&reg; SM)",
-	  "pl": "Intel&reg; Standard Manageability (Intel&reg; SM)",
+      "nl": "Intel&reg; Standaard beheerbaarheid (Intel&reg; SM)",
+      "pl": "Intel&reg; Standard Manageability (Intel&reg; SM)",
       "xloc": [
         "default-mobile.handlebars->11->578",
         "default.handlebars->41->1467"
@@ -32692,14 +32699,16 @@
     },
     {
       "en": "Intel&reg;AMT",
-	  "pl": "Intel&reg;AMT",
+      "nl": "Intel&reg;AMT",
+      "pl": "Intel&reg;AMT",
       "xloc": [
         "default.handlebars->41->957"
       ]
     },
     {
       "en": "Intel&reg;SM",
-	  "pl": "Intel&reg;SM",
+      "nl": "Intel&reg;SM",
+      "pl": "Intel&reg;SM",
       "xloc": [
         "default.handlebars->41->955"
       ]
@@ -49926,7 +49935,8 @@
     },
     {
       "en": "Redirection port or KVM feature is disabled",
-	  "pl": "Pzekierowania portu lub funkcja KVM są wyłączone",
+      "nl": "Omleidingspoort of KVM functie is uitgeschakeld",
+      "pl": "Pzekierowania portu lub funkcja KVM są wyłączone",
       "xloc": [
         "default.handlebars->container->column_l->p11->p11warning->3",
         "default.handlebars->container->column_l->p12->p12warning->3"
@@ -53205,7 +53215,8 @@
     },
     {
       "en": "Reverse Mouse Wheel",
-	  "pl": "Odwróć Zachowanie Rolki Myszy",
+      "nl": "Muiswiel actie omgekeerd",
+      "pl": "Odwróć Zachowanie Rolki Myszy",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->7",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->3",
