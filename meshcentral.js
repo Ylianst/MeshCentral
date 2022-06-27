@@ -145,7 +145,7 @@ function CreateMeshCentralServer(config, args) {
         if ((obj.args.help == true) || (obj.args['?'] == true)) {
             console.log('MeshCentral v' + getCurrentVersion() + ', remote computer management web portal.');
             console.log('This software is open source under Apache 2.0 license.');
-            console.log('Details at: https://www.meshcommander.com/meshcentral2\r\n');
+            console.log('Details at: https://www.meshcentral.com\r\n');
             if ((obj.platform == 'win32') || (obj.platform == 'linux')) {
                 console.log('Run as a background service');
                 console.log('   --install/uninstall               Install MeshCentral as a background service.');
