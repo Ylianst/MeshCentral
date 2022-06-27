@@ -15671,6 +15671,7 @@
     },
     {
       "en": "Connect using hardware KVM",
+	  "pl": "Połącz za pomocą sprzętowego KVM",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1hspan"
       ]
@@ -26214,6 +26215,7 @@
     },
     {
       "en": "Failed to sign agent {0}: {1}",
+	  "pl": "Nieudane przypisanie agenta {0}: {1}",
       "xloc": [
         "default.handlebars->41->104"
       ]
@@ -32682,6 +32684,7 @@
     },
     {
       "en": "Intel&reg; Standard Manageability (Intel&reg; SM)",
+	  "pl": "Intel&reg; Standard Manageability (Intel&reg; SM)",
       "xloc": [
         "default-mobile.handlebars->11->578",
         "default.handlebars->41->1467"
@@ -32689,12 +32692,14 @@
     },
     {
       "en": "Intel&reg;AMT",
+	  "pl": "Intel&reg;AMT",
       "xloc": [
         "default.handlebars->41->957"
       ]
     },
     {
       "en": "Intel&reg;SM",
+	  "pl": "Intel&reg;SM",
       "xloc": [
         "default.handlebars->41->955"
       ]
@@ -49921,6 +49926,7 @@
     },
     {
       "en": "Redirection port or KVM feature is disabled",
+	  "pl": "Pzekierowania portu lub funkcja KVM są wyłączone",
       "xloc": [
         "default.handlebars->container->column_l->p11->p11warning->3",
         "default.handlebars->container->column_l->p12->p12warning->3"
@@ -53199,6 +53205,7 @@
     },
     {
       "en": "Reverse Mouse Wheel",
+	  "pl": "Odwróć Zachowanie Rolki Myszy",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->7",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->3",
