@@ -109,7 +109,13 @@ module.exports.CreateDB = function (parent, func) {
             obj.eventsfile.remove({ time: { '$lt': new Date(Date.now() - (expireEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
             obj.powerfile.remove({ time: { '$lt': new Date(Date.now() - (expirePowerEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
             obj.serverstatsfile.remove({ time: { '$lt': new Date(Date.now() - (expireServerStatsSeconds * 1000)) } }, { multi: true }); // Force delete older events
+        } else if ((obj.databaseType == 4) || (obj.databaseType == 5)) { // MariaDB or MySQL
+            sqlDbQuery('DELETE FROM events WHERE time < ?', [new Date(Date.now() - (expireEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expireEventsSeconds
+            sqlDbQuery('DELETE FROM power WHERE time < ?', [new Date(Date.now() - (expirePowerEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expirePowerSeconds
+            sqlDbQuery('DELETE FROM serverstats WHERE expire < ?', [new Date()], function (doc, err) { }); // Delete events where expiration date is in the past
+            sqlDbQuery('DELETE FROM smbios WHERE expire < ?', [new Date()], function (doc, err) { }); // Delete events where expiration date is in the past
         }
+        
         obj.removeInactiveDevices();
     }
 
@@ -1471,7 +1477,7 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the Server Stats collection
             obj.SetServerStats = function (data, func) { sqlDbQuery('REPLACE INTO serverstats VALUE (?, ?, ?)', [data.time, data.expire, JSON.stringify(data)], func); };
-            obj.GetServerStats = function (hours, func) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); sqlDbQuery('SELECT doc FROM serverstats WHERE time > ?', [t], func); }; // TODO: Expire old entries
+            obj.GetServerStats = function (hours, func) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); sqlDbQuery('SELECT doc FROM serverstats WHERE time > ?', [t], func); };
 
             // Read a configuration file from the database
             obj.getConfigFile = function (path, func) { obj.Get('cfile/' + path, func); }
