@@ -6072,7 +6072,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.ws(url + 'mstscrelay.ashx', function (ws, req) {
                     const domain = getDomain(req);
                     if (domain == null) { parent.debug('web', 'mstsc: failed checks.'); try { ws.close(); } catch (e) { } return; }
-                    require('./apprelays.js').CreateMstscRelay(obj, obj.db, ws, req, obj.args, domain);
+                    // If no user is logged in and we have a default user, set it now.
+                    if ((req.session.userid == null) && (typeof obj.args.user == 'string') && (obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()])) { req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase(); }
+                    try { require('./apprelays.js').CreateMstscRelay(obj, obj.db, ws, req, obj.args, domain); } catch (ex) { console.log(ex); }
                 });
             }
 
@@ -6082,9 +6084,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.ws(url + 'sshrelay.ashx', function (ws, req) {
                     const domain = getDomain(req);
                     if (domain == null) { parent.debug('web', 'ssh: failed checks.'); try { ws.close(); } catch (e) { } return; }
-                    try {
-                        require('./apprelays.js').CreateSshRelay(obj, obj.db, ws, req, obj.args, domain);
-                    } catch (ex) { console.log(ex); }
+                    // If no user is logged in and we have a default user, set it now.
+                    if ((req.session.userid == null) && (typeof obj.args.user == 'string') && (obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()])) { req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase(); }
+                    try { require('./apprelays.js').CreateSshRelay(obj, obj.db, ws, req, obj.args, domain); } catch (ex) { console.log(ex); }
                 });
                 obj.app.ws(url + 'sshterminalrelay.ashx', function (ws, req) {
                     PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
