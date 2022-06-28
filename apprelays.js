@@ -229,21 +229,29 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
     // Process a websocket request
     obj.processWebSocket = function (req, ws) {
-        //console.log('processWebSocket', req.url);
-        if (obj.relayActive == false) { console.log("ERROR: Attempt to use an unconnected tunnel"); return false; }
-        parent.lastOperation = obj.lastOperation = Date.now();
+        console.log('processWebSocket', req.url);
 
         // Mark this tunnel as being a web socket tunnel
-        obj.isWebSocket = true; 
+        obj.isWebSocket = true;
         obj.ws = ws;
+
+        // Pause the websocket until we get a tunnel connected
+        obj.ws._socket.pause();
+
+        // Remove the trailing '/.websocket' if needed
+        if (req.url.endsWith('/.websocket')) { req.url = req.url.substring(0, req.url.length - 11); }
+
+        if (obj.relayActive == false) { console.log("ERROR: Attempt to use an unconnected tunnel"); return false; }
+        parent.lastOperation = obj.lastOperation = Date.now();
 
         // Construct the HTTP request and send it out
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
         request += 'host: ' + obj.addr + ':' + obj.port + '\r\n';
-        const blockedHeaders = ['origin', 'host', 'cookie']; // These are headers we do not forward
+        const blockedHeaders = ['origin', 'host', 'cookie', 'sec-websocket-extensions']; // These are headers we do not forward
         for (var i in req.headers) { if (blockedHeaders.indexOf(i) == -1) { request += i + ': ' + req.headers[i] + '\r\n'; } }
         if (parent.webCookie != null) { request += 'cookie: ' + parent.webCookie + '\r\n' } // If we have a sessin cookie, use it.
         request += '\r\n';
+
         send(Buffer.from(request));
     }
 
@@ -397,7 +405,18 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                 // Check if this HTTP request has a body
                 if ((obj.socketXHeader['connection'] != null) && (obj.socketXHeader['connection'].toLowerCase() == 'close')) { obj.socketParseState = 1; }
                 if (obj.socketXHeader['content-length'] != null) { obj.socketParseState = 1; }
-                if ((obj.socketXHeader["transfer-encoding"] != null) && (obj.socketXHeader["transfer-encoding"].toLowerCase() == 'chunked')) { obj.socketParseState = 1; }
+                if ((obj.socketXHeader['transfer-encoding'] != null) && (obj.socketXHeader['transfer-encoding'].toLowerCase() == 'chunked')) { obj.socketParseState = 1; }
+                if (obj.isWebSocket) {
+                    console.log('websocket', obj.socketXHeader);
+                    if ((obj.socketXHeader['connection'] != null) && (obj.socketXHeader['connection'].toLowerCase() == 'upgrade')) {
+                        console.log('websocket pass-thru');
+                        obj.socketParseState = 2; // Switch to decoding websocket frames
+                        obj.ws._socket.resume(); // Resume the browser's websocket
+                    } else {
+                        console.log('websocket failed');
+                        obj.close(); // Failed to upgrade to websocket
+                    }
+                }
 
                 // Forward the HTTP request into the tunnel, if no body is present, close the request.
                 processHttpResponse(obj.socketXHeader, null, (obj.socketParseState == 0));
@@ -417,7 +436,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                     processHttpResponse(null, data, (obj.socketContentLengthRemaining == 0)); // Send any data we have, if we are done, signal the end of the response
                     if (obj.socketContentLengthRemaining > 0) return; // If more data is needed, return now so we exit the while() loop.
                     csize = 0; // We are done
-                } else if ((obj.socketXHeader["transfer-encoding"] != null) && (obj.socketXHeader["transfer-encoding"].toLowerCase() == 'chunked')) {
+                }
+                else if ((obj.socketXHeader['transfer-encoding'] != null) && (obj.socketXHeader['transfer-encoding'].toLowerCase() == 'chunked')) {
                     // The body is chunked
                     var clen = obj.socketAccumulator.indexOf('\r\n');
                     if (clen < 0) { return; } // Chunk length not found, exit now and get more data.
@@ -438,22 +458,78 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             if (obj.socketParseState == 2) {
                 // We are in websocket pass-thru mode, decode the websocket frame
                 if (obj.socketAccumulator.length < 2) return; // Need at least 2 bytes to decode a websocket header
-                console.log('WebSocket frame', obj.socketAccumulator.length, Buffer.from(obj.socketAccumulator, 'binary'));
+                //console.log('WebSocket frame', obj.socketAccumulator.length, Buffer.from(obj.socketAccumulator, 'binary'));
 
+                // Decode the websocket frame
                 const buf = Buffer.from(obj.socketAccumulator, 'binary');
                 const fin = ((buf[0] & 0x80) != 0);
+                const rsv = ((buf[0] & 0x70) != 0);
                 const op = buf[0] & 0x0F;
                 const mask = ((buf[1] & 0x80) != 0);
-                const len = buf[1] & 0x7F;
-                console.log('fin', fin);
-                console.log('op', op);
-                console.log('mask', mask);
-                console.log('len', len);
+                var len = buf[1] & 0x7F;
 
-                // Connection close
-                if ((fin == true) || (op == 8)) { obj.close(); }
+                // Calculate the total length
+                var payload = null;
+                if (len < 126) {
+                    // 1 byte length
+                    if (buf.length < (2 + len)) return; // Insuffisent data
+                    payload = buf.slice(2, 2 + len);
+                    obj.socketAccumulator = obj.socketAccumulator.substring(2 + len); // Remove data from accumulator
+                } else if (len == 126) {
+                    // 2 byte length
+                    if (buf.length < 4) return;
+                    len = buf.readInt16BE(2);
+                    if (buf.length < (4 + len)) return; // Insuffisent data
+                    payload = buf.slice(4, 4 + len);
+                    obj.socketAccumulator = obj.socketAccumulator.substring(4 + len); // Remove data from accumulator
+                } if (len == 127) {
+                    // 8 byte length
+                    if (buf.length < 10) return;
+                    len = buf.readInt32BE(2);
+                    if (len > 0) { obj.close(); return; } // This frame is larger than 4 gigabyte, close the connection.
+                    len = buf.readInt32BE(6);
+                    if (buf.length < (10 + len)) return; // Insuffisent data
+                    payload = buf.slice(10, 10 + len);
+                    obj.socketAccumulator = obj.socketAccumulator.substring(10 + len); // Remove data from accumulator
+                }
+                if (buf.length < len) return;
 
-                return;
+                // If the mask or reserved bit are true, we are not decoding this right, close the connection.
+                if ((mask == true) || (rsv == true)) { obj.close(); return; }
+
+                // TODO: If FIN is not set, we need to add support for continue frames
+
+                // Perform operation
+                switch (op) {
+                    case 0: { // Continue frame
+                        //console.log('continue', payload.length);
+                        break;
+                    }
+                    case 1: { // Text frame
+                        //console.log('text', payload.length);
+                        try { obj.ws.send(payload.toString('binary')); } catch (ex) { }
+                        break;
+                    }
+                    case 2: { // Binary frame
+                        //console.log('binary', payload.length);
+                        try { obj.ws.send(payload); } catch (ex) { }
+                        break;
+                    }
+                    case 8: { // Connection close
+                        obj.close();
+                        return;
+                    }
+                    case 9: { // Ping frame
+                        //console.log('ping', payload.length);
+                        // TODO
+                        break;
+                    }
+                    case 10: { // Pong frame
+                        //console.log('pong', payload.length);
+                        // TODO
+                        break;
+                    }
+                }
             }
         }
     }
