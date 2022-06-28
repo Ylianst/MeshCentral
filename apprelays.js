@@ -229,7 +229,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
     // Process a websocket request
     obj.processWebSocket = function (req, ws) {
-        console.log('processWebSocket', req.url);
+        if (obj.relayActive == false) { console.log("ERROR: Attempt to use an unconnected tunnel"); return false; }
+        parent.lastOperation = obj.lastOperation = Date.now();
 
         // Mark this tunnel as being a web socket tunnel
         obj.isWebSocket = true;
@@ -239,10 +240,9 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         obj.ws._socket.pause();
 
         // Remove the trailing '/.websocket' if needed
-        if (req.url.endsWith('/.websocket')) { req.url = req.url.substring(0, req.url.length - 11); }
-
-        if (obj.relayActive == false) { console.log("ERROR: Attempt to use an unconnected tunnel"); return false; }
-        parent.lastOperation = obj.lastOperation = Date.now();
+        var baseurl = req.url, i = req.url.indexOf('?');
+        if (i > 0) { baseurl = req.url.substring(0, i); }
+        if (baseurl.endsWith('/.websocket')) { req.url = baseurl.substring(0, baseurl.length - 11) + ((i < 1) ? '' : req.url.substring(i)); }
 
         // Construct the HTTP request and send it out
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
@@ -251,8 +251,46 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         for (var i in req.headers) { if (blockedHeaders.indexOf(i) == -1) { request += i + ': ' + req.headers[i] + '\r\n'; } }
         if (parent.webCookie != null) { request += 'cookie: ' + parent.webCookie + '\r\n' } // If we have a sessin cookie, use it.
         request += '\r\n';
-
         send(Buffer.from(request));
+
+        // Hook up the websocket events
+        obj.ws.on('message', function (data) {
+            // Setup opcode and payload
+            var op = 2, payload = data;
+            if (typeof data == 'string') { op = 1; payload = Buffer.from(data, 'binary'); } // Text frame
+
+            // Select a random mask
+            const mask = parent.parent.crypto.randomBytes(4)
+
+            // Setup header and mask
+            var header = null;
+            if (data.length < 126) {
+                header = Buffer.alloc(6);            // Header (2) + Mask (4)
+                header[0] = 0x80 + op;               // FIN + OP
+                header[1] = 0x80 + data.length;      // Mask + Length
+                mask.copy(header, 2, 0, 4);          // Copy the mask
+            } else if (data.length <= 0xFFFF) {
+                header = Buffer.alloc(8);            // Header (2) + Length (2) + Mask (4)
+                header[0] = 0x80 + op;               // FIN + OP
+                header[1] = 0x80 + 126;              // Mask + 126
+                header.writeInt16BE(data.length, 2); // Payload size
+                mask.copy(header, 4, 0, 4);          // Copy the mask
+            } else {
+                header = Buffer.alloc(14);           // Header (2) + Length (8) + Mask (4)
+                header[0] = 0x80 + op;               // FIN + OP
+                header[1] = 0x80 + 127;              // Mask + 127
+                header.writeInt32BE(data.length, 6); // Payload size
+                mask.copy(header, 10, 0, 4);         // Copy the mask
+            }
+
+            // Mask the payload
+            for (var i = 0; i < payload.length; i++) { payload[i] = (payload[i] ^ mask[i % 4]); }
+
+            // Send the frame
+            send(Buffer.concat([header, payload]));
+        });
+        obj.ws.on('close', function () { obj.close(); });
+        obj.ws.on('error', function (err) { obj.close(); });
     }
 
     // Disconnect
@@ -407,13 +445,10 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                 if (obj.socketXHeader['content-length'] != null) { obj.socketParseState = 1; }
                 if ((obj.socketXHeader['transfer-encoding'] != null) && (obj.socketXHeader['transfer-encoding'].toLowerCase() == 'chunked')) { obj.socketParseState = 1; }
                 if (obj.isWebSocket) {
-                    console.log('websocket', obj.socketXHeader);
                     if ((obj.socketXHeader['connection'] != null) && (obj.socketXHeader['connection'].toLowerCase() == 'upgrade')) {
-                        console.log('websocket pass-thru');
                         obj.socketParseState = 2; // Switch to decoding websocket frames
                         obj.ws._socket.resume(); // Resume the browser's websocket
                     } else {
-                        console.log('websocket failed');
                         obj.close(); // Failed to upgrade to websocket
                     }
                 }
