@@ -260,40 +260,46 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             // Setup opcode and payload
             var op = 2, payload = data;
             if (typeof data == 'string') { op = 1; payload = Buffer.from(data, 'binary'); } // Text frame
-
-            // Select a random mask
-            const mask = parent.parent.crypto.randomBytes(4)
-
-            // Setup header and mask
-            var header = null;
-            if (data.length < 126) {
-                header = Buffer.alloc(6);            // Header (2) + Mask (4)
-                header[0] = 0x80 + op;               // FIN + OP
-                header[1] = 0x80 + data.length;      // Mask + Length
-                mask.copy(header, 2, 0, 4);          // Copy the mask
-            } else if (data.length <= 0xFFFF) {
-                header = Buffer.alloc(8);            // Header (2) + Length (2) + Mask (4)
-                header[0] = 0x80 + op;               // FIN + OP
-                header[1] = 0x80 + 126;              // Mask + 126
-                header.writeInt16BE(data.length, 2); // Payload size
-                mask.copy(header, 4, 0, 4);          // Copy the mask
-            } else {
-                header = Buffer.alloc(14);           // Header (2) + Length (8) + Mask (4)
-                header[0] = 0x80 + op;               // FIN + OP
-                header[1] = 0x80 + 127;              // Mask + 127
-                header.writeInt32BE(data.length, 6); // Payload size
-                mask.copy(header, 10, 0, 4);         // Copy the mask
-            }
-
-            // Mask the payload
-            for (var i = 0; i < payload.length; i++) { payload[i] = (payload[i] ^ mask[i % 4]); }
-
-            // Send the frame
-            //console.log(obj.tunnelId, '-->', op, payload.length);
-            send(Buffer.concat([header, payload]));
+            sendWebSocketFrameToDevice(op, payload);
         });
+
+        obj.ws.on('ping', function (data) { sendWebSocketFrameToDevice(9, data); }); // Forward ping frame
+        obj.ws.on('pong', function (data) { sendWebSocketFrameToDevice(10, data); }); // Forward pong frame
         obj.ws.on('close', function () { obj.close(); });
         obj.ws.on('error', function (err) { obj.close(); });
+    }
+
+    function sendWebSocketFrameToDevice(op, payload) {
+        // Select a random mask
+        const mask = parent.parent.crypto.randomBytes(4)
+
+        // Setup header and mask
+        var header = null;
+        if (payload.length < 126) {
+            header = Buffer.alloc(6);                   // Header (2) + Mask (4)
+            header[0] = 0x80 + op;                      // FIN + OP
+            header[1] = 0x80 + payload.length;          // Mask + Length
+            mask.copy(header, 2, 0, 4);                 // Copy the mask
+        } else if (payload.length <= 0xFFFF) {
+            header = Buffer.alloc(8);                   // Header (2) + Length (2) + Mask (4)
+            header[0] = 0x80 + op;                      // FIN + OP
+            header[1] = 0x80 + 126;                     // Mask + 126
+            header.writeInt16BE(payload.length, 2);     // Payload size
+            mask.copy(header, 4, 0, 4);                 // Copy the mask
+        } else {
+            header = Buffer.alloc(14);                  // Header (2) + Length (8) + Mask (4)
+            header[0] = 0x80 + op;                      // FIN + OP
+            header[1] = 0x80 + 127;                     // Mask + 127
+            header.writeInt32BE(payload.length, 6);     // Payload size
+            mask.copy(header, 10, 0, 4);                // Copy the mask
+        }
+
+        // Mask the payload
+        for (var i = 0; i < payload.length; i++) { payload[i] = (payload[i] ^ mask[i % 4]); }
+
+        // Send the frame
+        //console.log(obj.tunnelId, '-->', op, payload.length);
+        send(Buffer.concat([header, payload]));
     }
 
     // Disconnect
@@ -541,34 +547,12 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
                 // Perform operation
                 switch (op) {
-                    case 0: { // Continue frame
-                        //console.log('continue', payload.length);
-                        break;
-                    }
-                    case 1: { // Text frame
-                        //console.log('text', payload.length);
-                        try { obj.ws.send(payload.toString('binary')); } catch (ex) { }
-                        break;
-                    }
-                    case 2: { // Binary frame
-                        //console.log('binary', payload.length);
-                        try { obj.ws.send(payload); } catch (ex) { }
-                        break;
-                    }
-                    case 8: { // Connection close
-                        obj.close();
-                        return;
-                    }
-                    case 9: { // Ping frame
-                        //console.log('ping', payload.length);
-                        // TODO
-                        break;
-                    }
-                    case 10: { // Pong frame
-                        //console.log('pong', payload.length);
-                        // TODO
-                        break;
-                    }
+                    case 0: { break; } // Continue frame (TODO)
+                    case 1: { try { obj.ws.send(payload.toString('binary')); } catch (ex) { } break; } // Text frame
+                    case 2: { try { obj.ws.send(payload); } catch (ex) { } break; } // Binary frame
+                    case 8: { obj.close(); return; } // Connection close
+                    case 9: { try { obj.ws.ping(payload); } catch (ex) { } break; } // Ping frame
+                    case 10: { try { obj.ws.pong(payload); } catch (ex) { } break; } // Pong frame
                 }
             }
         }
