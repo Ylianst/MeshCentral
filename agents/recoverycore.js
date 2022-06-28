@@ -7,7 +7,6 @@ var tunnels = {};
 var fs = require('fs');
 
 var needStreamFix = (new Date(process.versions.meshAgent) < new Date('2020-01-21 13:27:45.000-08:00'));
-
 try
 {
     Object.defineProperty(Array.prototype, 'find', {
@@ -553,15 +552,15 @@ function agentUpdate_Start(updateurl, updateoptions) {
             if (process.platform == 'win32')
             {
                 // Special Processing for Temporary/Console Mode Agents on Windows
-                var parms = windows_getCommandLine();
-                if (parms.findIndex(function (val) { return (val.toUpperCase() == 'RUN' || val.toUpperCase() == 'CONNECT');})>=0)
+                var parms = windows_getCommandLine(); // This uses FFI to fetch the command line parameters that the agent was started with
+                if (parms.findIndex(function (val) { return (val != null && (val.toUpperCase() == 'RUN' || val.toUpperCase() == 'CONNECT')); }) >= 0)
                 {
                     // This is a Temporary/Console Mode Agent
                     sendConsoleText('This is a temporary/console agent, checking for conflicts with background services...');
 
                     // Check to see if our binary conflicts with an installed agent
                     var agents = _getPotentialServiceNames();
-                    if(_getPotentialServiceNames().length>0)
+                    if (_getPotentialServiceNames().length > 0)
                     {
                         sendConsoleText('Self update cannot continue because the installed agent (' + agents[0] + ') conflicts with the currently running Temp/Console agent...', sessionid);
                         return;
@@ -648,11 +647,25 @@ function agentUpdate_Start(updateurl, updateoptions) {
                             sendAgentMessage('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + '), URL: ' + updateurl, 3);
                             agentUpdate_Start._selfupdate = null;
 
+                            try
+                            {
+                                // We are clearing these two properties, becuase some older agents may not cleanup correctly causing problems with the retry
+                                require('https').globalAgent.sockets = {};  
+                                require('https').globalAgent.requests = {};
+                            }
+                            catch(z)
+                            {}
+                            if (needStreamFix)
+                            {
+                                sendConsoleText('This is an older agent that may have an httpstream bug. On next retry will try to fetch the update differently...');
+                                needStreamFix = false;
+                            }
+
                             if (agentUpdate_Start._retryCount < 4)
                             {
                                 // Retry the download again
-                                sendConsoleText('Self Update will try again in 60 seconds...', sessionid);
-                                agentUpdate_Start._timeout = setTimeout(agentUpdate_Start, 60000, updateurl, updateoptions);
+                                sendConsoleText('Self Update will try again in 20 seconds...', sessionid);
+                                agentUpdate_Start._timeout = setTimeout(agentUpdate_Start, 20000, updateurl, updateoptions);
                             }
                             else
                             {
@@ -900,7 +913,8 @@ function onTunnelControlData(data, ws) {
 }
 
 
-require('MeshAgent').AddCommandHandler(function (data) {
+require('MeshAgent').AddCommandHandler(function (data)
+{
     if (typeof data == 'object') {
         // If this is a console command, parse it and call the console handler
         switch (data.action) {
