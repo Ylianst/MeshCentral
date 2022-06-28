@@ -24,6 +24,8 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
     obj.tlsServer = null;
     obj.net = require('net');
     obj.app = obj.express();
+    if (args.compression !== false) { obj.app.use(require('compression')()); }
+    obj.app.disable('x-powered-by');
     obj.webRelayServer = null;
     obj.port = 0;
     obj.cleanupTimer = null;
@@ -111,23 +113,56 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
                 req.clientIp = ipex;
             }
 
-            // Check if this there is a multi-tunnel for this request
-            if (req.url.startsWith('/control-redirect.ashx?n=')) {
+            // If this is a session start or a websocket, have the application handle this
+            if ((req.headers.upgrade == 'websocket') || (req.url.startsWith('/control-redirect.ashx?n='))) {
                 return next();
             } else {
+                // If this is a normal request (GET, POST, etc) handle it here
                 if ((req.session.userid != null) && (req.session.rid != null)) {
                     var relaySession = relaySessions[req.session.userid + '/' + req.session.rid];
                     if (relaySession != null) {
-                        // The multi-tunnel session is valid, use it
+                        // The web relay session is valid, use it
                         relaySession.handleRequest(req, res);
                     } else {
-                        // No multi-tunnel session with this relay identifier, close the HTTP request.
+                        // No web relay ession with this relay identifier, close the HTTP request.
                         res.end();
                     }
                 } else {
                     // The user is not logged in or does not have a relay identifier, close the HTTP request.
                     res.end();
                 }
+            }
+        });
+
+        // Start the server, only after users and meshes are loaded from the database.
+        if (args.tlsoffload) {
+            // Setup the HTTP server without TLS
+            obj.expressWs = require('express-ws')(obj.app, null, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
+        } else {
+            // Setup the HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
+            const tlsOptions = { cert: certificates.web.cert, key: certificates.web.key, ca: certificates.web.ca, rejectUnauthorized: true, ciphers: "HIGH:TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_8_SHA256:TLS_AES_128_CCM_SHA256:TLS_CHACHA20_POLY1305_SHA256", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 };
+            obj.tlsServer = require('https').createServer(tlsOptions, obj.app);
+            obj.tlsServer.on('secureConnection', function () { /*console.log('tlsServer secureConnection');*/ });
+            obj.tlsServer.on('error', function (err) { console.log('tlsServer error', err); });
+            obj.tlsServer.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
+            obj.tlsServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
+            obj.expressWs = require('express-ws')(obj.app, obj.tlsServer, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
+        }
+
+        // Handle incoming web socket calls
+        obj.app.ws('/*', function (ws, req) {
+            if ((req.session.userid != null) && (req.session.rid != null)) {
+                var relaySession = relaySessions[req.session.userid + '/' + req.session.rid];
+                if (relaySession != null) {
+                    // The multi-tunnel session is valid, use it
+                    relaySession.handleWebSocket(ws, req);
+                } else {
+                    // No multi-tunnel session with this relay identifier, close the websocket.
+                    ws.close();
+                }
+            } else {
+                // The user is not logged in or does not have a relay identifier, close the websocket.
+                ws.close();
             }
         });
 
@@ -183,21 +218,6 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
             // Redirect to root
             res.redirect('/');
         });
-
-        // Start the server, only after users and meshes are loaded from the database.
-        if (args.tlsoffload) {
-            // Setup the HTTP server without TLS
-            obj.expressWs = require('express-ws')(obj.app, null, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
-        } else {
-            // Setup the HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
-            const tlsOptions = { cert: certificates.web.cert, key: certificates.web.key, ca: certificates.web.ca, rejectUnauthorized: true, ciphers: "HIGH:TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_8_SHA256:TLS_AES_128_CCM_SHA256:TLS_CHACHA20_POLY1305_SHA256", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 };
-            obj.tlsServer = require('https').createServer(tlsOptions, obj.app);
-            obj.tlsServer.on('secureConnection', function () { /*console.log('tlsServer secureConnection');*/ });
-            obj.tlsServer.on('error', function (err) { console.log('tlsServer error', err); });
-            obj.tlsServer.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
-            obj.tlsServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
-            obj.expressWs = require('express-ws')(obj.app, obj.tlsServer, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
-        }
     }
 
     // Check that everything is cleaned up
