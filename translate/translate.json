@@ -5922,7 +5922,7 @@
     {
       "cs": "Přidat a znovu odeslat mapu ...",
       "da": "Tilføj &Relay Map...",
-      "de": "&Relay-Karte hinzufügen...",
+      "de": "&Relay-Zuordnung hinzufügen...",
       "en": "Add &Relay Map...",
       "es": "Agregar y retransmitir mapa ...",
       "fi": "Lisää ja välitä kartta ...",
@@ -6220,7 +6220,7 @@
     {
       "cs": "Přidat mapu ...",
       "da": "Tilføj kort...",
-      "de": "Karte hinzufügen...",
+      "de": "Zuordnung hinzufügen...",
       "en": "Add Map...",
       "es": "Agregar mapa ...",
       "fi": "Lisää kartta ...",
@@ -6291,7 +6291,7 @@
     {
       "cs": "Přidat mapu relé ...",
       "da": "Tilføj Relay kort",
-      "de": "Relaiskarte hinzufügen...",
+      "de": "Relay-Zuordnung hinzufügen...",
       "en": "Add Relay Map...",
       "es": "Agregar mapa de retransmisiones ...",
       "fi": "Lisää välityskartta ...",
@@ -8695,7 +8695,7 @@
     {
       "cs": "Alternativní port",
       "da": "Alternativ port",
-      "de": "Alternativer Hafen",
+      "de": "Alternativer Port",
       "en": "Alternative Port",
       "es": "Puerto Alternativo",
       "fi": "Vaihtoehtoinen portti",
@@ -11322,7 +11322,7 @@
     {
       "cs": "Vázat místní port na všechna síťová rozhraní",
       "da": "Bind lokal port til alle netværksinterfaces",
-      "de": "Binden Sie den lokalen Port an alle Netzwerkschnittstellen",
+      "de": "Lokalen Port an alle Netzwerkschnittstellen binden",
       "en": "Bind local port to all network interfaces",
       "es": "Vincular el puerto local a todas las interfaces de red",
       "fi": "Sido paikallinen portti kaikkiin verkkoliitäntöihin",
@@ -36974,7 +36974,7 @@
     {
       "cs": "Místní přístav",
       "da": "Lokal Port",
-      "de": "Lokaler Hafen",
+      "de": "Lokaler Port",
       "en": "Local Port",
       "es": "Puerto Local",
       "fi": "Paikallinen satama",
@@ -44700,7 +44700,7 @@
     {
       "cs": "Web O & pen ...",
       "da": "O&pen Site...",
-      "de": "Website öffnen...",
+      "de": "Webseite öffnen...",
       "en": "O&pen Site...",
       "es": "Sitio de O & pen ...",
       "fi": "O & kynä -sivusto ...",
@@ -45291,7 +45291,7 @@
     {
       "cs": "Otevřete web",
       "da": "Åbn webstedet",
-      "de": "Website öffnen",
+      "de": "Webseite öffnen",
       "en": "Open Web Site",
       "es": "Abrir Sitio Web",
       "fi": "Avaa verkkosivusto",
@@ -47775,7 +47775,7 @@
     {
       "cs": "Mapování portů",
       "da": "Port Mapping",
-      "de": "Port-Mapping",
+      "de": "Port-Zuordnung",
       "en": "Port Mapping",
       "es": "Mapeo de Puertos",
       "fi": "Portin kartoitus",
@@ -50109,7 +50109,7 @@
     {
       "cs": "Reléové zařízení",
       "da": "Relay enhed",
-      "de": "Relaisgerät",
+      "de": "Relay-Gerät",
       "en": "Relay Device",
       "es": "Dispositivo de Retransmisión",
       "fi": "Relelaite",
@@ -50162,7 +50162,7 @@
     {
       "cs": "Reléové mapování",
       "da": "Relay Mapping",
-      "de": "Relaiszuordnung",
+      "de": "Relay-Zuordnung",
       "en": "Relay Mapping",
       "es": "Mapeo de Relés",
       "fi": "Relekartoitus",
@@ -53867,7 +53867,7 @@
     {
       "cs": "S & ettings ...",
       "da": "S&ettings...",
-      "de": "Die Einstellungen...",
+      "de": "Einstellungen...",
       "en": "S&ettings...",
       "es": "A&justes...",
       "fi": "Asetukset...",
@@ -60322,7 +60322,7 @@
     {
       "cs": "Zahájena relace přenosu „{0}“ z {1} na {2}",
       "da": "Startede relay session \\\"{0}\\\" fra {1} til {2}",
-      "de": "Relaissitzung \\\"{0}\\\" von {1} bis {2} gestartet",
+      "de": "Relay-Sitzung \\\"{0}\\\" von {1} bis {2} gestartet",
       "en": "Started relay session \\\"{0}\\\" from {1} to {2}",
       "es": "Sesión de retransmisión iniciada \\\"{0}\\\" de {1} a {2}",
       "fi": "Aloitti välitysistunnon \\\"{0}\\\" välillä {1} - {2}",
@@ -61541,7 +61541,7 @@
     {
       "cs": "TCP relé",
       "da": "TCP-relay",
-      "de": "TCP-Relais",
+      "de": "TCP-Relay",
       "en": "TCP relay",
       "es": "Relé TCP",
       "fi": "TCP -rele",
@@ -64010,7 +64010,7 @@
     {
       "cs": "Žeton",
       "da": "Token",
-      "de": "Zeichen",
+      "de": "Token",
       "en": "Token",
       "es": "Token",
       "fi": "Tunnus",
@@ -64767,7 +64767,7 @@
     {
       "cs": "UDP relé",
       "da": "UDP-relay",
-      "de": "UDP-Relais",
+      "de": "UDP-Relay",
       "en": "UDP relay",
       "es": "Relé UDP",
       "fi": "UDP -rele",
@@ -68877,8 +68877,8 @@
     },
     {
       "cs": "VYHRAJ + L",
-      "da": "WIN + L.",
-      "de": "GEWINNEN + L.",
+      "da": "WIN + L",
+      "de": "WIN + L",
       "en": "WIN + L",
       "es": "WIN + L",
       "fi": "VOIT + L",
@@ -68899,8 +68899,8 @@
     },
     {
       "cs": "VYHRAJ + M",
-      "da": "WIN + M.",
-      "de": "GEWINNEN + M.",
+      "da": "WIN + M",
+      "de": "WIN + M",
       "en": "WIN + M",
       "es": "WIN + M",
       "fi": "VOIT + M",
@@ -68922,7 +68922,7 @@
     {
       "cs": "VYHRAJ + R",
       "da": "WIN + R",
-      "de": "WIN + R.",
+      "de": "WIN + R",
       "en": "WIN + R",
       "es": "WIN + R",
       "fi": "VOIT + R",
