@@ -244,6 +244,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         if (i > 0) { baseurl = req.url.substring(0, i); }
         if (baseurl.endsWith('/.websocket')) { req.url = baseurl.substring(0, baseurl.length - 11) + ((i < 1) ? '' : req.url.substring(i)); }
 
+        //console.log('processWebSocket', obj.tunnelId, req.url);
+
         // Construct the HTTP request and send it out
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
         request += 'host: ' + obj.addr + ':' + obj.port + '\r\n';
@@ -287,6 +289,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             for (var i = 0; i < payload.length; i++) { payload[i] = (payload[i] ^ mask[i % 4]); }
 
             // Send the frame
+            //console.log(obj.tunnelId, '-->', op, payload.length);
             send(Buffer.concat([header, payload]));
         });
         obj.ws.on('close', function () { obj.close(); });
@@ -502,6 +505,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                 const op = buf[0] & 0x0F;
                 const mask = ((buf[1] & 0x80) != 0);
                 var len = buf[1] & 0x7F;
+                //console.log(obj.tunnelId, 'fin: ' + fin + ', rsv: ' + rsv + ', op: ' + op + ', len: ' + len);
 
                 // Calculate the total length
                 var payload = null;
@@ -513,16 +517,16 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                 } else if (len == 126) {
                     // 2 byte length
                     if (buf.length < 4) return;
-                    len = buf.readInt16BE(2);
+                    len = buf.readUInt16BE(2);
                     if (buf.length < (4 + len)) return; // Insuffisent data
                     payload = buf.slice(4, 4 + len);
                     obj.socketAccumulator = obj.socketAccumulator.substring(4 + len); // Remove data from accumulator
                 } if (len == 127) {
                     // 8 byte length
                     if (buf.length < 10) return;
-                    len = buf.readInt32BE(2);
+                    len = buf.readUInt32BE(2);
                     if (len > 0) { obj.close(); return; } // This frame is larger than 4 gigabyte, close the connection.
-                    len = buf.readInt32BE(6);
+                    len = buf.readUInt32BE(6);
                     if (buf.length < (10 + len)) return; // Insuffisent data
                     payload = buf.slice(10, 10 + len);
                     obj.socketAccumulator = obj.socketAccumulator.substring(10 + len); // Remove data from accumulator
@@ -533,6 +537,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                 if ((mask == true) || (rsv == true)) { obj.close(); return; }
 
                 // TODO: If FIN is not set, we need to add support for continue frames
+                //console.log(obj.tunnelId, '<--', op, payload ? payload.length : 0);
 
                 // Perform operation
                 switch (op) {
@@ -585,6 +590,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                     else if (blockHeaders.indexOf(i) == -1) { obj.res.set(i, header[i]); } // Set the headers if not blocked
                 }
                 obj.res.set('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;"); // Set an "allow all" policy, see if the can restrict this in the future
+                obj.res.set('Cache-Control', 'no-cache'); // Tell the browser not to cache the responses since since the relay port can be used for many relays
             }
 
             // If there is data, send it
