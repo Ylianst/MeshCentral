@@ -1937,7 +1937,6 @@ function start() {
             });
             return;
         }
-        console.log("Done.");
     }
     if (command == 'unsign') { // Unsign an executable
         if (typeof args.exe != 'string') { console.log("Missing --exe [filename]"); return; }
@@ -1952,7 +1951,10 @@ function start() {
             }
         } else {
             console.log("Changing resources and unsigning to " + args.out);
-            exe.writeExecutable(args, null); // Unsigning with resources decoded and re-encoded.
+            exe.writeExecutable(args, null, function (err) { // Unsigning with resources decoded and re-encoded.
+                if (err == null) { console.log("Done."); } else { console.log(err); }
+                if (exe != null) { exe.close(); }
+            });
         }
     }
     if (command == 'createcert') { // Create a code signing certificate and private key
