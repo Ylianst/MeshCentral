@@ -257,6 +257,13 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
 
     function getRandomPassword() { return Buffer.from(require('crypto').randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
 
+    // Perform a IP match against a list
+    function isIPMatch(ip, matchList) {
+        const ipcheck = require('ipcheck');
+        for (var i in matchList) { if (ipcheck.match(ip, matchList[i]) == true) return true; }
+        return false;
+    }
+
     // Start up the web relay server
     serverStart();
     CheckListenPort(args.relayport, args.relayportbind, StartWebRelayServer);
