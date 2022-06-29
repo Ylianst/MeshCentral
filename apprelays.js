@@ -82,6 +82,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
     var pendingRequests = [];
     var nextTunnelId = 1;
     var tunnels = {};
+    var errorCount = 0; // If we keep closing tunnels without processing requests, fail the requests
 
     // Any HTTP cookie set by the device is going to be shared between all tunnels to that device.
     obj.webCookies = {};
@@ -121,6 +122,12 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
 
     // Handle request
     function handleNextRequest() {
+        // if there are not pending requests, do nothing
+        if (pendingRequests.length == 0) return;
+
+        // If the errorCount is high, something is really wrong, we are opening lots of tunnels and not processing any requests.
+        if (errorCount > 5) { close(); return; }
+
         // Check to see if any of the tunnels are free
         var count = 0;
         for (var i in tunnels) {
@@ -140,12 +147,10 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
     function launchNewTunnel() {
         // Launch a new tunnel
         const tunnel = module.exports.CreateWebRelay(obj, db, args, domain);
-        tunnel.onclose = function (tunnelId) {
+        tunnel.onclose = function (tunnelId, processedCount) {
+            if (processedCount == 0) { errorCount++; } // If this tunnel closed without processing any requests, mark this as an error
             delete tunnels[tunnelId];
-            // Count how many non-websocket tunnels are active
-            var count = 0;
-            for (var i in tunnels) { count += (tunnels[i].isWebSocket ? 0 : 1); }
-            if (count == 0) { launchNewTunnel(); }
+            handleNextRequest();
         }
         tunnel.onconnect = function (tunnelId) {
             if (pendingRequests.length > 0) {
@@ -154,6 +159,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
             }
         }
         tunnel.oncompleted = function (tunnelId) {
+            errorCount = 0; // Something got completed, clear any error count
             if (pendingRequests.length > 0) {
                 const x = pendingRequests.shift();
                 if (x[2] == true) { tunnels[tunnelId].processWebSocket(x[0], x[1]); } else { tunnels[tunnelId].processRequest(x[0], x[1]); }
@@ -166,11 +172,21 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
 
     // Close all tunnels
     function close() {
+        // Set the session as closed
         if (obj.closed == true) return;
         obj.closed = true;
+
+        // Close all tunnels
         for (var i in tunnels) { tunnels[i].close(); }
         tunnels = null;
+
+        // Close any pending requests
+        for (var i in pendingRequests) { if (pendingRequests[i][2] == true) { pendingRequests[i][1].end(); } else { pendingRequests[i][1].close(); } }
+
+        // Notify of session closure
         if (obj.onclose) { obj.onclose(obj.userid + '/' + obj.sessionId); }
+
+        // Cleanup
         delete obj.userid;
         delete obj.lastOperation;
     }
@@ -189,6 +205,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     obj.relayActive = false;
     obj.closed = false;
     obj.isWebSocket = false;
+    obj.processedRequestCount = 0;
     const constants = (require('crypto').constants ? require('crypto').constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Events
@@ -341,7 +358,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         if (obj.ws) { obj.ws.close(); delete obj.ws; }
 
         // Event disconnection
-        if (obj.onclose) { obj.onclose(obj.tunnelId); }
+        if (obj.onclose) { obj.onclose(obj.tunnelId, obj.processedRequestCount); }
 
         obj.relayActive = false;
     };
@@ -461,6 +478,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                 if ((obj.socketXHeader['transfer-encoding'] != null) && (obj.socketXHeader['transfer-encoding'].toLowerCase() == 'chunked')) { obj.socketParseState = 1; }
                 if (obj.isWebSocket) {
                     if ((obj.socketXHeader['connection'] != null) && (obj.socketXHeader['connection'].toLowerCase() == 'upgrade')) {
+                        obj.processedRequestCount++;
                         obj.socketParseState = 2; // Switch to decoding websocket frames
                         obj.ws._socket.resume(); // Resume the browser's websocket
                     } else {
@@ -615,6 +633,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                 delete obj.res;
 
                 // Event completion
+                obj.processedRequestCount++;
                 if (obj.oncompleted) { obj.oncompleted(obj.tunnelId); }
             }
         } else {
