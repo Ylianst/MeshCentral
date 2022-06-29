@@ -21367,7 +21367,7 @@
       "zh-chs": "在远程计算机上显示通知",
       "zh-cht": "在遠程電腦上顯示通知",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -22235,7 +22235,7 @@
       "zh-chs": "将远程剪贴板下载到本地剪贴板",
       "zh-cht": "將遠程剪貼板下載到本地剪貼板",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -37365,7 +37365,7 @@
       "tr": "Uzak bilgisayarı kilitle",
       "zh-chs": "锁定远程计算机",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -45374,7 +45374,7 @@
       "zh-chs": "在远程计算机上打开一个网址",
       "zh-cht": "在遠程電腦上打開一個網址",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -45400,7 +45400,7 @@
       "zh-cht": "打開此電腦的聊天窗口",
       "xloc": [
         "default.handlebars->41->906",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -49760,7 +49760,7 @@
       "zh-chs": "将远程桌面会话记录到档案",
       "zh-cht": "將遠程桌面會話記錄到檔案",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -50067,7 +50067,7 @@
       "zh-chs": "刷新桌面",
       "zh-cht": "刷新桌面",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -51363,7 +51363,7 @@
       "tr": "Uzak giriş kilitli",
       "zh-chs": "远程输入被锁定",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -51387,7 +51387,7 @@
       "tr": "Uzaktan giriş kilidi açıldı",
       "zh-chs": "远程输入解锁",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -54656,7 +54656,7 @@
       "zh-chs": "保存远程桌面的屏幕截图",
       "zh-cht": "保存遠程桌面的屏幕截圖",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7",
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1",
         "sharing.handlebars->p11->deskarea0->deskarea4->1"
       ]
     },
@@ -57666,7 +57666,7 @@
       "ru": "Поделиться устройством с гостем",
       "tr": "Cihazı bir misafirle paylaşın",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -63903,7 +63903,7 @@
       "zh-chs": "切换远程桌面背景",
       "zh-cht": "切換遠程桌面背景",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -66292,7 +66292,7 @@
       "zh-chs": "将本地剪貼板上传到远程设备",
       "zh-cht": "將本地剪貼板上傳到遠程裝置",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -75543,10 +75543,7 @@
       ]
     },
     {
-      "en": "Á/span>",
-      "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1->7"
-      ]
+      "en": "Á/span>"
     },
     {
       "cs": "↺",
