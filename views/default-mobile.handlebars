@@ -5772,20 +5772,13 @@
                         }
                     }
                     for (var j = 0; j < m.length; j++) {
-                        var iplayer = m[j];
-                        if (iplayer.family == 'IPv4') {
-                            if (iplayer.gateway && iplayer.netmask) {
-                                x += addDetailItem("IPv4 Layer", format("{0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
-                            } else {
-                                if (iplayer.address) { x += addDetailItem("IPv4 Layer", format("{0}", EscapeHtml(iplayer.address))); }
-                            }
-                        }
-                        if (iplayer.family == 'IPv6') {
-                            if (iplayer.gateway && iplayer.netmask) {
-                                x += addDetailItem("IPv6 Layer", format("{0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
-                            } else {
-                                if (iplayer.address) { x += addDetailItem("IPv6 Layer", format("{0}", EscapeHtml(iplayer.address))); }
-                            }
+                        var iplayer = m[j], items = [];
+                        if (iplayer.address) { items.push(format("IP: {0}", EscapeHtml(iplayer.address))); }
+                        if (iplayer.netmask) { items.push(format("Mask: {0}", EscapeHtml(iplayer.netmask))); }
+                        if (iplayer.gateway) { items.push(format("Gateway: {0}", EscapeHtml(iplayer.gateway))); }
+                        if (items.length > 0) {
+                            if (iplayer.family == 'IPv4') { x += addDetailItem("IPv4 Layer", items.join(", ")); }
+                            if (iplayer.family == 'IPv6') { x += addDetailItem("IPv6 Layer", items.join(", ")); }
                         }
                     }
                     x += '</div>';
