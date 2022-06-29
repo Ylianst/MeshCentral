@@ -84,7 +84,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
     var tunnels = {};
 
     // Any HTTP cookie set by the device is going to be shared between all tunnels to that device.
-    obj.webCookie = null;
+    obj.webCookies = {};
 
     // Events
     obj.closed = false;
@@ -203,10 +203,11 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
         // Construct the HTTP request
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
-        request += 'host: ' + obj.addr + ':' + obj.port + '\r\n';
-        const blockedHeaders = ['origin', 'host', 'cookie']; // These are headers we do not forward
+        const blockedHeaders = ['origin', 'cookie']; // These are headers we do not forward
         for (var i in req.headers) { if (blockedHeaders.indexOf(i) == -1) { request += i + ': ' + req.headers[i] + '\r\n'; } }
-        if (parent.webCookie != null) { request += 'cookie: ' + parent.webCookie + '\r\n' } // If we have a sessin cookie, use it.
+        var cookieStr = '';
+        for (var i in parent.webCookies) { if (cookieStr != '') { cookieStr += '; ' } cookieStr += (i + '=' + parent.webCookies[i].value); }
+        if (cookieStr.length > 0) { request += 'cookie: ' + cookieStr + '\r\n' } // If we have session cookies, set them in the header here
         request += '\r\n';
 
         if (req.headers['content-length'] != null) {
@@ -244,14 +245,13 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         if (i > 0) { baseurl = req.url.substring(0, i); }
         if (baseurl.endsWith('/.websocket')) { req.url = baseurl.substring(0, baseurl.length - 11) + ((i < 1) ? '' : req.url.substring(i)); }
 
-        //console.log('processWebSocket', obj.tunnelId, req.url);
-
-        // Construct the HTTP request and send it out
+        // Construct the HTTP request
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
-        request += 'host: ' + obj.addr + ':' + obj.port + '\r\n';
-        const blockedHeaders = ['origin', 'host', 'cookie', 'sec-websocket-extensions']; // These are headers we do not forward
+        const blockedHeaders = ['origin', 'cookie', 'sec-websocket-extensions']; // These are headers we do not forward
         for (var i in req.headers) { if (blockedHeaders.indexOf(i) == -1) { request += i + ': ' + req.headers[i] + '\r\n'; } }
-        if (parent.webCookie != null) { request += 'cookie: ' + parent.webCookie + '\r\n' } // If we have a sessin cookie, use it.
+        var cookieStr = '';
+        for (var i in parent.webCookies) { if (cookieStr != '') { cookieStr += '; ' } cookieStr += (i + '=' + parent.webCookies[i].value); }
+        if (cookieStr.length > 0) { request += 'cookie: ' + cookieStr + '\r\n' } // If we have session cookies, set them in the header here
         request += '\r\n';
         send(Buffer.from(request));
 
@@ -445,7 +445,13 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                 for (var i in obj.socketHeader) {
                     if (i != 0) {
                         var x2 = obj.socketHeader[i].indexOf(':');
-                        obj.socketXHeader[obj.socketHeader[i].substring(0, x2).toLowerCase()] = obj.socketHeader[i].substring(x2 + 2);
+                        const n = obj.socketHeader[i].substring(0, x2).toLowerCase();
+                        const v = obj.socketHeader[i].substring(x2 + 2);
+                        if (n == 'set-cookie') { // Since "set-cookie" can be present many times in the header, handle it as an array of values
+                            if (obj.socketXHeader[n] == null) { obj.socketXHeader[n] = [v]; } else { obj.socketXHeader[n].push(v); }
+                        } else {
+                            obj.socketXHeader[n] = v;
+                        }
                     }
                 }
 
@@ -568,9 +574,31 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             // If there is a header, send it
             if (header != null) {
                 obj.res.status(parseInt(header.Directive[1])); // Set the status
-                const blockHeaders = ['Directive']; // These are headers we do not forward
+                const blockHeaders = ['Directive', 'sec-websocket-extensions']; // We do not forward these headers 
                 for (var i in header) {
-                    if (i == 'set-cookie') { parent.webCookie = header[i]; } // Keep the cookie, don't forward it
+                    if (i == 'set-cookie') {
+                        for (var ii in header[i]) {
+                            // Decode the new cookie
+                            //console.log('set-cookie', header[i][ii]);
+                            const cookieSplit = header[i][ii].split(';');
+                            var newCookieName = null, newCookie = {};
+                            for (var j in cookieSplit) {
+                                var l = cookieSplit[j].indexOf('='), k = null, v = null;
+                                if (l == -1) { k = cookieSplit[j].trim(); } else { k = cookieSplit[j].substring(0, l).trim(); v = cookieSplit[j].substring(l + 1).trim(); }
+                                if (j == 0) { newCookieName = k; newCookie.value = v; } else { newCookie[k.toLowerCase()] = (v == null) ? true : v; }
+                            }
+                            if (newCookieName != null) {
+                                if ((typeof newCookie['max-age'] == 'string') && (parseInt(newCookie['max-age']) <= 0)) {
+                                    delete parent.webCookies[newCookieName]; // Remove a expired cookie
+                                    //console.log('clear-cookie', newCookieName);
+                                } else if (((newCookie.secure != true) || (obj.tls != null))) {
+                                    parent.webCookies[newCookieName] = newCookie; // Keep this cookie in the session
+                                    if (newCookie.httponly != true) { obj.res.set(i, header[i]); } // if the cookie is not HTTP-only, forward it to the browser. We need to do this to allow JavaScript to read it.
+                                    //console.log('new-cookie', newCookieName, newCookie);
+                                }
+                            }
+                        }
+                    }
                     else if (blockHeaders.indexOf(i) == -1) { obj.res.set(i, header[i]); } // Set the headers if not blocked
                 }
                 obj.res.set('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;"); // Set an "allow all" policy, see if the can restrict this in the future
