@@ -1365,13 +1365,18 @@ function handleServerCommand(data) {
                     }
                     case 'setclip': {
                         // Set the load clipboard to a user value
-                        if (typeof data.data == 'string') {
+                        if (typeof data.data == 'string')
+                        {
                             MeshServerLogEx(22, [data.data.length], "Setting clipboard content, " + data.data.length + " byte(s)", data);
-                            if (require('MeshAgent').isService) {
-                                if (process.platform != 'win32') {
+                            if (require('MeshAgent').isService)
+                            {
+                                if (process.platform != 'win32')
+                                {
                                     require('clipboard').dispatchWrite(data.data);
+                                    mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
                                 }
-                                else {
+                                else
+                                {
                                     var clipargs = data.data;
                                     var uid = require('user-sessions').consoleUid();
                                     var user = require('user-sessions').getUsername(uid);
@@ -1381,20 +1386,24 @@ function handleServerCommand(data) {
                                     this._dispatcher = require('win-dispatcher').dispatch({ user: user, modules: [{ name: 'clip-dispatch', script: "module.exports = { dispatch: function dispatch(val) { require('clipboard')(val); process.exit(); } };" }], launch: { module: 'clip-dispatch', method: 'dispatch', args: [clipargs] } });
                                     this._dispatcher.parent = this;
                                     //require('events').setFinalizerMetadata.call(this._dispatcher, 'clip-dispatch');
-                                    this._dispatcher.on('connection', function (c) {
+                                    this._dispatcher.on('connection', function (c)
+                                    {
                                         this._c = c;
                                         this._c.root = this.parent;
-                                        this._c.on('end', function () {
+                                        this._c.on('end', function ()
+                                        {
                                             this.root._dispatcher = null;
                                             this.root = null;
+                                            mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
                                         });
                                     });
                                 }
                             }
-                            else {
+                            else
+                            {
                                 require("clipboard")(data.data);
+                                mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
                             } // Set the clipboard
-                            mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
                         }
                         break;
                     }
