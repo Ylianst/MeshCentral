@@ -721,8 +721,11 @@ function agentUpdate_Start(updateurl, updateoptions) {
                                 }
                                 catch (zz)
                                 {
-                                    sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
-                                    sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+                                    if (zz.toString() != 'waitExit() aborted because thread is exiting')
+                                    {
+                                        sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
+                                        sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+                                    }
                                 }
                                 break;
                         }
