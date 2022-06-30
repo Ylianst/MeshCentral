@@ -157,6 +157,8 @@ function run(argv) {
     if ((typeof args.uuidoutput) == 'string' || args.uuidoutput) { settings.uuidoutput = args.uuidoutput; }
     if ((typeof args.desc) == 'string') { settings.desc = args.desc; }
     if ((typeof args.dnssuffix) == 'string') { settings.dnssuffix = args.dnssuffix; }
+    if ((typeof args.create) == 'string') { settings.create = args.create; }
+    if ((typeof args.delete) == 'string') { settings.delete = args.delete; }
     if (args.bindany) { settings.bindany = true; }
     if (args.emailtoken) { settings.emailtoken = true; }
     if (args.smstoken) { settings.smstoken = true; }
@@ -238,8 +240,12 @@ function run(argv) {
             console.log('\r\nPossible arguments:\r\n');
             console.log('  --json                 Display all Intel AMT state in JSON format.');
         } else if (action == 'amthashes') {
-            console.log('Amthashes will display all trusted activations hashes for Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. These certificates hashes are used by Intel AMT when performing activation into ACM mode. Example usage:\r\n\r\n  meshcmd amthashes');
+            console.log('Amthashes will display all trusted activations hashes for Intel AMT. If the host is not specified, the hashes are read using the local MEI driver is used. These certificates hashes are used by Intel AMT when performing activation into ACM mode. Example usage:\r\n\r\n  meshcmd amthashes');
             console.log('\r\nPossible arguments:\r\n');
+            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --user [username]      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('  --tls                  Specifies that TLS must be used.');
             console.log('  --json                 Display all Intel AMT hashes in JSON format.');
         } else if ((action == 'microlms') || (action == 'lms') || (action == 'amtlms')) {
             console.log('Starts MicroLMS on this computer, allowing local access to Intel AMT on TCP ports 16992 and 16993 when applicable. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. These certificates hashes are used by Intel AMT when performing activation into ACM mode. Example usage:\r\n\r\n  meshcmd microlms');
@@ -528,23 +534,28 @@ function run(argv) {
             return;
         });
     } else if (settings.action == 'amthashes') {
-        // Display Intel AMT list of trusted hashes
-        var amtMeiModule, amtMei, amtHashes = [];
-        try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
-        amtMei.on('error', function (e) { console.log('amthashes error: ' + e); exit(1); return; });
-        amtMei.getHashHandles(function (handles) {
-            exitOnCount = handles.length;
-            for (var i = 0; i < handles.length; ++i) {
-                this.getCertHashEntry(handles[i], function (result) {
-                    var certState = [];
-                    if (result.isDefault) { certState.push('Default'); }
-                    if (result.isActive) { certState.push('Active'); } else { certState.push('Disabled'); }
-                    amtHashes.push(result);
-                    if (!args.json) { console.log(result.name + ', (' + certState.join(', ') + ')\r\n  ' + result.hashAlgorithmStr + ': ' + result.certificateHash); }
-                    if (--exitOnCount == 0) { if (args.json) { console.log(JSON.stringify(amtHashes, null, 2)); } exit(0); }
-                });
-            }
-        });
+        if (settings.hostname == null) {
+            // Display Intel AMT list of trusted hashes from the MEI driver
+            var amtMeiModule, amtMei, amtHashes = [];
+            try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
+            amtMei.on('error', function (e) { console.log('amthashes error: ' + e); exit(1); return; });
+            amtMei.getHashHandles(function (handles) {
+                exitOnCount = handles.length;
+                for (var i = 0; i < handles.length; ++i) {
+                    this.getCertHashEntry(handles[i], function (result) {
+                        var certState = [];
+                        if (result.isDefault) { certState.push('Default'); }
+                        if (result.isActive) { certState.push('Active'); } else { certState.push('Disabled'); }
+                        amtHashes.push(result);
+                        if (!args.json) { console.log(result.name + ', (' + certState.join(', ') + ')\r\n  ' + result.hashAlgorithmStr + ': ' + result.certificateHash); }
+                        if (--exitOnCount == 0) { if (args.json) { console.log(JSON.stringify(amtHashes, null, 2)); } exit(0); }
+                    });
+                }
+            });
+        } else {
+            // We are going to use WSMAN to perform hash operations
+            performAmtTrustedHashes();
+        }
     } else if (settings.action == 'netinfo') {
         // Display network information
         var interfaces = require('os').networkInterfaces();
@@ -871,6 +882,104 @@ function run(argv) {
         console.log('Invalid "action" specified.'); exit(1); return;
     }
 }
+
+
+//
+// Intel AMT Trusted Hashes
+//
+
+function performAmtTrustedHashes() {
+    // Check the settings
+    if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+    if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { settings.hostname = '127.0.0.1'; }
+    if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+    if ((typeof settings.create == 'string')) {
+        if ((settings.name == null) || (typeof settings.name != 'string') || (settings.name == '')) { console.log('No or invalid \"name\" specified, use --name [name].'); exit(1); return; }
+        if ((settings.create.length != 32) && (settings.create.length != 40) && (settings.create.length != 64) && (settings.create.length != 96)) { console.log('No or invalid \"create\" hash, must be in HEX format of length 30, 40, 64, 96.'); exit(1); return; }
+        if (Buffer.from(settings.create, 'hex').toString('hex') != settings.create.toUpperCase()) { console.log('No or invalid \"create\" specified, must be in HEX format.'); exit(1); return; }
+        settings.create = Buffer.from(settings.create, 'hex').toString('hex');
+    }
+    if ((typeof settings.delete == 'string')) {
+        if ((settings.delete.length != 32) && (settings.delete.length != 40) && (settings.delete.length != 64) && (settings.delete.length != 96)) { console.log('No or invalid \"delete\" hash, must be in HEX format of length 30, 40, 64, 96.'); exit(1); return; }
+        if (Buffer.from(settings.delete, 'hex').toString('hex') != settings.delete.toUpperCase()) { console.log('No or invalid \"delete\" specified, must be in HEX format.'); exit(1); return; }
+        settings.delete = Buffer.from(settings.delete, 'hex').toString('hex');
+    }
+
+    // See if MicroLMS needs to be started
+    if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) {
+        settings.noconsole = true; startLms(performAmtTrustedHashesEx);
+    } else {
+        performAmtTrustedHashesEx();
+    }
+}
+
+function performAmtTrustedHashesEx(x) {
+    var transport = require('amt-wsman-duk');
+    var wsman = require('amt-wsman');
+    var amt = require('amt');
+    wsstack = new wsman(transport, settings.hostname, settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls);
+    amtstack = new amt(wsstack);
+    amtstack.BatchEnum(null, ['AMT_ProvisioningCertificateHash'], performAmtTrustedHashesEx2);
+}
+
+function performAmtTrustedHashesEx2(stack, name, responses, status) {
+    if (status != 200) {
+        console.log('Unable to get trusted hashes, status = ' + status + '.');
+    } else {
+        var r = responses['AMT_ProvisioningCertificateHash'].responses;
+        if (settings.create) {
+            // Create a new hash entry
+            var instanceId = null;
+            for (var i in r) { if (Buffer.from(r[i]['HashData'], 'base64').toString('hex') == settings.create) { instanceId = r[i]['InstanceID']; } }
+            if (instanceId != null) { console.log('This trusted hash is already present.'); exit(1); return; }
+
+            // Setup hash type
+            var hashtype = -1;
+            var hash = Buffer.from(settings.create, 'hex');
+            if (hash.length == 16) { hashtype = 0; } // MD5
+            if (hash.length == 20) { hashtype = 1; } // SHA1
+            if (hash.length == 32) { hashtype = 2; } // SHA256
+            if (hash.length == 48) { hashtype = 3; } // SHA384
+            if (hashtype == -1) { console.log('Invalid hash type', hash.length); exit(1); return; }
+
+            // Setup object instance
+            var instance = { "Description": settings.name, "Enabled": true, "HashData": hash.toString('base64'), "HashType": hashtype, "IsDefault": false, "InstanceID": '' };
+
+            // Perform WSMAN "CREATE" operation.
+            amtstack.Create('AMT_ProvisioningCertificateHash', instance, function (stack, name, response, status) {
+                if (status != 200) { console.log('ERROR: Failed to create trusted hash.', status, JSON.stringify(response, null, 2)); } else { console.log('Done.'); }
+                exit(0);
+            });
+            return;
+        } else if (settings.delete) {
+            // Delete a hash entry
+            var instance = null;
+            for (var i in r) { if (Buffer.from(r[i]['HashData'], 'base64').toString('hex') == settings.delete) { instance = r[i]; } }
+            if (instance == null) { console.log('This trusted hash not present.'); exit(1); return; }
+
+            // Perform WSMAN "DELETE" operation.
+            amtstack.Delete('AMT_ProvisioningCertificateHash', instance, function (stack, name, response, status) {
+                if (status != 200) { console.log('ERROR: Failed to delete trusted hash.', status, JSON.stringify(response, null, 2)); } else { console.log('Done.'); }
+                exit(0);
+            });
+            return;
+        } else if (settings.json) {
+            // List the hashes in JSON format
+            console.log(JSON.stringify(r, null, 2));
+        } else {
+            // List the hashes
+            for (var i in r) {
+                var certState = [];
+                var hashTypes = ['MD5', 'SHA1', 'SHA256', 'SHA384'];
+                if (r[i]['IsDefault']) { certState.push('Default'); }
+                if (r[i]['Enabled']) { certState.push('Active'); } else { certState.push('Disabled'); }
+                console.log(r[i]['Description'] + ', (' + certState.join(', ') + ')\r\n  ' + hashTypes[r[i]['HashType']] + ': ' + Buffer.from(r[i]['HashData'], 'base64').toString('hex'));
+            }
+        }
+        exit(0);
+    }
+}
+
 
 //
 // Intel AMT Agent Presence
