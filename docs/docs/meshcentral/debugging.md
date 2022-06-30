@@ -126,6 +126,16 @@ service meshcentral restart
 
 ## MeshAgent
 
+### Agent Debug Logs to server
+
+This automatically downloads all agent error logs into `meshcentral-data/agenterrorlogs.txt`
+
+[Set](https://github.com/Ylianst/MeshCentral/blob/aa58afcc3a5d738177ab7a7b6d0228d72af82b85/meshcentral-config-schema.json#L100) in `config.json`
+
+```json
+"agentLogDump": true
+```
+
 ### Determine Agent capabilities
 
 On the server goto the agents console tab. Type:
