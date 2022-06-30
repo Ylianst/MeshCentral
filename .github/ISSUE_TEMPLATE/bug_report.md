@@ -40,7 +40,7 @@ If applicable, add screenshots to help explain your problem.
 **Additional context**
 Add any other context about the problem here.
 
-**Config.JSON**
+**Your config.json file**
 ```
 {
   "$schema": "http://info.meshcentral.com/downloads/meshcentral-config-schema.json",
