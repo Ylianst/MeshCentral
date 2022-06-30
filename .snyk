@@ -1,0 +1,19 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.0
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:handlebars:20151207':
+    - minify-js > dir_cache > minify-js > grunt-jsdoc-to-markdown > jsdoc-to-markdown > dmd > ddata > handlebars:
+        patched: '2022-06-30T19:46:17.262Z'
+    - minify-js > utils-igor > minify-js > grunt-jsdoc-to-markdown > jsdoc-to-markdown > dmd > ddata > handlebars:
+        patched: '2022-06-30T19:46:17.262Z'
+    - minify-js > dir_cache > minify-js > grunt-jsdoc-to-markdown > jsdoc-to-markdown > dmd > stream-handlebars > handlebars:
+        patched: '2022-06-30T19:46:17.262Z'
+    - minify-js > utils-igor > minify-js > grunt-jsdoc-to-markdown > jsdoc-to-markdown > dmd > stream-handlebars > handlebars:
+        patched: '2022-06-30T19:46:17.262Z'
+  'npm:minimatch:20160620':
+    - minify-js > dir_cache > minify-js > grunt-jsdoc-to-markdown > jsdoc-to-markdown > jsdoc-parse > file-set > glob > minimatch:
+        patched: '2022-06-30T19:46:17.262Z'
+    - minify-js > utils-igor > minify-js > grunt-jsdoc-to-markdown > jsdoc-to-markdown > jsdoc-parse > file-set > glob > minimatch:
+        patched: '2022-06-30T19:46:17.262Z'
