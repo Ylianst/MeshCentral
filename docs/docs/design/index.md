@@ -81,6 +81,12 @@ The main takeaway is that MeshCentral is mostly an ExpressJS application. This i
 
 MeshCentral will run `npm install` automatically when any of these optional modules are needed but not currently available. 
 
+## Understanding the different modes: LAN, WAN and Hybrid
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/gx5Fh3pQOns" frameborder="0" allowfullscreen></iframe>
+</div>
+
 ## Code files and folders
 
 Someone would think the server is rather simple when taking a look at the MeshCentral server code files. At a high level, the entire server has 3 folders, 3 text files and a manageable number of .js files that are fairly self-descriptive. Here is a list of the source files and folders. 
