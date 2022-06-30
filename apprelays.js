@@ -181,7 +181,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
         tunnels = null;
 
         // Close any pending requests
-        for (var i in pendingRequests) { if (pendingRequests[i][2] == true) { pendingRequests[i][1].end(); } else { pendingRequests[i][1].close(); } }
+        for (var i in pendingRequests) { if (pendingRequests[i][2] == true) { pendingRequests[i][1].close(); } else { pendingRequests[i][1].end(); } }
 
         // Notify of session closure
         if (obj.onclose) { obj.onclose(obj.userid + '/' + obj.sessionId); }
