@@ -13,6 +13,12 @@ Intel AMT Guide [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/doc
 
 This user guide contains all essential information for activating and using Intel® Active Management Technology (Intel® AMT) with MeshCentral. We will review how to activate, connect to and use Intel AMT features and how this benefit administrators that want to manage computers remotely. This document expect the reader to already be familiar with how to install and operate MeshCentral and have a basic understanding of how Intel® AMT works.
 
+## History of AMT
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/_SXT0Gr4Mls" frameborder="0" allowfullscreen></iframe>
+</div>
+
 ## Introduction
 
 MeshCentral is a free open source web-based remote computer management software and it fully supports Intel® Active Management Technology (Intel® AMT). MeshCentral does not require that computers it manages support Intel AMT, but if a remote computer has this capability, MeshCentral will make use of it.
@@ -173,3 +179,19 @@ Once Intel AMT is in a situation where ACM activation can occur, the activation 
 ![](images/2022-05-16-23-16-05.png)
 
 The best way to test this feature is to create an “Intel AMT only” device group and run the MeshCMD command on the remote system to perform activation. If there is a problem, this process should clearly display why ACM activation fails.
+
+## Intel AMT MEI and LMS
+
+Intel Active Management Technology (Intel AMT) can communicate to the local platform using the Management Engine Interface (MEI). We show how your can use that to get Intel AMT information. For more advanced usages, you need to connect using TCP and TLS which requires Intel Local Manageability Service (LMS). We show how MeshCentral's Mesh Agent and MeshCMD have a small version of LMS built-in and how it works
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/mStyhe-fSC0" frameborder="0" allowfullscreen></iframe>
+</div>
+
+## Intel AMT System Defense
+
+As part of Intel AMT there are hardware filters in the network interface you can setup to match and perform actions on packets. This happens at Ethernet speeds with no slow down and independent of the OS.
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/q7RyboI4uew" frameborder="0" allowfullscreen></iframe>
+</div>

@@ -767,6 +767,12 @@ In addition to local device groups, the IP-KVM/Power switch device group was als
 
 ## NGINX Reverse-Proxy Setup
 
+### Video Walkthru
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/YSmiLyKSX2I" frameborder="0" allowfullscreen></iframe>
+</div>
+
 Sometimes it’s useful to setup MeshCentral with a reverse-proxy in front of it. This is useful if you need to host many services on a single public IP address, if you want to offload TLS and perform extra web caching. In this section we will setup NGINX, a popular reverse-proxy, in front of MeshCentral. NGNIX is available at: https://www.nginx.com/
 
 ![](images/2022-05-19-00-23-11.png)
@@ -1760,3 +1766,11 @@ su -c '/bin/bash -i' myOtherUser
 ```
 
 This will run bash in interactive mode and work correctly.
+
+#### SSH and SFTP integration to the Terminal
+
+MeshCentral has built-in web-based integration of SSH in the "Termina" tab and SFTP in the "Files" tab.
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/7qAbl2OuZEU" frameborder="0" allowfullscreen></iframe>
+</div>
