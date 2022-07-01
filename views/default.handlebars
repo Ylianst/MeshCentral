@@ -4583,8 +4583,8 @@
             // RDP link, show this link only of the remote machine is Windows.
             if ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
                 if (webRelayPort != 0) {
-                    x += '<a href=# onclick=p10WebRouter("' + node._id + '",1,' + (node.httpport ? node.httpport : 80) + ')>' + "HTTP" + '</a>&nbsp;';
-                    x += '<a href=# onclick=p10WebRouter("' + node._id + '",2,' + (node.httpsport ? node.httpsport : 443) + ')>' + "HTTPS" + '</a>&nbsp;';
+                    x += '<a href=# onclick=p10WebRouter("' + node._id + '",1,' + (node.httpport ? node.httpport : 80) + ')>' + "HTTP" + ((node.httpport && (node.httpport != 80)) ? '/' + node.httpport : '') + '</a>&nbsp;';
+                    x += '<a href=# onclick=p10WebRouter("' + node._id + '",2,' + (node.httpsport ? node.httpsport : 443) + ')>' + "HTTPS" + ((node.httspport && (node.httpsport != 443)) ? '/' + node.httpsport : '') + '</a>&nbsp;';
                 }
                 if ((node.agent.id > 0) && (node.agent.id < 5)) {
                     if (navigator.platform.toLowerCase() == 'win32') {
@@ -4596,12 +4596,12 @@
                 if (node.agent.id > 4) {
                     if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
                         if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.ssh != false)) {
-                            x += '<a href=# onclick=p10MCRouter("' + node._id + '",4,22)>' + "SSH" + '</a>&nbsp;';
+                            x += '<a href=# onclick=p10MCRouter("' + node._id + '",4,' + (node.sshport ? node.sshport : 22) + ')>' + "SSH" + '</a>&nbsp;';
                         }
                     }
                     if (navigator.platform.toLowerCase() == 'win32') {
                         if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.scp != false)) {
-                            x += '<a href=# onclick=p10MCRouter("' + node._id + '",5,22)>' + "SCP" + '</a>&nbsp;';
+                            x += '<a href=# onclick=p10MCRouter("' + node._id + '",5,' + (node.sshport ? node.sshport : 22) + ')>' + "SCP" + '</a>&nbsp;';
                         }
                     }
                 }
@@ -7183,25 +7183,25 @@
                     // RDP link, show this link only of the remote machine is Windows.
                     if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0)) {
                         if (webRelayPort != 0) {
-                            x += '<a href=# cmenu=httpPortContextMenu onclick=p10WebRouter("' + node._id + '",1,' + (node.httpport ? node.httpport : 80) + ')>' + "HTTP" + '</a>&nbsp;';
-                            x += '<a href=# cmenu=httpsPortContextMenu onclick=p10WebRouter("' + node._id + '",2,' + (node.httpsport ? node.httpsport : 443) + ')>' + "HTTPS" + '</a>&nbsp;';
+                            x += '<a href=# cmenu=httpPortContextMenu onclick=p10WebRouter("' + node._id + '",1,' + (node.httpport ? node.httpport : 80) + ')>' + "HTTP" + ((node.httpport && (node.httpport != 80)) ? '/' + node.httpport : '') + '</a>&nbsp;';
+                            x += '<a href=# cmenu=httpsPortContextMenu onclick=p10WebRouter("' + node._id + '",2,' + (node.httpsport ? node.httpsport : 443) + ')>' + "HTTPS" + ((node.httpsport && (node.httpsport != 443)) ? '/' + node.httpsport : '') + '</a>&nbsp;';
                         }
                         if ((node.agent.id > 0) && (node.agent.id < 5)) {
                             if (navigator.platform.toLowerCase() == 'win32') {
                                 if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false)) {
-                                    x += '<a href=# cmenu=altPortContextMenu id=rdpMCRouterLink onclick=p10MCRouter("' + node._id + '",3) title="' + "Requires installation of MeshCentral Router" + '.">' + "RDP" + '</a>&nbsp;';
+                                    x += '<a href=# cmenu=altPortContextMenu id=rdpMCRouterLink onclick=p10MCRouter("' + node._id + '",3) title="' + "Requires installation of MeshCentral Router" + '.">' + "RDP" + ((node.rdpport && (node.rdpport != 3389)) ? '/' + node.rdpport : '') + '</a>&nbsp;';
                                 }
                             }
                         }
                         if (node.agent.id > 4) {
                             if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
                                 if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.ssh != false)) {
-                                    x += '<a href=# cmenu=sshPortContextMenu onclick=p10MCRouter("' + node._id + '",4,22) title="' + "Requires installation of MeshCentral Router." + '">' + "SSH" + '</a>&nbsp;';
+                                    x += '<a href=# cmenu=sshPortContextMenu onclick=p10MCRouter("' + node._id + '",4,' + (node.sshport ? node.sshport : 22) + ') title="' + "Requires installation of MeshCentral Router." + '">' + "SSH" + ((node.sshport && (node.sshport != 22)) ? '/' + node.sshport : '') + '</a>&nbsp;';
                                 }
                             }
                             if (navigator.platform.toLowerCase() == 'win32') {
                                 if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.scp != false)) {
-                                    x += '<a href=# cmenu=sshPortContextMenu onclick=p10MCRouter("' + node._id + '",5,22) title="' + "Requires installation of MeshCentral Router." + '">' + "SCP" + '</a>&nbsp;';
+                                    x += '<a href=# cmenu=sshPortContextMenu onclick=p10MCRouter("' + node._id + '",5,' + (node.sshport ? node.sshport : 22) + ') title="' + "Requires installation of MeshCentral Router." + '">' + "SCP" + ((node.sshport && (node.sshport != 22)) ? '/' + node.sshport : '') + '</a>&nbsp;';
                                 }
                             }
                         }
