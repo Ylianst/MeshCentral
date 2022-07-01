@@ -638,7 +638,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             }
         } else {
             // Tunnel is now in web socket pass-thru mode
-            if (header.connection.toLowerCase() == 'upgrade') {
+            if ((typeof header.connection == 'string') && (header.connection.toLowerCase() == 'upgrade')) {
                 // Websocket upgrade succesful
                 obj.socketParseState = 2;
             } else {
