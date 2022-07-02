@@ -30,6 +30,9 @@ function runDockerBuild()
 
     if [ -z "${LOG_FILE}" ]; then ${BUILD_CMD}; else ${BUILD_CMD} &>> "${LOG_FILE}"; fi
     if [ $? -ne 0 ]; then exit $?; fi
+
+    IMAGEID=$(docker images --format "{{.ID}} {{.CreatedAt}}" | sort -rk 2 | awk 'NR==1{print $1}');
+    appendOutput "\tImageId: ${IMAGEID}";
     
     ENDTS=$(date +%s);
     DIFSEC=$((${ENDTS}-${STARTTS}));
@@ -45,7 +48,7 @@ function runDockerBuild()
         else appendOutput "\tBuild time: ${TMPMIN} min ${TMPSEC} sec"; fi
     else appendOutput "\tBuild time: ${DIFSEC} sec"; fi
 
-    IMG_SIZE=$(docker image inspect meshcentral | grep -e "\"Size\"" | tr -d '",' |  sed -E "s/\s*Size:\s*//");
+    IMG_SIZE=$(docker image inspect ${IMAGEID} | grep -o '"Size":\s*[^,]*' | cut -f2- -d ':' | tr -d ' ');
     expr $IMG_SIZE + 0 > /dev/null;
     appendOutput "\tImage size: ${IMG_SIZE} ($((${IMG_SIZE}/1024/1024))M)\n";
 
@@ -58,17 +61,32 @@ if [ "${parent_path}" != "$(pwd -P)" ]; then
     cd "${parent_path}";
 fi
 
-if ! [ -z $1 ] && [ "${1}" == "prune" ]; then PRUNE="true"; fi
+if ! [ -z $1 ]; then
+    for arg in "$@"
+    do
+        case "${arg}" in
+            --prune)
+                PRUNE="true";
+                shift 1;
+                ;;
+            *)
+                break;
+                ;;
+        esac
+    done
+fi
 
-#runDockerBuild --build-arg DISABLE_MINIFY=yes --build-arg DISABLE_TRANSLATE=yes;
-#runDockerBuild --build-arg DISABLE_TRANSLATE=yes;
-#runDockerBuild --build-arg DISABLE_MINIFY=yes;
-runDockerBuild;
+MAINARGS=$@;
 
-#runDockerBuild --build-arg INCLUDE_MONGODBTOOLS=yes --build-arg DISABLE_MINIFY=yes --build-arg DISABLE_TRANSLATE=yes;
-#runDockerBuild --build-arg INCLUDE_MONGODBTOOLS=yes --build-arg DISABLE_TRANSLATE=yes;
-#runDockerBuild --build-arg INCLUDE_MONGODBTOOLS=yes --build-arg DISABLE_MINIFY=yes;
-#runDockerBuild --build-arg INCLUDE_MONGODBTOOLS=yes;
+#runDockerBuild --build-arg DISABLE_MINIFY=yes --build-arg DISABLE_TRANSLATE=yes ${MAINARGS};
+#runDockerBuild --build-arg DISABLE_TRANSLATE=yes ${MAINARGS};
+#runDockerBuild --build-arg DISABLE_MINIFY=yes ${MAINARGS};
+runDockerBuild ${MAINARGS};
+
+#runDockerBuild --build-arg INCLUDE_MONGODBTOOLS=yes --build-arg DISABLE_MINIFY=yes --build-arg DISABLE_TRANSLATE=yes ${MAINARGS};
+#runDockerBuild --build-arg INCLUDE_MONGODBTOOLS=yes --build-arg DISABLE_TRANSLATE=yes ${MAINARGS};
+#runDockerBuild --build-arg INCLUDE_MONGODBTOOLS=yes --build-arg DISABLE_MINIFY=yes ${MAINARGS};
+#runDockerBuild --build-arg INCLUDE_MONGODBTOOLS=yes ${MAINARGS};
 
 echo "";
 echo -e "${MSG}";
