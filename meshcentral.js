@@ -145,7 +145,7 @@ function CreateMeshCentralServer(config, args) {
         if ((obj.args.help == true) || (obj.args['?'] == true)) {
             console.log('MeshCentral v' + getCurrentVersion() + ', remote computer management web portal.');
             console.log('This software is open source under Apache 2.0 license.');
-            console.log('Details at: https://www.meshcommander.com/meshcentral2\r\n');
+            console.log('Details at: https://www.meshcentral.com\r\n');
             if ((obj.platform == 'win32') || (obj.platform == 'linux')) {
                 console.log('Run as a background service');
                 console.log('   --install/uninstall               Install MeshCentral as a background service.');
@@ -1617,275 +1617,282 @@ function CreateMeshCentralServer(config, args) {
 
         // Load the list of mesh agents and install scripts
         if ((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true)) { for (i in obj.meshAgentsArchitectureNumbers) { obj.meshAgentsArchitectureNumbers[i].update = false; } }
-        obj.updateMeshAgentsTable(obj.config.domains[''], function () {
-            obj.updateMeshAgentInstallScripts();
+        obj.signMeshAgents(obj.config.domains[''], function () {
+            obj.updateMeshAgentsTable(obj.config.domains[''], function () {
+                obj.updateMeshAgentInstallScripts();
 
-            // Setup and start the web server
-            obj.crypto.randomBytes(48, function (err, buf) {
-                // Setup Mesh Multi-Server if needed
-                obj.multiServer = require('./multiserver.js').CreateMultiServer(obj, obj.args);
-                if (obj.multiServer != null) {
-                    if ((obj.db.databaseType != 3) || (obj.db.changeStream != true)) { console.log("ERROR: Multi-server support requires use of MongoDB with ReplicaSet and ChangeStream enabled."); process.exit(0); return; }
-                    if (typeof obj.args.sessionkey != 'string') { console.log("ERROR: Multi-server support requires \"SessionKey\" be set in the settings section of config.json, same key for all servers."); process.exit(0); return; }
-                    obj.serverId = obj.multiServer.serverid;
-                    for (var serverid in obj.config.peers.servers) { obj.peerConnectivityByNode[serverid] = {}; }
-                }
+                // Setup and start the web server
+                obj.crypto.randomBytes(48, function (err, buf) {
+                    // Setup Mesh Multi-Server if needed
+                    obj.multiServer = require('./multiserver.js').CreateMultiServer(obj, obj.args);
+                    if (obj.multiServer != null) {
+                        if ((obj.db.databaseType != 3) || (obj.db.changeStream != true)) { console.log("ERROR: Multi-server support requires use of MongoDB with ReplicaSet and ChangeStream enabled."); process.exit(0); return; }
+                        if (typeof obj.args.sessionkey != 'string') { console.log("ERROR: Multi-server support requires \"SessionKey\" be set in the settings section of config.json, same key for all servers."); process.exit(0); return; }
+                        obj.serverId = obj.multiServer.serverid;
+                        for (var serverid in obj.config.peers.servers) { obj.peerConnectivityByNode[serverid] = {}; }
+                    }
 
-                // If the server is set to "nousers", allow only loopback unless IP filter is set
-                if ((obj.args.nousers == true) && (obj.args.userallowedip == null)) { obj.args.userallowedip = "::1,127.0.0.1"; }
+                    // If the server is set to "nousers", allow only loopback unless IP filter is set
+                    if ((obj.args.nousers == true) && (obj.args.userallowedip == null)) { obj.args.userallowedip = "::1,127.0.0.1"; }
 
-                // Set the session length to 60 minutes if not set and set a random key if needed
-                if ((obj.args.sessiontime != null) && ((typeof obj.args.sessiontime != 'number') || (obj.args.sessiontime < 1))) { delete obj.args.sessiontime; }
-                if (typeof obj.args.sessionkey != 'string') { obj.args.sessionkey = buf.toString('hex').toUpperCase(); }
+                    // Set the session length to 60 minutes if not set and set a random key if needed
+                    if ((obj.args.sessiontime != null) && ((typeof obj.args.sessiontime != 'number') || (obj.args.sessiontime < 1))) { delete obj.args.sessiontime; }
+                    if (typeof obj.args.sessionkey != 'string') { obj.args.sessionkey = buf.toString('hex').toUpperCase(); }
 
-                // Create MQTT Broker to hook into webserver and mpsserver
-                if ((typeof obj.config.settings.mqtt == 'object') && (typeof obj.config.settings.mqtt.auth == 'object') && (typeof obj.config.settings.mqtt.auth.keyid == 'string') && (typeof obj.config.settings.mqtt.auth.key == 'string')) { obj.mqttbroker = require("./mqttbroker.js").CreateMQTTBroker(obj, obj.db, obj.args); }
+                    // Create MQTT Broker to hook into webserver and mpsserver
+                    if ((typeof obj.config.settings.mqtt == 'object') && (typeof obj.config.settings.mqtt.auth == 'object') && (typeof obj.config.settings.mqtt.auth.keyid == 'string') && (typeof obj.config.settings.mqtt.auth.key == 'string')) { obj.mqttbroker = require("./mqttbroker.js").CreateMQTTBroker(obj, obj.db, obj.args); }
 
-                // Start the web server and if needed, the redirection web server.
-                obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.certificates, obj.StartEx5);
-                if (obj.redirserver != null) { obj.redirserver.hookMainWebServer(obj.certificates); }
+                    // Start the web server and if needed, the redirection web server.
+                    obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.certificates, obj.StartEx5);
+                    if (obj.redirserver != null) { obj.redirserver.hookMainWebServer(obj.certificates); }
 
-                // Update proxy certificates
-                if (obj.supportsProxyCertificatesRequest == true) { obj.updateProxyCertificates(true); }
+                    // Start the HTTP relay web server if needed
+                    if ((obj.args.relayport != null) && (obj.args.relayport != 0)) {
+                        obj.webrelayserver = require('./webrelayserver.js').CreateWebRelayServer(obj, obj.db, obj.args, obj.certificates, function () { });
+                    }
 
-                // Setup the Intel AMT event handler
-                obj.amtEventHandler = require('./amtevents.js').CreateAmtEventsHandler(obj);
+                    // Update proxy certificates
+                    if (obj.supportsProxyCertificatesRequest == true) { obj.updateProxyCertificates(true); }
 
-                // Setup the Intel AMT local network scanner
-                if (obj.args.wanonly != true) {
-                    if (obj.args.amtscanner != false) { obj.amtScanner = require('./amtscanner.js').CreateAmtScanner(obj).start(); }
-                    if (obj.args.meshscanner != false) { obj.meshScanner = require('./meshscanner.js').CreateMeshScanner(obj).start(); }
-                }
+                    // Setup the Intel AMT event handler
+                    obj.amtEventHandler = require('./amtevents.js').CreateAmtEventsHandler(obj);
 
-                // Setup and start the MPS server
-                obj.mpsserver = require('./mpsserver.js').CreateMpsServer(obj, obj.db, obj.args, obj.certificates);
+                    // Setup the Intel AMT local network scanner
+                    if (obj.args.wanonly != true) {
+                        if (obj.args.amtscanner != false) { obj.amtScanner = require('./amtscanner.js').CreateAmtScanner(obj).start(); }
+                        if (obj.args.meshscanner != false) { obj.meshScanner = require('./meshscanner.js').CreateMeshScanner(obj).start(); }
+                    }
 
-                // Setup the Intel AMT manager
-                if (obj.args.amtmanager !== false) {
-                    obj.amtManager = require('./amtmanager.js').CreateAmtManager(obj);
-                }
+                    // Setup and start the MPS server
+                    obj.mpsserver = require('./mpsserver.js').CreateMpsServer(obj, obj.db, obj.args, obj.certificates);
 
-                // Setup and start the legacy swarm server
-                if ((obj.certificates.swarmserver != null) && (obj.args.swarmport != null) && (obj.args.swarmport !== 0)) {
-                    obj.swarmserver = require('./swarmserver.js').CreateSwarmServer(obj, obj.db, obj.args, obj.certificates);
-                }
+                    // Setup the Intel AMT manager
+                    if (obj.args.amtmanager !== false) {
+                        obj.amtManager = require('./amtmanager.js').CreateAmtManager(obj);
+                    }
 
-                // Setup the main email server
-                if (obj.config.sendgrid != null) {
-                    // Sendgrid server
-                    obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
-                    obj.mailserver.verify();
-                    if (obj.args.lanonly == true) { addServerWarning("SendGrid server has limited use in LAN mode.", 17); }
-                } else if (obj.config.smtp != null) {
-                    // SMTP server
-                    obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
-                    obj.mailserver.verify();
-                    if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
-                } else if (obj.config.sendmail != null) {
-                    // Sendmail server
-                    obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
-                    obj.mailserver.verify();
-                    if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
-                }
+                    // Setup and start the legacy swarm server
+                    if ((obj.certificates.swarmserver != null) && (obj.args.swarmport != null) && (obj.args.swarmport !== 0)) {
+                        obj.swarmserver = require('./swarmserver.js').CreateSwarmServer(obj, obj.db, obj.args, obj.certificates);
+                    }
 
-                // Setup the email server for each domain
-                for (i in obj.config.domains) {
-                    if (obj.config.domains[i].sendgrid != null) {
+                    // Setup the main email server
+                    if (obj.config.sendgrid != null) {
                         // Sendgrid server
-                        obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
-                        obj.config.domains[i].mailserver.verify();
+                        obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
+                        obj.mailserver.verify();
                         if (obj.args.lanonly == true) { addServerWarning("SendGrid server has limited use in LAN mode.", 17); }
-                    } else if ((obj.config.domains[i].smtp != null) && (obj.config.domains[i].smtp.host != null) && (obj.config.domains[i].smtp.from != null)) {
+                    } else if (obj.config.smtp != null) {
                         // SMTP server
-                        obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
-                        obj.config.domains[i].mailserver.verify();
+                        obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
+                        obj.mailserver.verify();
                         if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
-                    } else if (obj.config.domains[i].sendmail != null) {
+                    } else if (obj.config.sendmail != null) {
                         // Sendmail server
-                        obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
-                        obj.config.domains[i].mailserver.verify();
+                        obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
+                        obj.mailserver.verify();
                         if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
-                    } else {
-                        // Setup the parent mail server for this domain
-                        if (obj.mailserver != null) { obj.config.domains[i].mailserver = obj.mailserver; }
                     }
-                }
 
-                // Setup SMS gateway
-                if (config.sms != null) {
-                    obj.smsserver = require('./meshsms.js').CreateMeshSMS(obj);
-                    if ((obj.smsserver != null) && (obj.args.lanonly == true)) { addServerWarning("SMS gateway has limited use in LAN mode.", 19); }
-                }
-
-                // Setup web based push notifications
-                if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) {
-                    obj.webpush = require('web-push');
-                    var vapidKeys = null;
-                    try { vapidKeys = JSON.parse(obj.fs.readFileSync(obj.path.join(obj.datapath, 'vapid.json')).toString()); } catch (ex) { }
-                    if ((vapidKeys == null) || (typeof vapidKeys.publicKey != 'string') || (typeof vapidKeys.privateKey != 'string')) {
-                        console.log("Generating web push VAPID keys...");
-                        vapidKeys = obj.webpush.generateVAPIDKeys();
-                        obj.fs.writeFileSync(obj.path.join(obj.datapath, 'vapid.json'), JSON.stringify(vapidKeys));
-                    }
-                    obj.webpush.vapidPublicKey = vapidKeys.publicKey;
-                    obj.webpush.setVapidDetails('mailto:' + config.settings.webpush.email, vapidKeys.publicKey, vapidKeys.privateKey);
-                    if (typeof config.settings.webpush.gcmapi == 'string') { webpush.setGCMAPIKey(config.settings.webpush.gcmapi); }
-                }
-
-                // Setup Firebase
-                if ((config.firebase != null) && (typeof config.firebase.senderid == 'string') && (typeof config.firebase.serverkey == 'string')) {
-                    obj.firebase = require('./firebase').CreateFirebase(obj, config.firebase.senderid, config.firebase.serverkey);
-                } else if ((typeof config.firebaserelay == 'object') && (typeof config.firebaserelay.url == 'string')) {
-                    // Setup the push messaging relay
-                    obj.firebase = require('./firebase').CreateFirebaseRelay(obj, config.firebaserelay.url, config.firebaserelay.key);
-                } else if (obj.config.settings.publicpushnotifications === true) {
-                    // Setup the Firebase push messaging relay using https://meshcentral.com, this is the public push notification server.
-                    obj.firebase = require('./firebase').CreateFirebaseRelay(obj, 'https://meshcentral.com/firebaserelay.aspx');
-                }
-
-                // Start periodic maintenance
-                obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
-
-                // Dispatch an event that the server is now running
-                obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' });
-
-                // Plugin hook. Need to run something at server startup? This is the place.
-                if (obj.pluginHandler) { obj.pluginHandler.callHook('server_startup'); }
-                
-                // Setup the login cookie encryption key
-                if ((obj.config) && (obj.config.settings) && (typeof obj.config.settings.logincookieencryptionkey == 'string')) {
-                    // We have a string, hash it and use that as a key
-                    try { obj.loginCookieEncryptionKey = Buffer.from(obj.config.settings.logincookieencryptionkey, 'hex'); } catch (ex) { }
-                    if ((obj.loginCookieEncryptionKey == null) || (obj.loginCookieEncryptionKey.length != 80)) { addServerWarning("Invalid \"LoginCookieEncryptionKey\" in config.json.", 20); obj.loginCookieEncryptionKey = null; }
-                }
-
-                // Login cookie encryption key not set, use one from the database
-                if (obj.loginCookieEncryptionKey == null) {
-                    obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
-                        if ((docs != null) && (docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null) && (docs[0].key.length >= 160)) {
-                            obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
+                    // Setup the email server for each domain
+                    for (i in obj.config.domains) {
+                        if (obj.config.domains[i].sendgrid != null) {
+                            // Sendgrid server
+                            obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
+                            obj.config.domains[i].mailserver.verify();
+                            if (obj.args.lanonly == true) { addServerWarning("SendGrid server has limited use in LAN mode.", 17); }
+                        } else if ((obj.config.domains[i].smtp != null) && (obj.config.domains[i].smtp.host != null) && (obj.config.domains[i].smtp.from != null)) {
+                            // SMTP server
+                            obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
+                            obj.config.domains[i].mailserver.verify();
+                            if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
+                        } else if (obj.config.domains[i].sendmail != null) {
+                            // Sendmail server
+                            obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
+                            obj.config.domains[i].mailserver.verify();
+                            if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
                         } else {
-                            obj.loginCookieEncryptionKey = obj.generateCookieKey(); obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() });
+                            // Setup the parent mail server for this domain
+                            if (obj.mailserver != null) { obj.config.domains[i].mailserver = obj.mailserver; }
+                        }
+                    }
+
+                    // Setup SMS gateway
+                    if (config.sms != null) {
+                        obj.smsserver = require('./meshsms.js').CreateMeshSMS(obj);
+                        if ((obj.smsserver != null) && (obj.args.lanonly == true)) { addServerWarning("SMS gateway has limited use in LAN mode.", 19); }
+                    }
+
+                    // Setup web based push notifications
+                    if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) {
+                        obj.webpush = require('web-push');
+                        var vapidKeys = null;
+                        try { vapidKeys = JSON.parse(obj.fs.readFileSync(obj.path.join(obj.datapath, 'vapid.json')).toString()); } catch (ex) { }
+                        if ((vapidKeys == null) || (typeof vapidKeys.publicKey != 'string') || (typeof vapidKeys.privateKey != 'string')) {
+                            console.log("Generating web push VAPID keys...");
+                            vapidKeys = obj.webpush.generateVAPIDKeys();
+                            obj.fs.writeFileSync(obj.path.join(obj.datapath, 'vapid.json'), JSON.stringify(vapidKeys));
+                        }
+                        obj.webpush.vapidPublicKey = vapidKeys.publicKey;
+                        obj.webpush.setVapidDetails('mailto:' + config.settings.webpush.email, vapidKeys.publicKey, vapidKeys.privateKey);
+                        if (typeof config.settings.webpush.gcmapi == 'string') { webpush.setGCMAPIKey(config.settings.webpush.gcmapi); }
+                    }
+
+                    // Setup Firebase
+                    if ((config.firebase != null) && (typeof config.firebase.senderid == 'string') && (typeof config.firebase.serverkey == 'string')) {
+                        obj.firebase = require('./firebase').CreateFirebase(obj, config.firebase.senderid, config.firebase.serverkey);
+                    } else if ((typeof config.firebaserelay == 'object') && (typeof config.firebaserelay.url == 'string')) {
+                        // Setup the push messaging relay
+                        obj.firebase = require('./firebase').CreateFirebaseRelay(obj, config.firebaserelay.url, config.firebaserelay.key);
+                    } else if (obj.config.settings.publicpushnotifications === true) {
+                        // Setup the Firebase push messaging relay using https://meshcentral.com, this is the public push notification server.
+                        obj.firebase = require('./firebase').CreateFirebaseRelay(obj, 'https://meshcentral.com/firebaserelay.aspx');
+                    }
+
+                    // Start periodic maintenance
+                    obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
+
+                    // Dispatch an event that the server is now running
+                    obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' });
+
+                    // Plugin hook. Need to run something at server startup? This is the place.
+                    if (obj.pluginHandler) { obj.pluginHandler.callHook('server_startup'); }
+
+                    // Setup the login cookie encryption key
+                    if ((obj.config) && (obj.config.settings) && (typeof obj.config.settings.logincookieencryptionkey == 'string')) {
+                        // We have a string, hash it and use that as a key
+                        try { obj.loginCookieEncryptionKey = Buffer.from(obj.config.settings.logincookieencryptionkey, 'hex'); } catch (ex) { }
+                        if ((obj.loginCookieEncryptionKey == null) || (obj.loginCookieEncryptionKey.length != 80)) { addServerWarning("Invalid \"LoginCookieEncryptionKey\" in config.json.", 20); obj.loginCookieEncryptionKey = null; }
+                    }
+
+                    // Login cookie encryption key not set, use one from the database
+                    if (obj.loginCookieEncryptionKey == null) {
+                        obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
+                            if ((docs != null) && (docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null) && (docs[0].key.length >= 160)) {
+                                obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
+                            } else {
+                                obj.loginCookieEncryptionKey = obj.generateCookieKey(); obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() });
+                            }
+                        });
+                    }
+
+                    // Load the invitation link encryption key from the database
+                    obj.db.Get('InvitationLinkEncryptionKey', function (err, docs) {
+                        if ((docs != null) && (docs.length > 0) && (docs[0].key != null) && (docs[0].key.length >= 160)) {
+                            obj.invitationLinkEncryptionKey = Buffer.from(docs[0].key, 'hex');
+                        } else {
+                            obj.invitationLinkEncryptionKey = obj.generateCookieKey(); obj.db.Set({ _id: 'InvitationLinkEncryptionKey', key: obj.invitationLinkEncryptionKey.toString('hex'), time: Date.now() });
                         }
                     });
-                }
 
-                // Load the invitation link encryption key from the database
-                obj.db.Get('InvitationLinkEncryptionKey', function (err, docs) {
-                    if ((docs != null) && (docs.length > 0) && (docs[0].key != null) && (docs[0].key.length >= 160)) {
-                        obj.invitationLinkEncryptionKey = Buffer.from(docs[0].key, 'hex');
-                    } else {
-                        obj.invitationLinkEncryptionKey = obj.generateCookieKey(); obj.db.Set({ _id: 'InvitationLinkEncryptionKey', key: obj.invitationLinkEncryptionKey.toString('hex'), time: Date.now() });
+                    // Setup Intel AMT hello server
+                    if ((typeof config.settings.amtprovisioningserver == 'object') && (typeof config.settings.amtprovisioningserver.devicegroup == 'string') && (typeof config.settings.amtprovisioningserver.newmebxpassword == 'string') && (typeof config.settings.amtprovisioningserver.trustedfqdn == 'string') && (typeof config.settings.amtprovisioningserver.ip == 'string')) {
+                        obj.amtProvisioningServer = require('./amtprovisioningserver').CreateAmtProvisioningServer(obj, config.settings.amtprovisioningserver);
                     }
-                });
 
-                // Setup Intel AMT hello server
-                if ((typeof config.settings.amtprovisioningserver == 'object') && (typeof config.settings.amtprovisioningserver.devicegroup == 'string') && (typeof config.settings.amtprovisioningserver.newmebxpassword == 'string') && (typeof config.settings.amtprovisioningserver.trustedfqdn == 'string') && (typeof config.settings.amtprovisioningserver.ip == 'string')) {
-                    obj.amtProvisioningServer = require('./amtprovisioningserver').CreateAmtProvisioningServer(obj, config.settings.amtprovisioningserver);
-                }
+                    // Start collecting server stats every 5 minutes
+                    obj.trafficStats = obj.webserver.getTrafficStats();
+                    setInterval(function () {
+                        obj.serverStatsCounter++;
+                        var hours = 720; // Start with all events lasting 30 days.
+                        if (((obj.serverStatsCounter) % 2) == 1) { hours = 3; } // Half of the event get removed after 3 hours.
+                        else if ((Math.floor(obj.serverStatsCounter / 2) % 2) == 1) { hours = 8; } // Another half of the event get removed after 8 hours.
+                        else if ((Math.floor(obj.serverStatsCounter / 4) % 2) == 1) { hours = 24; } // Another half of the event get removed after 24 hours.
+                        else if ((Math.floor(obj.serverStatsCounter / 8) % 2) == 1) { hours = 48; } // Another half of the event get removed after 48 hours.
+                        else if ((Math.floor(obj.serverStatsCounter / 16) % 2) == 1) { hours = 72; } // Another half of the event get removed after 72 hours.
+                        const expire = new Date();
+                        expire.setTime(expire.getTime() + (60 * 60 * 1000 * hours));
 
-                // Start collecting server stats every 5 minutes
-                obj.trafficStats = obj.webserver.getTrafficStats();
-                setInterval(function () {
-                    obj.serverStatsCounter++;
-                    var hours = 720; // Start with all events lasting 30 days.
-                    if (((obj.serverStatsCounter) % 2) == 1) { hours = 3; } // Half of the event get removed after 3 hours.
-                    else if ((Math.floor(obj.serverStatsCounter / 2) % 2) == 1) { hours = 8; } // Another half of the event get removed after 8 hours.
-                    else if ((Math.floor(obj.serverStatsCounter / 4) % 2) == 1) { hours = 24; } // Another half of the event get removed after 24 hours.
-                    else if ((Math.floor(obj.serverStatsCounter / 8) % 2) == 1) { hours = 48; } // Another half of the event get removed after 48 hours.
-                    else if ((Math.floor(obj.serverStatsCounter / 16) % 2) == 1) { hours = 72; } // Another half of the event get removed after 72 hours.
-                    const expire = new Date();
-                    expire.setTime(expire.getTime() + (60 * 60 * 1000 * hours));
+                        // Get traffic data
+                        var trafficStats = obj.webserver.getTrafficDelta(obj.trafficStats);
+                        obj.trafficStats = trafficStats.current;
 
-                    // Get traffic data
-                    var trafficStats = obj.webserver.getTrafficDelta(obj.trafficStats);
-                    obj.trafficStats = trafficStats.current;
+                        var data = {
+                            time: new Date(),
+                            expire: expire,
+                            mem: process.memoryUsage(),
+                            conn: {
+                                ca: Object.keys(obj.webserver.wsagents).length,
+                                cu: Object.keys(obj.webserver.wssessions).length,
+                                us: Object.keys(obj.webserver.wssessions2).length,
+                                rs: obj.webserver.relaySessionCount
+                            },
+                            traffic: trafficStats.delta
+                        };
+                        try { data.cpu = require('os').loadavg(); } catch (ex) { }
+                        if (obj.mpsserver != null) {
+                            data.conn.am = 0;
+                            for (var i in obj.mpsserver.ciraConnections) { data.conn.am += obj.mpsserver.ciraConnections[i].length; }
+                        }
+                        if (obj.firstStats === true) { delete obj.firstStats; data.first = true; }
+                        if (obj.multiServer != null) { data.s = obj.multiServer.serverid; }
+                        obj.db.SetServerStats(data); // Save the stats to the database
+                        obj.DispatchEvent(['*'], obj, { action: 'servertimelinestats', data: data }); // Event the server stats
+                    }, 300000);
 
-                    var data = {
-                        time: new Date(),
-                        expire: expire,
-                        mem: process.memoryUsage(),
-                        conn: {
-                            ca: Object.keys(obj.webserver.wsagents).length,
-                            cu: Object.keys(obj.webserver.wssessions).length,
-                            us: Object.keys(obj.webserver.wssessions2).length,
-                            rs: obj.webserver.relaySessionCount
-                        },
-                        traffic: trafficStats.delta
-                    };
-                    try { data.cpu = require('os').loadavg(); } catch (ex) { }
-                    if (obj.mpsserver != null) {
-                        data.conn.am = 0;
-                        for (var i in obj.mpsserver.ciraConnections) { data.conn.am += obj.mpsserver.ciraConnections[i].length; }
+                    obj.debug('main', "Server started");
+                    if (obj.args.nousers == true) { obj.updateServerState('nousers', '1'); }
+                    obj.updateServerState('state', "running");
+
+                    // Setup auto-backup defaults
+                    if (obj.config.settings.autobackup == null) { obj.config.settings.autobackup = { backupintervalhours: 24, keeplastdaysbackup: 10 }; }
+                    else if (obj.config.settings.autobackup === false) { delete obj.config.settings.autobackup; }
+
+                    // Check that autobackup path is not within the "meshcentral-data" folder.
+                    if ((typeof obj.config.settings.autobackup == 'object') && (typeof obj.config.settings.autobackup.backuppath == 'string') && (obj.path.normalize(obj.config.settings.autobackup.backuppath).startsWith(obj.path.normalize(obj.datapath)))) {
+                        addServerWarning("Backup path can't be set within meshcentral-data folder, backup settings ignored.", 21);
+                        delete obj.config.settings.autobackup;
                     }
-                    if (obj.firstStats === true) { delete obj.firstStats; data.first = true; }
-                    if (obj.multiServer != null) { data.s = obj.multiServer.serverid; }
-                    obj.db.SetServerStats(data); // Save the stats to the database
-                    obj.DispatchEvent(['*'], obj, { action: 'servertimelinestats', data: data }); // Event the server stats
-                }, 300000);
 
-                obj.debug('main', "Server started");
-                if (obj.args.nousers == true) { obj.updateServerState('nousers', '1'); }
-                obj.updateServerState('state', "running");
+                    // Load Intel AMT passwords from the "amtactivation.log" file
+                    obj.loadAmtActivationLogPasswords(function (amtPasswords) {
+                        obj.amtPasswords = amtPasswords;
+                    });
 
-                // Setup auto-backup defaults
-                if (obj.config.settings.autobackup == null) { obj.config.settings.autobackup = { backupintervalhours: 24, keeplastdaysbackup: 10 }; }
-                else if (obj.config.settings.autobackup === false) { delete obj.config.settings.autobackup; }
-
-                // Check that autobackup path is not within the "meshcentral-data" folder.
-                if ((typeof obj.config.settings.autobackup == 'object') && (typeof obj.config.settings.autobackup.backuppath == 'string') && (obj.path.normalize(obj.config.settings.autobackup.backuppath).startsWith(obj.path.normalize(obj.datapath)))) {
-                    addServerWarning("Backup path can't be set within meshcentral-data folder, backup settings ignored.", 21);
-                    delete obj.config.settings.autobackup;
-                }
-
-                // Load Intel AMT passwords from the "amtactivation.log" file
-                obj.loadAmtActivationLogPasswords(function (amtPasswords) {
-                    obj.amtPasswords = amtPasswords;
-                });
-
-                // Setup users that can see all device groups
-                if (typeof obj.config.settings.managealldevicegroups == 'string') { obj.config.settings.managealldevicegroups = obj.config.settings.managealldevicegroups.split(','); }
-                else if (Array.isArray(obj.config.settings.managealldevicegroups) == false) { obj.config.settings.managealldevicegroups = []; }
-                for (i in obj.config.domains) {
-                    if (Array.isArray(obj.config.domains[i].managealldevicegroups)) {
-                        for (var j in obj.config.domains[i].managealldevicegroups) {
-                            if (typeof obj.config.domains[i].managealldevicegroups[j] == 'string') {
-                                const u = 'user/' + i + '/' + obj.config.domains[i].managealldevicegroups[j];
-                                if (obj.config.settings.managealldevicegroups.indexOf(u) == -1) { obj.config.settings.managealldevicegroups.push(u); }
+                    // Setup users that can see all device groups
+                    if (typeof obj.config.settings.managealldevicegroups == 'string') { obj.config.settings.managealldevicegroups = obj.config.settings.managealldevicegroups.split(','); }
+                    else if (Array.isArray(obj.config.settings.managealldevicegroups) == false) { obj.config.settings.managealldevicegroups = []; }
+                    for (i in obj.config.domains) {
+                        if (Array.isArray(obj.config.domains[i].managealldevicegroups)) {
+                            for (var j in obj.config.domains[i].managealldevicegroups) {
+                                if (typeof obj.config.domains[i].managealldevicegroups[j] == 'string') {
+                                    const u = 'user/' + i + '/' + obj.config.domains[i].managealldevicegroups[j];
+                                    if (obj.config.settings.managealldevicegroups.indexOf(u) == -1) { obj.config.settings.managealldevicegroups.push(u); }
+                                }
                             }
                         }
                     }
-                }
-                obj.config.settings.managealldevicegroups.sort();
+                    obj.config.settings.managealldevicegroups.sort();
 
-                // Start watchdog timer if needed
-                // This is used to monitor if NodeJS is servicing IO correctly or getting held up a lot. Add this line to the settings section of config.json
-                //   "watchDog": { "interval": 100, "timeout": 150 }
-                // This will check every 100ms, if the timer is more than 150ms late, it will warn.
-                if ((typeof config.settings.watchdog == 'object') && (typeof config.settings.watchdog.interval == 'number') && (typeof config.settings.watchdog.timeout == 'number') && (config.settings.watchdog.interval >= 50) && (config.settings.watchdog.timeout >= 50)) {
-                    obj.watchdogtime = Date.now();
-                    obj.watchdogmax = 0;
-                    obj.watchdogmaxtime = null;
-                    obj.watchdogtable = [];
-                    obj.watchdog = setInterval(function () {
-                        const now = Date.now(), delta = now - obj.watchdogtime - config.settings.watchdog.interval;
-                        if (delta > obj.watchdogmax) { obj.watchdogmax = delta; obj.watchdogmaxtime = new Date().toLocaleString(); }
-                        if (delta > config.settings.watchdog.timeout) {
-                            const msg = obj.common.format("Watchdog timer timeout, {0}ms.", delta);
-                            obj.watchdogtable.push(new Date().toLocaleString() + ', ' + delta + 'ms');
-                            while (obj.watchdogtable.length > 10) { obj.watchdogtable.shift(); }
-                            obj.debug('main', msg);
-                            try {
-                                var errlogpath = null;
-                                if (typeof obj.args.mesherrorlogpath == 'string') { errlogpath = obj.path.join(obj.args.mesherrorlogpath, 'mesherrors.txt'); } else { errlogpath = obj.getConfigFilePath('mesherrors.txt'); }
-                                obj.fs.appendFileSync(errlogpath, new Date().toLocaleString() + ': ' + msg + '\r\n');
-                            } catch (ex) { console.log('ERROR: Unable to write to mesherrors.txt.'); }
-                        }
-                        obj.watchdogtime = now;
-                    }, config.settings.watchdog.interval);
-                    obj.debug('main', "Started watchdog timer.");
-                }
+                    // Start watchdog timer if needed
+                    // This is used to monitor if NodeJS is servicing IO correctly or getting held up a lot. Add this line to the settings section of config.json
+                    //   "watchDog": { "interval": 100, "timeout": 150 }
+                    // This will check every 100ms, if the timer is more than 150ms late, it will warn.
+                    if ((typeof config.settings.watchdog == 'object') && (typeof config.settings.watchdog.interval == 'number') && (typeof config.settings.watchdog.timeout == 'number') && (config.settings.watchdog.interval >= 50) && (config.settings.watchdog.timeout >= 50)) {
+                        obj.watchdogtime = Date.now();
+                        obj.watchdogmax = 0;
+                        obj.watchdogmaxtime = null;
+                        obj.watchdogtable = [];
+                        obj.watchdog = setInterval(function () {
+                            const now = Date.now(), delta = now - obj.watchdogtime - config.settings.watchdog.interval;
+                            if (delta > obj.watchdogmax) { obj.watchdogmax = delta; obj.watchdogmaxtime = new Date().toLocaleString(); }
+                            if (delta > config.settings.watchdog.timeout) {
+                                const msg = obj.common.format("Watchdog timer timeout, {0}ms.", delta);
+                                obj.watchdogtable.push(new Date().toLocaleString() + ', ' + delta + 'ms');
+                                while (obj.watchdogtable.length > 10) { obj.watchdogtable.shift(); }
+                                obj.debug('main', msg);
+                                try {
+                                    var errlogpath = null;
+                                    if (typeof obj.args.mesherrorlogpath == 'string') { errlogpath = obj.path.join(obj.args.mesherrorlogpath, 'mesherrors.txt'); } else { errlogpath = obj.getConfigFilePath('mesherrors.txt'); }
+                                    obj.fs.appendFileSync(errlogpath, new Date().toLocaleString() + ': ' + msg + '\r\n');
+                                } catch (ex) { console.log('ERROR: Unable to write to mesherrors.txt.'); }
+                            }
+                            obj.watchdogtime = now;
+                        }, config.settings.watchdog.interval);
+                        obj.debug('main', "Started watchdog timer.");
+                    }
 
+                });
             });
         });
     };
@@ -2841,46 +2848,60 @@ function CreateMeshCentralServer(config, args) {
         10006: { id: 10006, localname: 'MeshCentralAssistant.exe', rname: 'MeshCentralAssistant.exe', desc: 'MeshCentral Assistant for Windows', update: false, amt: false, platform: 'win32' } // MeshCentral Assistant
     };
 
-    // Update the list of available mesh agents
-    obj.updateMeshAgentsTable = function (domain, func) {
+    // Sign windows agents
+    obj.signMeshAgents = function (domain, func) {
         // Setup the domain is specified
         var objx = domain, suffix = '';
         if (domain.id == '') { objx = obj; } else { suffix = '-' + domain.id; objx.meshAgentBinaries = {}; }
 
         // Check if a custom agent signing certificate is available
-        var agentSignCertInfo = require('./authenticode.js').loadCertificates([ obj.path.join(obj.datapath, 'agentsigningcert.pem') ]);
+        var agentSignCertInfo = require('./authenticode.js').loadCertificates([obj.path.join(obj.datapath, 'agentsigningcert.pem')]);
 
         // If not using a custom signing cert, get agent code signature certificate ready with the full cert chain
         if ((agentSignCertInfo == null) && (obj.certificates.codesign != null)) {
             agentSignCertInfo = {
                 cert: obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.codesign.cert),
                 key: obj.certificateOperations.forge.pki.privateKeyFromPem(obj.certificates.codesign.key),
-                extraCerts: [obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.root.cert) ]
+                extraCerts: [obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.root.cert)]
             }
         }
+        if (agentSignCertInfo == null) { func(); return; } // No code signing certificate, nothing to do.
+
+        // Setup the domain is specified
+        var objx = domain, suffix = '';
+        if (domain.id == '') { objx = obj; } else { suffix = '-' + domain.id; objx.meshAgentBinaries = {}; }
 
         // Generate the agent signature description and URL
-        var serverSignedAgentsPath, signDesc, signUrl;
-        if (agentSignCertInfo != null) {
-            serverSignedAgentsPath = obj.path.join(obj.datapath, 'signedagents' + suffix);
-            signDesc = (domain.title ? domain.title : agentSignCertInfo.cert.subject.hash);
-            var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-            signUrl = 'https://' + ((domain.dns != null) ? domain.dns : obj.certificates.CommonName);
-            if (httpsPort != 443) { signUrl += ':' + httpsPort; }
-            var xdomain = (domain.dns == null) ? domain.id : '';
-            if (xdomain != '') xdomain += '/';
-            signUrl += '/' + xdomain;
+        const serverSignedAgentsPath = obj.path.join(obj.datapath, 'signedagents' + suffix);
+        const signDesc = (domain.title ? domain.title : agentSignCertInfo.cert.subject.hash);
+        const httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+        var httpsHost = ((domain.dns != null) ? domain.dns : obj.certificates.CommonName);
+        if (obj.args.agentaliasdns != null) { httpsHost = obj.args.agentaliasdns; }
+        var signUrl = 'https://' + httpsHost;
+        if (httpsPort != 443) { signUrl += ':' + httpsPort; }
+        var xdomain = (domain.dns == null) ? domain.id : '';
+        if (xdomain != '') xdomain += '/';
+        signUrl += '/' + xdomain;
 
-            // If requested, lock the agent to this server
-            if (obj.config.settings.agentsignlock) { signUrl += '?ServerID=' + obj.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert).toUpperCase(); }
-        }
+        // If requested, lock the agent to this server
+        if (obj.config.settings.agentsignlock) { signUrl += '?ServerID=' + obj.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert).toUpperCase(); }
 
-        // Load agent information file. This includes the data & time of the agent.
-        const agentInfo = [];
-        try { agentInfo = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'hashagents.json'), 'utf8')); } catch (ex) { }
+        // Setup the time server
+        var timeStampUrl = 'http://timestamp.comodoca.com/authenticode';
+        if (args.agenttimestampserver === false) { timeStampUrl = null; }
+        else if (typeof args.agenttimestampserver == 'string') { timeStampUrl = args.agenttimestampserver; }
 
-        var archcount = 0;
+        // Setup the time server proxy
+        var timeStampProxy = null;
+        if (typeof args.agenttimestampproxy == 'string') { timeStampProxy = args.agenttimestampproxy; }
+        else if ((args.agenttimestampproxy !== false) && (typeof args.npmproxy == 'string')) { timeStampProxy = args.npmproxy; }
+
+        // Setup the pending operations counter
+        var pendingOperations = 1;
+
         for (var archid in obj.meshAgentsArchitectureNumbers) {
+            if (obj.meshAgentsArchitectureNumbers[archid].codesign !== true) continue;
+
             var agentpath;
             if (domain.id == '') {
                 // Load all agents when processing the default domain
@@ -2893,45 +2914,136 @@ function CreateMeshCentralServer(config, args) {
                 if (obj.fs.existsSync(agentpath)) { delete obj.meshAgentsArchitectureNumbers[archid].codesign; } else { continue; } // If the agent is not present in "meshcentral-data/agents" skip.
             }
 
+            // Open the original agent with authenticode
+            const signeedagentpath = obj.path.join(serverSignedAgentsPath, obj.meshAgentsArchitectureNumbers[archid].localname);
+            const originalAgent = require('./authenticode.js').createAuthenticodeHandler(agentpath);
+            if (originalAgent != null) {
+                // Check if the agent is already signed correctly
+                const destinationAgent = require('./authenticode.js').createAuthenticodeHandler(signeedagentpath);
+                var destinationAgentOk = (
+                    (destinationAgent != null) &&
+                    (destinationAgent.fileHashSigned != null) &&
+                    (Buffer.compare(destinationAgent.fileHashSigned, destinationAgent.fileHashActual) == 0) &&
+                    (destinationAgent.signingAttribs.indexOf(signUrl) >= 0) &&
+                    (destinationAgent.signingAttribs.indexOf(signDesc) >= 0)
+                );
+
+                if (destinationAgent != null) {
+                    // If the agent is signed correctly, look to see if the resources in the destination agent are correct
+                    var orgVersionStrings = originalAgent.getVersionInfo();
+                    if (destinationAgentOk == true) {
+                        var versionStrings = destinationAgent.getVersionInfo();
+                        var versionProperties = ['FileDescription', 'FileVersion', 'InternalName', 'LegalCopyright', 'OriginalFilename', 'ProductName', 'ProductVersion'];
+                        for (var i in versionProperties) {
+                            const prop = versionProperties[i], propl = prop.toLowerCase();
+                            if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object') && (typeof domain.agentfileinfo[propl] == 'string')) {
+                                if (domain.agentfileinfo[propl] != versionStrings[prop]) { destinationAgentOk = false; } // If the resource we want is not the same as the destination executable, we need to re-sign the agent.
+                            } else {
+                                if (orgVersionStrings[prop] != versionStrings[prop]) { destinationAgentOk = false; } // if the resource of the orginal agent not the same as the destination executable, we need to re-sign the agent.
+                            }
+                        }
+                    }
+
+                    // If everything looks ok, runs a hash of the original and destination agent skipping the CRC, resource and signature blocks. If different, sign the agent again.
+                    if ((destinationAgentOk == true) && (originalAgent.getHashNoResources('sha384').compare(destinationAgent.getHashNoResources('sha384')) != 0)) { destinationAgentOk = false; }
+
+                    // We are done comparing the destination agent, close it.
+                    destinationAgent.close();
+                }
+
+                if (destinationAgentOk == false) {
+                    // If not signed correctly, sign it. First, create the server signed agent folder if needed
+                    try { obj.fs.mkdirSync(serverSignedAgentsPath); } catch (ex) { }
+                    const xagentSignedFunc = function agentSignedFunc(err, size) {
+                        if (err == null) {
+                            // Agent was signed succesfuly
+                            console.log(obj.common.format('Code signed agent {0}.', agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname));
+                        } else {
+                            // Failed to sign agent
+                            addServerWarning('Failed to sign agent \"' + agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname + '\": ' + err, 22, [ agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname, err ]);
+                        }
+                        if (--pendingOperations === 0) { agentSignedFunc.func(); }
+                    }
+                    pendingOperations++;
+                    xagentSignedFunc.func = func;
+                    xagentSignedFunc.objx = objx;
+                    xagentSignedFunc.archid = archid;
+                    xagentSignedFunc.signeedagentpath = signeedagentpath;
+
+                    // Parse the resources in the executable and make any required changes
+                    var resChanges = false, versionStrings = null;
+                    if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object')) {
+                        versionStrings = originalAgent.getVersionInfo();
+                        var versionProperties = ['FileDescription', 'FileVersion', 'InternalName', 'LegalCopyright', 'OriginalFilename', 'ProductName', 'ProductVersion'];
+                        for (var i in versionProperties) {
+                            const prop = versionProperties[i], propl = prop.toLowerCase();
+                            if (domain.agentfileinfo[propl] && (domain.agentfileinfo[propl] != versionStrings[prop])) { versionStrings[prop] = domain.agentfileinfo[propl]; resChanges = true; }
+                        }
+                        if (resChanges == true) { originalAgent.setVersionInfo(versionStrings); }
+                    }
+
+                    const signingArguments = { out: signeedagentpath, desc: signDesc, url: signUrl, time: timeStampUrl, proxy: timeStampProxy }; // Shallow clone
+                    obj.debug('main', "Code signing agent with arguments: " + JSON.stringify(signingArguments));
+                    if (resChanges == false) {
+                        // Sign the agent the simple way, without changing any resources.
+                        originalAgent.sign(agentSignCertInfo, signingArguments, xagentSignedFunc);
+                    } else {
+                        // Change the agent resources and sign the agent, this is a much more involved process.
+                        // NOTE: This is experimental and could corupt the agent.
+                        originalAgent.writeExecutable(signingArguments, agentSignCertInfo, xagentSignedFunc);
+                    }
+                } else {
+                    // Signed agent is already ok, use it.
+                    originalAgent.close();
+                }
+            }
+        }
+
+        if (--pendingOperations === 0) { func(); }
+    }
+
+    // Update the list of available mesh agents
+    obj.updateMeshAgentsTable = function (domain, func) {
+        // Check if a custom agent signing certificate is available
+        var agentSignCertInfo = require('./authenticode.js').loadCertificates([obj.path.join(obj.datapath, 'agentsigningcert.pem')]);
+
+        // If not using a custom signing cert, get agent code signature certificate ready with the full cert chain
+        if ((agentSignCertInfo == null) && (obj.certificates.codesign != null)) {
+            agentSignCertInfo = {
+                cert: obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.codesign.cert),
+                key: obj.certificateOperations.forge.pki.privateKeyFromPem(obj.certificates.codesign.key),
+                extraCerts: [obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.root.cert)]
+            }
+        }
+
+        // Setup the domain is specified
+        var objx = domain, suffix = '';
+        if (domain.id == '') { objx = obj; } else { suffix = '-' + domain.id; objx.meshAgentBinaries = {}; }
+
+        // Load agent information file. This includes the data & time of the agent.
+        const agentInfo = [];
+        try { agentInfo = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'hashagents.json'), 'utf8')); } catch (ex) { }
+
+        var archcount = 0;
+        for (var archid in obj.meshAgentsArchitectureNumbers) {
+            var agentpath;
+            if (domain.id == '') {
+                // Load all agents when processing the default domain
+                agentpath = obj.path.join(__dirname, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
+                const agentpath2 = obj.path.join(obj.datapath, 'signedagents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
+                if (obj.fs.existsSync(agentpath2)) { agentpath = agentpath2; } // If the agent is present in "meshcentral-data/signedagents", use that one instead.
+                const agentpath3 = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
+                if (obj.fs.existsSync(agentpath3)) { agentpath = agentpath3; } // If the agent is present in "meshcentral-data/agents", use that one instead.
+            } else {
+                // When processing an extra domain, only load agents that are specific to that domain
+                var agentpath = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
+                if (obj.fs.existsSync(agentpath)) { delete obj.meshAgentsArchitectureNumbers[archid].codesign; } else { continue; } // If the agent is not present in "meshcentral-data/agents" skip.
+            }
+
             // Fetch agent binary information
             var stats = null;
             try { stats = obj.fs.statSync(agentpath); } catch (ex) { }
             if ((stats == null)) continue; // If this agent does not exist, skip it.
-
-            // Check if we need to sign this agent, if so, check if it's already been signed
-            if ((obj.meshAgentsArchitectureNumbers[archid].codesign === true) && (agentSignCertInfo != null)) {
-                // Open the original agent with authenticode
-                var signeedagentpath = obj.path.join(serverSignedAgentsPath, obj.meshAgentsArchitectureNumbers[archid].localname);
-                const originalAgent = require('./authenticode.js').createAuthenticodeHandler(agentpath);
-                if (originalAgent != null) {
-                    // Check if the agent is already signed correctly
-                    const destinationAgent = require('./authenticode.js').createAuthenticodeHandler(signeedagentpath);
-                    var destinationAgentOk = (
-                        (destinationAgent != null) &&
-                        (destinationAgent.fileHashSigned != null) &&
-                        (Buffer.compare(destinationAgent.fileHashSigned, destinationAgent.fileHashActual) == 0) &&
-                        ((Buffer.compare(destinationAgent.fileHashSigned, originalAgent.getHash(destinationAgent.fileHashAlgo))) == 0) &&
-                        (destinationAgent.signingAttribs.indexOf(signUrl) >= 0) &&
-                        (destinationAgent.signingAttribs.indexOf(signDesc) >= 0)
-                    );
-                    if (destinationAgent != null) { destinationAgent.close(); }
-                    if (destinationAgentOk == false) {
-                        // If not signed correctly, sign it. First, create the server signed agent folder if needed
-                        try { obj.fs.mkdirSync(serverSignedAgentsPath); } catch (ex) { }
-                        if (originalAgent.sign(agentSignCertInfo, { out: signeedagentpath, desc: signDesc, url: signUrl }) == true) {
-                            // Agent was signed succesfuly
-                            agentpath = signeedagentpath;
-                            console.log(obj.common.format('Code signed agent {0}.', obj.meshAgentsArchitectureNumbers[archid].localname));
-                        } else {
-                            console.log(obj.common.format('Failed to sign agent {0}.', obj.meshAgentsArchitectureNumbers[archid].localname));
-                        }
-                    } else {
-                        // Signed agent is already ok, use it.
-                        agentpath = signeedagentpath;
-                    }
-                    originalAgent.close();
-                }
-            }
 
             // Setup agent information
             archcount++;
@@ -2952,7 +3064,7 @@ function CreateMeshCentralServer(config, args) {
                     // Load the agent with a random msh added to it.
                     const outStream = new require('stream').Duplex();
                     outStream.meshAgentBinary = objx.meshAgentBinaries[archid];
-                    outStream.meshAgentBinary.randomMsh = agentSignCertInfo.cert.subject.hash;
+                    if (agentSignCertInfo) { outStream.meshAgentBinary.randomMsh = agentSignCertInfo.cert.subject.hash; } else { outStream.meshAgentBinary.randomMsh = obj.crypto.randomBytes(16).toString('hex'); }
                     outStream.bufferList = [];
                     outStream._write = function (chunk, encoding, callback) { this.bufferList.push(chunk); if (callback) callback(); }; // Append the chuck.
                     outStream._read = function (size) { }; // Do nothing, this is not going to be called.

@@ -1,15 +1,15 @@
 {
   "3": {
-    "filename": "MeshService-signed.exe",
+    "filename": "MeshService.exe",
     "hash": "C0E5DB22DE5DED510C48141D7CFE4807F98B8205D680F5FC8A5D15950F17A1465E0953B7BFA7FAEED72019E765E1C8E1",
-    "size": 3686192,
-    "mtime": "2022-05-03T20:43:54Z"
+    "size": 3680256,
+    "mtime": "2022-04-04T17:13:59Z"
   },
   "4": {
-    "filename": "MeshService64-signed.exe",
+    "filename": "MeshService64.exe",
     "hash": "47A927806EDB6DFAC2C79467719FADA0F3625010D551C6D0EA6EA7DB99F088C088E70F562416FC1809B014913CFEA7E0",
-    "size": 3299120,
-    "mtime": "2022-05-03T20:43:56Z"
+    "size": 3293184,
+    "mtime": "2022-03-25T19:04:18Z"
   },
   "5": {
     "filename": "meshagent_x86",

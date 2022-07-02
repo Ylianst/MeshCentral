@@ -22,7 +22,7 @@ var fs = require('fs');
 var type = require('./type');
 var log = require('./log');
 var tls = require('tls');
-var crypto = require('crypto');
+//var crypto = require('crypto');
 var events = require('events');
 
 /**

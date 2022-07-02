@@ -10,7 +10,7 @@
     "_WANonly": true,
     "_LANonly": true,
     "_maintenanceMode": true,
-    "_certificatePrivateKeyPassword": [ "password1", "password2" ],
+    "_certificatePrivateKeyPassword": ["password1", "password2"],
     "_sessionTime": 60,
     "_sessionKey": "MyReallySecretPassword1",
     "_sessionSameSite": "strict",
@@ -38,6 +38,8 @@
     "_agentCoreDump": true,
     "_agentCoreDumpUsers": "user1,user2",
     "_agentSignLock": true,
+    "_agentTimeStampServer": "http://timestamp.digicert.com",
+    "_agentTimeStampProxy": "http://1.2.3.4:80",
     "_ignoreAgentHashCheck": true,
     "_exactPorts": true,
     "_allowLoginToken": true,
@@ -72,14 +74,15 @@
     "_webPush": { "email": "xxxxx@xxxxx.com" },
     "_publicPushNotifications": true,
     "_desktopMultiplex": true,
+    "_ipBlockedUserRedirect": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     "_userAllowedIP": "127.0.0.1,192.168.1.0/24",
     "_userBlockedIP": "127.0.0.1,::1,192.168.0.100",
     "_agentAllowedIP": "192.168.0.100/24",
     "_agentBlockedIP": "127.0.0.1,::1",
     "_authLog": "c:\\temp\\auth.log",
-    "_InterUserMessaging": [ "user//admin" ],
-    "_manageAllDeviceGroups": [ "user//admin" ],
-    "_manageCrossDomain": [ "user//admin" ],
+    "_InterUserMessaging": ["user//admin"],
+    "_manageAllDeviceGroups": ["user//admin"],
+    "_manageCrossDomain": ["user//admin"],
     "_localDiscovery": {
       "name": "Local server name",
       "info": "Information about this server"
@@ -91,6 +94,7 @@
     "_mpsAliasPort": 4433,
     "_mpsAliasHost": "mps.mydomain.com",
     "_mpsTlsOffload": true,
+    "_mpsHighSecurity": true,
     "_no2FactorAuth": true,
     "_runOnServerStarted": "c:\\tmp\\mcstart.bat",
     "_runOnServerUpdated": "c:\\tmp\\mcupdate.bat",
@@ -162,19 +166,21 @@
       "title2": "Servername",
       "_titlePicture": "title-sample.png",
       "_loginPicture": "title-sample.png",
+      "_rootRedirect": "https://www.youtube.com/watch?v=Gs069dndIYk",
+      "_mobileSite": false,
+      "_unknownUserRootRedirect": "https://www.youtube.com/watch?v=2Q_ZzBGPdqE",
+      "_nightMode": 1,
       "_userQuota": 1048576,
       "_meshQuota": 248576,
+      "_loginKey": ["abc", "123"],
+      "_agentKey": ["abc", "123"],
+      "_ipkvm": false,
       "minify": true,
-      "_guestDeviceSharing" : false,
-      "_AutoRemoveInactiveDevices": 37,
-      "_DeviceSearchBarServerAndClientName": false,
-      "_loginKey": [ "abc", "123" ],
-      "_agentKey": [ "abc", "123" ],
       "_newAccounts": true,
-      "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+      "_newAccountsUserGroups": ["ugrp//xxxxxxxxxxxxxxxxx"],
       "_userNameIsEmail": true,
-      "_newAccountEmailDomains": [ "sample.com" ],
-      "_newAccountsRights": [ "nonewgroups", "notools" ],
+      "_newAccountEmailDomains": ["sample.com"],
+      "_newAccountsRights": ["nonewgroups", "notools"],
       "_welcomeText": "Sample Text on Login Page.",
       "_welcomePicture": "mainwelcome.jpg",
       "_welcomePictureFullScreen": false,
@@ -184,6 +190,13 @@
       "_hide": 4,
       "_footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
       "_loginfooter": "This is a private server.",
+      "_allowSavingDeviceCredentials": false,
+      "_guestDeviceSharing": false,
+      "_AutoRemoveInactiveDevices": 37,
+      "_DeviceSearchBarServerAndClientName": false,
+      "_agentSelfGuestSharing": {
+          "expire": 120
+        },
       "_certUrl": "https://192.168.2.106:443/",
       "_altMessenging": {
         "name": "Jitsi",
@@ -199,7 +212,7 @@
             "protocol": "http",
             "port": 80,
             "_ip": "192.168.1.100",
-            "_filter": [ "mesh/(domainid)/(meshid)", "node/(domainid)/(nodeid)" ]
+            "_filter": ["mesh/(domainid)/(meshid)", "node/(domainid)/(nodeid)"]
           },
           {
             "name": "HTTPS",
@@ -210,7 +223,7 @@
       },
       "PreconfiguredRemoteInput": [
         {
-          "name": "CompagnyUrl",
+          "name": "CompanyUrl",
           "value": "https://help.mycompany.com/"
         },
         {
@@ -221,7 +234,7 @@
           "name": "Welcome",
           "value": "Default welcome text"
         }
-     ],
+      ],
       "myServer": {
         "Backup": false,
         "Restore": false,
@@ -274,6 +287,15 @@
         "image": "agent-logo.png",
         "fileName": "compagnyagent"
       },
+      "_agentFileInfo": {
+        "_filedescription": "sample_filedescription",
+        "_fileversion": "0.1.2.3",
+        "_internalname": "sample_internalname",
+        "_legalcopyright": "sample_legalcopyright",
+        "_originalfilename": "sample_originalfilename",
+        "_productname": "sample_productname",
+        "_productversion": "0.1.2.3"
+      },
       "_assistantCustomization": {
         "title": "Company® Product™",
         "image": "assistant-logo.png",
@@ -324,14 +346,24 @@
         "log": "amtactivation.log",
         "certs": {
           "mycertname": {
-            "certfiles": [ "amtacm-leafcert.crt", "amtacm-intermediate1.crt", "amtacm-intermediate2.crt", "amtacm-rootcert.crt" ],
+            "certfiles": [
+              "amtacm-leafcert.crt",
+              "amtacm-intermediate1.crt",
+              "amtacm-intermediate2.crt",
+              "amtacm-rootcert.crt"
+            ],
             "keyfile": "amtacm-leafcert.key"
           }
         }
       },
       "_amtManager": {
         "adminAccounts": [{ "user": "admin", "pass": "MyP@ssw0rd" }],
-        "environmentDetection": [ "domain1.com", "domain2.com", "domain3.com", "domain4.com" ],
+        "environmentDetection": [
+          "domain1.com",
+          "domain2.com",
+          "domain3.com",
+          "domain4.com"
+        ],
         "wifiProfiles": [
           {
             "name": "Profile1",
@@ -354,8 +386,8 @@
         "Strict-Transport-Security": "max-age=360000",
         "x-frame-options": "SAMEORIGIN"
       },
-      "_agentConfig": [ "webSocketMaskOverride=1", "coreDumpEnabled=1" ],
-      "_assistantConfig": [ "disableUpdate=1" ],
+      "_agentConfig": ["webSocketMaskOverride=1", "coreDumpEnabled=1"],
+      "_assistantConfig": ["disableUpdate=1"],
       "_sessionRecording": {
         "_onlySelectedUsers": true,
         "_onlySelectedUserGroups": true,
@@ -366,42 +398,42 @@
         "_maxRecordingDays": 15,
         "_maxRecordingSizeMegabytes": 3,
         "__protocols__": "Is an array: 1 = Terminal, 2 = Desktop, 5 = Files, 100 = Intel AMT WSMAN, 101 = Intel AMT Redirection, 200 = Messenger",
-        "protocols": [ 1, 2, 101 ]
+        "protocols": [1, 2, 101]
       },
       "_authStrategies": {
         "__comment__": "This section is used to allow users to login using other accounts. You will need to get an API key from the services and register callback URL's",
         "twitter": {
           "_callbackurl": "https://server/auth-twitter-callback",
           "newAccounts": true,
-          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+          "_newAccountsUserGroups": ["ugrp//xxxxxxxxxxxxxxxxx"],
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         },
         "google": {
           "_callbackurl": "https://server/auth-google-callback",
           "newAccounts": true,
-          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+          "_newAccountsUserGroups": ["ugrp//xxxxxxxxxxxxxxxxx"],
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxx"
         },
         "github": {
           "_callbackurl": "https://server/auth-github-callback",
           "newAccounts": true,
-          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+          "_newAccountsUserGroups": ["ugrp//xxxxxxxxxxxxxxxxx"],
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         },
         "reddit": {
           "_callbackurl": "https://server/auth-reddit-callback",
           "newAccounts": true,
-          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+          "_newAccountsUserGroups": ["ugrp//xxxxxxxxxxxxxxxxx"],
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         },
         "azure": {
           "_callbackurl": "https://server/auth-azure-callback",
           "newAccounts": true,
-          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+          "_newAccountsUserGroups": ["ugrp//xxxxxxxxxxxxxxxxx"],
           "clientid": "00000000-0000-0000-0000-000000000000",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
           "tenantid": "00000000-0000-0000-0000-000000000000"
@@ -409,7 +441,7 @@
         "jumpcloud": {
           "_callbackurl": "https://server/auth-jumpcloud-callback",
           "newAccounts": true,
-          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+          "_newAccountsUserGroups": ["ugrp//xxxxxxxxxxxxxxxxx"],
           "entityid": "meshcentral",
           "idpurl": "https://sso.jumpcloud.com/saml2/saml2",
           "cert": "jumpcloud-saml.pem"
@@ -418,8 +450,8 @@
           "_callbackurl": "https://server/auth-saml-callback",
           "_disableRequestedAuthnContext": true,
           "newAccounts": true,
-          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
-          "_newAccountsRights": [ "nonewgroups", "notools" ],
+          "_newAccountsUserGroups": ["ugrp//xxxxxxxxxxxxxxxxx"],
+          "_newAccountsRights": ["nonewgroups", "notools"],
           "entityid": "meshcentral",
           "idpurl": "https://server/saml2",
           "cert": "saml.pem"
@@ -455,7 +487,7 @@
           "uid": "anneonyme",
           "mail": "anneonyme@example.com",
           "email": "anneonyme@example.com",
-          "otherMail": [ "other.anneonyme@example.com", "anneonyme@example.com" ]
+          "otherMail": ["other.anneonyme@example.com", "anneonyme@example.com"]
         },
         "so": {
           "displayName": "Sticker Sophie",
@@ -463,7 +495,7 @@
           "uid": "ssticker",
           "mail": "ssticker@example.com",
           "email": "ssticker@example.com",
-          "otherMail": [ "other.ssticker@example.com", "ssticker@example.com" ]
+          "otherMail": ["other.ssticker@example.com", "ssticker@example.com"]
         }
       },
       "__LDAPOptions": {
@@ -512,7 +544,7 @@
   "_sendmail": {
     "newline": "unix",
     "path": "/usr/sbin/sendmail",
-    "_args": [ "-f", "foo@example.com" ]
+    "_args": ["-f", "foo@example.com"]
   },
   "_sms": {
     "provider": "twilio",

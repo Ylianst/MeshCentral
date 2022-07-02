@@ -9,6 +9,7 @@ nav:
   - MeshCentral2: 
       - 'MeshCentral2 Guide': 'meshcentral/index.md'
       - 'All Configuration Options': 'meshcentral/config.md'
+      - 'Device Tabs': 'meshcentral/devicetabs.md'
       - 'Tokens': 'meshcentral/tokens.md'
       - 'Assistant': 'meshcentral/assistant.md'
       - 'Code Signing': 'meshcentral/codesigning.md'

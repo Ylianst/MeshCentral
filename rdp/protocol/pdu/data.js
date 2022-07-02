@@ -186,7 +186,7 @@ var FastPathUpdateType = {
     FASTPATH_UPDATETYPE_PTR_NULL : 0x5,
     FASTPATH_UPDATETYPE_PTR_DEFAULT : 0x6,
     FASTPATH_UPDATETYPE_PTR_POSITION : 0x8,
-    FASTPATH_UPDATETYPE_COLOR : 0x9,
+    FASTPATH_UPDATETYPE_COLOR : 0x9, // Mouse cursor
     FASTPATH_UPDATETYPE_CACHED : 0xA,
     FASTPATH_UPDATETYPE_POINTER : 0xB
 };
@@ -1075,7 +1075,7 @@ function clipPDU() {
  * @param opt {object} type option
  * @returns {type.Component}
  */
-function fastPathBitmapUpdateDataPDU (opt) {
+function fastPathBitmapUpdateDataPDU(opt) {
 	var self = {
 		__FASTPATH_UPDATE_TYPE__ : FastPathUpdateType.FASTPATH_UPDATETYPE_BITMAP,
 		header : new type.UInt16Le(FastPathUpdateType.FASTPATH_UPDATETYPE_BITMAP, { constant : true }),
@@ -1093,13 +1093,67 @@ function fastPathBitmapUpdateDataPDU (opt) {
 	return new type.Component(self, opt);
 }
 
+// This is a table of cursorid to cursor name.
+// Created by movering the mouse over this page: https://www.w3schools.com/csSref/tryit.asp?filename=trycss_cursor
+const cursorIdTable = {
+    // Normal style mouse cursor
+    903013897: 'alias',
+    370524792: 'all-scroll',
+    853046751: 'cell',
+    2101250798: 'col-resize',
+    703681364: 'copy',
+    992638936: 'crosshair',
+    1539083673: 'ew-resize',
+    1919796298: 'grab',
+    1010243511: 'grabbing',
+    1247283057: 'help',
+    1390892051: 'none',
+    885751489: 'not-allowed',
+    1732952247: 'row-resize',
+    747144997: 'url',
+    2018345610: 'zoom-in',
+    347367048: 'zoom-out',
+    1872942890: 'default',
+    1737852989: 'text',
+    1932827019: 'ns-resize',
+    1884471290: 'nesw-resize',
+    1204065391: 'nwse-resize',
+    2030531519: 'progress',
+    1050842114: 'pointer',
+
+    // Black style cursors
+    1258195498: 'default',
+    219484254: 'all-scroll',
+    399295089: 'text',
+    1912613597: 'wait',
+    864127801: 'ew-resize',
+    23245044: 'nesw-resize',
+    1966995494: 'not-allowed',
+    1873216615: 'help',
+    255126408: 'nesw-resize',
+    157191894: 'ns-resize',
+    1768446509: 'pointer',
+    1032011501: 'crosshair'
+}
+
+function fastPathPointerUpdateDataPDU(opt, cursorId, cursorStr) {
+    var self = {
+        __FASTPATH_UPDATE_TYPE__: FastPathUpdateType.FASTPATH_UPDATETYPE_COLOR,
+        header: new type.UInt16Le(FastPathUpdateType.FASTPATH_UPDATETYPE_COLOR, { constant: true }),
+        cursorId: cursorId,
+        cursorStr: cursorStr
+    };
+
+    return new type.Component(self, opt);
+}
+
 /**
  * @see http://msdn.microsoft.com/en-us/library/cc240622.aspx
  * @param updateData {type.Component}
  * @param opt {object} type option
  * @returns {type.Component}
  */
-function fastPathUpdatePDU (updateData, opt) {
+function fastPathUpdatePDU(updateData, opt) {
 	var self = {
 		updateHeader : new type.UInt8( function () {
 			return self.updateData.obj.__FASTPATH_UPDATE_TYPE__;
@@ -1116,12 +1170,27 @@ function fastPathUpdatePDU (updateData, opt) {
 			}) };
 			
 			switch (self.updateHeader.value & 0xf) {
-			case FastPathUpdateType.FASTPATH_UPDATETYPE_BITMAP:
-				self.updateData = fastPathBitmapUpdateDataPDU(options).read(s);
-				break;
-			default:
-				self.updateData = new type.BinaryString(null, options).read(s);
-				log.debug('unknown fast path pdu type ' + (self.updateHeader.value & 0xf));
+                case FastPathUpdateType.FASTPATH_UPDATETYPE_BITMAP: {
+                    self.updateData = fastPathBitmapUpdateDataPDU(options).read(s);
+                    break;
+                }
+                case FastPathUpdateType.FASTPATH_UPDATETYPE_COLOR: {
+                    var data = new type.BinaryString(null, options).read(s);
+
+                    // Hash the data to get a cursor id.
+                    // This is a hack since the cursor bitmap is sent but we can't use that, we has hash the bitmap and use that as a hint as to what cursor we need to display
+                    const hasher = require('crypto').createHash('sha384');
+                    hasher.update(data.value);
+                    const cursorid = Math.abs(hasher.digest().readInt32BE(0));
+                    const cursorStr = cursorIdTable[cursorid];
+                    //if (cursorStr == null) { console.log('Unknown cursorId: ' + cursorid); }
+                    self.updateData = fastPathPointerUpdateDataPDU(options, cursorid, cursorStr);
+                    break;
+                }
+                default: {
+                    self.updateData = new type.BinaryString(null, options).read(s);
+                    log.debug('unknown fast path pdu type ' + (self.updateHeader.value & 0xf));
+                }
 			}
 		})
 	};

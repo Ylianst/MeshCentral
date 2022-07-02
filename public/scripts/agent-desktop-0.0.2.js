@@ -533,6 +533,9 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                     else if (Button == obj.MouseButton.RIGHT) { Button = obj.MouseButton.LEFT; }
                 }
 
+                // Reverse mouse wheel if needed
+                if (obj.ReverseMouseWheel) { Delta = -1 * Delta; }
+
                 var MouseMsg = "";
                 if (Action == obj.KeyAction.DBLCLICK) {
                     MouseMsg = String.fromCharCode(0x00, obj.InputType.MOUSE, 0x00, 0x0A, 0x00, 0x88, ((X / 256) & 0xFF), (X & 0xFF), ((Y / 256) & 0xFF), (Y & 0xFF));

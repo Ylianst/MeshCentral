@@ -696,7 +696,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Request a list of all nodes
                     db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, function (err, docs) {
 
-                        //console.log(docs);
+                        //console.log(err, docs);
 
                         if (docs == null) { docs = []; }
                         parent.common.unEscapeAllLinksFieldName(docs);
@@ -2867,8 +2867,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if ((command.actiontype == 400) && common.validateInt(command.time, 1, 30000)) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: node._id, value: 'flash ' + command.time }, MESHRIGHT_ADMIN, 0); }
                                 if ((command.actiontype == 401) && common.validateInt(command.time, 1, 30000)) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: node._id, value: 'vibrate ' + command.time }, MESHRIGHT_ADMIN, 0); }
                             } else {
-                                // Check we have the rights to delete this device
-                                if ((rights & MESHRIGHT_RESETOFF) == 0) return;                                
+                                // Check we have the rights to perform this operation
+                                if ((command.actiontype == 302) && ((rights & MESHRIGHT_WAKEDEVICE) == 0)) return; // This is a Intel AMT power on operation, check if we have WAKE rights
+                                if ((command.actiontype != 302) && ((rights & MESHRIGHT_RESETOFF) == 0)) return; // For all other operations, check that we have RESET/OFF rights
 
                                 // If this device is connected on MQTT, send a power action.
                                 if ((parent.parent.mqttbroker != null) && (command.actiontype >= 0) && (command.actiontype <= 4)) { parent.parent.mqttbroker.publish(node._id, 'powerAction', ['', '', 'poweroff', 'reset', 'sleep'][command.actiontype]); }
@@ -2913,7 +2914,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Perform input validation
                     try {
                         if (common.validateStrArray(command.nodeids, 1, 256) == false) { err = "Invalid nodeids"; } // Check nodeids
-                        else if (common.validateString(command.title, 1, 512) == false) { err = "Invalid title"; } // Check title
                         else if (common.validateString(command.msg, 1, 4096) == false) { err = "Invalid message"; } // Check message
                         else {
                             var nodeids = [];
@@ -2927,6 +2927,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'toast', responseid: command.responseid, result: err })); } catch (ex) { } }
                         break;
                     }
+
+                    // Check the title, if needed, use a default one
+                    if (common.validateString(command.title, 1, 512) == false) { delete command.title } // Check title
+                    if ((command.title == null) && (typeof domain.notificationmessages == 'object') && (typeof domain.notificationmessages.title == 'string')) { command.title = domain.notificationmessages.title; }
+                    if ((command.title == null) && (typeof domain.title == 'string')) { command.title = domain.title; }
+                    if (command.title == null) { command.title = "MeshCentral"; }
 
                     for (i in command.nodeids) {
                         // Get the node and the rights for this node
@@ -3017,6 +3023,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 delete node.sshport; change = 1; changes.push('sshport'); // Delete the SSH port
                             } else {
                                 node.sshport = command.sshport; change = 1; changes.push('sshport'); // Set the SSH port
+                            }
+                        }
+
+                        if ((typeof command.httpport == 'number') && (command.httpport > 0) && (command.httpport < 65536)) {
+                            if ((command.httpport == 80) && (node.httpport != null)) {
+                                delete node.httpport; change = 1; changes.push('httpport'); // Delete the HTTP port
+                            } else {
+                                node.httpport = command.httpport; change = 1; changes.push('httpport'); // Set the HTTP port
+                            }
+                        }
+
+                        if ((typeof command.httpsport == 'number') && (command.httpsport > 0) && (command.httpsport < 65536)) {
+                            if ((command.httpsport == 443) && (node.httpsport != null)) {
+                                delete node.httpsport; change = 1; changes.push('httpsport'); // Delete the HTTPS port
+                            } else {
+                                node.httpsport = command.httpsport; change = 1; changes.push('httpsport'); // Set the HTTPS port
                             }
                         }
 

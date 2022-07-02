@@ -239,6 +239,7 @@
     <Compile Include="translate\translate.js" />
     <Compile Include="ua-parser.js" />
     <Compile Include="webauthn.js" />
+    <Compile Include="webrelayserver.js" />
     <Compile Include="webserver.js" />
     <Compile Include="winservice.js" />
     <Content Include="agents\codesign.cer" />
@@ -261,10 +262,8 @@
     <Content Include="agents\MeshCommander-Small.gz" />
     <Content Include="agents\meshinstall-initd.sh" />
     <Content Include="agents\meshinstall-linux.sh" />
-    <Content Include="agents\MeshService-signed.exe" />
     <Content Include="agents\MeshService.exe" />
     <Content Include="agents\MeshService.pdb" />
-    <Content Include="agents\MeshService64-signed.exe" />
     <Content Include="agents\MeshService64.exe" />
     <Content Include="agents\MeshService64.pdb" />
     <Content Include="agents\modules_meshcore\coretranslations.json" />
@@ -698,6 +697,7 @@
     <Folder Include="typings\globals\localforage\" />
     <Folder Include="typings\globals\lru-cache\" />
     <Folder Include="typings\globals\marked\" />
+    <Folder Include="typings\globals\moment-timezone\" />
     <Folder Include="typings\globals\moment\" />
     <Folder Include="typings\globals\node-forge\" />
     <Folder Include="typings\globals\nodemailer\" />
@@ -738,6 +738,7 @@
     <TypeScriptCompile Include="typings\globals\localforage\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\lru-cache\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\marked\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\moment-timezone\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\moment\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\node-forge\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\nodemailer\index.d.ts" />
