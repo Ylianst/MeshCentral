@@ -4,18 +4,30 @@
 
 For viewing general information about the agent
 
+* Group
+* Description
+* IP-KVM Port Number
+* IP-KVM Port Type
+* Intel AMT
+* Intel AMT Tag
+* Mesh Agent
+* Operating System
+* Windows Security
+* Antivirus
+* Active User
+* User Consent
+* Notifications
+* Tags
+
 ### Fields
 
 ### Buttons
 
 Actions
-
 Notes
-
 Log Event
-
 Message
-
+PDU On/Off/Control
 Chat
 
 ### 7 Day Power State
@@ -35,6 +47,19 @@ You can set alternate port in the link if it's not default by right-clicking.
 
 ![](images/general_alternateports.png)
 
+* Interfaces 
+* Location 
+* MeshCmd 
+* RDP 
+* Web-VNC 
+* Web-RDP 
+* Web-SSH
+* XTerm
+* HTTP
+* HTTPS
+* SSH
+* SCP
+* MQTT Login
 
 ## Desktop
 
