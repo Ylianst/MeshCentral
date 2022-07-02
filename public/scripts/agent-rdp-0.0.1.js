@@ -18,6 +18,10 @@ var CreateRDPDesktop = function (canvasid) {
     obj.m.onClipboardChanged = null;
     obj.onConsoleMessageChange = null;
 
+    var xMouseCursorActive = true;
+    var xMouseCursorCurrent = 'default';
+    obj.mouseCursorActive = function (x) { if (xMouseCursorActive == x) return; xMouseCursorActive = x; obj.CanvasId.style.cursor = ((x == true) ? xMouseCursorCurrent : 'default'); }
+
     function mouseButtonMap(button) {
         // Swap mouse buttons if needed
         if (obj.m.SwapMouse === true) return [2, 0, 1, 0, 0][button];
@@ -73,6 +77,12 @@ var CreateRDPDesktop = function (canvasid) {
                         bitmap.data = obj.bitmapData; // Use the binary data that was sent earlier.
                         delete obj.bitmapData;
                         obj.render.update(bitmap);
+                        break;
+                    }
+                    case 'rdp-pointer': {
+                        var pointer = msg[1];
+                        xMouseCursorCurrent = pointer;
+                        if (xMouseCursorActive) { obj.CanvasId.style.cursor = pointer; }
                         break;
                     }
                     case 'rdp-close': {
@@ -198,6 +208,7 @@ var CreateRDPDesktop = function (canvasid) {
         if (obj.mouseNagleTimer != null) { clearTimeout(obj.mouseNagleTimer); obj.mouseNagleTimer = null; }
         var delta = 0;
         if (e.detail) { delta = (e.detail * 120); } else if (e.wheelDelta) { delta = (e.wheelDelta * 3); }
+        if (obj.m.ReverseMouseWheel) { delta = -1 * delta; } // Reverse the mouse wheel
         if (delta != 0) { obj.socket.send(JSON.stringify(['wheel', m.x, m.y, delta, false, false])); }
         e.preventDefault();
         return false;

@@ -160,6 +160,8 @@ function RdpClient(config) {
     }).on('close', function () {
         self.connected = false;
         self.emit('close');
+    }).on('pointer', function (cursorId, cursorStr) {
+        self.emit('pointer', cursorId, cursorStr);
     }).on('bitmap', function (bitmaps) {
         for (var bitmap in bitmaps) {
             var bitmapData = bitmaps[bitmap].obj.bitmapDataStream.value;

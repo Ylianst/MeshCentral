@@ -931,6 +931,10 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         else if (typeof e.detail == 'number') { v = -1 * e.detail; }
         else if (typeof e.wheelDelta == 'number') { v = e.wheelDelta; }
         if (v == 0) return;
+
+        // Reverse mouse wheel if needed
+        if (obj.ReverseMouseWheel) { v = -1 * v; }
+
         var tmpmask = obj.buttonmask;
         obj.buttonmask |= (1 << ((v > 0) ? 3 : 4));
         obj.mousemove(e, 1);

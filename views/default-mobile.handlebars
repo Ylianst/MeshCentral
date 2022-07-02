@@ -3541,7 +3541,7 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if (((meshrights & (4 + 8 + 64)) != 0) && (node.mtype < 3)) { x += '<input type=button value="' + "Actions" + '" onclick=deviceActionFunction() />'; }
+                if (((meshrights & (4 + 8 + 64 + 262144)) != 0) && (node.mtype < 3)) { x += '<input type=button value="' + "Actions" + '" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value="' + "Notes" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast onclick=deviceToastFunction() />';  }
 
@@ -3676,35 +3676,6 @@
             if (currentDevicePanel == 1) { deskAdjust(); }
         }
 
-        /*
-        function deviceActionFunction() {
-            if (xxdialogMode) return;
-            var rights = GetNodeRights(currentNode), count = 0;
-            var x = "Select an operation to perform on this device." + '<br /><br />';
-            var y = '<select id=d2deviceop style=float:right;width:170px>';
-            if ((rights & 64) != 0) { count++; y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
-            //if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
-            if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; }
-            //if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
-            //if (((currentNode.conn & 1) != 0) && ((rights & 32768) != 0)) { count++; y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
-            y += '</select>';
-            x += addHtmlValue("Operation", y);
-            if (count == 0) { x = "No actions currently available for this device."; }
-            setDialogMode(2, "Device Action", (count == 0) ? 1 : 3, deviceActionFunctionEx, x);
-        }
-
-        function deviceActionFunctionEx() {
-            var op = Q('d2deviceop').value;
-            if (op == 100) {
-                // Device wake
-                meshserver.send({ action: 'wakedevices', nodeids: [currentNode._id] });
-            } else {
-                // Power operation
-                meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: op });
-            }
-        }
-        */
-
         function deviceActionFunction() {
             if (xxdialogMode) return;
             var rights = GetNodeRights(currentNode), count = 0;
@@ -3723,11 +3694,14 @@
                 //if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
                 if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; }
                 //if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
-                if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF)) {
+                if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && ((rights & 262144) != 0)) {
                     count++;
                     y += '<option value=310>' + "Intel&reg; AMT Reset" + '</option>';
-                    y += '<option value=302>' + "Intel&reg; AMT Power on" + '</option>';
                     y += '<option value=308>' + "Intel&reg; AMT Power off" + '</option>';
+                }
+                if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && ((rights & 64) != 0)) {
+                    count++;
+                    y += '<option value=302>' + "Intel&reg; AMT Power on" + '</option>';
                 }
                 //if ((getNodeAmtVersion(currentNode) >= 15) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && (rights == 0xFFFFFFFF) && ((features & 0x00000400) == 0)) { count++; y += '<option value=107>' + "Intel&reg; AMT One Click Recovery" + '</option>'; } // CIRA (2) or AMT (4) connected
                 //if (((currentNode.conn & 1) != 0) && ((rights & 32768) != 0)) { count++; y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
@@ -4070,7 +4044,7 @@
             );
 
             // Show the right settings
-            QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (currentNode.agent == null))) && ((deskState == 0) || (desktop.contype == 2)));
+            QV('d7amtkvm', (currentNode.intelamt != null && ((typeof currentNode.intelamt.sku != 'number') || ((currentNode.intelamt.sku & 16) == 0)) && ((currentNode.intelamt.ver != null) || (currentNode.agent == null))) && ((deskState == 0) || (desktop.contype == 2)));
             QV('d7meshkvm', ((currentNode.agent != null) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1))));
 
             // Enable buttons
@@ -4241,7 +4215,7 @@
         }
 
         function applyDesktopSettings() {
-            var r = '', ops = (features & 512) ? [90, 70, 50, 40, 30, 20, 10, 5, 1] : [50, 40, 30, 20, 10, 5, 1];
+            var r = '', ops = (features & 512) ? [100, 90, 70, 50, 40, 30, 20, 10, 5, 1] : [50, 40, 30, 20, 10, 5, 1];
             for (var i in ops) { r += '<option value=' + ops[i] + '>' + ops[i] + '%</option>'; }
             QH('d7bitmapquality', r);
             d7desktopmode.value = desktopsettings.encoding;
@@ -4695,7 +4669,7 @@
 
             // Enable action button if mesh type is not "local devices"
             QV('termActionsBtn', terminalNode.mtype != 3);
-            if (((termState == true) && (terminal.contype != 3)) || (terminalNode.agent.id == 3) || (terminalNode.agent.id == 4)) {
+            if (((termState == true) && (terminal.contype != 3)) || (terminalNode.agent == null) || (terminalNode.agent.id == 3) || (terminalNode.agent.id == 4)) {
                 QH('terminalCustomUpperRight', '');
             } else {
                 QH('terminalCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (terminalNode.sshport ? terminalNode.sshport : 22)) + '</a>');
@@ -5321,7 +5295,7 @@
                 QE('p13PasteButton', advancedFeatures && (currentNode.mtype != 3) && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
             }
             var filesState = ((files != null) && (files.state != 0));
-            if (((filesState == true) && (files.contype != 2)) || (filesNode.agent.id == 3) || (filesNode.agent.id == 4)) {
+            if (((filesState == true) && (files.contype != 2)) || (filesNode.agent == null) || (filesNode.agent.id == 3) || (filesNode.agent.id == 4)) {
                 QH('filesCustomUpperRight', '');
             } else {
                 QH('filesCustomUpperRight', '<a style=cursor:pointer onclick=cmsshportaction(1,event)>' + format("SSH Port {0}", (filesNode.sshport ? filesNode.sshport : 22)) + '</a>');
@@ -5798,20 +5772,13 @@
                         }
                     }
                     for (var j = 0; j < m.length; j++) {
-                        var iplayer = m[j];
-                        if (iplayer.family == 'IPv4') {
-                            if (iplayer.gateway && iplayer.netmask) {
-                                x += addDetailItem("IPv4 Layer", format("{0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
-                            } else {
-                                if (iplayer.address) { x += addDetailItem("IPv4 Layer", format("{0}", EscapeHtml(iplayer.address))); }
-                            }
-                        }
-                        if (iplayer.family == 'IPv6') {
-                            if (iplayer.gateway && iplayer.netmask) {
-                                x += addDetailItem("IPv6 Layer", format("{0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
-                            } else {
-                                if (iplayer.address) { x += addDetailItem("IPv6 Layer", format("{0}", EscapeHtml(iplayer.address))); }
-                            }
+                        var iplayer = m[j], items = [];
+                        if (iplayer.address) { items.push(format("IP: {0}", EscapeHtml(iplayer.address))); }
+                        if (iplayer.netmask) { items.push(format("Mask: {0}", EscapeHtml(iplayer.netmask))); }
+                        if (iplayer.gateway) { items.push(format("Gateway: {0}", EscapeHtml(iplayer.gateway))); }
+                        if (items.length > 0) {
+                            if (iplayer.family == 'IPv4') { x += addDetailItem("IPv4 Layer", items.join(", ")); }
+                            if (iplayer.family == 'IPv6') { x += addDetailItem("IPv6 Layer", items.join(", ")); }
                         }
                     }
                     x += '</div>';
@@ -5831,7 +5798,13 @@
                 x += addDetailItem("Security", (node.intelamt.tls == 1) ? "Secured using TLS" : "TLS is not setup", s);
                 // Check that the Intel AMT user is setup and there is no warnings (1 = invalid credentials, 8 = trying)
                 x += addDetailItem("Admin Credentials", ((node.intelamt.user) == null || (node.intelamt.user == '') || ((node.intelamt.warn != null) && ((node.intelamt.warn & 9) != 0))) ? "Not Known" : "Known", s);
-                if (x != '') { sections.push({ name: "Intel&reg; Active Management Technology (Intel&reg; AMT)", html: x, img: 'amt' }); }
+                if (x != '') {
+                    if ((typeof node.intelamt.sku == 'number') && ((node.intelamt.sku & 16) != 0)) {
+                        sections.push({ name: "Intel&reg; Standard Manageability (Intel&reg; SM)", html: x, img: 'amt' });
+                    } else {
+                        sections.push({ name: "Intel&reg; Active Management Technology (Intel&reg; AMT)", html: x, img: 'amt' });
+                    }
+                }
             }
 
             if (hardware.identifiers) {

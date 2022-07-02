@@ -6,6 +6,63 @@ Nodejs Code Signing module
   <iframe width="320" height="180" src="https://www.youtube.com/embed/xteKscs_Jgo" frameborder="0" allowfullscreen></iframe>
 </div>
 
+MeshCentral comes with authenticode.js, you can run it like this:
+
+```bash
+node node_modules/meshcentral/authenticode-js
+```
+
+and you will get
+
+```
+MeshCentral Authenticode Tool.
+Usage:
+  node authenticode.js [command] [options]
+Commands:
+  info: Show information about an executable.
+          --exe [file]             Required executable to view information.
+          --json                   Show information in JSON format.
+  sign: Sign an executable.
+          --exe [file]             Required executable to sign.
+          --out [file]             Resulting signed executable.
+          --pem [pemfile]          Certificate & private key to sign the executable with.
+          --desc [description]     Description string to embbed into signature.
+          --url [url]              URL to embbed into signature.
+          --hash [method]          Default is SHA384, possible value: MD5, SHA224, SHA256, SHA384 or SHA512.
+          --time [url]             The time signing server URL.
+          --proxy [url]            The HTTP proxy to use to contact the time signing server, must start with http://
+  unsign: Remove the signature from the executable.
+          --exe [file]             Required executable to un-sign.
+          --out [file]             Resulting executable with signature removed.
+  createcert: Create a code signging self-signed certificate and key.
+          --out [pemfile]          Required certificate file to create.
+          --cn [value]             Required certificate common name.
+          --country [value]        Certificate country name.
+          --state [value]          Certificate state name.
+          --locality [value]       Certificate locality name.
+          --org [value]            Certificate organization name.
+          --ou [value]             Certificate organization unit name.
+          --serial [value]         Certificate serial number.
+  timestamp: Add a signed timestamp to an already signed executable.
+          --exe [file]             Required executable to sign.
+          --out [file]             Resulting signed executable.
+          --time [url]             The time signing server URL.
+          --proxy [url]            The HTTP proxy to use to contact the time signing server, must start with http://
+
+Note that certificate PEM files must first have the signing certificate,
+followed by all certificates that form the trust chain.
+
+When doing sign/unsign, you can also change resource properties of the generated file.
+
+          --filedescription [value]
+          --fileversion [value]
+          --internalname [value]
+          --legalcopyright [value]
+          --originalfilename [value]
+          --productname [value]
+          --productversion [value]
+```
+
 ## Automatic Agent Code Signing
 
 If you want to self-sign the mesh agent so you can whitelist the software in your AV, and lock it to your server and organization.
@@ -13,3 +70,6 @@ If you want to self-sign the mesh agent so you can whitelist the software in you
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/qMAestNgCwc" frameborder="0" allowfullscreen></iframe>
 </div>
+
+!!!note
+    If you generate your private key on windows with use `BEGIN PRIVATE KEY` and openssl needs `BEGIN RSA PRIVATE KEY` you can convert your private key to rsa private key using `openssl rsa -in server.key -out server_new.key`

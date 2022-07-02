@@ -1,1 +1,1 @@
-MeshService-signed.exe hashagents.js > hashagents.json
+MeshService.exe hashagents.js > hashagents.json
