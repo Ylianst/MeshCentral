@@ -559,7 +559,7 @@
     {
       "cs": "& Otevřít mapování ...",
       "da": "&Open Mappings...",
-      "de": "&Zuordnungen öffnen...",
+      "de": "Zu&ordnungen öffnen...",
       "en": "&Open Mappings...",
       "es": "&Abrir mapeos ...",
       "fi": "& Avaa kartoitukset ...",
@@ -622,7 +622,7 @@
     {
       "cs": "& Uložit mapování ...",
       "da": "&Save Mappings...",
-      "de": "&Zuordnungen speichern...",
+      "de": "Zuordnungen &speichern...",
       "en": "&Save Mappings...",
       "es": "&Guardar asignaciones ...",
       "fi": "& Tallenna kartoitukset ...",
@@ -1367,7 +1367,7 @@
     {
       "cs": ", aby tento odkaz fungoval, musíte si stáhnout MeshCentral Router, spustit jej a kliknout na tlačítko instalace.",
       "da": ", for at dette link kan fungere, skal du hente MeshCentral Router, køre den og klik på installationsknappen.",
-      "de": "Damit dieser Link funktioniert, müssen Sie MeshCentral Router herunterladen, ausführen und auf die Schaltfläche Installieren klicken.",
+      "de": "Damit dieser Link funktioniert, müssen Sie den MeshCentral Router herunterladen, ausführen und auf die Schaltfläche Installieren klicken.",
       "en": ", for this link to work you must download MeshCentral Router run it and click the install button.",
       "es": ", para que este enlace funcione, debes descargar MeshCentral Router, ejecutarlo y hacer clic en el botón de instalación.",
       "fi": ", jotta tämä linkki toimisi, sinun on ladattava MeshCentral Reititin ja suoritettava se napsauttamalla asennuspainiketta.",
@@ -1689,7 +1689,7 @@
     {
       "cs": "0 bajtů",
       "da": "0 bytes",
-      "de": "0 Byte",
+      "de": "0 Bytes",
       "en": "0 Bytes",
       "es": "0 bytes",
       "fi": "0 tavua",
@@ -3245,6 +3245,7 @@
       ]
     },
     {
+      "de": "2FA ist gesperrt",
       "en": "2FA is locked",
       "nl": "2FA is vergrendeld",
       "pl": "2FA jest zablokowane",
@@ -5905,7 +5906,7 @@
     {
       "cs": "Přidat a mapovat ...",
       "da": "Tilføj &Map...",
-      "de": "&Zuordnen hinzufügen...",
+      "de": "Zuordnung &hinzufügen...",
       "en": "Add &Map...",
       "es": "Agregar & mapa ...",
       "fi": "Lisää & kartta ...",
@@ -7622,7 +7623,7 @@
     {
       "cs": "Agent Select",
       "da": "Agent valg",
-      "de": "Agentenauswahl",
+      "de": "Agent-Auswahl",
       "en": "Agent Select",
       "es": "Selección del Agente",
       "fi": "Agentti Valitse",
@@ -7689,7 +7690,7 @@
     {
       "cs": "Snapshot agenta",
       "da": "Agent Snapshot",
-      "de": "Agenten-Snapshot",
+      "de": "Agent-Snapshot",
       "en": "Agent Snapshot",
       "es": "Instantánea del agente",
       "fi": "Agentin tilannekuva",
@@ -7736,7 +7737,7 @@
     {
       "cs": "Typ agenta",
       "da": "Agent type",
-      "de": "Agententyp",
+      "de": "Agent-Typ",
       "en": "Agent Type",
       "es": "Tipo de agente",
       "fi": "Agentin tyyppi",
@@ -7787,7 +7788,7 @@
     {
       "cs": "Verze agenta",
       "da": "Agent version",
-      "de": "Agentenversion",
+      "de": "Agent-Version",
       "en": "Agent Version",
       "es": "Versión del agente",
       "fi": "Agentin versio",
@@ -8216,7 +8217,7 @@
     {
       "cs": "Agenti",
       "da": "Agenter",
-      "de": "Agenten",
+      "de": "Agent",
       "en": "Agents",
       "es": "Agentes",
       "fi": "Agentit",
@@ -8320,6 +8321,7 @@
       ]
     },
     {
+      "de": "Alle verfügbaren Agents",
       "en": "All Available Agents",
       "fr": "Tous les agents disponsibles",
       "nl": "Alle beschikbare agents",
@@ -9228,7 +9230,7 @@
     {
       "cs": "Odkaz na aplikaci",
       "da": "Applikationslink",
-      "de": "Bewerbungslink",
+      "de": "Anwendungsverknüpfung",
       "en": "Application Link",
       "es": "Enlace de aplicación",
       "fi": "Sovelluslinkki",
@@ -9874,7 +9876,7 @@
     {
       "cs": "Opravdu odinstalovat vybraného agenta?",
       "da": "Er du sikker på, at du vil afinstallere den valgte agent?",
-      "de": "Möchten Sie den ausgewählten Agenten wirklich deinstallieren?",
+      "de": "Möchten Sie den ausgewählten Agent wirklich deinstallieren?",
       "en": "Are you sure you want to uninstall selected agent?",
       "es": "¿Estás seguro de que desea desinstalar el agente seleccionado?",
       "fi": "Haluatko varmasti poistaa valitun agentin?",
@@ -9899,7 +9901,7 @@
     {
       "cs": "Opravdu odinstalovat označených {0} agentů?",
       "da": "Er du sikker på, at du vil afinstallere de valgte {0} agenter?",
-      "de": "Möchten Sie die ausgewählten {0} Agenten wirklich deinstallieren?",
+      "de": "Möchten Sie die ausgewählten {0} Agent wirklich deinstallieren?",
       "en": "Are you sure you want to uninstall the selected {0} agents?",
       "es": "¿Está seguro de que desea desinstalar los {0} agentes seleccionados?",
       "fi": "Haluatko varmasti poistaa valitut {0} agenttia?",
@@ -12665,7 +12667,7 @@
     {
       "cs": "Změnit modul Java Script kódu agenta",
       "da": "Skift agentens Java Script kode modul",
-      "de": "Das JavaScript-Codemodul des Agenten wechseln",
+      "de": "Das JavaScript-Codemodul des Agent wechseln",
       "en": "Change the agent Java Script code module",
       "es": "Cambiar el módulo de código del agente JavaScript",
       "fi": "Vaihda agentti Java Script -koodimoduuli",
@@ -12912,7 +12914,7 @@
     {
       "cs": "Změnou jazyka se tento nástroj zavře. Jsi si jistá?",
       "da": "Skift af sprog vil lukke dette værktøj. Er du sikker?",
-      "de": "Wenn Sie die Sprache ändern, wird dieses Tool geschlossen. Bist du sicher?",
+      "de": "Wenn Sie die Sprache ändern, wird dieses Tool geschlossen. Sind Sie sicher?",
       "en": "Changing language will close this tool. Are you sure?",
       "es": "El cambio de idioma cerrará esta herramienta. ¿Está seguro?",
       "fi": "Kielen vaihtaminen sulkee tämän työkalun. Oletko varma?",
@@ -13016,7 +13018,7 @@
     {
       "cs": "Žádost o chat, přijměte kliknutím sem.",
       "da": "Chatanmodning, klik her for at acceptere.",
-      "de": "Chat Anfrage, Drücke hier zum annehmen.",
+      "de": "Chat Anfrage, Drücken Sie hier zum annehmen.",
       "en": "Chat Request, Click here to accept.",
       "es": "Solicitud de Chat, haga clic aquí para aceptar.",
       "fi": "Chat -pyyntö, hyväksy napsauttamalla tätä.",
@@ -13950,7 +13952,7 @@
     {
       "cs": "Kliknutím sem zobrazíte.",
       "da": "Klik her for at se.",
-      "de": "Klicke hier zum ansehen.",
+      "de": "Zum betrachten hier klicken",
       "en": "Click here to view.",
       "es": "Haz clic aquí para ver.",
       "fi": "Klikkaa tästä nähdäksesi.",
@@ -17394,7 +17396,7 @@
     {
       "cs": "Pověření",
       "da": "Legitimationsoplysninger",
-      "de": "Referenzen",
+      "de": "Anmeldedaten",
       "en": "Credentials",
       "es": "Credenciales",
       "fi": "Valtakirjat",
@@ -17652,7 +17654,7 @@
     {
       "cs": "Aktuální stav agenta",
       "da": "Aktuel agentstatus",
-      "de": "Aktueller Agentenstatus",
+      "de": "Aktueller Agentstatus",
       "en": "Current Agent Status",
       "es": "Estado Actual del Agente",
       "fi": "Agentin nykyinen tila",
@@ -17702,7 +17704,7 @@
     {
       "cs": "Aktuální heslo není správné.",
       "da": "Nuværende adgangskode er ikke korrekt.",
-      "de": "Aktuelles Password nicht in korrekt.",
+      "de": "Aktuelles Passwort ist nicht korrekt.",
       "en": "Current password not correct.",
       "es": "La contraseña actual no es correcta.",
       "fi": "Nykyinen salasana ei ole oikea.",
@@ -17751,7 +17753,7 @@
     {
       "cs": "Přizpůsobit ...",
       "da": "Tilpasse...",
-      "de": "Anpassen",
+      "de": "Anpassen...",
       "en": "Customize...",
       "es": "Personalizar ...",
       "fi": "Mukauta ...",
@@ -20977,6 +20979,7 @@
       "zh-chs": "直接联系"
     },
     {
+      "de": "Deaktiviere Cursor Einstellungen",
       "en": "Disable Cursor Settings",
       "nl": "Cursorinstellingen uitschakelen",
       "pl": "Wyłącz Ustawienia Kursora",
@@ -20987,6 +20990,7 @@
       ]
     },
     {
+      "de": "Deaktiviere Cursor Schatten",
       "en": "Disable Cursor Shadow",
       "nl": "Cursorschaduw uitschakelen",
       "pl": "Wyłącz Cień Kursora",
@@ -21007,6 +21011,7 @@
       ]
     },
     {
+      "de": "Deaktiviere Menüanimationen",
       "en": "Disable Menu Animations",
       "nl": "Menu animaties uitschakelen",
       "pl": "Wyłącz Animację Menu",
@@ -21027,6 +21032,7 @@
       ]
     },
     {
+      "de": "Deaktiviere Hintergrundbild",
       "en": "Disable Wallpaper",
       "nl": "Achtergrond uitschakelen",
       "pl": "Wyłącz Tapetę Pulpitu",
@@ -21039,7 +21045,7 @@
     {
       "cs": "Zakázáno",
       "da": "Deaktiveret",
-      "de": "Deaktiviertes",
+      "de": "Deaktiviert",
       "en": "Disabled",
       "es": "Deshabilitado",
       "fi": "Poistettu käytöstä",
@@ -21066,7 +21072,7 @@
     {
       "cs": "Zakázané dvoufaktorové ověřování e-mailů",
       "da": "Deaktiveret e-mail 2-faktor godkendelse",
-      "de": "Deaktivierte E-Mail-Zwei-Faktor-Authentifizierung",
+      "de": "E-Mail Zwei-Faktor-Authentifizierung deaktiviert",
       "en": "Disabled email two-factor authentication",
       "es": "Autenticación de dos factores de correo electrónico deshabilitada",
       "fi": "Poistettu käytöstä kaksivaiheinen sähköpostitodennus",
@@ -21628,7 +21634,7 @@
     {
       "cs": "Nepožadujte {0} dny.",
       "da": "Spørg ikke i {0} dage.",
-      "de": "Frag nicht nach {0} Tagen.",
+      "de": "Für {0} Tage nicht erneut fragen.",
       "en": "Don't ask for {0} days.",
       "es": "No pedir por {0} días.",
       "fi": "Älä kysy {0} päivää.",
@@ -22268,7 +22274,7 @@
     {
       "cs": "Stáhněte si software agenta z obchodu Google Play nebo souboru APK, nainstalujte jej a použijte QR kód vpravo nebo odkaz na párování níže k nastavení zařízení na tomto serveru.",
       "da": "Download agentsoftwaren ved hjælp af Google Play Butik eller APK-fil, installer den og brug QR-koden til højre eller parringslinket nedenfor for at konfigurere din enhed på denne server.",
-      "de": "Laden Sie die Agentensoftware über den Google Play Store oder die APK-Datei herunter, installieren Sie sie und verwenden Sie den QR-Code rechts oder den unten stehenden Link, um Ihr Gerät auf diesem Server einzurichten.",
+      "de": "Laden Sie die Agentsoftware über den Google Play Store oder die APK-Datei herunter, installieren Sie sie und verwenden Sie den QR-Code rechts oder den unten stehenden Link, um Ihr Gerät auf diesem Server einzurichten.",
       "en": "Download the agent software using the Google Play store or APK file, install it and use the QR code on the right or the pairing link below to setup your device on this server.",
       "es": "Descarga el software del agente usando la tienda Google Play o el archivo APK, instálalo y usa el código QR a la derecha o el enlace de emparejamiento a continuación para configurar tu dispositivo en este servidor.",
       "fi": "Lataa agenttiohjelmisto Google Play -kaupasta tai APK -tiedostosta, asenna se ja käytä oikealla olevaa QR -koodia tai alla olevaa pariliitoslinkkiä laitteesi asettamiseen tälle palvelimelle.",
@@ -23688,7 +23694,7 @@
     {
       "cs": "K instalaci / odinstalování agenta je vyžadováno zvýšené oprávnění.",
       "da": "Elleverede tilladelser er påkrævet for at installere/afinstallere agenten.",
-      "de": "Für die Installation / Deinstallation des Agenten sind erhöhte Berechtigungen erforderlich.",
+      "de": "Für die Installation / Deinstallation des Agents sind erhöhte Berechtigungen erforderlich.",
       "en": "Elevated permissions is required to install/uninstall the agent.",
       "es": "Se requieren permisos elevados para instalar / desinstalar el agente.",
       "fi": "Agentin asentaminen / poistaminen edellyttää korotettuja käyttöoikeuksia.",
@@ -23941,6 +23947,7 @@
       ]
     },
     {
+      "de": "Email domain \\\"{0}\\\" ist nicht erlaubt. Nur ({1}) ist erlaubt",
       "en": "Email domain \\\"{0}\\\" is not allowed. Only ({1}) are allowed",
       "nl": "Email domein \\\"{0}\\\" is niet toegestaan. Alleen ({1}) is toegestaan",
       "pl": "Domena email \\\"{0}\\\" jest niedozwolona. Tylko ({1}) jest dopuszczona",
@@ -25341,6 +25348,7 @@
       ]
     },
     {
+      "de": "Fehler #{0}",
       "en": "Error #{0}",
       "nl": "Foutmelding #{0}",
       "pl": "Błąd #{0}",
@@ -25467,7 +25475,7 @@
     {
       "cs": "Chyba, heslo nebylo změněno.",
       "da": "Fejl, adgangskode ikke ændret.",
-      "de": "Fehler, Password wurde nicht geändert.",
+      "de": "Fehler, Passwort wurde nicht geändert.",
       "en": "Error, password not changed.",
       "es": "Error, contraseña no cambiada.",
       "fi": "Virhe, salasanaa ei muutettu.",
@@ -25517,7 +25525,7 @@
     {
       "cs": "Chyba, nelze změnit dříve použité heslo.",
       "da": "Fejl, kan ikke ændres til tidligere brugt adgangskode.",
-      "de": "Fehler, Änderung des zuvor verwendeten Kennworts nicht möglich.",
+      "de": "Fehler, Änderung zu einem zuvor verwendeten Passwort ist nicht möglich.",
       "en": "Error, unable to change to previously used password.",
       "es": "Error, no se puede cambiar a la contraseña utilizada anteriormente.",
       "fi": "Virhe, ei voi vaihtaa aiemmin käytettyyn salasanaan.",
@@ -26178,7 +26186,7 @@
     {
       "cs": "E -mailovou adresu se nepodařilo změnit, jiný účet již používá: {0}.",
       "da": "Kunne ikke ændre e-mailadresse, en anden konto bruger allerede: {0}.",
-      "de": "Fehler beim ändern der E-Mail-Adresse, wird bereits von einem anderen Konto verwendet: {0}.",
+      "de": "Fehler beim ändern der E-Mail-Adresse, diese wird bereits von einem anderen Konto verwendet: {0}.",
       "en": "Failed to change email address, another account already using: {0}.",
       "es": "No se pudo cambiar la dirección de correo electrónico, otra cuenta ya usa: {0}.",
       "fi": "Sähköpostiosoitteen vaihtaminen epäonnistui, toinen tili jo käyttää: {0}.",
@@ -26235,7 +26243,7 @@
     {
       "cs": "Vzdálenou plochu se nepodařilo spustit po odmítnutí místním uživatelem",
       "da": "Kunne ikke starte fjernskrivebord, da den lokale bruger afviste",
-      "de": "Fehler beim Starten des Remotedesktops, nachdem der lokale Benutzer abgelehnt wurde",
+      "de": "Fehler beim Starten des Remotedesktops, nachdem der lokale Benutzer abgelehnt hat",
       "en": "Failed to start remote desktop after local user rejected",
       "es": "No se pudo iniciar el escritorio remoto después de que el usuario local rechazó",
       "fi": "Etätyöpöydän käynnistäminen epäonnistui, kun paikallinen käyttäjä hylkäsi",
@@ -26281,7 +26289,7 @@
     {
       "cs": "Po odmítnutí místního uživatele se nepodařilo spustit vzdálené soubory",
       "da": "Kunne ikke starte fjernfiler, da den lokale bruger afviste",
-      "de": "Remote-Dateien konnten nicht gestartet werden, nachdem der lokale Benutzer abgelehnt wurde",
+      "de": "Remote-Dateien konnten nicht gestartet werden, nachdem der lokale Benutzer abgelehnt hat",
       "en": "Failed to start remote files after local user rejected",
       "es": "Error al iniciar archivos remotos después de que el usuario local rechazó",
       "fi": "Etätiedostojen käynnistäminen epäonnistui, kun paikallinen käyttäjä hylkäsi",
@@ -27146,7 +27154,7 @@
     {
       "cs": "V případě systému Linux vyjměte a vložte do terminálu a nainstalujte agenta:",
       "da": "For Linux skal du klippe og indsætte følgende i en terminal for at installere agenten:",
-      "de": "Schneiden Sie unter Linux Folgendes aus und fügen Sie es in ein Terminal ein, um den Agenten zu installieren:",
+      "de": "Schneiden Sie unter Linux Folgendes aus und fügen Sie es in ein Terminal ein, um den Agent zu installieren:",
       "en": "For Linux, cut & paste the following in a terminal to install the agent:",
       "es": "Para Linux, copia y pega lo siguiente en la terminal para instalar el agente:",
       "fi": "Linux: leikkaa ja liitä seuraava päätelaitteeseen agentin asentamiseksi:",
@@ -27232,7 +27240,7 @@
     {
       "cs": "Vynutit aktualizaci agenta",
       "da": "Tving agentopdatering",
-      "de": "Aktualisierung des Agenten erzwingen",
+      "de": "Aktualisierung des Agents erzwingen",
       "en": "Force agent update",
       "es": "Forzar actualización del agente",
       "fi": "Pakota agenttipäivitys",
@@ -27256,7 +27264,7 @@
     {
       "cs": "Vynutit aktualizaci agenta na vybraných zařízeních?",
       "da": "Tving agentopdatering på udvalgte enheder?",
-      "de": "Agentenaktualisierung auf ausgewählten Geräten erzwingen?",
+      "de": "Agentaktualisierung auf ausgewählten Geräten erzwingen?",
       "en": "Force agent update on selected devices?",
       "es": "¿Forzar la actualización del agente en los dispositivos seleccionados?",
       "fi": "Pakotetaanko agenttipäivitys valituille laitteille?",
@@ -29314,6 +29322,7 @@
       ]
     },
     {
+      "de": "HTTP Verbindung",
       "en": "HTTP Connection",
       "xloc": [
         "default.handlebars->45->750"
@@ -29351,6 +29360,7 @@
       ]
     },
     {
+      "de": "HTTPS Verbindung",
       "en": "HTTPS Connection",
       "xloc": [
         "default.handlebars->45->752"
@@ -29467,7 +29477,7 @@
     {
       "cs": "Vynutit odpojení agenta",
       "da": "Hård afbrydelse af agent",
-      "de": "Agenten hart trennen",
+      "de": "Agent hart trennen",
       "en": "Hard disconnect agent",
       "es": "Agente (Desconexión dura)",
       "fi": "Kova irrota agentti",
@@ -31255,7 +31265,7 @@
     {
       "cs": "Informace o aktuálním jádru v tomto agentovi",
       "da": "Oplysninger om den aktuelle core, der kører på denne agent",
-      "de": "Informationen zum derzeit auf diesem Agenten ausgeführten Kern",
+      "de": "Informationen zum derzeit auf diesem Agent ausgeführten Kern",
       "en": "Information about current core running on this agent",
       "es": "Información sobre el núcleo actual que se ejecuta en este agente",
       "fi": "Tietoja tämän agentin nykyisestä ytimestä",
@@ -31407,7 +31417,7 @@
     {
       "cs": "Instalace CIRA",
       "da": "Installér CIRA",
-      "de": "CIRA instrallieren",
+      "de": "CIRA installieren",
       "en": "Install CIRA",
       "es": "Instalar CIRA",
       "fi": "Asenna CIRA",
@@ -32552,7 +32562,7 @@
     {
       "cs": "Je třeba, aby Intel&reg; AMT bylo nastaveno s důvěryhodným FQDN v MEBx nebo bude třeba drátová LAN síť:",
       "da": "Intel® AMT skal indstilles med en Trusted FQDN i MEBx eller have et kablet LAN på netværket:",
-      "de": "Intel&reg; AMT benötigt einen gesetzten Trusted FQDN im MEBx oder eine drahtgebundene Verbindung zum LAN:",
+      "de": "Intel&reg; AMT benötigt einen gesetzten vertrauenswürdigen FQDN im MEBx oder eine drahtgebundene Verbindung zum LAN:",
       "en": "Intel&reg; AMT will need to be set with a Trusted FQDN in MEBx or have a wired LAN on the network:",
       "es": "Intel&reg; AMT deberá configurarse con un FQDN de confianza en MEBx o tener una LAN con cable en la red:",
       "fi": "Intel&reg; AMT: lle on määritettävä luotettava FQDN MEBx: ssä tai langallinen lähiverkko verkossa:",
@@ -33980,7 +33990,7 @@
     {
       "cs": "Pozvěte někoho k instalaci agenta tím, že mu nasdílíte odkaz. Tento odkaz obsahuje pokyny pro zařazení do skupiny zařízení „{0}“. Odkaz je veřejný a protistrana nepotřebuje žádný účet na tomto serveru.",
       "da": "Inviter nogen til at installere mesh-agenten ved at dele et invitationslink. Dette link henviser brugeren til installationsinstruktioner for enhedsgruppen \\\"{0}\\\". Linket er offentligt, og der kræves ingen konto til denne server.",
-      "de": "Laden Sie jemanden ein, den Mesh-Agenten zu installieren, indem Sie einen Einladungslink freigeben. Dieser Link verweist den Benutzer auf Installationsanweisungen für die Gerätegruppe \\\"{0}\\\". Der Link ist öffentlich und es wird kein Konto für diesen Server benötigt.",
+      "de": "Laden Sie jemanden ein, den Mesh-Agent zu installieren, indem Sie einen Einladungslink freigeben. Dieser Link verweist den Benutzer auf Installationsanweisungen für die Gerätegruppe \\\"{0}\\\". Der Link ist öffentlich und es wird kein Konto für diesen Server benötigt.",
       "en": "Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \\\"{0}\\\" device group. The link is public and no account for this server is needed.",
       "es": "Invita a alguien a instalar el Agente Mesh compartiendo un enlace de invitación. Este enlace le indica al usuario las instrucciones de instalación para el grupo de dispositivos \\\"{0}\\\". El enlace es público y no se necesita una cuenta para este servidor.",
       "fi": "Kutsu joku asentamaan verkkoagentti jakamalla kutsulinkki. Tämä linkki ohjaa käyttäjän \\\"{0}\\\" laiteryhmän asennusohjeisiin. Linkki on julkinen, eikä tälle palvelimelle tarvita tiliä.",
@@ -34005,7 +34015,7 @@
     {
       "cs": "Pozvěte někoho, aby nainstaloval agenta sítě do této skupiny zařízení.",
       "da": "Inviter nogen til at installere mesh-agenten på denne enhedsgruppe.",
-      "de": "Laden Sie jemanden ein, den Mesh-Agenten für diese Gerätegruppe zu installieren.",
+      "de": "Laden Sie jemanden ein, den Mesh-Agent für diese Gerätegruppe zu installieren.",
       "en": "Invite someone to install the mesh agent on this device group.",
       "es": "Invita a alguien a instalar el Agente Mesh en este grupo de dispositivos.",
       "fi": "Kutsu joku asentamaan Mesh agentti tähän laiteryhmään.",
@@ -34031,7 +34041,7 @@
     {
       "cs": "Pozvěte někoho k instalaci agenta. E-mailem bude zaslán odkaz na instalaci agenta pro skupinu „{0}“.",
       "da": "Inviter nogen til at installere mesh-agenten. Der sendes en e-mail med linket til mesh-agent-installationen for enhedsgruppen \\\"{0}\\\".",
-      "de": "Laden Sie jemanden ein, den Mesh-Agenten zu installieren. Eine E-Mail einem Link zur Mesh-Agenten-Installation für die Gerätegruppe \\\"{0}\\\" wird verschickt.",
+      "de": "Laden Sie jemanden ein, den Mesh-Agent zu installieren. Eine E-Mail mit einem Link zur Mesh-Agent-Installation für die Gerätegruppe \\\"{0}\\\" wird verschickt.",
       "en": "Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for the \\\"{0}\\\" device group.",
       "es": "Invita a alguien a instalar el Agente Mesh. Se enviará un correo electrónico con el enlace a la instalación del agente de mesh para el grupo de dispositivos \\\"{0}\\\".",
       "fi": "Kutsu joku asentamaan verkkoagentti. Lähetettävä sähköposti ja linkki verkkoagenttiasennukseen laiteryhmälle \\\"{0}\\\".",
@@ -34262,6 +34272,7 @@
       ]
     },
     {
+      "de": "Desktop-Multiplex-Sitzung beigetreten \\\"{0}\\\"",
       "en": "Joined desktop multiplex session \\\"{0}\\\"",
       "fr": "Session de bureau multiplexée jointe \\\"{0}\\\"",
       "nl": "Deelgenomen aan desktop multiplex-sessie \\\"{0}\\\"",
@@ -34618,7 +34629,7 @@
     {
       "cs": "Proces zabíjení {0}",
       "da": "Stopper proces {0}",
-      "de": "Tötungsprozess {0}",
+      "de": "Beende Prozess {0}",
       "en": "Killing process {0}",
       "es": "Finalización del proceso {0}",
       "fi": "Tappamisprosessi {0}",
@@ -35293,7 +35304,7 @@
     {
       "cs": "Poslední adresa agenta",
       "da": "Seneste agent adresse",
-      "de": "Letzte Agenten-Adresse",
+      "de": "Letzte Agent-Adresse",
       "en": "Last agent address",
       "es": "Última dirección IP del agente",
       "fi": "Agentin edellinen osoite",
@@ -35326,7 +35337,7 @@
     {
       "cs": "Poslední připojení agenta",
       "da": "Seneste agentforbindelse",
-      "de": "Letzte Agenten-Verbindung",
+      "de": "Letzte Agent-Verbindung",
       "en": "Last agent connection",
       "es": "Última conexión del agente",
       "fi": "Agentin edellinen yhteys",
@@ -35627,7 +35638,7 @@
     {
       "cs": "Spusťte směrovač MeshCentral",
       "da": "Start MeshCentral Router",
-      "de": "Starten Sie MeshCentral Router",
+      "de": "MeshCentral Router starten",
       "en": "Launch MeshCentral Router",
       "es": "Ejecutar MeshCentral Router",
       "fi": "Käynnistä MeshCentral Reititin",
@@ -35652,7 +35663,7 @@
     {
       "cs": "Spusťte na tomto zařízení relaci noVNC",
       "da": "Start noVNC-session til denne enhed",
-      "de": "Starten Sie die noVNC-Sitzung mit diesem Gerät",
+      "de": "noVNC-Sitzung mit diesem Gerät starten",
       "en": "Launch noVNC session to this device",
       "es": "Ejecutar sesión de noVNC en este dispositivo",
       "fi": "Käynnistä noVNC istunto tähän laitteeseen",
@@ -35674,7 +35685,7 @@
     {
       "cs": "Spusťte na tomto zařízení webovou relaci RDP",
       "da": "Start webbaseret RDP-session til denne enhed",
-      "de": "Starten Sie eine webbasierte RDP-Sitzung auf diesem Gerät",
+      "de": "Webbasierte RDP-Sitzung mit diesem Gerät starten",
       "en": "Launch web-based RDP session to this device",
       "es": "Ejecutar sesión de RDP basada en el navegador para este dispositivo",
       "fi": "Käynnistä web-pohjainen RDP-istunto tähän laitteeseen",
@@ -35699,7 +35710,7 @@
     {
       "cs": "Na tomto zařízení spusťte webovou relaci SSH",
       "da": "Start webbaseret SSH-session til denne enhed",
-      "de": "Starten Sie eine webbasierte SSH-Sitzung auf diesem Gerät",
+      "de": "Webbasierte SSH-Sitzung mit diesem Gerät starten",
       "en": "Launch web-based SSH session to this device",
       "es": "Inicia una sesión SSH basada en web en este dispositivo",
       "fi": "Käynnistä verkkopohjainen SSH-istunto tälle laitteelle",
@@ -35723,7 +35734,7 @@
     {
       "cs": "Na tomto zařízení spusťte webovou relaci VNC",
       "da": "Start webbaseret VNC-session til denne enhed",
-      "de": "Starten Sie eine webbasierte VNC-Sitzung auf diesem Gerät",
+      "de": "Webbasierte VNC-Sitzung mit diesem Gerät starten",
       "en": "Launch web-based VNC session to this device",
       "es": "Inicia una sesión VNC basada en web en este dispositivo",
       "fi": "Käynnistä verkkopohjainen VNC-istunto tälle laitteelle",
@@ -35795,6 +35806,7 @@
       ]
     },
     {
+      "de": "Web-RDP-Sitzung \\\"{1}\\\" nach {0} Sekunde(n) verlassen.",
       "en": "Left Web-RDP session \\\"{1}\\\" after {0} second(s).",
       "fr": "Fin de la session Web-RDP \\\"{1}\\\" dans {0} seconde(s).",
       "nl": "Verliet de desktop multiplex sessie na \\\"{1}\\\" {0} seconde(n).",
@@ -35823,6 +35835,7 @@
       "tr": "{0} saniye sonra Web-RDP oturumundan ayrıldı."
     },
     {
+      "de": "Web-SFTP-Sitzung \\\"{1}\\\" nach {0} Sekunde(n) verlassen.",
       "en": "Left Web-SFTP session \\\"{1}\\\" after {0} second(s).",
       "fr": "Fin de la session Web-SFTP \\\"{1}\\\" dans {0} seconde(s).",
       "nl": "Verliet de web-SFTP sessie na \\\"{1}\\\" {0} seconde(n).",
@@ -35851,6 +35864,7 @@
       "tr": "{0} saniye sonra Web-SFTP oturumundan ayrıldı."
     },
     {
+      "de": "Web-SSH-Sitzung \\\"{1}\\\" nach {0} Sekunde(n) verlassen.",
       "en": "Left Web-SSH session \\\"{1}\\\" after {0} second(s).",
       "fr": "Fin de la session Web-SSH \\\"{1}\\\" dans {0} seconde(s).",
       "nl": "Verliet de web-SSH sessie na \\\"{1}\\\" {0} seconde(n).",
@@ -35931,7 +35945,7 @@
     {
       "cs": "Opustil relaci multiplexu na ploše",
       "da": "Forlod desktop-multipleks sessionen",
-      "de": "Hat die Desktop-Multiplex-Sitzung verlassen",
+      "de": "Desktop-Multiplex-Sitzung verlassen",
       "en": "Left the desktop multiplex session",
       "es": "Dejó la sesión multiplex de escritorio",
       "fi": "Poistu työpöydän multiplex-istunnosta",
@@ -35954,6 +35968,7 @@
       ]
     },
     {
+      "de": "Desktop-Multiplex-Sitzung \\\"{0}\\\" nach {1} Sekunde(n) verlassen.",
       "en": "Left the desktop multiplex session \\\"{0}\\\" after {1} second(s).",
       "fr": "Fin de la session de bureau multiplexée \\\"{1}\\\" dans {0} seconde(s).",
       "nl": "Verliet de desktop multiplexsessie \\\"{0}\\\" na {1} seconde(n).",
@@ -35967,7 +35982,7 @@
     {
       "cs": "Po {0} sekundách jste opustili relaci multiplexu na ploše.",
       "da": "Forlod desktop-multiplekssessionen efter {0} sekund(er).",
-      "de": "Verließ die Desktop-Multiplex-Sitzung nach {0} Sekunde(n).",
+      "de": "Desktop-Multiplex-Sitzung nach {0} Sekunde(n) verlassen.",
       "en": "Left the desktop multiplex session after {0} second(s).",
       "es": "Abandonar la sesión de escritorio multiplexada tras {0} segundo(s).",
       "fi": "Poistui työpöydän multipleksi-istunnosta {0} sekunnin kuluttua.",
@@ -36541,6 +36556,7 @@
       ]
     },
     {
+      "de": "Linux MeshAgent",
       "en": "Linux MeshAgent",
       "fr": "MeshAgent Linux",
       "nl": "Linux MeshAgent",
@@ -37081,6 +37097,7 @@
       ]
     },
     {
+      "de": "Lokale Netzwerkverbindung durch einen Relay-Agent",
       "en": "Local network connection thru a relay agent.",
       "nl": "Lokale netwerkverbinding via een relay-agent.",
       "pl": "Lokalne połączenie sieciowe za pośrednictwem przekierowania agenta.",
@@ -37091,6 +37108,7 @@
       ]
     },
     {
+      "de": "Lokale Netzwerkverbindung",
       "en": "Local network connection.",
       "nl": "Lokale netwerkverbinding.",
       "pl": "Lokalne połączenie sieciowe.",
@@ -39261,7 +39279,7 @@
     {
       "cs": "Megabajtů",
       "da": "Megabyte",
-      "de": "Megabyte",
+      "de": "Megabytes",
       "en": "Megabytes",
       "es": "Megabytes",
       "fi": "Megatavua",
@@ -39423,7 +39441,7 @@
     {
       "cs": "Mesh předávání (relay)",
       "da": "Mesh Relæ",
-      "de": "Netzrelais",
+      "de": "Mesh Relay",
       "en": "Mesh Relay",
       "es": "Relé de Mesh",
       "fi": "Mesh-rele",
@@ -39475,7 +39493,7 @@
     {
       "cs": "Agent je dostupný pomocí předávání (relay) přes jiného agenta.",
       "da": "Mesh-agent kan nås ved at bruge en anden agent som relæ.",
-      "de": "Mesh-Agent ist erreichbar mittels eines anderen Agenten als Vermittler.",
+      "de": "Mesh-Agent ist erreichbar mittels eines anderen Agents als Vermittler.",
       "en": "Mesh agent is reachable using another agent as relay.",
       "es": "Se puede alcanzar al Agente Mesh utilizando otro agente en modo Relay.",
       "fi": "Verkkoagentti on tavoitettavissa käyttämällä toista ainetta releenä.",
@@ -39910,7 +39928,7 @@
     {
       "cs": "MeshCentral Router je Windows nástroj pro mapování TCP portů. Prostřednictvím tohoto serveru můžete například vzdáleně přistupovat na RDP vzdálenou plochu jiného počítače.",
       "da": "MeshCentral Router er et Windows-værktøj til kortlægning af TCP-porte. Du kan for eksempel RDP ind i en ekstern enhed via denne server.",
-      "de": "MeshCentral Router ist ein Windows-Werkzeug für die TCP-Portweiterleitung. Sie können beispielsweise über diesen Server in ein Remote-Gerät per RDP erreichen.",
+      "de": "MeshCentral Router ist ein Windows-Werkzeug für die TCP-Portweiterleitung. Sie können beispielsweise über diesen Server ein Remote-Gerät per RDP erreichen.",
       "en": "MeshCentral Router is a Windows tool for TCP port mapping. You can, for example, RDP into a remote device thru this server.",
       "es": "MeshCentral Router es una herramienta de Windows para la asignación de puertos TCP. Puede, por ejemplo, RDP en un dispositivo remoto a través de este servidor.",
       "fi": "MeshCentral Reititin on Windows-työkalu TCP-porttien tunneloimiseen. Voit esimerkiksi yhdistää etälaitteesi RDP:n tämän palvelimen kautta.",
@@ -40479,7 +40497,7 @@
     {
       "cs": "Zpráva:",
       "da": "Meddelelse:",
-      "de": "Botschaft:",
+      "de": "Nachricht:",
       "en": "Message:",
       "es": "Mensaje:",
       "fi": "Viesti:",
@@ -40529,7 +40547,7 @@
     {
       "cs": "Posel",
       "da": "Messenger",
-      "de": "Bote",
+      "de": "Messenger",
       "en": "Messenger",
       "es": "Mensajero",
       "fi": "sanansaattaja",
@@ -41453,6 +41471,7 @@
       ]
     },
     {
+      "de": "NLA nicht unterstützt",
       "en": "NLA not supported",
       "nl": "NLA niet ondersteund",
       "pl": "NLA nie obsługiwane",
@@ -41525,7 +41544,7 @@
     {
       "cs": "Přejděte na níže uvedenou adresu URL, udělejte přístup a zkopírujte kód tokenu zpět.",
       "da": "Naviger til URL'en nedenfor, giv adgang og kopier tokenkoden tilbage.",
-      "de": "Nagivieren Sie auf die unten stehende URL, gewähren Sie Zugriff und kopieren Sie den Token-Code zurück.",
+      "de": "Navigieren Sie auf die unten stehende URL, gewähren Sie Zugriff und kopieren Sie den Token-Code zurück.",
       "en": "Nagivate to the URL below, grant access and copy the token code back.",
       "es": "Navega a la siguiente URL, confirma el acceso y copie nuevamente el código token.",
       "fi": "Suurenna alla olevaan URL-osoitteeseen, myönnä käyttöoikeus ja kopioi tunnuskoodi takaisin.",
@@ -41853,7 +41872,7 @@
     {
       "cs": "Nový účet",
       "da": "Ny konto",
-      "de": "Neuer Account",
+      "de": "Neues Konto",
       "en": "New Account",
       "es": "Nueva Cuenta",
       "fi": "Uusi tili",
@@ -41903,7 +41922,7 @@
     {
       "cs": "Nová verze agenta",
       "da": "Ny agentversion",
-      "de": "Neue Agentenversion",
+      "de": "Neue Agent-Version",
       "en": "New Agent Version",
       "es": "Nueva Versión del Agente",
       "fi": "Uusi agenttiversio",
@@ -42255,7 +42274,7 @@
     {
       "cs": "Žádná konzola agenta",
       "da": "Ingen agentkonsol",
-      "de": "Keine Agentenkonsole",
+      "de": "Keine Agent-Konsole",
       "en": "No Agent Console",
       "es": "Sin consola de agente",
       "fi": "Ei agenttikonsolia",
@@ -42777,7 +42796,7 @@
     {
       "cs": "Žádné dálkové ovládání",
       "da": "Ingen fjernadgang",
-      "de": "Keine Fernbedienung",
+      "de": "Keine Fernsteuerung",
       "en": "No Remote Control",
       "es": "No hay Control remoto",
       "fi": "Ei kaukosäädintä",
@@ -43256,7 +43275,7 @@
     {
       "cs": "Žádná společná zařízení",
       "da": "Ingen enheder til fælles",
-      "de": "Keine Geräte gemeinsam",
+      "de": "Keine gemeinsamen Geräte",
       "en": "No devices in common",
       "es": "Sin dispositivos en común",
       "fi": "Ei yhteisiä laitteita",
@@ -43627,6 +43646,7 @@
       ]
     },
     {
+      "de": "Kein Relay mehr für \\\"{0}\\\".",
       "en": "No longer a relay for \\\"{0}\\\".",
       "nl": "Niet langer een relay voor \\\"{0}\\\".",
       "pl": "Nie jest już bramką dla \\\"{0}\\\".",
@@ -45095,6 +45115,7 @@
       ]
     },
     {
+      "de": "Einmalpasswort",
       "en": "One-Time Password",
       "nl": "Eenmalig wachtwoord",
       "pl": "Hasło Jednorazowe",
@@ -45516,7 +45537,7 @@
     {
       "cs": "Zahájení: {0}",
       "da": "Åbner: {0}",
-      "de": "Eröffnung: {0}",
+      "de": "Öffne: {0}",
       "en": "Opening: {0}",
       "es": "Apertura: {0}",
       "fi": "Avaaminen: {0}",
@@ -45601,6 +45622,7 @@
       ]
     },
     {
+      "de": "Optionen",
       "en": "Options",
       "nl": "Opties",
       "pl": "Opcje",
@@ -46352,7 +46374,7 @@
     {
       "cs": "Je vyžadována změna hesla.",
       "da": "Adgangskodeændring anmodet.",
-      "de": "Passwort-Änderung angefragt.",
+      "de": "Passwortänderung angefragt.",
       "en": "Password change requested.",
       "es": "Cambio de contraseña requerido.",
       "fi": "Salasanan vaihtoa pyydetty.",
@@ -46404,7 +46426,7 @@
     {
       "cs": "Heslo pro účet {0} bylo obnoveno na:",
       "da": "Adgangskoden til kontoen {0} er blevet nulstillet til:",
-      "de": "Das Passwort für Konto {0} wurde zurückgesetzt auf:",
+      "de": "Das Passwort für das Konto {0} wurde zurückgesetzt auf:",
       "en": "Password for account {0} has been reset to:",
       "es": "La contraseña de la cuenta {0} se ha restablecido a:",
       "fi": "Tilin {0} salasana on asetettu seuraavaksi:",
@@ -46777,7 +46799,7 @@
     {
       "cs": "Provést akci agenta",
       "da": "Udfør agenthandling",
-      "de": "Agenten-Aktion durchführen",
+      "de": "Agent-Aktion durchführen",
       "en": "Perform Agent Action",
       "es": "Realizar Acción en el Agente",
       "fi": "Suorita agenttitoiminto",
@@ -47182,7 +47204,7 @@
     {
       "cs": "Přístup odepřen",
       "da": "Adgang nægtet",
-      "de": "Zugriff verboten",
+      "de": "Zugriff verweigert",
       "en": "Permission denied",
       "es": "Permiso denegado",
       "fi": "Lupa kielletty",
@@ -47717,7 +47739,7 @@
     {
       "cs": "Zásuvné moduly byly změněny a to může vyžadovat aktualizaci jádra agenta.",
       "da": "Plugins er blevet ændret, dette kan kræve agentkerneopdatering.",
-      "de": "Plugins wurden geändert. Dies erfordert möglicherweise eine Aktualisierung der Agentenkerne.",
+      "de": "Plugins wurden geändert. Dies erfordert möglicherweise eine Aktualisierung der Agent-Cores.",
       "en": "Plugins have been altered, this may require agent core update.",
       "es": "Se han modificado los plugins, esto puede requerir la actualización del núcleo del agente.",
       "fi": "Laajennuksia on muutettu, mikä saattaa edellyttää agentin ytimen päivitystä.",
@@ -48792,7 +48814,7 @@
     {
       "cs": "Výzva k souhlasu uživatele",
       "da": "Bed om brugerens samtykke",
-      "de": "Benutzereinwilligung abfragen",
+      "de": "Aufforderung zur Zustimmung des Benutzers",
       "en": "Prompt for user consent",
       "es": "Solicitar consentimiento del usuario",
       "fi": "Pyydä käyttäjän suostumusta",
@@ -48843,6 +48865,7 @@
       ]
     },
     {
+      "de": "Protokollverhandlung fehlgeschlagen ({0})",
       "en": "Protocol negotiation failed ({0})",
       "nl": "Protocolonderhandeling mislukt ({0})",
       "pl": "Niepowodzenie negocjacji protokołu ({0})",
@@ -48877,7 +48900,7 @@
     {
       "cs": "Poskytující stát",
       "da": "Provisioning State",
-      "de": "Bereitstellungsstaat",
+      "de": "Bereitstellungszustand",
       "en": "Provisioning State",
       "es": "Estado de Aprovisionamiento",
       "fi": "Valmistelutila",
@@ -49069,6 +49092,7 @@
       ]
     },
     {
+      "de": "Push Benachrichtigung",
       "en": "Push Notification",
       "nl": "Push Notificatie",
       "pl": "Powiadomianie Push",
@@ -49306,6 +49330,7 @@
       ]
     },
     {
+      "de": "RDP verbinden",
       "en": "RDP Connect",
       "nl": "RDP verbinden",
       "pl": "Połącz (protokół RDP)",
@@ -49341,6 +49366,7 @@
       ]
     },
     {
+      "de": "RDP Anmeldedaten",
       "en": "RDP Credentials",
       "nl": "RDP inloggegevens",
       "pl": "Poświadczenia RDP",
@@ -49978,6 +50004,7 @@
       ]
     },
     {
+      "de": "Weiterleitungsport für KVM ist deaktiviert",
       "en": "Redirection port or KVM feature is disabled",
       "nl": "Omleidingspoort of KVM functie is uitgeschakeld",
       "pl": "Pzekierowania portu lub funkcja KVM są wyłączone",
@@ -50049,7 +50076,7 @@
     {
       "cs": "Obnovit jádra agentů",
       "da": "Opdater agentkerner",
-      "de": "Agentenkerne aktualisieren",
+      "de": "Agent-Cores aktualisieren",
       "en": "Refresh Agent Cores",
       "es": "Actualizar Núcleos de Agente",
       "fi": "Päivitä agenttien ytimet",
@@ -50074,7 +50101,7 @@
     {
       "cs": "Obnovte plochu",
       "da": "Opdater skrivebordet",
-      "de": "Aktualisieren Sie den Desktop",
+      "de": "Desktop aktualisieren",
       "en": "Refresh the desktop",
       "es": "Actualizar el escritorio",
       "fi": "Päivitä työpöytä",
@@ -50293,6 +50320,7 @@
       "zh-cht": "中繼櫃員"
     },
     {
+      "de": "Gerät merken",
       "en": "Remember Device",
       "nl": "Onthoud apparaat",
       "pl": "Pamiętaj Urządzenie",
@@ -50332,6 +50360,7 @@
       ]
     },
     {
+      "de": "Passwort merken",
       "en": "Remember password",
       "nl": "Onthoud wachtwoord",
       "pl": "Zapamiętaj hasło",
@@ -50415,6 +50444,7 @@
       ]
     },
     {
+      "de": "Benutzer & Schlüssel merken",
       "en": "Remember user & key",
       "nl": "Onthoud gebruikeruser & sleutel",
       "pl": "Zapamiętaj użytkownika i klucz",
@@ -50476,7 +50506,7 @@
     {
       "cs": "Instalace agenta pro vzdálený přístup",
       "da": "Fjernagentinstallation",
-      "de": "Entfernte Agenten-Installation",
+      "de": "Entfernte Agent-Installation",
       "en": "Remote Agent Installation",
       "es": "Instalación Remota de Agente",
       "fi": "Agentin etäasennus",
@@ -50501,7 +50531,7 @@
     {
       "cs": "Vzdálená instalace agenta pro {0}",
       "da": "Fjernagentinstallation for {0}",
-      "de": "Remote Agent Installation für {0}",
+      "de": "Entfernte Agent-Installation für {0}",
       "en": "Remote Agent Installation for {0}",
       "es": "Instalación Remota de Agente para {0}",
       "fi": "Etäagentin asennus verkkotunnukselle {0}",
@@ -50785,7 +50815,7 @@
     {
       "cs": "Připojení ke vzdálené ploše vynuceně uzavřeno místním uživatelem",
       "da": "Fjernskrivebordsforbindelse tvangslukket af lokal bruger",
-      "de": "Remotedesktopverbindung wird vom lokalen Benutzer zwangsweise geschlossen",
+      "de": "Remotedesktopverbindung wurde vom lokalen Benutzer zwangsweise geschlossen",
       "en": "Remote Desktop Connection forcefully closed by local user",
       "es": "Conexión de escritorio remoto cerrada con fuerza por el usuario local",
       "fi": "Paikallinen käyttäjä on sulkenut etätyöpöytäyhteyden voimakkaasti",
@@ -51371,7 +51401,7 @@
     {
       "cs": "Vzdálený vstup je uzamčen",
       "da": "Fjernindtastning er låst",
-      "de": "Remote-Eingang ist gesperrt",
+      "de": "Remote-Eingabe ist gesperrt",
       "en": "Remote input is locked",
       "es": "La entrada remota está bloqueada",
       "fi": "Etätulo on lukittu",
@@ -53932,7 +53962,7 @@
     {
       "cs": "S & top agent",
       "da": "S&top Agent",
-      "de": "Stop-Agent",
+      "de": "Agent anhalten",
       "en": "S&top Agent",
       "es": "D&etener Agente",
       "fi": "S & ylin agentti",
@@ -54148,6 +54178,7 @@
       ]
     },
     {
+      "de": "SMS Nachricht",
       "en": "SMS message",
       "nl": "SMS bericht",
       "pl": "Wiadomość SMS",
@@ -54209,7 +54240,7 @@
     {
       "cs": "SMS byla úspěšně odeslána.",
       "da": "SMS blev sendt.",
-      "de": "SMS Erfolgreich gesendet.",
+      "de": "SMS erfolgreich gesendet.",
       "en": "SMS succesfuly sent.",
       "es": "SMS enviados con éxito.",
       "fi": "Tekstiviesti lähetetty onnistuneesti.",
@@ -54277,6 +54308,7 @@
       ]
     },
     {
+      "de": "SSH verbinden",
       "en": "SSH Connect",
       "nl": "SSH verbinding",
       "pl": "Połącz z SSH",
@@ -54407,6 +54439,7 @@
       "zh-chs": "SSH 密钥"
     },
     {
+      "de": "SSH-Benutzername+Schlüssel",
       "en": "SSH-User+Key",
       "nl": "SSH-gebruiker+sleutel",
       "pl": "SSH-Uużytkownik+Klucz",
@@ -54420,6 +54453,7 @@
       ]
     },
     {
+      "de": "SSH-Benutzername+Schlüssel+Passwort",
       "en": "SSH-User+Key+Pass",
       "nl": "SSH-gebruiker+sleutel+wachtwoord",
       "pl": "SSH-Uużytkownik+Klucz+Hasło",
@@ -54433,6 +54467,7 @@
       ]
     },
     {
+      "de": "SSH-Benutzer+Passwort",
       "en": "SSH-User+Pass",
       "nl": "SSH-gebruiker+wachtwoord",
       "pl": "SSH-Uużytkownik+Hasło",
@@ -55260,7 +55295,7 @@
     {
       "cs": "Vyberte Agent",
       "da": "Vælg Agent",
-      "de": "Agentenauswahl",
+      "de": "Agentauswahl",
       "en": "Select Agent",
       "es": "Seleccionar agente",
       "fi": "Valitse agentti",
@@ -55778,7 +55813,7 @@
     {
       "cs": "Pošlete tomuto uživateli zprávu SMS",
       "da": "Send en SMS-besked til denne bruger",
-      "de": "Senden Sie eine SMS an diesen Benutzer",
+      "de": "Eine SMS an diesen Benutzer senden",
       "en": "Send a SMS message to this user",
       "es": "Enviar un mensaje SMS a este usuario",
       "fi": "Lähetä tekstiviesti tälle käyttäjälle",
@@ -55803,7 +55838,7 @@
     {
       "cs": "Pošlete e-mailovou zprávu tomuto uživateli",
       "da": "Send en e-mail til denne bruger",
-      "de": "Senden Sie eine E-Mail-Nachricht an diesen Benutzer",
+      "de": "Eine E-Mail-Nachricht an diesen Benutzer senden",
       "en": "Send a email message to this user",
       "es": "Enviar un mensaje de correo electrónico a este usuario",
       "fi": "Lähetä sähköposti tälle käyttäjälle",
@@ -55828,7 +55863,7 @@
     {
       "cs": "Odeslat upozornění všem uživatelům v této skupině.",
       "da": "Send en meddelelse til alle brugere i denne gruppe.",
-      "de": "Sende eine Mitteilung an alle Benutzer in dieser Gruppe.",
+      "de": "Eine Mitteilung an alle Benutzer in dieser Gruppe senden.",
       "en": "Send a notice to all users in this group.",
       "es": "Enviar un mensaje a todos los usuarios de este grupo.",
       "fi": "Lähetä ilmoitus kaikille tämän ryhmän jäsenille.",
@@ -55853,7 +55888,7 @@
     {
       "cs": "Poslat tomuto uživateli textové upozornění.",
       "da": "Send en tekstmeddelelse til denne bruger.",
-      "de": "Sende eine Textbenachrichtigung an diesen Benutzer.",
+      "de": "Eine Textbenachrichtigung an diesen Benutzer senden.",
       "en": "Send a text notification to this user.",
       "es": "Enviar un mensaje de texto a este usuario.",
       "fi": "Lähetä tekstiviesti tälle käyttäjälle.",
@@ -57026,7 +57061,7 @@
     {
       "cs": "Zasedání",
       "da": "Session",
-      "de": "Session",
+      "de": "Sitzung",
       "en": "Session",
       "es": "Sesión",
       "fi": "Istunto",
@@ -57054,7 +57089,7 @@
     {
       "cs": "ID relace",
       "da": "Session Id",
-      "de": "Session-ID",
+      "de": "Sitzungs-ID",
       "en": "Session Id",
       "es": "ID de la Sesión",
       "fi": "Istunnon tunniste",
@@ -57570,7 +57605,7 @@
     {
       "cs": "Nastavení…",
       "da": "Opsætning...",
-      "de": "Aufbau...",
+      "de": "Einrichtung...",
       "en": "Setup...",
       "es": "Configurar...",
       "fi": "Asennus...",
@@ -57868,7 +57903,7 @@
     {
       "cs": "Shift + WIN + M",
       "da": "Shift + WIN + M",
-      "de": "Umschalt + GEWINN + M.",
+      "de": "Umschalt + Win + M.",
       "en": "Shift + WIN + M",
       "es": "Mayús + WIN + M",
       "fi": "Vaihto + VOIT + M",
@@ -57890,7 +57925,7 @@
     {
       "cs": "Shift+Win+M",
       "da": "Shift+Win+M",
-      "de": "Umschalten+Win+M",
+      "de": "Umschalt+Win+M",
       "en": "Shift+Win+M",
       "es": "Shift+Win+M",
       "fi": "Vaihto + voitto + M",
@@ -58220,7 +58255,7 @@
     {
       "cs": "Zobrazit využití procesoru a paměti zařízení.",
       "da": "Vis enheds CPU og hukommelsesforbrug.",
-      "de": "Zeigen Sie die CPU- und Speicherauslastung des Geräts an.",
+      "de": "CPU- und Speicherauslastung des Geräts anzeigen.",
       "en": "Show device CPU and memory usage.",
       "es": "Muestra el uso de la CPU y la memoria del dispositivo.",
       "fi": "Näytä laitteen suorittimen ja muistin käyttö.",
@@ -58372,7 +58407,7 @@
     {
       "cs": "Zobrazit po dobu 5 minut",
       "da": "Vis i 5 minutter",
-      "de": "Show für 5 Minuten",
+      "de": "5 Minuten lang anzeigen",
       "en": "Show for 5 minutes",
       "es": "Mostrar por 5 minutos",
       "fi": "Näytä 5 minuuttia",
@@ -58603,6 +58638,7 @@
       ]
     },
     {
+      "de": "Melden Sie sich mit OpenID an",
       "en": "Sign-in using OpenID Connect",
       "nl": "Aanmelden met OpenID Connect",
       "pl": "Zaloguj używając OpenID Connect",
@@ -59176,7 +59212,7 @@
     {
       "cs": "Jemné odpojení agenta",
       "da": "Soft afbryd agent",
-      "de": "Agenten sanft trennen",
+      "de": "Agent sanft trennen",
       "en": "Soft disconnect agent",
       "es": "Agente de desconexión por Soft",
       "fi": "Pehmeä irrotusaine",
@@ -59228,7 +59264,7 @@
     {
       "cs": "Skupina softwarového agenta",
       "da": "Software Agent Gruppe",
-      "de": "Software-Agenten-Gruppe",
+      "de": "Software-Agent-Gruppe",
       "en": "Software Agent Group",
       "es": "Grupo Agentes de Software",
       "fi": "Ohjelmistoagenttiryhmä",
@@ -60109,7 +60145,7 @@
     {
       "cs": "Spusťte směrovač MeshCentral",
       "da": "Start MeshCentral Router",
-      "de": "Starten Sie MeshCentral Router",
+      "de": "MeshCentral Router starten",
       "en": "Start MeshCentral Router",
       "es": "Iniciar MeshCentral Router",
       "fi": "Käynnistä MeshCentral Reititin",
@@ -60210,6 +60246,7 @@
       ]
     },
     {
+      "de": "Web-RDP Sitzung \\\"{0}\\\" gestartet.",
       "en": "Started Web-RDP session \\\"{0}\\\".",
       "fr": "Démarrage de la session Web-RDP \\\"{0}\\\".",
       "nl": "Gestarte Web-RDP sessie \\\"{0}\\\".",
@@ -60221,6 +60258,7 @@
       ]
     },
     {
+      "de": "Web-SFTP Sitzung \\\"{0}\\\" gestartet.",
       "en": "Started Web-SFTP session \\\"{0}\\\".",
       "fr": "Démarrage de la session Web-SFTP \\\"{0}\\\".",
       "nl": "Gestarte Web-SFTP sessie \\\"{0}\\\".",
@@ -60232,6 +60270,7 @@
       ]
     },
     {
+      "de": "Web-SSH Sitzung \\\"{0}\\\" gestartet.",
       "en": "Started Web-SSH session \\\"{0}\\\".",
       "fr": "Démarrage de la session Web-SSH \\\"{0}\\\".",
       "nl": "Gestarte Web-SSH sessie \\\"{0}\\\".",
@@ -60243,6 +60282,7 @@
       ]
     },
     {
+      "de": "Web-VNC Sitzung \\\"{0}\\\" gestartet.",
       "en": "Started Web-VNC session \\\"{0}\\\".",
       "fr": "Démarrage de la session Web-VNC \\\"{0}\\\".",
       "nl": "Gestarte Web-VNC sessie \\\"{0}\\\".",
@@ -60279,6 +60319,7 @@
       ]
     },
     {
+      "de": "Desktop-Multiplex-Sitzung gestartet \\\"{0}\\\"",
       "en": "Started desktop multiplex session \\\"{0}\\\"",
       "fr": "Démarrage de la session de bureau multiplexée \\\"{0}\\\"",
       "nl": "Startte een Desktop multiplexsessie \\\"{0}\\\"",
@@ -60853,7 +60894,7 @@
     {
       "cs": "Úložný prostor",
       "da": "Lagring",
-      "de": "Festspeicher",
+      "de": "Speicher",
       "en": "Storage",
       "es": "Almacenamiento",
       "fi": "Tallennustila",
@@ -60927,6 +60968,7 @@
       ]
     },
     {
+      "de": "Gespeicherter Schlüssel",
       "en": "Stored Key",
       "nl": "Opgeslagen sleutel",
       "pl": "Przechowywany Klucz",
@@ -62783,7 +62825,7 @@
     {
       "cs": "Toto je stará verze agenta, zvažte aktualizaci.",
       "da": "Dette er en gammel agentversion, overvej at opdatere.",
-      "de": "Dies ist eine alte Agentenversion. Ziehen Sie eine Aktualisierung in Betracht.",
+      "de": "Dies ist eine alte Agent-Version. Ziehen Sie eine Aktualisierung in Betracht.",
       "en": "This is an old agent version, consider updating.",
       "es": "Esta es una versión antigua del agente, considera actualizar.",
       "fi": "Tämä on vanha agenttiversio, harkitse päivittämistä.",
@@ -62807,7 +62849,7 @@
     {
       "cs": "Toto není bezpečná zásada, protože aktivaci budou provádět agenti.",
       "da": "Dette er ikke en sikker politik, da agenter vil udføre aktivering.",
-      "de": "Dies ist keine sichere Richtlinie, da Agenten die Aktivierung durchführen.",
+      "de": "Dies ist keine sichere Richtlinie, da Agents die Aktivierung durchführen.",
       "en": "This is not a secure policy as agents will be performing activation.",
       "es": "Esta no es una política segura ya que los agentes realizarán la activación.",
       "fi": "Tämä ei ole turvallinen käytäntö, koska agentit suorittavat aktivointia.",
@@ -63600,7 +63642,7 @@
     {
       "cs": "Pokud chcete agenta odebrat, spusťte následující příkaz a to s právy správce systému (root).",
       "da": "For at fjerne en mesh-agent skal du køre følgende kommando. Root-legitimationsoplysninger vil være nødvendige.",
-      "de": "Um einen Mesh-Agenten zu entfernen, führen Sie den folgenden Befehl aus. Root-Zugriff wird benötigt.",
+      "de": "Um einen Mesh-Agent zu entfernen, führen Sie den folgenden Befehl aus. Root-Zugriff wird benötigt.",
       "en": "To remove a mesh agent, run the following command. Root credentials will be needed.",
       "es": "Para eliminar un Agente Mesh, ejecuta el siguiente comando. Se necesitarán credenciales de root.",
       "fi": "Poista verkkoagentti suorittamalla seuraava komento. Tarvitaan juuretunnuksia.",
@@ -63625,7 +63667,7 @@
     {
       "cs": "Pro odinstalování spustťe tento příkaz jako správce systému (root).",
       "da": "For at afinstallere skal du klippe og indsætte følgende kommando som root.",
-      "de": "Zum Deinstallieren, kopieren Sie den folgenden Befehl und führen Sie ihn aus root aus.",
+      "de": "Zum Deinstallieren, kopieren Sie den folgenden Befehl und führen Sie ihn als root aus.",
       "en": "To uninstall, cut and paste the following command as root.",
       "es": "Para desinstalar, corta y pegua el siguiente comando como root.",
       "fi": "Poista asennus leikkaamalla ja liittämällä seuraava komento juureksi.",
@@ -65282,6 +65324,7 @@
       ]
     },
     {
+      "de": "OTPLIB konnte nicht geladen werden",
       "en": "Unable to load OTPLIB",
       "nl": "Kan OTPLIB niet laden",
       "pl": "Nie mogę załadować OTPLIB",
@@ -65418,7 +65461,7 @@
     {
       "cs": "Nelze nastavit modul Let's Encrypt.",
       "da": "Kan ikke konfigurere Let's Encrypt-modulet.",
-      "de": "Einrichten Let's Encrypt Modul nicht möglich.",
+      "de": "Let's Encrypt Modul einrichtung nicht möglich.",
       "en": "Unable to setup Let's Encrypt module.",
       "es": "No se puede configurar el módulo Let's Encrypt.",
       "fi": "Let's Encrypt -moduulia ei voi asentaa.",
@@ -65488,7 +65531,7 @@
     {
       "cs": "Odinstalovat agenta",
       "da": "Afinstaller agent",
-      "de": "Agenten deinstallieren",
+      "de": "Agent deinstallieren",
       "en": "Uninstall Agent",
       "es": "Desinstalar Agente",
       "fi": "Agentin asennuksen poistaminen",
@@ -65540,7 +65583,7 @@
     {
       "cs": "Odinstalovat agenta",
       "da": "Afinstaller agent",
-      "de": "Agenten deinstallieren",
+      "de": "Agent deinstallieren",
       "en": "Uninstall agent",
       "es": "Desinstalar agente",
       "fi": "Agentin asennuksen poistaminen",
@@ -66053,7 +66096,7 @@
     {
       "cs": "Aktualizace",
       "da": "Opdatering",
-      "de": "Updates",
+      "de": "Aktualisierung",
       "en": "Update",
       "es": "Actualizar",
       "fi": "Päivittää",
@@ -66677,7 +66720,7 @@
     {
       "cs": "Používá se pro aktivaci holé sítě LAN.",
       "da": "Bruges til bare-metal LAN-aktivering.",
-      "de": "Zur Bare-Metal-LAN-Aktivierung verwenden.",
+      "de": "Für Bare-Metal-LAN-Aktivierung verwenden.",
       "en": "Use for bare-metal LAN activation.",
       "es": "Úselo para la activación de LAN completa.",
       "fi": "Käytä paljaalle metallille lähiverkkoaktivointiin.",
@@ -67178,6 +67221,7 @@
       ]
     },
     {
+      "de": "Benutzer Anmeldungen",
       "en": "User Logins",
       "fr": "Connexions utilisateurs",
       "nl": "Gebruikersaanmeldingen",
@@ -68779,7 +68823,7 @@
     {
       "cs": "Zobrazit předchozí přihlášení pro tohoto uživatele",
       "da": "Se tidligere logins for denne bruger",
-      "de": "Vorherige Anmeldungen anzeigen für diesen Benutzer",
+      "de": "Vorherige Anmeldungen für diesen Benutzer anzeigen",
       "en": "View previous logins for this user",
       "es": "Ver inicios de sesión anteriores de éste usuario",
       "fi": "Näytä tämän käyttäjän aiemmat kirjautumistiedot",
@@ -70647,6 +70691,7 @@
       ]
     },
     {
+      "de": "Arbeitsverzeichnis",
       "en": "Working Dir",
       "nl": "Werkmap",
       "pl": "Folder Roboczy",
@@ -71032,7 +71077,7 @@
     {
       "cs": "Váš přihlašovací token je: [[[TOKEN]]]",
       "da": "Dit login-token er: [[[TOKEN]]]",
-      "de": "Ihr Login-Token lautet: [[[TOKEN]]]",
+      "de": "Ihr Anmelde-Token lautet: [[[TOKEN]]]",
       "en": "Your login token is: [[[TOKEN]]]",
       "es": "Tu token de inicio de sesión es: [[[TOKEN]]]",
       "fi": "Kirjautumistunnuksesi on: [[[TOKEN]]]",
@@ -71457,7 +71502,7 @@
     {
       "cs": "[[[SERVERNAME]]] - Instalace agenta",
       "da": "[[[SERVERNAME]]] - Agent installation",
-      "de": "[[[SERVERNAME]]] - Agenteninstallation",
+      "de": "[[[SERVERNAME]]] - Agent-Installation",
       "en": "[[[SERVERNAME]]] - Agent Installation",
       "es": "[[[SERVERNAME]]] - Instalación de Agente",
       "fi": "[[[SERVERNAME]]] - Agentin asennus",
@@ -71683,7 +71728,7 @@
     {
       "cs": "přidejte nějaké",
       "da": "Tilføj en",
-      "de": "eines hinzufügen",
+      "de": "eins hinzufügen",
       "en": "add one",
       "es": "agregar uno",
       "fi": "lisää yksi",
@@ -73356,7 +73401,7 @@
     {
       "cs": "opera",
       "da": "opera",
-      "de": "Oper",
+      "de": "Opera",
       "en": "opera",
       "es": "opera",
       "fi": "ooppera",
@@ -73997,7 +74042,7 @@
     {
       "cs": "{0} - Instalace agenta",
       "da": "{0} - Agentinstallation",
-      "de": "{0} - Agenteninstallation",
+      "de": "{0} - Agent-Installation",
       "en": "{0} - Agent Installation",
       "es": "{0} - Instalación del Agente",
       "fi": "{0} - Agentin asennus",
@@ -74085,7 +74130,7 @@
     {
       "cs": "{0} bajtů",
       "da": "{0} Bytes",
-      "de": "{0} Byte",
+      "de": "{0} Bytes",
       "en": "{0} Bytes",
       "es": "{0} bytes",
       "fi": "{0} Tavua",
@@ -74153,7 +74198,7 @@
     {
       "cs": "{0} Kb",
       "da": "{0} Kb",
-      "de": "{0} kB",
+      "de": "{0} Kb",
       "en": "{0} Kb",
       "es": "{0} Kb",
       "fi": "{0} Kb",
@@ -74384,7 +74429,7 @@
     {
       "cs": "{0} bajtů/s",
       "da": "{0} bytes/sek",
-      "de": "{0} Byte/Sek.",
+      "de": "{0} Bytes/Sek",
       "en": "{0} bytes/sec",
       "es": "{0} bytes / seg",
       "fi": "{0} tavua/sek",
@@ -74669,7 +74714,7 @@
     {
       "cs": "Zbývají {0} minuty",
       "da": "{0} minutter tilbage",
-      "de": "noch {0} Minuten",
+      "de": "noch {0} Minuten",
       "en": "{0} minutes left",
       "es": "Quedan {0} minutos",
       "fi": "{0} minuuttia jäljellä",
