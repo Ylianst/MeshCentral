@@ -85,6 +85,28 @@ if ! [ -z $1 ]; then
                 OVERRIDE_TAGS="true";
                 shift 1;
                 ;;
+            --help)
+                __usage="\n
+                    Usage: ./$(basename ${0}) [OPTIONS] [BUILD ARGUMENTS]\n
+                    \n
+                    Options:\n
+                    \t--log           \t\twrite output to build.log file\n
+                    \t--no-tags       \tdo not use default tags (meshcentral:latest and meshcentral:%VERSION%)\n
+                    \t--prune         \tWARNING: This will remove:\n
+                    \t\t\t              - all stopped docker containers\n
+                    \t\t\t              - all docker networks not used by at least one container\n
+                    \t\t\t              - all docker images without at least one container associated to them\n
+                    \t\t\t              - all docker build cache\n
+                    \n
+                    Build arguments:                            \tAll build arguments are forwarded to the docker build command, so you can use any option accepted by 'docker build'\n
+                                                                \t\t\t(https://docs.docker.com/engine/reference/commandline/build/#options)\n\n
+                    \t--build-arg INCLUDE_MONGODBTOOLS=yes      \tIncludes mongodb-tools (mongodump, ...) in the image\n
+                    \t--build-arg DISABLE_MINIFY=yes            \t\tDisables minification of files\n
+                    \t--build-arg DISABLE_TRANSLATE=yes         \tDisables translation of files\n
+                ";
+                echo -e $__usage;
+                exit 0;
+                ;;
             *)
                 break;
                 ;;
