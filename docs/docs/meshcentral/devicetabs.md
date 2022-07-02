@@ -2,26 +2,43 @@
 
 ## General
 
+For viewing general information about the agent
 
+### Fields
 
-Set alternate port in the link if it's not default
+### Buttons
 
-![](images/general_alternateports.png)
+Actions
+
+Notes
+
+Log Event
+
+Message
+
+Chat
 
 ### 7 Day Power State
 
+![](images/7daypowerstate.png)
+
 Legend
 
-1. Black color: device is powered om
-2. purple color: device is in sleep state
-3. blue/green color : device is connected trough amt/cira, but not powered on
-4. grey color: device is powered off
+* **_Black color_**: Device is powered on
+* **_Purple color_**: Device is in sleep state (Intel AMT agents only)
+* **_Teal color_**: Device is connected through AMT/CIRA, but not powered on (Intel AMT agents only)
+* **_Grey color_**: Device is powered off (Intel AMT agents only)
 
-![](images/7daypowerstate.png)
+### Text Links
+
+You can set alternate port in the link if it's not default by right-clicking.
+
+![](images/general_alternateports.png)
+
 
 ## Desktop
 
-For connecting to the machine.
+For connecting to the machines KVM interface.
 
 ### Connect Button
 
@@ -31,39 +48,46 @@ Right-clicking on Connect button will give you additional options:
 * Ask Consent
 * Privacy Bar
 
-# RDP Connect Button
+![](images/desktop_connectbutton.png)
+
+### RDP Connect Button
 
 Right-clicking on RDP Connect button allows you to specify Alternate Port.
 
-# Intel AMT Connect Button
+![](images/desktop_rdpconnectbutton.png)
+
+### Intel AMT Connect Button
+
+Uses Intel AMT to control video output of the hardware video card.
 
 ## Terminal
 
-For connecting to a command line based interface to the machine
+For connecting to a command line based interface on the agent
 
 Right-clicking on Connect button allows you to:
 
-* Admin Shell
-* Admin Powershell
-* User Shell
-* User Powershell
-* SSH
+!!!note
+    Linux and Windows have different options:
+
+* Admin Shell (Windows)
+* Admin Powershell (Windows)
+* User Shell (Windows)
+* User Powershell (Windows)
+* SSH (Linux)
+
+![](images/terminal_connectbutton.png)
 
 ## Files
-
+ 
 For transferring files to and from the agent.
 
 ## Events
 
-Mesh Events related to the agent. This is your audit log
+Mesh Events related to the agent. This is your audit log to see what actions have been taken on the agent from the MeshCentral server.
 
 ## Details
 
-Agent information that includes
-
-Note you can show CPU and Memory usage info by clicking the icon in the top right corner
-
-![](images/details_cpuram.png)
+Agent information that includes:
 
 * OS
 * Agent Info
@@ -74,10 +98,14 @@ Note you can show CPU and Memory usage info by clicking the icon in the top righ
 * Storage
 * Intel AMT
 
+Note you can show CPU and Memory usage info by clicking the icon in the top right corner
+
+![](images/details_cpuram.png)
+
 ## Intel AMT
 
 ## Console
 
 For debugging and communicating with the mesh agent. 
 
-Type `help` for all available options
+It allows JS commands to be issued to the device but also run extra commands from the meshcore. Type `help` for all available options
