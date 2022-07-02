@@ -112,6 +112,12 @@
     <div id="rfbPortContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmrfbportaction(1,event)">Alternate Port</div>
     </div>
+    <div id="httpPortContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div class="cmtext" onclick="cmhttpportaction(1,event)">Alternate Port</div>
+    </div>
+    <div id="httpsPortContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div class="cmtext" onclick="cmhttpsportaction(1,event)">Alternate Port</div>
+    </div>
     <div id="filesContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmfilesaction(1,event)">Rename</div>
         <div class="cmtext" onclick="cmfilesaction(2,event)">Edit</div>
@@ -3240,6 +3246,8 @@
                                 node.rdpport = message.event.node.rdpport;
                                 node.rfbport = message.event.node.rfbport;
                                 node.sshport = message.event.node.sshport;
+                                node.httpport = message.event.node.httpport;
+                                node.httpsport = message.event.node.httpsport;
                                 node.consent = message.event.node.consent;
                                 node.pmt = message.event.node.pmt;
                                 if (message.event.node.links != null) { node.links = message.event.node.links; } else { delete node.links; }
@@ -4575,8 +4583,8 @@
             // RDP link, show this link only of the remote machine is Windows.
             if ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && (node.agent.id != 14)) {
                 if (webRelayPort != 0) {
-                    x += '<a href=# onclick=p10WebRouter("' + node._id + '",1,80)>' + "HTTP" + '</a>&nbsp;';
-                    x += '<a href=# onclick=p10WebRouter("' + node._id + '",2,443)>' + "HTTPS" + '</a>&nbsp;';
+                    x += '<a href=# onclick=p10WebRouter("' + node._id + '",1,' + (node.httpport ? node.httpport : 80) + ')>' + "HTTP" + ((node.httpport && (node.httpport != 80)) ? '/' + node.httpport : '') + '</a>&nbsp;';
+                    x += '<a href=# onclick=p10WebRouter("' + node._id + '",2,' + (node.httpsport ? node.httpsport : 443) + ')>' + "HTTPS" + ((node.httspport && (node.httpsport != 443)) ? '/' + node.httpsport : '') + '</a>&nbsp;';
                 }
                 if ((node.agent.id > 0) && (node.agent.id < 5)) {
                     if (navigator.platform.toLowerCase() == 'win32') {
@@ -4588,12 +4596,12 @@
                 if (node.agent.id > 4) {
                     if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
                         if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.ssh != false)) {
-                            x += '<a href=# onclick=p10MCRouter("' + node._id + '",4,22)>' + "SSH" + '</a>&nbsp;';
+                            x += '<a href=# onclick=p10MCRouter("' + node._id + '",4,' + (node.sshport ? node.sshport : 22) + ')>' + "SSH" + '</a>&nbsp;';
                         }
                     }
                     if (navigator.platform.toLowerCase() == 'win32') {
                         if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.scp != false)) {
-                            x += '<a href=# onclick=p10MCRouter("' + node._id + '",5,22)>' + "SCP" + '</a>&nbsp;';
+                            x += '<a href=# onclick=p10MCRouter("' + node._id + '",5,' + (node.sshport ? node.sshport : 22) + ')>' + "SCP" + '</a>&nbsp;';
                         }
                     }
                 }
@@ -6066,6 +6074,32 @@
             if (currentNode.rfbport != null) { Q('d10rfbport').value = currentNode.rfbport; }
         }
 
+        function cmhttpportaction(action) {
+            if (xxdialogMode) return;
+            var x = "HTTP remote connection port:" + '<br /><br /><input type=text placeholder="80" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10httpport type=text>';
+            setDialogMode(2, "HTTP Connection", 3, function() {
+                // Save the new HTTP port to the server
+                var httpport = ((Q('d10httpport').value.length > 0) ? parseInt(Q('d10httpport').value) : 80);
+                meshserver.send({ action: 'changedevice', nodeid: currentNode._id, httpport: httpport });
+                //if (currentNode != null) { p10rfb(currentNode._id, httpport); }
+            }, x, currentNode);
+            Q('d10httpport').focus();
+            if (currentNode.httpport != null) { Q('d10httpport').value = currentNode.httpport; }
+        }
+
+        function cmhttpsportaction(action) {
+            if (xxdialogMode) return;
+            var x = "HTTPS remote connection port:" + '<br /><br /><input type=text placeholder="443" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10httpsport type=text>';
+            setDialogMode(2, "HTTPS Connection", 3, function() {
+                // Save the new HTTP port to the server
+                var httpsport = ((Q('d10httpsport').value.length > 0) ? parseInt(Q('d10httpsport').value) : 443);
+                meshserver.send({ action: 'changedevice', nodeid: currentNode._id, httpsport: httpsport });
+                //if (currentNode != null) { p10rfb(currentNode._id, httpsport); }
+            }, x, currentNode);
+            Q('d10httpsport').focus();
+            if (currentNode.httpsport != null) { Q('d10httpsport').value = currentNode.httpsport; }
+        }
+
         function cmfilesaction(action) {
             if (xxdialogMode) return;
             var filetreexx = p13sort_files(p13filetree.dir);
@@ -6155,6 +6189,8 @@
             QV('altPortContextMenu', false);
             QV('rfbPortContextMenu', false);
             QV('sshPortContextMenu', false);
+            QV('httpPortContextMenu', false);
+            QV('httpsPortContextMenu', false);
             QV('filesContextMenu', false);
             QV('deskPlayerContextMenu', false);
             QV('deskKeyShortcutContextMenu', false);
@@ -7147,25 +7183,25 @@
                     // RDP link, show this link only of the remote machine is Windows.
                     if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0)) {
                         if (webRelayPort != 0) {
-                            x += '<a href=# onclick=p10WebRouter("' + node._id + '",1,80)>' + "HTTP" + '</a>&nbsp;';
-                            x += '<a href=# onclick=p10WebRouter("' + node._id + '",2,443)>' + "HTTPS" + '</a>&nbsp;';
+                            x += '<a href=# cmenu=httpPortContextMenu onclick=p10WebRouter("' + node._id + '",1,' + (node.httpport ? node.httpport : 80) + ')>' + "HTTP" + ((node.httpport && (node.httpport != 80)) ? '/' + node.httpport : '') + '</a>&nbsp;';
+                            x += '<a href=# cmenu=httpsPortContextMenu onclick=p10WebRouter("' + node._id + '",2,' + (node.httpsport ? node.httpsport : 443) + ')>' + "HTTPS" + ((node.httpsport && (node.httpsport != 443)) ? '/' + node.httpsport : '') + '</a>&nbsp;';
                         }
                         if ((node.agent.id > 0) && (node.agent.id < 5)) {
                             if (navigator.platform.toLowerCase() == 'win32') {
                                 if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false)) {
-                                    x += '<a href=# cmenu=altPortContextMenu id=rdpMCRouterLink onclick=p10MCRouter("' + node._id + '",3) title="' + "Requires installation of MeshCentral Router" + '.">' + "RDP" + '</a>&nbsp;';
+                                    x += '<a href=# cmenu=altPortContextMenu id=rdpMCRouterLink onclick=p10MCRouter("' + node._id + '",3) title="' + "Requires installation of MeshCentral Router" + '.">' + "RDP" + ((node.rdpport && (node.rdpport != 3389)) ? '/' + node.rdpport : '') + '</a>&nbsp;';
                                 }
                             }
                         }
                         if (node.agent.id > 4) {
                             if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
                                 if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.ssh != false)) {
-                                    x += '<a href=# cmenu=sshPortContextMenu onclick=p10MCRouter("' + node._id + '",4,22) title="' + "Requires installation of MeshCentral Router." + '">' + "SSH" + '</a>&nbsp;';
+                                    x += '<a href=# cmenu=sshPortContextMenu onclick=p10MCRouter("' + node._id + '",4,' + (node.sshport ? node.sshport : 22) + ') title="' + "Requires installation of MeshCentral Router." + '">' + "SSH" + ((node.sshport && (node.sshport != 22)) ? '/' + node.sshport : '') + '</a>&nbsp;';
                                 }
                             }
                             if (navigator.platform.toLowerCase() == 'win32') {
                                 if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.scp != false)) {
-                                    x += '<a href=# cmenu=sshPortContextMenu onclick=p10MCRouter("' + node._id + '",5,22) title="' + "Requires installation of MeshCentral Router." + '">' + "SCP" + '</a>&nbsp;';
+                                    x += '<a href=# cmenu=sshPortContextMenu onclick=p10MCRouter("' + node._id + '",5,' + (node.sshport ? node.sshport : 22) + ') title="' + "Requires installation of MeshCentral Router." + '">' + "SCP" + ((node.sshport && (node.sshport != 22)) ? '/' + node.sshport : '') + '</a>&nbsp;';
                                 }
                             }
                         }

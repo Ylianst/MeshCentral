@@ -3026,6 +3026,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                         }
 
+                        if ((typeof command.httpport == 'number') && (command.httpport > 0) && (command.httpport < 65536)) {
+                            if ((command.httpport == 80) && (node.httpport != null)) {
+                                delete node.httpport; change = 1; changes.push('httpport'); // Delete the HTTP port
+                            } else {
+                                node.httpport = command.httpport; change = 1; changes.push('httpport'); // Set the HTTP port
+                            }
+                        }
+
+                        if ((typeof command.httpsport == 'number') && (command.httpsport > 0) && (command.httpsport < 65536)) {
+                            if ((command.httpsport == 443) && (node.httpsport != null)) {
+                                delete node.httpsport; change = 1; changes.push('httpsport'); // Delete the HTTPS port
+                            } else {
+                                node.httpsport = command.httpsport; change = 1; changes.push('httpsport'); // Set the HTTPS port
+                            }
+                        }
+
                         if ((typeof command.ssh == 'number') && (command.ssh == 0)) {
                             if ((node.ssh != null) && (node.ssh[user._id] != null)) { delete node.ssh[user._id]; change = 1; changes.push('ssh'); } // Delete the SSH cendentials
                         }

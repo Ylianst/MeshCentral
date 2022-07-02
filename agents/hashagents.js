@@ -1,8 +1,8 @@
 var fs = require('fs');
 
 var agents = {
-    'MeshService-signed.exe': 3,
-    'MeshService64-signed.exe': 4,
+    'MeshService.exe': 3,
+    'MeshService64.exe': 4,
     'meshagent_x86': 5,
     'meshagent_x86-64': 6,
     'meshagent_arm': 9,
