@@ -2,9 +2,9 @@
 
 MSG="";
 PRUNE="false";
-
-LOG_FILE=""
-#LOG_FILE="$(dirname -- "$( readlink -f -- "$0"; )")/build.log";
+OVERRIDE_TAGS="false";
+ENABLE_LOG="false";
+LOG_FILE="$(dirname -- "$( readlink -f -- "$0"; )")/build.log";
 
 function appendOutput()
 {
@@ -12,23 +12,31 @@ function appendOutput()
 
     ARGS=$@;
     LINE="${ARGS}\n";
-    if [ -z "${LOG_FILE}" ]; then echo -e "${LINE}" > /dev/tty; else echo -e "${LINE}" &>> "${LOG_FILE}"; fi
+    if [ -z "${ENABLE_LOG}" ] || [ "${ENABLE_LOG}" != "true" ]; then echo -e "${LINE}" > /dev/tty; else echo -e "${LINE}" 2>&1 | tee -a ${LOG_FILE}; fi
 
     MSG="${MSG}${LINE}";
 }
 
 function runDockerBuild()
 {
-    if [ "${PRUNE}" == "true" ]; then docker system prune -a -f; fi
+    if [ "${PRUNE}" == "true" ]; then
+        if [ -z "${ENABLE_LOG}" ] || [ "${ENABLE_LOG}" != "true" ]; then docker system prune -a -f;
+        else docker system prune -a -f | tee -a ${LOG_FILE}; fi
+    fi
 
 	STARTTS=$(date +%s);
     ARGS=$@;
 
-    APP_VERSION=$(grep -o '"version":\s*"[^"]*"' ./package.json | cut -f4- -d\" | tr -d '"')
-    BUILD_CMD="docker build -f docker/Dockerfile --force-rm --no-cache ${ARGS} -t meshcentral:latest -t meshcentral:${APP_VERSION} .";
+    APP_VERSION=$(grep -o '"version":\s*"[^"]*"' ./package.json | cut -f4- -d\" | tr -d '"');
+    BASE_TAGS="";
+    if [ -z "${OVERRIDE_TAGS}" ] || [ "${OVERRIDE_TAGS}" != "true" ]; then
+        BASE_TAGS="-t meshcentral:latest -t meshcentral:${APP_VERSION}";
+    fi
+
+    BUILD_CMD="docker build -f docker/Dockerfile --force-rm --no-cache ${ARGS} ${BASE_TAGS} .";
     appendOutput "Current build: ${BUILD_CMD}";
 
-    if [ -z "${LOG_FILE}" ]; then ${BUILD_CMD}; else ${BUILD_CMD} &>> "${LOG_FILE}"; fi
+    if [ -z "${ENABLE_LOG}" ] || [ "${ENABLE_LOG}" != "true" ]; then ${BUILD_CMD}; else ${BUILD_CMD} | tee -a ${LOG_FILE}; fi
     if [ $? -ne 0 ]; then exit $?; fi
 
     IMAGEID=$(docker images --format "{{.ID}} {{.CreatedAt}}" | sort -rk 2 | awk 'NR==1{print $1}');
@@ -69,6 +77,14 @@ if ! [ -z $1 ]; then
                 PRUNE="true";
                 shift 1;
                 ;;
+            --log)
+                ENABLE_LOG="true";
+                shift 1;
+                ;;
+            --no-tags)
+                OVERRIDE_TAGS="true";
+                shift 1;
+                ;;
             *)
                 break;
                 ;;
@@ -89,6 +105,6 @@ runDockerBuild ${MAINARGS};
 #runDockerBuild --build-arg INCLUDE_MONGODBTOOLS=yes ${MAINARGS};
 
 echo "";
-echo -e "${MSG}";
+if [ -z "${ENABLE_LOG}" ] || [ "${ENABLE_LOG}" != "true" ]; then echo -e "${MSG}"; else echo -e "${MSG}" 2>&1 | tee -a ${LOG_FILE}; fi
 
 exit 0;
