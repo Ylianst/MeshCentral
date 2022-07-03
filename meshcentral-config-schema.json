@@ -86,12 +86,14 @@
             "statsevents": { "type": "integer", "default": 2592000, "description": "Amount of time in seconds that server statistics are kept in the database." }
           }
         },
-        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535, "default": 443 },
         "portBind": { "type": "string", "description": "When set, bind the HTTPS main port to a specific network address." },
-        "aliasPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
-        "redirPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "aliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "default": null },
+        "redirPort": { "type": "integer", "minimum": 1, "maximum": 65535, "default": 80 },
         "redirPortBind": { "type": "string", "description": "When set, bind the HTTP redirection port to a specific network address." },
         "redirAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "relayPort": { "type": "integer", "minimum": 1, "maximum": 65535, "default": null, "description": "When set, a web relay web server is bound to this port and will allow user access to remote web sites." },
+        "relayDNS": { "type": "string", "default": null, "description": "When set, relayPort valie is ignored. Set this to a DNS name the points to this server. When the server is accessed using the DNS name, the main web server port is used as a web relay port."  },
         "agentPort": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "When set, enabled a new HTTPS server port that only accepts agent connections." },
         "agentPortBind": { "type": "string", "description": "When set, binds the agent port to a specific network interface." },
         "agentAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "When set, indicates the actual publically visible agent-only port. If not set, the AgentPort value is used." },

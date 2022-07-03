@@ -86,6 +86,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.renderLanguages = [];
     obj.destroyedSessions = {};
 
+    // Web relay sessions
+    var webRelayNextSessionId = 1;
+    var webRelaySessions = {}            // RelayID --> Web Mutli-Tunnel
+    var webRelayCleanupTimer = null;
+    
     // Mesh Rights
     const MESHRIGHT_EDITMESH            = 0x00000001;
     const MESHRIGHT_MANAGEUSERS         = 0x00000002;
@@ -2859,7 +2864,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     webstate: encodeURIComponent(webstate).replace(/'/g, '%27'),
                     amtscanoptions: amtscanoptions,
                     pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports(),
-                    webRelayPort: ((parent.webrelayserver != null) ? parent.webrelayserver.port : 0)
+                    webRelayPort: ((typeof args.relaydns == 'string') ? args.port : ((parent.webrelayserver != null) ? parent.webrelayserver.port : 0)),
+                    webRelayDns: ((typeof args.relaydns == 'string') ? args.relaydns : '')
                 }, dbGetFunc.req, domain), user);
             }
             xdbGetFunc.req = req;
@@ -5725,7 +5731,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
             }
         }
-        obj.app.use(obj.bodyParser.urlencoded({ extended: false }));
+        //obj.app.use(obj.bodyParser.urlencoded({ extended: false }));
         var sessionOptions = {
             name: 'xid', // Recommended security practice to not use the default cookie name
             httpOnly: true,
@@ -5835,13 +5841,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 req.clientIp = ipex;
             }
 
+            // If this is a web relay connection, handle it here.
+            if ((typeof obj.args.relaydns == 'string') && (req.headers.host == obj.args.relaydns) && (!req.url.startsWith('/control-redirect.ashx?n='))) {
+                // If this is a normal request (GET, POST, etc) handle it here
+                if ((req.session.userid != null) && (req.session.rid != null)) {
+                    var relaySession = webRelaySessions[req.session.userid + '/' + req.session.rid];
+                    if (relaySession != null) {
+                        // The web relay session is valid, use it
+                        relaySession.handleRequest(req, res);
+                    } else {
+                        // No web relay ession with this relay identifier, close the HTTP request.
+                        res.sendStatus(404);
+                    }
+                } else {
+                    // The user is not logged in or does not have a relay identifier, close the HTTP request.
+                    res.sendStatus(404);
+                }
+                return;
+            }
+
             // Get the domain for this request
             const domain = req.xdomain = getDomain(req);
             parent.debug('webrequest', '(' + req.clientIp + ') ' + req.url);
 
             // Skip the rest is this is an agent connection
             if ((req.url.indexOf('/meshrelay.ashx/.websocket') >= 0) || (req.url.indexOf('/agent.ashx/.websocket') >= 0) || (req.url.indexOf('/localrelay.ashx/.websocket') >= 0)) { next(); return; }
-
+            
             // Setup security headers
             const geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
             var selfurl = ' wss://' + req.headers.host;
@@ -5951,27 +5976,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             } else {
                 // Present the login page as the root page
                 obj.app.get(url, handleRootRequest);
-                obj.app.post(url, handleRootPostRequest);
+                obj.app.post(url, obj.bodyParser.urlencoded({ extended: false }), handleRootPostRequest);
             }
             obj.app.get(url + 'refresh.ashx', function (req, res) { res.sendStatus(200); });
             if ((domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.backup === true))) { obj.app.get(url + 'backup.zip', handleBackupRequest); }
-            if ((domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.restore === true))) { obj.app.post(url + 'restoreserver.ashx', handleRestoreRequest); }
+            if ((domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.restore === true))) { obj.app.post(url + 'restoreserver.ashx', obj.bodyParser.urlencoded({ extended: false }), handleRestoreRequest); }
             obj.app.get(url + 'terms', handleTermsRequest);
             obj.app.get(url + 'xterm', handleXTermRequest);
             obj.app.get(url + 'login', handleRootRequest);
-            obj.app.post(url + 'login', handleRootPostRequest);
-            obj.app.post(url + 'tokenlogin', handleLoginRequest);
+            obj.app.post(url + 'login', obj.bodyParser.urlencoded({ extended: false }), handleRootPostRequest);
+            obj.app.post(url + 'tokenlogin', obj.bodyParser.urlencoded({ extended: false }), handleLoginRequest);
             obj.app.get(url + 'logout', handleLogoutRequest);
             obj.app.get(url + 'MeshServerRootCert.cer', handleRootCertRequest);
-            obj.app.post(url + 'changepassword', handlePasswordChangeRequest);
-            obj.app.post(url + 'deleteaccount', handleDeleteAccountRequest);
-            obj.app.post(url + 'createaccount', handleCreateAccountRequest);
-            obj.app.post(url + 'resetpassword', handleResetPasswordRequest);
-            obj.app.post(url + 'resetaccount', handleResetAccountRequest);
+            obj.app.post(url + 'changepassword', obj.bodyParser.urlencoded({ extended: false }), handlePasswordChangeRequest);
+            obj.app.post(url + 'deleteaccount', obj.bodyParser.urlencoded({ extended: false }), handleDeleteAccountRequest);
+            obj.app.post(url + 'createaccount', obj.bodyParser.urlencoded({ extended: false }), handleCreateAccountRequest);
+            obj.app.post(url + 'resetpassword', obj.bodyParser.urlencoded({ extended: false }), handleResetPasswordRequest);
+            obj.app.post(url + 'resetaccount', obj.bodyParser.urlencoded({ extended: false }), handleResetAccountRequest);
             obj.app.get(url + 'checkmail', handleCheckMailRequest);
             obj.app.get(url + 'agentinvite', handleAgentInviteRequest);
             obj.app.get(url + 'userimage.ashx', handleUserImageRequest);
-            obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
+            obj.app.post(url + 'amtevents.ashx', obj.bodyParser.urlencoded({ extended: false }), obj.handleAmtEventRequest);
             obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
             obj.app.get(url + 'messenger', handleMessengerRequest);
             obj.app.get(url + 'messenger.png', handleMessengerImageRequest);
@@ -5979,10 +6004,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
             obj.app.get(url + 'devicepowerevents.ashx', obj.handleDevicePowerEvents);
             obj.app.get(url + 'downloadfile.ashx', handleDownloadFile);
-            obj.app.post(url + 'uploadfile.ashx', handleUploadFile);
-            obj.app.post(url + 'uploadfilebatch.ashx', handleUploadFileBatch);
-            obj.app.post(url + 'uploadmeshcorefile.ashx', handleUploadMeshCoreFile);
-            obj.app.post(url + 'oneclickrecovery.ashx', handleOneClickRecoveryFile);
+            obj.app.post(url + 'uploadfile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFile);
+            obj.app.post(url + 'uploadfilebatch.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFileBatch);
+            obj.app.post(url + 'uploadmeshcorefile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadMeshCoreFile);
+            obj.app.post(url + 'oneclickrecovery.ashx', obj.bodyParser.urlencoded({ extended: false }), handleOneClickRecoveryFile);
             obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
             obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
             obj.app.ws(url + '2fahold.ashx', handle2faHoldWebSocket);
@@ -6013,7 +6038,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             obj.app.get(url + 'agentdownload.ashx', handleAgentDownloadFile);
             obj.app.get(url + 'logo.png', handleLogoRequest);
             obj.app.get(url + 'loginlogo.png', handleLoginLogoRequest);
-            obj.app.post(url + 'translations', handleTranslationsRequest);
+            obj.app.post(url + 'translations', obj.bodyParser.urlencoded({ extended: false }), handleTranslationsRequest);
             obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
             obj.app.get(url + 'welcome.png', handleWelcomeImageRequest);
             obj.app.get(url + 'recordings.ashx', handleGetRecordings);
@@ -6044,11 +6069,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
             if (domain.agentinvitecodes == true) {
                 obj.app.get(url + 'invite', handleInviteRequest);
-                obj.app.post(url + 'invite', handleInviteRequest);
+                obj.app.post(url + 'invite', obj.bodyParser.urlencoded({ extended: false }), handleInviteRequest);
             }
             if (parent.pluginHandler != null) {
                 obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);
-                obj.app.post(url + 'pluginadmin.ashx', obj.handlePluginAdminPostReq);
+                obj.app.post(url + 'pluginadmin.ashx', obj.bodyParser.urlencoded({ extended: false }), obj.handlePluginAdminPostReq);
                 obj.app.get(url + 'pluginHandler.js', obj.handlePluginJS);
             }
 
@@ -6100,9 +6125,68 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 });
             }
 
+            // Setup web relay on this web server if needed
+            // We set this up when a DNS name is used as a web relay instead of a port
+            if (typeof obj.args.relaydns == 'string') {
+                // This is the magic URL that will setup the relay session
+                obj.app.get('/control-redirect.ashx', function (req, res, next) {
+                    if (req.headers.host != obj.args.relaydns) { res.sendStatus(404); return; }
+                    if ((req.session.userid == null) && obj.args.user && obj.users['user//' + obj.args.user.toLowerCase()]) { req.session.userid = 'user//' + obj.args.user.toLowerCase(); } // Use a default user if needed
+                    if ((req.session == null) || (req.session.userid == null)) { res.redirect('/'); return; }
+                    res.set({ 'Cache-Control': 'no-store' });
+                    parent.debug('web', 'webRelaySetup');
+
+                    // Check that all the required arguments are present
+                    if ((req.session.userid == null) || (req.query.n == null) || (req.query.p == null) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
+
+                    // Get the user and domain information
+                    const userid = req.session.userid;
+                    const domainid = userid.split('/')[1];
+                    const domain = parent.config.domains[domainid];
+                    const nodeid = ((req.query.relayid != null) ? req.query.relayid : req.query.n);
+                    const addr = (req.query.addr != null) ? req.query.addr : '127.0.0.1';
+                    const port = parseInt(req.query.p);
+                    const appid = parseInt(req.query.appid);
+
+                    // Check to see if we already have a multi-relay session that matches exactly this device and port for this user
+                    var relaySession = null;
+                    for (var i in webRelaySessions) {
+                        const xrelaySession = webRelaySessions[i];
+                        if ((xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
+                            relaySession = xrelaySession; // We found an exact match
+                        }
+                    }
+
+                    if (relaySession != null) {
+                        // Since we found a match, use it
+                        req.session.rid = relaySession.sessionId;
+                    } else {
+                        // Create a web relay session
+                        relaySession = require('./apprelays.js').CreateWebRelaySession(parent, db, req, args, domain, userid, nodeid, addr, port, appid);
+                        relaySession.onclose = function (sessionId) {
+                            // Remove the relay session
+                            delete webRelaySessions[sessionId];
+                            // If there are not more relay sessions, clear the cleanup timer
+                            if ((Object.keys(webRelaySessions).length == 0) && (webRelayCleanupTimer != null)) { clearInterval(webRelayCleanupTimer); webRelayCleanupTimer = null; }
+                        }
+                        relaySession.sessionId = webRelayNextSessionId++;
+
+                        // Set the multi-tunnel session
+                        webRelaySessions[userid + '/' + relaySession.sessionId] = relaySession;
+                        req.session.rid = relaySession.sessionId;
+
+                        // Setup the cleanup timer if needed
+                        if (webRelayCleanupTimer == null) { webRelayCleanupTimer = setInterval(checkWebRelaySessionsTimeout, 10000); }
+                    }
+
+                    // Redirect to root
+                    res.redirect('/');
+                });
+            }
+
             // Setup firebase push only server
             if ((obj.parent.firebase != null) && (obj.parent.config.firebase)) {
-                if (obj.parent.config.firebase.pushrelayserver) { parent.debug('email', 'Firebase-pushrelay-handler'); obj.app.post(url + 'firebaserelay.aspx', handleFirebasePushOnlyRelayRequest); }
+                if (obj.parent.config.firebase.pushrelayserver) { parent.debug('email', 'Firebase-pushrelay-handler'); obj.app.post(url + 'firebaserelay.aspx', obj.bodyParser.urlencoded({ extended: false }), handleFirebasePushOnlyRelayRequest); }
                 if (obj.parent.config.firebase.relayserver) { parent.debug('email', 'Firebase-relay-handler'); obj.app.ws(url + 'firebaserelay.aspx', handleFirebaseRelayRequest); }
             }
 
@@ -6342,7 +6426,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
                             });
-                            obj.app.post(url + 'auth-saml-callback', function (req, res, next) {
+                            obj.app.post(url + 'auth-saml-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
                                 var domain = getDomain(req);
                                 if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
@@ -6384,7 +6468,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
                             });
-                            obj.app.post(url + 'auth-intel-callback', function (req, res, next) {
+                            obj.app.post(url + 'auth-intel-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
                                 var domain = getDomain(req);
                                 if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
@@ -6423,7 +6507,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
                             });
-                            obj.app.post(url + 'auth-jumpcloud-callback', function (req, res, next) {
+                            obj.app.post(url + 'auth-jumpcloud-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
                                 var domain = getDomain(req);
                                 if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
@@ -8263,6 +8347,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return header + value + '\r\n';
     }
 
+    // Check that everything is cleaned up
+    function checkWebRelaySessionsTimeout() {
+        for (var i in webRelaySessions) { webRelaySessions[i].checkTimeout(); }
+    }
 
     // Check that a cookie IP is within the correct range depending on the active policy
     function checkCookieIp(cookieip, ip) {

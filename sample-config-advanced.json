@@ -29,6 +29,8 @@
     "_redirPort": 80,
     "_redirPortBind": "127.0.0.1",
     "_redirAliasPort": 80,
+    "_relayPort": 453,
+    "_relayDNS": "relay.myserver.mydomain.com",
     "_agentPort": 1234,
     "_agentPortBind": "127.0.0.1",
     "_agentAliasPort": 1234,
