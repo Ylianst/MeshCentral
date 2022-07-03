@@ -1456,6 +1456,7 @@
         var features2 = parseInt('{{{features2}}}');
         var sessionTime = parseInt('{{{sessiontime}}}');
         var webRelayPort = parseInt('{{{webRelayPort}}}');
+        var webRelayDns = '{{{webRelayDns}}}';
         var sessionRefreshTimer = null;
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
@@ -8117,6 +8118,7 @@
             }
             var servername = serverinfo.name;
             if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+            if (webRelayDns != '') { servername = webRelayDns; }
             var url = 'https://' + servername + ':' + webRelayPort + '/control-redirect.ashx?n=' + nodeid + '&p=' + port + '&appid=' + protocol; // Protocol: 1 = HTTP, 2 = HTTPS
             if (addr != null) { url += '&addr=' + addr; }
             if (relayid != null) { url += '&relayid=' + relayid; }

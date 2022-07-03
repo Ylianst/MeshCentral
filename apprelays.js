@@ -220,7 +220,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
         // Construct the HTTP request
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
-        const blockedHeaders = ['origin', 'cookie']; // These are headers we do not forward
+        const blockedHeaders = ['origin', 'cookie', 'upgrade-insecure-requests', 'sec-ch-ua', 'sec-ch-ua-mobile', 'dnt', 'sec-fetch-user', 'sec-ch-ua-platform', 'sec-fetch-site', 'sec-fetch-mode', 'sec-fetch-dest']; // These are headers we do not forward
         for (var i in req.headers) { if (blockedHeaders.indexOf(i) == -1) { request += i + ': ' + req.headers[i] + '\r\n'; } }
         var cookieStr = '';
         for (var i in parent.webCookies) { if (cookieStr != '') { cookieStr += '; ' } cookieStr += (i + '=' + parent.webCookies[i].value); }
