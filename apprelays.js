@@ -638,12 +638,14 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             }
         } else {
             // Tunnel is now in web socket pass-thru mode
-            if ((typeof header.connection == 'string') && (header.connection.toLowerCase() == 'upgrade')) {
-                // Websocket upgrade succesful
-                obj.socketParseState = 2;
-            } else {
-                // Unable to upgrade to web socket
-                obj.close();
+            if (header != null) {
+                if ((typeof header.connection == 'string') && (header.connection.toLowerCase() == 'upgrade')) {
+                    // Websocket upgrade succesful
+                    obj.socketParseState = 2;
+                } else {
+                    // Unable to upgrade to web socket
+                    obj.close();
+                }
             }
         }
     }
