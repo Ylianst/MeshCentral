@@ -36,10 +36,10 @@ Chat
 
 Legend
 
-* **_Black color_**: Device is powered on
+* **_Black color_**: Device is powered on (Intel AMT & agents)
 * **_Purple color_**: Device is in sleep state (Intel AMT agents only)
 * **_Teal color_**: Device is connected through AMT/CIRA, but not powered on (Intel AMT agents only)
-* **_Grey color_**: Device is powered off (Intel AMT agents only)
+* **_Grey color_**: Device is powered off (Intel AMT & agents)
 
 ### Text Links
 
@@ -47,12 +47,12 @@ You can set alternate port in the link if it's not default by right-clicking.
 
 ![](images/general_alternateports.png)
 
-* Interfaces 
-* Location 
-* MeshCmd 
-* RDP 
-* Web-VNC 
-* Web-RDP 
+* Interfaces
+* Location
+* MeshCmd
+* RDP
+* Web-VNC
+* Web-RDP
 * Web-SSH
 * XTerm
 * HTTP
@@ -103,7 +103,7 @@ Right-clicking on Connect button allows you to:
 ![](images/terminal_connectbutton.png)
 
 ## Files
- 
+
 For transferring files to and from the agent.
 
 ## Events
@@ -131,6 +131,6 @@ Note you can show CPU and Memory usage info by clicking the icon in the top righ
 
 ## Console
 
-For debugging and communicating with the mesh agent. 
+For debugging and communicating with the mesh agent.
 
 It allows JS commands to be issued to the device but also run extra commands from the meshcore. Type `help` for all available options
