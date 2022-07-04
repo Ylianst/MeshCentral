@@ -13,7 +13,7 @@
 /*jshint esversion: 6 */
 'use strict';
 
-// SerialTunnel object is used to embed TLS within another connection.
+// SerialTunnel object is used to embed TLS within another connection.e
 function SerialTunnel(options) {
     var obj = new require('stream').Duplex(options);
     obj.forwardwrite = null;
@@ -5742,6 +5742,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60 * 1000); }
         obj.app.use(obj.session(sessionOptions));
 
+        // Handle all incoming web sockets, see if some need to be handled as web relays
+        obj.app.ws('/*', function (ws, req, next) {
+            if ((obj.webRelayRouter != null) && (req.hostname == obj.args.relaydns)) { handleWebRelayWebSocket(ws, req); return; }
+            return next();
+        });
+
         // Add HTTP security headers to all responses
         obj.app.use(function (req, res, next) {
             // Check if a session is destroyed
@@ -5842,23 +5848,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
 
             // If this is a web relay connection, handle it here.
-            if ((typeof obj.args.relaydns == 'string') && (req.headers.host == obj.args.relaydns) && (!req.url.startsWith('/control-redirect.ashx?n='))) {
-                // If this is a normal request (GET, POST, etc) handle it here
-                if ((req.session.userid != null) && (req.session.rid != null)) {
-                    var relaySession = webRelaySessions[req.session.userid + '/' + req.session.rid];
-                    if (relaySession != null) {
-                        // The web relay session is valid, use it
-                        relaySession.handleRequest(req, res);
-                    } else {
-                        // No web relay ession with this relay identifier, close the HTTP request.
-                        res.sendStatus(404);
-                    }
-                } else {
-                    // The user is not logged in or does not have a relay identifier, close the HTTP request.
-                    res.sendStatus(404);
-                }
-                return;
-            }
+            if ((obj.webRelayRouter != null) && (req.hostname == obj.args.relaydns)) { return obj.webRelayRouter(req, res); }
 
             // Get the domain for this request
             const domain = req.xdomain = getDomain(req);
@@ -6122,65 +6112,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
                         require('./apprelays.js').CreateSshFilesRelay(obj, obj.db, ws1, req1, domain, user, cookie, obj.args);
                     });
-                });
-            }
-
-            // Setup web relay on this web server if needed
-            // We set this up when a DNS name is used as a web relay instead of a port
-            if (typeof obj.args.relaydns == 'string') {
-                // This is the magic URL that will setup the relay session
-                obj.app.get('/control-redirect.ashx', function (req, res, next) {
-                    if (req.headers.host != obj.args.relaydns) { res.sendStatus(404); return; }
-                    if ((req.session.userid == null) && obj.args.user && obj.users['user//' + obj.args.user.toLowerCase()]) { req.session.userid = 'user//' + obj.args.user.toLowerCase(); } // Use a default user if needed
-                    if ((req.session == null) || (req.session.userid == null)) { res.redirect('/'); return; }
-                    res.set({ 'Cache-Control': 'no-store' });
-                    parent.debug('web', 'webRelaySetup');
-
-                    // Check that all the required arguments are present
-                    if ((req.session.userid == null) || (req.query.n == null) || (req.query.p == null) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
-
-                    // Get the user and domain information
-                    const userid = req.session.userid;
-                    const domainid = userid.split('/')[1];
-                    const domain = parent.config.domains[domainid];
-                    const nodeid = ((req.query.relayid != null) ? req.query.relayid : req.query.n);
-                    const addr = (req.query.addr != null) ? req.query.addr : '127.0.0.1';
-                    const port = parseInt(req.query.p);
-                    const appid = parseInt(req.query.appid);
-
-                    // Check to see if we already have a multi-relay session that matches exactly this device and port for this user
-                    var relaySession = null;
-                    for (var i in webRelaySessions) {
-                        const xrelaySession = webRelaySessions[i];
-                        if ((xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
-                            relaySession = xrelaySession; // We found an exact match
-                        }
-                    }
-
-                    if (relaySession != null) {
-                        // Since we found a match, use it
-                        req.session.rid = relaySession.sessionId;
-                    } else {
-                        // Create a web relay session
-                        relaySession = require('./apprelays.js').CreateWebRelaySession(parent, db, req, args, domain, userid, nodeid, addr, port, appid);
-                        relaySession.onclose = function (sessionId) {
-                            // Remove the relay session
-                            delete webRelaySessions[sessionId];
-                            // If there are not more relay sessions, clear the cleanup timer
-                            if ((Object.keys(webRelaySessions).length == 0) && (webRelayCleanupTimer != null)) { clearInterval(webRelayCleanupTimer); webRelayCleanupTimer = null; }
-                        }
-                        relaySession.sessionId = webRelayNextSessionId++;
-
-                        // Set the multi-tunnel session
-                        webRelaySessions[userid + '/' + relaySession.sessionId] = relaySession;
-                        req.session.rid = relaySession.sessionId;
-
-                        // Setup the cleanup timer if needed
-                        if (webRelayCleanupTimer == null) { webRelayCleanupTimer = setInterval(checkWebRelaySessionsTimeout, 10000); }
-                    }
-
-                    // Redirect to root
-                    res.redirect('/');
                 });
             }
 
@@ -6515,7 +6446,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                     }
                 }
-
             }
 
             // Server redirects
@@ -6609,6 +6539,73 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.agentapp.get(url + 'meshagents', obj.handleMeshAgentRequest);
             }
 
+            // Setup web relay on this web server if needed
+            // We set this up when a DNS name is used as a web relay instead of a port
+            if (typeof obj.args.relaydns == 'string') {
+                obj.webRelayRouter = require('express').Router();
+
+                // This is the magic URL that will setup the relay session
+                obj.webRelayRouter.get('/control-redirect.ashx', function (req, res, next) {
+                    if (req.headers.host != obj.args.relaydns) { res.sendStatus(404); return; }
+                    if ((req.session.userid == null) && obj.args.user && obj.users['user//' + obj.args.user.toLowerCase()]) { req.session.userid = 'user//' + obj.args.user.toLowerCase(); } // Use a default user if needed
+                    if ((req.session == null) || (req.session.userid == null)) { res.redirect('/'); return; }
+                    res.set({ 'Cache-Control': 'no-store' });
+                    parent.debug('web', 'webRelaySetup');
+
+                    // Check that all the required arguments are present
+                    if ((req.session.userid == null) || (req.query.n == null) || (req.query.p == null) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
+
+                    // Get the user and domain information
+                    const userid = req.session.userid;
+                    const domainid = userid.split('/')[1];
+                    const domain = parent.config.domains[domainid];
+                    const nodeid = ((req.query.relayid != null) ? req.query.relayid : req.query.n);
+                    const addr = (req.query.addr != null) ? req.query.addr : '127.0.0.1';
+                    const port = parseInt(req.query.p);
+                    const appid = parseInt(req.query.appid);
+
+                    // Check to see if we already have a multi-relay session that matches exactly this device and port for this user
+                    var relaySession = null;
+                    for (var i in webRelaySessions) {
+                        const xrelaySession = webRelaySessions[i];
+                        if ((xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
+                            relaySession = xrelaySession; // We found an exact match
+                        }
+                    }
+
+                    if (relaySession != null) {
+                        // Since we found a match, use it
+                        req.session.rid = relaySession.sessionId;
+                    } else {
+                        // Create a web relay session
+                        relaySession = require('./apprelays.js').CreateWebRelaySession(parent, db, req, args, domain, userid, nodeid, addr, port, appid);
+                        relaySession.onclose = function (sessionId) {
+                            // Remove the relay session
+                            delete webRelaySessions[sessionId];
+                            // If there are not more relay sessions, clear the cleanup timer
+                            if ((Object.keys(webRelaySessions).length == 0) && (webRelayCleanupTimer != null)) { clearInterval(webRelayCleanupTimer); webRelayCleanupTimer = null; }
+                        }
+                        relaySession.sessionId = webRelayNextSessionId++;
+
+                        // Set the multi-tunnel session
+                        webRelaySessions[userid + '/' + relaySession.sessionId] = relaySession;
+                        req.session.rid = relaySession.sessionId;
+
+                        // Setup the cleanup timer if needed
+                        if (webRelayCleanupTimer == null) { webRelayCleanupTimer = setInterval(checkWebRelaySessionsTimeout, 10000); }
+                    }
+
+                    // Redirect to root
+                    res.redirect('/');
+                });
+
+                // Handle all incoming requests as web relays
+                obj.webRelayRouter.get('/*', function (req, res) { handleWebRelayRequest(req, res); })
+
+                // Handle all incoming requests as web relays
+                obj.webRelayRouter.post('/*', function (req, res) { handleWebRelayRequest(req, res); })
+            }
+
             // Indicates to ExpressJS that the override public folder should be used to serve static files.
             if (parent.config.domains[i].webpublicpath != null) {
                 // Use domain public path
@@ -6646,6 +6643,41 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // We are done starting the web server.
         if (doneFunc) doneFunc();
+    }
+
+
+    // Handle an incoming request as a web relay 
+    function handleWebRelayRequest(req, res) {
+        if ((req.session.userid != null) && (req.session.rid != null)) {
+            var relaySession = webRelaySessions[req.session.userid + '/' + req.session.rid];
+            if (relaySession != null) {
+                // The web relay session is valid, use it
+                relaySession.handleRequest(req, res);
+            } else {
+                // No web relay ession with this relay identifier, close the HTTP request.
+                res.sendStatus(404);
+            }
+        } else {
+            // The user is not logged in or does not have a relay identifier, close the HTTP request.
+            res.sendStatus(404);
+        }
+    }
+
+    // Handle an incoming websocket connection as a web relay 
+    function handleWebRelayWebSocket(ws, req) {
+        if ((req.session.userid != null) && (req.session.rid != null)) {
+            var relaySession = webRelaySessions[req.session.userid + '/' + req.session.rid];
+            if (relaySession != null) {
+                // The multi-tunnel session is valid, use it
+                relaySession.handleWebSocket(ws, req);
+            } else {
+                // No multi-tunnel session with this relay identifier, close the websocket.
+                ws.close();
+            }
+        } else {
+            // The user is not logged in or does not have a relay identifier, close the websocket.
+            ws.close();
+        }
     }
 
     // Perform server inner authentication
