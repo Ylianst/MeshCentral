@@ -218,9 +218,13 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         if (obj.relayActive == false) { console.log("ERROR: Attempt to use an unconnected tunnel"); return false; }
         parent.lastOperation = obj.lastOperation = Date.now();
 
+        // Check if this is a websocket
+        if (req.headers['upgrade'] == 'websocket') { console.log('Attempt to process a websocket in HTTP tunnel method.'); res.end(); return false; }
+
         // Construct the HTTP request
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
-        const blockedHeaders = ['origin', 'cookie', 'upgrade-insecure-requests', 'sec-ch-ua', 'sec-ch-ua-mobile', 'dnt', 'sec-fetch-user', 'sec-ch-ua-platform', 'sec-fetch-site', 'sec-fetch-mode', 'sec-fetch-dest']; // These are headers we do not forward
+        const blockedHeaders = ['host', 'origin', 'cookie', 'upgrade-insecure-requests', 'sec-ch-ua', 'sec-ch-ua-mobile', 'dnt', 'sec-fetch-user', 'sec-ch-ua-platform', 'sec-fetch-site', 'sec-fetch-mode', 'sec-fetch-dest']; // These are headers we do not forward
+        request += 'host: central.mesh.meshcentral.com\r\n';
         for (var i in req.headers) { if (blockedHeaders.indexOf(i) == -1) { request += i + ': ' + req.headers[i] + '\r\n'; } }
         var cookieStr = '';
         for (var i in parent.webCookies) { if (cookieStr != '') { cookieStr += '; ' } cookieStr += (i + '=' + parent.webCookies[i].value); }
