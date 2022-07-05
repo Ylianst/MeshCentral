@@ -28180,6 +28180,7 @@
     {
       "en": "Gateway: {0}",
       "nl": "Gateway: {0}",
+	  "pl": "Brama: {0}",
       "xloc": [
         "default-mobile.handlebars->11->556",
         "default.handlebars->45->1453"
@@ -29326,6 +29327,7 @@
       "de": "HTTP Verbindung",
       "en": "HTTP Connection",
       "nl": "HTTP verbinding",
+	  "pl": "Połączenie HTTP",
       "xloc": [
         "default.handlebars->45->750"
       ]
@@ -29333,6 +29335,7 @@
     {
       "en": "HTTP remote connection port:",
       "nl": "HTTP poort voor externe verbinding:",
+	  "pl": "HTTP zdalny port połączenia:",
       "xloc": [
         "default.handlebars->45->749"
       ]
@@ -29366,6 +29369,7 @@
       "de": "HTTPS Verbindung",
       "en": "HTTPS Connection",
       "nl": "HTTPS verbinding",
+	  "pl": "Połączenie HTTPS",
       "xloc": [
         "default.handlebars->45->752"
       ]
@@ -29373,6 +29377,7 @@
     {
       "en": "HTTPS remote connection port:",
       "nl": "HTTPS poort voor externe verbinding:",
+	  "pl": "HTTPS zdalny port połączenia:",
       "xloc": [
         "default.handlebars->45->751"
       ]
@@ -39186,6 +39191,7 @@
     {
       "en": "Mask: {0}",
       "nl": "Mask: {0}",
+	  "pl": "Maska: {0}",
       "xloc": [
         "default-mobile.handlebars->11->555",
         "default.handlebars->45->1452"
