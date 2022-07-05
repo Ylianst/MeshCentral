@@ -21,7 +21,7 @@ Nagivieren Sie unter Apple OSX den folgenden Link, um den Vorgang abzuschließen
 ~
 ~</area-osx>
 ~<area-linux>
-Schneiden Sie unter Linux Folgendes aus und fügen Sie es in ein Terminal ein, um den Agenten zu installieren:
+Schneiden Sie unter Linux Folgendes aus und fügen Sie es in ein Terminal ein, um den Agent zu installieren:
 ~
 ~wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] '[[[MESHIDHEX]]]'
 ~
