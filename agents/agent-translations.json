@@ -69,7 +69,7 @@
     "meshId": "Gruppen-ID",
     "serverId": "Server-ID",
     "setup": "Konfiguration",
-    "update": "Updates",
+    "update": "Aktualisierung",
     "install": "Installieren",
     "uninstall": "Deinstallation",
     "connect": "Verbinden",
@@ -86,7 +86,7 @@
       "GESTARTET",
       "NICHT GESTARTET"
     ],
-    "statusDescription": "Aktueller Agentenstatus",
+    "statusDescription": "Aktueller Agentstatus",
     "agentVersion": "Neue Version",
     "elevation": "Zum Installieren/Deinstallieren dieser Software sind erhöhte Berechtigungen erforderlich.",
     "graphicalerror": "Die grafische Version dieses Installationsprogramms kann auf diesem System nicht ausgeführt werden",
