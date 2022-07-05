@@ -2977,6 +2977,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.nightmode === 1) { features2 += 0x00100000; } // Always night mode
         if (domain.nightmode === 2) { features2 += 0x00200000; } // Always day mode
         if (domain.allowsavingdevicecredentials == false) { features2 += 0x00400000; } // Do not allow device credentials to be saved on the server
+        if ((typeof domain.files == 'object') && (domain.files.sftpconnect === false)) { features2 += 0x00800000; } // Remove the "SFTP Connect" button in the "Files" tab when the device is agent managed
+        if ((typeof domain.terminal == 'object') && (domain.terminal.sshconnect === false)) { features2 += 0x01000000; } // Remove the "SSH Connect" button in the "Terminal" tab when the device is agent managed
         return { features: features, features2: features2 };
     }
 
