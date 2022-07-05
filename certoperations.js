@@ -1006,7 +1006,13 @@ module.exports.CertificateOperations = function (parent) {
         if (r.root == null) {
             // If the root certificate does not exist, create one
             console.log("Generating root certificate...");
-            rootCertAndKey = obj.GenerateRootCertificate(true, 'MeshCentralRoot', null, null, strongCertificate);
+            if (typeof args.rootcertcommonname == 'string') {
+                // If a root certificate common name is specified, use it.
+                rootCertAndKey = obj.GenerateRootCertificate(false, args.rootcertcommonname, null, null, strongCertificate);
+            } else {
+                // A root certificate common name is not specified, use the default one.
+                rootCertAndKey = obj.GenerateRootCertificate(true, 'MeshCentralRoot', null, null, strongCertificate);
+            }
             rootCertificate = obj.pki.certificateToPem(rootCertAndKey.cert);
             rootPrivateKey = obj.pki.privateKeyToPem(rootCertAndKey.key);
             obj.fs.writeFileSync(parent.getConfigFilePath('root-cert-public.crt'), rootCertificate);

@@ -199,7 +199,7 @@
           "type": "object",
           "properties": {
             "mongoDumpPath": { "type": "string" },
-            "mysqlDumpPath": { "type": "string"},
+            "mysqlDumpPath": { "type": "string" },
             "backupIntervalHours": { "type": "integer" },
             "keepLastDaysBackup": { "type": "integer" },
             "zipPassword": { "type": "string" },
@@ -250,6 +250,7 @@
             }
           }
         },
+        "rootCertCommonName" : { "type": "string", "default": "MeshCentralRoot-XXXXXX", "description": "The common name of the MeshCentral server root certificate. By default it's 'MeshCentralRoot-' followed by the first 6 HEX digits of the public key fingerprint. For this setting to take effect, all generated certificates need to be deleted and reset. Existing agents will not be able to connect anymore." },
         "redirects": { "type": "object" },
         "maxInvalidLogin": {
           "type": "object",
