@@ -2864,7 +2864,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     webstate: encodeURIComponent(webstate).replace(/'/g, '%27'),
                     amtscanoptions: amtscanoptions,
                     pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports(),
-                    webRelayPort: ((typeof args.relaydns == 'string') ? args.port : ((parent.webrelayserver != null) ? parent.webrelayserver.port : 0)),
+                    webRelayPort: ((typeof args.relaydns == 'string') ? args.port : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0)),
                     webRelayDns: ((typeof args.relaydns == 'string') ? args.relaydns : '')
                 }, dbGetFunc.req, domain), user);
             }
@@ -7128,16 +7128,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         obj.args.port = port;
         if (obj.tlsServer != null) {
             if (obj.args.lanonly == true) {
-                obj.tcpServer = obj.tlsServer.listen(port, addr, function () { console.log('MeshCentral HTTPS server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+                obj.tcpServer = obj.tlsServer.listen(port, addr, function () { console.log('MeshCentral HTTPS server running on port ' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.'); });
             } else {
-                obj.tcpServer = obj.tlsServer.listen(port, addr, function () { console.log('MeshCentral HTTPS server running on ' + certificates.CommonName + ':' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+                obj.tcpServer = obj.tlsServer.listen(port, addr, function () {
+                    console.log('MeshCentral HTTPS server running on ' + certificates.CommonName + ':' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.');
+                    if (typeof args.relaydns == 'string') { console.log('MeshCentral HTTPS relay server running on ' + args.relaydns + ':' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.'); }
+                });
                 obj.parent.updateServerState('servername', certificates.CommonName);
             }
             if (obj.parent.authlog) { obj.parent.authLog('https', 'Server listening on ' + ((addr != null) ? addr : '0.0.0.0') + ' port ' + port + '.'); }
             obj.parent.updateServerState('https-port', port);
             if (args.aliasport != null) { obj.parent.updateServerState('https-aliasport', args.aliasport); }
         } else {
-            obj.tcpServer = obj.app.listen(port, addr, function () { console.log('MeshCentral HTTP server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+            obj.tcpServer = obj.app.listen(port, addr, function () {
+                console.log('MeshCentral HTTP server running on port ' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.');
+                if (typeof args.relaydns == 'string') { console.log('MeshCentral HTTP relay server running on ' + args.relaydns + ':' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.'); }
+            });
             obj.parent.updateServerState('http-port', port);
             if (args.aliasport != null) { obj.parent.updateServerState('http-aliasport', args.aliasport); }
         }
