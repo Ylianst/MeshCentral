@@ -1229,6 +1229,9 @@ mongorestore --archive=backup.archive
 
 This will re-import the database from the backup. You can then start MeshCentral again.
 
+!!!note
+    The two values for `backup` and `restore` in the json are only valid for databases backed by NeDB
+
 ### Backup to Google Drive
 
 ```bash
