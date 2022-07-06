@@ -122,7 +122,7 @@ module.exports.CreateAmtRemoteIder = function (webserver, meshcentral) {
     }
 
     obj.Start = function () {
-        if (obj.debug) { console.log("IDER-Start"); console.log(obj.floppy, obj.cdrom); }
+        if (obj.debug) { console.log('IDER-Start'); console.log(obj.floppy, obj.cdrom); }
         obj.bytesToAmt = 0;
         obj.bytesFromAmt = 0;
         obj.inSequence = 0;
@@ -143,7 +143,7 @@ module.exports.CreateAmtRemoteIder = function (webserver, meshcentral) {
     }
 
     obj.Stop = function () {
-        if (obj.debug) console.log("IDER-Stop");
+        if (obj.debug) console.log('IDER-Stop');
         //if (obj.pingTimer) { clearInterval(obj.pingTimer); obj.pingTimer = null; }
         obj.parent.Stop();
     }

@@ -479,16 +479,12 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     
     obj.xxSend = function (x) {
         if (typeof x == 'string') {
-            //if (obj.redirTrace) {
-                //console.log("REDIR-SEND1(" + x.length + "): " + Buffer.from(x, 'binary').toString('hex'), typeof x);
-            //}
+            if (obj.redirTrace) { console.log("REDIR-SEND(" + x.length + "): " + Buffer.from(x, 'binary').toString('hex'), typeof x); }
             //obj.Debug("Send(" + x.length + "): " + webserver.common.rstr2hex(x));
             //obj.forwardclient.write(x); // FIXES CIRA
             obj.forwardclient.write(Buffer.from(x, 'binary'));
         } else {
-            //if (obj.redirTrace) {
-                //console.log("REDIR-SEND2(" + x.length + "): " + x.toString('hex'), typeof x);
-            //}
+            if (obj.redirTrace) { console.log("REDIR-SEND(" + x.length + "): " + x.toString('hex'), typeof x); }
             //obj.Debug("Send(" + x.length + "): " + webserver.common.rstr2hex(x));
             //obj.forwardclient.write(x); // FIXES CIRA
             obj.forwardclient.write(x);
@@ -508,7 +504,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     obj.xxRandomValueHex = function(len) { return obj.crypto.randomBytes(Math.ceil(len / 2)).toString('hex').slice(0, len); }
 
     obj.xxOnSocketClosed = function () {
-        if (obj.redirTrace) { console.log("REDIR-CLOSED"); }
+        if (obj.redirTrace) { console.log('REDIR-CLOSED'); }
         //obj.Debug("Socket Closed");
         obj.Stop();
     }
@@ -521,12 +517,12 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     }
 
     obj.Stop = function () {
-        if (obj.redirTrace) { console.log("REDIR-CLOSED"); }
+        if (obj.redirTrace) { console.log('REDIR-CLOSED'); }
         //obj.Debug("Socket Stopped");
         obj.xxStateChange(0);
         obj.connectstate = -1;
-        obj.amtaccumulator = "";
-        if (obj.forwardclient != null) { try { obj.forwardclient.close(); } catch (ex) { } delete obj.forwardclient; }
+        obj.amtaccumulator = '';
+        if (obj.forwardclient != null) { try { obj.forwardclient.destroy(); } catch (ex) { } delete obj.forwardclient; }
         if (obj.amtkeepalivetimer != null) { clearInterval(obj.amtkeepalivetimer); delete obj.amtkeepalivetimer; }
     }
 
