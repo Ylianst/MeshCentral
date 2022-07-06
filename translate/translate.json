@@ -961,6 +961,13 @@
     },
     {
       "en": ", 16 grays",
+      "cs": ", 16 šedá",
+      "da": ", 16 grå",
+      "de": ", 16 Grautöne",
+      "fi": ", 16 harmaata",
+      "pt": ", 16 cinza",
+      "pt-br": ", 16 cinza",
+      "it": ", 16 grigi",
       "fr": ", 16 gris",
       "nl": ", 16 grijstinten",
       "pl": ", 16 odcieni szarości",
@@ -971,6 +978,13 @@
     },
     {
       "en": ", 256 grays",
+      "cs": ", 256 šedá",
+      "da": ", 256 grå",
+      "de": ", 256 Grautöne",
+      "fi": ", 256 harmaata",
+      "pt": ", 256 cinza",
+      "pt-br": ", 256 cinza",
+      "it": ", 256 grigi",
       "fr": ", 256 gris",
       "nl": ", 256 grijstinten",
       "pl": ", 256 odcieni szarości",
@@ -1112,6 +1126,15 @@
       "pl": ", RDP",
       "ru": ", RDP",
       "fr": ", RDP",
+      "de": ", RDP",
+      "de": ", RDP",
+      "da": ", RDP",
+      "cs": ", RDP",
+      "es": ", RDP",
+      "fi": ", RDP",
+      "it": ", RDP",
+      "pt": ", RDP",
+      "pt-br": ", RDP",
       "xloc": [
         "default.handlebars->45->1244"
       ]
@@ -1191,10 +1214,18 @@
     },
     {
       "en": ", SFTP",
+      "cs": ", SFTP",
+      "es": ", SFTP",
+      "da": ", SFTP",
+      "de": ", SFTP",
+      "fr": ", SFTP",
+      "fi": ", SFTP",
+      "it": ", SFTP",
       "nl": ", SFTP",
       "pl": ", SFTP",
+      "pt": ", SFTP",
+      "pt-br": ", SFTP",
       "ru": ", SFTP",
-      "fr": ", SFTP",
       "xloc": [
         "default-mobile.handlebars->11->468",
         "default.handlebars->45->1352"
@@ -1206,6 +1237,14 @@
       "pl": ", SSH",
       "ru": ", SSH",
       "fr": ", SSH",
+      "de": ", SSH",
+      "da": ", SSH",
+      "cs": ", SSH",
+      "es": ", SSH",
+      "fi": ", SSH",
+      "it": ", SSH",
+      "pt": ", SSH",
+      "pt-br": ", SSH",
       "xloc": [
         "default.handlebars->45->1320"
       ]
@@ -2540,6 +2579,7 @@
     {
       "cs": "1024×768",
       "da": "1024×768",
+      "de": "1024×768",
       "en": "1024x768",
       "es": "1024×768",
       "fi": "1024×768",
@@ -2560,6 +2600,7 @@
     {
       "cs": "1024×768",
       "da": "1024×768",
+      "de": "1024×768",
       "en": "1024×768",
       "es": "1024×768",
       "fi": "1024×768",
@@ -2699,6 +2740,7 @@
     {
       "cs": "1280x800",
       "da": "1280x800",
+      "de": "1280×800",
       "en": "1280×800",
       "es": "1280x800",
       "fi": "1280x800",
@@ -2719,6 +2761,7 @@
     {
       "cs": "1440x900",
       "da": "1440x900",
+      "de": "1440x900",
       "en": "1440x900",
       "es": "1440x900",
       "fi": "1440x900",
@@ -2739,6 +2782,7 @@
     {
       "cs": "1440x900",
       "da": "1440x900",
+      "de": "1440x900",
       "en": "1440×900",
       "es": "1440x900",
       "fi": "1440x900",
@@ -2811,6 +2855,7 @@
     {
       "cs": "1600x900",
       "da": "1600x900",
+      "de": "1600x900",
       "en": "1600x900",
       "es": "1600x900",
       "fi": "1600x900",
@@ -2831,6 +2876,7 @@
     {
       "cs": "1600x900",
       "da": "1600x900",
+      "de": "1600x900",
       "en": "1600×900",
       "es": "1600x900",
       "fi": "1600x900",
@@ -2851,6 +2897,7 @@
     {
       "cs": "1680x1050",
       "da": "1680x1050",
+      "de": "1600x1050",
       "en": "1680x1050",
       "es": "1680x1050",
       "fi": "1680x1050",
@@ -2871,6 +2918,7 @@
     {
       "cs": "1680x1050",
       "da": "1680x1050",
+      "de": "1600x1050",
       "en": "1680×1050",
       "es": "1680x1050",
       "fi": "1680x1050",
@@ -2891,6 +2939,7 @@
     {
       "cs": "1920x1080",
       "da": "1920x1080",
+      "de": "1920x1080",
       "en": "1920x1080",
       "es": "1920x1080",
       "fi": "1920x1080",
@@ -2911,6 +2960,7 @@
     {
       "cs": "1920x1080",
       "da": "1920x1080",
+      "de": "1920x1080",
       "en": "1920×1080",
       "es": "1920x1080",
       "fi": "1920x1080",
@@ -4015,6 +4065,7 @@
     {
       "cs": "640x480",
       "da": "640x480",
+      "de": "640x480",
       "en": "640x480",
       "es": "640x480",
       "fi": "640x480",
@@ -4035,6 +4086,7 @@
     {
       "cs": "640x480",
       "da": "640x480",
+      "de": "640x480",
       "en": "640×480",
       "es": "640x480",
       "fi": "640x480",
@@ -4174,7 +4226,13 @@
     },
     {
       "en": "7 days",
+      "da": "7 Dages",
+      "de": "7 Tage",
+      "cs": "7 dní",
+      "es": "7 días",
       "nl": "7 dagen",
+      "fi": "7 päivääs",
+      "it": "7 giorni",
       "pl": "7 dni",
       "pt-br": "7 dias",
       "ru": "7 дней",
@@ -28180,6 +28238,7 @@
     {
       "en": "Gateway: {0}",
       "nl": "Gateway: {0}",
+      "pl": "Brama: {0}",
       "xloc": [
         "default-mobile.handlebars->11->556",
         "default.handlebars->45->1453"
@@ -29326,6 +29385,7 @@
       "de": "HTTP Verbindung",
       "en": "HTTP Connection",
       "nl": "HTTP verbinding",
+      "pl": "Połączenie HTTP",
       "xloc": [
         "default.handlebars->45->750"
       ]
@@ -29333,6 +29393,7 @@
     {
       "en": "HTTP remote connection port:",
       "nl": "HTTP poort voor externe verbinding:",
+	  "pl": "HTTP zdalny port połączenia:",
       "xloc": [
         "default.handlebars->45->749"
       ]
@@ -29366,6 +29427,7 @@
       "de": "HTTPS Verbindung",
       "en": "HTTPS Connection",
       "nl": "HTTPS verbinding",
+      "pl": "Połączenie HTTPS",
       "xloc": [
         "default.handlebars->45->752"
       ]
@@ -29373,6 +29435,7 @@
     {
       "en": "HTTPS remote connection port:",
       "nl": "HTTPS poort voor externe verbinding:",
+      "pl": "HTTPS zdalny port połączenia:",
       "xloc": [
         "default.handlebars->45->751"
       ]
@@ -32751,16 +32814,36 @@
     },
     {
       "en": "Intel&reg;AMT",
+      "cs": "Intel&reg;AMT",
+      "da": "Intel&reg;AMT",
+      "de": "Intel&reg;AMT",
       "nl": "Intel&reg;AMT",
       "pl": "Intel&reg;AMT",
+      "es": "Intel&reg;AMT",
+      "fi": "Intel&reg;AMT",
+      "fr": "Intel&reg;AMT",
+      "it": "Intel&reg;AMT",
+      "pt-br": "Intel&reg;AMT",
+      "ru": "Intel&reg;AMT",
+      "tr": "Intel&reg;AMT",
       "xloc": [
         "default.handlebars->45->965"
       ]
     },
     {
       "en": "Intel&reg;SM",
+      "cs": "Intel&reg;SM",
+      "da": "Intel&reg;SM",
+      "de": "Intel&reg;SM",
       "nl": "Intel&reg;SM",
       "pl": "Intel&reg;SM",
+      "es": "Intel&reg;SM",
+      "fi": "Intel&reg;SM",
+      "fr": "Intel&reg;SM",
+      "it": "Intel&reg;SM",
+      "pt-br": "Intel&reg;SM",
+      "ru": "Intel&reg;SM",
+      "tr": "Intel&reg;SM",
       "xloc": [
         "default.handlebars->45->963"
       ]
@@ -39186,6 +39269,7 @@
     {
       "en": "Mask: {0}",
       "nl": "Mask: {0}",
+      "pl": "Maska: {0}",
       "xloc": [
         "default-mobile.handlebars->11->555",
         "default.handlebars->45->1452"
@@ -45629,11 +45713,16 @@
     },
     {
       "de": "Optionen",
+      "da": "Muligheder",
       "en": "Options",
+      "es": "Opciones",
+      "cs": "Možnosti",
+      "it": "Opzioni",
       "nl": "Opties",
       "pl": "Opcje",
       "ru": "Опции",
       "fr": "Options",
+      "fi": "Vaihtoehdot",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7rdpkvm->5->1"
       ]
@@ -70839,6 +70928,7 @@
       "de": "X",
       "en": "X",
       "es": "X",
+      "fi": "X",
       "fr": "X",
       "it": "X",
       "ja": "バツ",
@@ -74690,6 +74780,7 @@
       "ja": "{0}分",
       "nl": "{0} minuut",
       "pl": "{0} minuta",
+      "pt": "{0} minuto",
       "pt-br": "{0} minuto",
       "ru": "{0} минута",
       "tr": "{0} dakika",
@@ -74710,6 +74801,7 @@
       "ja": "{0}分",
       "nl": "{0} minuten",
       "pl": "{0} minut",
+      "pt": "{0} minutos",
       "pt-br": "{0} minutos",
       "ru": "{0} минут",
       "tr": "{0} dakika",

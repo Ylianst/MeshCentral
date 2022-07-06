@@ -9726,7 +9726,7 @@
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
             QV('connectbutton2span', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.mtype != 3));
-            QV('connectbutton2sspan', (features2 & 0x00000200) && (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.agent.id != 3) && (terminalNode.agent.id != 4));
+            QV('connectbutton2sspan', (features2 & 0x00000200) && (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.agent.id != 3) && (terminalNode.agent.id != 4) && ((features2 & 0x1000000) == 0));
             if (terminalNode.mtype == 1) {
                 QV('connectbutton2hspan', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
                 QV('terminalSizeDropDown', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
@@ -10160,7 +10160,7 @@
             QE('p13Connect', online);
             QE('p13Connects', online);
             QV('p13Connect', (files == null) && (filesNode.mtype == 2));
-            QV('p13Connects', (files == null) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4));
+            QV('p13Connects', (features2 & 0x200) && (files == null) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
             QV('p13Disconnect', files != null);
             if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
             p13setActions();
