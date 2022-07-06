@@ -93,12 +93,15 @@ See description for information about each item.
             "statsevents": { "type": "integer", "default": 2592000, "description": "Amount of time in seconds that server statistics are kept in the database." }
           }
         },
-        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535, "default": 443, "description": "Ths port of the main HTTPS server." },
         "portBind": { "type": "string", "description": "When set, bind the HTTPS main port to a specific network address." },
-        "aliasPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
-        "redirPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "aliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "default": null, "description": "The actual main port as seen externally on the Internet, this setting is often used when a reverse-proxy is used." },
+        "redirPort": { "type": "integer", "minimum": 0, "maximum": 65535, "default": 80, "description": "This is a HTTP web server port that mostly redirects users to the HTTPS port but does provide some other servces, 0 will turn this port off." },
         "redirPortBind": { "type": "string", "description": "When set, bind the HTTP redirection port to a specific network address." },
-        "redirAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "redirAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "The actual redirection port as seen externally on the Internet, this setting is often used when a reverse-proxy is used." },
+        "relayPort": { "type": "integer", "minimum": 0, "maximum": 65535, "default": 0, "description": "When set, a web relay web server is bound to this port and will allow user access to remote web sites." },
+        "relayAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "default": null, "description": "The actual relay port as seen externally on the Internet, this setting is often used when a reverse-proxy is used." },
+        "relayDNS": { "type": "string", "default": null, "description": "When set, relayPort valie is ignored. Set this to a DNS name the points to this server. When the server is accessed using the DNS name, the main web server port is used as a web relay port."  },
         "agentPort": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "When set, enabled a new HTTPS server port that only accepts agent connections." },
         "agentPortBind": { "type": "string", "description": "When set, binds the agent port to a specific network interface." },
         "agentAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "When set, indicates the actual publically visible agent-only port. If not set, the AgentPort value is used." },
@@ -108,8 +111,10 @@ See description for information about each item.
         "agentCoreDump": { "type": "boolean", "default": false, "description": "Automatically activates and transfers any agent crash dump files to the server in meshcentral-data/coredumps." },
         "agentCoreDumpUsers": { "type": "array", "description": "List of non-administrator users that have access to mesh agent crash dumps." },
         "agentSignLock": { "type": "boolean", "default": false, "description": "When code signing an agent using authenticode, lock the agent to only allow connection to this server. (This is in testing, the default value will change to true in the future)." },
+        "agentTimeStampServer": { "type": [ "boolean", "string" ], "default": "http://timestamp.comodoca.com/authenticode", "description": "The time stamping server to use when code signing Windows executables. When set to false, the executables are not time stamped." },
+        "agentTimeStampProxy": { "type": [ "boolean", "string" ], "description": "The HTTP proxy to use when contacting the time stamping server, if false, no proxy is used. By default, the npmproxy value is used." },
         "ignoreAgentHashCheck": { "type": [ "boolean", "string" ], "default": false, "description": "When true, the agent no longer checked the TLS certificate of the server. This should be used for debugging only. You can also set this to a comma seperated list of IP addresses to ignore, for example: \"192.168.2.100,192.168.1.0/24\"." },
-        "exactPorts": { "type": "boolean", "default": false },
+        "exactPorts": { "type": "boolean", "default": false, "description": "When set to true, MeshCentral will only grab the required TCP listening ports or fail. It will not try to use the next available port of it's busy." },
         "allowLoginToken": { "type": "boolean", "default": false },
         "StrictTransportSecurity": { "type": ["boolean", "string"], "default": null, "description": "Controls the Strict-Transport-Security header, default is 1 year. Set to false to remove, true to force enable, or string to set a custom value. If set to null, MeshCentral will enable if a trusted certificate is set." },
         "allowFraming": { "type": "boolean", "default": false, "description": "When enabled, the MeshCentral web site can be embedded within another website's iframe." },
@@ -447,8 +452,8 @@ See description for information about each item.
             "type": [ "object", "boolean" ],
             "additionalProperties": false,
             "properties": {
-              "Backup": { "type": "boolean", "default": true, "description": "Allows administrators to backup the server from the My Server tab." },
-              "Restore": { "type": "boolean", "default": true, "description": "Allows administrators to restore the server from the My Server tab." },
+              "Backup": { "type": "boolean", "default": true, "description": "Allows administrators to backup the server from the My Server tab. This option can only enabled when the NeDB databse is in use. For other databases, this option disabled and the setting is ignored." },
+              "Restore": { "type": "boolean", "default": true, "description": "Allows administrators to restore the server from the My Server tab. This option can only enabled when the NeDB databse is in use. For other databases, this option disabled and the setting is ignored." },
               "Upgrade": { "type": "boolean", "default": true, "description": "Allows administrators to update the server from the My Server tab." },
               "ErrorLog": { "type": "boolean", "default": true, "description": "Allows administrators to see the server crash log the server from the My Server tab." },
               "Console": { "type": "boolean", "default": true, "description": "Allows administrators to access the server console from the My Server tab." },
@@ -547,6 +552,20 @@ See description for information about each item.
               "fileName": { "type": "string", "default": "meshagent", "description": "The agent filename." },
               "foregroundColor": { "type": "string", "default": null, "description": "Foreground text color, valid values are RBG in format 0,0,0 to 255,255,255 or format #000000 to #FFFFFF." },
               "backgroundColor": { "type": "string", "default": null, "description": "Background color, valid values are RBG in format 0,0,0 to 255,255,255 or format #000000 to #FFFFFF." }
+            }
+          },
+          "agentFileInfo": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Use this section to set resource metadata of the Windows agents prior to signing. In Windows, you can right-click and select properties to view these values.",
+            "properties": {
+              "fileDescription": { "type": "string", "description": "Executable file description." },
+              "fileVersion": { "type": "string", "description": "Executable file version, generally in the form of 1.2.3.4." },
+              "internalName":  { "type": "string", "description": "Executable internal name." },
+              "legalCopyright":  { "type": "string", "description": "Executable legal copyright." },
+              "originalFilename":  { "type": "string", "description": "Executable original file name." },
+              "productName":  { "type": "string", "description": "Executable product name." },
+              "productVersion":  { "type": "string", "description": "Executable product version, generally in the form of 1.2.3.4." }
             }
           },
           "assistantCustomization": {
