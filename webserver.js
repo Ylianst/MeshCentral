@@ -2864,7 +2864,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     webstate: encodeURIComponent(webstate).replace(/'/g, '%27'),
                     amtscanoptions: amtscanoptions,
                     pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports(),
-                    webRelayPort: ((typeof args.relaydns == 'string') ? args.port : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0)),
+                    webRelayPort: ((typeof args.relaydns == 'string') ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0)),
                     webRelayDns: ((typeof args.relaydns == 'string') ? args.relaydns : '')
                 }, dbGetFunc.req, domain), user);
             }
@@ -2972,11 +2972,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.devicesearchbarserverandclientname) { features2 += 0x00008000; } // Search bar will find both server name and client name
         if (domain.ipkvm) { features2 += 0x00010000; } // Indicates support for IP KVM device groups
         if ((domain.passwordrequirements) && (domain.passwordrequirements.otp2factor == false)) { features2 += 0x00020000; } // Indicates support for OTP 2FA is disabled
-        if ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.backupcode2factor === false)) { features2 += 0x00040000; } // Indicates 2FA backup codes are disabled
-        if ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.single2factorwarning === false)) { features2 += 0x00080000; } // Indicates no warning if a single 2FA is in use
+        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.backupcode2factor === false)) { features2 += 0x00040000; } // Indicates 2FA backup codes are disabled
+        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.single2factorwarning === false)) { features2 += 0x00080000; } // Indicates no warning if a single 2FA is in use
         if (domain.nightmode === 1) { features2 += 0x00100000; } // Always night mode
         if (domain.nightmode === 2) { features2 += 0x00200000; } // Always day mode
         if (domain.allowsavingdevicecredentials == false) { features2 += 0x00400000; } // Do not allow device credentials to be saved on the server
+        if ((typeof domain.files == 'object') && (domain.files.sftpconnect === false)) { features2 += 0x00800000; } // Remove the "SFTP Connect" button in the "Files" tab when the device is agent managed
+        if ((typeof domain.terminal == 'object') && (domain.terminal.sshconnect === false)) { features2 += 0x01000000; } // Remove the "SSH Connect" button in the "Terminal" tab when the device is agent managed
         return { features: features, features2: features2 };
     }
 

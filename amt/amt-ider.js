@@ -127,8 +127,8 @@ module.exports.CreateAmtIderSession = function (parent, db, ws, req, args, domai
                     if ((command.args.floppyPath != null) && (typeof command.args.floppyPath != 'string')) { command.args.floppyPath = null; } else { command.args.floppyPath = decodeURIComponent(command.args.floppyPath); }
                     if ((command.args.cdromPath != null) && (typeof command.args.cdromPath != 'string')) { command.args.cdromPath = null; } else { command.args.cdromPath = decodeURIComponent(command.args.cdromPath); }
                     // TODO: Double check that "." or ".." are not used.
-                    if ((command.args.floppyPath != null) && (command.args.floppyPath.indexOf("..") >= 0)) { delete command.args.floppyPath; }
-                    if ((command.args.cdromPath != null) && (command.args.cdromPath.indexOf("..") >= 0)) { delete command.args.cdromPath; }
+                    if ((command.args.floppyPath != null) && (command.args.floppyPath.indexOf('..') >= 0)) { delete command.args.floppyPath; }
+                    if ((command.args.cdromPath != null) && (command.args.cdromPath.indexOf('..') >= 0)) { delete command.args.cdromPath; }
 
                     // Get the disk image paths
                     var domainx = 'domain' + ((domain.id == '') ? '' : ('-' + domain.id));
@@ -148,7 +148,7 @@ module.exports.CreateAmtIderSession = function (parent, db, ws, req, args, domai
                     var iderError = obj.ider.m.diskSetup(floppyPath, cdromPath);
 
                     // Error with the disk images, unable to start IDER
-                    if (iderError != 0) { try { ws.send(JSON.stringify({ action: "error", code: iderError })); } catch (ex) { } break; }
+                    if (iderError != 0) { try { ws.send(JSON.stringify({ action: 'error', code: iderError })); } catch (ex) { } break; }
 
                     // Start the IDER session
                     obj.ider.Start(req.query.host, req.query.port, req.query.tls);
