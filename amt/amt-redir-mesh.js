@@ -44,10 +44,10 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     obj.redirTrace = false;
     obj.tls1only = 0; // TODO
 
-    obj.amtaccumulator = "";
+    obj.amtaccumulator = '';
     obj.amtsequence = 1;
     obj.amtkeepalivetimer = null;
-    obj.authuri = "/RedirectionService";
+    obj.authuri = '/RedirectionService';
 
     obj.onStateChanged = null;
     obj.forwardclient = null;
@@ -71,7 +71,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     const SITERIGHT_LOCKED = 32;
 
     function Debug(lvl) {
-        if ((arguments.length < 2) || (lvl > meshcentral.debugLevel)) return;
+        if ((arguments.length < 2) || (meshcentral.debugLevel == null) || (lvl > meshcentral.debugLevel)) return;
         var a = []; for (var i = 1; i < arguments.length; i++) { a.push(arguments[i]); } console.log(...a);
     }
 
@@ -81,7 +81,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
         var obj = new require('stream').Duplex(options);
         obj.forwardwrite = null;
         obj.updateBuffer = function (chunk) { this.push(chunk); };
-        obj._write = function (chunk, encoding, callback) { if (obj.forwardwrite != null) { obj.forwardwrite(chunk); } else { console.err("Failed to fwd _write."); } if (callback) callback(); }; // Pass data written to forward
+        obj._write = function (chunk, encoding, callback) { if (obj.forwardwrite != null) { obj.forwardwrite(chunk); } else { console.err('Failed to fwd _write.'); } if (callback) callback(); }; // Pass data written to forward
         obj._read = function (size) { }; // Push nothing, anything to read should be pushed from updateBuffer()
         return obj;
     }
@@ -478,10 +478,21 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     }
     
     obj.xxSend = function (x) {
-        if (obj.redirTrace) { console.log("REDIR-SEND(" + x.length + "): " + Buffer.from(x, "binary").toString('hex'), typeof x); }
-        //obj.Debug("Send(" + x.length + "): " + webserver.common.rstr2hex(x));
-        //obj.forwardclient.write(x); // FIXES CIRA
-        obj.forwardclient.write(Buffer.from(x, "binary"));
+        if (typeof x == 'string') {
+            //if (obj.redirTrace) {
+                //console.log("REDIR-SEND1(" + x.length + "): " + Buffer.from(x, 'binary').toString('hex'), typeof x);
+            //}
+            //obj.Debug("Send(" + x.length + "): " + webserver.common.rstr2hex(x));
+            //obj.forwardclient.write(x); // FIXES CIRA
+            obj.forwardclient.write(Buffer.from(x, 'binary'));
+        } else {
+            //if (obj.redirTrace) {
+                //console.log("REDIR-SEND2(" + x.length + "): " + x.toString('hex'), typeof x);
+            //}
+            //obj.Debug("Send(" + x.length + "): " + webserver.common.rstr2hex(x));
+            //obj.forwardclient.write(x); // FIXES CIRA
+            obj.forwardclient.write(x);
+        }
     }
 
     obj.Send = function (x) {
