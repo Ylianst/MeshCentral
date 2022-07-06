@@ -110,10 +110,14 @@
   "ko": {
     "allow": "허용하다",
     "deny": "거부",
-    "terminalNotify": "원격 터미널 세션이 시작되었습니다: {0}",
-    "desktopNotify": "원격 데스크톱 세션이 시작되었습니다: {0}",
-    "fileNotify": "원격 파일 전송 세션이 시작되었습니다: {0}",
-    "privacyBar": "다음과 데스크탑 공유: {0}"
+    "terminalNotify": "{0}이(가) 원격 터미널 세션을 시작했습니다.",
+    "desktopNotify": "{0}이(가) 원격 데스크톱 세션을 시작했습니다.",
+    "fileNotify": "{0}이(가) 원격 파일 세션을 시작했습니다.",
+    "privacyBar": "다음과 데스크톱 공유: {0}",
+    "autoAllowForFive": "다음 5분 동안 모든 연결 자동 수락",
+    "terminalConsent": "{0} 원격 터미널 액세스를 요청합니다. 액세스 권한을 부여하시겠습니까?",
+    "desktopConsent": "{0} 원격 데스크톱 액세스를 요청합니다. 액세스 권한을 부여하시겠습니까?",
+    "fileConsent": "{0}이(가) 원격 파일 액세스를 요청합니다. 액세스 권한을 부여하시겠습니까?"
   },
   "nl": {
     "allow": "Toestaan",
@@ -129,7 +133,15 @@
   },
   "pt": {
     "allow": "Permitir",
-    "deny": "Negar"
+    "deny": "Negar",
+    "autoAllowForFive": "Aceita automaticamente todas as conexões pelos próximos 5 minutos",
+    "terminalConsent": "{0} solicitando acesso ao terminal remoto. Garantir acesso?",
+    "desktopConsent": "{0} solicitando acesso à área de trabalho remota. Garantir acesso?",
+    "fileConsent": "{0} solicitando acesso remoto ao arquivo. Garantir acesso?",
+    "terminalNotify": "{0} iniciou uma sessão de terminal remoto.",
+    "desktopNotify": "{0} iniciou uma sessão de área de trabalho remota.",
+    "fileNotify": "{0} iniciou uma sessão de arquivo remoto.",
+    "privacyBar": "Compartilhando área de trabalho com: {0}"
   },
   "ru": {
     "allow": "Разрешить",
@@ -145,7 +157,15 @@
   },
   "sv": {
     "allow": "Tillåta",
-    "deny": "Förneka"
+    "deny": "Förneka",
+    "autoAllowForFive": "Acceptera alla anslutningar automatiskt under de kommande 5 minuterna",
+    "terminalConsent": "{0} begär åtkomst till fjärrterminal. Ge tillgång?",
+    "desktopConsent": "{0} begär åtkomst till fjärrskrivbord. Ge tillgång?",
+    "fileConsent": "{0} begär fjärråtkomst till fil. Ge tillgång?",
+    "terminalNotify": "{0} startade en fjärrterminalsession.",
+    "desktopNotify": "{0} startade en fjärrskrivbordssession.",
+    "fileNotify": "{0} startade en fjärrfilsession.",
+    "privacyBar": "Dela skrivbord med: {0}"
   },
   "tr": {
     "allow": "İzin ver",
@@ -161,7 +181,15 @@
   },
   "zh-chs": {
     "allow": "允许",
-    "deny": "否定"
+    "deny": "否定",
+    "autoAllowForFive": "在接下来的 5 分钟内自动接受所有连接",
+    "terminalConsent": "{0} 请求远程终端访问。授予访问权限？",
+    "desktopConsent": "{0} 请求远程桌面访问。授予访问权限？",
+    "fileConsent": "{0} 请求远程文件访问。授予访问权限？",
+    "terminalNotify": "{0} 启动了远程终端会话。",
+    "desktopNotify": "{0} 启动了远程桌面会话。",
+    "fileNotify": "{0} 启动了远程文件会话。",
+    "privacyBar": "与：{0} 共享桌面"
   },
   "da": {
     "allow": "Tillad",
@@ -198,5 +226,17 @@
     "desktopNotify": "{0} iniciou uma sessão de área de trabalho remota.",
     "fileNotify": "{0} {0} iniciou uma sessão de arquivos.",
     "privacyBar": "Compartilhando área de trabalho com: {0}"
+  },
+  "zh-cht": {
+    "allow": "允許",
+    "deny": "否定",
+    "autoAllowForFive": "在接下來的 5 分鐘內自動接受所有連接",
+    "terminalConsent": "{0} 請求遠程終端訪問。授予訪問權限？",
+    "desktopConsent": "{0} 請求遠程桌面訪問。授予訪問權限？",
+    "fileConsent": "{0} 請求遠程文件訪問。授予訪問權限？",
+    "terminalNotify": "{0} 啟動了遠程終端會話。",
+    "desktopNotify": "{0} 啟動了遠程桌面會話。",
+    "fileNotify": "{0} 啟動了遠程文件會話。",
+    "privacyBar": "與：{0} 共享桌面"
   }
 }

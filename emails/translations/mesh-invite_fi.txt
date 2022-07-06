@@ -27,7 +27,7 @@ Linux: leikkaa ja liitä seuraava päätelaitteeseen agentin asentamiseksi:
 ~
 ~</area-linux>
 ~<area-assistant>
-For MeshCentral Assistant on Windows, nagivate to the following link to complete the process:
+Jos käytät MeshCentral Assistantia Windowsissa, siirry seuraavaan linkkiin prosessin viimeistelemiseksi:
 ~
 ~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
 ~
