@@ -27,7 +27,7 @@ Apple OSX के लिए, इस प्रक्रिया को पूर�
 ~
 ~</area-linux>
 ~<area-assistant>
-For MeshCentral Assistant on Windows, nagivate to the following link to complete the process:
+विंडोज़ पर मेशसेंट्रल असिस्टेंट के लिए, प्रक्रिया को पूरा करने के लिए निम्न लिंक पर जाएँ:
 ~
 ~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
 ~

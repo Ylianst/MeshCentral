@@ -27,7 +27,7 @@ Linuxの場合は、ターミナルで以下をカットアンドペーストし
 ~
 ~</area-linux>
 ~<area-assistant>
-For MeshCentral Assistant on Windows, nagivate to the following link to complete the process:
+Windows용 MeshCentral Assistant의 경우 다음 링크로 이동하여 프로세스를 완료하십시오.
 ~
 ~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
 ~
