@@ -170,13 +170,11 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
         //console.log('SEND: ' + h); // Display send packet
     }
 
-    // NODE.js specific private method
-    obj.parseDigest = function (header) {
-        var t = header.substring(7).split(',');
-        for (var i in t) t[i] = t[i].trim();
-        return t.reduce(function (obj, s) { var parts = s.split('='); obj[parts[0]] = parts[1].replace(new RegExp('\"', 'g'), ''); return obj; }, {})
-    }
+    // Parse the HTTP digest header and return a list of key & values.
+    obj.parseDigest = function (header) { return correctedQuoteSplit(header.substring(7)).reduce(function (obj, s) { var parts = s.trim().split('='); obj[parts[0]] = parts[1].replace(new RegExp('\"', 'g'), ''); return obj; }, {}) }
 
+    // Split a string on quotes but do not do it when in quotes
+    function correctedQuoteSplit(str) { return str.split(',').reduce(function (a, c) { if (a.ic) { a.st[a.st.length - 1] += ',' + c } else { a.st.push(c) } if (c.split('"').length % 2 == 0) { a.ic = !a.ic } return a; }, { st: [], ic: false }).st }
     function nonceHex(v) { var s = ('00000000' + v.toString(16)); return s.substring(s.length - 8); }
 
     // NODE.js specific private method
