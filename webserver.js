@@ -5706,9 +5706,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.tlsAltServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
                 obj.expressWsAlt = require('express-ws')(obj.agentapp, obj.tlsAltServer, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
             }
+            if (parent.crowdsecMiddleware != null) { obj.agentapp.use(parent.crowdsecMiddleware); } // Setup CrowdSec bouncer middleware if needed
         }
 
         // Setup middleware
+        if (parent.crowdsecMiddleware != null) { obj.app.use(parent.crowdsecMiddleware); } // Setup CrowdSec bouncer middleware if needed
         obj.app.engine('handlebars', obj.exphbs({ defaultLayout: false }));
         obj.app.set('view engine', 'handlebars');
         if (obj.args.trustedproxy) {

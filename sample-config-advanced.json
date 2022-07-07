@@ -154,6 +154,10 @@
       "trustedFqdn": "sample.com",
       "ip": "192.168.1.1"
     },
+    "_crowdsec": {
+      "url": "http://localhost:8080",
+      "apiKey": "BOUNCER_API_KEY"
+    },
     "_plugins": { "enabled": true }
   },
   "_domaindefaults": {

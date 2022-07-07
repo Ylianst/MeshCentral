@@ -39,6 +39,9 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
         res.redirect('https://' + host + ':' + httpsPort + req.url);
     }
 
+    // Setup CrowdSec bouncer middleware if needed
+    if (parent.crowdsecMiddleware != null) { obj.app.use(parent.crowdsecMiddleware); }
+
     /*
     // Return the current domain of the request
     function getDomain(req) {

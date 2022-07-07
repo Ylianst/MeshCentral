@@ -698,7 +698,7 @@ function CreateMeshCentralServer(config, args) {
                                 obj.args = args = config2.settings;
 
                                 // Lower case all keys in the config file
-                                obj.common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders']);
+                                obj.common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders', 'crowdsec']);
 
                                 // Grad some of the values from the original config.json file if present.
                                 if ((config.settings.vault != null) && (config2.settings != null)) { config2.settings.vault = config.settings.vault; }
@@ -1196,7 +1196,7 @@ function CreateMeshCentralServer(config, args) {
                             for (i in args) { config2.settings[i] = args[i]; }
 
                             // Lower case all keys in the config file
-                            common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders']);
+                            common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders', 'crowdsec']);
 
                             // Grad some of the values from the original config.json file if present.
                             config2['mysql'] = config['mysql'];
@@ -1219,7 +1219,7 @@ function CreateMeshCentralServer(config, args) {
     };
 
     // Time to start the server of real.
-    obj.StartEx1b = function () {
+    obj.StartEx1b = async function () {
         var i;
 
         // Setup certificate operations
@@ -1230,6 +1230,12 @@ function CreateMeshCentralServer(config, args) {
             obj.fs.open(obj.config.settings.authlog, 'a', function (err, fd) {
                 if (err == null) { obj.authlogfile = fd; obj.authlog = true; } else { console.log('ERROR: Unable to open: ' + obj.config.settings.authlog); }
             })
+        }
+
+        // Start CrowdSec bouncer if needed: https://www.crowdsec.net/
+        if (typeof obj.args.crowdsec == 'object') {
+            const expressCrowdsecBouncer = require("@crowdsec/express-bouncer");
+            try { obj.crowdsecMiddleware = await expressCrowdsecBouncer(obj.args.crowdsec); } catch (ex) { delete obj.crowdsecMiddleware; }
         }
 
         // Check if self update is allowed. If running as a Windows service, self-update is not possible.
@@ -3515,7 +3521,7 @@ function getConfig(createSampleConfig) {
 
     // Lower case all keys in the config file
     try {
-        require('./common.js').objKeysToLower(config, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders']);
+        require('./common.js').objKeysToLower(config, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders', 'crowdsec']);
     } catch (ex) {
         console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
         process.exit();
@@ -3713,6 +3719,7 @@ function mainStart() {
         if (nodemailer || (config.smtp != null) || (config.sendmail != null)) { modules.push('nodemailer'); } // Add SMTP support
         if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail'); } // Add SendGrid support
         if (args.translate) { modules.push('jsdom'); modules.push('esprima'); modules.push('minify-js'); modules.push('html-minifier'); } // Translation support
+        if (typeof config.settings.crowdsec == 'object') { modules.push('@crowdsec/express-bouncer'); } // Add CrowdSec bounser module (https://www.npmjs.com/package/@crowdsec/express-bouncer)
 
         // Setup encrypted zip support if needed
         if (config.settings.autobackup && config.settings.autobackup.zippassword) {
