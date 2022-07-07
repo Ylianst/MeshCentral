@@ -36,6 +36,9 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
     var tlsSessionStoreCount = 0;     // Number of cached TLS session information in store.
 
     function serverStart() {
+        // Setup CrowdSec bouncer middleware if needed
+        if (parent.crowdsecMiddleware != null) { obj.app.use(parent.crowdsecMiddleware); }
+
         if (args.trustedproxy) {
             // Reverse proxy should add the "X-Forwarded-*" headers
             try {
