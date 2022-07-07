@@ -5747,9 +5747,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var sessionOptions = {
             name: 'xid', // Recommended security practice to not use the default cookie name
             httpOnly: true,
+            domain: (certificates.CommonName != 'un-configured' ? "." + certificates.CommonName : null),
             keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
             secure: (obj.args.tlsoffload == null), // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
-            sameSite: obj.args.sessionsamesite
+            sameSite: (obj.args.sessionsamesite ? obj.args.sessionsamesite : 'lax')
         }
         if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60 * 1000); }
         obj.app.use(obj.session(sessionOptions));
