@@ -3196,6 +3196,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     }
 
+    // Handle Captcha GET
+    function handleCaptchaGetRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if (parent.crowdSecBounser == null) { res.sendStatus(404); return; }
+        parent.crowdSecBounser.applyCaptcha(req, res, function () { res.redirect((((domain.id == '') && (domain.dns == null)) ? '/' : ('/' + domain.id))); });
+    }
+
+    // Handle Captcha POST
+    function handleCaptchaPostRequest(req, res) {
+        if (parent.crowdSecBounser == null) { res.sendStatus(404); return; }
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        req.originalUrl = (((domain.id == '') && (domain.dns == null)) ? '/' : ('/' + domain.id));
+        parent.crowdSecBounser.applyCaptcha(req, res, function () { res.redirect(req.originalUrl); });
+    }
+
     // Render the terms of service.
     function handleTermsRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -5714,11 +5731,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.tlsAltServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
                 obj.expressWsAlt = require('express-ws')(obj.agentapp, obj.tlsAltServer, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
             }
-            if (parent.crowdsecMiddleware != null) { obj.agentapp.use(parent.crowdsecMiddleware); } // Setup CrowdSec bouncer middleware if needed
         }
 
         // Setup middleware
-        if (parent.crowdsecMiddleware != null) { obj.app.use(parent.crowdsecMiddleware); } // Setup CrowdSec bouncer middleware if needed
         obj.app.engine('handlebars', obj.exphbs({ defaultLayout: false }));
         obj.app.set('view engine', 'handlebars');
         if (obj.args.trustedproxy) {
@@ -5762,7 +5777,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         });
 
         // Add HTTP security headers to all responses
-        obj.app.use(function (req, res, next) {
+        obj.app.use(async function (req, res, next) {
             // Check if a session is destroyed
             if (typeof req.session.userid == 'string') {
                 if (typeof req.session.x == 'string') {
@@ -5904,6 +5919,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Extend the session time by forcing a change to the session every minute.
             if (req.session.userid != null) { req.session.t = Math.floor(Date.now() / 60e3); } else { delete req.session.t; }
+
+            // Check CrowdSec Bounser if configured
+            if ((parent.crowdSecBounser != null) && (req.headers['upgrade'] != 'websocket') && (req.session.userid == null)) { if ((await parent.crowdSecBounser.process(domain, req, res, next)) == true) { return; } }
 
             // Debugging code, this will stop the agent from crashing if two responses are made to the same request.
             const render = res.render;
@@ -6078,6 +6096,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);
                 obj.app.post(url + 'pluginadmin.ashx', obj.bodyParser.urlencoded({ extended: false }), obj.handlePluginAdminPostReq);
                 obj.app.get(url + 'pluginHandler.js', obj.handlePluginJS);
+            }
+
+            // Check CrowdSec Bounser if configured
+            if (parent.crowdSecBounser != null) {
+                obj.app.get(url + 'captcha.ashx', handleCaptchaGetRequest);
+                obj.app.post(url + 'captcha.ashx', obj.bodyParser.urlencoded({ extended: false }), handleCaptchaPostRequest);
             }
 
             // Setup IP-KVM relay if supported
