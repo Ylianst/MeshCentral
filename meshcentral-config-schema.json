@@ -201,7 +201,8 @@
           "description": "Enabled the MeshCentral built-in Crowdsec bouncer. This section is passed directly to the bouncer, all of the settings are documented at https://www.npmjs.com/package/@crowdsec/express-bouncer",
           "properties": {
             "url": { "type": "string", "description": "The URL of your LAPI instance. Ex: http://localhost:8080" },
-            "apiKey": { "type": "string", "description": "The bouncer key (generated via cscli)" }
+            "apiKey": { "type": "string", "description": "The bouncer key (generated via cscli)." },
+            "fallbackRemediation": { "type": "string", "default": "ban", "enum": ["bypass", "captcha", "ban"], "description": "Action to perform if the CrowdSec agent can't be contacted." }
           },
           "required": [ "url", "apiKey" ]
         },

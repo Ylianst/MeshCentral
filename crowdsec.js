@@ -5,7 +5,7 @@ module.exports.CreateCrowdSecBouncer = function (parent, config) {
     const { getLogger } = require('@crowdsec/express-bouncer/src/nodejs-bouncer/lib/logger');
     const { configure, renderBanWall, testConnectionToCrowdSec, getRemediationForIp } = require('@crowdsec/express-bouncer/src/nodejs-bouncer');
     const applyCaptcha = require('@crowdsec/express-bouncer/src/express-crowdsec-middleware/lib/captcha');
-    const { BYPASS_REMEDIATION, CAPTCHA_REMEDIATION, BAN_REMEDIATION } = require('@crowdsec/express-bouncer/src/nodejs-bouncer/lib/constants');
+    const { BYPASS_REMEDIATION, CAPTCHA_REMEDIATION, BAN_REMEDIATION } = require('@crowdsec/express-bouncer/src/nodejs-bouncer/lib/constants'); // "bypass", "captcha", "ban";
     const svgCaptcha = require('svg-captcha');
     const { renderCaptchaWall } = require('@crowdsec/express-bouncer/src/nodejs-bouncer');
 
@@ -15,7 +15,7 @@ module.exports.CreateCrowdSecBouncer = function (parent, config) {
     // Set the default values
     if (typeof config.userAgent != 'string') { config.userAgent = "CrowdSec Express-NodeJS bouncer/v0.0.1"; }
     if (typeof config.timeout != 'number') { config.timeout = 2000; }
-    if (typeof config.fallbackRemediation != 'number') { config.fallbackRemediation = BAN_REMEDIATION; }
+    if ((typeof config.fallbackRemediation != 'string') || (["bypass", "captcha", "ban"].indexOf(config.fallbackRemediation) == -1)) { config.fallbackRemediation = BAN_REMEDIATION; }
     if (typeof config.maxRemediation != 'number') { config.maxRemediation = BAN_REMEDIATION; }
     if (typeof config.captchaGenerationCacheDuration != 'number') { config.captchaGenerationCacheDuration = 60 * 1000; }
     if (typeof config.captchaResolutionCacheDuration != 'number') { config.captchaResolutionCacheDuration = 30 * 60 * 1000; }
@@ -53,7 +53,8 @@ module.exports.CreateCrowdSecBouncer = function (parent, config) {
     // Process a web request
     obj.process = async function (domain, req, res, next) {
         try {
-            const remediation = await getRemediationForIp(req.clientIp);
+            var remediation = config.fallbackRemediation;
+            try { remediation = await getRemediationForIp(req.clientIp); } catch (ex) { }
             //console.log('CrowdSec', req.clientIp, remediation, req.url);
             switch (remediation) {
                 case BAN_REMEDIATION:
