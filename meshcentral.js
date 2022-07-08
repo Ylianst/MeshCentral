@@ -1233,10 +1233,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Start CrowdSec bouncer if needed: https://www.crowdsec.net/
-        if (typeof obj.args.crowdsec == 'object') {
-            const expressCrowdsecBouncer = require("@crowdsec/express-bouncer");
-            try { obj.crowdsecMiddleware = await expressCrowdsecBouncer(obj.args.crowdsec); } catch (ex) { delete obj.crowdsecMiddleware; }
-        }
+        if (typeof obj.args.crowdsec == 'object') { obj.crowdSecBounser = require('./crowdsec.js').CreateCrowdSecBouncer(obj, obj.args.crowdsec); }
 
         // Check if self update is allowed. If running as a Windows service, self-update is not possible.
         if (obj.fs.existsSync(obj.path.join(__dirname, 'daemon'))) { obj.serverSelfWriteAllowed = false; }
