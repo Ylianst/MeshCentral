@@ -3501,7 +3501,10 @@ function getConfig(createSampleConfig) {
     }
     if (fs.existsSync(configFilePath)) {
         // Load and validate the configuration file
-        try { config = require(configFilePath); } catch (ex) { console.log('ERROR: Unable to parse ' + configFilePath + '.'); return null; }
+        try {
+            const json = fs.readFileSync(configFilePath);
+            config = JSON.parse(json);          
+        } catch (ex) { console.log('ERROR: Unable to parse ' + configFilePath + ':', ex); return null; }
         if (config.domains == null) { config.domains = {}; }
         for (i in config.domains) { if ((i.split('/').length > 1) || (i.split(' ').length > 1)) { console.log("ERROR: Error in config.json, domain names can't have spaces or /."); return null; } }
     } else {
