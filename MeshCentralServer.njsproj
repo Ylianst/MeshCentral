@@ -100,6 +100,7 @@
     <Compile Include="amt\amt-xml.js" />
     <Compile Include="amt\amt.js" />
     <Compile Include="authenticode.js" />
+    <Compile Include="crowdsec.js" />
     <Compile Include="exeHandler.js" />
     <Compile Include="amtprovisioningserver.js" />
     <Compile Include="firebase.js" />
