@@ -29,7 +29,6 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
     obj.webRelayServer = null;
     obj.port = 0;
     obj.cleanupTimer = null;
-    var nextSessionId = 1;
     var relaySessions = {}            // RelayID --> Web Mutli-Tunnel
     const constants = (require('crypto').constants ? require('crypto').constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
     var tlsSessionStore = {};         // Store TLS session information for quick resume.
@@ -68,14 +67,14 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
             httpOnly: true,
             keys: [args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
             secure: (args.tlsoffload == null), // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
-            sameSite: args.sessionsamesite
+            sameSite: (args.sessionsamesite ? args.sessionsamesite : 'lax')
         }
         if (args.sessiontime != null) { sessionOptions.maxAge = (args.sessiontime * 60 * 1000); }
         obj.app.use(obj.session(sessionOptions));
 
         // Add HTTP security headers to all responses
         obj.app.use(function (req, res, next) {
-            parent.debug('webrequest', req.url + ' (RelayServer)');
+            parent.debug('webrelay', req.url);
             res.removeHeader('X-Powered-By');
             res.set({
                 'strict-transport-security': 'max-age=60000; includeSubDomains',
@@ -83,7 +82,7 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
                 'x-frame-options': 'SAMEORIGIN',
                 'X-XSS-Protection': '1; mode=block',
                 'X-Content-Type-Options': 'nosniff',
-                'Content-Security-Policy': "default-src 'none'; style-src 'self' 'unsafe-inline';"
+                'Content-Security-Policy': "default-src 'self'; style-src 'self' 'unsafe-inline';"
             });
 
             // Set the real IP address of the request
@@ -121,8 +120,8 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
                 return next();
             } else {
                 // If this is a normal request (GET, POST, etc) handle it here
-                if ((req.session.userid != null) && (req.session.rid != null)) {
-                    var relaySession = relaySessions[req.session.userid + '/' + req.session.rid];
+                if ((req.session.userid != null) && (req.session.x != null)) {
+                    var relaySession = relaySessions[req.session.userid + '/' + req.session.x];
                     if (relaySession != null) {
                         // The web relay session is valid, use it
                         relaySession.handleRequest(req, res);
@@ -154,8 +153,8 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
 
         // Handle incoming web socket calls
         obj.app.ws('/*', function (ws, req) {
-            if ((req.session.userid != null) && (req.session.rid != null)) {
-                var relaySession = relaySessions[req.session.userid + '/' + req.session.rid];
+            if ((req.session.userid != null) && (req.session.x != null)) {
+                var relaySession = relaySessions[req.session.userid + '/' + req.session.x];
                 if (relaySession != null) {
                     // The multi-tunnel session is valid, use it
                     relaySession.handleWebSocket(ws, req);
@@ -173,10 +172,10 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
         obj.app.get('/control-redirect.ashx', function (req, res) {
             if ((req.session == null) || (req.session.userid == null)) { res.redirect('/'); return; }
             res.set({ 'Cache-Control': 'no-store' });
-            parent.debug('web', 'webRelaySetup');
+            parent.debug('webrelay', 'webRelaySetup');
 
             // Check that all the required arguments are present
-            if ((req.session.userid == null) || (req.query.n == null) || (req.query.p == null) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
+            if ((req.session.userid == null) || (req.session.x == null) || (req.query.n == null) || (req.query.p == null) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
 
             // Get the user and domain information
             const userid = req.session.userid;
@@ -188,35 +187,30 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
             const appid = parseInt(req.query.appid);
 
             // Check to see if we already have a multi-relay session that matches exactly this device and port for this user
-            var relaySession = null;
-            for (var i in relaySessions) {
-                const xrelaySession = relaySessions[i];
-                if ((xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
-                    relaySession = xrelaySession; // We found an exact match
-                }
+            const xrelaySession = relaySessions[req.session.userid + '/' + req.session.x];
+            if ((xrelaySession != null) && (xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
+                // We found an exact match, we are all setup already, redirect to root
+                res.redirect('/');
+                return;
             }
 
-            if (relaySession != null) {
-                // Since we found a match, use it
-                req.session.rid = relaySession.sessionId;
-            } else {
-                // Create a web relay session
-                relaySession = require('./apprelays.js').CreateWebRelaySession(parent, db, req, args, domain, userid, nodeid, addr, port, appid);
-                relaySession.onclose = function (sessionId) {
-                    // Remove the relay session
-                    delete relaySessions[sessionId];
-                    // If there are not more relay sessions, clear the cleanup timer
-                    if ((Object.keys(relaySessions).length == 0) && (obj.cleanupTimer != null)) { clearInterval(obj.cleanupTimer); obj.cleanupTimer = null; }
-                }
-                relaySession.sessionId = nextSessionId++;
+            // There is a relay session, but it's not correct, close it.
+            if (xrelaySession != null) { xrelaySession.close(); delete relaySessions[req.session.userid + '/' + req.session.x]; }
 
-                // Set the multi-tunnel session
-                relaySessions[userid + '/' + relaySession.sessionId] = relaySession;
-                req.session.rid = relaySession.sessionId;
-
-                // Setup the cleanup timer if needed
-                if (obj.cleanupTimer == null) { obj.cleanupTimer = setInterval(checkTimeout, 10000); }
+            // Create a web relay session
+            const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid);
+            relaySession.onclose = function (sessionId) {
+                // Remove the relay session
+                delete relaySessions[sessionId];
+                // If there are not more relay sessions, clear the cleanup timer
+                if ((Object.keys(relaySessions).length == 0) && (obj.cleanupTimer != null)) { clearInterval(obj.cleanupTimer); obj.cleanupTimer = null; }
             }
+
+            // Set the multi-tunnel session
+            relaySessions[userid + '/' + req.session.x] = relaySession;
+
+            // Setup the cleanup timer if needed
+            if (obj.cleanupTimer == null) { obj.cleanupTimer = setInterval(checkTimeout, 10000); }
 
             // Redirect to root
             res.redirect('/');
