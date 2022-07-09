@@ -120,7 +120,7 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
                 return next();
             } else {
                 // If this is a normal request (GET, POST, etc) handle it here
-                if ((req.session.userid != null) && (req.session.x != null)) {
+                if ((req.session.userid != null) && (req.session.x != null) && (parent.webserver.destroyedSessions[req.session.userid + '/' + req.session.x] == null)) {
                     var relaySession = relaySessions[req.session.userid + '/' + req.session.x];
                     if (relaySession != null) {
                         // The web relay session is valid, use it
@@ -153,7 +153,7 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
 
         // Handle incoming web socket calls
         obj.app.ws('/*', function (ws, req) {
-            if ((req.session.userid != null) && (req.session.x != null)) {
+            if ((req.session.userid != null) && (req.session.x != null) && (parent.webserver.destroyedSessions[req.session.userid + '/' + req.session.x] == null)) {
                 var relaySession = relaySessions[req.session.userid + '/' + req.session.x];
                 if (relaySession != null) {
                     // The multi-tunnel session is valid, use it
@@ -170,12 +170,21 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
 
         // This is the magic URL that will setup the relay session
         obj.app.get('/control-redirect.ashx', function (req, res) {
-            if ((req.session == null) || (req.session.userid == null)) { res.redirect('/'); return; }
             res.set({ 'Cache-Control': 'no-store' });
             parent.debug('webrelay', 'webRelaySetup');
 
+            // Decode the relay cookie
+            if (req.query.c != null) {
+                // Decode and check if this relay cookie is valid
+                const urlCookie = obj.parent.decodeCookie(req.query.c, parent.loginCookieEncryptionKey);
+                if ((urlCookie != null) && (urlCookie.ruserid != null) && (urlCookie.x != null) && (parent.webserver.destroyedSessions[urlCookie.ruserid + '/' + urlCookie.x] == null)) {
+                    if (req.session.x != urlCookie.x) { req.session.x = urlCookie.x; } // Set the sessionid if missing
+                    if (req.session.userid != urlCookie.ruserid) { req.session.userid = urlCookie.ruserid; } // Set the session userid if missing
+                }
+            }
+
             // Check that all the required arguments are present
-            if ((req.session.userid == null) || (req.session.x == null) || (req.query.n == null) || (req.query.p == null) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
+            if ((req.session.userid == null) || (req.session.x == null) || (req.query.n == null) || (req.query.p == null) || (parent.webserver.destroyedSessions[req.session.userid + '/' + req.session.x] != null) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
 
             // Get the user and domain information
             const userid = req.session.userid;
