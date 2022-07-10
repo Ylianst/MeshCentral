@@ -88,7 +88,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Web relay sessions
     var webRelayNextSessionId = 1;
-    var webRelaySessions = {}            // RelayID --> Web Mutli-Tunnel
+    var webRelaySessions = {}            // UserId/SessionId/Host --> Web Relay Session
     var webRelayCleanupTimer = null;
     
     // Mesh Rights
@@ -2871,8 +2871,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     webstate: encodeURIComponent(webstate).replace(/'/g, '%27'),
                     amtscanoptions: amtscanoptions,
                     pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports(),
-                    webRelayPort: ((typeof args.relaydns == 'string') ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0)),
-                    webRelayDns: ((typeof args.relaydns == 'string') ? args.relaydns : '')
+                    webRelayPort: ((args.relaydns != null) ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0)),
+                    webRelayDns: ((args.relaydns != null) ? args.relaydns[0] : '')
                 }, dbGetFunc.req, domain), user);
             }
             xdbGetFunc.req = req;
@@ -5772,7 +5772,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Handle all incoming web sockets, see if some need to be handled as web relays
         obj.app.ws('/*', function (ws, req, next) {
-            if ((obj.webRelayRouter != null) && (req.hostname == obj.args.relaydns)) { handleWebRelayWebSocket(ws, req); return; }
+            if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) { handleWebRelayWebSocket(ws, req); return; }
             return next();
         });
 
@@ -5876,7 +5876,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
 
             // If this is a web relay connection, handle it here.
-            if ((obj.webRelayRouter != null) && (req.hostname == obj.args.relaydns)) {
+            if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) {
                 if (['GET', 'POST', 'PUT', 'HEAD'].indexOf(req.method) >= 0) { return obj.webRelayRouter(req, res); } else { res.sendStatus(404); return; }
             }
 
@@ -6580,12 +6580,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Setup web relay on this web server if needed
             // We set this up when a DNS name is used as a web relay instead of a port
-            if (typeof obj.args.relaydns == 'string') {
+            if (obj.args.relaydns != null) {
                 obj.webRelayRouter = require('express').Router();
 
                 // This is the magic URL that will setup the relay session
                 obj.webRelayRouter.get('/control-redirect.ashx', function (req, res, next) {
-                    if (req.headers.host != obj.args.relaydns) { res.sendStatus(404); return; }
+                    if (obj.args.relaydns.indexOf(req.hostname) == -1) { res.sendStatus(404); return; }
                     if ((req.session.userid == null) && obj.args.user && obj.users['user//' + obj.args.user.toLowerCase()]) { req.session.userid = 'user//' + obj.args.user.toLowerCase(); } // Use a default user if needed
                     res.set({ 'Cache-Control': 'no-store' });
                     parent.debug('web', 'webRelaySetup');
@@ -6613,7 +6613,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     const appid = parseInt(req.query.appid);
 
                     // Check to see if we already have a multi-relay session that matches exactly this device and port for this user
-                    const xrelaySession = webRelaySessions[req.session.userid + '/' + req.session.x];
+                    const xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + req.hostname;
+                    const xrelaySession = webRelaySessions[xrelaySessionId];
                     if ((xrelaySession != null) && (xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
                         // We found an exact match, we are all setup already, redirect to root
                         res.redirect('/');
@@ -6623,11 +6624,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // There is a relay session, but it's not correct, close it.
                     if (xrelaySession != null) {
                         xrelaySession.close();
-                        delete webRelaySessions[req.session.userid + '/' + req.session.x];
+                        delete webRelaySessions[xrelaySessionId];
                     }
 
                     // Create a web relay session
-                    const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid);
+                    const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySessionId);
                     relaySession.onclose = function (sessionId) {
                         // Remove the relay session
                         delete webRelaySessions[sessionId];
@@ -6636,7 +6637,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
 
                     // Set the multi-tunnel session
-                    webRelaySessions[userid + '/' + req.session.x] = relaySession;
+                    webRelaySessions[xrelaySessionId] = relaySession;
 
                     // Setup the cleanup timer if needed
                     if (obj.cleanupTimer == null) { webRelayCleanupTimer = setInterval(checkWebRelaySessionsTimeout, 10000); }
@@ -6701,7 +6702,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Handle an incoming request as a web relay 
     function handleWebRelayRequest(req, res) {
         if ((req.session.userid != null) && (req.session.x != null) && (obj.destroyedSessions[req.session.userid + '/' + req.session.x] == null)) {
-            var relaySession = webRelaySessions[req.session.userid + '/' + req.session.x];
+            var relaySession = webRelaySessions[req.session.userid + '/' + req.session.x + '/' + req.hostname];
             if (relaySession != null) {
                 // The web relay session is valid, use it
                 relaySession.handleRequest(req, res);
@@ -6718,7 +6719,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Handle an incoming websocket connection as a web relay 
     function handleWebRelayWebSocket(ws, req) {
         if ((req.session.userid != null) && (req.session.x != null) && (obj.destroyedSessions[req.session.userid + '/' + req.session.x] == null)) {
-            var relaySession = webRelaySessions[req.session.userid + '/' + req.session.x];
+            var relaySession = webRelaySessions[req.session.userid + '/' + req.session.x + '/' + req.hostname];
             if (relaySession != null) {
                 // The multi-tunnel session is valid, use it
                 relaySession.handleWebSocket(ws, req);
@@ -7184,7 +7185,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             } else {
                 obj.tcpServer = obj.tlsServer.listen(port, addr, function () {
                     console.log('MeshCentral HTTPS server running on ' + certificates.CommonName + ':' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.');
-                    if (typeof args.relaydns == 'string') { console.log('MeshCentral HTTPS relay server running on ' + args.relaydns + ':' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.'); }
+                    if (args.relaydns != null) { console.log('MeshCentral HTTPS relay server running on ' + args.relaydns[0] + ':' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.'); }
                 });
                 obj.parent.updateServerState('servername', certificates.CommonName);
             }
@@ -7194,7 +7195,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else {
             obj.tcpServer = obj.app.listen(port, addr, function () {
                 console.log('MeshCentral HTTP server running on port ' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.');
-                if (typeof args.relaydns == 'string') { console.log('MeshCentral HTTP relay server running on ' + args.relaydns + ':' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.'); }
+                if (args.relaydns != null) { console.log('MeshCentral HTTP relay server running on ' + args.relaydns[0] + ':' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.'); }
             });
             obj.parent.updateServerState('http-port', port);
             if (args.aliasport != null) { obj.parent.updateServerState('http-aliasport', args.aliasport); }

@@ -69,7 +69,7 @@ function SerialTunnel(options) {
 }
 
 // Construct a Web relay object
-module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, userid, nodeid, addr, port, appid) {
+module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, userid, nodeid, addr, port, appid, sessionid) {
     const obj = {};
     obj.parent = parent;
     obj.lastOperation = Date.now();
@@ -79,6 +79,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
     obj.addr = addr;
     obj.port = port;
     obj.appid = appid;
+    obj.sessionid = sessionid;
     var pendingRequests = [];
     var nextTunnelId = 1;
     var tunnels = {};
@@ -199,7 +200,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
         for (var i in pendingRequests) { if (pendingRequests[i][2] == true) { pendingRequests[i][1].close(); } else { pendingRequests[i][1].end(); } }
 
         // Notify of session closure
-        if (obj.onclose) { obj.onclose(obj.userid + '/' + obj.sessionId); }
+        if (obj.onclose) { obj.onclose(obj.sessionid); }
 
         // Cleanup
         delete obj.userid;

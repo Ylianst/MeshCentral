@@ -1649,8 +1649,12 @@ function CreateMeshCentralServer(config, args) {
                     obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.certificates, obj.StartEx5);
                     if (obj.redirserver != null) { obj.redirserver.hookMainWebServer(obj.certificates); }
 
+                    // Change RelayDNS to a array of strings
+                    if (typeof obj.args.relaydns == 'string') { obj.args.relaydns = [obj.args.relaydns]; }
+                    if (obj.common.validateStrArray(obj.args.relaydns, 1) == false) { delete obj.args.relaydns; }
+
                     // Start the HTTP relay web server if needed
-                    if ((typeof obj.args.relaydns != 'string') && (typeof obj.args.relayport == 'number') && (obj.args.relayport != 0)) {
+                    if ((obj.args.relaydns != null) && (typeof obj.args.relayport == 'number') && (obj.args.relayport != 0)) {
                         obj.webrelayserver = require('./webrelayserver.js').CreateWebRelayServer(obj, obj.db, obj.args, obj.certificates, function () { });
                     }
 
