@@ -6612,61 +6612,60 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     const port = parseInt(req.query.p);
                     const appid = parseInt(req.query.appid);
 
-                    try {
-
-                        // Check that we have an exact session on any of the relay DNS names
-                        var xrelaySessionId, xrelaySession, freeRelayHost, oldestRelayTime, oldestRelayHost;
-                        for (var hostIndex in obj.args.relaydns) {
-                            const host = obj.args.relaydns[hostIndex];
-                            xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + host;
-                            xrelaySession = webRelaySessions[xrelaySessionId];
-                            if (xrelaySession == null) {
-                                // We found an unused hostname, save this as it could be useful.
-                                if (freeRelayHost == null) { freeRelayHost = host; }
-                            } else {
-                                // Check if we already have a relay session that matches exactly what we want
-                                if ((xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
-                                    // We found an exact match, we are all setup already, redirect to root of that DNS name
-                                    if (host == req.hostname) {
-                                        // Request was made on the same host, redirect to root.
-                                        res.redirect('/');
-                                    } else {
-                                        // Request was made to a different host
-                                        const httpport = ((args.aliasport != null) ? args.aliasport : args.port);
-                                        res.redirect('https://' + host + ((httpport != 443) ? (':' + httpport) : '') + '/');
-                                    }
-                                    return;
+                    // Check that we have an exact session on any of the relay DNS names
+                    var xrelaySessionId, xrelaySession, freeRelayHost, oldestRelayTime, oldestRelayHost;
+                    for (var hostIndex in obj.args.relaydns) {
+                        const host = obj.args.relaydns[hostIndex];
+                        xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + host;
+                        xrelaySession = webRelaySessions[xrelaySessionId];
+                        if (xrelaySession == null) {
+                            // We found an unused hostname, save this as it could be useful.
+                            if (freeRelayHost == null) { freeRelayHost = host; }
+                        } else {
+                            // Check if we already have a relay session that matches exactly what we want
+                            if ((xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
+                                // We found an exact match, we are all setup already, redirect to root of that DNS name
+                                if (host == req.hostname) {
+                                    // Request was made on the same host, redirect to root.
+                                    res.redirect('/');
+                                } else {
+                                    // Request was made to a different host
+                                    const httpport = ((args.aliasport != null) ? args.aliasport : args.port);
+                                    res.redirect('https://' + host + ((httpport != 443) ? (':' + httpport) : '') + '/');
                                 }
+                                return;
+                            }
 
-                                // Keep a record of the oldest web relay session, this could be useful.
-                                if (oldestRelayHost == null) {
-                                    // Oldest host not set yet, set it
+                            // Keep a record of the oldest web relay session, this could be useful.
+                            if (oldestRelayHost == null) {
+                                // Oldest host not set yet, set it
+                                oldestRelayHost = host;
+                                oldestRelayTime = xrelaySession.lastOperation;
+                            } else {
+                                // Check if this host is older then oldest so far
+                                if (oldestRelayTime > xrelaySession.lastOperation) {
                                     oldestRelayHost = host;
                                     oldestRelayTime = xrelaySession.lastOperation;
-                                } else {
-                                    // Check if this host is older then oldest so far
-                                    if (oldestRelayTime > xrelaySession.lastOperation) {
-                                        oldestRelayHost = host;
-                                        oldestRelayTime = xrelaySession.lastOperation;
-                                    }
                                 }
                             }
                         }
+                    }
 
-                        // Check if there is a free relay DNS name we can use
-                        var selectedHost = null;
-                        if (freeRelayHost != null) {
-                            // There is a free one, use it.
-                            selectedHost = freeRelayHost;
-                            xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + selectedHost;
-                        } else {
-                            // No free ones, close the oldest one
-                            selectedHost = oldestRelayHost;
-                            xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + selectedHost;
-                            xrelaySession = webRelaySessions[xrelaySessionId];
-                            xrelaySession.close();
-                            delete webRelaySessions[xrelaySessionId];
-                        }
+                    // Check if there is a free relay DNS name we can use
+                    var selectedHost = null;
+                    if (freeRelayHost != null) {
+                        // There is a free one, use it.
+                        selectedHost = freeRelayHost;
+                    } else {
+                        // No free ones, close the oldest one
+                        selectedHost = oldestRelayHost;
+                    }
+                    xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + selectedHost;
+
+                    if (selectedHost == req.hostname) {
+                        // If this web relay session id is not free, close it now
+                        xrelaySession = webRelaySessions[xrelaySessionId];
+                        if (xrelaySession != null) { xrelaySession.close(); delete webRelaySessions[xrelaySessionId]; }
 
                         // Create a web relay session
                         const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySessionId);
@@ -6683,16 +6682,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         // Setup the cleanup timer if needed
                         if (obj.cleanupTimer == null) { webRelayCleanupTimer = setInterval(checkWebRelaySessionsTimeout, 10000); }
 
-                        if (selectedHost == req.hostname) {
-                            // Request was made on the same host, redirect to root.
-                            res.redirect('/');
+                        // Redirect to root.
+                        res.redirect('/');
+                    } else {
+                        if (req.query.noredirect != null) {
+                            // No redirects allowed, fail here. This is important to make sure there is no redirect cascades
+                            res.sendStatus(404);
                         } else {
-                            // Request was made to a different host
+                            // Request was made to a different host, redirect using the full URL so an HTTP cookie can be created on the other DNS name
                             const httpport = ((args.aliasport != null) ? args.aliasport : args.port);
-                            res.redirect('https://' + selectedHost + ((httpport != 443) ? (':' + httpport) : '') + '/');
+                            res.redirect('https://' + selectedHost + ((httpport != 443) ? (':' + httpport) : '') + req.url + '&noredirect=1');
                         }
-
-                    } catch (ex) { console.log(ex); }
+                    }
                 });
 
                 // Handle all incoming requests as web relays
@@ -6716,7 +6717,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Indicates to ExpressJS that the override public folder should be used to serve static files.
             if (parent.config.domains[i].webpublicpath != null) {
-                // Use domain public path
+                // Use domain public pathe
                 obj.app.use(url, obj.express.static(parent.config.domains[i].webpublicpath));
             } else if (obj.parent.webPublicOverridePath != null) {
                 // Use override path
