@@ -5877,7 +5877,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // If this is a web relay connection, handle it here.
             if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) {
-                if (['GET', 'POST', 'PUT', 'HEAD'].indexOf(req.method) >= 0) { return obj.webRelayRouter(req, res); } else { res.sendStatus(404); return; }
+                if (['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'].indexOf(req.method) >= 0) { return obj.webRelayRouter(req, res); } else { res.sendStatus(404); return; }
             }
 
             // Get the domain for this request
@@ -6613,6 +6613,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     const appid = parseInt(req.query.appid);
 
                     // Check to see if we already have a multi-relay session that matches exactly this device and port for this user
+                    // TODO: Check that we have an exact session on any of the relay DNS names
                     const xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + req.hostname;
                     const xrelaySession = webRelaySessions[xrelaySessionId];
                     if ((xrelaySession != null) && (xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
@@ -6621,7 +6622,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         return;
                     }
 
+                    // TODO: Check if there is a free relay DNS name we can use
+
                     // There is a relay session, but it's not correct, close it.
+                    // TODO: Do this on the session that got the olders request
                     if (xrelaySession != null) {
                         xrelaySession.close();
                         delete webRelaySessions[xrelaySessionId];
@@ -6654,6 +6658,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Handle all incoming requests as web relays
                 obj.webRelayRouter.put('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
+
+                // Handle all incoming requests as web relays
+                obj.webRelayRouter.delete('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
+
+                // Handle all incoming requests as web relays
+                obj.webRelayRouter.options('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
 
                 // Handle all incoming requests as web relays
                 obj.webRelayRouter.head('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
