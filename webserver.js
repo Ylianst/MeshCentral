@@ -6612,42 +6612,87 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     const port = parseInt(req.query.p);
                     const appid = parseInt(req.query.appid);
 
-                    // Check to see if we already have a multi-relay session that matches exactly this device and port for this user
-                    // TODO: Check that we have an exact session on any of the relay DNS names
-                    const xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + req.hostname;
-                    const xrelaySession = webRelaySessions[xrelaySessionId];
-                    if ((xrelaySession != null) && (xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
-                        // We found an exact match, we are all setup already, redirect to root
-                        res.redirect('/');
-                        return;
-                    }
+                    try {
 
-                    // TODO: Check if there is a free relay DNS name we can use
+                        // Check that we have an exact session on any of the relay DNS names
+                        var xrelaySessionId, xrelaySession, freeRelayHost, oldestRelayTime, oldestRelayHost;
+                        for (var hostIndex in obj.args.relaydns) {
+                            const host = obj.args.relaydns[hostIndex];
+                            xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + host;
+                            xrelaySession = webRelaySessions[xrelaySessionId];
+                            if (xrelaySession == null) {
+                                // We found an unused hostname, save this as it could be useful.
+                                if (freeRelayHost == null) { freeRelayHost = host; }
+                            } else {
+                                // Check if we already have a relay session that matches exactly what we want
+                                if ((xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
+                                    // We found an exact match, we are all setup already, redirect to root of that DNS name
+                                    if (host == req.hostname) {
+                                        // Request was made on the same host, redirect to root.
+                                        res.redirect('/');
+                                    } else {
+                                        // Request was made to a different host
+                                        const httpport = ((args.aliasport != null) ? args.aliasport : args.port);
+                                        res.redirect('https://' + host + ((httpport != 443) ? (':' + httpport) : '') + '/');
+                                    }
+                                    return;
+                                }
 
-                    // There is a relay session, but it's not correct, close it.
-                    // TODO: Do this on the session that got the olders request
-                    if (xrelaySession != null) {
-                        xrelaySession.close();
-                        delete webRelaySessions[xrelaySessionId];
-                    }
+                                // Keep a record of the oldest web relay session, this could be useful.
+                                if (oldestRelayHost == null) {
+                                    // Oldest host not set yet, set it
+                                    oldestRelayHost = host;
+                                    oldestRelayTime = xrelaySession.lastOperation;
+                                } else {
+                                    // Check if this host is older then oldest so far
+                                    if (oldestRelayTime > xrelaySession.lastOperation) {
+                                        oldestRelayHost = host;
+                                        oldestRelayTime = xrelaySession.lastOperation;
+                                    }
+                                }
+                            }
+                        }
 
-                    // Create a web relay session
-                    const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySessionId);
-                    relaySession.onclose = function (sessionId) {
-                        // Remove the relay session
-                        delete webRelaySessions[sessionId];
-                        // If there are not more relay sessions, clear the cleanup timer
-                        if ((Object.keys(webRelaySessions).length == 0) && (obj.cleanupTimer != null)) { clearInterval(webRelayCleanupTimer); obj.cleanupTimer = null; }
-                    }
+                        // Check if there is a free relay DNS name we can use
+                        var selectedHost = null;
+                        if (freeRelayHost != null) {
+                            // There is a free one, use it.
+                            selectedHost = freeRelayHost;
+                            xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + selectedHost;
+                        } else {
+                            // No free ones, close the oldest one
+                            selectedHost = oldestRelayHost;
+                            xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + selectedHost;
+                            xrelaySession = webRelaySessions[xrelaySessionId];
+                            xrelaySession.close();
+                            delete webRelaySessions[xrelaySessionId];
+                        }
 
-                    // Set the multi-tunnel session
-                    webRelaySessions[xrelaySessionId] = relaySession;
+                        // Create a web relay session
+                        const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySessionId);
+                        relaySession.onclose = function (sessionId) {
+                            // Remove the relay session
+                            delete webRelaySessions[sessionId];
+                            // If there are not more relay sessions, clear the cleanup timer
+                            if ((Object.keys(webRelaySessions).length == 0) && (obj.cleanupTimer != null)) { clearInterval(webRelayCleanupTimer); obj.cleanupTimer = null; }
+                        }
 
-                    // Setup the cleanup timer if needed
-                    if (obj.cleanupTimer == null) { webRelayCleanupTimer = setInterval(checkWebRelaySessionsTimeout, 10000); }
+                        // Set the multi-tunnel session
+                        webRelaySessions[xrelaySessionId] = relaySession;
 
-                    // Redirect to root
-                    res.redirect('/');
+                        // Setup the cleanup timer if needed
+                        if (obj.cleanupTimer == null) { webRelayCleanupTimer = setInterval(checkWebRelaySessionsTimeout, 10000); }
+
+                        if (selectedHost == req.hostname) {
+                            // Request was made on the same host, redirect to root.
+                            res.redirect('/');
+                        } else {
+                            // Request was made to a different host
+                            const httpport = ((args.aliasport != null) ? args.aliasport : args.port);
+                            res.redirect('https://' + selectedHost + ((httpport != 443) ? (':' + httpport) : '') + '/');
+                        }
+
+                    } catch (ex) { console.log(ex); }
                 });
 
                 // Handle all incoming requests as web relays
