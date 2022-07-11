@@ -5223,7 +5223,7 @@
       "zh-chs": "访问被拒绝。",
       "zh-cht": "訪問被拒絕。",
       "xloc": [
-        "login2.handlebars->7->31"
+        "login2.handlebars->7->32"
       ]
     },
     {
@@ -12281,6 +12281,14 @@
       ]
     },
     {
+      "en": "CAPTCHA image",
+      "xloc": [
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1",
+        "login2.handlebars->centralTable->1->0->logincell->createpanel->createpanelform->9->1"
+      ]
+    },
+    {
       "cs": "CCM",
       "da": "CCM",
       "de": "CCM",
@@ -16744,7 +16752,7 @@
         "default-mobile.handlebars->11->471",
         "default.handlebars->45->1339",
         "default.handlebars->45->1356",
-        "login2.handlebars->7->32"
+        "login2.handlebars->7->33"
       ]
     },
     {
@@ -17613,9 +17621,9 @@
       "zh-cht": "創建帳號",
       "xloc": [
         "default.handlebars->45->2485",
-        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->12->1->1",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->12->1->1",
-        "login2.handlebars->centralTable->1->0->logincell->createpanel->createpanelform->9->1->12->1->1"
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->16->1->1",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->16->1->1",
+        "login2.handlebars->centralTable->1->0->logincell->createpanel->createpanelform->9->1->16->1->1"
       ]
     },
     {
@@ -24692,13 +24700,13 @@
         "default.handlebars->45->2665",
         "default.handlebars->45->2697",
         "default.handlebars->45->494",
-        "login-mobile.handlebars->5->42",
+        "login-mobile.handlebars->5->45",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
-        "login.handlebars->5->44",
+        "login.handlebars->5->46",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resettokenpanel->1->5->1->2->1->3",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->4->1->3",
-        "login2.handlebars->7->26",
-        "login2.handlebars->7->53",
+        "login2.handlebars->7->27",
+        "login2.handlebars->7->54",
         "login2.handlebars->centralTable->1->0->logincell->resetpanel->resetpanelform->7->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->resetpanel->resetpanelform->7->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->resettokenpanelform->5->1->2farow2->1->3",
@@ -24779,9 +24787,9 @@
       "zh-chs": "电邮确认",
       "zh-cht": "電郵確認",
       "xloc": [
-        "login-mobile.handlebars->5->43",
-        "login.handlebars->5->45",
-        "login2.handlebars->7->54"
+        "login-mobile.handlebars->5->46",
+        "login.handlebars->5->47",
+        "login2.handlebars->7->55"
       ]
     },
     {
@@ -25256,10 +25264,10 @@
       "zh-chs": "电邮：",
       "zh-cht": "電郵：",
       "xloc": [
-        "login-mobile.handlebars->5->21",
+        "login-mobile.handlebars->5->24",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->2->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resetpanel->1->7->1->0->1",
-        "login.handlebars->5->22",
+        "login.handlebars->5->24",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->2->nuEmail",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resetpanel->1->7->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->createpanel->createpanelform->9->1->2->nuEmail"
@@ -27312,7 +27320,7 @@
       "zh-chs": "发送请求失败。",
       "zh-cht": "發送請求失敗。",
       "xloc": [
-        "login2.handlebars->7->29"
+        "login2.handlebars->7->30"
       ]
     },
     {
@@ -28579,9 +28587,9 @@
       "zh-chs": "忘记了密码？",
       "zh-cht": "忘記了密碼？",
       "xloc": [
-        "login-mobile.handlebars->5->22",
-        "login.handlebars->5->23",
-        "login2.handlebars->7->27"
+        "login-mobile.handlebars->5->25",
+        "login.handlebars->5->25",
+        "login2.handlebars->7->28"
       ]
     },
     {
@@ -29900,12 +29908,12 @@
       "zh-chs": "好的密码",
       "zh-cht": "好的密碼",
       "xloc": [
-        "login-mobile.handlebars->5->29",
-        "login-mobile.handlebars->5->33",
-        "login.handlebars->5->30",
-        "login.handlebars->5->34",
-        "login2.handlebars->7->39",
-        "login2.handlebars->7->43"
+        "login-mobile.handlebars->5->32",
+        "login-mobile.handlebars->5->36",
+        "login.handlebars->5->32",
+        "login.handlebars->5->36",
+        "login2.handlebars->7->40",
+        "login2.handlebars->7->44"
       ]
     },
     {
@@ -35230,6 +35238,14 @@
         "default-mobile.handlebars->11->85",
         "default.handlebars->45->2879",
         "default.handlebars->45->310"
+      ]
+    },
+    {
+      "en": "Invalid security check.",
+      "xloc": [
+        "login-mobile.handlebars->5->22",
+        "login.handlebars->5->22",
+        "login2.handlebars->7->24"
       ]
     },
     {
@@ -41128,9 +41144,9 @@
       "zh-chs": "最大长度为{0}",
       "zh-cht": "最大長度為{0}",
       "xloc": [
-        "login-mobile.handlebars->5->37",
-        "login.handlebars->5->38",
-        "login2.handlebars->7->47"
+        "login-mobile.handlebars->5->40",
+        "login.handlebars->5->40",
+        "login2.handlebars->7->48"
       ]
     },
     {
@@ -42543,9 +42559,9 @@
       "zh-chs": "最小长度为{0}",
       "zh-cht": "最小長度為{0}",
       "xloc": [
-        "login-mobile.handlebars->5->36",
-        "login.handlebars->5->37",
-        "login2.handlebars->7->46"
+        "login-mobile.handlebars->5->39",
+        "login.handlebars->5->39",
+        "login2.handlebars->7->47"
       ]
     },
     {
@@ -48437,9 +48453,9 @@
       "zh-chs": "密码提示",
       "zh-cht": "密碼提示",
       "xloc": [
-        "login-mobile.handlebars->5->27",
-        "login.handlebars->5->28",
-        "login2.handlebars->7->37",
+        "login-mobile.handlebars->5->30",
+        "login.handlebars->5->30",
+        "login2.handlebars->7->38",
         "login2.handlebars->centralTable->1->0->logincell->loginpanel->loginpanelform->loginuserpassdiv->1->1->4->1"
       ]
     },
@@ -48494,14 +48510,14 @@
       "zh-chs": "密码政策",
       "zh-cht": "密碼政策",
       "xloc": [
-        "login-mobile.handlebars->5->31",
-        "login-mobile.handlebars->5->35",
-        "login.handlebars->5->32",
-        "login.handlebars->5->36",
-        "login.handlebars->5->43",
-        "login2.handlebars->7->41",
-        "login2.handlebars->7->45",
-        "login2.handlebars->7->52"
+        "login-mobile.handlebars->5->34",
+        "login-mobile.handlebars->5->38",
+        "login.handlebars->5->34",
+        "login.handlebars->5->38",
+        "login.handlebars->5->45",
+        "login2.handlebars->7->42",
+        "login2.handlebars->7->46",
+        "login2.handlebars->7->53"
       ]
     },
     {
@@ -52794,10 +52810,10 @@
       "zh-chs": "记住此设备{0}天。",
       "zh-cht": "記住此裝置{0}天。",
       "xloc": [
-        "login-mobile.handlebars->5->20",
-        "login.handlebars->5->21",
-        "login2.handlebars->7->24",
-        "login2.handlebars->7->25"
+        "login-mobile.handlebars->5->23",
+        "login.handlebars->5->23",
+        "login2.handlebars->7->25",
+        "login2.handlebars->7->26"
       ]
     },
     {
@@ -55117,7 +55133,7 @@
       "zh-chs": "请求已接受。",
       "zh-cht": "請求已接受。",
       "xloc": [
-        "login2.handlebars->7->30"
+        "login2.handlebars->7->31"
       ]
     },
     {
@@ -55186,7 +55202,7 @@
       "zh-chs": "请求已发送，{0}。",
       "zh-cht": "請求已發送，{0}。",
       "xloc": [
-        "login2.handlebars->7->28"
+        "login2.handlebars->7->29"
       ]
     },
     {
@@ -57801,12 +57817,12 @@
       "zh-chs": "安全登录",
       "zh-cht": "安全登入",
       "xloc": [
-        "login-mobile.handlebars->5->23",
-        "login-mobile.handlebars->5->25",
-        "login.handlebars->5->24",
+        "login-mobile.handlebars->5->26",
+        "login-mobile.handlebars->5->28",
         "login.handlebars->5->26",
-        "login2.handlebars->7->33",
-        "login2.handlebars->7->35"
+        "login.handlebars->5->28",
+        "login2.handlebars->7->34",
+        "login2.handlebars->7->36"
       ]
     },
     {
@@ -57868,6 +57884,14 @@
       ]
     },
     {
+      "en": "Security Check:",
+      "xloc": [
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->newAccountCaptcha->nuCaptcha",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->newAccountCaptcha->nuCaptcha",
+        "login2.handlebars->centralTable->1->0->logincell->createpanel->createpanelform->9->1->newAccountCaptcha->nuCaptcha"
+      ]
+    },
+    {
       "cs": "Klíč zabezpečení",
       "da": "Sikkerhedsnøgle",
       "de": "Sicherheitsschlüssel",
@@ -57916,6 +57940,14 @@
       "xloc": [
         "default-mobile.handlebars->11->710",
         "default.handlebars->45->2873"
+      ]
+    },
+    {
+      "en": "Security check",
+      "xloc": [
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1",
+        "login2.handlebars->centralTable->1->0->logincell->createpanel->createpanelform->9->1"
       ]
     },
     {
@@ -58692,7 +58724,7 @@
       "zh-chs": "将令牌发送到注册的电子邮件地址？",
       "zh-cht": "將令牌發送到註冊的電子郵件地址？",
       "xloc": [
-        "login-mobile.handlebars->5->24"
+        "login-mobile.handlebars->5->27"
       ]
     },
     {
@@ -58717,7 +58749,7 @@
       "zh-chs": "将令牌发送到注册电话号码？",
       "zh-cht": "將令牌發送到註冊電話號碼？",
       "xloc": [
-        "login-mobile.handlebars->5->26"
+        "login-mobile.handlebars->5->29"
       ]
     },
     {
@@ -58742,8 +58774,8 @@
       "zh-chs": "将保安编码发送到注册的电邮地址？",
       "zh-cht": "將保安編碼發送到註冊的電郵地址？",
       "xloc": [
-        "login.handlebars->5->25",
-        "login2.handlebars->7->34"
+        "login.handlebars->5->27",
+        "login2.handlebars->7->35"
       ]
     },
     {
@@ -58768,8 +58800,8 @@
       "zh-chs": "将保安编码发送到注册电话号码？",
       "zh-cht": "將保安編碼發送到註冊電話號碼？",
       "xloc": [
-        "login.handlebars->5->27",
-        "login2.handlebars->7->36"
+        "login.handlebars->5->29",
+        "login2.handlebars->7->37"
       ]
     },
     {
@@ -59630,6 +59662,7 @@
       "zh-chs": "服务器正在维护中。",
       "zh-cht": "服務器正在維護中。",
       "xloc": [
+        "login-mobile.handlebars->5->20",
         "login.handlebars->5->20",
         "login2.handlebars->7->22"
       ]
@@ -63860,12 +63893,12 @@
       "zh-chs": "强密码",
       "zh-cht": "強密碼",
       "xloc": [
-        "login-mobile.handlebars->5->28",
-        "login-mobile.handlebars->5->32",
-        "login.handlebars->5->29",
-        "login.handlebars->5->33",
-        "login2.handlebars->7->38",
-        "login2.handlebars->7->42"
+        "login-mobile.handlebars->5->31",
+        "login-mobile.handlebars->5->35",
+        "login.handlebars->5->31",
+        "login.handlebars->5->35",
+        "login2.handlebars->7->39",
+        "login2.handlebars->7->43"
       ]
     },
     {
@@ -68421,6 +68454,8 @@
       "zh-chs": "无法发送设备通知。",
       "zh-cht": "無法發送設備通知。",
       "xloc": [
+        "login-mobile.handlebars->5->21",
+        "login.handlebars->5->21",
         "login2.handlebars->7->23"
       ]
     },
@@ -72345,12 +72380,12 @@
       "zh-chs": "密码强度低",
       "zh-cht": "密碼強度低",
       "xloc": [
-        "login-mobile.handlebars->5->30",
-        "login-mobile.handlebars->5->34",
-        "login.handlebars->5->31",
-        "login.handlebars->5->35",
-        "login2.handlebars->7->40",
-        "login2.handlebars->7->44"
+        "login-mobile.handlebars->5->33",
+        "login-mobile.handlebars->5->37",
+        "login.handlebars->5->33",
+        "login.handlebars->5->37",
+        "login2.handlebars->7->41",
+        "login2.handlebars->7->45"
       ]
     },
     {
@@ -77885,9 +77920,9 @@
       "zh-chs": "{0}小写",
       "zh-cht": "{0}小寫",
       "xloc": [
-        "login-mobile.handlebars->5->39",
-        "login.handlebars->5->40",
-        "login2.handlebars->7->49"
+        "login-mobile.handlebars->5->42",
+        "login.handlebars->5->42",
+        "login2.handlebars->7->50"
       ]
     },
     {
@@ -78084,9 +78119,9 @@
       "zh-chs": "{0}非字母数字",
       "zh-cht": "{0}非字母數字",
       "xloc": [
-        "login-mobile.handlebars->5->41",
-        "login.handlebars->5->42",
-        "login2.handlebars->7->51"
+        "login-mobile.handlebars->5->44",
+        "login.handlebars->5->44",
+        "login2.handlebars->7->52"
       ]
     },
     {
@@ -78111,9 +78146,9 @@
       "zh-chs": "{0}数字",
       "zh-cht": "{0}數字",
       "xloc": [
-        "login-mobile.handlebars->5->40",
-        "login.handlebars->5->41",
-        "login2.handlebars->7->50"
+        "login-mobile.handlebars->5->43",
+        "login.handlebars->5->43",
+        "login2.handlebars->7->51"
       ]
     },
     {
@@ -78614,9 +78649,9 @@
       "zh-chs": "{0}大写",
       "zh-cht": "{0}大寫",
       "xloc": [
-        "login-mobile.handlebars->5->38",
-        "login.handlebars->5->39",
-        "login2.handlebars->7->48"
+        "login-mobile.handlebars->5->41",
+        "login.handlebars->5->41",
+        "login2.handlebars->7->49"
       ]
     },
     {
