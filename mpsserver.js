@@ -58,7 +58,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         obj.server.listen(args.mpsport, args.mpsportbind, function () {
             console.log("MeshCentral Intel(R) AMT server running on " + certificates.AmtMpsName + ":" + args.mpsport + ((args.mpsaliasport != null) ? (", alias port " + args.mpsaliasport) : "") + ".");
             obj.parent.authLog('mps', 'Server listening on ' + ((args.mpsportbind != null) ? args.mpsportbind : '0.0.0.0') + ' port ' + args.mpsport + '.');
-        }).on("error", function (err) { console.error("ERROR: MeshCentral Intel(R) AMT server port " + args.mpsport + " is not available."); if (args.exactports) { process.exit(); } });
+        }).on("error", function (err) { console.error("ERROR: MeshCentral Intel(R) AMT server port " + args.mpsport + " is not available. Check if the MeshCentral is already running."); if (args.exactports) { process.exit(); } });
 
         obj.server.on('tlsClientError', function (err, tlssocket) { if (args.mpsdebug) { var remoteAddress = tlssocket.remoteAddress; if (tlssocket.remoteFamily == 'IPv6') { remoteAddress = '[' + remoteAddress + ']'; } console.log('MPS:Invalid TLS connection from ' + remoteAddress + ':' + tlssocket.remotePort + '.'); } });
     }

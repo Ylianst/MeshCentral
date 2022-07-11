@@ -3675,6 +3675,7 @@ function mainStart() {
         var wildleek = false;
         var nodemailer = false;
         var sendgrid = false;
+        var captcha = false;
         if (require('os').platform() == 'win32') { for (var i in config.domains) { domainCount++; if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } } else { allsspi = false; }
         if (domainCount == 0) { allsspi = false; }
         for (var i in config.domains) {
@@ -3697,6 +3698,7 @@ function mainStart() {
             }
             if (config.domains[i].sessionrecording != null) { sessionRecording = true; }
             if ((config.domains[i].passwordrequirements != null) && (config.domains[i].passwordrequirements.bancommonpasswords == true)) { wildleek = true; }
+            if ((config.domains[i].newaccountscaptcha != null) && (config.domains[i].newaccountscaptcha !== false)) { captcha = true; }
         }
 
         // Build the list of required modules
@@ -3705,6 +3707,8 @@ function mainStart() {
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (ssh == true) { if (nodeVersion < 11) { addServerWarning('MeshCentral SSH support requires NodeJS 11 or higher.', 1); } else { modules.push('ssh2'); } }
         if (passport != null) { modules.push(...passport); }
+        if (captcha == true) { modules.push('svg-captcha'); }
+
         if (sessionRecording == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
         if (config.letsencrypt != null) { modules.push('acme-client'); } // Add acme-client module
         if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
