@@ -40,7 +40,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.tls = require('tls');
     obj.path = require('path');
     obj.bodyParser = require('body-parser');
-    obj.session = require('cookie-session');
     obj.exphbs = require('express-handlebars');
     obj.crypto = require('crypto');
     obj.common = require('./common.js');
@@ -5773,7 +5772,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             sameSite: (obj.args.sessionsamesite ? obj.args.sessionsamesite : 'lax')
         }
         if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60000); } // sessiontime is minutes
-        obj.app.use(obj.session(sessionOptions));
+        obj.app.use(require('cookie-session')(sessionOptions));
 
         // Handle all incoming web sockets, see if some need to be handled as web relays
         obj.app.ws('/*', function (ws, req, next) {
