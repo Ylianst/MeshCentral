@@ -19,7 +19,6 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
     obj.parent = parent;
     obj.db = db;
     obj.express = require('express');
-    obj.session = require('cookie-session');
     obj.expressWs = null;
     obj.tlsServer = null;
     obj.net = require('net');
@@ -74,8 +73,8 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
             secure: (args.tlsoffload == null), // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
             sameSite: (args.sessionsamesite ? args.sessionsamesite : 'lax')
         }
-        if (args.sessiontime != null) { sessionOptions.maxAge = (args.sessiontime * 60 * 1000); }
-        obj.app.use(obj.session(sessionOptions));
+        if (args.sessiontime != null) { sessionOptions.maxAge = (args.sessiontime * 60000); } // sessiontime is minutes
+        obj.app.use(require('cookie-session')(sessionOptions));
 
         // Add HTTP security headers to all responses
         obj.app.use(function (req, res, next) {
