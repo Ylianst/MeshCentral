@@ -344,6 +344,7 @@
           "minify": { "type": "boolean", "default": false, "description": "When enabled, the server will send reduced sided web pages." },
           "newAccounts": { "type": "boolean", "default": false, "description": "When set to true, allow new user accounts to be created from the login page." },
           "newAccountsPass": { "type": "string", "default": null, "description": "When set this password will be required in order to create a new account from the login screen." },
+          "newAccountsCaptcha": { "type": "boolean", "default": false, "description": "When set to true, users will get a CAPTCHA when creating a new account from the login screen." },
           "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
           "userNameIsEmail": { "type": "boolean", "default": false, "description": "When enabled, the username of each account is also the email address of the account." },
           "newAccountEmailDomains": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
