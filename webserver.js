@@ -1359,6 +1359,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // If the email is the username, set this here.
         if (domain.usernameisemail) { req.body.username = req.body.email; }
 
+        // Check if there is domain.newAccountToken, check if supplied token is valid
+        if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.anewaccountpass != domain.newaccountspass)) {
+            parent.debug('web', 'handleCreateAccountRequest: Invalid account creation token');
+            req.session.loginmode = 2;
+            req.session.messageid = 103; // Invalid account creation token.
+            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+            return;
+        }
+
+        // If needed, check the new account creation CAPTCHA
+        if ((domain.newaccountscaptcha != null) && (domain.newaccountscaptcha !== false)) {
+            const c = parent.decodeCookie(req.body.captchaargs, parent.loginCookieEncryptionKey, 10); // 10 minute timeout
+            if ((c == null) || (c.type != 'newAccount') || (typeof c.captcha != 'string') || (c.captcha.length < 5) || (c.captcha != req.body.anewaccountcaptcha)) {
+                req.session.loginmode = 2;
+                req.session.messageid = 117; // Invalid security check
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                return;
+            }
+        }
+
         // Accounts that start with ~ are not allowed
         if ((typeof req.body.username != 'string') || (req.body.username.length < 1) || (req.body.username[0] == '~')) {
             parent.debug('web', 'handleCreateAccountRequest: unable to create account (0)');
@@ -1423,14 +1443,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             req.session.messageid = 102; // Existing account with this email address.
                             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                         } else {
-                            // Check if there is domain.newAccountToken, check if supplied token is valid
-                            if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.anewaccountpass != domain.newaccountspass)) {
-                                parent.debug('web', 'handleCreateAccountRequest: Invalid account creation token');
-                                req.session.loginmode = 2;
-                                req.session.messageid = 103; // Invalid account creation token.
-                                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                                return;
-                            }
                             // Check if user exists
                             if (obj.users['user/' + domain.id + '/' + req.body.username.toLowerCase()]) {
                                 parent.debug('web', 'handleCreateAccountRequest: Username already exists');
@@ -3054,20 +3066,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             twoFactorTimeout = domain.passwordrequirements.twofactortimeout * 1000;
         }
 
+        // Setup CAPTCHA if needed
+        var newAccountCaptcha = '', newAccountCaptchaImage = '';
+        if ((domain.newaccountscaptcha != null) && (domain.newaccountscaptcha !== false)) {
+            newAccountCaptcha = obj.parent.encodeCookie({ type: 'newAccount', captcha: require('svg-captcha').randomText(5) }, obj.parent.loginCookieEncryptionKey);
+            newAccountCaptchaImage = 'newAccountCaptcha.ashx?x=' + newAccountCaptcha;
+        }
+
         // Render the login page
         render(req, res,
             getRenderPage((domain.sitestyle == 2) ? 'login2' : 'login', req, domain),
             getRenderArgs({
                 loginmode: loginmode,
                 rootCertLink: getRootCertLink(domain),
-                newAccount: newAccountsAllowed,
-                newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1),
+                newAccount: newAccountsAllowed, // True if new accounts are allowed from the login page
+                newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), // 1 if new account creation requires password
+                newAccountCaptcha: newAccountCaptcha, // If new account creation requires a CAPTCHA, this string will not be empty
+                newAccountCaptchaImage: newAccountCaptchaImage, // Set to the URL of the CAPTCHA image
                 serverDnsName: obj.getWebServerName(domain),
                 serverPublicPort: httpsPort,
                 passlogin: (typeof domain.showpasswordlogin == 'boolean') ? domain.showpasswordlogin : true,
                 emailcheck: emailcheck,
                 features: features,
-                sessiontime: (args.sessiontime) ? args.sessiontime : 60,
+                sessiontime: (args.sessiontime) ? args.sessiontime : 60, // Session time in minutes, 60 minutes is the default
                 passRequirements: passRequirements,
                 customui: customui,
                 footer: (domain.loginfooter == null) ? '' : domain.loginfooter,
@@ -3193,6 +3214,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             res.redirect(domain.url + getQueryPortion(req));
             return;
         }
+    }
+
+    // Handle new account Captcha GET
+    function handleNewAccountCaptchaRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if ((domain.newaccountscaptcha == null) || (domain.newaccountscaptcha === false) || (req.query.x == null)) { res.sendStatus(404); return; }
+        const c = obj.parent.decodeCookie(req.query.x, obj.parent.loginCookieEncryptionKey);
+        if ((c == null) || (c.type !== 'newAccount') || (typeof c.captcha != 'string')) { res.sendStatus(404); return; }
+        res.type('svg');
+        res.status(200).end(require('svg-captcha')(c.captcha, {}));
     }
 
     // Handle Captcha GET
@@ -6102,6 +6134,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);
                 obj.app.post(url + 'pluginadmin.ashx', obj.bodyParser.urlencoded({ extended: false }), obj.handlePluginAdminPostReq);
                 obj.app.get(url + 'pluginHandler.js', obj.handlePluginJS);
+            }
+
+            // New account CAPTCHA request
+            if ((domain.newaccountscaptcha != null) && (domain.newaccountscaptcha !== false)) {
+                obj.app.get(url + 'newAccountCaptcha.ashx', handleNewAccountCaptchaRequest);
             }
 
             // Check CrowdSec Bounser if configured
