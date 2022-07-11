@@ -5759,15 +5759,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
 
+        // Setup a keygrip instance with higher default security, default hash is SHA1, we want to bump that up with SHA384
+        // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
+        // If args.sessionkey is a string, use it as a single key, but args.sessionkey can also be used as an array of keys.
+        const keygrip = require('keygrip')((typeof obj.args.sessionkey == 'string') ? [obj.args.sessionkey] : obj.args.sessionkey, 'sha384', 'base64');
+
         // Setup the cookie session
-        var sessionOptions = {
+        const sessionOptions = {
             name: 'xid', // Recommended security practice to not use the default cookie name
             httpOnly: true,
-            keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
+            keys: keygrip,
             secure: (obj.args.tlsoffload == null), // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
             sameSite: (obj.args.sessionsamesite ? obj.args.sessionsamesite : 'lax')
         }
-        if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60 * 1000); }
+        if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60000); } // sessiontime is minutes
         obj.app.use(obj.session(sessionOptions));
 
         // Handle all incoming web sockets, see if some need to be handled as web relays
@@ -6689,7 +6694,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             // No redirects allowed, fail here. This is important to make sure there is no redirect cascades
                             res.sendStatus(404);
                         } else {
-                            // Request was made to a different host, redirect using the full URL so an HTTP cookie can be created on the other DNS name
+                            // Request was made to a different host, redirect using the full URL so an HTTP cookie can be created on the other DNS name.
                             const httpport = ((args.aliasport != null) ? args.aliasport : args.port);
                             res.redirect('https://' + selectedHost + ((httpport != 443) ? (':' + httpport) : '') + req.url + '&noredirect=1');
                         }
