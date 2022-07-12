@@ -13,6 +13,7 @@ nav:
       - 'Tokens': 'meshcentral/tokens.md'
       - 'Assistant': 'meshcentral/assistant.md'
       - 'Code Signing': 'meshcentral/codesigning.md'
+      - 'Plugins': 'meshcentral/plugins.md'
       - 'Debugging': 'meshcentral/debugging.md'
 
   - Design and Architecture:

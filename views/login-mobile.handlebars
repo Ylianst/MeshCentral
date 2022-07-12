@@ -131,6 +131,14 @@
                                                 <td align=right>Creation Token:</td>
                                                 <td><input id=anewaccountpass type=password name=anewaccountpass autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(6) onkeyup=validateCreate(6,event) /></td>
                                             </tr>
+                                            <tr id=newAccountCaptchaImg title="CAPTCHA image">
+                                                <td></td>
+                                                <td colspan=2><img src="{{{newAccountCaptchaImage}}}" loading="lazy" /></td>
+                                            </tr>
+                                            <tr id=newAccountCaptcha title="Security check">
+                                                <td id="nuCaptcha" align=right>Security Check:</td>
+                                                <td><input id=anewaccountcaptcha type=text name=anewaccountcaptcha {{{autocomplete}}}=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(7,event) onkeyup=validateCreate(7,event) /></td>
+                                            </tr>
                                             <tr>
                                                 <td colspan=2>
                                                     <div style=float:right><input id=createButton type=submit value="Create Account" disabled="disabled" /></div>
@@ -140,6 +148,7 @@
                                         </table>
                                         <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
                                         <input id=createformargs name="urlargs" type="hidden" value="" />
+                                        <input id=createformcaptcha name="captchaargs" type="hidden" value="{{{newAccountCaptcha}}}" />
                                     </form>
                                 </div>
                             </div>
@@ -316,6 +325,7 @@
         var newAccount = '{{{newAccount}}}';
         var passhint = '{{{passhint}}}';
         var newAccountPass = parseInt('{{{newAccountPass}}}');
+        var newAccountCaptcha = '{{{newAccountCaptcha}}}';
         var emailCheck = '{{{emailcheck}}}';
         var features = parseInt('{{{features}}}');
         var passRequirements = '{{{passRequirements}}}';
@@ -334,7 +344,7 @@
         // Display the right server message
         var messageid = parseInt('{{{messageid}}}');
         var okmessages = ['', "If valid, reset mail sent.", "Email sent.", "Email verification required, check your mailbox and click the confirmation link.", "SMS sent."];
-        var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later."];
+        var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later.", "Server under maintenance.", "Unable to send device notification.", "Invalid security check."];
         if (messageid > 0) {
             var msg = '';
             if ((messageid < 100) && (messageid < okmessages.length)) { msg = okmessages[messageid]; }
@@ -403,6 +413,8 @@
             QV('newAccountDiv', (newAccount === '1') || (newAccount === 'true')); // If new accounts are not allowed, don't display the new account link.
             if ((passRequirements.hint === true) && (passhint != null) && (passhint.length > 0)) { QV('showPassHintLink', true); }
             QV('newAccountPass', (newAccountPass == 1));
+            QV('newAccountCaptcha', (newAccountCaptcha != ''));
+            QV('newAccountCaptchaImg', (newAccountCaptcha != ''));
             QV('resetAccountDiv', (emailCheck == 'true'));
             QV('hrAccountDiv', (emailCheck == 'true') || (newAccountPass == 1));
 
@@ -592,8 +604,9 @@
                 if (box == 2) { Q('apassword1').focus(); }
                 if (box == 3) { Q('apassword2').focus(); }
                 if (box == 4) { Q('apasswordhint').focus(); }
-                if (box == 5) { if (newAccountPass == 1) { Q('anewaccountpass').focus(); } else { Q('createButton').click(); } }
-                if (box == 6) { Q('createButton').click(); }
+                if (box == 5) { if (newAccountPass == 1) { Q('anewaccountpass').focus(); } else { box = 6; } }
+                if (box == 6) { if (newAccountCaptcha != '') { Q('anewaccountcaptcha').focus(); } else { box = 7; } }
+                if (box == 7) { Q('createButton').click(); }
             }
             if (e != null) { haltEvent(e); }
         }

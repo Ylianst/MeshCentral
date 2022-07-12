@@ -69,7 +69,7 @@ function SerialTunnel(options) {
 }
 
 // Construct a Web relay object
-module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, userid, nodeid, addr, port, appid) {
+module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, userid, nodeid, addr, port, appid, sessionid) {
     const obj = {};
     obj.parent = parent;
     obj.lastOperation = Date.now();
@@ -79,10 +79,13 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
     obj.addr = addr;
     obj.port = port;
     obj.appid = appid;
+    obj.sessionid = sessionid;
     var pendingRequests = [];
     var nextTunnelId = 1;
     var tunnels = {};
     var errorCount = 0; // If we keep closing tunnels without processing requests, fail the requests
+
+    parent.parent.debug('webrelay', 'CreateWebRelaySession, userid:' + userid + ', addr:' + addr + ', port:' + port);
 
     // Any HTTP cookie set by the device is going to be shared between all tunnels to that device.
     obj.webCookies = {};
@@ -110,12 +113,14 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
 
     // Handle new HTTP request
     obj.handleRequest = function (req, res) {
+        parent.parent.debug('webrelay', 'handleRequest, url:' + req.url);
         pendingRequests.push([req, res, false]);
         handleNextRequest();
     }
 
     // Handle new websocket request
     obj.handleWebSocket = function (ws, req) {
+        parent.parent.debug('webrelay', 'handleWebSocket, url:' + req.url);
         pendingRequests.push([req, ws, true]);
         handleNextRequest();
     }
@@ -146,23 +151,36 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
 
     function launchNewTunnel() {
         // Launch a new tunnel
+        parent.parent.debug('webrelay', 'launchNewTunnel');
         const tunnel = module.exports.CreateWebRelay(obj, db, args, domain);
         tunnel.onclose = function (tunnelId, processedCount) {
+            if (tunnels == null) return;
+            parent.parent.debug('webrelay', 'tunnel-onclose');
             if (processedCount == 0) { errorCount++; } // If this tunnel closed without processing any requests, mark this as an error
             delete tunnels[tunnelId];
             handleNextRequest();
         }
         tunnel.onconnect = function (tunnelId) {
+            if (tunnels == null) return;
+            parent.parent.debug('webrelay', 'tunnel-onconnect');
             if (pendingRequests.length > 0) {
                 const x = pendingRequests.shift();
                 if (x[2] == true) { tunnels[tunnelId].processWebSocket(x[0], x[1]); } else { tunnels[tunnelId].processRequest(x[0], x[1]); }
             }
         }
-        tunnel.oncompleted = function (tunnelId) {
-            errorCount = 0; // Something got completed, clear any error count
-            if (pendingRequests.length > 0) {
-                const x = pendingRequests.shift();
-                if (x[2] == true) { tunnels[tunnelId].processWebSocket(x[0], x[1]); } else { tunnels[tunnelId].processRequest(x[0], x[1]); }
+        tunnel.oncompleted = function (tunnelId, closed) {
+            if (tunnels == null) return;
+            if (closed === true) {
+                parent.parent.debug('webrelay', 'tunnel-oncompleted and closed');
+            } else {
+                parent.parent.debug('webrelay', 'tunnel-oncompleted');
+            }
+            if (closed !== true) {
+                errorCount = 0; // Something got completed, clear any error count
+                if (pendingRequests.length > 0) {
+                    const x = pendingRequests.shift();
+                    if (x[2] == true) { tunnels[tunnelId].processWebSocket(x[0], x[1]); } else { tunnels[tunnelId].processRequest(x[0], x[1]); }
+                }
             }
         }
         tunnel.connect(userid, nodeid, addr, port, appid);
@@ -171,9 +189,13 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
     }
 
     // Close all tunnels
+    obj.close = function () { close(); }
+
+    // Close all tunnels
     function close() {
         // Set the session as closed
         if (obj.closed == true) return;
+        parent.parent.debug('webrelay', 'tunnel-close');
         obj.closed = true;
 
         // Close all tunnels
@@ -184,7 +206,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
         for (var i in pendingRequests) { if (pendingRequests[i][2] == true) { pendingRequests[i][1].close(); } else { pendingRequests[i][1].end(); } }
 
         // Notify of session closure
-        if (obj.onclose) { obj.onclose(obj.userid + '/' + obj.sessionId); }
+        if (obj.onclose) { obj.onclose(obj.sessionid); }
 
         // Cleanup
         delete obj.userid;
@@ -291,7 +313,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
     function sendWebSocketFrameToDevice(op, payload) {
         // Select a random mask
-        const mask = parent.parent.crypto.randomBytes(4)
+        const mask = parent.parent.parent.crypto.randomBytes(4)
 
         // Setup header and mask
         var header = null;
@@ -326,6 +348,13 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     obj.close = function (arg) {
         if (obj.closed == true) return;
         obj.closed = true;
+
+        // If we are processing a http response that terminates when it closes, do this now.
+        if ((obj.socketParseState == 1) && (obj.socketXHeader['connection'] != null) && (obj.socketXHeader['connection'].toLowerCase() == 'close')) {
+            processHttpResponse(null, obj.socketAccumulator, true, true); // Indicate this tunnel is done and also closed, do not put a new request on this tunnel.
+            obj.socketAccumulator = '';
+            obj.socketParseState = 0;
+        }
 
         if (obj.tls) {
             try { obj.tls.end(); } catch (ex) { console.log(ex); }
@@ -376,7 +405,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         // Encode a cookie for the mesh relay
         const cookieContent = { userid: userid, domainid: domain.id, nodeid: nodeid, tcpport: port };
         if (addr != null) { cookieContent.tcpaddr = addr; }
-        const cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
+        const cookie = parent.parent.parent.encodeCookie(cookieContent, parent.parent.parent.loginCookieEncryptionKey);
 
         try {
             // Setup the correct URL with domain and use TLS only if needed.
@@ -385,9 +414,9 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             var domainadd = '';
             if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
             const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?p=14&auth=' + cookie; // Protocol 14 is Web-TCP
-            parent.parent.debug('relay', 'TCP: Connection websocket to ' + url);
+            parent.parent.parent.debug('relay', 'TCP: Connection websocket to ' + url);
             obj.wsClient = new WebSocket(url, options);
-            obj.wsClient.on('open', function () { parent.parent.debug('relay', 'TCP: Relay websocket open'); });
+            obj.wsClient.on('open', function () { parent.parent.parent.debug('relay', 'TCP: Relay websocket open'); });
             obj.wsClient.on('message', function (data) { // Make sure to handle flow control.
                 if (obj.tls) {
                     // WS --> TLS
@@ -402,13 +431,13 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                             // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel
                             const tlsoptions = { socket: obj.ser, rejectUnauthorized: false };
                             obj.tls = require('tls').connect(tlsoptions, function () {
-                                parent.parent.debug('relay', "Web Relay Secure TLS Connection");
+                                parent.parent.parent.debug('relay', "Web Relay Secure TLS Connection");
                                 obj.relayActive = true;
                                 parent.lastOperation = obj.lastOperation = Date.now(); // Update time of last opertion performed
                                 if (obj.onconnect) { obj.onconnect(obj.tunnelId); } // Event connection
                             });
                             obj.tls.setEncoding('binary');
-                            obj.tls.on('error', function (err) { parent.parent.debug('relay', "Web Relay TLS Connection Error", err); obj.close(); });
+                            obj.tls.on('error', function (err) { parent.parent.parent.debug('relay', "Web Relay TLS Connection Error", err); obj.close(); });
 
                             // Decrypted tunnel from TLS communcation to be forwarded to the browser
                             obj.tls.on('data', function (data) { processHttpData(data); }); // TLS ---> Browser
@@ -423,8 +452,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                     processRawHttpData(data);
                 }
             });
-            obj.wsClient.on('close', function () { parent.parent.debug('relay', 'TCP: Relay websocket closed'); obj.close(); });
-            obj.wsClient.on('error', function (err) { parent.parent.debug('relay', 'TCP: Relay websocket error: ' + err); obj.close(); });
+            obj.wsClient.on('close', function () { parent.parent.parent.debug('relay', 'TCP: Relay websocket closed'); obj.close(); });
+            obj.wsClient.on('error', function (err) { parent.parent.parent.debug('relay', 'TCP: Relay websocket error: ' + err); obj.close(); });
         } catch (ex) {
             console.log(ex);
         }
@@ -452,6 +481,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     obj.socketParseState = 0;
     obj.socketContentLengthRemaining = 0;
     function processHttpData(data) {
+        //console.log('processHttpData', data.length);
         obj.socketAccumulator += data;
         while (true) {
             //console.log('ACC(' + obj.socketAccumulator + '): ' + obj.socketAccumulator);
@@ -476,8 +506,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                 }
 
                 // Check if this HTTP request has a body
-                if ((obj.socketXHeader['connection'] != null) && (obj.socketXHeader['connection'].toLowerCase() == 'close')) { obj.socketParseState = 1; }
                 if (obj.socketXHeader['content-length'] != null) { obj.socketParseState = 1; }
+                if ((obj.socketXHeader['connection'] != null) && (obj.socketXHeader['connection'].toLowerCase() == 'close')) { obj.socketParseState = 1; }
                 if ((obj.socketXHeader['transfer-encoding'] != null) && (obj.socketXHeader['transfer-encoding'].toLowerCase() == 'chunked')) { obj.socketParseState = 1; }
                 if (obj.isWebSocket) {
                     if ((obj.socketXHeader['connection'] != null) && (obj.socketXHeader['connection'].toLowerCase() == 'upgrade')) {
@@ -494,21 +524,35 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             }
             if (obj.socketParseState == 1) {
                 var csize = -1;
-                if ((obj.socketXHeader['connection'] != null) && (obj.socketXHeader['connection'].toLowerCase() == 'close')) {
-                    // The body ends with a close, in this case, we will only process the header
-                    processHttpResponse(null, null, true);
-                    csize = 0;
-                } else if (obj.socketXHeader['content-length'] != null) {
+                if (obj.socketXHeader['content-length'] != null) {
                     // The body length is specified by the content-length
                     if (obj.socketContentLengthRemaining == 0) { obj.socketContentLengthRemaining = parseInt(obj.socketXHeader['content-length']); } // Set the remaining content-length if not set
                     var data = obj.socketAccumulator.substring(0, obj.socketContentLengthRemaining); // Grab the available data, not passed the expected content-length
                     obj.socketAccumulator = obj.socketAccumulator.substring(data.length); // Remove the data from the accumulator
                     obj.socketContentLengthRemaining -= data.length; // Substract the obtained data from the expected size
-                    processHttpResponse(null, data, (obj.socketContentLengthRemaining == 0)); // Send any data we have, if we are done, signal the end of the response
-                    if (obj.socketContentLengthRemaining > 0) return; // If more data is needed, return now so we exit the while() loop.
+                    if (obj.socketContentLengthRemaining > 0) {
+                        // Send any data we have, if we are done, signal the end of the response
+                        processHttpResponse(null, data, false);
+                        return; // More data is needed, return now so we exit the while() loop.
+                    } else {
+                        // We are done with this request
+                        const closing = (obj.socketXHeader['connection'] != null) && (obj.socketXHeader['connection'].toLowerCase() == 'close');
+                        if (closing) {
+                            // We need to close this tunnel.
+                            processHttpResponse(null, data, false);
+                            obj.close();
+                        } else {
+                            // Proceed with the next request.
+                            processHttpResponse(null, data, true);
+                        }
+                    }
                     csize = 0; // We are done
-                }
-                else if ((obj.socketXHeader['transfer-encoding'] != null) && (obj.socketXHeader['transfer-encoding'].toLowerCase() == 'chunked')) {
+                } else if ((obj.socketXHeader['connection'] != null) && (obj.socketXHeader['connection'].toLowerCase() == 'close')) {
+                    // The body ends with a close, in this case, we will only process the header
+                    processHttpResponse(null, obj.socketAccumulator, false);
+                    obj.socketAccumulator = '';
+                    return;
+                } else if ((obj.socketXHeader['transfer-encoding'] != null) && (obj.socketXHeader['transfer-encoding'].toLowerCase() == 'chunked')) {
                     // The body is chunked
                     var clen = obj.socketAccumulator.indexOf('\r\n');
                     if (clen < 0) { return; } // Chunk length not found, exit now and get more data.
@@ -586,8 +630,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     }
 
     // This is a fully parsed HTTP response from the remote device
-    function processHttpResponse(header, data, done) {
-        //console.log('processHttpResponse');
+    function processHttpResponse(header, data, done, closed) {
+        //console.log('processHttpResponse', header, data ? data.length : 0, done, closed);
         if (obj.isWebSocket == false) {
             if (obj.res == null) return;
             parent.lastOperation = obj.lastOperation = Date.now(); // Update time of last opertion performed
@@ -595,7 +639,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             // If there is a header, send it
             if (header != null) {
                 obj.res.status(parseInt(header.Directive[1])); // Set the status
-                const blockHeaders = ['Directive', 'sec-websocket-extensions']; // We do not forward these headers 
+                const blockHeaders = ['Directive', 'sec-websocket-extensions', 'connection', 'transfer-encoding']; // We do not forward these headers 
                 for (var i in header) {
                     if (i == 'set-cookie') {
                         for (var ii in header[i]) {
@@ -637,7 +681,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
                 // Event completion
                 obj.processedRequestCount++;
-                if (obj.oncompleted) { obj.oncompleted(obj.tunnelId); }
+                if (obj.oncompleted) { obj.oncompleted(obj.tunnelId, closed); }
             }
         } else {
             // Tunnel is now in web socket pass-thru mode
@@ -656,7 +700,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     // Send data thru the relay tunnel. Written to use TLS if needed.
     function send(data) { try { if (obj.tls) { obj.tls.write(data); } else { obj.wsClient.send(data); } } catch (ex) { } }
 
-    parent.parent.debug('relay', 'TCP: Request for web relay');
+    parent.parent.parent.debug('relay', 'TCP: Request for web relay');
     return obj;
 };
 

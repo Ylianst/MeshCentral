@@ -1235,7 +1235,7 @@ function createAuthenticodeHandler(path) {
         if (args.hash == 'sha512') { hashOid = forge.pki.oids.sha512; fileHash = obj.getHash('sha512'); }
         if (args.hash == 'sha224') { hashOid = forge.pki.oids.sha224; fileHash = obj.getHash('sha224'); }
         if (args.hash == 'md5') { hashOid = forge.pki.oids.md5; fileHash = obj.getHash('md5'); }
-        if (hashOid == null) { func(false); return; };
+        if (hashOid == null) { func('Invalid signing hash: ' + args.hash); return; };
 
         // Create the signature block
         var xp7 = forge.pkcs7.createSignedData();
@@ -1453,7 +1453,7 @@ function createAuthenticodeHandler(path) {
         // Open the output file
         var output = null;
         try { output = fs.openSync(args.out, 'w+'); } catch (ex) { }
-        if (output == null) { func(false); return; }
+        if (output == null) { func('Unable to open output file: ' + args.out); return; }
         var tmp, written = 0, executableSize = obj.header.sigpos ? obj.header.sigpos : filesize;
 
         // Compute pre-header length and copy that to the new file

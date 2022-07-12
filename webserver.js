@@ -40,7 +40,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.tls = require('tls');
     obj.path = require('path');
     obj.bodyParser = require('body-parser');
-    obj.session = require('cookie-session');
     obj.exphbs = require('express-handlebars');
     obj.crypto = require('crypto');
     obj.common = require('./common.js');
@@ -84,11 +83,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.blockedAgents = 0;
     obj.renderPages = null;
     obj.renderLanguages = [];
-    obj.destroyedSessions = {};
+    obj.destroyedSessions = {};                 // userid/req.session.x --> destroyed session time
 
     // Web relay sessions
     var webRelayNextSessionId = 1;
-    var webRelaySessions = {}            // RelayID --> Web Mutli-Tunnel
+    var webRelaySessions = {}            // UserId/SessionId/Host --> Web Relay Session
     var webRelayCleanupTimer = null;
     
     // Mesh Rights
@@ -1360,6 +1359,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // If the email is the username, set this here.
         if (domain.usernameisemail) { req.body.username = req.body.email; }
 
+        // Check if there is domain.newAccountToken, check if supplied token is valid
+        if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.anewaccountpass != domain.newaccountspass)) {
+            parent.debug('web', 'handleCreateAccountRequest: Invalid account creation token');
+            req.session.loginmode = 2;
+            req.session.messageid = 103; // Invalid account creation token.
+            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+            return;
+        }
+
+        // If needed, check the new account creation CAPTCHA
+        if ((domain.newaccountscaptcha != null) && (domain.newaccountscaptcha !== false)) {
+            const c = parent.decodeCookie(req.body.captchaargs, parent.loginCookieEncryptionKey, 10); // 10 minute timeout
+            if ((c == null) || (c.type != 'newAccount') || (typeof c.captcha != 'string') || (c.captcha.length < 5) || (c.captcha != req.body.anewaccountcaptcha)) {
+                req.session.loginmode = 2;
+                req.session.messageid = 117; // Invalid security check
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                return;
+            }
+        }
+
         // Accounts that start with ~ are not allowed
         if ((typeof req.body.username != 'string') || (req.body.username.length < 1) || (req.body.username[0] == '~')) {
             parent.debug('web', 'handleCreateAccountRequest: unable to create account (0)');
@@ -1424,14 +1443,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             req.session.messageid = 102; // Existing account with this email address.
                             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                         } else {
-                            // Check if there is domain.newAccountToken, check if supplied token is valid
-                            if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.anewaccountpass != domain.newaccountspass)) {
-                                parent.debug('web', 'handleCreateAccountRequest: Invalid account creation token');
-                                req.session.loginmode = 2;
-                                req.session.messageid = 103; // Invalid account creation token.
-                                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                                return;
-                            }
                             // Check if user exists
                             if (obj.users['user/' + domain.id + '/' + req.body.username.toLowerCase()]) {
                                 parent.debug('web', 'handleCreateAccountRequest: Username already exists');
@@ -2799,7 +2810,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Create a authentication cookie
                 const authCookie = obj.parent.encodeCookie({ userid: dbGetFunc.user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
-                const authRelayCookie = obj.parent.encodeCookie({ ruserid: dbGetFunc.user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
+                const authRelayCookie = obj.parent.encodeCookie({ ruserid: dbGetFunc.user._id, x: req.session.x }, obj.parent.loginCookieEncryptionKey);
 
                 // Send the main web application
                 var extras = (dbGetFunc.req.query.key != null) ? ('&key=' + dbGetFunc.req.query.key) : '';
@@ -2871,8 +2882,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     webstate: encodeURIComponent(webstate).replace(/'/g, '%27'),
                     amtscanoptions: amtscanoptions,
                     pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports(),
-                    webRelayPort: ((typeof args.relaydns == 'string') ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0)),
-                    webRelayDns: ((typeof args.relaydns == 'string') ? args.relaydns : '')
+                    webRelayPort: ((args.relaydns != null) ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0)),
+                    webRelayDns: ((args.relaydns != null) ? args.relaydns[0] : '')
                 }, dbGetFunc.req, domain), user);
             }
             xdbGetFunc.req = req;
@@ -3055,20 +3066,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             twoFactorTimeout = domain.passwordrequirements.twofactortimeout * 1000;
         }
 
+        // Setup CAPTCHA if needed
+        var newAccountCaptcha = '', newAccountCaptchaImage = '';
+        if ((domain.newaccountscaptcha != null) && (domain.newaccountscaptcha !== false)) {
+            newAccountCaptcha = obj.parent.encodeCookie({ type: 'newAccount', captcha: require('svg-captcha').randomText(5) }, obj.parent.loginCookieEncryptionKey);
+            newAccountCaptchaImage = 'newAccountCaptcha.ashx?x=' + newAccountCaptcha;
+        }
+
         // Render the login page
         render(req, res,
             getRenderPage((domain.sitestyle == 2) ? 'login2' : 'login', req, domain),
             getRenderArgs({
                 loginmode: loginmode,
                 rootCertLink: getRootCertLink(domain),
-                newAccount: newAccountsAllowed,
-                newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1),
+                newAccount: newAccountsAllowed, // True if new accounts are allowed from the login page
+                newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), // 1 if new account creation requires password
+                newAccountCaptcha: newAccountCaptcha, // If new account creation requires a CAPTCHA, this string will not be empty
+                newAccountCaptchaImage: newAccountCaptchaImage, // Set to the URL of the CAPTCHA image
                 serverDnsName: obj.getWebServerName(domain),
                 serverPublicPort: httpsPort,
                 passlogin: (typeof domain.showpasswordlogin == 'boolean') ? domain.showpasswordlogin : true,
                 emailcheck: emailcheck,
                 features: features,
-                sessiontime: (args.sessiontime) ? args.sessiontime : 60,
+                sessiontime: (args.sessiontime) ? args.sessiontime : 60, // Session time in minutes, 60 minutes is the default
                 passRequirements: passRequirements,
                 customui: customui,
                 footer: (domain.loginfooter == null) ? '' : domain.loginfooter,
@@ -3194,6 +3214,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             res.redirect(domain.url + getQueryPortion(req));
             return;
         }
+    }
+
+    // Handle new account Captcha GET
+    function handleNewAccountCaptchaRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if ((domain.newaccountscaptcha == null) || (domain.newaccountscaptcha === false) || (req.query.x == null)) { res.sendStatus(404); return; }
+        const c = obj.parent.decodeCookie(req.query.x, obj.parent.loginCookieEncryptionKey);
+        if ((c == null) || (c.type !== 'newAccount') || (typeof c.captcha != 'string')) { res.sendStatus(404); return; }
+        res.type('svg');
+        res.status(200).end(require('svg-captcha')(c.captcha, {}));
     }
 
     // Handle Captcha GET
@@ -5758,21 +5789,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
             }
         }
-        //obj.app.use(obj.bodyParser.urlencoded({ extended: false }));
-        var sessionOptions = {
+
+        // Setup a keygrip instance with higher default security, default hash is SHA1, we want to bump that up with SHA384
+        // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
+        // If args.sessionkey is a string, use it as a single key, but args.sessionkey can also be used as an array of keys.
+        const keygrip = require('keygrip')((typeof obj.args.sessionkey == 'string') ? [obj.args.sessionkey] : obj.args.sessionkey, 'sha384', 'base64');
+
+        // Setup the cookie session
+        const sessionOptions = {
             name: 'xid', // Recommended security practice to not use the default cookie name
             httpOnly: true,
-            domain: (certificates.CommonName != 'un-configured' ? "." + certificates.CommonName : null),
-            keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
+            keys: keygrip,
             secure: (obj.args.tlsoffload == null), // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
             sameSite: (obj.args.sessionsamesite ? obj.args.sessionsamesite : 'lax')
         }
-        if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60 * 1000); }
-        obj.app.use(obj.session(sessionOptions));
+        if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60000); } // sessiontime is minutes
+        obj.app.use(require('cookie-session')(sessionOptions));
 
         // Handle all incoming web sockets, see if some need to be handled as web relays
         obj.app.ws('/*', function (ws, req, next) {
-            if ((obj.webRelayRouter != null) && (req.hostname == obj.args.relaydns)) { handleWebRelayWebSocket(ws, req); return; }
+            if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) { handleWebRelayWebSocket(ws, req); return; }
             return next();
         });
 
@@ -5876,7 +5912,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
 
             // If this is a web relay connection, handle it here.
-            if ((obj.webRelayRouter != null) && (req.hostname == obj.args.relaydns)) { return obj.webRelayRouter(req, res); }
+            if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) {
+                if (['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'].indexOf(req.method) >= 0) { return obj.webRelayRouter(req, res); } else { res.sendStatus(404); return; }
+            }
 
             // Get the domain for this request
             const domain = req.xdomain = getDomain(req);
@@ -6096,6 +6134,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);
                 obj.app.post(url + 'pluginadmin.ashx', obj.bodyParser.urlencoded({ extended: false }), obj.handlePluginAdminPostReq);
                 obj.app.get(url + 'pluginHandler.js', obj.handlePluginJS);
+            }
+
+            // New account CAPTCHA request
+            if ((domain.newaccountscaptcha != null) && (domain.newaccountscaptcha !== false)) {
+                obj.app.get(url + 'newAccountCaptcha.ashx', handleNewAccountCaptchaRequest);
             }
 
             // Check CrowdSec Bounser if configured
@@ -6578,19 +6621,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Setup web relay on this web server if needed
             // We set this up when a DNS name is used as a web relay instead of a port
-            if (typeof obj.args.relaydns == 'string') {
+            if (obj.args.relaydns != null) {
                 obj.webRelayRouter = require('express').Router();
 
                 // This is the magic URL that will setup the relay session
                 obj.webRelayRouter.get('/control-redirect.ashx', function (req, res, next) {
-                    if (req.headers.host != obj.args.relaydns) { res.sendStatus(404); return; }
+                    if (obj.args.relaydns.indexOf(req.hostname) == -1) { res.sendStatus(404); return; }
                     if ((req.session.userid == null) && obj.args.user && obj.users['user//' + obj.args.user.toLowerCase()]) { req.session.userid = 'user//' + obj.args.user.toLowerCase(); } // Use a default user if needed
-                    if ((req.session == null) || (req.session.userid == null)) { res.redirect('/'); return; }
                     res.set({ 'Cache-Control': 'no-store' });
                     parent.debug('web', 'webRelaySetup');
 
+                    // Decode the relay cookie
+                    if (req.query.c != null) {
+                        // Decode and check if this relay cookie is valid
+                        const urlCookie = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey);
+                        if ((urlCookie != null) && (urlCookie.ruserid != null) && (urlCookie.x != null)) {
+                            if (req.session.x != urlCookie.x) { req.session.x = urlCookie.x; } // Set the sessionid if missing
+                            if (req.session.userid != urlCookie.ruserid) { req.session.userid = urlCookie.ruserid; } // Set the session userid if missing
+                        }
+                    }
+
                     // Check that all the required arguments are present
-                    if ((req.session.userid == null) || (req.query.n == null) || (req.query.p == null) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
+                    if ((req.session.userid == null) || (req.session.x == null) || (req.query.n == null) || (req.query.p == null) || ((obj.destroyedSessions[req.session.userid + '/' + req.session.x] != null)) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
 
                     // Get the user and domain information
                     const userid = req.session.userid;
@@ -6601,51 +6653,112 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     const port = parseInt(req.query.p);
                     const appid = parseInt(req.query.appid);
 
-                    // Check to see if we already have a multi-relay session that matches exactly this device and port for this user
-                    var relaySession = null;
-                    for (var i in webRelaySessions) {
-                        const xrelaySession = webRelaySessions[i];
-                        if ((xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
-                            relaySession = xrelaySession; // We found an exact match
+                    // Check that we have an exact session on any of the relay DNS names
+                    var xrelaySessionId, xrelaySession, freeRelayHost, oldestRelayTime, oldestRelayHost;
+                    for (var hostIndex in obj.args.relaydns) {
+                        const host = obj.args.relaydns[hostIndex];
+                        xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + host;
+                        xrelaySession = webRelaySessions[xrelaySessionId];
+                        if (xrelaySession == null) {
+                            // We found an unused hostname, save this as it could be useful.
+                            if (freeRelayHost == null) { freeRelayHost = host; }
+                        } else {
+                            // Check if we already have a relay session that matches exactly what we want
+                            if ((xrelaySession.domain.id == domain.id) && (xrelaySession.userid == userid) && (xrelaySession.nodeid == nodeid) && (xrelaySession.addr == addr) && (xrelaySession.port == port) && (xrelaySession.appid == appid)) {
+                                // We found an exact match, we are all setup already, redirect to root of that DNS name
+                                if (host == req.hostname) {
+                                    // Request was made on the same host, redirect to root.
+                                    res.redirect('/');
+                                } else {
+                                    // Request was made to a different host
+                                    const httpport = ((args.aliasport != null) ? args.aliasport : args.port);
+                                    res.redirect('https://' + host + ((httpport != 443) ? (':' + httpport) : '') + '/');
+                                }
+                                return;
+                            }
+
+                            // Keep a record of the oldest web relay session, this could be useful.
+                            if (oldestRelayHost == null) {
+                                // Oldest host not set yet, set it
+                                oldestRelayHost = host;
+                                oldestRelayTime = xrelaySession.lastOperation;
+                            } else {
+                                // Check if this host is older then oldest so far
+                                if (oldestRelayTime > xrelaySession.lastOperation) {
+                                    oldestRelayHost = host;
+                                    oldestRelayTime = xrelaySession.lastOperation;
+                                }
+                            }
                         }
                     }
 
-                    if (relaySession != null) {
-                        // Since we found a match, use it
-                        req.session.rid = relaySession.sessionId;
+                    // Check if there is a free relay DNS name we can use
+                    var selectedHost = null;
+                    if (freeRelayHost != null) {
+                        // There is a free one, use it.
+                        selectedHost = freeRelayHost;
                     } else {
+                        // No free ones, close the oldest one
+                        selectedHost = oldestRelayHost;
+                    }
+                    xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + selectedHost;
+
+                    if (selectedHost == req.hostname) {
+                        // If this web relay session id is not free, close it now
+                        xrelaySession = webRelaySessions[xrelaySessionId];
+                        if (xrelaySession != null) { xrelaySession.close(); delete webRelaySessions[xrelaySessionId]; }
+
                         // Create a web relay session
-                        relaySession = require('./apprelays.js').CreateWebRelaySession(parent, db, req, args, domain, userid, nodeid, addr, port, appid);
+                        const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySessionId);
                         relaySession.onclose = function (sessionId) {
                             // Remove the relay session
                             delete webRelaySessions[sessionId];
                             // If there are not more relay sessions, clear the cleanup timer
-                            if ((Object.keys(webRelaySessions).length == 0) && (webRelayCleanupTimer != null)) { clearInterval(webRelayCleanupTimer); webRelayCleanupTimer = null; }
+                            if ((Object.keys(webRelaySessions).length == 0) && (obj.cleanupTimer != null)) { clearInterval(webRelayCleanupTimer); obj.cleanupTimer = null; }
                         }
-                        relaySession.sessionId = webRelayNextSessionId++;
 
                         // Set the multi-tunnel session
-                        webRelaySessions[userid + '/' + relaySession.sessionId] = relaySession;
-                        req.session.rid = relaySession.sessionId;
+                        webRelaySessions[xrelaySessionId] = relaySession;
 
                         // Setup the cleanup timer if needed
-                        if (webRelayCleanupTimer == null) { webRelayCleanupTimer = setInterval(checkWebRelaySessionsTimeout, 10000); }
-                    }
+                        if (obj.cleanupTimer == null) { webRelayCleanupTimer = setInterval(checkWebRelaySessionsTimeout, 10000); }
 
-                    // Redirect to root
-                    res.redirect('/');
+                        // Redirect to root.
+                        res.redirect('/');
+                    } else {
+                        if (req.query.noredirect != null) {
+                            // No redirects allowed, fail here. This is important to make sure there is no redirect cascades
+                            res.sendStatus(404);
+                        } else {
+                            // Request was made to a different host, redirect using the full URL so an HTTP cookie can be created on the other DNS name.
+                            const httpport = ((args.aliasport != null) ? args.aliasport : args.port);
+                            res.redirect('https://' + selectedHost + ((httpport != 443) ? (':' + httpport) : '') + req.url + '&noredirect=1');
+                        }
+                    }
                 });
 
                 // Handle all incoming requests as web relays
-                obj.webRelayRouter.get('/*', function (req, res) { handleWebRelayRequest(req, res); })
+                obj.webRelayRouter.get('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
 
                 // Handle all incoming requests as web relays
-                obj.webRelayRouter.post('/*', function (req, res) { handleWebRelayRequest(req, res); })
+                obj.webRelayRouter.post('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
+
+                // Handle all incoming requests as web relays
+                obj.webRelayRouter.put('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
+
+                // Handle all incoming requests as web relays
+                obj.webRelayRouter.delete('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
+
+                // Handle all incoming requests as web relays
+                obj.webRelayRouter.options('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
+
+                // Handle all incoming requests as web relays
+                obj.webRelayRouter.head('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
             }
 
             // Indicates to ExpressJS that the override public folder should be used to serve static files.
             if (parent.config.domains[i].webpublicpath != null) {
-                // Use domain public path
+                // Use domain public pathe
                 obj.app.use(url, obj.express.static(parent.config.domains[i].webpublicpath));
             } else if (obj.parent.webPublicOverridePath != null) {
                 // Use override path
@@ -6685,8 +6798,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Handle an incoming request as a web relay 
     function handleWebRelayRequest(req, res) {
-        if ((req.session.userid != null) && (req.session.rid != null)) {
-            var relaySession = webRelaySessions[req.session.userid + '/' + req.session.rid];
+        if ((req.session.userid != null) && (req.session.x != null) && (obj.destroyedSessions[req.session.userid + '/' + req.session.x] == null)) {
+            var relaySession = webRelaySessions[req.session.userid + '/' + req.session.x + '/' + req.hostname];
             if (relaySession != null) {
                 // The web relay session is valid, use it
                 relaySession.handleRequest(req, res);
@@ -6702,8 +6815,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Handle an incoming websocket connection as a web relay 
     function handleWebRelayWebSocket(ws, req) {
-        if ((req.session.userid != null) && (req.session.rid != null)) {
-            var relaySession = webRelaySessions[req.session.userid + '/' + req.session.rid];
+        if ((req.session.userid != null) && (req.session.x != null) && (obj.destroyedSessions[req.session.userid + '/' + req.session.x] == null)) {
+            var relaySession = webRelaySessions[req.session.userid + '/' + req.session.x + '/' + req.hostname];
             if (relaySession != null) {
                 // The multi-tunnel session is valid, use it
                 relaySession.handleWebSocket(ws, req);
@@ -7169,7 +7282,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             } else {
                 obj.tcpServer = obj.tlsServer.listen(port, addr, function () {
                     console.log('MeshCentral HTTPS server running on ' + certificates.CommonName + ':' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.');
-                    if (typeof args.relaydns == 'string') { console.log('MeshCentral HTTPS relay server running on ' + args.relaydns + ':' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.'); }
+                    if (args.relaydns != null) { console.log('MeshCentral HTTPS relay server running on ' + args.relaydns[0] + ':' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.'); }
                 });
                 obj.parent.updateServerState('servername', certificates.CommonName);
             }
@@ -7179,7 +7292,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else {
             obj.tcpServer = obj.app.listen(port, addr, function () {
                 console.log('MeshCentral HTTP server running on port ' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.');
-                if (typeof args.relaydns == 'string') { console.log('MeshCentral HTTP relay server running on ' + args.relaydns + ':' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.'); }
+                if (args.relaydns != null) { console.log('MeshCentral HTTP relay server running on ' + args.relaydns[0] + ':' + port + ((typeof args.aliasport == 'number') ? (', alias port ' + args.aliasport) : '') + '.'); }
             });
             obj.parent.updateServerState('http-port', port);
             if (args.aliasport != null) { obj.parent.updateServerState('http-aliasport', args.aliasport); }

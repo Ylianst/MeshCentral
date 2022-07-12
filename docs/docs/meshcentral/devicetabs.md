@@ -85,6 +85,64 @@ Right-clicking on RDP Connect button allows you to specify Alternate Port.
 
 Uses Intel AMT to control video output of the hardware video card.
 
+### During a desktop session
+
+**Bottom left include:**
+
+![desktop bottom left](images/desktop_buttonsbottomleft.png)
+
+* Sending special Keys
+
+**Top Right include:**
+
+Actions
+
+![](images/desktop_buttonstopright_actions.png)
+
+* Wake Up
+* Run Commands
+* Sleep
+* Reset
+* Power Off
+* Uninstall Agent
+
+Settings
+
+![](images/desktop_settings.png)
+
+* Quality
+* Scaling
+* Frame rate
+* Swap Mouse Buttons
+* Reverse Mouse Wheel
+* Use Remote Keyboard Map
+* Automatic Clipboard
+* Lock on Disconnect
+
+![](images/desktop_buttonstopright_other.png)
+
+* Session recording indicator
+* Screen rotating
+* switching view mode
+* full screen
+
+Bottom right include:
+
+![](images/desktop_buttonsbottomright.png)
+
+* Session Sharing with Guest
+* Toggling keyboard lockout on guest
+* Refresh Desktop view
+* Upload Clipboard
+* Download Clipboard
+* Record Session to file
+* Take screenshot
+* Toggle Remote Desktop Background
+* Open URL on remote desktop
+* Lock the Remote computer
+* Display a notification on the remote computer
+* Open Chat Window
+
 ## Terminal
 
 For connecting to a command line based interface on the agent

@@ -12,22 +12,31 @@ module.exports.CreateCrowdSecBouncer = function (parent, config) {
     // Current captcha state
     const currentCaptchaIpList = {};
 
-    // Set the default values
-    if (typeof config.userAgent != 'string') { config.userAgent = "CrowdSec Express-NodeJS bouncer/v0.0.1"; }
+    // Set the default values. "config" will come in with lowercase names with everything, so we need to correct some value names.
+    if (typeof config.useragent != 'string') { config.useragent = 'CrowdSec Express-NodeJS bouncer/v0.0.1'; }
     if (typeof config.timeout != 'number') { config.timeout = 2000; }
-    if ((typeof config.fallbackRemediation != 'string') || (["bypass", "captcha", "ban"].indexOf(config.fallbackRemediation) == -1)) { config.fallbackRemediation = BAN_REMEDIATION; }
-    if (typeof config.maxRemediation != 'number') { config.maxRemediation = BAN_REMEDIATION; }
-    if (typeof config.captchaGenerationCacheDuration != 'number') { config.captchaGenerationCacheDuration = 60 * 1000; }
-    if (typeof config.captchaResolutionCacheDuration != 'number') { config.captchaResolutionCacheDuration = 30 * 60 * 1000; }
-    if (typeof config.captchaTexts != 'object') { config.captchaTexts = {}; }
-    if (typeof config.banTexts != 'object') { config.banTexts = {}; }
-    if (typeof config.colors != 'object') { config.colors = {}; }
-    if (typeof config.hideCrowdsecMentions != 'boolean') { config.hideCrowdsecMentions = false; }
-    if (typeof config.customCss != 'string') { config.customCss = ''; }
+    if ((typeof config.fallbackremediation != 'string') || (['bypass', 'captcha', 'ban'].indexOf(config.fallbackremediation) == -1)) { config.fallbackremediation = BAN_REMEDIATION; }
+    if (typeof config.maxremediation != 'number') { config.maxremediation = BAN_REMEDIATION; }
+    if (typeof config.captchagenerationcacheduration != 'number') { config.captchagenerationcacheduration = 60 * 1000; } // 60 seconds
+    if (typeof config.captcharesolutioncacheduration != 'number') { config.captcharesolutioncacheduration = 30 * 60 * 1000; } // 30 minutes
+    if (typeof config.captchatexts != 'object') { config.captchatexts = {}; } else {
+        if (typeof config.captchatexts.tabtitle == 'string') { config.captchatexts.tabTitle = config.captchatexts.tabtitle; delete config.captchatexts.tabtitle; } // Fix "tabTitle" capitalization
+    }
+    if (typeof config.bantexts != 'object') { config.bantexts = {}; } else {
+        if (typeof config.bantexts.tabtitle == 'string') { config.bantexts.tabTitle = config.bantexts.tabtitle; delete config.bantexts.tabtitle; } // Fix "tabTitle" capitalization
+    }
+    if (typeof config.colors != 'object') { config.colors = {}; } else {
+        var colors = {};
+        // All of the values in "text" and "background" sections happen to be lowercase, so, we can use the values as-is.
+        if (typeof config.colors.text == 'object') { colors.text = config.colors.text; }
+        if (typeof config.colors.background == 'object') { colors.background = config.colors.background; }
+        config.colors = colors;
+    }
+    if (typeof config.hidecrowdsecmentions != 'boolean') { config.hidecrowdsecmentions = false; }
+    if (typeof config.customcss != 'string') { delete config.customcss; }
     if (typeof config.bypass != 'boolean') { config.bypass = false; }
-    if (typeof config.trustedRangesForIpForwarding != 'object') { config.trustedRangesForIpForwarding = []; }
-    if (typeof config.customLogger != 'object') { config.customLogger = null; }
-    if (typeof config.bypassConnectionTest != 'boolean') { config.bypassConnectionTest = false; }
+    if (typeof config.customlogger != 'object') { delete config.customlogger; }
+    if (typeof config.bypassconnectiontest != 'boolean') { config.bypassconnectiontest = false; }
 
     // Setup the logger
     var logger = config.customLogger ? config.customLogger : getLogger();
@@ -35,16 +44,16 @@ module.exports.CreateCrowdSecBouncer = function (parent, config) {
     // Configure the bouncer
     configure({
         url: config.url,
-        apiKey: config.apiKey,
-        userAgent: config.userAgent,
+        apiKey: config.apikey,
+        userAgent: config.useragent,
         timeout: config.timeout,
-        fallbackRemediation: config.fallbackRemediation,
-        maxRemediation: config.maxRemediation,
-        captchaTexts: config.captchaTexts,
-        banTexts: config.banTexts,
+        fallbackRemediation: config.fallbackremediation,
+        maxRemediation: config.maxremediation,
+        captchaTexts: config.captchatexts,
+        banTexts: config.bantexts,
         colors: config.colors,
-        hideCrowdsecMentions: config.hideCrowdsecMentions,
-        customCss: config.customCss
+        hideCrowdsecMentions: config.hidecrowdsecmentions,
+        customCss: config.customcss
     });
 
     // Test connectivity
@@ -53,7 +62,7 @@ module.exports.CreateCrowdSecBouncer = function (parent, config) {
     // Process a web request
     obj.process = async function (domain, req, res, next) {
         try {
-            var remediation = config.fallbackRemediation;
+            var remediation = config.fallbackremediation;
             try { remediation = await getRemediationForIp(req.clientIp); } catch (ex) { }
             //console.log('CrowdSec', req.clientIp, remediation, req.url);
             switch (remediation) {
@@ -75,7 +84,7 @@ module.exports.CreateCrowdSecBouncer = function (parent, config) {
 
     // Process a captcha request
     obj.applyCaptcha = async function (req, res, next) {
-        await applyCaptchaEx(req.clientIp, req, res, next, config.captchaGenerationCacheDuration, config.captchaResolutionCacheDuration, logger);
+        await applyCaptchaEx(req.clientIp, req, res, next, config.captchagenerationcacheduration, config.captcharesolutioncacheduration, logger);
     }
 
     // Process a captcha request

@@ -698,7 +698,7 @@ function CreateMeshCentralServer(config, args) {
                                 obj.args = args = config2.settings;
 
                                 // Lower case all keys in the config file
-                                obj.common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders', 'crowdsec']);
+                                obj.common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders']);
 
                                 // Grad some of the values from the original config.json file if present.
                                 if ((config.settings.vault != null) && (config2.settings != null)) { config2.settings.vault = config.settings.vault; }
@@ -1196,7 +1196,7 @@ function CreateMeshCentralServer(config, args) {
                             for (i in args) { config2.settings[i] = args[i]; }
 
                             // Lower case all keys in the config file
-                            common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders', 'crowdsec']);
+                            common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders']);
 
                             // Grad some of the values from the original config.json file if present.
                             config2['mysql'] = config['mysql'];
@@ -1649,8 +1649,12 @@ function CreateMeshCentralServer(config, args) {
                     obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.certificates, obj.StartEx5);
                     if (obj.redirserver != null) { obj.redirserver.hookMainWebServer(obj.certificates); }
 
+                    // Change RelayDNS to a array of strings
+                    if (typeof obj.args.relaydns == 'string') { obj.args.relaydns = [obj.args.relaydns]; }
+                    if (obj.common.validateStrArray(obj.args.relaydns, 1) == false) { delete obj.args.relaydns; }
+
                     // Start the HTTP relay web server if needed
-                    if ((typeof obj.args.relaydns != 'string') && (typeof obj.args.relayport == 'number') && (obj.args.relayport != 0)) {
+                    if ((obj.args.relaydns == null) && (typeof obj.args.relayport == 'number') && (obj.args.relayport != 0)) {
                         obj.webrelayserver = require('./webrelayserver.js').CreateWebRelayServer(obj, obj.db, obj.args, obj.certificates, function () { });
                     }
 
@@ -3521,7 +3525,7 @@ function getConfig(createSampleConfig) {
 
     // Lower case all keys in the config file
     try {
-        require('./common.js').objKeysToLower(config, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders', 'crowdsec']);
+        require('./common.js').objKeysToLower(config, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders']);
     } catch (ex) {
         console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
         process.exit();
@@ -3674,6 +3678,7 @@ function mainStart() {
         var wildleek = false;
         var nodemailer = false;
         var sendgrid = false;
+        var captcha = false;
         if (require('os').platform() == 'win32') { for (var i in config.domains) { domainCount++; if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } } else { allsspi = false; }
         if (domainCount == 0) { allsspi = false; }
         for (var i in config.domains) {
@@ -3696,6 +3701,7 @@ function mainStart() {
             }
             if (config.domains[i].sessionrecording != null) { sessionRecording = true; }
             if ((config.domains[i].passwordrequirements != null) && (config.domains[i].passwordrequirements.bancommonpasswords == true)) { wildleek = true; }
+            if ((config.domains[i].newaccountscaptcha != null) && (config.domains[i].newaccountscaptcha !== false)) { captcha = true; }
         }
 
         // Build the list of required modules
@@ -3704,6 +3710,8 @@ function mainStart() {
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (ssh == true) { if (nodeVersion < 11) { addServerWarning('MeshCentral SSH support requires NodeJS 11 or higher.', 1); } else { modules.push('ssh2'); } }
         if (passport != null) { modules.push(...passport); }
+        if (captcha == true) { modules.push('svg-captcha'); }
+
         if (sessionRecording == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
         if (config.letsencrypt != null) { modules.push('acme-client'); } // Add acme-client module
         if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
