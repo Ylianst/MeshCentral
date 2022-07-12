@@ -63,7 +63,7 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
         // Setup a keygrip instance with higher default security, default hash is SHA1, we want to bump that up with SHA384
         // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
         // If args.sessionkey is a string, use it as a single key, but args.sessionkey can also be used as an array of keys.
-        const keygrip = require('keygrip')((typeof obj.args.sessionkey == 'string') ? [obj.args.sessionkey] : obj.args.sessionkey, 'sha384', 'base64');
+        const keygrip = require('keygrip')((typeof args.sessionkey == 'string') ? [args.sessionkey] : args.sessionkey, 'sha384', 'base64');
 
         // Setup cookie session
         const sessionOptions = {
