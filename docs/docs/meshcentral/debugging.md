@@ -49,6 +49,14 @@ If you want to change node to meshcentral in journalctl, add this to /etc/system
 SyslogIdentifier=meshcentral
 ```
 
+### Finding agent problems
+
+Using the servers `My Server > console`
+
+* `agentstatus` - Gives you summary counts of problems
+* `agentissues` - Gives IP:port and what error
+* `dupagents` - Gives duplicateAgent IP's, counts and names
+
 ### Logging it all
 
 To log everything that's possible, prepare the log directory.
