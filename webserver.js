@@ -3876,7 +3876,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Take a "user/domain/userid/path/file" format and return the actual server disk file path if access is allowed
     obj.getServerFilePath = function (user, domain, path) {
-        var splitpath = path.split('/'), serverpath = obj.path.join(obj.filespath, 'domain'), filename = '';
+        var splitpath = path.split('/'), serverpath = obj.path.join('./', 'domain'), filename = '';
         if ((splitpath.length < 3) || (splitpath[0] != 'user' && splitpath[0] != 'mesh') || (splitpath[1] != domain.id)) return null; // Basic validation
         var objid = splitpath[0] + '/' + splitpath[1] + '/' + splitpath[2];
         if (splitpath[0] == 'user' && (objid != user._id)) return null; // User validation, only self allowed
