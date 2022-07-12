@@ -1654,7 +1654,7 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.common.validateStrArray(obj.args.relaydns, 1) == false) { delete obj.args.relaydns; }
 
                     // Start the HTTP relay web server if needed
-                    if ((obj.args.relaydns != null) && (typeof obj.args.relayport == 'number') && (obj.args.relayport != 0)) {
+                    if ((obj.args.relaydns == null) && (typeof obj.args.relayport == 'number') && (obj.args.relayport != 0)) {
                         obj.webrelayserver = require('./webrelayserver.js').CreateWebRelayServer(obj, obj.db, obj.args, obj.certificates, function () { });
                     }
 
