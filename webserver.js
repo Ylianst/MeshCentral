@@ -925,8 +925,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         var origin = 'https://' + (domain.dns ? domain.dns : parent.certificates.CommonName);
                         if (httpport != 443) { origin += ':' + httpport; }
 
+                        const sec = parent.decryptSessionData(req.session.e);
                         var assertionExpectations = {
-                            challenge: req.session.u2f,
+                            challenge: sec.u2f,
                             origin: origin,
                             factor: 'either',
                             fmt: 'fido-u2f',
@@ -1006,6 +1007,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Return a U2F hardware key challenge
     function getHardwareKeyChallenge(req, domain, user, func) {
         delete req.session.u2f;
+        const sec = parent.decryptSessionData(req.session.e);
+
         if (user.otphkeys && (user.otphkeys.length > 0)) {
             // Get all WebAuthn keys
             var webAuthnKeys = [];
@@ -1014,12 +1017,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Generate a Webauthn challenge, this is really easy, no need to call any modules to do this.
                 var authnOptions = { type: 'webAuthn', keyIds: [], timeout: 60000, challenge: obj.crypto.randomBytes(64).toString('base64') };
                 for (var i = 0; i < webAuthnKeys.length; i++) { authnOptions.keyIds.push(webAuthnKeys[i].keyId); }
-                req.session.u2f = authnOptions.challenge;
+                sec.u2f = authnOptions.challenge;
+                req.session.e = parent.encryptSessionData(sec);
                 parent.debug('web', 'getHardwareKeyChallenge: success');
                 func(JSON.stringify(authnOptions));
                 return;
             }
         }
+
+        // Remove the chalange if present
+        if (sec.u2f != null) { delete sec.u2f; req.session.e = parent.encryptSessionData(sec); }
+
         parent.debug('web', 'getHardwareKeyChallenge: fail');
         func('');
     }
@@ -1049,7 +1057,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Normally, use the body username/password. If this is a token, use the username/password in the session.
         var xusername = req.body.username, xpassword = req.body.password;
-        if ((xusername == null) && (xpassword == null) && (req.body.token != null)) { xusername = req.session.tuser; xpassword = req.session.tpass; }
+        if ((xusername == null) && (xpassword == null) && (req.body.token != null)) {
+            const sec = parent.decryptSessionData(req.session.e);
+            xusername = sec.tuser; xpassword = sec.tpass;
+        }
 
         // Authenticate the user
         obj.authenticate(xusername, xpassword, domain, function (err, userid, passhint, loginOptions) {
@@ -1165,9 +1176,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 if ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null)) { req.session.temail = 1; }
                                 if ((user.phone != null) && (parent.smsserver != null)) { req.session.tsms = 1; }
                                 if ((user.otpdev != null) && (parent.firebase != null)) { req.session.tpush = 1; }
-                                req.session.tuserid = userid;
-                                req.session.tuser = xusername;
-                                req.session.tpass = xpassword;
+                                req.session.e = parent.encryptSessionData({ tuserid: userid, tuser: xusername, tpass: xpassword });
                                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                             }, randomWaitTime);
                         } else {
@@ -1263,9 +1272,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             parent.debug('web', 'handleLoginRequest: login ok, password change requested');
             req.session.loginmode = 6;
             req.session.messageid = 113; // Password change requested.
-            req.session.resettokenuserid = userid;
-            req.session.resettokenusername = xusername;
-            req.session.resettokenpassword = xpassword;
+
+            // Decrypt any session data
+            const sec = parent.decryptSessionData(req.session.e);
+            sec.rtuser = xusername;
+            sec.rtpass = xpassword;
+            req.session.e = parent.encryptSessionData(sec);
+
             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
             return;
         }
@@ -1289,6 +1302,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Regenerate session when signing in to prevent fixation
         //req.session.regenerate(function () {
         // Store the user's primary key in the session store to be retrieved, or in this case the entire user object
+        delete req.session.e;
         delete req.session.u2f;
         delete req.session.loginmode;
         delete req.session.tuserid;
@@ -1513,18 +1527,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
         if (req.body == null) { res.sendStatus(404); return; } // Post body is empty or can't be parsed
 
+        // Decrypt any session data
+        const sec = parent.decryptSessionData(req.session.e);
+
         // Check everything is ok
         const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false));
-        if ((allowAccountReset === false) || (domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
+        if ((allowAccountReset === false) || (domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof sec.rtuser != 'string') || (typeof sec.rtpass != 'string')) {
             parent.debug('web', 'handleResetPasswordRequest: checks failed');
+            delete req.session.e;
             delete req.session.u2f;
             delete req.session.loginmode;
             delete req.session.tuserid;
             delete req.session.tuser;
             delete req.session.tpass;
-            delete req.session.resettokenuserid;
-            delete req.session.resettokenusername;
-            delete req.session.resettokenpassword;
             delete req.session.temail;
             delete req.session.tsms;
             delete req.session.tpush;
@@ -1536,7 +1551,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // Authenticate the user
-        obj.authenticate(req.session.resettokenusername, req.session.resettokenpassword, domain, function (err, userid, passhint, loginOptions) {
+        obj.authenticate(sec.rtuser, sec.rtpass, domain, function (err, userid, passhint, loginOptions) {
             if (userid) {
                 // Login
                 var user = obj.users[userid];
@@ -1593,21 +1608,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             req.session.userid = userid;
                             req.session.ip = req.clientIp; // Bind this session to the IP address of the request
                             setSessionRandom(req);
-                            completeLoginRequest(req, res, domain, obj.users[userid], userid, req.session.tuser, req.session.tpass, direct, loginOptions);
+                            const sec = parent.decryptSessionData(req.session.e);
+                            completeLoginRequest(req, res, domain, obj.users[userid], userid, sec.tuser, sec.tpass, direct, loginOptions);
                         }, 0);
                     }
                 }, 0);
             } else {
                 // Failed, error out.
                 parent.debug('web', 'handleResetPasswordRequest: failed authenticate()');
+                delete req.session.e;
                 delete req.session.u2f;
                 delete req.session.loginmode;
                 delete req.session.tuserid;
                 delete req.session.tuser;
                 delete req.session.tpass;
-                delete req.session.resettokenuserid;
-                delete req.session.resettokenusername;
-                delete req.session.resettokenpassword;
                 delete req.session.temail;
                 delete req.session.tsms;
                 delete req.session.tpush;
@@ -2819,6 +2833,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Clean up the U2F challenge if needed
                 if (dbGetFunc.req.session.u2f) { delete dbGetFunc.req.session.u2f; };
+                if (dbGetFunc.req.session.e) {
+                    const sec = parent.decryptSessionData(dbGetFunc.req.session.e);
+                    if (sec.u2f != null) { delete sec.u2f; dbGetFunc.req.session.e = parent.encryptSessionData(sec); }
+                }
 
                 // Intel AMT Scanning options
                 var amtscanoptions = '';
@@ -2894,8 +2912,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Send back the login application
             // If this is a 2 factor auth request, look for a hardware key challenge.
             // Normal login 2 factor request
-            if (req.session && (req.session.loginmode == 4) && (req.session.tuserid)) {
-                var user = obj.users[req.session.tuserid];
+            const sec = parent.decryptSessionData(req.session.e);
+            if (req.session && (req.session.loginmode == 4) && (sec.tuserid)) {
+                var user = obj.users[sec.tuserid];
                 if (user != null) {
                     parent.debug('web', 'handleRootRequestEx: sending 2FA challenge.');
                     getHardwareKeyChallenge(req, domain, user, function (hwchallenge) { handleRootRequestLogin(req, res, domain, hwchallenge, passRequirements); });
@@ -3027,7 +3046,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Encrypt the hardware key challenge state if needed
         var hwstate = null;
-        if (hardwareKeyChallenge) { hwstate = obj.parent.encodeCookie({ u: req.session.tuser, p: req.session.tpass, c: req.session.u2f }, obj.parent.loginCookieEncryptionKey) }
+        if (hardwareKeyChallenge) {
+            const sec = parent.decryptSessionData(req.session.e);
+            hwstate = obj.parent.encodeCookie({ u: sec.tuser, p: sec.tpass, c: sec.u2f }, obj.parent.loginCookieEncryptionKey)
+        }
 
         // Check if we can use OTP tokens with email. We can't use email for 2FA password recovery (loginmode 5).
         var otpemail = (loginmode != 5) && (domain.mailserver != null) && (req.session != null) && ((req.session.temail === 1) || (typeof req.session.temail == 'string'));
@@ -3125,7 +3147,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             case 'tokenlogin': {
                 if (req.body.hwstate) {
                     var cookie = obj.parent.decodeCookie(req.body.hwstate, obj.parent.loginCookieEncryptionKey, 10);
-                    if (cookie != null) { req.session.tuser = cookie.u; req.session.tpass = cookie.p; req.session.u2f = cookie.c; }
+                    if (cookie != null) { req.session.e = parent.encryptSessionData({ tuser: cookie.u, tpass: cookie.p, u2f: cookie.c }); }
                 }
                 handleLoginRequest(req, res, true); break;
             }
@@ -5830,8 +5852,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
 
             // Remove legacy values from the session to keep the session as small as possible
+            delete req.session.u2f;
             delete req.session.domainid;
-            delete req.session.u2fchallenge
             delete req.session.nowInMinutes;
             delete req.session.tokenuserid;
             delete req.session.tokenusername;
@@ -5920,7 +5942,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const domain = req.xdomain = getDomain(req);
             parent.debug('webrequest', '(' + req.clientIp + ') ' + req.url);
 
-            // Skip the rest is this is an agent connection
+            // Skip the rest if this is an agent connection
             if ((req.url.indexOf('/meshrelay.ashx/.websocket') >= 0) || (req.url.indexOf('/agent.ashx/.websocket') >= 0) || (req.url.indexOf('/localrelay.ashx/.websocket') >= 0)) { next(); return; }
             
             // Setup security headers
@@ -5936,6 +5958,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { extraFrameSrc += ' https://' + xforwardedhost + ':' + parent.webrelayserver.port; }
             }
 
+            // Finish setup security headers
             const headers = {
                 'Referrer-Policy': 'no-referrer',
                 'X-XSS-Protection': '1; mode=block',

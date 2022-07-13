@@ -3262,6 +3262,29 @@ function CreateMeshCentralServer(config, args) {
         });
     }
 
+    // Encrypt session data
+    obj.encryptSessionData = function (data, key) {
+        if (data == null) return null;
+        if (key == null) { key = obj.loginCookieEncryptionKey; }
+        try {
+            const iv = Buffer.from(obj.crypto.randomBytes(12), 'binary'), cipher = obj.crypto.createCipheriv('aes-256-gcm', key.slice(0, 32), iv);
+            const crypted = Buffer.concat([cipher.update(JSON.stringify(data), 'utf8'), cipher.final()]);
+            return Buffer.concat([iv, cipher.getAuthTag(), crypted]).toString(obj.args.cookieencoding ? obj.args.cookieencoding : 'base64');
+        } catch (ex) { return null; }
+    }
+
+    // Decrypt the session data
+    obj.decryptSessionData = function (data, key) {
+        if ((typeof data != 'string') || (data.length < 13)) return {};
+        if (key == null) { key = obj.loginCookieEncryptionKey; }
+        try {
+            const buf = Buffer.from(data, 'base64');
+            const decipher = obj.crypto.createDecipheriv('aes-256-gcm', key.slice(0, 32), buf.slice(0, 12));
+            decipher.setAuthTag(buf.slice(12, 28));
+            return JSON.parse(decipher.update(buf.slice(28), 'binary', 'utf8') + decipher.final('utf8'));
+        } catch (ex) { return {}; }
+    }
+
     // Generate a cryptographic key used to encode and decode cookies
     obj.generateCookieKey = function () {
         return Buffer.from(obj.crypto.randomBytes(80), 'binary');
