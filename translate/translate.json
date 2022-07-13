@@ -12282,6 +12282,7 @@
     },
     {
       "en": "CAPTCHA image",
+      "nl": "CAPTCHA afbeelding",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1",
@@ -35242,6 +35243,7 @@
     },
     {
       "en": "Invalid security check.",
+      "nl": "Ongeldige beveiligingscontrole.",
       "xloc": [
         "login-mobile.handlebars->5->22",
         "login.handlebars->5->22",
@@ -57885,6 +57887,7 @@
     },
     {
       "en": "Security Check:",
+      "nl": "Veiligheidscontrole:",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->newAccountCaptcha->nuCaptcha",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->newAccountCaptcha->nuCaptcha",
@@ -57944,6 +57947,7 @@
     },
     {
       "en": "Security check",
+      "nl": "Veiligheidscontrole",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1",
