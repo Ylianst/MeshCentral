@@ -506,7 +506,7 @@
                                 <input type=button id=p5SelectAllButton disabled="disabled" onclick="p5selectallfile();" value="Select All" />&nbsp;
                                 <input type=button id=p5RenameFileButton disabled="disabled" value="Rename" onclick="p5renamefile();" />&nbsp;
                                 <input type=button id=p5DeleteFileButton disabled="disabled" value="Delete" onclick="p5deletefile();" />&nbsp;
-                                <!--<input type=button id=p5ViewFileButton disabled="disabled" value="View" onclick="p5viewfile()" />&nbsp;-->
+                                <input type=button id=p5ViewFileButton disabled="disabled" value="Edit" onclick="p5viewfile()" />&nbsp;
                                 <input type=button id=p5NewFolderButton disabled="disabled" value="New Folder" onclick="p5createfolder();" />&nbsp;
                                 <input type=button id=p5UploadButton disabled="disabled" value="Upload" onclick="p5uploadFile()" />&nbsp;
                                 <input type=button id=p5CutButton disabled="disabled" value="Cut" onclick="p5copyFile(1)" />&nbsp;
@@ -2913,6 +2913,30 @@
                     setDialogMode(2, "Phone Notifications", 3, account_managePhoneConfirm, x, message.cookie);
                     Q('d2phoneCodeInput').focus();
                     account_managePhoneCodeValidate();
+                    break;
+                }
+                case 'fileoperation': {
+                    // View the file in the dialog box
+                    var p5editSaveBack = function(b, tag) {
+                        var data;
+                        if (d4EditEncodingVal == 1) {
+                            data = encode_utf8(Q('d4editorarea').value); // UTF8 encoding
+                        } else {
+                            data = Q('d4editorarea').value; // RAW encoding
+                        }
+                        meshserver.send({ action: 'fileoperation', fileop: 'set', path: tag.path, file: tag.file, data: btoa(data) });
+                    }
+                    setDialogMode(4, EscapeHtml(message.file), 3, p5editSaveBack, null, message);
+                    QS('dialog').width = 'auto';
+                    QS('dialog').bottom = '80px';
+                    QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
+                    if (d4EditEncodingVal == 1) {
+                        // UTF8 Encoding
+                        Q('d4editorarea').value = decode_utf8(atob(message.data));
+                    } else {
+                        // RAW Encoding
+                        Q('d4editorarea').value = atob(message.data);
+                    }
                     break;
                 }
                 case 'event': {
@@ -13656,10 +13680,10 @@
         function p5setActions() {
             var cc = getFileSelCount(), tc = getFileCount(), sfc = getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
             QE('p5DeleteFileButton', (cc > 0) && (filetreelocation.length > 0));
+            QE('p5ViewFileButton', (cc == 1) && (sfc == 1) && (filetreelocation.length > 0));
             QE('p5NewFolderButton', filetreelocation.length > 0);
             QE('p5UploadButton', filetreelocation.length > 0);
             QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
-            //QE('p5ViewFileButton', (cc == 1) && (sfc == 1) && (filetreelocation.length > 0));
             QE('p5SelectAllButton', tc > 0);
             Q('p5SelectAllButton').value = (cc > 0 ? "Select None" : "Select All");
             QE('p5CutButton', (sfc > 0) && (cc == sfc));
@@ -13685,6 +13709,7 @@
         var isFilenameValid = (function(){ var x1=/^[^\\/:\*\?"<>\|]+$/, x2=/^\./, x3=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname){ return x1.test(fname)&&!x2.test(fname)&&!x3.test(fname)&&(fname[0] != '.'); } })();
         function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponentEx(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /><span id=p5confirmOverwriteSpan style=display:none><br /><label><input type=checkbox id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></form>'); p5updateUploadDialogOk('p5uploadinput'); }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
+        function p5GetFileInfo(name) { var filetreex = filetree; for (var i in filetreelocation) { if ((filetreex.f != null) && (filetreex.f[filetreelocation[i]] != null)) { filetreex = filetreex.f[filetreelocation[i]]; } } return filetreex.f[name]; }
         function p5updateUploadDialogOk() {
             // Check if these are files we can upload, remove all folders.
             var xallfiles = Q('p5uploadinput').files, files = [];
@@ -13712,27 +13737,20 @@
                 }
             }
         }
-        /*
         function p5viewfile() {
             var checkboxes = document.getElementsByName('fc');
             for (var i = 0; i < checkboxes.length; i++) {
                 if (checkboxes[i].checked) {
-                    console.log(filetreelocation.join('/') + '/' + checkboxes[i].value); // TODO: Download and show this file
-                    break;
+                    var f = p5GetFileInfo(checkboxes[i].value); if (f == null) return;
+                    if (f.s <= 204800) { meshserver.send({ action: 'fileoperation', fileop: 'get', path: filetreelocation, file: checkboxes[i].value, tag: 'edit' }); } else { messagebox("File Editor", "Only files less than 200k can be edited."); }
+                    return;
                 }
             }
         }
-        */
-
         var p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0;
         function p5copyFile(cut) {
             var checkboxes = document.getElementsByName('fc'); p5clipboard = []; p5clipboardCut = cut, p5clipboardFolder = Clone(filetreelocation);
-            for (var i = 0; i < checkboxes.length; i++) {
-                if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '3')) {
-                    console.log('yy', checkboxes[i].value);
-                    p5clipboard.push(checkboxes[i].value);
-                }
-            }
+            for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '3')) { p5clipboard.push(checkboxes[i].value); } }
             p5updateClipview();
         }
         function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Confirm {0} of {1} entrie{2} to this location?", (p5clipboardCut == 0?'copy':'move'), p5clipboard.length, ((p5clipboard.length > 1)?'s':'')) } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
