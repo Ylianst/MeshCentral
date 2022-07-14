@@ -8686,7 +8686,7 @@
                     meshserver.send({ action: 'msg', type: 'userSessions', nodeid: currentNode._id, tag: consent });
                 } else if (contype == 4) {
                     // Setup RDP remote desktop
-                    desktop = CreateRDPDesktop('Desk');
+                    desktop = CreateRDPDesktop('Desk', domainUrl);
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.onScreenSizeChange = mdeskAdjust;
                     desktop.m.onClipboardChanged = function(text) { if ((text != null) && (desktopsettings.rdpautoclipboard) && (navigator.clipboard != null)) { navigator.clipboard.writeText(text).then(function() { }).catch(function(err) { console.log(err); }) } } // Put remote clipboard data into our clipboard

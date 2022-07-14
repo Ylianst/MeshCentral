@@ -775,7 +775,8 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 const protocol = (args.tlsoffload) ? 'ws' : 'wss';
                 var domainadd = '';
                 if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-                const url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?p=10&auth=' + obj.infos.ip;  // Protocol 10 is Web-RDP
+                var url = protocol + '://localhost:' + args.port + '/' + domainadd + (((obj.mtype == 3) && (obj.relaynodeid == null)) ? 'local' : 'mesh') + 'relay.ashx?p=10&auth=' + obj.infos.ip;  // Protocol 10 is Web-RDP
+                if (domain.id != '') { url += '&domainid=' + domain.id; } // Since we are using "localhost", we are going to signal what domain we are on using a URL argument.
                 parent.parent.debug('relay', 'RDP: Connection websocket to ' + url);
                 obj.wsClient = new WebSocket(url, options);
                 obj.wsClient.on('open', function () { parent.parent.debug('relay', 'RDP: Relay websocket open'); });
