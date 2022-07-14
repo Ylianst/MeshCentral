@@ -785,15 +785,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Check permissions
                     if ((user.siteadmin & 8) != 0) {
                         // Perform a file operation (Create Folder, Delete Folder, Delete File...)
-                        if (common.validateString(command.fileop, 4, 16) == false) return;
+                        if (common.validateString(command.fileop, 3, 16) == false) return;
                         var sendUpdate = true, path = meshPathToRealPath(command.path, user); // This will also check access rights
                         if (path == null) break;
 
                         if ((command.fileop == 'createfolder') && (common.IsFilenameValid(command.newfolder) == true)) {
                             // Create a new folder
-                            try { fs.mkdirSync(path + '/' + command.newfolder); } catch (ex) {
+                            try { fs.mkdirSync(parent.path.join(path, command.newfolder)); } catch (ex) {
                                 try { fs.mkdirSync(path); } catch (ex) { }
-                                try { fs.mkdirSync(path + '/' + command.newfolder); } catch (ex) { }
+                                try { fs.mkdirSync(parent.path.join(path, command.newfolder)); } catch (ex) { }
                             }
                         }
                         else if (command.fileop == 'delete') {
@@ -822,14 +822,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         else if ((command.fileop == 'rename') && (common.IsFilenameValid(command.oldname) === true) && (common.IsFilenameValid(command.newname) === true)) {
                             // Rename
-                            try { fs.renameSync(path + '/' + command.oldname, path + '/' + command.newname); } catch (e) { }
+                            try { fs.renameSync(parent.path.join(path, command.oldname), parent.path.join(path, command.newname)); } catch (e) { }
                         }
                         else if ((command.fileop == 'copy') || (command.fileop == 'move')) {
                             // Copy or move of one or many files
-                            if (common.validateArray(command.names, 1) == false) return;
-                            var scpath = meshPathToRealPath(command.scpath, user); // This will also check access rights
+                            if (common.validateArray(command.name, 1) == false) return;
+                            var scpath = meshPathToRealPath(command.path, user); // This will also check access rights
                             if (scpath == null) break;
-                            // TODO: Check quota if this is a copy!!!!!!!!!!!!!!!!
+                            // TODO: Check quota if this is a copy
                             for (i in command.names) {
                                 if (common.IsFilenameValid(command.names[i]) === true) {
                                     var s = parent.path.join(scpath, command.names[i]), d = parent.path.join(path, command.names[i]);
@@ -837,8 +837,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     copyFile(s, d, function (op) { if (op != null) { fs.unlink(op, function (err) { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); }); } else { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } }, ((command.fileop == 'move') ? s : null));
                                 }
                             }
+                        } else if (command.fileop == 'get') {
+                            // Get a short file and send it back on the web socket
+                            if (common.validateString(command.file, 1, 4096) == false) return;
+                            const scpath = meshPathToRealPath(command.path, user); // This will also check access rights
+                            if (scpath == null) break;
+                            const filePath = parent.path.join(scpath, command.file);
+                            fs.stat(filePath, function (err, stat) {
+                                if ((err != null) || (stat == null) || (stat.size >= 204800)) return;
+                                fs.readFile(filePath, function (err, data) {
+                                    if ((err != null) || (data == null)) return;
+                                    command.data = data.toString('base64');
+                                    ws.send(JSON.stringify(command)); // Send the file data back, base64 encoded.
+                                });
+                            });
+                        } else if (command.fileop == 'set') {
+                            // Set a short file transfered on the web socket
+                            if (common.validateString(command.file, 1, 4096) == false) return;
+                            if (typeof command.data != 'string') return;
+                            const scpath = meshPathToRealPath(command.path, user); // This will also check access rights
+                            if (scpath == null) break;
+                            const filePath = parent.path.join(scpath, command.file);
+                            var data = null;
+                            try { data = Buffer.from(command.data, 'base64'); } catch (ex) { return; }
+                            fs.writeFile(filePath, data, function (err) { if (err == null) { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } });
                         }
-
                         if (sendUpdate == true) { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } // Fire an event causing this user to update this files
                     }
                     break;
