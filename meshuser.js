@@ -3397,9 +3397,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Do not allow this command if 2FA's are locked
                     if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
 
-                    // Do not allow this command if backup codes are not allowed
-                    if ((domain.passwordrequirements) && (domain.passwordrequirements.backupcode2factor == false)) return;
-
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
