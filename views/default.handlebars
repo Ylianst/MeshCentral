@@ -2931,11 +2931,9 @@
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
                     if (d4EditEncodingVal == 1) {
-                        // UTF8 Encoding
-                        Q('d4editorarea').value = decode_utf8(atob(message.data));
+                        Q('d4editorarea').value = decode_utf8(atob(message.data)); // UTF8 Encoding
                     } else {
-                        // RAW Encoding
-                        Q('d4editorarea').value = atob(message.data);
+                        Q('d4editorarea').value = atob(message.data); // RAW Encoding
                     }
                     break;
                 }
@@ -10717,11 +10715,9 @@
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
                     if (d4EditEncodingVal == 1) {
-                        // UTF8 Encoding
-                        Q('d4editorarea').value = decode_utf8(gdownloadFile.data);
+                        Q('d4editorarea').value = decode_utf8(gdownloadFile.data); // UTF8 Encoding
                     } else {
-                        // RAW Encoding
-                        Q('d4editorarea').value = gdownloadFile.data;
+                        Q('d4editorarea').value = gdownloadFile.data; // RAW Encoding
                     }
                     gdownloadFile = null;
                 } else {
@@ -10767,11 +10763,9 @@
         function p13editSaveBack(b, tag) {
             var data;
             if (d4EditEncodingVal == 1) {
-                // UTF8 encoding
-                data = new TextEncoder().encode(Q('d4editorarea').value);
+                data = new TextEncoder().encode(Q('d4editorarea').value); // UTF8 encoding
             } else {
-                // RAW encoding
-                data = new TextEncoder().encode(decode_utf8(Q('d4editorarea').value));
+                data = new TextEncoder().encode(decode_utf8(Q('d4editorarea').value)); // RAW encoding
             }
             p13uploadFileContinue(1, [{ name: tag, size: data.byteLength, type: 'text/plain', xdata: data }]);
         }
