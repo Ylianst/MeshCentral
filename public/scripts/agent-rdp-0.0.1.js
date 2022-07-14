@@ -5,9 +5,9 @@
 */
 
 // Construct a RDP remote desktop object
-var CreateRDPDesktop = function (canvasid) {
+var CreateRDPDesktop = function (canvasid, domainUrl) {
     var obj = {}
-    obj.m = { KeyAction: { "NONE": 0, "DOWN": 1, "UP": 2, "SCROLL": 3, "EXUP": 4, "EXDOWN": 5, "DBLCLICK": 6 } };
+    obj.m = { KeyAction: { 'NONE': 0, 'DOWN': 1, 'UP': 2, 'SCROLL': 3, 'EXUP': 4, 'EXDOWN': 5, 'DBLCLICK': 6 } };
     obj.State = 0;
     obj.canvas = Q(canvasid);
     obj.CanvasId = canvasid;
@@ -41,7 +41,7 @@ var CreateRDPDesktop = function (canvasid) {
             delete credentials.height;
         }
         obj.render = new Mstsc.Canvas.create(obj.canvas);
-        obj.socket = new WebSocket('wss://' + window.location.host + '/mstscrelay.ashx'); // TODO: Support domains
+        obj.socket = new WebSocket('wss://' + window.location.host + domainUrl + 'mstscrelay.ashx');
         obj.socket.binaryType = 'arraybuffer';
         obj.socket.onopen = function () {
             changeState(2); // Setup state

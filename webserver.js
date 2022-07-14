@@ -754,10 +754,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Request or connection says open regardless of the response
     function getDomain(req) {
         if (req.xdomain != null) { return req.xdomain; } // Domain already set for this request, return it.
-        if (req.headers.host != null) { var d = obj.dnsDomains[req.headers.host.split(':')[0].toLowerCase()]; if (d != null) return d; } // If this is a DNS name domain, return it here.
-        var x = req.url.split('/');
+        if ((req.hostname == 'localhost') && (req.query.domainid != null)) { const d = parent.config.domains[req.query.domainid]; if (d != null) return d; } // This is a localhost access with the domainid specified in the URL
+        if (req.hostname != null) { const d = obj.dnsDomains[req.hostname.toLowerCase()]; if (d != null) return d; } // If this is a DNS name domain, return it here.
+        const x = req.url.split('/');
         if (x.length < 2) return parent.config.domains[''];
-        var y = parent.config.domains[x[1].toLowerCase()];
+        const y = parent.config.domains[x[1].toLowerCase()];
         if ((y != null) && (y.dns == null)) { return parent.config.domains[x[1].toLowerCase()]; }
         return parent.config.domains[''];
     }
