@@ -3330,9 +3330,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Do not allow this command if 2FA's are locked
                     if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) { ws.send(JSON.stringify({ action: 'otpauth-request', err: 1 })); return; }
 
-                    // Do not allow this command if backup codes are not allowed
-                    if ((domain.passwordrequirements) && (domain.passwordrequirements.backupcode2factor == false)) { ws.send(JSON.stringify({ action: 'otpauth-request', err: 2 })); return; }
-
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) { ws.send(JSON.stringify({ action: 'otpauth-request', err: 3 })); return; }
 
@@ -3360,9 +3357,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Do not allow this command if 2FA's are locked
                     if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
-
-                    // Do not allow this command if backup codes are not allowed
-                    if ((domain.passwordrequirements) && (domain.passwordrequirements.backupcode2factor == false)) return;
 
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
