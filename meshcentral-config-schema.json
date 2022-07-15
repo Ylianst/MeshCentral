@@ -395,14 +395,18 @@
               }
             }
           },
-          "altMessenging": { 
-            "type": "object",
-            "properties": {
-              "name": { "type": "string", "description": "Name of the alternative messaging service, for example: \"Jitsi\" " },
-              "url": { "type": "string", "description": "URL to the alternative messaging services, for example: \"https://meet.jit.si/myserver-{0}\"" },
-              "localurl": { "type": "string", "description": "If specified, this is the URL that is used on the administrator side, for example: \"https://meet.jit.si/myserver-{0}\"" }
-            },
-            "required": [ "name", "url" ]
+          "altMessenging": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string", "description": "Name of the alternative messaging service, for example: \"Jitsi\" " },
+                "url": { "type": "string", "description": "URL to the alternative messaging services, for example: \"https://meet.jit.si/myserver-{0}\", for a device {0}, {1}, {2}, {3} is the device id. For a user, {0} is the userid, {1} is full userid with dashes, {2} is real name with no spaces, {3} is real name with dash instead of spaces." },
+                "localurl": { "type": "string", "description": "If specified, this is the URL that is used on the administrator side, for example: \"https://meet.jit.si/myserver-{0}\", for a device {0}, {1}, {2}, {3} is the device id. For a user, {0} is the userid, {1} is full userid with dashes, {2} is real name with no spaces, {3} is real name with dash instead of spaces." },
+                "type": { "type": "string", "enum": [null, "user", "device"], "default": null, "description": "Indicate if this button should be shown in the user or device type. If obmitted, it will be displayed in both." }
+              },
+              "required": [ "name", "url" ]
+            }
           },
           "deviceMeshRouterLinks": {
             "rdp": { "type": "boolean", "default": true, "description": "Display a RDP link in the device tab when supported." },
