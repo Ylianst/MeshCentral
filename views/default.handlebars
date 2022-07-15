@@ -7144,7 +7144,12 @@
                     //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
                     if ((meshrights & 8) && (connectivity & 1) || ((node.pmt == 1) && ((features2 & 2) != 0))) { x += '<input type=button value="' + "Chat" + '" title="' + "Open chat window to this computer" + '" onclick=deviceChat(event) />'; }
                     if ((serverinfo != null) && (serverinfo.altmessenging != null) && (meshrights & 8) && (connectivity & 1)) {
-                        for (var i in serverinfo.altmessenging) { x += '<input type=button value="' + EscapeHtml(serverinfo.altmessenging[i].name) + '" onclick=altDeviceChat(event,' + i + ') />'; }
+                        for (var i in serverinfo.altmessenging) {
+                            var am = serverinfo.altmessenging[i];
+                            if ((am.type == null) || (am.type == 'device')) {
+                                x += '<input type=button value="' + EscapeHtml(serverinfo.altmessenging[i].name) + '" onclick=altDeviceChat(event,' + i + ') />';
+                            }
+                        }
                     }
                     if ((serverinfo.guestdevicesharing !== false) && (node.agent != null) && (node.agent.caps & 3) && (connectivity & 1) && ((meshrights & 0x80008) == 0x80008) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 0x1000) == 0))) {
                         x += '<input type=button value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />';
@@ -7633,9 +7638,9 @@
 
         function altDeviceChat(e, i) {
             if (xxdialogMode) return;
-            var url = serverinfo.altmessenging[i].url.split('{0}').join(currentNode._id.split('/').join('-'));
+            var url = serverinfo.altmessenging[i].url.split('{0}').join(currentNode._id.split('/')[2]).split('{1}').join(currentNode._id.split('/')[2]).split('{2}').join(currentNode._id.split('/')[2]).split('{3}').join(currentNode._id.split('/')[2]);
             var localurl = url;
-            if (typeof serverinfo.altmessenging[i].localurl == 'string') { localurl = serverinfo.altmessenging[i].localurl.split('{0}').join(currentNode._id.split('/').join('-')); }
+            if (typeof serverinfo.altmessenging[i].localurl == 'string') { localurl = serverinfo.altmessenging[i].localurl.split('{0}').join(currentNode._id.split('/')[2]).split('{1}').join(currentNode._id.split('/')[2]).split('{2}').join(currentNode._id.split('/')[2]).split('{3}').join(currentNode._id.split('/')[2]); }
             if (url != '') { meshserver.send({ action: 'msg', type: 'openUrl', nodeid: currentNode._id, url: url }); }
             if (localurl != '') { safeNewWindow(localurl, 'altmessenger:' + currentNode._id, 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=400,height=560'); }
         }
@@ -14429,7 +14434,17 @@
         function altUserChat(e, userid, name, i) {
             if (xxdialogMode) return;
             haltEvent(e);
-            var url = serverinfo.altmessenging[i].url.split('{0}').join(userid.split('/').join('-'));
+            var url = serverinfo.altmessenging[i].url;
+            var ruserid = decodeURIComponent(userid);
+            var userid1 = encodeURIComponentEx(ruserid.split('/')[2]); // userid
+            var userid2 = encodeURIComponentEx(ruserid.split('/').join('-')); // user-domain-userid
+            var userid3 = userid1, userid4 = userid2;
+            var ruser = users[ruserid];
+            if ((ruser != null) && (ruser.realname != null)) {
+                userid3 = encodeURIComponentEx(ruser.realname.split(' ').join('')); // real name with no empty spaces
+                userid4 = encodeURIComponentEx(ruser.realname.split(' ').join('-')); // real name with - instead of spaces
+            }
+            url = url.split('{0}').join(userid1).split('{1}').join(userid2).split('{2}').join(userid3).split('{3}').join(userid4);
             if (urlargs.key) { url += '&key=' + urlargs.key; }
             safeNewWindow(url, 'altmessenger:' + userid);
             meshserver.send({ action: 'notifyuser', userid: decodeURIComponent(userid), msg: serverinfo.altmessenging[i].name, msgid: 11, url: url });
@@ -15429,7 +15444,14 @@
             if (!self && ((activeSessions > 0) || ((features2 & 8) && (user.webpush)))) {
                 x += '<input type=button value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + encodeURIComponentEx(user._id) + '") />';
                 x += '<input type=button value="' + "Chat" + '" title="' + "Chat" + '" onclick=userChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '") />';
-                if ((activeSessions > 0) && (serverinfo != null) && (serverinfo.altmessenging != null)) { for (var i in serverinfo.altmessenging) { x += '<input type=button value="' + EscapeHtml(serverinfo.altmessenging[i].name) + '" onclick=altUserChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '",' + i + ') />'; } }
+                if ((activeSessions > 0) && (serverinfo != null) && (serverinfo.altmessenging != null)) {
+                    for (var i in serverinfo.altmessenging) {
+                        var am = serverinfo.altmessenging[i];
+                        if ((am.type == null) || (am.type == 'user')) {
+                            x += '<input type=button value="' + EscapeHtml(am.name) + '" onclick=altUserChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '",' + i + ') />';
+                        }
+                    }
+                }
             }
 
             // Setup the panel
