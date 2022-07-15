@@ -10182,7 +10182,7 @@
             QE('p13Connect', online);
             QE('p13Connects', online);
             QV('p13Connect', (files == null) && (filesNode.mtype == 2));
-            QV('p13Connects', (features2 & 0x200) && (files == null) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
+            QV('p13Connects', ((features2 & 0x200) != 0) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
             QV('p13Disconnect', files != null);
             if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
             p13setActions();
@@ -10190,7 +10190,7 @@
 
         function onFilesStateChange(xfiles, state) {
             QV('p13Connect', (state == 0) && (files == null) && (filesNode.mtype == 2));
-            QV('p13Connects', (state == 0) && (files == null) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4));
+            QV('p13Connects', (state == 0) && (features2 & 0x200) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
             QV('p13Disconnect', state != 0);
             var str = StatusStrs[state];
             if (state == 3) {
