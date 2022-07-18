@@ -449,7 +449,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 } else {
                     // Save this LDAP user to file if needed
                     if (typeof domain.ldapsaveusertofile == 'string') {
-                        obj.fs.writeFile(domain.ldapsaveusertofile, JSON.stringify(xxuser, null, 2) + '\r\n\r\n', function (err) { });
+                        obj.fs.appendFile(domain.ldapsaveusertofile, JSON.stringify(xxuser, null, 2) + '\r\n\r\n', function (err) { });
                     }
 
                     // Work on getting the userid for this LDAP user
@@ -571,7 +571,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     // Save this LDAP user to file if needed
                     if (typeof domain.ldapsaveusertofile == 'string') {
-                        obj.fs.writeFile(domain.ldapsaveusertofile, JSON.stringify(xxuser, null, 2) + '\r\n\r\n', function (err) { });
+                        obj.fs.appendFile(domain.ldapsaveusertofile, JSON.stringify(xxuser, null, 2) + '\r\n\r\n', function (err) { });
                     }
 
                     // Work on getting the userid for this LDAP user
