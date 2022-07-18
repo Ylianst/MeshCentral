@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Verifica email
+Salve [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]] [[[URLARGS1]]]) sta eseguendo una verifica e-mail. Vai al seguente link per completare il processo:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Se non hai avviato questa richiesta, ignora questo messaggio.

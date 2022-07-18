@@ -1,0 +1,5 @@
+[[[SERVERNAME]]] - アカウントの招待
+サーバー[[[SERVERNAME]]]（[[[SERVERURL]]]/[[[URLARGS1]]]）にアカウントが作成されました。ユーザー名 "[[[ACCOUNTNAME]]]"とパスワード "[[[PASSWORD] ]] "。
+~
+宜しくお願いします、
+~[[[USERNAME]]]

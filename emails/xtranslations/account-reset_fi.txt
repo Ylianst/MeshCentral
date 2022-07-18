@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Tili nollattu
+Hei [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) pyytää tilin salasanan palauttamista. Seuraa linkkiä prosessin loppuun saattamiseksi:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Jos et suorittanut tätä pyyntöä, voit ohitaa tämän sähköpostin.

@@ -1,0 +1,2 @@
+[[0]] verifikations kode er: [[1]]
+[[0]] adgangs token er: [[1]]

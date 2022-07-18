@@ -1,0 +1,41 @@
+[[[SERVERNAME]]] - 招待
+~<area-name>
+[[[NAME]]]様
+~</area-name>
+サーバー[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) のユーザー[[[USERNAME]]]が、リモートコントロールセッションを開始するためのソフトウェアのインストールを要求しています。
+~<area-msg>
+~
+メッセージ：[[[MSG]]]
+~
+~</area-msg>
+~<area-windows>
+Windowsの場合、次のリンクに移動してプロセスを完了します。
+~
+~[[[SERVERURL]]]/meshagents?id=4&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~</area-windows>
+~<area-osx>
+Apple OSXの場合、次のリンクに移動してプロセスを完了します。
+~
+~[[[SERVERURL]]]/meshosxagent?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~</area-osx>
+~<area-linux>
+Linuxの場合は、ターミナルで以下をカットアンドペーストしてエージェントをインストールします。
+~
+~wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] '[[[MESHIDHEX]]]'
+~
+~</area-linux>
+~<area-assistant>
+Windows용 MeshCentral Assistant의 경우 다음 링크로 이동하여 프로세스를 완료하십시오.
+~
+~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
+~
+~</area-assistant>
+~<area-link>
+ソフトウェアをインストールするには、[[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]]に移動し、指示に従います。
+~</area-link>
+このリクエストを開始していない場合は、このメールを無視してください。
+~
+宜しくお願いします、
+~[[[USERNAME]]]

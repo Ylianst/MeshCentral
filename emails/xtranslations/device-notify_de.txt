@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] – Gerätebenachrichtigung
+~<area-header>
+Die folgenden Geräte haben ihren Verbindungsstatus geändert.
+~</area-header>
+~<area-connections>
+~
+Verbundene Geräte:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Getrennte Geräte:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+Um sich abzumelden, laden Sie diesen Link innerhalb von 1 Stunde nach Erhalt dieser Nachricht: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>

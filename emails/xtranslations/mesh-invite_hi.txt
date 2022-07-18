@@ -1,0 +1,41 @@
+[[[SERVERNAME]]] - निमंत्रण
+~<area-name>
+नमस्कार [[[NAME]]],
+~</area-name>
+उपयोगकर्ता [[[USERNAME]]] सर्वर पर [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) आपसे रिमोट कंट्रोल सेशन शुरू करने के लिए सॉफ़्टवेयर स्थापित करने का अनुरोध कर रहा है।
+~<area-msg>
+~
+संदेश: [[[MSG]]]
+~
+~</area-msg>
+~<area-windows>
+विंडोज के लिए, प्रक्रिया को पूरा करने के लिए निम्नलिखित लिंक पर जाएं:
+~
+~[[[SERVERURL]]]/meshagents?id=4&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~</area-windows>
+~<area-osx>
+Apple OSX के लिए, इस प्रक्रिया को पूरा करने के लिए निम्नलिखित लिंक पर जाएं:
+~
+~[[[SERVERURL]]]/meshosxagent?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~</area-osx>
+~<area-linux>
+लिनक्स में, एजेंट को स्थापित करने के लिए टर्मिनल में निम्नलिखित को काटें और चिपकाएँ:
+~
+~wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] '[[[MESHIDHEX]]]'
+~
+~</area-linux>
+~<area-assistant>
+विंडोज़ पर मेशसेंट्रल असिस्टेंट के लिए, प्रक्रिया को पूरा करने के लिए निम्न लिंक पर जाएँ:
+~
+~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
+~
+~</area-assistant>
+~<area-link>
+सॉफ़्टवेयर को स्थापित करने के लिए, [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] पर जाएँ और निर्देशों का पालन करें।
+~</area-link>
+यदि आपने यह अनुरोध आरंभ नहीं किया है, तो कृपया इस मेल को अनदेखा करें।
+~
+सादर,
+~[[[USERNAME]]]

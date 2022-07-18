@@ -1,0 +1,2 @@
+[[0]] kod weryfikacyjny to: [[1]]
+[[0]] token dostępu to: [[1]]

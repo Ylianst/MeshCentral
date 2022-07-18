@@ -1,0 +1,22 @@
+[[[SERVERNAME]]]-デバイス通知
+~<area-header>
+次のデバイスは接続状態を変更しました。
+~</area-header>
+~<area-connections>
+~
+接続されているデバイス：
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+切断されたデバイス：
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+登録を解除するには、次のメッセージが表示されてから1時間以内に次のリンクを読み込みます：[[[SERVERURL]]] [[[[UNSUBSCRIBELINK]]]
+~</area-footer>

@@ -1,0 +1,2 @@
+[[0]] Bestätigungscode lautet: [[1]]
+[[0]] Zugriffstoken ist: [[1]]

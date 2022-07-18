@@ -1,0 +1,4 @@
+[[[SERVERNAME]]] - Inicio de Sesión
+Tu token de inicio de sesión es: [[[TOKEN]]]
+~
+Este token sólo se puede usar una vez y es válido durante 5 minutos.

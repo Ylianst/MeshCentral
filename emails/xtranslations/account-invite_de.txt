@@ -1,0 +1,5 @@
+[[[SERVERNAME]]] - Kontoeinladung
+Auf dem Server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) wurde ein Konto für Sie erstellt, Sie können ab sofort mit dem Benutzernamen "[[[ACCOUNTNAME]]]" und dem Passwort "[[[PASSWORD]]]" darauf zugreifen.
+~
+Freundliche Grüße,
+~[[[USERNAME]]]

@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Réinitialisation du compte
+Bonjour [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) demande une réinitialisation du mot de passe du compte. Accédez au lien suivant pour terminer le processus:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Si vous n'avez pas initié cette demande, veuillez ignorer ce courrier.

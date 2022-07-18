@@ -1,0 +1,41 @@
+[[[SERVERNAME]]] - Invito
+~<area-name>
+Salve [[[NAME]]],
+~</area-name>
+L'utente [[[USERNAME]]] sul server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) sta richiedendo l'installazione del software per avviare la sessione di controllo remoto. 
+~<area-msg>
+~
+Messaggio: [[[MSG]]]
+~
+~</area-msg>
+~<area-windows>
+Per Windows, accedi al seguente collegamento per completare il processo:
+~
+~[[[SERVERURL]]]/meshagents?id=4&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~</area-windows>
+~<area-osx>
+Per Apple OSX, vai al seguente link per completare il processo:
+~
+~[[[SERVERURL]]]/meshosxagent?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~</area-osx>
+~<area-linux>
+Per Linux, taglia e incolla quanto segue in un terminale per installare l'agente:
+~
+~wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] '[[[MESHIDHEX]]]'
+~
+~</area-linux>
+~<area-assistant>
+Per MeshCentral Assistant su Windows, accedere al seguente collegamento per completare il processo:
+~
+~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
+~
+~</area-assistant>
+~<area-link>
+Per installare il software, vai a [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] e segui le istruzioni. 
+~</area-link>
+Se non hai avviato questa richiesta, ignora questo messaggio.
+~
+I migliori saluti,
+~[[[USERNAME]]]

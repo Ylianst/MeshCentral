@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - डिवाइस नोटिफिकेशन
+~<area-header>
+निम्न उपकरणों ने अपनी कनेक्शन स्थिति बदल दी है।
+~</area-header>
+~<area-connections>
+~
+जुड़ी हुई डिवाइसेज:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+डिस्कनेक्ट किए गए डिवाइस:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+सदस्यता समाप्त करने के लिए, यह संदेश मिलने के 1 घंटे के भीतर इस लिंक को लोड करें: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>

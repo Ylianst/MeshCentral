@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] – enhetsavisering
+~<area-header>
+Följande enheter har ändrat anslutningsstatus.
+~</area-header>
+~<area-connections>
+~
+Anslutna enheter:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Frånkopplade enheter:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+För att avsluta prenumerationen, ladda denna länk inom 1 timme efter att du fått detta meddelande: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>

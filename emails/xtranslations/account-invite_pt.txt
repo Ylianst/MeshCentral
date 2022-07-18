@@ -1,0 +1,5 @@
+[[[SERVERNAME]]] - Convite para conta
+Uma conta foi criada para você no servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), você pode acessá-la agora com o nome de usuário "[[[ACCOUNTNAME]]]" e a senha "[[[PASSWORD] ]] ".
+~
+Cumprimentos,
+~[[[USERNAME]]]

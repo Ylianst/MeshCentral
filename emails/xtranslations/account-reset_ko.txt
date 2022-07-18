@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - 계정 재설정
+안녕하세요, [[[USERNAME]]]님. [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]])은 계정 비밀번호 초기화를 위해 요구됩니다. 다음 링크로 이동하여 과정을 완료하십시오 :
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+이 요청을 시작하지 않은 경우, 이 메일을 무시하십시오.

@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - Notifica dispositivo
+~<area-header>
+I seguenti dispositivi hanno cambiato il loro stato di connessione.
+~</area-header>
+~<area-connections>
+~
+Dispositivi collegati:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Dispositivi disconnessi:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+Per annullare l'iscrizione, carica questo link entro 1 ora dalla ricezione di questo messaggio: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>

@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - Laitteen ilmoitus
+~<area-header>
+Seuraavat laitteet ovat muuttaneet yhteystilaa.
+~</area-header>
+~<area-connections>
+~
+Kytketyt laitteet:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Irrotetut laitteet:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+Peruuta tilaus lataamalla tämä linkki tunnin sisällä tämän viestin vastaanottamisesta: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>
