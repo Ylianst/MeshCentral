@@ -1,5 +1,0 @@
-[[[SERVERNAME]]] - Konto invitation
-En konto blev oprettet til dig på serveren [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), du kan tilgå den nu med brugernavnet "[[[ACCOUNTNAME]]]" og adgangskode "[[[PASSWORD]]]".
-~
-Venlig hilsen,
-~[[[USERNAME]]]
