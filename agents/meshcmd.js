@@ -1483,7 +1483,12 @@ function deactivateACMEx() {
     amtstack = new amt(wsstack);
     amtstack.Get("AMT_SetupAndConfigurationService", function (stack, name, responses, status) {
         if (status !== 200) {
-            console.log('Command not allowed.  Status: ' + status);
+            if ((responses != null) && (responses.Header != null) && (typeof responses.Header.error == 'string')) {
+                console.log(responses.Header.error + ', Status: ' + status);
+                if (status == 600) { console.log('Check that Intel AMT is in ACM mode and that the password is correct.'); }
+            } else {
+                console.log('Command not allowed, Status: ' + status);
+            }
             exit(1);
         } else {
             var sacs = responses.Body;

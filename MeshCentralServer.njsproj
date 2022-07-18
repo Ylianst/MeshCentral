@@ -34,7 +34,8 @@
     <Compile Include="agents\modules_meshcmd\amt-wsman-duk.js" />
     <Compile Include="agents\modules_meshcmd\amt-wsman.js" />
     <Compile Include="agents\modules_meshcmd\amt-xml.js" />
-    <Compile Include="agents\modules_meshcmd\amt-x1.js" />
+    <Compile Include="agents\modules_meshcmd\amt.js" />
+    <Compile Include="agents\modules_meshcmd\linux-dhcp.js" />
     <Compile Include="agents\modules_meshcmd\smbios.js" />
     <Compile Include="agents\modules_meshcmd\sysinfo.js" />
     <Compile Include="agents\modules_meshcmd\win-securitycenter.js" />

@@ -86,7 +86,7 @@ function CreateWsmanComm(/*host, port, user, pass, tls, extra*/) {
         //console.log('Request ' + (obj.RequestCount++));
         if (globalDebugFlags & 1) { console.log('Request ' + (obj.RequestCount++)); } // DEBUG
 
-        req.on('error', function (e) { obj.gotNextMessagesError({ status: 600 }, 'error', null, [postdata, callback, tag]); });
+        req.on('error', function (err) { obj.gotNextMessagesError({ status: 600, error: '' + err }, 'error', null, [postdata, callback, tag]); });
         req.on('response', function (response) {
             //console.log(JSON.stringify(response, null, 2));
             if (globalDebugFlags & 1) { console.log('Response: ' + response.statusCode); }
@@ -126,7 +126,7 @@ function CreateWsmanComm(/*host, port, user, pass, tls, extra*/) {
         if (obj.FailAllError == 999) return;
         if (obj.FailAllError != 0) { callArgs[1](null, obj.FailAllError, callArgs[2]); return; }
         //if (status != 200) { console.log("ERROR, status=" + status + "\r\n\r\nreq=" + callArgs[0]); } // Debug: Display the request & response if something did not work.
-        if (obj.FailAllError != 999) { callArgs[1]({ Header: { HttpError: request.status } }, request.status, callArgs[2]); }
+        if (obj.FailAllError != 999) { callArgs[1]({ Header: { HttpError: request.status, error: request.error } }, request.status, callArgs[2]); }
         obj.PerformNextAjax();
     }
 
