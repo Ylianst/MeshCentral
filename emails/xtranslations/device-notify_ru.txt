@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - Уведомление устройства
+~<area-header>
+Следующие устройства изменили свое состояние подключения.
+~</area-header>
+~<area-connections>
+~
+Подключенные устройства:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Отключенные устройства:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+Чтобы отказаться от подписки, откройте эту ссылку в течение 1 часа после получения этого сообщения: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>

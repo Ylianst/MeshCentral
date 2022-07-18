@@ -1,0 +1,5 @@
+[[[SERVERNAME]]] - 계정 초대
+당신을 위해 서버에서 한 계정이 생성되었습니다 : [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), 이제 당신은 다음 이름으로 접근 가능합니다 : "[[[ACCOUNTNAME]]]" 그리고 비밀번호는 다음과 같습니다 : "[[[PASSWORD]]]".
+~
+최고의 안부를 전합니다,
+~[[[USERNAME]]]

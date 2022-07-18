@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Weryfikacja Email
+Cześć [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) przeprowadza weryfikację poczty elektronicznej. Kliknij na poniższy link, aby zakończyć proces:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Jeśli nie byłeś inicjatorem tej prośby, proszę zignorować ten email.

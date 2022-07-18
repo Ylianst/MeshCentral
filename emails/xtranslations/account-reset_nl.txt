@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Account Reset
+Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) vraagt om het opnieuw instellen van het account wachtwoord. Ga naar de volgende link om het proces te voltooien:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Als u dit verzoek niet heeft ingediend, dan kunt u deze e-mail negeren.

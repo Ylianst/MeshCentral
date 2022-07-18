@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] – Oznámení zařízení
+~<area-header>
+Následující zařízení změnila svůj stav připojení.
+~</area-header>
+~<area-connections>
+~
+Připojená zařízení:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Odpojená zařízení:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+Chcete-li se odhlásit, načtěte tento odkaz do 1 hodiny od obdržení této zprávy: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>

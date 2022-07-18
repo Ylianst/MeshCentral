@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Resetowanie Konta
+Cześć [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) zwraca się z prośbą o zresetowanie hasła do konta. Kliknij poniższy link, aby zakończyć proces:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Jeśli nie byłeś inicjatorem tej prośby, proszę zignorować ten email.

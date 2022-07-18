@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Konto reset
+Hej [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) anmoder om en nulstilling af adgangskoden til kontoen. Gå til følgende link for at fuldføre processen:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Hvis du ikke startede denne anmodning, bedes du ignorere denne mail.

@@ -1,0 +1,2 @@
+[[0]] le code de vérification est: [[1]]
+[[0]] le jeton d'accès est: [[1]]

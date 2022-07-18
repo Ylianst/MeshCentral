@@ -1,0 +1,4 @@
+[[[SERVERNAME]]] - Konto-Login
+Ihr Anmelde-Token lautet: [[[TOKEN]]]
+~
+Dieser Token kann nur einmal verwendet werden und ist 5 Minuten gültig.

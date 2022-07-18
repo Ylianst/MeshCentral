@@ -1,0 +1,5 @@
+[[[SERVERNAME]]] - Account uitnodiging
+Er is een account jouw aangemaakt op de server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), Je kan inloggen met de gebruikersnaam "[[[ACCOUNTNAME]]]" en wachtwoord "[[[PASSWORD]]]".
+~
+Vriendelijke groeten,
+~[[[USERNAME]]]

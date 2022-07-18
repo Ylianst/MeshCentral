@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Verificação de Email
+Olá, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) está realizando uma verificação de e-mail. Acesse o seguinte link para concluir o processo:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Se você não iniciou esta solicitação, ignore este e-mail.

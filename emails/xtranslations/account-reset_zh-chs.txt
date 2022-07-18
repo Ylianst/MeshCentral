@@ -1,0 +1,6 @@
+[[[SERVERNAME]]]-帐户重置
+[[[USERNAME]]，您好：[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在请求重置帐户密码。导航至以下连结以完成该过程：
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+如果您没有发起此请求，请不理此邮件。

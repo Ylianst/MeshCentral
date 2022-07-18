@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - 기기 알림
+~<area-header>
+다음 장치의 연결 상태가 변경되었습니다.
+~</area-header>
+~<area-connections>
+~
+연결된 장치:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+연결 해제된 장치:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+구독을 취소하려면 다음 메시지를 받은 후 1시간 이내에 다음 링크를 로드하세요. [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>

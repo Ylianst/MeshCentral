@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - Notification de l'appareil
+~<area-header>
+Ces appareils ont changé leur statut de connexion :
+~</area-header>
+~<area-connections>
+~
+Appareils connectés :
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Appareils déconnectés :
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+Pour se désinscrire, chargez le lien suivant (valable une heure à réception de ce message) : [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>

@@ -9228,7 +9228,7 @@
       ]
     },
     {
-      "cs": "Účet pro vás byl vytvořen na serveru [[[SERVERNAME]]] ([[[[SERVERURL]]]/[[[URLARGS1]]]), nyní k němu můžete přistupovat pomocí uživatelského jména „[[[[ACCOUNTNAME]]]“ “a hesla„ [[[HESLO]] ]] \".",
+      "cs": "Účet pro vás byl vytvořen na serveru [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), nyní k němu můžete přistupovat pomocí uživatelského jména „[[[ACCOUNTNAME]]]“ “a hesla„ [[[PASSWORD]]] \".",
       "da": "En konto blev oprettet til dig på serveren [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), du kan tilgå den nu med brugernavnet \"[[[ACCOUNTNAME]]]\" og adgangskode \"[[[PASSWORD]]]\".",
       "de": "Auf dem Server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) wurde ein Konto für Sie erstellt, Sie können ab sofort mit dem Benutzernamen \"[[[ACCOUNTNAME]]]\" und dem Passwort \"[[[PASSWORD]]]\" darauf zugreifen.",
       "en": "An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username \"[[[ACCOUNTNAME]]]\" and password \"[[[PASSWORD]]]\".",
@@ -9243,11 +9243,11 @@
       "pl": "Konto zostało utworzone dla Ciebie na serwerze [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), możesz uzyskać do niego dostęp podając nazwę użytkownika \"[[[ACCOUNTNAME]]]\" i hasło \"[[[PASSWORD]]]\".",
       "pt": "Uma conta foi criada para você no servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), você pode acessá-la agora com o nome de usuário \"[[[ACCOUNTNAME]]]\" e a senha \"[[[PASSWORD] ]] \".",
       "pt-br": "Uma conta foi criada para você no servidor [[[SERVERNAME]]] ([[[SERVERURL]]] / [[[URLARGS1]]]), você pode acessá-la agora com o nome de usuário \"[[[ACCOUNTNAME]]]\" e senha \"[[[PASSWORD]]]\".",
-      "ru": "Для вас на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) была создана учетная запись, теперь вы можете получить к ней доступ с именем пользователя «[[[ACCOUNTNAME]]]» и паролем «[[[PASSWORD] ]] \".",
-      "sv": "Ett konto skapades åt dig på servern [[[SERVERNAME]]] ([[[SERVERURL]]] / [[[URLARGS1]]], du kan komma åt det nu med användarnamnet \"[[[ACCOUNTNAME]]]\" och lösenord \"[[[LÖSENORD]]]\".",
+      "ru": "Для вас на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) была создана учетная запись, теперь вы можете получить к ней доступ с именем пользователя «[[[ACCOUNTNAME]]]» и паролем «[[[PASSWORD]]]\".",
+      "sv": "Ett konto skapades åt dig på servern [[[SERVERNAME]]] ([[[SERVERURL]]] / [[[URLARGS1]]], du kan komma åt det nu med användarnamnet \"[[[ACCOUNTNAME]]]\" och lösenord \"[[[PASSWORD]]]\".",
       "tr": "[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) sunucusunda sizin için bir hesap oluşturuldu, şimdi \"[[[ACCOUNTNAME]]]\" kullanıcı adı ve \"[[[PASSWORD]]]\" ile bu hesaba erişebilirsiniz.",
-      "zh-chs": "已在服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/[[[URLARGS1]]]）上为您创建了一个帐户，您现在可以使用用户名“ [[[ACCOUNTNAME]]]”和密码“ [[[PASSWORD] ]]”。",
-      "zh-cht": "在伺服器[[[SERVERNAME]]]（[[[SERVERURL]]]/[[[URLARGS1]]]）上為你創建了一個帳戶，你現在可以使用用戶名“ [[[ACCOUNTNAME]]]”和密碼“ [[[PASSWORD] ]]”。",
+      "zh-chs": "已在服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/[[[URLARGS1]]]）上为您创建了一个帐户，您现在可以使用用户名“ [[[ACCOUNTNAME]]]”和密码“ [[[PASSWORD]]]”。",
+      "zh-cht": "在伺服器[[[SERVERNAME]]]（[[[SERVERURL]]]/[[[URLARGS1]]]）上為你創建了一個帳戶，你現在可以使用用戶名“ [[[ACCOUNTNAME]]]”和密碼“ [[[PASSWORD]]]”。",
       "xloc": [
         "account-invite.txt"
       ]
@@ -31099,8 +31099,8 @@
       "ko": "안녕하세요, [[[USERNAME]]]님.",
       "nl": "Hallo [[[USERNAME]]],",
       "pl": "Cześć [[[USERNAME]]],",
-      "pt": "Olá [[[NOME DE USUÁRIO]]],",
-      "pt-br": "Olá [[[NOME DE USUÁRIO]]],",
+      "pt": "Olá [[[USERNAME]]],",
+      "pt-br": "Olá [[[USERNAME]]],",
       "ru": "Привет [[[USERNAME]]],",
       "sv": "Hej [[[USERNAME]],",
       "tr": "Merhaba [[[USERNAME]]],",
@@ -70550,7 +70550,7 @@
       "pt": "O usuário [[[USERNAME]]] no servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) está solicitando a instalação do software para iniciar a sessão de controle remoto.",
       "pt-br": "O usuário [[[USERNAME]]] no servidor [[[SERVERNAME]]] ([[[SERVERURL]]] / [[[URLARGS1]]]) está solicitando a instalação do software para iniciar a sessão de controle remoto.",
       "ru": "Пользователь [[[USERNAME]]] на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) запрашивает установку программного обеспечения для запуска сеанса удаленного управления.",
-      "sv": "Användaren [[[USERNAME]]] på servern [[[SERVERNAME]]] ([[[SERVERURL]] / [[[URLARGS1]]) ber dig installera programvara för att starta fjärrkontrollsessionen.",
+      "sv": "Användaren [[[USERNAME]]] på servern [[[SERVERNAME]]] ([[[SERVERURL]]/[[[URLARGS1]]) ber dig installera programvara för att starta fjärrkontrollsessionen.",
       "tr": "[[[SERVERNAME]]] [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) sunucusundaki [[[USERNAME]]] uzaktan kontrol oturumunu başlatmak için yazılım yüklemenizi istiyor.",
       "zh-chs": "服务器[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) 上的用户[[[USERNAME]]]请求您安装软件以启动远程控制。",
       "zh-cht": "伺服器[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) 上的用戶[[[USERNAME]]]請求你安裝軟體以啟動遠程控制。",
@@ -74510,7 +74510,7 @@
       "es": "El código de verificación de [[0]] es: [[1]]",
       "fi": "[[0]] vahvistuskoodi on: [[1]]",
       "fr": "[[0]] le code de vérification est: [[1]]",
-      "hi": "[[०]] सत्यापन कोड है: [[१]]",
+      "hi": "[[0]] सत्यापन कोड है: [[1]]",
       "it": "[[0]] il codice di verifica è: [[1]]",
       "ja": "[[0]]確認コード：[[1]]",
       "ko": "[[0]] 인증된 코드는 다음과 같습니다 : [[1]]",
@@ -74538,16 +74538,16 @@
       "hi": "[[[CONNECTIONS]]]",
       "it": "[[[CONNECTIONS]]]",
       "ja": "[[[CONNECTIONS]]]",
-      "ko": "[[[사이]]]",
+      "ko": "[[[CONNECTIONS]]]",
       "nl": "[[[CONNECTIONS]]]",
       "pl": "[[[CONNECTIONS]]]",
-      "pt": "[[[CONEXÕES]]]",
-      "pt-br": "[[[CONEXÕES]]]",
+      "pt": "[[[CONNECTIONS]]]",
+      "pt-br": "[[[CONNECTIONS]]]",
       "ru": "[[[CONNECTIONS]]]",
-      "sv": "[[[ANSLUTNINGAR]]]",
+      "sv": "[[[CONNECTIONS]]]",
       "tr": "[[[CONNECTIONS]]]",
-      "zh-chs": "[[[连接]]]",
-      "zh-cht": "[[[連接]]]",
+      "zh-chs": "[[[CONNECTIONS]]]",
+      "zh-cht": "[[[CONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->5->3->0"
       ]
@@ -74561,18 +74561,18 @@
       "fi": "[[[DISCONNECTIONS]]]",
       "fr": "[[[DISCONNECTIONS]]]",
       "hi": "[[[DISCONNECTIONS]]]",
-      "it": "[[[DISCONNESSIONI]]]",
+      "it": "[[[DISCONNECTIONS]]]",
       "ja": "[[[DISCONNECTIONS]]]",
-      "ko": "[[[연결 해제]]]",
+      "ko": "[[[DISCONNECTIONS]]]",
       "nl": "[[[DISCONNECTIONS]]]",
       "pl": "[[[DISCONNECTIONS]]]",
-      "pt": "[[[DESCONEXÕES]]]",
-      "pt-br": "[[[DESCONEXÕES]]]",
+      "pt": "[[[DISCONNECTIONS]]]",
+      "pt-br": "[[[DISCONNECTIONS]]]",
       "ru": "[[[DISCONNECTIONS]]]",
-      "sv": "[[[KOPPLINGAR]]]",
+      "sv": "[[[DISCONNECTIONS]]]",
       "tr": "[[[DISCONNECTIONS]]]",
-      "zh-chs": "[[[断开连接]]]",
-      "zh-cht": "[[[斷開連接]]]",
+      "zh-chs": "[[[DISCONNECTIONS]]]",
+      "zh-cht": "[[[DISCONNECTIONS]]]",
       "xloc": [
         "device-notify.html->2->7->3->0"
       ]
@@ -74623,8 +74623,8 @@
       "ru": "[[[SERVERNAME]]] - приглашение в аккаунт",
       "sv": "[[[SERVERNAME]]] - Kontoinbjudan",
       "tr": "[[[SERVERNAME]]] - Hesap Davetiyesi",
-      "zh-chs": "[[[SERVERNAME]]]-帐户邀请",
-      "zh-cht": "[[[SERVERNAME]]]-帳戶邀請",
+      "zh-chs": "[[[SERVERNAME]]] - 帐户邀请",
+      "zh-cht": "[[[SERVERNAME]]] - 帳戶邀請",
       "xloc": [
         "account-invite.html->0",
         "account-invite.html->2->1->1->0->1->1",
@@ -74650,8 +74650,8 @@
       "ru": "[[[SERVERNAME]]] - Вход в аккаунт",
       "sv": "[[[SERVERNAME]]] - Kontoinloggning",
       "tr": "[[[SERVERNAME]]] - Hesap Girişi",
-      "zh-chs": "[[[SERVERNAME]]]-帐户登录",
-      "zh-cht": "[[[SERVERNAME]]]-帳戶登入",
+      "zh-chs": "[[[SERVERNAME]]] - 帐户登录",
+      "zh-cht": "[[[SERVERNAME]]] - 帳戶登入",
       "xloc": [
         "account-login.html->0",
         "account-login.html->2->1->1->0->1->1",
@@ -74755,8 +74755,8 @@
       "ru": "[[[SERVERNAME]]] - подтверждение по электронной почте",
       "sv": "[[[SERVERNAME]]] - E-postverifiering",
       "tr": "[[[SERVERNAME]]] - E-posta Doğrulaması",
-      "zh-chs": "[[[SERVERNAME]]]-电邮验证",
-      "zh-cht": "[[[SERVERNAME]]]-電郵驗證",
+      "zh-chs": "[[[SERVERNAME]]] - 电邮验证",
+      "zh-cht": "[[[SERVERNAME]]] - 電郵驗證",
       "xloc": [
         "account-check.html->0",
         "account-check.txt"
@@ -74781,8 +74781,8 @@
       "ru": "[[[SERVERNAME]]] - Приглашение",
       "sv": "[[[SERVERNAME]]] - Inbjudan",
       "tr": "[[[SERVERNAME]]] - Davet",
-      "zh-chs": "[[[SERVERNAME]]]-邀请",
-      "zh-cht": "[[[SERVERNAME]]]-邀請",
+      "zh-chs": "[[[SERVERNAME]]] - 邀请",
+      "zh-cht": "[[[SERVERNAME]]] - 邀請",
       "xloc": [
         "mesh-invite.html->0",
         "mesh-invite.txt"
@@ -74807,8 +74807,8 @@
       "ru": "[[[SERVERNAME]]] - Подтверждение",
       "sv": "[[[SERVERNAME]]] - Verifiering",
       "tr": "[[[SERVERNAME]]] - Doğrulama",
-      "zh-chs": "[[[SERVERNAME]]]-验证",
-      "zh-cht": "[[[SERVERNAME]]]-驗證",
+      "zh-chs": "[[[SERVERNAME]]] - 验证",
+      "zh-cht": "[[[SERVERNAME]]] - 驗證",
       "xloc": [
         "account-check.html->2->1->1->0->1->1",
         "account-reset.html->2->1->1->0->1->1"

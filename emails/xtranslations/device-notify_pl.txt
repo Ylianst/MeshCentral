@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - Powiadomienia Urządzenia
+~<area-header>
+Przedstawione urządzenia zmieniły stan połączenia.
+~</area-header>
+~<area-connections>
+~
+Podłączone urządzenia:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Rozłączone urządzenia:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+By się wypisać, załaduj ten link w ciągu 1 godziny od otrzymania wiadomości: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>

@@ -1,0 +1,6 @@
+[[[SERVERNAME]]]-帳戶重置
+[[[USERNAME]]，你好，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在請求重設帳戶密碼。導航至以下鏈結以完成該過程：
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+如果你沒有發起此請求，請不理此電郵。

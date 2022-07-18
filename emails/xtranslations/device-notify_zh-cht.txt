@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - 設備通知
+~<area-header>
+以下設備已更改其連接狀態。
+~</area-header>
+~<area-connections>
+~
+連接的設備：
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+斷開連接的設備：
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+要取消訂閱，請在收到此消息後 1 小時內加載此鏈接：[[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>

@@ -1,0 +1,41 @@
+[[[SERVERNAME]]] - Invitation
+~<area-name>
+Hej [[[NAME]]]
+~</area-name>
+Bruger [[[USERNAME]]] på serveren [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) anmoder dig om at installere software for at starte fjernbetjeningssessionen.
+~<area-msg>
+~
+Meddelelse: [[[[MSG]]]
+~
+~</area-msg>
+~<area-windows>
+For Windows skal du navigere til følgende link for at fuldføre processen:
+~
+~[[[SERVERURL]]]/meshagents?id=4&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~</area-windows>
+~<area-osx>
+For Apple OSX skal du navigere til følgende link for at fuldføre processen:
+~
+~[[[SERVERURL]]]/meshosxagent?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~</area-osx>
+~<area-linux>
+For Linux skal du klippe og indsætte følgende i en terminal for at installere agenten:
+~
+~wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] '[[[MESHIDHEX]]]'
+~
+~</area-linux>
+~<area-assistant>
+For MeshCentral Assistant på Windows skal du gå til følgende link for at fuldføre processen:
+~
+~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
+~
+~</area-assistant>
+~<area-link>
+For at installere softwaren skal du navigere til [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] og følge instruktionerne.
+~</area-link>
+Hvis du ikke startede denne anmodning, bedes du ignorere denne mail.
+~
+Venlig hilsen,
+~[[[USERNAME]]]

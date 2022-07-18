@@ -1,0 +1,4 @@
+[[[SERVERNAME]]] - Přihlášení k účtu
+Váš přihlašovací token je: [[[TOKEN]]]
+~
+Tento token lze použít pouze jednou a je platný po dobu 5 minut.

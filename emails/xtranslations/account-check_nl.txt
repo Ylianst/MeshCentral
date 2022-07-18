@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - E-mail Verificatie
+Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) voert een e-mailverificatie uit. Ga naar de volgende link om het proces te voltooien:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Als u dit verzoek niet heeft ingediend, dan kunt u deze e-mail negeren.

@@ -1,0 +1,5 @@
+[[[SERVERNAME]]] - Zaproszenie Do Założenia Konta
+Konto zostało utworzone dla Ciebie na serwerze [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), możesz uzyskać do niego dostęp podając nazwę użytkownika "[[[ACCOUNTNAME]]]" i hasło "[[[PASSWORD]]]".
+~
+Z wyrazami szacunku,
+~[[[USERNAME]]]

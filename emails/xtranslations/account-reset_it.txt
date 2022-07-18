@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Reimpostazione dell'account
+Salve [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]] [[[URLARGS1]]]) sta richiedendo la reimpostazione della password dell'account. Vai al seguente link per completare il processo:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Se non hai avviato questa richiesta, ignora questo messaggio.

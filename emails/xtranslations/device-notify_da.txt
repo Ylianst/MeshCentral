@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - Enheds Notifikation
+~<area-header>
+Følgende enheder har ændret deres forbindelsestilstand.
+~</area-header>
+~<area-connections>
+~
+Forbundne enheder:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Afbrudte enheder:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+For at afmelde, skal du indlæse dette link inden for 1 time efter at have modtaget denne besked: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>

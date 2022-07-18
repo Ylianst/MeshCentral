@@ -1,0 +1,2 @@
+[[0]] verificatie code is: [[1]]
+[[0]] Toegangs token is: [[1]]

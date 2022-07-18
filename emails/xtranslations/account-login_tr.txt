@@ -1,0 +1,4 @@
+[[[SERVERNAME]]] - Hesap Girişi
+Giriş anahtarınız: [[[TOKEN]]]
+~
+Bu simge yalnızca bir kez kullanılabilir ve 5 dakika geçerlidir.

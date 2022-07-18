@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - Apparaatmelding
+~<area-header>
+De volgende apparaten hebben hun verbindingsstatus gewijzigd.
+~</area-header>
+~<area-connections>
+~
+Verbonden apparaten:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Losgekoppelde apparaten:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+Om je af te melden, open je deze link binnen 1 uur nadat je dit bericht hebt ontvangen: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>

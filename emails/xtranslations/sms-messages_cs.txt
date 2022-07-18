@@ -1,0 +1,2 @@
+[[0]] ověřovací kód je: [[1]]
+[[0]] přístupový token je: [[1]]

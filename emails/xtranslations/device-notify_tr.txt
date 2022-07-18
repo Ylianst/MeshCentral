@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - Cihaz Bildirimi
+~<area-header>
+Aşağıdaki cihazlar bağlantı durumlarını değiştirdi.
+~</area-header>
+~<area-connections>
+~
+Bağlı cihazlar:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Bağlantısı kesilen cihazlar:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+Aboneliğinizi iptal etmek için, bu mesajı aldıktan sonraki 1 saat içinde bu bağlantıyı yükleyin: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>

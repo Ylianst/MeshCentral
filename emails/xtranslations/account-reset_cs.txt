@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Reset účtu
+Ahoj [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) požaduje obnovení hesla k účtu. Chcete-li proces dokončit, přejděte na následující odkaz:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Pokud jste tento požadavek nezačali, ignorujte tento e-mail.

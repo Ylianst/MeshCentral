@@ -1,0 +1,2 @@
+[[0]] vahvistuskoodi on: [[1]]
+[[0]] pääsy koodi on: [[1]]

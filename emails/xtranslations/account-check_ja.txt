@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - メールの確認
+こんにちは[[[USERNAME]]]、[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) は電子メールの検証を実行しています。プロセスを完了するには、次のリンクに移動します。
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+このリクエストを開始していない場合は、このメールを無視してください。

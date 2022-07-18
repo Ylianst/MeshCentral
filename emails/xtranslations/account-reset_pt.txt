@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Redefinição de conta
+Olá, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) está solicitando uma redefinição de senha de conta. Acesse o seguinte link para concluir o processo:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Se você não iniciou esta solicitação, ignore este e-mail.

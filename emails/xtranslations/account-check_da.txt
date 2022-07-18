@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Email verificering
+Hej [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) udfører en e-mailbekræftelse. Gå til følgende link for at fuldføre processen:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Hvis du ikke startede denne anmodning, bedes du ignorere denne mail.
