@@ -43,7 +43,7 @@ function WsmanStackCreateService(/*CreateWsmanComm, host, port, user, pass, tls,
     obj.PerformAjax = function PerformAjax(postdata, callback, tag, pri, namespaces) {
         if (namespaces == null) namespaces = '';
         obj.comm.PerformAjax('<?xml version=\"1.0\" encoding=\"utf-8\"?><Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:w="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns=\"http://www.w3.org/2003/05/soap-envelope\" ' + namespaces + '><Header><a:Action>' + postdata, function (data, status, tag) {
-            if (status != 200) { callback(obj, null, { Header: { HttpError: status } }, status, tag); return; }
+            if (status != 200) { callback(obj, null, (data != null) ? data : { Header: { HttpError: status } }, status, tag); return; }
             var wsresponse = obj.xmlParser.ParseWsman(data);
             if (!wsresponse || wsresponse == null) { callback(obj, null, { Header: { HttpError: status } }, 601, tag); } else { callback(obj, wsresponse.Header["ResourceURI"], wsresponse, 200, tag); }
         }, tag, pri);

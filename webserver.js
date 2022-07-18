@@ -447,6 +447,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     fn(new Error('invalid password'));
                     return;
                 } else {
+                    // Save this LDAP user to file if needed
+                    if (typeof domain.ldapsaveusertofile == 'string') {
+                        obj.fs.writeFile(domain.ldapsaveusertofile, JSON.stringify(xxuser, null, 2) + '\r\n\r\n', function (err) { });
+                    }
+
+                    // Work on getting the userid for this LDAP user
                     var username = xxuser['displayName'];
                     if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
                     var shortname = null;
@@ -466,19 +472,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (shortname == null) { fn(new Error('no user identifier')); return; }
                     if (username == null) { username = shortname; }
                     var userid = 'user/' + domain.id + '/' + shortname;
-                    var user = obj.users[userid];
-                    var email = null;
-                    if (domain.ldapuseremail) {
-                        email = xxuser[domain.ldapuseremail];
-                    } else if (xxuser.mail) { // use default 
-                        email = xxuser.mail;
-                    }
-                    if ('[object Array]' == Object.prototype.toString.call(email)) {
-                        // mail may be multivalued in ldap in which case, answer is an array. Use the 1st value.
-                        email = email[0];
-                    }
-                    if (email) { email = email.toLowerCase(); } // it seems some code otherwhere also lowercase the emailaddress. be compatible.
 
+                    // Work on getting the email address for this LDAP user
+                    var email = null;
+                    if (domain.ldapuseremail) { email = xxuser[domain.ldapuseremail]; } else if (xxuser.mail) { email = xxuser.mail; } // Use given feild name or default
+                    if ('[object Array]' == Object.prototype.toString.call(email)) { email = email[0]; } // Mail may be multivalued in LDAP in which case, answer is an array. Use the 1st value.
+                    if (email) { email = email.toLowerCase(); } // it seems some code elsewhere also lowercase the emailaddress, so let's be consistant.
+
+                    // Work on getting the real name for this LDAP user
+                    var realname = null;
+                    if (domain.ldapuserrealname) { realname = xxuser[domain.ldapuserrealname]; }
+
+                    // Work on getting the real name for this LDAP user
+                    var phonenumber = null;
+                    if (domain.ldapuserphonenumber) { phonenumber = xxuser[domain.ldapuserphonenumber]; }
+
+                    // Check if the user already exists
+                    var user = obj.users[userid];
                     if (user == null) {
                         // Create a new user
                         var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
@@ -558,13 +568,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 ldap.authenticate(name, pass, function (err, xxuser) {
                     try { ldap.close(); } catch (ex) { console.log(ex); } // Close the LDAP object
                     if (err) { fn(new Error('invalid password')); return; }
-                    var shortname = null;
-                    var email = null;
-                    if (domain.ldapuseremail) {
-                        email = xxuser[domain.ldapuseremail];
-                    } else if (xxuser.mail) {
-                        email = xxuser.mail;
+
+                    // Save this LDAP user to file if needed
+                    if (typeof domain.ldapsaveusertofile == 'string') {
+                        obj.fs.writeFile(domain.ldapsaveusertofile, JSON.stringify(xxuser, null, 2) + '\r\n\r\n', function (err) { });
                     }
+
+                    // Work on getting the userid for this LDAP user
+                    var shortname = null;
                     if ('[object Array]' == Object.prototype.toString.call(email)) {
                         // mail may be multivalued in ldap in which case, answer would be an array. Use the 1st one.
                         email = email[0];
@@ -588,8 +599,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (shortname == null) { fn(new Error('no user identifier')); return; }
                     if (username == null) { username = shortname; }
                     var userid = 'user/' + domain.id + '/' + shortname;
-                    var user = obj.users[userid];
 
+                    // Work on getting the email address for this LDAP user
+                    var email = null;
+                    if (domain.ldapuseremail) { email = xxuser[domain.ldapuseremail]; } else if (xxuser.mail) { email = xxuser.mail; } // Use given feild name or default
+                    if ('[object Array]' == Object.prototype.toString.call(email)) { email = email[0]; } // Mail may be multivalued in LDAP in which case, answer is an array. Use the 1st value.
+                    if (email) { email = email.toLowerCase(); } // it seems some code elsewhere also lowercase the emailaddress, so let's be consistant.
+
+                    // Work on getting the real name for this LDAP user
+                    var realname = null;
+                    if (domain.ldapuserrealname) { realname = xxuser[domain.ldapuserrealname]; }
+
+                    // Work on getting the real name for this LDAP user
+                    var phonenumber = null;
+                    if (domain.ldapuserphonenumber) { phonenumber = xxuser[domain.ldapuserphonenumber]; }
+
+                    // Check if the user already exists
+                    var user = obj.users[userid];
                     if (user == null) {
                         // This user does not exist, create a new account.
                         var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
