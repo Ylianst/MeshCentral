@@ -3351,6 +3351,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 {
                     availcommands += ',cs,wpfhwacceleration,uac,volumes';
                     if (bcdOK()) { availcommands += ',safemode'; }
+                    if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                 }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
@@ -3366,6 +3367,39 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 response = "Available commands: \r\n" + fin + ".";
                 break;
             }
+            case 'privacybar':
+                if (process.platform != 'win32' || require('notifybar-desktop').DefaultPinned == null)
+                {
+                    response = 'Unknown command "privacybar", type "help" for list of avaialble commands.';
+                }
+                else
+                {
+                    switch(args['_'].length)
+                    {
+                        default:
+                            // Show Help
+                            response = "Current Default Pinned State: " + (require('notifybar-desktop').DefaultPinned ? "PINNED" : "UNPINNED") + '\r\n';
+                            response += "To set default pinned state:\r\n  privacybar [PINNED|UNPINNED]\r\n";
+                            break;
+                        case 1:
+                            switch(args['_'][0].toUpperCase())
+                            {
+                                case 'PINNED':
+                                    require('notifybar-desktop').DefaultPinned = true;
+                                    response = "privacybar default pinned state is: PINNED";
+                                    break;
+                                case 'UNPINNED':
+                                    require('notifybar-desktop').DefaultPinned = false;
+                                    response = "privacybar default pinned state is: UNPINNED";
+                                    break;
+                                default:
+                                    response = "INVALID parameter: " + args['_'][0].toUpperCase();
+                                    break;
+                            }
+                            break;
+                    }
+                }
+                break;
             case 'domain':
                 response = getDomainInfo();
                 break;
