@@ -564,26 +564,23 @@ function AmtStackCreateService(wsmanStack) {
             }
         }
 
-        if ((eventSensorType == 18) && (eventDataField[0] == 170)) // System watchdog event
+        if (eventSensorType == 18 && eventDataField[0] == 170) // System watchdog event
         {
             return "Agent watchdog " + char2hex(eventDataField[4]) + char2hex(eventDataField[3]) + char2hex(eventDataField[2]) + char2hex(eventDataField[1]) + "-" + char2hex(eventDataField[6]) + char2hex(eventDataField[5]) + "-... changed to " + obj.WatchdogCurrentStates[eventDataField[7]];
         }
 
-        if ((eventSensorType == 5) && (eventOffset == 0)) // System chassis
-        {
+        if ((eventSensorType == 5) && (eventOffset == 0)) { // System chassis
             return "Case intrusion";
         }
 
-        if ((eventSensorType == 192) && (eventOffset == 0) && (eventDataField[0] == 170) && (eventDataField[1] == 48))
-        {
+        if ((eventSensorType == 192) && (eventOffset == 0) && (eventDataField[0] == 170) && (eventDataField[1] == 48)) {
             if (eventDataField[2] == 0) return "A remote Serial Over LAN session was established.";
             if (eventDataField[2] == 1) return "Remote Serial Over LAN session finished. User control was restored.";
             if (eventDataField[2] == 2) return "A remote IDE-Redirection session was established.";
             if (eventDataField[2] == 3) return "Remote IDE-Redirection session finished. User control was restored.";
         }
 
-        if (eventSensorType == 36)
-        {
+        if (eventSensorType == 36) {
             var handle = (eventDataField[1] << 24) + (eventDataField[2] << 16) + (eventDataField[3] << 8) + eventDataField[4];
             var nic = '#' + eventDataField[0];
             if (eventDataField[0] == 0xAA) nic = "wired"; // TODO: Add wireless *****
@@ -603,14 +600,17 @@ function AmtStackCreateService(wsmanStack) {
 
         if (eventSensorType == 193) {
             if ((eventDataField[0] == 0xAA) && (eventDataField[1] == 0x30) && (eventDataField[2] == 0x00) && (eventDataField[3] == 0x00)) { return "User request for remote connection."; }
-            if ((eventDataField[0] == 0xAA) && (eventDataField[1] == 0x20) && (eventDataField[2] == 0x03) && (eventDataField[3] == 0x01)) { return "EAC error: attempt to get posture while NAC in Intel(r) AMT is disabled."; } // eventDataField = 0xAA20030100000000
-            if ((eventDataField[0] == 0xAA) && (eventDataField[1] == 0x20) && (eventDataField[2] == 0x04) && (eventDataField[3] == 0x00)) { return "Certificate revoked. "; }
+            if ((eventDataField[0] == 0xAA) && (eventDataField[1] == 0x20) && (eventDataField[2] == 0x03) && (eventDataField[3] == 0x01)) { return "EAC error: attempt to get posture while NAC in Intel® AMT is disabled."; } // eventDataField = 0xAA20030100000000
+            if ((eventDataField[0] == 0xAA) && (eventDataField[1] == 0x20) && (eventDataField[2] == 0x04) && (eventDataField[3] == 0x00)) { return "HWA Error: general error"; } // Used to be "Certificate revoked." but don"t know the source of this.
         }
 
         if (eventSensorType == 6) return "Authentication failed " + (eventDataField[1] + (eventDataField[2] << 8)) + " times. The system may be under attack.";
         if (eventSensorType == 30) return "No bootable media";
         if (eventSensorType == 32) return "Operating system lockup or power interrupt";
-        if (eventSensorType == 35) return "System boot failure";
+        if (eventSensorType == 35) {
+            if (eventDataField[0] == 64) return "BIOS POST (Power On Self-Test) Watchdog Timeout."; // 64,2,252,84,89,0,0,0
+            return "System boot failure";
+        }
         if (eventSensorType == 37) return "System firmware started (at least one CPU is properly executing).";
         return "Unknown Sensor Type #" + eventSensorType;
     }
@@ -709,9 +709,9 @@ function AmtStackCreateService(wsmanStack) {
         2600: 'Agent Watchdog Added',
         2601: 'Agent Watchdog Removed',
         2602: 'Agent Watchdog Action Set',
-        2700: "Wireless Profile Added",
-        2701: "Wireless Profile Removed",
-        2702: "Wireless Profile Updated",
+        2700: 'Wireless Profile Added',
+        2701: 'Wireless Profile Removed',
+        2702: 'Wireless Profile Updated',
         2703: "An existing profile sync was modified",
         2704: "An existing profile link preference was changed",
         2705: "Wireless profile share with UEFI enabled setting was changed",
@@ -813,6 +813,7 @@ function AmtStackCreateService(wsmanStack) {
                 // Read network access
                 x['MCLocationType'] = e[ptr++];
                 var netlen = e[ptr++];
+
                 x['NetAddress'] = e.slice(ptr, ptr + netlen).toString();
 
                 // Read extended data
@@ -832,109 +833,6 @@ function AmtStackCreateService(wsmanStack) {
 
     // ###END###{AuditLog}
 
-    /*
-    // ###BEGIN###{Certificates}
-
-    // Forge MD5
-    function hex_md5(str) { return forge.md.md5.create().update(str).digest().toHex(); }
-
-    // ###END###{Certificates}
-
-    // ###BEGIN###{!Certificates}
-
-    // TinyMD5 from https://github.com/jbt/js-crypto
-
-    // Perform MD5 setup
-    var md5_k = [];
-    for (var i = 0; i < 64;) { md5_k[i] = 0 | (Math.abs(Math.sin(++i)) * 4294967296); }
-
-    // Perform MD5 on raw string and return hex
-    function hex_md5(str) {
-        var b, c, d, j,
-        x = [],
-        str2 = unescape(encodeURI(str)),
-        a = str2.length,
-        h = [b = 1732584193, c = -271733879, ~b, ~c],
-        i = 0;
-
-        for (; i <= a;) x[i >> 2] |= (str2.charCodeAt(i) || 128) << 8 * (i++ % 4);
-
-        x[str = (a + 8 >> 6) * 16 + 14] = a * 8;
-        i = 0;
-
-        for (; i < str; i += 16) {
-            a = h; j = 0;
-            for (; j < 64;) {
-                a = [
-                  d = a[3],
-                  ((b = a[1] | 0) +
-                    ((d = (
-                      (a[0] +
-                        [
-                          b & (c = a[2]) | ~b & d,
-                          d & b | ~d & c,
-                          b ^ c ^ d,
-                          c ^ (b | ~d)
-                        ][a = j >> 4]
-                      ) +
-                      (md5_k[j] +
-                        (x[[
-                          j,
-                          5 * j + 1,
-                          3 * j + 5,
-                          7 * j
-                        ][a] % 16 + i] | 0)
-                      )
-                    )) << (a = [
-                      7, 12, 17, 22,
-                      5, 9, 14, 20,
-                      4, 11, 16, 23,
-                      6, 10, 15, 21
-                    ][4 * a + j++ % 4]) | d >>> 32 - a)
-                  ),
-                  b,
-                  c
-                ];
-            }
-            for (j = 4; j;) h[--j] = h[j] + a[j];
-        }
-
-        str = '';
-        for (; j < 32;) str += ((h[j >> 3] >> ((1 ^ j++ & 7) * 4)) & 15).toString(16);
-        return str;
-    }
-
-    // ###END###{!Certificates}
-
-    // Perform MD5 on raw string and return raw string result
-    function rstr_md5(str) { return hex2rstr(hex_md5(str)); }
-    */
-    /*
-    Convert arguments into selector set and body XML. Used by AMT_WiFiPortConfigurationService_UpdateWiFiSettings.
-    args = { 
-        "WiFiEndpoint": {
-            __parameterType: 'reference',
-            __resourceUri: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpoint',
-            Name: 'WiFi Endpoint 0'
-        }, 
-        "WiFiEndpointSettingsInput": 
-        {
-            __parameterType: 'instance',
-            __namespace: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings',
-            ElementName: document.querySelector('#editProfile-profileName').value,
-            InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + document.querySelector('#editProfile-profileName').value,
-            AuthenticationMethod: document.querySelector('#editProfile-networkAuthentication').value,
-            //BSSType: 3, // Intel(r) AMT supports only infrastructure networks
-            EncryptionMethod: document.querySelector('#editProfile-encryption').value,
-            SSID: document.querySelector('#editProfile-networkName').value,
-            Priority: 100,
-            PSKPassPhrase: document.querySelector('#editProfile-passPhrase').value
-        }, 
-        "IEEE8021xSettingsInput": null, 
-        "ClientCredential": null, 
-        "CACredential": null 
-    }, 
-    */
     function execArgumentsToXml(args) {
         if (args === undefined || args === null) return null;
 
