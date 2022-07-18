@@ -7639,8 +7639,19 @@
         function altDeviceChat(e, i) {
             if (xxdialogMode) return;
             var url = serverinfo.altmessenging[i].url.split('{0}').join(currentNode._id.split('/')[2]).split('{1}').join(currentNode._id.split('/')[2]).split('{2}').join(currentNode._id.split('/')[2]).split('{3}').join(currentNode._id.split('/')[2]);
+            var userid1 = encodeURIComponentEx(userinfo._id.split('/')[2]); // userid
+            var userid2 = encodeURIComponentEx(userinfo._id.split('/').join('-')); // user-domain-userid
+            var userid3 = userid1, userid4 = userid2;
+            if (userinfo.realname != null) {
+                userid3 = encodeURIComponentEx(userinfo.realname.split(' ').join('')); // real name with no empty spaces
+                userid4 = encodeURIComponentEx(userinfo.realname.split(' ').join('-')); // real name with - instead of spaces
+            }
+            url = url.split('{4}').join(userid1).split('{5}').join(userid2).split('{6}').join(userid3).split('{7}').join(userid4);
             var localurl = url;
-            if (typeof serverinfo.altmessenging[i].localurl == 'string') { localurl = serverinfo.altmessenging[i].localurl.split('{0}').join(currentNode._id.split('/')[2]).split('{1}').join(currentNode._id.split('/')[2]).split('{2}').join(currentNode._id.split('/')[2]).split('{3}').join(currentNode._id.split('/')[2]); }
+            if (typeof serverinfo.altmessenging[i].localurl == 'string') {
+                localurl = serverinfo.altmessenging[i].localurl.split('{0}').join(currentNode._id.split('/')[2]).split('{1}').join(currentNode._id.split('/')[2]).split('{2}').join(currentNode._id.split('/')[2]).split('{3}').join(currentNode._id.split('/')[2]);
+                localurl = localurl.split('{4}').join(userid1).split('{5}').join(userid2).split('{6}').join(userid3).split('{7}').join(userid4);
+            }
             if (url != '') { meshserver.send({ action: 'msg', type: 'openUrl', nodeid: currentNode._id, url: url }); }
             if (localurl != '') { safeNewWindow(localurl, 'altmessenger:' + currentNode._id, 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=400,height=560'); }
         }
