@@ -987,8 +987,8 @@ function AmtStackCreateService(wsmanStack) {
 
     // Convert a byte array of SID into string
     function GetSidString(sid) {
-        var r = "S-" + sid.charCodeAt(0) + "-" + sid.charCodeAt(7);
-        for (var i = 2; i < (sid.length / 4); i++) r += "-" + ReadIntX(sid, i * 4);
+        var r = 'S-' + sid[0] + '-' + sid[7];
+        for (var i = 2; i < (sid.length / 4); i++) r += '-' + ReadIntX(sid, i * 4);
         return r;
     }
 
