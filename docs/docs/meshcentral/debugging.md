@@ -215,3 +215,16 @@ Then open your browser to http://localhost:9999 or whatever port you used.
 !!!note
     If you pause the debugger, and happen to forget about it, the agent will automatically kill itself and restart because it will think that a thread is stuck. Default debugger timeout is 10 minutes, you may find a log entry saved to disk saying "Microstack Thread STUCK", or something similar.
 
+## Intel AMT
+
+To debug issues, confirm that Intel AMT is active and there MeshCentral is not showing any red errors on the "Intel AMT" line:
+
+![](images/amt_troubleshoot1.png)
+
+Next, you can go in the "My Server / Trace" tab and enable tracing on the "Intel AMT Manager" like this:
+
+![](images/amt_troubleshoot2.png)
+
+You can then open another tab and select to power off or power on Intel AMT, you should see "performPowerAction" with 2 or 8 depending on power on/off.
+
+![](images/amt_troubleshoot3.png)
