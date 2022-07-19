@@ -879,7 +879,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 const rcookieData = {};
                 if (user != null) { rcookieData.ruserid = user._id; } else if (obj.nouser === true) { rcookieData.nouser = 1; }
                 const rcookie = parent.parent.encodeCookie(rcookieData, parent.parent.loginCookieEncryptionKey);
-                if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
+                if (obj.id == null) { obj.id = parent.crypto.randomBytes(9).toString('base64'); } // If there is no connection id, generate one.
                 const command = { nodeid: cookie.nodeid, action: 'msg', type: 'tunnel', value: '*/' + xdomain + 'meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, tcpport: cookie.tcpport, tcpaddr: cookie.tcpaddr, soptions: {} };
                 if (user) { command.userid = user._id; }
                 if (typeof domain.consentmessages == 'object') {
@@ -915,9 +915,8 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 obj.meshid = node.meshid;
 
                 // Send connection request to agent
-                if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
+                if (obj.id == null) { obj.id = parent.crypto.randomBytes(9).toString('base64'); } // If there is no connection id, generate one.
                 const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);
-
                 if (obj.req.query.tcpport != null) {
                     const command = { nodeid: obj.req.query.nodeid, action: 'msg', type: 'tunnel', userid: user._id, value: '*/' + xdomain + 'meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, tcpport: obj.req.query.tcpport, tcpaddr: ((obj.req.query.tcpaddr == null) ? '127.0.0.1' : obj.req.query.tcpaddr), soptions: {} };
                     if (typeof domain.consentmessages == 'object') {
@@ -972,7 +971,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 obj.meshid = node.meshid;
 
                 // Send connection request to agent
-                if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); }
+                if (obj.id == null) { obj.id = parent.crypto.randomBytes(9).toString('base64'); } // If there is no connection id, generate one.
                 const rcookieData = { nodeid: node._id };
                 if (user != null) { rcookieData.ruserid = user._id; } else if (obj.nouser === true) { rcookieData.nouser = 1; }
                 const rcookie = parent.parent.encodeCookie(rcookieData, parent.parent.loginCookieEncryptionKey);
@@ -1118,7 +1117,7 @@ module.exports.CreateLocalRelay = function (parent, ws, req, domain, user, cooki
 function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
     const net = require('net');
     var obj = {};
-    obj.id = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
+    obj.id = parent.crypto.randomBytes(9).toString('base64');
     obj.req = req;
     obj.ws = ws;
     obj.user = user;
