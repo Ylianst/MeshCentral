@@ -106,7 +106,7 @@ module.exports.random = function (max) {
     return r;
 };
 
-// Split a comma seperated string, ignoring commas in quotes.
+// Split a comma separated string, ignoring commas in quotes.
 module.exports.quoteSplit = function (str) {
     var tmp = '', quote = 0, result = [];
     for (var i in str) { if (str[i] == '"') { quote = (quote + 1) % 2; } if ((str[i] == ',') && (quote == 0)) { tmp = tmp.trim(); result.push(tmp); tmp = ''; } else { tmp += str[i]; } }

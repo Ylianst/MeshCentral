@@ -318,7 +318,7 @@ if (args['_'].length == 0) {
                             console.log("  --id '[groupid]'       - Device group identifier (or --group).");
                         }
                         console.log("  --group [groupname]    - Device group name (or --id).");
-                        console.log("  --hours [hours]        - Validity period in hours or 0 for infinit.");
+                        console.log("  --hours [hours]        - Validity period in hours or 0 for infinite.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --flags [mode]         - Mode flag for link type (0 = both, 1 = interactive only, 2 = background only)");
                         break;
@@ -398,7 +398,7 @@ if (args['_'].length == 0) {
                         console.log("  --group [groupname]    - Filter by group name (or --id).");
                         console.log("  --count                - Only return the device count.");
                         console.log("  --json                 - Show result as JSON.");
-                        console.log("  --csv                  - Show result as comma seperated values.");
+                        console.log("  --csv                  - Show result as comma separated values.");
                         console.log("  --filter \"[filter]\"  - Filter devices using a filter string.");
                         console.log("     \"x\"                  - Devices with \"x\" in the name.");
                         console.log("     \"user:x or u:x\"      - Devices with \"x\" in the name of currently logged in user.");
@@ -469,7 +469,7 @@ if (args['_'].length == 0) {
                         console.log("  --resetpass                 - Request password reset on next login.");
                         console.log("  --realname [name]           - Set the real name for this account.");
                         console.log("  --phone [number]            - Set the account phone number.");
-                        console.log("  --rights [none|full|a,b,c]  - Comma seperated list of server permissions. Possible values:");
+                        console.log("  --rights [none|full|a,b,c]  - Comma separated list of server permissions. Possible values:");
                         console.log("     manageusers,backup,restore,update,fileaccess,locked,nonewgroups,notools,usergroups,recordings,locksettings,allevents");
                         break;
                     }
@@ -486,7 +486,7 @@ if (args['_'].length == 0) {
                         console.log("  --resetpass                 - Request password reset on next login.");
                         console.log("  --realname [name]           - Set the real name for this account.");
                         console.log("  --phone [number]            - Set the account phone number.");
-                        console.log("  --rights [none|full|a,b,c]  - Comma seperated list of server permissions. Possible values:");
+                        console.log("  --rights [none|full|a,b,c]  - Comma separated list of server permissions. Possible values:");
                         console.log("     manageusers,backup,restore,update,fileaccess,locked,nonewgroups,notools,usergroups,recordings,locksettings,allevents");
                         break;
                     }
@@ -627,7 +627,7 @@ if (args['_'].length == 0) {
                         console.log("    16 = Terminal prompt for user consent.");
                         console.log("    32 = Files prompt for user consent.");
                         console.log("    64 = Desktop show connection toolbar.");
-                        console.log("  --invitecodes [aa,bb]  - Comma seperated list of invite codes, blank to clear.");
+                        console.log("  --invitecodes [aa,bb]  - Comma separated list of invite codes, blank to clear.");
                         console.log("    --backgroundonly     - When used with invitecodes, set agent to only install in background.");
                         console.log("    --interactiveonly    - When used with invitecodes, set agent to only run on demand.");
                         break;
@@ -745,7 +745,7 @@ if (args['_'].length == 0) {
                         console.log("\r\nRequired arguments:\r\n");
                         console.log("  --msg [message]        - Message to display.");
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --user [userid]        - Send the message to the speficied user.");
+                        console.log("  --user [userid]        - Send the message to the specified user.");
                         break;
                     }
                     case 'deviceinfo': {

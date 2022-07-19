@@ -113,7 +113,7 @@ See description for information about each item.
         "agentSignLock": { "type": "boolean", "default": false, "description": "When code signing an agent using authenticode, lock the agent to only allow connection to this server. (This is in testing, the default value will change to true in the future)." },
         "agentTimeStampServer": { "type": [ "boolean", "string" ], "default": "http://timestamp.comodoca.com/authenticode", "description": "The time stamping server to use when code signing Windows executables. When set to false, the executables are not time stamped." },
         "agentTimeStampProxy": { "type": [ "boolean", "string" ], "description": "The HTTP proxy to use when contacting the time stamping server, if false, no proxy is used. By default, the npmproxy value is used." },
-        "ignoreAgentHashCheck": { "type": [ "boolean", "string" ], "default": false, "description": "When true, the agent no longer checked the TLS certificate of the server. This should be used for debugging only. You can also set this to a comma seperated list of IP addresses to ignore, for example: \"192.168.2.100,192.168.1.0/24\"." },
+        "ignoreAgentHashCheck": { "type": [ "boolean", "string" ], "default": false, "description": "When true, the agent no longer checked the TLS certificate of the server. This should be used for debugging only. You can also set this to a comma separated list of IP addresses to ignore, for example: \"192.168.2.100,192.168.1.0/24\"." },
         "exactPorts": { "type": "boolean", "default": false, "description": "When set to true, MeshCentral will only grab the required TCP listening ports or fail. It will not try to use the next available port of it's busy." },
         "allowLoginToken": { "type": "boolean", "default": false },
         "StrictTransportSecurity": { "type": ["boolean", "string"], "default": null, "description": "Controls the Strict-Transport-Security header, default is 1 year. Set to false to remove, true to force enable, or string to set a custom value. If set to null, MeshCentral will enable if a trusted certificate is set." },
@@ -206,7 +206,7 @@ See description for information about each item.
           "type": "object",
           "properties": {
             "mongoDumpPath": { "type": "string" },
-            "mysqlDumpPath": { "type": "string"},
+            "mysqlDumpPath": { "type": "string" },
             "backupIntervalHours": { "type": "integer" },
             "keepLastDaysBackup": { "type": "integer" },
             "zipPassword": { "type": "string" },
@@ -257,6 +257,7 @@ See description for information about each item.
             }
           }
         },
+        "rootCertCommonName" : { "type": "string", "default": "MeshCentralRoot-XXXXXX", "description": "The common name of the MeshCentral server root certificate. By default it's 'MeshCentralRoot-' followed by the first 6 HEX digits of the public key fingerprint. For this setting to take effect, all generated certificates need to be deleted and reset. Existing agents will not be able to connect anymore." },
         "redirects": { "type": "object" },
         "maxInvalidLogin": {
           "type": "object",
@@ -622,10 +623,18 @@ See description for information about each item.
               "MaxSingleUserSessions": { "type": "integer", "default": null, "description": "Maximum number of sessions a single user can have. Each time a user opens a new browser tab or opens a new browser on a different computer, a new user session is created." }
             }
           },
+          "files": {
+            "type": "object",
+            "description": "Values that affect the files feature",
+            "properties": {
+              "sftpConnect" : { "type": "boolean", "default": true, "description": "When false, removes the 'SFTP Connect' button from the files tab unless this is the only possible option." }
+            }
+          },
           "terminal": {
             "type": "object",
             "description": "Values that affect the terminal feature",
             "properties": {
+              "sshConnect" : { "type": "boolean", "default": true, "description": "When false, removes the 'SSH Connect' button from the terminal tab unless this is the only possible option." },
               "linuxShell": {
                 "type": "string",
                 "enum": [ "any", "root", "user", "login" ],
@@ -643,7 +652,7 @@ See description for information about each item.
           },
           "desktop": {
             "type": "object",
-            "description": "Values that affect the remote desktop feature",
+            "description": "Values that affect the desktop feature",
             "properties": {
               "viewonly": {
                 "type": "boolean",

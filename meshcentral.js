@@ -201,7 +201,7 @@ function CreateMeshCentralServer(config, args) {
 
             // Check if translate.json is in the "meshcentral-data" folder, if so use that and translate default pages.
             var translationFile = null, customTranslation = false;
-            if (require('fs').existsSync(obj.path.join(obj.datapath, 'translate.json'))) { translationFile = obj.path.join(obj.datapath, 'translate.json'); console.log("Using translate.json in meshentral-data."); customTranslation = true; }
+            if (require('fs').existsSync(obj.path.join(obj.datapath, 'translate.json'))) { translationFile = obj.path.join(obj.datapath, 'translate.json'); console.log("Using translate.json in meshcentral-data."); customTranslation = true; }
             if (translationFile == null) { if (require('fs').existsSync(obj.path.join(__dirname, 'translate', 'translate.json'))) { translationFile = obj.path.join(__dirname, 'translate', 'translate.json'); console.log("Using default translate.json."); } }
             if (translationFile == null) { console.log("Unable to find translate.json."); process.exit(); return; }
 
@@ -369,7 +369,7 @@ function CreateMeshCentralServer(config, args) {
             // Check if we need to install, start, stop, remove ourself as a background service
             if (((obj.args.xinstall == true) || (obj.args.xuninstall == true) || (obj.args.start == true) || (obj.args.stop == true) || (obj.args.restart == true))) {
                 var env = [], xenv = ['user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'exactport', 'rediraliasport', 'debug'];
-                for (i in xenv) { if (obj.args[xenv[i]] != null) { env.push({ name: 'mesh' + xenv[i], value: obj.args[xenv[i]] }); } } // Set some args as service environement variables.
+                for (i in xenv) { if (obj.args[xenv[i]] != null) { env.push({ name: 'mesh' + xenv[i], value: obj.args[xenv[i]] }); } } // Set some args as service environment variables.
 
                 var serviceFilePath = null;
                 if (obj.fs.existsSync(obj.path.join(servicepath, 'winservice.js'))) { serviceFilePath = obj.path.join(servicepath, 'winservice.js'); }
@@ -757,7 +757,7 @@ function CreateMeshCentralServer(config, args) {
             obj.syslogtcp.log("MeshCentral v" + getCurrentVersion() + " Server Start", obj.syslogtcp.LOG_INFO);
         }
 
-        // Check top level configuration for any unreconized values
+        // Check top level configuration for any unrecognized values
         if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [ i ]); } } }
 
         // Read IP lists from files if applicable
