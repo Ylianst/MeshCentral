@@ -206,7 +206,7 @@ See description for information about each item.
           "type": "object",
           "properties": {
             "mongoDumpPath": { "type": "string" },
-            "mysqlDumpPath": { "type": "string"},
+            "mysqlDumpPath": { "type": "string" },
             "backupIntervalHours": { "type": "integer" },
             "keepLastDaysBackup": { "type": "integer" },
             "zipPassword": { "type": "string" },
@@ -257,6 +257,7 @@ See description for information about each item.
             }
           }
         },
+        "rootCertCommonName" : { "type": "string", "default": "MeshCentralRoot-XXXXXX", "description": "The common name of the MeshCentral server root certificate. By default it's 'MeshCentralRoot-' followed by the first 6 HEX digits of the public key fingerprint. For this setting to take effect, all generated certificates need to be deleted and reset. Existing agents will not be able to connect anymore." },
         "redirects": { "type": "object" },
         "maxInvalidLogin": {
           "type": "object",
@@ -622,10 +623,18 @@ See description for information about each item.
               "MaxSingleUserSessions": { "type": "integer", "default": null, "description": "Maximum number of sessions a single user can have. Each time a user opens a new browser tab or opens a new browser on a different computer, a new user session is created." }
             }
           },
+          "files": {
+            "type": "object",
+            "description": "Values that affect the files feature",
+            "properties": {
+              "sftpConnect" : { "type": "boolean", "default": true, "description": "When false, removes the 'SFTP Connect' button from the files tab unless this is the only possible option." }
+            }
+          },
           "terminal": {
             "type": "object",
             "description": "Values that affect the terminal feature",
             "properties": {
+              "sshConnect" : { "type": "boolean", "default": true, "description": "When false, removes the 'SSH Connect' button from the terminal tab unless this is the only possible option." },
               "linuxShell": {
                 "type": "string",
                 "enum": [ "any", "root", "user", "login" ],
@@ -643,7 +652,7 @@ See description for information about each item.
           },
           "desktop": {
             "type": "object",
-            "description": "Values that affect the remote desktop feature",
+            "description": "Values that affect the desktop feature",
             "properties": {
               "viewonly": {
                 "type": "boolean",
